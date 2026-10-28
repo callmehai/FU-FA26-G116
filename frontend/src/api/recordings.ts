@@ -3,6 +3,8 @@ import type {
   RecordingMutationResponse,
   RecordingPlayback,
   RecordingUploadInput,
+  RoomTakeOpened,
+  RoomTakeSaved,
 } from '../types/recording'
 import { api } from './client'
 
@@ -29,6 +31,24 @@ export function uploadRecording(
   form.append('file', input.file, input.fileName)
   return api.upload<RecordingMutationResponse>(`/api/meetings/${meetingId}/recordings`, form, options)
 }
+
+/**
+ * ADR-0041 — the room mic. A take opens while the meeting runs; the participants are told before the meeting's first
+ * one only (`consentConfirmed`), a later take is appended to the same recording.
+ */
+export const beginRoomTake = (meetingId: string, consentConfirmed: boolean, consentPurpose: string) =>
+  api.post<RoomTakeOpened>(`/api/meetings/${meetingId}/recordings/takes`, { consentConfirmed, consentPurpose })
+
+/** One part of a take, written at its place: sending it again after a lost answer is harmless. */
+export const sendRoomPart = (recordingId: string, part: number, bytes: Uint8Array, final: boolean) =>
+  api.putBlob<void>(
+    `/api/recordings/${recordingId}/parts/${part}${final ? '?final=true' : ''}`,
+    new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/octet-stream' }),
+  )
+
+/** Switches the take off: it is appended to the meeting's room recording, which is transcribed again. */
+export const completeRoomTake = (recordingId: string) =>
+  api.post<RoomTakeSaved>(`/api/recordings/${recordingId}/complete`)
 
 export const getRecordingPlayback = (recordingId: string) =>
   api.get<RecordingPlayback>(`/api/recordings/${recordingId}/playback`)

@@ -3148,6 +3148,8 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
 .recording-name { overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .recording-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; width: fit-content; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
 .recording-actions { gap: 6px; }
+/* ADR-0041: the room mic's take being recorded — seen by everyone, heard by nobody yet. */
+.recording-live .recording-icon { color: var(--live); }
 .recording-deleted .recording-name { color: var(--muted-ink); font-weight: 500; text-decoration: line-through; }
 .recording-player { grid-column: 2 / -1; width: 100%; margin: 4px 0 0; }
 audio.recording-player { height: 40px; }
@@ -3302,6 +3304,9 @@ audio.recording-player { height: 40px; }
 .tl-rail::before { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--control-line); content: ''; }
 .tl-row-head .tl-rail::before { top: 22px; }
 .tl-group:last-child .tl-row:last-child .tl-rail::before { display: none; }
+/* Where a take of the room mic begins: the mic was off before it. */
+.tl-take { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.tl-take::after { flex: 1; height: 1px; background: var(--control-line); content: ''; }
 .tl-group:last-child .tl-row-head:last-child .tl-rail::before { display: none; }
 .tl-dot { position: relative; width: 10px; height: 10px; margin-top: 11px; border-radius: 50%; background: var(--control-line); }
 .tl-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; padding-top: 4px; }
@@ -3377,6 +3382,7 @@ audio.recording-player { height: 40px; }
 .mic-meter i.is-lit { opacity: 1; }
 .mic-side { position: relative; display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--control-line); border-radius: 50%; background: var(--surface); color: var(--ink-soft); cursor: pointer; }
 .mic-side:hover { background: var(--surface-alt); }
+.mic-choices { display: flex; flex-wrap: wrap; gap: 8px; }
 .mic-hint { margin: 0; color: var(--ink-soft); font-size: 12.5px; text-wrap: pretty; }
 .mic-notice { display: flex; gap: 6px; margin: 0; padding: 6px 8px; border: 1px solid var(--dot-amber); border-radius: var(--radius); background: var(--chip-amber-bg); color: var(--chip-amber-fg); font-size: 12.5px; }
 .mic-notice svg { flex: none; margin-top: 1px; }

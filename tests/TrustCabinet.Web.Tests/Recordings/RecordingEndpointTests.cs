@@ -79,16 +79,19 @@ public sealed class RecordingEndpointTests(RecordingFixture fixture) : IClassFix
     }
 
     [Fact]
-    public async Task Browser_capture_is_recorded_as_such_and_codec_parameters_are_accepted()
+    public async Task A_form_carries_a_file_recorded_elsewhere_and_codec_parameters_are_accepted()
     {
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Secretary);
-        await AssertCode(await client.PostAsync(s.Url, Form(type: "audio/webm;codecs=opus", source: "BrowserCapture",
-            fileName: "ghi-truc-tiep.webm", duration: null)), 201, "MSG290");
+        // The room mic streams its takes (ADR-0041): a form never claims to be one.
+        await AssertCode(await client.PostAsync(s.Url, Form(source: "BrowserCapture")), 400, "MSG291");
+        await AssertCode(await client.PostAsync(s.Url, Form(type: "audio/webm;codecs=opus", fileName: "ghi-ngoai.webm",
+            duration: null)), 201, "MSG290");
         var item = (await client.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("items")[0];
-        Assert.Equal("BrowserCapture", item.GetProperty("source").GetString());
+        Assert.Equal("Upload", item.GetProperty("source").GetString());
         Assert.Equal("audio/webm", item.GetProperty("contentType").GetString());
         Assert.Equal(0, item.GetProperty("durationMs").GetInt64());
+        Assert.Equal(JsonValueKind.Null, item.GetProperty("takes").ValueKind);
     }
 
     [Fact]

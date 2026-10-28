@@ -5,7 +5,7 @@
 | Hình thức (`mode`) | Mic | Ghi thế nào | Mục |
 |---|---|---|---|
 | `Online` | N mic, mỗi mic 1 người | Mỗi người tự ghi micro của mình trong phòng gọi, gửi từng câu | [Ghi âm theo micro từng người](#ghi-âm-theo-micro-từng-người-scrum-109) |
-| `InPerson` | 1 mic phòng | Thư ký ghi cả phòng trên trình duyệt, hoặc tải tệp ghi bằng thiết bị khác | Bản ghi, ngay dưới |
+| `InPerson` | 1 mic phòng | Thư ký bật mic phòng trên trình duyệt (từng lượt, nối thành một bản ghi), hoặc tải tệp ghi bằng thiết bị khác | Bản ghi, ngay dưới; [Mic phòng](#mic-phòng-adr-0041) |
 | `Hybrid` | 1 mic phòng + N mic | Cả hai | Cả hai |
 
 Bản ghi phòng là đầu vào cho gỡ băng (SCRUM-31) và nhận diện người nói (SCRUM-35).
@@ -26,7 +26,7 @@ Nhận ra **ai** đang nói từ giọng (Voice ID) là chuyện khác: đó là
 
 | Nghĩa vụ | Cột / cơ chế |
 |---|---|
-| Thông báo trước khi lưu | `consentConfirmed=true` bắt buộc: Thư ký xác nhận đã thông báo cho người dự và không ai phản đối. Thời điểm xác nhận lưu ở `ConsentObtainedAt`. Có người phản đối thì không ghi |
+| Thông báo trước khi lưu | `consentConfirmed=true` bắt buộc: Thư ký xác nhận đã thông báo cho người dự và không ai phản đối. Thời điểm xác nhận lưu ở `ConsentObtainedAt`. Có người phản đối thì không ghi. Mic phòng hỏi trước lượt đầu của cuộc họp; lượt sau nối vào cùng bản ghi nên không hỏi lại |
 | Nêu mục đích | `consentPurpose` (mặc định *Lập biên bản cuộc họp*) lưu cùng bản ghi |
 | Thời hạn lưu trữ và xoá | `RetainUntil` = lúc lưu + `Recordings:RetentionDays` (mặc định 180 ngày); job `RecordingRetentionWorker` xoá tự động mỗi 15 phút; Thư ký xoá theo yêu cầu bất cứ lúc nào |
 
@@ -62,21 +62,29 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
 {
   "meetingId": "…",
   "canUpload": true,
+  "canRecord": true,
   "items": [
     {
-      "id": "…", "fileName": "phien-hop.webm", "contentType": "audio/webm",
+      "id": "…", "fileName": "ghi-am-phong-29-10-2026-0900.wav", "contentType": "audio/wav",
       "byteSize": 1048576, "durationMs": 65000, "source": "BrowserCapture",
-      "status": "Available", "createdAt": "…", "createdByName": "Nguyễn Văn A",
+      "status": "Available", "createdAt": "…", "createdById": "…", "createdByName": "Nguyễn Văn A",
       "consentObtainedAt": "…", "consentPurpose": "Lập biên bản cuộc họp",
-      "retainUntil": "…", "deletedAt": null, "canErase": true
+      "retainUntil": "…", "deletedAt": null, "canErase": true, "canClose": false,
+      "takes": [
+        { "offsetMs": 0, "durationMs": 40000, "startedAt": "2026-10-29T02:00:00Z" },
+        { "offsetMs": 40000, "durationMs": 25000, "startedAt": "2026-10-29T02:10:00Z" }
+      ]
     }
   ]
 }
 ```
 
-`status`: `Available` | `Deleted`. `source`: `Upload` | `BrowserCapture`. Mới nhất lên đầu.
-`durationMs = 0` nghĩa là chưa biết (trình duyệt không gửi); gỡ băng sẽ điền giá trị thật.
-Không trả đường dẫn lưu trữ.
+`status`: `Pending` | `Available` | `Deleted`. `Pending` là lượt mic phòng đang ghi: mọi người thấy, không ai nghe
+được, không xoá được (`409 MSG364`). `source`: `Upload` | `BrowserCapture` (mic phòng). Mới nhất lên đầu.
+`takes`: các lượt mic phòng trong bản ghi, `null` với tệp tải lên. `canRecord`: người gọi bật được mic phòng ngay lúc
+này (Thư ký, cuộc họp `InProgress`, có phòng). `canClose`: Thư ký lưu hộ được lượt đang mở.
+`durationMs = 0` nghĩa là chưa biết (trình duyệt không gửi); gỡ băng sẽ điền giá trị thật. Bản ghi mic phòng tính độ
+dài từ số byte. Không trả đường dẫn lưu trữ.
 
 ### `POST /api/meetings/{meetingId}/recordings` — `multipart/form-data`
 
@@ -85,7 +93,7 @@ Không trả đường dẫn lưu trữ.
 | `file` | ✓ | Một tệp. `Content-Type` của phần tệp: `audio/mpeg`, `audio/mp4`, `audio/x-m4a`, `audio/aac`, `audio/wav`, `audio/webm`, `audio/ogg` (tham số codec như `;codecs=opus` được bỏ qua) |
 | `consentConfirmed` | ✓ | Đúng chữ `true` — Thư ký xác nhận đã thông báo cho người dự và không ai phản đối |
 | `consentPurpose` | | ≤ 1000 ký tự; bỏ trống thì dùng mục đích mặc định |
-| `source` | | `Upload` (mặc định) hoặc `BrowserCapture` |
+| `source` | | Chỉ `Upload` (mặc định). Mic phòng đi đường riêng bên dưới, `BrowserCapture` ở đây bị từ chối (`400 MSG291`) |
 | `durationMs` | | Số nguyên ≥ 0, trình duyệt đo được |
 
 Quyền và trạng thái cuộc họp được kiểm **trước** khi nhận byte đầu tiên. Tệp được ghi thẳng xuống
@@ -95,6 +103,52 @@ lý do gì khiến bản ghi không được giữ (thiếu đồng ý, lỗi da
 `201 MSG290` `{ code, message, recordingId }`. Lỗi: `400 MSG291`, `415 MSG292`, `413 MSG293`,
 `409 MSG294`, `409 MSG358`, `403 MSG295`, `503 MSG298`. `canUpload` trong danh sách là `false` với cuộc họp
 `Online`.
+
+## Mic phòng (ADR-0041)
+
+Theo [ADR-0041](../05-decisions/0041-mic-phong-ghi-tung-luot.md), như AI-eCabinet. Bật mic là mở một **lượt**.
+Trong khi ghi, trình duyệt gửi tiếng lên từng phần, và giữ phần chưa gửi trong IndexedDB. Tắt mic là lưu lượt: lượt
+được nối vào bản ghi phòng của cuộc họp, rồi cả bản được chuyển chữ lại. Mỗi cuộc họp chỉ một lượt mở.
+
+### `POST /api/meetings/{meetingId}/recordings/takes` — `{ "consentConfirmed": true, "consentPurpose": "…" }`
+
+Thư ký mở lượt khi cuộc họp `InProgress` và có phòng. `consentConfirmed` chỉ bắt buộc với lượt đầu của cuộc họp
+(chưa có bản ghi phòng nào). Lượt sau mang mục đích và mốc đồng ý của bản ghi nó sẽ nối vào.
+
+`201` `{ recordingId, partSize, maxBytes }`. Lỗi: `400 MSG291` (chưa xác nhận đồng ý), `403 MSG295`,
+`409 MSG358` (họp trực tuyến), `409 MSG359` (không còn đang diễn ra), `409 MSG360` (đã có lượt mở), `503 MSG298`.
+
+### `PUT /api/recordings/{recordingId}/parts/{n}[?final=true]` — `application/octet-stream`
+
+Phần thứ `n` (từ 1), được ghi vào tệp tại vị trí `(n − 1) × partSize`. Gửi lại một phần chỉ ghi đè đúng chỗ đó.
+
+- Mọi phần dài đúng `partSize`, trừ phần cuối (`final=true`).
+- Phần 1 mở đầu bằng header WAV 16 kHz mono 16-bit. Kích thước trong header là `0xFFFFFFFF` (chưa biết); server ghi
+  độ dài thật khi lưu.
+- Chỉ người mở lượt gửi được phần; người khác nhận `404`.
+
+`204`. Lỗi: `400 MSG361` (sai thứ tự, sai kích thước, sai header, sau phần cuối), `413 MSG293` (vượt
+`MaxUploadMegabytes`: trình duyệt tự sang lượt mới trước khi chạm), `409 MSG362` (lượt đã được lưu), `503 MSG298`.
+
+### `POST /api/recordings/{recordingId}/complete`
+
+Tắt mic. Người mở lượt gọi, hoặc một Thư ký lưu hộ lượt còn mở trên máy khác.
+
+- Lượt đầu của cuộc họp thành bản ghi phòng.
+- Lượt sau được nối vào bản ghi phòng mới nhất, và thêm một dòng vào `takes`.
+- Bản ghi phòng đầy giới hạn thì lượt này mở bản ghi mới.
+- Bản gỡ băng của cả bản trở về `Pending`. Lần chạy đang dở trên tệp ngắn hơn bị bỏ kết quả.
+
+`200 MSG363` `{ code, message, recordingId, appended }`. Gọi lại trên lượt đã lưu vẫn trả mã này. Lượt chưa thu
+được tiếng nào bị bỏ: `200 MSG365`, `recordingId: null`. Lỗi: `403 MSG295`, `409 MSG362`, `503 MSG298`.
+
+Lượt không nhận được phần nào trong `Recordings:IdleTakeHours` thì `RecordingRetentionWorker` tự lưu. Nhật ký kiểm
+toán ghi `recording.take_saved` với actor rỗng.
+
+### Sự kiện hub `speechChanged` với `changeType: "RecordingsChanged"`
+
+Gửi khi lượt được mở hoặc lưu, khi tệp được lưu hoặc xoá, và khi chuyển chữ xong. Người nhận đọc lại
+`GET …/recordings`.
 
 ### `GET /api/recordings/{recordingId}/playback`
 
@@ -132,6 +186,8 @@ Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá v
 | `RetentionDays` | `180` | Thời hạn lưu trữ ghi vào từng bản ghi lúc lưu |
 | `MaxUploadMegabytes` | `300` | Ba giờ mp3, hoặc một giờ WAV 16 kHz |
 | `PlaybackUrlMinutes` | `120` | |
+| `RoomPartBytes` | `320000` | Một phần mic phòng: 10 giây PCM 16 kHz |
+| `IdleTakeHours` | `12` | Lượt mic phòng không nhận phần nào lâu hơn thì server tự lưu |
 
 ## Gỡ băng (SCRUM-31)
 
@@ -301,9 +357,7 @@ gửi cho người trong danh sách cuộc họp. Không mang chữ: ai nhận t
 
 ## Chưa làm
 
-- Banner "Đang ghi âm" cho mọi người dự khi Thư ký ghi trên trang cuộc họp (họp trực tiếp): chỉ trình duyệt của
-  Thư ký hiện trạng thái ghi.
-- Đẩy bản ghi phòng lên từng phần trong khi ghi; hiện tải lên một lần khi dừng (ADR-0040).
+- Chữ chạy trong khi mic phòng đang ghi: eCab cũng đã bỏ, chữ có sau mỗi lần tắt mic (ADR-0041).
 - Chế độ "Máy phòng họp" cho họp kết hợp (ADR-0040).
 - Quyền nghe của khách mời (chờ SCRUM-59).
 

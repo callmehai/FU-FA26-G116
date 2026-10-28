@@ -22,6 +22,7 @@ public static class RecordingServiceCollectionExtensions
             Encoding.UTF8.GetBytes(configuration["Authentication:SigningKey"] ?? "")));
         services.AddScoped<IRecordingRepository, RecordingRepository>();
         services.AddScoped<IRecordingService, RecordingService>();
+        services.AddScoped<IRoomTakeService, RoomTakeService>();
         services.AddSingleton<SpeechClipGate>();
         services.AddScoped<ISpeechClipService, SpeechClipService>();
         return services;

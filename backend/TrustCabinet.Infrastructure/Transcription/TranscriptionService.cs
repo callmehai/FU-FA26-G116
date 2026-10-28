@@ -22,8 +22,8 @@ namespace TrustCabinet.Infrastructure.Transcription;
 /// </summary>
 public sealed class TranscriptionService(IMeetingRepository meetings, IRecordingRepository recordings,
     ITranscriptRepository transcripts, IRecordingStorage storage, ISpeechEngine engine, IVoiceIdRepository voices,
-    IVoiceprintProtector protector, IOptions<VoiceIdOptions> voiceOptions, IAuditService audit, TimeProvider clock,
-    ILogger<TranscriptionService> logger) : ITranscriptionService
+    IVoiceprintProtector protector, IOptions<VoiceIdOptions> voiceOptions, IAuditService audit,
+    ISpeechChangePublisher publisher, TimeProvider clock, ILogger<TranscriptionService> logger) : ITranscriptionService
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
@@ -230,12 +230,16 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
     /// </summary>
     private async Task FinishAsync(Guid transcriptId, SpeechTranscription? result, string? error, CancellationToken ct)
     {
-        await meetings.InTransactionAsync(async token =>
+        var meetingId = await meetings.InTransactionAsync(async token =>
         {
             var current = await transcripts.FindForProcessingAsync(transcriptId, token);
-            if (current is null) return 0;
+            if (current is null) return (Guid?)null;
             var recording = await recordings.FindAsync(current.RecordingId, true, token);
-            if (recording is null || recording.Status != RecordingStatus.Available) return 0;
+            if (recording is null || recording.Status != RecordingStatus.Available) return null;
+            // A room-mic take was appended while this ran (ADR-0041): the result is of a shorter file, and the
+            // transcript already waits to be made again from the whole.
+            await transcripts.ReloadAsync(current, token);
+            if (current.Status != TranscriptStatus.Processing) return null;
             var now = clock.GetUtcNow();
             current.UpdatedAt = now;
             if (result is null)
@@ -266,11 +270,24 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 current.ProgressPercent = 100;
                 current.ErrorMessage = "";
                 current.CompletedAt = now;
-                if (result.DurationMs > 0) recording.DurationMs = result.DurationMs;
+                // A room recording's length comes from its bytes, which its takes' places are counted in.
+                if (result.DurationMs > 0 && recording.Takes is null) recording.DurationMs = result.DurationMs;
             }
             await transcripts.SaveChangesAsync(token);
-            return 0;
+            return (Guid?)recording.MeetingId;
         }, ct);
+        if (meetingId is not { } id) return;
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(2));
+            await publisher.PublishAsync(new(Guid.CreateVersion7(), id, RecordingRules.RecordingsChanged, clock.GetUtcNow()),
+                timeout.Token);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Could not publish the finished transcript of {MeetingId}", id);
+        }
     }
 
     /// <summary>

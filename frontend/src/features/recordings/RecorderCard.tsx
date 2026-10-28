@@ -1,17 +1,24 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from '../../components/Icon'
+import { useToast } from '../../components/toastContext'
+import { errorMessage } from '../../lib/errors'
+import type { Recording, RecordingList } from '../../types/recording'
 import { ConsentDialog } from './ConsentDialog'
 import { formatDuration } from './format'
+import { saveTake } from './roomMic'
 import type { RoomRecorder } from './useRoomRecorder'
 
 /**
- * SCRUM-29, ADR-0040 — the Secretary's recorder for a meeting held in a room, as AI-eCabinet's floating mic card: in
- * the corner of every tab while the meeting runs, so moving between tabs never stops it. The room's one mic records
- * everyone; nobody else has a switch. The page holds the recorder, so the card can fold into a bubble while it runs.
+ * SCRUM-29, ADR-0041 — the Secretary's room mic, as AI-eCabinet's floating mic card: in the corner of every tab while
+ * the meeting runs, so moving between tabs never stops it. One switch: on records the room, off saves the take into
+ * the meeting's one recording and has it transcribed again. The participants are told before the first take only. The
+ * card also carries on or saves a take this laptop kept from a session cut off, and saves one left open on another.
  */
 
 const MIN_KEY = 'trustcabinet.recorder.min'
+/** Past this much audio waiting on the device, the network is said to be slow; nothing is lost meanwhile. */
+const BEHIND_NOTICE_SECONDS = 30
 
 /** Open on a laptop, so the Secretary sees it is there; a bubble on a phone, where the card would cover the page. */
 function storedMin() {
@@ -24,12 +31,39 @@ function storedMin() {
   }
 }
 
-export function RecorderCard({ title, room }: { title: string; room: RoomRecorder }) {
-  const { recorder } = room
+function useNow(on: boolean) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!on) return
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [on])
+  return now
+}
+
+export function RecorderCard({
+  title,
+  room,
+  list,
+  open,
+  onChanged,
+}: {
+  title: string
+  room: RoomRecorder
+  /** The meeting's recordings: whether its first take is still to come. */
+  list: RecordingList | null
+  /** The take open right now, on this laptop or another. */
+  open: Recording | null
+  onChanged: () => Promise<void> | void
+}) {
+  const toast = useToast()
   const [min, setMin] = useState(storedMin)
   const [asking, setAsking] = useState(false)
+  const [closing, setClosing] = useState(false)
   const dock = useRef<HTMLDivElement>(null)
-  const { state } = recorder
+  const { phase, unfinished } = room
+  const on = phase === 'on'
+  const now = useNow(on)
 
   // The corner is shared with the upload tray (under the card) and the toasts (above it): they read its height here.
   useEffect(() => {
@@ -43,10 +77,13 @@ export function RecorderCard({ title, room }: { title: string; room: RoomRecorde
       root.style.removeProperty('--mic-dock-h')
     }
   }, [])
-  const recording = state.kind === 'recording'
-  const taking = recording || state.kind === 'paused'
-  // A microphone that would not open must be seen, whatever the Secretary chose.
-  const minimised = min && state.kind !== 'error'
+
+  const kept = !on && phase !== 'starting' && unfinished !== null
+  // A take open that is not this laptop's: on another device, or this one's own that a closed tab left behind.
+  const elsewhere = !on && phase === 'off' && !kept && open !== null ? open : null
+  const firstTake = !list?.items.some((r) => r.source === 'BrowserCapture' && r.status === 'Available' && r.takes)
+  // A problem must be seen, whatever the Secretary chose.
+  const minimised = min && !room.error && !kept && !elsewhere
 
   const remember = (value: boolean) => {
     setMin(value)
@@ -58,25 +95,49 @@ export function RecorderCard({ title, room }: { title: string; room: RoomRecorde
   }
 
   const status =
-    state.kind === 'error'
-      ? 'Chưa ghi được'
-      : state.kind === 'starting'
-        ? 'Đang mở micro…'
-        : recording
-          ? 'Đang ghi cả phòng'
-          : state.kind === 'paused'
-            ? 'Đã tạm dừng'
-            : 'Chưa ghi âm'
+    phase === 'starting'
+      ? 'Đang mở micro…'
+      : on
+        ? 'Đang ghi cả phòng'
+        : phase === 'saving'
+          ? 'Đang lưu lượt ghi…'
+          : kept
+            ? 'Còn lượt ghi dở trên máy này'
+            : elsewhere
+              ? `Đang ghi ở nơi khác · ${elsewhere.createdByName}`
+              : room.error
+                ? 'Chưa ghi được'
+                : 'Mic phòng đang tắt'
+
+  const closeElsewhere = async (take: Recording) => {
+    setClosing(true)
+    try {
+      const saved = await saveTake(take.id)
+      if (saved) toast.show(saved.message, saved.recordingId ? 'success' : 'info')
+    } catch (error) {
+      toast.show(errorMessage(error), 'error')
+    } finally {
+      await onChanged()
+      setClosing(false)
+    }
+  }
+
+  const toggle = () => {
+    if (on) room.stop()
+    else if (firstTake) setAsking(true)
+    else room.start(false)
+  }
+  const toggleLabel = on ? 'Tắt mic, lưu lượt ghi' : 'Bật mic phòng'
 
   const card = minimised ? (
     <button
       type="button"
-      className={`mic-bubble${recording ? ' is-live' : ''}`}
+      className={`mic-bubble${on ? ' is-live' : ''}`}
       onClick={() => remember(false)}
       aria-label={`Mở ô ghi âm: ${status} · ${title}`}
       data-tooltip={`${title} · ${status}`}
     >
-      <Icon name={taking ? 'mic' : 'micOff'} size={24} />
+      <Icon name={on ? 'mic' : 'micOff'} size={24} />
     </button>
   ) : (
     <section className="mic-card" aria-labelledby="recorder-card-title">
@@ -94,59 +155,81 @@ export function RecorderCard({ title, room }: { title: string; room: RoomRecorde
       </header>
       <div className="mic-card-body">
         <div className="mic-status" role="status">
-          <span className={`mic-status-dot${recording ? ' is-live' : state.kind === 'error' ? ' is-error' : ''}`} />
+          <span className={`mic-status-dot${on ? ' is-live' : room.error ? ' is-error' : ''}`} />
           <span className="mic-status-text" title={status}>
             {status}
           </span>
-          {taking && (
-            <span className="mic-clock" data-tooltip="Thời lượng bản ghi">
-              {formatDuration(state.elapsedMs)}
+          {on && room.startedAt !== null && (
+            <span className="mic-clock" data-tooltip="Thời lượng lượt ghi này">
+              {formatDuration(now - room.startedAt)}
             </span>
           )}
         </div>
-        <div className="mic-controls">
-          {taking ? (
+        {kept ? (
+          <div className="mic-choices">
+            <button type="button" className="btn btn-primary btn-sm" onClick={room.resumeUnfinished}>
+              <Icon name="mic" size={16} />
+              Ghi tiếp
+            </button>
+            <button type="button" className="btn btn-outline btn-sm" onClick={room.finishUnfinished}>
+              <Icon name="check" size={16} />
+              Lưu phần đã ghi
+            </button>
+          </div>
+        ) : elsewhere ? (
+          elsewhere.canClose && (
+            <div className="mic-choices">
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                disabled={closing}
+                onClick={() => void closeElsewhere(elsewhere)}
+                data-tooltip="Máy kia không quay lại thì lưu lượt đó để chuyển chữ"
+              >
+                <Icon name="check" size={16} />
+                {closing ? 'Đang lưu…' : 'Lưu lượt đó'}
+              </button>
+            </div>
+          )
+        ) : (
+          <div className="mic-controls">
             <button
               type="button"
-              className={`mic-toggle${recording ? ' is-on' : ''}`}
-              onClick={recording ? recorder.pause : recorder.resume}
-              aria-label={recording ? 'Tạm dừng' : 'Ghi tiếp'}
-              data-tooltip={recording ? 'Tạm dừng' : 'Ghi tiếp'}
+              className={`mic-toggle${on ? ' is-on' : ''}`}
+              onClick={toggle}
+              disabled={phase === 'starting' || phase === 'saving'}
+              aria-label={toggleLabel}
+              aria-pressed={on}
+              data-tooltip={toggleLabel}
             >
-              <Icon name={recording ? 'pause' : 'mic'} size={22} />
+              <Icon name={on ? 'mic' : 'micOff'} size={22} />
             </button>
-          ) : (
-            <button
-              type="button"
-              className="mic-toggle"
-              onClick={() => setAsking(true)}
-              disabled={state.kind === 'starting'}
-              aria-label="Bắt đầu ghi âm"
-              data-tooltip="Bắt đầu ghi âm"
-            >
-              <Icon name="mic" size={22} />
-            </button>
-          )}
-          <Meter level={recorder.level} live={recording} />
-          {taking && (
-            <button
-              type="button"
-              className="mic-side"
-              onClick={() => void room.stop()}
-              aria-label="Dừng và lưu"
-              data-tooltip="Dừng và lưu"
-            >
-              <Icon name="recordStop" size={20} />
-            </button>
-          )}
-        </div>
-        {state.kind === 'error' ? (
+            <Meter level={room.level} live={on} />
+          </div>
+        )}
+        {room.error ? (
           <p className="mic-notice mic-notice-error" role="alert">
             <Icon name="alertCircle" size={16} />
-            {state.message}
+            {room.error}
+          </p>
+        ) : room.notice && phase === 'off' ? (
+          <p className="mic-notice" role="status">
+            <Icon name="alertCircle" size={16} />
+            {room.notice}
+          </p>
+        ) : on && room.behindSeconds > BEHIND_NOTICE_SECONDS ? (
+          <p className="mic-notice" role="status">
+            <Icon name="alertCircle" size={16} />
+            Mạng chậm · {formatDuration(room.behindSeconds * 1000)} chưa gửi, vẫn giữ trên máy
           </p>
         ) : (
-          !taking && <p className="mic-hint">Báo mọi người trước khi bấm ghi.</p>
+          phase === 'off' &&
+          !kept &&
+          !elsewhere && (
+            <p className="mic-hint">
+              {firstTake ? 'Báo mọi người trước khi bật mic.' : 'Tắt mic là lưu lượt ghi và chuyển chữ.'}
+            </p>
+          )
         )}
       </div>
     </section>
@@ -168,7 +251,7 @@ export function RecorderCard({ title, room }: { title: string; room: RoomRecorde
           onClose={() => setAsking(false)}
           onConfirm={() => {
             setAsking(false)
-            void recorder.start()
+            room.start(true)
           }}
         />
       )}

@@ -1649,6 +1649,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("storage_path");
 
+                    b.Property<string>("Takes")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("takes");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -1664,6 +1668,11 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("RetainUntil")
                         .HasDatabaseName("ix_recordings_retain_until");
+
+                    b.HasIndex(new[] { "MeetingId" }, "ix_recordings_one_open_take")
+                        .IsUnique()
+                        .HasDatabaseName("ix_recordings_one_open_take")
+                        .HasFilter("source = 'BrowserCapture' AND status = 'Pending'");
 
                     b.ToTable("recordings", (string)null);
                 });

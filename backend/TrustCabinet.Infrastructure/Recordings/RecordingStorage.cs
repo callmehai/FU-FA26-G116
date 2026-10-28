@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
@@ -26,6 +27,15 @@ public sealed class RecordingOptions
 
     /// <summary>How long a signed playback URL works. Covers listening through a long meeting without re-signing.</summary>
     public int PlaybackUrlMinutes { get; set; } = 120;
+
+    /// <summary>
+    /// The room mic's part, in bytes: ten seconds of 16 kHz PCM. What has not reached the server yet waits on the
+    /// device, so a smaller part only means more requests.
+    /// </summary>
+    public int RoomPartBytes { get; set; } = 320_000;
+
+    /// <summary>A take no part has reached for this long is saved by the server: the laptop is not coming back.</summary>
+    public int IdleTakeHours { get; set; } = 12;
 }
 
 /// <summary>
@@ -63,8 +73,71 @@ public sealed class LocalRecordingStorage(IOptions<RecordingOptions> options) : 
         return (relative.Replace('\\', '/'), total);
     }
 
+    public string Create(string extension)
+    {
+        var relative = Path.Combine(DateTime.UtcNow.ToString("yyyy-MM"), $"{Guid.CreateVersion7():N}{extension}");
+        var full = Resolve(relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        using (new FileStream(full, FileMode.CreateNew, FileAccess.Write)) { }
+        return relative.Replace('\\', '/');
+    }
+
+    public async Task<long> WriteAtAsync(string storagePath, long offset, Stream content, long maxBytes, CancellationToken ct)
+    {
+        await using var file = new FileStream(Resolve(storagePath), FileMode.Open, FileAccess.Write, FileShare.Read, 81920, true);
+        file.Position = offset;
+        var buffer = new byte[81920];
+        long total = 0;
+        int read;
+        while ((read = await content.ReadAsync(buffer, ct)) > 0)
+        {
+            total += read;
+            if (total > maxBytes) throw new RecordingTooLargeException();
+            await file.WriteAsync(buffer.AsMemory(0, read), ct);
+        }
+        return total;
+    }
+
+    public void Truncate(string storagePath, long length)
+    {
+        using var file = new FileStream(Resolve(storagePath), FileMode.Open, FileAccess.Write, FileShare.Read);
+        if (file.Length > length) file.SetLength(length);
+    }
+
+    public async Task<string> ConcatAsync(string first, string second, long skip, CancellationToken ct)
+    {
+        var relative = Create(Path.GetExtension(first));
+        try
+        {
+            await using var target = new FileStream(Resolve(relative), FileMode.Open, FileAccess.Write, FileShare.None, 81920, true);
+            await using (var head = OpenRead(first)) await head.CopyToAsync(target, ct);
+            await using var tail = OpenRead(second);
+            tail.Position = Math.Min(skip, tail.Length);
+            await tail.CopyToAsync(target, ct);
+        }
+        catch
+        {
+            File.Delete(Resolve(relative));
+            throw;
+        }
+        return relative;
+    }
+
+    public void SealWav(string storagePath)
+    {
+        using var file = new FileStream(Resolve(storagePath), FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+        if (file.Length < RecordingRules.WavHeaderBytes) return;
+        Span<byte> size = stackalloc byte[4];
+        BinaryPrimitives.WriteUInt32LittleEndian(size, (uint)Math.Min(uint.MaxValue, file.Length - 8));
+        file.Position = 4;
+        file.Write(size);
+        BinaryPrimitives.WriteUInt32LittleEndian(size, (uint)Math.Min(uint.MaxValue, file.Length - RecordingRules.WavHeaderBytes));
+        file.Position = 40;
+        file.Write(size);
+    }
+
     public Stream OpenRead(string storagePath)
-        => new FileStream(Resolve(storagePath), FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
+        => new FileStream(Resolve(storagePath), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 81920, true);
 
     public void Delete(string storagePath)
     {

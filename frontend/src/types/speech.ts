@@ -67,6 +67,7 @@ export interface SpeechMessage {
 export interface SpeechChangedEvent {
   eventId: string
   meetingId: string
-  changeType: 'ClipAdded' | 'ClipEdited' | 'ClipDeleted'
+  /** `RecordingsChanged`: a room-mic take opened or was saved, a file was kept or erased, a transcript finished. */
+  changeType: 'ClipAdded' | 'ClipEdited' | 'ClipDeleted' | 'RecordingsChanged'
   occurredAt: string
 }

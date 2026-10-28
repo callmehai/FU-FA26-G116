@@ -9,6 +9,7 @@ import { formatDate, formatDateTime } from '../../lib/format'
 import type { Recording, RecordingList } from '../../types/recording'
 import type { TranscriptStatus } from '../../types/transcript'
 import { useAccessLost } from '../auth/useAccessLost'
+import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import { useUploadsSettled } from '../uploads/uploadsContext'
 import { ConsentDialog } from './ConsentDialog'
 import { formatDuration, formatSize, probeDuration } from './format'
@@ -16,10 +17,13 @@ import { PlayerBar } from './PlayerBar'
 import { rememberSpeed, storedSpeed } from './playerSpeed'
 import { TranscriptView } from './TranscriptView'
 import { DEFAULT_PURPOSE, recordingsTarget, useRecordingSave } from './useRecordingSave'
+import { RECORDINGS_EVENTS } from './useRoomRecordings'
 
 /**
- * SCRUM-29 — the meeting's room recordings, in the Bản ghi tab. The Secretary records the room from the recorder card
- * in the corner of every tab (RecorderCard), and uploads a file recorded elsewhere from here.
+ * SCRUM-29 — the meeting's room recordings, in the Bản ghi tab. The Secretary records the room with the mic card in
+ * the corner of every tab (RecorderCard), and uploads a file recorded elsewhere from here. ADR-0041: each take of the
+ * room mic is appended to one recording, transcribed again as a whole, so the tab reads as one meeting; the take being
+ * recorded shows as such to everyone, and nobody hears it before the mic goes off.
  *
  * Nothing is kept before the Secretary confirms the participants were told and nobody objected; the purpose they
  * confirm is stored with the file, and every row says when it will be erased.
@@ -84,6 +88,8 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
   }, [transcribing, load])
 
   useUploadsSettled(recordingsTarget(meetingId), () => void load())
+  // A take opened or saved, a file kept or erased, a transcript done: on any screen of the meeting.
+  useMeetingEvents(meetingId, () => void load(true), RECORDINGS_EVENTS)
 
   const data = state.kind === 'loaded' ? state.data : null
   const canUpload = !existingOnly && (data?.canUpload ?? false)
@@ -143,16 +149,22 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
       {data && data.items.length === 0 && (
         <div className="cell-empty">
           <p className="empty-title">Chưa có bản ghi.</p>
-          {canUpload && <p className="field-hint">Ghi bằng ô ghi âm ở góc màn hình, hoặc tải tệp ghi sẵn lên.</p>}
+          {canUpload && <p className="field-hint">Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.</p>}
         </div>
       )}
 
       {data && data.items.length > 0 && (
         <ul className="recording-list">
           {/* Oldest first, each with its transcript under it: the tab reads in the order the meeting went. */}
-          {[...data.items].reverse().map((recording) => (
-            <RecordingRow key={recording.id} recording={recording} onErase={() => setErasing(recording)} />
-          ))}
+          {[...data.items]
+            .reverse()
+            .map((recording) =>
+              recording.status === 'Pending' ? (
+                <OpenTakeRow key={recording.id} take={recording} />
+              ) : (
+                <RecordingRow key={recording.id} recording={recording} onErase={() => setErasing(recording)} />
+              ),
+            )}
         </ul>
       )}
 
@@ -217,6 +229,29 @@ const TRANSCRIPT_BADGE: Partial<Record<TranscriptStatus, { tone: BadgeTone; labe
   Processing: { tone: 'amber', label: 'Đang chuyển chữ' },
   Completed: { tone: 'emerald', label: 'Có bản gỡ băng' },
   Failed: { tone: 'red', label: 'Lỗi chuyển chữ' },
+}
+
+/** The room mic's take being recorded: everyone sees the room is being recorded, nobody hears it yet. */
+function OpenTakeRow({ take }: { take: Recording }) {
+  return (
+    <li className="recording-row recording-live">
+      <span className="recording-icon" aria-hidden="true">
+        <Icon name="mic" size={18} />
+      </span>
+      <div className="recording-main">
+        <span className="recording-name">Mic phòng đang ghi</span>
+        <span
+          className="recording-meta"
+          tabIndex={0}
+          data-tooltip="Tắt mic thì lượt này được nối vào bản ghi phòng và chuyển chữ lại cả bản."
+        >
+          <Badge tone="red">Đang ghi</Badge>
+          <span>{take.createdByName}</span>
+          <span>từ {formatDateTime(take.createdAt)}</span>
+        </span>
+      </div>
+    </li>
+  )
 }
 
 function RecordingRow({ recording, onErase }: { recording: Recording; onErase: () => void }) {
@@ -303,7 +338,8 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           {recording.fileName}
         </span>
         <span className="recording-meta" data-tooltip={details} tabIndex={0}>
-          <Badge tone="slate">{recording.source === 'BrowserCapture' ? 'Ghi trực tiếp' : 'Tải lên'}</Badge>
+          <Badge tone="slate">{recording.source === 'BrowserCapture' ? 'Mic phòng' : 'Tải lên'}</Badge>
+          {recording.takes && recording.takes.length > 1 && <span>{recording.takes.length} lượt ghi</span>}
           {deleted ? (
             <Badge tone="red">Đã xoá</Badge>
           ) : (
@@ -411,6 +447,8 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           <TranscriptView
             fileName={recording.fileName}
             recordingId={recording.id}
+            takes={recording.takes}
+            listedStatus={recording.transcriptStatus}
             currentMs={currentMs}
             onSeek={(ms) => {
               const element = audio.current

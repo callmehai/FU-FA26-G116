@@ -91,6 +91,14 @@ public static class AuditActions
 
     public const string RecordingObjectType = "Recording";
 
+    /// <summary>
+    /// ADR-0041 — the Secretary switched the room mic on (a take opened), or a take was saved: appended to the meeting's
+    /// room recording, kept as the first one, or dropped because the mic heard nothing. Who closed it is the actor; the
+    /// server closing a take left idle has none.
+    /// </summary>
+    public const string RecordingTakeStarted = "recording.take_started";
+    public const string RecordingTakeSaved = "recording.take_saved";
+
     /// <summary>SCRUM-35 — a person agreed to Voice ID; the notice version and purpose they agreed to are in the details.</summary>
     public const string VoiceConsentGranted = "voice.consent_granted";
 

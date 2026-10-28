@@ -13,7 +13,8 @@ import type { SpeechChangedEvent } from '../../types/speech'
  * sends (SCRUM-69), the only change of status anyone else hears about, so it is told to both.
  * `documentsChanged` follows an upload (SCRUM-21). The per-mic transcript (SCRUM-109) says `speechChanged` for a
  * sentence added or corrected, which a read of what changed since the last one catches, and `speechRemoved` for a
- * sentence taken back or the capture mode changed, which only a full read shows.
+ * sentence taken back or the capture mode changed, which only a full read shows. The room recordings (ADR-0041) say
+ * `recordingsChanged` when a take opens or is saved, a file is kept or erased, or a transcript is done.
  */
 export type MeetingEvent =
   | 'participantsChanged'
@@ -23,6 +24,7 @@ export type MeetingEvent =
   | 'documentsChanged'
   | 'speechChanged'
   | 'speechRemoved'
+  | 'recordingsChanged'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -78,7 +80,13 @@ function open(meetingId: string): Channel {
   connection.on('speechChanged', (event: SpeechChangedEvent) => {
     if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
     seen.add(event.eventId)
-    notify(event.changeType === 'ClipDeleted' ? 'speechRemoved' : 'speechChanged')
+    notify(
+      event.changeType === 'RecordingsChanged'
+        ? 'recordingsChanged'
+        : event.changeType === 'ClipDeleted'
+          ? 'speechRemoved'
+          : 'speechChanged',
+    )
   })
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {

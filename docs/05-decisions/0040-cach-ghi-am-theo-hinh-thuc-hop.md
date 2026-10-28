@@ -1,6 +1,7 @@
 # ADR-0040: Cách ghi âm suy ra từ hình thức họp: trực tuyến ghi theo micro từng người, trực tiếp ghi bằng mic phòng
 
-- **Trạng thái:** Đề xuất — SCRUM-109, PO 29/10/2026
+- **Trạng thái:** Đề xuất — SCRUM-109, PO 29/10/2026; điểm 4 (Tạm dừng, Dừng và lưu, tải lên khi dừng) thay thế bởi
+  ADR-0041
 - **Ngày:** 2026-10-29
 - **Người quyết định:** Hải (PO)
 - **Thay:**

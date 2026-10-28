@@ -4,8 +4,8 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// An audio recording of a sitting — captured in the browser, uploaded afterwards, or mixed from
-/// the call room (SCRUM-29, SCRUM-44).
+/// An audio recording of a sitting — the room mic's takes appended into one, or a file uploaded afterwards
+/// (SCRUM-29, ADR-0041).
 ///
 /// A recording of people speaking is personal data under Luật BVDLCN 91/2025/QH15. Three obligations
 /// follow, and the columns below exist so the system can show it kept them rather than merely
@@ -54,8 +54,17 @@ public class Recording : Entity
     /// </summary>
     public DateTimeOffset? DeletedAt { get; set; }
 
+    /// <summary>
+    /// The room mic's takes in this recording, in order: where each starts in the audio and when it was spoken, so the
+    /// transcript reads on the meeting's clock. Null for an uploaded file.
+    /// </summary>
+    public List<RecordingTake>? Takes { get; set; }
+
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;
 
     public Transcript? Transcript { get; set; }
 }
+
+/// <summary>One stretch of the room mic between switching it on and off (ADR-0041).</summary>
+public sealed record RecordingTake(long OffsetMs, long DurationMs, DateTimeOffset StartedAt);

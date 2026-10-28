@@ -6,6 +6,7 @@ import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
+import type { RecordingTake } from '../../types/recording'
 import type { Transcript, TranscriptSegment, TranscriptStatus } from '../../types/transcript'
 import { saveBlob } from '../documents/documentFile'
 import { formatDuration } from './format'
@@ -22,11 +23,37 @@ import { speakerName, speakerSlotOf } from './speakers'
 
 const POLL_MS = 4000
 
+const wallClock = new Intl.DateTimeFormat('vi-VN', {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+})
+
+/** The take a moment of the audio belongs to: the last one starting at or before it. */
+function takeAt(takes: RecordingTake[], ms: number) {
+  let index = 0
+  for (let i = 0; i < takes.length; i++) if (takes[i].offsetMs <= ms) index = i
+  return index
+}
+
+/**
+ * How a moment of the recording reads: the room mic's takes (ADR-0041) carry when each was said, so a moment reads on
+ * the meeting's clock; an uploaded file only knows how far into it a moment is.
+ */
+function timeLabel(takes: RecordingTake[] | null | undefined, ms: number) {
+  if (!takes?.length) return formatDuration(ms)
+  const take = takes[takeAt(takes, ms)]
+  return wallClock.format(new Date(Date.parse(take.startedAt) + ms - take.offsetMs))
+}
+
 type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'loaded'; transcript: Transcript }
 
 export function TranscriptView({
   recordingId,
   fileName,
+  takes,
+  listedStatus,
   currentMs,
   onSeek,
   onStatus,
@@ -34,6 +61,10 @@ export function TranscriptView({
   recordingId: string
   /** The recording's file name, to name the saved text after it. */
   fileName: string
+  /** The room mic's takes, for the meeting's clock and a line where each new one starts. */
+  takes?: RecordingTake[] | null
+  /** The status the recordings list last read: a take appended makes it wait again, and the text is read anew. */
+  listedStatus?: TranscriptStatus
   /** Where the player is, to highlight the segment being heard. */
   currentMs: number
   onSeek: (ms: number) => void
@@ -65,7 +96,7 @@ export function TranscriptView({
     return () => {
       loads.current++
     }
-  }, [load])
+  }, [load, listedStatus])
 
   const status = state.kind === 'loaded' ? state.transcript.status : null
   useEffect(() => {
@@ -111,7 +142,9 @@ export function TranscriptView({
     )
 
   const { transcript } = state
-  if (transcript.status === 'Pending' || transcript.status === 'Processing')
+  const running = transcript.status === 'Pending' || transcript.status === 'Processing'
+  // A room recording that just had a take appended keeps showing what it said so far while the whole is redone.
+  if (running && transcript.segments.length === 0)
     return (
       <p className="transcript-status transcript-running" role="status">
         <span className="transcript-spinner" aria-hidden="true" />
@@ -145,8 +178,16 @@ export function TranscriptView({
   const active = transcript.segments.findLast((s) => s.startMs <= currentMs)?.id
   // Only a name the Secretary assigned replaces "Người nói N" on the segments.
   const names = new Map(transcript.speakers.filter((s) => s.assignedName).map((s) => [s.label, s.assignedName!]))
+  const at = (ms: number) => timeLabel(takes, ms)
+  const marked = takes && takes.length > 1 ? takes : null
   return (
     <div className="transcript">
+      {running && (
+        <p className="transcript-status transcript-running" role="status">
+          <span className="transcript-spinner" aria-hidden="true" />
+          Đang chuyển chữ lại cả bản ghi, có lượt ghi mới. Chữ dưới đây là bản trước.
+        </p>
+      )}
       <div className="transcript-note">
         <Badge tone="outline">Máy nhận dạng</Badge>
         <span className="field-hint">Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.</span>
@@ -163,7 +204,7 @@ export function TranscriptView({
               <Icon name="download" size={16} />
             </button>
           )}
-          {transcript.canEdit && (
+          {transcript.canEdit && !running && (
             <button
               type="button"
               className="btn btn-ghost btn-icon btn-sm"
@@ -197,10 +238,13 @@ export function TranscriptView({
         <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>
       ) : (
         <ol className="tl-list transcript-list" aria-label="Lời thoại theo thời điểm nói">
-          {runs(transcript.segments).map((run) => (
+          {runs(transcript.segments, marked).map((run, i, all) => (
             <li key={run[0].id} className="tl-group">
+              {marked && (i === 0 || takeAt(marked, all[i - 1][0].startMs) !== takeAt(marked, run[0].startMs)) && (
+                <TakeLine takes={marked} index={takeAt(marked, run[0].startMs)} />
+              )}
               <div className="tl-row tl-row-head">
-                <span className="tl-time">{formatDuration(run[0].startMs)}</span>
+                <span className="tl-time">{at(run[0].startMs)}</span>
                 <span className="tl-rail" aria-hidden="true">
                   <span className="tl-dot" style={{ background: speakerSlotOf(run[0].speakerLabel).dot }} />
                 </span>
@@ -208,12 +252,12 @@ export function TranscriptView({
                   <strong className="tl-name" style={{ color: speakerSlotOf(run[0].speakerLabel).ink }}>
                     {names.get(run[0].speakerLabel) ?? speakerName(run[0].speakerLabel)}
                   </strong>
-                  <span className="tl-time-inline">{formatDuration(run[0].startMs)}</span>
+                  <span className="tl-time-inline">{at(run[0].startMs)}</span>
                   <button
                     type="button"
                     className="tl-play"
                     onClick={() => onSeek(run[0].startMs)}
-                    aria-label={`Nghe từ ${formatDuration(run[0].startMs)}`}
+                    aria-label={`Nghe từ ${at(run[0].startMs)}`}
                     data-tooltip="Nghe lại"
                   >
                     <Icon name="play" size={12} />
@@ -224,6 +268,7 @@ export function TranscriptView({
                 <SegmentRow
                   key={segment.id}
                   segment={segment}
+                  time={at(segment.startMs)}
                   first={i === 0}
                   active={segment.id === active}
                   canEdit={transcript.canEdit}
@@ -244,19 +289,37 @@ export function TranscriptView({
   )
 }
 
-/** Neighbouring segments of one voice read as one run under its name, as in the per-mic record. */
-function runs(segments: TranscriptSegment[]) {
+/**
+ * Neighbouring segments of one voice read as one run under its name, as in the per-mic record. A run never crosses
+ * from one take of the room mic into the next: the mic was off in between.
+ */
+function runs(segments: TranscriptSegment[], takes: RecordingTake[] | null) {
   const out: TranscriptSegment[][] = []
   for (const segment of segments) {
     const last = out.at(-1)
-    if (last && last[0].speakerLabel === segment.speakerLabel) last.push(segment)
+    const sameTake = !takes || takeAt(takes, last?.[0].startMs ?? 0) === takeAt(takes, segment.startMs)
+    if (last && sameTake && last[0].speakerLabel === segment.speakerLabel) last.push(segment)
     else out.push([segment])
   }
   return out
 }
 
+/** Where a take of the room mic begins: its number and the clock it ran by. */
+function TakeLine({ takes, index }: { takes: RecordingTake[]; index: number }) {
+  const take = takes[index]
+  const from = Date.parse(take.startedAt)
+  return (
+    <div className="tl-take" role="separator">
+      <span>
+        Lượt {index + 1} · {wallClock.format(new Date(from))}–{wallClock.format(new Date(from + take.durationMs))}
+      </span>
+    </div>
+  )
+}
+
 function SegmentRow({
   segment,
+  time,
   first,
   active,
   canEdit,
@@ -266,6 +329,8 @@ function SegmentRow({
   onSeek,
 }: {
   segment: TranscriptSegment
+  /** How the segment's moment reads: the meeting's clock for the room mic, the file's offset for an upload. */
+  time: string
   first: boolean
   active: boolean
   canEdit: boolean
@@ -297,13 +362,8 @@ function SegmentRow({
       {first ? (
         <span className="tl-time" />
       ) : (
-        <button
-          type="button"
-          className="tl-time tl-time-button"
-          onClick={onSeek}
-          aria-label={`Nghe từ ${formatDuration(segment.startMs)}`}
-        >
-          {formatDuration(segment.startMs)}
+        <button type="button" className="tl-time tl-time-button" onClick={onSeek} aria-label={`Nghe từ ${time}`}>
+          {time}
         </button>
       )}
       <span className="tl-rail" aria-hidden="true" />
@@ -355,7 +415,13 @@ function SegmentRow({
         )}
         {canEdit && !editing && (
           <span className="tl-tools">
-            <button type="button" className="tl-tool" onClick={onEdit} aria-label="Sửa nội dung" data-tooltip="Sửa nội dung">
+            <button
+              type="button"
+              className="tl-tool"
+              onClick={onEdit}
+              aria-label="Sửa nội dung"
+              data-tooltip="Sửa nội dung"
+            >
               <Icon name="pencil" size={16} />
             </button>
           </span>

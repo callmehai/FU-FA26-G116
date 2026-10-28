@@ -26,6 +26,8 @@ public sealed class RecordingFixture : IAsyncLifetime
     internal Factory Host = null!;
     internal const string SigningKey = "khoa-ky-chi-dung-trong-test-du-32-ky-tu";
     internal const int MaxUploadMegabytes = 1;
+    /// <summary>A small room-mic part, so a take of a few parts stays a few kilobytes.</summary>
+    internal const int RoomPartBytes = 4000;
 
     internal TrustCabinetDbContext Db() => new(new DbContextOptionsBuilder<TrustCabinetDbContext>()
         .UseNpgsql(Database.DataSource, o => o.MigrationsHistoryTable("__ef_migrations_history"))
@@ -53,6 +55,7 @@ public sealed class RecordingFixture : IAsyncLifetime
             base.ConfigureWebHost(builder);
             builder.UseSetting("Recordings:StorageRoot", fixture.StorageRoot);
             builder.UseSetting("Recordings:MaxUploadMegabytes", MaxUploadMegabytes.ToString());
+            builder.UseSetting("Recordings:RoomPartBytes", RoomPartBytes.ToString());
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<TrustCabinetDbContext>();

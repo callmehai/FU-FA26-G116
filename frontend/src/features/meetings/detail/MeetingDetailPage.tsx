@@ -27,6 +27,7 @@ import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RecorderCard } from '../../recordings/RecorderCard'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
 import { useRoomRecorder } from '../../recordings/useRoomRecorder'
+import { useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { SpeechPanel } from '../../speech/SpeechPanel'
 import { useSpeech } from '../../speech/useSpeech'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
@@ -124,11 +125,19 @@ function MeetingDetail({
   // ADR-0040: how the meeting is recorded follows from how it is held. Whoever joins from afar is captured per mic, in
   // the call room; the page only reads that record. A room is recorded by the Secretary, from a card that lives with
   // the page rather than the Bản ghi tab, so that moving between tabs never stops it (AI-eCabinet's floating card).
+  // ADR-0041: the room mic streams each take as it records, and everyone sees that the room is being recorded.
   const speech = useSpeech(meeting.id, { micOn: false })
   const perMic = meeting.mode !== 'InPerson'
-  const room = useRoomRecorder(meeting.id)
-  const recordsRoom =
-    meeting.mode === 'InPerson' && meeting.status === 'InProgress' && meeting.myMeetingRole === 'Secretary'
+  const running = meeting.status === 'InProgress'
+  const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online')
+  const room = useRoomRecorder(meeting.id, running, roomRecordings.reload)
+  const recordsRoom = meeting.mode === 'InPerson' && running && meeting.myMeetingRole === 'Secretary'
+  // A take, or one this laptop kept from a closed tab, stays on screen until it is saved, even past the meeting's end.
+  const showsRecorder =
+    recordsRoom ||
+    room.phase !== 'off' ||
+    room.unfinished !== null ||
+    (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null)
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -243,6 +252,17 @@ function MeetingDetail({
             <StatusBadge status={meeting.status} />
             {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
             <RsvpChip response={meeting.myResponse} />
+            {roomRecordings.open && (
+              <button
+                type="button"
+                className="room-recording"
+                onClick={() => setTab('recordings')}
+                data-tooltip={`Mic phòng đang ghi · ${roomRecordings.open.createdByName}`}
+              >
+                <Icon name="mic" size={13} />
+                Đang ghi âm
+              </button>
+            )}
           </div>
           <p className="record-facts">
             <span>
@@ -373,8 +393,15 @@ function MeetingDetail({
           />
         )}
 
-        {/* A take still running when the meeting ends stays on screen until the Secretary saves it. */}
-        {(recordsRoom || room.recorder.active) && <RecorderCard title={meeting.title} room={room} />}
+        {showsRecorder && (
+          <RecorderCard
+            title={meeting.title}
+            room={room}
+            list={roomRecordings.list}
+            open={roomRecordings.open}
+            onChanged={roomRecordings.reload}
+          />
+        )}
 
         <MeetingHistory
           history={history}

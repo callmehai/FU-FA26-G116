@@ -17,8 +17,8 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// retention period ends — the row stays as evidence that it existed and was erased.
 /// </summary>
 public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepository recordings,
-    IRecordingStorage storage, IRecordingPlaybackSigner signer, IAuditService audit, TimeProvider clock,
-    IOptions<RecordingOptions> options, ILogger<RecordingService> logger) : IRecordingService
+    IRecordingStorage storage, IRecordingPlaybackSigner signer, IAuditService audit, ISpeechChangePublisher publisher,
+    TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RecordingService> logger) : IRecordingService
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
@@ -33,7 +33,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             var items = await recordings.ListAsync(meetingId, ct);
             return new(Data: new RecordingList(meetingId,
                 secretary && RecordingRules.UploadAllowed(meeting.Status) && RecordingRules.HasRoom(meeting.Mode),
-                items.Select(r => View(r, secretary, export)).ToArray()));
+                items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId)));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -96,6 +96,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 return new RecordingOutcome(RecordingId: recording.Id);
             }, ct);
             kept = outcome.Failure == RecordingFailure.None;
+            if (kept) await PublishAsync(meetingId, ct);
             return outcome;
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -171,10 +172,16 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return new(RecordingFailure.NotFound);
                 if (!RecordingRules.IsSecretary(meeting, actorId)) return new(RecordingFailure.Forbidden);
                 if (recording.Status == RecordingStatus.Deleted) return new(RecordingId: recording.Id);
+                // A take still streaming is saved first (switching the mic off), then erased like any recording.
+                if (recording.Status == RecordingStatus.Pending) return new(RecordingFailure.TakeOpen);
                 path = await MarkErasedAsync(recording, actorId, "request", token);
                 return new RecordingOutcome(RecordingId: recording.Id);
             }, ct);
-            if (path is not null) DeleteQuietly(path);
+            if (path is not null)
+            {
+                DeleteQuietly(path);
+                if (await recordings.FindAsync(recordingId, false, ct) is { } erased) await PublishAsync(erased.MeetingId, ct);
+            }
             return outcome;
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -232,6 +239,21 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             ? (meeting, RecordingFailure.None) : (null, RecordingFailure.NotFound);
     }
 
+    private async Task PublishAsync(Guid meetingId, CancellationToken ct)
+    {
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(2));
+            await publisher.PublishAsync(new(Guid.CreateVersion7(), meetingId, RecordingRules.RecordingsChanged, clock.GetUtcNow()),
+                timeout.Token);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Could not publish recordings change for {MeetingId}", meetingId);
+        }
+    }
+
     private void DeleteQuietly(string path)
     {
         try { storage.Delete(path); }
@@ -244,6 +266,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
 
     private static RecordingView View(Recording r, bool secretary, bool export) => new(r.Id, r.FileName, r.ContentType,
         r.ByteSize, r.DurationMs, r.Source.ToString(), r.Status.ToString(), r.CreatedAt, r.CreatedBy.FullName,
-        r.ConsentObtainedAt, r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status != RecordingStatus.Deleted,
-        r.Transcript?.Status.ToString() ?? "None", export && r.Status == RecordingStatus.Available);
+        r.ConsentObtainedAt, r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status == RecordingStatus.Available,
+        r.Transcript?.Status.ToString() ?? "None", export && r.Status == RecordingStatus.Available, r.CreatedById, r.Takes,
+        secretary && r.Status == RecordingStatus.Pending);
 }
