@@ -38,6 +38,11 @@ else Folder is available
         FolderController-->LibraryScreen: MSG188 - Enter a folder name.
         LibraryScreen-->Actor: MSG188 - Enter a folder name.
 
+    else Folder name exceeds 400 characters - EX-4
+        FolderService-->FolderController: MSG348 - The text is longer than allowed.
+        FolderController-->LibraryScreen: MSG348 - The text is longer than allowed.
+        LibraryScreen-->Actor: MSG348 - The text is longer than allowed.
+
     else Folder name is valid
         FolderService->FolderRepository: Save the new name only, without changing the location or contents
         activate FolderRepository

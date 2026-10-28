@@ -33,25 +33,34 @@ alt Document is missing or no longer belongs to the actor - EX-1
     LibraryScreen-->Actor: MSG175 - This personal-library item is not available.
 
 else Document is available
-    DocumentService->DocumentRepository: Save the new library document name only,\nleaving the file content and names already copied into Meetings unchanged\n(BR-183, BR-224, BR-276)
-    activate DocumentRepository
-    DocumentRepository->Database: Update the library document name
-    activate Database
-    Database-->DocumentRepository: Updated / Failed
-    deactivate Database
-    DocumentRepository-->DocumentService: Updated document / Failed
-    deactivate DocumentRepository
+    DocumentService->DocumentService: Validate the new name: not blank, at most 255 characters,\nno control characters, and keep the original .pdf or .docx extension
 
-    alt Document cannot be renamed - EX-2
-        DocumentService-->DocumentController: MSG184 - Unable to rename the document. Its name remains unchanged.
-        DocumentController-->LibraryScreen: MSG184 - Unable to rename the document. Its name remains unchanged.
-        LibraryScreen-->Actor: MSG184 - Unable to rename the document. Its name remains unchanged.
+    alt Document name is invalid - EX-3
+        DocumentService-->DocumentController: MSG347 - The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file.
+        DocumentController-->LibraryScreen: MSG347 - The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file.
+        LibraryScreen-->Actor: MSG347 - The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file.
 
-    else Document renamed
-        DocumentService-->DocumentController: Renamed document
-        DocumentController-->LibraryScreen: Renamed document
-        LibraryScreen->LibraryScreen: Refresh the displayed name
-        LibraryScreen-->Actor: MSG183 - Document renamed successfully.
+    else Document name is valid
+        DocumentService->DocumentRepository: Save the new library document name only,\nleaving the file content and names already copied into Meetings unchanged\n(BR-183, BR-224, BR-276)
+        activate DocumentRepository
+        DocumentRepository->Database: Update the library document name
+        activate Database
+        Database-->DocumentRepository: Updated / Failed
+        deactivate Database
+        DocumentRepository-->DocumentService: Updated document / Failed
+        deactivate DocumentRepository
+
+        alt Document cannot be renamed - EX-2
+            DocumentService-->DocumentController: MSG184 - Unable to rename the document. Its name remains unchanged.
+            DocumentController-->LibraryScreen: MSG184 - Unable to rename the document. Its name remains unchanged.
+            LibraryScreen-->Actor: MSG184 - Unable to rename the document. Its name remains unchanged.
+
+        else Document renamed
+            DocumentService-->DocumentController: Renamed document
+            DocumentController-->LibraryScreen: Renamed document
+            LibraryScreen->LibraryScreen: Refresh the displayed name
+            LibraryScreen-->Actor: MSG183 - Document renamed successfully.
+        end
     end
 end
 

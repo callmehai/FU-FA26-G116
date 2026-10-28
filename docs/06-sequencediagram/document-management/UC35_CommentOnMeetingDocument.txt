@@ -19,13 +19,19 @@ CommentController->CommentService: addComment(meetingId, meetingDocumentId, acto
 activate CommentService
 
 CommentService->CommentService: Check comment is not blank (BR-246)
+and length is at most 4,000 characters (BR-247)
 
 alt Comment is empty - EX-1
     CommentService-->CommentController: MSG200 - Enter a comment.
     CommentController-->DocumentViewer: MSG200 - Enter a comment.
     DocumentViewer-->User: MSG200 - Enter a comment.
 
-else Comment has text
+else Comment exceeds 4,000 characters - EX-6
+    CommentService-->CommentController: MSG348 - The text is longer than allowed.
+    CommentController-->DocumentViewer: MSG348 - The text is longer than allowed.
+    DocumentViewer-->User: MSG348 - The text is longer than allowed.
+
+else Comment has valid length
     CommentService->MeetingAccessPolicy: Check actor can currently view the Meeting,\nincluding a valid Guest invitation (BR-181, BR-249, BR-275)
     activate MeetingAccessPolicy
     MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
@@ -48,6 +54,11 @@ else Comment has text
         CommentService-->CommentController: MSG156 - Meeting documents are not accessible.
         CommentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
         DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
+
+    else Meeting is cancelled - EX-7
+        CommentService-->CommentController: MSG349 - This meeting was cancelled and can no longer be modified.
+        CommentController-->DocumentViewer: MSG349 - This meeting was cancelled and can no longer be modified.
+        DocumentViewer-->User: MSG349 - This meeting was cancelled and can no longer be modified.
 
     else Meeting has ended - EX-5
         CommentService-->CommentController: MSG251 - Comments are read-only after the Meeting has ended.
