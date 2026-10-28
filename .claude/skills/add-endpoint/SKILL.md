@@ -27,7 +27,7 @@ An endpoint is never one file. Work through every step; skipping one is what bre
   - declare `private const string MsgNNName = "MSGnn";` at the top of the endpoint file
   - no inline `"MSGnn"` literals
 - Enums are stored as strings, keys are `Guid.CreateVersion7()`, users are deactivated not deleted, `MeetingStatusHistory` is append-only.
-- Recordings and voice are personal data (Decree 13/2023/NĐ-CP): state consent and deletion obligations explicitly.
+- Recordings are personal data and a voice used to recognise someone is sensitive biometric data (Law 91/2025/QH15, Decree 356/2025/NĐ-CP): state consent and deletion obligations explicitly. Voice embeddings live only encrypted in `voice_samples`.
 
 ## Frontend
 1. `frontend/src/types/<name>.ts` — type mirroring the response.
