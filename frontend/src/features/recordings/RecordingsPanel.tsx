@@ -149,7 +149,8 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
 
       {data && data.items.length > 0 && (
         <ul className="recording-list">
-          {data.items.map((recording) => (
+          {/* Oldest first, each with its transcript under it: the tab reads in the order the meeting went. */}
+          {[...data.items].reverse().map((recording) => (
             <RecordingRow key={recording.id} recording={recording} onErase={() => setErasing(recording)} />
           ))}
         </ul>
@@ -219,6 +220,9 @@ const TRANSCRIPT_BADGE: Partial<Record<TranscriptStatus, { tone: BadgeTone; labe
 }
 
 function RecordingRow({ recording, onErase }: { recording: Recording; onErase: () => void }) {
+  const deleted = recording.status === 'Deleted'
+  // Open from the start: what the machine wrote down is what people come to the tab for.
+  const [open, setOpen] = useState(!deleted)
   const [playback, setPlayback] = useState<
     { kind: 'loading' } | { kind: 'ready'; url: string } | { kind: 'error'; message: string } | null
   >(null)
@@ -243,21 +247,27 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
     element.currentTime = Math.max(0, Math.min(lengthMs, ms)) / 1000
     setCurrentMs(element.currentTime * 1000)
   }
-  const deleted = recording.status === 'Deleted'
   const badge = deleted ? undefined : TRANSCRIPT_BADGE[transcriptStatus]
 
-  const toggle = async () => {
-    if (playback) {
+  // The player's signed link is fetched each time the row opens: one from an earlier opening may have expired.
+  useEffect(() => {
+    if (!open || deleted) return
+    let gone = false
+    void Promise.resolve().then(async () => {
+      if (gone) return
+      setPlayback({ kind: 'loading' })
+      try {
+        const url = (await getRecordingPlayback(recording.id)).url
+        if (!gone) setPlayback({ kind: 'ready', url })
+      } catch (error) {
+        if (!gone) setPlayback({ kind: 'error', message: errorMessage(error) })
+      }
+    })
+    return () => {
+      gone = true
       setPlayback(null)
-      return
     }
-    setPlayback({ kind: 'loading' })
-    try {
-      setPlayback({ kind: 'ready', url: (await getRecordingPlayback(recording.id)).url })
-    } catch (error) {
-      setPlayback({ kind: 'error', message: errorMessage(error) })
-    }
-  }
+  }, [open, deleted, recording.id])
 
   const toast = useToast()
   // A signed link to the original file, followed by the browser itself: a recording can be hundreds of megabytes.
@@ -284,7 +294,7 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
     .join(' · ')
 
   return (
-    <li className={`recording-row${deleted ? ' recording-deleted' : ''}${playback ? ' recording-open' : ''}`}>
+    <li className={`recording-row${deleted ? ' recording-deleted' : ''}${open ? ' recording-open' : ''}`}>
       <span className="recording-icon" aria-hidden="true">
         <Icon name="fileAudio" size={18} />
       </span>
@@ -311,12 +321,12 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           <button
             type="button"
             className="btn btn-outline btn-icon btn-sm"
-            onClick={() => void toggle()}
-            aria-label={playback ? 'Đóng' : 'Nghe và xem bản gỡ băng'}
-            aria-expanded={playback !== null}
-            data-tooltip={playback ? 'Đóng' : 'Nghe và xem bản gỡ băng'}
+            onClick={() => setOpen(!open)}
+            aria-label={open ? 'Thu gọn' : 'Nghe và xem bản gỡ băng'}
+            aria-expanded={open}
+            data-tooltip={open ? 'Thu gọn' : 'Nghe và xem bản gỡ băng'}
           >
-            <Icon name={playback ? 'x' : 'play'} size={16} />
+            <Icon name={open ? 'chevronUp' : 'chevronDown'} size={16} />
           </button>
           {recording.canDownload && (
             <button

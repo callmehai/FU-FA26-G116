@@ -3381,6 +3381,8 @@ audio.recording-player { height: 40px; }
 .mic-notice { display: flex; gap: 6px; margin: 0; padding: 6px 8px; border: 1px solid var(--dot-amber); border-radius: var(--radius); background: var(--chip-amber-bg); color: var(--chip-amber-fg); font-size: 12.5px; }
 .mic-notice svg { flex: none; margin-top: 1px; }
 .mic-notice-error { border-color: var(--edge-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
+/* The page scrolls past the card, so the last row of a list is never left under it. */
+body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16px); }
 /* A phone keeps the sidebar's rail on the left: the card stays clear of it. */
 @media (max-width: 560px) {
   .mic-card { width: min(320px, calc(100vw - var(--sidebar-width-collapsed) - 24px)); }
