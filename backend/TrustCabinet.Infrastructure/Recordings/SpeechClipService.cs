@@ -43,16 +43,15 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             var (meeting, failure) = await ListenableMeetingAsync(meetingId, actorId, ct);
             if (meeting is null) return new(failure);
             var secretary = RecordingRules.IsSecretary(meeting, actorId);
-            var query = db.SpeechClips.AsNoTracking().Where(c => c.MeetingId == meetingId);
-            if (since is { } after) query = query.Where(c => c.UpdatedAt > after);
-            var items = await query.OrderBy(c => c.StartedAt).ThenBy(c => c.CreatedAt)
-                .Select(c => new SpeechClipView(c.Id, c.SpeakerId, c.Speaker.FullName, c.StartedAt, c.DurationMs, c.Text,
-                    c.UpdatedAt, c.EditedAt, c.EditedBy == null ? null : c.EditedBy.FullName,
-                    secretary || c.SpeakerId == actorId))
-                .ToListAsync(ct);
+            var officer = SpeechClipRules.RunsRecord(meeting, actorId);
+            var rows = await ReadWithNeighboursAsync(meetingId, since, ct);
+            var marks = SpeechClipFold.Fold([.. rows.All.Select(FoldOf)]);
+            var byId = rows.All.ToDictionary(r => r.Id);
+            var items = rows.Shown.Select(r => View(r, marks.GetValueOrDefault(r.Id), byId, actorId, secretary, officer)).ToList();
             return new(Data: new SpeechClipList(meetingId, meeting.CaptureMode.ToString(),
                 SpeechClipRules.Capturing(meeting), secretary,
-                SpeechClipRules.RunsRecord(meeting, actorId) && SpeechClipRules.ModeChangeable(meeting.Status), now, items));
+                SpeechClipRules.RunsRecord(meeting, actorId) && SpeechClipRules.ModeChangeable(meeting.Status), now, items,
+                officer));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -67,7 +66,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         {
             var (meeting, failure) = await ListenableMeetingAsync(meetingId, actorId, ct);
             if (meeting is null) return new(failure);
-            return SpeechClipRules.Capturing(meeting) ? new() : new(SpeechClipFailure.NotCapturing);
+            return SpeechClipRules.Accepts(meeting, clock.GetUtcNow()) ? new() : new(SpeechClipFailure.NotCapturing);
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -100,8 +99,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             return new(SpeechClipFailure.SaveFailed);
         }
 
-        var text = await TranscribeAsync(upload, ct);
-        if (text is null) return new(SpeechClipFailure.EngineUnavailable);
+        var heard = await TranscribeAsync(upload, ct);
+        if (heard is not { } transcribed) return new(SpeechClipFailure.EngineUnavailable);
+        var (text, segments) = transcribed;
         // Silence, a cough, a door: nothing worth a line. The browser drops it; nothing is stored.
         if (text.Length == 0) return new();
 
@@ -112,15 +112,15 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             {
                 var meeting = await meetings.FindWorkflowAsync(meetingId, false, token);
                 if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return null;
-                // A sentence finished just as the Chair ended the meeting was still said in it.
-                if (meeting.CaptureMode != CaptureMode.PerMic || meeting.Status is not (MeetingStatus.InProgress or MeetingStatus.Ended))
-                    return null;
+                // A sentence finished just as the Chair ended the meeting was still said in it, and one the browser
+                // could only send later (offline, tab closed) too.
+                if (!SpeechClipRules.Accepts(meeting, now)) return null;
                 var row = new SpeechClip
                 {
                     MeetingId = meetingId, SpeakerId = actorId, ClientClipId = upload.ClientClipId,
                     StartedAt = StartedAt(upload, meeting, now), DurationMs = upload.DurationMs,
                     Text = text.Length > SpeechClipRules.MaxTextLength ? text[..SpeechClipRules.MaxTextLength] : text,
-                    CreatedAt = now, UpdatedAt = now,
+                    Segments = segments, CreatedAt = now, UpdatedAt = now,
                 };
                 db.SpeechClips.Add(row);
                 await db.SaveChangesAsync(token);
@@ -195,6 +195,43 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         }
     }
 
+    public async Task<SpeechClipOutcome> SetExclusionAsync(Guid clipId, Guid actorId, bool excluded, string? reason,
+        CancellationToken ct = default)
+    {
+        SpeechClipExclusion? why = null;
+        if (excluded)
+        {
+            if (!Enum.TryParse<SpeechClipExclusion>(reason, false, out var parsed) || !Enum.IsDefined(parsed))
+                return new(SpeechClipFailure.Invalid, Errors: new Dictionary<string, string[]>
+                {
+                    ["reason"] = ["Lý do phải là Leak hoặc Other."],
+                });
+            why = parsed;
+        }
+        try
+        {
+            return await ChangeClipAsync(clipId, actorId, async (clip, meeting, now, token) =>
+            {
+                if (!SpeechClipRules.RunsRecord(meeting, actorId)) return new(SpeechClipFailure.Forbidden);
+                // Already so: a double tap writes and audits nothing.
+                if (clip.ExcludedAt is not null == excluded && clip.ExclusionReason == why) return new(Data: excluded);
+                await audit.RecordAsync(excluded ? AuditActions.SpeechClipExcluded : AuditActions.SpeechClipRestored,
+                    AuditActions.SpeechClipObjectType, clip.Id, actorId,
+                    new { clip.MeetingId, clip.SpeakerId, reason = (why ?? clip.ExclusionReason)?.ToString() }, token);
+                clip.ExcludedAt = excluded ? now : null;
+                clip.ExcludedById = excluded ? actorId : null;
+                clip.ExclusionReason = why;
+                clip.UpdatedAt = now;
+                return new(Data: excluded);
+            }, "ClipEdited", ct);
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to change the exclusion of speech clip {ClipId}", clipId);
+            return new(SpeechClipFailure.SaveFailed);
+        }
+    }
+
     public async Task<SpeechClipOutcome> SetCaptureModeAsync(Guid meetingId, Guid actorId, string? mode, CancellationToken ct = default)
     {
         if (!Enum.TryParse<CaptureMode>(mode, false, out var capture) || !Enum.IsDefined(capture))
@@ -239,8 +276,12 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         return await db.SpeechClips.Where(c => c.CreatedAt < cutoff).ExecuteDeleteAsync(ct);
     }
 
-    /// <summary>Null when the worker cannot be reached or is busy for too long; the browser keeps the sentence and retries.</summary>
-    private async Task<string?> TranscribeAsync(SpeechClipUpload upload, CancellationToken ct)
+    /// <summary>
+    /// The sentence's text and its segments, or null when the worker cannot be reached or is busy for too long; the
+    /// browser keeps the sentence and retries.
+    /// </summary>
+    private async Task<(string Text, List<SpeechClipSegment> Segments)?> TranscribeAsync(SpeechClipUpload upload,
+        CancellationToken ct)
     {
         if (!engine.IsConfigured) return null;
         if (!await gate.Slots.WaitAsync(gate.Wait, ct)) return null;
@@ -248,8 +289,11 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         {
             using var audio = new MemoryStream(upload.Audio, writable: false);
             // Diarization off: the owner of the mic is the speaker, so there is nothing to tell apart.
-            var result = await engine.TranscribeAsync(audio, upload.ContentType, diarize: false, ct);
-            return string.Join(' ', result.Segments.Select(s => s.Text.Trim()).Where(t => t.Length > 0));
+            var result = await engine.TranscribeAsync(audio, upload.ContentType, diarize: false, clip: true, ct);
+            var spoken = result.Segments.Select(s => (Segment: s, Text: s.Text.Trim())).Where(s => s.Text.Length > 0).ToList();
+            return (string.Join(' ', spoken.Select(s => s.Text)), [.. spoken.Select(s => new SpeechClipSegment(
+                s.Segment.StartMs, s.Segment.EndMs, s.Text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length,
+                s.Segment.LevelDbfs))]);
         }
         catch (SpeechEngineException ex)
         {
@@ -268,10 +312,12 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     /// </summary>
     private static DateTimeOffset StartedAt(SpeechClipUpload upload, Meeting meeting, DateTimeOffset now)
     {
-        var fallback = now.AddMilliseconds(-upload.DurationMs);
+        // Sent late, after the meeting ended: the sentence ended at the latest when the meeting did.
+        var ended = meeting.Status == MeetingStatus.Ended && meeting.ActualEndedAt is { } at && at < now ? at : now;
+        var fallback = ended.AddMilliseconds(-upload.DurationMs);
         var started = upload.StartedAt.ToUniversalTime();
         var earliest = (meeting.ActualStartedAt ?? fallback) - SpeechClipRules.ClockTolerance;
-        return started < earliest || started > now + SpeechClipRules.ClockTolerance ? fallback : started;
+        return started < earliest || started > ended + SpeechClipRules.ClockTolerance ? fallback : started;
     }
 
     private async Task<SpeechClipOutcome> ChangeClipAsync(Guid clipId, Guid actorId,
@@ -300,8 +346,76 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         => db.SpeechClips.AsNoTracking()
             .Where(c => c.MeetingId == meetingId && c.SpeakerId == actorId && c.ClientClipId == clientClipId)
             .Select(c => new SpeechClipView(c.Id, c.SpeakerId, c.Speaker.FullName, c.StartedAt, c.DurationMs, c.Text,
-                c.UpdatedAt, c.EditedAt, c.EditedBy == null ? null : c.EditedBy.FullName, true))
+                c.UpdatedAt, c.EditedAt, c.EditedBy == null ? null : c.EditedBy.FullName, true, false, null, null, null))
             .SingleOrDefaultAsync(ct);
+
+    /// <summary>One sentence with what the list and the fold need of it.</summary>
+    private sealed record ClipRow(Guid Id, Guid SpeakerId, string SpeakerName, DateTimeOffset StartedAt, long DurationMs,
+        string Text, DateTimeOffset UpdatedAt, DateTimeOffset? EditedAt, string? EditedByName, List<SpeechClipSegment>? Segments,
+        DateTimeOffset? ExcludedAt, SpeechClipExclusion? ExclusionReason, string? ExcludedByName);
+
+    private sealed record ClipRows(IReadOnlyList<ClipRow> All, IReadOnlyList<ClipRow> Shown);
+
+    /// <summary>
+    /// A full read is every sentence. A read since the last one is what changed plus the sentences close to it in
+    /// time: whether a sentence was overheard depends on its neighbours, so a louder copy arriving later, or one being
+    /// excluded, changes the mark on an older line that did not change itself.
+    /// </summary>
+    private async Task<ClipRows> ReadWithNeighboursAsync(Guid meetingId, DateTimeOffset? since, CancellationToken ct)
+    {
+        var clips = db.SpeechClips.AsNoTracking().Where(c => c.MeetingId == meetingId);
+        if (since is not { } after)
+        {
+            var all = await RowsAsync(clips, ct);
+            return new(all, all);
+        }
+        var changed = await RowsAsync(clips.Where(c => c.UpdatedAt > after), ct);
+        if (changed.Count == 0) return new([], []);
+        // Neighbours within the fold's clock lag of a changed sentence; a sentence lasts a minute at most.
+        var reach = TimeSpan.FromMilliseconds(SpeechClipFold.LagMs + SpeechClipRules.MaxDurationMs);
+        var from = changed.Min(c => c.StartedAt) - reach;
+        var to = changed.Max(c => c.StartedAt.AddMilliseconds(c.DurationMs)) + reach;
+        var window = await RowsAsync(clips.Where(c => c.StartedAt >= from && c.StartedAt <= to), ct);
+        var lag = TimeSpan.FromMilliseconds(SpeechClipFold.LagMs);
+        var shown = window.Where(r => changed.Any(c => r.StartedAt <= c.StartedAt.AddMilliseconds(c.DurationMs) + lag
+            && c.StartedAt <= r.StartedAt.AddMilliseconds(r.DurationMs) + lag)).ToList();
+        return new(window, shown);
+    }
+
+    private static async Task<List<ClipRow>> RowsAsync(IQueryable<SpeechClip> clips, CancellationToken ct)
+        => await clips.OrderBy(c => c.StartedAt).ThenBy(c => c.CreatedAt)
+            .Select(c => new ClipRow(c.Id, c.SpeakerId, c.Speaker.FullName, c.StartedAt, c.DurationMs, c.Text, c.UpdatedAt,
+                c.EditedAt, c.EditedBy == null ? null : c.EditedBy.FullName, c.Segments, c.ExcludedAt, c.ExclusionReason,
+                c.ExcludedBy == null ? null : c.ExcludedBy.FullName))
+            .ToListAsync(ct);
+
+    private static FoldClip FoldOf(ClipRow r) => new(r.Id, r.SpeakerId, r.StartedAt.ToUnixTimeMilliseconds(), r.DurationMs,
+        r.Text, r.Segments ?? [], r.ExcludedAt is not null, r.EditedAt is not null);
+
+    /// <summary>The Chair and the Secretary read an excluded sentence's words; everyone else sees that it was there.</summary>
+    private static SpeechClipView View(ClipRow r, FoldMark? mark, Dictionary<Guid, ClipRow> byId, Guid actorId,
+        bool secretary, bool officer)
+    {
+        var excluded = r.ExcludedAt is not null;
+        return new(r.Id, r.SpeakerId, r.SpeakerName, r.StartedAt, r.DurationMs, excluded && !officer ? "" : r.Text,
+            r.UpdatedAt, r.EditedAt, r.EditedByName, secretary || r.SpeakerId == actorId, excluded,
+            r.ExclusionReason?.ToString(), officer ? r.ExcludedByName : null,
+            mark is null || excluded ? null : Leak(r, mark, byId));
+    }
+
+    private static SpeechClipLeak? Leak(ClipRow r, FoldMark mark, Dictionary<Guid, ClipRow> byId)
+    {
+        var of = mark.LeakOf ?? mark.Spans.GroupBy(s => s.Of).OrderByDescending(g => g.Sum(s => s.EndMs - s.StartMs)).First().Key;
+        if (!byId.TryGetValue(of, out var source)) return null;
+        var words = new List<int[]>();
+        var at = 0;
+        foreach (var segment in r.Segments ?? [])
+        {
+            if (mark.Spans.Any(s => s.StartMs == segment.StartMs && s.EndMs == segment.EndMs)) words.Add([at, at + segment.Words]);
+            at += segment.Words;
+        }
+        return new(source.Id, source.SpeakerId, source.SpeakerName, mark.LeakOf is not null, words);
+    }
 
     private async Task<(Meeting? Meeting, SpeechClipFailure Failure)> ListenableMeetingAsync(Guid meetingId, Guid actorId,
         CancellationToken ct)

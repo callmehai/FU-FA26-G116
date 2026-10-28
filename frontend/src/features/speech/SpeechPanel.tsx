@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { deleteSpeechClip, editSpeechClip, setCaptureMode } from '../../api/speech'
+import { deleteSpeechClip, editSpeechClip, setCaptureMode, setSpeechClipExclusion } from '../../api/speech'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
@@ -131,10 +131,13 @@ function ModePicker({ meetingId, mode, onChanged }: { meetingId: string; mode: C
 /** The person's own switch and what their mic is doing — the "being recorded" sign the ticket asks for. */
 function MyMic({ speech, room }: { speech: Speech; room: boolean }) {
   const { capture, mine, capturing } = speech
+  const elsewhere = capture.state === 'elsewhere'
   const status =
     capture.state === 'error'
       ? capture.error
-      : !mine
+      : elsewhere
+        ? 'Đang ghi ở tab khác'
+        : !mine
         ? 'Không ghi'
         : !capturing
           ? 'Micro tắt'
@@ -164,15 +167,23 @@ function MyMic({ speech, room }: { speech: Speech; room: boolean }) {
           <span style={{ transform: `scaleX(${capture.level})` }} />
         </span>
       )}
-      <button
-        type="button"
-        className={mine ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm'}
-        onClick={() => speech.setMine(!mine)}
-        data-tooltip={room && mine ? 'Chỉ dừng ghi chữ; micro trong phòng vẫn bật' : undefined}
-      >
-        <Icon name={mine ? 'micOff' : 'mic'} size={16} />
-        {mine ? 'Dừng ghi' : 'Ghi lời tôi'}
-      </button>
+      {elsewhere && capturing ? (
+        // Two tabs of one person would write every sentence twice: one records, this one can take over.
+        <button type="button" className="btn btn-primary btn-sm" onClick={capture.takeOver}>
+          <Icon name="mic" size={16} />
+          Ghi ở tab này
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={mine ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm'}
+          onClick={() => speech.setMine(!mine)}
+          data-tooltip={room && mine ? 'Chỉ dừng ghi chữ; micro trong phòng vẫn bật' : undefined}
+        >
+          <Icon name={mine ? 'micOff' : 'mic'} size={16} />
+          {mine ? 'Dừng ghi' : 'Ghi lời tôi'}
+        </button>
+      )}
       {/* Its own line, so it wraps instead of being cut off beside the button in the room's narrow panel. */}
       {stuck && <p className="speech-mine-note field-error">{stuck}</p>}
       {capture.refused > 0 && (
@@ -218,8 +229,10 @@ function Lines({ speech, room }: { speech: Speech; room: boolean }) {
             key={clip.id}
             clip={clip}
             first={i === 0 || clips[i - 1].speakerId !== clip.speakerId}
-            canEdit={!!list?.canEdit}
+            canEdit={!!list?.canEdit && !clip.excluded}
+            canExclude={!!list?.canExclude}
             onRemove={() => setRemoving(clip)}
+            onChanged={speech.reload}
           />
         ))}
       </ol>
@@ -244,18 +257,63 @@ function Lines({ speech, room }: { speech: Speech; room: boolean }) {
   )
 }
 
+/** The sentence's words, with those another mic's speaker probably said shown faint. */
+function Words({ clip }: { clip: SpeechClip }) {
+  const leak = clip.leak
+  if (!leak || leak.whole) return <>{clip.text}</>
+  const inLeak = (word: number) => leak.words.some(([from, to]) => word >= from && word < to)
+  let word = -1
+  return (
+    <>
+      {clip.text.split(/(\s+)/).map((part, i) => {
+        if (!part.trim()) return part
+        word++
+        return inLeak(word) ? (
+          <span key={i} className="speech-leak-words">
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      })}
+    </>
+  )
+}
+
+const LEAK_HINT = (clip: SpeechClip) =>
+  clip.leak &&
+  (clip.leak.whole
+    ? `Có thể là lời của ${clip.leak.speakerName} lọt sang micro này`
+    : `Phần chữ mờ có thể là lời của ${clip.leak.speakerName} lọt sang micro này`)
+
 function Line({
   clip,
   first,
   canEdit,
+  canExclude,
   onRemove,
+  onChanged,
 }: {
   clip: SpeechClip
   first: boolean
   canEdit: boolean
+  canExclude: boolean
   onRemove: () => void
+  onChanged: () => void
 }) {
   const toast = useToast()
+  const [excluding, setExcluding] = useState(false)
+  const exclude = async (reason: 'Leak' | 'Other' | null) => {
+    setExcluding(true)
+    try {
+      toast.show((await setSpeechClipExclusion(clip.id, reason)).message, 'success')
+      onChanged()
+    } catch (failure) {
+      toast.show(errorMessage(failure), 'error')
+    } finally {
+      setExcluding(false)
+    }
+  }
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(clip.text)
   const [saving, setSaving] = useState(false)
@@ -275,7 +333,12 @@ function Line({
   }
 
   return (
-    <li className={`speech-line${first ? ' speech-line-first' : ''}`}>
+    <li
+      className={
+        `speech-line${first ? ' speech-line-first' : ''}` +
+        `${clip.excluded ? ' speech-line-excluded' : clip.leak?.whole ? ' speech-line-leak' : ''}`
+      }
+    >
       {first && (
         <span className="speech-line-head">
           <strong>{clip.speakerName}</strong>
@@ -320,9 +383,27 @@ function Line({
             </button>
           </div>
         </div>
+      ) : clip.excluded && !canExclude ? (
+        <p className="speech-line-text speech-line-gone">Câu đã được loại khỏi bản ghi.</p>
       ) : (
         <p className="speech-line-text" title={first ? undefined : time.format(new Date(clip.startedAt))}>
-          {clip.text}
+          {clip.excluded && (
+            <span
+              className="speech-chip"
+              tabIndex={0}
+              data-tooltip={`${clip.excludedByName ?? 'Chủ tọa hoặc Thư ký'} đã loại${
+                clip.exclusionReason === 'Leak' ? ' vì lẫn tiếng micro khác' : ''
+              }`}
+            >
+              Đã loại
+            </span>
+          )}
+          {!clip.excluded && clip.leak && (
+            <span className="speech-chip speech-chip-leak" tabIndex={0} data-tooltip={LEAK_HINT(clip) ?? undefined}>
+              Lẫn tiếng
+            </span>
+          )}
+          <Words clip={clip} />
           {clip.editedAt && (
             <span
               className="transcript-edited"
@@ -335,8 +416,32 @@ function Line({
           )}
         </p>
       )}
-      {!editing && (canEdit || clip.canDelete) && (
+      {!editing && (canEdit || clip.canDelete || canExclude) && (
         <span className="speech-line-actions">
+          {canExclude &&
+            (clip.excluded ? (
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon btn-sm"
+                aria-label="Đưa câu trở lại bản ghi"
+                data-tooltip="Đưa câu trở lại bản ghi"
+                disabled={excluding}
+                onClick={() => void exclude(null)}
+              >
+                <Icon name="undo" size={16} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon btn-sm"
+                aria-label={clip.leak ? 'Loại câu lẫn tiếng khỏi bản ghi' : 'Loại câu khỏi bản ghi'}
+                data-tooltip={clip.leak ? 'Loại câu lẫn tiếng khỏi bản ghi' : 'Loại câu khỏi bản ghi'}
+                disabled={excluding}
+                onClick={() => void exclude(clip.leak ? 'Leak' : 'Other')}
+              >
+                <Icon name="eyeOff" size={16} />
+              </button>
+            ))}
           {canEdit && (
             <button
               type="button"

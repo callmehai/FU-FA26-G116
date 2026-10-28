@@ -60,6 +60,8 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_THREADS` | `min(4, số CPU)` | Số luồng cho mỗi model |
 | `SPEECH_CLUSTER_THRESHOLD` | `0.5` | Ngưỡng gộp giọng khi tách người nói, xem [Hiệu chỉnh](#hiệu-chỉnh) |
 | `SPEECH_MIN_CONSISTENCY` | `0.40` | Ngưỡng "chỉ một người nói" của mẫu giọng, xem [Hiệu chỉnh](#hiệu-chỉnh) |
+| `SPEECH_CLIP_MAX_GAIN_DB` | `6` | Mức tăng âm tối đa của hồ sơ `clip` |
+| `SPEECH_CLIP_VAD_THRESHOLD` | `0.5` | Ngưỡng VAD của hồ sơ `clip` |
 | `SPEECH_PUNCTUATION` | `1` | `0` tắt bước thêm dấu câu (để so sánh); model vẫn phải có và đúng mã băm |
 | `SPEECH_LOG_LEVEL` | `INFO` | Mức log |
 
@@ -76,13 +78,16 @@ Không cần xác thực.
 {"status":"ok","models":{"asr":"gipformer-1.5-68m-int8@b528768939c7","embedding":"eres2net-base-200k@e2d2048292e0","vad":"silero-vad@9e2449e10874"}}
 ```
 
-### `POST /v1/transcribe?diarize=true|false[&speakers=N]`
+### `POST /v1/transcribe?diarize=true|false[&speakers=N][&profile=room|clip]`
 
 - `diarize` mặc định `true`. Với `false`, worker chỉ cắt theo khoảng lặng, không tách người nói,
   `speaker` là `null` và `speakers` rỗng. Dùng cho bản ghi micro của riêng một người, khi đã biết
   ai nói.
 - `speakers=N` (1–20): biết trước số người nói thì báo, tách sẽ chính xác hơn. Bỏ trống thì
   worker tự đoán.
+- `profile` mặc định `room` (bản ghi cả phòng: tăng âm tối đa 30 dB, VAD 0.2). `clip` dùng cho một câu
+  từ micro riêng của một người (SCRUM-109): tăng âm tối đa 6 dB, VAD 0.5, vì chỗ nhỏ tiếng trên micro
+  riêng phần lớn là người ngồi cạnh lọt vào. Xem [Hiệu chỉnh](#tiếng-lọt-giữa-các-micro-riêng).
 
 ```json
 {
@@ -90,7 +95,7 @@ Không cần xác thực.
   "asrModel": "gipformer-1.5-68m-int8@b528768939c7",
   "embeddingModel": "eres2net-base-200k@e2d2048292e0",
   "segments": [
-    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn."}
+    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6}
   ],
   "speakers": [
     {"label": "SPEAKER_00", "speechMs": 11846, "embedding": [-0.051461, 0.011607, "… 512 số, độ dài 1"]}
@@ -104,6 +109,8 @@ Không cần xác thực.
   nhiều đoạn liên tiếp cùng nhãn.
 - Vector của mỗi người nói lấy từ các lượt nói dài nhất của người đó, tối đa 30 giây.
 - Bản ghi im lặng trả về `segments` rỗng.
+- `levelDbfs` là độ to của đoạn khi đến micro, đo **trước** bước tăng âm. Backend dùng nó để nhận ra câu
+  một micro nghe lọt từ micro khác (to ở micro người nói, nhỏ ở micro bên cạnh).
 - Chữ từ model là CHỮ HOA không dấu câu. Worker thêm dấu phẩy, dấu chấm, dấu hỏi và viết hoa đầu câu
   bằng viBERT-capu (bước 6 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
   đoạn trước thì bắt đầu bằng chữ thường. Tên riêng model chỉ viết hoa được một phần; còn lại thư ký
@@ -204,6 +211,24 @@ Thư mục cần `enrolA.wav` và `enrolB.wav` (mỗi file một giọng, 8–30
 [eval/](eval/README.md). Các số trong mục dưới đều đo bằng các script đó.
 
 ## Hiệu chỉnh
+
+### Tiếng lọt giữa các micro riêng
+
+Họp trực tiếp theo micro từng người, laptop nào cũng nghe người ngồi cạnh. Đo bằng
+[`eval/bleed.py`](eval/README.md#4-tiếng-lọt-giữa-các-micro-riêng) trên cuộc họp tổng hợp từ VIVOS (2–3
+người, mỗi người một laptop, tiếng người khác nhỏ hơn 3–30 dB, câu cắt bằng chính `clipCutter.ts` của
+web, AGC trình duyệt tắt như sản phẩm). Từ trùng tính trên tổng số từ chuẩn, nên có thể quá 100 % khi 3
+micro cùng nghe một câu.
+
+| Cấu hình | Từ trùng (bộ chính, 1.851 từ) | Từ trùng (bộ kiểm chứng, 1.720 từ) | Mất lời thật | Lời chủ micro được ghi |
+|---|--:|--:|--:|--:|
+| Trước: hồ sơ `room`, không đánh dấu | 114,4 % | 103,5 % | 0 % | 0,955 / 0,941 |
+| Sau: hồ sơ `clip` + đánh dấu của backend (`SpeechClipFold`) | 35,7 % | 30,1 % | 0 % | 0,957 / 0,938 |
+
+Ngưỡng VAD của hồ sơ `clip` chọn trên bộ chỉnh riêng (seed 100–104): 0.2 / 0.35 / 0.5 / 0.65 còn 38 / 36 /
+35 / 33 % từ trùng sau khi đánh dấu, lời chủ micro giữ 0.96, người nói nhỏ (−38 dBFS) không mất lời.
+Chọn 0.5 như AI-eCabinet. Phần còn lại phần lớn là hai laptop cách đều người nói: hai bản to gần bằng nhau
+nên không đoán được bản nào là thật (AI-eCabinet dùng thêm giọng mẫu cho trường hợp này).
 
 Độ nhất quán của mẫu giọng được tính như sau:
 

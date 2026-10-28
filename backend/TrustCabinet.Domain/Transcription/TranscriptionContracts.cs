@@ -9,13 +9,16 @@ namespace TrustCabinet.Domain.Transcription;
 public interface ISpeechEngine
 {
     bool IsConfigured { get; }
-    Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, CancellationToken ct);
+    /// <param name="clip">One sentence from one person's own mic (SCRUM-109): the worker lifts quiet stretches far less,
+    /// since those are mostly a neighbour overheard.</param>
+    Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct);
 }
 
 public sealed record SpeechTranscription(long DurationMs, string Language, string AsrModel, string EmbeddingModel,
     IReadOnlyList<SpeechSegment> Segments, IReadOnlyList<SpeechSpeaker> Speakers);
 
-public sealed record SpeechSegment(long StartMs, long EndMs, string? Speaker, string Text);
+/// <param name="LevelDbfs">How loud the segment reached the mic, before the worker levelled it.</param>
+public sealed record SpeechSegment(long StartMs, long EndMs, string? Speaker, string Text, double? LevelDbfs = null);
 
 /// <summary>
 /// One diarized voice. The embedding is used once, to suggest who the voice is (SCRUM-35), and is never stored:

@@ -3239,6 +3239,12 @@ audio.recording-player { height: 40px; }
 .speech-line-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 /* Negative margins: the 32px buttons sit beside a 22px line of text without making the line taller. */
 .speech-line-actions { display: flex; gap: 2px; margin: -5px 0; opacity: 0; transition: opacity .12s; }
+/* SCRUM-109: a sentence another mic's speaker probably said, and one taken out of the record. Faint, never hidden. */
+.speech-chip { display: inline-block; margin-right: 6px; padding: 0 6px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--muted-ink); font-size: 12px; line-height: 18px; vertical-align: 1px; white-space: nowrap; }
+.speech-chip-leak { border-color: color-mix(in srgb, var(--chip-amber-fg) 24%, transparent); color: var(--chip-amber-fg); background: var(--chip-amber-bg); }
+.speech-line-leak .speech-line-text, .speech-leak-words { color: var(--muted-ink); }
+.speech-line-excluded .speech-line-text { color: var(--faint-ink); }
+.speech-line-gone { color: var(--muted-ink); font-style: italic; }
 .speech-line:hover .speech-line-actions, .speech-line:focus-within .speech-line-actions { opacity: 1; }
 @media (hover: none) { .speech-line-actions { opacity: 1; } }
 /* Everyone whose mic feeds the transcript sees it in the header, in the one colour kept for warnings. */

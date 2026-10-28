@@ -6,6 +6,21 @@ export const CAPTURE_MODE_LABEL: Record<CaptureMode, string> = {
   Room: 'Thu chung cả phòng',
 }
 
+/** Why the Chair or the Secretary took a sentence out of the record. */
+export type SpeechClipExclusion = 'Leak' | 'Other'
+
+/**
+ * The server's guess that a sentence, or the words `[from, to)` of it, are another attendee's, overheard by this mic
+ * from their sentence `clipId` (AI-eCabinet's crosstalk marking). A mark only: nothing is hidden for it.
+ */
+export interface SpeechClipLeak {
+  clipId: string
+  speakerId: string
+  speakerName: string
+  whole: boolean
+  words: [number, number][]
+}
+
 /** One sentence from an attendee's own mic, as everyone in the meeting reads it. */
 export interface SpeechClip {
   id: string
@@ -18,6 +33,11 @@ export interface SpeechClip {
   editedAt: string | null
   editedByName: string | null
   canDelete: boolean
+  /** Taken out of the record; only the Chair and the Secretary still get its words. */
+  excluded: boolean
+  exclusionReason: SpeechClipExclusion | null
+  excludedByName: string | null
+  leak: SpeechClipLeak | null
 }
 
 /** GET /api/meetings/{id}/speech-clips — the whole list, or what changed since `readAt` of the last read. */
@@ -28,6 +48,8 @@ export interface SpeechClipList {
   canCapture: boolean
   canEdit: boolean
   canChangeMode: boolean
+  /** The caller may take sentences out of the record and put them back: the Chair and the Secretary. */
+  canExclude: boolean
   readAt: string
   items: SpeechClip[]
 }

@@ -6,8 +6,8 @@ namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
 /// SCRUM-109 — the per-mic transcript: each attendee's browser sends a sentence when they pause, everyone reads the
-/// sentences as they arrive, the Secretary corrects them, and the Chair or Secretary picks the capture mode before the
-/// meeting starts.
+/// sentences as they arrive, the Secretary corrects them, the Chair or Secretary takes out what one mic overheard from
+/// another, and picks the capture mode before the meeting starts.
 /// </summary>
 public static class SpeechClipEndpoints
 {
@@ -28,9 +28,14 @@ public static class SpeechClipEndpoints
     private const string Msg326InvalidMode = "MSG326";
     private const string Msg327ModeForbidden = "MSG327";
     private const string Msg349MeetingCancelled = "MSG349";
+    private const string Msg351ClipExcluded = "MSG351";
+    private const string Msg352ClipRestored = "MSG352";
+    private const string Msg353ExcludeForbidden = "MSG353";
+    private const string Msg354InvalidExclusion = "MSG354";
 
     private sealed record TextBody(string? Text);
     private sealed record ModeBody(string? Mode);
+    private sealed record ExclusionBody(bool Excluded, string? Reason);
 
     public static void MapSpeechClipEndpoints(this IEndpointRouteBuilder app)
     {
@@ -52,6 +57,10 @@ public static class SpeechClipEndpoints
             => Map(await service.EditAsync(clipId, CapabilityGate.GatedUserId(context.User), body.Text, ct), Msg302Saved));
         clip.MapDelete("", async (Guid clipId, HttpContext context, ISpeechClipService service, CancellationToken ct)
             => Map(await service.DeleteAsync(clipId, CapabilityGate.GatedUserId(context.User), ct), Msg322ClipDeleted, delete: true));
+        clip.MapPut("/exclusion", async (Guid clipId, ExclusionBody body, HttpContext context, ISpeechClipService service,
+            CancellationToken ct)
+            => MapExclusion(await service.SetExclusionAsync(clipId, CapabilityGate.GatedUserId(context.User), body.Excluded,
+                body.Reason, ct)));
     }
 
     /// <summary>
@@ -126,6 +135,16 @@ public static class SpeechClipEndpoints
             _ => Results.Ok(new { code = successCode, message = "Đã lưu đoạn gỡ băng." }),
         };
     }
+
+    private static IResult MapExclusion(SpeechClipOutcome result) => result switch
+    {
+        { Failure: SpeechClipFailure.None, Data: true } => Results.Ok(new { code = Msg351ClipExcluded, message = "Đã loại câu khỏi bản ghi." }),
+        { Failure: SpeechClipFailure.None } => Results.Ok(new { code = Msg352ClipRestored, message = "Đã đưa câu trở lại bản ghi." }),
+        { Failure: SpeechClipFailure.Forbidden } => Error(403, Msg353ExcludeForbidden, "Chỉ Chủ tọa hoặc Thư ký được loại câu khỏi bản ghi."),
+        { Failure: SpeechClipFailure.Invalid } => Results.Json(new { code = Msg354InvalidExclusion,
+            message = "Lý do loại câu không hợp lệ.", errors = result.Errors }, statusCode: 400),
+        _ => Map(result),
+    };
 
     private static IResult Error(int status, string code, string message) => Results.Json(new { code, message }, statusCode: status);
 }

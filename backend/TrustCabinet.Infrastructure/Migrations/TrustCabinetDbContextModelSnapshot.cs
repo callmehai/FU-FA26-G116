@@ -1824,9 +1824,26 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("edited_by_id");
 
+                    b.Property<DateTimeOffset?>("ExcludedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("excluded_at");
+
+                    b.Property<Guid?>("ExcludedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("excluded_by_id");
+
+                    b.Property<string>("ExclusionReason")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("exclusion_reason");
+
                     b.Property<Guid>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
+
+                    b.Property<string>("Segments")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("segments");
 
                     b.Property<Guid>("SpeakerId")
                         .HasColumnType("uuid")
@@ -1851,6 +1868,9 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("EditedById")
                         .HasDatabaseName("ix_speech_clips_edited_by_id");
+
+                    b.HasIndex("ExcludedById")
+                        .HasDatabaseName("ix_speech_clips_excluded_by_id");
 
                     b.HasIndex("SpeakerId")
                         .HasDatabaseName("ix_speech_clips_speaker_id");
@@ -3172,6 +3192,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_speech_clips_users_edited_by_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "ExcludedBy")
+                        .WithMany()
+                        .HasForeignKey("ExcludedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_speech_clips_users_excluded_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithMany()
                         .HasForeignKey("MeetingId")
@@ -3187,6 +3213,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_speech_clips_users_speaker_id");
 
                     b.Navigation("EditedBy");
+
+                    b.Navigation("ExcludedBy");
 
                     b.Navigation("Meeting");
 

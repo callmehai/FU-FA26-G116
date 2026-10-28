@@ -1,0 +1,784 @@
+{
+ "about": "Shared by SpeechClipFoldTests (C#) and workers/speech/tests/test_fold_port.py: the backend's crosstalk marking and the Python copy bleed.py measures with must agree.",
+ "cases": [
+  {
+   "name": "the quiet copy of a louder sentence is marked",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {
+    "00000000-0000-0000-0000-00000000000b": {
+     "leakOf": "00000000-0000-0000-0000-00000000000a",
+     "spans": [
+      [
+       100,
+       3000,
+       "00000000-0000-0000-0000-00000000000a"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "name": "punctuation and case do not matter",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "Xin chào các anh chị. Hôm nay chúng ta họp.",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {
+    "00000000-0000-0000-0000-00000000000b": {
+     "leakOf": "00000000-0000-0000-0000-00000000000a",
+     "spans": [
+      [
+       100,
+       3000,
+       "00000000-0000-0000-0000-00000000000a"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "name": "two copies about as loud mark nothing",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -27.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "a 6 dB gap is enough",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -30.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {
+    "00000000-0000-0000-0000-00000000000b": {
+     "leakOf": "00000000-0000-0000-0000-00000000000a",
+     "spans": [
+      [
+       100,
+       3000,
+       "00000000-0000-0000-0000-00000000000a"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "name": "clocks 1.5 s apart still line up",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 1500,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {
+    "00000000-0000-0000-0000-00000000000b": {
+     "leakOf": "00000000-0000-0000-0000-00000000000a",
+     "spans": [
+      [
+       100,
+       3000,
+       "00000000-0000-0000-0000-00000000000a"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "name": "clocks 3.5 s apart do not",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 3500,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "different words are not a copy",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "tôi đồng ý với phương án một của ban soạn thảo",
+     "segments": [
+      [
+       100,
+       3000,
+       11,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "more than three stray words are the owner talking too",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay",
+     "segments": [
+      [
+       100,
+       3000,
+       7,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay tôi xin phát biểu",
+     "segments": [
+      [
+       100,
+       3000,
+       11,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "two sentences of the same person are never a leak",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "an excluded louder copy marks nothing",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": true,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "an edited sentence is neither marked nor a reference",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": true
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "an edited quiet copy is not marked",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": true
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "no measured level marks nothing",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       null
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "segments that do not account for the text mark nothing",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       5,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "only the overheard segment is marked",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 8000,
+     "text": "xin chào các anh chị hôm nay chúng ta họp tôi đồng ý với phương án một",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ],
+      [
+       4500,
+       7600,
+       7,
+       -22.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {
+    "00000000-0000-0000-0000-00000000000b": {
+     "leakOf": null,
+     "spans": [
+      [
+       100,
+       3000,
+       "00000000-0000-0000-0000-00000000000a"
+      ]
+     ]
+    }
+   }
+  },
+  {
+   "name": "under 60% covered is not a copy",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 1500,
+     "text": "xin chào các anh",
+     "segments": [
+      [
+       100,
+       1300,
+       4,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay",
+     "segments": [
+      [
+       100,
+       3000,
+       7,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {}
+  },
+  {
+   "name": "the loudest of two copies is the source",
+   "clips": [
+    {
+     "id": "00000000-0000-0000-0000-00000000000a",
+     "speaker": "10000000-0000-0000-0000-000000000001",
+     "offsetMs": 0,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -24.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000b",
+     "speaker": "10000000-0000-0000-0000-000000000002",
+     "offsetMs": 60,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -38.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    },
+    {
+     "id": "00000000-0000-0000-0000-00000000000c",
+     "speaker": "10000000-0000-0000-0000-000000000003",
+     "offsetMs": 30,
+     "durationMs": 3200,
+     "text": "xin chào các anh chị hôm nay chúng ta họp",
+     "segments": [
+      [
+       100,
+       3000,
+       10,
+       -31.0
+      ]
+     ],
+     "excluded": false,
+     "edited": false
+    }
+   ],
+   "expect": {
+    "00000000-0000-0000-0000-00000000000b": {
+     "leakOf": "00000000-0000-0000-0000-00000000000a",
+     "spans": [
+      [
+       100,
+       3000,
+       "00000000-0000-0000-0000-00000000000a"
+      ]
+     ]
+    },
+    "00000000-0000-0000-0000-00000000000c": {
+     "leakOf": "00000000-0000-0000-0000-00000000000a",
+     "spans": [
+      [
+       100,
+       3000,
+       "00000000-0000-0000-0000-00000000000a"
+      ]
+     ]
+    }
+   }
+  }
+ ]
+}

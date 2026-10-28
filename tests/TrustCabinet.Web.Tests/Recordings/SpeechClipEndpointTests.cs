@@ -3,7 +3,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Domain.Transcription;
 
 namespace TrustCabinet.Web.Tests.Recordings;
@@ -14,7 +16,11 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     private static readonly byte[] Wav = [.. "RIFF"u8, .. new byte[2048]];
 
     private static readonly SpeechTranscription OneSentence = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
-        [new(0, 1200, null, "Tôi đồng ý với dự thảo."), new(1300, 2400, null, "Đề nghị biểu quyết.")], []);
+        [new(0, 1200, null, "Tôi đồng ý với dự thảo.", -24.5), new(1300, 2400, null, "Đề nghị biểu quyết.", -25.0)], []);
+
+    /// <summary>The same words as heard by a neighbour's laptop: 14 dB quieter.</summary>
+    private static readonly SpeechTranscription Overheard = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "",
+        [new(0, 1200, null, "tôi đồng ý với dự thảo", -38.5), new(1300, 2400, null, "đề nghị biểu quyết", -39.0)], []);
 
     private static readonly SpeechTranscription Silence = new(2400, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [], []);
 
@@ -64,6 +70,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         Assert.Equal(s.Member, clip.GetProperty("speakerId").GetGuid());
         Assert.Equal("Tôi đồng ý với dự thảo. Đề nghị biểu quyết.", clip.GetProperty("text").GetString());
         Assert.False(fixture.Speech.LastDiarize);
+        Assert.True(fixture.Speech.LastClip);
         Assert.Equal(Wav, fixture.Speech.LastAudio);
 
         // The response was lost and the browser sent it again: one line, and the worker is not asked twice.
@@ -84,9 +91,10 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         var since = Uri.EscapeDataString(list.GetProperty("readAt").GetDateTimeOffset().ToString("O"));
         Assert.Empty((await List(chair, s.MeetingId, $"?since={since}")).GetProperty("items").EnumerateArray());
 
-        // No audio is kept anywhere: the row holds words, time and speaker only.
+        // No audio is kept anywhere: the row holds words, time, speaker and the loudness of each stretch only.
         await using var db = fixture.Db();
-        Assert.Equal(1, await db.SpeechClips.CountAsync(c => c.MeetingId == s.MeetingId));
+        var row = await db.SpeechClips.SingleAsync(c => c.MeetingId == s.MeetingId);
+        Assert.Equal([new(0, 1200, 6, -24.5), new(1300, 2400, 4, -25.0)], row.Segments);
         Assert.Equal(0, fixture.StoredFileCount());
     }
 
@@ -242,5 +250,116 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
         {
             fixture.Failures.FailClipRead = false;
         }
+    }
+
+    private async Task<Guid> StoreAt(RecordingFixture.Scenario s, Guid speaker, SpeechTranscription heard, DateTimeOffset at)
+    {
+        fixture.Speech.Failure = null;
+        fixture.Speech.Result = heard;
+        using var client = fixture.Client(speaker);
+        var json = await AssertCode(await Send(client, s.MeetingId, Guid.NewGuid(), startedAt: at.ToString("O")), 200, "MSG318");
+        return json.GetProperty("clip").GetProperty("id").GetGuid();
+    }
+
+    [Fact]
+    public async Task A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept()
+    {
+        var s = await fixture.Seed();
+        var at = fixture.Clock.Now.AddSeconds(-10);
+        // The neighbour's laptop sends first; its clock is 300 ms ahead.
+        var copy = await StoreAt(s, s.Member, Overheard, at.AddMilliseconds(300));
+        using var member = fixture.Client(s.Member);
+        var before = await List(member, s.MeetingId);
+        Assert.Equal(JsonValueKind.Null, Assert.Single(before.GetProperty("items").EnumerateArray()).GetProperty("leak").ValueKind);
+
+        fixture.Clock.Now = fixture.Clock.Now.AddSeconds(1);
+        var source = await StoreAt(s, s.Chair, OneSentence, at);
+        // The live view asks only for what changed, and still learns that its older line is now a copy.
+        var since = Uri.EscapeDataString(before.GetProperty("readAt").GetDateTimeOffset().ToString("O"));
+        var changed = (await List(member, s.MeetingId, $"?since={since}")).GetProperty("items").EnumerateArray().ToList();
+        var ids = changed.Select(c => c.GetProperty("id").GetGuid()).ToList();
+        Assert.Contains(copy, ids);
+        Assert.Contains(source, ids);
+        var marked = changed.Single(c => c.GetProperty("id").GetGuid() == copy).GetProperty("leak");
+        Assert.Equal(source, marked.GetProperty("clipId").GetGuid());
+        Assert.Equal("Recording test 1", marked.GetProperty("speakerName").GetString());
+        Assert.True(marked.GetProperty("whole").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, changed.Single(c => c.GetProperty("id").GetGuid() == source).GetProperty("leak").ValueKind);
+
+        // Marked, not hidden: the words are still there for everyone.
+        Assert.Equal(2, (await List(member, s.MeetingId)).GetProperty("items").GetArrayLength());
+    }
+
+    [Fact]
+    public async Task The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back()
+    {
+        var s = await fixture.Seed();
+        var clip = await StoreSentence(s, s.Member);
+        string url = $"/api/speech-clips/{clip}/exclusion";
+        using var member = fixture.Client(s.Member);
+        Assert.False((await List(member, s.MeetingId)).GetProperty("canExclude").GetBoolean());
+        await AssertCode(await member.PutAsJsonAsync(url, new { excluded = true, reason = "Leak" }), 403, "MSG353");
+        using var chair = fixture.Client(s.Chair);
+        Assert.True((await List(chair, s.MeetingId)).GetProperty("canExclude").GetBoolean());
+        await AssertCode(await chair.PutAsJsonAsync(url, new { excluded = true, reason = "Rò rỉ" }), 400, "MSG354");
+        await AssertCode(await chair.PutAsJsonAsync(url, new { excluded = true, reason = "Leak" }), 200, "MSG351");
+        // A second tap changes and audits nothing.
+        await AssertCode(await chair.PutAsJsonAsync(url, new { excluded = true, reason = "Leak" }), 200, "MSG351");
+
+        var officerLine = Assert.Single((await List(chair, s.MeetingId)).GetProperty("items").EnumerateArray());
+        Assert.True(officerLine.GetProperty("excluded").GetBoolean());
+        Assert.Equal("Leak", officerLine.GetProperty("exclusionReason").GetString());
+        Assert.Equal("Recording test 1", officerLine.GetProperty("excludedByName").GetString());
+        Assert.Equal("Tôi đồng ý với dự thảo. Đề nghị biểu quyết.", officerLine.GetProperty("text").GetString());
+        // Everyone else sees that a line was there, not its words.
+        var memberLine = Assert.Single((await List(member, s.MeetingId)).GetProperty("items").EnumerateArray());
+        Assert.True(memberLine.GetProperty("excluded").GetBoolean());
+        Assert.Equal("", memberLine.GetProperty("text").GetString());
+        Assert.Equal(JsonValueKind.Null, memberLine.GetProperty("excludedByName").ValueKind);
+
+        using var secretary = fixture.Client(s.Secretary);
+        await AssertCode(await secretary.PutAsJsonAsync(url, new { excluded = false }), 200, "MSG352");
+        Assert.False(Assert.Single((await List(member, s.MeetingId)).GetProperty("items").EnumerateArray())
+            .GetProperty("excluded").GetBoolean());
+
+        await using var db = fixture.Db();
+        var actions = await db.AuditLog.Where(a => a.ObjectId == clip).OrderBy(a => a.OccurredAt).Select(a => a.Action)
+            .ToListAsync();
+        Assert.Equal(["speech_clip.excluded", "speech_clip.restored"], actions);
+        Assert.Equal(HttpStatusCode.NotFound, (await chair.PutAsJsonAsync($"/api/speech-clips/{Guid.NewGuid()}/exclusion",
+            new { excluded = true, reason = "Other" })).StatusCode);
+    }
+
+    [Fact]
+    public async Task A_sentence_kept_on_the_device_still_arrives_up_to_a_week_after_the_meeting()
+    {
+        var s = await fixture.Seed(MeetingStatus.Ended);
+        var ended = fixture.Clock.Now.AddDays(-1);
+        await using (var db = fixture.Db())
+        {
+            var meeting = await db.Meetings.SingleAsync(m => m.Id == s.MeetingId);
+            meeting.ActualStartedAt = ended.AddHours(-1);
+            meeting.ActualEndedAt = ended;
+            await db.SaveChangesAsync();
+        }
+        fixture.Speech.Failure = null;
+        fixture.Speech.Result = OneSentence;
+        using var member = fixture.Client(s.Member);
+        Assert.False((await List(member, s.MeetingId)).GetProperty("canCapture").GetBoolean());
+        var said = ended.AddMinutes(-5);
+        var saved = await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), startedAt: said.ToString("O")), 200, "MSG318");
+        Assert.Equal(said, saved.GetProperty("clip").GetProperty("startedAt").GetDateTimeOffset());
+        // A browser clock that puts it after the meeting: it ended when the meeting did, at the latest.
+        var late = await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), startedAt: fixture.Clock.Now.AddSeconds(-3).ToString("O")),
+            200, "MSG318");
+        Assert.Equal(ended.AddMilliseconds(-2400), late.GetProperty("clip").GetProperty("startedAt").GetDateTimeOffset());
+
+        await using (var db = fixture.Db())
+        {
+            var meeting = await db.Meetings.SingleAsync(m => m.Id == s.MeetingId);
+            meeting.ActualEndedAt = fixture.Clock.Now - SpeechClipRules.LateUpload - TimeSpan.FromMinutes(1);
+            await db.SaveChangesAsync();
+        }
+        await AssertCode(await Send(member, s.MeetingId, Guid.NewGuid(), startedAt: said.ToString("O")), 409, "MSG320");
     }
 }

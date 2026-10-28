@@ -111,6 +111,10 @@ public static class AuditActions
 
     /// <summary>A per-mic sentence was taken out — by its speaker or the Secretary (the details say which).</summary>
     public const string SpeechClipDeleted = "speech_clip.deleted";
+
+    /// <summary>The Chair or a Secretary took a per-mic sentence out of the record, or put it back (reason in details).</summary>
+    public const string SpeechClipExcluded = "speech_clip.excluded";
+    public const string SpeechClipRestored = "speech_clip.restored";
     public const string SpeechClipObjectType = "SpeechClip";
 
     /// <summary>The Chair or a Secretary switched how the meeting is captured before it started.</summary>

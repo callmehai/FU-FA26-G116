@@ -1,4 +1,5 @@
 using TrustCabinet.Domain.Entities.Common;
+using TrustCabinet.Domain.Recordings;
 
 namespace TrustCabinet.Domain.Entities;
 
@@ -37,4 +38,29 @@ public class SpeechClip : Entity
     public Guid? EditedById { get; set; }
     public User? EditedBy { get; set; }
     public DateTimeOffset? EditedAt { get; set; }
+
+    /// <summary>
+    /// The stretches of speech the worker found in the sentence: their time, how many of its words each holds, and how
+    /// loud each reached the mic. That is what tells a sentence a neighbour's mic overheard from the speaker's own
+    /// (<see cref="SpeechClipFold"/>). Numbers only, never audio or a voice vector. Null for sentences stored before
+    /// it was kept.
+    /// </summary>
+    public List<SpeechClipSegment>? Segments { get; set; }
+
+    /// <summary>
+    /// Set when the Chair or the Secretary took the sentence out of the record (overheard from another mic, or not
+    /// part of the meeting). Nothing is deleted: the sentence stays, and restoring it clears these.
+    /// </summary>
+    public DateTimeOffset? ExcludedAt { get; set; }
+    public Guid? ExcludedById { get; set; }
+    public User? ExcludedBy { get; set; }
+    public SpeechClipExclusion? ExclusionReason { get; set; }
+}
+
+/// <summary>Why a sentence was taken out of the record.</summary>
+public enum SpeechClipExclusion
+{
+    /// <summary>Another attendee's words, overheard by this mic.</summary>
+    Leak,
+    Other,
 }

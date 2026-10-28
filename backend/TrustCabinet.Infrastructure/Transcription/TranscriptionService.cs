@@ -166,7 +166,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         {
             if (recording.Status != RecordingStatus.Available) throw new SpeechEngineException("Bản ghi đã bị xoá.");
             await using var audio = storage.OpenRead(recording.StoragePath);
-            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, ct);
+            result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, ct);
         }
         catch (Exception ex) when (ex is SpeechEngineException or FileNotFoundException or DirectoryNotFoundException)
         {

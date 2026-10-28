@@ -3,6 +3,7 @@ import { sendSpeechClip } from '../../api/speech'
 import { ApiError } from '../../api/client'
 import { isApiError } from '../../lib/errors'
 import { ClipCutter, SAMPLE_RATE } from './clipCutter'
+import { clipStore } from './clipStore'
 import { encodeWav, Resampler } from './wav'
 // Always a file of our own origin: Vite would inline a file this small as a data: URL, which the test server's CSP
 // (script-src 'self') refuses to run as a worklet.
@@ -11,9 +12,14 @@ import speechTapUrl from './speechTap.worklet.js?url&no-inline'
 /**
  * SCRUM-109 — captures the signed-in person's own mic and sends what they say a sentence at a time. Nothing here can
  * capture anyone else: the server takes sentences only from their speaker's session.
+ *
+ * Two things come from AI-eCabinet. A sentence waits on the device (clipStore) until the server has it, so a closed
+ * tab or a dropped network loses nothing. And one tab at a time records a person's mic in a meeting (a Web Lock): two
+ * tabs of the same person would write every sentence twice.
  */
 
-export type CaptureState = 'off' | 'starting' | 'listening' | 'speaking' | 'error'
+/** `elsewhere`: another tab of this browser records this meeting; this one can take over. */
+export type CaptureState = 'off' | 'starting' | 'listening' | 'speaking' | 'error' | 'elsewhere'
 
 export interface MicCapture {
   state: CaptureState
@@ -29,10 +35,13 @@ export interface MicCapture {
   engineDown: boolean
   /** Sentences the server turned down for good (not an outage, which is retried). */
   refused: number
+  /** Record in this tab, stopping the one that does now. */
+  takeOver: () => void
 }
 
 interface Pending {
   id: string
+  meetingId: string
   startedAt: Date
   durationMs: number
   audio: Blob
@@ -59,6 +68,8 @@ function micError(error: unknown) {
 const retryable = (error: unknown) =>
   !(error instanceof ApiError) || error.status >= 500 || error.status === 408 || error.status === 429
 
+const lockName = (meetingId: string) => `trustcabinet-mic:${meetingId}`
+
 export function useMicCapture(meetingId: string, active: boolean, deviceId?: string): MicCapture {
   const [state, setState] = useState<CaptureState>('off')
   const [error, setError] = useState<string | null>(null)
@@ -67,6 +78,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
   const [retrying, setRetrying] = useState(0)
   const [engineDown, setEngineDown] = useState(false)
   const [refused, setRefused] = useState(0)
+  const [claim, setClaim] = useState(0)
   // The queue outlives a capture session: switching the mic off must not drop what was already said.
   const queue = useRef<Pending[]>([])
   const timer = useRef<number | undefined>(undefined)
@@ -80,7 +92,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
         if (queue.current.filter((q) => q.sending).length >= PARALLEL) break
         if (item.sending || item.dueAt > now) continue
         item.sending = true
-        sendSpeechClip(meetingId, item.id, item.audio, item.startedAt, item.durationMs).then(
+        sendSpeechClip(item.meetingId, item.id, item.audio, item.startedAt, item.durationMs).then(
           () => {
             setEngineDown(false)
             settle(item)
@@ -104,6 +116,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
     }
     const settle = (item: Pending) => {
       queue.current = queue.current.filter((q) => q !== item)
+      void clipStore.remove(item.id)
       count()
       pump()
     }
@@ -116,8 +129,31 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
       if (next !== Infinity) timer.current = window.setTimeout(pump, Math.max(0, next - Date.now()))
     }
     pumpRef.current = pump
+    let gone = false
+    // What an earlier visit could not send, on this meeting or another: the server tells which it still takes.
+    void clipStore.all().then((stored) => {
+      if (gone) return
+      const known = new Set(queue.current.map((q) => q.id))
+      for (const clip of stored)
+        if (!known.has(clip.id))
+          queue.current.push({
+            id: clip.id,
+            meetingId: clip.meetingId,
+            startedAt: new Date(clip.startedAt),
+            durationMs: clip.durationMs,
+            audio: clip.audio,
+            attempt: 0,
+            sending: false,
+            dueAt: 0,
+          })
+      count()
+      pump()
+    })
     pump()
-    return () => window.clearTimeout(timer.current)
+    return () => {
+      gone = true
+      window.clearTimeout(timer.current)
+    }
   }, [meetingId])
 
   useEffect(() => {
@@ -131,16 +167,28 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
 
     const enqueue = (clips: ReturnType<ClipCutter['push']>) => {
       for (const clip of clips) {
-        queue.current.push({
+        const item: Pending = {
           id: crypto.randomUUID(),
+          meetingId,
           startedAt: new Date(anchor + (clip.startSample / SAMPLE_RATE) * 1000),
           durationMs: (clip.samples.length / SAMPLE_RATE) * 1000,
           audio: encodeWav(clip.samples, SAMPLE_RATE),
           attempt: 0,
           sending: false,
           dueAt: 0,
+        }
+        queue.current.push(item)
+        void clipStore.put({
+          id: item.id,
+          meetingId,
+          startedAt: item.startedAt.toISOString(),
+          durationMs: item.durationMs,
+          audio: item.audio,
         })
-        if (queue.current.length > MAX_QUEUE) queue.current = queue.current.slice(-MAX_QUEUE)
+        if (queue.current.length > MAX_QUEUE) {
+          for (const dropped of queue.current.slice(0, -MAX_QUEUE)) void clipStore.remove(dropped.id)
+          queue.current = queue.current.slice(-MAX_QUEUE)
+        }
       }
       if (clips.length > 0) {
         setWaiting(queue.current.length)
@@ -190,15 +238,53 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
       }
     }
 
-    void Promise.resolve().then(start)
-    return () => {
-      stopped = true
+    let closed = false
+    const close = () => {
+      if (closed) return
+      closed = true
       // Whatever was being said when the mic went off is still a sentence.
       enqueue(cutter.flush())
       stream?.getTracks().forEach((track) => track.stop())
       void context?.close()
     }
-  }, [active, deviceId])
 
-  return { state: active ? state : 'off', error, level: active ? level : 0, waiting, retrying, engineDown, refused }
+    let release: (() => void) | undefined
+    const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined
+    if (!locks) void Promise.resolve().then(start)
+    else
+      locks
+        .request(lockName(meetingId), claim > 0 ? { steal: true } : { ifAvailable: true }, (lock) => {
+          if (stopped) return
+          if (!lock) {
+            setState('elsewhere')
+            return
+          }
+          void start()
+          // Held for as long as this tab records.
+          return new Promise<void>((resolve) => (release = resolve))
+        })
+        .catch(() => {
+          // Another tab of this person took the mic over: this one stops and says so.
+          if (stopped) return
+          close()
+          setState('elsewhere')
+        })
+
+    return () => {
+      stopped = true
+      close()
+      release?.()
+    }
+  }, [active, deviceId, meetingId, claim])
+
+  return {
+    state: active ? state : 'off',
+    error,
+    level: active && state !== 'elsewhere' ? level : 0,
+    waiting,
+    retrying,
+    engineDown,
+    refused,
+    takeOver: () => setClaim((n) => n + 1),
+  }
 }

@@ -67,7 +67,7 @@ jobs:
           frontend=false
           if $all || has "$ci|^frontend/"; then frontend=true; fi
           speech=false
-          if $all || has "$ci|^workers/speech/"; then speech=true; fi
+          if $all || has "$ci|^workers/speech/|^tests/TrustCabinet\.Web\.Tests/Recordings/speech-fold-cases\.json$"; then speech=true; fi
           echo "backend=$backend" >> "$GITHUB_OUTPUT"
           echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
           echo "speech=$speech" >> "$GITHUB_OUTPUT"

@@ -1,4 +1,11 @@
-import type { CaptureMode, CaptureModeChanged, SpeechClipList, SpeechClipSaved, SpeechMessage } from '../types/speech'
+import type {
+  CaptureMode,
+  CaptureModeChanged,
+  SpeechClipExclusion,
+  SpeechClipList,
+  SpeechClipSaved,
+  SpeechMessage,
+} from '../types/speech'
 import { api } from './client'
 
 /**
@@ -29,6 +36,10 @@ export const editSpeechClip = (clipId: string, text: string) =>
   api.put<SpeechMessage>(`/api/speech-clips/${clipId}/text`, { text })
 
 export const deleteSpeechClip = (clipId: string) => api.delete<SpeechMessage>(`/api/speech-clips/${clipId}`)
+
+/** The Chair or the Secretary takes a sentence out of the record, or (`reason` null) puts it back. Nothing is deleted. */
+export const setSpeechClipExclusion = (clipId: string, reason: SpeechClipExclusion | null) =>
+  api.put<SpeechMessage>(`/api/speech-clips/${clipId}/exclusion`, { excluded: reason !== null, reason })
 
 export const setCaptureMode = (meetingId: string, mode: CaptureMode) =>
   api.put<CaptureModeChanged>(`/api/meetings/${meetingId}/capture-mode`, { mode })

@@ -166,7 +166,7 @@ Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như 
 
 | `captureMode` | Cách thu | Lưu gì | Tên người nói |
 |---|---|---|---|
-| `PerMic` (mặc định) | Trình duyệt của mỗi người dự tự thu micro của chính họ, cắt theo câu khi ngừng nói (theo mức âm lượng, không dùng WebAssembly) và gửi từng câu lên | Mỗi câu: chữ, lúc bắt đầu, thời lượng, chủ micro. **Không lưu âm thanh** | Chủ micro |
+| `PerMic` (mặc định) | Trình duyệt của mỗi người dự tự thu micro của chính họ, cắt theo câu khi ngừng nói (theo mức âm lượng, không dùng WebAssembly) và gửi từng câu lên | Mỗi câu: chữ, lúc bắt đầu, thời lượng, chủ micro, và mỗi quãng nói trong câu (thời gian, số từ, độ to). **Không lưu âm thanh** | Chủ micro |
 | `Room` | Thư ký tải tệp lên hoặc ghi bằng trình duyệt (các mục trên) | Bản ghi và bản gỡ băng | Thư ký gán, có gợi ý Voice ID |
 
 - Chọn ở form tạo/sửa cuộc họp (`captureMode` trong body của `POST`/`PUT /api/meetings`, bỏ trống thì
@@ -176,39 +176,59 @@ Cuộc họp có **cách ghi âm** (`captureMode`), cùng hai lựa chọn như 
   băng không, và một bản gỡ băng không thể nửa theo micro, nửa thu chung.
 - Không ai bật micro của người khác được, kể cả Chủ tọa (khác eCab). Mỗi người thấy mình đang được ghi
   và tự tắt được; người nói rút lại được câu của mình.
-- Âm thanh một câu chỉ nằm trong bộ nhớ của request: backend gửi worker (`diarize=false`, tối đa 2 câu
-  cùng lúc trên cả server), nhận chữ rồi bỏ. Câu toàn im lặng không tạo dòng nào.
+- Âm thanh một câu chỉ nằm trong bộ nhớ của request: backend gửi worker (`diarize=false&profile=clip`, tối
+  đa 2 câu cùng lúc trên cả server), nhận chữ rồi bỏ. Câu toàn im lặng không tạo dòng nào. Hồ sơ `clip`
+  chỉ tăng âm tối đa 6 dB (thu cả phòng: 30 dB) và lọc khoảng lặng chặt hơn (VAD 0,5), vì chỗ nhỏ tiếng
+  trên micro riêng phần lớn là tiếng người ngồi cạnh lọt vào.
+- **Câu bị lọt tiếng được đánh dấu, không bị ẩn** (như AI-eCabinet, đo ở `workers/speech/eval/bleed.py`).
+  Họp trực tiếp, laptop nào cũng nghe người ngồi cạnh: cùng một câu đến hai lần, to ở micro người nói, nhỏ ở
+  micro bên cạnh. Một quãng của câu bị đánh dấu khi câu của người khác, ở độ lệch đồng hồ tốt nhất trong
+  ±2 giây, phủ ≥ 60 % quãng đó, chứa ≥ 50 % số từ (≤ 3 từ lạ), và to hơn ≥ 6 dB. Đo trên cuộc họp tổng hợp
+  từ VIVOS: từ trùng 114 % → 36 %, không quãng nào của chủ micro bị đánh dấu nhầm. Hai bản to gần bằng nhau
+  (hai laptop cách đều người nói) thì không đoán được bản nào là thật nên không đánh dấu. Câu đã sửa tay
+  không được so. Chủ tọa hoặc Thư ký quyết định **loại câu khỏi bản ghi**.
+- Trình duyệt giữ câu chưa gửi được trong IndexedDB (mất mạng, đóng tab, máy chuyển chữ tắt) và gửi tiếp
+  khi người đó mở lại cuộc họp. Backend nhận câu như thế **đến 7 ngày sau khi cuộc họp kết thúc**
+  (`SpeechClipRules.LateUpload`), miễn là câu được nói trong giờ họp.
 - Chữ của các câu là dữ liệu cá nhân, xoá theo cùng hạn với bản ghi (`Recordings:RetentionDays`).
 
 Quyền: đọc, gửi câu và xoá câu của mình là người trong danh sách cuộc họp (như nghe bản ghi); sửa chữ
-là Thư ký; xoá câu của người khác là Thư ký; đổi cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh
-sách nhận `404`.
+là Thư ký; xoá câu của người khác là Thư ký; loại câu khỏi bản ghi và đưa lại là Chủ tọa hoặc Thư ký; đổi
+cách ghi âm là Chủ tọa hoặc Thư ký. Người ngoài danh sách nhận `404`.
 
 ### `GET /api/meetings/{meetingId}/speech-clips[?since=…]`
 
 ```json
 {
   "meetingId": "…", "captureMode": "PerMic", "canCapture": true, "canEdit": false, "canChangeMode": false,
-  "readAt": "2026-10-26T08:01:02.123Z",
+  "canExclude": false, "readAt": "2026-10-26T08:01:02.123Z",
   "items": [
     { "id": "…", "speakerId": "…", "speakerName": "Lê Thành Viên", "startedAt": "2026-10-26T08:00:57Z",
       "durationMs": 2400, "text": "Tôi đồng ý với dự thảo.", "updatedAt": "…", "editedAt": null,
-      "editedByName": null, "canDelete": true }
+      "editedByName": null, "canDelete": true, "excluded": false, "exclusionReason": null, "excludedByName": null,
+      "leak": { "clipId": "…", "speakerId": "…", "speakerName": "Nguyễn Chủ Toạ", "whole": true, "words": [[0, 5]] } }
   ]
 }
 ```
 
+- `leak`: câu (`whole: true`) hoặc các từ `[từ, đến)` của nó có lẽ là lời của `speakerName` lọt sang, từ câu
+  `clipId`. Mọi người đều thấy dấu này. `null` khi không lọt, hoặc câu đã bị loại.
+- `excluded`: câu đã bị loại khỏi bản ghi. Chủ tọa và Thư ký vẫn nhận chữ, lý do (`Leak` | `Other`) và
+  người loại; người khác nhận `text: ""` để biết ở đó từng có một câu.
+
 Xếp theo `startedAt`. `canCapture` là micro **của chính người gọi** được gửi câu lúc này (cuộc họp
-`InProgress` và `PerMic`). `since` = `readAt` của lần đọc trước: chỉ trả câu mới hoặc vừa sửa. Câu bị xoá
-thì đọc lại từ đầu (sự kiện `speechChanged` có `changeType: "ClipDeleted"`).
+`InProgress` và `PerMic`). `since` = `readAt` của lần đọc trước: trả câu mới hoặc vừa sửa, **cùng các câu
+gần nó trong khoảng ±2 giây**, vì dấu lọt tiếng của một câu cũ có thể đổi khi bản to hơn đến sau hoặc bị
+loại. Câu bị xoá thì đọc lại từ đầu (sự kiện `speechChanged` có `changeType: "ClipDeleted"`).
 
 ### `PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}?startedAt=…&durationMs=…`
 
 Thân là âm thanh của **một câu** (`audio/wav`, `audio/webm`, `audio/ogg`, tối đa 3 MB, 1 ms–60 giây).
 `clientClipId` do trình duyệt sinh; gửi lại cùng id (mất phản hồi, mạng chập chờn) trả lại câu đã lưu,
 không gỡ băng lần hai. `startedAt` theo đồng hồ trình duyệt; lệch quá 2 phút hoặc trước giờ họp thì lấy
-giờ server. `200 MSG318` kèm `clip`, `204` nếu toàn im lặng, `503 MSG312` khi worker chưa sẵn sàng
-(trình duyệt giữ câu và gửi lại), `409 MSG320` khi cuộc họp không ghi theo micro hoặc không còn diễn ra.
+giờ server; gửi sau khi họp xong thì câu kết thúc muộn nhất lúc cuộc họp kết thúc. `200 MSG318` kèm
+`clip`, `204` nếu toàn im lặng, `503 MSG312` khi worker chưa sẵn sàng (trình duyệt giữ câu và gửi lại),
+`409 MSG320` khi cuộc họp không ghi theo micro, chưa bắt đầu, hoặc đã kết thúc quá 7 ngày.
 
 ### `PUT /api/speech-clips/{clipId}/text` — `{ "text": "…" }`
 
@@ -217,6 +237,13 @@ Thư ký sửa chữ một câu, như sửa đoạn gỡ băng (`MSG302`).
 ### `DELETE /api/speech-clips/{clipId}`
 
 Người nói rút lại câu của mình, hoặc Thư ký xoá (`MSG322`). Xoá hẳn, ghi nhật ký kiểm toán.
+
+### `PUT /api/speech-clips/{clipId}/exclusion` — `{ "excluded": true, "reason": "Leak" | "Other" }`
+
+Chủ tọa hoặc Thư ký loại câu khỏi bản ghi (`200 MSG351`), hoặc đưa lại với `{ "excluded": false }`
+(`200 MSG352`). Không xoá gì: câu vẫn nằm đó, chỉ ra khỏi bản ghi. Bấm lại khi câu đã ở trạng thái đó thì
+không đổi và không ghi nhật ký. Người khác nhận `403 MSG353`; `reason` sai `400 MSG354`. Ghi nhật ký kiểm
+toán `speech_clip.excluded` / `speech_clip.restored` kèm lý do.
 
 ### `PUT /api/meetings/{meetingId}/capture-mode` — `{ "mode": "PerMic" | "Room" }`
 
