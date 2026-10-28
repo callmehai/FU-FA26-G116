@@ -1,10 +1,16 @@
 # Use Case Specifications · TrustCabinet
 
+> **GENERATED — DO NOT EDIT.** Bản trích từ Report 3 §II. Sửa DOCX trong
+> [`docs/08-reports/source/`](../08-reports/source/README.md) rồi chạy
+> `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
+> (hoặc `python scripts/sync_requirement_extracts.py`). Sửa tay file này sẽ mất ở lần sync sau.
+> Chi tiết: [08-reports/README.md](../08-reports/README.md).
+
 Đặc tả Use Case của **TrustCabinet**, đồng bộ nguyên văn mục *II. Use Case Specifications* của [Report 3 — SRS](../08-reports/Report-3_Software_Requirement_Specification.md) (bản DOCX cập nhật 24/10/2026, gồm ADR-0020 cho tài liệu cuộc họp và đợt BA Final Review 24/10/2026). Nội dung đặc tả giữ tiếng Anh như Report 3.
 
 - **Phạm vi:** 15 Feature (FE-01 → FE-15), 77 Use Case (UC-01 → UC-77; UC-32b đã bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự theo ADR-0020, bổ sung UC-33d để bỏ gắn một mục; UC-73 → UC-77 thêm sau baseline 72 UC). UC gom nhiều thao tác nhỏ được tách thành UC con có hậu tố chữ (ví dụ `UC-06a`, `UC-06b`, `UC-06c`).
-- **Đồng bộ:** file này là bản trích của Report 3 §II; sinh lại bằng
-  `python scripts/sync_requirement_extracts.py` (thêm `--check` để chỉ xem lệch), không sửa tay bảng UC.
+- **Đồng bộ:** file này là bản trích của Report 3 §II; sinh lại bằng pipeline ở banner trên (thêm
+  `--check` trên `sync_requirement_extracts.py` để chỉ xem lệch), **không sửa tay** bảng UC.
 - **Đổi số:** danh sách UC đã được gom và đánh số lại sau quyết định PO 09/10/2026 (bỏ Meeting Session, biểu quyết chỉ trong cuộc họp). Bảng đổi số cũ → mới nằm ở [Master Use Case Inventory §5](00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới).
 - **Business Rules:** [06-business-rules.md](06-business-rules.md). **Mã thông báo:** chuẩn là [danh mục mã thông báo](../03-api/00-danh-muc-ma-thong-bao.md) — khi mã `MSGnn` trong đặc tả lệch với danh mục, danh mục thắng.
 - UC ghi *Placeholder* là UC đã có trong phạm vi nhưng Report 3 chưa đặc tả chi tiết; BE viết đặc tả cơ bản khi nhận ticket (xem [DEVELOPMENT_WORKFLOW](../DEVELOPMENT_WORKFLOW.md)).
