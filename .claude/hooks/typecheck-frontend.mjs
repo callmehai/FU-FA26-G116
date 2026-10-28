@@ -1,6 +1,8 @@
 // Stop hook: type-check the frontend once Claude finishes a turn that changed frontend/src.
 // oxlint runs on every edit but does not type-check; CI runs `tsc -b` as part of `npm run build`.
 // Exit code 2 feeds the errors back to Claude so it keeps working instead of stopping.
+// Opt-in: it costs ~13 s per turn, so it is not in the shared settings.json. To enable it, add a
+// "Stop" hook running this script to your own .claude/settings.local.json (gitignored).
 import { readFileSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
