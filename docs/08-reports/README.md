@@ -159,8 +159,10 @@ chiều làm việc là repo → Drive.
 **Report 4 (28/10/2026):** điền mục II. Detailed Code Design bằng class diagram
 ([07-classdiagram/](../07-classdiagram/README.md)) và sequence diagram từng UC
 ([06-sequencediagram/](../06-sequencediagram/README.md), ảnh `.png` trong thư mục từng feature) của FE-01 → FE-07,
-FE-11 và FE-13: 8 class diagram, 68 sequence diagram; thêm một dòng Change Log (HuyNT) và cập nhật mục lục. Các mục
-I, III, IV vẫn là nội dung mẫu, chưa sửa. File ~28 MB nên chưa đẩy lên Drive được qua trình duyệt (giới hạn 10 MB);
+FE-11 và FE-13: 8 class diagram, 68 sequence diagram; thêm một dòng Change Log (HuyNT) và cập nhật mục lục. Cùng ngày
+điền mục I.2 Package Diagram bằng bốn trang của [15-package-diagram/](../15-package-diagram/README.md) (tổng quan,
+back-end, domain, front-end), mỗi trang kèm bảng mô tả package; quy ước đặt tên ghi ở đầu mục; thêm một dòng Change
+Log. Mục I.1, I.3, III, IV vẫn là nội dung mẫu, chưa sửa. File ~28 MB nên chưa đẩy lên Drive được qua trình duyệt (giới hạn 10 MB);
 đẩy bằng `push_reports.py 4 --confirm` hoặc tải lên phiên bản mới cho đúng file ở bảng link chuẩn phía trên.
 
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
