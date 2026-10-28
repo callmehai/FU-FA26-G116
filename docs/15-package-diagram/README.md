@@ -8,15 +8,14 @@ thiết kế mục tiêu. Phụ thuộc lấy từ chính source:
 - frontend: các `import` tương đối, kể cả `import()` của route lazy, gom theo thư mục cấp một của
   `frontend/src` (riêng `features/` tách theo từng feature).
 
-[`trustcabinet-package-diagram.drawio`](trustcabinet-package-diagram.drawio) là file editable duy
-nhất, mỗi góc nhìn một trang; PNG xuất từ từng trang.
+Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable, `.png` xuất từ đúng source đó.
 
-| Trang | Nội dung | Ảnh |
+| Góc nhìn | Nội dung | Source / Ảnh |
 |---|---|---|
-| Tổng quan | `frontend/src` theo lớp, ba project backend, project test và phụ thuộc giữa chúng | [package-tong-quan.png](package-tong-quan.png) |
-| Backend | Package con của `TrustCabinet.Web`, `.Infrastructure`, `.Domain`; class ở namespace gốc của Web và Infrastructure | [package-backend.png](package-backend.png) |
-| Domain | Phụ thuộc giữa các package nghiệp vụ trong `TrustCabinet.Domain` | [package-domain.png](package-domain.png) |
-| Frontend | `frontend/src` với 14 feature trong `features/` | [package-frontend.png](package-frontend.png) |
+| Tổng quan | `frontend/src` theo lớp, ba project backend, project test và phụ thuộc giữa chúng | [drawio](package-tong-quan.drawio) · [PNG](package-tong-quan.png) |
+| Backend | Package con của `TrustCabinet.Web`, `.Infrastructure`, `.Domain`; class ở namespace gốc của Web và Infrastructure | [drawio](package-backend.drawio) · [PNG](package-backend.png) |
+| Domain | Phụ thuộc giữa các package nghiệp vụ trong `TrustCabinet.Domain` | [drawio](package-domain.drawio) · [PNG](package-domain.png) |
+| Frontend | `frontend/src` với 14 feature trong `features/` | [drawio](package-frontend.drawio) · [PNG](package-frontend.png) |
 
 ## Quy ước
 
@@ -47,14 +46,12 @@ nhất, mỗi góc nhìn một trang; PNG xuất từ từng trang.
 
 Sửa trực tiếp trên `.drawio` theo [quy tắc chỉnh draw.io](../../DRAWIO_EDITING_RULES.md) và
 [drawio-skill](../../.agents/skills/drawio-skill/SKILL.md). Khi thêm hoặc bỏ project, namespace hay
-thư mục `features/` thì cập nhật hình và mục "Những gì cố ý không vẽ" ở trên. Xuất lại PNG từng
-trang (số trang bắt đầu từ 1):
+thư mục `features/` thì cập nhật hình và mục "Những gì cố ý không vẽ" ở trên. Xuất lại PNG của
+đúng file vừa sửa:
 
 ```bash
-draw.io -x -f png -s 2 -p 1 -o package-tong-quan.png trustcabinet-package-diagram.drawio
+draw.io -x -f png -s 2 -o package-backend.png package-backend.drawio
 ```
-
-Trang 2–4 tương ứng `package-backend.png`, `package-domain.png`, `package-frontend.png`.
 
 Bản trên Drive nằm ở thư mục `Package diagram`, được tải tay lên; `scripts/push_diagrams.py` chưa
 có nhóm cho thư mục này (xem [DIAGRAM_DRIVE_SYNC.md](../DIAGRAM_DRIVE_SYNC.md)).

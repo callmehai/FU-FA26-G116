@@ -1,0 +1,124 @@
+<mxfile host="Electron" agent="Claude Code" scale="1" border="0">
+  <diagram id="pkg-domain" name="Domain">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1350" pageHeight="710" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p3-domain" parent="1" style="shape=folder;tabWidth=188;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Domain" vertex="1">
+          <mxGeometry x="40" y="40" width="1270" height="630" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Agenda" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Agenda" vertex="1">
+          <mxGeometry x="130" y="60" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Documents" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Documents" vertex="1">
+          <mxGeometry x="340" y="60" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Attendance" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Attendance" vertex="1">
+          <mxGeometry x="560" y="60" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-VoiceId" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="VoiceId" vertex="1">
+          <mxGeometry x="840" y="60" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Meetings" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Meetings" vertex="1">
+          <mxGeometry x="160" y="200" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Participants" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Participants" vertex="1">
+          <mxGeometry x="500" y="200" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Transcription" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Transcription" vertex="1">
+          <mxGeometry x="840" y="200" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Recordings" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Recordings" vertex="1">
+          <mxGeometry x="340" y="340" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Entities" parent="p3-domain" style="shape=folder;tabWidth=93;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Entities" vertex="1">
+          <mxGeometry x="580" y="340" width="220" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Common" parent="p3-Entities" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Common" vertex="1">
+          <mxGeometry x="30" y="60" width="160" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Access" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Access" vertex="1">
+          <mxGeometry x="880" y="362" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Audit" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Audit" vertex="1">
+          <mxGeometry x="60" y="540" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Authentication" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Authentication" vertex="1">
+          <mxGeometry x="260" y="540" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Calls" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Calls" vertex="1">
+          <mxGeometry x="460" y="540" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Enums" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Enums" vertex="1">
+          <mxGeometry x="660" y="540" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Notifications" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Notifications" vertex="1">
+          <mxGeometry x="860" y="540" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-Users" parent="p3-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Users" vertex="1">
+          <mxGeometry x="1060" y="540" width="170" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-e-agenda-meetings" parent="1" source="p3-Agenda" target="p3-Meetings" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.3235;entryY=0.2143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-documents-meetings" parent="1" source="p3-Documents" target="p3-Meetings" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.2353;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7647;entryY=0.2143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="200" />
+              <mxPoint x="330" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-documents-participants" parent="1" source="p3-Documents" target="p3-Participants" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.7647;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2353;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="510" y="200" />
+              <mxPoint x="580" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-attendance-participants" parent="1" source="p3-Attendance" target="p3-Participants" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.8529;entryY=0.2143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-meetings-participants" parent="1" source="p3-Meetings" target="p3-Participants" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.2857;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.2857;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-participants-meetings" parent="1" source="p3-Participants" target="p3-Meetings" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.7143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.7143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-recordings-meetings" parent="1" source="p3-Recordings" target="p3-Meetings" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.2353;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7647;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="340" />
+              <mxPoint x="330" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-recordings-participants" parent="1" source="p3-Recordings" target="p3-Participants" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.7647;exitY=0.2143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2353;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="510" y="340" />
+              <mxPoint x="580" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-entities-participants" parent="1" source="p3-Entities" target="p3-Participants" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.2955;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.8529;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-entities-access" parent="1" source="p3-Entities" target="p3-Access" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.3571;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3-e-voiceid-transcription" parent="1" source="p3-VoiceId" target="p3-Transcription" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0.2143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
