@@ -232,10 +232,10 @@ export function MeetingsPage() {
           {MEETING_MODE_LABEL[m.mode]}
           {m.mode !== 'Online' && m.location && <span className="cell-sub">{m.location}</span>}
         </td>
-        <td>
+        <td className="cell-status">
           <StatusBadge status={m.status} />
         </td>
-        <td>
+        <td className="cell-level">
           <SensitivityBadge sensitivity={m.sensitivity} />
         </td>
         <td className="col-action">
@@ -323,7 +323,7 @@ export function MeetingsPage() {
         </div>
 
         <div className="table-card table-fill" aria-busy={refreshing}>
-          <table className={refreshing && data ? 'data-table data-table-stale' : 'data-table'}>
+          <table className={refreshing && data ? 'data-table meetings-table data-table-stale' : 'data-table meetings-table'}>
             <thead>
               <tr>
                 <th className="cell-index">STT</th>

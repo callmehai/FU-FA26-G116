@@ -98,7 +98,14 @@ export function Pagination({
             <button
               key={item}
               type="button"
-              className={item === page ? 'pagination-page pagination-page-current' : 'pagination-page'}
+              className={
+                item === page
+                  ? 'pagination-page pagination-page-current'
+                  : // A phone keeps only the first, the current and the last page: the bar fits one line.
+                    item === 1 || item === totalPages
+                    ? 'pagination-page'
+                    : 'pagination-page pagination-page-near'
+              }
               onClick={() => onPageChange(item)}
               disabled={disabled}
               aria-current={item === page ? 'page' : undefined}

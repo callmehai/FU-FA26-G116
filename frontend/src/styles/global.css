@@ -1070,6 +1070,30 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .row-link .cell-title a:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
 /* The previous page stays readable but visibly stale while the next one loads. */
 .data-table-stale tbody { opacity: .55; transition: opacity .15s; }
+
+/* Meetings on a phone: the panel grows with its rows and the page scrolls, instead of filling the
+   height left under the counters and filters — on a 390px screen that left room for one and a half
+   rows. Each meeting reads as a card: title and the eye button, then the time, then state, level and
+   place on one wrapping line, as the users table does. */
+@media (max-width: 720px) {
+  .list-fill { flex: none; }
+  .list-fill .table-fill { overflow: visible; }
+  .meetings-table thead, .meetings-table td.cell-index { display: none; }
+  /* While loading, one bar per card stands in for the title. */
+  .meetings-table .row-skeleton td:not(:nth-child(2)) { display: none; }
+  .meetings-table tbody tr:not(.row-skeleton) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 12px 16px; border-bottom: 1px solid #e9ecf1; }
+  .meetings-table tbody tr:last-child { border-bottom: none; }
+  .meetings-table tbody tr:not(.row-skeleton) td { padding: 0; border: none; }
+  .meetings-table td.cell-title { flex: 1 1 0; order: 1; font-weight: 600; overflow-wrap: anywhere; }
+  .meetings-table td.col-action { order: 2; padding: 0; }
+  .meetings-table td.cell-schedule { flex: 1 1 100%; order: 3; white-space: normal; }
+  .meetings-table td.cell-schedule .cell-sub { display: inline; margin-left: 6px; }
+  .meetings-table td.cell-status { order: 4; }
+  .meetings-table td.cell-level { order: 5; }
+  .meetings-table td.cell-place { order: 6; min-width: 0; }
+  .meetings-table td.cell-place .cell-sub { display: inline; margin-left: 4px; }
+  .meetings-table td.cell-place .cell-sub::before { content: '· '; }
+}
 .empty-title { margin: 0 0 12px; color: var(--ink); font-weight: 600; }
 .cell-empty .field-hint { margin-top: 4px; }
 
@@ -1174,6 +1198,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .pagination-page-current:hover:not(:disabled) { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand); }
 .pagination-page:disabled { cursor: default; }
 .pagination-gap { min-width: 24px; color: var(--muted-ink); text-align: center; }
+/* On a phone the page buttons get their own line, with only the first, current and last page —
+   "‹ 1 … 10 … 33 ›" — so they never run past the panel or break onto a second line. */
+@media (max-width: 480px) {
+  .pagination-controls { margin-left: 0; }
+  .pagination-page-near { display: none; }
+}
 .row-actions { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
 .chip-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
