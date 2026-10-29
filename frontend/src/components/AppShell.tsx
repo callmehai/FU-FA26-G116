@@ -11,7 +11,7 @@ const CreateMeetingHost = lazy(() =>
 )
 
 /**
- * Chrome shared by every signed-in screen (ADR-0035): the blue top bar over the routed region. The
+ * Chrome shared by every signed-in screen (ADR-0043): the blue top bar over the routed region. The
  * region is a page frame or the Quản trị area (AdminLayout), each with its own scrolling column.
  */
 export function AppShell() {

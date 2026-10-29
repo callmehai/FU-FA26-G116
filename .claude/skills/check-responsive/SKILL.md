@@ -18,7 +18,7 @@ was an icon whose meaning lived in a hover tooltip.
 
 | Name | Viewport | Playwright options | What it catches |
 |---|---|---|---|
-| Phone | 390×844 | `isMobile: true, hasTouch: true` | Sidebar is the 72px rail (always collapsed under 720px, ADR-0012); no hover |
+| Phone | 390×844 | `isMobile: true, hasTouch: true` | The top bar folds its sections into ☰ under 860px (ADR-0043); no hover |
 | Small phone | 360×740 | same | Android; also the room's side panel width (ADR-0011) |
 | Narrow laptop | 1200×800 | — | Toolbars must still be one line (frontend-ui-design §4) |
 | Desktop | 1440×900 | — | The default the other specs use |
@@ -72,7 +72,7 @@ With the chrome-devtools MCP, use `emulate` (viewport `390x844x3,mobile,touch`) 
    icon-only button must be recognisable without its tooltip — otherwise show its label on narrow
    or touch screens. Facts that minimize-text moved into tooltips must still be reachable by tap or
    focus.
-5. **Touch targets** are at least 40px high and wide (ADR-0012 control height), 8px apart.
+5. **Touch targets** are at least 40px high and wide (ADR-0043: controls grow to 40px on a touch screen), 8px apart.
 6. **Dialogs fit**: height ≤ `innerHeight - 32`, the body scrolls, the footer buttons are on
    screen. Focus a field and shrink the viewport height to 500px (the on-screen keyboard): the
    primary button must still be reachable by scrolling the dialog.

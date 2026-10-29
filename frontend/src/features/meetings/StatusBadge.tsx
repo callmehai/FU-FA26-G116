@@ -3,7 +3,7 @@ import { MEETING_STATUS_LABEL, SENSITIVITY_LABEL, type MeetingStatus, type Sensi
 import { STATUS_TONE } from './statusTone'
 
 /**
- * A meeting's lifecycle state as AI-eCabinet draws it (ADR-0035): a rounded chip with a dot in the
+ * A meeting's lifecycle state as AI-eCabinet draws it (ADR-0043): a rounded chip with a dot in the
  * state's colour. Shape tells states apart as well as colour — a draft and a wait are dashed, "Đang
  * diễn ra" is the one solid chip, its dot pulsing so a live meeting is found first on any screen.
  */
@@ -26,7 +26,7 @@ const LEVEL: Record<Sensitivity, { className: string; icon: IconName }> = {
 /**
  * A meeting's sensitivity as a square-cornered chip with its own icon, so the levels differ by
  * shape as well as colour from the round status chip. Red is reserved for "Mật". Every level is
- * drawn, "Thường" included, as AI-eCabinet does (ADR-0035).
+ * drawn, "Thường" included, as AI-eCabinet does (ADR-0043).
  */
 export function SensitivityBadge({ sensitivity }: { sensitivity: Sensitivity }) {
   const level = LEVEL[sensitivity]

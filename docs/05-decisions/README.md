@@ -22,7 +22,7 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0009](0009-tu-lien-ket-google-lan-dau-theo-email.md) | Tự liên kết tài khoản Google ở lần đăng nhập đầu, theo email đã xác minh | Đề xuất |
 | [0010](0010-phong-hop-truc-tuyen-dung-livekit-sfu.md) | Phòng họp trực tuyến dùng LiveKit (SFU) tự host | Đã chấp nhận — phần Meeting Session thay thế bởi ADR-0013; quyền Guest thay thế bởi ADR-0016 |
 | [0011](0011-tinh-nang-hop-la-panel-dung-chung.md) | Tính năng dùng trong lúc họp là panel dùng chung cho màn chi tiết và phòng họp | Đã chấp nhận — phần Meeting Session thay thế bởi ADR-0013 |
-| [0012](0012-giao-dien-hanh-chinh-sidebar-doc.md) | Giao diện phong cách hành chính, một sidebar dọc | Đề xuất — phần hình nhãn trạng thái và mức độ thay thế bởi ADR-0028 |
+| [0012](0012-giao-dien-hanh-chinh-sidebar-doc.md) | Giao diện phong cách hành chính, một sidebar dọc | Đề xuất — phần hình nhãn trạng thái và mức độ thay thế bởi ADR-0028; phần khung và kích thước thay thế bởi ADR-0043 |
 | [0013](0013-mot-cuoc-hop-la-mot-buoi-hop.md) | Một cuộc họp là một buổi họp — bỏ Meeting Session | Đã chấp nhận |
 | [0014](0014-bieu-quyet-chi-trong-cuoc-hop.md) | Biểu quyết chỉ diễn ra trong cuộc họp, Chủ toạ ghi kết luận | Đã chấp nhận — phần loại Guest thay thế bởi ADR-0016, gate End Meeting thay thế bởi ADR-0017, chuẩn bị Vote nháp thay thế bởi ADR-0019 |
 | [0015](0015-server-test-tren-lightsail.md) | Server test chung chạy Docker Compose trên một máy Lightsail, ở chế độ Development, tự deploy từ `main` | Đề xuất |
@@ -38,7 +38,7 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0025](0025-version-rieng-cho-diem-danh.md) | Version riêng cho điểm danh; không dùng xmin toàn dòng | Đã chấp nhận trong phạm vi SCRUM-26, chờ team review branch |
 | [0026](0026-tu-chay-nhan-dang-giong-noi.md) | Tự chạy nhận dạng giọng nói (chuyển thành chữ, tách người nói) trên một worker nội bộ | Đề xuất — SCRUM-31, nhận xét hội đồng 17/10/2026 |
 | [0027](0027-voice-id-co-dong-y.md) | Voice ID có đồng ý — lưu giọng mẫu đã mã hoá, máy chỉ gợi ý tên, Thư ký quyết định | Đề xuất — SCRUM-35, nhận xét hội đồng 17/10/2026; điểm 2 (không lưu âm thanh mẫu) thay thế bởi ADR-0042 |
-| [0028](0028-trang-thai-la-icon-va-chu.md) | Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip | Đề xuất |
+| [0028](0028-trang-thai-la-icon-va-chu.md) | Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip | Đề xuất — thay thế bởi ADR-0043 |
 | [0029](0029-ghi-am-theo-micro-tung-nguoi.md) | Ghi âm theo micro từng người, chỉ lưu chữ của từng câu | Đề xuất — SCRUM-109; điểm 3 thay thế bởi ADR-0039, điểm 1 và 5 thay thế bởi ADR-0040 |
 | [0030](0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md) | Ghi cả cuộc gọi từ trình duyệt của Thư ký, báo đang ghi qua kênh dữ liệu của cuộc gọi | Thay thế bởi ADR-0040 |
 | [0031](0031-gui-email-qua-resend.md) | Gửi email qua Resend, giữ hàng đợi trong app, nhận kết quả giao thư bằng webhook | Đề xuất — SCRUM-15, PO 27/10/2026 |
@@ -53,3 +53,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0040](0040-cach-ghi-am-theo-hinh-thuc-hop.md) | Cách ghi âm suy ra từ hình thức họp: trực tuyến ghi theo micro từng người, trực tiếp ghi bằng mic phòng; bỏ chọn cách ghi, bỏ ghi trộn cả cuộc gọi | Đề xuất — SCRUM-109, PO 29/10/2026; điểm 4 thay thế một phần bởi ADR-0041 |
 | [0041](0041-mic-phong-ghi-tung-luot.md) | Mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi, nối thành một bản ghi của cuộc họp và chuyển chữ lại cả bản, như AI-eCabinet | Đề xuất — SCRUM-29, PO 29/10/2026 |
 | [0042](0042-luu-ban-ghi-giong-mau-de-nghe-lai.md) | Lưu bản ghi giọng mẫu đã mã hoá để chính chủ nghe lại, như AI-eCabinet; thông báo đồng ý lên 1.1 | Đề xuất — SCRUM-35, PO 29/10/2026 |
+| [0043](0043-giao-dien-theo-ai-ecabinet-thanh-tren.md) | Giao diện theo AI-eCabinet: thanh xanh trên cùng thay sidebar dọc, chip trạng thái có chấm, nút vàng cho việc cần làm ngay | Đề xuất — PO 30/10/2026 |

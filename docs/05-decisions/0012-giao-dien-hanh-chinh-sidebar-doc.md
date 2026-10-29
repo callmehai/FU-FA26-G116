@@ -1,6 +1,7 @@
 # ADR-0012: Giao diện phong cách hành chính, một sidebar dọc
 
-- **Trạng thái:** Đề xuất — phần hình nhãn trạng thái và mức độ thay thế bởi [ADR-0028](0028-trang-thai-la-icon-va-chu.md)
+- **Trạng thái:** Đề xuất — phần hình nhãn trạng thái và mức độ thay thế bởi [ADR-0028](0028-trang-thai-la-icon-va-chu.md);
+  phần khung (sidebar dọc) và kích thước thay thế bởi [ADR-0043](0043-giao-dien-theo-ai-ecabinet-thanh-tren.md)
 - **Ngày:** 2026-10-06
 - **Người quyết định:** Nhóm SEP490-G116
 

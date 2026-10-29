@@ -22,8 +22,10 @@ nhóm nếu cần.
 - **Mô hình cuộc họp**: một cuộc họp là một buổi họp, không có cấp phiên họp — chữ "phiên họp" trên UI của
   AI-eCabinet là mục agenda ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)); biểu quyết ngay trong
   cuộc họp, chủ trì ghi kết luận Thông qua / Không thông qua / Hoãn ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md))
-- **Bố cục giao diện** ban đầu bám theo AI-eCabinet; nay là một sidebar dọc theo
-  [ADR-0012](../05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md)
+- **Bố cục giao diện** theo AI-eCabinet: thanh xanh trên cùng, khu Quản trị có cột menu riêng, chip trạng
+  thái có chấm, nút vàng cho việc cần làm ngay
+  ([ADR-0043](../05-decisions/0043-giao-dien-theo-ai-ecabinet-thanh-tren.md); giai đoạn sidebar dọc ở
+  [ADR-0012](../05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md))
 - **Cách chia màn chi tiết cuộc họp thành tab** theo giai đoạn nghiệp vụ
 - **Nguyên tắc**: giao diện không phải ranh giới bảo mật — ẩn menu không thay được kiểm tra quyền
   ở phía server; route thiếu quyền trả 404 chứ không phải 403, để không lộ sự tồn tại của màn hình

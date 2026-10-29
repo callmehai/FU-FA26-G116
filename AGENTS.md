@@ -44,8 +44,8 @@ third-party skills, drawio-skill and ui-ux, which exist nowhere else.
 vendored unchanged (see its `VENDORED.md`). Run its CLI as `npx -y github:callmehai/sloplint#v0.3.0
 <scan|diff|static>` from the repository root wherever the skill says `node <skill>/checker/cli.mjs`:
 the repo has no root `node_modules`, and `npx` brings Playwright with it. `.slop.json` declares the
-exceptions our ADRs mandate (sidebar gradient, uppercase column headings, sensitivity icons, the
-call room's Meet pills); pass `--setup .slop.login.mjs` so each page signs in as a seeded user, and
+exceptions our ADRs mandate (the top bar's gold edge and the call-to-action pings, uppercase column
+headings, sensitivity icons, the call room's Meet pills); pass `--setup .slop.login.mjs` so each page signs in as a seeded user, and
 add `#tab=<tab label>`, `#open=notifications` or `#click=<button name>` to a URL to measure a
 detail tab, the notification panel or a dialog. A list that opens filtered to one status repeats it on every row, so scan it
 with `?status=all`. Lucide icons, Be Vietnam Pro and the blue `--brand` are project choices, not
@@ -105,11 +105,13 @@ TrustCabinet.sln
 global.json                  pins .NET SDK 10.0.401
 ```
 
-Every signed-in screen sits in one shell with one vertical blue sidebar — no app bar, no workspace
-switcher; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. See
-[ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md) for the layout and palette,
-and [ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md) for what was taken from
-the AI-eCabinet reference and why.
+Every signed-in screen sits under one blue top bar, as in AI-eCabinet: the sections as tabs, the
+Quản trị area with its own column of pages, the bell and the avatar menu on the right, and a ☰ menu
+under 860px; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. See
+[ADR-0043](docs/05-decisions/0043-giao-dien-theo-ai-ecabinet-thanh-tren.md) for the layout and
+sizes, [ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md) for the palette, and
+[ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md) for what was taken from the
+AI-eCabinet reference and why.
 
 ## Running in development
 
@@ -192,7 +194,7 @@ application never updates or deletes a row there. The reasoning for each is in
 3. `frontend/src/api/<name>.ts`: the call, using `api.get/post/...` from `client.ts`
    — do not call `fetch` directly from a component
 
-**The UI is never the security boundary.** `RequireCapability` and the sidebar filtering decide
+**The UI is never the security boundary.** `RequireCapability` and the menu filtering decide
 what to *render*, nothing more. Every endpoint must re-authorize the request server-side, and list
 endpoints must filter rows server-side — a record the caller may not see should never reach the
 browser. A capability-gated route renders the same 404 as an unknown URL, so a restricted screen
@@ -234,12 +236,14 @@ adding or changing a message.
 
 **CSS**: use the variables declared on `:root` in `global.css` (`--brand`, `--gold`, `--ink`,
 `--surface`, `--muted-ink`, `--chip-*`, …) rather than hardcoded colours. Blue `--brand` is the
-primary colour; gold is only a thin accent edge; red (`--danger`) is only for "Mật", the current
+primary colour; gold is the top bar's edge and the user's action now ("Vào phòng họp", "Duyệt",
+AI-eCabinet's gold buttons); red (`--danger`) is only for "Mật", the current
 time and warnings — plus the PDF file icon (`--file-pdf`), red because that is how readers know
 PDF. The UI is **light only** — do not add a `prefers-color-scheme: dark` palette.
-Sizes follow ADR-0012 (256px sidebar, 72px collapsed, 40px controls, 44px page-header action, 6px
-radius, 14px body text, never below 12px; a listing is one `.list-panel` of toolbar, table and
-paging); check against it before inventing new ones. A meeting's state uses `StatusBadge` and its
+Sizes follow ADR-0043 (60px top bar, 34px buttons and 38px in a page header, 38px fields, 40px for
+both on a touch screen, 8px radius on controls and 10px on cards, 14px body text, never below 12px; a
+listing is a toolbar on the page over one white card of table and paging); check against it before
+inventing new ones. A meeting's state uses `StatusBadge` and its
 sensitivity `SensitivityBadge` — they differ by shape as well as colour. Icons come from `components/Icon.tsx`,
 which maps a name to a Lucide glyph — never import `lucide-react` in a screen.
 

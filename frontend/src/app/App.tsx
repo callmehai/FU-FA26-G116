@@ -44,7 +44,7 @@ const VoicePage = lazy(() => import('../features/voice/VoicePage').then((m) => (
 
 /**
  * Route map: a public login and password reset, then every screen behind a session gate, inside
- * one shell under one top bar (ADR-0035).
+ * one shell under one top bar (ADR-0043).
  *
  * Capability-gated routes render the same 404 as an unknown URL, so an admin-only screen never
  * reveals its existence to someone who lacks the capability. None of this is security: the backend

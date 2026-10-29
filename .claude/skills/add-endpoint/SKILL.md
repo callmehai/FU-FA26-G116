@@ -15,7 +15,7 @@ An endpoint is never one file. Work through every step; skipping one is what bre
 
 ## Backend
 - Declare the route in `Program.cs`, or in an extension method such as `MapXxxEndpoints()` if the file already splits that way.
-- **Authorize server-side on every endpoint.** The UI (`RequireCapability`, sidebar) is never the security boundary.
+- **Authorize server-side on every endpoint.** The UI (`RequireCapability`, the menus) is never the security boundary.
 - **List endpoints filter rows server-side.** A record the caller may not see must never reach the browser.
 - Status codes:
   - not signed in: `401`

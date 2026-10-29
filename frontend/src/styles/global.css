@@ -1,6 +1,6 @@
 /* ==========================================================================
    Design tokens
-   The administrative style of ADR-0012, in AI-eCabinet's frame (ADR-0035): a state blue for the
+   The administrative style of ADR-0012, in AI-eCabinet's frame (ADR-0043): a state blue for the
    top bar and the primary action, gold only as a thin accent edge, red only for "Mật", the
    current time and warnings — over a cool grey page, Be Vietnam Pro, 14px body
    text. Light only. Every colour below is referenced by token; never hardcode
@@ -9,7 +9,7 @@
 :root {
   color-scheme: light;
 
-  /* AI-eCabinet's corners: 8px on controls, 10px on cards and menus (ADR-0035). */
+  /* AI-eCabinet's corners: 8px on controls, 10px on cards and menus (ADR-0043). */
   --radius: 8px;
   --radius-lg: 10px;
 
@@ -525,7 +525,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .google-button { display: flex; justify-content: center; min-height: 40px; }
 .google-button-disabled { opacity: .5; pointer-events: none; }
 
-/* ---------- Shell (ADR-0035, after AI-eCabinet) ----------
+/* ---------- Shell (ADR-0043, after AI-eCabinet) ----------
    One blue bar across the top, edged in gold, over the routed region. The region's column is the
    one scroll container, so a listing table can fill the remaining height with its own scroll. */
 .shell { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
@@ -1310,7 +1310,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* ---------- Chips ----------
    Three kinds, told apart by shape as well as colour:
    - .badge: a plain soft label (a role, a count);
-   - .status: a meeting's lifecycle state — a round chip with a dot (AI-eCabinet, ADR-0035);
+   - .status: a meeting's lifecycle state — a round chip with a dot (AI-eCabinet, ADR-0043);
      dashed while nothing is settled, solid for "Đang diễn ra";
    - .level: a sensitivity level — square corners and its own icon, every level drawn. */
 .badge {

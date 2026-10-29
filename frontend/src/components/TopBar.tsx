@@ -13,7 +13,7 @@ import { useDropMenu } from './useDropMenu'
 const FOLD_QUERY = '(max-width: 859px)'
 
 /**
- * The one blue bar over every signed-in screen (ADR-0035, after AI-eCabinet): the brand home to the
+ * The one blue bar over every signed-in screen (ADR-0043, after AI-eCabinet): the brand home to the
  * calendar, the sections, the Quản trị area for administrators, then the bell and the avatar menu.
  * Hiding an entry is presentation only — every route and endpoint behind it re-checks the capability.
  */
