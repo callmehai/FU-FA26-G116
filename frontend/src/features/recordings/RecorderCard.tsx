@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
@@ -8,15 +8,21 @@ import { ConsentDialog } from './ConsentDialog'
 import { formatDuration } from './format'
 import { saveTake } from './roomMic'
 import type { RoomRecorder } from './useRoomRecorder'
+import { useFloatingBox, type Edge } from './useFloatingBox'
 
 /**
  * SCRUM-29, ADR-0041 — the Secretary's room mic, as AI-eCabinet's floating mic card: in the corner of every tab while
- * the meeting runs, so moving between tabs never stops it. One switch: on records the room, off saves the take into
+ * the meeting runs, so moving between tabs never stops it. It is dragged anywhere and widened from its sides, and
+ * stays where it was left; nothing else in the corner pushes it. One switch: on records the room, off saves the take into
  * the meeting's one recording and has it transcribed again. The participants are told before the first take only. The
  * card also carries on or saves a take this laptop kept from a session cut off, and saves one left open on another.
  */
 
 const MIN_KEY = 'trustcabinet.recorder.min'
+const BOX_KEY = 'trustcabinet.recorder.box'
+const MIN_WIDTH = 320
+const MAX_WIDTH = 480
+const EDGES: Edge[] = ['w', 'e']
 /** Past this much audio waiting on the device, the network is said to be slow; nothing is lost meanwhile. */
 const BEHIND_NOTICE_SECONDS = 30
 
@@ -60,23 +66,27 @@ export function RecorderCard({
   const [min, setMin] = useState(storedMin)
   const [asking, setAsking] = useState(false)
   const [closing, setClosing] = useState(false)
-  const dock = useRef<HTMLDivElement>(null)
+  const box = useFloatingBox(BOX_KEY, { right: 16, bottom: 16, width: null }, MIN_WIDTH, MAX_WIDTH)
+  const { ref: dock, refit } = box
   const { phase, unfinished } = room
   const on = phase === 'on'
   const now = useNow(on)
 
-  // The corner is shared with the upload tray (under the card) and the toasts (above it): they read its height here.
+  // The page scrolls past the card (it reads the height here), and a card that grew is pulled back inside the window.
   useEffect(() => {
     const el = dock.current
     if (!el) return
     const root = document.documentElement
-    const observer = new ResizeObserver(() => root.style.setProperty('--mic-dock-h', `${el.offsetHeight + 8}px`))
+    const observer = new ResizeObserver(() => {
+      root.style.setProperty('--mic-dock-h', `${el.offsetHeight + 8}px`)
+      refit()
+    })
     observer.observe(el)
     return () => {
       observer.disconnect()
       root.style.removeProperty('--mic-dock-h')
     }
-  }, [])
+  }, [dock, refit])
 
   const kept = !on && phase !== 'starting' && unfinished !== null
   // A take open that is not this laptop's: on another device, or this one's own that a closed tab left behind.
@@ -84,6 +94,17 @@ export function RecorderCard({
   const firstTake = !list?.items.some((r) => r.source === 'BrowserCapture' && r.status === 'Available' && r.takes)
   // A problem must be seen, whatever the Secretary chose.
   const minimised = min && !room.error && !kept && !elsewhere
+  useLayoutEffect(() => {
+    if (!minimised) refit()
+  }, [minimised, refit])
+
+  // The bubble opens on a press that did not move it. The drag captures the pointer, so the release lands on the
+  // box rather than the button and is read there; the button's own click is the keyboard's.
+  const pressedAt = useRef<{ x: number; y: number } | null>(null)
+  const still = (event: { clientX: number; clientY: number }) => {
+    const p = pressedAt.current
+    return !p || Math.hypot(event.clientX - p.x, event.clientY - p.y) <= 4
+  }
 
   const remember = (value: boolean) => {
     setMin(value)
@@ -132,15 +153,28 @@ export function RecorderCard({
   const card = minimised ? (
     <button
       type="button"
+      data-drag
       className={`mic-bubble${on ? ' is-live' : ''}`}
-      onClick={() => remember(false)}
+      onPointerDown={(event) => {
+        pressedAt.current = { x: event.clientX, y: event.clientY }
+      }}
+      onClick={(event) => {
+        if (event.detail === 0 || still(event)) remember(false)
+      }}
       aria-label={`Mở ô ghi âm: ${status} · ${title}`}
       data-tooltip={`${title} · ${status}`}
     >
       <Icon name={on ? 'mic' : 'micOff'} size={24} />
     </button>
   ) : (
-    <section className="mic-card" aria-labelledby="recorder-card-title">
+    <section
+      className="mic-card"
+      aria-labelledby="recorder-card-title"
+      style={box.rect.width ? { width: Math.max(MIN_WIDTH, box.rect.width) } : undefined}
+    >
+      {EDGES.map((edge) => (
+        <span key={edge} aria-hidden="true" className={`mic-edge mic-edge-${edge}`} {...box.edge(edge)} />
+      ))}
       <header className="mic-card-head">
         <h2 id="recorder-card-title">{title}</h2>
         <button
@@ -238,7 +272,16 @@ export function RecorderCard({
   return (
     <>
       {createPortal(
-        <div className="mic-dock" ref={dock}>
+        <div
+          className={`mic-dock${box.moving ? ' is-moving' : ''}`}
+          ref={dock}
+          style={{ right: box.rect.right, bottom: box.rect.bottom }}
+          {...box.move}
+          onPointerUp={(event: PointerEvent<HTMLDivElement>) => {
+            box.move.onPointerUp()
+            if (minimised && pressedAt.current && still(event)) remember(false)
+          }}
+        >
           {card}
         </div>,
         document.body,

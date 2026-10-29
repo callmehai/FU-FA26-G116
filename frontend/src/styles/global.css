@@ -1561,12 +1561,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 /* The bottom-right corner is shared: the upload tray sits on --corner-bottom (lifted over the call room's
-   controls), the Secretary's recorder card above it (--upload-tray-h, set by UploadTray), the toasts above both
-   (--mic-dock-h, set by RecorderCard). */
+   controls), the toasts above it (--upload-tray-h, set by UploadTray). The Secretary's recorder card is moved by
+   hand and pushed by neither (RecorderCard). */
 .toast-stack {
   position: fixed;
   right: 16px;
-  bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px) + var(--mic-dock-h, 0px));
+  bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px));
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -3350,14 +3350,18 @@ audio.recording-player { height: 40px; }
   .tl-speaker { flex: none; max-width: 85%; }
 }
 
-/* SCRUM-109 — the attendee's own mic, floating in the corner of every tab of a running meeting (AI-eCabinet's
-   SpeechWidget). Above the page, under dialogs. */
-.mic-dock { position: fixed; right: 16px; bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px)); z-index: 40; display: flex; justify-content: flex-end; max-width: calc(100vw - 16px); pointer-events: none; }
-.mic-dock > * { pointer-events: auto; }
+/* SCRUM-29 — the Secretary's room mic, floating over every tab of a running meeting (AI-eCabinet's FloatingMicBox).
+   Above the page, under dialogs, toasts and the upload tray. Dragged anywhere by a part that is not a control
+   (right/bottom set by useFloatingBox), widened from its sides. */
+.mic-dock { position: fixed; z-index: 40; max-width: calc(100vw - 16px); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.mic-dock.is-moving, .mic-dock.is-moving * { cursor: grabbing; }
+.mic-edge { position: absolute; top: 8px; bottom: 8px; z-index: 1; width: 8px; cursor: ew-resize; }
+.mic-edge-w { left: 0; }
+.mic-edge-e { right: 0; }
 .mic-bubble { position: relative; display: grid; place-items: center; width: 56px; height: 56px; padding: 0; border: 1px solid var(--brand); border-radius: 50%; background: var(--brand); color: var(--surface); box-shadow: var(--shadow); cursor: pointer; }
 .mic-bubble.is-live { border-color: var(--live); background: var(--live); }
 .mic-bubble:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.mic-card { display: flex; flex-direction: column; width: min(320px, calc(100vw - 16px)); overflow: hidden; border: 1px solid var(--control-line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.mic-card { position: relative; display: flex; flex-direction: column; width: min(320px, calc(100vw - 16px)); max-width: calc(100vw - 16px); overflow: hidden; border: 1px solid var(--control-line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
 .mic-card-head { display: flex; align-items: flex-start; gap: 8px; padding: 8px 8px 8px 14px; background: var(--brand); color: var(--surface); }
 .mic-card-head h2 { display: -webkit-box; flex: 1; min-width: 0; margin: 0; padding: 3px 0; overflow: hidden; font-size: 14px; font-weight: 700; line-height: 1.375; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .mic-card-min { display: grid; flex: none; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius); background: var(--surface); color: var(--brand); cursor: pointer; }
