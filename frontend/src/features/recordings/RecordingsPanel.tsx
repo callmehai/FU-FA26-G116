@@ -284,7 +284,8 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
   }
   const badge = deleted ? undefined : TRANSCRIPT_BADGE[transcriptStatus]
 
-  // The player's signed link is fetched each time the row opens: one from an earlier opening may have expired.
+  // The player's signed link is fetched each time the row opens: one from an earlier opening may have expired. And
+  // again when the file grows (a room-mic take appended, ADR-0041): the player would keep the shorter file it loaded.
   useEffect(() => {
     if (!open || deleted) return
     let gone = false
@@ -302,7 +303,7 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
       gone = true
       setPlayback(null)
     }
-  }, [open, deleted, recording.id])
+  }, [open, deleted, recording.id, recording.byteSize])
 
   const toast = useToast()
   // A signed link to the original file, followed by the browser itself: a recording can be hundreds of megabytes.
