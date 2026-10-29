@@ -95,8 +95,9 @@ Guest (SCRUM-25). Guest mở phòng nhận `404`. **PR phải ghi rõ: Guest ch�
 
 Chỉ có bảng `speaking_requests` (entity `SpeakingRequest`: cuộc họp, mục nghị sự, người xin, thứ tự, trạng thái
 `Queued/Invited/Speaking/Finished/Cancelled`, giờ bắt đầu/kết thúc). Chưa có endpoint hay màn hình. UC-79 viết
-theo ghi chú 11 §3 ý 1 và §6.2.4; chế độ "phát biểu theo lượt" (Chủ toạ mời từng người, như AI-eCabinet) cần PO
-xác nhận chi tiết. UC-79 không dùng mã MSG mới; trường hợp "không còn là Chủ toạ" chỉ ẩn nút, chưa có câu báo.
+theo quyết định PO (Hải) ngày 26/10 khi trả lời rà soát FE-08 (ghi chú 11 §3 ý 1 và §6.2.4): giơ tay / hạ tay
+thành UC "Đăng ký phát biểu" như AI-eCabinet, có cả chế độ phát biểu theo lượt (Chủ toạ mời từng người theo hàng
+đợi), gắn SCRUM-27, không tạo ticket mới. Luồng bám các trạng thái của entity. UC-79 không dùng mã MSG mới; trường hợp "không còn là Chủ toạ" chỉ ẩn nút, chưa có câu báo.
 
 ### 3. Không làm (có chủ ý)
 
