@@ -24,10 +24,9 @@ public class TranscriptSegment : Entity
     /// What the diarizer called this voice — "Người nói 1", "Người nói 2". A label within this one
     /// recording and nothing more.
     ///
-    /// **No voiceprint is stored.** There is deliberately no column holding a voice embedding or
-    /// any other biometric feature, so the same speaker is not recognised across meetings. That is
-    /// out of scope (SCRUM-35), and a voiceprint would be biometric data under Decree
-    /// 13/2023/NĐ-CP with its own consent and erasure duties.
+    /// **No voice is stored here.** Who a label is comes from the Secretary (TranscriptSpeaker), helped by a
+    /// suggestion from voices enrolled under their own consent (SCRUM-35, ADR-0027); a voice embedding is
+    /// biometric data under Luật BVDLCN 91/2025/QH15 and lives only, encrypted, in voice_samples.
     /// </summary>
     public string SpeakerLabel { get; set; } = string.Empty;
 

@@ -32,13 +32,15 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
 
     public bool IsConfigured => options.Value.IsConfigured;
 
-    public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, CancellationToken ct)
+    public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip,
+        CancellationToken ct)
     {
-        using var response = await SendAsync($"v1/transcribe?diarize={(diarize ? "true" : "false")}", audio, contentType, ct);
+        using var response = await SendAsync(
+            $"v1/transcribe?diarize={(diarize ? "true" : "false")}&profile={(clip ? "clip" : "room")}", audio, contentType, ct);
         var body = await response.Content.ReadFromJsonAsync<TranscribeBody>(Json, ct)
             ?? throw new SpeechEngineException("Máy chủ nhận dạng giọng nói trả kết quả rỗng.");
         return new(body.DurationMs, body.Language ?? "vi", body.AsrModel ?? "", body.EmbeddingModel ?? "",
-            [.. (body.Segments ?? []).Select(s => new SpeechSegment(s.StartMs, s.EndMs, s.Speaker, s.Text ?? ""))],
+            [.. (body.Segments ?? []).Select(s => new SpeechSegment(s.StartMs, s.EndMs, s.Speaker, s.Text ?? "", s.LevelDbfs))],
             [.. (body.Speakers ?? []).Select(s => new SpeechSpeaker(s.Label ?? "", s.SpeechMs, s.Embedding ?? []))]);
     }
 
@@ -96,7 +98,7 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
 
     private sealed record ErrorBody(string? Error);
     private sealed record EmbedBody(float[]? Embedding, string? Model, long SpeechMs);
-    private sealed record SegmentBody(long StartMs, long EndMs, string? Speaker, string? Text);
+    private sealed record SegmentBody(long StartMs, long EndMs, string? Speaker, string? Text, double? LevelDbfs);
     private sealed record SpeakerBody(string? Label, long SpeechMs, float[]? Embedding);
     private sealed record TranscribeBody(long DurationMs, string? Language, string? AsrModel, string? EmbeddingModel,
         SegmentBody[]? Segments, SpeakerBody[]? Speakers);

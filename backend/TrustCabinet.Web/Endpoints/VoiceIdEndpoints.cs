@@ -37,6 +37,15 @@ public static class VoiceIdEndpoints
             => Map(await service.WithdrawAsync(CapabilityGate.GatedUserId(context.User), ct),
                 Msg306ConsentWithdrawn, "Đã tắt nhận diện giọng nói và xoá toàn bộ giọng mẫu."));
         voice.MapPost("/samples", AddSampleAsync);
+        // The owner hears their own sample back; anyone else's, or one not kept, is a plain 404.
+        voice.MapGet("/samples/{sampleId:guid}/audio", async (Guid sampleId, HttpContext context, IVoiceIdService service,
+            CancellationToken ct) =>
+        {
+            var audio = await service.SampleAudioAsync(CapabilityGate.GatedUserId(context.User), sampleId, ct);
+            if (audio is null) return Results.NotFound();
+            context.Response.Headers.CacheControl = "no-store";
+            return Results.File(audio.Bytes, audio.ContentType, enableRangeProcessing: true);
+        });
         voice.MapDelete("/samples/{sampleId:guid}", async (Guid sampleId, HttpContext context, IVoiceIdService service, CancellationToken ct)
             => Map(await service.DeleteSampleAsync(CapabilityGate.GatedUserId(context.User), sampleId, ct),
                 Msg311SampleDeleted, "Đã xoá giọng mẫu."));

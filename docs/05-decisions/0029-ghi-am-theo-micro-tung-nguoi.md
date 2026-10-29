@@ -1,6 +1,6 @@
 # ADR-0029: Ghi âm theo micro từng người, chỉ lưu chữ của từng câu
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Đề xuất — điểm 3 thay thế bởi ADR-0039, điểm 1 và 5 thay thế bởi ADR-0040
 - **Ngày:** 2026-10-26
 - **Người quyết định:** Hải (PO, FE), theo SCRUM-109
 
