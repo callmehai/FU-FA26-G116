@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
@@ -250,7 +250,8 @@ function MeetingDetail({
           <div className="record-title">
             <h1>{meeting.title}</h1>
             <StatusBadge status={meeting.status} />
-            {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
+            {/* Every level, Thường included, as a chip beside the title: the overview needs no Mức độ field. */}
+            <SensitivityBadge sensitivity={meeting.sensitivity} chip />
             <RsvpChip response={meeting.myResponse} />
             {roomRecordings.open && (
               <button
@@ -278,8 +279,8 @@ function MeetingDetail({
         {(canEdit || canReschedule || roomOpen || canRun || canCancel) && (
           <div className="page-header-actions">
             {roomOpen && (
-              // The meeting is running: green like its "Đang diễn ra" state, so it stands apart from blue.
-              <Link className="btn btn-live btn-lg btn-cta" to={routes.meetingRoom(meeting.id)}>
+              // The meeting is running: green like its "Đang diễn ra" state, and it pings — the call to go in.
+              <Link className="btn btn-live btn-lg btn-cta btn-ping" to={routes.meetingRoom(meeting.id)}>
                 <Icon name="video" size={18} />
                 Vào phòng họp
               </Link>
@@ -458,82 +459,74 @@ function approverLabel(
   return { text: approvers.error ? 'Không tải được tên' : 'Đang tải…', muted: true }
 }
 
+interface FactRow {
+  label: string
+  value: ReactNode
+}
+
+const empty = (text = 'Chưa có') => <em className="value-empty">{text}</em>
+
+/** "Chủ Nhật, 25/10/2026, 19:01–20:31" wraps between its parts, never inside the time range. */
+function Unbroken({ text }: { text: string }) {
+  const parts = text.split(', ')
+  if (parts.length === 1) return text
+  return parts.map((part, i) => (
+    <span key={i} className="nowrap">
+      {part}
+      {i < parts.length - 1 && ','}
+    </span>
+  ))
+}
+
+/**
+ * The record as one grid of "label value" pairs: when and where on the left, who on the right, the
+ * n-th fact of each side on the same row so the two sides line up; the description last, under
+ * both. Plain text only — the state and the level already stand beside the title. On a narrow
+ * screen the right side follows the left in one column.
+ */
 function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: string; muted: boolean } | null }) {
+  const where: FactRow[] = [
+    {
+      label: 'Thời gian',
+      value: <Unbroken text={formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)} />,
+    },
+    { label: 'Hình thức', value: MEETING_MODE_LABEL[meeting.mode] },
+    ...(meeting.mode !== 'Online'
+      ? [{ label: meeting.mode === 'Hybrid' ? 'Phòng họp' : 'Địa điểm', value: meeting.location || empty() }]
+      : []),
+    ...(meeting.mode !== 'InPerson'
+      ? [{ label: 'Link họp', value: meeting.onlineLink ?? 'Phòng họp trực tuyến TrustCabinet' }]
+      : []),
+  ]
+  const who: FactRow[] = [
+    { label: 'Chủ tọa', value: meeting.chair?.fullName ?? empty() },
+    {
+      label: 'Thư ký',
+      value: meeting.secretaries.length > 0 ? meeting.secretaries.map((s) => s.fullName).join(', ') : empty(),
+    },
+    ...(approver ? [{ label: 'Người duyệt', value: approver.muted ? empty(approver.text) : approver.text }] : []),
+  ]
+  const rows = Math.max(where.length, who.length)
+
   return (
-    <div className="card field-grid">
-      <div className="field-item">
-        <span>Trạng thái</span>
-        <StatusBadge status={meeting.status} />
-      </div>
-      <div className="field-item">
-        <span>Mức độ</span>
-        <SensitivityBadge sensitivity={meeting.sensitivity} />
-      </div>
-      <div className="field-item span-all">
-        <span>Thời gian</span>
-        <strong>{formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)}</strong>
-      </div>
-      {meeting.actualStartedAt && (
-        <div className="field-item span-all">
-          <span>Thời gian thực tế</span>
-          <strong>
-            {meeting.actualEndedAt
-              ? formatSchedule(meeting.actualStartedAt, meeting.actualEndedAt)
-              : `Bắt đầu ${formatDateTime(meeting.actualStartedAt)}`}
-          </strong>
+    <dl className="card record-overview">
+      {where.map((f, i) => (
+        <div key={f.label} className="record-fact record-fact-left" style={{ gridRow: i + 1 }}>
+          <dt>{f.label}</dt>
+          <dd>{f.value}</dd>
         </div>
-      )}
-      <div className="field-item">
-        <span>Hình thức</span>
-        <strong>{MEETING_MODE_LABEL[meeting.mode]}</strong>
-      </div>
-      {meeting.mode !== 'Online' && (
-        <div className="field-item">
-          <span>{meeting.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
-          {meeting.location ? <strong>{meeting.location}</strong> : <em className="value-empty">Chưa có</em>}
+      ))}
+      {who.map((f, i) => (
+        <div key={f.label} className="record-fact record-fact-right" style={{ gridRow: i + 1 }}>
+          <dt>{f.label}</dt>
+          <dd>{f.value}</dd>
         </div>
-      )}
-      {meeting.mode !== 'InPerson' && (
-        <div className="field-item">
-          <span>Link trực tuyến</span>
-          {meeting.onlineLink ? (
-            <strong className="value-text">{meeting.onlineLink}</strong>
-          ) : (
-            <strong>Phòng họp trực tuyến TrustCabinet</strong>
-          )}
-        </div>
-      )}
-      <div className="field-item field-row-start">
-        <span>Chủ tọa</span>
-        {meeting.chair ? <strong>{meeting.chair.fullName}</strong> : <em className="value-empty">Chưa có</em>}
+      ))}
+      <div className="record-fact record-fact-wide" style={{ gridRow: rows + 1 }}>
+        <dt>Mô tả</dt>
+        <dd>{meeting.description ? <p className="value-text">{meeting.description}</p> : empty('Chưa có mô tả')}</dd>
       </div>
-      <div className="field-item">
-        <span>Thư ký</span>
-        {meeting.secretaries.length > 0 ? (
-          <strong>{meeting.secretaries.map((s) => s.fullName).join(', ')}</strong>
-        ) : (
-          <em className="value-empty">Chưa có</em>
-        )}
-      </div>
-      {approver && (
-        <div className="field-item">
-          <span>Người duyệt</span>
-          {approver.muted ? <em className="value-empty">{approver.text}</em> : <strong>{approver.text}</strong>}
-        </div>
-      )}
-      <div className="field-item">
-        <span>Tạo lúc</span>
-        <strong>{formatDateTime(meeting.createdAt)}</strong>
-      </div>
-      <div className="field-item span-all field-divided">
-        <span>Mô tả</span>
-        {meeting.description ? (
-          <p className="value-text">{meeting.description}</p>
-        ) : (
-          <em className="value-empty">Chưa có mô tả</em>
-        )}
-      </div>
-    </div>
+    </dl>
   )
 }
 
@@ -555,9 +548,9 @@ function DetailSkeleton() {
         ))}
       </div>
       <div className="detail-grid">
-        <div className="card field-grid">
+        <div className="card record-overview">
           {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="field-item detail-skeleton-field">
+            <div key={i} className={`record-fact detail-skeleton-fact record-fact-${i % 2 ? 'right' : 'left'}`} style={{ gridRow: (i >> 1) + 1 }}>
               <span className="skeleton" />
               <span className="skeleton" />
             </div>

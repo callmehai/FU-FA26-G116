@@ -17,6 +17,7 @@ import {
   SENSITIVITIES,
   SENSITIVITY_LABEL,
   type MeetingListResponse,
+  type MeetingStatus,
   type MeetingSortBy,
 } from '../../types/meeting'
 import { useAccessLost } from '../auth/useAccessLost'
@@ -54,6 +55,12 @@ const WHEN_SELECT_OPTIONS = [
 ]
 
 const COLUMN_COUNT = 7
+/** A row's tone by state: live stands out, called off and over fade back (global.css: .row-*). */
+const ROW_TONE: Partial<Record<MeetingStatus, string>> = {
+  InProgress: 'row-live',
+  Cancelled: 'row-cancelled',
+  Ended: 'row-ended',
+}
 const SKELETON_ROWS = 5
 
 type Load =
@@ -141,6 +148,8 @@ export function MeetingsPage() {
   }
 
   const filtered = hasFilters(state)
+  const activeFilters = [state.status, state.sensitivity, state.when].filter(Boolean).length
+  const [filtersOpen, setFiltersOpen] = useState(false)
   // The list as it opens: only meetings under way, which most of the time is none.
   const onlyLive = state.status === 'InProgress' && !state.q.trim() && !state.sensitivity && !state.when
   const data = shown
@@ -209,9 +218,11 @@ export function MeetingsPage() {
     const offset = (data.page - 1) * data.pageSize
     body = data.items.map((m, index) => (
       // The whole row opens the meeting; the title link and the eye button are the keyboard routes.
+      // The row itself says where the meeting stands at a glance: live stands out, called off and
+      // over fade back.
       <tr
         key={m.id}
-        className={m.status === 'InProgress' ? 'row-link row-live' : 'row-link'}
+        className={`row-link${ROW_TONE[m.status] ? ` ${ROW_TONE[m.status]}` : ''}`}
         onClick={() => navigate(routes.meeting(m.id), { state: back })}
       >
         <td className="cell-index">{offset + index + 1}</td>
@@ -219,19 +230,24 @@ export function MeetingsPage() {
           <Link to={routes.meeting(m.id)} state={back} onClick={(e) => e.stopPropagation()}>
             {m.title}
           </Link>
+          {m.mode !== 'Online' && m.location && (
+            <span className="cell-sub cell-meta">
+              <Icon name="mapPin" size={13} />
+              {m.location}
+            </span>
+          )}
         </td>
         <td className="cell-schedule">
-          {formatClock(m.plannedStartTime)}–{formatClock(m.plannedEndTime)}
+          <b>
+            {formatClock(m.plannedStartTime)} – {formatClock(m.plannedEndTime)}
+          </b>
           <span className="cell-sub">
             {formatDate(m.plannedStartTime) === formatDate(m.plannedEndTime)
               ? formatWeekdayDate(m.plannedStartTime)
               : `${formatDate(m.plannedStartTime)} – ${formatDate(m.plannedEndTime)}`}
           </span>
         </td>
-        <td className="cell-muted cell-place">
-          {MEETING_MODE_LABEL[m.mode]}
-          {m.mode !== 'Online' && m.location && <span className="cell-sub">{m.location}</span>}
-        </td>
+        <td className="cell-muted cell-place">{MEETING_MODE_LABEL[m.mode]}</td>
         <td className="cell-status">
           <StatusBadge status={m.status} />
         </td>
@@ -239,16 +255,25 @@ export function MeetingsPage() {
           <SensitivityBadge sensitivity={m.sensitivity} />
         </td>
         <td className="col-action">
-          <Link
-            className="icon-button icon-button-sm icon-button-brand"
-            to={routes.meeting(m.id)}
-            state={back}
-            onClick={(e) => e.stopPropagation()}
-            data-tooltip="Xem chi tiết"
-            aria-label={`Xem chi tiết ${m.title}`}
-          >
-            <Icon name="eye" />
-          </Link>
+          {m.status === 'InProgress' && m.mode !== 'InPerson' ? (
+            // The call to act now: green like the "Đang diễn ra" state, and it pings. The room
+            // answers 404 to someone who is not invited.
+            <Link className="btn btn-live btn-sm btn-ping" to={routes.meetingRoom(m.id)} onClick={(e) => e.stopPropagation()}>
+              <Icon name="video" size={16} />
+              Vào phòng họp
+            </Link>
+          ) : (
+            <Link
+              className="icon-button icon-button-sm icon-button-brand"
+              to={routes.meeting(m.id)}
+              state={back}
+              onClick={(e) => e.stopPropagation()}
+              data-tooltip="Xem chi tiết"
+              aria-label={`Xem chi tiết ${m.title}`}
+            >
+              <Icon name="eye" />
+            </Link>
+          )}
         </td>
       </tr>
     ))
@@ -261,7 +286,7 @@ export function MeetingsPage() {
         action={
           canCreate && (
             <Link className="btn btn-primary btn-lg btn-cta" to={createLink.to} state={createLink.state}>
-              <Icon name="plus" size={18} />
+              <Icon name="plus" size={16} />
               Tạo cuộc họp
             </Link>
           )
@@ -275,7 +300,7 @@ export function MeetingsPage() {
         onSelect={(status) => update({ status })}
       />
 
-      <div className="list-panel list-fill">
+      <div className="list-panel list-page list-fill">
         <div className="toolbar">
           <label className="search search-flex">
             <Icon name="search" size={16} />
@@ -288,38 +313,53 @@ export function MeetingsPage() {
             />
           </label>
 
-          <Select
-            value={state.status}
-            options={STATUS_OPTIONS}
-            onChange={(status) => update({ status })}
-            label="Trạng thái"
-          />
-          <Select
-            value={state.sensitivity}
-            options={SENSITIVITY_OPTIONS}
-            onChange={(sensitivity) => update({ sensitivity })}
-            label="Mức độ"
-          />
+          {/* On a phone the filters fold behind one button with their count, as on AI-eCabinet. */}
+          <button
+            type="button"
+            className="btn btn-outline filters-toggle"
+            aria-expanded={filtersOpen}
+            aria-controls="meeting-filters"
+            onClick={() => setFiltersOpen((o) => !o)}
+          >
+            <Icon name="filter" size={16} />
+            Bộ lọc
+            {activeFilters > 0 && <span className="filters-count">{activeFilters}</span>}
+          </button>
+          <div id="meeting-filters" className={filtersOpen ? 'toolbar-filters toolbar-filters-open' : 'toolbar-filters'}>
+            <Select
+              value={state.status}
+              options={STATUS_OPTIONS}
+              onChange={(status) => update({ status })}
+              label="Trạng thái"
+            />
+            <Select
+              value={state.sensitivity}
+              options={SENSITIVITY_OPTIONS}
+              onChange={(sensitivity) => update({ sensitivity })}
+              label="Mức độ"
+            />
 
-          <Select
-            value={state.when}
-            options={WHEN_SELECT_OPTIONS}
-            onChange={(when) => update({ when })}
-            label="Thời điểm"
-          />
+            <Select
+              value={state.when}
+              options={WHEN_SELECT_OPTIONS}
+              onChange={(when) => update({ when })}
+              label="Thời điểm"
+            />
 
-          {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
-          {filtered && (
-            <button
-              type="button"
-              className="icon-button"
-              onClick={clearFilters}
-              data-tooltip="Xoá bộ lọc"
-              aria-label="Xoá bộ lọc"
-            >
-              <Icon name="x" size={16} />
-            </button>
-          )}
+            {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
+            {filtered && (
+              <button
+                type="button"
+                className="icon-button"
+                onClick={clearFilters}
+                data-tooltip="Xoá bộ lọc"
+                aria-label="Xoá bộ lọc"
+              >
+                <Icon name="x" size={16} />
+              </button>
+            )}
+          </div>
+
         </div>
 
         <div className="table-card table-fill" aria-busy={refreshing}>
@@ -331,7 +371,7 @@ export function MeetingsPage() {
                   Tên cuộc họp
                 </SortHeader>
                 <SortHeader column="plannedStartTime" state={state} onSort={sortBy}>
-                  Thời gian
+                  Thời gian diễn ra
                 </SortHeader>
                 <th className="cell-place">Hình thức</th>
                 <th>Trạng thái</th>

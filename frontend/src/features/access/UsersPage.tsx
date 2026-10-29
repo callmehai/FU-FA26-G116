@@ -279,7 +279,7 @@ export function UsersPage() {
         }
       />
 
-      <div className="list-panel list-fill">
+      <div className="list-panel list-page list-fill">
         <div className="toolbar">
           <label className="search search-flex">
             <Icon name="search" size={16} />

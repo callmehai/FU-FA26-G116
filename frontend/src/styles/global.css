@@ -9,8 +9,9 @@
 :root {
   color-scheme: light;
 
-  --radius: 6px;
-  --radius-lg: 8px;
+  /* AI-eCabinet's corners: 8px on controls, 10px on cards and menus (ADR-0043). */
+  --radius: 8px;
+  --radius-lg: 10px;
 
   --ink: #1a2433;
   --ink-soft: #34404f;
@@ -63,7 +64,9 @@
 
   --sidebar-width: 256px;
   --sidebar-width-collapsed: 72px;
-  --control-height: 40px;
+  /* AI-eCabinet's field height: 38px, 40px on a touch screen. Buttons are 34px, 38px in a page header. */
+  --control-height: 38px;
+  --button-height: 34px;
   /* Call room (SCRUM-41): the video stage is dark like every call app, the chrome stays light. */
   --stage-bg: #12233b;
   --stage-tile: #1d3150;
@@ -183,12 +186,12 @@ code {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  height: var(--control-height);
-  padding: 0 16px;
+  height: var(--button-height);
+  padding: 0 13px;
   border: 1px solid transparent;
   border-radius: var(--radius);
   font: inherit;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -225,22 +228,33 @@ code {
 .btn-cta { font-weight: 700; }
 
 /* A button that is only its icon; the name lives in aria-label and the tooltip (data-tooltip). */
-.btn-icon { width: var(--control-height); padding: 0; }
-.btn-icon.btn-sm { width: 34px; }
-.btn-icon.btn-lg { width: 44px; }
+.btn-icon { width: var(--button-height); padding: 0; }
+.btn-icon.btn-sm { width: 28px; }
+.btn-icon.btn-lg { width: 38px; }
 
 /* Entering a meeting in progress — the same solid green as the "Đang diễn ra" state — so a live
    screen does not show three blue calls to action side by side. */
 .btn-live { background: var(--live); color: #fff; }
 .btn-live:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 86%, #000); }
+
 /* "Tham dự": a yes to the invitation, in the soft green of the "Đã xác nhận tham dự" chip it becomes. */
 .btn-accept { background: var(--chip-emerald-bg); border-color: color-mix(in srgb, var(--live) 32%, transparent); color: var(--chip-emerald-fg); }
 .btn-accept:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 16%, var(--surface)); border-color: color-mix(in srgb, var(--live) 50%, transparent); }
 
+/* The call to act now (Vào phòng họp, Bắt đầu họp): a ring in the button's own colour pings out of
+   it, so the one thing to do is found at a glance. Deliberate motion (PO, ADR-0043), sanctioned in
+   .slop.json; it stops under prefers-reduced-motion. */
+.btn-ping { --ping: var(--live); animation: cta-ping 2s ease-out .6s infinite; }
+.btn-primary.btn-ping { --ping: var(--brand); }
+@keyframes cta-ping {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ping) 55%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--ping) 0%, transparent); }
+}
+
 .btn-block { width: 100%; }
-.btn-sm { height: 34px; padding: 0 12px; font-size: 13px; }
-/* The page's main action, in a page header: 44px, the design's touch-friendly size. */
-.btn-lg { height: 44px; padding: 0 18px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12.5px; }
+/* The page's main action, in a page header: AI-eCabinet's 38px. */
+.btn-lg { height: 38px; padding: 0 16px; }
 
 .icon-button {
   display: inline-flex;
@@ -273,6 +287,14 @@ code {
 }
 
 @keyframes press { 40% { transform: scale(.95); } }
+
+/* A finger needs 40px: fields and buttons grow on a touch screen. */
+@media (pointer: coarse) {
+  :root { --control-height: 40px; --button-height: 40px; }
+  .btn-sm { height: 36px; }
+  .btn-lg { height: 40px; }
+  .btn-icon.btn-sm { width: 36px; }
+}
 .is-pressed { animation: press .18s ease-out; }
 
 .btn-primary:active:not(:disabled) { background: var(--brand-ink); box-shadow: inset 0 1px 2px #0003; }
@@ -921,7 +943,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .page-header {
   display: flex;
   flex: none;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
@@ -980,6 +1003,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* In a crowded toolbar the search gives way first, so the filters stay on one line. */
 .search-flex { flex: 1 1 200px; width: auto; max-width: 420px; }
 
+/* Filters that fold behind "Bộ lọc (n)" on a phone (AI-eCabinet); on a wider screen they sit in the row. */
+.toolbar-filters { display: contents; }
+.filters-toggle { display: none; }
+.filters-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; }
+@media (max-width: 720px) {
+  .toolbar:has(.filters-toggle) .search-flex { flex: 1 1 0; }
+  .filters-toggle { display: inline-flex; height: var(--control-height); color: var(--brand); -webkit-tap-highlight-color: transparent; }
+  .filters-toggle[aria-expanded='true'] { border-color: var(--brand-wash-line); background: var(--brand-wash); }
+  .toolbar-filters { display: none; }
+  .toolbar-filters-open { display: flex; flex: 1 1 100%; flex-wrap: wrap; gap: 8px; }
+}
+
 /* A checkbox filter on the toolbar ("Hiện cả người đã rời"). */
 .toolbar-check { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); white-space: nowrap; cursor: pointer; }
 
@@ -1014,6 +1049,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 .table-card { flex: none; overflow-x: auto; background: var(--surface); }
 
+/* AI-eCabinet's listing: the toolbar sits on the page, the table and its paging in one white card. */
+.list-page { border: none; background: none; }
+.list-page > .toolbar { padding: 0 0 12px; border: none; }
+.list-page > .table-card { border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.list-page > .table-card:has(+ .pagination) { border-bottom: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.list-page > .pagination { border: 1px solid var(--line); border-top-color: var(--line-soft); border-radius: 0 0 var(--radius-lg) var(--radius-lg); background: var(--surface); }
+
 /* The table scrolls inside the panel, under a sticky header. */
 .table-fill { flex: 1; min-height: 0; overflow: auto; }
 .table-fill .data-table th { position: sticky; top: 0; z-index: 1; }
@@ -1042,8 +1084,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .data-table th, .data-table td { padding-right: 12px; padding-left: 12px; }
 }
 .data-table tbody tr:hover { background: #f6f8fb; }
-/* A meeting in progress is found first: its row carries a green wash. */
+/* The row says where the meeting stands before anything is read: one in progress carries a green
+   wash; one called off fades and its title is struck through; one that is over goes quiet. */
 .data-table tbody tr.row-live { background: var(--live-wash); }
+.data-table tbody tr.row-cancelled td { color: var(--faint-ink); }
+.data-table tbody tr.row-cancelled .cell-title a { color: var(--label-ink); font-weight: 500; text-decoration: line-through; text-decoration-color: var(--faint-ink); }
+.data-table tbody tr.row-cancelled .level { opacity: .6; }
+.data-table tbody tr.row-ended .cell-title a { color: var(--ink-soft); font-weight: 500; }
 
 .cell-index { width: 48px; color: var(--label-ink); }
 .cell-title { font-weight: 600; }
@@ -1054,9 +1101,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
    actions column out of view at a 1200px window. */
 .data-table td.cell-title { white-space: normal; min-width: 96px; }
 /* A room name can be as long as a title, so the place wraps too. */
-.data-table :is(th, td).cell-place { white-space: normal; min-width: 96px; }
+.data-table td.cell-place { white-space: normal; min-width: 96px; }
 .cell-muted { color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
 .cell-schedule { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cell-schedule b { font-weight: 600; }
+/* The place under a meeting's title: how it meets, where. */
+.cell-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.cell-meta .icon { color: var(--label-ink); }
 .cell-empty { margin: 0; padding: 56px 16px; color: var(--muted-ink); text-align: center; }
 .cell-empty .btn { margin-top: 4px; }
 .cell-error { margin: 0 0 10px; color: var(--danger); }
@@ -1071,28 +1122,30 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The previous page stays readable but visibly stale while the next one loads. */
 .data-table-stale tbody { opacity: .55; transition: opacity .15s; }
 
-/* Meetings on a phone: the panel grows with its rows and the page scrolls, instead of filling the
-   height left under the counters and filters — on a 390px screen that left room for one and a half
-   rows. Each meeting reads as a card: title and the eye button, then the time, then state, level and
-   place on one wrapping line, as the users table does. */
+/* Meetings on a phone, as AI-eCabinet lays them out: the panel grows with its rows and the page
+   scrolls; each meeting is a card — its state and level, the title, the place, the time, and the
+   gold "Vào phòng họp" across the card while it runs. */
 @media (max-width: 720px) {
   .list-fill { flex: none; }
   .list-fill .table-fill { overflow: visible; }
   .meetings-table thead, .meetings-table td.cell-index { display: none; }
   /* While loading, one bar per card stands in for the title. */
   .meetings-table .row-skeleton td:not(:nth-child(2)) { display: none; }
-  .meetings-table tbody tr:not(.row-skeleton) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 12px 16px; border-bottom: 1px solid #e9ecf1; }
+  .meetings-table tbody tr:not(.row-skeleton) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 1px solid #e9ecf1; }
   .meetings-table tbody tr:last-child { border-bottom: none; }
   .meetings-table tbody tr:not(.row-skeleton) td { padding: 0; border: none; }
-  .meetings-table td.cell-title { flex: 1 1 0; order: 1; font-weight: 600; overflow-wrap: anywhere; }
-  .meetings-table td.col-action { order: 2; padding: 0; }
-  .meetings-table td.cell-schedule { flex: 1 1 100%; order: 3; white-space: normal; }
-  .meetings-table td.cell-schedule .cell-sub { display: inline; margin-left: 6px; }
-  .meetings-table td.cell-status { order: 4; }
-  .meetings-table td.cell-level { order: 5; }
-  .meetings-table td.cell-place { order: 6; min-width: 0; }
-  .meetings-table td.cell-place .cell-sub { display: inline; margin-left: 4px; }
-  .meetings-table td.cell-place .cell-sub::before { content: '· '; }
+  .meetings-table td.cell-status { order: 1; }
+  .meetings-table td.cell-level { order: 2; }
+  .meetings-table td.cell-place { order: 3; min-width: 0; }
+  .meetings-table td.cell-place::before { content: '· '; }
+  .meetings-table td.cell-title { flex: 1 1 100%; order: 4; overflow-wrap: anywhere; }
+  .meetings-table td.cell-schedule { flex: 1 1 100%; order: 5; white-space: normal; }
+  .meetings-table td.cell-schedule .cell-sub { display: inline; margin-left: 8px; }
+  .meetings-table td.col-action { order: 6; margin-left: auto; }
+  .meetings-table td.col-action:has(.btn-live) { flex: 1 1 100%; }
+  .meetings-table .btn-live { width: 100%; height: 40px; }
+  .meetings-table td.col-action:has(.icon-button) { position: absolute; top: 8px; right: 8px; }
+  .meetings-table tbody tr:not(.row-skeleton) { position: relative; }
 }
 .empty-title { margin: 0 0 12px; color: var(--ink); font-weight: 600; }
 .cell-empty .field-hint { margin-top: 4px; }
@@ -1240,14 +1293,17 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   align-items: center;
   gap: 6px;
   height: 24px;
-  color: var(--ink);
-  font-weight: 500;
+  color: var(--status-icon, var(--ink));
+  font-weight: 600;
   white-space: nowrap;
 }
-/* The icon carries the tone; the text stays ink so every state reads at full contrast. */
+/* Icon and text both take the tone, so a state reads at a glance without a chip around it; the
+   chip-foreground shades keep the text at 4.5:1 on white. What is over fades back: ended is grey,
+   cancelled lighter still. */
 .status > svg { flex: none; color: var(--status-icon); }
 .status-slate { --status-icon: var(--chip-slate-fg); }
-.status-ended { --status-icon: var(--label-ink); color: var(--label-ink); }
+.status-ended { --status-icon: var(--label-ink); font-weight: 500; }
+.status-cancelled { --status-icon: var(--faint-ink); }
 .status-amber { --status-icon: var(--chip-amber-fg); }
 .status-red { --status-icon: var(--chip-red-fg); }
 .status-emerald { --status-icon: var(--chip-emerald-fg); }
@@ -1338,9 +1394,33 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .detail-skeleton-title { width: min(520px, 70%); height: 28px; }
 .detail-skeleton-facts { width: min(360px, 50%); height: 14px; }
 .detail-skeleton-tab { display: flex; align-items: center; height: 46px; padding: 0 14px; }
+/* The overview (MeetingDetailPage Overview; .overview is the calendar's quick view): one grid of
+   label-value pairs, two pairs to a row so both sides line up, no rules between rows. Each pair's
+   wrapper is display: contents, so its label and value are the grid's own cells. */
+.record-overview { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr); gap: 24px 24px; align-items: baseline; margin: 0; padding: 28px 28px 30px; }
+.record-fact { display: contents; }
+.record-fact dt { color: var(--label-ink); font-size: 13.5px; }
+.record-fact dd { margin: 0; color: var(--ink); font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+.record-fact dd .nowrap { white-space: nowrap; }
+.record-fact dd .nowrap:not(:last-child)::after { content: ' '; white-space: normal; }
+.record-fact-left > dt { grid-column: 1; grid-row: inherit; }
+.record-fact-left > dd { grid-column: 2; grid-row: inherit; }
+.record-fact-right > dt { grid-column: 3; grid-row: inherit; padding-left: 24px; }
+.record-fact-right > dd { grid-column: 4; grid-row: inherit; }
+.record-fact-wide > dt { grid-column: 1; grid-row: inherit; padding-top: 10px; }
+.record-fact-wide > dd { grid-column: 2 / -1; grid-row: inherit; padding-top: 10px; font-weight: 400; }
+.detail-skeleton-fact .skeleton:first-child { width: 72px; height: 10px; }
+.detail-skeleton-fact .skeleton:last-child { width: 70%; height: 14px; }
+/* Narrow: one column of pairs, the right side after the left. */
+@media (max-width: 1100px) {
+  .record-overview { grid-template-columns: max-content minmax(0, 1fr); gap: 18px 16px; padding: 20px; }
+  .record-overview > .record-fact > * { grid-row: auto !important; grid-column: auto; padding-left: 0; }
+  .record-fact-wide > dd { grid-column: auto; }
+}
 .detail-skeleton-field { gap: 10px; }
 .detail-skeleton-field .skeleton:first-child { width: 40%; height: 10px; }
 .detail-skeleton-field .skeleton:last-child { width: 70%; height: 16px; }
+
 .detail-skeleton-aside { display: flex; flex-direction: column; gap: 14px; }
 .detail-skeleton-aside .skeleton:first-child { width: 50%; height: 16px; }
 
@@ -1494,18 +1574,19 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 
 /* ---------- Segmented control (components/SegmentedControl.tsx) ----------
-   Native radios with the dots hidden, drawn as one bordered control: the selected option takes the
-   brand wash and brand text — the design's "Đang chọn" state. Same height as every other control. */
+   Native radios with the dots hidden, drawn as AI-eCabinet's segmented control: a bordered track,
+   the selected option a solid brand block inside it. Same height as every other control. */
 .segmented {
   display: flex;
+  gap: 2px;
   height: var(--control-height);
+  padding: 3px;
   overflow: hidden;
   border: 1px solid var(--control-line);
   border-radius: var(--radius);
   background: var(--surface);
 }
 .segmented-option { position: relative; display: flex; flex: 1; min-width: 0; }
-.segmented-option + .segmented-option { border-left: 1px solid var(--control-line); }
 .segmented-option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 .segmented-option > span {
   display: flex;
@@ -1513,14 +1594,15 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   align-items: center;
   justify-content: center;
   padding: 0 10px;
+  border-radius: 6px;
   color: var(--ink);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   white-space: nowrap;
   transition: background-color .15s, color .15s;
 }
 .segmented-option:hover > span { background: var(--surface-alt); }
-.segmented-option input:checked + span { background: var(--brand-wash); color: var(--brand); font-weight: 700; }
+.segmented-option input:checked + span { background: var(--brand); color: #fff; font-weight: 600; }
 .segmented-option input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: -2px; }
 .segmented-option input:disabled + span { opacity: .5; cursor: not-allowed; }
 .segmented-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -1578,13 +1660,89 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* A whole form: wider, its body scrolls between the fixed head and the pinned actions. */
 .dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
 .dialog-lg .dialog-body { flex: 1; min-height: 0; }
+/* The meeting form, AI-eCabinet's two columns: what and when on the left, how on a grey panel. */
+.dialog-xl { width: min(1040px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
+.dialog-xl .dialog-body { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.dialog-xl .meeting-form { flex: 1; }
+.dialog-foot-note { flex: 1; align-self: center; margin: 0; color: var(--muted-ink); font-size: 13px; }
 @media (max-width: 640px) {
+  .dialog-foot-note { display: none; }
+  .dialog-xl { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; }
+  .dialog-xl .dialog-foot .btn { flex: 1; height: 44px; }
   .dialog-lg { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; }
   .dialog-lg .dialog-foot .btn { flex: 1; height: 44px; }
 }
 
 /* The meeting form's sections, as AI-eCabinet groups them: a small caps heading, a divider between. */
 .meeting-form { display: flex; flex-direction: column; gap: 20px; }
+.meeting-form-cols { display: grid; flex: 1; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; }
+.meeting-form-main, .meeting-form-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+/* Both columns run the dialog's height: the grey panel down to the footer, the people list taking
+   what the left column has left. */
+.meeting-form-side { padding: 18px; border-radius: var(--radius-lg); background: var(--surface-alt); }
+.meeting-form-main > [data-field='participants'] { flex: 1; }
+.meeting-form-main textarea { min-height: 72px; resize: vertical; }
+
+/* Mức độ mật: one row per level with what it changes; the chosen one takes the brand edge. */
+.level-choices { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: none; }
+.level-choices > legend { margin-bottom: 8px; padding: 0; font-size: 14px; font-weight: 500; }
+.level-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+}
+.level-choice:hover { border-color: var(--brand-wash-line); }
+.level-choice:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
+.level-choice:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.level-choice:has(input:disabled) { cursor: not-allowed; opacity: .6; }
+.level-choice input { flex: none; width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--brand); }
+.level-choice-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.level-choice-text b { font-weight: 600; }
+.level-choice-text small { color: var(--muted-ink); font-size: 12.5px; line-height: 1.4; }
+.meeting-form-main .span-2 { grid-column: auto; }
+.field-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 14px; font-weight: 500; line-height: 1; }
+.form-time { min-width: 0; margin: 0; padding: 0; border: none; }
+.form-time > span { font-size: 14px; font-weight: 500; line-height: 1; }
+.form-time-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
+.form-time-row .field { gap: 0; }
+.form-time-dash { color: var(--muted-ink); }
+/* "Nhiều ngày": a start row and an end row, each a day and a time, labelled on the left. */
+.form-time-days { display: grid; grid-template-columns: max-content minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; gap: 8px 10px; }
+.form-time-days .field { gap: 0; }
+.form-time-label { color: var(--muted-ink); font-size: 13px; }
+.form-length-note { align-self: center; margin-left: 4px; color: var(--muted-ink); font-size: 13px; }
+.form-lengths { display: flex; flex-wrap: wrap; gap: 6px; }
+/* A quick choice under a field ("1 giờ"): a small toggle, solid while it is what the field holds. */
+.chip-toggle {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.chip-toggle:hover:not(:disabled, [aria-pressed='true']) { background: var(--surface-alt); }
+.chip-toggle[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
+.chip-toggle:disabled { opacity: .5; cursor: not-allowed; }
+@media (pointer: coarse) { .chip-toggle { height: 36px; } }
+@media (max-width: 760px) {
+  .meeting-form-cols { grid-template-columns: minmax(0, 1fr); }
+  .meeting-form-main > [data-field='participants'] { flex: none; }
+}
+/* A phone has no room for the day and both times on one line: the day takes its own. */
+@media (max-width: 480px) {
+  .form-time-row { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .form-time-row > [data-field='date'] { grid-column: 1 / -1; }
+}
 .form-section { display: flex; flex-direction: column; gap: 14px; }
 .form-section + .form-section { padding-top: 20px; border-top: 1px solid var(--line); }
 .form-section-title { margin: 0; color: var(--ink); font-size: 14px; font-weight: 700; }
@@ -1868,6 +2026,32 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-more { position: absolute; right: 9px; z-index: 2; height: 22px; padding: 0 7px; border: 1px solid var(--brand); border-radius: 4px; background: var(--surface); color: var(--brand); font: inherit; font-size: 12px; font-weight: 700; line-height: 20px; cursor: pointer; }
 .cal-more:hover { background: var(--brand-wash); }
 .cal-event.cal-event-crowded { padding-right: 52px; }
+.cal-event-go .cal-event-title { -webkit-line-clamp: 1; }
+.cal-event-go .cal-event-place { display: none; }
+.cal-go {
+  position: absolute;
+  right: 6px;
+  left: 6px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 9px;
+  border-top: 1px solid rgb(255 255 255 / 22%);
+  background: color-mix(in srgb, var(--live) 78%, #000);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.cal-go-foot { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
+.cal-go:hover { background: color-mix(in srgb, var(--live) 64%, #000); }
+.cal-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.cal-go .icon { margin-left: auto; animation: nudge 2s ease-in-out infinite; }
+@keyframes nudge {
+  0%, 60%, 100% { transform: none; }
+  75% { transform: translateX(3px); }
+}
 .cal-event-crowded .cal-event-time { overflow: hidden; }
 .calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 
@@ -2159,14 +2343,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   box-shadow: var(--shadow);
   list-style: none;
 }
-.roster-option { padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.roster-option { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.roster-option-person { flex: 1; min-width: 0; }
+/* Inside .search, whose own icon is absolutely placed: this one stays in the row. */
+.roster-option > .icon { position: static; flex: none; color: var(--brand); transform: none; }
 .roster-option-active { background: var(--brand-wash); }
 .roster-option .avatar, .roster-row .avatar { width: 32px; height: 32px; font-size: 12px; }
 .roster-menu-note { padding: 10px 8px; color: var(--muted-ink); font-size: 14px; }
 .roster-menu-error { color: var(--danger-ink); }
 
-.roster-list { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
-.roster-row { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
+/* The picked list keeps its height and scrolls (AI-eCabinet), about four people, so the dialog itself does not scroll. */
+.roster-list { display: flex; flex-direction: column; max-height: 13rem; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
+.roster-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
 .roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
 .roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
 .roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }

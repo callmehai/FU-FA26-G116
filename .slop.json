@@ -4,6 +4,8 @@
     "C1": { "selector": ".sidebar, .room-header, .login-screen", "reason": "ADR-0012: blue gradient sidebar; the room header and login band follow it" },
     "T3": { "selector": "th, th *", "reason": "ADR-0012: uppercase 12px column headings" },
     "L3": { "selector": ".level, .level *", "reason": "ADR-0012, ADR-0028: each sensitivity level has its own icon" },
+    "M1": { "selector": ".btn-ping, .cal-go, .cal-go *", "reason": "ADR-0043: the call to act now pings (Vào phòng họp, Bắt đầu họp, the calendar's join band) — PO 30/10/2026" },
+    "S5": { "selector": ".btn-ping", "reason": "ADR-0043: the ping is a ring drawn as a box-shadow while it spreads, not a resting shadow" },
     "S2": { "selector": "[class^='prejoin'], [class*=' prejoin'], [class^='room-'], [class*=' room-']", "reason": "Call room follows Google Meet (SCRUM-39..44)" }
   }
 }
