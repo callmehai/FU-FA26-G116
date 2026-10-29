@@ -40,6 +40,10 @@ else Meeting has ended - EX-6
     DocumentService-->DocumentController: MSG247 - Document links cannot be changed after the Meeting has ended.
     DocumentController-->DocumentsTab: MSG247 - Document links cannot be changed after the Meeting has ended.
     DocumentsTab-->Actor: MSG247 - Document links cannot be changed after the Meeting has ended.
+else Meeting is cancelled - EX-8
+    DocumentService-->DocumentController: MSG349 - This meeting was cancelled and can no longer be modified.
+    DocumentController-->DocumentsTab: MSG349 - This meeting was cancelled and can no longer be modified.
+    DocumentsTab-->Actor: MSG349 - This meeting was cancelled and can no longer be modified.
 else Actor may link documents
     DocumentService->MeetingDocumentRepository: Get the selected Agenda Item of this Meeting (BR-278)
     activate MeetingDocumentRepository

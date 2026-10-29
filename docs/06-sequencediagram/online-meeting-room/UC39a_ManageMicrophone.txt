@@ -1,0 +1,23 @@
+title UC-39a - Manage Microphone
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Turn microphone on or off (button or Ctrl+D)
+activate Page
+alt The browser blocks the microphone - EX-1
+    Page-->Actor: MSG334 - The browser is blocking the microphone. Click the lock icon beside the address bar,\nchoose Allow and reload the page. You can still join the room to listen.
+else No microphone is available - EX-2
+    Page-->Actor: MSG335 - No microphone was found on this computer.
+else Another application holds the microphone - EX-3
+    Page-->Actor: MSG336 - The microphone is being used by another application (Zoom, Teams...).\nClose that application and try again.
+else Microphone can be switched
+    Page->RoomProvider: Publish or mute the actor's own microphone
+    activate RoomProvider
+    RoomProvider-->Page: Everyone in the room sees the microphone state (UC-40)
+    deactivate RoomProvider
+    Page->Page: Remember the on/off state for the next visit on this device (BR-331)
+    Page-->Actor: Button and video tile show the new state
+end
+deactivate Page

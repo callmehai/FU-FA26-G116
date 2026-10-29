@@ -38,6 +38,10 @@ else Meeting has ended - EX-1
     DocumentService-->DocumentController: MSG248 - Documents cannot be removed after the Meeting has ended.
     DocumentController-->DocumentsTab: MSG248 - Documents cannot be removed after the Meeting has ended.
     DocumentsTab-->Actor: MSG248 - Documents cannot be removed after the Meeting has ended.
+else Meeting is cancelled - EX-6
+    DocumentService-->DocumentController: MSG349 - This meeting was cancelled and can no longer be modified.
+    DocumentController-->DocumentsTab: MSG349 - This meeting was cancelled and can no longer be modified.
+    DocumentsTab-->Actor: MSG349 - This meeting was cancelled and can no longer be modified.
 else Actor may remove documents
     DocumentService->MeetingDocumentRepository: Get the selected document as currently attached to this Meeting (BR-211)
     activate MeetingDocumentRepository

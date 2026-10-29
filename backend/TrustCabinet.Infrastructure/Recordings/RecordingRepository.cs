@@ -26,7 +26,26 @@ public sealed class RecordingRepository(TrustCabinetDbContext db) : IRecordingRe
             .Where(r => r.Status != RecordingStatus.Deleted && r.RetainUntil != null && r.RetainUntil < now)
             .OrderBy(r => r.RetainUntil).Select(r => r.Id).Take(take).ToListAsync(ct);
 
+    public async Task<Recording?> FindRoomRecordingAsync(Guid meetingId, bool forUpdate, CancellationToken ct)
+    {
+        var id = await db.Recordings.AsNoTracking()
+            .Where(r => r.MeetingId == meetingId && r.Source == RecordingSource.BrowserCapture
+                && r.Status == RecordingStatus.Available && r.ContentType == "audio/wav" && r.Takes != null)
+            .OrderByDescending(r => r.CreatedAt).ThenByDescending(r => r.Id).Select(r => (Guid?)r.Id).FirstOrDefaultAsync(ct);
+        if (id is null) return null;
+        var recording = await FindAsync(id.Value, forUpdate, ct);
+        // Erased between the two reads: there is nothing to append to.
+        return recording is { Status: RecordingStatus.Available } ? recording : null;
+    }
+
+    public async Task<IReadOnlyList<Guid>> ListIdleTakesAsync(DateTimeOffset before, int take, CancellationToken ct)
+        => await db.Recordings.AsNoTracking()
+            .Where(r => r.Source == RecordingSource.BrowserCapture && r.Status == RecordingStatus.Pending && r.UpdatedAt < before)
+            .OrderBy(r => r.UpdatedAt).Select(r => r.Id).Take(take).ToListAsync(ct);
+
     public void Add(Recording recording) => db.Recordings.Add(recording);
+
+    public void Remove(Recording recording) => db.Recordings.Remove(recording);
 
     public Task DeleteTranscriptAsync(Guid recordingId, CancellationToken ct)
         => db.Transcripts.Where(t => t.RecordingId == recordingId).ExecuteDeleteAsync(ct);

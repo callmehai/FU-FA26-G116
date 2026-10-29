@@ -26,7 +26,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import manifest, text
+from . import manifest, punctuation, text
 
 log = logging.getLogger(__name__)
 
@@ -52,6 +52,11 @@ VAD_THRESHOLD = 0.2
 # late onsets and early offsets do not clip the edges of words.
 VAD_PAD_S = 0.1
 
+# --- Punctuation ------------------------------------------------------------------------------
+# A speaker's consecutive segments are punctuated as one passage (speech/punctuation.py), so a
+# breath in the middle of a sentence does not end it. A longer pause than this starts a new one.
+PASSAGE_MAX_GAP_S = 5.0
+
 # --- Levelling --------------------------------------------------------------------------------
 # A sliding gain lifts quiet stretches before the VAD. In a real meeting the people far from the
 # recorder (or heard through a speakerphone) were 15–20 dB below the chair; the VAD never marked
@@ -68,6 +73,18 @@ LEVEL_MAX_CUT_DB = 12.0
 # raised into something the VAD mistakes for speech. The lift fades in over the next 6 dB.
 LEVEL_FLOOR_DBFS = -60.0
 LEVEL_FADE_DB = 6.0
+# A sentence from one person's own mic (profile "clip", SCRUM-109) is lifted at most this much. Its
+# owner sits right at the mic; what is quiet there is mostly a neighbour overheard, and +30 dB would
+# lift it into a second copy of the neighbour's words (AI-eCabinet measured the same: its clip
+# profile allows 6 dB). See README, "Hiệu chỉnh".
+CLIP_MAX_GAIN_DB = 6.0
+# The VAD of the "clip" profile. The sentence was already cut by loudness in the browser, so the VAD
+# only has to keep the overheard stretches out. On synthetic per-mic meetings (eval/bleed.py, tuning
+# seeds) 0.2 / 0.35 / 0.5 / 0.65 left 38 / 36 / 35 / 33 % duplicated words after marking, with the
+# owner's own words recalled alike (0.96) and no loss for a quiet owner at -38 dBFS. 0.5 is
+# AI-eCabinet's choice; stricter gains little and risks the first syllable. SPEECH_CLIP_VAD_THRESHOLD.
+CLIP_VAD_THRESHOLD = 0.5
+PROFILES = ("room", "clip")
 
 # --- Diarization -------------------------------------------------------------------------------
 # Window and hop over each stretch of speech. On a real room recording 1.5 s windows were too
@@ -223,7 +240,28 @@ def model_ids(hashes: dict[str, str]) -> dict[str, str]:
         "asr": f"gipformer-1.5-68m-int8@{short('gipformer/encoder.int8.onnx')}",
         "embedding": f"eres2net-base-200k@{short('eres2net_base.onnx')}",
         "vad": f"silero-vad@{short('silero_vad.onnx')}",
+        "punctuation": f"vibert-capu-int8@{short(punctuation.MODEL_FILE)}",
     }
+
+
+def passages(pieces: list[tuple[float, float, str | None, np.ndarray]], raws: list[str]) -> list[list[int]]:
+    """Indices of the pieces, in time order, grouped into runs of one speaker without a long pause.
+
+    Pieces the recogniser found no words in are left out; they neither join nor split a passage.
+    """
+    groups: list[list[int]] = []
+    last_end = -math.inf
+    last_label: str | None = None
+    for index in sorted(range(len(pieces)), key=lambda i: (pieces[i][0], pieces[i][1])):
+        if not raws[index].split():
+            continue
+        start, end, label, _ = pieces[index]
+        if groups and label == last_label and start - last_end <= PASSAGE_MAX_GAP_S:
+            groups[-1].append(index)
+        else:
+            groups.append([index])
+        last_end, last_label = end, label
+    return groups
 
 
 def level(samples: np.ndarray, window_s: float = LEVEL_WINDOW_S, target_db: float = LEVEL_TARGET_DBFS,
@@ -409,19 +447,36 @@ class Engine:
         self._vad_config.silero_vad.max_speech_duration = MAX_CHUNK_S - 2 * VAD_PAD_S - 0.5
         self._vad_config.sample_rate = SAMPLE_RATE
         self._vad_config.num_threads = 1
+        self._clip_vad_config = sherpa_onnx.VadModelConfig()
+        self._clip_vad_config.silero_vad.model = self._vad_config.silero_vad.model
+        self._clip_vad_config.silero_vad.threshold = float(
+            os.environ.get("SPEECH_CLIP_VAD_THRESHOLD") or CLIP_VAD_THRESHOLD)
+        self._clip_vad_config.silero_vad.min_silence_duration = 0.5
+        self._clip_vad_config.silero_vad.min_speech_duration = 0.25
+        self._clip_vad_config.silero_vad.max_speech_duration = self._vad_config.silero_vad.max_speech_duration
+        self._clip_vad_config.sample_rate = SAMPLE_RATE
+        self._clip_vad_config.num_threads = 1
+        self._clip_max_gain_db = float(os.environ.get("SPEECH_CLIP_MAX_GAIN_DB") or CLIP_MAX_GAIN_DB)
+        # SPEECH_PUNCTUATION=0 turns it off, to compare with and without; the model is still pinned.
+        self._punctuator = (
+            punctuation.Punctuator.load(root)
+            if os.environ.get("SPEECH_PUNCTUATION", "1").lower() not in ("0", "false", "off")
+            else None
+        )
         log.info(
             "models loaded in %.1fs, %d threads, embedding dim %d, cluster threshold %.2f, "
-            "min enrolment consistency %.2f",
+            "min enrolment consistency %.2f, punctuation %s",
             time.monotonic() - started, threads, self._extractor.dim, self._cluster_threshold,
-            self._min_consistency,
+            self._min_consistency, "on" if self._punctuator else "off",
         )
 
     # --- building blocks (call with the lock held) ---------------------------------------------
 
-    def _speech_segments(self, samples: np.ndarray) -> list[tuple[int, np.ndarray]]:
+    def _speech_segments(self, samples: np.ndarray, config=None) -> list[tuple[int, np.ndarray]]:
         """Voiced stretches as (start sample, samples), padded, each at most MAX_CHUNK_S long."""
-        vad = self._onnx.VoiceActivityDetector(self._vad_config, buffer_size_in_seconds=MAX_CHUNK_S * 3)
-        window = self._vad_config.silero_vad.window_size
+        config = config or self._vad_config
+        vad = self._onnx.VoiceActivityDetector(config, buffer_size_in_seconds=MAX_CHUNK_S * 3)
+        window = config.silero_vad.window_size
         found: list[tuple[int, int]] = []
 
         def drain() -> None:
@@ -447,6 +502,20 @@ class Engine:
             self._recognizer.decode_streams(streams)
             texts.extend(stream.result.text for stream in streams)
         return texts
+
+    def _readable(self, pieces: list[tuple[float, float, str | None, np.ndarray]], raws: list[str]) -> list[str]:
+        """The recogniser's raw text of each piece, punctuated and capitalised."""
+        if self._punctuator is None:
+            return [text.normalise(raw) for raw in raws]
+        out = [""] * len(pieces)
+        for indices in passages(pieces, raws):
+            lines = [" ".join(raws[i].split()).lower() for i in indices]
+            restored = punctuation.passage(lines, self._punctuator)
+            if restored == lines:  # the tagger changed the word count, or nothing at all
+                restored = [text.normalise(line) for line in lines]
+            for index, sentence in zip(indices, restored):
+                out[index] = sentence
+        return out
 
     def _embed(self, samples: np.ndarray) -> np.ndarray:
         stream = self._extractor.create_stream()
@@ -535,11 +604,11 @@ class Engine:
     # --- operations ------------------------------------------------------------------------------
 
     def transcribe_file(self, path: str | os.PathLike[str], diarize: bool = True,
-                        speakers: int | None = None) -> dict:
+                        speakers: int | None = None, profile: str = "room") -> dict:
         samples = decode(path)
         with self._lock:
             started = time.monotonic()
-            result = self._transcribe(samples, diarize, speakers)
+            result = self._transcribe(samples, diarize, speakers, profile)
             elapsed = time.monotonic() - started
         audio_s = samples.size / SAMPLE_RATE
         log.info(
@@ -549,9 +618,11 @@ class Engine:
         )
         return result
 
-    def _transcribe(self, samples: np.ndarray, diarize: bool, speakers: int | None) -> dict:
-        samples = level(samples)
-        regions = self._speech_segments(samples)
+    def _transcribe(self, samples: np.ndarray, diarize: bool, speakers: int | None, profile: str = "room") -> dict:
+        raw = samples
+        clip = profile == "clip"
+        samples = level(samples, max_gain_db=self._clip_max_gain_db if clip else LEVEL_MAX_GAIN_DB)
+        regions = self._speech_segments(samples, self._clip_vad_config if clip else None)
         pieces: list[tuple[float, float, str | None, np.ndarray]] = []
         turns_by_label: dict[str, list[np.ndarray]] = defaultdict(list)
         if diarize:
@@ -569,16 +640,20 @@ class Engine:
                 begin = offset / SAMPLE_RATE
                 pieces.append((begin, begin + part.size / SAMPLE_RATE, None, part))
 
-        texts = self._transcribe_pieces([piece[3] for piece in pieces])
+        texts = self._readable(pieces, self._transcribe_pieces([piece[3] for piece in pieces]))
         segments = []
-        for (start, end, label, _), raw in zip(pieces, texts):
-            sentence = text.normalise(raw)
+        for (start, end, label, part), sentence in zip(pieces, texts):
             if sentence:
+                first = round(start * SAMPLE_RATE)
+                # As loud as it reached the mic, before levelling: what tells a speaker's own mic from
+                # a neighbour's that overheard them (SCRUM-109).
+                loudness = rms_dbfs(raw[first : first + part.size])
                 segments.append({
                     "startMs": round(start * 1000),
                     "endMs": round(end * 1000),
                     "speaker": label,
                     "text": sentence,
+                    "levelDbfs": None if loudness is None else round(loudness, 1),
                 })
         segments.sort(key=lambda segment: (segment["startMs"], segment["endMs"]))
 

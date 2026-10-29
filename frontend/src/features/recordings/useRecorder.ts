@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { levelDb } from '../speech/clipCutter'
 
 /**
  * Records the microphone in the browser (SCRUM-29: "ghi trực tiếp từ trình duyệt, có nút tạm dừng
  * và tiếp tục"). Chunks are collected every second, so a tab that crashes mid-meeting loses at most
- * that second rather than the whole take, and switching tabs does not stop the recorder.
+ * that second rather than the whole take. The meeting page holds it, so moving between its tabs does
+ * not stop it.
  */
 
 export type RecorderState =
@@ -50,10 +52,48 @@ async function openMic(): Promise<RecordingInput> {
   return { stream, release: () => stream.getTracks().forEach((track) => track.stop()) }
 }
 
+/** How loud the room is, 0–1, about ten times a second; on the same scale as the per-mic meter. */
+function watchLevel(stream: MediaStream, onLevel: (level: number) => void) {
+  const context = new AudioContext()
+  const analyser = context.createAnalyser()
+  analyser.fftSize = 2048
+  context.createMediaStreamSource(stream).connect(analyser)
+  const frame = new Float32Array(analyser.fftSize)
+  let frameId = 0
+  let shownAt = 0
+  const tick = (now: number) => {
+    if (now - shownAt >= 100) {
+      shownAt = now
+      analyser.getFloatTimeDomainData(frame)
+      onLevel(Math.max(0, Math.min(1, (levelDb(frame) + 60) / 50)))
+    }
+    frameId = requestAnimationFrame(tick)
+  }
+  frameId = requestAnimationFrame(tick)
+  void context.resume()
+  return () => {
+    cancelAnimationFrame(frameId)
+    void context.close()
+  }
+}
+
+/** What was recorded, as one file. */
+function takeOf(chunks: Blob[], mimeType: string, durationMs: number): RecordedTake {
+  const type = mimeType || 'audio/webm'
+  return {
+    blob: new Blob(chunks, { type }),
+    durationMs,
+    extension: type.startsWith('audio/mp4') ? 'm4a' : type.startsWith('audio/ogg') ? 'ogg' : 'webm',
+  }
+}
+
 export type Recorder = ReturnType<typeof useRecorder>
 
-export function useRecorder() {
+/** `onLeft` keeps the take when the screen holding the recorder goes away mid-recording. */
+export function useRecorder(onLeft?: (take: RecordedTake) => void) {
   const [state, setState] = useState<RecorderState>({ kind: 'idle' })
+  const [level, setLevel] = useState(0)
+  const meter = useRef<(() => void) | null>(null)
   const recorder = useRef<MediaRecorder | null>(null)
   const input = useRef<RecordingInput | null>(null)
   const chunks = useRef<Blob[]>([])
@@ -76,14 +116,36 @@ export function useRecorder() {
   }, [state.kind])
 
   const release = useCallback(() => {
+    meter.current?.()
+    meter.current = null
+    setLevel(0)
     input.current?.release()
     input.current = null
     recorder.current = null
     resumedAt.current = null
   }, [])
 
-  // Leaving the screen mid-recording must not leave the microphone on.
-  useEffect(() => release, [release])
+  const left = useRef(onLeft)
+  useLayoutEffect(() => {
+    left.current = onLeft
+  })
+
+  // Leaving the screen mid-recording must not leave the microphone on, nor lose the meeting: what was recorded so
+  // far goes to `onLeft` once the recorder has handed over its last second.
+  useEffect(
+    () => () => {
+      const current = recorder.current
+      const keep = left.current
+      if (current && current.state !== 'inactive' && keep) {
+        const durationMs = elapsed()
+        const parts = chunks.current
+        current.onstop = () => keep(takeOf(parts, current.mimeType, durationMs))
+        current.stop()
+      }
+      release()
+    },
+    [release],
+  )
 
   /** `open` picks the sound: the microphone unless told otherwise (the call room records the whole call). */
   const start = useCallback(
@@ -109,6 +171,7 @@ export function useRecorder() {
         }
         next.start(1000)
         recorder.current = next
+        meter.current = watchLevel(input.current.stream, setLevel)
         activeMs.current = 0
         resumedAt.current = performance.now()
         setState({ kind: 'recording', elapsedMs: 0 })
@@ -146,16 +209,11 @@ export function useRecorder() {
         }
         const durationMs = elapsed()
         current.onstop = () => {
-          const type = current.mimeType || 'audio/webm'
-          const blob = new Blob(chunks.current, { type })
+          const take = takeOf(chunks.current, current.mimeType, durationMs)
           chunks.current = []
           release()
           setState({ kind: 'idle' })
-          resolve({
-            blob,
-            durationMs,
-            extension: type.startsWith('audio/mp4') ? 'm4a' : type.startsWith('audio/ogg') ? 'ogg' : 'webm',
-          })
+          resolve(take)
         }
         current.stop()
       }),
@@ -187,5 +245,17 @@ export function useRecorder() {
   /** The take's length right now, for timers set in effects and handlers (not for rendering — use state). */
   const elapsedMs = useCallback(() => elapsed(), [])
 
-  return { state, active, start, pause, resume, stop, discard, elapsedMs, reset: () => setState({ kind: 'idle' }) }
+  return {
+    state,
+    active,
+    /** 0–1 while recording, for a meter; nothing while paused. */
+    level: state.kind === 'recording' ? level : 0,
+    start,
+    pause,
+    resume,
+    stop,
+    discard,
+    elapsedMs,
+    reset: () => setState({ kind: 'idle' }),
+  }
 }

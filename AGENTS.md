@@ -35,9 +35,9 @@ scan for, with the rest in tooltips, and [sloplint](.claude/skills/sloplint/SKIL
 (phòng chống AI slop) for catching the generated look — gradients, glows, endless motion, KPI
 tiles, eyebrows, side stripes and the other tells catalogued from published research and the big
 design systems. Claude Code loads them as skills; any other agent reads the files directly.
-**Skill location:** the five project skills live in `.claude/skills/` (canonical — Claude Code loads
+**Skill location:** the project skills live in `.claude/skills/` (canonical — Claude Code loads
 them) and are mirrored verbatim into `.agents/skills/`, which other agents load from; edit the
-canonical copy and mirror it in the same change. `.agents/skills/` additionally holds the two
+canonical copy and mirror it in the same change (`SkillMirrorTests` fails CI otherwise). `.agents/skills/` additionally holds the two
 third-party skills, drawio-skill and ui-ux, which exist nowhere else.
 
 **sloplint in this repo.** The skill is [sloplint](https://github.com/callmehai/sloplint) `v0.3.0`,
@@ -147,6 +147,8 @@ CI runs all four on every pull request, limited to what the PR touches — see
 runs just the backend tests that read those files; one that only changes README or `deploy/` skips
 both jobs. A new file the backend build or a test reads from outside `backend/` and `tests/` needs
 its path added to the `changes` job, or CI will skip the tests that should catch it.
+A PR that changes `workers/speech/` also runs the speech worker's Python unit tests
+(`python -m unittest discover -s workers/speech/tests`, numpy only).
 Keep it green; fix the branch rather than disabling a step.
 
 **CI builds the backend with `-warnaserror`**, so a compiler or analyzer warning fails the pull
@@ -265,6 +267,12 @@ review files under `docs/`, load context in this order before deciding the scope
    READMEs for areas the task does not touch.
 4. A directory README is a map of scope, the canonical source, and how source files relate to
    exported files. Do not copy the content of those standards into the README.
+5. **Generated report / extract files are not editable.** If the path is a Report Markdown under
+   `docs/08-reports/` (`Report-*.md`), or a Report-3 extract under `docs/01-requirements/`
+   (`05-use-case-specifications.md`, `06-business-rules.md`), stop writing to that file. Read
+   [docs/08-reports/README.md](docs/08-reports/README.md), edit the DOCX in
+   `docs/08-reports/source/`, then regenerate with `scripts/sync_reports.py`. Do not open the
+   snapshot and "fix the wording" there — the next sync overwrites it.
 
 Every directory under `docs/` must have a `README.md`. This lets an agent start from the repository
 context and follow the path to the files it will change.
@@ -278,9 +286,20 @@ When a change affects the API contract, a technical decision or the scope, updat
   [frontend/src/pages/scopeData.ts](frontend/src/pages/scopeData.ts) (the landing page reads it).
 - New or changed endpoint → update [docs/03-api/](docs/03-api/).
 
-**Reports** live in the repo and are published outward: edit the DOCX in `docs/08-reports/source/`,
-regenerate the Markdown snapshot (`scripts/sync_reports.py`), and push to Drive only when asked
-(`scripts/push_reports.py`). Drive is never the source — nothing reads reports back from it.
+**Reports — hard rule (agents keep getting this wrong).** The Markdown under `docs/08-reports/`
+(`Report-1_….md`, `Report-2_….md`, `Report-3_….md`) and the extracts
+`docs/01-requirements/05-use-case-specifications.md` /
+`docs/01-requirements/06-business-rules.md` are **generated snapshots**, not sources. Never edit
+them by hand, even for a one-line fix.
+
+1. Edit the DOCX in `docs/08-reports/source/` (that folder is the only local source).
+2. Regenerate: `python scripts/sync_reports.py --source docs/08-reports/source/<file>.docx --report <n>`
+   (Report 3 also refreshes the requirement extracts and `docs/uc-map.html` in the same run).
+3. Push to Drive only when asked: `scripts/push_reports.py`. Drive is never the source — nothing
+   reads reports back from it.
+
+Full workflow, Drive links and DOCX preservation rules:
+[docs/08-reports/README.md](docs/08-reports/README.md).
 
 **BA settles the requirement docs last, not first.** BE writes the basic UC Specification and
 Sequence Diagram, then implements; BE and FE change whatever the Use Case needs and note each change

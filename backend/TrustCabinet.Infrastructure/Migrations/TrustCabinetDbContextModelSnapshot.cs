@@ -631,14 +631,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("cancelled_from_status");
 
-                    b.Property<string>("CaptureMode")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasDefaultValue("PerMic")
-                        .HasColumnName("capture_mode");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -1657,6 +1649,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("storage_path");
 
+                    b.Property<string>("Takes")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("takes");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -1672,6 +1668,11 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("RetainUntil")
                         .HasDatabaseName("ix_recordings_retain_until");
+
+                    b.HasIndex(new[] { "MeetingId" }, "ix_recordings_one_open_take")
+                        .IsUnique()
+                        .HasDatabaseName("ix_recordings_one_open_take")
+                        .HasFilter("source = 'BrowserCapture' AND status = 'Pending'");
 
                     b.ToTable("recordings", (string)null);
                 });
@@ -1804,6 +1805,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("AudioContentType")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("audio_content_type");
+
+                    b.Property<string>("AudioPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("audio_path");
+
                     b.Property<Guid>("ClientClipId")
                         .HasColumnType("uuid")
                         .HasColumnName("client_clip_id");
@@ -1824,9 +1835,30 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("edited_by_id");
 
+                    b.Property<DateTimeOffset?>("ExcludedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("excluded_at");
+
+                    b.Property<Guid?>("ExcludedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("excluded_by_id");
+
+                    b.Property<string>("ExclusionReason")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("exclusion_reason");
+
                     b.Property<Guid>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
+
+                    b.Property<byte[]>("Peaks")
+                        .HasColumnType("bytea")
+                        .HasColumnName("peaks");
+
+                    b.Property<string>("Segments")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("segments");
 
                     b.Property<Guid>("SpeakerId")
                         .HasColumnType("uuid")
@@ -1851,6 +1883,9 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("EditedById")
                         .HasDatabaseName("ix_speech_clips_edited_by_id");
+
+                    b.HasIndex("ExcludedById")
+                        .HasDatabaseName("ix_speech_clips_excluded_by_id");
 
                     b.HasIndex("SpeakerId")
                         .HasDatabaseName("ix_speech_clips_speaker_id");
@@ -2269,6 +2304,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<byte[]>("AudioCiphertext")
+                        .HasColumnType("bytea")
+                        .HasColumnName("audio_ciphertext");
+
+                    b.Property<string>("AudioContentType")
+                        .HasColumnType("text")
+                        .HasColumnName("audio_content_type");
 
                     b.Property<byte[]>("Ciphertext")
                         .IsRequired()
@@ -3172,6 +3215,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_speech_clips_users_edited_by_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "ExcludedBy")
+                        .WithMany()
+                        .HasForeignKey("ExcludedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_speech_clips_users_excluded_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithMany()
                         .HasForeignKey("MeetingId")
@@ -3187,6 +3236,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_speech_clips_users_speaker_id");
 
                     b.Navigation("EditedBy");
+
+                    b.Navigation("ExcludedBy");
 
                     b.Navigation("Meeting");
 

@@ -12,6 +12,11 @@ Số Feature theo [danh mục UC](../../01-requirements/00-master-use-case-inven
 SCRUM-110, 111, 112 đã gán Lộc. SCRUM-26 chờ PR sửa `10-diem-danh.md` (mục 3.4) merge rồi mới chuyển.
 Bảng bên dưới giữ trạng thái đọc lúc 27/10, cột cuối ghi việc đã làm.
 
+**Cập nhật 29/10/2026:** SCRUM-26 đã ở `In Review`. PR #186 (FE-07) đã merge; chuyển **`In Review`** SCRUM-23, 58, 110, 111, 112, 113.
+Việc còn lại lên kế hoạch ở [note 17](17-plan-sua-con-lai-sau-note-14.md).
+Cuối ngày 29/10 chuyển tiếp **`In Review`**: SCRUM-99, 69, 15, 25, 98 (note 17 lượt 1–5). Chỉ còn SCRUM-41 ở BA Final Review; việc
+ngoài phạm vi ở [note 18](18-sua-wireframe-va-viec-ngoai-pham-vi.md).
+
 Cả 18 ticket dưới đây đang ở **BA Final Review** (đọc ngày 28/10/2026). Việc của BA ở trạng thái này: đối chiếu code đã
 merge với UC, BR, MSG, sequence, class diagram, ERD; sửa tài liệu; sau đó chuyển ticket sang kiểm thử khi không còn lệch.
 
@@ -80,24 +85,18 @@ SCRUM-110 `10291`, SCRUM-111 `10292`, SCRUM-112 `10293`, SCRUM-23 `10294`; PR #1
   Confidential/Secret, `MSG158` khi mở tệp lỗi, `MSG176` khi tải danh sách lỗi, `MSG175` khi tài khoản còn hoạt động; BR-333–335;
   ADR-0035.
 
-**Còn lại cho BA Final Review:**
+**Đã làm trên nhánh `docs/ba-final-review-fe-07` (28/10/2026):**
 
-1. Report 3 chưa có `MSG347` (tên tài liệu không hợp lệ, UC-71b), `MSG348` (tên thư mục quá 400 ký tự, UC-72a/b; góp ý quá 4.000
-   ký tự, UC-35), `MSG349` (cuộc họp đã huỷ, UC-33a–d): thêm EX tương ứng. Catalogue đã ghi "chờ BA bổ sung đặc tả".
-2. UC-34b bước 1: thêm câu theo màn #174 — màn Người dùng có nút "Xem kho tài liệu"; tài khoản đang hoạt động thì nút vẫn hiện
-   nhưng **tắt kèm tooltip lý do** (giống nút đặt lại mật khẩu). Cũng ghi: không có tìm kiếm hay lọc như kho của chính mình;
-   tài khoản được kích hoạt lại khi đang xem → `MSG175` và về màn Người dùng; thư mục không còn hoặc thuộc cuộc họp
-   Confidential/Secret → về gốc kho đó; không thêm mã thông báo mới.
-3. **Câu hỏi PO còn mở (SCRUM-111, Lộc):** Quản trị viên có thấy tệp và `meetingId` của cuộc họp mức **Thường** mà Quản trị viên
-   không tham gia hay không. Chưa có câu trả lời.
-4. Lệch sequence và class diagram so với code (PROPOSED → as-built): đổi tên và chuyển là hai `PUT` riêng (không `PATCH`), không
-   có `GET /api/folders`; UC-33b là ba endpoint theo nguồn; UC-33b AF-1 kiểm quyền trước khi đọc tệp; `MSG170` khi không chọn tài
-   liệu nào; `GET /api/documents/{id}/content` mở tệp trong kho (chưa UC nào có bước này); `PUT …/agenda/{itemId}` vẫn nhận
-   `documentIds`; event `documentsChanged`.
-5. Cuộc họp đã huỷ: thêm EX `MSG349` cho UC-33a–d (xem 3.1).
-6. Permission Matrix thêm quyền đọc kho tài khoản khoá. Các dòng EX của UC-33a/33b/36 vẫn ghi "submission" (đã định nghĩa mỗi tệp
-   là một submission ở bước 1), chưa viết lại từng câu.
-7. Mở file draw.io gộp bằng giao diện để kiểm tra bốn tab mới; ảnh `drawio-png` xuất ở scale thấp hơn 2 (xem `drawio-png/README.md`).
+1. Report 3 DOCX: thêm EX `MSG347` (UC-71b), `MSG348` (UC-72a/b, UC-35), `MSG349` (UC-33a–d, UC-35); cập nhật UC-34b theo màn PR #174 (nút "Xem kho tài liệu" tắt + tooltip khi tài khoản còn hoạt động; không tìm kiếm/lọc; tài khoản kích hoạt lại → `MSG175` về màn Người dùng; thư mục không còn hoặc Confidential/Secret → về gốc kho); Permission Matrix thêm quyền đọc kho tài khoản khoá (`Restricted ²⁰`); Change Log và bảng System Messages. Đã chạy `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3` → snapshot MD + `05-use-case-specifications.md`.
+2. Sequence source `.txt` as-built (Controller/Service, không Endpoints/HTTP/SignalR; EX `MSG347`/`MSG348`/`MSG349`) cho UC-33a×2, UC-33b–d, UC-35, UC-71b, UC-72a/b; xuất lại PNG SequenceDiagram.org cạnh `.txt`. Quy chuẩn Naming bổ sung trong `docs/06-sequencediagram/README.md`.
+3. Tab draw.io + `drawio-png/` dựng lại bằng `scripts/txt_to_sequence_drawio_png.py` (style agenda UC-23a: actor/boundary/control/database, title UC, message 13px; xuất file 1 trang, không `--embed-diagram`).
+4. Class diagram FE-07 as-built (§6e): tách 3 operation gắn mục nghị sự; thêm `getDocumentContent` kho cá nhân; PNG xuất lại.
+
+**Còn lại (không chặn PR tài liệu này):**
+
+1. **Câu hỏi PO còn mở (SCRUM-111, Lộc):** Quản trị viên có thấy tệp và `meetingId` của cuộc họp mức **Thường** mà Quản trị viên không tham gia hay không. As-built hiện ẩn Confidential/Secret, vẫn hiện mức Thường — chờ PO.
+2. Chuẩn hoá câu chữ "submission" trong EX UC-33a/33b/36 (cosmetic; nghĩa đã chốt ADR-0033).
+3. Rà tab draw.io gộp bằng giao diện (khuyến nghị trước khi merge nếu leader muốn).
 
 ### 3.3 FE-05 — Chương trình nghị sự (SCRUM-25, SCRUM-98)
 
@@ -108,15 +107,18 @@ nằm ở [note 08](08-chuong-trinh-nghi-su.md).
 ### 3.4 FE-06 — Thành phần tham dự (SCRUM-20, SCRUM-26, SCRUM-97)
 
 Nguồn: tin bot 11:56 PM ngày 27/10. Tài liệu đã cập nhật ngày 24/10 (PR #136). "Không còn gì thì chuyển sang kiểm thử."
-SCRUM-26 còn `docs/03-api/10-diem-danh.md` mục 5–6 lệch Report 3. **Đã sửa 28/10:** mục 6 bỏ chip "Có mặt x/y" (Report 3, UC-31 và BR-172 ghi không hiện tổng;
+SCRUM-26 còn `docs/03-api/10-diem-danh.md` mục 5–6 lệch Report 3. **Đã sửa 28/10 (PR #180 đã merge):** mục 6 bỏ chip "Có mặt x/y" (Report 3, UC-31 và BR-172 ghi không hiện tổng;
 FE không render `totals`) và ghi biểu tượng "Điểm danh" riêng ở góc dưới bên phải của phòng họp; mục 5 (migration `AddAttendanceVersions`,
-phiên bản riêng từng người, ADR-0025) khớp Report 3 nên giữ nguyên. Chờ PR merge rồi chuyển SCRUM-26 sang `In Review`. Xem [note 04](04-scrum-26-diem-danh.md) và
+phiên bản riêng từng người, ADR-0025) khớp Report 3 nên giữ nguyên. Chuyển SCRUM-26 sang `In Review` khi không còn lệch. Xem [note 04](04-scrum-26-diem-danh.md) và
 [note 02](02-scrum-97-giao-chu-toa.md).
 
 ### 3.5 FE-08 — Phòng họp trực tuyến (SCRUM-41)
 
 Nguồn: tin bot 10:55 PM ngày 27/10. Phần mã thông báo xong ở PR #162; lệch đặc tả ghi ở comment SCRUM-41 ngày 26/10. Tài liệu
-UC-37–42, BR-322–331 nằm ở PR #147 (còn mở). Xem [note 11](11-tai-lieu-fe-phong-hop-ghi-am.md).
+UC-37–42, UC-39d, UC-78 và UC-79 (đăng ký phát biểu, SCRUM-27) nằm ở PR #147 (còn mở). **Số hiệu đã đánh lại khi gộp `main` 29/10/2026:** BR phòng họp là
+BR-323–332 và BR-336–339 (BR-322 thuộc `main`); mã FE là MSG328–MSG343 và MSG350, các mã MSG290–299 và MSG119–125 cũ không còn dùng cho phòng họp.
+Guest vào phòng chưa cài (chờ SCRUM-25); gọi 1–1 (SCRUM-40) đã bỏ khỏi Report 3. Xem [note 11](11-tai-lieu-fe-phong-hop-ghi-am.md) và
+[note phòng họp](../NOTE-phong-hop-truc-tuyen-25-10-2026.md).
 
 ### 3.6 FE-13 — Email và thông báo (SCRUM-15)
 
@@ -134,24 +136,24 @@ Nguồn: tin bot 3:10 PM ngày 27/10, PR #167, ADR-0031 (`docs/05-decisions/0031
   (4 cột `cancelled_*`, `actor_id` null). Theo [DRAWIO_EDITING_RULES.md](../../../DRAWIO_EDITING_RULES.md): sửa có chọn lọc, giữ ID.
 - **Catalogue MSG:** `MSG345` thuộc SCRUM-99; `MSG346`–`MSG349` thuộc FE-07 (trong đó `MSG349` dùng chung với SCRUM-99); mã tiếp theo
   theo catalogue. Không đặt mã mới trong PR tài liệu khi chưa cấp trong catalogue.
-- **Thứ tự xử lý đề xuất:** (1) ~~merge PR #178~~ xong; (2) ~~chuyển kiểm thử SCRUM-20, 97, 21, 22, 107~~ xong; (3) merge PR sửa
-  `10-diem-danh.md` rồi chuyển SCRUM-26; (4) FE-07 mục 3.2 theo thứ tự SCRUM-110 → 111 → 112 → 113 → 23 → 58; (5) FE-04 mục 3.1
+- **Thứ tự xử lý đề xuất:** (1) ~~merge PR #178~~ xong; (2) ~~chuyển kiểm thử SCRUM-20, 97, 21, 22, 107~~ xong; (3) ~~merge PR #180 sửa
+  `10-diem-danh.md`~~ xong, còn chuyển SCRUM-26 sang `In Review`; (4) FE-07 mục 3.2 (Report 3/MSG + sequence + class as-built trên nhánh `docs/ba-final-review-fe-07`; còn câu hỏi PO); (5) FE-04 mục 3.1
   và 2 ERD; (6) FE-13 mục 3.6; (7) FE-05 và FE-08.
 
 ## 5. Danh sách việc cần BA review còn lại (gom từ mục 3)
 
 | # | Việc | Feature | Ticket | Ghi chú |
 |---|---|---|---|---|
-| 1 | Thêm EX cho `MSG347`, `MSG348`, `MSG349` vào Report 3 | FE-07 | 110, 111, 23, 112 | UC-71b, UC-72a/b, UC-35, UC-33a–d |
-| 2 | UC-34b bước 1: nút "Xem kho tài liệu" tắt kèm lý do khi tài khoản còn hoạt động; không tìm kiếm/lọc; về gốc kho khi thư mục không còn | FE-07 | 113 | Theo màn PR #174 |
-| 3 | Hỏi PO: Quản trị viên có thấy tệp và `meetingId` của cuộc họp Thường mà họ không tham gia | FE-07 | 111 | Câu hỏi của Lộc |
-| 4 | Sequence và class diagram FE-07 từ PROPOSED sang as-built (PUT riêng, ba endpoint UC-33b, content endpoint, event) | FE-07 | 110, 111, 112 | Mục 3.2 ý 4 |
-| 5 | Permission Matrix thêm quyền đọc kho tài khoản khoá | FE-07 | 113 | Report 3 |
-| 6 | Mở file draw.io gộp bằng giao diện kiểm tra bốn tab mới | FE-07 | — | Chưa kiểm bằng giao diện |
-| 7 | BR-301, BR-302, UC-75 `MSG345`, UC-16/17 lọc "Đã huỷ", sơ đồ trạng thái | FE-04 | 99 | Mục 3.1 |
-| 8 | Đối chiếu UC-21, UC-22 với code | FE-04 | 69 | PR #175 |
-| 9 | 3 ERD drawio: 4 cột `email_messages` và 4 cột `cancelled_*`, `actor_id` null | FE-13, FE-04 | 15, 99 | `docs/13-erd/` |
-| 10 | Đối chiếu endpoint webhook Resend với Report 3 | FE-13 | 15 | `docs/03-api/07-gui-email-thu-moi.md` |
-| 11 | Đối chiếu UC-23–26, UC-77 với code; UC-33b liên quan API sửa mục nghị sự | FE-05 | 25, 98 | Mục 3.3 |
+| 1 | ~~Thêm EX cho `MSG347`, `MSG348`, `MSG349` vào Report 3~~ | FE-07 | 110, 111, 23, 112 | DOCX + sync MD xong trên nhánh `docs/ba-final-review-fe-07` |
+| 2 | ~~UC-34b bước 1: nút "Xem kho tài liệu" tắt kèm lý do; không tìm kiếm/lọc; về gốc kho khi thư mục không còn~~ | FE-07 | 113 | Report 3 đã cập nhật |
+| 3 | Hỏi PO: Quản trị viên có thấy tệp và `meetingId` của cuộc họp Thường mà họ không tham gia | FE-07 | 111 | Câu hỏi của Lộc; as-built giữ hiện Thường |
+| 4 | ~~Sequence PNG org + class diagram FE-07 as-built~~ | FE-07 | 110, 111, 112 | Xong trên nhánh `docs/ba-final-review-fe-07` |
+| 5 | ~~Permission Matrix thêm quyền đọc kho tài khoản khoá~~ | FE-07 | 113 | Report 3 đã cập nhật |
+| 6 | Mở file draw.io gộp bằng giao diện kiểm tra tab đã dựng lại | FE-07 | — | Khuyến nghị trước merge |
+| 7 | ~~BR-301, BR-302, UC-75 `MSG345`, UC-16/17 lọc "Đã huỷ", sơ đồ trạng thái~~ | FE-04 | 99 | Report 3 đã sửa 29/10 (BR-298/300/301/302, UC-75 AF-2 + EX-4, UC-17 AF-4, MSG345, từ điển dữ liệu); Report 3 không có sơ đồ trạng thái chỉnh sửa được nên bỏ qua |
+| 8 | ~~Đối chiếu UC-21, UC-22 với code~~ | FE-04 | 69 | Đã đối chiếu 29/10, không lệch (PR #175 chỉ đổi thời điểm ghi thông báo, Report 3 đã nói lỗi thông báo không huỷ việc bắt đầu) |
+| 9 | ~~3 ERD drawio: 4 cột `email_messages` và 4 cột `cancelled_*`, `actor_id` null~~ | FE-13, FE-04 | 15, 99 | Xong `muc-tieu` (sửa + xuất PNG). `chen` không có thuộc tính nên bỏ qua. `hien-tai` không sửa tay (snapshot sinh từ DB, README cấm; đang cũ nhiều chỗ) — cần sinh lại sau migration |
+| 10 | ~~Đối chiếu phần gửi email với Report 3 (chỉ nghiệp vụ, không đưa Resend/webhook vào Report 3)~~ | FE-13 | 15 | Xong 29/10: BR-300 thêm quy tắc thư huỷ chỉ gửi người đã nhận thư mời; bỏ chữ Gmail ở mô tả giao diện SMTP; không có màn hình trạng thái giao thư nên không thêm |
+| 11 | ~~Đối chiếu UC-23–26, UC-77 với code; UC-33b liên quan API sửa mục nghị sự~~ | FE-05 | 25, 98 | Xong 29/10: UC-23a–d, 24, 25, 77 khớp code; UC-26 thêm Guest (đọc), từ điển dữ liệu AgendaItem bỏ thời lượng. Form sửa mục vẫn có ô chọn tài liệu nên UC-23a/b giữ nguyên |
 | 12 | Đối chiếu mã thông báo phòng họp và lệch ghi ở comment 26/10 | FE-08 | 41 | Mục 3.5, PR #147 còn mở |
-| 13 | Chuyển SCRUM-26 sang `In Review` sau khi PR sửa `10-diem-danh.md` merge | FE-06 | 26 | Đã sửa trong note này |
+| 13 | ~~Chuyển SCRUM-26 sang `In Review` sau khi PR #180 merge~~ | FE-06 | 26 | Đã ở In Review (29/10) |

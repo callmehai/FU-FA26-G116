@@ -1,5 +1,7 @@
 # Voice ID và tách người nói — SCRUM-31, SCRUM-35, SCRUM-102, SCRUM-103
 
+> **Đổi 29/10/2026 (ADR-0042, PR #193):** giờ lưu cả bản ghi giọng mẫu mã hoá, chỉ chính chủ nghe; đồng ý lên 1.1. Xem [note 16 §2.5](16-ghi-am-voice-id-28-29-10-2026.md#25-voice-id-scrum-35-adr-0042).
+
 **Ngày ghi:** 24/10/2026
 **Nguồn:** tin nhắn agent của leader gửi Khánh
 **Khi nào sửa:** khi ticket sang **BA Final Review**

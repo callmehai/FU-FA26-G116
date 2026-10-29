@@ -17,6 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Protocol
 from urllib.parse import parse_qs, urlsplit
 
+from . import pipeline
 from .pipeline import UnreadableAudio
 
 log = logging.getLogger(__name__)
@@ -29,7 +30,8 @@ BLOCK = 1 << 20
 class Engine(Protocol):
     model_ids: dict[str, str]
 
-    def transcribe_file(self, path: str, diarize: bool = True, speakers: int | None = None) -> dict: ...
+    def transcribe_file(self, path: str, diarize: bool = True, speakers: int | None = None,
+                        profile: str = "room") -> dict: ...
 
     def embed_file(self, path: str) -> tuple[bool, dict]: ...
 
@@ -44,8 +46,8 @@ class Rejected(Exception):
         self.close = close
 
 
-def parse_transcribe_query(query: str) -> tuple[bool, int | None]:
-    """`diarize=true|false` (default true) and optional `speakers=N` (1–20)."""
+def parse_transcribe_query(query: str) -> tuple[bool, int | None, str]:
+    """`diarize=true|false` (default true), optional `speakers=N` (1–20) and `profile=room|clip` (default room)."""
     try:
         params = parse_qs(query, keep_blank_values=True, strict_parsing=bool(query))
     except ValueError as error:
@@ -61,7 +63,10 @@ def parse_transcribe_query(query: str) -> tuple[bool, int | None]:
         if not raw.isdigit() or not 1 <= int(raw) <= MAX_SPEAKERS:
             raise Rejected(400, "invalid_parameter")
         speakers = int(raw)
-    return diarize_value in ("true", "1"), speakers
+    profile = params.get("profile", ["room"])[0]
+    if profile not in pipeline.PROFILES:
+        raise Rejected(400, "invalid_parameter")
+    return diarize_value in ("true", "1"), speakers, profile
 
 
 def authorised(header: str | None, api_key: str | None) -> bool:
@@ -116,9 +121,9 @@ class Handler(BaseHTTPRequestHandler):
             if not authorised(self.headers.get("Authorization"), self.server.api_key):
                 raise Rejected(401, "unauthorized", close=True)
             if url.path == "/v1/transcribe":
-                diarize, speakers = parse_transcribe_query(url.query)
+                diarize, speakers, profile = parse_transcribe_query(url.query)
                 body_path = self._receive_body()
-                self._send(200, self.server.engine.transcribe_file(body_path, diarize, speakers))
+                self._send(200, self.server.engine.transcribe_file(body_path, diarize, speakers, profile))
             else:
                 if url.query:
                     raise Rejected(400, "invalid_parameter", close=True)

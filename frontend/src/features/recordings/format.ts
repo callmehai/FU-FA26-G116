@@ -31,3 +31,9 @@ export function probeDuration(file: Blob): Promise<number | undefined> {
     audio.src = url
   })
 }
+
+/** A place on a player, `m:ss`; minutes pass 59 (75:12) rather than turning into hours. */
+export function formatClock(ms: number) {
+  const total = Math.max(0, Math.floor(ms / 1000))
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`
+}

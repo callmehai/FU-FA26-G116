@@ -109,7 +109,7 @@ thường: EF Core hỏi bảng lịch sử migration trước khi tạo nó.
 ### Xoá sạch dữ liệu, seed lại từ đầu
 
 ```bash
-docker compose -f deploy/docker-compose.yml down -v     # -v xoá luôn database
+docker compose -f deploy/docker-compose.yml down -v     # -v xoá luôn database và file ghi âm
 docker compose -f deploy/docker-compose.yml up -d
 ```
 
@@ -341,8 +341,9 @@ mã hoá giữa các máy đăng nhập cùng tài khoản ([ADR-0036](../docs/0
 Không máy nào mở cổng ra internet. Âm thanh rời server sang máy đó nên chỉ dùng dữ liệu thử; máy đó tắt hoặc ngủ thì
 các chức năng giọng nói báo `MSG312` như chưa bật.
 
-1. **Máy chạy worker** (macOS): `brew install --cask tailscale && open -a Tailscale`, đăng nhập. Lấy IP:
-   `tailscale ip -4` (dạng `100.x.y.z`).
+1. **Máy chạy worker** (macOS): `brew install --cask tailscale-app && open -a Tailscale`, đăng nhập. Lấy IP:
+   `tailscale ip -4` (dạng `100.x.y.z`). Chưa có lệnh `tailscale` thì dùng
+   `/Applications/Tailscale.app/Contents/MacOS/Tailscale ip -4`.
 2. **Server**: cài Tailscale và đăng nhập **cùng tài khoản** (lệnh in ra một link, mở link đó trên trình duyệt):
 
    ```bash

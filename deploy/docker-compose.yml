@@ -62,15 +62,15 @@ services:
       # Khoá mã hoá vector giọng (ADR-0027). Để trống thì suy ra từ SIGNING_KEY; đặt riêng để đổi
       # SIGNING_KEY không làm hỏng giọng mẫu đã lưu.
       VoiceId__EncryptionKey: "${VOICE_ID_KEY:-}"
-    volumes:
-      # Bản ghi cuộc họp nằm trên đĩa server (RecordingOptions.StorageRoot); không có volume thì mỗi
-      # lần deploy tạo lại container là mất hết bản ghi.
-      - recordings:/app/App_Data/recordings
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    # Bản ghi cuộc họp và tiếng từng câu theo mic nằm trên đĩa của app (Recordings:StorageRoot). Không có volume thì
+    # mỗi lần deploy là mất hết file.
+    volumes:
+      - recordings:/app/App_Data/recordings
 
   postgres:
     image: postgres:17-alpine
@@ -120,7 +120,7 @@ services:
 
   speech:
     # Chỉ chạy khi deploy/.env có COMPOSE_PROFILES=speech. Workflow deploy build image trên GitHub và
-    # chỉ chép sang khi workers/speech đổi, vì image ~770 MB.
+    # chỉ chép sang khi workers/speech đổi, vì image ~950 MB.
     image: trustcabinet-speech:latest
     build:
       context: ../workers/speech

@@ -26,6 +26,8 @@ public sealed class RecordingFixture : IAsyncLifetime
     internal Factory Host = null!;
     internal const string SigningKey = "khoa-ky-chi-dung-trong-test-du-32-ky-tu";
     internal const int MaxUploadMegabytes = 1;
+    /// <summary>A small room-mic part, so a take of a few parts stays a few kilobytes.</summary>
+    internal const int RoomPartBytes = 4000;
 
     internal TrustCabinetDbContext Db() => new(new DbContextOptionsBuilder<TrustCabinetDbContext>()
         .UseNpgsql(Database.DataSource, o => o.MigrationsHistoryTable("__ef_migrations_history"))
@@ -53,6 +55,7 @@ public sealed class RecordingFixture : IAsyncLifetime
             base.ConfigureWebHost(builder);
             builder.UseSetting("Recordings:StorageRoot", fixture.StorageRoot);
             builder.UseSetting("Recordings:MaxUploadMegabytes", MaxUploadMegabytes.ToString());
+            builder.UseSetting("Recordings:RoomPartBytes", RoomPartBytes.ToString());
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<TrustCabinetDbContext>();
@@ -82,6 +85,7 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal int Calls;
         internal byte[]? LastAudio;
         internal bool? LastDiarize;
+        internal bool? LastClip;
 
         public bool IsConfigured => true;
 
@@ -93,10 +97,12 @@ public sealed class RecordingFixture : IAsyncLifetime
             => EmbedFailure is { } failure ? Task.FromException<SpeechEmbedding>(failure)
                 : Task.FromResult(new SpeechEmbedding(NextEmbedding, "eres2net-base-200k@0123456789ab", 7200));
 
-        public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, CancellationToken ct)
+        public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip,
+            CancellationToken ct)
         {
             Calls++;
             LastDiarize = diarize;
+            LastClip = clip;
             using var copy = new MemoryStream();
             await audio.CopyToAsync(copy, ct);
             LastAudio = copy.ToArray();
@@ -137,13 +143,14 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal string Url => $"/api/meetings/{MeetingId}/recordings";
     }
 
-    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress, CaptureMode capture = CaptureMode.PerMic)
+    /// <summary>A hybrid meeting by default: it is captured both ways (ADR-0040), so either kind of test can use it.</summary>
+    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress, MeetingMode mode = MeetingMode.Hybrid)
     {
         await using var db = Db();
         var users = Enumerable.Range(0, 5).Select(i => new User { FullName = $"Recording test {i}",
             Email = $"{Guid.NewGuid():N}@recording.test", PasswordHash = "test-only-non-login-hash" }).ToArray();
         db.Users.AddRange(users);
-        var meeting = new Meeting { Title = "Recording test", CreatedById = users[3].Id, Status = status, CaptureMode = capture,
+        var meeting = new Meeting { Title = "Recording test", CreatedById = users[3].Id, Status = status, Mode = mode,
             PlannedStartTime = Clock.Now, PlannedEndTime = Clock.Now.AddHours(1) };
         db.Meetings.Add(meeting);
         for (var i = 0; i < 3; i++) db.MeetingParticipants.Add(new() { MeetingId = meeting.Id, UserId = users[i].Id,

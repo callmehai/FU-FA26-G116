@@ -379,7 +379,16 @@ def main() -> int:
                 if output_dir:
                     destination = output_dir / destination.name
                 body = docx_to_markdown(path)
-                converted.append((destination, f"# {title}\n\n> Nguồn: [Tài liệu nguồn]({origin})\n\n{body}"))
+                # Banner so agents opening the snapshot see it is not the editable source.
+                banner = (
+                    f"# {title}\n\n"
+                    f"> **GENERATED — DO NOT EDIT.** Snapshot từ DOCX local. "
+                    f"Sửa [`{origin}`]({origin}) rồi chạy "
+                    f"`python scripts/sync_reports.py --source docs/08-reports/source/<tên>.docx "
+                    f"--report {number}`. Sửa tay file này sẽ mất ở lần sync sau. "
+                    f"Chi tiết: [08-reports/README.md](README.md).\n\n"
+                )
+                converted.append((destination, f"{banner}{body}"))
             for destination, content in converted:
                 write_atomic(destination, content)
                 print(f"Synced {destination}")

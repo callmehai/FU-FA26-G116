@@ -26,6 +26,13 @@ public sealed class VoiceIdOptions
     public double SuggestMargin { get; set; } = 0.1;
 
     /// <summary>
+    /// How close a second voice suggested as the same person must sound to the first: one person split in two by
+    /// diarization, not a stranger who scores well against the same sample. On the same 24 meetings, 0.7 named no
+    /// stranger (0.5 named 11% of one) and raised enrolled speech named right from 97% to 99% (workers/speech/eval).
+    /// </summary>
+    public double SameVoiceThreshold { get; set; } = 0.7;
+
+    /// <summary>
     /// The organisation that controls the voice data, named in the consent notice: consent is valid only when the person
     /// knows who that is (Luật Bảo vệ dữ liệu cá nhân 91/2025, Điều 9.2.b). Each deployment sets its own legal name.
     /// </summary>
@@ -77,5 +84,30 @@ public sealed class VoiceprintProtector : IVoiceprintProtector
         return embedding;
     }
 
+    /// <summary>The sample's recording, under the same key, bound to its owner and sample apart from the embedding.</summary>
+    public byte[] ProtectAudio(byte[] audio, Guid userId, Guid sampleId)
+    {
+        var output = new byte[NonceSize + audio.Length + TagSize];
+        var nonce = output.AsSpan(0, NonceSize);
+        RandomNumberGenerator.Fill(nonce);
+        using var aes = new AesGcm(key, TagSize);
+        aes.Encrypt(nonce, audio, output.AsSpan(NonceSize, audio.Length), output.AsSpan(NonceSize + audio.Length),
+            AudioAad(userId, sampleId));
+        return output;
+    }
+
+    public byte[] UnprotectAudio(byte[] ciphertext, Guid userId, Guid sampleId)
+    {
+        var length = ciphertext.Length - NonceSize - TagSize;
+        if (length <= 0) throw new CryptographicException("Malformed sample audio ciphertext.");
+        var plain = new byte[length];
+        using var aes = new AesGcm(key, TagSize);
+        aes.Decrypt(ciphertext.AsSpan(0, NonceSize), ciphertext.AsSpan(NonceSize, length),
+            ciphertext.AsSpan(NonceSize + length), plain, AudioAad(userId, sampleId));
+        return plain;
+    }
+
     private static byte[] Aad(Guid userId, Guid sampleId, string model) => Encoding.UTF8.GetBytes($"{userId:N}|{sampleId:N}|{model}");
+
+    private static byte[] AudioAad(Guid userId, Guid sampleId) => Encoding.UTF8.GetBytes($"{userId:N}|{sampleId:N}|audio");
 }

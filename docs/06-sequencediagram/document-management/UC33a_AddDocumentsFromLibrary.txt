@@ -39,6 +39,10 @@ else Meeting has ended - EX-6
     DocumentService-->DocumentController: MSG172 - Documents cannot be added after the Meeting has ended.
     DocumentController-->DocumentsTab: MSG172 - Documents cannot be added after the Meeting has ended.
     DocumentsTab-->Actor: MSG172 - Documents cannot be added after the Meeting has ended.
+else Meeting is cancelled - EX-10
+    DocumentService-->DocumentController: MSG349 - This meeting was cancelled and can no longer be modified.
+    DocumentController-->DocumentsTab: MSG349 - This meeting was cancelled and can no longer be modified.
+    DocumentsTab-->Actor: MSG349 - This meeting was cancelled and can no longer be modified.
 else Actor may add documents
     DocumentService->LibraryDocumentRepository: Get the selected documents of the actor's personal library (BR-193, BR-209)
     activate LibraryDocumentRepository

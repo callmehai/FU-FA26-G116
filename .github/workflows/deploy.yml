@@ -72,7 +72,7 @@ jobs:
           docker save "trustcabinet-app:$tag" | gzip | ssh "$SERVER" 'gunzip | docker load'
 
       - name: Máy chuyển chữ
-        # Chỉ khi server bật profile speech (cần máy 4 GB, deploy/README.md §10). Image ~770 MB nên chỉ
+        # Chỉ khi server bật profile speech (cần máy 4 GB, deploy/README.md §10). Image ~950 MB nên chỉ
         # build và chép khi workers/speech đổi: tag theo mã băm thư mục đó, server có rồi thì bỏ qua.
         run: |
           if ! ssh "$SERVER" "grep -qE '^COMPOSE_PROFILES=.*speech' ~/TrustCabinet/deploy/.env"; then

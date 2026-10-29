@@ -38,6 +38,8 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct)
         => db.Transcripts.Include(t => t.Recording).SingleOrDefaultAsync(t => t.Id == transcriptId, ct);
 
+    public Task ReloadAsync(Transcript transcript, CancellationToken ct) => db.Entry(transcript).ReloadAsync(ct);
+
     public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
         => db.TranscriptSegments.Where(s => s.TranscriptId == transcriptId).ExecuteDeleteAsync(ct);
 
