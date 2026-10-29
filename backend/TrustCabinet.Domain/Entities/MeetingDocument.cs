@@ -33,6 +33,5 @@ public class MeetingDocument : Entity
     public User? RemovedBy { get; set; }
 
     public ICollection<MeetingDocumentAgendaItem> AgendaItemLinks { get; set; } = [];
-    public ICollection<VoteDocument> VoteLinks { get; set; } = [];
     public ICollection<DocumentComment> Comments { get; set; } = [];
 }

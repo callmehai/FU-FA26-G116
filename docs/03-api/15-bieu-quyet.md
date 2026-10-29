@@ -76,7 +76,7 @@ trừ khi BE và FE thống nhất lại trong cùng PR.
 }
 ```
 
-- `title` trim 1–500; `description` mặc định `""`, tối đa 4000.
+- `title` trim 1–300; `description` mặc định `""`, tối đa 4000.
 - `options`: ≥ 2 chuỗi khác nhau sau trim, mỗi chuỗi 1–200; không nhận `id` từ client khi tạo.
 - `isAnonymous` bắt buộc bool; `eligibleRoles` ≥ 1 giá trị trong `Chair|Secretary|Member|Guest`.
 - PUT thay toàn bộ trường cấu hình; chỉ khi Vote còn `Draft`.
@@ -193,12 +193,11 @@ Vote cùng tài liệu (BR-291); không rút; không liên kết với `VoteChoi
 Câu tiếng Việt khi triển khai lấy từ catalogue (cột thông báo chuẩn hiện là tiếng Anh dành sẵn —
 BE/BA đổi sang tiếng Việt cùng PR code, không đổi mã).
 
-## 6. Schema BE đã có trên nhánh thiết kế
+## 6. Schema BE (SCRUM-96)
 
-Migration `20261025104005_VotesBelongToMeetingWithEligibleVotersAndDocuments` và entity
-`VotingSession`, `VotingOption`, `VoteReceipt`, `VoteChoice`, `VoteEligibleVoter`, `VoteDocument`
-đã có trên nhánh này. **Theo note team:** tách sang PR code riêng, tạo lại migration trên `main`
-mới nhất — không mang file migration cũ.
+Entity và migration cho mô hình này **không nằm trong PR tài liệu**: chúng ở PR code SCRUM-96, với
+migration tạo trên `main` mới nhất. Cần có: `VotingSession`, `VotingOption`, `VoteReceipt`, `VoteChoice`,
+`VoteEligibleVoter`, `VoteDocument` (xem [ERD](../02-design/02-erd.md)). `VotingSession.Title` tối đa 300 ký tự.
 
 Còn thiếu bảng **`document_read_confirmations`** (UC-74 / BR-290–293): xem ERD mục tiêu; thêm
 cùng PR code với endpoint xác nhận đọc.

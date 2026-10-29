@@ -5,8 +5,7 @@ namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
 /// One numbered item on a meeting's programme. The chair walks the meeting down this list, and
-/// much of what is produced during the sitting — notes, speeches — hangs off an item. Votes do not:
-/// they belong to the meeting itself (BR-285).
+/// almost everything produced during the sitting — notes, votes, speeches — hangs off an item.
 /// </summary>
 public class AgendaItem : Entity
 {
@@ -43,4 +42,5 @@ public class AgendaItem : Entity
     public DateTimeOffset? ActualEndedAt { get; set; }
 
     public ICollection<MeetingDocumentAgendaItem> DocumentLinks { get; set; } = [];
+    public ICollection<VotingSession> VotingSessions { get; set; } = [];
 }

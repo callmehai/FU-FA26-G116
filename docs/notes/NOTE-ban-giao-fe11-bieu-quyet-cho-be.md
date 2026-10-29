@@ -17,24 +17,24 @@ Ngày 28/10/2026. Ticket: **SCRUM-96** (biểu quyết + UC-74). Nhánh thiết 
 6. UC/BR/MSG: [NOTE tiếng Việt](NOTE-review-fe11-uc-br-msg.md), catalogue MSG205–236 / 252–255 /
    265–270, ADR-0014/0016/0017/0019/0020.
 
-## Đã có trên nhánh thiết kế
+## Đã có trong PR tài liệu
 
 | Hạng mục | Trạng thái |
 |---|---|
 | Sequence UC-52a…57, UC-76a/b (+ PNG, tab draw.io gộp) | Có |
 | Class diagram FE-11 | Có (thiết kế; vài lớp nét đứt PROPOSED) |
 | ERD Markdown + Chen/mục tiêu (Vote thuộc Meeting, eligible, documents) | Có |
-| Entity + EF config + migration voting | Có — **tách PR code** (xem dưới) |
-| `DatabaseModelTests` ràng buộc voting | Có |
+| Entity + EF config + migration + `DatabaseModelTests` voting | **Không nằm trong PR tài liệu** — ở PR code SCRUM-96 (migration tạo trên `main`) |
 | Contract API `15-bieu-quyet.md` | Có (28/10/2026) |
 | Bảng / entity `DocumentReadConfirmation` | **Chưa code** — đã ghi ERD đích |
 | Endpoint / hub / Postman | Chưa |
 
 ## Việc BE làm
 
-1. **Tách code schema** khỏi PR docs (theo [note 6.3](ban-giao-ba-final-review/11-tai-lieu-fe-phong-hop-ghi-am.md)):
-   nhánh code gắn SCRUM-96; xoá migration `20261025104005_…` rồi
-   `dotnet dotnet-ef migrations add …` lại trên `main` mới nhất.
+1. Schema voting đã tách khỏi PR docs (theo [note 6.3](ban-giao-ba-final-review/11-tai-lieu-fe-phong-hop-ghi-am.md)):
+   PR code SCRUM-96 có entity, EF config, `DatabaseModelTests` và migration tạo lại trên `main`
+   (migration có `DELETE FROM voting_sessions` vì chưa endpoint nào ghi Vote). Việc còn lại ở đó:
+   tách phiếu kín khỏi `CastAt` và Id v7 (xem ERD mục “Biểu quyết ẩn danh”).
 2. Thêm `DocumentReadConfirmation` (+ migration) cùng endpoint UC-74.
 3. Implement endpoint theo [15-bieu-quyet.md](../03-api/15-bieu-quyet.md); khai báo hằng MSG;
    cập nhật catalogue sang “Đã triển khai” + câu tiếng Việt trong cùng PR.
