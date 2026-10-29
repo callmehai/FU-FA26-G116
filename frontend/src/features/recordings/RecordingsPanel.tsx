@@ -95,6 +95,8 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
   const canUpload = !existingOnly && (data?.canUpload ?? false)
   if (existingOnly && data?.items.length === 0) return null
 
+  // An erased recording leaves the tab (PO 29/10/2026); its audit trail stays on the server.
+  const kept = data?.items.filter((r) => r.status !== 'Deleted') ?? []
   return (
     <section className="list-panel recordings-panel recordings-page" aria-label="Bản ghi">
       <div className="toolbar">
@@ -146,17 +148,17 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
         </ul>
       )}
 
-      {data && data.items.length === 0 && (
+      {data && kept.length === 0 && (
         <div className="cell-empty">
           <p className="empty-title">Chưa có bản ghi.</p>
           {canUpload && <p className="field-hint">Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.</p>}
         </div>
       )}
 
-      {data && data.items.length > 0 && (
+      {data && kept.length > 0 && (
         <ul className="recording-list">
           {/* Oldest first, each with its transcript under it: the tab reads in the order the meeting went. */}
-          {[...data.items]
+          {[...kept]
             .reverse()
             .map((recording) =>
               recording.status === 'Pending' ? (
@@ -451,6 +453,8 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
             takes={recording.takes}
             listedStatus={recording.transcriptStatus}
             currentMs={currentMs}
+            playing={playing}
+            onPause={() => audio.current?.pause()}
             onSeek={(ms) => {
               const element = audio.current
               if (!element) return

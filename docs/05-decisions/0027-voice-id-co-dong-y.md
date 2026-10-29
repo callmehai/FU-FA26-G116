@@ -1,6 +1,6 @@
 # ADR-0027: Voice ID có đồng ý — lưu giọng mẫu đã mã hoá, máy chỉ gợi ý tên, Thư ký quyết định
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Đề xuất — điểm 2, phần âm thanh mẫu, thay thế bởi [ADR-0042](0042-luu-ban-ghi-giong-mau-de-nghe-lai.md)
 - **Ngày:** 2026-10-23
 - **Người quyết định:** PO (23/10/2026), nhóm SEP490-G116
 - **Liên quan:** `SCRUM-35`, [ADR-0026](0026-tu-chay-nhan-dang-giong-noi.md); nhận xét hội đồng review

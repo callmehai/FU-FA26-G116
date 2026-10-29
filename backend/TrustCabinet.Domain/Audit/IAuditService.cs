@@ -99,8 +99,14 @@ public static class AuditActions
     public const string RecordingTakeStarted = "recording.take_started";
     public const string RecordingTakeSaved = "recording.take_saved";
 
+    /// <summary>A take erased from a room recording; the details say which, how long, and how many lines went with it.</summary>
+    public const string RecordingTakeDeleted = "recording.take_deleted";
+
     /// <summary>SCRUM-35 — a person agreed to Voice ID; the notice version and purpose they agreed to are in the details.</summary>
     public const string VoiceConsentGranted = "voice.consent_granted";
+
+    /// <summary>A person agreed to a newer Voice ID notice while consenting already; the details name both versions.</summary>
+    public const string VoiceConsentRenewed = "voice.consent_renewed";
 
     /// <summary>A person withdrew Voice ID; the details say how many samples were erased with it.</summary>
     public const string VoiceConsentWithdrawn = "voice.consent_withdrawn";

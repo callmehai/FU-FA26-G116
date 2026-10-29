@@ -3,6 +3,7 @@ import type {
   RecordingMutationResponse,
   RecordingPlayback,
   RecordingUploadInput,
+  RoomTakeDeleted,
   RoomTakeOpened,
   RoomTakeSaved,
 } from '../types/recording'
@@ -49,6 +50,10 @@ export const sendRoomPart = (recordingId: string, part: number, bytes: Uint8Arra
 /** Switches the take off: it is appended to the meeting's room recording, which is transcribed again. */
 export const completeRoomTake = (recordingId: string) =>
   api.post<RoomTakeSaved>(`/api/recordings/${recordingId}/complete`)
+
+/** Erases take `take` (from 1) of a room recording: its sound and lines go, the rest stays as edited. Secretary only. */
+export const deleteRoomTake = (recordingId: string, take: number) =>
+  api.delete<RoomTakeDeleted>(`/api/recordings/${recordingId}/takes/${take}`)
 
 export const getRecordingPlayback = (recordingId: string) =>
   api.get<RecordingPlayback>(`/api/recordings/${recordingId}/playback`)

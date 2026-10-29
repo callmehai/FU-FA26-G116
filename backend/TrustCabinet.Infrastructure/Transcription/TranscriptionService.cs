@@ -45,13 +45,17 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 return new(Data: new TranscriptView(recordingId, "None", "", "vi", "", null, recording.DurationMs, canEdit, [], [], people));
             // The machine's guess at a voice is a hint for the Secretary who names it, and a guess about someone's
             // biometric identity: nobody else gets it, only the name the Secretary assigned.
+            var sameAs = canEdit
+                ? SpeakerMatcher.SameAs([.. transcript.Speakers.Select(s => (s.Label, s.SuggestedUserId, s.SuggestionScore, s.AssignedUserId))])
+                : new Dictionary<string, string>();
             return new(Data: new TranscriptView(recordingId, transcript.Status.ToString(), transcript.Provider,
                 transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                 [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
                     s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName))],
                 [.. transcript.Speakers.OrderBy(s => s.Label).Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                     canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
-                    canEdit ? s.SuggestionScore : null, s.AssignedUserId, s.AssignedUser?.FullName))],
+                    canEdit ? s.SuggestionScore : null, s.AssignedUserId, s.AssignedUser?.FullName,
+                    sameAs.GetValueOrDefault(s.Label)))],
                 people, canExport && transcript.Status == TranscriptStatus.Completed));
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -315,7 +319,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             }
         }
         var options = voiceOptions.Value;
-        return SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin);
+        return SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin,
+            options.SameVoiceThreshold);
     }
 
     private static IEnumerable<MeetingParticipant> Participants(Meeting meeting)

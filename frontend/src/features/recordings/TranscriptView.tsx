@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { deleteRoomTake } from '../../api/recordings'
 import { editTranscriptSegment, getTranscript, getTranscriptText, retryTranscript } from '../../api/transcripts'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
@@ -10,8 +11,8 @@ import type { RecordingTake } from '../../types/recording'
 import type { Transcript, TranscriptSegment, TranscriptStatus } from '../../types/transcript'
 import { saveBlob } from '../documents/documentFile'
 import { formatDuration } from './format'
-import { SpeakerList } from './SpeakerList'
-import { speakerName, speakerSlotOf } from './speakers'
+import { SpeakerList, SpeakerPicker } from './SpeakerList'
+import { speakerName, speakerSlotOf, voiceName, voicesOf } from './speakers'
 
 /**
  * SCRUM-31 — the machine transcript of one recording, under its player. Clicking a time jumps the
@@ -55,6 +56,8 @@ export function TranscriptView({
   takes,
   listedStatus,
   currentMs,
+  playing = false,
+  onPause,
   onSeek,
   onStatus,
 }: {
@@ -67,6 +70,9 @@ export function TranscriptView({
   listedStatus?: TranscriptStatus
   /** Where the player is, to highlight the segment being heard. */
   currentMs: number
+  /** The player is playing: the run being heard offers a pause where its play button was. */
+  playing?: boolean
+  onPause?: () => void
   onSeek: (ms: number) => void
   onStatus: (status: TranscriptStatus) => void
 }) {
@@ -75,6 +81,8 @@ export function TranscriptView({
   const [editing, setEditing] = useState<string | null>(null)
   const [retrying, setRetrying] = useState(false)
   const [redoing, setRedoing] = useState(false)
+  // The take (from 1) the Secretary asked to erase, until they confirm.
+  const [dropping, setDropping] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
   const generation = useRef(0)
 
@@ -176,8 +184,9 @@ export function TranscriptView({
     )
 
   const active = transcript.segments.findLast((s) => s.startMs <= currentMs)?.id
-  // Only a name the Secretary assigned replaces "Người nói N" on the segments.
-  const names = new Map(transcript.speakers.filter((s) => s.assignedName).map((s) => [s.label, s.assignedName!]))
+  // Voices named as one person read as one speaker: one colour, one name, one run of lines (AI-eCabinet's voiceOf).
+  // Only a name the Secretary assigned replaces "Người nói N".
+  const { voices, one } = voicesOf(transcript.speakers)
   const at = (ms: number) => timeLabel(takes, ms)
   const marked = takes && takes.length > 1 ? takes : null
   return (
@@ -233,56 +242,93 @@ export function TranscriptView({
           <p className="field-hint">Khi xong, chữ đã sửa và tên đã gán cho người nói sẽ được thay bằng bản mới.</p>
         </ConfirmDialog>
       )}
+      {dropping !== null && (
+        <ConfirmDialog
+          title={`Xoá lượt ${dropping}?`}
+          tone="danger"
+          confirmLabel="Xoá lượt"
+          pendingLabel="Đang xoá…"
+          cancelLabel="Giữ lại"
+          onConfirm={async () => {
+            toast.show((await deleteRoomTake(recordingId, dropping)).message, 'success')
+            await load()
+          }}
+          onClose={() => setDropping(null)}
+        >
+          <p>Tiếng và chữ của lượt này bị xoá hẳn, không lấy lại được.</p>
+          <p className="field-hint">Các lượt khác giữ nguyên chữ đã sửa và tên đã gán.</p>
+        </ConfirmDialog>
+      )}
       <SpeakerList transcript={transcript} onChanged={() => void load()} />
       {transcript.segments.length === 0 ? (
         <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>
       ) : (
         <ol className="tl-list transcript-list" aria-label="Lời thoại theo thời điểm nói">
-          {runs(transcript.segments, marked).map((run, i, all) => (
-            <li key={run[0].id} className="tl-group">
-              {marked && (i === 0 || takeAt(marked, all[i - 1][0].startMs) !== takeAt(marked, run[0].startMs)) && (
-                <TakeLine takes={marked} index={takeAt(marked, run[0].startMs)} />
-              )}
-              <div className="tl-row tl-row-head">
-                <span className="tl-time">{at(run[0].startMs)}</span>
-                <span className="tl-rail" aria-hidden="true">
-                  <span className="tl-dot" style={{ background: speakerSlotOf(run[0].speakerLabel).dot }} />
-                </span>
-                <div className="tl-head-row">
-                  <strong className="tl-name" style={{ color: speakerSlotOf(run[0].speakerLabel).ink }}>
-                    {names.get(run[0].speakerLabel) ?? speakerName(run[0].speakerLabel)}
-                  </strong>
-                  <span className="tl-time-inline">{at(run[0].startMs)}</span>
-                  <button
-                    type="button"
-                    className="tl-play"
-                    onClick={() => onSeek(run[0].startMs)}
-                    aria-label={`Nghe từ ${at(run[0].startMs)}`}
-                    data-tooltip="Nghe lại"
-                  >
-                    <Icon name="play" size={12} />
-                  </button>
+          {runs(transcript.segments, marked, one).map((run, i, all) => {
+            const voice = voices.get(one(run[0].speakerLabel))
+            const tone = speakerSlotOf(one(run[0].speakerLabel))
+            // Heard right now: the run's button pauses it.
+            const hearing = playing && currentMs >= run[0].startMs && currentMs < run[run.length - 1].endMs
+            return (
+              <li key={run[0].id} className="tl-group">
+                {marked && (i === 0 || takeAt(marked, all[i - 1][0].startMs) !== takeAt(marked, run[0].startMs)) && (
+                  <TakeLine
+                    takes={marked}
+                    index={takeAt(marked, run[0].startMs)}
+                    onDelete={
+                      transcript.canEdit && !running ? () => setDropping(takeAt(marked, run[0].startMs) + 1) : undefined
+                    }
+                  />
+                )}
+                <div className="tl-row tl-row-head">
+                  <span className="tl-time">{at(run[0].startMs)}</span>
+                  <span className="tl-rail" aria-hidden="true">
+                    <span className="tl-dot" style={{ background: tone.dot }} />
+                  </span>
+                  <div className="tl-head-row">
+                    {/* The Secretary names a speaker where it speaks, as in AI-eCabinet: the name is its picker. */}
+                    {transcript.canEdit && voice ? (
+                      <span className="tl-name" style={{ color: tone.ink }}>
+                        <SpeakerPicker transcript={transcript} voice={voice} onChanged={() => void load()} inline />
+                      </span>
+                    ) : (
+                      <strong className="tl-name" style={{ color: tone.ink }}>
+                        {voice ? voiceName(voice.speaker) : speakerName(run[0].speakerLabel)}
+                      </strong>
+                    )}
+                    <span className="tl-time-inline">{at(run[0].startMs)}</span>
+                    <button
+                      type="button"
+                      className="tl-play"
+                      onClick={() => (hearing && onPause ? onPause() : onSeek(run[0].startMs))}
+                      aria-label={hearing ? 'Tạm dừng' : `Nghe từ ${at(run[0].startMs)}`}
+                      aria-pressed={hearing}
+                      data-tooltip={hearing ? 'Tạm dừng' : 'Nghe lại'}
+                    >
+                      <Icon name={hearing ? 'pause' : 'play'} size={12} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-              {run.map((segment, i) => (
-                <SegmentRow
-                  key={segment.id}
-                  segment={segment}
-                  time={at(segment.startMs)}
-                  first={i === 0}
-                  active={segment.id === active}
-                  canEdit={transcript.canEdit}
-                  editing={editing === segment.id}
-                  onEdit={() => setEditing(segment.id)}
-                  onDone={(saved) => {
-                    setEditing(null)
-                    if (saved) void load()
-                  }}
-                  onSeek={() => onSeek(segment.startMs)}
-                />
-              ))}
-            </li>
-          ))}
+                {run.map((segment, i) => (
+                  <SegmentRow
+                    key={segment.id}
+                    segment={segment}
+                    time={at(segment.startMs)}
+                    first={i === 0}
+                    active={segment.id === active}
+                    canEdit={transcript.canEdit}
+                    editing={editing === segment.id}
+                    onEdit={() => setEditing(segment.id)}
+                    onDone={(saved) => {
+                      setEditing(null)
+                      if (saved) void load()
+                    }}
+                    onSeek={() => onSeek(segment.startMs)}
+                  />
+                ))}
+              </li>
+            )
+          })}
         </ol>
       )}
     </div>
@@ -293,26 +339,37 @@ export function TranscriptView({
  * Neighbouring segments of one voice read as one run under its name, as in the per-mic record. A run never crosses
  * from one take of the room mic into the next: the mic was off in between.
  */
-function runs(segments: TranscriptSegment[], takes: RecordingTake[] | null) {
+function runs(segments: TranscriptSegment[], takes: RecordingTake[] | null, one: (label: string) => string) {
   const out: TranscriptSegment[][] = []
   for (const segment of segments) {
     const last = out.at(-1)
     const sameTake = !takes || takeAt(takes, last?.[0].startMs ?? 0) === takeAt(takes, segment.startMs)
-    if (last && sameTake && last[0].speakerLabel === segment.speakerLabel) last.push(segment)
+    if (last && sameTake && one(last[0].speakerLabel) === one(segment.speakerLabel)) last.push(segment)
     else out.push([segment])
   }
   return out
 }
 
 /** Where a take of the room mic begins: its number and the clock it ran by. */
-function TakeLine({ takes, index }: { takes: RecordingTake[]; index: number }) {
+function TakeLine({ takes, index, onDelete }: { takes: RecordingTake[]; index: number; onDelete?: () => void }) {
   const take = takes[index]
   const from = Date.parse(take.startedAt)
   return (
-    <div className="tl-take" role="separator">
-      <span>
+    <div className="tl-take">
+      <span role="separator">
         Lượt {index + 1} · {wallClock.format(new Date(from))}–{wallClock.format(new Date(from + take.durationMs))}
       </span>
+      {onDelete && (
+        <button
+          type="button"
+          className="tl-tool tl-take-delete"
+          onClick={onDelete}
+          aria-label={`Xoá lượt ${index + 1}`}
+          data-tooltip="Xoá lượt này"
+        >
+          <Icon name="trash" size={14} />
+        </button>
+      )}
     </div>
   )
 }
@@ -375,8 +432,18 @@ function SegmentRow({
               maxLength={8000}
               rows={Math.min(8, Math.max(2, Math.ceil(draft.length / 90)))}
               onChange={(e) => setDraft(e.target.value)}
+              // As in AI-eCabinet: Enter saves, Shift+Enter breaks the line, Esc leaves it as it was.
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') onDone(false)
+                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  e.preventDefault()
+                  if (draft.trim() && !saving) void save()
+                }
+              }}
+              onFocus={(e) => e.currentTarget.setSelectionRange(draft.length, draft.length)}
               aria-label="Nội dung đoạn"
               aria-invalid={error ? true : undefined}
+              aria-describedby={`edit-keys-${segment.id}`}
               autoFocus
             />
             {error && (
@@ -385,6 +452,9 @@ function SegmentRow({
               </p>
             )}
             <div className="row-actions transcript-editor-actions">
+              <span id={`edit-keys-${segment.id}`} className="field-hint transcript-editor-keys">
+                Enter để lưu · Esc để huỷ
+              </span>
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => onDone(false)} disabled={saving}>
                 Huỷ
               </button>
@@ -399,7 +469,12 @@ function SegmentRow({
             </div>
           </div>
         ) : (
-          <p className="tl-text">
+          <p
+            className={`tl-text${canEdit ? ' is-editable' : ''}`}
+            // A click on the words edits them, as in AI-eCabinet; selecting words to copy them does not.
+            onClick={canEdit ? () => !window.getSelection()?.toString() && onEdit() : undefined}
+            data-tooltip={canEdit ? 'Bấm để sửa' : undefined}
+          >
             {segment.text}
             {segment.editedAt && (
               <span

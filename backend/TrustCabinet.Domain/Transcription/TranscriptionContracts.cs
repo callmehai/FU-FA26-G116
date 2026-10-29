@@ -46,10 +46,11 @@ public sealed record TranscriptSegmentView(Guid Id, int Position, long StartMs, 
 
 /// <summary>
 /// SCRUM-35 — one voice of the recording. <c>Suggested*</c> is the machine's guess from enrolled voices;
-/// <c>Assigned*</c> is the secretary's decision, and only that one names the speaker.
+/// <c>Assigned*</c> is the secretary's decision, and only that one names the speaker. <c>SameAsLabel</c> is another
+/// voice suggested as the same person more surely: perhaps one person the machine split in two (Secretary only).
 /// </summary>
 public sealed record TranscriptSpeakerView(string Label, long SpeechMs, Guid? SuggestedUserId, string? SuggestedName,
-    double? SuggestionScore, Guid? AssignedUserId, string? AssignedName);
+    double? SuggestionScore, Guid? AssignedUserId, string? AssignedName, string? SameAsLabel = null);
 
 public sealed record TranscriptPerson(Guid Id, string FullName);
 

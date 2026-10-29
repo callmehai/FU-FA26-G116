@@ -56,6 +56,13 @@ export interface RoomTakeOpened {
   maxBytes: number
 }
 
+/** `DELETE /api/recordings/{id}/takes/{take}`: one take cut out of a room recording (MSG366). */
+export interface RoomTakeDeleted {
+  code: string
+  message: string
+  recordingId: string
+}
+
 export interface RoomTakeSaved {
   code: string
   message: string

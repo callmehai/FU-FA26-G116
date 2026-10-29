@@ -2305,6 +2305,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<byte[]>("AudioCiphertext")
+                        .HasColumnType("bytea")
+                        .HasColumnName("audio_ciphertext");
+
+                    b.Property<string>("AudioContentType")
+                        .HasColumnType("text")
+                        .HasColumnName("audio_content_type");
+
                     b.Property<byte[]>("Ciphertext")
                         .IsRequired()
                         .HasColumnType("bytea")

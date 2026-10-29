@@ -148,6 +148,53 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
     }
 
     [Fact]
+    public async Task A_sample_recording_is_kept_only_under_the_newer_notice_and_only_its_owner_hears_it()
+    {
+        var s = await fixture.Seed();
+        await using (var seed = fixture.Db())
+        {
+            // Agreed before ADR-0042, to a notice that said the recording is not kept.
+            var now = DateTimeOffset.UtcNow;
+            seed.VoiceConsents.Add(new() { Id = Guid.CreateVersion7(), UserId = s.Member, GrantedAt = now, NoticeVersion = "1.0",
+                Purpose = VoiceIdRules.Purpose, CreatedAt = now, UpdatedAt = now });
+            await seed.SaveChangesAsync();
+        }
+        using var owner = fixture.Client(s.Member);
+        fixture.Speech.NextEmbedding = [1f, 0f, 0f];
+        var old = await AssertCode(await owner.PostAsync("/api/me/voice/samples", Sample()), 201, "MSG307");
+        Assert.False(old.GetProperty("data").GetProperty("playable").GetBoolean());
+        var oldId = old.GetProperty("data").GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.NotFound, (await owner.GetAsync($"/api/me/voice/samples/{oldId}/audio")).StatusCode);
+
+        // Agreeing to the newer notice renews the same consent; the samples stay.
+        var renewed = await AssertCode(await Consent(owner), 200, "MSG305");
+        Assert.Equal(VoiceIdRules.NoticeVersion, renewed.GetProperty("data").GetProperty("consent").GetProperty("noticeVersion").GetString());
+        Assert.Equal(1, renewed.GetProperty("data").GetProperty("samples").GetArrayLength());
+        await using var db = fixture.Db();
+        Assert.Equal(1, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member));
+        Assert.Equal(1, await db.AuditLog.CountAsync(a => a.Action == AuditActions.VoiceConsentRenewed && a.ActorId == s.Member));
+
+        fixture.Speech.NextEmbedding = [0f, 1f, 0f];
+        var added = await AssertCode(await owner.PostAsync("/api/me/voice/samples", Sample()), 201, "MSG307");
+        Assert.True(added.GetProperty("data").GetProperty("playable").GetBoolean());
+        var id = added.GetProperty("data").GetProperty("id").GetGuid();
+        var heard = await owner.GetAsync($"/api/me/voice/samples/{id}/audio");
+        Assert.Equal(HttpStatusCode.OK, heard.StatusCode);
+        Assert.Equal("audio/webm", heard.Content.Headers.ContentType?.MediaType);
+        var body = await heard.Content.ReadAsByteArrayAsync();
+        Assert.Equal([.. "OggS"u8, .. new byte[512]], body);
+        Assert.Contains("no-store", heard.Headers.CacheControl?.ToString());
+
+        // Stored encrypted, bound to its owner: someone else, or nobody signed in, never hears it.
+        var stored = await db.VoiceSamples.AsNoTracking().SingleAsync(x => x.Id == id);
+        Assert.DoesNotContain(Convert.ToHexString("OggS"u8), Convert.ToHexString(stored.AudioCiphertext!));
+        using var other = fixture.Client(s.Chair);
+        Assert.Equal(HttpStatusCode.NotFound, (await other.GetAsync($"/api/me/voice/samples/{id}/audio")).StatusCode);
+        using var anonymous = fixture.Client();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync($"/api/me/voice/samples/{id}/audio")).StatusCode);
+    }
+
+    [Fact]
     public async Task Voices_are_suggested_only_as_consenting_people_of_the_meeting_and_named_only_by_the_secretary()
     {
         var s = await fixture.Seed();

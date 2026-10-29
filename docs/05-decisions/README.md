@@ -37,7 +37,7 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0024](0024-luu-file-tai-lieu-tren-cloudflare-r2.md) | Lưu file tài liệu trên Cloudflare R2, mọi byte đi qua backend | Đề xuất — SCRUM-107 |
 | [0025](0025-version-rieng-cho-diem-danh.md) | Version riêng cho điểm danh; không dùng xmin toàn dòng | Đã chấp nhận trong phạm vi SCRUM-26, chờ team review branch |
 | [0026](0026-tu-chay-nhan-dang-giong-noi.md) | Tự chạy nhận dạng giọng nói (chuyển thành chữ, tách người nói) trên một worker nội bộ | Đề xuất — SCRUM-31, nhận xét hội đồng 17/10/2026 |
-| [0027](0027-voice-id-co-dong-y.md) | Voice ID có đồng ý — lưu giọng mẫu đã mã hoá, máy chỉ gợi ý tên, Thư ký quyết định | Đề xuất — SCRUM-35, nhận xét hội đồng 17/10/2026 |
+| [0027](0027-voice-id-co-dong-y.md) | Voice ID có đồng ý — lưu giọng mẫu đã mã hoá, máy chỉ gợi ý tên, Thư ký quyết định | Đề xuất — SCRUM-35, nhận xét hội đồng 17/10/2026; điểm 2 (không lưu âm thanh mẫu) thay thế bởi ADR-0042 |
 | [0028](0028-trang-thai-la-icon-va-chu.md) | Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip | Đề xuất |
 | [0029](0029-ghi-am-theo-micro-tung-nguoi.md) | Ghi âm theo micro từng người, chỉ lưu chữ của từng câu | Đề xuất — SCRUM-109; điểm 3 thay thế bởi ADR-0039, điểm 1 và 5 thay thế bởi ADR-0040 |
 | [0030](0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md) | Ghi cả cuộc gọi từ trình duyệt của Thư ký, báo đang ghi qua kênh dữ liệu của cuộc gọi | Thay thế bởi ADR-0040 |
@@ -51,3 +51,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0039](0039-luu-am-thanh-tung-cau-de-nghe-lai.md) | Lưu âm thanh từng câu ghi theo micro để nghe lại, như AI-eCabinet; nghe qua link ký có hạn, xoá cùng chữ | Đề xuất — SCRUM-109, PO 29/10/2026; phần "Đồng ý" thay thế bởi ADR-0040 |
 | [0040](0040-cach-ghi-am-theo-hinh-thuc-hop.md) | Cách ghi âm suy ra từ hình thức họp: trực tuyến ghi theo micro từng người, trực tiếp ghi bằng mic phòng; bỏ chọn cách ghi, bỏ ghi trộn cả cuộc gọi | Đề xuất — SCRUM-109, PO 29/10/2026; điểm 4 thay thế một phần bởi ADR-0041 |
 | [0041](0041-mic-phong-ghi-tung-luot.md) | Mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi, nối thành một bản ghi của cuộc họp và chuyển chữ lại cả bản, như AI-eCabinet | Đề xuất — SCRUM-29, PO 29/10/2026 |
+| [0042](0042-luu-ban-ghi-giong-mau-de-nghe-lai.md) | Lưu bản ghi giọng mẫu đã mã hoá để chính chủ nghe lại, như AI-eCabinet; thông báo đồng ý lên 1.1 | Đề xuất — SCRUM-35, PO 29/10/2026 |

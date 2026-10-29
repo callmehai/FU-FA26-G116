@@ -145,9 +145,23 @@ Tắt mic. Người mở lượt gọi, hoặc một Thư ký lưu hộ lượt 
 Lượt không nhận được phần nào trong `Recordings:IdleTakeHours` thì `RecordingRetentionWorker` tự lưu. Nhật ký kiểm
 toán ghi `recording.take_saved` với actor rỗng.
 
+### `DELETE /api/recordings/{recordingId}/takes/{take}`
+
+Thư ký xoá lượt thứ `take` (đếm từ 1) của một bản ghi phòng (PO 29/10/2026; AI-eCabinet không có):
+
+- Tiếng của lượt bị cắt khỏi tệp (một tệp mới thay tệp cũ, header WAV ghi lại độ dài). `takes` bỏ lượt đó, các
+  lượt sau dời lên đúng độ dài của nó.
+- Bản gỡ băng đã xong: câu bắt đầu trong lượt bị bỏ, câu sau dời giờ lên. Chữ đã sửa và tên đã gán của các lượt khác
+  giữ nguyên. Giọng chỉ có trong lượt đó bị bỏ cùng. Không chuyển chữ lại.
+- Bản gỡ băng còn chờ hoặc đang chạy: chạy lại từ tệp ngắn hơn.
+- Nhật ký kiểm toán ghi `recording.take_deleted` kèm lượt, độ dài và số câu đã bỏ.
+
+`200 MSG366` `{ code, message, recordingId }`. Bản ghi chỉ còn một lượt: `409 MSG367`, xoá cả bản ghi thay vào.
+Không phải Thư ký: `403 MSG295`. Bản ghi không có lượt đó, không phải bản ghi phòng hay đã xoá: `404`.
+
 ### Sự kiện hub `speechChanged` với `changeType: "RecordingsChanged"`
 
-Gửi khi lượt được mở hoặc lưu, khi tệp được lưu hoặc xoá, và khi chuyển chữ xong. Người nhận đọc lại
+Gửi khi lượt được mở, lưu hoặc xoá, khi tệp được lưu hoặc xoá, và khi chuyển chữ xong. Người nhận đọc lại
 `GET …/recordings`.
 
 ### `GET /api/recordings/{recordingId}/playback`

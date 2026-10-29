@@ -3176,7 +3176,7 @@ audio.recording-player { height: 40px; }
 @media (prefers-reduced-motion: reduce) { .transcript-spinner { animation: none; } }
 .transcript { container-type: inline-size; display: flex; flex-direction: column; gap: 8px; }
 .transcript-list { max-height: 480px; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--surface); }
-.transcript-editor { display: flex; flex-direction: column; gap: 6px; }
+.transcript-editor { display: flex; flex: 1; min-width: 0; max-width: 75ch; flex-direction: column; gap: 6px; }
 .transcript-editor textarea { width: 100%; resize: vertical; }
 .transcript-editor-actions { justify-content: flex-end; gap: 6px; }
 
@@ -3184,6 +3184,8 @@ audio.recording-player { height: 40px; }
 .voice-card { display: flex; flex-direction: column; gap: 14px; }
 .voice-card .card-title { margin: 0; }
 .voice-skeleton { height: 220px; }
+.voice-renew { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.voice-renew p { flex: 1 1 280px; margin: 0; }
 .voice-notice { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; }
 .voice-status { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .voice-count { margin-left: auto; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -3192,10 +3194,9 @@ audio.recording-player { height: 40px; }
 .voice-sample { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border-bottom: 1px solid var(--line-soft); color: var(--muted-ink); }
 .voice-sample:last-child { border-bottom: 0; }
 /* Name and "length · date" stay whole; on a phone the second drops under the first. */
-.voice-sample-text { display: flex; flex-wrap: wrap; column-gap: 10px; min-width: 0; }
+.voice-sample-text { display: flex; flex: 1; flex-wrap: wrap; column-gap: 10px; min-width: 0; }
 .voice-sample-text > * { white-space: nowrap; }
 .voice-sample-name { color: var(--ink); font-weight: 500; }
-.voice-sample .btn { margin-left: auto; }
 .voice-actions { justify-content: space-between; }
 .voice-passage { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
 .voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -3307,10 +3308,20 @@ audio.recording-player { height: 40px; }
 /* Where a take of the room mic begins: the mic was off before it. */
 .tl-take { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .tl-take::after { flex: 1; height: 1px; background: var(--control-line); content: ''; }
+.tl-take-delete { order: 1; margin: -6px 0; }
 .tl-group:last-child .tl-row-head:last-child .tl-rail::before { display: none; }
 .tl-dot { position: relative; width: 10px; height: 10px; margin-top: 11px; border-radius: 50%; background: var(--control-line); }
 .tl-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; padding-top: 4px; }
 .tl-name { font-size: 13.5px; font-weight: 600; }
+/* The Secretary's picker as the run's heading: it reads as the name, and opens on a click (AI-eCabinet). */
+.tl-name-pick .select-trigger { height: 28px; min-height: 28px; margin-left: -6px; padding: 0 4px 0 6px; border-color: transparent; border-style: solid; background: transparent; color: inherit; font: inherit; }
+.tl-name-pick .select-trigger:hover, .tl-name-pick .select-trigger[aria-expanded="true"] { border-color: var(--control-line); background: var(--surface); }
+.tl-name-pick .select-value, .tl-name-pick .select-placeholder { color: inherit; font-weight: 600; }
+.tl-text.is-editable { margin: -2px -6px; padding: 2px 6px; border-radius: var(--radius); cursor: text; }
+.tl-text.is-editable:hover { background: var(--surface-alt); }
+.transcript-editor-keys { margin-right: auto; align-self: center; }
+/* A phone has no Enter-to-save or Esc: the buttons say it. */
+@media (max-width: 560px), (pointer: coarse) { .transcript-editor-keys { display: none; } }
 .tl-time-inline { display: none; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .tl-play { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px; border: 0; border-radius: var(--radius); background: transparent; color: var(--brand); font: inherit; font-size: 12.5px; font-variant-numeric: tabular-nums; cursor: pointer; }
 .tl-play svg { fill: currentColor; }
@@ -3436,6 +3447,7 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
 .speaker-row .select-trigger { width: auto; max-width: 100%; }
 .speaker-row .select-value, .speaker-row .select-placeholder { overflow: hidden; }
 .speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
+.speaker-same { display: inline-flex; flex: none; color: var(--chip-amber-fg); }
 .speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 /* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------

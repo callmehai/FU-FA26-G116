@@ -18,7 +18,9 @@ public enum RecordingFailure
     BadPart,
     /// <summary>The take was switched off (saved) already; nothing more is added to it.</summary>
     TakeClosed,
-    TooLarge
+    TooLarge,
+    /// <summary>The recording has one take left: erasing it is erasing the recording.</summary>
+    LastTake
 }
 
 public sealed record RecordingOutcome(RecordingFailure Failure = RecordingFailure.None, object? Data = null,
@@ -92,6 +94,11 @@ public interface IRoomTakeService
     Task<RecordingOutcome> CompleteAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     /// <summary>Saves the takes no part has reached for a long time — a laptop that never came back; returns how many.</summary>
     Task<int> CompleteIdleAsync(CancellationToken ct = default);
+    /// <summary>
+    /// Erases take <paramref name="take"/> (from 1) of a room recording: its sound is cut out of the file and its lines
+    /// out of the transcript; later lines move up by its length, and edits and names elsewhere are kept. Secretary only.
+    /// </summary>
+    Task<RecordingOutcome> DeleteTakeAsync(Guid recordingId, int take, Guid actorId, CancellationToken ct = default);
 }
 
 public interface IRecordingRepository
@@ -121,6 +128,8 @@ public interface IRecordingStorage
     void Truncate(string storagePath, long length);
     /// <summary>A new file of <paramref name="first"/> followed by <paramref name="second"/> past its first <paramref name="skip"/> bytes.</summary>
     Task<string> ConcatAsync(string first, string second, long skip, CancellationToken ct);
+    /// <summary>A new file of <paramref name="source"/> without the <paramref name="length"/> bytes at <paramref name="from"/>.</summary>
+    Task<string> CutAsync(string source, long from, long length, CancellationToken ct);
     /// <summary>Writes the real lengths into a streamed WAV's header, which went out before they were known.</summary>
     void SealWav(string storagePath);
     Stream OpenRead(string storagePath);

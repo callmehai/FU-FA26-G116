@@ -24,6 +24,8 @@ export interface TranscriptSpeaker {
   suggestionScore: number | null
   assignedUserId: string | null
   assignedName: string | null
+  /** Another voice suggested as the same person more surely: perhaps one person the machine split in two. */
+  sameAsLabel?: string | null
 }
 
 export interface TranscriptPerson {

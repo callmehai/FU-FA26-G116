@@ -123,6 +123,37 @@ public sealed class LocalRecordingStorage(IOptions<RecordingOptions> options) : 
         return relative;
     }
 
+    public async Task<string> CutAsync(string source, long from, long length, CancellationToken ct)
+    {
+        var relative = Create(Path.GetExtension(source));
+        try
+        {
+            await using var target = new FileStream(Resolve(relative), FileMode.Open, FileAccess.Write, FileShare.None, 81920, true);
+            await using var input = OpenRead(source);
+            await CopyRangeAsync(input, target, from, ct);
+            input.Position = Math.Min(input.Length, from + length);
+            await input.CopyToAsync(target, ct);
+        }
+        catch
+        {
+            File.Delete(Resolve(relative));
+            throw;
+        }
+        return relative;
+    }
+
+    private static async Task CopyRangeAsync(Stream input, Stream target, long count, CancellationToken ct)
+    {
+        var buffer = new byte[81920];
+        while (count > 0)
+        {
+            var read = await input.ReadAsync(buffer.AsMemory(0, (int)Math.Min(buffer.Length, count)), ct);
+            if (read == 0) break;
+            await target.WriteAsync(buffer.AsMemory(0, read), ct);
+            count -= read;
+        }
+    }
+
     public void SealWav(string storagePath)
     {
         using var file = new FileStream(Resolve(storagePath), FileMode.Open, FileAccess.ReadWrite, FileShare.Read);

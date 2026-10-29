@@ -31,6 +31,8 @@ public static class RecordingEndpoints
     private const string Msg363TakeSaved = "MSG363";
     private const string Msg364ErasePending = "MSG364";
     private const string Msg365TakeEmpty = "MSG365";
+    private const string Msg366TakeDeleted = "MSG366";
+    private const string Msg367LastTake = "MSG367";
     private const int MaxFieldBytes = 4 * 1024;
 
     public static void MapRecordingEndpoints(this IEndpointRouteBuilder app)
@@ -75,6 +77,13 @@ public static class RecordingEndpoints
                 result = new(RecordingFailure.BadPart);
             }
             return result.Failure == RecordingFailure.None ? Results.NoContent() : Map(result, erasing: false);
+        });
+        recording.MapDelete("/takes/{take:int}", async (Guid recordingId, int take, HttpContext context, IRoomTakeService takes,
+            CancellationToken ct) =>
+        {
+            var result = await takes.DeleteTakeAsync(recordingId, take, CapabilityGate.GatedUserId(context.User), ct);
+            if (result.Failure != RecordingFailure.None) return Map(result);
+            return Results.Ok(new { code = Msg366TakeDeleted, message = "Đã xoá lượt ghi.", result.RecordingId });
         });
         recording.MapPost("/complete", async (Guid recordingId, HttpContext context, IRoomTakeService takes, CancellationToken ct) =>
         {
@@ -213,6 +222,7 @@ public static class RecordingEndpoints
                 RecordingFailure.BadPart => (400, Msg361BadPart, "Phần âm thanh gửi lên không hợp lệ."),
                 RecordingFailure.TakeClosed => (409, Msg362TakeClosed, "Lượt ghi này đã được lưu, không thêm tiếng vào được nữa."),
                 RecordingFailure.TooLarge => (413, Msg293TooLarge, "Bản ghi vượt quá giới hạn dung lượng."),
+                RecordingFailure.LastTake => (409, Msg367LastTake, "Bản ghi chỉ còn một lượt ghi. Xoá cả bản ghi nếu muốn bỏ lượt này."),
                 RecordingFailure.Invalid => (400, Msg291Invalid, "Thông tin bản ghi không hợp lệ."),
                 RecordingFailure.ReadFailed => (500, Msg297ReadFailed, "Không tải được danh sách bản ghi."),
                 _ => (503, Msg298SaveFailed, "Không lưu được thay đổi bản ghi. Vui lòng thử lại.")

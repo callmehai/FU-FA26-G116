@@ -197,6 +197,11 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
     private async Task<(RecordingOutcome, string[])> SaveAsync(Recording take, Guid? actorId, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
+        // Whole milliseconds of PCM (under 1 ms dropped at the end): a take's place in the room recording is kept in ms,
+        // so its bytes start and end exactly there, and one can be cut out again without touching its neighbours.
+        var bytesPerMs = RecordingRules.RoomBytesPerSecond / 1000;
+        take.ByteSize = RecordingRules.WavHeaderBytes
+            + Math.Max(0, take.ByteSize - RecordingRules.WavHeaderBytes) / bytesPerMs * bytesPerMs;
         if (take.ByteSize <= RecordingRules.WavHeaderBytes)
         {
             // The mic heard nothing: there is no one's voice to keep.
@@ -256,6 +261,102 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             DeleteQuietly(merged);
             throw;
         }
+    }
+
+    public async Task<RecordingOutcome> DeleteTakeAsync(Guid recordingId, int take, Guid actorId, CancellationToken ct = default)
+    {
+        string? cut = null;
+        var committed = false;
+        try
+        {
+            var found = await recordings.FindAsync(recordingId, false, ct);
+            if (found is null) return new(RecordingFailure.NotFound);
+            var (outcome, previous) = await meetings.InTransactionAsync(async token =>
+            {
+                // The meeting row lock, as for saving a take: a take is never appended while another is cut out.
+                var meeting = await meetings.FindWorkflowAsync(found.MeetingId, true, token);
+                if (!await meetings.IsUserActiveAsync(actorId, token)) return (new RecordingOutcome(RecordingFailure.Inactive), (string?)null);
+                if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return (new(RecordingFailure.NotFound), null);
+                var recording = await recordings.FindAsync(recordingId, true, token);
+                if (recording is null || recording.Status != RecordingStatus.Available || recording.Takes is not { } takes
+                    || take < 1 || take > takes.Count) return (new(RecordingFailure.NotFound), null);
+                if (!RecordingRules.IsSecretary(meeting, actorId)) return (new(RecordingFailure.Forbidden), null);
+                if (takes.Count == 1) return (new(RecordingFailure.LastTake), null);
+
+                var now = clock.GetUtcNow();
+                var gone = takes[take - 1];
+                var bytesPerMs = RecordingRules.RoomBytesPerSecond / 1000;
+                var from = RecordingRules.WavHeaderBytes + gone.OffsetMs * bytesPerMs;
+                // The last take runs to the end of the file, whatever rounding its length went through.
+                var length = take == takes.Count ? recording.ByteSize - from : gone.DurationMs * bytesPerMs;
+                cut = await storage.CutAsync(recording.StoragePath, from, length, token);
+                storage.SealWav(cut);
+                var old = recording.StoragePath;
+                recording.StoragePath = cut;
+                recording.ByteSize -= length;
+                recording.DurationMs = RecordingRules.PcmMs(recording.ByteSize);
+                recording.Takes = [.. takes.Take(take - 1), .. takes.Skip(take).Select(t => t with { OffsetMs = t.OffsetMs - gone.DurationMs })];
+                recording.UpdatedAt = now;
+                var transcript = await transcripts.FindByRecordingAsync(recording.Id, true, token);
+                var lines = transcript is null ? 0 : CutTranscript(transcript, gone, now);
+                await audit.RecordAsync(AuditActions.RecordingTakeDeleted, AuditActions.RecordingObjectType, recording.Id, actorId,
+                    new { recording.MeetingId, take, gone.StartedAt, gone.DurationMs, lines, totalMs = recording.DurationMs }, token);
+                await recordings.SaveChangesAsync(token);
+                return (new RecordingOutcome(RecordingId: recording.Id), old);
+            }, ct);
+            committed = true;
+            if (previous is not null) DeleteQuietly(previous);
+            if (outcome.Failure == RecordingFailure.None) await PublishAsync(found.MeetingId, ct);
+            return outcome;
+        }
+        catch (Exception ex) when (PersistenceError(ex) || ex is IOException)
+        {
+            logger.LogError(ex, "Failed to erase take {Take} of {RecordingId}", take, recordingId);
+            return new(RecordingFailure.SaveFailed);
+        }
+        finally
+        {
+            if (!committed && cut is not null) DeleteQuietly(cut);
+        }
+    }
+
+    /// <summary>
+    /// Takes the erased take's lines out and moves the later ones up by its length; edits, names and positions stay. A
+    /// transcript still being made is made again from the shorter file instead: its result would place lines wrongly.
+    /// </summary>
+    private static int CutTranscript(Transcript transcript, RecordingTake gone, DateTimeOffset now)
+    {
+        transcript.UpdatedAt = now;
+        if (transcript.Status is TranscriptStatus.Pending or TranscriptStatus.Processing)
+        {
+            transcript.Status = TranscriptStatus.Pending;
+            transcript.ErrorMessage = "";
+            transcript.ProgressPercent = 0;
+            return 0;
+        }
+        var start = gone.OffsetMs;
+        var end = gone.OffsetMs + gone.DurationMs;
+        var dropped = transcript.Segments.Where(s => s.StartMs >= start && s.StartMs < end).ToList();
+        foreach (var segment in dropped) transcript.Segments.Remove(segment);
+        foreach (var segment in transcript.Segments)
+        {
+            if (segment.StartMs >= end)
+            {
+                segment.StartMs -= gone.DurationMs;
+                segment.EndMs -= gone.DurationMs;
+            }
+            // A line running on past the take's start ends where the take began, or later by what is left after it.
+            else if (segment.EndMs > start)
+                segment.EndMs = segment.EndMs > end ? segment.EndMs - gone.DurationMs : start;
+        }
+        var spoke = transcript.Segments.GroupBy(s => s.SpeakerLabel).ToDictionary(g => g.Key, g => g.Sum(s => s.EndMs - s.StartMs));
+        foreach (var speaker in transcript.Speakers.ToList())
+        {
+            if (spoke.TryGetValue(speaker.Label, out var ms)) speaker.SpeechMs = ms;
+            // A voice heard only in the erased take is gone with it, name and suggestion included.
+            else transcript.Speakers.Remove(speaker);
+        }
+        return dropped.Count;
     }
 
     private async Task PublishAsync(Guid meetingId, CancellationToken ct)
