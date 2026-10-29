@@ -1577,18 +1577,19 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 
 /* ---------- Segmented control (components/SegmentedControl.tsx) ----------
-   Native radios with the dots hidden, drawn as one bordered control: the selected option takes the
-   brand wash and brand text — the design's "Đang chọn" state. Same height as every other control. */
+   Native radios with the dots hidden, drawn as AI-eCabinet's segmented control: a bordered track,
+   the selected option a solid brand block inside it. Same height as every other control. */
 .segmented {
   display: flex;
+  gap: 2px;
   height: var(--control-height);
+  padding: 3px;
   overflow: hidden;
   border: 1px solid var(--control-line);
   border-radius: var(--radius);
   background: var(--surface);
 }
 .segmented-option { position: relative; display: flex; flex: 1; min-width: 0; }
-.segmented-option + .segmented-option { border-left: 1px solid var(--control-line); }
 .segmented-option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 .segmented-option > span {
   display: flex;
@@ -1596,14 +1597,15 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   align-items: center;
   justify-content: center;
   padding: 0 10px;
+  border-radius: 6px;
   color: var(--ink);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   white-space: nowrap;
   transition: background-color .15s, color .15s;
 }
 .segmented-option:hover > span { background: var(--surface-alt); }
-.segmented-option input:checked + span { background: var(--brand-wash); color: var(--brand); font-weight: 700; }
+.segmented-option input:checked + span { background: var(--brand); color: #fff; font-weight: 600; }
 .segmented-option input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: -2px; }
 .segmented-option input:disabled + span { opacity: .5; cursor: not-allowed; }
 .segmented-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -1661,13 +1663,57 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* A whole form: wider, its body scrolls between the fixed head and the pinned actions. */
 .dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
 .dialog-lg .dialog-body { flex: 1; min-height: 0; }
+/* The meeting form, AI-eCabinet's two columns: what and when on the left, how on a grey panel. */
+.dialog-xl { width: min(980px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
+.dialog-xl .dialog-body { flex: 1; min-height: 0; }
+.dialog-foot-note { flex: 1; align-self: center; margin: 0; color: var(--muted-ink); font-size: 13px; }
 @media (max-width: 640px) {
+  .dialog-foot-note { display: none; }
+  .dialog-xl { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; }
+  .dialog-xl .dialog-foot .btn { flex: 1; height: 44px; }
   .dialog-lg { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; }
   .dialog-lg .dialog-foot .btn { flex: 1; height: 44px; }
 }
 
 /* The meeting form's sections, as AI-eCabinet groups them: a small caps heading, a divider between. */
 .meeting-form { display: flex; flex-direction: column; gap: 20px; }
+.meeting-form-cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.meeting-form-main, .meeting-form-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.meeting-form-side { padding: 16px; border-radius: var(--radius-lg); background: var(--surface-alt); }
+.meeting-form-main .span-2 { grid-column: auto; }
+.field-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 14px; font-weight: 500; line-height: 1; }
+.form-add { align-self: flex-start; }
+.form-time { min-width: 0; margin: 0; padding: 0; border: none; }
+.form-time > span { font-size: 14px; font-weight: 500; line-height: 1; }
+.form-time-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
+.form-time-row .field { gap: 0; }
+.form-time-dash { color: var(--muted-ink); }
+.form-lengths { display: flex; flex-wrap: wrap; gap: 6px; }
+/* A quick choice under a field ("1 giờ"): a small round toggle, solid while it is what the field holds. */
+.chip-toggle {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--control-line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.chip-toggle:hover:not(:disabled) { background: var(--surface-alt); }
+.chip-toggle[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
+.chip-toggle:disabled { opacity: .5; cursor: not-allowed; }
+@media (pointer: coarse) { .chip-toggle { height: 36px; } }
+@media (max-width: 760px) {
+  .meeting-form-cols { grid-template-columns: minmax(0, 1fr); }
+}
+/* A phone has no room for the day and both times on one line: the day takes its own. */
+@media (max-width: 480px) {
+  .form-time-row { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .form-time-row > [data-field='date'] { grid-column: 1 / -1; }
+}
 .form-section { display: flex; flex-direction: column; gap: 14px; }
 .form-section + .form-section { padding-top: 20px; border-top: 1px solid var(--line); }
 .form-section-title { margin: 0; color: var(--ink); font-size: 14px; font-weight: 700; }

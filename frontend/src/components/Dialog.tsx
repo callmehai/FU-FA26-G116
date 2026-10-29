@@ -24,7 +24,7 @@ export function Dialog({
   footer?: ReactNode
   /** `lg` holds a whole form (create or edit a meeting); on a phone it takes the screen. `sheet` slides in from the
    * right edge at full height, for a list read beside the page. */
-  size?: 'md' | 'lg' | 'sheet'
+  size?: 'md' | 'lg' | 'xl' | 'sheet'
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
