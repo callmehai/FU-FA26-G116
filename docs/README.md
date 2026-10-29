@@ -31,6 +31,7 @@ BE → FE → BA chốt tài liệu → Tester, Definition of Done. Đọc trư�
 | [13-erd/](13-erd/README.md) | Ba cách trình bày ERD: mục tiêu dạng bảng, Chen và snapshot schema hiện tại |
 | [14-uc-diagram/](14-uc-diagram/README.md) | Use Case Diagram theo 7 actor, source draw.io nhiều trang và ảnh xuất |
 | [15-package-diagram/](15-package-diagram/README.md) | Package diagram theo code hiện có: tổng quan, backend, Domain, frontend; source draw.io nhiều trang và ảnh xuất |
+| [16-architecture-diagram/](16-architecture-diagram/README.md) | Sơ đồ kiến trúc phần mềm tổng thể (Report 4, mục I.1), source draw.io và ảnh xuất |
 | [notes/](notes/) | Ghi chú rà soát và bàn giao cập nhật tài liệu cho người phụ trách |
 | [wireframe/](wireframe/) | Wireframe màn hình theo phiên bản: HTML, plugin Figma và ảnh cho report. Quy tắc bàn giao ở [wireframe/README.md](wireframe/README.md) |
 
