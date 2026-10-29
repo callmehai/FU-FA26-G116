@@ -151,8 +151,8 @@ erDiagram
         uuid MeetingId FK
         string FromStatus "null ở bản ghi tạo mới"
         string ToStatus
-        uuid ActorId FK
-        string Reason "bắt buộc khi từ chối"
+        uuid ActorId FK "nullable; null = hệ thống (tự huỷ cuộc họp quá hạn)"
+        string Reason "bắt buộc khi từ chối hoặc huỷ"
         timestamptz OccurredAt
     }
     MeetingGuestInvitation {
@@ -553,6 +553,8 @@ erDiagram
         int RetryCount
         string ProviderMessageId "nullable"
         string DeliveryState "nullable"
+        timestamptz DeliveryStateAt "nullable"
+        string DeliveryDetail
         timestamptz CreatedAt
     }
     AuditLogEntry {

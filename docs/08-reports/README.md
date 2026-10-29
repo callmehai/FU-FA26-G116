@@ -164,6 +164,33 @@ Thư mục Drive chứa các report: [SEP490-G116 › Docs](https://drive.google
 `UP TO DATE` cho tất cả; file ID và link không đổi. Report 4 vốn đã khớp nên không cần ghi lại. Từ nay
 chiều làm việc là repo → Drive.
 
+**Report 4 (28/10/2026):** điền mục II. Detailed Code Design bằng class diagram
+([07-classdiagram/](../07-classdiagram/README.md)) và sequence diagram từng UC
+([06-sequencediagram/](../06-sequencediagram/README.md), ảnh `.png` trong thư mục từng feature) của FE-01 → FE-07,
+FE-11 và FE-13: 8 class diagram, 68 sequence diagram; thêm một dòng Change Log (HuyNT) và cập nhật mục lục. Cùng ngày
+điền mục I.2 Package Diagram bằng bốn trang của [15-package-diagram/](../15-package-diagram/README.md) (tổng quan,
+back-end, domain, front-end), mỗi trang kèm bảng mô tả package; quy ước đặt tên ghi ở đầu mục; thêm một dòng Change
+Log. Cũng ngày đó điền mục I.1 Software Architecture bằng sơ đồ kiến trúc của
+[16-architecture-diagram/](../16-architecture-diagram/README.md) (thay ảnh mẫu), hai đoạn giới thiệu và bảng mô tả 24
+thành phần theo bốn tầng; thêm một dòng Change Log; cập nhật số trang mục lục. Mục I.3, III, IV vẫn là nội dung mẫu.
+
+**Ngoại lệ Drive → repo (28/10/2026, người dùng đồng ý):** bản trên Drive có một đợt sửa không có trong repo — gom
+sequence diagram mỗi feature dưới heading "Sequence Diagram", đổi cả tài liệu sang Times New Roman, thêm "a. Token
+Design" và "b. CORS Configuration" ở mục III.1.1, một dòng Change Log "M". Để không mất đợt sửa đó, bản Drive được lấy
+làm gốc, áp mục I.1 lên, rồi đưa vào `source/` và đẩy lại bằng `push_reports.py 4 --confirm`; `--check` trả
+`UP TO DATE`, file ID và link không đổi. Từ đây lại theo chiều repo → Drive.
+
+**Report 4 (29/10/2026, review PR #182):** sửa phần trình bày. Sơ đồ rộng (I.1, bốn trang I.2, class diagram FE-02 →
+FE-06 và FE-13) nằm trên trang ngang riêng, có footer thứ hai (`footer2.xml`) rộng theo trang ngang; FE-01 ở chung
+trang với tiêu đề mục II, FE-07 (ảnh dọc) và FE-11 (chưa có class diagram, thêm một câu ghi chú) mở trang mới bằng
+`pageBreakBefore`, mục II và III cũng vậy. Ảnh UC-33b (4747×11044) cắt làm hai ở dải trống giữa hai message (hàng
+5498) để mỗi nửa rộng bằng khổ chữ — ảnh nguồn trong `06-sequencediagram` giữ nguyên. Footer dùng field `NUMPAGES`
+thay số "10" gõ cứng. Ảnh I.1 thay bằng bản sửa của sơ đồ kiến trúc; bảng I.1 đổi "22" thành "18 endpoint groups",
+thêm việc dọn file mồ côi vào dòng Background Workers; dòng Workers của bảng back-end ở I.2 thêm EmailDeliveryWorker
+và OrphanFilePurgeWorker. Số trang mục lục lấy từ Word sau khi dàn trang (118 mục khớp bản PDF). Thêm một dòng Change
+Log (LocHD). Trước khi đẩy, md5 của file Drive trùng bản đẩy lần trước (không ai sửa trên Drive); đã đẩy bằng
+`push_reports.py 4 --confirm`, `--check` trả `UP TO DATE`, file ID và link không đổi.
+
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
 một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
 

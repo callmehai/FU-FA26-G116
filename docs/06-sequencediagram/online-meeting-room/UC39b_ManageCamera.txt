@@ -1,0 +1,23 @@
+title UC-39b - Manage Camera
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Turn camera on or off (button or Ctrl+E)
+activate Page
+alt The browser blocks the camera - EX-1
+    Page-->Actor: MSG334 - The browser is blocking the camera. Click the lock icon beside the address bar,\nchoose Allow and reload the page. You can still join the room to listen.
+else No camera is available - EX-2
+    Page-->Actor: MSG335 - No camera was found on this computer.
+else Another application holds the camera - EX-3
+    Page-->Actor: MSG336 - The camera is being used by another application (Zoom, Teams...).\nClose that application and try again.
+else Camera can be switched
+    Page->RoomProvider: Publish or stop the actor's own camera
+    activate RoomProvider
+    RoomProvider-->Page: Everyone in the room sees the video or the initials (UC-40)
+    deactivate RoomProvider
+    Page->Page: Remember the on/off state for the next visit on this device (BR-331)
+    Page-->Actor: Button shows the new state
+end
+deactivate Page

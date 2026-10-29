@@ -671,10 +671,9 @@ public static class MeetingEndpoints
 public sealed record CreateMeetingRequest(
     string? Title, string? PlannedStartTime, string? PlannedEndTime, string? Mode,
     string? Location, string? OnlineLink, string? Sensitivity, string? Description,
-    ParticipantSeed[]? Participants, string? CaptureMode = null)
+    ParticipantSeed[]? Participants)
 {
-    public MeetingInput ToInput() => new(Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description,
-        CaptureMode);
+    public MeetingInput ToInput() => new(Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description);
 }
 
 public sealed record MeetingRequest(
@@ -685,11 +684,10 @@ public sealed record MeetingRequest(
     string? Location,
     string? OnlineLink,
     string? Sensitivity,
-    string? Description,
-    string? CaptureMode = null)
+    string? Description)
 {
     public MeetingInput ToInput() => new(
-        Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description, CaptureMode);
+        Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description);
 }
 
 public sealed record MeetingResponse(
@@ -710,7 +708,7 @@ public sealed record MeetingResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     MeetingPerson? Chair, IReadOnlyList<MeetingPerson> Secretaries, string? MyMeetingRole,
-    string? MyResponse, bool CanRespond, string CaptureMode, MeetingCancellationResponse? Cancellation)
+    string? MyResponse, bool CanRespond, MeetingCancellationResponse? Cancellation)
 {
     public static MeetingResponse From(MeetingDetails meeting) => new(
         meeting.Id,
@@ -729,7 +727,7 @@ public sealed record MeetingResponse(
         meeting.AssignedApproverId,
         meeting.CreatedAt,
         meeting.UpdatedAt, meeting.Chair, meeting.Secretaries ?? [], meeting.MyMeetingRole,
-        meeting.MyResponse, meeting.CanRespond, meeting.CaptureMode.ToString(),
+        meeting.MyResponse, meeting.CanRespond,
         meeting.Cancellation is { } cancellation
             ? new MeetingCancellationResponse(
                 cancellation.CancelledAt, cancellation.CancelledById, cancellation.CancelledByName, cancellation.Reason)

@@ -13,9 +13,7 @@ public sealed record MeetingInput(
     string? Location,
     string? OnlineLink,
     string? Sensitivity,
-    string? Description,
-    // SCRUM-109: PerMic or Room; null keeps the current one, PerMic on create.
-    string? CaptureMode = null);
+    string? Description);
 
 /// <summary>A validated and normalized form value, ready to persist.</summary>
 public sealed record ValidatedMeetingInput(
@@ -26,8 +24,7 @@ public sealed record ValidatedMeetingInput(
     string Location,
     string? OnlineLink,
     Sensitivity Sensitivity,
-    string Description,
-    CaptureMode? CaptureMode = null);
+    string Description);
 
 [System.Text.Json.Serialization.JsonUnmappedMemberHandling(System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow)]
 public sealed record ParticipantSeed(Guid UserId, string? Role);
@@ -73,7 +70,6 @@ public sealed record MeetingDetails(
     string? MyMeetingRole = null,
     string? MyResponse = null,
     bool CanRespond = false,
-    CaptureMode CaptureMode = CaptureMode.PerMic,
     MeetingCancellation? Cancellation = null)
 {
     public static MeetingDetails From(Meeting meeting, Guid? actorId = null)
@@ -103,7 +99,6 @@ public sealed record MeetingDetails(
             mine?.Role.ToString(),
             MyResponseOf(mine?.Role, mine?.Response),
             mine is not null && ParticipantRules.CanRespond(meeting.Status, mine),
-            meeting.CaptureMode,
             meeting.Status == MeetingStatus.Cancelled && meeting.CancelledAt is { } cancelledAt
                 ? new MeetingCancellation(
                     cancelledAt,

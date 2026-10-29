@@ -1,0 +1,25 @@
+title UC-39d - Choose Audio and Video Devices
+
+actor "Participant" as Actor
+boundary "Meeting Lobby / Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Choose a microphone, speaker or camera
+activate Page
+alt The browser lists no device of that kind - AF-2
+    Page-->Actor: Picker disabled and says why; the actor can still join the room to listen
+else The chosen device is not found - EX-1
+    Page-->Actor: MSG335 - No {device} was found on this computer.
+else Another application holds the device - EX-2
+    Page-->Actor: MSG336 - The {device} is being used by another application (Zoom, Teams...).\nClose that application and try again.
+else The device cannot be opened - EX-3
+    Page-->Actor: MSG337 - Unable to open the {device}. You can still join the room to listen.
+else Device can be switched
+    Page->RoomProvider: Switch the live microphone, speaker or camera and keep the on/off state
+    activate RoomProvider
+    RoomProvider-->Page: Device in use
+    deactivate RoomProvider
+    Page->Page: Remember the choice for the next visit on this device; no Meeting setting changes (BR-331)
+    Page-->Actor: Picker shows the new device
+end
+deactivate Page

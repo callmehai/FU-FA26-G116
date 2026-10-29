@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { addVoiceSample, deleteVoiceSample, getMyVoice, grantVoiceConsent, withdrawVoiceConsent } from '../../api/voice'
+import {
+  addVoiceSample,
+  deleteVoiceSample,
+  getMyVoice,
+  grantVoiceConsent,
+  voiceSampleAudio,
+  withdrawVoiceConsent,
+} from '../../api/voice'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
@@ -106,7 +113,8 @@ function ConsentCard({ profile, onChange }: { profile: VoiceProfile; onChange: (
           <strong>Mục đích:</strong> {profile.purpose}
         </li>
         <li>
-          <strong>Lưu gì:</strong> chỉ đặc trưng giọng (một dãy số) đã mã hoá — không lưu âm thanh bạn ghi.
+          <strong>Lưu gì:</strong> bản ghi giọng mẫu bạn đọc và đặc trưng giọng (một dãy số), cả hai đã mã hoá. Chỉ bạn
+          nghe lại được bản ghi mẫu.
         </li>
         <li>
           <strong>Dùng ở đâu:</strong> chỉ so với giọng trong bản ghi các cuộc họp bạn tham dự. Máy chỉ gợi ý, Thư ký
@@ -155,8 +163,10 @@ function Enrolled({
   const [recording, setRecording] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
   const full = profile.samples.length >= profile.maxSamples
+  const player = useSamplePlayer()
 
   const remove = async (sampleId: string) => {
+    player.stop()
     try {
       const result = await deleteVoiceSample(sampleId)
       toast.show(result.message, 'success')
@@ -185,6 +195,9 @@ function Enrolled({
           {profile.samples.length}/{profile.maxSamples}
         </span>
       </div>
+      {profile.consent!.noticeVersion !== profile.noticeVersion && (
+        <RenewNotice profile={profile} onChange={onChange} />
+      )}
       {profile.samples.length < 2 && (
         <p className="alert alert-info">
           {profile.samples.length === 0
@@ -203,6 +216,20 @@ function Enrolled({
                   {formatDuration(sample.speechMs)} · {formatDate(sample.createdAt)}
                 </span>
               </span>
+              {sample.playable && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-icon btn-sm"
+                  onClick={() =>
+                    void player.toggle(sample.id).catch((error) => toast.show(errorMessage(error), 'error'))
+                  }
+                  aria-label={`${player.playing === sample.id ? 'Dừng' : 'Nghe lại'} giọng mẫu ${index + 1}`}
+                  aria-pressed={player.playing === sample.id}
+                  data-tooltip={player.playing === sample.id ? 'Dừng' : 'Nghe lại'}
+                >
+                  <Icon name={player.playing === sample.id ? 'pause' : 'play'} size={16} />
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn-ghost btn-icon btn-sm"
@@ -369,5 +396,67 @@ function RecordSampleDialog({
         </p>
       )}
     </Dialog>
+  )
+}
+
+/** One player for the list: the owner hears a sample back, fetched with their session, gone when the page closes. */
+function useSamplePlayer() {
+  const [playing, setPlaying] = useState<string | null>(null)
+  const audio = useRef<HTMLAudioElement | null>(null)
+  const url = useRef<string | null>(null)
+
+  const stop = useCallback(() => {
+    audio.current?.pause()
+    if (url.current) URL.revokeObjectURL(url.current)
+    url.current = null
+    setPlaying(null)
+  }, [])
+  useEffect(() => stop, [stop])
+
+  const toggle = async (sampleId: string) => {
+    const wasPlaying = playing === sampleId
+    stop()
+    if (wasPlaying) return
+    const blob = await voiceSampleAudio(sampleId)
+    url.current = URL.createObjectURL(blob)
+    const el = (audio.current ??= new Audio())
+    el.onended = stop
+    el.src = url.current
+    setPlaying(sampleId)
+    await el.play()
+  }
+
+  return { playing, toggle, stop }
+}
+
+/**
+ * ADR-0042 — the notice changed (1.1: the sample recording is kept, for its owner to hear back). Someone who agreed to
+ * the earlier one keeps their samples; they renew to have the next ones kept as recordings too.
+ */
+function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (profile: VoiceProfile) => void }) {
+  const toast = useToast()
+  const [saving, setSaving] = useState(false)
+  const renew = async () => {
+    setSaving(true)
+    try {
+      const result = await grantVoiceConsent(profile.noticeVersion)
+      toast.show(result.message, 'success')
+      onChange(result.data)
+    } catch (error) {
+      toast.show(errorMessage(error), 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+  return (
+    <div className="alert alert-info voice-renew">
+      <p>
+        Điều khoản mới: giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại. Mẫu cũ giữ nguyên, không
+        nghe lại được.
+      </p>
+      <button type="button" className="btn btn-outline btn-sm" disabled={saving} onClick={() => void renew()}>
+        {saving ? 'Đang lưu…' : 'Đồng ý điều khoản mới'}
+      </button>
+    </div>
   )
 }

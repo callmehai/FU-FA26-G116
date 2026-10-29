@@ -8,8 +8,10 @@ Dataset layout (from vivos_dataset.py or recorded by the team; personal data, ne
                                            "turns": [{"start": 0.0, "end": 5.8, "person": "lan", "text": "..."}]}
 
 The suggestion rule mirrors SpeakerMatcher.cs: a person's score is their best sample, a voice is
-named only at or above the threshold and at least the margin ahead of the next person, and each
-person names at most one voice per recording, best pairs first. --voice-margin adds a candidate
+named only at or above the threshold and at least the margin ahead of the next person. A person may name
+several voices of one recording, as AI-eCabinet does: diarization can split one person in two, and the weaker
+voice is then shown as "the same voice as" the stronger. --rule one is the earlier rule, where each person named
+at most one voice, best pairs first, kept to compare. --voice-margin adds a candidate
 rule: the voice must also be that far ahead of the person's next best voice in the same recording,
 because everyone recorded in one room scores alike against a sample.
 
@@ -69,7 +71,7 @@ def cosine(a, b):
     return 0.0 if na == 0 or nb == 0 or len(a) != len(b) else dot / (na * nb)
 
 
-def suggest(voices, samples, roster, threshold, margin, voice_margin=0.0):
+def suggest(voices, samples, roster, threshold, margin, voice_margin=0.0, rule="many", same_voice=0.0):
     """voices: {label: embedding}; samples: {person: [embedding]} → {label: (person, score)}."""
     scores = {label: sorted(((max(cosine(v, e) for e in samples[p]), p) for p in roster if p in samples), reverse=True)
               for label, v in voices.items()}
@@ -80,13 +82,18 @@ def suggest(voices, samples, roster, threshold, margin, voice_margin=0.0):
     result, taken = {}, set()
     for score, label, person in sorted(((s, label, p) for label, ranked in scores.items() for s, p in ranked),
                                        reverse=True):
-        if label in result or person in taken or score < threshold:
+        if label in result or (rule == "one" and person in taken) or score < threshold:
             continue
         runner_up = max((s for s, p in scores[label] if p != person), default=0.0)
         if score - runner_up < margin:
             continue
         other_voice = sorted(by_person[person], reverse=True)[1] if len(by_person[person]) > 1 else 0.0
         if score - other_voice < voice_margin:
+            continue
+        # A second voice named as someone must also sound like the first one: else it is another person who
+        # scores well against the same sample (a stranger), not one person split in two.
+        lead = next((other for other, (p, _) in result.items() if p == person), None)
+        if lead is not None and cosine(voices[label], voices[lead]) < same_voice:
             continue
         result[label] = (person, score)
         taken.add(person)
@@ -119,6 +126,10 @@ def main():
     ap.add_argument("--threshold", type=float, nargs="+", default=[0.4, 0.5, 0.6])
     ap.add_argument("--margin", type=float, nargs="+", default=[0.1])
     ap.add_argument("--voice-margin", type=float, nargs="+", default=[0.0])
+    ap.add_argument("--same-voice", type=float, nargs="+", default=[0.0],
+                    help="rule many: a second voice named as a person must be this close to the first one")
+    ap.add_argument("--rule", choices=["many", "one"], nargs="+", default=["many"],
+                    help="many: a person may name several voices (the product); one: at most one voice each")
     ap.add_argument("--cache", type=pathlib.Path, help="directory to keep worker results between runs")
     args = ap.parse_args()
     if args.cache:
@@ -138,9 +149,10 @@ def main():
     for line in rejected:
         print(f"  rejected {line}")
 
-    grid = {(t, m, v): {"speech": 0.0, "right": 0.0, "wrong": 0.0, "stranger": 0.0, "stranger_named": 0.0,
+    grid = {(t, m, v, r, sv): {"speech": 0.0, "right": 0.0, "wrong": 0.0, "stranger": 0.0, "stranger_named": 0.0,
                      "absent_named": 0, "suggested": 0, "correct": 0}
-            for t in args.threshold for m in args.margin for v in args.voice_margin}
+            for t in args.threshold for m in args.margin for v in args.voice_margin for r in args.rule
+            for sv in (args.same_voice if r == "many" else [0.0])}
     err_words = ref_words = 0
     spk_right = spk_total = audio_s = busy_s = 0.0
     found = []
@@ -176,8 +188,8 @@ def main():
             ref_words += len(ref)
 
         voices = {s["label"]: s["embedding"] for s in result["speakers"]}
-        for (threshold, margin, voice_margin), tot in grid.items():
-            names = suggest(voices, samples, truth["people"], threshold, margin, voice_margin)
+        for (threshold, margin, voice_margin, rule, same_voice), tot in grid.items():
+            names = suggest(voices, samples, truth["people"], threshold, margin, voice_margin, rule, same_voice)
             for seg in segments:
                 length = (seg["endMs"] - seg["startMs"]) / 1000
                 person, named = true_person(seg), names.get(seg["speaker"], (None, 0))[0]
@@ -199,12 +211,12 @@ def main():
     if ref_words:
         print(f"WER {err_words / ref_words:.1%} over {ref_words} words")
     print(f"processing {busy_s:.0f}s for {audio_s:.0f}s of audio (RTF {busy_s / max(audio_s, 1e-9):.3f}; cached runs read 0)")
-    print("\nthreshold margin voice-margin | named right | enrolled named right | named wrong | stranger named |"
+    print("\nrule same-voice threshold margin voice-margin | named right | enrolled named right | named wrong | stranger named |"
           " absent named | precision")
-    for (threshold, margin, voice_margin), tot in sorted(grid.items()):
+    for (threshold, margin, voice_margin, rule, same_voice), tot in sorted(grid.items()):
         speech = max(tot["speech"], 1e-9)
         enrolled = max(tot["speech"] - tot["stranger"], 1e-9)
-        print(f"   {threshold:.2f}   {margin:.2f}   {voice_margin:.2f}       |   {tot['right'] / speech:6.1%}    |"
+        print(f"{rule:>4}   {same_voice:.2f}   {threshold:.2f}   {margin:.2f}   {voice_margin:.2f}       |   {tot['right'] / speech:6.1%}    |"
               f"        {tot['right'] / enrolled:6.1%}        |   {tot['wrong'] / speech:6.1%}    |"
               f"     {tot['stranger_named'] / max(tot['stranger'], 1e-9):6.1%}     |    {tot['absent_named']:3d}       |"
               f" {tot['correct']}/{tot['suggested']}")

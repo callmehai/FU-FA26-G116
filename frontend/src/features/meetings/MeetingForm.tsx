@@ -19,7 +19,6 @@ import {
   type Sensitivity,
 } from '../../types/meeting'
 import type { ParticipantSeed } from '../../types/participant'
-import { CAPTURE_MODE_LABEL, type CaptureMode } from '../../types/speech'
 import { rosterError, type RosterEntry } from '../participants/roster'
 import { RosterField } from '../participants/RosterField'
 import { useAuth } from '../auth/useAuth'
@@ -43,7 +42,6 @@ type Field =
   | 'sensitivity'
   | 'location'
   | 'onlineLink'
-  | 'captureMode'
   | 'participants'
 type FieldErrors = Partial<Record<Field, string>>
 
@@ -58,7 +56,6 @@ const FIELD_ORDER: Field[] = [
   'sensitivity',
   'location',
   'onlineLink',
-  'captureMode',
   'participants',
 ]
 
@@ -80,16 +77,15 @@ interface Values {
   sensitivity: Sensitivity
   location: string
   onlineLink: string
-  captureMode: CaptureMode
 }
 
 const MODE_OPTIONS = MEETING_MODES.map((value) => ({ value, label: MEETING_MODE_LABEL[value] }))
 const SENSITIVITY_OPTIONS = SENSITIVITIES.map((value) => ({ value, label: SENSITIVITY_LABEL[value] }))
-const CAPTURE_OPTIONS = (['PerMic', 'Room'] as const).map((value) => ({ value, label: CAPTURE_MODE_LABEL[value] }))
-/** SCRUM-109: what each choice means for the people in the room, in one line. */
-const CAPTURE_HINT: Record<CaptureMode, string> = {
-  PerMic: 'Mỗi người tự thu micro của mình, chữ hiện theo từng câu.',
-  Room: 'Thư ký ghi hoặc tải lên một bản ghi chung.',
+/** ADR-0040: how the meeting will be recorded follows from how it is held, in one line. */
+const MODE_HINT: Record<MeetingMode, string> = {
+  InPerson: 'Ghi âm: Thư ký ghi cả phòng.',
+  Online: 'Ghi âm: mỗi người ghi micro của mình.',
+  Hybrid: 'Ghi âm: mic phòng và micro người trực tuyến.',
 }
 const LOCKED_HINT = 'Đã công bố, không đổi được.'
 const FORM_ID = 'meeting-form'
@@ -113,7 +109,6 @@ function initialValues(meeting: Meeting | null, day: string | null): Values {
     sensitivity: meeting?.sensitivity ?? 'Normal',
     location: meeting?.location ?? '',
     onlineLink: meeting?.onlineLink ?? '',
-    captureMode: meeting?.captureMode ?? 'PerMic',
   }
 }
 
@@ -171,7 +166,6 @@ function toRequest(values: Values): MeetingRequest {
     onlineLink: values.mode === 'InPerson' ? null : values.onlineLink.trim() || null,
     sensitivity: values.sensitivity,
     description: values.description,
-    captureMode: values.captureMode,
   }
 }
 
@@ -485,7 +479,7 @@ export function MeetingForm({
                 label="Hình thức"
                 disabled={reschedule}
               />
-              {errorOf('mode', reschedule ? LOCKED_HINT : undefined)}
+              {errorOf('mode', reschedule ? LOCKED_HINT : MODE_HINT[values.mode])}
             </div>
 
             <div className="field" data-field="sensitivity">
@@ -529,19 +523,6 @@ export function MeetingForm({
                 {errorOf('onlineLink', 'Không bắt buộc, tối đa 1.000 ký tự.')}
               </label>
             )}
-
-            {/* SCRUM-109. A published meeting changes it in the Bản ghi tab, which tells nobody "rescheduled". */}
-            <div className="field span-2" data-field="captureMode">
-              <span>Cách ghi âm</span>
-              <SegmentedControl
-                value={values.captureMode}
-                options={CAPTURE_OPTIONS}
-                onChange={(v) => set('captureMode', v)}
-                label="Cách ghi âm"
-                disabled={reschedule}
-              />
-              {errorOf('captureMode', reschedule ? 'Đã công bố: đổi ở tab Bản ghi.' : CAPTURE_HINT[values.captureMode])}
-            </div>
           </div>
         </section>
 

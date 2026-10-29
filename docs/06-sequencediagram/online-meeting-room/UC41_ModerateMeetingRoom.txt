@@ -1,0 +1,61 @@
+title UC-41 - Moderate Meeting Room
+
+actor "Chair" as Actor
+boundary "Online Meeting Room Page" as Page
+control ":Meeting Room Controller" as RoomController
+control ":Meeting Room Service" as RoomService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Room Service" as RoomProvider
+database ":Database" as Database
+
+Actor->Page: Choose Mute on a person whose microphone is on
+activate Page
+Page->RoomController: Mute the selected person's microphone
+activate RoomController
+RoomController->RoomService: muteParticipant(meetingId, chairId, targetUserId)
+activate RoomService
+RoomService->MeetingRepository: Read Meeting status and the current Chair
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and Chair information
+activate Database
+Database-->MeetingRepository: Current information
+deactivate Database
+MeetingRepository-->RoomService: Current information
+deactivate MeetingRepository
+RoomService->RoomService: Verify the actor is the current Chair and the Meeting is In Progress (BR-325)
+alt The actor is no longer the Chair - EX-1
+    RoomService-->RoomController: MSG123 - Only the Chair can mute another person's microphone.
+    RoomController-->Page: MSG123 - Only the Chair can mute another person's microphone.
+    Page-->Actor: MSG123 - Only the Chair can mute another person's microphone.
+else The Meeting is no longer In Progress - EX-5
+    RoomService-->RoomController: MSG117 - The meeting room opens only while the meeting is in progress.
+    RoomController-->Page: MSG117 - The meeting room opens only while the meeting is in progress.
+    Page-->Actor: MSG117 - The meeting room opens only while the meeting is in progress.
+else The Chair may mute
+    RoomService->RoomProvider: Mute the target's microphone for everyone in the room (BR-325)
+    activate RoomProvider
+    RoomProvider-->RoomService: Muted / target not in the room or no microphone on / no response
+    deactivate RoomProvider
+    alt The target is no longer in the room or has no microphone on - EX-2
+        RoomService-->RoomController: MSG282 - This person is no longer in the room or has no microphone on.
+        RoomController-->Page: MSG282 - This person is no longer in the room or has no microphone on.
+        Page-->Actor: MSG282 - This person is no longer in the room or has no microphone on.
+    else The room service does not respond - EX-3
+        RoomService-->RoomController: MSG124 - The meeting room server did not respond. Please try again.
+        RoomController-->Page: MSG124 - The meeting room server did not respond. Please try again.
+        Page-->Actor: MSG124 - The meeting room server did not respond. Please try again.
+    else Muting cannot be saved - EX-4
+        RoomService-->RoomController: MSG284 - Unable to mute the microphone. Please try again.
+        RoomController-->Page: MSG284 - Unable to mute the microphone. Please try again.
+        Page-->Actor: MSG284 - Unable to mute the microphone. Please try again.
+    else Microphone muted
+        RoomService-->RoomController: Microphone muted
+        RoomController-->Page: Microphone muted
+        Page-->Actor: MSG342 - Muted the microphone of {name}.
+        RoomProvider-->Page: The target's microphone is off
+        Page-->Actor: MSG339 - The Chair has muted your microphone. You can turn it back on when you need to speak.\n(shown to the target)
+    end
+end
+deactivate RoomService
+deactivate RoomController
+deactivate Page

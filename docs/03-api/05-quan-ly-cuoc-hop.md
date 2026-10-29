@@ -23,9 +23,9 @@ gửi duyệt, duyệt, từ chối và lịch sử trạng thái nằm trên tr
 
 Tạo cuộc họp yêu cầu tên và lịch dự kiến (BR-24, BR-25): giờ bắt đầu ở tương lai (BR-162), giờ kết
 thúc sau giờ bắt đầu (BR-62). Form khởi tạo Hình thức là `InPerson` và Mức độ mật là `Normal`.
-Trường `captureMode` (`PerMic` mặc định, hoặc `Room`) chọn cách ghi âm — xem
-[12 · Ghi âm theo micro từng người](12-ban-ghi-cuoc-hop.md#ghi-âm-theo-micro-từng-người-scrum-109). Bỏ trống khi
-sửa thì giữ nguyên; cuộc họp đã công bố đổi ở tab Bản ghi, không qua form dời lịch.
+Hình thức cũng quyết định cách ghi âm (ADR-0040): trực tuyến ghi theo micro từng người, trực tiếp do Thư ký ghi
+cả phòng, kết hợp thì cả hai — xem [12 · Bản ghi cuộc họp](12-ban-ghi-cuoc-hop.md). Không còn trường
+`captureMode`.
 
 ## Quyền truy cập
 
