@@ -661,8 +661,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .drop-menu-label { margin: 0; padding: 6px 10px 2px; color: var(--muted-ink); font-size: 12px; font-weight: 600; }
 .drop-menu-link { height: 42px; }
 .drop-menu-link .icon { color: var(--muted-ink); }
-.drop-menu-current, .drop-menu-current:hover { background: var(--brand); color: #fff; font-weight: 600; }
-.drop-menu-current .icon { color: #fff; }
+.drop-menu .drop-menu-current, .drop-menu .drop-menu-current:hover { background: var(--brand); color: #fff; font-weight: 600; }
+.drop-menu .drop-menu-current .icon { color: #fff; }
 @keyframes drop { from { opacity: 0; transform: translateY(-4px); } }
 
 .avatar {

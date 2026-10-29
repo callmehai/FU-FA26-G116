@@ -90,7 +90,7 @@ function NavMenu({ admin }: { admin: NavEntry[] }) {
         type="button"
         className="topbar-icon"
         aria-label="Mở menu điều hướng"
-        data-tooltip="Mở menu điều hướng"
+        data-tooltip={open ? undefined : 'Mở menu điều hướng'}
         aria-expanded={open}
         aria-controls={open ? 'nav-menu' : undefined}
         onClick={() => setOpen(!open)}

@@ -106,7 +106,7 @@ export function LoginPage() {
           <span className="login-mark">
             <BrandMark size={72} />
           </span>
-          <h1>TrustCabinet</h1>
+          <h1 className="serif">TrustCabinet</h1>
           <p className="login-sub">Đăng nhập hệ thống phòng họp không giấy</p>
         </div>
 

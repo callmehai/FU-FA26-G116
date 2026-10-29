@@ -149,7 +149,7 @@ export function ResetPasswordPage() {
           <span className="login-mark">
             <BrandMark size={72} />
           </span>
-          <h1>Đặt lại mật khẩu</h1>
+          <h1 className="serif">Đặt lại mật khẩu</h1>
           <p className="login-sub">
             {token === null
               ? 'Trang này cần được mở từ liên kết trong email.'
