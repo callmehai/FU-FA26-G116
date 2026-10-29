@@ -373,11 +373,11 @@ function MeetingDetail({
               <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
             </div>
           ) : (
-            <div className="card card-pending tab-pending">
-              <p>Tab này chưa có nghiệp vụ.</p>
-              <p>
-                Sẽ hiện thực khi backend có <code>{TAB_BLOCKED_ON[tab]}</code>.
-              </p>
+            // Seen by everyone on the test server, so it says what the user can expect, not which
+            // endpoint is missing (that stays in TAB_BLOCKED_ON for the developer).
+            <div className="card card-pending tab-pending" data-blocked-on={TAB_BLOCKED_ON[tab]}>
+              <p>Chưa có biên bản.</p>
+              <p>Chức năng lập và duyệt biên bản đang được làm.</p>
             </div>
           )}
         </section>
