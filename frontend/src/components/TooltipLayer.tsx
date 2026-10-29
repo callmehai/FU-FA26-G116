@@ -36,6 +36,12 @@ export function TooltipLayer() {
       const box = el.getBoundingClientRect()
       const width = tip.offsetWidth
       const height = tip.offsetHeight
+      // In the sidebar a label above would cover the brand or the item above: put it to the right.
+      if (el.closest('.sidebar')) {
+        tip.style.left = `${box.right + GAP}px`
+        tip.style.top = `${box.top + box.height / 2 - height / 2}px`
+        return
+      }
       const left = Math.min(Math.max(8, box.left + box.width / 2 - width / 2), window.innerWidth - width - 8)
       const above = box.top - height - GAP
       tip.style.left = `${left}px`

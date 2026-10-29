@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
-import { AdminLayout, PageFrame } from '../components/AdminLayout'
 import { AppShell } from '../components/AppShell'
 import { TooltipLayer } from '../components/TooltipLayer'
 import { NotFound } from '../components/NotFound'
@@ -44,7 +43,7 @@ const VoicePage = lazy(() => import('../features/voice/VoicePage').then((m) => (
 
 /**
  * Route map: a public login and password reset, then every screen behind a session gate, inside
- * one shell under one top bar (ADR-0043).
+ * one shell with one sidebar (ADR-0012).
  *
  * Capability-gated routes render the same 404 as an unknown URL, so an admin-only screen never
  * reveals its existence to someone who lacks the capability. None of this is security: the backend
@@ -82,45 +81,40 @@ export function App() {
             {/* Inside the guard and the shell: following an old /mgmt link must not remount either —
                 that would drop the notification connection. */}
             <Route path={routes.mgmt} element={<Navigate to={routes.meetings} replace />} />
-            <Route element={<PageFrame />}>
-              <Route path={routes.calendar} element={<CalendarPage />} />
-              <Route path={routes.documents} element={<DocumentsPage />} />
-              <Route path={routes.myVoice} element={<VoicePage />} />
-              <Route path={routes.meetings} element={<MeetingsPage />} />
-              {/* Create and edit are dialogs now (`?create=`, `?edit=`); old links land on them. */}
-              <Route path={routes.meetingNew} element={<Navigate to={`${routes.meetings}?create=1`} replace />} />
-              <Route path={routes.meetingEdit(':meetingId')} element={<EditLinkRedirect />} />
-              {/* No capability gate: an unreadable meeting 404s, which the page renders as NotFound. */}
-              <Route path={routes.meeting(':meetingId')} element={<MeetingDetailPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-            {/* The Quản trị area: its own column of pages beside the page (AI-eCabinet). */}
-            <Route element={<AdminLayout />}>
-              <Route
-                path={routes.adminUsers}
-                element={
-                  <RequireCapability cap="AdminUsers">
-                    <UsersPage />
-                  </RequireCapability>
-                }
-              />
-              <Route
-                path={routes.userLibrary(':userId')}
-                element={
-                  <RequireCapability cap="AdminUsers">
-                    <UserLibraryPage />
-                  </RequireCapability>
-                }
-              />
-              <Route
-                path={routes.adminRoles}
-                element={
-                  <RequireCapability cap="AdminUsers">
-                    <RolesPage />
-                  </RequireCapability>
-                }
-              />
-            </Route>
+            <Route path={routes.calendar} element={<CalendarPage />} />
+            <Route path={routes.documents} element={<DocumentsPage />} />
+            <Route path={routes.myVoice} element={<VoicePage />} />
+            <Route path={routes.meetings} element={<MeetingsPage />} />
+            {/* Create and edit are dialogs now (`?create=`, `?edit=`); old links land on them. */}
+            <Route path={routes.meetingNew} element={<Navigate to={`${routes.meetings}?create=1`} replace />} />
+            <Route path={routes.meetingEdit(':meetingId')} element={<EditLinkRedirect />} />
+            {/* No capability gate: an unreadable meeting 404s, which the page renders as NotFound. */}
+            <Route path={routes.meeting(':meetingId')} element={<MeetingDetailPage />} />
+            <Route
+              path={routes.adminUsers}
+              element={
+                <RequireCapability cap="AdminUsers">
+                  <UsersPage />
+                </RequireCapability>
+              }
+            />
+            <Route
+              path={routes.userLibrary(':userId')}
+              element={
+                <RequireCapability cap="AdminUsers">
+                  <UserLibraryPage />
+                </RequireCapability>
+              }
+            />
+            <Route
+              path={routes.adminRoles}
+              element={
+                <RequireCapability cap="AdminUsers">
+                  <RolesPage />
+                </RequireCapability>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Route>
       </Routes>

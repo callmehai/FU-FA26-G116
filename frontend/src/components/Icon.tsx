@@ -1,6 +1,4 @@
 import {
-  Menu,
-  Fingerprint,
   ArrowDown,
   AudioLines,
   FunnelX,
@@ -205,9 +203,6 @@ const ICONS = {
   // SCRUM-25: drag an agenda item; an item that has a conclusion.
   grip: GripVertical,
   clipboardCheck: ClipboardCheck,
-  // The top bar's sections folded into one menu on a narrow screen; one's own Voice ID.
-  menu: Menu,
-  fingerprint: Fingerprint,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
