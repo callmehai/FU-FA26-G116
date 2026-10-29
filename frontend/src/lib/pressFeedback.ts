@@ -7,7 +7,7 @@
  * always plays to the end, however short the press was.
  */
 const PRESSABLE =
-  '.btn, .icon-button, .select-trigger, .menu-item, .sidebar-item, .sidebar-subitem'
+  '.btn, .icon-button, .select-trigger, .menu-item, .topbar-icon'
 const PRESSED_CLASS = 'is-pressed'
 
 function press(target: EventTarget | null) {

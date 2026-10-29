@@ -140,7 +140,7 @@ export function UserLibraryPage() {
         description="Chỉ xem. Mỗi lần mở thư mục hoặc tài liệu đều được ghi vào nhật ký."
       />
 
-      <div className="list-panel list-fill">
+      <div className="list-panel list-page list-fill">
         <div className="table-card table-fill">
           <table className="data-table library-table">
             <thead>

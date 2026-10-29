@@ -53,7 +53,7 @@ const WHEN_SELECT_OPTIONS = [
   ...WHEN_OPTIONS.map((w) => ({ value: w, label: WHEN_LABEL[w] })),
 ]
 
-const COLUMN_COUNT = 7
+const COLUMN_COUNT = 5
 const SKELETON_ROWS = 5
 
 type Load =
@@ -206,31 +206,32 @@ export function MeetingsPage() {
       </EmptyRow>
     )
   } else {
-    const offset = (data.page - 1) * data.pageSize
-    body = data.items.map((m, index) => (
+    body = data.items.map((m) => (
       // The whole row opens the meeting; the title link and the eye button are the keyboard routes.
       <tr
         key={m.id}
         className={m.status === 'InProgress' ? 'row-link row-live' : 'row-link'}
         onClick={() => navigate(routes.meeting(m.id), { state: back })}
       >
-        <td className="cell-index">{offset + index + 1}</td>
         <td className="cell-title">
           <Link to={routes.meeting(m.id)} state={back} onClick={(e) => e.stopPropagation()}>
             {m.title}
           </Link>
+          <span className="cell-sub cell-meta">
+            <Icon name={m.mode === 'Online' ? 'video' : 'mapPin'} size={13} />
+            {MEETING_MODE_LABEL[m.mode]}
+            {m.mode !== 'Online' && m.location && ` · ${m.location}`}
+          </span>
         </td>
         <td className="cell-schedule">
-          {formatClock(m.plannedStartTime)}–{formatClock(m.plannedEndTime)}
+          <b>
+            {formatClock(m.plannedStartTime)} – {formatClock(m.plannedEndTime)}
+          </b>
           <span className="cell-sub">
             {formatDate(m.plannedStartTime) === formatDate(m.plannedEndTime)
               ? formatWeekdayDate(m.plannedStartTime)
               : `${formatDate(m.plannedStartTime)} – ${formatDate(m.plannedEndTime)}`}
           </span>
-        </td>
-        <td className="cell-muted cell-place">
-          {MEETING_MODE_LABEL[m.mode]}
-          {m.mode !== 'Online' && m.location && <span className="cell-sub">{m.location}</span>}
         </td>
         <td className="cell-status">
           <StatusBadge status={m.status} />
@@ -239,16 +240,25 @@ export function MeetingsPage() {
           <SensitivityBadge sensitivity={m.sensitivity} />
         </td>
         <td className="col-action">
-          <Link
-            className="icon-button icon-button-sm icon-button-brand"
-            to={routes.meeting(m.id)}
-            state={back}
-            onClick={(e) => e.stopPropagation()}
-            data-tooltip="Xem chi tiết"
-            aria-label={`Xem chi tiết ${m.title}`}
-          >
-            <Icon name="eye" />
-          </Link>
+          {m.status === 'InProgress' && m.mode !== 'InPerson' ? (
+            // The call to act now, as on AI-eCabinet's list: gold, and it pings. The room answers
+            // 404 to someone who is not invited.
+            <Link className="btn btn-go" to={routes.meetingRoom(m.id)} onClick={(e) => e.stopPropagation()}>
+              Vào phòng họp
+              <Icon name="arrowRight" size={14} />
+            </Link>
+          ) : (
+            <Link
+              className="icon-button icon-button-sm icon-button-brand"
+              to={routes.meeting(m.id)}
+              state={back}
+              onClick={(e) => e.stopPropagation()}
+              data-tooltip="Xem chi tiết"
+              aria-label={`Xem chi tiết ${m.title}`}
+            >
+              <Icon name="eye" />
+            </Link>
+          )}
         </td>
       </tr>
     ))
@@ -257,11 +267,11 @@ export function MeetingsPage() {
   return (
     <>
       <PageHeader
-        title="Danh sách cuộc họp"
+        title="Cuộc họp"
         action={
           canCreate && (
             <Link className="btn btn-primary btn-lg btn-cta" to={createLink.to} state={createLink.state}>
-              <Icon name="plus" size={18} />
+              <Icon name="plus" size={16} />
               Tạo cuộc họp
             </Link>
           )
@@ -275,7 +285,7 @@ export function MeetingsPage() {
         onSelect={(status) => update({ status })}
       />
 
-      <div className="list-panel list-fill">
+      <div className="list-panel list-page list-fill">
         <div className="toolbar">
           <label className="search search-flex">
             <Icon name="search" size={16} />
@@ -326,14 +336,12 @@ export function MeetingsPage() {
           <table className={refreshing && data ? 'data-table meetings-table data-table-stale' : 'data-table meetings-table'}>
             <thead>
               <tr>
-                <th className="cell-index">STT</th>
                 <SortHeader column="title" state={state} onSort={sortBy}>
                   Tên cuộc họp
                 </SortHeader>
                 <SortHeader column="plannedStartTime" state={state} onSort={sortBy}>
-                  Thời gian
+                  Thời gian diễn ra
                 </SortHeader>
-                <th className="cell-place">Hình thức</th>
                 <th>Trạng thái</th>
                 <th>Mức độ</th>
                 <th className="col-action">Thao tác</th>

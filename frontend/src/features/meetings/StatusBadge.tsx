@@ -3,22 +3,9 @@ import { MEETING_STATUS_LABEL, SENSITIVITY_LABEL, type MeetingStatus, type Sensi
 import { STATUS_TONE } from './statusTone'
 
 /**
- * One glyph per state, so states differ by shape and not only by colour (ADR-0028). "Đang diễn ra"
- * has none: its solid fill is its shape, and an icon on a filled label is one decoration too many.
- */
-const STATUS_ICON: Partial<Record<MeetingStatus, IconName>> = {
-  Draft: 'pencil',
-  WaitingApproval: 'clock',
-  Rejected: 'xCircle',
-  Approved: 'checkCircle',
-  Published: 'send',
-  Ended: 'checkCheck',
-  Cancelled: 'calendarX',
-}
-
-/**
- * A meeting's lifecycle state as a coloured icon and text, with no chip around it; "Đang diễn ra" is
- * the one solid label, so a live meeting is the first thing found on any screen (ADR-0028).
+ * A meeting's lifecycle state as AI-eCabinet draws it (ADR-0035): a rounded chip with a dot in the
+ * state's colour. Shape tells states apart as well as colour — a draft and a wait are dashed, "Đang
+ * diễn ra" is the one solid chip, its dot pulsing so a live meeting is found first on any screen.
  *
  * `label` overrides the text while keeping the colour. The history timeline needs that: a row
  * there records what *happened* ("Đã gửi duyệt"), not what the meeting *is* ("Chờ duyệt"), and
@@ -35,7 +22,7 @@ export function StatusBadge({
 }) {
   return (
     <span className={`status status-${STATUS_TONE[status]}${plain ? ' status-plain' : ''}`}>
-      {!plain && STATUS_ICON[status] && <Icon name={STATUS_ICON[status]} size={14} />}
+      {!plain && <span className="status-dot" aria-hidden="true" />}
       {label ?? MEETING_STATUS_LABEL[status]}
     </span>
   )
@@ -50,12 +37,10 @@ const LEVEL: Record<Sensitivity, { className: string; icon: IconName }> = {
 
 /**
  * A meeting's sensitivity as a square-cornered chip with its own icon, so the levels differ by
- * shape as well as colour. Red is reserved for "Mật". "Thường" is the usual case and stays plain
- * text: a chip on every row would make nothing stand out. A row of chips (a record's header, a
- * calendar card) leaves "Thường" out altogether, as the call room does (ADR-0028).
+ * shape as well as colour from the round status chip. Red is reserved for "Mật". Every level is
+ * drawn, "Thường" included, as AI-eCabinet does (ADR-0035).
  */
 export function SensitivityBadge({ sensitivity }: { sensitivity: Sensitivity }) {
-  if (sensitivity === 'Normal') return <span className="level level-plain">{SENSITIVITY_LABEL[sensitivity]}</span>
   const level = LEVEL[sensitivity]
   return (
     <span className={`level ${level.className}`}>
