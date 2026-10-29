@@ -23,7 +23,11 @@ deactivate Database
 MeetingRepository-->RoomService: Current information
 deactivate MeetingRepository
 RoomService->RoomService: Verify the actor may still view the Meeting and holds a current room-entry\nrelationship; for a Guest verify the invitation (BR-97, BR-101, BR-152 – BR-157, BR-181, BR-323)
-alt Actor is no longer eligible - EX-4
+alt Room status cannot be loaded - EX-8
+    RoomService-->RoomController: MSG283 - Unable to load the meeting room status. Please try again.
+    RoomController-->Page: MSG283 - Unable to load the meeting room status. Please try again.
+    Page-->Actor: MSG283 - Unable to load the meeting room status. Please try again.
+else Actor is no longer eligible - EX-4
     RoomService-->RoomController: Meeting not found for the actor
     RoomController-->Page: Meeting not found for the actor
     Page-->Actor: Meeting page shown as for a Meeting that does not exist

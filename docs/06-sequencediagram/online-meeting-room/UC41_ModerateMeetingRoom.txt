@@ -44,6 +44,10 @@ else The Chair may mute
         RoomService-->RoomController: MSG124 - The meeting room server did not respond. Please try again.
         RoomController-->Page: MSG124 - The meeting room server did not respond. Please try again.
         Page-->Actor: MSG124 - The meeting room server did not respond. Please try again.
+    else Muting cannot be saved - EX-4
+        RoomService-->RoomController: MSG284 - Unable to mute the microphone. Please try again.
+        RoomController-->Page: MSG284 - Unable to mute the microphone. Please try again.
+        Page-->Actor: MSG284 - Unable to mute the microphone. Please try again.
     else Microphone muted
         RoomService-->RoomController: Microphone muted
         RoomController-->Page: Microphone muted

@@ -30,6 +30,10 @@ else The actor already has an open request - EX-2
     RoomService-->RoomController: Request unchanged (BR-337)
     RoomController-->Page: Request unchanged
     Page-->Actor: The hand stays raised
+else The room service does not respond - EX-5
+    RoomService-->RoomController: MSG124 - The meeting room server did not respond. Please try again.
+    RoomController-->Page: MSG124 - The meeting room server did not respond. Please try again.
+    Page-->Actor: MSG124 - The meeting room server did not respond. Please try again.
 else Request can be made
     RoomService->MeetingRepository: Queue the request after the earlier ones (BR-337, BR-338)
     activate MeetingRepository
