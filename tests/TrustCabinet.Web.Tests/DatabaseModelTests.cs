@@ -48,7 +48,8 @@ public class DatabaseModelTests
                 "notifications", "recordings", "role_capabilities", "roles", "speaking_requests", "speech_clips",
                 "stored_files",
                 "transcript_segments", "transcript_speakers", "transcripts", "users", "voice_consents",
-                "voice_samples", "vote_choices", "vote_receipts", "voting_options", "voting_sessions",
+                "voice_samples", "vote_choices", "vote_documents", "vote_eligible_voters", "vote_receipts",
+                "voting_options", "voting_sessions",
             ],
             tables);
     }
@@ -375,6 +376,48 @@ public class DatabaseModelTests
         Assert.Contains(indexes, i => i.IsUnique
             && i.Properties.Select(p => p.Name).OrderBy(n => n)
                 .SequenceEqual(new[] { nameof(VoteReceipt.VotingSessionId), nameof(VoteReceipt.VoterId) }.OrderBy(n => n)));
+    }
+
+    [Fact]
+    public void A_guest_votes_once_by_invitation_not_as_a_user()
+    {
+        using var db = NewContext();
+
+        // ADR-0016: Guests vote, but never have a User row, so a ballot names its voter by
+        // invitation — and one-person-one-vote has to hold for that key as well.
+        foreach (var entity in new[] { typeof(VoteReceipt), typeof(VoteEligibleVoter) })
+        {
+            var type = db.Model.FindEntityType(entity)!;
+            Assert.Contains(type.GetForeignKeys(), fk => fk.PrincipalEntityType.ClrType == typeof(MeetingGuestInvitation));
+            Assert.Contains(type.GetIndexes(), i => i.IsUnique
+                && i.Properties.Select(p => p.Name).Contains("GuestInvitationId")
+                && i.Properties.Select(p => p.Name).Contains(nameof(VoteReceipt.VotingSessionId)));
+        }
+    }
+
+    [Fact]
+    public void A_vote_belongs_to_the_meeting_not_to_an_agenda_item()
+    {
+        using var db = NewContext();
+
+        // BR-285 / ADR-0014: a link to an agenda item would invite screens and minutes to group
+        // votes under items, which the PO ruled out.
+        Assert.DoesNotContain(
+            db.Model.FindEntityType(typeof(VotingSession))!.GetForeignKeys(),
+            fk => fk.PrincipalEntityType.ClrType == typeof(AgendaItem));
+    }
+
+    [Fact]
+    public void A_meeting_has_at_most_one_open_vote()
+    {
+        using var db = NewContext();
+
+        // BR-266, enforced by the database so two simultaneous Open requests cannot both succeed.
+        Assert.Contains(
+            db.Model.FindEntityType(typeof(VotingSession))!.GetIndexes(),
+            i => i.IsUnique
+                && i.Properties.Single().Name == nameof(VotingSession.MeetingId)
+                && i.GetFilter() == "status = 'Open'");
     }
 
     [Fact]
