@@ -64,6 +64,8 @@ Tin đầu của bot nói dùng từ MSG318, rồi đính chính; đây là bả
 
 ## 5. Ghi âm: SCRUM-109 và SCRUM-44 sang BA Final Review
 
+> **Lỗi thời từ 29/10/2026:** chọn chế độ thu, "không lưu âm thanh" và ghi trộn cuộc gọi (ADR-0030) đã bỏ. Yêu cầu sau cùng ở [note 16](16-ghi-am-voice-id-28-29-10-2026.md).
+
 SCRUM-29, 31, 35, 109 và 44 đều đã sang BA Final Review.
 
 **SCRUM-109 (chế độ thu), nguồn:**
