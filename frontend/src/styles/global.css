@@ -1700,6 +1700,30 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .date-pick-legend { display: flex; gap: 18px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); color: var(--muted-ink); font-size: 12px; }
 .date-pick-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .date-pick-legend i { width: 12px; height: 12px; border-radius: 50%; }
+
+/* Date and time fields of a form (components/DateField.tsx, TimeField.tsx). They replace the
+   browser's date and time inputs, whose text and popup follow the browser's language: an English
+   Chrome showed 10/29/2026 and AM/PM in a Vietnamese form. The button sits inside the box, as the
+   password field's show button does. */
+.date-field, .time-field { position: relative; min-width: 0; }
+.date-field-box { position: relative; display: flex; }
+.date-field-box input { flex: 1; min-width: 0; padding-right: 40px; }
+.date-field-box .icon-button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 36px;
+  height: calc(var(--control-height) - 4px);
+  color: var(--label-ink);
+}
+.date-field-box .icon-button:hover:not(:disabled) { color: var(--ink); }
+/* In the top layer (popover="manual"), placed under the field by useAnchoredPopover; `inset: auto`
+   and `margin: 0` undo the UA popover centring. */
+.date-field-panel { position: fixed; inset: auto; margin: 0; max-width: calc(100vw - 8px); color: var(--ink); }
+.date-field-foot { display: flex; justify-content: flex-end; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-soft); }
+.date-pick-selected .date-pick-num { background: var(--brand); color: #fff; font-weight: 600; }
+.date-pick-day.date-pick-selected:hover .date-pick-num { background: var(--brand-ink); }
+.time-field-menu { max-height: 264px; font-variant-numeric: tabular-nums; }
 .date-pick-swatch-today { box-shadow: inset 0 0 0 2px var(--gold); }
 .date-pick-swatch-viewed { border-radius: 3px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--edge-blue); }
 .calendar-toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }

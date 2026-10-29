@@ -1,5 +1,6 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useId, useRef, useState } from 'react'
 import { Icon } from './Icon'
+import { useAnchoredPopover, useOutsidePress } from './useAnchoredPopover'
 
 export interface SelectOption<T extends string> {
   value: T
@@ -20,10 +21,8 @@ export interface SelectOption<T extends string> {
  * Keyboard behaviour follows the ARIA listbox pattern: arrows move the highlight, Enter or Space
  * commits it, Escape closes without changing the value, and focus returns to the trigger.
  *
- * The menu opens in the browser's top layer (Popover API), positioned against the trigger. Inside
- * a modal dialog nothing else works: the dialog's scrolling body would clip an absolutely
- * positioned menu, and z-index cannot lift anything above a `showModal()` dialog — only another
- * top-layer element sits over it. It flips upwards when there is no room below.
+ * The menu opens in the browser's top layer (Popover API), positioned against the trigger and
+ * flipped upwards when there is no room below — see `useAnchoredPopover` for why.
  */
 export function Select<T extends string>({
   value,
@@ -65,49 +64,9 @@ export function Select<T extends string>({
 
   const selected = options.find((o) => o.value === value)
 
-  // Close when the click lands outside, which a button cannot detect on its own.
-  useEffect(() => {
-    if (!open) return
-
-    function onPointerDown(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
-    }
-
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [open])
-
-  // Lift the menu into the top layer and keep it pinned to the trigger while anything scrolls.
-  useLayoutEffect(() => {
-    const menu = menuRef.current
-    const trigger = triggerRef.current
-    if (!open || !menu || !trigger) return
-
-    menu.showPopover?.()
-
-    function place() {
-      if (!menu || !trigger) return
-      const box = trigger.getBoundingClientRect()
-      const gap = 4
-      const below = window.innerHeight - box.bottom
-      const upwards = below < menu.offsetHeight + gap * 2 && box.top > below
-
-      menu.style.left = `${box.left}px`
-      menu.style.minWidth = `${box.width}px`
-      menu.style.top = upwards ? 'auto' : `${box.bottom + gap}px`
-      menu.style.bottom = upwards ? `${window.innerHeight - box.top + gap}px` : 'auto'
-    }
-
-    place()
-    // Capture phase: a scroll inside the dialog body does not bubble to window.
-    window.addEventListener('scroll', place, true)
-    window.addEventListener('resize', place)
-    return () => {
-      window.removeEventListener('scroll', place, true)
-      window.removeEventListener('resize', place)
-      if (menu.matches(':popover-open')) menu.hidePopover()
-    }
-  }, [open])
+  const close = useCallback(() => setOpen(false), [])
+  useOutsidePress(open, rootRef, close)
+  useAnchoredPopover(open, triggerRef, menuRef)
 
   function openAt(index: number) {
     setHighlighted(index)

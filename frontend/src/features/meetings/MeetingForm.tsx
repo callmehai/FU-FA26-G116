@@ -1,8 +1,10 @@
 import { useCallback, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useBeforeUnload } from 'react-router-dom'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { DateField } from '../../components/DateField'
 import { Dialog } from '../../components/Dialog'
 import { SegmentedControl } from '../../components/SegmentedControl'
+import { TimeField } from '../../components/TimeField'
 import { fromDateTimeInput, toDateTimeInput } from '../../lib/dateInput'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate } from '../../lib/format'
@@ -425,43 +427,49 @@ export function MeetingForm({
             Thời gian
           </h3>
           <div className="form-row-3">
-            <label className="field" data-field="date">
-              <span className="field-required">Ngày họp</span>
-              <input
-                type="date"
+            <div className="field" data-field="date">
+              <label htmlFor="meeting-date" className="field-required">
+                Ngày họp
+              </label>
+              <DateField
+                id="meeting-date"
                 name="date"
                 value={values.date}
-                onChange={(e) => set('date', e.target.value)}
-                aria-invalid={!!fieldErrors.date}
+                onChange={(v) => set('date', v)}
+                invalid={!!fieldErrors.date}
               />
               {errorOf('date')}
-            </label>
-            <label className="field" data-field="plannedStartTime">
-              <span className="field-required">Bắt đầu</span>
-              <input
-                type="time"
+            </div>
+            <div className="field" data-field="plannedStartTime">
+              <label htmlFor="meeting-start" className="field-required">
+                Bắt đầu
+              </label>
+              <TimeField
+                id="meeting-start"
                 name="start"
                 value={values.start}
-                onChange={(e) => set('start', e.target.value)}
-                aria-invalid={!!fieldErrors.plannedStartTime}
+                onChange={(v) => set('start', v)}
+                invalid={!!fieldErrors.plannedStartTime}
               />
               {errorOf('plannedStartTime')}
-            </label>
-            <label className="field" data-field="plannedEndTime">
-              <span className="field-required">Kết thúc</span>
-              <input
-                type="time"
+            </div>
+            <div className="field" data-field="plannedEndTime">
+              <label htmlFor="meeting-end" className="field-required">
+                Kết thúc
+              </label>
+              <TimeField
+                id="meeting-end"
                 name="end"
                 value={values.end}
-                min={values.endDays === 0 ? values.start || undefined : undefined}
-                onChange={(e) => set('end', e.target.value)}
-                aria-invalid={!!fieldErrors.plannedEndTime}
+                from={values.endDays === 0 ? values.start || undefined : undefined}
+                onChange={(v) => set('end', v)}
+                invalid={!!fieldErrors.plannedEndTime}
               />
               {errorOf(
                 'plannedEndTime',
                 values.endDays > 0 && values.date ? `Ngày ${endDayLabel(values)}.` : undefined,
               )}
-            </label>
+            </div>
           </div>
         </section>
 
