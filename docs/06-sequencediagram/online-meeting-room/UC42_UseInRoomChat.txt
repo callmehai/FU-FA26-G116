@@ -1,0 +1,23 @@
+title UC-42 - Use In-room Chat
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Send a message of at most 1,000 characters
+activate Page
+Page->Page: Verify the message is not blank (BR-327)
+Page->RoomProvider: Send the message to everyone connected now; nothing is stored (BR-327)
+activate RoomProvider
+alt The message cannot be sent - EX-1
+    RoomProvider-->Page: Not sent
+    Page-->Actor: MSG343 - Unable to send the message. Please try again.
+else The connection is lost - EX-2
+    RoomProvider-->Page: Connection lost
+    Page-->Actor: MSG333 - Connection lost, reconnecting...
+else Message sent
+    RoomProvider-->Page: Message delivered to the people connected now
+    Page-->Actor: Message shown with sender and time; message box cleared
+end
+deactivate RoomProvider
+deactivate Page

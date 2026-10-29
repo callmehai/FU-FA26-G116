@@ -16,7 +16,10 @@ public static class MeetingReadPolicy
                 && ((participant.Role == MeetingRole.Secretary || participant.Role == MeetingRole.Chair)
                     || meeting.Status == MeetingStatus.Published
                     || meeting.Status == MeetingStatus.InProgress
-                    || meeting.Status == MeetingStatus.Ended));
+                    || meeting.Status == MeetingStatus.Ended
+                    // Announced and then called off: the invitees were told, so they may still open it (BR-300).
+                    || (meeting.Status == MeetingStatus.Cancelled
+                        && meeting.CancelledFromStatus == MeetingStatus.Published)));
 
     private static readonly Func<Meeting, Guid, bool> Read = ReadExpression.Compile();
 

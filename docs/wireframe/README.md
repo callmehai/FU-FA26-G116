@@ -16,13 +16,13 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v8
+## Bản hiện có — v10
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v8.html](TrustCabinet-wireframe-v8.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v8/](figma-v8/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v8. |
+| HTML | [TrustCabinet-wireframe-v10.html](TrustCabinet-wireframe-v10.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v10/](figma-v10/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v10. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
 
 ## 1. Thư mục
@@ -345,8 +345,8 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 | v4 | 14/10/2026 | ADR-0018: tài liệu không phiên bản, kho cá nhân có thư mục; chọn vai trò bỏ phiếu. Dựng lại 1.3, 5.3, 7.x, 11.1, 11.2, 11.4, 14.2 |
 | v5 | 15/10/2026 | FE-11 theo UC-52a–UC-57 và ADR-0019. Sửa 8.5, 11.1–11.4, 14.2; thêm 11.1b, 11.2b, 11.3b, 11.5 |
 | v6 | 19/10/2026 | SCRUM-47: lịch tháng và bộ lọc lịch theo trạng thái, mức độ (luồng phụ UC-17), tham khảo AI-eCabinet. Sửa 4.1, 4.2 (nút Bộ lọc, tiêu đề mở bảng chọn ngày, UC-17); thêm 4.1b, 4.1c, 4.1d |
-
 | v7 | 22/10/2026 | SCRUM-21/22/23: tài liệu cuộc họp theo UC-32a, UC-32c, UC-35 (sửa 22/10/2026), tham khảo AI-eCabinet. Sửa 7.3 (nhóm theo mục / biểu quyết / chung, menu gỡ khỏi mục hoặc cuộc họp), 7.5 (trả lời góp ý, khách mời góp ý); thêm 8.6 (panel Tài liệu trong phòng họp). Vẽ lại phòng họp FE-08 (8.1–8.5) cho khớp bản đã chạy trên server test 22/10/2026; số UC mục 8 sửa theo danh mục UC hiện hành (UC-37–UC-42). 23/10/2026: 7.4, 7.4b bỏ ô chọn mục (gắn mục khi mở từ ghim của mục), ghi giới hạn 10 tệp / 200 MB mỗi lần (BR-319) |
 | v8 | 24/10/2026 | SCRUM-18/20, SCRUM-97, SCRUM-26 (BA Final Review lượt 6) và căn cứ ghi âm Luật 91/2025/QH15 + NĐ 356/2025/NĐ-CP. Sửa 4.2 (thẻ lịch có Tham dự / Không tham dự), 4.3 (mở sẵn Đang diễn ra, Thời điểm bốn lựa chọn), 4.4 (popup, có Thành phần tham dự), 6.1 (nhãn phản hồi, "(Tôi)", nút Đổi vai trò), 6.3 (điểm danh là cột), 6.4 (trả lời một lần), 9.2 (câu đồng ý ghi âm); ghi chú 4.1, 4.5. Thêm 4.3b, 4.4b, 4.5b, 4.5c, 6.1b, 6.1c, 6.3b, 6.4b, 8.7 |
+| v9 | 26/10/2026 | FE-05, FE-07 theo bản đã chạy và UC-23a–UC-23d, UC-33a, SCRUM-107: nghị sự không thời lượng / giờ dự kiến, kéo thả mọi mục, tài liệu của mục chỉ chọn trong cuộc họp, tab Tài liệu bỏ ghim ba lựa chọn, tải từ máy ở 7.4b, "Từ kho của tôi" (7.4) chờ SCRUM-58. Sửa 5.1, 5.2, 5.3, 7.3, 7.4, 7.4b; thêm 5.1b |
 
 Ra bản mới thì thêm một dòng vào bảng này.

@@ -20,6 +20,9 @@ public interface IMeetingRepository
 
     Task<Meeting?> FindWorkflowAsync(Guid id, bool forUpdate = false, CancellationToken ct = default);
 
+    /// <summary>Not-yet-started meetings whose planned start is at or before <paramref name="cutoff"/>, oldest first.</summary>
+    Task<IReadOnlyList<Guid>> ListOverdueAsync(DateTimeOffset cutoff, int take, CancellationToken ct = default);
+
     Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default);
 
@@ -42,6 +45,10 @@ public interface IMeetingRepository
 
     Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
         => Task.CompletedTask;
+
+    /// <summary>Emails every invitee and Guest of a Published meeting that it was cancelled, with the reason (BR-300).</summary>
+    Task StageCancellationAsync(
+        Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default);
 
     Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
         => Task.CompletedTask;

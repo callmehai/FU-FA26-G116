@@ -17,6 +17,17 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         StagedPublicationIds.Add(meeting.Id);
         return Task.CompletedTask;
     }
+    public List<(Guid MeetingId, Guid HistoryId, string Reason)> StagedCancellations { get; } = [];
+    public Task<IReadOnlyList<Guid>> ListOverdueAsync(DateTimeOffset cutoff, int take, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<Guid>>(Meetings
+            .Where(m => MeetingRules.IsCancellable(m.Status) && m.PlannedStartTime <= cutoff)
+            .OrderBy(m => m.PlannedStartTime).Select(m => m.Id).Take(take).ToArray());
+    public Task StageCancellationAsync(
+        Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default)
+    {
+        StagedCancellations.Add((meeting.Id, historyId, reason));
+        return Task.CompletedTask;
+    }
     public Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<User>>(userIds.Select(id => new User { Id = id, FullName = "Selected user", Email = $"{id}@test.local", IsActive = !InactiveUserIds.Contains(id) }).ToArray());
 

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
@@ -110,6 +111,22 @@ public sealed class CallRepositoryPostgresTests : IAsyncLifetime
         var calls = new CallRepository(_db);
 
         Assert.NotNull(await calls.FindRoomAccessAsync(meeting.Id, users[0].Id));
+        Assert.Empty(await calls.ListAllowedUserIdsAsync(meeting.Id));
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Published, true)]
+    [InlineData(MeetingStatus.Approved, false)]
+    public async Task A_cancelled_meeting_shows_its_room_only_if_it_was_published(MeetingStatus cancelledFrom, bool visible)
+    {
+        var (meeting, users) = await SeedAsync(MeetingStatus.Cancelled, MeetingMode.Online, 1);
+        meeting.CancelledFromStatus = cancelledFrom;
+        await _db.SaveChangesAsync();
+        var calls = new CallRepository(_db);
+
+        var access = await calls.FindRoomAccessAsync(meeting.Id, users[0].Id);
+        Assert.Equal(visible, access is not null);
+        if (visible) Assert.Equal(CallRoomStatus.Cancelled, CallRoomRules.StatusOf(access!.Status, access.Mode));
         Assert.Empty(await calls.ListAllowedUserIdsAsync(meeting.Id));
     }
 

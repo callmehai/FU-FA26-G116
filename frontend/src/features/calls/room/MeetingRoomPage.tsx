@@ -26,7 +26,14 @@ import { useMeeting } from '../../meetings/useMeeting'
 import { useNotifications } from '../../notifications/notificationsContext'
 import { DevicePicker, MicLevel } from './devices'
 import { RoomView } from './RoomView'
-import { ROOM_OPTIONS, deviceErrorMessage, deviceOptions, disconnectMessage, noDeviceReason } from './roomSupport'
+import {
+  ROOM_OPTIONS,
+  deviceErrorMessage,
+  deviceOptions,
+  disconnectMessage,
+  noDeviceReason,
+  roomMessage,
+} from './roomSupport'
 
 type Phase = { kind: 'lobby' } | { kind: 'inRoom' } | { kind: 'left'; reason: DisconnectReason | undefined }
 
@@ -165,22 +172,17 @@ function RoomLifecycle({ meeting, call }: { meeting: Meeting; call: CallRoomStat
 
   if (call.status !== 'Open') {
     const text = {
-      NotStarted: 'Phòng họp chỉ mở khi cuộc họp đang diễn ra.',
-      Ended: 'Cuộc họp đã kết thúc, phòng họp đã đóng.',
-      InPersonOnly: 'Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến.',
+      NotStarted: roomMessage.notStarted,
+      Ended: roomMessage.closed,
+      InPersonOnly: roomMessage.inPersonOnly,
+      Cancelled: roomMessage.cancelled,
       Open: '',
     }[call.status]
     return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} />
   }
 
   if (!call.available) {
-    return (
-      <LobbyMessage
-        meetingId={meeting.id}
-        title={meeting.title}
-        text="Phòng họp trực tuyến chưa sẵn sàng. Vui lòng liên hệ quản trị viên."
-      />
-    )
+    return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={roomMessage.notConfigured} />
   }
 
   if (phase.kind === 'inRoom') {

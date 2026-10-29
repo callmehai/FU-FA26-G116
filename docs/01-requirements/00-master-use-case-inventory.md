@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 78 Use Case (UC-01 → UC-78).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 15 Feature, 79 Use Case (UC-01 → UC-79).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 9 UC chi tiết.
@@ -23,8 +23,12 @@ Documents (UC-76a, UC-76b), **UC-77** Record Agenda Item Conclusion. Các UC nà
 
 Bổ sung ngày 25/10/2026 (rà soát FE-08 với code): **UC-39d** Choose Audio and Video Devices (UC con của
 UC-39) và **UC-78** Keep Meeting in a Floating Window (`<<extend>>` UC-37). UC-37 → UC-42 nay đã đặc tả
-đầy đủ; UC-41 chỉ còn nghĩa "Chủ toạ tắt mic người khác", không gồm giơ tay, tắt mic tất cả hay mời ra khỏi
+đầy đủ; UC-41 chỉ còn nghĩa "Chủ toạ tắt mic người khác", không gồm giơ tay (xem UC-79), tắt mic tất cả hay mời ra khỏi
 phòng.
+
+Bổ sung ngày 29/10/2026 (BA Final Review FE-08, SCRUM-27): **UC-79** Register to Speak — giơ tay xin phát biểu,
+Chủ toạ mời từng người theo lượt (`<<extend>>` UC-37); là yêu cầu, chưa cài (mới có bảng `speaking_requests`).
+Gọi 1–1 (SCRUM-40) đã bỏ khỏi phạm vi nên không có UC nào cho nó.
 
 ## Các quyết định đã áp dụng
 
@@ -154,8 +158,9 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — UC-32a Xem danh sách, UC-32c Xem trước/tải về; quyền đọc theo quyền xem Meeting. `Secret` không tải về; UC-32b vẫn bỏ | Người có quyền xem Meeting, gồm Guest có lời mời đã xác minh còn hiệu lực | Đã đặc tả các UC con | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
 | UC-33 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — UC-33a Thêm một hoặc nhiều tài liệu cùng lần, UC-33b Gắn vào mục (tái cấp theo ADR-0020), UC-33c Gỡ khỏi cuộc họp, UC-33d Bỏ gắn một mục; khoá khi Meeting kết thúc. Nhóm tài liệu thêm cùng lần thành công toàn bộ hoặc không thêm tài liệu nào | Chair, Secretary hiện hành có quyền xem Meeting | Đã đặc tả bốn UC con | `<<extend>>` UC-32 |
 | UC-34 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | Internal user | Đã đặc tả | Độc lập |
+| UC-34b | Xem kho cá nhân của tài khoản đã khoá *(View a Locked Account’s Personal Library)* — Quản trị viên chỉ đọc, mỗi lần đọc ghi nhật ký kiểm toán (BR-334, BR-335) | System Admin | Đã đặc tả | Độc lập |
 | UC-35 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* — người có quyền đọc được bình luận trước khi Meeting kết thúc; sau đó chỉ đọc | System Admin, Organizer, Approver, Chair, Secretary, Participant, Guest có quyền xem Meeting | Đã đặc tả | `<<extend>>` UC-32 |
-| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần, tối đa 50 MB mỗi file, vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | Internal user | Đã đặc tả | `<<extend>>` UC-34 |
+| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 200 MB mỗi lần, 50 MB mỗi tệp; tổng kho cả hệ thống 10 GB), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | Internal user | Đã đặc tả | `<<extend>>` UC-34 |
 | UC-71 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-71a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-71b Đổi tên, UC-71c Chuyển thư mục | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
 | UC-72 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-72a Tạo, UC-72b Đổi tên, UC-72c Chuyển, UC-72d Xoá thư mục rỗng; lồng tối đa 5 cấp | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
 | UC-74 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | Được gọi trước UC-55 |
@@ -171,6 +176,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-41 | Điều phối phòng họp *(Moderate Meeting Room)* — chỉ tắt mic người khác, một chiều | Chair hiện hành | Đã đặc tả | Độc lập khi đã kết nối |
 | UC-42 | Chat trong phòng *(Use In-room Chat)* | User đang trong phòng | Đã đặc tả | Độc lập khi đã kết nối |
 | UC-78 | Giữ cuộc họp trong cửa sổ nổi *(Keep Meeting in a Floating Window)* | User đang trong phòng | Đã đặc tả | `<<extend>>` UC-37 |
+| UC-79 | Đăng ký phát biểu *(Register to Speak)* — giơ tay, Chủ toạ mời từng người, phát biểu theo lượt | Chair, Secretary, Participant, Guest trong phòng; Chair mời | Đã đặc tả (yêu cầu, chưa cài) | `<<extend>>` UC-37 |
 
 ## FE-09 — Upload audio & Thư viện media *(Meeting Audio Upload & Media Library)*
 
@@ -281,7 +287,7 @@ Feature cũ → mới: FE-01 → FE-04 giữ số; **FE-05 Meeting Session Manag
 FE-09 → FE-08, FE-10 → FE-09, FE-11 → FE-10, FE-12 → FE-11, FE-13 → FE-12, FE-14 → FE-13, FE-15 → FE-14, FE-16 → FE-15.
 
 Cột *mới* là số sau ngày 10/10/2026. `UC-71`, `UC-72` mới (thêm 13/10/2026, kho tài liệu) không liên quan `UC-71`, `UC-72` cũ ở cột trái;
-`UC-78` mới (thêm 25/10/2026, cửa sổ nổi) không liên quan `UC-78` cũ ở cột trái (đã đổi thành UC-59).
+`UC-78` mới (thêm 25/10/2026, cửa sổ nổi) không liên quan `UC-78` cũ ở cột trái (đã đổi thành UC-59); `UC-79` mới (thêm 29/10/2026, đăng ký phát biểu) cũng không liên quan `UC-79` cũ (đã đổi thành UC-60).
 
 > Bảng `00-danh-muc-ma-thong-bao.md` vẫn ghi số UC cũ ở cột UC; tra bảng này khi đọc.
 
@@ -351,8 +357,10 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 
 - Chỉ có trong code, chưa thành UC: *ReturnToDraft*, *TransferOrganizer* (endpoint workflow SCRUM-19). Cần PO/BA quyết định
   promote hay dọn code.
-- Không làm (Report 1): theo dõi task / action item, nhận dạng giọng nói (voiceprint), ký HSM thật, triển khai air-gapped,
+- Không làm (Report 1): theo dõi task / action item, ký HSM thật, triển khai air-gapped,
   tích hợp eOffice, nhiều tổ chức / đơn vị ([ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
+- Đưa vào phạm vi 23/10/2026 theo nhận xét hội đồng: nhận diện người nói bằng giọng mẫu (Voice ID) có đồng ý riêng —
+  [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md). UC cho đồng ý / ghi giọng mẫu / rút đồng ý chưa đánh số, BA bổ sung (SCRUM-35).
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
 
 Guest 13/10/2026: [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md); UC-27/30 cần quyền xem tương ứng như Member, UC-40 xem người đang kết nối mặc định. BR-122 đã chốt; xem [quyết định mới](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md).

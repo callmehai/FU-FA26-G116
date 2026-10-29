@@ -1,0 +1,73 @@
+title UC-79 - Register to Speak
+
+actor "Participant" as Actor
+actor "Chair" as Chair
+boundary "Online Meeting Room Page" as Page
+control ":Meeting Room Controller" as RoomController
+control ":Meeting Room Service" as RoomService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Actor->Page: Choose Raise hand
+activate Page
+Page->RoomController: Register to speak
+activate RoomController
+RoomController->RoomService: raiseHand(meetingId, actorId, agendaItemId)
+activate RoomService
+RoomService->MeetingRepository: Read Meeting status and the actor's open speaking request
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and speaking request information
+activate Database
+Database-->MeetingRepository: Current information
+deactivate Database
+MeetingRepository-->RoomService: Current information
+deactivate MeetingRepository
+alt The Meeting is no longer In Progress - EX-1
+    RoomService-->RoomController: MSG117 - The meeting room opens only while the meeting is in progress.
+    RoomController-->Page: MSG117 - The meeting room opens only while the meeting is in progress.
+    Page-->Actor: MSG117 - The meeting room opens only while the meeting is in progress.
+else The actor already has an open request - EX-2
+    RoomService-->RoomController: Request unchanged (BR-337)
+    RoomController-->Page: Request unchanged
+    Page-->Actor: The hand stays raised
+else Request can be made
+    RoomService->MeetingRepository: Queue the request after the earlier ones (BR-337, BR-338)
+    activate MeetingRepository
+    MeetingRepository->Database: Insert speaking request with status Queued
+    activate Database
+    Database-->MeetingRepository: Request saved
+    deactivate Database
+    MeetingRepository-->RoomService: Request saved
+    deactivate MeetingRepository
+    RoomService-->RoomController: Request queued
+    RoomController-->Page: Request queued
+    Page-->Actor: Raised hand on the tile and in the Participants panel
+end
+deactivate RoomService
+deactivate RoomController
+Chair->Page: Invite to speak on the first person in the queue
+Page->RoomController: Invite the person to speak
+activate RoomController
+RoomController->RoomService: inviteToSpeak(meetingId, chairId, requestId)
+activate RoomService
+RoomService->RoomService: Verify the actor is the current Chair; one person holds the floor at a time (BR-338)
+alt The actor is no longer the Chair - EX-4
+    RoomService-->RoomController: Nothing changed (BR-338)
+    RoomController-->Page: Nothing changed
+    Page-->Actor: Chair controls are no longer shown
+else Chair may invite
+    RoomService->MeetingRepository: Mark the request Invited, then Speaking and Finished with start and end time (BR-338, BR-339)
+    activate MeetingRepository
+    MeetingRepository->Database: Update speaking request
+    activate Database
+    Database-->MeetingRepository: Request updated
+    deactivate Database
+    MeetingRepository-->RoomService: Request updated
+    deactivate MeetingRepository
+    RoomService-->RoomController: Turn recorded
+    RoomController-->Page: Turn recorded
+    Page-->Actor: It is the person's turn; the hand is lowered when the turn ends
+end
+deactivate RoomService
+deactivate RoomController
+deactivate Page

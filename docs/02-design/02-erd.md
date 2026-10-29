@@ -56,7 +56,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | MeetingMinutes | Phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Trạng thái Draft/PendingSignature/RevisionRequested/Sealed/Superseded; bỏ `ApprovedById`, `RejectionReason`, `IssuedAt`; thêm `RevisionNote`, `SealedById`, `SealedAt`. Không ghi đè bản đã niêm phong. |
 | MinutesSignature | Chữ ký trên phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Thêm `InvalidatedAt` (chữ ký cũ mất hiệu lực khi biên bản bị yêu cầu sửa — BR-166). |
 | MeetingSummary | Tóm tắt AI hiện hành | NEED MIGRATION / RESTRUCTURE | Thêm `Status` Draft/Approved/Published, `ApprovedById`, `ApprovedAt`, `PublishedAt` (duyệt và công bố là hai bước); tối đa một bản hiện hành mỗi Meeting. |
-| EmailMessage | Bản ghi gửi email/outbox | IMPLEMENTED | Giữ khóa chống trùng và thông tin thử gửi lại. |
+| EmailMessage | Bản ghi gửi email/outbox | IMPLEMENTED | Giữ khóa chống trùng và thông tin thử gửi lại; id thư phía Resend và kết quả giao thư từ webhook ([ADR-0031](../05-decisions/0031-gui-email-qua-resend.md)). |
 | AuditLogEntry | Bằng chứng kiểm toán nghiệp vụ | IMPLEMENTED | Chỉ ghi thêm. |
 | CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting. |
 | CallParticipant | Một lượt kết nối của User hoặc khách | NEED MIGRATION / RESTRUCTURE | UserId XOR GuestInvitationId. |
@@ -115,7 +115,7 @@ erDiagram
     Meeting {
         uuid Id PK
         string Title
-        string Status "Draft|WaitingApproval|Rejected|Approved|Published|InProgress|Ended"
+        string Status "Draft|WaitingApproval|Rejected|Approved|Published|InProgress|Ended|Cancelled"
         string Sensitivity "Normal|Internal|Confidential|Secret"
         string Mode "InPerson|Online|Hybrid"
         string Location
@@ -124,6 +124,10 @@ erDiagram
         timestamptz PlannedEndTime "sau PlannedStartTime"
         timestamptz ActualStartedAt "nullable, ghi khi Start Meeting"
         timestamptz ActualEndedAt "nullable, ghi khi End Meeting"
+        timestamptz CancelledAt "nullable, ghi khi huỷ (UC-75)"
+        uuid CancelledById FK "nullable; null = hệ thống tự huỷ"
+        string CancellationReason
+        string CancelledFromStatus "nullable; Published thì người được mời vẫn đọc được"
         string Description
         uuid CreatedById FK
         uuid AssignedApproverId FK "nullable"
@@ -519,6 +523,8 @@ erDiagram
         string DeduplicationKey
         string Status
         int RetryCount
+        string ProviderMessageId "nullable"
+        string DeliveryState "nullable"
         timestamptz CreatedAt
     }
     AuditLogEntry {
@@ -656,7 +662,7 @@ erDiagram
 | Không có bảng cho | Vì sao |
 |---|---|
 | Nhiệm vụ / action item | Ngoài phạm vi. TrustCabinet dừng ở biên bản đã chốt — xem mục "Không làm" trong [README](../../README.md). Không có `tasks`, `assignments`, không có cột hạn hoàn thành ở đâu cả |
-| Voiceprint / đặc trưng giọng | Dữ liệu sinh trắc học theo Nghị định 13/2023/NĐ-CP. Chỉ tách người nói **trong một bản ghi** (`SpeakerLabel`), rồi người gán tên tay. Có test tự động chặn việc thêm cột kiểu này |
+| Vector giọng ở bất kỳ đâu ngoài `voice_samples` | Từ 23/10/2026 Voice ID nằm trong phạm vi ([ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md)): giọng mẫu chỉ lưu **đã mã hoá** trong `voice_samples`, dưới một `voice_consents` rút được. Vector các giọng trong bản ghi họp không lưu; `transcript_speakers` chỉ giữ gợi ý và tên Thư ký gán. Có test tự động chặn vector ở bảng khác. *Bảng mới chưa vẽ vào ERD mục tiêu — BA bổ sung ở BA Final Review* |
 | Khoá mã hoá, sổ huỷ khoá | Không làm mã hoá phong bì |
 | Tổ chức (`organizations`, `tenants`) | Hệ thống phục vụ **đúng một tổ chức**. Không có bảng tổ chức, không multi-tenant, không vùng lưu trú dữ liệu — xem [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) |
 | Đơn vị / phòng ban (`org_units`) | Cũng theo ADR-0004: không có phân cấp cha–con, không gán người dùng vào đơn vị, không có "đơn vị chủ trì" cuộc họp. Mời họp là mời **từng người**. Có test tự động chặn việc thêm lại cột kiểu này |

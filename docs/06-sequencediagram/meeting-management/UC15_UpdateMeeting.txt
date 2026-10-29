@@ -113,7 +113,7 @@ else Meeting is Published - AF-1
                 deactivate Database
                 MeetingRepository-->MeetingService: Rescheduled Meeting
                 deactivate MeetingRepository
-                MeetingService->NotificationService: Queue schedule-update notifications for affected invitees (BR-76)
+                MeetingService->NotificationService: Notify internal invitees in-app except the rescheduler (BR-322);\nemail only invited Guests (BR-76)
                 activate NotificationService
                 NotificationService-->MeetingService: Notifications queued / delivery unavailable;\ndelivery failure does not undo the saved change
                 deactivate NotificationService

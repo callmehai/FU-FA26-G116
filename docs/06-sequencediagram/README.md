@@ -98,10 +98,19 @@ database ":Database" as Database
 
 - Actor: không có dấu `:`
 - Boundary/Page: tên màn hình hoặc component cấp màn hình
-- Controller: bắt đầu bằng `:`
-- Service: bắt đầu bằng `:`
-- Repository: bắt đầu bằng `:`
-- Database: bắt đầu bằng `:`
+- Controller: bắt đầu bằng `:`, tên dạng `:Meeting Document Controller` / `:Agenda Controller` /
+  `:Document Controller` / `:Folder Controller` — **không** đặt lifeline kiểu `Endpoints`,
+  `Minimal API`, tên file C# hay route group
+- Service: bắt đầu bằng `:`, cùng miền với Controller (`:Meeting Document Service`, …)
+- Repository / Policy / Object Storage: `participant`, bắt đầu bằng `:`
+- Database: `database ":Database"`
+
+Khi as-built theo code: **đúng luồng nghiệp vụ và nhánh MSG/BR**, không mirror HTTP path,
+status code (`404 MSG…`), tên method `*Async`, hay hub SignalR lên sơ đồ (§10). Boundary →
+Controller dùng hành động nghiệp vụ (`Add the selected library documents to the Meeting`),
+Controller → Service dùng tên thao tác miền (`addLibraryDocuments(...)`). Tham chiếu mẫu:
+[UC-23a](agenda-management/UC23a_CreateAgendaItem.txt) và các sequence FE-07 đã as-built trong
+[document-management/](document-management/README.md).
 
 ## 4. Trách nhiệm của từng layer
 
@@ -546,10 +555,11 @@ deactivate MeetingPage
 | [document-management/](document-management/README.md) | UC-32a, UC-32c, UC-33a (AF-1), UC-35, UC-74 |
 | [voting-management/](voting-management/README.md) | UC-76a, UC-76b |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
+| [online-meeting-room/](online-meeting-room/README.md) | UC-37, UC-38, UC-39a → UC-39d, UC-40, UC-41, UC-42, UC-78, UC-79 |
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).
 
-Đồng bộ ảnh `.drawio.png` từ 53 tab UC của file draw.io gộp (bỏ qua tab index):
+Đồng bộ ảnh `.drawio.png` từ 64 tab UC của file draw.io gộp (bỏ qua tab index):
 `python scripts/sync_sequence_drawio_png.py` (cần cài Draw.io; có thể đặt `DRAWIO_EXECUTABLE` nếu CLI chưa có trong PATH).
 
 UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.

@@ -17,12 +17,14 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useCallback, useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { completeAgendaItem, deleteAgendaItem, startAgendaItem } from '../../api/agenda'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { avatarColors, initials } from '../../lib/avatar'
 import { formatClock } from '../../lib/format'
+import { routes } from '../../lib/routes'
 import type { AgendaItem, AgendaMutationResponse } from '../../types/agenda'
 import { AgendaConclusion } from './AgendaConclusion'
 import { AgendaItemDialog } from './AgendaItemDialog'
@@ -127,6 +129,8 @@ export function AgendaPanel({ meetingId, variant }: { meetingId: string; variant
       {items.map((item, index) => (
         <AgendaRow
           key={item.id}
+          meetingId={meetingId}
+          room={room}
           item={item}
           number={index + 1}
           sortable={sortable}
@@ -238,6 +242,8 @@ export function AgendaPanel({ meetingId, variant }: { meetingId: string; variant
 }
 
 function AgendaRow({
+  meetingId,
+  room,
   item,
   number,
   sortable,
@@ -250,6 +256,9 @@ function AgendaRow({
   onComplete,
   children,
 }: {
+  meetingId: string
+  /** In the call room a document opens in a new tab, so the call keeps running (BR-315). */
+  room: boolean
   item: AgendaItem
   number: number
   sortable: boolean
@@ -381,8 +390,13 @@ function AgendaRow({
                 <ul className="agenda-doc-list">
                   {item.documents.map((doc) => (
                     <li key={doc.id}>
-                      <Icon name="fileText" size={16} />
-                      <span>{doc.title}</span>
+                      <Link
+                        to={`${routes.meetingDocument(meetingId, doc.id)}${room ? '?from=room' : ''}`}
+                        {...(room && { target: '_blank', rel: 'noopener' })}
+                      >
+                        <Icon name="fileText" size={16} />
+                        <span>{doc.title}</span>
+                      </Link>
                     </li>
                   ))}
                 </ul>

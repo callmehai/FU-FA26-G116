@@ -2,31 +2,38 @@
 
 Thư mục lưu trữ tài liệu yêu cầu nghiệp vụ và đặc tả Use Case cho hệ thống họp không giấy tờ **TrustCabinet**.
 
-Nguồn chuẩn là ba báo cáo DOCX trên Google Drive (Report 1, 2, 3), được đồng bộ sang
-[08-reports/](../08-reports/README.md). Các file ở đây trích và sắp xếp lại nội dung đó để dev và tester tra cứu nhanh:
+**Nguồn chuẩn nội dung UC/BR là DOCX Report 3** trong
+[`docs/08-reports/source/`](../08-reports/source/README.md) — không phải các file `.md` ở đây, cũng
+không phải snapshot `Report-3_….md`. Drive chỉ là bản phát hành. Quy trình đầy đủ:
+[08-reports/README.md](../08-reports/README.md).
+
+Các file ở đây trích và sắp xếp lại nội dung đó để dev và tester tra cứu nhanh:
 
 - Mọi chức năng, luồng nghiệp vụ và quy tắc kiểm thử bám theo các đặc tả tại đây.
-- Khi Report 3 thay đổi, sửa DOCX local trước, sinh snapshot bằng `scripts/sync_reports.py`, rồi đồng bộ lại thư mục này trong **cùng commit**. Quy tắc snapshot Report 1–7 nằm ở [08-reports/README.md](../08-reports/README.md).
+- Khi Report 3 thay đổi: sửa DOCX local → `python scripts/sync_reports.py … --report 3` (tự gọi
+  `sync_requirement_extracts.py` và cập nhật `uc-map.html`) → commit cùng đợt. **Không** mở
+  `05-…` / `06-…` / `Report-3_….md` rồi sửa chữ trong đó.
 - Hai bản trích của Report 3 — [05-use-case-specifications.md](05-use-case-specifications.md) (§II) và
-  [06-business-rules.md](06-business-rules.md) (§V.1) — **không sửa tay**: sinh lại bằng
-  `python scripts/sync_requirement_extracts.py` (thêm `--check` để chỉ xem lệch). Script giữ nguyên những phần
-  Report 3 không có: ghi chú `_UC gom …_`, link `Sequence Diagram:`, dòng `Placeholder only` và mục BR đã ngừng dùng.
+  [06-business-rules.md](06-business-rules.md) (§V.1) — **cấm sửa tay**: sinh lại bằng sync ở trên
+  (hoặc `python scripts/sync_requirement_extracts.py`; thêm `--check` để chỉ xem lệch). Script giữ
+  nguyên những phần Report 3 không có: ghi chú `_UC gom …_`, link `Sequence Diagram:`, dòng
+  `Placeholder only` và mục BR đã ngừng dùng.
 
 ---
 
 ## 1. Cấu trúc tài liệu
 
 - [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể: 15 Feature (FE-01 → FE-15),
-  78 Use Case (UC-01 → UC-78), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
-  ngày 10/10/2026. UC-73 → UC-77 thêm ngày 24/10/2026, UC-39d và UC-78 thêm ngày 25/10/2026, nối tiếp dải số cũ.
+  79 Use Case (UC-01 → UC-79), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
+  ngày 10/10/2026. UC-73 → UC-77 thêm ngày 24/10/2026, UC-39d và UC-78 thêm ngày 25/10/2026, UC-79 thêm ngày 29/10/2026, nối tiếp dải số cũ.
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (bản DOCX
   25/10/2026): 118 heading UC, 83 bảng đặc tả, phần còn lại là placeholder, có link tới sequence diagram tương ứng.
   UC-73 → UC-77 (Hand Over Chair, Confirm Document Read, Cancel Meeting, Manage Vote Documents, Record Agenda Item
   Conclusion) đã có đặc tả và sequence diagram (`UC73_HandOverChair` → `UC77_RecordAgendaItemConclusion`);
-  UC-37 → UC-42, UC-39d và UC-78 (phòng họp trực tuyến) đã đặc tả ngày 25/10/2026.
+  UC-37 → UC-42, UC-39d và UC-78 (phòng họp trực tuyến) đã đặc tả ngày 25/10/2026; UC-79 (đăng ký phát biểu, yêu cầu chưa cài) thêm ngày 29/10/2026.
 - [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **279 BR đang dùng**
-  trong dải BR-01 → BR-331 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026, BR-322 → BR-331
-  rà soát phòng họp trực tuyến 25/10/2026; đợt BA Final Review 24/10/2026 sửa
+  trong dải BR-01 → BR-339 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026, BR-323 → BR-332, BR-336 → BR-339
+  rà soát phòng họp trực tuyến 25/10/2026 và UC-79 29/10/2026 (BR-322 là của main: không nhận thông báo về hành động của mình); đợt BA Final Review 24/10/2026 sửa
   BR-30/105/106/115/126/172/176/215/295); danh sách BR ngừng dùng ở cuối file.
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 

@@ -41,8 +41,9 @@ FE đọc để hiện huy hiệu chủ toạ.
 
 Chi tiết từng trường của `GET …/call`:
 
-- **`status`**: `Open`, `NotStarted`, `Ended` hoặc `InPersonOnly`. Tính từ trạng thái và hình thức
-  cuộc họp; `InPersonOnly` xét trước.
+- **`status`**: `Open`, `NotStarted`, `Ended`, `Cancelled` hoặc `InPersonOnly`. Tính từ trạng thái và
+  hình thức cuộc họp; `InPersonOnly` xét trước. `Cancelled` là cuộc họp đã huỷ (SCRUM-99), màn chờ báo `MSG350`;
+  như quyền xem cuộc họp, chỉ cuộc họp bị huỷ **sau khi công bố** mới trả `Cancelled`, huỷ trước đó vẫn là `404`.
 - **`myRole`**: vai trò của người gọi trong cuộc họp.
 - **`available`**: `false` khi máy chủ chưa cấu hình LiveKit.
 - **`participantCount`**: số người đang trong phòng. `null` khi phòng chưa mở hoặc không hỏi được
@@ -81,30 +82,34 @@ Câu `message` của từng mã ở [danh mục](00-danh-muc-ma-thong-bao.md#ph�
 
 ## Phía trình duyệt
 
-Các mã `MSG119`–`MSG121`, `MSG125` và `MSG290`–`MSG299` **FE tự hiển thị**, API không trả: bảng ở
-[danh mục](00-danh-muc-ma-thong-bao.md#thông-điệp-phía-trình-duyệt--scrum-39-scrum-41). Hành vi dưới
+Các mã `MSG328`–`MSG343` và `MSG350` **FE tự hiển thị**, API không trả: bảng ở
+[danh mục](00-danh-muc-ma-thong-bao.md#phòng-họp-trực-tuyến--scrum-39-scrum-41-apimeetingsidcall). Hành vi dưới
 đây không đi qua endpoint nào, nên không có mã HTTP.
 
 - **Rời phòng (UC-38).** Nút Rời phòng hỏi xác nhận rồi ngắt kết nối và về màn chi tiết; không gọi
   API, không đổi trạng thái cuộc họp. Rời từ cửa sổ nổi thì không hỏi, vì cửa sổ chính đang bị che.
   Người đã rời vào lại được trong khi cuộc họp còn `InProgress`.
 - **Bị ngắt kết nối.** Lý do do LiveKit trả, FE đổi thành câu và quyết định có cho vào lại không:
-  `CLIENT_INITIATED` → “Bạn đã rời phòng họp.” (vào lại được); `DUPLICATE_IDENTITY` → `MSG294` (vào
-  lại được); `PARTICIPANT_REMOVED` → `MSG295` (không vào lại); `ROOM_DELETED`/`ROOM_CLOSED` →
-  `MSG293` (không vào lại); còn lại → `MSG296` (vào lại được).
-- **Một tài khoản một kết nối (BR-327).** LiveKit đóng kết nối cũ khi cùng `identity` vào phòng lần
-  nữa; tab cũ hiện `MSG294`.
-- **Chat (UC-42, BR-326).** Text stream của LiveKit, tối đa 1.000 ký tự, không đi qua API và không
-  lưu; người vào sau không thấy tin trước. Gửi lỗi thì giữ nguyên nội dung và hiện `MSG125`.
-- **Thiết bị (UC-39d, BR-330).** Đổi micro/loa/camera bằng `switchActiveDevice`; lựa chọn nằm trong
+  `CLIENT_INITIATED` → `MSG328` (vào lại được); `DUPLICATE_IDENTITY` → `MSG329` (vào
+  lại được); `PARTICIPANT_REMOVED` → `MSG330` (không vào lại); `ROOM_DELETED`/`ROOM_CLOSED` →
+  `MSG331` (không vào lại); còn lại → `MSG332` (vào lại được). Đang kết nối lại thì dải báo `MSG333`.
+- **Một tài khoản một kết nối (BR-328).** LiveKit đóng kết nối cũ khi cùng `identity` vào phòng lần
+  nữa; tab cũ hiện `MSG329`.
+- **Chat (UC-42, BR-327).** Text stream của LiveKit, tối đa 1.000 ký tự, không đi qua API và không
+  lưu; người vào sau không thấy tin trước. Gửi lỗi thì giữ nguyên nội dung và hiện `MSG343`.
+- **Thiết bị (UC-39d, BR-331).** Đổi micro/loa/camera bằng `switchActiveDevice`; lựa chọn nằm trong
   `localStorage` (`trustcabinet.call.prefs`) của trình duyệt, không gửi lên server.
-- **Chia sẻ màn hình (UC-39c, BR-325).** Khi người khác publish track `SCREEN_SHARE`, webhook tắt
-  track của người đang trình bày; FE nhận `LocalTrackUnpublished` và hiện `MSG292`.
-- **Cửa sổ nổi (UC-78, BR-331).** Document Picture-in-Picture, dùng lại đúng `Room` đang mở — không
+- **Chia sẻ màn hình (UC-39c, BR-326).** Khi người khác publish track `SCREEN_SHARE`, webhook tắt
+  track của người đang trình bày; FE nhận `LocalTrackUnpublished` và hiện `MSG340`.
+- **Cửa sổ nổi (UC-78, BR-332).** Document Picture-in-Picture, dùng lại đúng `Room` đang mở — không
   gọi `join` lần hai và không tạo dòng `call_participants` mới.
-- **Vai trò hiển thị (BR-328).** Lấy từ `metadata.meetingRole` của người trong phòng. Metadata chỉ
-  đặt lúc cấp token, nên đổi vai trò giữa cuộc họp chưa tới được phòng — xem
-  [note rà soát FE-08](../notes/NOTE-phong-hop-truc-tuyen-25-10-2026.md).
+- **Vai trò hiển thị (BR-329).** `metadata.meetingRole` chỉ đặt lúc cấp token; FE đọc lại danh sách
+  thành phần mỗi lần `participantsChanged` (`roomRoles.ts`) nên đổi Chủ toạ giữa họp (UC-73) có hiệu lực
+  ngay trong phòng, không cần vào lại. PO 26/10/2026: không khoá đổi vai trò khi cuộc họp đang diễn ra.
+- **Sức chứa (BR-336).** `room.max_participants: 50` trong cấu hình LiveKit (`docker/livekit.dev.yaml`,
+  `deploy/livekit.yaml`); người thứ 51 bị LiveKit từ chối khi kết nối, FE chưa có mã riêng cho trường hợp này.
+- **Chưa mở khi chưa họp.** Màn chờ khi cuộc họp chưa `InProgress` hiện `MSG117` và tự mở khi nhận
+  thông báo `MeetingStarted` (SCRUM-69); đã `Ended` hiện `MSG331`, đã `Cancelled` hiện `MSG350`.
 
 ## Webhook và đối soát
 
@@ -147,7 +152,7 @@ Chỉ lưu ai vào/ra phòng và lúc nào. Không lưu âm thanh, hình, chat; 
   `pipWindow.ts`).
 - Phân nhánh theo `code`, không theo `message`.
 - `404` từ `GET …/call` → hiện `NotFound` như cuộc họp không tồn tại.
-- Mã `MSG119`–`MSG121`, `MSG125`, `MSG290`–`MSG299` chỉ có ở FE; đừng chờ backend trả chúng, và đừng
+- Mã `MSG328`–`MSG343`, `MSG350` chỉ có ở FE; đừng chờ backend trả chúng, và đừng
   thêm nhánh `isApiError` cho chúng.
 - Guest chưa được hỗ trợ ở cả ba endpoint (xem đầu tài liệu); đừng mở nút vào phòng cho Guest.
 

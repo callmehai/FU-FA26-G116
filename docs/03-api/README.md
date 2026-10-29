@@ -75,8 +75,15 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   (UC-33a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên R2, job dọn
   file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE.
   SCRUM-21: danh sách tài liệu nhóm theo mục nghị sự (UC-32a), xem / tải về đúng byte gốc, chặn tải về cuộc họp
-  Mật, nhật ký kiểm toán Confidential/Secret (UC-32c), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE
+  Mật, nhật ký kiểm toán Confidential/Secret (UC-32c), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE.
+  SCRUM-58 (SCRUM-112): thêm từ kho (UC-33a), gắn mục nghị sự ba nguồn (UC-33b), gỡ khỏi cuộc họp (UC-33c), gỡ khỏi
+  mục (UC-33d). SCRUM-23: góp ý và trả lời một cấp trên tài liệu (UC-35). Cuộc họp đã huỷ chỉ còn đọc (`MSG349`)
+- [`14-kho-tai-lieu-ca-nhan.md`](14-kho-tai-lieu-ca-nhan.md) — SCRUM-58 (SCRUM-110, SCRUM-111): thư mục kho cá nhân
+  (UC-72a–d), xem / tải lên / đổi tên / chuyển / xoá tài liệu trong kho (UC-34, UC-36, UC-71a–c), hạn mức 10 GB
+  của cả hệ thống (ADR-0034), Quản trị viên đọc kho của tài khoản đã khoá có kiểm toán; mã `MSG175`–`MSG198`, `MSG346`–`MSG348`
 - [`10-scrum97-ket-qua-kiem-thu.md`](10-scrum97-ket-qua-kiem-thu.md) — kết quả riêng của phần SCRUM-97 bổ sung trên baseline SCRUM-20; kèm change note Jira để owner đăng.
+- [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md) — SCRUM-29: lưu, nghe (link ký sẵn), xoá bản ghi cuộc họp; đồng ý, mục đích, hạn lưu trữ và job tự xoá; mã `MSG290`–`MSG298`. SCRUM-31: hàng chờ chuyển thành chữ trên worker tự chạy, xem, chạy lại, sửa đoạn; mã `MSG299`–`MSG304`
+- [`13-nhan-dien-giong-noi.md`](13-nhan-dien-giong-noi.md) — SCRUM-35: Voice ID của chính mình (đồng ý, giọng mẫu mã hoá, rút đồng ý), gợi ý và gán tên người nói trong bản gỡ băng; nghĩa vụ dữ liệu sinh trắc học; mã `MSG305`–`MSG317`
 
 Dự kiến có thêm:
 

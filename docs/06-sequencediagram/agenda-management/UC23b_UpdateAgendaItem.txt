@@ -94,7 +94,7 @@ else Editing permitted
             MeetingPage-->Secretary: MSG69 - Unable to update the agenda item. Please try again.
         else Change saved successfully
             opt Presenter assigned or changed while Meeting is Published or InProgress
-                AgendaService->NotificationService: Notify the new Presenter: internal user in the application,\nGuest by email (BR-307)
+                AgendaService->NotificationService: Notify the new Presenter: internal user in the application\n(not when the assignee is the actor, BR-322),\nGuest by email (BR-307)
                 activate NotificationService
                 NotificationService-->AgendaService: Notification created / delivery failed\n(failure does not undo the change)
                 deactivate NotificationService

@@ -13,6 +13,39 @@ export const ROOM_OPTIONS: RoomOptions = {
   videoCaptureDefaults: { resolution: VideoPresets.h720.resolution },
 }
 
+/**
+ * What the room says on its own, with no server response to show. Each line has its code in the message
+ * catalogue (docs/03-api/00-danh-muc-ma-thong-bao.md), so the tester and BA can find it there. The lobby's
+ * three "room not open" lines are the same situations the join endpoint refuses with, so they keep its codes.
+ */
+export const roomMessage = {
+  notStarted: 'Phòng họp chỉ mở khi cuộc họp đang diễn ra.', // MSG117
+  inPersonOnly: 'Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến.', // MSG280
+  notConfigured: 'Phòng họp trực tuyến chưa sẵn sàng. Vui lòng liên hệ quản trị viên.', // MSG281
+  left: 'Bạn đã rời phòng họp.', // MSG328
+  otherTab: 'Bạn đã vào phòng này từ tab hoặc thiết bị khác. Tab này đã rời phòng.', // MSG329
+  removed: 'Bạn không còn trong danh sách tham dự phòng họp này.', // MSG330
+  closed: 'Cuộc họp đã kết thúc, phòng họp đã đóng.', // MSG331
+  cancelled: 'Cuộc họp đã huỷ nên phòng họp không mở.', // MSG350
+  lost: 'Mất kết nối tới phòng họp.', // MSG332
+  reconnecting: 'Mất kết nối, đang kết nối lại…', // MSG333
+  deviceBlocked: (device: Device) =>
+    `Trình duyệt đang chặn ${device}. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang. Bạn vẫn có thể vào phòng để nghe.`, // MSG334
+  deviceMissing: (device: Device) => `Không tìm thấy ${device} trên máy này.`, // MSG335
+  deviceInUse: (device: Device) =>
+    `${device === 'micro' ? 'Micro' : 'Camera'} đang được ứng dụng khác dùng (Zoom, Teams…). Đóng ứng dụng đó rồi thử lại.`, // MSG336
+  deviceFailed: (device: Device) => `Không mở được ${device}. Bạn vẫn có thể vào phòng để nghe.`, // MSG337
+  audioBlocked: 'Trình duyệt đang chặn phát âm thanh.', // MSG338
+  mutedByChair: 'Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu.', // MSG339
+  shareTakenOver: (name: string) => `${name} bắt đầu trình bày, phần chia sẻ của bạn đã dừng.`, // MSG340
+  shareFailed: 'Không chia sẻ được màn hình. Vui lòng thử lại.', // MSG341
+  muted: (name: string) => `Đã tắt micro của ${name}.`, // MSG342
+  chatFailed: 'Không gửi được tin nhắn. Vui lòng thử lại.', // MSG343
+  recordingBlocksLeave: 'Bạn đang ghi âm cuộc họp. Bấm Dừng và lưu ở panel Bản ghi trước khi rời phòng.', // MSG344
+}
+
+type Device = 'micro' | 'camera'
+
 /** The meeting role the backend put in the participant's metadata, if any. */
 export function meetingRoleOf(participant: Participant): MeetingRole | undefined {
   if (!participant.metadata) return undefined
@@ -27,30 +60,30 @@ export function meetingRoleOf(participant: Participant): MeetingRole | undefined
 export function disconnectMessage(reason: DisconnectReason | undefined): { text: string; canRejoin: boolean } {
   switch (reason) {
     case DisconnectReason.CLIENT_INITIATED:
-      return { text: 'Bạn đã rời phòng họp.', canRejoin: true }
+      return { text: roomMessage.left, canRejoin: true }
     case DisconnectReason.DUPLICATE_IDENTITY:
-      return { text: 'Bạn đã vào phòng này từ tab hoặc thiết bị khác. Tab này đã rời phòng.', canRejoin: true }
+      return { text: roomMessage.otherTab, canRejoin: true }
     case DisconnectReason.PARTICIPANT_REMOVED:
-      return { text: 'Bạn không còn trong danh sách tham dự phòng họp này.', canRejoin: false }
+      return { text: roomMessage.removed, canRejoin: false }
     case DisconnectReason.ROOM_DELETED:
     case DisconnectReason.ROOM_CLOSED:
-      return { text: 'Cuộc họp đã kết thúc, phòng họp đã đóng.', canRejoin: false }
+      return { text: roomMessage.closed, canRejoin: false }
     default:
-      return { text: 'Mất kết nối tới phòng họp.', canRejoin: true }
+      return { text: roomMessage.lost, canRejoin: true }
   }
 }
 
 /** What went wrong with a microphone or camera, and whether the user can still listen. */
-export function deviceErrorMessage(error: unknown, device: 'micro' | 'camera'): string {
+export function deviceErrorMessage(error: unknown, device: Device): string {
   switch (MediaDeviceFailure.getFailure(error)) {
     case MediaDeviceFailure.PermissionDenied:
-      return `Trình duyệt đang chặn ${device}. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang. Bạn vẫn có thể vào phòng để nghe.`
+      return roomMessage.deviceBlocked(device)
     case MediaDeviceFailure.NotFound:
-      return `Không tìm thấy ${device} trên máy này.`
+      return roomMessage.deviceMissing(device)
     case MediaDeviceFailure.DeviceInUse:
-      return `${device === 'micro' ? 'Micro' : 'Camera'} đang được ứng dụng khác dùng (Zoom, Teams…). Đóng ứng dụng đó rồi thử lại.`
+      return roomMessage.deviceInUse(device)
     default:
-      return `Không mở được ${device}. Bạn vẫn có thể vào phòng để nghe.`
+      return roomMessage.deviceFailed(device)
   }
 }
 

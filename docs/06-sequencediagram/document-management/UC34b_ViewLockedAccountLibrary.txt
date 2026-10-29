@@ -1,0 +1,84 @@
+title UC-34b - View a Locked Account's Personal Library
+
+actor "System Admin" as Actor
+boundary "User Detail Screen" as UserScreen
+control ":Document Controller" as DocumentController
+control ":Document Service" as DocumentService
+participant ":User Repository" as UserRepository
+participant ":Document Repository" as DocumentRepository
+participant ":Audit Log" as AuditLog
+database ":Database" as Database
+
+Actor->UserScreen: Choose View personal library for a locked account\n(optionally open a folder)
+activate UserScreen
+
+UserScreen->DocumentController: Request the library contents of the account (and the selected folder)
+activate DocumentController
+
+DocumentController->DocumentService: viewLockedLibrary(adminId, accountId, folderId?)
+activate DocumentService
+
+DocumentService->DocumentService: Check the actor has the capability to manage users
+
+DocumentService->UserRepository: Get the account and its locked state (BR-334)
+activate UserRepository
+UserRepository->Database: Retrieve the account by id
+activate Database
+Database-->UserRepository: Account / Not found
+deactivate Database
+UserRepository-->DocumentService: Account / Not found
+deactivate UserRepository
+
+alt Account is missing or is not locked - EX-1
+    DocumentService-->DocumentController: MSG175 - This personal-library item is not available.
+    DocumentController-->UserScreen: MSG175 - This personal-library item is not available.
+    UserScreen-->Actor: MSG175 - This personal-library item is not available.
+
+else Account is locked
+    DocumentService->AuditLog: Record the read: who read, whose library, which folder, when (BR-335)
+    activate AuditLog
+    AuditLog->Database: Insert the audit entry
+    activate Database
+    Database-->AuditLog: Recorded / Failed
+    deactivate Database
+    AuditLog-->DocumentService: Recorded / Failed
+    deactivate AuditLog
+
+    alt Audit entry cannot be recorded - EX-2
+        DocumentService-->DocumentController: MSG176 - Unable to load your personal document library. Please try again.
+        DocumentController-->UserScreen: MSG176 - Unable to load your personal document library. Please try again.
+        UserScreen-->Actor: MSG176 - Unable to load your personal document library. Please try again.
+
+    else Audit entry recorded
+        DocumentService->DocumentRepository: Get the folders and documents of the account's library, read-only,\nwithout the files of Confidential or Secret Meetings and that Meeting's upload folder\nand its subfolders (BR-334)
+        activate DocumentRepository
+        DocumentRepository->Database: Retrieve the folders and documents owned by the account
+        activate Database
+        Database-->DocumentRepository: Folders and documents / Not found / Failed
+        deactivate Database
+        DocumentRepository-->DocumentService: Folders and documents / Not found / Failed
+        deactivate DocumentRepository
+
+        alt Folder is not in that library or is hidden by BR-334 - EX-1
+            DocumentService-->DocumentController: MSG175 - This personal-library item is not available.
+            DocumentController-->UserScreen: MSG175 - This personal-library item is not available.
+            UserScreen-->Actor: MSG175 - This personal-library item is not available.
+
+        else Library cannot be loaded - EX-2
+            DocumentService-->DocumentController: MSG176 - Unable to load your personal document library. Please try again.
+            DocumentController-->UserScreen: MSG176 - Unable to load your personal document library. Please try again.
+            UserScreen-->Actor: MSG176 - Unable to load your personal document library. Please try again.
+
+        else Library loaded
+            DocumentService-->DocumentController: Folders and documents (read-only)
+            DocumentController-->UserScreen: Folders and documents (read-only)
+            UserScreen-->Actor: Display the library with no upload, rename, move or delete action
+        end
+    end
+end
+
+note over DocumentService: AF-1 (read a document) repeats the checks, opens the file and records the audit entry\nnaming the document before returning it. If the file cannot be read or the entry\ncannot be recorded: MSG158 - Unable to display the document. Please try again. (EX-3)\nAs built: PersonalLibraryService, GET /api/users/{userId}/library (PR #169).
+
+deactivate DocumentService
+deactivate DocumentController
+deactivate UserScreen

@@ -220,7 +220,7 @@ A Use Case is Done only when **all** of these hold:
 | Frontend lint | `cd frontend && npm run lint` |
 | Frontend build (includes `tsc -b`) | `cd frontend && npm run build` |
 
-CI runs all four on every pull request — see [.github/workflows/ci.yml](../.github/workflows/ci.yml).
+CI runs all four on every pull request, limited to what the PR touches — see [.github/workflows/ci.yml](../.github/workflows/ci.yml).
 
 Branch and PR conventions:
 

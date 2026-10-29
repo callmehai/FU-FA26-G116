@@ -4,13 +4,13 @@ Patch Report 3 của đợt BA Final Review. Ngày 24/10/2026 cả 4 patch đã 
 máy có draw.io; bảng dưới ghi trạng thái và phần còn lại.
 
 | File | Trạng thái (24/10/2026) |
-|---|---|
-| [patch-scrum-26.md](patch-scrum-26.md) | SCRUM-26 / UC-31: đã vào Report 3 DOCX từ lượt 1. PNG `uc31_recordattendance` đã xuất (draw.io `--scale 1.5`, 4972×4184, không nhúng diagram); nhãn MSG150/MSG151 nằm trong khung. |
+|---|---|| [patch-scrum-26.md](patch-scrum-26.md) | SCRUM-26 / UC-31: đã vào Report 3 DOCX từ lượt 1. PNG `uc31_recordattendance` đã xuất (draw.io `--scale 1.5`, 4972×4184, không nhúng diagram); nhãn MSG150/MSG151 nằm trong khung. |
 | [patch-scrum-107.md](patch-scrum-107.md) | SCRUM-107 / UC-33a: đã dán vào DOCX (II.7.2.1, BR-215, V.2 MSG164/MSG174/MSG288) và chạy `sync_reports.py --report 3`. PNG `uc33a_uploaddocumentstomeeting` đã xuất (`--scale 1.5`, 5624×5072) |
 | [patch-scrum-97.md](patch-scrum-97.md) | SCRUM-97 / UC-73, UC-28b: đã dán vào DOCX (II.6.6, II.6.2.2, BR-126, BR-295, V.2 MSG256/MSG258) và sync. PNG `uc28b_assignchangemeetingrole` (5743×4739) và `uc73_handoverchair` (5263×2839) đã xuất (`--scale 1.5`) |
 | [patch-scrum-18-20.md](patch-scrum-18-20.md) | SCRUM-18/20 / UC-14, UC-17, UC-28a, UC-29, UC-30: đã dán vào DOCX (I.4.2, II.4.1, II.4.4, II.6.2.1, II.6.3, II.6.4, BR-30/105/106/115/176, thêm BR-320/BR-321, MSG154, thêm MSG285/MSG286/MSG277). PNG xuất bởi session lượt 4 |
 | [patch-chu-man-hinh.md](patch-chu-man-hinh.md) | Lượt 6, chỉ sửa chữ: III.7.3 (số trang chỉ hiện khi biết), III.7.4 (SCRUM-107: đuôi khớp nội dung, MSG162/164/174/288), III.9.2 (Luật 91/2025/QH15 + NĐ 356/2025/NĐ-CP), III.10.1 (gợi ý, Thư ký xác nhận). Đã dán 7 dòng vào DOCX, không đổi ảnh, đã sync; 0 dòng không khớp |
 | [patch-dac-ta-man-hinh.md](patch-dac-ta-man-hinh.md) | Lượt 6, đặc tả màn hình SCRUM-18/20, SCRUM-97, SCRUM-26: đã dán vào DOCX (I.5.1.b Screen List, III.4.1–4.5, III.6.1 kèm bảng Change Role Dialog, III.6.3, III.6.4, III.8.3), thay 7 ảnh và chèn 9 ảnh từ wireframe v8, rồi sync. 63/67 câu cũ khớp (4 còn lại là hình Screen Flow và một dòng gộp, không phải lỗi) |
+| [patch-scrum-107-21-asbuilt.md](patch-scrum-107-21-asbuilt.md) | Lượt 6c (27/10/2026), SCRUM-107 + SCRUM-21: đã dán vào DOCX 29 câu ở III.7.3 (bỏ nhóm Biểu quyết, "Thêm tài liệu chung", bảng), III.7.4 (một vùng tải lên, thứ tự kiểm, nút Huỷ), III.7.5 (bỏ watermark, bình luận chờ SCRUM-23), III.8.6 + Screen List 8.6 (**đã xây**), mức mật `Confidential`, V.1, V.2 MSG164/MSG288, và 10 dòng đặc tả UC-32a/UC-32c/UC-33a ở mục II; đã sync. Không đổi ảnh |
 
 `sync_sequence_drawio_png.py` dùng `--scale 2` làm ảnh bị cắt nửa dưới trắng và chạy cả 51 tab mất hơn 5 phút, nên PNG được xuất từng tab bằng draw.io CLI `--scale 1.5`. Không dùng `--embed-diagram`: bản draw.io hiện tại nhúng cả 54 tab vào mỗi PNG (3,9 MB, CRC chunk `zTXt` sai).
 

@@ -7,9 +7,72 @@ on:
     branches: [main]
   pull_request:
 
+# Push mới lên cùng một PR huỷ lần chạy cũ còn dở: chỉ kết quả của commit cuối có ý nghĩa, và repo
+# private chỉ có 2.000 phút Actions miễn phí mỗi tháng (tháng 10/2026 hết sạch trước ngày 26).
+# Trên main thì không huỷ, vì mỗi lần push kéo theo một lần deploy.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  # Chỉ chạy phần bị đổi: PR chỉ sửa README hay deploy/ không build lại backend và frontend. Không
+  # khớp nhóm nào ở đây thì job đó Skipped — repo không bắt check nào phải xanh nên Skipped không
+  # chặn merge. Image của server test thì deploy.yml tự quyết có build lại không.
+  changes:
+    name: Chọn phần cần chạy
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.diff.outputs.backend }}
+      frontend: ${{ steps.diff.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Commit merge của PR cùng cha đầu tiên của nó (đầu nhánh đích), để so ra các file PR đổi.
+          fetch-depth: 2
+
+      # backend=full: build và chạy hết test. backend=source: PR chỉ đụng frontend/, docs/ hay skill,
+      # nên chỉ chạy các test đọc mã nguồn ngoài backend — danh mục mã thông báo (đọc FE và docs) và
+      # bản sao skill; hơn 1.500 test còn lại chạy trên PostgreSQL mất ~6 phút mà kết quả không thể
+      # đổi. backend=skip: không đụng gì backend build hay test đọc tới.
+      - name: So file đã đổi
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            base=HEAD^1
+          else
+            # Push lên main: so với đầu main trước lần push, kể cả khi một lần push mang nhiều commit.
+            base=$BEFORE
+            git fetch -q --depth=1 origin "$base" 2> /dev/null || base=""
+          fi
+          all=false
+          if [ -z "$base" ] || ! changed=$(git diff --name-only "$base" HEAD); then
+            echo "Không so được với commit trước, chạy tất cả"
+            all=true
+          fi
+          # Here-string chứ không pipe: grep -q thoát sớm làm lệnh trước chết vì SIGPIPE, và bash
+          # của runner chạy với pipefail.
+          has() { grep -qE "$1" <<< "$changed"; }
+          ci='^\.github/workflows/ci\.yml$'
+          if $all || has "$ci|^(backend|tests)/|^(global\.json|TrustCabinet\.sln|dotnet-tools\.json|\.editorconfig)$"; then
+            backend=full
+          elif has '^(frontend|docs|\.claude|\.agents)/'; then
+            backend=source
+          else
+            backend=skip
+          fi
+          frontend=false
+          if $all || has "$ci|^frontend/"; then frontend=true; fi
+          echo "backend=$backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+          echo "Backend: $backend, frontend: $frontend"
+
   backend:
     name: Backend — build & test
+    needs: changes
+    if: needs.changes.outputs.backend != 'skip'
     runs-on: ubuntu-latest
     env:
       # Cùng giá trị với PostgreSQL service bên dưới; chỉ tồn tại trong runner CI dùng một lần.
@@ -61,10 +124,14 @@ jobs:
       # kèm lý do, chứ đừng gỡ cờ này.
       - run: dotnet build TrustCabinet.sln --no-restore --configuration Release -warnaserror
 
-      - run: dotnet test TrustCabinet.sln --no-build --configuration Release --verbosity normal
+      - run: dotnet test TrustCabinet.sln --no-build --configuration Release --verbosity normal --filter "$FILTER"
+        env:
+          FILTER: ${{ needs.changes.outputs.backend == 'source' && 'FullyQualifiedName~MessageCodeCatalogueTests|FullyQualifiedName~SkillMirrorTests' || '' }}
 
   frontend:
     name: Frontend — lint & build
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -86,11 +153,13 @@ jobs:
       # `npm run build` chạy tsc -b trước, nên bước này bắt luôn lỗi kiểu TypeScript.
       - run: npm run build
 
-  # Push lên main mà hai job trên xanh thì deploy lên server test (.github/workflows/deploy.yml).
-  # Nằm trong CI để commit hiện cả trạng thái deploy; trên pull request job này hiện là Skipped.
+  # Push lên main mà hai job trên xanh hoặc Skipped thì deploy lên server test
+  # (.github/workflows/deploy.yml) — kể cả lần chỉ sửa deploy/ hay docs, để server luôn chạy đúng
+  # commit đầu main. Nằm trong CI để commit hiện cả trạng thái deploy; trên pull request job này
+  # hiện là Skipped.
   deploy:
     name: Deploy server test
-    needs: [backend, frontend]
-    if: github.event_name == 'push'
+    needs: [changes, backend, frontend]
+    if: ${{ !cancelled() && !failure() && github.event_name == 'push' }}
     uses: ./.github/workflows/deploy.yml
     secrets: inherit

@@ -267,7 +267,8 @@ create.
   still open), then `python3 ~/.playwright-e2e/report.py reports/<ticket>/manifest.json` writes
   `index.html` beside it. Give the user that path and open it (`open …` on macOS). Do not publish it
   to an agent-specific host (a Claude Artifact, a Codex share link): not everyone on the team can
-  open those. Rebuild it after each round of review fixes.
+  open those. Rebuild it after each round of review fixes. Keep each check's result to a line or
+  two — the numbers and the outcome; the explanation belongs in "changes" or the pair captions.
 - **Every image in the report opens big on click.** A screenshot scaled down to the page column is
   too small to read (the user, 2026-10-25), and opening the raw image in a new tab is no better.
   `report.py` embeds each image at full resolution and opens it in a zoom viewer: fit to the screen,
@@ -310,6 +311,9 @@ or CI. To set it up on a new machine, create `~/.playwright-e2e` with:
   full resolution (pairs up to 6000px wide, shots up to 3000px), wrap it in a button that opens a
   `<dialog>` zoom viewer reusing the same data URI (so the file does not double), and write one
   plain `index.html` with inline CSS and script and no external requests, so it opens offline.
+  Lay out each check as two grid columns, scenario and result (`2fr` / `3fr`, one column under
+  520px), both allowed to wrap, the result right-aligned while it fits on one line. A result kept
+  on one line (`flex: none`) squeezed the scenario to a word per line and ran out of the panel.
 
 The setup is done when the smoke test passes against the running app.
 

@@ -58,10 +58,38 @@ jobs:
           test "$arch" = x86_64 || { echo "::error::Server là $arch, image build cho x86_64"; exit 1; }
 
       - name: Build image
-        run: docker build -t trustcabinet-app:latest .
+        id: app
+        # Image chỉ gói những gì Dockerfile chép vào: tag theo mã băm của đúng các đường dẫn đó, server
+        # có rồi thì bỏ qua — merge chỉ sửa docs, deploy/ hay workers/ không build lại app (~5 phút).
+        run: |
+          tag=$(git rev-parse HEAD:backend HEAD:frontend HEAD:Dockerfile HEAD:.dockerignore HEAD:global.json HEAD:TrustCabinet.sln | sha1sum | cut -c1-40)
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if ssh "$SERVER" "docker image inspect trustcabinet-app:$tag" > /dev/null 2>&1; then
+            echo "Server đã có image app $tag, bỏ qua build"
+            exit 0
+          fi
+          docker build -t "trustcabinet-app:$tag" .
+          docker save "trustcabinet-app:$tag" | gzip | ssh "$SERVER" 'gunzip | docker load'
 
-      - name: Chép image sang server
-        run: docker save trustcabinet-app:latest | gzip | ssh "$SERVER" 'gunzip | docker load'
+      - name: Máy chuyển chữ
+        # Chỉ khi server bật profile speech (cần máy 4 GB, deploy/README.md §10). Image ~770 MB nên chỉ
+        # build và chép khi workers/speech đổi: tag theo mã băm thư mục đó, server có rồi thì bỏ qua.
+        run: |
+          if ! ssh "$SERVER" "grep -qE '^COMPOSE_PROFILES=.*speech' ~/TrustCabinet/deploy/.env"; then
+            echo "Server chưa bật máy chuyển chữ, bỏ qua"
+            exit 0
+          fi
+          tree=$(git rev-parse HEAD:workers/speech)
+          if ssh "$SERVER" "docker image inspect trustcabinet-speech:$tree" > /dev/null 2>&1; then
+            echo "Server đã có image máy chuyển chữ $tree"
+          else
+            docker build -t "trustcabinet-speech:$tree" workers/speech
+            docker save "trustcabinet-speech:$tree" | gzip | ssh "$SERVER" 'gunzip | docker load'
+          fi
+          # latest là tên docker-compose.yml dùng; các bản cũ thì xoá cho khỏi đầy đĩa.
+          ssh "$SERVER" "set -e
+            docker tag trustcabinet-speech:$tree trustcabinet-speech:latest
+            docker images trustcabinet-speech --format '{{.Tag}}' | grep -vxE 'latest|$tree' | xargs -r -I{} docker rmi -f trustcabinet-speech:{} > /dev/null"
 
       - name: Khởi động lại
         # git đưa server về đúng commit vừa build, để docker-compose.yml và Caddyfile khớp với
@@ -71,6 +99,10 @@ jobs:
         # Caddyfile và livekit.yaml được mount từng file: git thay bằng file mới nên container đang
         # chạy vẫn đọc bản cũ, còn compose không biết nội dung đã đổi nên không tạo lại container.
         # Đổi thì khởi động lại đúng container đó.
+        # latest là tên docker-compose.yml dùng; image app không đổi thì tag lại cùng image và compose
+        # giữ nguyên container. Bản cũ xoá sau khi container đã chuyển sang bản mới.
+        env:
+          APP_TAG: ${{ steps.app.outputs.tag }}
         run: |
           ssh "$SERVER" "set -e
             cd ~/TrustCabinet
@@ -78,7 +110,9 @@ jobs:
             git fetch -q origin
             git checkout -q -B main $SHA
             grep -q '^LIVEKIT_API_SECRET=.' deploy/.env || echo \"LIVEKIT_API_SECRET=\$(openssl rand -hex 32)\" >> deploy/.env
+            docker tag trustcabinet-app:$APP_TAG trustcabinet-app:latest
             docker compose -f deploy/docker-compose.yml up -d --no-build
+            docker images trustcabinet-app --format '{{.Tag}}' | grep -vxE 'latest|$APP_TAG' | xargs -r -I{} docker rmi trustcabinet-app:{} > /dev/null
             git diff --quiet \$before HEAD -- deploy/Caddyfile || docker compose -f deploy/docker-compose.yml restart caddy
             git diff --quiet \$before HEAD -- deploy/livekit.yaml || docker compose -f deploy/docker-compose.yml restart livekit
             docker image prune -f > /dev/null"
@@ -101,3 +135,16 @@ jobs:
           done
           echo "::error::Sau 150 giây: /api/health trả $health (cần 200), /rtc/validate trả $rtc (cần 401 của LiveKit)"
           exit 1
+
+      - name: Kiểm tra máy chuyển chữ
+        # Lần đầu worker nạp model và tự kiểm tra mã băm, mất khoảng một phút.
+        run: |
+          ssh "$SERVER" "cd ~/TrustCabinet
+            grep -qE '^COMPOSE_PROFILES=.*speech' deploy/.env || { echo 'Server chưa bật máy chuyển chữ'; exit 0; }
+            for _ in \$(seq 1 36); do
+              status=\$(docker inspect -f '{{.State.Health.Status}}' \$(docker compose -f deploy/docker-compose.yml ps -q speech) 2> /dev/null)
+              [ \"\$status\" = healthy ] && { echo 'Máy chuyển chữ đã chạy'; exit 0; }
+              sleep 5
+            done
+            echo \"::error::Sau 180 giây máy chuyển chữ vẫn chưa healthy (\$status). Xem: docker compose -f deploy/docker-compose.yml logs speech\"
+            exit 1"

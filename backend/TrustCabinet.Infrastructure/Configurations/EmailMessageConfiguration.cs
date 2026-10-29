@@ -17,6 +17,9 @@ public class EmailMessageConfiguration : IEntityTypeConfiguration<EmailMessage>
         builder.Property(e => e.Body).HasMaxLength(50000);
         builder.Property(e => e.LastError).HasMaxLength(2000);
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(e => e.ProviderMessageId).HasMaxLength(128);
+        builder.Property(e => e.DeliveryState).HasConversion<string>().HasMaxLength(32);
+        builder.Property(e => e.DeliveryDetail).HasMaxLength(2000);
 
         // The sender picks up due messages and expired leases, oldest first.
         builder.HasIndex(e => new { e.Status, e.NextAttemptAt, e.CreatedAt });
@@ -26,6 +29,9 @@ public class EmailMessageConfiguration : IEntityTypeConfiguration<EmailMessage>
         // minutes event for the same meeting and recipient uses another key and remains allowed.
         builder.HasIndex(e => e.DeduplicationKey).IsUnique();
         builder.HasIndex(e => e.MeetingId);
+
+        // A provider webhook names the message by the provider's id.
+        builder.HasIndex(e => e.ProviderMessageId);
 
         // SetNull: the record that an invitation was sent outlives the meeting being deleted.
         builder.HasOne(e => e.Meeting)

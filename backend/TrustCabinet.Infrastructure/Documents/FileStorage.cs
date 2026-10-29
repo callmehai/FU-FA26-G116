@@ -27,6 +27,14 @@ public sealed class FileStorageOptions
     /// At least an hour, whatever is configured: an upload's own rows are unreferenced until it commits.</summary>
     public int OrphanGracePeriodHours { get; set; } = 24;
 
+    /// <summary>
+    /// What every stored document together may take, in GB (PO 27/10/2026, ADR-0034): R2's free tier holds 10 GB.
+    /// The organisation that takes the system over raises it to what it pays for.
+    /// </summary>
+    public int MaxTotalGigabytes { get; set; } = 10;
+
+    public long MaxTotalBytes => MaxTotalGigabytes * 1024L * 1024 * 1024;
+
     public bool IsConfigured => !string.IsNullOrWhiteSpace(ServiceUrl) && !string.IsNullOrWhiteSpace(BucketName)
         && !string.IsNullOrWhiteSpace(AccessKeyId) && !string.IsNullOrWhiteSpace(SecretAccessKey);
 }

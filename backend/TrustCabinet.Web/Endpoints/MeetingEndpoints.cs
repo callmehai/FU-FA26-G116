@@ -58,6 +58,11 @@ public static class MeetingEndpoints
     private const string Msg135OrganizerTransferConflict = "MSG135";
     private const string Msg137PublishRosterNotReady = "MSG137";
     private const string Msg138Rescheduled = "MSG138";
+    private const string Msg261Cancelled = "MSG261";
+    private const string Msg262CancellationReasonRequired = "MSG262";
+    private const string Msg263CancelConflict = "MSG263";
+    private const string Msg264CancelFailed = "MSG264";
+    private const string Msg345CancellationReasonTooLong = "MSG345";
 
     public static IEndpointRouteBuilder MapMeetingEndpoints(this IEndpointRouteBuilder app)
     {
@@ -199,6 +204,9 @@ public static class MeetingEndpoints
                 StatusCodes.Status403Forbidden, Msg46PublishConflict, "Cuộc họp này không còn có thể công bố."),
             MeetingWorkflowOutcome.Forbidden when command.Action is MeetingTransitionAction.Start or MeetingTransitionAction.End
                 => WorkflowError(StatusCodes.Status403Forbidden, TransitionConflictCode(command.Action), LifecycleConflictMessage(command.Action)),
+            // UC-75 EX-2 covers both: no longer the organizer, or no longer before the start.
+            MeetingWorkflowOutcome.Forbidden when command.Action == MeetingTransitionAction.Cancel => WorkflowError(
+                StatusCodes.Status403Forbidden, Msg263CancelConflict, CancelConflictMessage),
             MeetingWorkflowOutcome.Forbidden => WorkflowError(
                 StatusCodes.Status403Forbidden, Msg85ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.InvalidRequest => WorkflowError(
@@ -213,6 +221,10 @@ public static class MeetingEndpoints
                 StatusCodes.Status400BadRequest, Msg83RejectionReasonRequired, "Cần nhập lý do từ chối."),
             MeetingWorkflowOutcome.RejectionReasonTooLong => WorkflowError(
                 StatusCodes.Status400BadRequest, Msg84RejectionReasonTooLong, "Lý do từ chối không được vượt quá 1.000 ký tự."),
+            MeetingWorkflowOutcome.CancellationReasonRequired => WorkflowError(
+                StatusCodes.Status400BadRequest, Msg262CancellationReasonRequired, "Cần nhập lý do huỷ cuộc họp."),
+            MeetingWorkflowOutcome.CancellationReasonTooLong => WorkflowError(
+                StatusCodes.Status400BadRequest, Msg345CancellationReasonTooLong, "Lý do huỷ không được vượt quá 1.000 ký tự."),
             MeetingWorkflowOutcome.PublicationRosterNotReady => WorkflowError(
                 StatusCodes.Status409Conflict,
                 Msg137PublishRosterNotReady,
@@ -225,6 +237,7 @@ public static class MeetingEndpoints
                     MeetingTransitionAction.SubmitForApproval => "Cuộc họp không còn ở trạng thái Draft hoặc Rejected.",
                     MeetingTransitionAction.Publish => "Cuộc họp này không còn có thể công bố.",
                     MeetingTransitionAction.Start or MeetingTransitionAction.End => LifecycleConflictMessage(command.Action),
+                    MeetingTransitionAction.Cancel => CancelConflictMessage,
                     _ => "Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.",
                 }),
             _ => SaveFailed(
@@ -233,6 +246,7 @@ public static class MeetingEndpoints
                 {
                     MeetingTransitionAction.Start => "Không thể bắt đầu cuộc họp. Vui lòng thử lại.",
                     MeetingTransitionAction.End => "Không thể kết thúc cuộc họp. Vui lòng thử lại.",
+                    MeetingTransitionAction.Cancel => "Không thể huỷ cuộc họp. Vui lòng thử lại.",
                     _ => "Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.",
                 }),
         };
@@ -345,7 +359,8 @@ public static class MeetingEndpoints
         {
             MeetingTransitionAction.SubmitForApproval when assignedApproverId.HasValue && !hasReason
                 && !organizerId.HasValue => command,
-            MeetingTransitionAction.Reject when !assignedApproverId.HasValue && !organizerId.HasValue => command,
+            MeetingTransitionAction.Reject or MeetingTransitionAction.Cancel
+                when !assignedApproverId.HasValue && !organizerId.HasValue => command,
             MeetingTransitionAction.TransferOrganizer when organizerId.HasValue
                 && !assignedApproverId.HasValue && !hasReason => command,
             _ when action != MeetingTransitionAction.TransferOrganizer
@@ -364,6 +379,7 @@ public static class MeetingEndpoints
         MeetingTransitionAction.ReturnToDraft => "Đã đưa cuộc họp về bản nháp.",
         MeetingTransitionAction.Publish => "Đã công bố cuộc họp.",
         MeetingTransitionAction.TransferOrganizer => "Đã chuyển cuộc họp cho người tổ chức mới.",
+        MeetingTransitionAction.Cancel => "Đã huỷ cuộc họp.",
         _ => "Đã chuyển trạng thái cuộc họp.",
     };
 
@@ -377,6 +393,7 @@ public static class MeetingEndpoints
         MeetingTransitionAction.ReturnToDraft => Msg79ReturnedToDraft,
         MeetingTransitionAction.Publish => Msg45Published,
         MeetingTransitionAction.TransferOrganizer => Msg89OrganizerTransferred,
+        MeetingTransitionAction.Cancel => Msg261Cancelled,
         _ => Msg80InvalidTransition,
     };
 
@@ -389,6 +406,7 @@ public static class MeetingEndpoints
         MeetingTransitionAction.ReturnToDraft => Msg133ReturnToDraftConflict,
         MeetingTransitionAction.Publish => Msg46PublishConflict,
         MeetingTransitionAction.TransferOrganizer => Msg135OrganizerTransferConflict,
+        MeetingTransitionAction.Cancel => Msg263CancelConflict,
         _ => Msg80InvalidTransition,
     };
 
@@ -400,8 +418,11 @@ public static class MeetingEndpoints
         MeetingTransitionAction.Approve or MeetingTransitionAction.Reject or MeetingTransitionAction.ReturnToDraft
             => Msg88TransitionFailed,
         MeetingTransitionAction.Publish => Msg47PublishFailed,
+        MeetingTransitionAction.Cancel => Msg264CancelFailed,
         _ => Msg88TransitionFailed,
     };
+
+    private const string CancelConflictMessage = "Cuộc họp này không còn có thể huỷ.";
 
     private static string LifecycleConflictMessage(MeetingTransitionAction action)
         => action == MeetingTransitionAction.Start ? "Không thể bắt đầu cuộc họp này." : "Không thể kết thúc cuộc họp này.";
@@ -650,9 +671,10 @@ public static class MeetingEndpoints
 public sealed record CreateMeetingRequest(
     string? Title, string? PlannedStartTime, string? PlannedEndTime, string? Mode,
     string? Location, string? OnlineLink, string? Sensitivity, string? Description,
-    ParticipantSeed[]? Participants)
+    ParticipantSeed[]? Participants, string? CaptureMode = null)
 {
-    public MeetingInput ToInput() => new(Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description);
+    public MeetingInput ToInput() => new(Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description,
+        CaptureMode);
 }
 
 public sealed record MeetingRequest(
@@ -663,10 +685,11 @@ public sealed record MeetingRequest(
     string? Location,
     string? OnlineLink,
     string? Sensitivity,
-    string? Description)
+    string? Description,
+    string? CaptureMode = null)
 {
     public MeetingInput ToInput() => new(
-        Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description);
+        Title, PlannedStartTime, PlannedEndTime, Mode, Location, OnlineLink, Sensitivity, Description, CaptureMode);
 }
 
 public sealed record MeetingResponse(
@@ -687,7 +710,7 @@ public sealed record MeetingResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     MeetingPerson? Chair, IReadOnlyList<MeetingPerson> Secretaries, string? MyMeetingRole,
-    string? MyResponse, bool CanRespond)
+    string? MyResponse, bool CanRespond, string CaptureMode, MeetingCancellationResponse? Cancellation)
 {
     public static MeetingResponse From(MeetingDetails meeting) => new(
         meeting.Id,
@@ -706,8 +729,16 @@ public sealed record MeetingResponse(
         meeting.AssignedApproverId,
         meeting.CreatedAt,
         meeting.UpdatedAt, meeting.Chair, meeting.Secretaries ?? [], meeting.MyMeetingRole,
-        meeting.MyResponse, meeting.CanRespond);
+        meeting.MyResponse, meeting.CanRespond, meeting.CaptureMode.ToString(),
+        meeting.Cancellation is { } cancellation
+            ? new MeetingCancellationResponse(
+                cancellation.CancelledAt, cancellation.CancelledById, cancellation.CancelledByName, cancellation.Reason)
+            : null);
 }
+
+/// <summary>Present only on a Cancelled meeting. A null <c>CancelledById</c> means the system cancelled it (BR-301).</summary>
+public sealed record MeetingCancellationResponse(
+    DateTimeOffset CancelledAt, Guid? CancelledById, string CancelledByName, string Reason);
 
 public sealed record MeetingMutationResponse(string Code, string Message, MeetingResponse Meeting);
 
@@ -761,13 +792,14 @@ public sealed record MeetingHistoryItemResponse(
     string Action,
     string? FromStatus,
     string ResultingStatus,
-    Guid ActorId,
+    Guid? ActorId,
     string ActorName,
     DateTimeOffset OccurredAt,
     string? RejectionReason,
     Guid? AssignedApproverId,
     Guid? PreviousOrganizerId = null,
-    Guid? NewOrganizerId = null)
+    Guid? NewOrganizerId = null,
+    string? CancellationReason = null)
 {
     public static MeetingHistoryItemResponse From(MeetingHistoryRecord history) => new(
         history.Id,
@@ -781,7 +813,8 @@ public sealed record MeetingHistoryItemResponse(
         history.RejectionReason,
         history.AssignedApproverId,
         history.PreviousOrganizerId,
-        history.NewOrganizerId);
+        history.NewOrganizerId,
+        history.CancellationReason);
 }
 
 public sealed record MeetingHistoryPageResponse(

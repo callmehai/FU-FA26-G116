@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Users;
 namespace TrustCabinet.Infrastructure.Email;
 
 /// <summary>
-/// UC-07's <c>:Email Service</c>. Sends straight through SMTP rather than the queue — see
+/// UC-07's <c>:Email Service</c>. Sends straight through the transport rather than the queue — see
 /// <see cref="IPasswordResetEmailSender"/> for why.
 /// </summary>
 internal sealed class PasswordResetEmailSender(
@@ -26,9 +26,16 @@ internal sealed class PasswordResetEmailSender(
 
         // Switched off means no mail can go out, which is EX-2 — not a success that silently sent
         // nothing.
-        if (!emailOptions.Smtp.Enabled)
+        if (!emailOptions.Enabled)
         {
             logger.LogWarning("Email delivery is disabled; the password reset email was not sent.");
+            return false;
+        }
+
+        // A demo account's address can never receive the link; sending would only bounce.
+        if (emailOptions.IsUndeliverable(toAddress))
+        {
+            logger.LogWarning("The password reset email was not sent: the recipient's domain never receives mail.");
             return false;
         }
 
@@ -42,8 +49,8 @@ internal sealed class PasswordResetEmailSender(
             await sender.SendAsync(
                 new EmailMessage
                 {
-                    // Never stored — the field is required by the type, and SmtpEmailSender builds
-                    // the Message-ID from Id.
+                    // Never stored — the field is required by the type. SmtpEmailSender builds the
+                    // Message-ID from Id, ResendEmailSender the idempotency key.
                     DeduplicationKey = "password-reset",
                     ToAddress = toAddress,
                     Subject = "Đặt lại mật khẩu TrustCabinet",
@@ -61,6 +68,17 @@ internal sealed class PasswordResetEmailSender(
                 "The password reset email was refused by the mail server: {StatusCode} ({ErrorCode}).",
                 exception.StatusCode,
                 exception.ErrorCode);
+            return false;
+        }
+        catch (PermanentEmailFailureException) when (!ct.IsCancellationRequested)
+        {
+            // Resend's error text can quote the recipient back too, so it is left out for the same reason.
+            logger.LogError("The password reset email was refused by the email provider as invalid.");
+            return false;
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode is { } status && !ct.IsCancellationRequested)
+        {
+            logger.LogError("The email provider answered {StatusCode} to the password reset email.", (int)status);
             return false;
         }
         catch (Exception exception) when (!ct.IsCancellationRequested)

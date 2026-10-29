@@ -15,13 +15,17 @@ export function SegmentedControl<T extends string>({
   onChange,
   label,
   disabled = false,
+  counts,
 }: {
   value: T
-  options: SelectOption<T>[]
+  /** `short` replaces the label where the group is too narrow for it (a phone). */
+  options: (SelectOption<T> & { short?: string })[]
   onChange: (value: T) => void
   /** Accessible name of the group. */
   label: string
   disabled?: boolean
+  /** A number after an option's label — how many items it holds. */
+  counts?: Partial<Record<T, number>>
 }) {
   const name = useId()
 
@@ -37,7 +41,26 @@ export function SegmentedControl<T extends string>({
             onChange={() => onChange(option.value)}
             disabled={disabled}
           />
-          <span>{option.label}</span>
+          <span>
+            {/* Its own box, so a narrow group can shorten the label ("…") and still show the count. */}
+            <span className="segmented-label">
+              {option.short ? (
+                <>
+                  <span className="segmented-full">{option.label}</span>
+                  <span className="segmented-short">{option.short}</span>
+                </>
+              ) : (
+                option.label
+              )}
+            </span>
+            {counts?.[option.value] !== undefined && (
+              // The space keeps the label and the number apart in the accessible name.
+              <>
+                {' '}
+                <b className="segmented-count">{counts[option.value]}</b>
+              </>
+            )}
+          </span>
         </label>
       ))}
     </div>

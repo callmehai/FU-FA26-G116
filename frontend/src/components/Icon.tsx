@@ -1,5 +1,6 @@
 import {
   ArrowDown,
+  Captions,
   ArrowRight,
   LogIn,
   Mail,
@@ -17,18 +18,25 @@ import {
   ChevronRight,
   ChevronUp,
   ChevronsUpDown,
+  CircleAlert,
   CircleCheck,
   CircleStop,
   CircleX,
   Clock,
   Copy,
+  Download,
   Ellipsis,
   EllipsisVertical,
   Eye,
   EyeOff,
+  FileAudio,
   FileText,
   Folder,
   FolderPlus,
+  FolderInput,
+  Archive,
+  Unlink,
+  Reply,
   GripVertical,
   ClipboardCheck,
   Funnel,
@@ -45,6 +53,7 @@ import {
   MicOff,
   Monitor,
   Paperclip,
+  Pause,
   PenLine,
   PhoneOff,
   PictureInPicture2,
@@ -57,6 +66,7 @@ import {
   Send,
   Settings,
   Shield,
+  Square,
   ShieldAlert,
   SquareCheck,
   Trash2,
@@ -69,6 +79,8 @@ import {
   VideoOff,
   Volume2,
   X,
+  ZoomIn,
+  ZoomOut,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -79,6 +91,8 @@ import {
  */
 const ICONS = {
   calendar: CalendarDays,
+  // SCRUM-109: the per-mic transcript, a line of words per sentence.
+  captions: Captions,
   users: Users,
   shield: Shield,
   grid: LayoutGrid,
@@ -87,6 +101,7 @@ const ICONS = {
   bell: Bell,
   // Notification kinds (SCRUM-14): what each one is about, at a glance.
   clock: Clock,
+  alertCircle: CircleAlert,
   checkCircle: CircleCheck,
   xCircle: CircleX,
   checkCheck: CheckCheck,
@@ -125,8 +140,15 @@ const ICONS = {
   meeting: Presentation,
   folder: Folder,
   folderPlus: FolderPlus,
+  folderInput: FolderInput,
+  archive: Archive,
+  unlink: Unlink,
+  reply: Reply,
   settings: Settings,
   upload: Upload,
+  download: Download,
+  zoomIn: ZoomIn,
+  zoomOut: ZoomOut,
   // Sensitivity levels: each one has its own shape, not only its own colour.
   globe: Globe,
   building: Building2,
@@ -154,6 +176,10 @@ const ICONS = {
   // SCRUM-69: the Chair starts and ends the meeting.
   play: Play,
   stop: CircleStop,
+  // SCRUM-29: a recorder's pause and stop, and an audio file.
+  pause: Pause,
+  recordStop: Square,
+  fileAudio: FileAudio,
   // SCRUM-25: drag an agenda item; an item that has a conclusion.
   grip: GripVertical,
   clipboardCheck: ClipboardCheck,

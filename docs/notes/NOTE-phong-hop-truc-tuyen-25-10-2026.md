@@ -1,122 +1,112 @@
-# Phòng họp trực tuyến — rà soát FE-08 ngày 25/10/2026
+# Phòng họp trực tuyến — rà soát FE-08 (25/10/2026, cập nhật 29/10/2026)
 
-**Ngày:** 25/10/2026. **Người viết:** BA. **Nguồn:** code đang chạy trên nhánh `main`
-(`backend/TrustCabinet.Web/Endpoints/CallEndpoints.cs`,
-`backend/TrustCabinet.Infrastructure/Calls/`, `frontend/src/features/calls/room/`), Jira SCRUM-39/41/42/43,
-[ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md),
-[ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md) và Report 3 mục 8.
+**Ngày:** 25/10/2026; cập nhật 29/10/2026 sau khi gộp `main`. **Người viết:** BA. **Nguồn:** code trên
+nhánh `main` (`backend/TrustCabinet.Web/Endpoints/CallEndpoints.cs`,
+`backend/TrustCabinet.Infrastructure/Calls/`, `frontend/src/features/calls/room/`), Jira
+SCRUM-39/41/42/43, [ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md),
+[ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md), ghi chú bàn giao
+[11](ban-giao-ba-final-review/11-tai-lieu-fe-phong-hop-ghi-am.md) và
+[16](ban-giao-ba-final-review/16-ghi-am-voice-id-28-29-10-2026.md), Report 3 mục 8.
 
-Note này ghi **phần code chưa khớp yêu cầu**. Đặc tả UC-37 → UC-42, UC-39d, UC-78 trong Report 3 đã
-viết theo yêu cầu (không viết xuống theo code), nên hai điểm dưới đây là việc của BE, không phải
-sửa lại đặc tả.
+Note này ghi **phần code chưa khớp yêu cầu** và những gì đã đổi khi gộp `main`. Đặc tả UC-37 → UC-42,
+UC-39d, UC-78 trong Report 3 viết theo yêu cầu đã chốt và đối chiếu với code; phần Guest còn là yêu cầu,
+chưa phải mô tả code.
+
+## Số hiệu sau khi gộp `main` (29/10/2026)
+
+`main` đã dùng `BR-322` (không nhận thông báo về hành động của chính mình), `BR-333`–`BR-335` (kho tài
+liệu) và `MSG290`–`MSG327` (bản ghi, gỡ băng, Voice ID), nên số của nhánh này được đánh lại:
+
+| Loại | Trước | Sau |
+|---|---|---|
+| BR phòng họp | `BR-322` → `BR-331` | `BR-323` → `BR-332`; thêm `BR-336` (tối đa 50 người một phòng), `BR-337` → `BR-339` (đăng ký phát biểu, UC-79) |
+| Mã FE: bị chặn micro/camera | `MSG119`, `MSG120` | `MSG334` (một câu có `{thiết bị}`) |
+| Mã FE: không chia sẻ được màn hình | `MSG121` | `MSG341` |
+| Mã FE: gửi chat lỗi | `MSG125` | `MSG343` |
+| Mã FE: tắt mic người khác thành công | `MSG290` | `MSG342` |
+| Mã FE: bị chủ toạ tắt mic | `MSG291` | `MSG339` |
+| Mã FE: bị người khác lấy lượt trình bày | `MSG292` | `MSG340` |
+| Mã FE: phòng đóng khi cuộc họp kết thúc | `MSG293` | `MSG331` |
+| Mã FE: vào từ tab/thiết bị khác | `MSG294` | `MSG329` |
+| Mã FE: không còn trong danh sách | `MSG295` | `MSG330` |
+| Mã FE: mất kết nối | `MSG296` | `MSG332` (đang nối lại: `MSG333`) |
+| Mã FE: không thấy / đang bị dùng / không mở được thiết bị | `MSG297`, `MSG298`, `MSG299` | `MSG335`, `MSG336`, `MSG337` |
+| Mã FE: bị chặn phát âm thanh; tab rời phòng không qua nút Rời; cuộc họp đã huỷ | — | `MSG338`; `MSG328`; `MSG350` |
+
+`MSG119`–`MSG122`, `MSG125` ngừng dùng, không tái cấp. `MSG344` (nút Rời phòng bị khoá khi Thư ký ghi
+cả cuộc gọi) vẫn còn trong code `main` nhưng note 16 bỏ việc ghi cả cuộc gọi, nên UC không dùng nó.
+Mã tiếp theo không đổi (`MSG351`; note 16 giữ chỗ `MSG351`–`MSG367` cho ghi âm).
 
 ## Đã cập nhật trong đợt này
 
 | Loại | File |
 |---|---|
-| UC Specification | UC-37, UC-38, UC-39a, UC-39b, UC-39c, **UC-39d**, UC-40, UC-41, UC-42, **UC-78** trong [05-use-case-specifications.md](../01-requirements/05-use-case-specifications.md#fe-08--online-meeting-room-management) |
-| Business Rules | BR-322 → BR-331 trong [06-business-rules.md](../01-requirements/06-business-rules.md) |
-| Message codes | `MSG119`–`MSG121`, `MSG125` chuyển từ dành sẵn sang FE; `MSG122` ngừng dùng; `MSG290`–`MSG299` cấp mới (FE); mã tiếp theo `MSG300` — [danh mục](../03-api/00-danh-muc-ma-thong-bao.md#thông-điệp-phía-trình-duyệt--scrum-39-scrum-41) |
-| API contract | [09-phong-hop-truc-tuyen.md](../03-api/09-phong-hop-truc-tuyen.md): thêm hành vi phía trình duyệt, mã FE, lý do ngắt kết nối |
-| Danh mục UC | [00-master-use-case-inventory.md](../01-requirements/00-master-use-case-inventory.md): FE-08 còn 7 UC / 4 UC con; tổng 78 UC / 40 UC con |
-| Report 3 | DOCX + Markdown: thay 8 placeholder FE-08 bằng bảng 7 dòng, thêm UC-39d và UC-78, BR-322 → BR-331, 15 dòng mã thông báo, sửa màn 8.1/8.2 và bảng màn hình §I.5.b |
+| UC Specification | UC-37, UC-38, UC-39a–UC-39d, UC-40, UC-41, UC-42, UC-78 và **UC-79** (mới) trong [05-use-case-specifications.md](../01-requirements/05-use-case-specifications.md#fe-08--online-meeting-room-management) |
+| Business Rules | `BR-323` → `BR-332`, `BR-336` → `BR-339` trong [06-business-rules.md](../01-requirements/06-business-rules.md); `BR-329` thêm ý PO 26/10/2026 (không khoá đổi vai trò khi đang họp) |
+| Message codes | Mã FE `MSG328`–`MSG343`, `MSG350` có dòng trong Report 3 §V.2; danh mục đánh dấu ngừng dùng như trên |
+| API contract | [09-phong-hop-truc-tuyen.md](../03-api/09-phong-hop-truc-tuyen.md) |
+| Danh mục UC | [00-master-use-case-inventory.md](../01-requirements/00-master-use-case-inventory.md): 79 UC |
+| Report 3 | DOCX + Markdown: UC-37 → UC-42, UC-39d, UC-78, UC-79; hai ảnh mới ở màn 8.1 và 8.2; bỏ gọi 1–1 khỏi từ điển dữ liệu (SCRUM-40 đã bỏ) |
+| Wireframe | [v10](../wireframe/TrustCabinet-wireframe-v10.html): màn mới 8.1b (chọn thiết bị) và 8.2b (cửa sổ nổi) |
+| Sequence diagram | [online-meeting-room](../06-sequencediagram/online-meeting-room/README.md): UC-37, UC-38, UC-39a–UC-39d, UC-40, UC-41, UC-42, UC-78, UC-79 |
 
-## BE cần làm
+## Khớp code (kiểm ngày 29/10/2026)
 
-### 1. Guest chưa vào được phòng họp (UC-37 AF-2, BR-322)
+- Phòng chỉ mở khi `InProgress` (PO 26/10/2026, SCRUM-41): trước giờ họp màn chờ hiện `MSG117` và tự
+  mở khi nhận thông báo `MeetingStarted`; `Ended` hiện `MSG331`; `Cancelled` hiện `MSG350`. Đặc tả: UC-37 AF-3, EX-1, EX-6.
+- Phím tắt Ctrl+D (micro) / Ctrl+E (camera); trên Mac là Cmd. Chat tối đa 1.000 ký tự. Chọn loa chỉ có
+  khi trình duyệt có `setSinkId`. Cửa sổ nổi dùng Document Picture-in-Picture và tự mở khi chuyển tab.
+- **Tối đa 50 người một phòng:** do `room.max_participants` trong cấu hình LiveKit chặn; không có mã
+  riêng, FE hiện lỗi kết nối chung. Đặc tả có `BR-336` và UC-37 EX-7 **không gán mã MSG**. Cần PO/BE chọn
+  mã (lấy từ `MSG351` trở đi, sau khi hỏi nhánh ghi âm đang giữ `MSG351`–`MSG367`).
+- Ghi âm (note 16): họp trực tuyến ghi mic từng người, nút mic là công tắc duy nhất, màn chờ báo "ghi âm
+  để lập biên bản · tự xoá sau 180 ngày". UC-37 và UC-39a chỉ nhắc ngắn, dẫn sang FE-09; **không** viết
+  luồng ghi âm (nhánh khác làm). Không còn chuyện nút Rời phòng bị khoá vì ghi âm.
 
-**Yêu cầu.** UC-37, UC-38, UC-39a–UC-39d, UC-40, UC-41, UC-42 và UC-78 đều nhận **Guest** có lời
-mời hợp lệ làm actor. ADR-0016 cho Guest media, chat, chia sẻ màn hình và danh sách người đang trong
-phòng như Member; chỉ không được điều phối phòng.
+## 4 điểm còn hở (trạng thái 29/10/2026)
 
-**Code hiện tại.**
+1. **Đồng bộ vai trò trong phòng (BR-329): xong ở `main`** (commit `b650570`,
+   `frontend/src/features/calls/room/roomRoles.ts`): FE đọc lại danh sách thành phần mỗi lần
+   `participantsChanged`, nên đổi Chủ toạ giữa họp có hiệu lực trong phòng mà không cần vào lại. Server
+   vẫn đọc lại chủ toạ từ database khi tắt mic. Không còn cần ghi "chưa triển khai" vào BR-329, UC-41, UC-73.
+2. **Hằng số mã MSG ở FE: xong ở `main`** (`roomMessage` trong `roomSupport.ts`, mỗi câu có chú thích mã).
+   Danh mục và Report 3 đã khớp (`MessageCodeCatalogueTests`).
+3. **Sequence diagram FE-08: xong** — thư mục `online-meeting-room/`.
+4. **Comment Jira: đã soạn nháp, chưa đăng** — nháp nằm trong báo cáo bàn giao PR #147 (SCRUM-41 đổi số MSG/BR,
+   SCRUM-27 UC-79 mới, SCRUM-40 đã bỏ khỏi Report 3).
 
-- `CallEndpoints.cs` gắn `.RequireActiveUser(...)` cho cả ba endpoint, nên principal không phải tài
-  khoản nội bộ bị chặn trước khi tới nghiệp vụ.
-- `CallRepository.FindRoomAccessAsync` chỉ so `meeting_participants.UserId == userId`, không xét
-  `guest_invitations`.
-- `UnavailableMeetingGuestIdentityResolver` trả `null` — **chưa có xác thực Guest** (SCRUM-25 chưa
-  cài), nên chưa endpoint nào phân biệt được Guest với người lạ.
+## Còn mở
 
-**Hệ quả.** Guest mở phòng nhận `404` như cuộc họp không tồn tại. Phần Guest trong đặc tả là yêu
-cầu, chưa phải mô tả code.
+### 1. Guest chưa vào được phòng họp (UC-37 AF-2) — chờ SCRUM-25
 
-**Hướng làm.** Khi SCRUM-25 có guest token: cho endpoint `call` nhận cả `MeetingGuestSession`, cấp
-quyền vào phòng theo `guest_invitations` (còn hiệu lực, đúng cuộc họp), đặt `identity` của phòng là
-định danh guest (không dùng display name), `metadata.meetingRole = "Guest"`, và cho janitor đối soát
-theo cùng nguồn. Không cấp quyền tắt mic cho Guest.
+**Yêu cầu.** Guest có lời mời hợp lệ là actor của UC-37, UC-38, UC-39a–UC-39d, UC-40, UC-42, UC-78, UC-79
+(ADR-0016: media, chat, chia sẻ màn hình, danh sách người trong phòng như Member; không điều phối phòng).
+Đặc tả **giữ Guest** vì đó là yêu cầu.
 
-### 2. Đổi vai trò khi phòng đang mở không tới được phòng (UC-40 AF-2, BR-328)
+**Code: chưa làm.** `CallEndpoints.cs` gắn `RequireActiveUser`; `CallRepository.FindRoomAccessAsync`
+chỉ so `meeting_participants.UserId`; `UnavailableMeetingGuestIdentityResolver` trả `null` — chưa có xác thực
+Guest (SCRUM-25). Guest mở phòng nhận `404`. **PR phải ghi rõ: Guest chưa được cài.**
 
-**Yêu cầu.** BR-328: đổi Meeting Role có hiệu lực trong phòng mà không phải vào lại — phòng hiện
-vai trò mới và quyền mới ngay.
+**Hướng làm (khi SCRUM-25 có guest token).** Cho endpoint `call` nhận `MeetingGuestSession`, cấp quyền theo
+`guest_invitations` còn hiệu lực đúng cuộc họp, đặt `identity` theo định danh Guest (không dùng tên hiển thị),
+`metadata.meetingRole = "Guest"`, cho job đối soát theo cùng nguồn. Không cấp quyền tắt mic.
 
-**Code hiện tại.** `CallRoomService` ghi `metadata = {"meetingRole": ...}` **một lần lúc cấp token**
-(`CallRoomService.cs`, dòng ~91). FE đọc đúng metadata đó (`roomSupport.meetingRoleOf`) để xếp hàng
-và hiện huy hiệu chủ toạ. Sau UC-73 (giao chủ toạ) hoặc UC-28b (đổi vai trò), metadata trong phòng
-không đổi: người vừa nhận vai trò Chủ toạ vẫn hiện "Thành viên", người vừa trả vai trò vẫn hiện
-"Chủ toạ" và vẫn thấy nút "Tắt mic" cho tới khi tải lại trang. Quyền tắt mic ở server thì **đúng**:
-`CallRoomService.MuteAsync` đọc lại chủ toạ từ database, nên người đã trả vai trò bị `403 MSG123` —
-chỉ phần hiển thị sai.
+### 2. UC-79 Đăng ký phát biểu (SCRUM-27) — yêu cầu, chưa cài
 
-**Hướng làm.** Sau khi lưu thay đổi vai trò, gọi RoomService API cập nhật metadata của người trong
-phòng (`UpdateParticipant` với metadata mới), hoặc phát một sự kiện để FE đọc lại vai trò từ
-`GET /api/meetings/{id}/participants`. Cách thứ hai rẻ hơn và dùng được cho cả UC-28b.
+Chỉ có bảng `speaking_requests` (entity `SpeakingRequest`: cuộc họp, mục nghị sự, người xin, thứ tự, trạng thái
+`Queued/Invited/Speaking/Finished/Cancelled`, giờ bắt đầu/kết thúc). Chưa có endpoint hay màn hình. UC-79 viết
+theo ghi chú 11 §3 ý 1 và §6.2.4; chế độ "phát biểu theo lượt" (Chủ toạ mời từng người, như AI-eCabinet) cần PO
+xác nhận chi tiết. UC-79 không dùng mã MSG mới; trường hợp "không còn là Chủ toạ" chỉ ẩn nút, chưa có câu báo.
 
-## Không phải lỗi — đã cố ý để ngoài phạm vi
+### 3. Không làm (có chủ ý)
 
-- **Giơ tay, tắt mic tất cả, mời người ra khỏi phòng:** không có trong phiên bản này; UC-41 chỉ còn
-  "Chủ toạ tắt mic người khác" và §III 8.3 ghi "Not provided".
-- **Panel Biểu quyết (màn 8.5) và panel Tài liệu (màn 8.6):** đang là "Planned" trong bảng màn hình
-  §I.5.b, chưa phải yêu cầu của đợt này.
-- **Ghi âm trong phòng (SCRUM-44):** Report 1 LI-01 cấm bot ghi âm tham gia phòng; chưa làm.
-- **Chat lưu lại:** BR-326 chốt không lưu; FE dùng text stream của LiveKit, không gọi API nào.
+- Tắt mic tất cả, mời người ra khỏi phòng; panel Biểu quyết và Tài liệu trong phòng (màn 8.5, 8.6 chưa phải yêu cầu đợt này).
+- **Gọi 1–1 (SCRUM-40): đã bỏ** (PO 26/10/2026) khỏi UC và từ điển dữ liệu Report 3. Enum `CallKind.Direct` và
+  `CallStatus.Ringing/Missed` còn trong code và `docs/02-design/02-erd.md`; xoá khi BE dọn.
+- Ghi cả cuộc gọi từ máy Thư ký (SCRUM-44): bỏ theo note 16.
+- Chat lưu lại: `BR-327` chốt không lưu.
 
-## Còn phải làm (không phải BE)
+### 4. Việc ngoài repo
 
-- Report 3 trên Drive chưa thay (chỉ sửa DOCX local).
-- Wireframe 8.1–8.7: bản vẽ hiện tại chưa có màn hình nổi (UC-78) và khay chọn thiết bị của UC-39d.
-
-## 4 điểm còn hở cần xử lý tiếp trên nhánh này
-
-### 1. Đồng bộ trạng thái triển khai: BR-328, UC-41, UC-73 và nhánh Guest của UC-37
-- **Hiện trạng**: 
-  - `BR-328` ghi "Đổi vai trò có hiệu lực ngay trong phòng họp mà không cần vào lại", nhưng LiveKit metadata hiện tại chỉ cấp 1 lần lúc tạo token. Sau khi Chair bàn giao qua UC-73 hoặc đổi role qua UC-28b, người dùng trong phòng chưa nhận được metadata mới ngay lập tức.
-  - Nhánh Guest của `UC-37` (AF-2) phụ thuộc xác thực Guest (`UC-04` / SCRUM-25), hiện tại backend trả `404` vì chưa có token Guest.
-- **Phương án chọn để thực hiện tiếp**:
-  - Ghi chú rõ trạng thái **"Chưa triển khai (Chờ cập nhật LiveKit metadata / Token Guest UC-04)"** trong đặc tả `BR-328`, `UC-41`, `UC-73` và `UC-37` để phản ánh đúng hiện trạng giữa tài liệu và code.
-  - Hoặc triển khai bổ sung cơ chế gửi SignalR event / gọi LiveKit UpdateParticipant API khi đổi role và hoàn thiện Guest resolver khi UC-04 hoàn tất.
-
-### 2. Định nghĩa hằng số mã thông báo MSG ở Frontend (`RoomView.tsx`)
-- **Hiện trạng**: Các mã `MSG290`–`MSG299` và `MSG119`–`MSG121`, `MSG125` đã được đưa vào danh mục mã thông báo (`docs/03-api/00-danh-muc-ma-thong-bao.md`), và giao diện `RoomView.tsx` (dòng 853...) đang hiển thị chuỗi tiếng Việt khớp hoàn toàn với nội dung danh mục. Tuy nhiên, code FE đang hardcode chuỗi trực tiếp, chưa khai báo các hằng số mã `MSGnn`.
-- **Việc cần làm**:
-  - Tạo file hằng số thông báo FE (ví dụ `frontend/src/features/calls/room/callMessages.ts` hoặc tương đương).
-  - Khai báo các constant mã `MSG119`, `MSG120`, `MSG121`, `MSG125`, `MSG290`–`MSG299` kèm text tương ứng để code FE và catalogue đồng bộ 100%.
-
-### 3. Vẽ Sequence Diagram cho FE-08 (Online Meeting Room)
-- **Hiện trạng**: Thư mục `docs/06-sequencediagram/` hiện đã có đầy đủ sơ đồ cho các feature khác (Agenda, Participant, Voting, Notification...) nhưng chưa có thư mục riêng cho phòng họp trực tuyến FE-08.
-- **Việc cần làm**:
-  - Tạo thư mục `docs/06-sequencediagram/online-meeting-room/` kèm `README.md`.
-  - Thiết kế các file sequence diagram (`.txt` và drawio / PNG):
-    - `UC37_JoinMeetingRoom` (gồm Main flow và AF-2 Guest join)
-    - `UC38_LeaveMeetingRoom` (rời phòng, ngắt kết nối duplicate session)
-    - `UC39_ManageRoomControls` (`UC39a` Mic, `UC39b` Camera, `UC39c` Screen Share, `UC39d` Chọn thiết bị)
-    - `UC40_ViewParticipants`
-    - `UC41_ModerateMeetingRoom` (Chủ toạ tắt mic một chiều)
-    - `UC42_InRoomChat` (Text stream LiveKit)
-    - `UC78_FloatingMeetingWindow` (Document PiP)
-
-### 4. Ghi chú cập nhật Ticket Jira cho các điểm lệch yêu cầu
-Theo quy trình phát triển ([DEVELOPMENT_WORKFLOW.md](../../DEVELOPMENT_WORKFLOW.md)), các thay đổi và thu hẹp nghiệp vụ cần được ghi comment vào ticket Jira trước khi chuyển BA Final Review:
-- **SCRUM-39 (Join/Leave Room)**:
-  - Ghi chú: Nhánh Guest join (UC-37 AF-2) phụ thuộc token Guest (UC-04 / SCRUM-25), hiện tạm thời trả `404` cho tới khi xác thực Guest sẵn sàng.
-  - Một tài khoản một kết nối (BR-327, LiveKit duplicate identity kick out).
-- **SCRUM-41 (Room Moderation & Chat)**:
-  - Ghi chú thu hẹp phạm vi: Chỉ làm chức năng Chủ toạ tắt mic người khác 1 chiều (`UC-41`, `BR-324`). Không làm giơ tay, tắt mic tất cả và mời người ra khỏi phòng.
-  - Chat trong phòng (`UC-42`, `BR-326`): dùng text stream tạm thời, không lưu vào database và không hiển thị cho người vào sau.
-  - Lỗi role metadata (`BR-328`): Đổi vai trò chưa đồng bộ ngay lập tức vào LiveKit metadata trong phiên hiện tại.
-- **SCRUM-42 (Device & Stage Controls)**:
-  - Ghi chú bổ sung: Tách `UC-39d` (Chọn thiết bị audio/video, lưu `localStorage`, `BR-330`) và bổ sung `UC-78` (Cửa sổ nổi PiP, `BR-331`).
-- **SCRUM-43 (Screen Sharing)**:
-  - Ghi chú: Tại một thời điểm chỉ 1 người chia sẻ màn hình (`BR-325`), khi người khác chia sẻ thì người trước tự động dừng và nhận `MSG292`.
-
+- Report 3 trên Drive chưa thay (chỉ sửa DOCX local, theo yêu cầu không đẩy Drive).
+- Figma: plugin `figma-v10/` chưa chạy trong Figma Desktop.

@@ -22,7 +22,7 @@ public class MeetingStatusHistoryConfiguration : IEntityTypeConfiguration<Meetin
             .OnDelete(DeleteBehavior.Restrict);
 
         // Restrict: the actor of a recorded transition must stay resolvable. Users are deactivated
-        // rather than deleted precisely so this evidence keeps its attribution.
+        // rather than deleted precisely so this evidence keeps its attribution. Null means the system acted.
         builder.HasOne(h => h.Actor)
             .WithMany()
             .HasForeignKey(h => h.ActorId)

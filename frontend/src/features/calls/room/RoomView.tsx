@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -47,24 +48,41 @@ import { MEETING_ROLE_LABEL, type MeetingRole } from '../../../types/call'
 import { type Meeting } from '../../../types/meeting'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
+import { DocumentsPanel } from '../../documents/DocumentsPanel'
+import { mixCall } from '../../recordings/callMix'
+import { useRecorder } from '../../recordings/useRecorder'
+import { SpeechPanel } from '../../speech/SpeechPanel'
+import { useSpeech } from '../../speech/useSpeech'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
-import { deviceErrorMessage, meetingRoleOf } from './roomSupport'
+import { useRecordingSign } from './recordingSign'
+import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
+import { deviceErrorMessage, roomMessage } from './roomSupport'
 
 /** ⌘ on a Mac, Ctrl elsewhere — the modifier of the mic and camera shortcuts. */
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 
-type PanelId = 'people' | 'agenda' | 'attendance' | 'chat'
+type PanelId = 'people' | 'agenda' | 'attendance' | 'documents' | 'speech' | 'chat'
 
 const PANEL_LABEL: Record<PanelId, string> = {
   people: 'Người dự',
   agenda: 'Nội dung họp',
   attendance: 'Điểm danh',
+  documents: 'Tài liệu',
+  speech: 'Lời nói',
   chat: 'Chat',
 }
+
+/** On a phone only "Người dự" and "Chat" fit beside the call controls; these go behind ⋯, as in Meet. */
+const TUCKED_PANELS: { id: PanelId; icon: IconName }[] = [
+  { id: 'agenda', icon: 'list' },
+  { id: 'attendance', icon: 'userCheck' },
+  { id: 'documents', icon: 'fileText' },
+  { id: 'speech', icon: 'captions' },
+]
 
 const CHAT_MAX = 1000
 
@@ -96,9 +114,15 @@ export function RoomView({
   myRole: MeetingRole
   onLeave: () => Promise<void>
 }) {
+  // The role the room was joined with holds only until the roster says otherwise (BR-328).
+  const roleOf = useRoomRoles(meeting.id)
+  const currentRole = roleOf(room.localParticipant) ?? myRole
+
   return (
     <RoomContext.Provider value={room}>
-      <RoomLayout room={room} meeting={meeting} myRole={myRole} onLeave={onLeave} />
+      <RoomRolesContext.Provider value={roleOf}>
+        <RoomLayout room={room} meeting={meeting} myRole={currentRole} onLeave={onLeave} />
+      </RoomRolesContext.Provider>
       <RoomAudioRenderer />
     </RoomContext.Provider>
   )
@@ -134,6 +158,22 @@ function RoomLayout({
   const floating = usePipWindow()
   const tray = useDeviceTray()
   const micTrack = localParticipant.getTrackPublication(Track.Source.Microphone)?.audioTrack
+  // SCRUM-109: what this person says goes into the per-mic transcript while their call mic is on. Held here, not in
+  // the panel, so it keeps going with the panel closed; they can stop it there.
+  const speech = useSpeech(meeting.id, {
+    defaultOn: true,
+    micOn: isMicrophoneEnabled,
+    deviceId: room.getActiveDevice('audioinput'),
+  })
+
+  // SCRUM-44: a meeting captured as one room is recorded from the Secretary's tab, the whole call mixed. Held here
+  // so the take goes on with the panel closed; leaving the room while it runs is refused below.
+  const roomCapture = speech.list?.captureMode === 'Room'
+  const callRecorder = useRecorder()
+  const recordCall = useCallback(() => mixCall(room), [room])
+  const callRecorded = useRecordingSign(room, callRecorder.state.kind === 'recording')
+  const labelOf = (id: PanelId) => (id === 'speech' && roomCapture ? 'Bản ghi' : PANEL_LABEL[id])
+  const iconOf = (id: PanelId, icon: IconName): IconName => (id === 'speech' && roomCapture ? 'mic' : icon)
 
   // Closing the tab while connected asks first; the browser shows its own wording.
   useBeforeUnload((event) => event.preventDefault())
@@ -144,7 +184,7 @@ function RoomLayout({
     // A microphone that goes muted without the user clicking was muted by the chair.
     const onMuted = (publication: TrackPublication, participant: Participant) => {
       if (participant.isLocal && publication.source === Track.Source.Microphone && !selfMuting.current) {
-        toast.show('Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu.', 'info')
+        toast.show(roomMessage.mutedByChair, 'info')
       }
     }
     // Someone else started presenting while I am: step aside (SCRUM-43). The server mutes the
@@ -153,7 +193,7 @@ function RoomLayout({
       if (publication.source !== Track.Source.ScreenShare || participant.isLocal) return
       if (!room.localParticipant.isScreenShareEnabled) return
       void room.localParticipant.setScreenShareEnabled(false)
-      toast.show(`${participant.name || 'Người khác'} bắt đầu trình bày, phần chia sẻ của bạn đã dừng.`, 'info')
+      toast.show(roomMessage.shareTakenOver(participant.name || 'Người khác'), 'info')
     }
     room.on(RoomEvent.TrackPublished, onPublished)
     room.on(RoomEvent.Reconnecting, onReconnecting)
@@ -229,7 +269,7 @@ function RoomLayout({
       })
     } catch (err) {
       if (err instanceof Error && err.name === 'NotAllowedError') return
-      toast.show('Không chia sẻ được màn hình. Vui lòng thử lại.', 'error')
+      toast.show(roomMessage.shareFailed, 'error')
     }
   }
 
@@ -261,11 +301,30 @@ function RoomLayout({
           <span className="room-count-label">người trong phòng</span>
         </span>
         {restricted && <SensitivityBadge sensitivity={meeting.sensitivity} />}
+        {speech.capturing && (
+          <button type="button" className="room-recording" onClick={() => setPanel('speech')}>
+            <Icon name="mic" size={13} />
+            {/* A phone's header has no room for the whole sentence; the dot says the rest. */}
+            <span className="room-recording-long">Đang ghi lời bạn</span>
+            <span className="room-recording-short" aria-hidden="true">
+              Đang ghi
+            </span>
+          </button>
+        )}
+        {callRecorded && (
+          <button type="button" className="room-recording" onClick={() => setPanel('speech')}>
+            <Icon name="mic" size={13} />
+            <span className="room-recording-long">Đang ghi âm cuộc họp</span>
+            <span className="room-recording-short" aria-hidden="true">
+              Đang ghi âm
+            </span>
+          </button>
+        )}
       </header>
 
       {reconnecting && (
         <div className="room-banner" role="status">
-          Mất kết nối, đang kết nối lại…
+          {roomMessage.reconnecting}
         </div>
       )}
       <StartAudioBanner />
@@ -307,13 +366,23 @@ function RoomLayout({
         </main>
 
         {panel && (
-          <aside className="room-panel" aria-label={PANEL_LABEL[panel]}>
+          <aside className="room-panel" aria-label={labelOf(panel)}>
             {panel === 'people' ? (
               <ParticipantsPanel meetingId={meeting.id} participants={participants} isChair={myRole === 'Chair'} />
             ) : panel === 'agenda' ? (
               <AgendaPanel meetingId={meeting.id} variant="room" />
             ) : panel === 'attendance' ? (
               <AttendancePanel meetingId={meeting.id} />
+            ) : panel === 'documents' ? (
+              <DocumentsPanel meeting={meeting} variant="room" />
+            ) : panel === 'speech' ? (
+              <SpeechPanel
+                meetingId={meeting.id}
+                variant="room"
+                speech={speech}
+                recorder={callRecorder}
+                recordSource={recordCall}
+              />
             ) : (
               <ChatPanel messages={chat.chatMessages} send={chat.send} isSending={chat.isSending} />
             )}
@@ -415,20 +484,18 @@ function RoomLayout({
             active={panel === 'people'}
             onClick={() => togglePanel('people')}
           />
-          <ControlButton
-            icon="list"
-            label="Nội dung họp"
-            side
-            active={panel === 'agenda'}
-            onClick={() => togglePanel('agenda')}
-          />
-          <ControlButton
-            icon="userCheck"
-            label="Điểm danh"
-            side
-            active={panel === 'attendance'}
-            onClick={() => togglePanel('attendance')}
-          />
+          {TUCKED_PANELS.map((item) => (
+            <ControlButton
+              key={item.id}
+              icon={iconOf(item.id, item.icon)}
+              label={labelOf(item.id)}
+              side
+              className="room-control-tucked"
+              active={panel === item.id}
+              onClick={() => togglePanel(item.id)}
+            />
+          ))}
+          <MorePanels panel={panel} onPick={togglePanel} labelOf={labelOf} iconOf={iconOf} />
           <ControlButton
             icon="messageSquare"
             label="Chat"
@@ -462,6 +529,7 @@ function RoomLayout({
           tone="danger"
           onConfirm={onLeave}
           onClose={() => setConfirmingLeave(false)}
+          blocker={callRecorder.active ? roomMessage.recordingBlocksLeave : undefined}
         >
           Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.
         </ConfirmDialog>
@@ -493,7 +561,8 @@ function PipView({
   const self = cameras.find((t) => t.participant.isLocal)
   const others = cameras.filter((t) => !t.participant.isLocal)
   const speaking = others.find((t) => speakers.some((p) => p.identity === t.participant.identity))
-  const main = speaking ?? others[0]
+  // Alone in the room, Meet fills the window with your own tile (camera, or your initials) rather than a sentence.
+  const main = speaking ?? others[0] ?? self
 
   return (
     <div className="room room-pip">
@@ -514,10 +583,8 @@ function PipView({
           </figure>
         ) : main ? (
           <ParticipantTile trackRef={main} />
-        ) : (
-          <p className="room-pip-alone">Chỉ có bạn trong phòng</p>
-        )}
-        {self && (presenter || main) && (
+        ) : null}
+        {self && ((presenter && isTrackReference(presenter)) || main !== self) && (
           <div className="room-pip-self">
             <ParticipantTile trackRef={self} />
           </div>
@@ -545,6 +612,100 @@ function PipView({
         />
         <ControlButton icon="phoneOff" label="Rời phòng" leave onClick={onLeave} />
       </div>
+    </div>
+  )
+}
+
+/**
+ * ⋯ on a phone (hidden by CSS on wider screens): a menu of the panels that do not fit on the bar.
+ * Lit while one of them is open, like the buttons it stands in for.
+ */
+function MorePanels({
+  panel,
+  onPick,
+  labelOf,
+  iconOf,
+}: {
+  panel: PanelId | null
+  onPick: (id: PanelId) => void
+  labelOf: (id: PanelId) => string
+  iconOf: (id: PanelId, icon: IconName) => IconName
+}) {
+  const [open, setOpen] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+  const menuId = useId()
+
+  useEffect(() => {
+    if (!open) return
+    root.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus()
+    const onDown = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false)
+    }
+    // A menu's keys (WAI-ARIA menu pattern): arrows move through the items and wrap, Home and End
+    // jump to the ends, Escape closes and hands focus back to ⋯.
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false)
+        root.current?.querySelector<HTMLElement>('button')?.focus()
+        return
+      }
+      const items = [...(root.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])]
+      const at = items.indexOf(document.activeElement as HTMLElement)
+      const next =
+        event.key === 'ArrowDown'
+          ? (at + 1) % items.length
+          : event.key === 'ArrowUp'
+            ? (at - 1 + items.length) % items.length
+            : event.key === 'Home'
+              ? 0
+              : event.key === 'End'
+                ? items.length - 1
+                : -1
+      if (next < 0) return
+      event.preventDefault()
+      items[next]?.focus()
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  const lit = TUCKED_PANELS.some((item) => item.id === panel)
+  return (
+    <div className="room-more" ref={root}>
+      <button
+        type="button"
+        className={`room-control room-control-side${lit ? ' room-control-active' : ''}`}
+        aria-label="Thêm"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        onClick={() => setOpen(!open)}
+      >
+        <Icon name="more" size={20} />
+      </button>
+      {open && (
+        <div className="room-select-menu room-more-menu" role="menu" id={menuId} aria-label="Thêm">
+          {TUCKED_PANELS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="menuitem"
+              className={`room-select-item${panel === item.id ? ' is-active' : ''}`}
+              onClick={() => {
+                setOpen(false)
+                onPick(item.id)
+              }}
+            >
+              <Icon name={iconOf(item.id, item.icon)} size={18} />
+              <span className="room-select-text">{labelOf(item.id)}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -604,7 +765,7 @@ function StartAudioBanner() {
   if (canPlayAudio) return null
   return (
     <div className="room-banner room-banner-action" role="status">
-      <span>Trình duyệt đang chặn phát âm thanh.</span>
+      <span>{roomMessage.audioBlocked}</span>
       <button type="button" className="btn btn-primary btn-sm" onClick={() => void startAudio()}>
         <Icon name="volume" size={16} />
         Bấm để nghe mọi người
@@ -814,7 +975,7 @@ function ParticipantTile({ trackRef, style }: { trackRef: TrackReferenceOrPlaceh
   const speaking = useIsSpeaking(participant)
   const micMuted = !useMicrophoneOn(participant)
   const name = participant.name || 'Người dự'
-  const role = meetingRoleOf(participant)
+  const role = useRoleOf()(participant)
   const showVideo = isTrackReference(trackRef) && !trackRef.publication.isMuted
   const colors = avatarColors(name)
 
@@ -851,21 +1012,22 @@ function ParticipantsPanel({
   const toast = useToast()
   const handleAccessLost = useAccessLost()
   const [pending, setPending] = useState<string | null>(null)
+  const roleOf = useRoleOf()
 
   const sorted = useMemo(
     () =>
       [...participants].sort((a, b) => {
-        const byRole = ROLE_ORDER[meetingRoleOf(a) ?? 'Member'] - ROLE_ORDER[meetingRoleOf(b) ?? 'Member']
+        const byRole = ROLE_ORDER[roleOf(a) ?? 'Member'] - ROLE_ORDER[roleOf(b) ?? 'Member']
         return byRole || (a.name ?? '').localeCompare(b.name ?? '', 'vi', { numeric: true })
       }),
-    [participants],
+    [participants, roleOf],
   )
 
   async function mute(participant: Participant) {
     setPending(participant.identity)
     try {
       await muteCallParticipant(meetingId, participant.identity)
-      toast.show(`Đã tắt micro của ${participant.name || 'người này'}.`, 'success')
+      toast.show(roomMessage.muted(participant.name || 'người này'), 'success')
     } catch (err) {
       // 403 MSG123 is "not the chair" — the caller can still see the meeting, so it is not access lost.
       if (!isApiError(err, 403, 'MSG123') && handleAccessLost(err)) return
@@ -907,7 +1069,7 @@ function PersonRow({
   const speaking = useIsSpeaking(participant)
   const micMuted = !useMicrophoneOn(participant)
   const name = participant.name || 'Người dự'
-  const role = meetingRoleOf(participant)
+  const role = useRoleOf()(participant)
   const colors = avatarColors(name)
 
   return (
@@ -961,7 +1123,7 @@ function ChatPanel({
       await send(text)
       setDraft('')
     } catch {
-      setError('Không gửi được tin nhắn. Vui lòng thử lại.')
+      setError(roomMessage.chatFailed)
     }
   }
 

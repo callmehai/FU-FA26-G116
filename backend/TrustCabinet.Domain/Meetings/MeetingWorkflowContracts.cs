@@ -8,19 +8,25 @@ public sealed record MeetingTransitionCommand(
     string? Reason = null,
     Guid? OrganizerId = null);
 
+/// <param name="ActorId">Null when the system acted on its own (BR-301); <paramref name="ActorName"/> then says so.</param>
+/// <param name="CancellationReason">Shown to everyone who may read the meeting, unlike a rejection reason (BR-298).</param>
 public sealed record MeetingHistoryRecord(
     Guid Id,
     Guid MeetingId,
     MeetingHistoryAction Action,
     MeetingStatus? FromStatus,
     MeetingStatus ResultingStatus,
-    Guid ActorId,
+    Guid? ActorId,
     string ActorName,
     DateTimeOffset OccurredAt,
     string? RejectionReason,
     Guid? AssignedApproverId,
     Guid? PreviousOrganizerId = null,
-    Guid? NewOrganizerId = null);
+    Guid? NewOrganizerId = null,
+    string? CancellationReason = null)
+{
+    public const string SystemActorName = "Hệ thống";
+}
 
 public sealed record MeetingHistoryPage(
     IReadOnlyList<MeetingHistoryRecord> Items,
@@ -60,6 +66,8 @@ public enum MeetingWorkflowOutcome
     InvalidOrganizer,
     RejectionReasonRequired,
     RejectionReasonTooLong,
+    CancellationReasonRequired,
+    CancellationReasonTooLong,
     PublicationRosterNotReady,
     StatusConflict,
     ReadFailed,

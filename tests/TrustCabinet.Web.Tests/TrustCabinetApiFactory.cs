@@ -56,6 +56,33 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
             {
                 services.Remove(orphanPurge);
             }
+
+            // And the recording retention sweep, which would open a database connection.
+            var retention = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(RecordingRetentionWorker));
+            if (retention is not null)
+            {
+                services.Remove(retention);
+            }
+
+            // And the overdue meeting sweep, which would open a database connection too.
+            var overdue = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(MeetingOverdueWorker));
+            if (overdue is not null)
+            {
+                services.Remove(overdue);
+            }
+
+            // The transcription queue too: tests drive ProcessNextAsync themselves, with a fake speech engine.
+            var transcription = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(TranscriptionWorker));
+            if (transcription is not null)
+            {
+                services.Remove(transcription);
+            }
         });
     }
 }

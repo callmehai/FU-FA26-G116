@@ -7,18 +7,27 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 ## Danh sách
 
 - [Phòng họp trực tuyến — rà soát FE-08 25/10/2026](NOTE-phong-hop-truc-tuyen-25-10-2026.md) — đặc tả
-  UC-37 → UC-42, UC-39d, UC-78, BR-322 → BR-331 và mã `MSG119`–`MSG121`, `MSG125`, `MSG290`–`MSG299`;
-  hai việc còn lại của BE: Guest chưa vào được phòng, đổi vai trò khi phòng đang mở không tới được phòng.
-- [Bàn giao BA Final Review 24/10/2026](ban-giao-ba-final-review/README.md) — sáu note của leader,
-  xử lý lần lượt: SCRUM-18/20 (lời mời, tạo/sửa, danh sách), SCRUM-97 (giao Chủ tọa),
-  Voice ID (UC-43–51, ERD), SCRUM-26 (điểm danh), SCRUM-107 (tải tài liệu, PR #128),
-  chương trình nghị sự (SCRUM-98, UC-23, UC-77).
+  UC-37 → UC-42, UC-39d, UC-78, BR-323 → BR-332 và mã FE `MSG328`–`MSG344`, `MSG350` (gộp main 29/10/2026);
+  việc còn lại của BE: Guest chưa vào được phòng (chờ SCRUM-25).
+- [Bàn giao FE-07 cho Lộc — kho tài liệu cá nhân, gắn/gỡ, bình luận, xác nhận đọc](NOTE-ban-giao-fe07-kho-tai-lieu-cho-loc.md) — 27/10/2026;
+  hiện trạng ticket và code, chỗ lệch (UC-33a luồng chính chưa có ticket, UC-33b/33d đang chạy qua API agenda),
+  SCRUM-58 tách thành SCRUM-110/111/112, hai nhánh docs và kế hoạch từng bước vẽ sequence (SCRUM-91) và class diagram
+  (SCRUM-92) kèm checklist review.
+- [Review PR #136 và Bổ sung BA Final Review](ban-giao-ba-final-review/10-review-pr136-va-bo-sung-sau-merge.md) — 25/10/2026;
+  tổng hợp toàn bộ feedback review PR #136 (CI đỏ .mmd, conflict main, MSG174, BR-115, UC-28b, UC-73, số EX trong sequence)
+  và các chỉ đạo PO mới nhất từ PR #133 (không tự gửi thông báo), #134 (rủi ro BR-188), #135/SCRUM-98 (BR-72/238/307) và #141 (FE màn 5.2).
+- [Bàn giao BA Final Review 24/10/2026](ban-giao-ba-final-review/README.md) — bảy note của leader,
+  xử lý lần lượt: SCRUM-18/20, SCRUM-97, Voice ID, SCRUM-26, SCRUM-107, Chương trình nghị sự (SCRUM-98),
+  và Review PR #136 / bổ sung sau merge.
 - [Tài liệu cuộc họp — SCRUM-21/22/23](NOTE-tai-lieu-scrum-21-22-23.md) — 22/10/2026; UC-32a/32c/35, BR-315 → BR-318,
   sequence, class diagram FE-07, wireframe v7; so sánh với AI-eCabinet, câu hỏi cho PO và phần còn phải đồng bộ.
 - [Bàn giao cập nhật màn hình theo Report 3 ngày 18/10/2026](NOTE-cap-nhat-man-hinh-18-10-2026.md) — màn 4.x, 5.x,
   6.1, 7.5, 8.3, 11.x cần sửa theo UC/BR mới (agenda, vote gắn tài liệu, giao chủ toạ, huỷ cuộc họp); SCRUM-100.
 - [Thay đổi để dành cho UC chưa đặc tả](NOTE-uc-chua-dac-ta-cho-sua.md) — 18/10/2026; phần ý PO/hội đồng chạm UC
   placeholder (FE-08, FE-09, FE-10, FE-12) và các vùng Report 3 chưa sửa trong đợt này.
+- [Báo cáo nhận diện giọng nói theo góp ý hội đồng](NOTE-bao-cao-nhan-dien-giong-noi.md) — 23/10/2026; trả lời mục 1–3
+  của góp ý lần 1: Voice ID có đồng ý, độ chính xác đo trên VIVOS và một cuộc họp thật, bảng chi phí AI, đối chiếu
+  Luật 91/2025 và NĐ 356/2025, việc còn lại.
 - [Góp ý của hội đồng — lần review 1](NOTE-gop-y-hoi-dong-lan-1.md) — ghi nhận 18/10/2026; xác định người nói,
   chi phí AI, huỷ/quá hạn cuộc họp, người ký và ban hành biên bản, uỷ quyền, nhắc lịch, NĐ 13/2023, chữ ký số. Đã áp dụng một phần vào Report 3 18/10/2026.
 - [Hồ sơ theo dõi và review UC, BR, MSG của FE-11](NOTE-review-fe11-uc-br-msg.md) — bản tiếng Việt dễ đọc của UC-52a/52b, UC-53–57, BR liên quan và MSG205–236; có liên kết đến các danh mục chuẩn để đối chiếu.

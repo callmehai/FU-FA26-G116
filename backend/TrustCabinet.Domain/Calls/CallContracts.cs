@@ -28,6 +28,7 @@ public enum CallRoomStatus
     NotStarted,
     Ended,
     InPersonOnly,
+    Cancelled,
 }
 
 public static class CallRoomRules
@@ -42,6 +43,7 @@ public static class CallRoomRules
             {
                 MeetingStatus.InProgress => CallRoomStatus.Open,
                 MeetingStatus.Ended => CallRoomStatus.Ended,
+                MeetingStatus.Cancelled => CallRoomStatus.Cancelled,
                 _ => CallRoomStatus.NotStarted,
             };
 }

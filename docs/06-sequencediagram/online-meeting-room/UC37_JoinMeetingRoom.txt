@@ -1,0 +1,74 @@
+title UC-37 - Join Meeting Room
+
+actor "Participant" as Actor
+boundary "Meeting Lobby Page" as Page
+control ":Meeting Room Controller" as RoomController
+control ":Meeting Room Service" as RoomService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Room Service" as RoomProvider
+database ":Database" as Database
+
+Actor->Page: Choose Join room
+activate Page
+Page->RoomController: Join the Meeting room
+activate RoomController
+RoomController->RoomService: joinMeetingRoom(meetingId, actorId)
+activate RoomService
+RoomService->MeetingRepository: Read Meeting status, mode and the actor's current participant assignment
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and roster information
+activate Database
+Database-->MeetingRepository: Current information
+deactivate Database
+MeetingRepository-->RoomService: Current information
+deactivate MeetingRepository
+RoomService->RoomService: Verify the actor may still view the Meeting and holds a current room-entry\nrelationship; for a Guest verify the invitation (BR-97, BR-101, BR-152 – BR-157, BR-181, BR-323)
+alt Actor is no longer eligible - EX-4
+    RoomService-->RoomController: Meeting not found for the actor
+    RoomController-->Page: Meeting not found for the actor
+    Page-->Actor: Meeting page shown as for a Meeting that does not exist
+else Meeting has ended - EX-1
+    RoomService-->RoomController: MSG331 - The meeting has ended, the meeting room is closed.
+    RoomController-->Page: MSG331 - The meeting has ended, the meeting room is closed.
+    Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.
+else Meeting is cancelled - EX-6
+    RoomService-->RoomController: MSG350 - The meeting was cancelled, so the meeting room does not open.
+    RoomController-->Page: MSG350 - The meeting was cancelled, so the meeting room does not open.
+    Page-->Actor: MSG350 - The meeting was cancelled, so the meeting room does not open.
+else Meeting is held in person - EX-2
+    RoomService-->RoomController: MSG280 - This meeting is held in person, so it has no online meeting room.
+    RoomController-->Page: MSG280 - This meeting is held in person, so it has no online meeting room.
+    Page-->Actor: MSG280 - This meeting is held in person, so it has no online meeting room.
+else Meeting has not started yet - AF-3
+    RoomService-->RoomController: MSG117 - The meeting room opens only while the meeting is in progress.
+    RoomController-->Page: MSG117 - The meeting room opens only while the meeting is in progress.
+    Page-->Actor: MSG117 - The meeting room opens only while the meeting is in progress.\nThe lobby opens by itself when the Meeting starts
+else Room service is not configured - EX-3
+    RoomService-->RoomController: MSG281 - The online meeting room is not ready. Please contact the administrator.
+    RoomController-->Page: MSG281 - The online meeting room is not ready. Please contact the administrator.
+    Page-->Actor: MSG281 - The online meeting room is not ready. Please contact the administrator.
+else Meeting is In Progress and the actor is eligible
+    RoomService->RoomProvider: Request a room connection for the actor with the actor's current Meeting Role (BR-323, BR-329)
+    activate RoomProvider
+    RoomProvider-->RoomService: Room connection / refused
+    deactivate RoomProvider
+    alt Join cannot be completed - EX-5
+        RoomService-->RoomController: MSG118 - Unable to join the meeting room. Please try again.
+        RoomController-->Page: MSG118 - Unable to join the meeting room. Please try again.
+        Page-->Actor: MSG118 - Unable to join the meeting room. Please try again.
+    else Room connection issued
+        RoomService-->RoomController: Room connection
+        RoomController-->Page: Room connection
+        Page->RoomProvider: Connect to the meeting room (fewer than 50 people, BR-336; EX-7 when full)
+        activate RoomProvider
+        RoomProvider-->Page: People already in the room
+        deactivate RoomProvider
+        Page-->Actor: Online Meeting Room - Video Grid with the people in the room (UC-40)
+        opt Browser blocks audio playback - AF-4
+            Page-->Actor: MSG338 - The browser is blocking audio playback.
+        end
+    end
+end
+deactivate RoomService
+deactivate RoomController
+deactivate Page
