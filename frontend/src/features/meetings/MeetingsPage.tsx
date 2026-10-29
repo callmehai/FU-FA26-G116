@@ -141,6 +141,8 @@ export function MeetingsPage() {
   }
 
   const filtered = hasFilters(state)
+  const activeFilters = [state.status, state.sensitivity, state.when].filter(Boolean).length
+  const [filtersOpen, setFiltersOpen] = useState(false)
   // The list as it opens: only meetings under way, which most of the time is none.
   const onlyLive = state.status === 'InProgress' && !state.q.trim() && !state.sensitivity && !state.when
   const data = shown
@@ -298,38 +300,53 @@ export function MeetingsPage() {
             />
           </label>
 
-          <Select
-            value={state.status}
-            options={STATUS_OPTIONS}
-            onChange={(status) => update({ status })}
-            label="Trạng thái"
-          />
-          <Select
-            value={state.sensitivity}
-            options={SENSITIVITY_OPTIONS}
-            onChange={(sensitivity) => update({ sensitivity })}
-            label="Mức độ"
-          />
+          {/* On a phone the filters fold behind one button with their count, as on AI-eCabinet. */}
+          <button
+            type="button"
+            className="btn btn-outline filters-toggle"
+            aria-expanded={filtersOpen}
+            aria-controls="meeting-filters"
+            onClick={() => setFiltersOpen((o) => !o)}
+          >
+            <Icon name="filter" size={16} />
+            Bộ lọc
+            {activeFilters > 0 && <span className="filters-count">{activeFilters}</span>}
+          </button>
+          <div id="meeting-filters" className={filtersOpen ? 'toolbar-filters toolbar-filters-open' : 'toolbar-filters'}>
+            <Select
+              value={state.status}
+              options={STATUS_OPTIONS}
+              onChange={(status) => update({ status })}
+              label="Trạng thái"
+            />
+            <Select
+              value={state.sensitivity}
+              options={SENSITIVITY_OPTIONS}
+              onChange={(sensitivity) => update({ sensitivity })}
+              label="Mức độ"
+            />
 
-          <Select
-            value={state.when}
-            options={WHEN_SELECT_OPTIONS}
-            onChange={(when) => update({ when })}
-            label="Thời điểm"
-          />
+            <Select
+              value={state.when}
+              options={WHEN_SELECT_OPTIONS}
+              onChange={(when) => update({ when })}
+              label="Thời điểm"
+            />
 
-          {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
-          {filtered && (
-            <button
-              type="button"
-              className="icon-button"
-              onClick={clearFilters}
-              data-tooltip="Xoá bộ lọc"
-              aria-label="Xoá bộ lọc"
-            >
-              <Icon name="x" size={16} />
-            </button>
-          )}
+            {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
+            {filtered && (
+              <button
+                type="button"
+                className="icon-button"
+                onClick={clearFilters}
+                data-tooltip="Xoá bộ lọc"
+                aria-label="Xoá bộ lọc"
+              >
+                <Icon name="x" size={16} />
+              </button>
+            )}
+          </div>
+
         </div>
 
         <div className="table-card table-fill" aria-busy={refreshing}>

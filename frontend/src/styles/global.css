@@ -1069,6 +1069,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* In a crowded toolbar the search gives way first, so the filters stay on one line. */
 .search-flex { flex: 1 1 200px; width: auto; max-width: 420px; }
 
+/* Filters that fold behind "Bộ lọc (n)" on a phone (AI-eCabinet); on a wider screen they sit in the row. */
+.toolbar-filters { display: contents; }
+.filters-toggle { display: none; }
+.filters-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; }
+@media (max-width: 720px) {
+  .toolbar:has(.filters-toggle) .search-flex { flex: 1 1 0; }
+  .filters-toggle { display: inline-flex; height: var(--control-height); color: var(--brand); -webkit-tap-highlight-color: transparent; }
+  .filters-toggle[aria-expanded='true'] { border-color: var(--brand-wash-line); background: var(--brand-wash); }
+  .toolbar-filters { display: none; }
+  .toolbar-filters-open { display: flex; flex: 1 1 100%; flex-wrap: wrap; gap: 8px; }
+}
+
 /* A checkbox filter on the toolbar ("Hiện cả người đã rời"). */
 .toolbar-check { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); white-space: nowrap; cursor: pointer; }
 
