@@ -54,7 +54,10 @@ English technical terms as-is (*endpoint*, *migration*, *hub*). Example:
 End with the attribution line from the session's system reminder, if there is one.
 
 ## 5. Pull request — English
-- Title: English, imperative, with the ticket key (`SCRUM-107: Upload meeting documents to R2`).
+- Title: `[Type] SCRUM-nnn: <English, imperative>`, e.g. `[BE] SCRUM-107: Upload meeting documents to R2`.
+  Types: `[BE]`, `[FE]`, `[FE+BE]` (or `[Full]`), `[Docs]`, `[Chore]`; drop the ticket key when
+  there is none (`[Chore] Shared Claude Code setup`). The team's Discord bot routes the review to
+  the BE, FE or BA channel by this prefix, so never leave it out.
 - Body: what changed, why, how it was verified (the checks from step 2 and their results, and the
   browser checks if the UI changed), and **every deviation from the Jira ticket or the UC spec**.
   Each deviation must also be a comment on the Jira ticket — use the `jira-deviation-note` skill.

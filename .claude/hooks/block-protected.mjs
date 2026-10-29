@@ -40,12 +40,14 @@ if (base === ".env" || /^\.env\.(?!example$)/.test(base)) {
   block(".env files hold local secrets and are gitignored. Edit .env.example (placeholders only) or ask the user.");
 }
 
-// appsettings*.json is committed and the repo is public: no connection strings, keys or passwords.
+// appsettings*.json is committed and the repo is public: no connection-string passwords or secrets.
+// ApiKey / AccessKey(Id) are identifiers, not secrets (LiveKit pairs ApiKey with ApiSecret, R2/S3
+// pairs AccessKeyId with SecretAccessKey), and appsettings.Development.json carries a dev ApiKey.
 if (/^appsettings(\..+)?\.json$/.test(base)) {
   const text = String(ti.content ?? ti.new_string ?? "");
   const secretLike =
     /(Password|Pwd)\s*=\s*[^;"\s]+/i.test(text) ||
-    /"(ApiKey|ApiSecret|SecretKey|ClientSecret|AccessKey|SecretAccessKey|Password)"\s*:\s*"(?!\s*")[^"]+"/i.test(text);
+    /"(ApiSecret|SecretKey|ClientSecret|SecretAccessKey|Password)"\s*:\s*"(?!\s*")[^"]+"/i.test(text);
   if (secretLike) {
     block("appsettings*.json is committed to a public repo. Use `dotnet user-secrets` locally and environment variables in deployment.");
   }
