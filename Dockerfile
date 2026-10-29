@@ -22,6 +22,9 @@ COPY --from=frontend /src/backend/TrustCabinet.Web/wwwroot /app/wwwroot
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=backend /app ./
+# Recordings are written under the content root (Recordings:StorageRoot). /app belongs to root, so the folder is made
+# here for the app user; a named volume mounted on it starts with this owner.
+RUN mkdir -p App_Data/recordings && chown -R $APP_UID App_Data
 USER $APP_UID
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080

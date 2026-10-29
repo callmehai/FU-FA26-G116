@@ -109,7 +109,7 @@ thường: EF Core hỏi bảng lịch sử migration trước khi tạo nó.
 ### Xoá sạch dữ liệu, seed lại từ đầu
 
 ```bash
-docker compose -f deploy/docker-compose.yml down -v     # -v xoá luôn database
+docker compose -f deploy/docker-compose.yml down -v     # -v xoá luôn database và file ghi âm
 docker compose -f deploy/docker-compose.yml up -d
 ```
 
@@ -322,6 +322,30 @@ Worker cần khoảng 2,5 GB RAM, máy $7 (1 GB) **không chạy nổi**. Bật 
    chép sang, mất thêm vài phút. Các lần sau chỉ chép lại khi `workers/speech` đổi. Bước *Kiểm tra máy chuyển
    chữ* xanh là xong.
 5. Xoá máy 1 GB cũ khi máy mới đã chạy ổn, để không bị tính tiền hai máy.
+
+**Không nâng máy: mượn worker trên máy dev.** Máy 1 GB vẫn chuyển chữ được nếu worker chạy trên máy của một
+người trong nhóm và server gọi sang qua SSH tunnel ngược. Chỉ dùng cho dữ liệu test: âm thanh cuộc họp và giọng
+mẫu rời server, được xử lý trên máy dev. Máy dev tắt, ngủ hay mất mạng thì chuyển chữ báo lỗi như khi chưa bật;
+bật lại xong, Thư ký bấm "Chuyển thành chữ lại".
+
+1. Một lần trên server: cho tunnel mở cổng trên mạng Docker của app (`172.18.0.1` là gateway của mạng
+   `trustcabinet-test_default`, xem bằng `docker network inspect`), rồi trỏ app sang đó:
+
+   ```bash
+   echo 'GatewayPorts clientspecified' | sudo tee /etc/ssh/sshd_config.d/tunnel.conf && sudo systemctl reload ssh
+   echo 'SPEECH_URL=http://172.18.0.1:8090' >> ~/TrustCabinet/deploy/.env
+   cd ~/TrustCabinet && docker compose -f deploy/docker-compose.yml up -d app
+   ```
+
+   Không đặt `COMPOSE_PROFILES=speech`. Cổng 8090 chỉ mở trên mạng Docker, firewall Lightsail cũng không mở nó.
+2. Mỗi lần dùng, trên máy dev: chạy worker như [workers/speech/README.md](../workers/speech/README.md) (cổng
+   8090), rồi giữ tunnel và giữ máy thức:
+
+   ```bash
+   caffeinate -i ssh -N -o ServerAliveInterval=30 -o ExitOnForwardFailure=yes -R 172.18.0.1:8090:127.0.0.1:8090 tc-server
+   ```
+
+3. Thôi dùng: xoá dòng `SPEECH_URL` trong `deploy/.env` rồi chạy lại lệnh `up -d app` ở bước 1.
 
 CPU của Lightsail là loại *burst*: chạy hết công suất được trong thời gian ngắn, chạy liên tục thì bị giới hạn.
 Một câu nói chuyển chữ trong vài giây. Một bản ghi dài chạy chậm dần, và lúc đó phòng họp cũng có thể giật.
