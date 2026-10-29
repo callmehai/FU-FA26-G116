@@ -162,8 +162,6 @@ body {
 
 h1, h2, h3 { margin: 0; letter-spacing: -.01em; }
 h1 { font-size: 22px; font-weight: 700; line-height: 30px; }
-/* A page's title is set in Noto Serif, as AI-eCabinet's are. */
-.page-header h1, .serif { font-family: 'Noto Serif', Georgia, serif; font-size: 24px; line-height: 1.25; letter-spacing: 0; text-wrap: balance; }
 h2 { font-size: 16px; font-weight: 700; }
 
 a { color: inherit; text-decoration: none; }
@@ -219,8 +217,6 @@ code {
 /* Bordered secondary action on white ("Hôm nay", "Thử lại", "Chỉnh sửa"). */
 .btn-outline { background: var(--surface); border-color: var(--control-line); color: var(--ink); }
 .btn-outline:hover:not(:disabled) { background: var(--surface-alt); }
-/* A secondary action in the brand's colour (the calendar's "Tạo cuộc họp", AI-eCabinet's navy-text). */
-.btn-brand-text { color: var(--brand); }
 
 /* Destructive, tinted rather than solid red (AI-eCabinet D3): red stays for warnings and "Mật". */
 .btn-danger { background: var(--chip-red-bg); border-color: color-mix(in srgb, var(--danger) 28%, transparent); color: var(--danger-ink); }
@@ -241,34 +237,18 @@ code {
 .btn-live { background: var(--live); color: #fff; }
 .btn-live:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 86%, #000); }
 
-/* What waits on the user now (Tham dự, Gửi duyệt, Duyệt, Công bố, Bắt đầu họp): AI-eCabinet's gold,
-   dark text. `.btn-ping` adds the ripple to the one that matters most (Bắt đầu họp). */
-.btn-gold { background: var(--gold); color: var(--ink); font-weight: 700; }
-.btn-gold:hover:not(:disabled) { filter: brightness(1.05); }
-.btn-gold:focus-visible { outline-color: var(--ink); }
-.btn-gold:disabled { background: var(--line); color: var(--muted-ink); }
-.btn-ping { animation: cta-ping 1.8s ease-out .6s infinite; }
-@keyframes cta-ping {
-  0% { box-shadow: 0 0 0 0 rgb(212 171 82 / 75%), 0 4px 12px rgb(212 171 82 / 35%); }
-  100% { box-shadow: 0 0 0 12px rgb(212 171 82 / 0%), 0 4px 12px rgb(212 171 82 / 35%); }
-}
+/* "Tham dự": a yes to the invitation, in the soft green of the "Đã xác nhận tham dự" chip it becomes. */
+.btn-accept { background: var(--chip-emerald-bg); border-color: color-mix(in srgb, var(--live) 32%, transparent); color: var(--chip-emerald-fg); }
+.btn-accept:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 16%, var(--surface)); border-color: color-mix(in srgb, var(--live) 50%, transparent); }
 
-/* AI-eCabinet's call to act now ("Vào phòng họp"): gold with dark text, a ring that pings and an
-   arrow that nudges, so the one thing to do is found at a glance. Deliberate motion, sanctioned in
+/* The call to act now (Vào phòng họp, Bắt đầu họp): a ring in the button's own colour pings out of
+   it, so the one thing to do is found at a glance. Deliberate motion (PO, ADR-0043), sanctioned in
    .slop.json; it stops under prefers-reduced-motion. */
-.btn-go:not(.btn-lg) { height: 32px; }
-.btn-go { gap: 6px; padding: 0 12px; background: var(--gold); color: var(--ink); font-size: 12.5px; font-weight: 700; animation: go-ping 2s ease-out infinite; }
-.btn-go.btn-lg { padding: 0 16px; font-size: 13.5px; }
-.btn-go:hover:not(:disabled) { filter: brightness(1.05); }
-.btn-go .icon { animation: nudge 2s ease-in-out infinite; }
-.btn-go:focus-visible { outline-color: var(--ink); }
-@keyframes go-ping {
-  0% { box-shadow: 0 0 0 0 rgb(240 200 110 / 95%); }
-  70%, 100% { box-shadow: 0 0 0 9px rgb(240 200 110 / 0%); }
-}
-@keyframes nudge {
-  0%, 60%, 100% { transform: none; }
-  75% { transform: translateX(3px); }
+.btn-ping { --ping: var(--live); animation: cta-ping 2s ease-out .6s infinite; }
+.btn-primary.btn-ping { --ping: var(--brand); }
+@keyframes cta-ping {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ping) 55%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--ping) 0%, transparent); }
 }
 
 .btn-block { width: 100%; }
@@ -1104,8 +1084,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .data-table th, .data-table td { padding-right: 12px; padding-left: 12px; }
 }
 .data-table tbody tr:hover { background: #f6f8fb; }
-/* A meeting in progress is found first: its row carries a green wash. */
+/* The row says where the meeting stands before anything is read: one in progress carries a green
+   wash; one called off fades and its title is struck through; one that is over goes quiet. */
 .data-table tbody tr.row-live { background: var(--live-wash); }
+.data-table tbody tr.row-cancelled td { color: var(--faint-ink); }
+.data-table tbody tr.row-cancelled .cell-title a { color: var(--label-ink); font-weight: 500; text-decoration: line-through; text-decoration-color: var(--faint-ink); }
+.data-table tbody tr.row-cancelled .level { opacity: .6; }
+.data-table tbody tr.row-ended .cell-title a { color: var(--ink-soft); font-weight: 500; }
 
 .cell-index { width: 48px; color: var(--label-ink); }
 .cell-title { font-weight: 600; }
@@ -1116,7 +1101,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
    actions column out of view at a 1200px window. */
 .data-table td.cell-title { white-space: normal; min-width: 96px; }
 /* A room name can be as long as a title, so the place wraps too. */
-.data-table :is(th, td).cell-place { white-space: normal; min-width: 96px; }
+.data-table td.cell-place { white-space: normal; min-width: 96px; }
 .cell-muted { color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
 .cell-schedule { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cell-schedule b { font-weight: 600; }
@@ -1143,20 +1128,22 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 @media (max-width: 720px) {
   .list-fill { flex: none; }
   .list-fill .table-fill { overflow: visible; }
-  .meetings-table thead { display: none; }
+  .meetings-table thead, .meetings-table td.cell-index { display: none; }
   /* While loading, one bar per card stands in for the title. */
-  .meetings-table .row-skeleton td:not(:first-child) { display: none; }
+  .meetings-table .row-skeleton td:not(:nth-child(2)) { display: none; }
   .meetings-table tbody tr:not(.row-skeleton) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 1px solid #e9ecf1; }
   .meetings-table tbody tr:last-child { border-bottom: none; }
   .meetings-table tbody tr:not(.row-skeleton) td { padding: 0; border: none; }
   .meetings-table td.cell-status { order: 1; }
   .meetings-table td.cell-level { order: 2; }
-  .meetings-table td.cell-title { flex: 1 1 100%; order: 3; overflow-wrap: anywhere; }
-  .meetings-table td.cell-schedule { flex: 1 1 100%; order: 4; white-space: normal; }
+  .meetings-table td.cell-place { order: 3; min-width: 0; }
+  .meetings-table td.cell-place::before { content: '· '; }
+  .meetings-table td.cell-title { flex: 1 1 100%; order: 4; overflow-wrap: anywhere; }
+  .meetings-table td.cell-schedule { flex: 1 1 100%; order: 5; white-space: normal; }
   .meetings-table td.cell-schedule .cell-sub { display: inline; margin-left: 8px; }
-  .meetings-table td.col-action { order: 5; margin-left: auto; }
-  .meetings-table td.col-action:has(.btn-go) { flex: 1 1 100%; }
-  .meetings-table .btn-go { width: 100%; height: 40px; }
+  .meetings-table td.col-action { order: 6; margin-left: auto; }
+  .meetings-table td.col-action:has(.btn-live) { flex: 1 1 100%; }
+  .meetings-table .btn-live { width: 100%; height: 40px; }
   .meetings-table td.col-action:has(.icon-button) { position: absolute; top: 8px; right: 8px; }
   .meetings-table tbody tr:not(.row-skeleton) { position: relative; }
 }
@@ -1274,11 +1261,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .chip-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
 /* ---------- Chips ----------
-   Three kinds, told apart by shape as well as colour:
+   Three kinds, told apart by shape as well as colour (ADR-0028):
    - .badge: a plain soft label (a role, a count);
-   - .status: a meeting's lifecycle state — a round chip with a dot (AI-eCabinet, ADR-0043);
-     dashed while nothing is settled, solid for "Đang diễn ra";
-   - .level: a sensitivity level — square corners and its own icon, every level drawn. */
+   - .status: a meeting's lifecycle state — a coloured icon and text with no chip, like a status
+     indicator in Cloudscape or Carbon; "Đang diễn ra" is the one solid label;
+   - .level: a sensitivity level — square corners and its own icon; "Thường" is plain text. */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1303,30 +1290,29 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 .status {
   display: inline-flex;
-  flex: none;
   align-items: center;
   gap: 6px;
   height: 24px;
-  padding: 0 10px 0 8px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  font-size: 12px;
+  color: var(--status-icon, var(--ink));
   font-weight: 600;
   white-space: nowrap;
 }
-.status-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--status-dot); }
-/* A draft and a wait are dashed: nothing is settled yet. */
-.status-slate { --status-dot: var(--dot-slate); border: 1px dashed var(--dot-slate); background: var(--surface); color: #545b66; }
-.status-amber { --status-dot: #e08a00; border: 1px dashed #e08a00; background: #fff1d6; color: #8a4500; }
-.status-red { --status-dot: var(--dot-red); background: var(--chip-red-bg); color: #9b2416; }
-.status-emerald { --status-dot: var(--dot-emerald); background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
-.status-blue { --status-dot: var(--dot-blue); background: #e2ebff; color: #163fa6; }
-.status-violet { --status-dot: var(--dot-violet); background: var(--chip-violet-bg); color: var(--chip-violet-fg); }
-.status-ended { --status-dot: #a9b2bf; background: #eff1f4; color: #545b66; }
-/* The one solid chip; its dot pulses, the call to go in (AI-eCabinet's live-pulse). */
-.status-live { --status-dot: var(--live-dot); background: var(--live); color: #fff; }
-.status-live .status-dot { animation: live-pulse 1.6s ease-in-out infinite; }
-@keyframes live-pulse { 50% { opacity: .35; } }
+/* Icon and text both take the tone, so a state reads at a glance without a chip around it; the
+   chip-foreground shades keep the text at 4.5:1 on white. What is over fades back: ended is grey,
+   cancelled lighter still. */
+.status > svg { flex: none; color: var(--status-icon); }
+.status-slate { --status-icon: var(--chip-slate-fg); }
+.status-ended { --status-icon: var(--label-ink); font-weight: 500; }
+.status-cancelled { --status-icon: var(--faint-ink); }
+.status-amber { --status-icon: var(--chip-amber-fg); }
+.status-red { --status-icon: var(--chip-red-fg); }
+.status-emerald { --status-icon: var(--chip-emerald-fg); }
+.status-blue { --status-icon: var(--chip-blue-fg); }
+.status-violet { --status-icon: var(--chip-violet-fg); }
+.status-live { padding: 0 8px; border-radius: var(--radius); background: var(--live); color: #fff; font-size: 12px; font-weight: 600; }
+/* A history row's event ("Gửi duyệt") is a label, not the meeting's state: the text alone, even
+   when it led to the live state. */
+.status-plain, .status-plain.status-live { padding: 0; background: none; color: var(--ink); font-size: inherit; font-weight: 600; }
 
 .level {
   display: inline-flex;
@@ -1343,6 +1329,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .level-internal { background: var(--brand-wash); color: var(--chip-indigo-fg); box-shadow: inset 0 0 0 1px var(--brand-wash-line); }
 .level-confidential { background: var(--chip-amber-bg); color: var(--chip-amber-fg); box-shadow: inset 0 0 0 1px #ecc98a; }
 .level-secret { background: var(--chip-red-bg); color: var(--chip-red-fg); box-shadow: inset 0 0 0 1px var(--edge-red); font-weight: 700; }
+.level-plain { padding: 0; color: inherit; font-size: inherit; font-weight: 400; }
 
 /* ---------- Tabs ---------- */
 .tabs { display: flex; flex: none; gap: 4px; margin-bottom: 16px; overflow-x: auto; border-bottom: 1px solid var(--line); }
@@ -1385,50 +1372,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .record-head .page-header-actions > .btn { flex: 1 1 0; min-width: max-content; }
 }
 
-.detail-body { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-
-/* ---------- Meeting progress (workflow/MeetingProgress.tsx) ----------
-   AI-eCabinet's lifecycle strip under the title: one line naming the current step and a button
-   that unfolds the chevrons. */
-.progress { display: flex; flex: none; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.progress-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.progress-now { min-width: 0; margin: 0; color: var(--muted-ink); font-size: 13.5px; }
-.progress-label { font-weight: 600; }
-.progress-now b { color: var(--brand); }
-.progress-now b.progress-stop { color: #9b2416; }
-.progress-toggle { display: grid; }
-.progress-toggle > span { grid-area: 1 / 1; }
-.progress-toggle > [aria-hidden='true'] { visibility: hidden; }
-.progress-caret { display: flex; transition: transform .2s; }
-.progress-caret-open { transform: rotate(180deg); }
-.progress-steps { display: flex; margin: 0; padding: 0; overflow-x: auto; overflow-y: hidden; list-style: none; scrollbar-width: none; }
-.progress-step {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 96px;
-  height: 28px;
-  margin-right: -4px;
-  padding: 0 14px 0 20px;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
-  font-size: 12.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  outline: none;
-}
-.progress-step:first-child { padding-left: 12px; border-radius: 6px 0 0 6px; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%); }
-.progress-step:last-child { margin-right: 0; }
-.progress-step:focus-visible { text-decoration: underline; }
-.progress-step-done { background: #dde5f2; color: var(--brand); }
-.progress-step-now { background: var(--brand); color: #fff; }
-.progress-step-stop { background: var(--dot-red); color: #fff; }
-.progress-step-todo { background: #dfe3e9; color: var(--ink-soft); }
-@media (max-width: 640px) {
-  .progress-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .progress-head .btn { height: 40px; }
-}
+/* The status history sits left of the tab (PO 30/10/2026), where the eye starts; on a narrow
+   screen it falls under the tab's content. */
+.detail-grid { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.detail-grid > aside { order: -1; }
 
 .field-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 24px; }
 .field-item { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-width: 0; }
@@ -1454,12 +1401,67 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .detail-skeleton-field .skeleton:first-child { width: 40%; height: 10px; }
 .detail-skeleton-field .skeleton:last-child { width: 70%; height: 16px; }
 
+.detail-skeleton-aside { display: flex; flex-direction: column; gap: 14px; }
+.detail-skeleton-aside .skeleton:first-child { width: 50%; height: 16px; }
+
 /* A tab whose feature has no endpoint yet: what it will hold, and what it waits on. */
 .tab-pending { padding: 40px; text-align: center; }
 .tab-pending p { margin: 0; }
 .tab-pending p + p { margin-top: 6px; font-size: 13px; }
 
+/* Dot and line are both drawn by the <li>, from one origin, so they cannot drift apart: the dot's
+   centre and the line's centre sit on the same x (6px). Each item draws the segment from its own
+   dot down to the next one's, and the last item draws none. The 12px dot sits on a white ring in
+   its own colour, centred on the 24px chip. */
+.timeline { margin: 0; padding: 0; list-style: none; }
+.timeline li { position: relative; padding: 0 0 16px 24px; }
+.timeline li:last-child { padding-bottom: 0; }
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 6px;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--dot, var(--dot-slate));
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--dot, var(--dot-slate));
+}
+
+.timeline li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  bottom: -1px;
+  left: 5px;
+  width: 2px;
+  background: var(--line-soft);
+}
+
+.timeline-amber { --dot: var(--dot-amber); }
+.timeline-red { --dot: var(--dot-red); }
+.timeline-emerald { --dot: var(--dot-emerald); }
+.timeline-blue { --dot: var(--dot-blue); }
+.timeline-violet { --dot: var(--dot-violet); }
+.timeline-live { --dot: var(--live); }
+
+/* On a 360px phone a long label and the time do not fit one line: the time moves under the label. */
+.timeline-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 8px; min-height: 24px; }
+/* Who acted lives in the time's tooltip (AI-eCabinet), so a row stays one line. */
+.timeline-time {
+  flex: none;
+  border-radius: 4px;
+  color: var(--muted-ink);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.timeline-time:hover { color: var(--ink); }
+.timeline-time:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* A rejection reason is the author's own words: quoted, line breaks kept. */
+.timeline-reason,
 .workflow-reason {
   margin: 6px 0 0;
   padding: 8px 12px;
@@ -1471,6 +1473,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.timeline-skeleton li { display: flex; flex-direction: column; gap: 8px; }
+.timeline-skeleton li::before { background: var(--line); box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--line); }
+.timeline-skeleton .skeleton:first-child { width: 55%; height: 14px; }
+.timeline-skeleton .skeleton:last-child { width: 40%; }
+.history-error { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; color: var(--chip-red-fg); }
+.history-error p { margin: 0; }
+.history-inline-error { margin: 14px 0 0; color: var(--chip-red-fg); font-size: 13px; }
 .history-more { margin-top: 12px; color: var(--ink-soft); }
 
 /* ---------- Approval workflow (SCRUM-19) ----------
@@ -1632,8 +1641,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
 .dialog-lg .dialog-body { flex: 1; min-height: 0; }
 /* The meeting form, AI-eCabinet's two columns: what and when on the left, how on a grey panel. */
-.dialog-xl { width: min(980px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
-.dialog-xl .dialog-body { flex: 1; min-height: 0; }
+.dialog-xl { width: min(1040px, calc(100vw - 32px)); height: min(760px, calc(100dvh - 48px)); max-height: calc(100dvh - 48px); }
+.dialog-xl .dialog-body { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.dialog-xl .meeting-form { flex: 1; }
 .dialog-foot-note { flex: 1; align-self: center; margin: 0; color: var(--muted-ink); font-size: 13px; }
 @media (max-width: 640px) {
   .dialog-foot-note { display: none; }
@@ -1645,24 +1655,49 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* The meeting form's sections, as AI-eCabinet groups them: a small caps heading, a divider between. */
 .meeting-form { display: flex; flex-direction: column; gap: 20px; }
-.meeting-form-cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.meeting-form-main, .meeting-form-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
-.meeting-form-side { padding: 16px; border-radius: var(--radius-lg); background: var(--surface-alt); }
+.meeting-form-cols { display: grid; flex: 1; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; }
+.meeting-form-main, .meeting-form-side { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+/* Both columns run the dialog's height: the grey panel down to the footer, the people list taking
+   what the left column has left. */
+.meeting-form-side { padding: 18px; border-radius: var(--radius-lg); background: var(--surface-alt); }
+.meeting-form-main > [data-field='participants'] { flex: 1; }
+.meeting-form-main textarea { min-height: 96px; resize: vertical; }
+
+/* Mức độ mật: one row per level with what it changes; the chosen one takes the brand edge. */
+.level-choices { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: none; }
+.level-choices > legend { margin-bottom: 8px; padding: 0; font-size: 14px; font-weight: 500; }
+.level-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+}
+.level-choice:hover { border-color: var(--brand-wash-line); }
+.level-choice:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
+.level-choice:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.level-choice:has(input:disabled) { cursor: not-allowed; opacity: .6; }
+.level-choice input { flex: none; width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--brand); }
+.level-choice-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.level-choice-text b { font-weight: 600; }
+.level-choice-text small { color: var(--muted-ink); font-size: 12.5px; line-height: 1.4; }
 .meeting-form-main .span-2 { grid-column: auto; }
 .field-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 14px; font-weight: 500; line-height: 1; }
-.form-add { align-self: flex-start; }
 .form-time { min-width: 0; margin: 0; padding: 0; border: none; }
 .form-time > span { font-size: 14px; font-weight: 500; line-height: 1; }
 .form-time-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
 .form-time-row .field { gap: 0; }
 .form-time-dash { color: var(--muted-ink); }
 .form-lengths { display: flex; flex-wrap: wrap; gap: 6px; }
-/* A quick choice under a field ("1 giờ"): a small round toggle, solid while it is what the field holds. */
+/* A quick choice under a field ("1 giờ"): a small toggle, solid while it is what the field holds. */
 .chip-toggle {
   height: 28px;
   padding: 0 12px;
   border: 1px solid var(--control-line);
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink);
   font: inherit;
@@ -1676,6 +1711,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 @media (pointer: coarse) { .chip-toggle { height: 36px; } }
 @media (max-width: 760px) {
   .meeting-form-cols { grid-template-columns: minmax(0, 1fr); }
+  .meeting-form-main > [data-field='participants'] { flex: none; }
 }
 /* A phone has no room for the day and both times on one line: the day takes its own. */
 @media (max-width: 480px) {
@@ -1967,7 +2003,30 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-event.cal-event-crowded { padding-right: 52px; }
 .cal-event-go .cal-event-title { -webkit-line-clamp: 1; }
 .cal-event-go .cal-event-place { display: none; }
-.cal-go { position: absolute; left: 12px; z-index: 2; height: 26px; padding: 0 8px; font-size: 12px; }
+.cal-go {
+  position: absolute;
+  right: 6px;
+  left: 6px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 9px;
+  border-top: 1px solid rgb(255 255 255 / 22%);
+  background: color-mix(in srgb, var(--live) 78%, #000);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.cal-go-foot { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
+.cal-go:hover { background: color-mix(in srgb, var(--live) 64%, #000); }
+.cal-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.cal-go .icon { margin-left: auto; animation: nudge 2s ease-in-out infinite; }
+@keyframes nudge {
+  0%, 60%, 100% { transform: none; }
+  75% { transform: translateX(3px); }
+}
 .cal-event-crowded .cal-event-time { overflow: hidden; }
 .calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 
@@ -2500,6 +2559,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 @media (max-width: 960px) {
   .workflow-bar { flex-wrap: wrap; }
   .workflow-actions { width: 100%; justify-content: flex-end; }
+  .detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .detail-grid > aside { order: 0; }
   .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 

@@ -178,7 +178,7 @@ function organizerView(
         actions: (
           <button
             type="button"
-            className="btn btn-gold btn-cta"
+            className="btn btn-primary btn-cta"
             onClick={() => open('submit')}
             disabled={!canSubmit}
             data-tooltip={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
@@ -244,7 +244,7 @@ function organizerView(
         actions: (
           <button
             type="button"
-            className="btn btn-gold btn-cta"
+            className="btn btn-primary btn-cta"
             onClick={() => open('submit')}
             disabled={!canSubmit}
             data-tooltip={canSubmit ? undefined : 'Hoàn thiện thông tin trước khi gửi duyệt'}
@@ -268,7 +268,7 @@ function organizerView(
           </p>
         ),
         actions: (
-          <button type="button" className="btn btn-gold btn-cta" onClick={() => open('publish')}>
+          <button type="button" className="btn btn-primary btn-cta" onClick={() => open('publish')}>
             <Icon name="send" size={16} />
             Công bố
           </button>
@@ -304,7 +304,7 @@ function approverView(
               <Icon name="x" size={16} />
               Từ chối
             </button>
-            <button type="button" className="btn btn-gold btn-cta" onClick={() => open('approve')}>
+            <button type="button" className="btn btn-primary btn-cta" onClick={() => open('approve')}>
               <Icon name="check" size={16} />
               Duyệt
             </button>

@@ -23,8 +23,8 @@ nhóm nếu cần.
   AI-eCabinet là mục agenda ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)); biểu quyết ngay trong
   cuộc họp, chủ trì ghi kết luận Thông qua / Không thông qua / Hoãn ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md))
 - **Bố cục giao diện** ban đầu bám theo AI-eCabinet; nay là một sidebar dọc theo
-  [ADR-0012](../05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md); bên trong lấy lại thành phần của AI-eCabinet (chip trạng thái
-  có chấm, nút vàng cho việc cần làm ngay, tiến trình cuộc họp, hộp thoại tạo cuộc họp 2 cột) theo
+  [ADR-0012](../05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md); bên trong lấy lại một số thành phần của AI-eCabinet (kích thước
+  control, nút gọi hành động có gợn sóng, bố cục danh sách, hộp thoại tạo cuộc họp 2 cột) theo
   [ADR-0043](../05-decisions/0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md)
 - **Cách chia màn chi tiết cuộc họp thành tab** theo giai đoạn nghiệp vụ
 - **Nguyên tắc**: giao diện không phải ranh giới bảo mật — ẩn menu không thay được kiểm tra quyền

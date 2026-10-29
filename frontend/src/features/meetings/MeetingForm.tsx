@@ -90,10 +90,16 @@ const MODE_HINT: Record<MeetingMode, string> = {
   Hybrid: 'Ghi âm: mic phòng và micro người trực tuyến.',
 }
 const LOCKED_HINT = 'Đã công bố, không đổi được.'
-/** What a level changes, read from the document rules (BR-318, MeetingDocumentService). */
-const SENSITIVITY_HINT: Partial<Record<Sensitivity, string>> = {
-  Confidential: 'Hạn chế: mỗi lần xem tài liệu được ghi nhật ký.',
-  Secret: 'Mật: không tải tài liệu về được, mỗi lần xem được ghi nhật ký.',
+/**
+ * What a level changes, read from the rules: BR-318 and MeetingDocumentService (documents),
+ * PersonalLibraryService (an administrator's view of a library), RecordingContracts.Export.
+ * Thường and Nội bộ are handled alike; Nội bộ only labels the meeting.
+ */
+const SENSITIVITY_HINT: Record<Sensitivity, string> = {
+  Normal: 'Người dự họp xem và tải tài liệu.',
+  Internal: 'Như Thường, gắn nhãn chỉ dùng nội bộ.',
+  Confidential: 'Mỗi lần xem tài liệu được ghi nhật ký.',
+  Secret: 'Không tải tài liệu, không xuất ghi âm; mỗi lần xem được ghi nhật ký.',
 }
 /** AI-eCabinet's quick lengths under the times: one click sets the end from the start. */
 const LENGTHS = [
@@ -269,8 +275,6 @@ export function MeetingForm({
   const [formError, setFormError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
-  const [descriptionOpen, setDescriptionOpen] = useState(false)
-  const descriptionRef = useRef<HTMLTextAreaElement>(null)
   /**
    * Who attends: chosen only when creating; afterwards the attendees tab manages it. It starts with
    * the organizer as Chair, as AI-eCabinet does; they may hand the chair on or leave the list, since
@@ -376,11 +380,6 @@ export function MeetingForm({
   }
 
   // Folded until asked for, unless there is a description already or an error to show on it.
-  const showDescription = descriptionOpen || values.description !== '' || !!fieldErrors.description
-  function openDescription() {
-    setDescriptionOpen(true)
-    requestAnimationFrame(() => descriptionRef.current?.focus())
-  }
 
   const errorOf = (field: Field, hint?: string) =>
     fieldErrors[field] ? (
@@ -439,14 +438,11 @@ export function MeetingForm({
               {errorOf('title', reschedule ? LOCKED_HINT : undefined)}
             </label>
 
-            {/* AI-eCabinet keeps the description folded until asked for: most meetings start without one. */}
-            {showDescription ? (
-              <label className="field" data-field="description">
+            <label className="field" data-field="description">
                 <span>Mô tả</span>
                 <textarea
-                  ref={descriptionRef}
                   name="description"
-                  rows={3}
+                  rows={4}
                   value={values.description}
                   onChange={(e) => set('description', e.target.value)}
                   maxLength={DESCRIPTION_MAX}
@@ -467,12 +463,6 @@ export function MeetingForm({
                   </small>
                 </span>
               </label>
-            ) : (
-              <button type="button" className="btn btn-outline btn-sm form-add" onClick={openDescription}>
-                <Icon name="plus" size={14} />
-                Thêm mô tả
-              </button>
-            )}
 
             <fieldset className="field form-time" aria-labelledby="meeting-form-time">
               <span id="meeting-form-time" className="field-required">
@@ -606,17 +596,27 @@ export function MeetingForm({
               </label>
             )}
 
-            <div className="field" data-field="sensitivity">
-              <span className="field-required">Mức độ mật</span>
-              <SegmentedControl
-                value={values.sensitivity}
-                options={SENSITIVITY_OPTIONS}
-                onChange={(v) => set('sensitivity', v)}
-                label="Mức độ mật"
-                disabled={reschedule}
-              />
-              {errorOf('sensitivity', reschedule ? LOCKED_HINT : SENSITIVITY_HINT[values.sensitivity])}
-            </div>
+            {/* One row per level with what it changes, so nobody has to guess what "Hạn chế" means. */}
+            <fieldset className="field level-choices" data-field="sensitivity">
+              <legend className="field-required">Mức độ mật</legend>
+              {SENSITIVITY_OPTIONS.map((o) => (
+                <label key={o.value} className="level-choice">
+                  <input
+                    type="radio"
+                    name="sensitivity"
+                    value={o.value}
+                    checked={values.sensitivity === o.value}
+                    onChange={() => set('sensitivity', o.value)}
+                    disabled={reschedule}
+                  />
+                  <span className="level-choice-text">
+                    <b>{o.label}</b>
+                    <small>{SENSITIVITY_HINT[o.value]}</small>
+                  </span>
+                </label>
+              ))}
+              {errorOf('sensitivity', reschedule ? LOCKED_HINT : undefined)}
+            </fieldset>
           </div>
         </div>
 

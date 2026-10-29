@@ -41,6 +41,9 @@ const GRID_HEIGHT = HOURS_PER_DAY * HOUR_HEIGHT
 const WORKDAY_START_HOUR = 8
 /** A meeting shorter than this would not fit its own time line. */
 const MIN_EVENT_HEIGHT = 30
+/** The "Vào phòng họp" band across a live tile's foot (global.css: .cal-go); a long tile carries it this far down. */
+const GO_HEIGHT = 26
+const GO_AT = 104
 
 /** One meeting line on the month grid plus the gap above it (global.css: .month-event, .month-cell). */
 const MONTH_EVENT_ROW = 27
@@ -223,7 +226,7 @@ export function CalendarPage() {
           <Select value={span} options={SPAN_OPTIONS} onChange={changeSpan} label="Kiểu lịch" />
           <CalendarFilter value={filter} entries={inView} onChange={(next) => go({ filter: next })} />
           {can('MeetingCreator') && (
-            <Link className="btn btn-outline btn-brand-text" to={createLink.to} state={createLink.state}>
+            <Link className="btn btn-primary btn-cta" to={createLink.to} state={createLink.state}>
               <Icon name="plus" size={16} />
               Tạo cuộc họp
             </Link>
@@ -446,7 +449,7 @@ function GridEvent({
   const height = Math.max(MIN_EVENT_HEIGHT, bottom - top)
   const { meeting } = entry
   const tall = height >= 72
-  // A running call room gets AI-eCabinet's gold "Vào phòng họp" on its tile, where there is room.
+  // A running call room gets a "Vào phòng họp" band across the foot of its tile, where there is room.
   const goIn = meeting.status === 'InProgress' && meeting.mode !== 'InPerson' && height >= 56
   // Back from the meeting lands on this week, in this view.
   const back = backState('Lịch làm việc', useLocation())
@@ -477,7 +480,11 @@ function GridEvent({
       </Link>
       {/* A sibling, like the "+N": a link cannot sit inside the tile's link. */}
       {goIn && (
-        <Link className="btn btn-go cal-go" style={{ top: top + Math.min(height, 104) - 34 }} to={routes.meetingRoom(meeting.id)}>
+        <Link
+          className={`cal-go${height <= GO_AT ? ' cal-go-foot' : ''}`}
+          style={{ top: top + Math.min(height, GO_AT) - GO_HEIGHT - 1 }}
+          to={routes.meetingRoom(meeting.id)}
+        >
           Vào phòng họp
           <Icon name="arrowRight" size={13} />
         </Link>

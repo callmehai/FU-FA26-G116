@@ -64,7 +64,7 @@ export function MeetingLifecycleActions({
   return (
     <>
       {action === 'Start' ? (
-        <button type="button" className="btn btn-gold btn-lg btn-cta btn-ping" onClick={start} disabled={starting}>
+        <button type="button" className="btn btn-live btn-lg btn-cta btn-ping" onClick={start} disabled={starting}>
           <Icon name="play" size={18} />
           {starting ? 'Đang bắt đầu…' : 'Bắt đầu họp'}
         </button>

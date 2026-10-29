@@ -109,7 +109,7 @@ Every signed-in screen sits in one shell with one vertical blue sidebar — no a
 switcher; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. See
 [ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md) for the layout and palette,
 [ADR-0043](docs/05-decisions/0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) for the components taken
-from AI-eCabinet inside it (status chips, gold calls to action, the meeting progress strip, the
+from AI-eCabinet inside it (control sizes, the pinging calls to act, the listing layout, the
 two-column meeting form), and [ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md)
 for what was taken from the AI-eCabinet reference and why.
 
@@ -236,8 +236,7 @@ adding or changing a message.
 
 **CSS**: use the variables declared on `:root` in `global.css` (`--brand`, `--gold`, `--ink`,
 `--surface`, `--muted-ink`, `--chip-*`, …) rather than hardcoded colours. Blue `--brand` is the
-primary colour; gold is a thin accent edge and the user's action now ("Vào phòng họp", "Duyệt",
-AI-eCabinet's gold buttons); red (`--danger`) is only for "Mật", the current
+primary colour; gold is only a thin accent edge; red (`--danger`) is only for "Mật", the current
 time and warnings — plus the PDF file icon (`--file-pdf`), red because that is how readers know
 PDF. The UI is **light only** — do not add a `prefers-color-scheme: dark` palette.
 Sizes follow ADR-0012 for the shell (256px sidebar, 72px collapsed) and ADR-0043 for the rest (34px

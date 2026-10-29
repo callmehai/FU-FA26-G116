@@ -1,6 +1,6 @@
 # ADR-0028: Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip
 
-- **Trạng thái:** Đề xuất — thay thế bởi [ADR-0043](0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md)
+- **Trạng thái:** Đề xuất — chữ màu mực và việc bỏ "Thường" ở đầu trang chi tiết thay thế bởi [ADR-0043](0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md)
 - **Ngày:** 2026-10-23
 - **Người quyết định:** Hải (FE)
 

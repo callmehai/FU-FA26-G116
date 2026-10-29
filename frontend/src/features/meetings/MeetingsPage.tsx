@@ -17,6 +17,7 @@ import {
   SENSITIVITIES,
   SENSITIVITY_LABEL,
   type MeetingListResponse,
+  type MeetingStatus,
   type MeetingSortBy,
 } from '../../types/meeting'
 import { useAccessLost } from '../auth/useAccessLost'
@@ -53,7 +54,13 @@ const WHEN_SELECT_OPTIONS = [
   ...WHEN_OPTIONS.map((w) => ({ value: w, label: WHEN_LABEL[w] })),
 ]
 
-const COLUMN_COUNT = 5
+const COLUMN_COUNT = 7
+/** A row's tone by state: live stands out, called off and over fade back (global.css: .row-*). */
+const ROW_TONE: Partial<Record<MeetingStatus, string>> = {
+  InProgress: 'row-live',
+  Cancelled: 'row-cancelled',
+  Ended: 'row-ended',
+}
 const SKELETON_ROWS = 5
 
 type Load =
@@ -208,22 +215,27 @@ export function MeetingsPage() {
       </EmptyRow>
     )
   } else {
-    body = data.items.map((m) => (
+    const offset = (data.page - 1) * data.pageSize
+    body = data.items.map((m, index) => (
       // The whole row opens the meeting; the title link and the eye button are the keyboard routes.
+      // The row itself says where the meeting stands at a glance: live stands out, called off and
+      // over fade back.
       <tr
         key={m.id}
-        className={m.status === 'InProgress' ? 'row-link row-live' : 'row-link'}
+        className={`row-link${ROW_TONE[m.status] ? ` ${ROW_TONE[m.status]}` : ''}`}
         onClick={() => navigate(routes.meeting(m.id), { state: back })}
       >
+        <td className="cell-index">{offset + index + 1}</td>
         <td className="cell-title">
           <Link to={routes.meeting(m.id)} state={back} onClick={(e) => e.stopPropagation()}>
             {m.title}
           </Link>
-          <span className="cell-sub cell-meta">
-            <Icon name={m.mode === 'Online' ? 'video' : 'mapPin'} size={13} />
-            {MEETING_MODE_LABEL[m.mode]}
-            {m.mode !== 'Online' && m.location && ` · ${m.location}`}
-          </span>
+          {m.mode !== 'Online' && m.location && (
+            <span className="cell-sub cell-meta">
+              <Icon name="mapPin" size={13} />
+              {m.location}
+            </span>
+          )}
         </td>
         <td className="cell-schedule">
           <b>
@@ -235,6 +247,7 @@ export function MeetingsPage() {
               : `${formatDate(m.plannedStartTime)} – ${formatDate(m.plannedEndTime)}`}
           </span>
         </td>
+        <td className="cell-muted cell-place">{MEETING_MODE_LABEL[m.mode]}</td>
         <td className="cell-status">
           <StatusBadge status={m.status} />
         </td>
@@ -243,11 +256,11 @@ export function MeetingsPage() {
         </td>
         <td className="col-action">
           {m.status === 'InProgress' && m.mode !== 'InPerson' ? (
-            // The call to act now, as on AI-eCabinet's list: gold, and it pings. The room answers
-            // 404 to someone who is not invited.
-            <Link className="btn btn-go" to={routes.meetingRoom(m.id)} onClick={(e) => e.stopPropagation()}>
+            // The call to act now: green like the "Đang diễn ra" state, and it pings. The room
+            // answers 404 to someone who is not invited.
+            <Link className="btn btn-live btn-sm btn-ping" to={routes.meetingRoom(m.id)} onClick={(e) => e.stopPropagation()}>
+              <Icon name="video" size={16} />
               Vào phòng họp
-              <Icon name="arrowRight" size={14} />
             </Link>
           ) : (
             <Link
@@ -269,7 +282,7 @@ export function MeetingsPage() {
   return (
     <>
       <PageHeader
-        title="Cuộc họp"
+        title="Danh sách cuộc họp"
         action={
           canCreate && (
             <Link className="btn btn-primary btn-lg btn-cta" to={createLink.to} state={createLink.state}>
@@ -353,12 +366,14 @@ export function MeetingsPage() {
           <table className={refreshing && data ? 'data-table meetings-table data-table-stale' : 'data-table meetings-table'}>
             <thead>
               <tr>
+                <th className="cell-index">STT</th>
                 <SortHeader column="title" state={state} onSort={sortBy}>
                   Tên cuộc họp
                 </SortHeader>
                 <SortHeader column="plannedStartTime" state={state} onSort={sortBy}>
                   Thời gian diễn ra
                 </SortHeader>
+                <th className="cell-place">Hình thức</th>
                 <th>Trạng thái</th>
                 <th>Mức độ</th>
                 <th className="col-action">Thao tác</th>
