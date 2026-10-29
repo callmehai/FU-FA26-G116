@@ -35,9 +35,9 @@ scan for, with the rest in tooltips, and [sloplint](.claude/skills/sloplint/SKIL
 (phòng chống AI slop) for catching the generated look — gradients, glows, endless motion, KPI
 tiles, eyebrows, side stripes and the other tells catalogued from published research and the big
 design systems. Claude Code loads them as skills; any other agent reads the files directly.
-**Skill location:** the five project skills live in `.claude/skills/` (canonical — Claude Code loads
+**Skill location:** the project skills live in `.claude/skills/` (canonical — Claude Code loads
 them) and are mirrored verbatim into `.agents/skills/`, which other agents load from; edit the
-canonical copy and mirror it in the same change. `.agents/skills/` additionally holds the two
+canonical copy and mirror it in the same change (`SkillMirrorTests` fails CI otherwise). `.agents/skills/` additionally holds the two
 third-party skills, drawio-skill and ui-ux, which exist nowhere else.
 
 **sloplint in this repo.** The skill is [sloplint](https://github.com/callmehai/sloplint) `v0.3.0`,
