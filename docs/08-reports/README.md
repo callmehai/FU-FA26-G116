@@ -188,7 +188,8 @@ trang với tiêu đề mục II, FE-07 (ảnh dọc) và FE-11 (chưa có class
 thay số "10" gõ cứng. Ảnh I.1 thay bằng bản sửa của sơ đồ kiến trúc; bảng I.1 đổi "22" thành "18 endpoint groups",
 thêm việc dọn file mồ côi vào dòng Background Workers; dòng Workers của bảng back-end ở I.2 thêm EmailDeliveryWorker
 và OrphanFilePurgeWorker. Số trang mục lục lấy từ Word sau khi dàn trang (118 mục khớp bản PDF). Thêm một dòng Change
-Log (LocHD). Chưa đẩy lên Drive.
+Log (LocHD). Trước khi đẩy, md5 của file Drive trùng bản đẩy lần trước (không ai sửa trên Drive); đã đẩy bằng
+`push_reports.py 4 --confirm`, `--check` trả `UP TO DATE`, file ID và link không đổi.
 
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
 một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
