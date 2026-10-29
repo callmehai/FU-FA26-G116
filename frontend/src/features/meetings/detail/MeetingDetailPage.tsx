@@ -459,14 +459,9 @@ function approverLabel(
   return { text: approvers.error ? 'Không tải được tên' : 'Đang tải…', muted: true }
 }
 
-/** One fact of the record: its label beside its value, so two columns of them line up as a table. */
-function Fact({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="record-fact">
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  )
+interface FactRow {
+  label: string
+  value: ReactNode
 }
 
 const empty = (text = 'Chưa có') => <em className="value-empty">{text}</em>
@@ -484,48 +479,54 @@ function Unbroken({ text }: { text: string }) {
 }
 
 /**
- * The record in two even columns — when and where on the left, who on the right — and the
- * description under both. Plain text only: the state and the level already stand beside the title.
+ * The record as one grid of "label value" pairs: when and where on the left, who on the right, the
+ * n-th fact of each side on the same row so the two sides line up; the description last, under
+ * both. Plain text only — the state and the level already stand beside the title. On a narrow
+ * screen the right side follows the left in one column.
  */
 function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: string; muted: boolean } | null }) {
+  const where: FactRow[] = [
+    {
+      label: 'Thời gian',
+      value: <Unbroken text={formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)} />,
+    },
+    { label: 'Hình thức', value: MEETING_MODE_LABEL[meeting.mode] },
+    ...(meeting.mode !== 'Online'
+      ? [{ label: meeting.mode === 'Hybrid' ? 'Phòng họp' : 'Địa điểm', value: meeting.location || empty() }]
+      : []),
+    ...(meeting.mode !== 'InPerson'
+      ? [{ label: 'Link họp', value: meeting.onlineLink ?? 'Phòng họp trực tuyến TrustCabinet' }]
+      : []),
+  ]
+  const who: FactRow[] = [
+    { label: 'Chủ tọa', value: meeting.chair?.fullName ?? empty() },
+    {
+      label: 'Thư ký',
+      value: meeting.secretaries.length > 0 ? meeting.secretaries.map((s) => s.fullName).join(', ') : empty(),
+    },
+    ...(approver ? [{ label: 'Người duyệt', value: approver.muted ? empty(approver.text) : approver.text }] : []),
+  ]
+  const rows = Math.max(where.length, who.length)
+
   return (
-    <div className="card record-overview">
-      <dl className="record-facts-list">
-        <Fact label="Thời gian">
-          <Unbroken text={formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)} />
-        </Fact>
-        {meeting.actualStartedAt && (
-          <Fact label="Thực tế">
-            <Unbroken
-              text={
-                meeting.actualEndedAt
-                  ? formatSchedule(meeting.actualStartedAt, meeting.actualEndedAt)
-                  : `Bắt đầu ${formatDateTime(meeting.actualStartedAt)}`
-              }
-            />
-          </Fact>
-        )}
-        <Fact label="Hình thức">{MEETING_MODE_LABEL[meeting.mode]}</Fact>
-        {meeting.mode !== 'Online' && (
-          <Fact label={meeting.mode === 'Hybrid' ? 'Phòng họp' : 'Địa điểm'}>{meeting.location || empty()}</Fact>
-        )}
-        {meeting.mode !== 'InPerson' && (
-          <Fact label="Link họp">{meeting.onlineLink ?? 'Phòng họp trực tuyến TrustCabinet'}</Fact>
-        )}
-      </dl>
-      <dl className="record-facts-list">
-        <Fact label="Chủ tọa">{meeting.chair?.fullName ?? empty()}</Fact>
-        <Fact label="Thư ký">
-          {meeting.secretaries.length > 0 ? meeting.secretaries.map((s) => s.fullName).join(', ') : empty()}
-        </Fact>
-        {approver && <Fact label="Người duyệt">{approver.muted ? empty(approver.text) : approver.text}</Fact>}
-        <Fact label="Tạo lúc">{formatDateTime(meeting.createdAt)}</Fact>
-      </dl>
-      <div className="record-desc">
-        <span>Mô tả</span>
-        {meeting.description ? <p className="value-text">{meeting.description}</p> : empty('Chưa có mô tả')}
+    <dl className="card record-overview">
+      {where.map((f, i) => (
+        <div key={f.label} className="record-fact record-fact-left" style={{ gridRow: i + 1 }}>
+          <dt>{f.label}</dt>
+          <dd>{f.value}</dd>
+        </div>
+      ))}
+      {who.map((f, i) => (
+        <div key={f.label} className="record-fact record-fact-right" style={{ gridRow: i + 1 }}>
+          <dt>{f.label}</dt>
+          <dd>{f.value}</dd>
+        </div>
+      ))}
+      <div className="record-fact record-fact-wide" style={{ gridRow: rows + 1 }}>
+        <dt>Mô tả</dt>
+        <dd>{meeting.description ? <p className="value-text">{meeting.description}</p> : empty('Chưa có mô tả')}</dd>
       </div>
-    </div>
+    </dl>
   )
 }
 
@@ -548,15 +549,11 @@ function DetailSkeleton() {
       </div>
       <div className="detail-grid">
         <div className="card record-overview">
-          {[0, 1].map((col) => (
-            <dl key={col} className="record-facts-list">
-              {Array.from({ length: 4 }, (_, i) => (
-                <div key={i} className="record-fact detail-skeleton-fact">
-                  <span className="skeleton" />
-                  <span className="skeleton" />
-                </div>
-              ))}
-            </dl>
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className={`record-fact detail-skeleton-fact record-fact-${i % 2 ? 'right' : 'left'}`} style={{ gridRow: (i >> 1) + 1 }}>
+              <span className="skeleton" />
+              <span className="skeleton" />
+            </div>
           ))}
         </div>
         <div className="card detail-skeleton-aside">

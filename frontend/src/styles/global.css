@@ -1394,26 +1394,28 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .detail-skeleton-title { width: min(520px, 70%); height: 28px; }
 .detail-skeleton-facts { width: min(360px, 50%); height: 14px; }
 .detail-skeleton-tab { display: flex; align-items: center; height: 46px; padding: 0 14px; }
-/* The overview (MeetingDetailPage Overview; .overview is the calendar's quick view): two even columns of "label | value" rows — when and where,
-   then who — and the description under both. Text only, no chips: those stand beside the title. */
-.record-overview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; }
-.record-facts-list { display: flex; flex-direction: column; min-width: 0; margin: 0; }
-.record-fact { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 11px 0; border-top: 1px solid var(--line-soft); }
-.record-fact:first-child { border-top: 0; padding-top: 0; }
-.record-fact dt { color: var(--label-ink); font-size: 13px; line-height: 22px; }
-.record-fact dd { margin: 0; color: var(--ink); font-weight: 500; line-height: 22px; overflow-wrap: anywhere; }
+/* The overview (MeetingDetailPage Overview; .overview is the calendar's quick view): one grid of
+   label-value pairs, two pairs to a row so both sides line up, no rules between rows. Each pair's
+   wrapper is display: contents, so its label and value are the grid's own cells. */
+.record-overview { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr); gap: 16px 20px; align-items: baseline; margin: 0; }
+.record-fact { display: contents; }
+.record-fact dt { color: var(--label-ink); font-size: 13px; }
+.record-fact dd { margin: 0; color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
 .record-fact dd .nowrap { white-space: nowrap; }
 .record-fact dd .nowrap:not(:last-child)::after { content: ' '; white-space: normal; }
-.record-desc { display: flex; grid-column: 1 / -1; flex-direction: column; gap: 6px; margin-top: 11px; padding-top: 14px; border-top: 1px solid var(--line); }
-.record-desc > span { color: var(--label-ink); font-size: 13px; }
-.detail-skeleton-fact .skeleton:first-child { width: 70%; height: 10px; margin-top: 6px; }
-.detail-skeleton-fact .skeleton:last-child { width: 80%; height: 14px; margin-top: 4px; }
+.record-fact-left > dt { grid-column: 1; grid-row: inherit; }
+.record-fact-left > dd { grid-column: 2; grid-row: inherit; }
+.record-fact-right > dt { grid-column: 3; grid-row: inherit; padding-left: 24px; }
+.record-fact-right > dd { grid-column: 4; grid-row: inherit; }
+.record-fact-wide > dt { grid-column: 1; grid-row: inherit; padding-top: 8px; }
+.record-fact-wide > dd { grid-column: 2 / -1; grid-row: inherit; padding-top: 8px; font-weight: 400; }
+.detail-skeleton-fact .skeleton:first-child { width: 72px; height: 10px; }
+.detail-skeleton-fact .skeleton:last-child { width: 70%; height: 14px; }
+/* Narrow: one column of pairs, the right side after the left. */
 @media (max-width: 1100px) {
-  .record-overview { grid-template-columns: minmax(0, 1fr); }
-  .record-overview .record-facts-list + .record-facts-list .record-fact:first-child { padding-top: 11px; border-top: 1px solid var(--line-soft); }
-}
-@media (max-width: 480px) {
-  .record-fact { grid-template-columns: 92px minmax(0, 1fr); gap: 10px; }
+  .record-overview { grid-template-columns: max-content minmax(0, 1fr); gap: 14px 16px; }
+  .record-overview > .record-fact > * { grid-row: auto !important; grid-column: auto; padding-left: 0; }
+  .record-fact-wide > dd { grid-column: auto; }
 }
 .detail-skeleton-field { gap: 10px; }
 .detail-skeleton-field .skeleton:first-child { width: 40%; height: 10px; }
