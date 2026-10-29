@@ -11,14 +11,14 @@ using TrustCabinet.Domain.Recordings;
 namespace TrustCabinet.Infrastructure.Recordings;
 
 /// <summary>
-/// SCRUM-29 — recordings of a sitting. A recording is personal data of everyone who spoke (Decree 13/2023/NĐ-CP,
-/// now Luật BVDLCN 91/2025/QH15), so three obligations are kept in data, not just promised in a document: consent is
+/// SCRUM-29 — recordings of a sitting. A recording is personal data of everyone who spoke (Luật BVDLCN 91/2025/QH15,
+/// guided by Decree 356/2025/NĐ-CP), so three obligations are kept in data, not just promised in a document: consent is
 /// confirmed before the file is kept, the purpose is stored with it, and it is erased on request or when its
 /// retention period ends — the row stays as evidence that it existed and was erased.
 /// </summary>
 public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepository recordings,
-    IRecordingStorage storage, IRecordingPlaybackSigner signer, IAuditService audit, TimeProvider clock,
-    IOptions<RecordingOptions> options, ILogger<RecordingService> logger) : IRecordingService
+    IRecordingStorage storage, IRecordingPlaybackSigner signer, IAuditService audit, ISpeechChangePublisher publisher,
+    TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RecordingService> logger) : IRecordingService
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
@@ -29,9 +29,11 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             var (meeting, failure) = await ReadableMeetingAsync(meetingId, actorId, ct);
             if (meeting is null) return new(failure);
             var secretary = RecordingRules.IsSecretary(meeting, actorId);
+            var export = RecordingRules.Export(meeting, actorId) == RecordingFailure.None;
             var items = await recordings.ListAsync(meetingId, ct);
-            return new(Data: new RecordingList(meetingId, secretary && RecordingRules.UploadAllowed(meeting.Status),
-                items.Select(r => View(r, secretary)).ToArray()));
+            return new(Data: new RecordingList(meetingId,
+                secretary && RecordingRules.UploadAllowed(meeting.Status) && RecordingRules.HasRoom(meeting.Mode),
+                items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId)));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -48,6 +50,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             var (meeting, failure) = await ReadableMeetingAsync(meetingId, actorId, ct);
             if (meeting is null) return new(failure);
             if (!RecordingRules.IsSecretary(meeting, actorId)) return new(RecordingFailure.Forbidden);
+            if (!RecordingRules.HasRoom(meeting.Mode)) return new(RecordingFailure.NoRoom);
             return RecordingRules.UploadAllowed(meeting.Status) ? new() : new(RecordingFailure.Locked);
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -68,6 +71,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 if (!await meetings.IsUserActiveAsync(actorId, token)) return new RecordingOutcome(RecordingFailure.Inactive);
                 if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return new(RecordingFailure.NotFound);
                 if (!RecordingRules.IsSecretary(meeting, actorId)) return new(RecordingFailure.Forbidden);
+                if (!RecordingRules.HasRoom(meeting.Mode)) return new(RecordingFailure.NoRoom);
                 if (!RecordingRules.UploadAllowed(meeting.Status)) return new(RecordingFailure.Locked);
                 var errors = RecordingRules.Validate(upload);
                 if (errors.Count > 0) return new(RecordingFailure.Invalid, Errors: errors);
@@ -92,6 +96,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 return new RecordingOutcome(RecordingId: recording.Id);
             }, ct);
             kept = outcome.Failure == RecordingFailure.None;
+            if (kept) await PublishAsync(meetingId, ct);
             return outcome;
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -124,6 +129,28 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         }
     }
 
+    public async Task<RecordingOutcome> DownloadAsync(Guid recordingId, Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            var recording = await recordings.FindAsync(recordingId, false, ct);
+            if (recording is null) return new(RecordingFailure.NotFound);
+            var (meeting, failure) = await ReadableMeetingAsync(recording.MeetingId, actorId, ct);
+            if (meeting is null) return new(failure);
+            if (recording.Status != RecordingStatus.Available) return new(RecordingFailure.NotFound);
+            if (RecordingRules.Export(meeting, actorId) is not RecordingFailure.None and var refused) return new(refused);
+            // Logged when the link is handed out: the file itself is fetched by the browser without a token.
+            await audit.RecordAsync(AuditActions.RecordingDownloaded, AuditActions.RecordingObjectType, recording.Id, actorId,
+                new { recording.MeetingId, recording.FileName, recording.ByteSize }, ct);
+            return new(Data: signer.Sign(recordingId, clock.GetUtcNow(), download: true));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to sign a download of {RecordingId}", recordingId);
+            return new(RecordingFailure.ReadFailed);
+        }
+    }
+
     public async Task<StoredRecordingFile?> FindPlayableAsync(Guid recordingId, CancellationToken ct = default)
     {
         var recording = await recordings.FindAsync(recordingId, false, ct);
@@ -145,10 +172,16 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return new(RecordingFailure.NotFound);
                 if (!RecordingRules.IsSecretary(meeting, actorId)) return new(RecordingFailure.Forbidden);
                 if (recording.Status == RecordingStatus.Deleted) return new(RecordingId: recording.Id);
+                // A take still streaming is saved first (switching the mic off), then erased like any recording.
+                if (recording.Status == RecordingStatus.Pending) return new(RecordingFailure.TakeOpen);
                 path = await MarkErasedAsync(recording, actorId, "request", token);
                 return new RecordingOutcome(RecordingId: recording.Id);
             }, ct);
-            if (path is not null) DeleteQuietly(path);
+            if (path is not null)
+            {
+                DeleteQuietly(path);
+                if (await recordings.FindAsync(recordingId, false, ct) is { } erased) await PublishAsync(erased.MeetingId, ct);
+            }
             return outcome;
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -206,6 +239,21 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             ? (meeting, RecordingFailure.None) : (null, RecordingFailure.NotFound);
     }
 
+    private async Task PublishAsync(Guid meetingId, CancellationToken ct)
+    {
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(2));
+            await publisher.PublishAsync(new(Guid.CreateVersion7(), meetingId, RecordingRules.RecordingsChanged, clock.GetUtcNow()),
+                timeout.Token);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Could not publish recordings change for {MeetingId}", meetingId);
+        }
+    }
+
     private void DeleteQuietly(string path)
     {
         try { storage.Delete(path); }
@@ -216,8 +264,9 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         }
     }
 
-    private static RecordingView View(Recording r, bool secretary) => new(r.Id, r.FileName, r.ContentType, r.ByteSize,
-        r.DurationMs, r.Source.ToString(), r.Status.ToString(), r.CreatedAt, r.CreatedBy.FullName, r.ConsentObtainedAt,
-        r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status != RecordingStatus.Deleted,
-        r.Transcript?.Status.ToString() ?? "None");
+    private static RecordingView View(Recording r, bool secretary, bool export) => new(r.Id, r.FileName, r.ContentType,
+        r.ByteSize, r.DurationMs, r.Source.ToString(), r.Status.ToString(), r.CreatedAt, r.CreatedBy.FullName,
+        r.ConsentObtainedAt, r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status == RecordingStatus.Available,
+        r.Transcript?.Status.ToString() ?? "None", export && r.Status == RecordingStatus.Available, r.CreatedById, r.Takes,
+        secretary && r.Status == RecordingStatus.Pending);
 }

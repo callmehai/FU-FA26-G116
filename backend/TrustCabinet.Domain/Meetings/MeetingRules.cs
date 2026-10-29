@@ -61,13 +61,6 @@ public static partial class MeetingRules
             fieldErrors["sensitivity"] = "Mức độ mật không hợp lệ.";
         }
 
-        CaptureMode? captureMode = null;
-        if (input.CaptureMode is not null)
-        {
-            if (TryParseDefinedEnum<CaptureMode>(input.CaptureMode, out var parsedCapture)) captureMode = parsedCapture;
-            else fieldErrors["captureMode"] = "Cách ghi âm không hợp lệ.";
-        }
-
         MergeErrors(
             fieldErrors,
             ValidateInformation(title, start, end, mode, location, onlineLink, sensitivity, description));
@@ -93,8 +86,7 @@ public static partial class MeetingRules
             location,
             onlineLink,
             sensitivity,
-            description,
-            captureMode);
+            description);
         return true;
     }
 

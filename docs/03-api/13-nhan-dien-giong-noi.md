@@ -26,11 +26,11 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 | Đồng ý riêng, rõ ràng, do chính người đó | `voice_consents`: một lần đồng ý riêng, không gộp với đồng ý ghi âm; lưu phiên bản thông báo (`noticeVersion`) và mục đích người đó đã đọc. Không ai đồng ý thay người khác được — không có route nào nhận id người khác |
 | Nêu mục đích | `Purpose`: *Gợi ý tên người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự, để Thư ký lập biên bản.* |
 | Thông báo đủ trước khi đồng ý | Màn "Giọng nói của tôi" nêu mục đích, thứ được lưu, phạm vi dùng, quyền của người dùng, **bên kiểm soát dữ liệu** (`controller`, lấy từ cấu hình `VoiceId:Controller`; mỗi đơn vị triển khai đặt tên pháp nhân của mình), và ghi rõ đây là dữ liệu cá nhân nhạy cảm. Ô đồng ý không đánh dấu sẵn |
-| Thu thập tối thiểu | Chỉ lưu vector đặc trưng giọng (512 số), **không lưu âm thanh mẫu**. Vector của các giọng trong bản ghi họp chỉ dùng để so một lần rồi bỏ, không lưu |
-| Bảo mật (Luật, Điều 31 khoản 4) | Vector mã hoá AES-256-GCM; dữ liệu kèm (AAD) gắn với người, id mẫu và mô hình — chép sang người khác là không giải mã được. Chỉ backend giải mã, và không endpoint nào trả vector ra ngoài. Mọi lần đọc ghi đều có nhật ký kiểm toán |
+| Thu thập tối thiểu | Lưu vector đặc trưng giọng (512 số) và, từ thông báo 1.1, **bản ghi giọng mẫu** để chính người đó nghe lại và giữ mẫu rõ ([ADR-0042](../05-decisions/0042-luu-ban-ghi-giong-mau-de-nghe-lai.md)). Mẫu ghi dưới đồng ý 1.0 không lưu bản ghi. Vector của các giọng trong bản ghi họp chỉ dùng để so một lần rồi bỏ, không lưu |
+| Bảo mật (Luật, Điều 31 khoản 4) | Vector mã hoá AES-256-GCM; dữ liệu kèm (AAD) gắn với người, id mẫu và mô hình — chép sang người khác là không giải mã được. Bản ghi mẫu mã hoá cùng khoá, AAD gắn với người và id mẫu. Chỉ backend giải mã; không endpoint nào trả vector ra ngoài, và bản ghi mẫu chỉ trả cho chính chủ. Mọi lần đọc ghi đều có nhật ký kiểm toán |
 | Rút đồng ý, xoá | `DELETE /api/me/voice/consent`: trong một transaction, xoá **mọi** giọng mẫu và **mọi gợi ý** trỏ tới người đó; tên Thư ký đã gán giữ nguyên (đó là quyết định của người, không phải dữ liệu sinh trắc) |
 | Giới hạn phạm vi dùng | Chỉ so với người có trong danh sách thành phần hiện tại của **chính cuộc họp đó**; người ngoài cuộc họp có giọng giống đến đâu cũng không được gợi ý |
-| Bằng chứng | Nhật ký kiểm toán: `voice.consent_granted`, `voice.consent_withdrawn` (kèm số mẫu đã xoá), `voice.sample_added`, `voice.sample_deleted`, `transcript.speaker_assigned` (kèm gợi ý của máy và Thư ký có chấp nhận không) |
+| Bằng chứng | Nhật ký kiểm toán: `voice.consent_granted`, `voice.consent_renewed` (đồng ý thông báo mới, kèm hai phiên bản), `voice.consent_withdrawn` (kèm số mẫu đã xoá), `voice.sample_added`, `voice.sample_deleted`, `transcript.speaker_assigned` (kèm gợi ý của máy và Thư ký có chấp nhận không) |
 
 ## Voice ID của chính mình (`/api/me/voice`)
 
@@ -38,21 +38,23 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 
 ```json
 {
-  "consent": { "grantedAt": "…", "noticeVersion": "1.0", "purpose": "Gợi ý tên người phát biểu …" },
-  "samples": [ { "id": "…", "createdAt": "…", "speechMs": 7200 } ],
-  "maxSamples": 5, "noticeVersion": "1.0", "purpose": "Gợi ý tên người phát biểu …",
+  "consent": { "grantedAt": "…", "noticeVersion": "1.1", "purpose": "Gợi ý tên người phát biểu …" },
+  "samples": [ { "id": "…", "createdAt": "…", "speechMs": 7200, "playable": true } ],
+  "maxSamples": 5, "noticeVersion": "1.1", "purpose": "Gợi ý tên người phát biểu …",
   "controller": "Nhóm đồ án SEP490-G116, đơn vị vận hành bản thử nghiệm TrustCabinet"
 }
 ```
 
 `consent` là `null` khi chưa đồng ý hoặc đã rút. `noticeVersion`, `purpose` và `controller` ở gốc là
-thông báo hiện hành mà FE hiện cho người dùng đọc trước khi đồng ý.
+thông báo hiện hành mà FE hiện cho người dùng đọc trước khi đồng ý. `consent.noticeVersion` cũ hơn
+thông báo hiện hành thì FE mời đồng ý điều khoản mới. `playable`: bản ghi mẫu được lưu, chủ mẫu nghe lại được.
 
-### `POST /api/me/voice/consent` — `{ "noticeVersion": "1.0" }`
+### `POST /api/me/voice/consent` — `{ "noticeVersion": "1.1" }`
 
 Phải gửi đúng phiên bản thông báo đang hiện (khác → `400 MSG313`, `errors.noticeVersion`), để đồng ý
-luôn gắn với câu chữ người đó đã đọc. Đã đồng ý rồi thì không tạo thêm. `200 MSG305`, `data` là hồ sơ
-như `GET`.
+luôn gắn với câu chữ người đó đã đọc. Đã đồng ý rồi thì không tạo thêm. Đang đồng ý theo thông báo cũ
+thì **gia hạn ngay dòng đó** lên phiên bản mới: giọng mẫu giữ nguyên, nhật ký ghi `voice.consent_renewed`.
+`200 MSG305`, `data` là hồ sơ như `GET`.
 
 ### `DELETE /api/me/voice/consent`
 
@@ -71,12 +73,20 @@ chất lượng trước khi tính vector:
 | `multiple_speakers` | Các đoạn ~2 giây trong mẫu không giống nhau đủ — nghe như hơn một người |
 | `too_long` | Quá 60 giây hoặc quá 10 MB |
 
-`201 MSG307`, `data`: `{ id, createdAt, speechMs }`. Tối đa 5 mẫu (`409 MSG310`); chưa đồng ý
+`201 MSG307`, `data`: `{ id, createdAt, speechMs, playable }`. Dưới đồng ý 1.1 trở lên, tệp gửi lên được lưu
+mã hoá để chủ mẫu nghe lại (`playable: true`); dưới 1.0 thì không. Tối đa 5 mẫu (`409 MSG310`); chưa đồng ý
 `409 MSG308`; worker không chạy `503 MSG312`.
+
+### `GET /api/me/voice/samples/{sampleId}/audio`
+
+Bản ghi mẫu, giải mã cho chính chủ nghe lại ([ADR-0042](../05-decisions/0042-luu-ban-ghi-giong-mau-de-nghe-lai.md)):
+`200` với đúng loại tệp đã gửi, `Cache-Control: no-store`, hỗ trợ `Range`. Mẫu của người khác, mẫu
+không lưu bản ghi (đồng ý 1.0) hay không tồn tại: cùng một `404`. FE tải bằng phiên đăng nhập rồi phát
+từ bộ nhớ, không ghi ra đĩa.
 
 ### `DELETE /api/me/voice/samples/{sampleId}`
 
-`200 MSG311`. Mẫu của người khác: `404`.
+`200 MSG311`, bản ghi mẫu bị xoá cùng. Mẫu của người khác: `404`.
 
 ## Gợi ý và gán tên trong bản gỡ băng
 
@@ -86,21 +96,34 @@ chất lượng trước khi tính vector:
 "speakers": [
   { "label": "SPEAKER_00", "speechMs": 30000,
     "suggestedUserId": "…", "suggestedName": "Nguyễn Thư Ký", "suggestionScore": 0.83,
-    "assignedUserId": null, "assignedName": null }
+    "assignedUserId": null, "assignedName": null, "sameAsLabel": null },
+  { "label": "SPEAKER_01", "speechMs": 7000,
+    "suggestedUserId": "…", "suggestedName": "Nguyễn Thư Ký", "suggestionScore": 0.76,
+    "assignedUserId": null, "assignedName": null, "sameAsLabel": "SPEAKER_00" }
 ],
 "people": [ { "id": "…", "fullName": "…" } ]
 ```
 
 `people` là thành phần hiện tại của cuộc họp, chỉ trả cho Thư ký (để chọn tên); người khác nhận mảng
-rỗng. Tên hiển thị của một giọng: `assignedName` nếu Thư ký đã gán, nếu không thì *Người nói N*
-(FE có thể hiện `suggestedName` như một gợi ý chờ xác nhận).
+rỗng. **`suggestedUserId`, `suggestedName`, `suggestionScore` cũng chỉ trả cho Thư ký**: đó là phỏng đoán
+của máy về danh tính sinh trắc học của một người, để Thư ký quyết định, không phải thông tin cho cả cuộc
+họp; người khác nhận `null`. Tên hiển thị của một giọng: `assignedName` nếu Thư ký đã gán, nếu không thì
+*Người nói N*.
 
 **Cách gợi ý** (`SpeakerMatcher`): điểm của một người với một giọng là cosine cao nhất giữa vector giọng
 và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,6) **và** hơn người
-xếp sau ít nhất `VoiceId:SuggestMargin` (0,1). Mỗi người được gợi ý cho tối đa một giọng trong một bản
-ghi. Ngưỡng 0,6 đo trên 24 cuộc họp giả lập bằng giọng thật (VIVOS, sạch và qua phòng họp, xem
+xếp sau ít nhất `VoiceId:SuggestMargin` (0,1). Ngưỡng 0,6 đo trên 24 cuộc họp giả lập bằng giọng thật (VIVOS, sạch và qua phòng họp, xem
 `workers/speech/eval/`). Ở 0,5, 3% thời gian nói bị gợi ý sai người, có cả người chưa đăng ký bị gợi ý
 tên. Ở 0,6, không gợi ý sai lần nào, và 97–98% lời của người đã đăng ký vẫn được gợi ý đúng tên.
+
+**Một người bị tách làm hai** (như AI-eCabinet): máy tách người nói có thể chia một người thành hai nhãn, nên
+một người được gợi ý cho nhiều giọng. Giọng thứ hai trở đi phải nghe giống giọng được gợi ý chắc nhất
+(cosine giữa hai vector giọng ≥ `VoiceId:SameVoiceThreshold`, 0,7). Thiếu điều kiện này, người chưa đăng ký
+có giọng gần một người đã đăng ký bị gợi ý tên (11% lời của họ trên bộ sạch); ở 0,7 không còn trường hợp nào,
+còn lời của người đã đăng ký được gợi ý đúng tăng từ 97% lên 99% (đo lại 29/10/2026, `evaluate.py --rule`).
+Giọng gợi ý kém chắc hơn có `sameAsLabel`: nhãn của giọng chắc hơn (giọng đã được Thư ký gán đúng người đó
+thì nó đứng đầu, gán người khác thì bị loại khỏi nhóm). FE hiện "Cùng giọng với Người nói N" và cho gán cả
+hai trong một lần. Hai giọng đều giữ gợi ý; máy không tự gộp, vì gộp sai là gán nhầm tên người.
 
 ### `PUT /api/recordings/{recordingId}/speakers/{label}` — `{ "userId": "…" | null }`
 
@@ -115,3 +138,4 @@ không có trong bản ghi: `404`. `200 MSG316` `{ code, message, speaker }`.
 | `EncryptionKey` | rỗng | Base64 của 32 byte ngẫu nhiên. Rỗng (máy dev) thì dẫn xuất bằng HKDF từ `Authentication:SigningKey` với nhãn riêng. Server phải đặt khoá riêng. Đổi khoá thì giọng mẫu cũ không giải mã được — người dùng ghi lại |
 | `SuggestThreshold` | `0.6` | Xem phần *Cách gợi ý* |
 | `SuggestMargin` | `0.1` | |
+| `SameVoiceThreshold` | `0.7` | Giọng thứ hai được gợi ý cùng một người phải giống giọng đầu tới mức này, xem *Một người bị tách làm hai* |

@@ -22,8 +22,9 @@ export function Dialog({
   onClose: () => void
   children?: ReactNode
   footer?: ReactNode
-  /** `lg` holds a whole form (create or edit a meeting); on a phone it takes the screen. */
-  size?: 'md' | 'lg'
+  /** `lg` holds a whole form (create or edit a meeting); on a phone it takes the screen. `sheet` slides in from the
+   * right edge at full height, for a list read beside the page. */
+  size?: 'md' | 'lg' | 'sheet'
 }) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
@@ -48,7 +49,7 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className={size === 'lg' ? 'dialog dialog-lg' : 'dialog'}
+      className={size === 'md' ? 'dialog' : `dialog dialog-${size}`}
       aria-labelledby={titleId}
       onCancel={(event) => {
         // A dialog opened inside this one (a ConfirmDialog) handles its own Escape; React bubbles

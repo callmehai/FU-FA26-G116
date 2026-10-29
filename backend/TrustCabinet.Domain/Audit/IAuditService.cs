@@ -91,8 +91,22 @@ public static class AuditActions
 
     public const string RecordingObjectType = "Recording";
 
+    /// <summary>
+    /// ADR-0041 — the Secretary switched the room mic on (a take opened), or a take was saved: appended to the meeting's
+    /// room recording, kept as the first one, or dropped because the mic heard nothing. Who closed it is the actor; the
+    /// server closing a take left idle has none.
+    /// </summary>
+    public const string RecordingTakeStarted = "recording.take_started";
+    public const string RecordingTakeSaved = "recording.take_saved";
+
+    /// <summary>A take erased from a room recording; the details say which, how long, and how many lines went with it.</summary>
+    public const string RecordingTakeDeleted = "recording.take_deleted";
+
     /// <summary>SCRUM-35 — a person agreed to Voice ID; the notice version and purpose they agreed to are in the details.</summary>
     public const string VoiceConsentGranted = "voice.consent_granted";
+
+    /// <summary>A person agreed to a newer Voice ID notice while consenting already; the details name both versions.</summary>
+    public const string VoiceConsentRenewed = "voice.consent_renewed";
 
     /// <summary>A person withdrew Voice ID; the details say how many samples were erased with it.</summary>
     public const string VoiceConsentWithdrawn = "voice.consent_withdrawn";
@@ -111,10 +125,21 @@ public static class AuditActions
 
     /// <summary>A per-mic sentence was taken out — by its speaker or the Secretary (the details say which).</summary>
     public const string SpeechClipDeleted = "speech_clip.deleted";
+
+    /// <summary>The Chair or a Secretary took a per-mic sentence out of the record, or put it back (reason in details).</summary>
+    public const string SpeechClipExcluded = "speech_clip.excluded";
+    public const string SpeechClipRestored = "speech_clip.restored";
+
+    /// <summary>The Chair or a Secretary saved the per-mic transcript, a recording's transcript, or a recording's file.</summary>
+    public const string SpeechClipsExported = "speech_clip.exported";
+    public const string TranscriptExported = "transcript.exported";
+    public const string RecordingDownloaded = "recording.downloaded";
+
+    /// <summary>A Secretary corrected a transcript segment, or queued a finished transcript to be made again.</summary>
+    public const string TranscriptSegmentEdited = "transcript.segment_edited";
+    public const string TranscriptRerun = "transcript.rerun";
     public const string SpeechClipObjectType = "SpeechClip";
 
-    /// <summary>The Chair or a Secretary switched how the meeting is captured before it started.</summary>
-    public const string CaptureModeChanged = "meeting.capture_mode_changed";
     public const string MeetingObjectType = "Meeting";
 
     /// <summary>UC-32c — a document of a Confidential or Secret meeting was opened in the viewer (BR-318).</summary>

@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -43,8 +44,22 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceEmbedder
         {
             await repository.InTransactionAsync(async token =>
             {
-                if (await repository.FindActiveConsentAsync(actorId, true, token) is not null) return 0;
                 var now = clock.GetUtcNow();
+                var active = await repository.FindActiveConsentAsync(actorId, true, token);
+                if (active is not null)
+                {
+                    // Agreeing to the newer notice renews the consent in place: its samples stay, and what changed is
+                    // what may be kept from now on (ADR-0042). The audit row keeps both versions as evidence.
+                    if (active.NoticeVersion == VoiceIdRules.NoticeVersion) return 0;
+                    var from = active.NoticeVersion;
+                    active.NoticeVersion = VoiceIdRules.NoticeVersion;
+                    active.Purpose = VoiceIdRules.Purpose;
+                    active.UpdatedAt = now;
+                    await audit.RecordAsync(AuditActions.VoiceConsentRenewed, AuditActions.VoiceConsentObjectType, active.Id,
+                        actorId, new { from, to = active.NoticeVersion, active.Purpose }, token);
+                    await repository.SaveChangesAsync(token);
+                    return 0;
+                }
                 var consent = new VoiceConsent
                 {
                     UserId = actorId, GrantedAt = now, NoticeVersion = VoiceIdRules.NoticeVersion,
@@ -106,10 +121,15 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceEmbedder
             return new(VoiceFailure.SaveFailed);
         }
 
+        // Kept in memory to be stored encrypted after the worker reads it: a sample is at most a minute.
+        using var copy = new MemoryStream();
+        await audio.CopyToAsync(copy, ct);
+        var recorded = copy.ToArray();
         SpeechEmbedding embedding;
         try
         {
-            embedding = await embedder.EmbedAsync(audio, contentType, ct);
+            copy.Position = 0;
+            embedding = await embedder.EmbedAsync(copy, contentType, ct);
         }
         catch (VoiceSampleRejectedException rejected)
         {
@@ -140,11 +160,17 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceEmbedder
                     Ciphertext = protector.Protect(embedding.Embedding, actorId, id, embedding.Model),
                     SpeechMs = embedding.SpeechMs, CreatedAt = now, UpdatedAt = now,
                 };
+                // The recording is kept only under a consent whose notice said so (ADR-0042).
+                if (string.CompareOrdinal(consent.NoticeVersion, VoiceIdRules.AudioNoticeVersion) >= 0)
+                {
+                    sample.AudioCiphertext = protector.ProtectAudio(recorded, actorId, id);
+                    sample.AudioContentType = contentType;
+                }
                 repository.Add(sample);
                 await audit.RecordAsync(AuditActions.VoiceSampleAdded, AuditActions.VoiceSampleObjectType, id, actorId,
                     new { embedding.Model, embedding.SpeechMs }, token);
                 await repository.SaveChangesAsync(token);
-                return new VoiceOutcome(Data: new VoiceSampleView(id, now, embedding.SpeechMs));
+                return new VoiceOutcome(Data: new VoiceSampleView(id, now, embedding.SpeechMs, sample.AudioCiphertext is not null));
             }, ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -173,12 +199,29 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceEmbedder
         }
     }
 
+    public async Task<VoiceSampleAudio?> SampleAudioAsync(Guid actorId, Guid sampleId, CancellationToken ct = default)
+    {
+        // Only the owner's own list is read: someone else's sample is answered exactly like one that does not exist.
+        var sample = (await repository.ListSamplesAsync(actorId, ct)).SingleOrDefault(s => s.Id == sampleId);
+        if (sample?.AudioCiphertext is null || sample.AudioContentType is null) return null;
+        try
+        {
+            return new(protector.UnprotectAudio(sample.AudioCiphertext, actorId, sample.Id), sample.AudioContentType);
+        }
+        catch (CryptographicException ex)
+        {
+            logger.LogWarning(ex, "Audio of voice sample {SampleId} could not be decrypted", sampleId);
+            return null;
+        }
+    }
+
     private async Task<VoiceProfile> ProfileAsync(Guid userId, CancellationToken ct)
     {
         var consent = await repository.FindActiveConsentAsync(userId, false, ct);
         var samples = await repository.ListSamplesAsync(userId, ct);
         return new(consent is null ? null : new(consent.GrantedAt, consent.NoticeVersion, consent.Purpose),
-            [.. samples.Select(s => new VoiceSampleView(s.Id, s.CreatedAt, s.SpeechMs))], VoiceIdRules.MaxSamples,
+            [.. samples.Select(s => new VoiceSampleView(s.Id, s.CreatedAt, s.SpeechMs, s.AudioCiphertext is not null))],
+            VoiceIdRules.MaxSamples,
             VoiceIdRules.NoticeVersion, VoiceIdRules.Purpose, options.Value.Controller);
     }
 }

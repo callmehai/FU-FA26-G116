@@ -19,6 +19,7 @@ nhóm. Để chúng trong một thư mục ngoài repo.
 | `vivos_dataset.py` | Dựng bộ dữ liệu từ VIVOS: giọng mẫu, các cuộc họp giả lập, có biến thể "khác kênh" | numpy, ffmpeg |
 | `make_meeting.py` | Dựng một cuộc họp có đáp án từ các câu mỗi người tự ghi riêng | numpy, ffmpeg |
 | `score_transcript.py` | Chấm một bản ghi thật theo bản gỡ băng có nhãn `[mm:ss] Người nói N: …` | Python 3 chuẩn |
+| `bleed.py` | Cuộc họp tổng hợp theo micro từng người, mỗi micro nghe lọt người khác; đo từ trùng trước và sau khi đánh dấu (`fold.py`, bản Python của `SpeechClipFold`) | numpy, Node 22.18+ |
 
 Chạy worker trước (xem [README của worker](../README.md#chạy-cục-bộ)). Các script nhận `--url`, mặc
 định `http://127.0.0.1:8090`. Script cần numpy thì chạy bằng venv của worker
@@ -96,6 +97,24 @@ Script báo các chỉ số sau:
 
 Nếu bản gỡ băng do một công cụ AI khác tạo ra, các đoạn "khác" có thể là lỗi của bản gỡ băng.
 Hãy nghe lại trước khi kết luận.
+
+## 4. Tiếng lọt giữa các micro riêng
+
+```bash
+../.venv/bin/python -I bleed.py vivos/test --cache /tmp/bleed --profile room --profile clip           # bộ chính, seed 0–4
+../.venv/bin/python -I bleed.py vivos/test --cache /tmp/bleed --profile clip --seeds 300 301 302 303 304  # bộ kiểm chứng
+../.venv/bin/python -I bleed.py vivos/test --cache /tmp/bleed --profile clip --own-dbfs -38           # người nói nhỏ
+```
+
+Ba kịch bản: S1 từng người nói lần lượt, S3 lượt sau chen vào lượt trước 1–4 giây, S4 đáp nhanh dưới
+1,2 giây (ngắt câu của trình duyệt). Mỗi micro được cắt câu bằng `cut_clips.mjs`, tức chính
+`frontend/src/features/speech/clipCutter.ts`. Chỉ số theo từng từ chuẩn: **từ trùng** (bản trên micro
+người khác chưa bị đánh dấu), **lạc chỗ** (như trên nhưng micro chủ không có từ đó), **mất lời thật**
+(lời chủ micro bị đánh dấu), **recall** (lời chủ micro có trên micro của họ). Chọn ngưỡng trên seed
+100–104, báo cáo trên seed 0–4, kiểm chứng trên seed 300–304.
+
+`fold.py` phải đánh dấu đúng như backend: `tests/test_fold_port.py` chạy chung các ca trong
+`tests/TrustCabinet.Web.Tests/Recordings/speech-fold-cases.json` với `SpeechClipFoldTests`.
 
 ## Đọc kết quả của `evaluate.py`
 

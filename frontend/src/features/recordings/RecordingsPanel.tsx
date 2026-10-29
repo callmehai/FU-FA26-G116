@@ -1,93 +1,50 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { eraseRecording, getRecordingPlayback, listRecordings, uploadRecording } from '../../api/recordings'
+import { eraseRecording, getRecordingDownload, getRecordingPlayback, listRecordings } from '../../api/recordings'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
-import { Dialog } from '../../components/Dialog'
 import { Badge, type BadgeTone } from '../../components/Badge'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate, formatDateTime } from '../../lib/format'
-import { routes } from '../../lib/routes'
-import type { Recording, RecordingList, RecordingSource } from '../../types/recording'
+import type { Recording, RecordingList } from '../../types/recording'
 import type { TranscriptStatus } from '../../types/transcript'
 import { useAccessLost } from '../auth/useAccessLost'
-import { useUploads, useUploadsSettled } from '../uploads/uploadsContext'
+import { useMeetingEvents } from '../meetings/useMeetingEvents'
+import { useUploadsSettled } from '../uploads/uploadsContext'
+import { ConsentDialog } from './ConsentDialog'
 import { formatDuration, formatSize, probeDuration } from './format'
+import { PlayerBar } from './PlayerBar'
+import { rememberSpeed, storedSpeed } from './playerSpeed'
 import { TranscriptView } from './TranscriptView'
-import { useRecorder, type RecordedTake, type Recorder, type RecordingInput } from './useRecorder'
+import { DEFAULT_PURPOSE, recordingsTarget, useRecordingSave } from './useRecordingSave'
+import { RECORDINGS_EVENTS } from './useRoomRecordings'
 
 /**
- * SCRUM-29 — the meeting's recordings, as a panel (ADR-0011): the detail tab renders it, and the
- * call room's side panel can render the same component.
+ * SCRUM-29 — the meeting's room recordings, in the Bản ghi tab. The Secretary records the room with the mic card in
+ * the corner of every tab (RecorderCard), and uploads a file recorded elsewhere from here. ADR-0041: each take of the
+ * room mic is appended to one recording, transcribed again as a whole, so the tab reads as one meeting; the take being
+ * recorded shows as such to everyone, and nobody hears it before the mic goes off.
  *
- * Nothing is recorded or kept before the Secretary confirms the participants were told and nobody
- * objected; the purpose they confirm is stored with the file, and every row says when it will be
- * erased.
+ * Nothing is kept before the Secretary confirms the participants were told and nobody objected; the purpose they
+ * confirm is stored with the file, and every row says when it will be erased.
  */
 
-const DEFAULT_PURPOSE = 'Lập biên bản cuộc họp'
 const ACCEPT = '.mp3,.m4a,.aac,.wav,.webm,.ogg,audio/*'
 /** Same pace as an open transcript (TranscriptView). */
 const TRANSCRIPT_POLL_MS = 4000
 
 type LoadState = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'loaded'; data: RecordingList }
 
-type Consent = { kind: 'record' } | { kind: 'upload'; file: File }
-
-/** A take or a picked file, for the upload queue. */
-interface PendingUpload {
-  blob: Blob
-  fileName: string
-  source: RecordingSource
-  durationMs?: number
-  purpose: string
-}
-
-/** The meeting ended for recording, or the Secretary role moved: the list says so once re-read. */
-const isExpected = (err: unknown) => isApiError(err, 409, 'MSG294') || isApiError(err, 403, 'MSG295')
-
-function saveToComputer(upload: PendingUpload) {
-  const url = URL.createObjectURL(upload.blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = upload.fileName
-  link.click()
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-
-function takeName(take: RecordedTake) {
-  const now = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `ghi-am-${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()}-${pad(now.getHours())}${pad(now.getMinutes())}.${take.extension}`
-}
-
 /**
- * `existingOnly`: the meeting is captured per mic (SCRUM-109), so there is nothing new to record here — show
- * recordings made before, if any, and nothing at all otherwise.
- *
- * In the call room (SCRUM-44) the room holds the recorder, so a take goes on with the panel closed, and `source`
- * records the whole call rather than the Secretary's microphone alone.
+ * `existingOnly`: an online meeting has no room to record (ADR-0040) — show recordings made before, if any, and
+ * nothing at all otherwise.
  */
-export function RecordingsPanel({
-  meetingId,
-  variant = 'page',
-  existingOnly = false,
-  recorder: held,
-  source,
-}: {
-  meetingId: string
-  variant?: 'page' | 'room'
-  existingOnly?: boolean
-  recorder?: Recorder
-  source?: () => RecordingInput
-}) {
+export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId: string; existingOnly?: boolean }) {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const uploads = useUploads()
-  const own = useRecorder()
-  const recorder = held ?? own
+  const save = useRecordingSave(meetingId)
   const [state, setState] = useState<LoadState>({ kind: 'loading' })
-  const [consent, setConsent] = useState<Consent | null>(null)
+  const [upload, setUpload] = useState<File | null>(null)
   const [purpose, setPurpose] = useState(DEFAULT_PURPOSE)
   const [erasing, setErasing] = useState<Recording | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
@@ -130,79 +87,30 @@ export function RecordingsPanel({
     return () => window.clearInterval(timer)
   }, [transcribing, load])
 
-  // Saving goes through the upload queue: it goes on with the panel closed or the page left, a network
-  // hiccup is tried again, and a take that still fails stays in the tray with "Lưu về máy", so it is never lost.
-  const save = useCallback(
-    (upload: PendingUpload) =>
-      uploads.enqueue([
-        {
-          name: upload.fileName,
-          kind: 'audio',
-          where: 'Bản ghi cuộc họp',
-          href: `${routes.meeting(meetingId)}?tab=recordings`,
-          target: `recordings:${meetingId}`,
-          isExpected,
-          keep: () => saveToComputer(upload),
-          send: (options) =>
-            uploadRecording(
-              meetingId,
-              {
-                file: upload.blob,
-                fileName: upload.fileName,
-                source: upload.source,
-                consentPurpose: upload.purpose,
-                durationMs: upload.durationMs,
-              },
-              options,
-            ),
-        },
-      ]),
-    [meetingId, uploads],
-  )
-  useUploadsSettled(`recordings:${meetingId}`, () => void load())
-
-  const stopAndSave = async () => {
-    const take = await recorder.stop()
-    if (!take) return
-    save({
-      blob: take.blob,
-      fileName: takeName(take),
-      source: 'BrowserCapture',
-      durationMs: take.durationMs,
-      purpose,
-    })
-  }
+  useUploadsSettled(recordingsTarget(meetingId), () => void load())
+  // A take opened or saved, a file kept or erased, a transcript done: on any screen of the meeting.
+  useMeetingEvents(meetingId, () => void load(true), RECORDINGS_EVENTS)
 
   const data = state.kind === 'loaded' ? state.data : null
   const canUpload = !existingOnly && (data?.canUpload ?? false)
   if (existingOnly && data?.items.length === 0) return null
-  const busy = recorder.active || recorder.state.kind === 'starting'
 
+  // An erased recording leaves the tab (PO 29/10/2026); its audit trail stays on the server.
+  const kept = data?.items.filter((r) => r.status !== 'Deleted') ?? []
   return (
-    <section className={`list-panel recordings-panel recordings-${variant}`} aria-label="Bản ghi">
+    <section className="list-panel recordings-panel recordings-page" aria-label="Bản ghi">
       <div className="toolbar">
         <h2 className="recordings-title">Bản ghi</h2>
         {canUpload && (
           <div className="toolbar-end row-actions">
             <button
               type="button"
-              className="btn btn-outline btn-icon"
+              className="btn btn-outline"
               onClick={() => fileInput.current?.click()}
-              disabled={busy}
-              aria-label="Tải tệp ghi âm lên"
-              data-tooltip="Tải tệp ghi âm lên (mp3, m4a, wav, webm, ogg)"
+              data-tooltip="mp3, m4a, wav, webm, ogg"
             >
               <Icon name="upload" size={18} />
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-cta"
-              onClick={() => setConsent({ kind: 'record' })}
-              disabled={busy}
-              data-tooltip={source ? 'Thu micro của bạn và tiếng mọi người trong cuộc gọi' : undefined}
-            >
-              <Icon name="mic" size={18} />
-              Ghi âm
+              Tải tệp lên
             </button>
             <input
               ref={fileInput}
@@ -212,56 +120,12 @@ export function RecordingsPanel({
               onChange={(event) => {
                 const file = event.target.files?.[0]
                 event.target.value = ''
-                if (file) setConsent({ kind: 'upload', file })
+                if (file) setUpload(file)
               }}
             />
           </div>
         )}
       </div>
-
-      {recorder.state.kind === 'error' && (
-        <div className="alert alert-error recordings-alert" role="alert">
-          <p>{recorder.state.message}</p>
-          <button type="button" className="btn btn-outline btn-sm" onClick={recorder.reset}>
-            Đóng
-          </button>
-        </div>
-      )}
-
-      {(recorder.state.kind === 'recording' || recorder.state.kind === 'paused') && (
-        <div className={`recorder-bar${recorder.state.kind === 'paused' ? ' recorder-paused' : ''}`} role="status">
-          <span className="recorder-dot" aria-hidden="true" />
-          <span className="recorder-label">{recorder.state.kind === 'paused' ? 'Đã tạm dừng' : 'Đang ghi âm'}</span>
-          <span className="recorder-time">{formatDuration(recorder.state.elapsedMs)}</span>
-          <div className="row-actions recorder-actions">
-            {recorder.state.kind === 'recording' ? (
-              <button
-                type="button"
-                className="btn btn-outline btn-icon btn-sm"
-                onClick={recorder.pause}
-                aria-label="Tạm dừng"
-                data-tooltip="Tạm dừng"
-              >
-                <Icon name="pause" size={16} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-outline btn-icon btn-sm"
-                onClick={recorder.resume}
-                aria-label="Ghi tiếp"
-                data-tooltip="Ghi tiếp"
-              >
-                <Icon name="mic" size={16} />
-              </button>
-            )}
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => void stopAndSave()}>
-              <Icon name="recordStop" size={16} />
-              Dừng và lưu
-            </button>
-          </div>
-        </div>
-      )}
 
       {state.kind === 'error' && (
         <div className="alert alert-error recordings-alert" role="alert">
@@ -284,47 +148,46 @@ export function RecordingsPanel({
         </ul>
       )}
 
-      {data && data.items.length === 0 && (
+      {data && kept.length === 0 && (
         <div className="cell-empty">
           <p className="empty-title">Chưa có bản ghi.</p>
-          {canUpload && (
-            <p className="field-hint">
-              {source
-                ? 'Ghi âm thu cả micro của bạn và tiếng mọi người trong cuộc gọi.'
-                : 'Ghi âm ngay trên trình duyệt hoặc tải tệp ghi sẵn lên.'}
-            </p>
-          )}
+          {canUpload && <p className="field-hint">Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.</p>}
         </div>
       )}
 
-      {data && data.items.length > 0 && (
+      {data && kept.length > 0 && (
         <ul className="recording-list">
-          {data.items.map((recording) => (
-            <RecordingRow key={recording.id} recording={recording} onErase={() => setErasing(recording)} />
-          ))}
+          {/* Oldest first, each with its transcript under it: the tab reads in the order the meeting went. */}
+          {[...kept]
+            .reverse()
+            .map((recording) =>
+              recording.status === 'Pending' ? (
+                <OpenTakeRow key={recording.id} take={recording} />
+              ) : (
+                <RecordingRow key={recording.id} recording={recording} onErase={() => setErasing(recording)} />
+              ),
+            )}
         </ul>
       )}
 
-      {consent && (
+      {upload && (
         <ConsentDialog
-          consent={consent}
+          consent={{ kind: 'upload', file: upload }}
           purpose={purpose}
           onPurpose={setPurpose}
-          onClose={() => setConsent(null)}
+          onClose={() => setUpload(null)}
           onConfirm={() => {
-            const current = consent
-            setConsent(null)
-            if (current.kind === 'record') void recorder.start(source)
-            else
-              void probeDuration(current.file).then((durationMs) =>
-                save({
-                  blob: current.file,
-                  fileName: current.file.name,
-                  source: 'Upload',
-                  durationMs,
-                  purpose: purpose.trim() || DEFAULT_PURPOSE,
-                }),
-              )
+            const file = upload
+            setUpload(null)
+            void probeDuration(file).then((durationMs) =>
+              save({
+                blob: file,
+                fileName: file.name,
+                source: 'Upload',
+                durationMs,
+                purpose: purpose.trim() || DEFAULT_PURPOSE,
+              }),
+            )
           }}
         />
       )}
@@ -370,7 +233,33 @@ const TRANSCRIPT_BADGE: Partial<Record<TranscriptStatus, { tone: BadgeTone; labe
   Failed: { tone: 'red', label: 'Lỗi chuyển chữ' },
 }
 
+/** The room mic's take being recorded: everyone sees the room is being recorded, nobody hears it yet. */
+function OpenTakeRow({ take }: { take: Recording }) {
+  return (
+    <li className="recording-row recording-live">
+      <span className="recording-icon" aria-hidden="true">
+        <Icon name="mic" size={18} />
+      </span>
+      <div className="recording-main">
+        <span className="recording-name">Mic phòng đang ghi</span>
+        <span
+          className="recording-meta"
+          tabIndex={0}
+          data-tooltip="Tắt mic thì lượt này được nối vào bản ghi phòng và chuyển chữ lại cả bản."
+        >
+          <Badge tone="red">Đang ghi</Badge>
+          <span>{take.createdByName}</span>
+          <span>từ {formatDateTime(take.createdAt)}</span>
+        </span>
+      </div>
+    </li>
+  )
+}
+
 function RecordingRow({ recording, onErase }: { recording: Recording; onErase: () => void }) {
+  const deleted = recording.status === 'Deleted'
+  // Open from the start: what the machine wrote down is what people come to the tab for.
+  const [open, setOpen] = useState(!deleted)
   const [playback, setPlayback] = useState<
     { kind: 'loading' } | { kind: 'ready'; url: string } | { kind: 'error'; message: string } | null
   >(null)
@@ -384,19 +273,52 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
   }
   const audio = useRef<HTMLAudioElement>(null)
   const [currentMs, setCurrentMs] = useState(0)
-  const deleted = recording.status === 'Deleted'
+  const [lengthMs, setLengthMs] = useState(recording.durationMs)
+  const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed] = useState(storedSpeed)
+  const [volume, setVolume] = useState(1)
+  const [muted, setMuted] = useState(false)
+  const seek = (ms: number) => {
+    const element = audio.current
+    if (!element) return
+    element.currentTime = Math.max(0, Math.min(lengthMs, ms)) / 1000
+    setCurrentMs(element.currentTime * 1000)
+  }
   const badge = deleted ? undefined : TRANSCRIPT_BADGE[transcriptStatus]
 
-  const toggle = async () => {
-    if (playback) {
+  // The player's signed link is fetched each time the row opens: one from an earlier opening may have expired. And
+  // again when the file grows (a room-mic take appended, ADR-0041): the player would keep the shorter file it loaded.
+  useEffect(() => {
+    if (!open || deleted) return
+    let gone = false
+    void Promise.resolve().then(async () => {
+      if (gone) return
+      setPlayback({ kind: 'loading' })
+      try {
+        const url = (await getRecordingPlayback(recording.id)).url
+        if (!gone) setPlayback({ kind: 'ready', url })
+      } catch (error) {
+        if (!gone) setPlayback({ kind: 'error', message: errorMessage(error) })
+      }
+    })
+    return () => {
+      gone = true
       setPlayback(null)
-      return
     }
-    setPlayback({ kind: 'loading' })
+  }, [open, deleted, recording.id, recording.byteSize])
+
+  const toast = useToast()
+  // A signed link to the original file, followed by the browser itself: a recording can be hundreds of megabytes.
+  const download = async () => {
     try {
-      setPlayback({ kind: 'ready', url: (await getRecordingPlayback(recording.id)).url })
+      const link = document.createElement('a')
+      link.href = (await getRecordingDownload(recording.id)).url
+      link.download = recording.fileName
+      document.body.append(link)
+      link.click()
+      link.remove()
     } catch (error) {
-      setPlayback({ kind: 'error', message: errorMessage(error) })
+      toast.show(errorMessage(error), 'error')
     }
   }
 
@@ -410,7 +332,7 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
     .join(' · ')
 
   return (
-    <li className={`recording-row${deleted ? ' recording-deleted' : ''}${playback ? ' recording-open' : ''}`}>
+    <li className={`recording-row${deleted ? ' recording-deleted' : ''}${open ? ' recording-open' : ''}`}>
       <span className="recording-icon" aria-hidden="true">
         <Icon name="fileAudio" size={18} />
       </span>
@@ -419,7 +341,8 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           {recording.fileName}
         </span>
         <span className="recording-meta" data-tooltip={details} tabIndex={0}>
-          <Badge tone="slate">{recording.source === 'BrowserCapture' ? 'Ghi trực tiếp' : 'Tải lên'}</Badge>
+          <Badge tone="slate">{recording.source === 'BrowserCapture' ? 'Mic phòng' : 'Tải lên'}</Badge>
+          {recording.takes && recording.takes.length > 1 && <span>{recording.takes.length} lượt ghi</span>}
           {deleted ? (
             <Badge tone="red">Đã xoá</Badge>
           ) : (
@@ -437,13 +360,24 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           <button
             type="button"
             className="btn btn-outline btn-icon btn-sm"
-            onClick={() => void toggle()}
-            aria-label={playback ? 'Đóng' : 'Nghe và xem bản gỡ băng'}
-            aria-expanded={playback !== null}
-            data-tooltip={playback ? 'Đóng' : 'Nghe và xem bản gỡ băng'}
+            onClick={() => setOpen(!open)}
+            aria-label={open ? 'Thu gọn' : 'Nghe và xem bản gỡ băng'}
+            aria-expanded={open}
+            data-tooltip={open ? 'Thu gọn' : 'Nghe và xem bản gỡ băng'}
           >
-            <Icon name={playback ? 'x' : 'play'} size={16} />
+            <Icon name={open ? 'chevronUp' : 'chevronDown'} size={16} />
           </button>
+          {recording.canDownload && (
+            <button
+              type="button"
+              className="btn btn-outline btn-icon btn-sm"
+              onClick={() => void download()}
+              aria-label="Tải tệp ghi âm"
+              data-tooltip="Tải tệp ghi âm"
+            >
+              <Icon name="download" size={16} />
+            </button>
+          )}
           {recording.canErase && (
             <button
               type="button"
@@ -467,14 +401,60 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
         <div className="recording-player recording-detail">
           <audio
             ref={audio}
-            controls
             preload="metadata"
             src={playback.url}
             onTimeUpdate={(e) => setCurrentMs(e.currentTarget.currentTime * 1000)}
+            onLoadedMetadata={(e) => {
+              const element = e.currentTarget
+              if (Number.isFinite(element.duration)) setLengthMs(element.duration * 1000)
+              element.playbackRate = speed
+            }}
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
           />
+          <div className="recording-player-bar">
+            <PlayerBar
+              positionMs={currentMs}
+              totalMs={lengthMs}
+              playing={playing}
+              onToggle={() => {
+                const element = audio.current
+                if (!element) return
+                if (element.paused) void element.play().catch(() => toast.show('Không phát được tệp này.', 'error'))
+                else element.pause()
+              }}
+              onSeek={seek}
+              playLabel="Nghe cả tệp"
+              speed={speed}
+              onSpeed={(value) => {
+                setSpeed(value)
+                rememberSpeed(value)
+                if (audio.current) audio.current.playbackRate = value
+              }}
+              volume={volume}
+              onVolume={(value) => {
+                setVolume(value)
+                setMuted(false)
+                if (audio.current) {
+                  audio.current.volume = value
+                  audio.current.muted = false
+                }
+              }}
+              muted={muted}
+              onMute={(value) => {
+                setMuted(value)
+                if (audio.current) audio.current.muted = value
+              }}
+            />
+          </div>
           <TranscriptView
+            fileName={recording.fileName}
             recordingId={recording.id}
+            takes={recording.takes}
+            listedStatus={recording.transcriptStatus}
             currentMs={currentMs}
+            playing={playing}
+            onPause={() => audio.current?.pause()}
             onSeek={(ms) => {
               const element = audio.current
               if (!element) return
@@ -486,54 +466,5 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
         </div>
       )}
     </li>
-  )
-}
-
-function ConsentDialog({
-  consent,
-  purpose,
-  onPurpose,
-  onClose,
-  onConfirm,
-}: {
-  consent: Consent
-  purpose: string
-  onPurpose: (value: string) => void
-  onClose: () => void
-  onConfirm: () => void
-}) {
-  const [confirmed, setConfirmed] = useState(false)
-  const record = consent.kind === 'record'
-  return (
-    <Dialog
-      title={record ? 'Bắt đầu ghi âm' : 'Lưu tệp ghi âm'}
-      onClose={onClose}
-      footer={
-        <>
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Huỷ
-          </button>
-          <button type="button" className="btn btn-primary" disabled={!confirmed} onClick={onConfirm}>
-            <Icon name={record ? 'mic' : 'upload'} size={18} />
-            {record ? 'Bắt đầu ghi' : 'Tải lên'}
-          </button>
-        </>
-      }
-    >
-      {consent.kind === 'upload' && (
-        <p className="consent-file">
-          <Icon name="fileAudio" size={16} /> {consent.file.name} · {formatSize(consent.file.size)}
-        </p>
-      )}
-      <label className="field">
-        <span>Mục đích ghi âm</span>
-        <input value={purpose} maxLength={1000} onChange={(e) => onPurpose(e.target.value)} />
-      </label>
-      <label className="consent-check">
-        <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
-        <span>Tôi đã thông báo cho người dự rằng cuộc họp được ghi âm cho mục đích trên, và không ai phản đối.</span>
-      </label>
-      <p className="field-hint">Chỉ người trong cuộc họp được nghe; bản ghi tự xoá khi hết thời hạn lưu trữ.</p>
-    </Dialog>
   )
 }

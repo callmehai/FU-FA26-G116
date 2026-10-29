@@ -1,6 +1,6 @@
 # ADR-0030: Ghi cả cuộc gọi từ trình duyệt của Thư ký
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Thay thế bởi ADR-0040
 - **Ngày:** 2026-10-26
 - **Người quyết định:** Hải (PO, FE), theo SCRUM-44
 

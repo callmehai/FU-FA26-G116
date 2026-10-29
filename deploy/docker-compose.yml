@@ -110,7 +110,7 @@ services:
 
   speech:
     # Chỉ chạy khi deploy/.env có COMPOSE_PROFILES=speech. Workflow deploy build image trên GitHub và
-    # chỉ chép sang khi workers/speech đổi, vì image ~770 MB.
+    # chỉ chép sang khi workers/speech đổi, vì image ~950 MB.
     image: trustcabinet-speech:latest
     build:
       context: ../workers/speech

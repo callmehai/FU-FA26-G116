@@ -147,6 +147,8 @@ CI runs all four on every pull request, limited to what the PR touches — see
 runs just the backend tests that read those files; one that only changes README or `deploy/` skips
 both jobs. A new file the backend build or a test reads from outside `backend/` and `tests/` needs
 its path added to the `changes` job, or CI will skip the tests that should catch it.
+A PR that changes `workers/speech/` also runs the speech worker's Python unit tests
+(`python -m unittest discover -s workers/speech/tests`, numpy only).
 Keep it green; fix the branch rather than disabling a step.
 
 **CI builds the backend with `-warnaserror`**, so a compiler or analyzer warning fails the pull

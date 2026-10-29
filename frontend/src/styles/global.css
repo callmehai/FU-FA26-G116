@@ -127,6 +127,16 @@
   --accent-amber: #b26b00;
   --accent-emerald: #0e6b44;
   --wash-amber: #fffaf0;
+
+  /* A record's speakers (AI-eCabinet's palette): the dot on the rail, and the name in its ink. */
+  --speaker-1-dot: #3b82f6; --speaker-1-ink: #2563eb;
+  --speaker-2-dot: #f97316; --speaker-2-ink: #c2410c;
+  --speaker-3-dot: #8b5cf6; --speaker-3-ink: #7c3aed;
+  --speaker-4-dot: #14b8a6; --speaker-4-ink: #0f766e;
+  --speaker-5-dot: #ec4899; --speaker-5-ink: #be185d;
+  --speaker-6-dot: #84cc16; --speaker-6-ink: #4d7c0f;
+  --speaker-7-dot: #0ea5e9; --speaker-7-ink: #0369a1;
+  --speaker-8-dot: #d946ef; --speaker-8-ink: #a21caf;
 }
 @supports (transition-timing-function: linear(0, 1)) {
   :root {
@@ -1551,7 +1561,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 /* The bottom-right corner is shared: the upload tray sits on --corner-bottom (lifted over the call room's
-   controls), the toasts above it by the tray's height (--upload-tray-h, set by UploadTray). */
+   controls), the toasts above it (--upload-tray-h, set by UploadTray). The Secretary's recorder card is moved by
+   hand and pushed by neither (RecorderCard). */
 .toast-stack {
   position: fixed;
   right: 16px;
@@ -2466,6 +2477,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .prejoin-side > .level { margin-top: 8px; }
 .prejoin-presence { margin: 12px 0 0; color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: 0.25px; }
 .prejoin-side > .alert { width: 100%; margin-top: 16px; text-align: left; }
+.prejoin-recording { display: flex; align-items: flex-start; justify-content: center; gap: 6px; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
+.prejoin-recording svg { flex: none; margin-top: 2px; color: var(--danger); }
 .prejoin-join {
   position: relative;
   width: 240px;
@@ -3119,17 +3132,7 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
 .recordings-panel .toolbar { display: flex; align-items: center; gap: 12px; min-height: 64px; }
 .recordings-panel .toolbar .row-actions { gap: 8px; }
 .recordings-alert { margin: 12px 16px 0; }
-.recorder-bar {
-  display: flex; align-items: center; gap: 10px; margin: 12px 16px 0; padding: 8px 8px 8px 12px;
-  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); border-radius: var(--radius);
-  background: var(--chip-red-bg); color: var(--chip-red-fg); font-size: 14px;
-}
 .recorder-dot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--danger); animation: recorder-blink 1.2s ease-in-out infinite; }
-.recorder-paused { border-color: var(--line); background: var(--surface-alt); color: var(--muted-ink); }
-.recorder-paused .recorder-dot { background: var(--faint-ink); animation: none; }
-.recorder-label { font-weight: 600; }
-.recorder-time { font-variant-numeric: tabular-nums; }
-.recorder-actions { gap: 6px; margin-left: auto; }
 @keyframes recorder-blink { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .recorder-dot { animation: none; } }
 .recording-list { margin: 0; padding: 4px 0; list-style: none; }
@@ -3145,54 +3148,44 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
 .recording-name { overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .recording-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; width: fit-content; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
 .recording-actions { gap: 6px; }
+/* ADR-0041: the room mic's take being recorded — seen by everyone, heard by nobody yet. */
+.recording-live .recording-icon { color: var(--live); }
 .recording-deleted .recording-name { color: var(--muted-ink); font-weight: 500; text-decoration: line-through; }
 .recording-player { grid-column: 2 / -1; width: 100%; margin: 4px 0 0; }
 audio.recording-player { height: 40px; }
 .consent-file { display: flex; align-items: center; gap: 6px; margin: 0 0 14px; color: var(--muted-ink); font-size: 14px; }
 .consent-check { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 8px; font-size: 14px; line-height: 1.45; cursor: pointer; }
 .consent-check input { margin-top: 2px; flex: none; }
-.recordings-room .recording-row { padding: 10px 12px; }
 @media (max-width: 560px) {
   .recording-row { grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; }
   .recording-icon { display: none; }
   .recording-player { grid-column: 1 / -1; }
-  .recorder-bar { flex-wrap: wrap; }
   .recording-actions .btn-icon.btn-sm { width: 40px; height: 40px; }
 }
 
 /* SCRUM-31 — transcript under the player: time · speaker · text, the segment being heard highlighted. */
 .recording-detail { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
-.recording-detail audio { width: 100%; height: 40px; }
+.recording-player-bar { container-type: inline-size; }
 .recording-open { background: var(--surface-head); }
-.transcript { display: flex; flex-direction: column; gap: 8px; }
 .transcript-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+.transcript-tools { display: flex; gap: 2px; margin: -4px 0 -4px auto; }
 .transcript-status { margin: 0; }
 .transcript-running { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; }
 .transcript-spinner { width: 14px; height: 14px; flex: none; border: 2px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .transcript-spinner { animation: none; } }
-.transcript-segments { display: flex; flex-direction: column; max-height: 480px; margin: 0; padding: 0; overflow-y: auto; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.transcript-segment { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: start; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); }
-.transcript-segment:last-child { border-bottom: 0; }
-.transcript-active { background: var(--brand-wash); }
-.transcript-time { padding: 2px 0; border: 0; background: none; color: var(--brand); font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; text-align: left; cursor: pointer; }
-.transcript-time:hover { text-decoration: underline; }
-.transcript-body { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
-.transcript-speaker { display: flex; align-items: center; gap: 8px; }
-.transcript-edited { color: var(--muted-ink); font-size: 12px; font-style: italic; }
-.transcript-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
-.transcript-editor { display: flex; flex-direction: column; gap: 6px; }
+.transcript { container-type: inline-size; display: flex; flex-direction: column; gap: 8px; }
+.transcript-list { max-height: 480px; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--surface); }
+.transcript-editor { display: flex; flex: 1; min-width: 0; max-width: 75ch; flex-direction: column; gap: 6px; }
 .transcript-editor textarea { width: 100%; resize: vertical; }
 .transcript-editor-actions { justify-content: flex-end; gap: 6px; }
-@media (max-width: 560px) {
-  .transcript-segment { grid-template-columns: 48px minmax(0, 1fr); }
-  .transcript-edit { grid-column: 2; justify-self: start; }
-}
 
 /* SCRUM-35 — "Giọng nói của tôi": consent first, then samples. */
 .voice-card { display: flex; flex-direction: column; gap: 14px; }
 .voice-card .card-title { margin: 0; }
 .voice-skeleton { height: 220px; }
+.voice-renew { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.voice-renew p { flex: 1 1 280px; margin: 0; }
 .voice-notice { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; }
 .voice-status { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .voice-count { margin-left: auto; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -3201,10 +3194,9 @@ audio.recording-player { height: 40px; }
 .voice-sample { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border-bottom: 1px solid var(--line-soft); color: var(--muted-ink); }
 .voice-sample:last-child { border-bottom: 0; }
 /* Name and "length · date" stay whole; on a phone the second drops under the first. */
-.voice-sample-text { display: flex; flex-wrap: wrap; column-gap: 10px; min-width: 0; }
+.voice-sample-text { display: flex; flex: 1; flex-wrap: wrap; column-gap: 10px; min-width: 0; }
 .voice-sample-text > * { white-space: nowrap; }
 .voice-sample-name { color: var(--ink); font-weight: 500; }
-.voice-sample .btn { margin-left: auto; }
 .voice-actions { justify-content: space-between; }
 .voice-passage { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
 .voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -3212,38 +3204,235 @@ audio.recording-player { height: 40px; }
   .voice-actions { flex-direction: column-reverse; align-items: stretch; }
 }
 
-/* SCRUM-109 — the per-mic transcript: the person's own switch, then one line per sentence. Shared by the Bản ghi tab
-   and the call room's panel (ADR-0011). */
+/* SCRUM-109 — the Bản ghi tab: the per-mic record of those who joined from afar, then the room's recordings. */
 .recordings-tab { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .speech-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.speech-mode { max-width: 520px; }
-/* The "being recorded" sign: a red mic while it feeds the transcript, a grey struck-through one when it does not. */
-.speech-mine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 8px 12px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speech-mine-icon { display: flex; flex: none; color: var(--faint-ink); }
-.speech-mine.is-live .speech-mine-icon { color: var(--danger); }
-/* One line whatever the state, so the card never changes height while someone speaks; the meter shows speech. */
-.speech-mine-text { flex: 1; min-width: 0; overflow: hidden; color: var(--ink); font-size: 14px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.speech-meter { width: 56px; height: 6px; flex: none; overflow: hidden; border-radius: 3px; background: var(--line-soft); }
-.speech-meter > span { display: block; height: 100%; background: var(--brand); transform-origin: left; transition: transform .12s linear; }
-.speech-mine .btn { flex: none; }
-.speech-mine-note { flex-basis: 100%; margin: 0; }
-.speech-empty { margin: 0; }
-.speech-lines { display: flex; flex-direction: column; max-height: 520px; margin: 0; padding: 4px 0; overflow-y: auto; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speech-lines-room { flex: 1; min-height: 0; max-height: none; }
-/* A speaker's run of sentences reads as one block: the name and time once, at its start. */
-.speech-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 8px; padding: 2px 12px; }
-.speech-line-first { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
-.speech-line-first:first-child { margin-top: 0; border-top: 0; }
-.speech-line-head { display: flex; grid-column: 1 / -1; align-items: baseline; gap: 8px; font-size: 13px; }
-.speech-line-head time { color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
-.speech-line-text { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-/* Negative margins: the 32px buttons sit beside a 22px line of text without making the line taller. */
-.speech-line-actions { display: flex; gap: 2px; margin: -5px 0; opacity: 0; transition: opacity .12s; }
-.speech-line:hover .speech-line-actions, .speech-line:focus-within .speech-line-actions { opacity: 1; }
-@media (hover: none) { .speech-line-actions { opacity: 1; } }
+/* The player above a record (AI-eCabinet's TimelinePlayer): time, seek bar or waveform, back and ahead 5 s, play,
+   speed, volume. Shared by the per-mic record and a room recording. */
+.player-bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px 16px; min-width: 0; margin: 0; padding: 8px 12px 8px 16px; border: 0; border-radius: var(--radius-lg); background: var(--surface-alt); }
+.player-time { min-width: var(--time-width); color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.player-time strong { color: var(--ink); font-weight: 600; }
+.player-seek { position: relative; display: flex; align-items: center; height: 22px; min-width: 0; }
+/* Not a text field: the app's input border, padding and focus ring would draw a box around the track. */
+.player-bar input[type='range'] { padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+.player-seek input[type='range'] { width: 100%; height: 22px; margin: 0; background: transparent; cursor: pointer; appearance: none; }
+.player-seek input[type='range']::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--brand) calc(var(--p) * 100%), var(--control-line) calc(var(--p) * 100%)); }
+.player-seek input[type='range']::-moz-range-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--brand) calc(var(--p) * 100%), var(--control-line) calc(var(--p) * 100%)); }
+.player-seek input[type='range']::-webkit-slider-thumb { width: 14px; height: 14px; margin-top: -4px; border: 2px solid var(--brand); border-radius: 50%; background: var(--surface); appearance: none; }
+.player-seek input[type='range']::-moz-range-thumb { width: 10px; height: 10px; border: 2px solid var(--brand); border-radius: 50%; background: var(--surface); }
+.player-seek input[type='range']:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+/* With a waveform the slider is invisible over the bars: dragging and the arrow keys still work. */
+.player-seek-wave { height: 40px; }
+.player-seek-wave svg { width: 100%; height: 100%; fill: color-mix(in srgb, var(--brand) 25%, transparent); }
+.player-seek-wave .player-bar-heard { fill: var(--brand); }
+.player-seek-wave input[type='range'] { position: absolute; inset: 0; height: 100%; opacity: 0; }
+.player-seek-wave:focus-within { border-radius: var(--radius); box-shadow: 0 0 0 2px var(--focus); }
+.player-head { position: absolute; top: -2px; bottom: -2px; left: calc(var(--p) * 100%); width: 2px; margin-left: -1px; border-radius: 1px; background: var(--brand); pointer-events: none; }
+.player-hover { position: absolute; bottom: 100%; margin-bottom: 4px; padding: 2px 6px; border-radius: 4px; background: var(--brand); color: var(--surface); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; transform: translateX(-50%); pointer-events: none; }
+.player-controls, .player-volume { display: flex; align-items: center; gap: 4px; }
+.player-round { position: relative; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ink-soft); cursor: pointer; }
+.player-round:hover { background: var(--line-soft); }
+.player-round:focus-visible, .player-speed:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.player-five { position: absolute; font-size: 8px; font-weight: 700; line-height: 1; }
+.player-play { background: var(--brand); color: var(--surface); }
+.player-play:hover { background: var(--brand-ink); }
+.player-play svg { fill: currentColor; }
+.player-speed-wrap { position: relative; }
+.player-speed { min-width: 32px; height: 32px; padding: 0 6px; border: 0; border-radius: 16px; background: transparent; color: var(--ink-soft); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.player-speed:hover { background: var(--line-soft); }
+.player-speed-on { background: var(--brand-wash); color: var(--brand); }
+.player-speeds { position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 5; display: flex; padding: 2px; border: 1px solid var(--control-line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.player-speed-option { height: 32px; padding: 0 11px; border: 0; border-radius: var(--radius); background: transparent; color: var(--ink); font: inherit; font-size: 13.5px; white-space: nowrap; cursor: pointer; }
+.player-speed-option:hover { background: var(--surface-alt); }
+.player-speed-option.is-on { background: var(--brand); color: var(--surface); font-weight: 600; }
+.player-volume input[type='range'] { width: 96px; height: 22px; margin: 0; background: transparent; cursor: pointer; appearance: none; }
+.player-volume input[type='range']::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--brand) calc(var(--p) * 100%), var(--control-line) calc(var(--p) * 100%)); }
+.player-volume input[type='range']::-moz-range-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--brand) calc(var(--p) * 100%), var(--control-line) calc(var(--p) * 100%)); }
+.player-volume input[type='range']::-webkit-slider-thumb { width: 14px; height: 14px; margin-top: -4px; border: 2px solid var(--brand); border-radius: 50%; background: var(--surface); appearance: none; }
+.player-volume input[type='range']::-moz-range-thumb { width: 10px; height: 10px; border: 2px solid var(--brand); border-radius: 50%; background: var(--surface); }
+@media (pointer: coarse) {
+  .player-round, .player-speed, .player-speed-option { min-width: 40px; height: 40px; }
+}
+/* Narrow: time and controls on one line, the seek bar under them; the volume is the device's own. */
+/* Narrow: the controls on a line of their own, time and seek bar under them; the volume is the device's own. */
+@container (max-width: 640px) {
+  .player-bar { grid-template-columns: auto minmax(0, 1fr); row-gap: 4px; padding: 6px 12px; }
+  .player-controls { grid-row: 1; grid-column: 1 / -1; justify-content: center; }
+  .player-time { grid-row: 2; min-width: 0; }
+  .player-seek { grid-row: 2; }
+  .player-volume { display: none; }
+}
+
+/* SCRUM-109, ADR-0039 — the per-mic record as AI-eCabinet's timeline: 56px time | 18px rail of coloured dots | text,
+   the speakers beside it to filter by. */
+.tl-card { container-type: inline-size; display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.tl-head { display: flex; align-items: center; gap: 8px; padding: 14px 16px 12px; }
+.tl-title { display: flex; flex: 1; align-items: baseline; gap: 6px; min-width: 0; margin: 0; font-size: 16px; font-weight: 700; }
+.tl-count { color: var(--muted-ink); font-size: 14px; font-weight: 600; }
+.tl-mine { flex: none; }
+.tl-mine-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--dot-red); color: var(--surface); font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.tl-player { container-type: inline-size; padding: 0 16px 12px; }
+.tl-play-error { margin: 6px 0 0; }
+.tl-empty { display: grid; justify-items: center; gap: 4px; padding: 28px 16px; border-top: 1px solid var(--line); color: var(--faint-ink); text-align: center; }
+.tl-empty .empty-title { color: var(--ink); }
+.tl-body { border-top: 1px solid var(--line); }
+@container (min-width: 880px) {
+  .tl-body-split { display: grid; grid-template-columns: minmax(0, 1fr) 260px; }
+  .tl-body-split .tl-speakers { order: 2; max-height: max(490px, 70dvh); overflow-y: auto; border-bottom: 0; border-left: 1px solid var(--line); }
+}
+.tl-speakers { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); }
+.tl-speakers-title { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; color: var(--label-ink); font-size: 12px; font-weight: 600; }
+.tl-pill { min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--surface-alt); color: var(--ink-soft); font-size: 11.5px; font-weight: 700; line-height: 20px; text-align: center; }
+.tl-speakers ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+@container (min-width: 880px) {
+  .tl-body-split .tl-speakers ul { grid-template-columns: 1fr; }
+}
+.tl-speaker { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; padding: 6px 8px; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--surface); }
+.tl-speaker.is-on { border-color: var(--brand-wash-line); background: var(--brand-wash); }
+.tl-speaker-name { max-width: 100%; overflow: hidden; font-size: 13.5px; font-weight: 600; line-height: 28px; text-overflow: ellipsis; white-space: nowrap; }
+.tl-filter { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid var(--control-line); border-radius: var(--radius); background: var(--surface); color: var(--brand); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.tl-filter:hover { border-color: var(--brand); background: var(--brand-wash); }
+.tl-filter.is-on { border-color: var(--brand); background: var(--brand); color: var(--surface); }
+.tl-list { max-height: max(490px, 70dvh); margin: 0; padding: 6px 0; overflow-y: auto; list-style: none; overscroll-behavior: contain; }
+.tl-group { display: grid; grid-template-columns: 64px 18px minmax(0, 1fr); column-gap: 8px; }
+.tl-row { display: grid; grid-template-columns: subgrid; grid-column: 1 / -1; padding: 0 14px; }
+.tl-time { padding-top: 6px; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; text-align: right; }
+.tl-row-head .tl-time { padding-top: 9px; }
+.tl-time-button { align-self: start; height: 28px; padding: 0; border: 0; border-radius: var(--radius); background: transparent; font: inherit; font-size: 12.5px; cursor: pointer; }
+.tl-time-button:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+/* The rail: a line down the side of a speaker's run, with their dot at its head. */
+.tl-rail { position: relative; display: flex; justify-content: center; }
+.tl-rail::before { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--control-line); content: ''; }
+.tl-row-head .tl-rail::before { top: 22px; }
+.tl-group:last-child .tl-row:last-child .tl-rail::before { display: none; }
+/* Where a take of the room mic begins: the mic was off before it. */
+.tl-take { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.tl-take::after { flex: 1; height: 1px; background: var(--control-line); content: ''; }
+.tl-take-delete { order: 1; margin: -6px 0; }
+.tl-group:last-child .tl-row-head:last-child .tl-rail::before { display: none; }
+.tl-dot { position: relative; width: 10px; height: 10px; margin-top: 11px; border-radius: 50%; background: var(--control-line); }
+.tl-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; padding-top: 4px; }
+.tl-name { font-size: 13.5px; font-weight: 600; }
+/* The Secretary's picker as the run's heading: it reads as the name, and opens on a click (AI-eCabinet). */
+.tl-name-pick .select-trigger { height: 28px; min-height: 28px; margin-left: -6px; padding: 0 4px 0 6px; border-color: transparent; border-style: solid; background: transparent; color: inherit; font: inherit; }
+.tl-name-pick .select-trigger:hover, .tl-name-pick .select-trigger[aria-expanded="true"] { border-color: var(--control-line); background: var(--surface); }
+.tl-name-pick .select-value, .tl-name-pick .select-placeholder { color: inherit; font-weight: 600; }
+.tl-text.is-editable { margin: -2px -6px; padding: 2px 6px; border-radius: var(--radius); cursor: text; }
+.tl-text.is-editable:hover { background: var(--surface-alt); }
+.transcript-editor-keys { margin-right: auto; align-self: center; }
+/* A phone has no Enter-to-save or Esc: the buttons say it. */
+@media (max-width: 560px), (pointer: coarse) { .transcript-editor-keys { display: none; } }
+.tl-time-inline { display: none; color: var(--muted-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.tl-play { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px; border: 0; border-radius: var(--radius); background: transparent; color: var(--brand); font: inherit; font-size: 12.5px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.tl-play svg { fill: currentColor; }
+.tl-play:hover { text-decoration: underline; text-underline-offset: 2px; }
+.tl-play.is-on { font-weight: 600; }
+.tl-leak { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; height: 26px; padding: 0 10px 0 8px; border-radius: 13px; background: var(--chip-amber-bg); color: var(--chip-amber-fg); font-size: 12.5px; }
+.tl-leak span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-leak-words { padding: 0 2px; border-radius: 3px; background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
+.tl-struck-label { margin-left: auto; color: var(--muted-ink); font-size: 12.5px; }
+.tl-content { position: relative; display: flex; align-items: flex-start; gap: 8px; min-width: 0; padding: 2px 0 8px; }
+.tl-text { flex: 1; min-width: 0; max-width: 75ch; margin: 0; color: var(--ink); font-size: 14.5px; line-height: 1.625; white-space: pre-wrap; overflow-wrap: anywhere; text-wrap: pretty; }
+.tl-edited { color: var(--muted-ink); font-size: 12.5px; font-style: italic; }
+.tl-gone { color: var(--muted-ink); font-size: 13px; font-style: italic; }
+.tl-group.is-excluded .tl-text:not(.tl-gone) { color: var(--muted-ink); text-decoration: line-through; opacity: .6; }
+.tl-group.is-excluded .tl-name { color: var(--muted-ink); }
+.tl-sentence:hover, .tl-sentence:focus-within { background: var(--surface-head); }
+.tl-sentence.is-active { background: var(--brand-wash); }
+.tl-sentence.is-active .tl-time { color: var(--brand); font-weight: 600; }
+/* Negative margins: the 28px buttons sit beside a line of text without making it taller. */
+.tl-tools { display: flex; flex: none; gap: 2px; margin: -2px 0; opacity: 0; transition: opacity .12s; }
+.tl-sentence:hover .tl-tools, .tl-sentence:focus-within .tl-tools { opacity: 1; }
+.tl-tool { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius); background: transparent; color: var(--muted-ink); cursor: pointer; }
+.tl-tool:hover { background: var(--brand-wash); color: var(--brand); }
+.tl-tool:disabled { opacity: .5; cursor: default; }
+@media (hover: none) {
+  .tl-tools { opacity: 1; }
+  /* A finger-sized target that keeps the line its height: the extra reaches into the space around it. */
+  .tl-tool, .tl-play, .tl-time-button { min-width: 40px; height: 40px; margin: -6px 0; }
+  .tl-filter { height: 40px; }
+}
+/* Narrow (a phone, the call room's panel): the time column goes, the time moves next to the name. */
+@container (max-width: 560px) {
+  .tl-group { grid-template-columns: 18px minmax(0, 1fr); }
+  .tl-row > .tl-time { display: none; }
+  .tl-time-inline { display: inline; }
+  .tl-speakers ul { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .tl-speaker { flex: none; max-width: 85%; }
+}
+
+/* SCRUM-29 — the Secretary's room mic, floating over every tab of a running meeting (AI-eCabinet's FloatingMicBox).
+   Above the page, under dialogs, toasts and the upload tray. Dragged anywhere by a part that is not a control
+   (right/bottom set by useFloatingBox), widened from its sides. */
+.mic-dock { position: fixed; z-index: 40; max-width: calc(100vw - 16px); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.mic-dock.is-moving, .mic-dock.is-moving * { cursor: grabbing; }
+.mic-edge { position: absolute; top: 8px; bottom: 8px; z-index: 1; width: 8px; cursor: ew-resize; }
+.mic-edge-w { left: 0; }
+.mic-edge-e { right: 0; }
+.mic-bubble { position: relative; display: grid; place-items: center; width: 56px; height: 56px; padding: 0; border: 1px solid var(--brand); border-radius: 50%; background: var(--brand); color: var(--surface); box-shadow: var(--shadow); cursor: pointer; }
+.mic-bubble.is-live { border-color: var(--live); background: var(--live); }
+.mic-bubble:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mic-card { position: relative; display: flex; flex-direction: column; width: min(320px, calc(100vw - 16px)); max-width: calc(100vw - 16px); overflow: hidden; border: 1px solid var(--control-line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.mic-card-head { display: flex; align-items: flex-start; gap: 8px; padding: 8px 8px 8px 14px; background: var(--brand); color: var(--surface); }
+.mic-card-head h2 { display: -webkit-box; flex: 1; min-width: 0; margin: 0; padding: 3px 0; overflow: hidden; font-size: 14px; font-weight: 700; line-height: 1.375; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.mic-card-min { display: grid; flex: none; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius); background: var(--surface); color: var(--brand); cursor: pointer; }
+.mic-card-min:hover { background: var(--brand-wash); }
+.mic-card-body { display: flex; flex-direction: column; gap: 12px; padding: 14px; }
+.mic-status { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.mic-status-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--faint-ink); }
+.mic-status-dot.is-live { background: var(--live); }
+.mic-status-dot.is-error { background: var(--dot-red); }
+.mic-status-text { flex: 1; min-width: 0; overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.mic-clock { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.mic-controls { display: flex; align-items: center; gap: 12px; }
+.mic-toggle { display: grid; flex: none; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: var(--brand); color: var(--surface); cursor: pointer; }
+.mic-toggle:hover { background: var(--brand-ink); }
+.mic-toggle.is-on { background: var(--live); }
+.mic-toggle.is-on:hover { background: color-mix(in srgb, var(--live) 85%, black); }
+.mic-toggle:disabled { opacity: .6; cursor: default; }
+.mic-toggle:focus-visible, .mic-side:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mic-meter { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 3px; min-width: 0; height: 32px; overflow: hidden; color: var(--ink-soft); }
+.mic-meter.is-live { color: var(--live); }
+.mic-meter i { width: 4px; height: 100%; flex: none; border-radius: 1px; background: currentColor; opacity: .22; }
+.mic-meter i.is-lit { opacity: 1; }
+.mic-side { position: relative; display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--control-line); border-radius: 50%; background: var(--surface); color: var(--ink-soft); cursor: pointer; }
+.mic-side:hover { background: var(--surface-alt); }
+.mic-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.mic-hint { margin: 0; color: var(--ink-soft); font-size: 12.5px; text-wrap: pretty; }
+.mic-notice { display: flex; gap: 6px; margin: 0; padding: 6px 8px; border: 1px solid var(--dot-amber); border-radius: var(--radius); background: var(--chip-amber-bg); color: var(--chip-amber-fg); font-size: 12.5px; }
+.mic-notice svg { flex: none; margin-top: 1px; }
+.mic-notice-error { border-color: var(--edge-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
+/* The page scrolls past the card, so the last row of a list is never left under it. */
+body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16px); }
+/* A phone keeps the sidebar's rail on the left: the card stays clear of it. */
+@media (max-width: 560px) {
+  .mic-card { width: min(320px, calc(100vw - var(--sidebar-width-collapsed) - 24px)); }
+}
+
+/* "Ghi âm của tôi": the person's own sentences, in a sheet from the right edge. */
+.dialog-sheet { width: min(520px, 100vw); max-width: none; height: 100dvh; max-height: none; margin: 0 0 0 auto; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: var(--paper); }
+.dialog-sheet .dialog-head { background: var(--surface); }
+.dialog-sheet .dialog-body { flex: 1; min-height: 0; padding: 16px 20px; }
+.my-clips-section + .my-clips-section { margin-top: 20px; }
+.my-clips-section h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 13px; font-weight: 700; }
+.my-clips-section ul { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.my-clip { padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+.my-clip-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; color: var(--muted-ink); font-size: 13px; }
+.my-clip-line { flex-wrap: nowrap; }
+.my-clip-when { display: inline-flex; flex: 1; align-items: baseline; gap: 8px; min-width: 0; white-space: nowrap; }
+.my-clip-when strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.my-clip-chip { flex: none; padding: 0 8px; border-radius: 11px; background: var(--chip-slate-bg); color: var(--chip-slate-fg); font-size: 12px; font-weight: 600; line-height: 22px; }
+.my-clip-chip.is-done { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
+.my-clip-chip.is-wait { background: var(--chip-amber-bg); color: var(--chip-amber-fg); }
+.my-clip-text { margin: 8px 0 0; color: var(--ink); font-size: 14px; line-height: 1.625; }
+.my-clip .field-hint { margin: 6px 0 0; }
+.my-clips-empty { display: grid; justify-items: center; gap: 4px; padding: 24px 12px; color: var(--faint-ink); text-align: center; }
+.my-clips-empty .empty-title { color: var(--ink); }
+.my-clips-record { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; color: var(--brand); font-size: 14px; font-weight: 600; }
 /* Everyone whose mic feeds the transcript sees it in the header, in the one colour kept for warnings. */
 .room-recording { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 22px; padding: 0 10px; border: 0; border-radius: 11px; background: var(--danger); color: var(--surface); font: inherit; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .room-recording-short { display: none; }
+.room-recording-badge { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--surface); color: var(--danger); font-size: 11px; line-height: 16px; text-align: center; }
 @media (max-width: 560px) {
   .room-recording-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .room-recording-short { display: inline; }
@@ -3258,6 +3447,7 @@ audio.recording-player { height: 40px; }
 .speaker-row .select-trigger { width: auto; max-width: 100%; }
 .speaker-row .select-value, .speaker-row .select-placeholder { overflow: hidden; }
 .speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
+.speaker-same { display: inline-flex; flex: none; color: var(--chip-amber-fg); }
 .speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 /* ---------- Meeting documents (features/documents, SCRUM-21 / SCRUM-107) ----------
