@@ -14,9 +14,12 @@ Mỗi file giữ nguyên phạm vi cần sửa. Khi ticket sang **BA Final Revie
 | 6 | [Chương trình nghị sự](08-chuong-trinh-nghi-su.md) | SCRUM-98, UC-23, UC-77 | Bỏ thời lượng, người trình bày, tài liệu nhiều mục, kết luận item |
 | 10 | [Review PR #136 & Bổ sung sau merge](10-review-pr136-va-bo-sung-sau-merge.md) | PR #136, #133, #134, #135, #137, #141 | Fix CI .mmd, conflict main, MSG174, BR-115, UC-28b, UC-73, quy tắc không tự nhận thông báo, PO Agenda 25/10, rủi ro BR-188 |
 | 11 | [Quy tắc thông báo & PO Agenda 25/10](11-quy-tac-thong-bao-agenda-po-25-10.md) | PR #133, #137, #134, #135, #141 | BR chung không tự nhận thông báo (BR-76/92/164/307), BR-72, rủi ro BR-188, lệch màn 5.1–5.3 |
-| 12 | [Tài liệu FE, PO FE-08, ghi âm](12-tai-lieu-fe-phong-hop-ghi-am.md) | SCRUM-21, 107, 27, 40, 44, 109 (PR #134, #144, #154, #161) | Lệch BE/FE tài liệu, Đăng ký phát biểu, bỏ gọi 1–1, chế độ thu ghi âm, BR-328, mã MSG từ MSG328 |
+| 12 | [Tài liệu FE, PO FE-08, ghi âm](11-tai-lieu-fe-phong-hop-ghi-am.md) | SCRUM-21, 107, 27, 40, 44, 109 (PR #134, #144, #154, #161) | Lệch BE/FE tài liệu, Đăng ký phát biểu, bỏ gọi 1–1, chế độ thu ghi âm, BR-328, mã MSG từ MSG328 |
 | 13 | [Đối chiếu SCRUM-107 / SCRUM-21](13-doi-chieu-scrum-107-21.md) | SCRUM-107 (PR #128), SCRUM-21 (PR #134, #144) | Bước 6 FE-07: bảng đối chiếu UC-32a/32c/33a AF-1, BR, MSG, sequence, class diagram, Report 3 §III; **đã sửa tài liệu theo code** ngày 27/10/2026 (§10) |
 | 14 | [Ghi chú 27–28/10, phân loại theo FE](14-ghi-chu-nhan-27-28-10-2026-phan-loai-theo-fe.md) | SCRUM-15, 20, 21, 22, 23, 25, 26, 41, 58, 69, 97, 98, 99, 107, 110–113 (PR #165–#178) | Trạng thái Jira, việc BA còn lại theo FE-04/05/06/07/08/13, ERD drawio, danh sách review (mục 5) |
+| 15 | [Plan FE-07 BA Final Review](15-plan-fe-07-ba-final-review.md) | SCRUM-21, 22, 23, 58, 107, 110–113 | Plan đối chiếu FE-07 |
+| 16 | [Ghi âm và Voice ID 28–29/10](16-ghi-am-voice-id-28-29-10-2026.md) | SCRUM-29, 31, 35, 109 (PR #184 → #193) | Cách ghi theo hình thức họp, mic phòng từng lượt, nghe lại câu và giọng mẫu, MSG351–MSG367; **thay §3–§5 của note 11 và phần lưu trữ của note 03** |
+| 17 | [Plan sửa phần còn lại sau note 14](17-plan-sua-con-lai-sau-note-14.md) | SCRUM-99, 69, 15, 25, 98, 41 | 6 lượt: FE-04 huỷ cuộc họp, ERD drawio, UC-21/22, email, nghị sự, phòng họp; nguyên tắc Report 3 không kỹ thuật |
 Plan gom cả sáu note. **Thứ tự làm và cách giao cho agent: [plan 05 mục 8](05-plan-sua-uc-br-msg-diagram.md#8-thứ-tự-và-cách-chạy-agent-đọc-mục-này-trước)** —
 làm lần lượt từng lượt, mỗi lượt một session mới.
 
