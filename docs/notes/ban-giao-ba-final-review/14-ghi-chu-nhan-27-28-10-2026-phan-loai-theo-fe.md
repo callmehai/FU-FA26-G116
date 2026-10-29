@@ -14,6 +14,8 @@ Bảng bên dưới giữ trạng thái đọc lúc 27/10, cột cuối ghi vi�
 
 **Cập nhật 29/10/2026:** SCRUM-26 đã ở `In Review`. PR #186 (FE-07) đã merge; chuyển **`In Review`** SCRUM-23, 58, 110, 111, 112, 113.
 Việc còn lại lên kế hoạch ở [note 17](17-plan-sua-con-lai-sau-note-14.md).
+Cuối ngày 29/10 chuyển tiếp **`In Review`**: SCRUM-99, 69, 15, 25, 98 (note 17 lượt 1–5). Chỉ còn SCRUM-41 ở BA Final Review; việc
+ngoài phạm vi ở [note 18](18-sua-wireframe-va-viec-ngoai-pham-vi.md).
 
 Cả 18 ticket dưới đây đang ở **BA Final Review** (đọc ngày 28/10/2026). Việc của BA ở trạng thái này: đối chiếu code đã
 merge với UC, BR, MSG, sequence, class diagram, ERD; sửa tài liệu; sau đó chuyển ticket sang kiểm thử khi không còn lệch.

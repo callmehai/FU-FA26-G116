@@ -47,7 +47,7 @@ Report 3:
 Ngoài Report 3:
 
 - [ ] Sequence UC-75 (nếu đã có) và nhánh tự huỷ: đối chiếu as-built.
-- [ ] Comment Jira SCRUM-99 tóm tắt đã sửa → chuyển **In Review**.
+- [x] ~~Chuyển SCRUM-99 **In Review**~~ (29/10). Comment tóm tắt và đối chiếu sequence UC-75: chuyển sang [note 18](18-sua-wireframe-va-viec-ngoai-pham-vi.md).
 
 ### Lượt 2 — ERD drawio (SCRUM-99, SCRUM-15)
 
@@ -68,7 +68,7 @@ sửa có chọn lọc, giữ ID, xuất lại PNG, kiểm bằng mắt.
 - [x] Đối chiếu UC-21, UC-22 với code trên `main` (PR #175 sửa thời điểm ghi thông báo khi bắt đầu họp): ai được bấm,
       trạng thái nào, ai được báo, mã thông báo.
 - [ ] Lệch thì sửa Report 3; không lệch thì comment Jira "đã đối chiếu, không lệch".
-- [ ] Chuyển SCRUM-69 **In Review**.
+- [x] Chuyển SCRUM-69 **In Review** (29/10).
 
 ### Lượt 4 — FE-13, SCRUM-15: gửi email (Huy Nguyễn Trường)
 
@@ -77,7 +77,7 @@ Theo mục 1: Report 3 **không** nhắc Resend hay webhook.
 - [x] Chỉ kiểm phần nghiệp vụ: email thư mời/thông báo gửi khi nào, cho ai; gửi lỗi thì hệ thống làm gì (người dùng thấy gì).
       Actor giữ "Email / SMTP Service"; nếu có chữ "Gmail" hay "Resend" thì bỏ.
 - [x] Trạng thái giao thư (đã giao, bị trả về…) chỉ ghi vào Report 3 nếu có màn hình hiện cho người dùng; không có thì bỏ qua.
-- [ ] ERD làm ở lượt 2. Chuyển SCRUM-15 **In Review**.
+- [x] ERD làm ở lượt 2. Chuyển SCRUM-15 **In Review** (29/10).
 
 ### Lượt 5 — FE-05, SCRUM-25 và SCRUM-98: chương trình nghị sự (Huy)
 
@@ -86,7 +86,7 @@ Nguồn: [note 08](08-chuong-trinh-nghi-su.md) (đã cập nhật 24/10).
 - [x] Đối chiếu UC-23a–…, UC-24, 25, 26, 77 với code trên `main`.
 - [x] UC-23 (sửa mục nghị sự): ghi chú gắn tài liệu vào mục nghị sự giờ là chức năng riêng UC-33b, chỉ Thư ký dùng; bỏ bước
       chọn tài liệu trong UC-23a/23b nếu không còn trên màn hình.
-- [ ] Chuyển SCRUM-25, SCRUM-98 **In Review**.
+- [x] Chuyển SCRUM-25, SCRUM-98 **In Review** (29/10).
 
 > Đã làm 29/10: Report 3 (DOCX + sync) cho lượt 1, 3, 4, 5; chưa comment Jira và chưa chuyển trạng thái ticket (để người review làm).
 
@@ -99,3 +99,8 @@ Nguồn: [note 08](08-chuong-trinh-nghi-su.md) (đã cập nhật 24/10).
 
 - Không commit sau từng lượt: làm xong lượt 1–5 rồi commit một lần (message tiếng Việt) và push.
 - Gạch mục tương ứng ở bảng §5 note 14 và ở file này.
+
+## 4. Kết quả 29/10/2026
+
+Lượt 1–5 xong (commit `08b69a5`). Đã chuyển **In Review**: SCRUM-99, 69, 15, 25, 98. Việc ngoài phạm vi và sửa wireframe:
+[note 18](18-sua-wireframe-va-viec-ngoai-pham-vi.md).
