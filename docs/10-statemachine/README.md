@@ -20,7 +20,7 @@ và được `scripts/generate-state-machines.py` giữ lại khi sinh sơ đồ
 | SM-03 ParticipantAssignment | Removed |
 | SM-05 GuestInvitation | Expired, Revoked |
 | SM-07 SpeakingRequest | Finished, Cancelled |
-| SM-08 Voting | Closed |
+| SM-08 Voting | Closed, Deleted |
 | SM-09 VoteConclusion | Passed, NotPassed, Deferred |
 | SM-10 Recording | Failed, Deleted |
 | SM-11 Transcript | Completed |

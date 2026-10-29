@@ -1,0 +1,89 @@
+title UC-54 - Open Vote
+
+actor "Chair" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":Vote Repository" as VoteRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Confirm Open vote on a Draft Vote or on the create / edit form
+activate MeetingPage
+MeetingPage->VoteController: Open Vote
+activate VoteController
+VoteController->VoteService: openVote(meetingId, voteId, actorId, voteInfo)
+activate VoteService
+
+VoteService->VoteRepository: Get Meeting, the selected Vote, if any, and any Open Vote of the Meeting\nwith current statuses
+activate VoteRepository
+VoteRepository->Database: Get Meeting, the selected Vote, if any, and any Open Vote of the Meeting\nwith current statuses
+activate Database
+Database-->VoteRepository: Meeting, Vote and Open Vote / Not found
+deactivate Database
+VoteRepository-->VoteService: Meeting, Vote and Open Vote / Not found
+deactivate VoteRepository
+VoteService->ParticipantRepository: Check current Chair assignment
+activate ParticipantRepository
+ParticipantRepository->Database: Check current Chair assignment
+activate Database
+Database-->ParticipantRepository: Current Chair / Not eligible
+deactivate Database
+ParticipantRepository-->VoteService: Current Chair / Not eligible
+deactivate ParticipantRepository
+alt Meeting or Vote not accessible - EX-6
+    VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
+    VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
+    MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
+else Actor not the current Chair, Meeting not InProgress, or existing Vote no longer Draft - EX-2
+    VoteService-->VoteController: MSG218 - Only the current Chair can open a Draft vote while the meeting is InProgress.
+    VoteController-->MeetingPage: MSG218 - Only the current Chair can open a Draft vote while the meeting is InProgress.
+    MeetingPage-->Actor: MSG218 - Only the current Chair can open a Draft vote while the meeting is InProgress.
+else Another Vote of the Meeting is Open - EX-3
+    VoteService-->VoteController: MSG219 - Another vote is already open in this meeting. Close it before opening this vote.
+    VoteController-->MeetingPage: MSG219 - Another vote is already open in this meeting. Close it before opening this vote.
+    MeetingPage-->Actor: MSG219 - Another vote is already open in this meeting. Close it before opening this vote.
+else Current Chair, Meeting InProgress, Draft or new Vote (BR-160, BR-266, BR-285)
+    VoteService->VoteService: Validate required content, at least two distinct non-empty options,\nballot type and at least one eligible role (BR-255, BR-256, BR-257, BR-272)
+    alt Invalid Vote information - EX-1
+        VoteService-->VoteController: MSG209 - Invalid vote information. Check the highlighted fields.
+        VoteController-->MeetingPage: MSG209 - Invalid vote information. Check the highlighted fields.
+        MeetingPage-->Actor: MSG209 - Invalid vote information. Check the highlighted fields.
+    else Vote information is valid
+        VoteService->ParticipantRepository: Get current holders of the selected roles with valid Meeting access;\na Guest needs a verified invited email and a valid invitation (BR-190, BR-267)
+        activate ParticipantRepository
+        ParticipantRepository->Database: Retrieve current role holders with valid Meeting access
+        activate Database
+        Database-->ParticipantRepository: Eligible voters / None
+        deactivate Database
+        ParticipantRepository-->VoteService: Eligible voters / None
+        deactivate ParticipantRepository
+        alt No eligible voters - EX-4
+            VoteService-->VoteController: MSG220 - No eligible voters are available for the selected roles. Voting was not opened.
+            VoteController-->MeetingPage: MSG220 - No eligible voters are available for the selected roles. Voting was not opened.
+            MeetingPage-->Actor: MSG220 - No eligible voters are available for the selected roles. Voting was not opened.
+        else At least one eligible voter
+            VoteService->VoteRepository: Recheck no other Vote is Open; save the Open Vote with opening time, fixed\neligible-voter list and count, and fixed Vote document list as one change\n(new Vote or Draft updated) (BR-190, BR-266, BR-288)
+            activate VoteRepository
+            VoteRepository->Database: Insert or update Vote as Open with eligible voters and document list
+            activate Database
+            Database-->VoteRepository: Vote opened / Save failed; nothing saved
+            deactivate Database
+            VoteRepository-->VoteService: Vote opened / Save failed; nothing saved
+            deactivate VoteRepository
+            alt Voting cannot be opened - EX-5
+                VoteService-->VoteController: MSG221 - Unable to open voting. Voting was not opened. Please try again.
+                VoteController-->MeetingPage: MSG221 - Unable to open voting. Voting was not opened. Please try again.
+                MeetingPage-->Actor: MSG221 - Unable to open voting. Voting was not opened. Please try again.
+            else Voting opened
+                VoteService-->VoteController: MSG217 - Voting opened successfully.
+                VoteController-->MeetingPage: MSG217 - Voting opened successfully.
+                MeetingPage-->Actor: MSG217 - Voting opened successfully.
+            end
+        end
+    end
+end
+
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage

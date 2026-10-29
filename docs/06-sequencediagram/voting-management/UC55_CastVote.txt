@@ -1,0 +1,127 @@
+title UC-55 - Cast Vote
+
+actor "Chair / Secretary / Participant / Guest" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Meeting Access Policy" as MeetingAccessPolicy
+participant ":Vote Repository" as VoteRepository
+participant ":Document Read Confirmation Repository" as ReadConfirmationRepository
+participant ":Vote Receipt Repository" as VoteReceiptRepository
+participant ":Vote Choice Repository" as VoteChoiceRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Select one option and Submit ballot
+activate MeetingPage
+MeetingPage->VoteController: Cast ballot
+activate VoteController
+VoteController->VoteService: castVote(meetingId, voteId, actorId, optionId)
+activate VoteService
+
+VoteService->MeetingAccessPolicy: Check actor can currently view the Meeting (BR-181, BR-269)
+activate MeetingAccessPolicy
+MeetingAccessPolicy->Database: Check current Meeting relationship or valid Guest invitation
+activate Database
+Database-->MeetingAccessPolicy: Access / No access
+deactivate Database
+MeetingAccessPolicy-->VoteService: Access / No access
+deactivate MeetingAccessPolicy
+VoteService->VoteRepository: Get Vote, its Meeting, options and the actor's entry in the fixed\neligible-voter list (BR-190, BR-268)
+activate VoteRepository
+VoteRepository->Database: Get Vote, its Meeting, options and the actor's entry in the fixed\neligible-voter list (BR-190, BR-268)
+activate Database
+Database-->VoteRepository: Vote, Meeting and eligibility / Not found
+deactivate Database
+VoteRepository-->VoteService: Vote, Meeting and eligibility / Not found
+deactivate VoteRepository
+VoteService->VoteReceiptRepository: Get the actor's existing VoteReceipt for this Vote (BR-258)
+activate VoteReceiptRepository
+VoteReceiptRepository->Database: Retrieve VoteReceipt of the actor
+activate Database
+Database-->VoteReceiptRepository: Receipt / None
+deactivate Database
+VoteReceiptRepository-->VoteService: Receipt / None
+deactivate VoteReceiptRepository
+VoteService->ReadConfirmationRepository: Get the actor's read confirmations for Vote documents still attached\nto the Meeting (BR-289, BR-292)
+activate ReadConfirmationRepository
+ReadConfirmationRepository->Database: Get the actor's read confirmations for Vote documents still attached\nto the Meeting (BR-289, BR-292)
+activate Database
+Database-->ReadConfirmationRepository: Confirmed and unconfirmed documents
+deactivate Database
+ReadConfirmationRepository-->VoteService: Confirmed and unconfirmed documents
+deactivate ReadConfirmationRepository
+alt Meeting or Vote not accessible - EX-7
+    VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
+    VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
+    MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
+else Actor not on the fixed eligible-voter list - EX-3
+    VoteService-->VoteController: MSG224 - You are not eligible to cast a ballot in this vote.
+    VoteController-->MeetingPage: MSG224 - You are not eligible to cast a ballot in this vote.
+    MeetingPage-->Actor: MSG224 - You are not eligible to cast a ballot in this vote.
+else Vote not Open or Meeting not InProgress - EX-4
+    VoteService-->VoteController: MSG225 - This vote is no longer accepting ballots.
+    VoteController-->MeetingPage: MSG225 - This vote is no longer accepting ballots.
+    MeetingPage-->Actor: MSG225 - This vote is no longer accepting ballots.
+else Ballot already recorded for the actor - EX-5
+    VoteService-->VoteController: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
+    VoteController-->MeetingPage: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
+    MeetingPage-->Actor: MSG226 - Your ballot has already been recorded. It cannot be changed or withdrawn.
+else Vote documents not yet confirmed as read - EX-8
+    VoteService-->VoteController: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+    VoteController-->MeetingPage: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+    MeetingPage-->Actor: MSG252 - Confirm that you have read all vote documents before casting your ballot.
+    ref over Actor, MeetingPage: UC-74 - Confirm Document Read
+    end ref
+else Actor may vote (BR-165, BR-258, BR-268, BR-269)
+    VoteService->VoteService: Validate exactly one option is selected and belongs to this Vote (BR-271)
+    alt No option selected - EX-1
+        VoteService-->VoteController: MSG222 - Select one option before submitting your ballot.
+        VoteController-->MeetingPage: MSG222 - Select one option before submitting your ballot.
+        MeetingPage-->Actor: MSG222 - Select one option before submitting your ballot.
+    else Selected option not available in this Vote - EX-2
+        VoteService-->VoteController: MSG223 - The selected option is not available for this vote.
+        VoteController-->MeetingPage: MSG223 - The selected option is not available for this vote.
+        MeetingPage-->Actor: MSG223 - The selected option is not available for this vote.
+    else Option is valid
+        VoteService->VoteReceiptRepository: Save VoteReceipt marking the actor as voted, one per actor per Vote,\nas part of the same change as the VoteChoice (BR-258)
+        activate VoteReceiptRepository
+        VoteReceiptRepository->Database: Insert VoteReceipt
+        activate Database
+        Database-->VoteReceiptRepository: Receipt saved / Save failed
+        deactivate Database
+        VoteReceiptRepository-->VoteService: Receipt saved / Save failed
+        deactivate VoteReceiptRepository
+        alt Public Vote
+            VoteService->VoteChoiceRepository: Save VoteChoice with the selected option and the voter (BR-259)
+            activate VoteChoiceRepository
+            VoteChoiceRepository->Database: Insert VoteChoice with voter
+            activate Database
+            Database-->VoteChoiceRepository: Choice saved / Save failed
+            deactivate Database
+            VoteChoiceRepository-->VoteService: Choice saved / Save failed
+            deactivate VoteChoiceRepository
+        else Secret Vote
+            VoteService->VoteChoiceRepository: Save VoteChoice with the selected option only: no voter and no link to the\nVoteReceipt (BR-259)
+            activate VoteChoiceRepository
+            VoteChoiceRepository->Database: Insert VoteChoice without voter
+            activate Database
+            Database-->VoteChoiceRepository: Choice saved / Save failed
+            deactivate Database
+            VoteChoiceRepository-->VoteService: Choice saved / Save failed
+            deactivate VoteChoiceRepository
+        end
+        alt Ballot cannot be recorded - EX-6
+            VoteService-->VoteController: MSG228 - Unable to record your ballot. No ballot was recorded. Please try again.
+            VoteController-->MeetingPage: MSG228 - Unable to record your ballot. No ballot was recorded. Please try again.
+            MeetingPage-->Actor: MSG228 - Unable to record your ballot. No ballot was recorded. Please try again.
+        else Ballot recorded
+            VoteService-->VoteController: MSG227 - Your ballot has been recorded.
+            VoteController-->MeetingPage: MSG227 - Your ballot has been recorded.
+            MeetingPage-->Actor: MSG227 - Your ballot has been recorded.
+        end
+    end
+end
+
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage

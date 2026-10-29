@@ -1,0 +1,76 @@
+title UC-56 - Close Vote
+
+actor "Chair" as Actor
+boundary "Meeting Management Page" as MeetingPage
+control ":Vote Controller" as VoteController
+control ":Vote Service" as VoteService
+participant ":Meeting Participant Repository" as ParticipantRepository
+participant ":Vote Repository" as VoteRepository
+participant ":Vote Choice Repository" as VoteChoiceRepository
+database ":Database" as Database
+
+Actor->MeetingPage: Confirm Close voting on an Open Vote
+activate MeetingPage
+MeetingPage->VoteController: Close Vote
+activate VoteController
+VoteController->VoteService: closeVote(meetingId, voteId, actorId)
+activate VoteService
+
+VoteService->VoteRepository: Get Vote, its Meeting and current statuses
+activate VoteRepository
+VoteRepository->Database: Get Vote, its Meeting and current statuses
+activate Database
+Database-->VoteRepository: Vote and Meeting / Not found
+deactivate Database
+VoteRepository-->VoteService: Vote and Meeting / Not found
+deactivate VoteRepository
+VoteService->ParticipantRepository: Check current Chair assignment
+activate ParticipantRepository
+ParticipantRepository->Database: Check current Chair assignment
+activate Database
+Database-->ParticipantRepository: Current Chair / Not eligible
+deactivate Database
+ParticipantRepository-->VoteService: Current Chair / Not eligible
+deactivate ParticipantRepository
+alt Meeting or Vote not accessible - EX-3
+    VoteService-->VoteController: MSG205 - Meeting votes are not accessible.
+    VoteController-->MeetingPage: MSG205 - Meeting votes are not accessible.
+    MeetingPage-->Actor: MSG205 - Meeting votes are not accessible.
+else Actor not the current Chair, Meeting not InProgress or Ended, or Vote not Open - EX-1
+    VoteService-->VoteController: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
+    VoteController-->MeetingPage: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
+    MeetingPage-->Actor: MSG230 - Only the current Chair can close an Open vote while the meeting is InProgress or Ended.
+else Current Chair, Open Vote, Meeting InProgress or Ended (BR-270)
+    opt Meeting is Ended and the Vote is still Open - AF-1
+        VoteService->VoteService: Keep ballots unchanged; End Meeting neither closed the Vote\nnor altered its ballots (BR-159, BR-165)
+    end
+    VoteService->VoteChoiceRepository: Count recorded VoteChoices per option; percentages use ballots cast,\nno percentage when no ballots (BR-259, BR-261)
+    activate VoteChoiceRepository
+    VoteChoiceRepository->Database: Retrieve VoteChoices grouped by option
+    activate Database
+    Database-->VoteChoiceRepository: Tally per option / Load failed
+    deactivate Database
+    VoteChoiceRepository-->VoteService: Tally per option / Load failed
+    deactivate VoteChoiceRepository
+    VoteService->VoteRepository: Recheck Vote is Open; save Closed status, closing time and tally together;\nkeep every recorded ballot; no conclusion is recorded (BR-263, BR-270)
+    activate VoteRepository
+    VoteRepository->Database: Update Vote as Closed with tally
+    activate Database
+    Database-->VoteRepository: Vote closed / Save failed; Vote remains Open
+    deactivate Database
+    VoteRepository-->VoteService: Vote closed / Save failed; Vote remains Open
+    deactivate VoteRepository
+    alt Voting cannot be closed - EX-2
+        VoteService-->VoteController: MSG231 - Unable to close voting. The vote and saved ballots remain unchanged. Please try again.
+        VoteController-->MeetingPage: MSG231 - Unable to close voting. The vote and saved ballots remain unchanged. Please try again.
+        MeetingPage-->Actor: MSG231 - Unable to close voting. The vote and saved ballots remain unchanged. Please try again.
+    else Voting closed
+        VoteService-->VoteController: MSG229 - Voting closed. The result is available.
+        VoteController-->MeetingPage: MSG229 - Voting closed. The result is available.
+        MeetingPage-->Actor: MSG229 - Voting closed. The result is available.
+    end
+end
+
+deactivate VoteService
+deactivate VoteController
+deactivate MeetingPage
