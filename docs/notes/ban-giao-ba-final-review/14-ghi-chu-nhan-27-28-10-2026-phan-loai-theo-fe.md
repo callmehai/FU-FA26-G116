@@ -12,6 +12,11 @@ Số Feature theo [danh mục UC](../../01-requirements/00-master-use-case-inven
 SCRUM-110, 111, 112 đã gán Lộc. SCRUM-26 chờ PR sửa `10-diem-danh.md` (mục 3.4) merge rồi mới chuyển.
 Bảng bên dưới giữ trạng thái đọc lúc 27/10, cột cuối ghi việc đã làm.
 
+**Cập nhật 29/10/2026:** SCRUM-26 đã ở `In Review`. PR #186 (FE-07) đã merge; chuyển **`In Review`** SCRUM-23, 58, 110, 111, 112, 113.
+Việc còn lại lên kế hoạch ở [note 17](17-plan-sua-con-lai-sau-note-14.md).
+Cuối ngày 29/10 chuyển tiếp **`In Review`**: SCRUM-99, 69, 15, 25, 98 (note 17 lượt 1–5). Chỉ còn SCRUM-41 ở BA Final Review; việc
+ngoài phạm vi ở [note 18](18-sua-wireframe-va-viec-ngoai-pham-vi.md).
+
 Cả 18 ticket dưới đây đang ở **BA Final Review** (đọc ngày 28/10/2026). Việc của BA ở trạng thái này: đối chiếu code đã
 merge với UC, BR, MSG, sequence, class diagram, ERD; sửa tài liệu; sau đó chuyển ticket sang kiểm thử khi không còn lệch.
 
@@ -145,10 +150,10 @@ Nguồn: tin bot 3:10 PM ngày 27/10, PR #167, ADR-0031 (`docs/05-decisions/0031
 | 4 | ~~Sequence PNG org + class diagram FE-07 as-built~~ | FE-07 | 110, 111, 112 | Xong trên nhánh `docs/ba-final-review-fe-07` |
 | 5 | ~~Permission Matrix thêm quyền đọc kho tài khoản khoá~~ | FE-07 | 113 | Report 3 đã cập nhật |
 | 6 | Mở file draw.io gộp bằng giao diện kiểm tra tab đã dựng lại | FE-07 | — | Khuyến nghị trước merge |
-| 7 | BR-301, BR-302, UC-75 `MSG345`, UC-16/17 lọc "Đã huỷ", sơ đồ trạng thái | FE-04 | 99 | Mục 3.1 |
-| 8 | Đối chiếu UC-21, UC-22 với code | FE-04 | 69 | PR #175 |
-| 9 | 3 ERD drawio: 4 cột `email_messages` và 4 cột `cancelled_*`, `actor_id` null | FE-13, FE-04 | 15, 99 | `docs/13-erd/` |
-| 10 | Đối chiếu endpoint webhook Resend với Report 3 | FE-13 | 15 | `docs/03-api/07-gui-email-thu-moi.md` |
-| 11 | Đối chiếu UC-23–26, UC-77 với code; UC-33b liên quan API sửa mục nghị sự | FE-05 | 25, 98 | Mục 3.3 |
+| 7 | ~~BR-301, BR-302, UC-75 `MSG345`, UC-16/17 lọc "Đã huỷ", sơ đồ trạng thái~~ | FE-04 | 99 | Report 3 đã sửa 29/10 (BR-298/300/301/302, UC-75 AF-2 + EX-4, UC-17 AF-4, MSG345, từ điển dữ liệu); Report 3 không có sơ đồ trạng thái chỉnh sửa được nên bỏ qua |
+| 8 | ~~Đối chiếu UC-21, UC-22 với code~~ | FE-04 | 69 | Đã đối chiếu 29/10, không lệch (PR #175 chỉ đổi thời điểm ghi thông báo, Report 3 đã nói lỗi thông báo không huỷ việc bắt đầu) |
+| 9 | ~~3 ERD drawio: 4 cột `email_messages` và 4 cột `cancelled_*`, `actor_id` null~~ | FE-13, FE-04 | 15, 99 | Xong `muc-tieu` (sửa + xuất PNG). `chen` không có thuộc tính nên bỏ qua. `hien-tai` không sửa tay (snapshot sinh từ DB, README cấm; đang cũ nhiều chỗ) — cần sinh lại sau migration |
+| 10 | ~~Đối chiếu phần gửi email với Report 3 (chỉ nghiệp vụ, không đưa Resend/webhook vào Report 3)~~ | FE-13 | 15 | Xong 29/10: BR-300 thêm quy tắc thư huỷ chỉ gửi người đã nhận thư mời; bỏ chữ Gmail ở mô tả giao diện SMTP; không có màn hình trạng thái giao thư nên không thêm |
+| 11 | ~~Đối chiếu UC-23–26, UC-77 với code; UC-33b liên quan API sửa mục nghị sự~~ | FE-05 | 25, 98 | Xong 29/10: UC-23a–d, 24, 25, 77 khớp code; UC-26 thêm Guest (đọc), từ điển dữ liệu AgendaItem bỏ thời lượng. Form sửa mục vẫn có ô chọn tài liệu nên UC-23a/b giữ nguyên |
 | 12 | Đối chiếu mã thông báo phòng họp và lệch ghi ở comment 26/10 | FE-08 | 41 | Mục 3.5, PR #147 còn mở |
-| 13 | Chuyển SCRUM-26 sang `In Review` sau khi PR #180 merge | FE-06 | 26 | PR #180 đã merge; còn chuyển Jira |
+| 13 | ~~Chuyển SCRUM-26 sang `In Review` sau khi PR #180 merge~~ | FE-06 | 26 | Đã ở In Review (29/10) |
