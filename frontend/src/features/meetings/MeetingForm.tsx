@@ -7,7 +7,6 @@ import { SegmentedControl } from '../../components/SegmentedControl'
 import { TimeField } from '../../components/TimeField'
 import { fromDateTimeInput, toDateTimeInput } from '../../lib/dateInput'
 import { errorMessage, isApiError } from '../../lib/errors'
-import { formatDate } from '../../lib/format'
 import {
   MEETING_MODES,
   MEETING_MODE_LABEL,
@@ -188,8 +187,23 @@ function validate(values: Values, needsFutureStart: boolean): FieldErrors {
   return errors
 }
 
-/** The end's day for the hint under "Kết thúc", e.g. "16/10/2026". */
-const endDayLabel = (values: Values) => formatDate(`${addDays(values.date, values.endDays)}T12:00:00`)
+/** How long the meeting runs, "1 ngày 2 giờ 30 phút"; null until both ends are set and in order. */
+function durationLabel(values: Values) {
+  const start = startOf(values)
+  const end = endOf(values)
+  if (!start || !end) return null
+  const minutes = Math.round((Date.parse(end) - Date.parse(start)) / 60_000)
+  if (minutes <= 0) return null
+  const parts = [
+    [Math.floor(minutes / 1440), 'ngày'],
+    [Math.floor((minutes % 1440) / 60), 'giờ'],
+    [minutes % 60, 'phút'],
+  ] as const
+  return parts
+    .filter(([n]) => n > 0)
+    .map(([n, unit]) => `${n} ${unit}`)
+    .join(' ')
+}
 
 function toRequest(values: Values): MeetingRequest {
   return {
@@ -301,22 +315,37 @@ export function MeetingForm({
     ),
   )
 
-  /** `endDays` is not a field: it only follows from the meeting being edited. */
-  function set<K extends Exclude<keyof Values, 'endDays'>>(key: K, value: Values[K]) {
-    const next = { ...values, [key]: value }
+  /** Several fields at once (a quick length sets the end and the end's day together). */
+  function setMany(patch: Partial<Values>) {
+    const next = { ...values, ...patch }
     setValues(next)
     setFieldErrors((errors) => {
       const rest: FieldErrors = { ...errors }
-      const field: Field = key === 'start' ? 'plannedStartTime' : key === 'end' ? 'plannedEndTime' : key
-      delete rest[field]
-      // The end is judged against the start, so changing the day or either time re-checks it.
-      if (key === 'date' || key === 'start' || key === 'end') {
+      for (const key of Object.keys(patch) as (keyof Values)[]) {
+        const field: Field =
+          key === 'start' ? 'plannedStartTime' : key === 'end' || key === 'endDays' ? 'plannedEndTime' : key
+        delete rest[field]
+      }
+      // The end is judged against the start, so changing a day or either time re-checks it.
+      if (['date', 'start', 'end', 'endDays'].some((key) => key in patch)) {
         delete rest.plannedEndTime
         const error = endError(next)
         if (error) rest.plannedEndTime = error
       }
       return rest
     })
+  }
+
+  function set<K extends keyof Values>(key: K, value: Values[K]) {
+    setMany({ [key]: value } as Partial<Values>)
+  }
+
+  // AI-eCabinet's "Nhiều ngày": the times split into a start and an end, each with its own day.
+  const [multiDay, setMultiDay] = useState(values.endDays > 0)
+  const duration = durationLabel(values)
+  function toggleMultiDay() {
+    if (multiDay) set('endDays', 0)
+    setMultiDay(!multiDay)
   }
 
   function focusFirstError(errors: FieldErrors) {
@@ -442,7 +471,7 @@ export function MeetingForm({
                 <span>Mô tả</span>
                 <textarea
                   name="description"
-                  rows={4}
+                  rows={3}
                   value={values.description}
                   onChange={(e) => set('description', e.target.value)}
                   maxLength={DESCRIPTION_MAX}
@@ -468,6 +497,58 @@ export function MeetingForm({
               <span id="meeting-form-time" className="field-required">
                 Thời gian
               </span>
+              {multiDay ? (
+                <div className="form-time-days">
+                  <label htmlFor="meeting-date" className="form-time-label">
+                    Bắt đầu
+                  </label>
+                  <div className="field" data-field="date">
+                    <DateField
+                      id="meeting-date"
+                      name="date"
+                      value={values.date}
+                      onChange={(v) => set('date', v)}
+                      invalid={!!fieldErrors.date}
+                    />
+                  </div>
+                  <div className="field" data-field="plannedStartTime">
+                    <label htmlFor="meeting-start" className="visually-hidden">
+                      Giờ bắt đầu
+                    </label>
+                    <TimeField
+                      id="meeting-start"
+                      name="start"
+                      value={values.start}
+                      onChange={(v) => set('start', v)}
+                      invalid={!!fieldErrors.plannedStartTime}
+                    />
+                  </div>
+                  <label htmlFor="meeting-end-date" className="form-time-label">
+                    Kết thúc
+                  </label>
+                  <div className="field">
+                    <DateField
+                      id="meeting-end-date"
+                      name="endDate"
+                      value={values.date ? addDays(values.date, values.endDays) : ''}
+                      onChange={(v) => set('endDays', v && values.date ? daysBetween(values.date, v) : 0)}
+                      invalid={!!fieldErrors.plannedEndTime}
+                    />
+                  </div>
+                  <div className="field" data-field="plannedEndTime">
+                    <label htmlFor="meeting-end" className="visually-hidden">
+                      Giờ kết thúc
+                    </label>
+                    <TimeField
+                      id="meeting-end"
+                      name="end"
+                      value={values.end}
+                      onChange={(v) => set('end', v)}
+                      invalid={!!fieldErrors.plannedEndTime}
+                    />
+                  </div>
+                </div>
+              ) : (
               <div className="form-time-row">
                 <div className="field" data-field="date">
                   <label htmlFor="meeting-date" className="visually-hidden">
@@ -504,33 +585,42 @@ export function MeetingForm({
                     id="meeting-end"
                     name="end"
                     value={values.end}
-                    from={values.endDays === 0 ? values.start || undefined : undefined}
+                    from={values.start || undefined}
                     onChange={(v) => set('end', v)}
                     invalid={!!fieldErrors.plannedEndTime}
                   />
                 </div>
               </div>
-              {values.endDays === 0 && (
-                <div className="form-lengths" role="group" aria-label="Thời lượng">
-                  {LENGTHS.map((length) => (
-                    <button
-                      key={length.minutes}
-                      type="button"
-                      className="chip-toggle"
-                      aria-pressed={lengthOf(values) === length.minutes}
-                      disabled={!values.start}
-                      onClick={() => set('end', addMinutes(values.start, length.minutes))}
-                    >
-                      {length.label}
-                    </button>
-                  ))}
-                </div>
               )}
+              <div className="form-lengths" role="group" aria-label="Thời lượng">
+                {LENGTHS.map((length) => (
+                  <button
+                    key={length.minutes}
+                    type="button"
+                    className="chip-toggle"
+                    aria-pressed={!multiDay && lengthOf(values) === length.minutes}
+                    disabled={!values.start || reschedule}
+                    onClick={() => {
+                      setMany({ end: addMinutes(values.start, length.minutes), endDays: 0 })
+                      setMultiDay(false)
+                    }}
+                  >
+                    {length.label}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="chip-toggle"
+                  aria-pressed={multiDay}
+                  disabled={reschedule}
+                  onClick={toggleMultiDay}
+                >
+                  Nhiều ngày
+                </button>
+                {multiDay && duration && <span className="form-length-note">{duration}</span>}
+              </div>
               {errorOf('date') ?? errorOf('plannedStartTime')}
-              {errorOf(
-                'plannedEndTime',
-                values.endDays > 0 && values.date ? `Kết thúc ngày ${endDayLabel(values)}.` : undefined,
-              )}
+              {errorOf('plannedEndTime')}
             </fieldset>
 
             {!meeting && (

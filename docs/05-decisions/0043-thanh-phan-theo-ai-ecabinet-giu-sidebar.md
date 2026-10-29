@@ -46,9 +46,16 @@ TrustCabinet (không chép mã Tailwind/shadcn):
   điểm/link; phải là chủ tọa, thư ký, người duyệt; mô tả ở hàng cuối. Chỉ có chữ: trạng thái và mức độ đã đứng
   cạnh tiêu đề. Bỏ "thời gian thực tế" (lịch sử trạng thái đã có lúc bắt đầu, kết thúc) và "tạo lúc" (dòng đầu
   của lịch sử).
-- **Hộp thoại tạo/sửa cuộc họp** chia 2 cột và cao gần hết màn. Trái: tên, mô tả, thời gian kèm nút nhanh
-  30 phút / 1 giờ / 2 giờ, người dự họp. Phải: khung xám cho hình thức, địa điểm, link, và mức độ mật dạng danh
-  sách, mỗi mức có một dòng nói nó làm gì.
+- **Hộp thoại tạo/sửa cuộc họp** chia 2 cột, cao theo nội dung. Trái: tên, mô tả, thời gian, người dự họp.
+  Phải: khung xám cho hình thức, địa điểm, link, và mức độ mật dạng danh sách, mỗi mức có một dòng nói nó làm
+  gì. Các cơ chế lấy theo eCab sau khi bấm thử từng chế độ (30/10/2026):
+  - nút nhanh 30 phút / 1 giờ / 2 giờ và **Nhiều ngày**: bật lên thì thời gian tách thành hai dòng "Bắt đầu" và
+    "Kết thúc", mỗi dòng một ngày một giờ, kèm thời lượng ("2 ngày 1 giờ");
+  - đổi hình thức thì đổi ô: trực tiếp có địa điểm, trực tuyến có link, kết hợp có cả hai;
+  - tìm người dự: kết quả mở ra và **vẫn mở sau mỗi lần chọn**, người đã chọn có dấu tích, bấm lại để bỏ; danh
+    sách tự lật lên trên khi bên dưới hết chỗ;
+  - danh sách người đã chọn **cao tối đa 13rem (khoảng 4 người) rồi tự cuộn**, cuộn tới người vừa thêm; hộp thoại
+    không cuộn ở màn 900px.
 
 Những gì của eCab **không** đưa sang:
 

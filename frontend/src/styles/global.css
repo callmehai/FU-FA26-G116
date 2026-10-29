@@ -1397,23 +1397,23 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The overview (MeetingDetailPage Overview; .overview is the calendar's quick view): one grid of
    label-value pairs, two pairs to a row so both sides line up, no rules between rows. Each pair's
    wrapper is display: contents, so its label and value are the grid's own cells. */
-.record-overview { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr); gap: 16px 20px; align-items: baseline; margin: 0; }
+.record-overview { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr); gap: 24px 24px; align-items: baseline; margin: 0; padding: 28px 28px 30px; }
 .record-fact { display: contents; }
-.record-fact dt { color: var(--label-ink); font-size: 13px; }
-.record-fact dd { margin: 0; color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+.record-fact dt { color: var(--label-ink); font-size: 13.5px; }
+.record-fact dd { margin: 0; color: var(--ink); font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
 .record-fact dd .nowrap { white-space: nowrap; }
 .record-fact dd .nowrap:not(:last-child)::after { content: ' '; white-space: normal; }
 .record-fact-left > dt { grid-column: 1; grid-row: inherit; }
 .record-fact-left > dd { grid-column: 2; grid-row: inherit; }
 .record-fact-right > dt { grid-column: 3; grid-row: inherit; padding-left: 24px; }
 .record-fact-right > dd { grid-column: 4; grid-row: inherit; }
-.record-fact-wide > dt { grid-column: 1; grid-row: inherit; padding-top: 8px; }
-.record-fact-wide > dd { grid-column: 2 / -1; grid-row: inherit; padding-top: 8px; font-weight: 400; }
+.record-fact-wide > dt { grid-column: 1; grid-row: inherit; padding-top: 10px; }
+.record-fact-wide > dd { grid-column: 2 / -1; grid-row: inherit; padding-top: 10px; font-weight: 400; }
 .detail-skeleton-fact .skeleton:first-child { width: 72px; height: 10px; }
 .detail-skeleton-fact .skeleton:last-child { width: 70%; height: 14px; }
 /* Narrow: one column of pairs, the right side after the left. */
 @media (max-width: 1100px) {
-  .record-overview { grid-template-columns: max-content minmax(0, 1fr); gap: 14px 16px; }
+  .record-overview { grid-template-columns: max-content minmax(0, 1fr); gap: 18px 16px; padding: 20px; }
   .record-overview > .record-fact > * { grid-row: auto !important; grid-column: auto; padding-left: 0; }
   .record-fact-wide > dd { grid-column: auto; }
 }
@@ -1661,7 +1661,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
 .dialog-lg .dialog-body { flex: 1; min-height: 0; }
 /* The meeting form, AI-eCabinet's two columns: what and when on the left, how on a grey panel. */
-.dialog-xl { width: min(1040px, calc(100vw - 32px)); height: min(760px, calc(100dvh - 48px)); max-height: calc(100dvh - 48px); }
+.dialog-xl { width: min(1040px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
 .dialog-xl .dialog-body { display: flex; flex: 1; flex-direction: column; min-height: 0; }
 .dialog-xl .meeting-form { flex: 1; }
 .dialog-foot-note { flex: 1; align-self: center; margin: 0; color: var(--muted-ink); font-size: 13px; }
@@ -1676,12 +1676,12 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 /* The meeting form's sections, as AI-eCabinet groups them: a small caps heading, a divider between. */
 .meeting-form { display: flex; flex-direction: column; gap: 20px; }
 .meeting-form-cols { display: grid; flex: 1; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; }
-.meeting-form-main, .meeting-form-side { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.meeting-form-main, .meeting-form-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 /* Both columns run the dialog's height: the grey panel down to the footer, the people list taking
    what the left column has left. */
 .meeting-form-side { padding: 18px; border-radius: var(--radius-lg); background: var(--surface-alt); }
 .meeting-form-main > [data-field='participants'] { flex: 1; }
-.meeting-form-main textarea { min-height: 96px; resize: vertical; }
+.meeting-form-main textarea { min-height: 72px; resize: vertical; }
 
 /* Mức độ mật: one row per level with what it changes; the chosen one takes the brand edge. */
 .level-choices { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: none; }
@@ -1711,6 +1711,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .form-time-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
 .form-time-row .field { gap: 0; }
 .form-time-dash { color: var(--muted-ink); }
+/* "Nhiều ngày": a start row and an end row, each a day and a time, labelled on the left. */
+.form-time-days { display: grid; grid-template-columns: max-content minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; gap: 8px 10px; }
+.form-time-days .field { gap: 0; }
+.form-time-label { color: var(--muted-ink); font-size: 13px; }
+.form-length-note { align-self: center; margin-left: 4px; color: var(--muted-ink); font-size: 13px; }
 .form-lengths { display: flex; flex-wrap: wrap; gap: 6px; }
 /* A quick choice under a field ("1 giờ"): a small toggle, solid while it is what the field holds. */
 .chip-toggle {
@@ -1725,7 +1730,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   font-weight: 500;
   cursor: pointer;
 }
-.chip-toggle:hover:not(:disabled) { background: var(--surface-alt); }
+.chip-toggle:hover:not(:disabled, [aria-pressed='true']) { background: var(--surface-alt); }
 .chip-toggle[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
 .chip-toggle:disabled { opacity: .5; cursor: not-allowed; }
 @media (pointer: coarse) { .chip-toggle { height: 36px; } }
@@ -2338,14 +2343,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   box-shadow: var(--shadow);
   list-style: none;
 }
-.roster-option { padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.roster-option { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.roster-option-person { flex: 1; min-width: 0; }
+/* Inside .search, whose own icon is absolutely placed: this one stays in the row. */
+.roster-option > .icon { position: static; flex: none; color: var(--brand); transform: none; }
 .roster-option-active { background: var(--brand-wash); }
 .roster-option .avatar, .roster-row .avatar { width: 32px; height: 32px; font-size: 12px; }
 .roster-menu-note { padding: 10px 8px; color: var(--muted-ink); font-size: 14px; }
 .roster-menu-error { color: var(--danger-ink); }
 
-.roster-list { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
-.roster-row { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
+/* The picked list keeps its height and scrolls (AI-eCabinet), about four people, so the dialog itself does not scroll. */
+.roster-list { display: flex; flex-direction: column; max-height: 13rem; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
+.roster-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
 .roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
 .roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
 .roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
