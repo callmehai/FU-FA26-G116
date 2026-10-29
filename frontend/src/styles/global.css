@@ -215,6 +215,8 @@ code {
 /* Bordered secondary action on white ("Hôm nay", "Thử lại", "Chỉnh sửa"). */
 .btn-outline { background: var(--surface); border-color: var(--control-line); color: var(--ink); }
 .btn-outline:hover:not(:disabled) { background: var(--surface-alt); }
+/* A secondary action in the brand's colour (the calendar's "Tạo cuộc họp", AI-eCabinet's navy-text). */
+.btn-brand-text { color: var(--brand); }
 
 /* Destructive, tinted rather than solid red (AI-eCabinet D3): red stays for warnings and "Mật". */
 .btn-danger { background: var(--chip-red-bg); border-color: color-mix(in srgb, var(--danger) 28%, transparent); color: var(--danger-ink); }
@@ -1997,6 +1999,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-more { position: absolute; right: 9px; z-index: 2; height: 22px; padding: 0 7px; border: 1px solid var(--brand); border-radius: 4px; background: var(--surface); color: var(--brand); font: inherit; font-size: 12px; font-weight: 700; line-height: 20px; cursor: pointer; }
 .cal-more:hover { background: var(--brand-wash); }
 .cal-event.cal-event-crowded { padding-right: 52px; }
+.cal-event-go .cal-event-title { -webkit-line-clamp: 1; }
+.cal-event-go .cal-event-place { display: none; }
+.cal-go { position: absolute; left: 12px; z-index: 2; height: 26px; padding: 0 8px; font-size: 12px; }
 .cal-event-crowded .cal-event-time { overflow: hidden; }
 .calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 

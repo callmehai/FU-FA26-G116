@@ -223,8 +223,8 @@ export function CalendarPage() {
           <Select value={span} options={SPAN_OPTIONS} onChange={changeSpan} label="Kiểu lịch" />
           <CalendarFilter value={filter} entries={inView} onChange={(next) => go({ filter: next })} />
           {can('MeetingCreator') && (
-            <Link className="btn btn-primary btn-cta" to={createLink.to} state={createLink.state}>
-              <Icon name="plus" size={18} />
+            <Link className="btn btn-outline btn-brand-text" to={createLink.to} state={createLink.state}>
+              <Icon name="plus" size={16} />
               Tạo cuộc họp
             </Link>
           )}
@@ -446,6 +446,8 @@ function GridEvent({
   const height = Math.max(MIN_EVENT_HEIGHT, bottom - top)
   const { meeting } = entry
   const tall = height >= 72
+  // A running call room gets AI-eCabinet's gold "Vào phòng họp" on its tile, where there is room.
+  const goIn = meeting.status === 'InProgress' && meeting.mode !== 'InPerson' && height >= 56
   // Back from the meeting lands on this week, in this view.
   const back = backState('Lịch làm việc', useLocation())
 
@@ -457,7 +459,7 @@ function GridEvent({
         state={back}
         onClick={tileClick(entry, onOpen)}
         data-cal-trigger=""
-        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}${hidden ? ' cal-event-crowded' : ''}${meeting.status === 'Cancelled' ? ' cal-cancelled' : ''}`}
+        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}${hidden ? ' cal-event-crowded' : ''}${goIn ? ' cal-event-go' : ''}${meeting.status === 'Cancelled' ? ' cal-cancelled' : ''}`}
         style={{ top, height }}
         data-tooltip={`${meeting.title}\n${timeRange(entry)}`}
       >
@@ -473,6 +475,13 @@ function GridEvent({
         <span className="cal-event-title">{meeting.title}</span>
         {tall && <span className="cal-event-place">{placeLabel(entry.meeting)}</span>}
       </Link>
+      {/* A sibling, like the "+N": a link cannot sit inside the tile's link. */}
+      {goIn && (
+        <Link className="btn btn-go cal-go" style={{ top: top + Math.min(height, 104) - 34 }} to={routes.meetingRoom(meeting.id)}>
+          Vào phòng họp
+          <Icon name="arrowRight" size={13} />
+        </Link>
+      )}
       {hidden > 0 && (
         <button
           type="button"
