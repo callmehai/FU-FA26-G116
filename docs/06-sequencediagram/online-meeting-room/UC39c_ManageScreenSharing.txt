@@ -1,0 +1,25 @@
+title UC-39c - Manage Screen Sharing
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Choose Share screen and pick a screen, window or tab
+activate Page
+alt The sharing cannot start - EX-1
+    Page-->Actor: MSG341 - Unable to share your screen. Please try again.
+else Sharing starts
+    Page->RoomProvider: Publish the shared screen; stop any earlier presentation (BR-326)
+    activate RoomProvider
+    RoomProvider-->Page: Presentation shown on the main stage for everyone
+    deactivate RoomProvider
+    Page-->Actor: You are presenting to everyone
+end
+opt Someone else starts presenting - AF-1
+    RoomProvider-->Page: Another person is presenting
+    Page-->Actor: MSG340 - {name} started presenting, so your screen share was stopped.
+end
+Actor->Page: Choose Stop sharing
+Page->RoomProvider: Stop the presentation
+RoomProvider-->Page: Everyone returns to the Video Grid
+deactivate Page

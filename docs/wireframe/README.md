@@ -16,13 +16,13 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v9
+## Bản hiện có — v10
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v9.html](TrustCabinet-wireframe-v9.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v9/](figma-v9/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v9. |
+| HTML | [TrustCabinet-wireframe-v10.html](TrustCabinet-wireframe-v10.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v10/](figma-v10/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v10. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
 
 ## 1. Thư mục

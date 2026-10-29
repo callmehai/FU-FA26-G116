@@ -6,6 +6,9 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Phòng họp trực tuyến — rà soát FE-08 25/10/2026](NOTE-phong-hop-truc-tuyen-25-10-2026.md) — đặc tả
+  UC-37 → UC-42, UC-39d, UC-78, BR-323 → BR-332 và mã FE `MSG328`–`MSG344`, `MSG350` (gộp main 29/10/2026);
+  việc còn lại của BE: Guest chưa vào được phòng (chờ SCRUM-25).
 - [Bàn giao FE-07 cho Lộc — kho tài liệu cá nhân, gắn/gỡ, bình luận, xác nhận đọc](NOTE-ban-giao-fe07-kho-tai-lieu-cho-loc.md) — 27/10/2026;
   hiện trạng ticket và code, chỗ lệch (UC-33a luồng chính chưa có ticket, UC-33b/33d đang chạy qua API agenda),
   SCRUM-58 tách thành SCRUM-110/111/112, hai nhánh docs và kế hoạch từng bước vẽ sequence (SCRUM-91) và class diagram
