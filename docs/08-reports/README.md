@@ -180,6 +180,16 @@ Design" và "b. CORS Configuration" ở mục III.1.1, một dòng Change Log "M
 làm gốc, áp mục I.1 lên, rồi đưa vào `source/` và đẩy lại bằng `push_reports.py 4 --confirm`; `--check` trả
 `UP TO DATE`, file ID và link không đổi. Từ đây lại theo chiều repo → Drive.
 
+**Report 4 (29/10/2026, review PR #182):** sửa phần trình bày. Sơ đồ rộng (I.1, bốn trang I.2, class diagram FE-02 →
+FE-06 và FE-13) nằm trên trang ngang riêng, có footer thứ hai (`footer2.xml`) rộng theo trang ngang; FE-01 ở chung
+trang với tiêu đề mục II, FE-07 (ảnh dọc) và FE-11 (chưa có class diagram, thêm một câu ghi chú) mở trang mới bằng
+`pageBreakBefore`, mục II và III cũng vậy. Ảnh UC-33b (4747×11044) cắt làm hai ở dải trống giữa hai message (hàng
+5498) để mỗi nửa rộng bằng khổ chữ — ảnh nguồn trong `06-sequencediagram` giữ nguyên. Footer dùng field `NUMPAGES`
+thay số "10" gõ cứng. Ảnh I.1 thay bằng bản sửa của sơ đồ kiến trúc; bảng I.1 đổi "22" thành "18 endpoint groups",
+thêm việc dọn file mồ côi vào dòng Background Workers; dòng Workers của bảng back-end ở I.2 thêm EmailDeliveryWorker
+và OrphanFilePurgeWorker. Số trang mục lục lấy từ Word sau khi dàn trang (118 mục khớp bản PDF). Thêm một dòng Change
+Log (LocHD). Chưa đẩy lên Drive.
+
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
 một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
 

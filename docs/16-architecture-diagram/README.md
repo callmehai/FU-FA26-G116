@@ -20,6 +20,8 @@ phần:
   Data Tier, External Services. Caddy nằm giữa client và ứng dụng.
 - Mũi tên liền là chiều gọi hoặc chiều dữ liệu; hai đầu là trao đổi hai chiều (WebRTC, email gửi đi
   và webhook báo trạng thái gửi). Mũi tên nét đứt `maps to` là ánh xạ entity, không phải lời gọi.
+- Phòng họp đi hai đường: signalling `/rtc` qua Caddy (`deploy/Caddyfile`), media WebRTC đi thẳng tới LiveKit
+  qua cổng ICE 7881/TCP và 7882/UDP (`deploy/docker-compose.yml`).
 - Hình vẽ server test: Caddy chỉ có ở đó. Khi dev, Vite proxy `/api` và `/hubs` thay Caddy, file
   tài liệu nằm trên SeaweedFS thay cho Cloudflare R2.
 
