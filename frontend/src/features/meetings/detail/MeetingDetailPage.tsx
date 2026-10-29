@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
@@ -459,76 +459,71 @@ function approverLabel(
   return { text: approvers.error ? 'Không tải được tên' : 'Đang tải…', muted: true }
 }
 
+/** One fact of the record: its label beside its value, so two columns of them line up as a table. */
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="record-fact">
+      <dt>{label}</dt>
+      <dd>{children}</dd>
+    </div>
+  )
+}
+
+const empty = (text = 'Chưa có') => <em className="value-empty">{text}</em>
+
+/** "Chủ Nhật, 25/10/2026, 19:01–20:31" wraps between its parts, never inside the time range. */
+function Unbroken({ text }: { text: string }) {
+  const parts = text.split(', ')
+  if (parts.length === 1) return text
+  return parts.map((part, i) => (
+    <span key={i} className="nowrap">
+      {part}
+      {i < parts.length - 1 && ','}
+    </span>
+  ))
+}
+
+/**
+ * The record in two even columns — when and where on the left, who on the right — and the
+ * description under both. Plain text only: the state and the level already stand beside the title.
+ */
 function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: string; muted: boolean } | null }) {
   return (
-    <div className="card field-grid">
-      <div className="field-item">
-        <span>Trạng thái</span>
-        <StatusBadge status={meeting.status} />
-      </div>
-      <div className="field-item span-all">
-        <span>Thời gian</span>
-        <strong>{formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)}</strong>
-      </div>
-      {meeting.actualStartedAt && (
-        <div className="field-item span-all">
-          <span>Thời gian thực tế</span>
-          <strong>
-            {meeting.actualEndedAt
-              ? formatSchedule(meeting.actualStartedAt, meeting.actualEndedAt)
-              : `Bắt đầu ${formatDateTime(meeting.actualStartedAt)}`}
-          </strong>
-        </div>
-      )}
-      <div className="field-item">
-        <span>Hình thức</span>
-        <strong>{MEETING_MODE_LABEL[meeting.mode]}</strong>
-      </div>
-      {meeting.mode !== 'Online' && (
-        <div className="field-item">
-          <span>{meeting.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
-          {meeting.location ? <strong>{meeting.location}</strong> : <em className="value-empty">Chưa có</em>}
-        </div>
-      )}
-      {meeting.mode !== 'InPerson' && (
-        <div className="field-item">
-          <span>Link trực tuyến</span>
-          {meeting.onlineLink ? (
-            <strong className="value-text">{meeting.onlineLink}</strong>
-          ) : (
-            <strong>Phòng họp trực tuyến TrustCabinet</strong>
-          )}
-        </div>
-      )}
-      <div className="field-item field-row-start">
-        <span>Chủ tọa</span>
-        {meeting.chair ? <strong>{meeting.chair.fullName}</strong> : <em className="value-empty">Chưa có</em>}
-      </div>
-      <div className="field-item">
-        <span>Thư ký</span>
-        {meeting.secretaries.length > 0 ? (
-          <strong>{meeting.secretaries.map((s) => s.fullName).join(', ')}</strong>
-        ) : (
-          <em className="value-empty">Chưa có</em>
+    <div className="card record-overview">
+      <dl className="record-facts-list">
+        <Fact label="Thời gian">
+          <Unbroken text={formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)} />
+        </Fact>
+        {meeting.actualStartedAt && (
+          <Fact label="Thực tế">
+            <Unbroken
+              text={
+                meeting.actualEndedAt
+                  ? formatSchedule(meeting.actualStartedAt, meeting.actualEndedAt)
+                  : `Bắt đầu ${formatDateTime(meeting.actualStartedAt)}`
+              }
+            />
+          </Fact>
         )}
-      </div>
-      {approver && (
-        <div className="field-item">
-          <span>Người duyệt</span>
-          {approver.muted ? <em className="value-empty">{approver.text}</em> : <strong>{approver.text}</strong>}
-        </div>
-      )}
-      <div className="field-item">
-        <span>Tạo lúc</span>
-        <strong>{formatDateTime(meeting.createdAt)}</strong>
-      </div>
-      <div className="field-item span-all field-divided">
+        <Fact label="Hình thức">{MEETING_MODE_LABEL[meeting.mode]}</Fact>
+        {meeting.mode !== 'Online' && (
+          <Fact label={meeting.mode === 'Hybrid' ? 'Phòng họp' : 'Địa điểm'}>{meeting.location || empty()}</Fact>
+        )}
+        {meeting.mode !== 'InPerson' && (
+          <Fact label="Link họp">{meeting.onlineLink ?? 'Phòng họp trực tuyến TrustCabinet'}</Fact>
+        )}
+      </dl>
+      <dl className="record-facts-list">
+        <Fact label="Chủ tọa">{meeting.chair?.fullName ?? empty()}</Fact>
+        <Fact label="Thư ký">
+          {meeting.secretaries.length > 0 ? meeting.secretaries.map((s) => s.fullName).join(', ') : empty()}
+        </Fact>
+        {approver && <Fact label="Người duyệt">{approver.muted ? empty(approver.text) : approver.text}</Fact>}
+        <Fact label="Tạo lúc">{formatDateTime(meeting.createdAt)}</Fact>
+      </dl>
+      <div className="record-desc">
         <span>Mô tả</span>
-        {meeting.description ? (
-          <p className="value-text">{meeting.description}</p>
-        ) : (
-          <em className="value-empty">Chưa có mô tả</em>
-        )}
+        {meeting.description ? <p className="value-text">{meeting.description}</p> : empty('Chưa có mô tả')}
       </div>
     </div>
   )
@@ -552,12 +547,16 @@ function DetailSkeleton() {
         ))}
       </div>
       <div className="detail-grid">
-        <div className="card field-grid">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="field-item detail-skeleton-field">
-              <span className="skeleton" />
-              <span className="skeleton" />
-            </div>
+        <div className="card record-overview">
+          {[0, 1].map((col) => (
+            <dl key={col} className="record-facts-list">
+              {Array.from({ length: 4 }, (_, i) => (
+                <div key={i} className="record-fact detail-skeleton-fact">
+                  <span className="skeleton" />
+                  <span className="skeleton" />
+                </div>
+              ))}
+            </dl>
           ))}
         </div>
         <div className="card detail-skeleton-aside">

@@ -41,6 +41,9 @@ TrustCabinet (không chép mã Tailwind/shadcn):
   có số bộ lọc đang bật.
 - **Đầu trang chi tiết** luôn có chip mức độ, kể cả "Thường" (thay một điểm của ADR-0028), nên phần thông tin
   chung bỏ ô "Mức độ". Khung "Lịch sử trạng thái" giữ bên phải.
+- **Thông tin chung** (PO 30/10/2026: lưới cũ có nhiều dòng chỉ một ô, và có chip màu) thành hai cột đều nhau,
+  mỗi dòng "nhãn | giá trị": trái là thời gian, hình thức, địa điểm/link; phải là chủ tọa, thư ký, người duyệt,
+  ngày tạo; mô tả nằm dưới cả hai. Chỉ có chữ: trạng thái và mức độ đã đứng cạnh tiêu đề.
 - **Hộp thoại tạo/sửa cuộc họp** chia 2 cột và cao gần hết màn. Trái: tên, mô tả, thời gian kèm nút nhanh
   30 phút / 1 giờ / 2 giờ, người dự họp. Phải: khung xám cho hình thức, địa điểm, link, và mức độ mật dạng danh
   sách, mỗi mức có một dòng nói nó làm gì.
