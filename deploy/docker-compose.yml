@@ -61,6 +61,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    # Bản ghi cuộc họp và tiếng từng câu theo mic nằm trên đĩa của app (Recordings:StorageRoot). Không có volume thì
+    # mỗi lần deploy là mất hết file.
+    volumes:
+      - recordings:/app/App_Data/recordings
 
   postgres:
     image: postgres:17-alpine
@@ -143,5 +147,6 @@ services:
 
 volumes:
   pgdata:
+  recordings:
   caddy-data:
   caddy-config:
