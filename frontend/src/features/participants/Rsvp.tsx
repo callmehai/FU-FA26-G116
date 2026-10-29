@@ -49,7 +49,7 @@ export function RsvpButtons({
     <div className="rsvp-buttons" role="group" aria-labelledby={labelledBy}>
       <button
         type="button"
-        className="btn btn-accept btn-sm btn-cta"
+        className="btn btn-gold btn-sm btn-cta"
         disabled={pending !== null}
         onClick={() => send('Accepted')}
       >

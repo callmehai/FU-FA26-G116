@@ -17,7 +17,6 @@ import {
   type Meeting,
   type MeetingApprover,
 } from '../../../types/meeting'
-import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { useNotifications } from '../../notifications/notificationsContext'
@@ -38,7 +37,7 @@ import { EDIT_PARAM, useEditMeetingLink } from '../meetingDialogLink'
 import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
 import { CancelMeetingDialog } from '../workflow/CancelMeetingDialog'
-import { MeetingHistory } from '../workflow/MeetingHistory'
+import { MeetingProgress } from '../workflow/MeetingProgress'
 import { lifecycleAction } from '../workflow/lifecycle'
 import { MeetingLifecycleActions } from '../workflow/MeetingLifecycleActions'
 import { MeetingWorkflowBar, type WorkflowRole } from '../workflow/MeetingWorkflowBar'
@@ -250,7 +249,7 @@ function MeetingDetail({
           <div className="record-title">
             <h1>{meeting.title}</h1>
             <StatusBadge status={meeting.status} />
-            {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
+            <SensitivityBadge sensitivity={meeting.sensitivity} />
             <RsvpChip response={meeting.myResponse} />
             {roomRecordings.open && (
               <button
@@ -264,24 +263,14 @@ function MeetingDetail({
               </button>
             )}
           </div>
-          <p className="record-facts">
-            <span>
-              <Icon name="clock" size={16} />
-              {formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)}
-            </span>
-            <span>
-              <Icon name={meeting.mode === 'InPerson' ? 'mapPin' : 'video'} size={16} />
-              {placeLabel(meeting)}
-            </span>
-          </p>
         </div>
         {(canEdit || canReschedule || roomOpen || canRun || canCancel) && (
           <div className="page-header-actions">
             {roomOpen && (
-              // The meeting is running: green like its "Đang diễn ra" state, so it stands apart from blue.
-              <Link className="btn btn-live btn-lg btn-cta" to={routes.meetingRoom(meeting.id)}>
-                <Icon name="video" size={18} />
+              // The meeting is running: the gold call to go in, as on the list and the calendar.
+              <Link className="btn btn-go btn-lg" to={routes.meetingRoom(meeting.id)}>
                 Vào phòng họp
+                <Icon name="arrowRight" size={16} />
               </Link>
             )}
             {canRun && <MeetingLifecycleActions meeting={meeting} onOutcome={onOutcome} />}
@@ -311,6 +300,8 @@ function MeetingDetail({
           onClose={() => setCancelling(false)}
         />
       )}
+
+      <MeetingProgress meeting={meeting} history={history.items} showApproval={isOrganizer || isApprover} />
 
       {meeting.cancellation && <CancellationBar meeting={meeting} userId={user?.id} />}
 
@@ -354,7 +345,7 @@ function MeetingDetail({
         ))}
       </div>
 
-      <div className="detail-grid">
+      <div className="detail-body">
         <section>
           {tab === 'overview' ? (
             <Overview
@@ -402,13 +393,6 @@ function MeetingDetail({
             onChanged={roomRecordings.reload}
           />
         )}
-
-        <MeetingHistory
-          history={history}
-          onRetry={() => void history.reload()}
-          onLoadMore={() => void history.loadMore()}
-          nameOf={nameOf}
-        />
       </div>
     </>
   )
@@ -459,50 +443,50 @@ function approverLabel(
 }
 
 function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: string; muted: boolean } | null }) {
+  // AI-eCabinet's general card: three columns of facts, the description under a rule. The state and
+  // level are not repeated here: they sit beside the title.
   return (
-    <div className="card field-grid">
+    <div className="card field-grid info-card">
       <div className="field-item">
-        <span>Trạng thái</span>
-        <StatusBadge status={meeting.status} />
-      </div>
-      <div className="field-item">
-        <span>Mức độ</span>
-        <SensitivityBadge sensitivity={meeting.sensitivity} />
-      </div>
-      <div className="field-item span-all">
-        <span>Thời gian</span>
+        <span>Thời gian họp</span>
         <strong>{formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)}</strong>
       </div>
-      {meeting.actualStartedAt && (
-        <div className="field-item span-all">
-          <span>Thời gian thực tế</span>
+      <div className="field-item">
+        <span>{meeting.actualEndedAt ? 'Thời gian thực tế' : 'Bắt đầu thực tế'}</span>
+        {meeting.actualStartedAt ? (
           <strong>
             {meeting.actualEndedAt
               ? formatSchedule(meeting.actualStartedAt, meeting.actualEndedAt)
-              : `Bắt đầu ${formatDateTime(meeting.actualStartedAt)}`}
+              : formatDateTime(meeting.actualStartedAt)}
           </strong>
-        </div>
-      )}
+        ) : (
+          <em className="value-empty">Chưa bắt đầu</em>
+        )}
+      </div>
+      <div className="field-item">
+        <span>{meeting.mode === 'Online' ? 'Link trực tuyến' : meeting.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
+        {meeting.mode === 'Online' ? (
+          <strong className="value-text">{meeting.onlineLink || 'Phòng họp trực tuyến TrustCabinet'}</strong>
+        ) : meeting.location ? (
+          <strong>{meeting.location}</strong>
+        ) : (
+          <em className="value-empty">Chưa có</em>
+        )}
+      </div>
       <div className="field-item">
         <span>Hình thức</span>
         <strong>{MEETING_MODE_LABEL[meeting.mode]}</strong>
       </div>
-      {meeting.mode !== 'Online' && (
-        <div className="field-item">
-          <span>{meeting.mode === 'Hybrid' ? 'Địa điểm họp trực tiếp' : 'Địa điểm'}</span>
-          {meeting.location ? <strong>{meeting.location}</strong> : <em className="value-empty">Chưa có</em>}
-        </div>
-      )}
-      {meeting.mode !== 'InPerson' && (
+      {meeting.mode === 'Hybrid' && (
         <div className="field-item">
           <span>Link trực tuyến</span>
-          {meeting.onlineLink ? (
-            <strong className="value-text">{meeting.onlineLink}</strong>
-          ) : (
-            <strong>Phòng họp trực tuyến TrustCabinet</strong>
-          )}
+          <strong className="value-text">{meeting.onlineLink || 'Phòng họp trực tuyến TrustCabinet'}</strong>
         </div>
       )}
+      <div className="field-item">
+        <span>Tạo lúc</span>
+        <strong>{formatDateTime(meeting.createdAt)}</strong>
+      </div>
       <div className="field-item field-row-start">
         <span>Chủ tọa</span>
         {meeting.chair ? <strong>{meeting.chair.fullName}</strong> : <em className="value-empty">Chưa có</em>}
@@ -521,10 +505,6 @@ function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: s
           {approver.muted ? <em className="value-empty">{approver.text}</em> : <strong>{approver.text}</strong>}
         </div>
       )}
-      <div className="field-item">
-        <span>Tạo lúc</span>
-        <strong>{formatDateTime(meeting.createdAt)}</strong>
-      </div>
       <div className="field-item span-all field-divided">
         <span>Mô tả</span>
         {meeting.description ? (
@@ -554,19 +534,14 @@ function DetailSkeleton() {
           </span>
         ))}
       </div>
-      <div className="detail-grid">
-        <div className="card field-grid">
+      <div className="detail-body">
+        <div className="card field-grid info-card">
           {Array.from({ length: 6 }, (_, i) => (
             <div key={i} className="field-item detail-skeleton-field">
               <span className="skeleton" />
               <span className="skeleton" />
             </div>
           ))}
-        </div>
-        <div className="card detail-skeleton-aside">
-          <span className="skeleton" />
-          <span className="skeleton" />
-          <span className="skeleton" />
         </div>
       </div>
     </div>

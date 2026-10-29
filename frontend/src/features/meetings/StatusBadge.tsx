@@ -6,24 +6,12 @@ import { STATUS_TONE } from './statusTone'
  * A meeting's lifecycle state as AI-eCabinet draws it (ADR-0035): a rounded chip with a dot in the
  * state's colour. Shape tells states apart as well as colour — a draft and a wait are dashed, "Đang
  * diễn ra" is the one solid chip, its dot pulsing so a live meeting is found first on any screen.
- *
- * `label` overrides the text while keeping the colour. The history timeline needs that: a row
- * there records what *happened* ("Đã gửi duyệt"), not what the meeting *is* ("Chờ duyệt"), and
- * passes `plain`: its own dot already sits on the timeline, so the row shows the text alone.
  */
-export function StatusBadge({
-  status,
-  label,
-  plain = false,
-}: {
-  status: MeetingStatus
-  label?: string
-  plain?: boolean
-}) {
+export function StatusBadge({ status }: { status: MeetingStatus }) {
   return (
-    <span className={`status status-${STATUS_TONE[status]}${plain ? ' status-plain' : ''}`}>
-      {!plain && <span className="status-dot" aria-hidden="true" />}
-      {label ?? MEETING_STATUS_LABEL[status]}
+    <span className={`status status-${STATUS_TONE[status]}`}>
+      <span className="status-dot" aria-hidden="true" />
+      {MEETING_STATUS_LABEL[status]}
     </span>
   )
 }

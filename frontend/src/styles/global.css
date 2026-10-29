@@ -234,14 +234,25 @@ code {
    screen does not show three blue calls to action side by side. */
 .btn-live { background: var(--live); color: #fff; }
 .btn-live:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 86%, #000); }
-/* "Tham dự": a yes to the invitation, in the soft green of the "Đã xác nhận tham dự" chip it becomes. */
-.btn-accept { background: var(--chip-emerald-bg); border-color: color-mix(in srgb, var(--live) 32%, transparent); color: var(--chip-emerald-fg); }
-.btn-accept:hover:not(:disabled) { background: color-mix(in srgb, var(--live) 16%, var(--surface)); border-color: color-mix(in srgb, var(--live) 50%, transparent); }
+
+/* What waits on the user now (Tham dự, Gửi duyệt, Duyệt, Công bố, Bắt đầu họp): AI-eCabinet's gold,
+   dark text. `.btn-ping` adds the ripple to the one that matters most (Bắt đầu họp). */
+.btn-gold { background: var(--gold); color: var(--ink); font-weight: 700; }
+.btn-gold:hover:not(:disabled) { filter: brightness(1.05); }
+.btn-gold:focus-visible { outline-color: var(--ink); }
+.btn-gold:disabled { background: var(--line); color: var(--muted-ink); }
+.btn-ping { animation: cta-ping 1.8s ease-out .6s infinite; }
+@keyframes cta-ping {
+  0% { box-shadow: 0 0 0 0 rgb(212 171 82 / 75%), 0 4px 12px rgb(212 171 82 / 35%); }
+  100% { box-shadow: 0 0 0 12px rgb(212 171 82 / 0%), 0 4px 12px rgb(212 171 82 / 35%); }
+}
 
 /* AI-eCabinet's call to act now ("Vào phòng họp"): gold with dark text, a ring that pings and an
    arrow that nudges, so the one thing to do is found at a glance. Deliberate motion, sanctioned in
    .slop.json; it stops under prefers-reduced-motion. */
-.btn-go { gap: 6px; height: 32px; padding: 0 12px; background: var(--gold); color: var(--ink); font-size: 12.5px; font-weight: 700; animation: go-ping 2s ease-out infinite; }
+.btn-go:not(.btn-lg) { height: 32px; }
+.btn-go { gap: 6px; padding: 0 12px; background: var(--gold); color: var(--ink); font-size: 12.5px; font-weight: 700; animation: go-ping 2s ease-out infinite; }
+.btn-go.btn-lg { padding: 0 16px; font-size: 13.5px; }
 .btn-go:hover:not(:disabled) { filter: brightness(1.05); }
 .btn-go .icon { animation: nudge 2s ease-in-out infinite; }
 .btn-go:focus-visible { outline-color: var(--ink); }
@@ -1348,9 +1359,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .status-live { --status-dot: var(--live-dot); background: var(--live); color: #fff; }
 .status-live .status-dot { animation: live-pulse 1.6s ease-in-out infinite; }
 @keyframes live-pulse { 50% { opacity: .35; } }
-/* A history row's event ("Gửi duyệt") is a label, not the meeting's state: the text alone, even
-   when it led to the live state. */
-.status-plain, .status-plain.status-live { height: auto; padding: 0; border: none; background: none; color: var(--ink); font-size: inherit; font-weight: 600; }
 
 .level {
   display: inline-flex;
@@ -1409,7 +1417,50 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .record-head .page-header-actions > .btn { flex: 1 1 0; min-width: max-content; }
 }
 
-.detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 16px; align-items: start; }
+.detail-body { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* ---------- Meeting progress (workflow/MeetingProgress.tsx) ----------
+   AI-eCabinet's lifecycle strip under the title: one line naming the current step and a button
+   that unfolds the chevrons. */
+.progress { display: flex; flex: none; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.progress-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.progress-now { min-width: 0; margin: 0; color: var(--muted-ink); font-size: 13.5px; }
+.progress-label { font-weight: 600; }
+.progress-now b { color: var(--brand); }
+.progress-now b.progress-stop { color: #9b2416; }
+.progress-toggle { display: grid; }
+.progress-toggle > span { grid-area: 1 / 1; }
+.progress-toggle > [aria-hidden='true'] { visibility: hidden; }
+.progress-caret { display: flex; transition: transform .2s; }
+.progress-caret-open { transform: rotate(180deg); }
+.progress-steps { display: flex; margin: 0; padding: 0; overflow-x: auto; overflow-y: hidden; list-style: none; scrollbar-width: none; }
+.progress-step {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 96px;
+  height: 28px;
+  margin-right: -4px;
+  padding: 0 14px 0 20px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  outline: none;
+}
+.progress-step:first-child { padding-left: 12px; border-radius: 6px 0 0 6px; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%); }
+.progress-step:last-child { margin-right: 0; }
+.progress-step:focus-visible { text-decoration: underline; }
+.progress-step-done { background: #dde5f2; color: var(--brand); }
+.progress-step-now { background: var(--brand); color: #fff; }
+.progress-step-stop { background: var(--dot-red); color: #fff; }
+.progress-step-todo { background: #dfe3e9; color: var(--ink-soft); }
+@media (max-width: 640px) {
+  .progress-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .progress-head .btn { height: 40px; }
+}
 
 .field-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 24px; }
 .field-item { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-width: 0; }
@@ -1434,67 +1485,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .detail-skeleton-field { gap: 10px; }
 .detail-skeleton-field .skeleton:first-child { width: 40%; height: 10px; }
 .detail-skeleton-field .skeleton:last-child { width: 70%; height: 16px; }
-.detail-skeleton-aside { display: flex; flex-direction: column; gap: 14px; }
-.detail-skeleton-aside .skeleton:first-child { width: 50%; height: 16px; }
 
 /* A tab whose feature has no endpoint yet: what it will hold, and what it waits on. */
 .tab-pending { padding: 40px; text-align: center; }
 .tab-pending p { margin: 0; }
 .tab-pending p + p { margin-top: 6px; font-size: 13px; }
 
-/* Dot and line are both drawn by the <li>, from one origin, so they cannot drift apart: the dot's
-   centre and the line's centre sit on the same x (6px). Each item draws the segment from its own
-   dot down to the next one's, and the last item draws none. The 12px dot sits on a white ring in
-   its own colour, centred on the 24px chip. */
-.timeline { margin: 0; padding: 0; list-style: none; }
-.timeline li { position: relative; padding: 0 0 16px 24px; }
-.timeline li:last-child { padding-bottom: 0; }
-
-.timeline li::before {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  top: 6px;
-  left: 0;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--dot, var(--dot-slate));
-  box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--dot, var(--dot-slate));
-}
-
-.timeline li:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 22px;
-  bottom: -1px;
-  left: 5px;
-  width: 2px;
-  background: var(--line-soft);
-}
-
-.timeline-amber { --dot: var(--dot-amber); }
-.timeline-red { --dot: var(--dot-red); }
-.timeline-emerald { --dot: var(--dot-emerald); }
-.timeline-blue { --dot: var(--dot-blue); }
-.timeline-violet { --dot: var(--dot-violet); }
-.timeline-live { --dot: var(--live); }
-
-/* On a 360px phone a long label and the time do not fit one line: the time moves under the label. */
-.timeline-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 8px; min-height: 24px; }
-/* Who acted lives in the time's tooltip (AI-eCabinet), so a row stays one line. */
-.timeline-time {
-  flex: none;
-  border-radius: 4px;
-  color: var(--muted-ink);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  cursor: default;
-}
-.timeline-time:hover { color: var(--ink); }
-.timeline-time:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* A rejection reason is the author's own words: quoted, line breaks kept. */
-.timeline-reason,
 .workflow-reason {
   margin: 6px 0 0;
   padding: 8px 12px;
@@ -1506,13 +1503,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.timeline-skeleton li { display: flex; flex-direction: column; gap: 8px; }
-.timeline-skeleton li::before { background: var(--line); box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--line); }
-.timeline-skeleton .skeleton:first-child { width: 55%; height: 14px; }
-.timeline-skeleton .skeleton:last-child { width: 40%; }
-.history-error { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; color: var(--chip-red-fg); }
-.history-error p { margin: 0; }
-.history-inline-error { margin: 14px 0 0; color: var(--chip-red-fg); font-size: 13px; }
 .history-more { margin-top: 12px; color: var(--ink-soft); }
 
 /* ---------- Approval workflow (SCRUM-19) ----------
@@ -2493,7 +2483,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 @media (max-width: 960px) {
   .workflow-bar { flex-wrap: wrap; }
   .workflow-actions { width: 100%; justify-content: flex-end; }
-  .detail-grid { grid-template-columns: minmax(0, 1fr); }
   .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
