@@ -1372,10 +1372,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .record-head .page-header-actions > .btn { flex: 1 1 0; min-width: max-content; }
 }
 
-/* The status history sits left of the tab (PO 30/10/2026), where the eye starts; on a narrow
-   screen it falls under the tab's content. */
-.detail-grid { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
-.detail-grid > aside { order: -1; }
+.detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 16px; align-items: start; }
 
 .field-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 24px; }
 .field-item { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-width: 0; }
@@ -2560,7 +2557,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .workflow-bar { flex-wrap: wrap; }
   .workflow-actions { width: 100%; justify-content: flex-end; }
   .detail-grid { grid-template-columns: minmax(0, 1fr); }
-  .detail-grid > aside { order: 0; }
   .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
