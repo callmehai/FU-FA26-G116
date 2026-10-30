@@ -95,8 +95,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         Assert.Equal([both], Ids(groups[0].GetProperty("documents")));
         Assert.Equal([second], Ids(groups[1].GetProperty("documents")));
         Assert.Equal([both], Ids(groups[2].GetProperty("documents")));
-        // Every document is general as well, linked or not, until taken out of the group (ADR-0043).
-        Assert.Equal([both, second, general], Ids(body.GetProperty("general")));
+        Assert.Equal([general], Ids(body.GetProperty("general")));
 
         var row = groups[0].GetProperty("documents")[0];
         Assert.Equal("Tờ trình.pdf", row.GetProperty("fileName").GetString());
@@ -107,8 +106,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         Assert.Equal("Document test 0", row.GetProperty("addedBy").GetProperty("fullName").GetString());
         Assert.True(row.GetProperty("byteSize").GetInt64() > 0);
         Assert.Equal(JsonValueKind.String, row.GetProperty("addedAt").ValueKind);
-        Assert.Equal(JsonValueKind.Null, body.GetProperty("general").EnumerateArray()
-            .Single(d => d.GetProperty("id").GetGuid() == general).GetProperty("pageCount").ValueKind);
+        Assert.Equal(JsonValueKind.Null, Assert.Single(body.GetProperty("general").EnumerateArray()).GetProperty("pageCount").ValueKind);
     }
 
     [Fact]

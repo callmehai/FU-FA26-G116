@@ -39,16 +39,9 @@ public sealed class AgendaPoMigrationTests
                     {status}, {start}, {end}, {now}, {now})
                 """);
         }
-        // Rows written by SQL with the columns of that point: the model's later columns do not exist yet.
-        var document = AgendaFixture.TestDocument(meeting.Id, "Preserved file", user.Id);
-        db.Add(document.StoredFile); await db.SaveChangesAsync();
-        await db.Database.ExecuteSqlInterpolatedAsync($"""
-            INSERT INTO meeting_documents (id, meeting_id, stored_file_id, file_name, added_by_id, added_at, created_at, updated_at)
-            VALUES ({document.Id}, {meeting.Id}, {document.StoredFile.Id}, {document.FileName}, {user.Id}, {now}, {now}, {now})
-            """);
-        foreach (var item in new[] { ids[0], ids[2] })
-            await db.Database.ExecuteSqlInterpolatedAsync(
-                $"INSERT INTO meeting_document_agenda_items (meeting_document_id, agenda_item_id) VALUES ({document.Id}, {item})");
+        var document = AgendaFixture.TestDocument(meeting.Id, "Preserved file", user.Id, ids[0]);
+        document.AgendaItemLinks.Add(new() { AgendaItemId = ids[2] });
+        db.Add(document); await db.SaveChangesAsync();
         await db.Database.MigrateAsync();
         db.ChangeTracker.Clear();
         var items = await db.AgendaItems.OrderBy(i => i.Position).ToArrayAsync();
@@ -66,7 +59,7 @@ public sealed class AgendaPoMigrationTests
         Assert.Equal(now, items[1].ActualStartedAt);
         Assert.Equal(now.AddMinutes(5), items[2].ActualEndedAt);
         Assert.Equal(2, await db.MeetingDocumentAgendaItems.CountAsync());
-        Assert.True(await db.StoredFiles.AnyAsync(f => f.Id == document.StoredFile.Id));
+        Assert.True(await db.StoredFiles.AnyAsync(f => f.Id == document.StoredFileId));
         Assert.True(await db.MeetingGuestInvitations.AnyAsync(g => g.Id == guest.Id && g.RevokedAt == null));
         Assert.Equal(0, await db.Database.SqlQueryRaw<int>("SELECT count(*)::int AS \"Value\" FROM information_schema.columns WHERE table_name = 'agenda_items' AND column_name = 'planned_duration_minutes'").SingleAsync());
         var presenterCheck = await Assert.ThrowsAsync<PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"UPDATE agenda_items SET presenter_guest_invitation_id = {guest.Id} WHERE id = {ids[0]}"));

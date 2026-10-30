@@ -27,13 +27,6 @@ public class MeetingDocument : Entity
 
     public DateTimeOffset AddedAt { get; set; }
 
-    /// <summary>
-    /// Taken out of the general group by the Chair or Secretary (ADR-0043). Every document starts general,
-    /// including one added straight to an agenda item; this applies only while it is linked to an item, so a
-    /// document with no link left is general again (BR-280).
-    /// </summary>
-    public bool ExcludedFromGeneral { get; set; }
-
     /// <summary>Set when removed from the meeting (UC-33c). The row and its comments stay as evidence.</summary>
     public DateTimeOffset? RemovedAt { get; set; }
     public Guid? RemovedById { get; set; }

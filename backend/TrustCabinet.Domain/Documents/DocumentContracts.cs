@@ -44,10 +44,6 @@ public enum DocumentUploadFailure
     NotLinked,
     /// <summary>The files do not fit the system's storage limit (ADR-0034).</summary>
     StorageFull,
-    /// <summary>The document is already out of the general group (ADR-0043).</summary>
-    NotGeneral,
-    /// <summary>The document is linked to no agenda item, so the general group is its only place (BR-280).</summary>
-    GeneralOnly,
 }
 
 /// <summary>A file part as the request delivered it, before anything about it is trusted.</summary>
@@ -135,10 +131,6 @@ public interface IMeetingDocumentService
 
     /// <summary>UC-33d: drops one link; the document stays in the meeting (BR-280).</summary>
     Task<DocumentUploadOutcome> DetachAsync(Guid meetingId, Guid agendaItemId, Guid meetingDocumentId, Guid actorId,
-        CancellationToken ct = default);
-
-    /// <summary>ADR-0043: takes a document linked to an agenda item out of the general group; it stays in the meeting.</summary>
-    Task<DocumentUploadOutcome> RemoveFromGeneralAsync(Guid meetingId, Guid meetingDocumentId, Guid actorId,
         CancellationToken ct = default);
 }
 

@@ -375,71 +375,6 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
         Assert.Equal((409, "MSG247"), Pick(await Read(await secretary.DeleteAsync($"{Links(s, item)}/{document}"))));
     }
 
-    // ---- ADR-0043: out of the general group ----
-
-    private static string General(DocumentFixture.Scenario s, Guid document) => $"{Url(s)}/{document}/general";
-
-    private static Guid[] GeneralIds(JsonElement list)
-        => list.GetProperty("general").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()).ToArray();
-
-    [Fact]
-    public async Task A_document_added_straight_to_an_item_or_linked_later_stays_general_until_taken_out()
-    {
-        var s = await fixture.Seed();
-        var first = await AddItem(s.MeetingId, 1);
-        var second = await AddItem(s.MeetingId, 2);
-        var general = await Attached(s, "a.pdf");
-        using var client = fixture.Client(s.Chair);
-        // Linking a general document only adds a reference under the item.
-        await client.PostAsJsonAsync(Links(s, first), new { documentIds = new[] { general } });
-        // Uploaded straight into an item: under the item and in the general group.
-        var (_, _, uploaded) = await Read(await client.PostAsync($"{Links(s, second)}/upload",
-            DocumentFixture.Form(("b.pdf", SampleFiles.Pdf("b"), null))));
-        var direct = uploaded.GetProperty("documents")[0].GetProperty("id").GetGuid();
-        var (_, _, list) = await Read(await client.GetAsync(Url(s)));
-        Assert.Equal([general, direct], GeneralIds(list));
-
-        Assert.Equal((200, "MSG368"), Pick(await Read(await client.DeleteAsync(General(s, general)))));
-        (_, _, list) = await Read(await client.GetAsync(Url(s)));
-        Assert.Equal([direct], GeneralIds(list));
-        Assert.Equal(general, list.GetProperty("agendaItems")[0].GetProperty("documents")[0].GetProperty("id").GetGuid());
-        Assert.Equal((404, "MSG370"), Pick(await Read(await client.DeleteAsync(General(s, general)))));
-
-        // Its last link gone, it is general again (BR-280), and stays so when linked again.
-        Assert.Equal((200, "MSG239"), Pick(await Read(await client.DeleteAsync($"{Links(s, first)}/{general}"))));
-        await client.PostAsJsonAsync(Links(s, second), new { documentIds = new[] { general } });
-        (_, _, list) = await Read(await client.GetAsync(Url(s)));
-        Assert.Equal([general, direct], GeneralIds(list));
-    }
-
-    [Fact]
-    public async Task Taking_out_of_the_general_group_needs_a_link_the_role_an_open_meeting_and_a_save()
-    {
-        var s = await fixture.Seed();
-        var item = await AddItem(s.MeetingId);
-        var linked = await Attached(s, "a.pdf");
-        var alone = await Attached(s, "b.pdf");
-        var removed = await Attached(s, "c.pdf");
-        using var secretary = fixture.Client(s.Secretary);
-        await secretary.PostAsJsonAsync(Links(s, item), new { documentIds = new[] { linked, removed } });
-        await secretary.DeleteAsync($"{Url(s)}/{removed}");
-
-        // Nowhere else to show it: the general group is its only place.
-        Assert.Equal((409, "MSG369"), Pick(await Read(await secretary.DeleteAsync(General(s, alone)))));
-        Assert.Equal((404, "MSG170"), Pick(await Read(await secretary.DeleteAsync(General(s, removed)))));
-        using (var member = fixture.Client(s.Member))
-            Assert.Equal((403, "MSG241"), Pick(await Read(await member.DeleteAsync(General(s, linked)))));
-        fixture.SaveFailure.When = db => db.ChangeTracker.Entries<MeetingDocument>().Any(e => e.State == EntityState.Modified);
-        Assert.Equal((503, "MSG245"), Pick(await Read(await secretary.DeleteAsync(General(s, linked)))));
-        fixture.SaveFailure.When = null;
-        await using (var db = fixture.Db())
-            Assert.False(await db.MeetingDocuments.Where(d => d.Id == linked).Select(d => d.ExcludedFromGeneral).SingleAsync());
-        await SetStatus(s.MeetingId, MeetingStatus.Ended);
-        Assert.Equal((409, "MSG247"), Pick(await Read(await secretary.DeleteAsync(General(s, linked)))));
-        await SetStatus(s.MeetingId, MeetingStatus.Cancelled);
-        Assert.Equal((409, "MSG349"), Pick(await Read(await secretary.DeleteAsync(General(s, linked)))));
-    }
-
     // ---- Across the changes ----
 
     [Fact]
@@ -492,8 +427,6 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
             () => client.PostAsJsonAsync($"{Links(s, item)}/from-library", new { documentIds = new[] { another } }),
             () => client.PostAsync($"{Links(s, item)}/upload", DocumentFixture.Form(("y.pdf", SampleFiles.Pdf("y"), null))),
             () => client.DeleteAsync($"{Links(s, item)}/{document}"),
-            () => client.PostAsJsonAsync(Links(s, item), new { documentIds = new[] { document } }),
-            () => client.DeleteAsync(General(s, document)),
         })
         {
             var (status, _, body) = await Read(await change());

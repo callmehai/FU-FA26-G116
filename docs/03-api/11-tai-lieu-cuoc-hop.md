@@ -149,9 +149,7 @@ tài khoản đang hoạt động; **Guest chưa được hỗ trợ** vì chưa
 - `agendaItems`: **mọi** mục nghị sự theo `position`, kể cả mục chưa có tài liệu (để FE đặt nút thêm tài liệu cho
   từng mục ở SCRUM-58). Tài liệu gắn nhiều mục xuất hiện ở từng mục (BR-277). `status`: `Pending` /
   `InProgress` / `Done`.
-- `general`: mọi tài liệu của cuộc họp, kể cả tài liệu đang gắn mục, **trừ** tài liệu Chủ toạ/Thư ký đã gỡ khỏi
-  nhóm chung (`DELETE …/documents/{id}/general`). Tài liệu không gắn mục nào luôn ở đây (BR-280, ADR-0043). Một tài
-  liệu có thể vừa ở `general` vừa ở một hay nhiều mục.
+- `general`: tài liệu không gắn mục nào (BR-280).
 - Trong mỗi nhóm, tài liệu xếp theo thời điểm thêm (cũ trước). Tài liệu đã gỡ không có mặt (BR-211).
 - `currentAgendaItemId`: mục đang `InProgress`, hoặc `null`. Panel trong phòng họp dùng nó để đưa mục đang bàn
   lên đầu (BR-316) — server **không** đổi thứ tự theo nơi gọi.
@@ -326,25 +324,10 @@ Ba nguồn, ba endpoint, cùng mã thành công `200 MSG238`:
 
 ### `DELETE /api/meetings/{id}/agenda/{itemId}/documents/{meetingDocumentId}` — gỡ khỏi một mục (UC-33d)
 
-Xoá **đúng một** liên kết; tài liệu vẫn ở cuộc họp, giữ liên kết với mục khác, hết liên kết thì về nhóm chung (BR-280)
-và xoá cờ "đã gỡ khỏi nhóm chung", nên gắn lại sau đó tài liệu vẫn ở nhóm chung (ADR-0043).
+Xoá **đúng một** liên kết; tài liệu vẫn ở cuộc họp, giữ liên kết với mục khác, hết liên kết thì về nhóm chung (BR-280).
 Thứ tự theo sequence: tài liệu còn trong cuộc họp (`404 MSG170`) → mục thuộc cuộc họp (`404 MSG242`) → liên kết tồn tại
 (`404 MSG246`). `200 { "code": "MSG239", "message", "meetingId", "agendaItemId", "meetingDocumentId" }`. Lỗi khác:
 `403 MSG241`, `409 MSG247`, `503 MSG245`.
-
-### `DELETE /api/meetings/{id}/documents/{meetingDocumentId}/general` — gỡ khỏi nhóm tài liệu chung (ADR-0043)
-
-Đặt `excluded_from_general = true`: tài liệu không còn ở `general` nhưng vẫn ở cuộc họp và ở mọi mục đang gắn. Cùng
-quyền và cùng mã lỗi chung như UC-33d (`403 MSG241`, `409 MSG247`, `409 MSG349`, `404 MSG174`, `503 MSG245`).
-
-| Tình huống | Mã |
-|---|---|
-| Thành công, phát `documentsChanged` | `200 { "code": "MSG368", "message", "meetingId", "meetingDocumentId" }` |
-| Tài liệu đã gỡ khỏi cuộc họp hoặc thuộc cuộc họp khác | `404 MSG170` |
-| Đã gỡ khỏi nhóm chung trước đó | `404 MSG370` |
-| Không gắn mục nào (nhóm chung là chỗ duy nhất của nó) | `409 MSG369` |
-
-FE hiện nút này ở nhóm "Tài liệu chung" cho tài liệu đang gắn ít nhất một mục.
 
 ### Note cho FE (SCRUM-58)
 

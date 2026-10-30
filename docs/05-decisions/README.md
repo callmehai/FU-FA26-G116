@@ -30,7 +30,7 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0017](0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md) | End Meeting độc lập với Vote/điểm danh; phục hồi Thư ký theo trạng thái | Đã chấp nhận — PO 13/10/2026 |
 | [0018](0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md) | Tài liệu không có phiên bản — kho cá nhân và cuộc họp chỉ giữ tham chiếu tới file | Đã chấp nhận — PO 13/10/2026; phần khoá gỡ, AgendaItemId và số UC-33b thay thế bởi ADR-0020 |
 | [0019](0019-chuan-bi-bieu-quyet-truoc-khi-hop.md) | Chuẩn bị biểu quyết trước khi họp và chốt điều kiện mở phiếu | Đã chấp nhận — xác nhận người dùng 14/10/2026 |
-| [0020](0020-tai-lieu-theo-quyen-xem-cuoc-hop.md) | Tài liệu đi theo quyền xem cuộc họp; biểu quyết không gắn mục nghị sự | Đã chấp nhận — PO 15/10/2026; phần nhóm chung của UC-33d thay thế bởi ADR-0043 |
+| [0020](0020-tai-lieu-theo-quyen-xem-cuoc-hop.md) | Tài liệu đi theo quyền xem cuộc họp; biểu quyết không gắn mục nghị sự | Đã chấp nhận — PO 15/10/2026 |
 | [0021](0021-vong-doi-thanh-phan-va-y-dinh-gui-thu.md) | Lịch sử thành phần và ý định gửi thư cùng transaction | Đề xuất — implementation SCRUM-20 |
 | [0022](0022-sua-quyen-vai-tro-khong-dang-xuat.md) | Sửa quyền của vai trò không đăng xuất ai — báo qua hub để trình duyệt tự refresh token | Đề xuất — SCRUM-105; phần đổi vai trò của một người thay thế bởi ADR-0023 |
 | [0023](0023-doi-vai-tro-nguoi-dung-khong-dang-xuat.md) | Đổi vai trò của một người dùng cũng không đăng xuất — báo và áp dụng quyền mới ngay | Đề xuất — SCRUM-105, PO 22/10/2026 |
@@ -53,4 +53,3 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0040](0040-cach-ghi-am-theo-hinh-thuc-hop.md) | Cách ghi âm suy ra từ hình thức họp: trực tuyến ghi theo micro từng người, trực tiếp ghi bằng mic phòng; bỏ chọn cách ghi, bỏ ghi trộn cả cuộc gọi | Đề xuất — SCRUM-109, PO 29/10/2026; điểm 4 thay thế một phần bởi ADR-0041 |
 | [0041](0041-mic-phong-ghi-tung-luot.md) | Mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi, nối thành một bản ghi của cuộc họp và chuyển chữ lại cả bản, như AI-eCabinet | Đề xuất — SCRUM-29, PO 29/10/2026 |
 | [0042](0042-luu-ban-ghi-giong-mau-de-nghe-lai.md) | Lưu bản ghi giọng mẫu đã mã hoá để chính chủ nghe lại, như AI-eCabinet; thông báo đồng ý lên 1.1 | Đề xuất — SCRUM-35, PO 29/10/2026 |
-| [0043](0043-tai-lieu-chung-giu-khi-gan-muc.md) | Tài liệu chung vẫn ở nhóm chung khi gắn vào mục nghị sự; gỡ khỏi nhóm chung là một thao tác riêng | Đề xuất — PR #201, 30/10/2026 |
