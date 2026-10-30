@@ -41,7 +41,6 @@ export const roomMessage = {
   shareFailed: 'Không chia sẻ được màn hình. Vui lòng thử lại.', // MSG341
   muted: (name: string) => `Đã tắt micro của ${name}.`, // MSG342
   chatFailed: 'Không gửi được tin nhắn. Vui lòng thử lại.', // MSG343
-  recordingBlocksLeave: 'Bạn đang ghi âm cuộc họp. Bấm Dừng và lưu ở panel Bản ghi trước khi rời phòng.', // MSG344
 }
 
 type Device = 'micro' | 'camera'

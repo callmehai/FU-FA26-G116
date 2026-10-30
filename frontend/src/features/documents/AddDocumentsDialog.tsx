@@ -9,6 +9,7 @@ import {
 import { getLibrary } from '../../api/library'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
+import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
@@ -21,7 +22,8 @@ import { FileUploadFields } from './FileUploadFields'
 import { useFileUpload } from './useFileUpload'
 import { LibraryPicker } from './LibraryPicker'
 
-type Source = 'computer' | 'library' | 'meeting'
+export type DocumentSource = 'computer' | 'library' | 'meeting'
+type Source = DocumentSource
 
 const folderDate = new Intl.DateTimeFormat('vi-VN', {
   day: '2-digit',
@@ -60,6 +62,8 @@ export function AddDocumentsDialog({
   meeting,
   item,
   meetingDocuments = [],
+  meetingDocumentsError,
+  initialSource,
   onClose,
   onAdded,
   onQueued,
@@ -68,8 +72,12 @@ export function AddDocumentsDialog({
   meeting: Meeting
   /** The agenda item to link to; the general group when absent. */
   item?: { id: string; number: number; title: string; documentIds: string[] }
-  /** Every document of the meeting, for "Trong cuộc họp". */
-  meetingDocuments?: MeetingDocument[]
+  /** Every document of the meeting, for "Trong cuộc họp"; null while it loads. */
+  meetingDocuments?: MeetingDocument[] | null
+  /** Why `meetingDocuments` could not be read, with a retry; the tab says so instead of "no documents". */
+  meetingDocumentsError?: { message: string; retry: () => void } | null
+  /** The tab to open on, when the user already chose where from (the agenda row's menu). */
+  initialSource?: Source
   onClose: () => void
   onAdded: (message: string) => void
   /** Files from the computer are in the upload queue; the tray follows them. */
@@ -77,13 +85,13 @@ export function AddDocumentsDialog({
   onStale: (message: string) => void
 }) {
   const handleAccessLost = useAccessLost()
-  const linkable = item ? meetingDocuments.filter((d) => !item.documentIds.includes(d.id)) : []
+  const linkable = item ? (meetingDocuments ?? []).filter((d) => !item.documentIds.includes(d.id)) : []
   const sources = [
     ...(item ? [{ value: 'meeting' as const, label: 'Trong cuộc họp', short: 'Cuộc họp' }] : []),
     { value: 'computer' as const, label: 'Tải từ máy', short: 'Máy' },
     { value: 'library' as const, label: 'Từ kho của tôi', short: 'Kho' },
   ] satisfies { value: Source; label: string; short: string }[]
-  const [source, setSource] = useState<Source>(item && linkable.length > 0 ? 'meeting' : 'computer')
+  const [source, setSource] = useState<Source>(initialSource ?? (item && linkable.length > 0 ? 'meeting' : 'computer'))
   const [fromLibrary, setFromLibrary] = useState(new Map<string, LibraryDocument>())
   const [fromMeeting, setFromMeeting] = useState(new Set<string>())
   const [libraryReload, setLibraryReload] = useState(0)
@@ -217,7 +225,21 @@ export function AddDocumentsDialog({
         )}
 
         {source === 'meeting' &&
-          (linkable.length === 0 ? (
+          (meetingDocumentsError ? (
+            <div className="alert alert-error" role="alert">
+              <p>{meetingDocumentsError.message}</p>
+              <button type="button" className="btn btn-outline btn-sm" onClick={meetingDocumentsError.retry}>
+                <Icon name="refresh" size={16} />
+                Thử lại
+              </button>
+            </div>
+          ) : meetingDocuments === null ? (
+            <p className="documents-empty" aria-busy="true">
+              Đang tải…
+            </p>
+          ) : meetingDocuments.length === 0 ? (
+            <p className="documents-empty">Cuộc họp chưa có tài liệu.</p>
+          ) : linkable.length === 0 ? (
             <p className="documents-empty">Mọi tài liệu của cuộc họp đã gắn với mục này.</p>
           ) : (
             <ul className="picker-list" aria-label="Tài liệu của cuộc họp">

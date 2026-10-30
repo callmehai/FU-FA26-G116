@@ -37,12 +37,19 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0024](0024-luu-file-tai-lieu-tren-cloudflare-r2.md) | Lưu file tài liệu trên Cloudflare R2, mọi byte đi qua backend | Đề xuất — SCRUM-107 |
 | [0025](0025-version-rieng-cho-diem-danh.md) | Version riêng cho điểm danh; không dùng xmin toàn dòng | Đã chấp nhận trong phạm vi SCRUM-26, chờ team review branch |
 | [0026](0026-tu-chay-nhan-dang-giong-noi.md) | Tự chạy nhận dạng giọng nói (chuyển thành chữ, tách người nói) trên một worker nội bộ | Đề xuất — SCRUM-31, nhận xét hội đồng 17/10/2026 |
-| [0027](0027-voice-id-co-dong-y.md) | Voice ID có đồng ý — lưu giọng mẫu đã mã hoá, máy chỉ gợi ý tên, Thư ký quyết định | Đề xuất — SCRUM-35, nhận xét hội đồng 17/10/2026 |
+| [0027](0027-voice-id-co-dong-y.md) | Voice ID có đồng ý — lưu giọng mẫu đã mã hoá, máy chỉ gợi ý tên, Thư ký quyết định | Đề xuất — SCRUM-35, nhận xét hội đồng 17/10/2026; điểm 2 (không lưu âm thanh mẫu) thay thế bởi ADR-0042 |
 | [0028](0028-trang-thai-la-icon-va-chu.md) | Trạng thái cuộc họp là icon và chữ, mức "Thường" không gắn chip | Đề xuất |
-| [0029](0029-ghi-am-theo-micro-tung-nguoi.md) | Ghi âm theo micro từng người, chỉ lưu chữ của từng câu | Đề xuất — SCRUM-109 |
-| [0030](0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md) | Ghi cả cuộc gọi từ trình duyệt của Thư ký, báo đang ghi qua kênh dữ liệu của cuộc gọi | Đề xuất — SCRUM-44, PO 26/10/2026 |
+| [0029](0029-ghi-am-theo-micro-tung-nguoi.md) | Ghi âm theo micro từng người, chỉ lưu chữ của từng câu | Đề xuất — SCRUM-109; điểm 3 thay thế bởi ADR-0039, điểm 1 và 5 thay thế bởi ADR-0040 |
+| [0030](0030-ghi-ca-cuoc-goi-tu-may-thu-ky.md) | Ghi cả cuộc gọi từ trình duyệt của Thư ký, báo đang ghi qua kênh dữ liệu của cuộc gọi | Thay thế bởi ADR-0040 |
 | [0031](0031-gui-email-qua-resend.md) | Gửi email qua Resend, giữ hàng đợi trong app, nhận kết quả giao thư bằng webhook | Đề xuất — SCRUM-15, PO 27/10/2026 |
 | [0032](0032-huy-cuoc-hop-va-tu-huy-khi-qua-han.md) | Trạng thái Cancelled, huỷ cuộc họp và tự huỷ khi quá 24 giờ sau giờ bắt đầu | Đề xuất — SCRUM-99, PO 27/10/2026 |
 | [0033](0033-hang-doi-tai-len-o-trinh-duyet.md) | Hàng đợi tải lên ở trình duyệt, mỗi tệp một request, tự thử lại khi chắc chưa lưu | Đề xuất — SCRUM-58, PO 27/10/2026 |
 | [0034](0034-han-muc-luu-tru-toan-he-thong.md) | Hạn mức lưu trữ tài liệu 10 GB cho cả hệ thống thay cho 1 GB mỗi người | Đề xuất — SCRUM-58, PO 27/10/2026 |
 | [0035](0035-quan-tri-vien-doc-kho-tai-khoan-khoa.md) | Quản trị viên đọc kho của tài khoản đã khoá, có nhật ký kiểm toán, không thấy tệp cuộc họp Confidential/Secret | Đề xuất — SCRUM-58, PO 27/10/2026 |
+| [0036](0036-may-chuyen-chu-tren-may-nhom-qua-tailscale.md) | Server test gọi máy chuyển chữ chạy trên máy của nhóm qua Tailscale, có khoá; bản ghi nằm trên volume | Đề xuất — SCRUM-31, PO 28/10/2026 |
+| [0037](0037-them-dau-cau-bang-vibert-capu.md) | Thêm dấu câu và chữ hoa vào bản gỡ băng bằng viBERT-capu chạy trong worker | Đề xuất — SCRUM-31, PO 28/10/2026 |
+| [0038](0038-danh-dau-tieng-lot-giua-cac-micro.md) | Bê từ AI-eCabinet: đánh dấu tiếng lọt giữa các micro riêng, loại câu khỏi bản ghi, giữ câu chưa gửi trên máy, mỗi người một tab ghi | Đề xuất — SCRUM-109, PO 28/10/2026 |
+| [0039](0039-luu-am-thanh-tung-cau-de-nghe-lai.md) | Lưu âm thanh từng câu ghi theo micro để nghe lại, như AI-eCabinet; nghe qua link ký có hạn, xoá cùng chữ | Đề xuất — SCRUM-109, PO 29/10/2026; phần "Đồng ý" thay thế bởi ADR-0040 |
+| [0040](0040-cach-ghi-am-theo-hinh-thuc-hop.md) | Cách ghi âm suy ra từ hình thức họp: trực tuyến ghi theo micro từng người, trực tiếp ghi bằng mic phòng; bỏ chọn cách ghi, bỏ ghi trộn cả cuộc gọi | Đề xuất — SCRUM-109, PO 29/10/2026; điểm 4 thay thế một phần bởi ADR-0041 |
+| [0041](0041-mic-phong-ghi-tung-luot.md) | Mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi, nối thành một bản ghi của cuộc họp và chuyển chữ lại cả bản, như AI-eCabinet | Đề xuất — SCRUM-29, PO 29/10/2026 |
+| [0042](0042-luu-ban-ghi-giong-mau-de-nghe-lai.md) | Lưu bản ghi giọng mẫu đã mã hoá để chính chủ nghe lại, như AI-eCabinet; thông báo đồng ý lên 1.1 | Đề xuất — SCRUM-35, PO 29/10/2026 |

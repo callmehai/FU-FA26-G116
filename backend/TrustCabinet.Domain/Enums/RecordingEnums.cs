@@ -3,7 +3,10 @@ namespace TrustCabinet.Domain.Enums;
 /// <summary>Where a recording came from.</summary>
 public enum RecordingSource
 {
-    /// <summary>Captured in the browser during the sitting.</summary>
+    /// <summary>
+    /// The room's mic, streamed from the Secretary's browser in parts while the sitting runs (ADR-0041). Each take is
+    /// appended to the meeting's one room recording once the mic goes off.
+    /// </summary>
     BrowserCapture,
     /// <summary>A file recorded elsewhere and uploaded afterwards.</summary>
     Upload,
@@ -13,7 +16,7 @@ public enum RecordingSource
 
 public enum RecordingStatus
 {
-    /// <summary>Capture or upload in progress.</summary>
+    /// <summary>A room-mic take still being streamed; nobody hears it before the mic goes off.</summary>
     Pending,
     Available,
     Failed,
@@ -42,19 +45,4 @@ public enum MinutesStatus
     Issued,
     /// <summary>Replaced by a later revision.</summary>
     Superseded,
-}
-
-/// <summary>
-/// How a meeting's speech is captured (SCRUM-109), chosen before it starts and fixed once it has.
-/// The same choice AI-eCabinet offers, with the attendee's own mic as the default.
-/// </summary>
-public enum CaptureMode
-{
-    /// <summary>
-    /// Each attendee's browser captures their own microphone and sends it a sentence at a time, so
-    /// every line of the transcript belongs to the owner of the mic that heard it.
-    /// </summary>
-    PerMic,
-    /// <summary>One recording of the whole room, uploaded or captured by the Secretary (SCRUM-29/31/35).</summary>
-    Room,
 }

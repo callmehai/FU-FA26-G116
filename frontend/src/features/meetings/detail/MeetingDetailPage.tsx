@@ -24,9 +24,12 @@ import { useNotifications } from '../../notifications/notificationsContext'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
+import { RecorderCard } from '../../recordings/RecorderCard'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
+import { useRoomRecorder } from '../../recordings/useRoomRecorder'
+import { useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { SpeechPanel } from '../../speech/SpeechPanel'
-import type { CaptureMode } from '../../../types/speech'
+import { useSpeech } from '../../speech/useSpeech'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
@@ -119,8 +122,22 @@ function MeetingDetail({
   const [params] = useSearchParams()
   // `?tab=documents` is where the document viewer's back link lands.
   const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview')
-  // SCRUM-109: the Bản ghi tab may change it; until it says, the meeting's own value stands.
-  const [captureMode, setCaptureMode] = useState<CaptureMode | null>(null)
+  // ADR-0040: how the meeting is recorded follows from how it is held. Whoever joins from afar is captured per mic, in
+  // the call room; the page only reads that record. A room is recorded by the Secretary, from a card that lives with
+  // the page rather than the Bản ghi tab, so that moving between tabs never stops it (AI-eCabinet's floating card).
+  // ADR-0041: the room mic streams each take as it records, and everyone sees that the room is being recorded.
+  const speech = useSpeech(meeting.id, { micOn: false })
+  const perMic = meeting.mode !== 'InPerson'
+  const running = meeting.status === 'InProgress'
+  const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online')
+  const room = useRoomRecorder(meeting.id, running, roomRecordings.reload)
+  const recordsRoom = meeting.mode === 'InPerson' && running && meeting.myMeetingRole === 'Secretary'
+  // A take, or one this laptop kept from a closed tab, stays on screen until it is saved, even past the meeting's end.
+  const showsRecorder =
+    recordsRoom ||
+    room.phase !== 'off' ||
+    room.unfinished !== null ||
+    (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null)
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -235,6 +252,17 @@ function MeetingDetail({
             <StatusBadge status={meeting.status} />
             {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
             <RsvpChip response={meeting.myResponse} />
+            {roomRecordings.open && (
+              <button
+                type="button"
+                className="room-recording"
+                onClick={() => setTab('recordings')}
+                data-tooltip={`Mic phòng đang ghi · ${roomRecordings.open.createdByName}`}
+              >
+                <Icon name="mic" size={13} />
+                Đang ghi âm
+              </button>
+            )}
           </div>
           <p className="record-facts">
             <span>
@@ -336,24 +364,20 @@ function MeetingDetail({
           ) : tab === 'attendees' ? (
             <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
           ) : tab === 'agenda' ? (
-            <AgendaPanel meetingId={meeting.id} variant="page" />
+            <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
           ) : tab === 'documents' ? (
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : tab === 'recordings' ? (
             <div className="recordings-tab">
-              <SpeechPanel meetingId={meeting.id} variant="page" onCaptureMode={setCaptureMode} />
-              <RecordingsPanel
-                meetingId={meeting.id}
-                variant="page"
-                existingOnly={(captureMode ?? meeting.captureMode) === 'PerMic'}
-              />
+              <SpeechPanel speech={speech} perMic={perMic} userId={user?.id} startedAt={meeting.actualStartedAt} />
+              <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
             </div>
           ) : (
-            <div className="card card-pending tab-pending">
-              <p>Tab này chưa có nghiệp vụ.</p>
-              <p>
-                Sẽ hiện thực khi backend có <code>{TAB_BLOCKED_ON[tab]}</code>.
-              </p>
+            // Seen by everyone on the test server, so it says what the user can expect, not which
+            // endpoint is missing (that stays in TAB_BLOCKED_ON for the developer).
+            <div className="card card-pending tab-pending" data-blocked-on={TAB_BLOCKED_ON[tab]}>
+              <p>Chưa có biên bản.</p>
+              <p>Chức năng lập và duyệt biên bản đang được làm.</p>
             </div>
           )}
         </section>
@@ -366,6 +390,16 @@ function MeetingDetail({
               void reload()
               void reloadHistory()
             }}
+          />
+        )}
+
+        {showsRecorder && (
+          <RecorderCard
+            title={meeting.title}
+            room={room}
+            list={roomRecordings.list}
+            open={roomRecordings.open}
+            onChanged={roomRecordings.reload}
           />
         )}
 

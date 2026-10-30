@@ -271,8 +271,10 @@ thao tác); đã kết thúc → `409` (mã theo thao tác); đã huỷ → `409
 quyền dưới khoá, nên mất vai trò hay cuộc họp vừa kết thúc giữa chừng vẫn bị chặn đúng mã. Thành công thì phát
 `documentsChanged` như khi tải lên.
 
-`PUT /api/meetings/{id}/agenda/{itemId}` vẫn nhận `documentIds` như trước (chỉ Thư ký, mã của Agenda) — FE hiện dùng ở
-form sửa mục; endpoint dưới đây là chức năng riêng cho cả Chủ toạ.
+`PUT /api/meetings/{id}/agenda/{itemId}` vẫn nhận `documentIds` (chỉ Thư ký, mã của Agenda), nhưng từ 30/10/2026 FE không
+gửi nữa và thiếu field thì giữ nguyên liên kết ([08-chuong-trinh-nghi-su.md](08-chuong-trinh-nghi-su.md)). FE gắn tài liệu
+cho một mục bằng các endpoint dưới đây, từ nút ghim trên dòng của mục ở tab Nội dung (hiện khi `actions.canLinkDocuments`)
+và ở tab Tài liệu.
 
 ### `POST /api/meetings/{id}/documents` — thêm từ kho (UC-33a)
 

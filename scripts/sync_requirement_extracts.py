@@ -229,6 +229,17 @@ def sync_use_cases(check: bool) -> int:
         same_fe = [block for block in blocks if block[3] == fe]
         if same_fe:
             end_of_block = same_fe[-1][1]
+            if is_sub(uc):
+                # A sub-UC belongs with its parent, not at the end of the Feature: insert it after
+                # the last sub-UC already there (UC-39d after UC-39c, not after UC-42).
+                parent = uc[:5]
+                siblings = [b for b in blocks if b[3] == fe and b[2].startswith(parent) and b[2] != parent]
+                if siblings:
+                    end_of_block = siblings[-1][1]
+                else:
+                    anchor = next((b for b in blocks if b[3] == fe and b[2] == parent), None)
+                    if anchor:
+                        end_of_block = anchor[1]
             insert_at = end_of_block
             separator: list[str] = []
             while insert_at > 0:

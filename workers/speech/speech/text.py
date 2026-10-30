@@ -8,8 +8,9 @@ SENTENCE_END = ".?!…"
 def normalise(raw: str) -> str:
     """Gipformer emits UPPERCASE words without punctuation; make one readable sentence of it.
 
-    Lowercase, capitalise the first letter, collapse whitespace and close with a full stop. No
-    attempt is made to restore commas or proper nouns — the secretary corrects those by hand.
+    Lowercase, capitalise the first letter, collapse whitespace and close with a full stop. This is
+    the fallback when punctuation is off or the tagger changed the word count
+    (speech/punctuation.py restores commas and capitals otherwise).
     """
     text = " ".join(raw.split()).lower()
     if not text:

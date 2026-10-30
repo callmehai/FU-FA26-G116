@@ -22,6 +22,7 @@ kiểm tra mã băm lúc build image, nên container chạy không cần interne
 | Chuyển giọng nói thành chữ | Gipformer 1.5 — RNN-T Zipformer 68M tham số, int8 | MIT | [g-group-ai-lab/gipformer1.5-68M-rnnt](https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt) |
 | Vector giọng (512 chiều) — dùng cho cả tách người nói lẫn Voice ID | 3D-Speaker ERes2Net base, huấn luyện trên 200k người nói | Apache-2.0 | bản ONNX của k2-fsa |
 | Lọc khoảng lặng (VAD) | Silero VAD | MIT | bản ONNX của k2-fsa |
+| Dấu câu và chữ hoa | viBERT-capu — viBERT (FPT AI) tinh chỉnh bởi dragonSwing, int8 | CC BY-SA 4.0 (ghi công dragonSwing và FPT AI) | [dragonSwing/vibert-capu](https://huggingface.co/dragonSwing/vibert-capu), bản ONNX [welcomyou/vibert-capu-onnx](https://huggingface.co/welcomyou/vibert-capu-onnx) |
 
 Danh sách file, mã SHA-256 và URL nằm trong [models.manifest](models.manifest). Server kiểm tra lại
 mã băm mỗi lần khởi động; file bị thay hay thiếu thì **từ chối chạy**. Mỗi kết quả kèm mã model dạng
@@ -33,7 +34,7 @@ model nào.
 **Cách 1: Docker** (giống server).
 
 ```bash
-docker compose --profile speech up -d --build   # lần đầu tải ~110 MB model khi build, image ~770 MB
+docker compose --profile speech up -d --build   # lần đầu tải ~230 MB model khi build, image ~950 MB
 curl http://127.0.0.1:8090/health
 ```
 
@@ -59,6 +60,9 @@ Cần `ffmpeg` trong `PATH` (`brew install ffmpeg`) để giải mã mp3, m4a, w
 | `SPEECH_THREADS` | `min(4, số CPU)` | Số luồng cho mỗi model |
 | `SPEECH_CLUSTER_THRESHOLD` | `0.5` | Ngưỡng gộp giọng khi tách người nói, xem [Hiệu chỉnh](#hiệu-chỉnh) |
 | `SPEECH_MIN_CONSISTENCY` | `0.40` | Ngưỡng "chỉ một người nói" của mẫu giọng, xem [Hiệu chỉnh](#hiệu-chỉnh) |
+| `SPEECH_CLIP_MAX_GAIN_DB` | `6` | Mức tăng âm tối đa của hồ sơ `clip` |
+| `SPEECH_CLIP_VAD_THRESHOLD` | `0.5` | Ngưỡng VAD của hồ sơ `clip` |
+| `SPEECH_PUNCTUATION` | `1` | `0` tắt bước thêm dấu câu (để so sánh); model vẫn phải có và đúng mã băm |
 | `SPEECH_LOG_LEVEL` | `INFO` | Mức log |
 
 ## HTTP API
@@ -74,13 +78,16 @@ Không cần xác thực.
 {"status":"ok","models":{"asr":"gipformer-1.5-68m-int8@b528768939c7","embedding":"eres2net-base-200k@e2d2048292e0","vad":"silero-vad@9e2449e10874"}}
 ```
 
-### `POST /v1/transcribe?diarize=true|false[&speakers=N]`
+### `POST /v1/transcribe?diarize=true|false[&speakers=N][&profile=room|clip]`
 
 - `diarize` mặc định `true`. Với `false`, worker chỉ cắt theo khoảng lặng, không tách người nói,
   `speaker` là `null` và `speakers` rỗng. Dùng cho bản ghi micro của riêng một người, khi đã biết
   ai nói.
 - `speakers=N` (1–20): biết trước số người nói thì báo, tách sẽ chính xác hơn. Bỏ trống thì
   worker tự đoán.
+- `profile` mặc định `room` (bản ghi cả phòng: tăng âm tối đa 30 dB, VAD 0.2). `clip` dùng cho một câu
+  từ micro riêng của một người (SCRUM-109): tăng âm tối đa 6 dB, VAD 0.5, vì chỗ nhỏ tiếng trên micro
+  riêng phần lớn là người ngồi cạnh lọt vào. Xem [Hiệu chỉnh](#tiếng-lọt-giữa-các-micro-riêng).
 
 ```json
 {
@@ -88,7 +95,7 @@ Không cần xác thực.
   "asrModel": "gipformer-1.5-68m-int8@b528768939c7",
   "embeddingModel": "eres2net-base-200k@e2d2048292e0",
   "segments": [
-    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn."}
+    {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6}
   ],
   "speakers": [
     {"label": "SPEAKER_00", "speechMs": 11846, "embedding": [-0.051461, 0.011607, "… 512 số, độ dài 1"]}
@@ -102,8 +109,12 @@ Không cần xác thực.
   nhiều đoạn liên tiếp cùng nhãn.
 - Vector của mỗi người nói lấy từ các lượt nói dài nhất của người đó, tối đa 30 giây.
 - Bản ghi im lặng trả về `segments` rỗng.
-- Chữ từ model là CHỮ HOA không dấu câu. Worker đổi thành câu thường, viết hoa chữ đầu, thêm dấu
-  chấm cuối. Dấu phẩy và tên riêng để thư ký sửa tay.
+- `levelDbfs` là độ to của đoạn khi đến micro, đo **trước** bước tăng âm. Backend dùng nó để nhận ra câu
+  một micro nghe lọt từ micro khác (to ở micro người nói, nhỏ ở micro bên cạnh).
+- Chữ từ model là CHỮ HOA không dấu câu. Worker thêm dấu phẩy, dấu chấm, dấu hỏi và viết hoa đầu câu
+  bằng viBERT-capu (bước 6 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
+  đoạn trước thì bắt đầu bằng chữ thường. Tên riêng model chỉ viết hoa được một phần; còn lại thư ký
+  sửa tay.
 
 ### `POST /v1/embed`
 
@@ -158,7 +169,12 @@ Các bước xử lý một bản ghi:
      rồi các lượt liền nhau của cùng người được nối, để câu không bị cắt giữa chừng.
 5. **Chuyển chữ** từng lượt nói bằng Gipformer. Lượt dài hơn 25 giây được chia thành các phần
    bằng nhau.
-6. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
+6. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
+   thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Các đoạn liền nhau của cùng một người, cách nhau
+   không quá 5 giây, được đọc chung thành một đoạn văn, nên chỗ ngắt hơi giữa câu không thành dấu
+   chấm. Model chỉ sửa từ tại chỗ, không thêm hay bớt từ, nên mốc giờ của từng đoạn giữ nguyên;
+   lỡ số từ đổi thì đoạn đó quay về cách cũ (viết hoa chữ đầu, dấu chấm cuối).
+7. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
 
 Không dùng bộ tách người nói có sẵn của sherpa-onnx (pyannote + embedding cửa sổ 10 giây). Đo trên
 cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 trong Docker. Cách trên chỉ tốn khoảng
@@ -175,6 +191,8 @@ cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 tron
 ```bash
 python -m unittest discover -s workers/speech/tests   # không cần model, chỉ cần numpy
 ```
+
+CI chạy lệnh này (job *Speech worker — unit tests*) mỗi khi PR đổi `workers/speech/`.
 
 Kiểm tra đầu cuối với model thật, chạy trên máy dev, CI không có model:
 
@@ -193,6 +211,24 @@ Thư mục cần `enrolA.wav` và `enrolB.wav` (mỗi file một giọng, 8–30
 [eval/](eval/README.md). Các số trong mục dưới đều đo bằng các script đó.
 
 ## Hiệu chỉnh
+
+### Tiếng lọt giữa các micro riêng
+
+Họp trực tiếp theo micro từng người, laptop nào cũng nghe người ngồi cạnh. Đo bằng
+[`eval/bleed.py`](eval/README.md#4-tiếng-lọt-giữa-các-micro-riêng) trên cuộc họp tổng hợp từ VIVOS (2–3
+người, mỗi người một laptop, tiếng người khác nhỏ hơn 3–30 dB, câu cắt bằng chính `clipCutter.ts` của
+web, AGC trình duyệt tắt như sản phẩm). Từ trùng tính trên tổng số từ chuẩn, nên có thể quá 100 % khi 3
+micro cùng nghe một câu.
+
+| Cấu hình | Từ trùng (bộ chính, 1.851 từ) | Từ trùng (bộ kiểm chứng, 1.720 từ) | Mất lời thật | Lời chủ micro được ghi |
+|---|--:|--:|--:|--:|
+| Trước: hồ sơ `room`, không đánh dấu | 114,4 % | 103,5 % | 0 % | 0,955 / 0,941 |
+| Sau: hồ sơ `clip` + đánh dấu của backend (`SpeechClipFold`) | 35,7 % | 30,1 % | 0 % | 0,957 / 0,938 |
+
+Ngưỡng VAD của hồ sơ `clip` chọn trên bộ chỉnh riêng (seed 100–104): 0.2 / 0.35 / 0.5 / 0.65 còn 38 / 36 /
+35 / 33 % từ trùng sau khi đánh dấu, lời chủ micro giữ 0.96, người nói nhỏ (−38 dBFS) không mất lời.
+Chọn 0.5 như AI-eCabinet. Phần còn lại phần lớn là hai laptop cách đều người nói: hai bản to gần bằng nhau
+nên không đoán được bản nào là thật (AI-eCabinet dùng thêm giọng mẫu cho trường hợp này).
 
 Độ nhất quán của mẫu giọng được tính như sau:
 
@@ -285,8 +321,11 @@ gần như giống hệt nhau.
 | Chuyển chữ + tách người nói | 608 s mp3 | 43 s (RTF 0.07) | 132 s (RTF 0.22), RAM đỉnh 1.5 GB |
 | Chỉ chuyển chữ | 23 s | 0.5 s (RTF 0.02) | — |
 | Vector mẫu giọng | ~10 s | ~0.4 s | — |
+| Riêng bước dấu câu | 880 từ | 1.3 s (~680 từ/giây) | — |
 
-RTF là thời gian xử lý chia cho độ dài âm thanh. Thời gian tăng tuyến tính theo độ dài. Với RTF
+RTF là thời gian xử lý chia cho độ dài âm thanh. Thời gian tăng tuyến tính theo độ dài. Bước dấu câu
+thêm khoảng 2% thời gian (cuộc họp thật 300 s: 20.7 s → 21.2 s) và khoảng 270 MB RAM, WER không đổi
+(16.1%) vì model không đổi từ nào. Với RTF
 0.25, một giờ họp mất khoảng 15 phút. Container lúc rảnh dùng khoảng 260 MB RAM. Process con giữ
 lại bộ nhớ đã dùng, nên sau vài bản ghi 10 phút liên tiếp, container giữ khoảng 2.4 GB. Docker ở
 đây chạy trong máy ảo Linux của Docker Desktop (8 CPU), chậm hơn chạy trực tiếp khoảng 3 lần.

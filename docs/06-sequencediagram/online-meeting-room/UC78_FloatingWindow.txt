@@ -1,0 +1,23 @@
+title UC-78 - Keep Meeting in a Floating Window
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Choose Open floating window
+activate Page
+alt The browser refuses the floating window - EX-1
+    Page-->Actor: The call stays in the main window
+else The browser does not support it - AF-3
+    Page-->Actor: The control is not offered
+else Floating window opens
+    Page->Page: Open a small always-on-top window using the existing room connection;\nno second join (BR-328, BR-332)
+    Page-->Actor: Main window shows The meeting is in a floating window and Bring the meeting back
+end
+alt Actor chooses Leave in the floating window - AF-2
+    Page->Page: Leave the room through UC-38 without asking and close the floating window
+else Actor brings the meeting back or closes the floating window
+    Page->Page: Return the call to the main window; the connection is unchanged (BR-332)
+    Page-->Actor: Video Grid in the main window
+end
+deactivate Page

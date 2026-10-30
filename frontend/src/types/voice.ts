@@ -10,6 +10,8 @@ export interface VoiceSample {
   id: string
   createdAt: string
   speechMs: number
+  /** Its recording was kept, so its owner can hear it back; false for a sample taken before that. */
+  playable?: boolean
 }
 
 export interface VoiceProfile {

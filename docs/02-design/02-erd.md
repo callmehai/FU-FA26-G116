@@ -8,7 +8,7 @@ Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu
 
 **ERD thực thể–quan hệ:** [file drawio chỉnh sửa được](../13-erd/chen/trustcabinet-erd-chen.drawio) và
 [ảnh toàn bộ mô hình](../13-erd/chen/trustcabinet-erd-chen.drawio.png). Một ảnh chứa toàn bộ
-30 thực thể hình chữ nhật và 49 quan hệ hình thoi; action trong hình thoi dùng tiếng Anh.
+30 thực thể hình chữ nhật và 52 quan hệ hình thoi; action trong hình thoi dùng tiếng Anh.
 Bội số thể hiện bằng đầu nối crow’s foot, không ghi số trên đường nối. Sơ đồ bỏ thuộc tính
 để tập trung vào thực thể và quan hệ, bố trí quanh Meeting và User theo DB design hiện có.
 [Bản dạng bảng](../13-erd/muc-tieu/README.md) được giữ để đối chiếu các thuộc tính và thiết kế dữ liệu.
@@ -46,10 +46,13 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | IMPLEMENTED (SCRUM-107, bảng) | MeetingDocumentId; AuthorId nullable, GuestInvitationId (ADR-0016), check đúng một tác giả. Trả lời một cấp (BR-317) do SCRUM-23 kiểm. |
 | SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED | Giữ. |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
-| VotingSession | Một lần biểu quyết trong cuộc họp | NEED MIGRATION / RESTRUCTURE | Bỏ `Kind`, `OpensAt`, `ClosesAt`; thêm `OpenedAt`, `ClosedAt`, `ConclusionNote`, `ConcludedById`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, như AI-eCabinet); `Conclusion` thành Passed/NotPassed/Deferred; AgendaItem liên kết tùy chọn (ADR-0014). |
+| VotingSession | Một lần biểu quyết trong cuộc họp | IMPLEMENTED (bảng); đổi theo mô hình đích ở SCRUM-96 | Mô hình đích bỏ `Kind`, `OpensAt`, `ClosesAt` và `AgendaItemId` — Vote thuộc Meeting, không gắn mục nghị sự (BR-285, ADR-0014/0019); thêm `OpenedAt`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, BR-257), `Conclusion` Passed/NotPassed/Deferred, `ConclusionNote`, `ConcludedById`, `ConcludedAt` (BR-262). Tối đa một Vote `Open` mỗi Meeting do unique index có điều kiện ép (BR-266). |
 | VotingOption | Phương án | IMPLEMENTED | Giữ. |
-| VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED | Giữ tính duy nhất theo session và voter. |
-| VoteChoice | Lựa chọn đã bỏ | IMPLEMENTED | Giữ tách khỏi receipt; voter nullable nếu ẩn danh. |
+| VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Người bỏ phiếu là đúng một trong `VoterId` (User) và `GuestInvitationId` (Guest, ADR-0016); duy nhất theo (session, voter) và (session, guest). |
+| VoteChoice | Lựa chọn đã bỏ | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Giữ tách khỏi receipt; `VoterId` và `GuestInvitationId` cùng null khi phiếu kín, nhiều nhất một cột có giá trị khi công khai. Chưa kín tuyệt đối: xem “Biểu quyết ẩn danh”. |
+| VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 30 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
+| VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 30 thực thể) | PLANNED (SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
+| DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
 | Recording | Bản ghi âm do Thư ký upload | NEED MIGRATION / RESTRUCTURE | Thêm `UploadedById`; `Source` chỉ còn `Upload`; giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
 | TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. |
@@ -280,8 +283,10 @@ erDiagram
     Meeting ||--o{ SpeakingRequest : "receiving"
     Meeting ||--o{ MeetingNote : "recording"
     Meeting ||--o{ VotingSession : "hosting"
-    AgendaItem o|--o{ VotingSession : "contextualizing"
     VotingSession ||--o{ VotingOption : "offering"
+    VotingSession ||--o{ VoteEligibleVoter : "fixing"
+    VotingSession ||--o{ VoteDocument : "attaching"
+    MeetingDocument ||--o{ VoteDocument : "being attached as"
     VotingSession ||--o{ VoteReceipt : "receiving"
     VotingSession ||--o{ VoteChoice : "recording"
     VotingOption ||--o{ VoteChoice : "being selected in"
@@ -307,10 +312,9 @@ erDiagram
     VotingSession {
         uuid Id PK
         uuid MeetingId FK
-        uuid AgendaItemId FK "nullable"
         string Title
-        bool IsAnonymous
-        string EligibleRoles "Chair|Secretary|Member|Guest, ít nhất một; Chair chọn"
+        bool IsAnonymous "true = Secret, false = Public"
+        string EligibleRoles "text[] Chair|Secretary|Member|Guest, ít nhất một; mặc định cả bốn"
         string Status "Draft|Open|Closed"
         timestamptz OpenedAt "nullable"
         timestamptz ClosedAt "nullable"
@@ -318,6 +322,17 @@ erDiagram
         string Conclusion "Passed|NotPassed|Deferred; null tới khi Chair ghi"
         string ConclusionNote "nullable"
         uuid ConcludedById FK "nullable"
+        timestamptz ConcludedAt "nullable"
+    }
+    VoteEligibleVoter {
+        uuid Id PK
+        uuid VotingSessionId FK
+        uuid UserId FK "nullable; đúng một trong UserId và GuestInvitationId"
+        uuid GuestInvitationId FK "nullable; Guest"
+    }
+    VoteDocument {
+        uuid VotingSessionId PK, FK
+        uuid MeetingDocumentId PK, FK
     }
     VotingOption {
         uuid Id PK
@@ -328,7 +343,8 @@ erDiagram
     VoteReceipt {
         uuid Id PK
         uuid VotingSessionId FK
-        uuid VoterId FK
+        uuid VoterId FK "nullable; đúng một trong VoterId và GuestInvitationId"
+        uuid GuestInvitationId FK "nullable; Guest"
         timestamptz CastAt
     }
     VoteChoice {
@@ -336,24 +352,39 @@ erDiagram
         uuid VotingSessionId FK
         uuid VotingOptionId FK
         uuid VoterId FK "NULL khi phiên ẩn danh"
+        uuid GuestInvitationId FK "NULL khi phiên ẩn danh"
         timestamptz CastAt
+    }
+    MeetingDocument ||--o{ DocumentReadConfirmation : "confirmed as read"
+    User ||--o{ DocumentReadConfirmation : "confirming"
+    MeetingGuestInvitation ||--o{ DocumentReadConfirmation : "confirming"
+    DocumentReadConfirmation {
+        uuid Id PK
+        uuid MeetingDocumentId FK
+        uuid UserId FK "nullable; đúng một trong UserId và GuestInvitationId"
+        uuid GuestInvitationId FK "nullable; Guest"
+        timestamptz ConfirmedAt
     }
 ```
 
 ### Biểu quyết ẩn danh — đọc kỹ chỗ này
 
 Tách **`VoteReceipt`** (ai đã bỏ phiếu) khỏi **`VoteChoice`** (phiếu chọn gì) là cách làm cho phiếu
-kín thực sự kín:
+kín **khó truy ngược hơn**, chưa phải kín tuyệt đối:
 
-- `VoteReceipt` có unique index `(VotingSessionId, VoterId)` → một người một phiếu, do database ép,
+- `VoteReceipt` có unique index `(VotingSessionId, VoterId)` và `(VotingSessionId, GuestInvitationId)` → một người một phiếu, kể cả Guest, do database ép,
   không phải do một câu `if` mà hai request đồng thời có thể cùng vượt qua.
-- `VoteChoice.VoterId` **để NULL khi phiên ẩn danh** → không dòng nào trong database nối người với
+- `VoteChoice.VoterId` và `VoteChoice.GuestInvitationId` **cùng để NULL khi phiên ẩn danh** → không có khoá nào nối người (User hay Guest) với
   lựa chọn. Ẩn tên trên giao diện là không đủ: liên kết vẫn nằm đó cho bất cứ ai đọc được DB.
+- **Còn hở:** `CastAt` có trên cả `VoteReceipt` và `VoteChoice`, và khoá chính là UUID v7 (sắp theo thời gian). Ai đọc được DB có thể ghép phiếu với
+  người bỏ phiếu bằng thời điểm hoặc thứ tự Id, nhất là khi ít người bỏ phiếu. Cách sửa (bỏ `CastAt` khỏi `VoteChoice`, Id ngẫu nhiên cho phiếu kín) làm ở PR code SCRUM-96;
+  cho đến lúc đó đừng mô tả phiếu kín là không thể truy ngược.
 
 **Hệ quả phải biết:** phiên ẩn danh thì **không đổi phiếu được**, vì không có gì xác định phải thay
-dòng nào. `SCRUM-28` yêu cầu đổi phiếu tới khi đóng phiên — hiện chỉ làm được với phiên công khai. (Report 3 mới, màn 11.3: một phiếu không đổi được sau khi nộp — nếu giữ quy tắc này thì vấn đề tự hết.)
-Muốn có cả hai thì cần cơ chế token cấp cho từng người bỏ phiếu, và đó là một quyết định thiết kế
-riêng, không phải thứ chắp thêm. **Việc này cần BA chốt trước khi `SCRUM-28` bắt đầu.**
+dòng nào. Đặc tả hiện hành chốt phiếu đã ghi không sửa, không rút với mọi loại phiếu (BR-265), nên
+giới hạn này không còn là vấn đề; `SCRUM-28` cũ (đổi phiếu tới khi đóng phiên) không còn áp dụng.
+Nếu sau này PO muốn cho đổi phiếu kín thì cần cơ chế token cấp cho từng người bỏ phiếu, một quyết định thiết kế
+riêng chứ không phải thứ chắp thêm.
 
 ## 7. Bản ghi, transcript, biên bản và AI
 
@@ -573,12 +604,20 @@ erDiagram
 | Meeting | 1 → 0..* | SpeakingRequest | Tiếp nhận |
 | Meeting | 1 → 0..* | MeetingNote | Ghi nhận |
 | Meeting | 1 → 0..* | VotingSession | Tổ chức |
-| AgendaItem | 0..1 → 0..* | VotingSession | Cung cấp ngữ cảnh cho |
 | VotingSession | 1 → 1..* | VotingOption | Đưa ra lựa chọn |
+| VotingSession | 1 → 0..* | VoteEligibleVoter | Chốt người được bỏ phiếu |
+| User | 1 → 0..* | VoteEligibleVoter | Được bỏ phiếu |
+| VotingSession | 1 → 0..* | VoteDocument | Gắn tài liệu |
+| MeetingDocument | 1 → 0..* | VoteDocument | Được gắn vào biểu quyết |
+| MeetingDocument | 1 → 0..* | DocumentReadConfirmation | Được xác nhận đã đọc (UC-74) |
+| User | 1 → 0..* | DocumentReadConfirmation | Xác nhận đã đọc |
+| MeetingGuestInvitation | 1 → 0..* | DocumentReadConfirmation | Xác nhận đã đọc (Guest) |
 | VotingSession | 1 → 0..* | VoteReceipt | Ghi nhận việc bỏ phiếu |
 | VotingSession | 1 → 0..* | VoteChoice | Ghi nhận lựa chọn |
 | VotingOption | 1 → 0..* | VoteChoice | Được chọn trong |
 | User | 1 → 0..* | VoteReceipt | Bỏ phiếu |
+| MeetingGuestInvitation | 1 → 0..* | VoteReceipt | Bỏ phiếu (Guest) |
+| MeetingGuestInvitation | 1 → 0..* | VoteEligibleVoter | Được bỏ phiếu (Guest) |
 | Meeting | 1 → 0..* | Recording | Ghi âm |
 | User | 1 → 0..* | Recording | Tải lên (Secretary) |
 | Recording | 1 → 0..1 | Transcript | Chuyển thành văn bản |
@@ -616,7 +655,8 @@ erDiagram
 15. Mỗi CallParticipant tham chiếu đúng một identity: User nội bộ hoặc MeetingGuestInvitation bên ngoài. Mỗi lần kết nối lại tạo một row mới cho lượt kết nối đó.
 16. Hệ thống không tự ghi âm; Thư ký upload audio sau khi Meeting `Ended`. Trước khi lưu audio phải có consent và lưu mục đích, thời hạn lưu giữ cùng bằng chứng xóa. Guest phải được hiển thị thông báo ghi âm trước khi vào; lưu bằng chứng đã thông báo và thực hiện nghĩa vụ xóa dữ liệu của Guest.
 17. Lời mời Guest giới hạn trong một Meeting, có hạn dùng, có thể thu hồi và dùng token được bảo vệ (chỉ lưu hash); kiểm tra hiệu lực ở mỗi request.
-18. VotingSession chỉ được tạo và mở khi Meeting `InProgress`; Chair mở và đóng; hệ thống đếm phiếu; Chair ghi `Conclusion` là Passed, NotPassed hoặc Deferred. Guest có quyền bỏ phiếu như Member theo quyết định PO 13/10/2026. Người được bỏ phiếu là người đang giữ các vai trò Chair chọn cho phiên (`EligibleRoles`), chốt lúc mở phiên (BR-190). Không có quorum, không có biểu quyết trước/sau họp, không có entity Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
+18. VotingSession thuộc Meeting, không gắn mục nghị sự (BR-285). Chair hoặc Secretary chuẩn bị nháp khi Meeting `Approved`, `Published` hoặc `InProgress` ([ADR-0019](../05-decisions/0019-chuan-bi-bieu-quyet-truoc-khi-hop.md)); chỉ Chair mở (khi `InProgress`, tối đa một Vote `Open`, BR-266) và đóng; hệ thống đếm phiếu; Chair ghi `Conclusion` là Passed, NotPassed hoặc Deferred. Guest có quyền bỏ phiếu như Member theo quyết định PO 13/10/2026. Người được bỏ phiếu là người đang giữ các vai trò Chair chọn cho phiên (`EligibleRoles`), chốt lúc mở phiên thành các dòng `VoteEligibleVoter` (BR-190). Tài liệu biểu quyết là các dòng `VoteDocument`, chốt khi mở (BR-288). Không có quorum, không có biểu quyết trước/sau họp, không có entity Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md)).
+18a. Trước khi bỏ phiếu, người đủ điều kiện phải xác nhận đã đọc mọi tài liệu còn gắn Vote (`DocumentReadConfirmation`, BR-289–293). Xác nhận thuộc (người, MeetingDocument), dùng chung mọi Vote cùng tài liệu, không rút và không nối với lựa chọn phiếu kín. Gỡ tài liệu khỏi Meeting khi Vote còn Open thì tài liệu đó không còn tính vào điều kiện đọc (BR-292).
 19. Meeting được kết thúc khi Vote còn Open; Ended ngừng nhận phiếu và Chair có thể đóng/kiểm phiếu cũ sau họp (BR-159/160).
 20. Biên bản bị yêu cầu sửa hoặc sửa sau khi đã có chữ ký: các chữ ký trên phiên bản cũ có `InvalidatedAt`, phiên bản mới cần vòng ký mới; chỉ Secretary niêm phong sau khi đủ chữ ký (BR-166).
 
@@ -630,13 +670,13 @@ erDiagram
 | ~~Document có MeetingId/AgendaItemId, DocumentVersion, DocumentComment trỏ Document.~~ | Kho cá nhân + MeetingDocument + StoredFile (ADR-0018). | **Đã làm** ở migration `MeetingDocumentsOnStoredFiles` (SCRUM-107): xoá ba bảng cũ (chỉ có fixture dev, không có byte) và tạo cụm mới. |
 | CallParticipant.UserId hiện bắt buộc. | UserId XOR GuestInvitationId. | Cho phép hai cột identity null riêng rẽ và ràng buộc chỉ một cột có giá trị. |
 | CallSession.StartedById hiện bắt buộc. | Có thể null với MeetingRoom. | Cho phép phòng tồn tại mà không cần starter nội bộ. |
-| VotingSession có `Kind` (Live/Asynchronous), `OpensAt`, `ClosesAt`, `Conclusion` dạng chuỗi tự do. | Chỉ biểu quyết trong họp; `Conclusion` là Passed/NotPassed/Deferred (ADR-0014). | Migration mới bỏ `kind`, `opens_at`, `closes_at`; thêm `opened_at`, `closed_at`, `conclusion_note`, `concluded_by_id`. |
+| VotingSession có `Kind` (Live/Asynchronous), `OpensAt`, `ClosesAt`, `Conclusion` dạng chuỗi tự do. | Chỉ biểu quyết trong họp; `Conclusion` là Passed/NotPassed/Deferred (ADR-0014). | Xử lý ở SCRUM-96 (PR code riêng, migration tạo trên `main`): bỏ `kind`, `closes_at`, `agenda_item_id`; đổi `opens_at` → `opened_at`; thêm `eligible_roles`, `conclusion` (enum), `conclusion_note`, `concluded_by_id`, `concluded_at`, bảng `vote_eligible_voters`, `vote_documents`. |
 
 ### Xung đột yêu cầu cần đối chiếu
 
 - **ADR-0010:** phần gắn CallSession với MeetingSession đã được [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md) thay thế: phòng ở cấp Meeting, mở khi Meeting `InProgress`.
 - **`CallSession.RecordingId`:** ERD vẫn giữ quan hệ phòng họp → bản ghi, mâu thuẫn với "hệ thống không tự ghi âm" (Recording.Source chỉ còn `Upload`). Giữ nguyên lần này; cần quyết định khi làm FE-08 / FE-09.
-- **Guest:** quyết định PO 13/10/2026 tại ADR-0016 thay quyền chỉ nghe; ADR-0017 bỏ gate đóng Vote trước End Meeting. Chi tiết schema cho Guest display information, comments và votes chưa thiết kế trong đợt này.
+- **Guest:** quyết định PO 13/10/2026 tại ADR-0016 thay quyền chỉ nghe; ADR-0017 bỏ gate đóng Vote trước End Meeting. Comment của Guest (SCRUM-107) và phiếu của Guest (25/10/2026) định danh qua `GuestInvitationId`, không tạo User. Schema cho Guest display information chưa thiết kế trong đợt này.
 - **Tài liệu vòng đời cuộc họp:** đã chỉnh sơ đồ — Rejected sửa rồi gửi duyệt lại sang WaitingApproval; bỏ `MinutesIssued`, `Archived`.
 - **ADR-0006 / ADR-0018:** kho cá nhân, quyền sở hữu và ngữ cảnh comment qua MeetingDocument phù hợp với mô hình đích; phần phiên bản và ghim phiên bản của ADR-0006 đã được ADR-0018 thay bằng tham chiếu tới StoredFile. Câu hỏi chưa chốt về hạn mức kho và quyền truy cập của người đã rời tổ chức nằm ngoài phạm vi ERD này.
 - **Report 3 §I.3.2 lệch ERD (23/10/2026, SCRUM-107):** ERD bỏ `Document.Category` (PO bỏ "Phân loại" ngày 22/10/2026, không UC nào dùng) và thêm `StoredFile.OriginalFileName` (ADR-0018 §7 nói `StoredFile` giữ tên file). Entity Descriptions của Report 3 vẫn còn `Category` và chưa có `OriginalFileName`; BA sửa DOCX rồi đồng bộ lại.

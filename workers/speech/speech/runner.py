@@ -36,9 +36,9 @@ def _ready() -> dict[str, str]:
     return _engine.model_ids
 
 
-def _transcribe(path: str, diarize: bool, speakers: int | None) -> dict:
+def _transcribe(path: str, diarize: bool, speakers: int | None, profile: str) -> dict:
     assert _engine is not None
-    return _engine.transcribe_file(path, diarize, speakers)
+    return _engine.transcribe_file(path, diarize, speakers, profile)
 
 
 def _embed(path: str) -> tuple[bool, dict]:
@@ -72,8 +72,9 @@ class EngineProcess:
                     self._pool = self._start()
             raise RuntimeError("engine process died during the request") from None
 
-    def transcribe_file(self, path: str, diarize: bool = True, speakers: int | None = None) -> dict:
-        return self._call(_transcribe, os.fspath(path), diarize, speakers)
+    def transcribe_file(self, path: str, diarize: bool = True, speakers: int | None = None,
+                        profile: str = "room") -> dict:
+        return self._call(_transcribe, os.fspath(path), diarize, speakers, profile)
 
     def embed_file(self, path: str) -> tuple[bool, dict]:
         return self._call(_embed, os.fspath(path))

@@ -36,7 +36,6 @@ public sealed class MeetingService(
             OnlineLink = valid.OnlineLink,
             Sensitivity = valid.Sensitivity,
             Description = valid.Description,
-            CaptureMode = valid.CaptureMode ?? CaptureMode.PerMic,
             Status = MeetingStatus.Draft,
             CreatedById = actorId,
             AssignedApproverId = null,
@@ -288,12 +287,6 @@ public sealed class MeetingService(
             locked["description"] = lockedMessage;
         }
 
-        // SCRUM-109: a published meeting changes it from the Bản ghi tab, which tells nobody "rescheduled".
-        if (input.CaptureMode is { } capture && capture != meeting.CaptureMode)
-        {
-            locked["captureMode"] = "Cuộc họp đã công bố, đổi cách ghi âm ở tab Bản ghi.";
-        }
-
         if (locked.Count > 0)
         {
             return MeetingResult.Invalid(locked);
@@ -349,7 +342,6 @@ public sealed class MeetingService(
         meeting.OnlineLink = input.OnlineLink;
         meeting.Sensitivity = input.Sensitivity;
         meeting.Description = input.Description;
-        if (input.CaptureMode is { } capture) meeting.CaptureMode = capture;
         meeting.UpdatedAt = now;
     }
 
@@ -361,8 +353,7 @@ public sealed class MeetingService(
             || !string.Equals(PlaceOf(meeting.Mode, meeting.Location), PlaceOf(input.Mode, input.Location), StringComparison.Ordinal)
             || !string.Equals(meeting.OnlineLink, input.OnlineLink, StringComparison.Ordinal)
             || meeting.Sensitivity != input.Sensitivity
-            || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal)
-            || (input.CaptureMode is { } capture && capture != meeting.CaptureMode);
+            || !string.Equals(meeting.Description, input.Description, StringComparison.Ordinal);
 
     /// <summary>
     /// An online meeting has no room: the form hides and clears the field, so a location stored on one

@@ -84,6 +84,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`10-scrum97-ket-qua-kiem-thu.md`](10-scrum97-ket-qua-kiem-thu.md) — kết quả riêng của phần SCRUM-97 bổ sung trên baseline SCRUM-20; kèm change note Jira để owner đăng.
 - [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md) — SCRUM-29: lưu, nghe (link ký sẵn), xoá bản ghi cuộc họp; đồng ý, mục đích, hạn lưu trữ và job tự xoá; mã `MSG290`–`MSG298`. SCRUM-31: hàng chờ chuyển thành chữ trên worker tự chạy, xem, chạy lại, sửa đoạn; mã `MSG299`–`MSG304`
 - [`13-nhan-dien-giong-noi.md`](13-nhan-dien-giong-noi.md) — SCRUM-35: Voice ID của chính mình (đồng ý, giọng mẫu mã hoá, rút đồng ý), gợi ý và gán tên người nói trong bản gỡ băng; nghĩa vụ dữ liệu sinh trắc học; mã `MSG305`–`MSG317`
+- [`15-bieu-quyet.md`](15-bieu-quyet.md) — thiết kế contract FE-11 / SCRUM-96 (chưa triển khai): danh sách/nháp/mở/bỏ phiếu/đóng/kết luận, gắn-gỡ tài liệu Vote (UC-76), xác nhận đã đọc (UC-74); mã `MSG205`–`MSG236`, `MSG252`–`MSG255`, `MSG265`–`MSG270`. Note bàn giao: [NOTE-ban-giao-fe11-bieu-quyet-cho-be.md](../notes/NOTE-ban-giao-fe11-bieu-quyet-cho-be.md)
 
 Dự kiến có thêm:
 

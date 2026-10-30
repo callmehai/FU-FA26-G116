@@ -21,8 +21,9 @@ class FakeEngine:
         self.fail_with = None
         self.embed_result = (True, {"embedding": [1.0], "model": "emb@1"})
 
-    def transcribe_file(self, path, diarize=True, speakers=None):
+    def transcribe_file(self, path, diarize=True, speakers=None, profile="room"):
         self.calls.append(("transcribe", Path(path).read_bytes(), diarize, speakers, path))
+        self.profile = profile
         if self.fail_with:
             raise self.fail_with
         return {"durationMs": 1, "segments": [], "speakers": []}
@@ -163,11 +164,16 @@ class AuthenticatedServerTests(ServerTests):
 
 class QueryParsingTests(unittest.TestCase):
     def test_defaults(self):
-        self.assertEqual(parse_transcribe_query(""), (True, None))
+        self.assertEqual(parse_transcribe_query(""), (True, None, "room"))
 
     def test_values(self):
-        self.assertEqual(parse_transcribe_query("diarize=0&speakers=20"), (False, 20))
-        self.assertEqual(parse_transcribe_query("diarize=TRUE"), (True, None))
+        self.assertEqual(parse_transcribe_query("diarize=0&speakers=20"), (False, 20, "room"))
+        self.assertEqual(parse_transcribe_query("diarize=TRUE"), (True, None, "room"))
+        self.assertEqual(parse_transcribe_query("diarize=false&profile=clip"), (False, None, "clip"))
+
+    def test_unknown_profile_is_rejected(self):
+        with self.assertRaises(Rejected):
+            parse_transcribe_query("profile=phone")
 
     def test_garbage_is_rejected(self):
         with self.assertRaises(Rejected):

@@ -24,6 +24,8 @@ export interface TranscriptSpeaker {
   suggestionScore: number | null
   assignedUserId: string | null
   assignedName: string | null
+  /** Another voice suggested as the same person more surely: perhaps one person the machine split in two. */
+  sameAsLabel?: string | null
 }
 
 export interface TranscriptPerson {
@@ -44,6 +46,8 @@ export interface Transcript {
   speakers: TranscriptSpeaker[]
   /** The meeting's people the Secretary may name a voice as; empty for everyone else. */
   people: TranscriptPerson[]
+  /** Finished, and the caller (Chair or Secretary, not a Secret meeting) may save it as text. */
+  canExport: boolean
 }
 
 export interface TranscriptMessage {

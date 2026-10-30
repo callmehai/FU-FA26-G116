@@ -1,0 +1,34 @@
+title UC-38 - Leave Meeting Room
+
+actor "Participant" as Actor
+boundary "Online Meeting Room Page" as Page
+participant ":Room Service" as RoomProvider
+
+Actor->Page: Confirm Leave
+activate Page
+alt Call is in the floating window - AF-2
+    Page->Page: Leave at once without asking and close the floating window (BR-332)
+else Call is in the main window - AF-1
+    Page-->Actor: Ask for confirmation: Stay or Leave
+end
+Page->RoomProvider: Disconnect the actor from the meeting room
+activate RoomProvider
+RoomProvider-->Page: Disconnected
+deactivate RoomProvider
+Page->Page: Stop camera and microphone; the Meeting stays In Progress for everyone else (BR-324)
+Page-->Actor: Meeting detail page
+opt The connection ends without the actor choosing Leave
+    alt The Meeting ended - EX-1
+        Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.
+    else Same account joined from another tab or device - EX-2 (BR-328)
+        Page-->Actor: MSG329 - You joined this room from another tab or device, so this tab left the room.
+    else Actor is no longer on the participant list - EX-3
+        Page-->Actor: MSG330 - You are no longer on the participant list of this meeting room.
+    else Connection is lost - EX-4
+        Page-->Actor: MSG333 - Connection lost, reconnecting...
+        Page-->Actor: MSG332 - Connection to the meeting room lost.
+    else This tab left the room without Leave - EX-5
+        Page-->Actor: MSG328 - You have left the meeting room.
+    end
+end
+deactivate Page

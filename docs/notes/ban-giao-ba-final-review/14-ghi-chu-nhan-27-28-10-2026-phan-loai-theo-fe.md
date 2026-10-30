@@ -115,7 +115,10 @@ phiên bản riêng từng người, ADR-0025) khớp Report 3 nên giữ nguyê
 ### 3.5 FE-08 — Phòng họp trực tuyến (SCRUM-41)
 
 Nguồn: tin bot 10:55 PM ngày 27/10. Phần mã thông báo xong ở PR #162; lệch đặc tả ghi ở comment SCRUM-41 ngày 26/10. Tài liệu
-UC-37–42, BR-322–331 nằm ở PR #147 (còn mở). Xem [note 11](11-tai-lieu-fe-phong-hop-ghi-am.md).
+UC-37–42, UC-39d, UC-78 và UC-79 (đăng ký phát biểu, SCRUM-27) nằm ở PR #147 (còn mở). **Số hiệu đã đánh lại khi gộp `main` 29/10/2026:** BR phòng họp là
+BR-323–332 và BR-336–339 (BR-322 thuộc `main`); mã FE là MSG328–MSG343 và MSG350, các mã MSG290–299 và MSG119–125 cũ không còn dùng cho phòng họp.
+Guest vào phòng chưa cài (chờ SCRUM-25); gọi 1–1 (SCRUM-40) đã bỏ khỏi Report 3. Xem [note 11](11-tai-lieu-fe-phong-hop-ghi-am.md) và
+[note phòng họp](../NOTE-phong-hop-truc-tuyen-25-10-2026.md).
 
 ### 3.6 FE-13 — Email và thông báo (SCRUM-15)
 

@@ -565,7 +565,8 @@
     "states": [
       "Draft",
       "Open",
-      "Closed"
+      "Closed",
+      "Deleted"
     ],
     "edges": [
       [
@@ -574,16 +575,22 @@
         "Chair opens vote\n[meeting InProgress, no other vote Open]\n/ fix eligible voters and documents"
       ],
       [
+        "Draft",
+        "Deleted",
+        "Chair or Secretary deletes draft\n[meeting Approved, Published or InProgress]"
+      ],
+      [
         "Open",
         "Closed",
-        "Chair closes vote"
+        "Chair closes vote\n[meeting InProgress or Ended]"
       ]
     ],
     "initial": "Chair or Secretary saves vote draft\n[meeting Approved, Published or InProgress]",
-    "source": "UC53–57, UC76; BR160–161, 165, 252, 266, 288; ADR0014",
+    "source": "UC53–57, UC76; BR160–161, 165, 189, 252, 266, 288; ADR0014",
     "provisional": false,
     "final_states": [
-      "Closed"
+      "Closed",
+      "Deleted"
     ]
   },
   {

@@ -6,7 +6,7 @@ Ba cách trình bày mô hình dữ liệu của TrustCabinet. Đây không ph�
 | Thư mục | Nội dung | Dùng ở đâu | Đẩy Drive |
 |---|---|---|---|
 | [muc-tieu/](muc-tieu/README.md) | ERD mục tiêu dạng bảng, 30 thực thể, có thuộc tính | Nguồn chính của [02-erd.md](../02-design/02-erd.md) và Report 3 §I.3.2 | Có |
-| [chen/](chen/README.md) | ERD mục tiêu dạng Chen, không thuộc tính, 30 thực thể / 49 quan hệ | Góc nhìn thực thể–quan hệ | Có |
+| [chen/](chen/README.md) | ERD mục tiêu dạng Chen, không thuộc tính, 30 thực thể / 52 quan hệ | Góc nhìn thực thể–quan hệ | Có |
 | [hien-tai/](hien-tai/README.md) | Snapshot schema hiện tại, sinh từ database | Đối chiếu code và migration; không phải nguồn yêu cầu | Không |
 
 ## Bản nào là nguồn?

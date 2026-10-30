@@ -19,5 +19,8 @@ export function addVoiceSample(audio: Blob, fileName: string) {
   return api.postForm<VoiceMutation<VoiceSample>>('/api/me/voice/samples', form)
 }
 
+/** The caller's own sample recording, to hear it back (as AI-eCabinet does). Nobody else's can be fetched. */
+export const voiceSampleAudio = (sampleId: string) => api.blob(`/api/me/voice/samples/${sampleId}/audio`)
+
 export const deleteVoiceSample = (sampleId: string) =>
   api.delete<VoiceMutation<VoiceProfile>>(`/api/me/voice/samples/${sampleId}`)

@@ -100,7 +100,11 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
         var done = await Transcript(secretary, id);
         Assert.Equal("Completed", done.GetProperty("status").GetString());
         Assert.Equal("", done.GetProperty("errorMessage").GetString());
+        // A finished transcript can be made again (a newer model, voices enrolled since); the redo is audited.
+        await AssertCode(await secretary.PostAsync($"/api/recordings/{id}/transcribe", null), 202, "MSG300");
         await AssertCode(await secretary.PostAsync($"/api/recordings/{id}/transcribe", null), 409, "MSG301");
+        await using var db = fixture.Db();
+        Assert.Equal(1, await db.AuditLog.CountAsync(a => a.ObjectId == id && a.Action == "transcript.rerun"));
     }
 
     [Fact]

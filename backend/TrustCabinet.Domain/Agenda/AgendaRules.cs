@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -24,7 +25,6 @@ public static class AgendaRules
     {
         Title = input.Title?.Trim() ?? "",
         Description = input.Description ?? "",
-        DocumentIds = input.DocumentIds ?? []
     };
 
     public static IReadOnlyDictionary<string, string[]> Validate(AgendaInput input)
@@ -59,7 +59,8 @@ public static class AgendaRules
         var pending = item.Status == AgendaItemStatus.Pending;
         return new(planning, planning, planning && pending,
             chair && pending && !items.Any(i => i.Status == AgendaItemStatus.InProgress),
-            chair && item.Status == AgendaItemStatus.InProgress, CanRecordConclusion(meeting, actor, item, hasMinutes));
+            chair && item.Status == AgendaItemStatus.InProgress, CanRecordConclusion(meeting, actor, item, hasMinutes),
+            DocumentFileRules.UploadAccess(meeting, actor, true) == DocumentUploadFailure.None);
     }
 }
 

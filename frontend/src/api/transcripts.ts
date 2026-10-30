@@ -12,6 +12,9 @@ export const getTranscript = (recordingId: string) => api.get<Transcript>(`/api/
 export const retryTranscript = (recordingId: string) =>
   api.post<TranscriptMessage>(`/api/recordings/${recordingId}/transcribe`)
 
+/** The finished transcript as a UTF-8 text file (Chair or Secretary). */
+export const getTranscriptText = (recordingId: string) => api.blob(`/api/recordings/${recordingId}/transcript.txt`)
+
 export const editTranscriptSegment = (segmentId: string, text: string) =>
   api.put<SegmentSaved>(`/api/transcript-segments/${segmentId}`, { text })
 
