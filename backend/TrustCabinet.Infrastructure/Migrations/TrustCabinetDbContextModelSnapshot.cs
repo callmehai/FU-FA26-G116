@@ -745,6 +745,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("document_id");
 
+                    b.Property<bool>("ExcludedFromGeneral")
+                        .HasColumnType("boolean")
+                        .HasColumnName("excluded_from_general");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(300)

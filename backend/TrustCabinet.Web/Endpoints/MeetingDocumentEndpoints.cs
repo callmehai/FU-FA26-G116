@@ -9,7 +9,7 @@ namespace TrustCabinet.Web.Endpoints;
 /// <summary>
 /// UC-32a, UC-32c — list, view and download meeting documents (SCRUM-21); UC-33a AF-1 — upload
 /// files from the computer into a meeting (SCRUM-107, ADR-0024); UC-33a from the library, UC-33b,
-/// UC-33c, UC-33d — add, link, remove and unlink (SCRUM-58).
+/// UC-33c, UC-33d — add, link, remove and unlink (SCRUM-58); out of the general group (ADR-0043).
 /// </summary>
 public static class MeetingDocumentEndpoints
 {
@@ -48,6 +48,9 @@ public static class MeetingDocumentEndpoints
     internal const string StorageFullMessage =
         "Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên.";
     private const string Msg349MeetingCancelled = "MSG349";
+    private const string Msg368RemovedFromGeneral = "MSG368";
+    private const string Msg369GeneralOnly = "MSG369";
+    private const string Msg370NotGeneral = "MSG370";
 
     /// <summary>The 200 MB of files plus room for the multipart framing and the page counts.</summary>
     private const long MaxRequestBytes = DocumentFileRules.MaxTotalBytes + 1024 * 1024;
@@ -130,6 +133,22 @@ public static class MeetingDocumentEndpoints
                 return Change(outcome, RemoveCodes, () => Results.Ok(new
                 {
                     code = Msg167Removed, message = "Đã gỡ tài liệu khỏi cuộc họp.", meetingId, meetingDocumentId,
+                }));
+            });
+
+        // ADR-0043: out of the general group, for a document an agenda item still holds. The same who and when as UC-33d.
+        app.MapGroup(prefix).RequireActiveUser(Change(new(DocumentUploadFailure.StoreFailed), UnlinkCodes))
+            .MapDelete("/{meetingDocumentId:guid}/general", async (Guid meetingId, Guid meetingDocumentId,
+                HttpContext context, IMeetingDocumentService service, MeetingDocumentChangePublisher publisher,
+                ILoggerFactory logs, CancellationToken ct) =>
+            {
+                var outcome = await service.RemoveFromGeneralAsync(meetingId, meetingDocumentId,
+                    CapabilityGate.GatedUserId(context.User), ct);
+                await PublishAsync(outcome, meetingId, publisher, logs);
+                return Change(outcome, UnlinkCodes, () => Results.Ok(new
+                {
+                    code = Msg368RemovedFromGeneral, message = "Đã gỡ tài liệu khỏi nhóm tài liệu chung.", meetingId,
+                    meetingDocumentId,
                 }));
             });
 
@@ -425,6 +444,10 @@ public static class MeetingDocumentEndpoints
                 "Một hoặc nhiều tài liệu đã chọn đã được gắn vào mục nghị sự này."),
             DocumentUploadFailure.NotLinked => (404, Msg246NotLinked,
                 "Tài liệu này không còn gắn với mục nghị sự đã chọn. Hãy tải lại danh sách tài liệu."),
+            DocumentUploadFailure.NotGeneral => (404, Msg370NotGeneral,
+                "Tài liệu này không còn trong nhóm tài liệu chung. Hãy tải lại danh sách tài liệu."),
+            DocumentUploadFailure.GeneralOnly => (409, Msg369GeneralOnly,
+                "Tài liệu chưa gắn với mục nghị sự nào nên vẫn phải ở nhóm tài liệu chung. Muốn bỏ hẳn, hãy gỡ khỏi cuộc họp."),
             _ => (503, codes.Failed, codes.FailedMessage),
         };
         return Results.Json(new { code, message, errors = outcome.Errors }, statusCode: status);

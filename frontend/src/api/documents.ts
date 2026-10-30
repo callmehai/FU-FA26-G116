@@ -61,6 +61,13 @@ function filesForm(files: Upload) {
 export const addFromLibrary = (meetingId: string, documentIds: string[]) =>
   api.post<MeetingDocumentsAdded>(base(meetingId), { documentIds })
 
+/**
+ * ADR-0043: out of the general group; the document stays in the meeting and under its items. 409 MSG369 when it is
+ * linked to no item (the general group is its only place), 404 MSG370 when already out; otherwise UC-33d's codes.
+ */
+export const removeFromGeneral = (meetingId: string, meetingDocumentId: string) =>
+  api.delete<{ code: string; message: string }>(`${base(meetingId)}/${meetingDocumentId}/general`)
+
 /** UC-33c: comments stay as history but are no longer shown (BR-281). 403 MSG169, 409 MSG248, 404 MSG170. */
 export const removeMeetingDocument = (meetingId: string, meetingDocumentId: string) =>
   api.delete<{ code: string; message: string }>(`${base(meetingId)}/${meetingDocumentId}`)

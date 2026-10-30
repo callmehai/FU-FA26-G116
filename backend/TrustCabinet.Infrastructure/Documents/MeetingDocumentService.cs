@@ -35,12 +35,14 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
                 Row = new MeetingDocumentRow(d.Id, d.FileName, d.StoredFile.ContentType, d.StoredFile.ByteSize,
                     d.StoredFile.PageCount, d.Comments.Count, new MeetingPerson(d.AddedById, d.AddedBy.FullName), d.AddedAt),
                 ItemIds = d.AgendaItemLinks.Select(l => l.AgendaItemId).ToList(),
+                d.ExcludedFromGeneral,
             }).ToListAsync(ct);
 
-        // A document linked to several items shows under each (BR-277); one linked to none is general (BR-280).
+        // A document linked to several items shows under each (BR-277). Every document is general too unless the
+        // Chair or Secretary took it out (ADR-0043); one linked to none is always general (BR-280).
         var groups = items.Select(i => new MeetingDocumentAgendaGroup(i.Id, i.Position, i.Title, i.Status.ToString(),
             rows.Where(r => r.ItemIds.Contains(i.Id)).Select(r => r.Row).ToList())).ToList();
-        var general = rows.Where(r => r.ItemIds.Count == 0).Select(r => r.Row).ToList();
+        var general = rows.Where(r => !r.ExcludedFromGeneral || r.ItemIds.Count == 0).Select(r => r.Row).ToList();
         var current = items.FirstOrDefault(i => i.Status == AgendaItemStatus.InProgress)?.Id;
         return new(meetingId, current, groups, general);
     }
@@ -247,8 +249,26 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             var link = await db.MeetingDocumentAgendaItems.SingleOrDefaultAsync(l => l.MeetingDocumentId == meetingDocumentId
                 && l.AgendaItemId == agendaItemId, token);
             if (link is null) return DocumentUploadFailure.NotLinked;
-            // Only this link: with none left the document shows as a general one (BR-280).
+            // Only this link: with none left the document is a general one again (BR-280), and stays so if linked later.
             db.MeetingDocumentAgendaItems.Remove(link);
+            if (!await db.MeetingDocumentAgendaItems.AnyAsync(l => l.MeetingDocumentId == meetingDocumentId
+                    && l.AgendaItemId != agendaItemId, token))
+                (await db.MeetingDocuments.SingleAsync(d => d.Id == meetingDocumentId, token)).ExcludedFromGeneral = false;
+            return DocumentUploadFailure.None;
+        }, ct);
+
+    public Task<DocumentUploadOutcome> RemoveFromGeneralAsync(Guid meetingId, Guid meetingDocumentId, Guid actorId,
+        CancellationToken ct = default)
+        => InMeetingLockAsync(meetingId, actorId, "take a document out of the general group of", async (meeting, now, token) =>
+        {
+            var document = await db.MeetingDocuments.SingleOrDefaultAsync(d => d.Id == meetingDocumentId
+                && d.MeetingId == meeting.Id && d.RemovedAt == null, token);
+            if (document is null) return DocumentUploadFailure.NotInMeeting;
+            if (document.ExcludedFromGeneral) return DocumentUploadFailure.NotGeneral;
+            if (!await db.MeetingDocumentAgendaItems.AnyAsync(l => l.MeetingDocumentId == meetingDocumentId, token))
+                return DocumentUploadFailure.GeneralOnly;
+            document.ExcludedFromGeneral = true;
+            document.UpdatedAt = now;
             return DocumentUploadFailure.None;
         }, ct);
 

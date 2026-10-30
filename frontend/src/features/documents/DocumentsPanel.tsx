@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { removeMeetingDocument, unlinkFromAgendaItem } from '../../api/documents'
+import { removeFromGeneral, removeMeetingDocument, unlinkFromAgendaItem } from '../../api/documents'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
@@ -31,7 +31,8 @@ const GROUPS = [
  * side panel (ADR-0011). It reads its own list and re-reads on the hub.
  *
  * - `page`: the AI-eCabinet layout — by agenda item (a document linked to several items under each,
- *   BR-277) or the general ones (BR-280). While the meeting has not ended or been cancelled, its Chair
+ *   BR-277) or the general ones: every document unless taken out of that group, and always one linked to no item
+ *   (BR-280, ADR-0043). While the meeting has not ended or been cancelled, its Chair
  *   and Secretary add documents (SCRUM-107, SCRUM-58: from the computer or their library, to the general
  *   group or one item), detach one from an item and remove one from the meeting (BR-184, BR-279, BR-299);
  *   the server checks again.
@@ -101,6 +102,8 @@ type RowProps = {
   onDownload: (doc: MeetingDocument) => void
   /** The Chair's and Secretary's: detach from `item`, or remove from the meeting when `item` is absent. */
   onRemove?: (doc: MeetingDocument, item?: DocumentsAgendaItem) => void
+  /** The Chair's and Secretary's, in the general group, for a document an agenda item still holds (ADR-0043). */
+  onRemoveFromGeneral?: (doc: MeetingDocument) => void
 }
 
 /** What a remove answer means the page is out of date: role lost, meeting ended or cancelled, item or document gone. */
@@ -113,7 +116,10 @@ const staleRemove = (err: unknown) =>
   isApiError(err, 403, 'MSG241') ||
   isApiError(err, 409, 'MSG248') ||
   isApiError(err, 409, 'MSG247') ||
-  isApiError(err, 409, 'MSG349')
+  isApiError(err, 409, 'MSG349') ||
+  // Out of the general group (ADR-0043): already out, or its links went meanwhile.
+  isApiError(err, 404, 'MSG370') ||
+  isApiError(err, 409, 'MSG369')
 
 function PageList({
   data,
@@ -132,7 +138,11 @@ function PageList({
   const [group, setGroup] = useState<Group>('agenda')
   /** The add dialog: for the general group (`item` absent) or one agenda item. */
   const [adding, setAdding] = useState<{ item?: DocumentsAgendaItem; number?: number } | null>(null)
-  const [removing, setRemoving] = useState<{ doc: MeetingDocument; item?: DocumentsAgendaItem } | null>(null)
+  const [removing, setRemoving] = useState<{
+    doc: MeetingDocument
+    item?: DocumentsAgendaItem
+    fromGeneral?: boolean
+  } | null>(null)
   const canManage =
     meeting.status !== 'Ended' &&
     meeting.status !== 'Cancelled' &&
@@ -140,8 +150,13 @@ function PageList({
   // A document linked to several items counts once, as the room panel's total does.
   const all = distinctDocuments([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
   const agendaCount = distinctCount(data.agendaItems.flatMap((item) => item.documents))
+  const linked = new Set(data.agendaItems.flatMap((item) => item.documents.map((d) => d.id)))
   const managed = canManage
     ? { ...row, onRemove: (doc: MeetingDocument, item?: DocumentsAgendaItem) => setRemoving({ doc, item }) }
+    : row
+  // Only a document an item still holds can leave the general group; otherwise it would be nowhere (BR-280).
+  const managedGeneral = canManage
+    ? { ...managed, onRemoveFromGeneral: (doc: MeetingDocument) => setRemoving({ doc, fromGeneral: true }) }
     : row
 
   return (
@@ -180,7 +195,7 @@ function PageList({
         ) : data.general.length === 0 ? (
           <p className="documents-empty">Chưa có tài liệu chung.</p>
         ) : (
-          <DocumentRows documents={data.general} row={managed} />
+          <DocumentRows documents={data.general} row={managedGeneral} linked={linked} />
         )}
       </div>
 
@@ -218,17 +233,27 @@ function PageList({
 
       {removing && (
         <ConfirmDialog
-          title={removing.item ? 'Gỡ tài liệu khỏi mục này?' : 'Gỡ tài liệu khỏi cuộc họp?'}
-          confirmLabel={removing.item ? 'Gỡ khỏi mục' : 'Gỡ khỏi cuộc họp'}
+          title={
+            removing.fromGeneral
+              ? 'Gỡ khỏi tài liệu chung?'
+              : removing.item
+                ? 'Gỡ tài liệu khỏi mục này?'
+                : 'Gỡ tài liệu khỏi cuộc họp?'
+          }
+          confirmLabel={
+            removing.fromGeneral ? 'Gỡ khỏi tài liệu chung' : removing.item ? 'Gỡ khỏi mục' : 'Gỡ khỏi cuộc họp'
+          }
           pendingLabel="Đang gỡ…"
           cancelLabel="Giữ tài liệu"
-          tone={removing.item ? 'primary' : 'danger'}
+          tone={removing.item || removing.fromGeneral ? 'primary' : 'danger'}
           onConfirm={async () => {
-            const { doc, item } = removing
+            const { doc, item, fromGeneral } = removing
             try {
-              const done = item
-                ? await unlinkFromAgendaItem(meeting.id, item.id, doc.id)
-                : await removeMeetingDocument(meeting.id, doc.id)
+              const done = fromGeneral
+                ? await removeFromGeneral(meeting.id, doc.id)
+                : item
+                  ? await unlinkFromAgendaItem(meeting.id, item.id, doc.id)
+                  : await removeMeetingDocument(meeting.id, doc.id)
               setRemoving(null)
               toast.show(done.message)
               onUploaded()
@@ -241,7 +266,12 @@ function PageList({
           }}
           onClose={() => setRemoving(null)}
         >
-          {removing.item ? (
+          {removing.fromGeneral ? (
+            <>
+              <strong>{removing.doc.fileName}</strong> vẫn còn trong cuộc họp và ở các mục đang gắn, chỉ không còn trong
+              nhóm tài liệu chung.
+            </>
+          ) : removing.item ? (
             <>
               <strong>{removing.doc.fileName}</strong> vẫn còn trong cuộc họp, chỉ không còn gắn với mục “
               {removing.item.title}”.
@@ -358,16 +388,24 @@ function DocumentRows({
   documents,
   row,
   item,
+  linked,
 }: {
   documents: MeetingDocument[]
   row: RowProps
   /** The agenda item these rows sit under, if any. */
   item?: DocumentsAgendaItem
+  /** In the general group: the documents some agenda item holds, which may leave the group (ADR-0043). */
+  linked?: ReadonlySet<string>
 }) {
   return (
     <ul className="documents-rows">
       {documents.map((doc) => (
-        <DocumentRow key={doc.id} doc={doc} row={row} item={item} />
+        <DocumentRow
+          key={doc.id}
+          doc={doc}
+          row={linked?.has(doc.id) ? row : { ...row, onRemoveFromGeneral: undefined }}
+          item={item}
+        />
       ))}
     </ul>
   )
@@ -407,6 +445,17 @@ function DocumentRow({ doc, row, item }: { doc: MeetingDocument; row: RowProps; 
           onClick={() => row.onDownload(doc)}
         >
           <Icon name="download" size={16} />
+        </button>
+      )}
+      {!room && row.onRemoveFromGeneral && (
+        <button
+          type="button"
+          className="icon-button icon-button-sm"
+          aria-label={`Gỡ ${doc.fileName} khỏi tài liệu chung`}
+          data-tooltip="Gỡ khỏi tài liệu chung"
+          onClick={() => row.onRemoveFromGeneral!(doc)}
+        >
+          <Icon name="unlink" size={16} />
         </button>
       )}
       {!room && row.onRemove && item && (
