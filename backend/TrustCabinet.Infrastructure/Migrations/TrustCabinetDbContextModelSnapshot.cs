@@ -972,6 +972,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("revoked_by_id");
 
+                    b.Property<string>("SelfDeclaredDisplayName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("self_declared_display_name");
+
+                    b.Property<string>("SelfDeclaredJobTitle")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("self_declared_job_title");
+
                     b.Property<string>("SensitivityAtInvitation")
                         .IsRequired()
                         .HasMaxLength(32)

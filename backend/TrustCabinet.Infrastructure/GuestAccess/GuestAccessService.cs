@@ -8,11 +8,12 @@ using Npgsql;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.GuestAccess;
+using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.Email;
 
 namespace TrustCabinet.Infrastructure.GuestAccess;
 
-/// <summary>UC-04 steps 1–4: open the invitation link, send the one-time code, verify it into a guest session.</summary>
+/// <summary>UC-04: open the invitation link, send and verify the one-time code, then the guest's own session and profile.</summary>
 internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredentials credentials,
     IOptions<GuestAccessOptions> options, IOptions<EmailDeliveryOptions> email, IEmailSender sender,
     TimeProvider clock, ILogger<GuestAccessService> logger) : IGuestAccessService
@@ -21,6 +22,8 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
     private static readonly GuestAccessResult Unavailable = new(GuestAccessFailure.Unavailable);
     private static readonly GuestAccessResult InvalidCode = new(GuestAccessFailure.InvalidCode);
     private static readonly GuestAccessResult Locked = new(GuestAccessFailure.CodeLocked);
+    private static readonly GuestAccessResult Ended = new(GuestAccessFailure.SessionEnded);
+    private const int ProfileFieldLength = 200;
 
     public async Task<GuestAccessResult> OpenAsync(Guid invitationId, string? linkToken, CancellationToken ct)
     {
@@ -120,7 +123,9 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             db.GuestSessions.Add(session);
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
-            return new(Data: new GuestVerified(session.Id, invitation.MeetingId, session.ExpiresAt));
+            var identity = new MeetingGuestSession(invitation.MeetingId, invitationId, session.Id);
+            return new(Data: new GuestVerified(credentials.AccessToken(identity, session.ExpiresAt), session.ExpiresAt,
+                invitation.MeetingId, invitation.SelfDeclaredDisplayName is not null));
         }
         catch (Exception ex) when (IsPersistence(ex))
         {
@@ -129,9 +134,91 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
         }
     }
 
+    public async Task<GuestAccessResult> GetSessionAsync(MeetingGuestSession session, CancellationToken ct)
+    {
+        try
+        {
+            var current = await FindSessionAsync(session, tracked: false, ct);
+            return current is null ? Ended : new(Data: View(current));
+        }
+        catch (Exception ex) when (IsPersistence(ex))
+        {
+            logger.LogError(ex, "Could not read guest session {SessionId}.", session.SessionId);
+            return Unavailable;
+        }
+    }
+
+    public async Task<GuestAccessResult> SaveProfileAsync(MeetingGuestSession session, string? displayName, string? jobTitle,
+        CancellationToken ct)
+    {
+        var name = displayName?.Trim() ?? "";
+        var title = string.IsNullOrWhiteSpace(jobTitle) ? null : jobTitle.Trim();
+        var errors = new Dictionary<string, string[]>();
+        if (name.Length is 0 or > ProfileFieldLength)
+            errors["displayName"] = [$"Tên hiển thị bắt buộc, tối đa {ProfileFieldLength} ký tự."];
+        if (title?.Length > ProfileFieldLength)
+            errors["jobTitle"] = [$"Chức vụ tối đa {ProfileFieldLength} ký tự."];
+        try
+        {
+            var current = await FindSessionAsync(session, tracked: true, ct);
+            if (current is null) return Ended;
+            if (errors.Count > 0) return new(GuestAccessFailure.InvalidProfile, Errors: errors);
+            // BR-180: shown as self-declared; InvitedName and Email stay the invitation evidence.
+            current.Invitation.SelfDeclaredDisplayName = name;
+            current.Invitation.SelfDeclaredJobTitle = title;
+            current.Invitation.UpdatedAt = clock.GetUtcNow();
+            await db.SaveChangesAsync(ct);
+            return new(Data: View(current));
+        }
+        catch (Exception ex) when (IsPersistence(ex))
+        {
+            logger.LogError(ex, "Could not save the profile of guest session {SessionId}.", session.SessionId);
+            return Unavailable;
+        }
+    }
+
+    public async Task<GuestAccessResult> SignOutAsync(MeetingGuestSession session, CancellationToken ct)
+    {
+        try
+        {
+            var now = clock.GetUtcNow();
+            await db.GuestSessions
+                .Where(x => x.Id == session.SessionId && x.InvitationId == session.InvitationId && x.RevokedAt == null)
+                .ExecuteUpdateAsync(set => set.SetProperty(x => x.RevokedAt, now).SetProperty(x => x.UpdatedAt, now), ct);
+            return new();
+        }
+        catch (Exception ex) when (IsPersistence(ex))
+        {
+            logger.LogError(ex, "Could not end guest session {SessionId}.", session.SessionId);
+            return Unavailable;
+        }
+    }
+
+    /// <summary>The caller's own session while it still grants access; its token's claims must all agree.</summary>
+    private Task<GuestSession?> FindSessionAsync(MeetingGuestSession session, bool tracked, CancellationToken ct)
+    {
+        if (!session.IsValid) return Task.FromResult<GuestSession?>(null);
+        var query = CurrentSessions(db, clock.GetUtcNow()).Include(x => x.Invitation).ThenInclude(g => g.Meeting)
+            .Where(x => x.Id == session.SessionId && x.InvitationId == session.InvitationId && x.Invitation.MeetingId == session.MeetingId);
+        return (tracked ? query.AsTracking() : query).SingleOrDefaultAsync(ct);
+    }
+
+    private static GuestSessionView View(GuestSession session) => new(session.Id, session.ExpiresAt,
+        Meeting(session.Invitation.Meeting), session.Invitation.Email, session.Invitation.InvitedName,
+        session.Invitation.SelfDeclaredDisplayName, session.Invitation.SelfDeclaredJobTitle,
+        session.Invitation.SelfDeclaredDisplayName is not null);
+
     /// <summary>UC-04 EX-1: an invitation works only while it stands and its meeting is Published or InProgress.</summary>
     internal static readonly Expression<Func<MeetingGuestInvitation, bool>> OpenInvitation = g => g.RevokedAt == null
         && (g.Meeting.Status == MeetingStatus.Published || g.Meeting.Status == MeetingStatus.InProgress);
+
+    /// <summary>
+    /// Not logged out, not expired, invitation standing, meeting Published or InProgress. A guest loses
+    /// everything once the meeting has Ended (PO 30/10/2026), unlike an internal participant.
+    /// </summary>
+    internal static IQueryable<GuestSession> CurrentSessions(TrustCabinetDbContext db, DateTimeOffset now)
+        => db.GuestSessions.AsNoTracking().Where(x => x.RevokedAt == null && x.ExpiresAt > now && x.Invitation.RevokedAt == null
+            && (x.Invitation.Meeting.Status == MeetingStatus.Published || x.Invitation.Meeting.Status == MeetingStatus.InProgress));
 
     private Task<MeetingGuestInvitation?> FindOpenAsync(Guid invitationId, CancellationToken ct)
         => db.MeetingGuestInvitations.AsNoTracking().Include(g => g.Meeting).Where(OpenInvitation)

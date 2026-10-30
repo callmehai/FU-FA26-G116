@@ -12,6 +12,8 @@ public sealed class MeetingGuestInvitationConfiguration : IEntityTypeConfigurati
     {
         b.Property(p => p.AttendanceVersion).HasDefaultValue(0L).IsRequired();
         b.Property(x => x.InvitedName).HasMaxLength(200).IsRequired();
+        b.Property(x => x.SelfDeclaredDisplayName).HasMaxLength(200);
+        b.Property(x => x.SelfDeclaredJobTitle).HasMaxLength(200);
         b.Property(x => x.Email).HasColumnType("citext").HasMaxLength(256).IsRequired();
         b.Property(x => x.Response).HasConversion<string>().HasMaxLength(32);
         b.Property(x => x.Attendance).HasConversion(value => value.ToString(), value => AttendanceRules.ReadStored(value))

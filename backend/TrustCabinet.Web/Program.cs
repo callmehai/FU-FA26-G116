@@ -36,7 +36,7 @@ builder.Services.AddTrustCabinetParticipants();
 builder.Services.AddTrustCabinetAttendance();
 // SCRUM-116: UC-04 guest access; replaces the fail-closed guest adapters registered above.
 builder.Services.AddTrustCabinetGuestAccess(builder.Configuration);
-builder.Services.AddSingleton<IMeetingGuestIdentityResolver, UnavailableMeetingGuestIdentityResolver>();
+builder.Services.AddSingleton<IMeetingGuestIdentityResolver, GuestTokenIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();

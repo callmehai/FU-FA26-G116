@@ -127,6 +127,26 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
         return Mail.LastCode(s.Email);
     }
 
+    /// <summary>The whole UC-04 flow: code, verification and (unless told otherwise) the display name.</summary>
+    internal async Task<(HttpClient Client, string Token)> SignIn(Scenario s, bool profile = true)
+    {
+        var client = Host.CreateClient();
+        var code = await SendCode(client, s);
+        var verified = await Expect(await client.PostAsJsonAsync(s.Url + "/verify", new { token = s.LinkToken, code }), 200);
+        var token = verified.GetProperty("accessToken").GetString()!;
+        client.DefaultRequestHeaders.Authorization = new("Bearer", token);
+        if (profile)
+            await Expect(await client.PutAsJsonAsync("/api/guest-access/session/profile", new { displayName = "Khách tự khai" }), 200, "MSG376");
+        return (client, token);
+    }
+
+    internal HttpClient UserClient(Guid userId)
+    {
+        var client = Host.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new("Bearer", Agenda.AgendaFixture.Token(userId));
+        return client;
+    }
+
     internal static async Task<JsonElement> Expect(HttpResponseMessage response, int status, string? code = null)
     {
         var text = await response.Content.ReadAsStringAsync();

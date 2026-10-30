@@ -3,7 +3,7 @@ using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Entities;
 
-/// <summary>Invitation evidence; verified credentials and sessions are owned by UC-04.</summary>
+/// <summary>Invitation evidence. UC-04's codes and sessions hang off it (GuestVerificationChallenge, GuestSession).</summary>
 public class MeetingGuestInvitation : Entity
 {
     public Guid MeetingId { get; set; }
@@ -22,4 +22,7 @@ public class MeetingGuestInvitation : Entity
     public Guid? AttendanceRecordedById { get; set; }
     public DateTimeOffset? AttendanceRecordedAt { get; set; }
     public string InitialInvitationDeliveryKey { get; set; } = string.Empty;
+    /// <summary>BR-180: what the verified guest says about themselves; never replaces InvitedName or Email.</summary>
+    public string? SelfDeclaredDisplayName { get; set; }
+    public string? SelfDeclaredJobTitle { get; set; }
 }

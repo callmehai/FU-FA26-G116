@@ -254,6 +254,9 @@ hồi hay cuộc họp không còn mở đều trả cùng `MSG371`, không lộ
 | `MSG373` | 429 | `POST …/code`: gửi lại trong vòng 1 phút, kèm `retryAfterSeconds` | Vui lòng chờ trước khi gửi lại mã. |
 | `MSG374` | 503 | `/api/guest-access/*`: không đọc/lưu được dữ liệu hoặc không gửi được email (EX-3) | Không thể xác minh lúc này. Vui lòng thử lại sau. |
 | `MSG375` | 200 | `POST …/code`: đã gửi mã | Đã gửi mã xác minh tới email được mời. |
+| `MSG376` | 200 | `PUT /api/guest-access/session/profile`: lưu hồ sơ tự khai | Đã lưu thông tin hiển thị. |
+| `MSG377` | 400 | `PUT …/session/profile`: tên hiển thị trống/quá 200 ký tự, chức vụ quá 200 ký tự | Thông tin hiển thị không hợp lệ. |
+| `MSG378` | 404 | `GET`/`PUT /api/guest-access/session…`: phiên hết hạn, đã đăng xuất, lời mời bị thu hồi hoặc cuộc họp không còn mở | Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email. |
 
 ## Mã tiếp theo
 
@@ -631,9 +634,9 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG373` | UC-04 · SCRUM-116 | *Wait before requesting another code.* — `Vui lòng chờ trước khi gửi lại mã.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG374` | UC-04 / EX-3 · SCRUM-116 | *Verification could not be completed.* — `Không thể xác minh lúc này. Vui lòng thử lại sau.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG375` | UC-04 · SCRUM-116 | *A verification code was sent to the invited email.* — `Đã gửi mã xác minh tới email được mời.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
-| `MSG376` | UC-04 bước 5 · SCRUM-116 | *Display information saved.* — `Đã lưu thông tin hiển thị.` |
-| `MSG377` | UC-04 bước 5 · SCRUM-116 | *Invalid display information.* — `Thông tin hiển thị không hợp lệ.` |
-| `MSG378` | UC-04 · SCRUM-116 | *The guest session has ended.* — `Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.` |
+| `MSG376` | UC-04 bước 5 · SCRUM-116 | *Display information saved.* — `Đã lưu thông tin hiển thị.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
+| `MSG377` | UC-04 bước 5 · SCRUM-116 | *Invalid display information.* — `Thông tin hiển thị không hợp lệ.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
+| `MSG378` | UC-04 · SCRUM-116 | *The guest session has ended.* — `Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG127` | ADR-0013 · View Meeting Sessions (UC-53 cũ, đã bỏ) | *Unable to load meeting sessions. Please try again.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG128` | UC-26 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
 | `MSG139` | UC-22 cũ · Ngừng dùng 13/10/2026 | Không còn gate đóng Vote trước End Meeting; không tái cấp mã. |

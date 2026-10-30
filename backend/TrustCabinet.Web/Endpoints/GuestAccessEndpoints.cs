@@ -12,9 +12,13 @@ public static class GuestAccessEndpoints
     private const string Msg373TooSoon = "MSG373";
     private const string Msg374Unavailable = "MSG374";
     private const string Msg375CodeSent = "MSG375";
+    private const string Msg376ProfileSaved = "MSG376";
+    private const string Msg377ProfileInvalid = "MSG377";
+    private const string Msg378SessionEnded = "MSG378";
 
     private sealed record LinkBody(string? Token);
     private sealed record VerifyBody(string? Token, string? Code);
+    private sealed record ProfileBody(string? DisplayName, string? JobTitle);
 
     public static void MapGuestAccessEndpoints(this IEndpointRouteBuilder app)
     {
@@ -34,6 +38,29 @@ public static class GuestAccessEndpoints
         invitation.MapPost("/verify", async (Guid invitationId, VerifyBody? body, IGuestAccessService service,
             HttpContext context, CancellationToken ct)
             => Map(await service.VerifyAsync(invitationId, body?.Token, body?.Code, ct), context));
+
+        // The guest's own session. A fixed endpoint, so an internal token gets 403 rather than 404.
+        var session = app.MapGroup("/api/guest-access/session").RequireAuthorization();
+        session.MapGet("", async (HttpContext context, IMeetingGuestIdentityResolver identities, IGuestAccessService service,
+            CancellationToken ct) => identities.Resolve(context.User) is { } guest
+                ? Map(await service.GetSessionAsync(guest, ct), context)
+                : Results.Forbid());
+        session.MapPut("/profile", async (ProfileBody? body, HttpContext context, IMeetingGuestIdentityResolver identities,
+            IGuestAccessService service, CancellationToken ct) =>
+        {
+            if (identities.Resolve(context.User) is not { } guest) return Results.Forbid();
+            var result = await service.SaveProfileAsync(guest, body?.DisplayName, body?.JobTitle, ct);
+            return result is { Failure: GuestAccessFailure.None }
+                ? Map(result with { Data = new { code = Msg376ProfileSaved, message = "Đã lưu thông tin hiển thị.", session = result.Data } }, context)
+                : Map(result, context);
+        });
+        session.MapDelete("", async (HttpContext context, IMeetingGuestIdentityResolver identities, IGuestAccessService service,
+            CancellationToken ct) =>
+        {
+            if (identities.Resolve(context.User) is not { } guest) return Results.Forbid();
+            var result = await service.SignOutAsync(guest, ct);
+            return result.Failure == GuestAccessFailure.None ? Results.NoContent() : Map(result, context);
+        });
     }
 
     private static IResult Map(GuestAccessResult result, HttpContext context)
@@ -54,6 +81,11 @@ public static class GuestAccessEndpoints
                 context.Response.Headers.RetryAfter = result.RetryAfterSeconds.ToString(CultureInfo.InvariantCulture);
                 return Results.Json(new { code = Msg373TooSoon, message = "Vui lòng chờ trước khi gửi lại mã.",
                     retryAfterSeconds = result.RetryAfterSeconds }, statusCode: 429);
+            case GuestAccessFailure.InvalidProfile:
+                return Results.Json(new { code = Msg377ProfileInvalid, message = "Thông tin hiển thị không hợp lệ.",
+                    errors = result.Errors }, statusCode: 400);
+            case GuestAccessFailure.SessionEnded:
+                return Error(404, Msg378SessionEnded, "Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.");
             default:
                 return Error(503, Msg374Unavailable, "Không thể xác minh lúc này. Vui lòng thử lại sau.");
         }
