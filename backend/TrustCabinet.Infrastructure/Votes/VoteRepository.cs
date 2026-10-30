@@ -64,6 +64,43 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
         => await db.VotingSessions.AsNoTracking().Where(v => v.MeetingId == meetingId && v.Id == voteId)
             .Select(Row(viewer)).SingleOrDefaultAsync(ct);
 
+    /// <summary>
+    /// The vote's documents still in the meeting, oldest attached first, with when <paramref name="viewer"/> confirmed
+    /// reading each. One removed from the meeting no longer shows or counts (BR-292).
+    /// </summary>
+    public async Task<IReadOnlyList<VoteDocumentView>> DocumentsAsync(Guid voteId, VoteViewer viewer, CancellationToken ct)
+    {
+        var userId = viewer.UserId;
+        var guestId = viewer.GuestInvitationId;
+        return await db.VoteDocuments.AsNoTracking()
+            .Where(l => l.VotingSessionId == voteId && l.MeetingDocument.RemovedAt == null)
+            .OrderBy(l => l.MeetingDocument.AddedAt).ThenBy(l => l.MeetingDocumentId)
+            .Select(l => new VoteDocumentView(l.MeetingDocumentId, l.MeetingDocument.FileName,
+                l.MeetingDocument.StoredFile.ContentType, l.MeetingDocument.StoredFile.ByteSize,
+                l.MeetingDocument.StoredFile.PageCount,
+                l.MeetingDocument.ReadConfirmations
+                    .Where(c => (userId != null && c.UserId == userId) || (guestId != null && c.GuestInvitationId == guestId))
+                    .Select(c => (DateTimeOffset?)c.ConfirmedAt).FirstOrDefault()))
+            .ToListAsync(ct);
+    }
+
+    public Task<HashSet<Guid>> AttachedDocumentIdsAsync(Guid voteId, CancellationToken ct)
+        => db.VoteDocuments.Where(l => l.VotingSessionId == voteId).Select(l => l.MeetingDocumentId).ToHashSetAsync(ct);
+
+    /// <summary>
+    /// Whether the meeting document is in the meeting and attached to a vote the reader may see: any vote for the
+    /// Chair and the Secretary, an Open or Closed one for everyone else, since a draft is theirs alone (BR-253).
+    /// </summary>
+    public Task<bool> IsVisibleVoteDocumentAsync(Guid meetingId, Guid meetingDocumentId, bool includeDrafts, CancellationToken ct)
+        => db.VoteDocuments.AnyAsync(l => l.MeetingDocumentId == meetingDocumentId && l.MeetingDocument.MeetingId == meetingId
+            && l.MeetingDocument.RemovedAt == null && l.VotingSession.MeetingId == meetingId
+            && (includeDrafts || l.VotingSession.Status != VotingStatus.Draft), ct);
+
+    public Task<DocumentReadConfirmation?> FindReadConfirmationAsync(Guid meetingDocumentId, VoteViewer viewer, CancellationToken ct)
+        => db.DocumentReadConfirmations.AsNoTracking().SingleOrDefaultAsync(c => c.MeetingDocumentId == meetingDocumentId
+            && ((viewer.UserId != null && c.UserId == viewer.UserId)
+                || (viewer.GuestInvitationId != null && c.GuestInvitationId == viewer.GuestInvitationId)), ct);
+
     public async Task<IReadOnlyList<VotingOption>> OptionsAsync(Guid voteId, CancellationToken ct)
         => await db.VotingOptions.AsNoTracking().Where(o => o.VotingSessionId == voteId)
             .OrderBy(o => o.Position).ToListAsync(ct);
@@ -106,7 +143,7 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
         var userId = viewer.UserId;
         var guestId = viewer.GuestInvitationId;
         return v => new VoteRow(v.Id, v.Title, v.Description, v.Status, v.IsAnonymous, v.EligibleRoles,
-            v.OpenedAt, v.ClosedAt, v.EligibleCount, v.Receipts.Count, v.Documents.Count,
+            v.OpenedAt, v.ClosedAt, v.EligibleCount, v.Receipts.Count, v.Documents.Count(d => d.MeetingDocument.RemovedAt == null),
             v.EligibleVoters.Any(e => (userId != null && e.UserId == userId) || (guestId != null && e.GuestInvitationId == guestId)),
             v.Receipts.Any(r => (userId != null && r.VoterId == userId) || (guestId != null && r.GuestInvitationId == guestId)),
             v.Conclusion, v.ConclusionNote, v.ConcludedById, v.ConcludedBy != null ? v.ConcludedBy.FullName : null, v.ConcludedAt);

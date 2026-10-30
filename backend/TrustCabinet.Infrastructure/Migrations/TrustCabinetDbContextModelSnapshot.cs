@@ -422,6 +422,62 @@ namespace TrustCabinet.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.DocumentReadConfirmation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("GuestInvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_invitation_id");
+
+                    b.Property<Guid>("MeetingDocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meeting_document_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_document_read_confirmations");
+
+                    b.HasIndex("GuestInvitationId")
+                        .HasDatabaseName("ix_document_read_confirmations_guest_invitation_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_document_read_confirmations_user_id");
+
+                    b.HasIndex("MeetingDocumentId", "GuestInvitationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_document_read_confirmations_meeting_document_id_guest_invit")
+                        .HasFilter("guest_invitation_id IS NOT NULL");
+
+                    b.HasIndex("MeetingDocumentId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_document_read_confirmations_meeting_document_id_user_id")
+                        .HasFilter("user_id IS NOT NULL");
+
+                    b.ToTable("document_read_confirmations", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_document_read_confirmations_one_reader", "num_nonnulls(user_id, guest_invitation_id) = 1");
+                        });
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.EmailMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2836,6 +2892,34 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("ParentComment");
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.DocumentReadConfirmation", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "GuestInvitation")
+                        .WithMany()
+                        .HasForeignKey("GuestInvitationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_document_read_confirmations_meeting_guest_invitations_guest");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingDocument", "MeetingDocument")
+                        .WithMany("ReadConfirmations")
+                        .HasForeignKey("MeetingDocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_document_read_confirmations_meeting_documents_meeting_docum");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_document_read_confirmations_users_user_id");
+
+                    b.Navigation("GuestInvitation");
+
+                    b.Navigation("MeetingDocument");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.EmailMessage", b =>
                 {
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
@@ -3677,6 +3761,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("AgendaItemLinks");
 
                     b.Navigation("Comments");
+
+                    b.Navigation("ReadConfirmations");
 
                     b.Navigation("VoteLinks");
                 });
