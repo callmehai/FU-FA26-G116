@@ -278,40 +278,55 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
     {
         var s = await f.Seed(MeetingStatus.InProgress);
         using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary); using var member = f.Client(s.Member);
-        var openedAt = f.Clock.Now;
         var id = await Opened(chair, s, Body(anonymous: true));
         var options = await Options(chair, s, id);
-        foreach (var (client, option) in new[] { (member, options[0]), (chair, options[1]), (secretary, options[0]) })
+        await using var db = f.Db();
+        var optionsBefore = await db.VotingOptions.AsNoTracking().Where(o => o.VotingSessionId == id)
+            .ToDictionaryAsync(o => o.Id, o => o.UpdatedAt);
+        // Lộc's probe from the review of PR #200: three voters, three different options, so any row order or
+        // timestamp that followed the ballots would show who chose what.
+        foreach (var (client, option) in new[] { (member, options[2]), (chair, options[0]), (secretary, options[1]) })
         {
             f.Clock.Now = f.Clock.Now.AddSeconds(7);
             await Code(await Ballot(client, s, id, option), 200, "MSG227");
         }
 
-        await using var db = f.Db();
-        // Every column a choice has, and none of them can be sorted into the receipts' order: the timestamps are the
-        // same on every choice, the id is random, and nothing names a voter (BR-259).
-        var columns = await db.Database.SqlQuery<string>(
-            $"SELECT column_name AS \"Value\" FROM information_schema.columns WHERE table_name = 'vote_choices' ORDER BY column_name").ToArrayAsync();
-        Assert.Equal(new[] { "created_at", "guest_invitation_id", "id", "updated_at", "voter_id", "voting_option_id", "voting_session_id" }, columns);
-        var choices = await db.VoteChoices.Where(c => c.VotingSessionId == id).ToArrayAsync();
-        Assert.Equal(3, choices.Length);
-        Assert.All(choices, c =>
-        {
-            Assert.Null(c.VoterId);
-            Assert.Null(c.GuestInvitationId);
-            Assert.Equal(4, c.Id.Version);
-            Assert.Equal(openedAt, c.CreatedAt);
-            Assert.Equal(openedAt, c.UpdatedAt);
-        });
+        // Nothing is stored per secret choice (BR-259): a plain SELECT has nothing to line up with the receipts.
+        Assert.False(await db.VoteChoices.AnyAsync(c => c.VotingSessionId == id));
+        // The counters moved, every option row was rewritten in the same statement — one row version for all of
+        // them — and none of their timestamps tells when.
+        var rows = await db.Database.SqlQuery<OptionRow>($"""
+            SELECT id, ballot_count, updated_at, xmin::text AS row_version
+            FROM voting_options WHERE voting_session_id = {id}
+            """).ToArrayAsync();
+        Assert.Equal(new[] { 1, 1, 1 }, rows.OrderBy(r => Array.IndexOf(options, r.Id)).Select(r => r.BallotCount).ToArray());
+        Assert.Single(rows.Select(r => r.RowVersion).Distinct());
+        Assert.All(rows, r => Assert.Equal(optionsBefore[r.Id], r.UpdatedAt));
         // The receipts still say who voted and when.
         var receipts = await db.VoteReceipts.Where(r => r.VotingSessionId == id).ToArrayAsync();
         Assert.Equal(new[] { s.Secretary, s.Chair, s.Member }.Order(), receipts.Select(r => r.VoterId!.Value).Order());
-        Assert.Equal(3, receipts.Select(r => r.CastAt).Distinct().Count());
 
         await Code(await chair.PostAsync($"{s.Url}/votes/{id}/close", null), 200, "MSG229");
         var result = (await Detail(member, s, id)).GetProperty("result");
         Assert.Equal(JsonValueKind.Null, result.GetProperty("voters").ValueKind);
-        Assert.Equal(new[] { 2, 1, 0 }, result.GetProperty("options").EnumerateArray().Select(o => o.GetProperty("count").GetInt32()).ToArray());
+        Assert.Equal(3, result.GetProperty("ballotCount").GetInt32());
+        Assert.Equal(new[] { 1, 1, 1 }, result.GetProperty("options").EnumerateArray().Select(o => o.GetProperty("count").GetInt32()).ToArray());
+    }
+
+    private sealed record OptionRow(Guid Id, int BallotCount, DateTimeOffset UpdatedAt, string RowVersion);
+
+    [Fact]
+    public async Task The_database_refuses_a_choice_that_names_no_voter()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress); using var chair = f.Client(s.Chair);
+        var id = await Opened(chair, s);
+        var option = (await Options(chair, s, id))[0];
+        await using var db = f.Db();
+        var ex = await Assert.ThrowsAsync<Npgsql.PostgresException>(() => db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO vote_choices (id, voting_session_id, voting_option_id, created_at, updated_at)
+            VALUES ({Guid.NewGuid()}, {id}, {option}, now(), now())
+            """));
+        Assert.Equal("ck_vote_choices_one_voter", ex.ConstraintName);
     }
 
     [Fact]
@@ -336,6 +351,11 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         Assert.Equal(invitation.Id, receipt.GuestInvitationId);
         Assert.Null(receipt.VoterId);
         Assert.Equal(invitation.Id, (await db.VoteChoices.SingleAsync(c => c.VotingSessionId == id)).GuestInvitationId);
+
+        // A Guest loses the votes with the meeting once it ends (PO 30/10/2026), unlike internal readers.
+        await db.Meetings.Where(m => m.Id == s.MeetingId).ExecuteUpdateAsync(m => m.SetProperty(x => x.Status, MeetingStatus.Ended));
+        await Code(await guest.GetAsync(s.Url + "/votes"), 404, "MSG205");
+        Assert.Single((await chair.GetFromJsonAsync<JsonElement>(s.Url + "/votes")).GetProperty("votes").EnumerateArray());
     }
 
     [Fact]
@@ -377,6 +397,8 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         await using var db = f.Db();
         Assert.Equal(1, await db.VoteReceipts.CountAsync(r => r.VotingSessionId == id));
         Assert.Equal(1, await db.VoteChoices.CountAsync(c => c.VotingSessionId == id));
+        // The refused ballot's count was rolled back with its receipt.
+        Assert.Equal(1, await db.VotingOptions.Where(o => o.VotingSessionId == id).SumAsync(o => o.BallotCount));
     }
 
     [Fact]
@@ -391,26 +413,26 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
     }
 
     [Fact]
-    public async Task A_ballot_that_fails_at_commit_leaves_neither_receipt_nor_choice()
+    public async Task A_ballot_that_fails_at_commit_leaves_neither_receipt_nor_count()
     {
         var s = await f.Seed(MeetingStatus.InProgress); using var chair = f.Client(s.Chair); using var member = f.Client(s.Member);
         var id = await Opened(chair, s, Body(anonymous: true));
         var options = await Options(chair, s, id);
         await using var db = f.Db();
-        // A deferred constraint fails after both rows were written; this fixture's database is disposable.
+        // A deferred constraint fails after the receipt and the count were written; this fixture's database is disposable.
         await db.Database.ExecuteSqlRawAsync("""
             CREATE FUNCTION vote_test_reject_commit() RETURNS trigger LANGUAGE plpgsql AS $$
             BEGIN RAISE EXCEPTION 'Injected ballot commit failure' USING ERRCODE = '23514'; END $$;
-            CREATE CONSTRAINT TRIGGER vote_test_reject_commit AFTER INSERT ON vote_choices
+            CREATE CONSTRAINT TRIGGER vote_test_reject_commit AFTER INSERT ON vote_receipts
               DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION vote_test_reject_commit();
             """);
         try { await Code(await Ballot(member, s, id, options[0]), 503, "MSG228"); }
         finally
         {
-            await db.Database.ExecuteSqlRawAsync("DROP TRIGGER vote_test_reject_commit ON vote_choices; DROP FUNCTION vote_test_reject_commit();");
+            await db.Database.ExecuteSqlRawAsync("DROP TRIGGER vote_test_reject_commit ON vote_receipts; DROP FUNCTION vote_test_reject_commit();");
         }
         Assert.False(await db.VoteReceipts.AnyAsync(r => r.VotingSessionId == id));
-        Assert.False(await db.VoteChoices.AnyAsync(c => c.VotingSessionId == id));
+        Assert.Equal(0, await db.VotingOptions.Where(o => o.VotingSessionId == id).SumAsync(o => o.BallotCount));
         await Code(await Ballot(member, s, id, options[0]), 200, "MSG227");
     }
 

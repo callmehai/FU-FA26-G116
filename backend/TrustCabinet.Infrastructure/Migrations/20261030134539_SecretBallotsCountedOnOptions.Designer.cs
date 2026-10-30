@@ -12,8 +12,8 @@ using TrustCabinet.Infrastructure;
 namespace TrustCabinet.Infrastructure.Migrations
 {
     [DbContext(typeof(TrustCabinetDbContext))]
-    [Migration("20261030013252_VoteChoicesWithoutCastTime")]
-    partial class VoteChoicesWithoutCastTime
+    [Migration("20261030134539_SecretBallotsCountedOnOptions")]
+    partial class SecretBallotsCountedOnOptions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2407,7 +2407,7 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.ToTable("vote_choices", null, t =>
                         {
-                            t.HasCheckConstraint("ck_vote_choices_at_most_one_voter", "num_nonnulls(voter_id, guest_invitation_id) <= 1");
+                            t.HasCheckConstraint("ck_vote_choices_one_voter", "num_nonnulls(voter_id, guest_invitation_id) = 1");
                         });
                 });
 
@@ -2545,6 +2545,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<int>("BallotCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("ballot_count");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -2574,7 +2578,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_voting_options_voting_session_id_position");
 
-                    b.ToTable("voting_options", (string)null);
+                    b.ToTable("voting_options", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_voting_options_ballot_count", "ballot_count >= 0");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VotingSession", b =>

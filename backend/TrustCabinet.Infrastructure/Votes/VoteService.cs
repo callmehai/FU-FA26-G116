@@ -37,7 +37,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
     {
         if (actor.Guest is { } g)
             return actor.UserId is null && g.IsValid && s is not null && g.MeetingId == s.Meeting.Id
-                && ParticipantRules.Published(s.Meeting.Status) && s.Guests.Any(x => x.Id == g.InvitationId)
+                && VoteRules.GuestCanView(s.Meeting.Status) && s.Guests.Any(x => x.Id == g.InvitationId)
                 && await guests.CanAccessAsync(g, ct)
                 ? (VoteFailure.None, new(null, g.InvitationId)) : (VoteFailure.NotFound, null);
         if (actor.UserId is not { } id || !await db.Users.AnyAsync(u => u.Id == id && u.IsActive, ct))
@@ -298,7 +298,15 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             VotingSessionId = vote.Id, VoterId = viewer.UserId, GuestInvitationId = viewer.GuestInvitationId,
             CastAt = now, CreatedAt = now, UpdatedAt = now
         });
-        db.VoteChoices.Add(VoteRules.Choice(vote, optionId, viewer));
+        // A secret ballot is only counted; nothing is stored that says what this voter chose (BR-259).
+        if (!vote.IsAnonymous)
+            db.VoteChoices.Add(new VoteChoice
+            {
+                VotingSessionId = vote.Id, VotingOptionId = optionId, VoterId = viewer.UserId,
+                GuestInvitationId = viewer.GuestInvitationId, CreatedAt = now, UpdatedAt = now
+            });
+        // Runs at once inside this transaction; a duplicate receipt at SaveChanges rolls it back with the rest.
+        await votes.CountBallotAsync(vote.Id, optionId, ct);
         return new(VoteId: vote.Id);
     }
 

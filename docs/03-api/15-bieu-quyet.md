@@ -23,7 +23,7 @@ Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-15
 - Auth: JWT user active, hoặc Guest session đã xác minh (cùng adapter UC-04 như điểm danh/agenda).
 - Ẩn tài nguyên: meeting/vote không được đọc → `404` cùng body (không `403` lộ tồn tại).
 - Mutation khóa Meeting (như agenda); kiểm lại quyền/trạng thái trong transaction trước khi ghi.
-- Tally khi đóng: **tính từ `VoteChoice`**, không lưu cột tổng (theo class diagram §6f — NEEDS REVIEW nếu PO muốn lưu).
+- Tally: đọc từ bộ đếm `VotingOption.BallotCount`, tăng trong cùng transaction với receipt (SCRUM-28, review PR #200) — xem §7.
 - Realtime: `voteChanged` trên `/hubs/meetings` sau commit (cùng nhóm JoinMeeting); FE GET lại — xem §7.
 
 ## 2. Quyền theo trạng thái
@@ -90,8 +90,8 @@ trừ khi BE và FE thống nhất lại trong cùng PR.
 { "optionId": "<guid>" }
 ```
 
-Một lựa chọn; không đổi/rút sau khi ghi (BR-265). Phiếu kín: ghi `VoteReceipt` có voter,
-`VoteChoice` không có `VoterId`/`GuestInvitationId`. Phiếu công khai: cả hai dòng cùng identity.
+Một lựa chọn; không đổi/rút sau khi ghi (BR-265). Mọi phiếu ghi `VoteReceipt` có voter và tăng bộ đếm của phương án.
+Phiếu công khai thêm một dòng `VoteChoice` ghi người chọn; phiếu kín **không ghi `VoteChoice`** (§7).
 
 ### Kết luận
 
@@ -218,7 +218,10 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
   `409/MSG224`; không Open hoặc cuộc họp không InProgress → `409/MSG225`; đã bỏ → `409/MSG226`; rồi mới tới
   `400/MSG222` (thiếu `optionId`) và `400/MSG223`.
 - **Guest đủ điều kiện** = lời mời chưa thu hồi lúc mở phiếu. "Email đã xác minh" là việc của UC-04, chưa có ở Backend;
-  khi bỏ phiếu, Guest vẫn phải có phiên còn hiệu lực (adapter `IParticipantGuestAccess`).
+  khi bỏ phiếu, Guest vẫn phải có phiên còn hiệu lực (adapter `IParticipantGuestAccess`). Chờ PO chốt có lọc theo phiên
+  Khách đã xác minh lúc mở phiếu không, sau khi PR #203 (UC-04) merge.
+- **Guest chỉ xem biểu quyết khi cuộc họp Published hoặc InProgress**; cuộc họp kết thúc thì Guest nhận `404/MSG205`
+  (PO 30/10/2026, cùng luật `ParticipantRules.GuestCanView` của PR #203). Người nội bộ vẫn xem được sau khi kết thúc.
 - **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.
   Điểm danh không liên quan (BR-190).
 - **Phương án trùng** so sánh sau trim, không phân biệt hoa thường (`Đồng ý` và `đồng ý` là trùng).
@@ -259,11 +262,21 @@ Sự kiện `voteChanged` `{ eventId, meetingId, voteId, changeType, title, occu
 
 ### Phiếu kín ở tầng dữ liệu
 
-`VoteChoice` không còn `CastAt` (migration `VoteChoicesWithoutCastTime`); Id là UUID v4 ngẫu nhiên, `CreatedAt` =
-`UpdatedAt` = `OpenedAt` của phiên, áp dụng cho mọi phiếu. Thời điểm bỏ phiếu chỉ còn ở `VoteReceipt`. Test
-`A_secret_ballot_leaves_nothing_that_pairs_a_choice_with_its_voter` khoá danh sách cột của `vote_choices` và các giá
-trị đó. Còn lại ngoài tầm cột: cột hệ thống `xmin` của PostgreSQL (receipt và choice cùng một transaction) và thứ tự
-vật lý trên đĩa — xem [ERD](../02-design/02-erd.md#biểu-quyết-ẩn-danh--đọc-kỹ-chỗ-này).
+Phiếu kín **không ghi dòng nào vào `vote_choices`** (migration `SecretBallotsCountedOnOptions`). Lý do: review PR #200
+cho thấy dù choice không có người, không có thời điểm và Id ngẫu nhiên, một câu `SELECT` thường (không `ORDER BY`)
+vẫn trả các choice đúng theo thứ tự ghi, khớp từng dòng với `vote_receipts` sắp theo `cast_at`.
+
+- Mỗi phiếu (kín hay công khai) tăng `voting_options.ballot_count` trong cùng transaction với receipt. Câu `UPDATE`
+  ghi lại **mọi** phương án của phiên (cộng 1 cho phương án được chọn, 0 cho phần còn lại) và không đổi `updated_at`,
+  nên `xmin` và timestamp của các dòng phương án không cho biết dòng nào vừa tăng. Kiểm phiếu đọc bộ đếm này.
+- `vote_choices` chỉ còn phiếu công khai, mỗi dòng ghi người chọn; ràng buộc `ck_vote_choices_one_voter`
+  (`num_nonnulls(voter_id, guest_invitation_id) = 1`) chặn ở DB mọi choice không tên. `cast_at` đã bỏ khỏi
+  `vote_choices`; thời điểm bỏ phiếu chỉ ở receipt.
+- Test `A_secret_ballot_leaves_nothing_that_pairs_a_choice_with_its_voter` dựng lại phép thử của review (3 người, 3
+  phương án khác nhau): không có choice nào, bộ đếm đúng, mọi dòng phương án cùng một `xmin` và `updated_at` không đổi.
+- Còn lại: người theo dõi DB **liên tục** trong lúc phiếu mở có thể so hai lần đọc để thấy bộ đếm nào vừa tăng khi một
+  receipt mới xuất hiện. Một ảnh chụp DB tại một thời điểm thì không ghép được. Xem
+  [ERD](../02-design/02-erd.md#biểu-quyết-ẩn-danh--đọc-kỹ-chỗ-này).
 
 ### Khoá và đồng thời
 

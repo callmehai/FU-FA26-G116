@@ -69,17 +69,25 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
             .OrderBy(o => o.Position).ToListAsync(ct);
 
     /// <summary>
-    /// The tally, counted from the stored choices rather than kept in a column, so it cannot drift from them. Only a
-    /// public vote lists who chose what (BR-273); a secret one has nothing that could (BR-259).
+    /// Counts a ballot for <paramref name="optionId"/>. Every option of the vote is rewritten in the one statement,
+    /// adding one to the chosen and nothing to the rest, and <c>updated_at</c> is left alone: had only the chosen
+    /// row changed, its row version (<c>xmin</c>) and timestamp would match the voter's receipt from the same
+    /// transaction and give a secret choice away (BR-259). Atomic in SQL, so ballots cast side by side add up.
+    /// </summary>
+    public Task<int> CountBallotAsync(Guid voteId, Guid optionId, CancellationToken ct)
+        => db.VotingOptions.Where(o => o.VotingSessionId == voteId).ExecuteUpdateAsync(
+            set => set.SetProperty(o => o.BallotCount, o => o.BallotCount + (o.Id == optionId ? 1 : 0)), ct);
+
+    /// <summary>
+    /// The tally, read from each option's counter. Only a public vote lists who chose what (BR-273); a secret one
+    /// stored nothing that could (BR-259).
     /// </summary>
     public async Task<VoteResult> ResultAsync(Guid meetingId, Guid voteId, bool isAnonymous, CancellationToken ct)
     {
         var options = await OptionsAsync(voteId, ct);
-        var counts = await db.VoteChoices.Where(c => c.VotingSessionId == voteId).GroupBy(c => c.VotingOptionId)
-            .Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(g => g.Key, g => g.Count, ct);
-        var ballots = counts.Values.Sum();
-        var tally = options.Select(o => new VoteOptionResult(o.Id, o.Label, counts.GetValueOrDefault(o.Id),
-            VoteRules.Percentage(counts.GetValueOrDefault(o.Id), ballots))).ToArray();
+        var ballots = options.Sum(o => o.BallotCount);
+        var tally = options.Select(o => new VoteOptionResult(o.Id, o.Label, o.BallotCount,
+            VoteRules.Percentage(o.BallotCount, ballots))).ToArray();
         if (isAnonymous) return new(ballots, tally, null);
 
         var eligible = await db.VoteEligibleVoters.AsNoTracking().Where(e => e.VotingSessionId == voteId)
