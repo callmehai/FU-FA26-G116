@@ -41,7 +41,7 @@ public class DatabaseModelTests
         Assert.Equal(
             [
                 "agenda_items", "audit_log", "call_participants", "call_sessions",
-                "document_comments", "documents", "email_messages", "folders",
+                "document_comments", "document_read_confirmations", "documents", "email_messages", "folders",
                 "meeting_document_agenda_items", "meeting_documents", "meeting_guest_invitations", "meeting_invitation_dispatches",
                 "meeting_minutes", "meeting_notes", "meeting_participants",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
@@ -355,13 +355,15 @@ public class DatabaseModelTests
     {
         using var db = NewContext();
 
-        var voter = db.Model.FindEntityType(typeof(VoteChoice))!.FindProperty(nameof(VoteChoice.VoterId))!;
-
-        // The column has to be nullable for a secret ballot to be possible at all: in an anonymous
-        // session the application leaves it null, so no row links a person to what they chose.
-        // Making it required would force every ballot to name its voter and quietly turn every
-        // "secret" vote into an open one.
-        Assert.True(voter.IsNullable);
+        // A secret ballot stores no choice row at all: even one naming nobody comes back from a
+        // plain SELECT in the order the receipts were written, which pairs it with its voter
+        // (review of PR #200). So every choice must name its voter, and a secret ballot is only
+        // counted on its option.
+        var check = Assert.Single(db.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(VoteChoice))!.GetCheckConstraints(),
+            c => c.Name == "ck_vote_choices_one_voter");
+        Assert.Equal("num_nonnulls(voter_id, guest_invitation_id) = 1", check.Sql);
+        Assert.NotNull(db.Model.FindEntityType(typeof(VotingOption))!.FindProperty(nameof(VotingOption.BallotCount)));
+        Assert.Null(db.Model.FindEntityType(typeof(VoteChoice))!.FindProperty("CastAt"));
     }
 
     [Fact]

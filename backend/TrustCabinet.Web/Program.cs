@@ -20,6 +20,7 @@ using TrustCabinet.Infrastructure.Participants;
 using TrustCabinet.Infrastructure.Recordings;
 using TrustCabinet.Infrastructure.Transcription;
 using TrustCabinet.Infrastructure.VoiceId;
+using TrustCabinet.Infrastructure.Votes;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
 
@@ -33,10 +34,12 @@ builder.Services.AddTrustCabinetMeetings(builder.Configuration);
 builder.Services.AddTrustCabinetAgenda();
 builder.Services.AddTrustCabinetParticipants();
 builder.Services.AddTrustCabinetAttendance();
+builder.Services.AddTrustCabinetVotes();
 builder.Services.AddSingleton<IMeetingGuestIdentityResolver, UnavailableMeetingGuestIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
+builder.Services.AddScoped<TrustCabinet.Domain.Votes.IVoteChangePublisher, VoteChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Recordings.ISpeechChangePublisher, SpeechChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Participants.IParticipantsChangePublisher, ParticipantsChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Access.ICapabilitiesChangePublisher, CapabilitiesChangePublisher>();
@@ -197,6 +200,8 @@ app.MapMeetingEndpoints();
 app.MapAgendaEndpoints();
 app.MapParticipantEndpoints();
 app.MapAttendanceEndpoints();
+// SCRUM-28: votes during the meeting — drafts, open, ballots, close, conclusion.
+app.MapVoteEndpoints();
 app.MapMeetingDocumentEndpoints();
 // SCRUM-58: the personal library and its folders; SCRUM-23: comments on a meeting document.
 app.MapPersonalLibraryEndpoints();

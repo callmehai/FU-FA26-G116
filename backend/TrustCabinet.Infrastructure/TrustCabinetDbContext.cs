@@ -30,6 +30,7 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<VotingOption> VotingOptions => Set<VotingOption>();
     public DbSet<VoteEligibleVoter> VoteEligibleVoters => Set<VoteEligibleVoter>();
     public DbSet<VoteDocument> VoteDocuments => Set<VoteDocument>();
+    public DbSet<DocumentReadConfirmation> DocumentReadConfirmations => Set<DocumentReadConfirmation>();
     public DbSet<VoteReceipt> VoteReceipts => Set<VoteReceipt>();
     public DbSet<VoteChoice> VoteChoices => Set<VoteChoice>();
     public DbSet<Recording> Recordings => Set<Recording>();
