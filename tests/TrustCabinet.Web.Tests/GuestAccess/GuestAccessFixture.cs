@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -24,6 +25,7 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
     internal readonly TestClock Clock = new();
     internal readonly Mailbox Mail = new();
     internal readonly SaveFailureInterceptor SaveFailure = new();
+    internal readonly GuestReadFailureInterceptor ReadFailure = new();
     internal Factory Host = null!;
 
     internal TrustCabinetDbContext Db() => new(new DbContextOptionsBuilder<TrustCabinetDbContext>()
@@ -52,7 +54,7 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
                 services.RemoveAll<DbContextOptions<TrustCabinetDbContext>>();
                 services.AddDbContext<TrustCabinetDbContext>(o => o.UseNpgsql(fixture.Database.DataSource,
                     p => p.MigrationsHistoryTable("__ef_migrations_history")).UseSnakeCaseNamingConvention()
-                    .AddInterceptors(fixture.SaveFailure));
+                    .AddInterceptors(fixture.SaveFailure, fixture.ReadFailure));
                 services.RemoveAll<TimeProvider>();
                 services.AddSingleton<TimeProvider>(fixture.Clock);
                 services.RemoveAll<IEmailSender>();
@@ -98,7 +100,17 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
             => Enabled ? throw new DbUpdateException("Injected persistence failure.") : ValueTask.FromResult(result);
     }
 
-    internal sealed record Scenario(Guid MeetingId, Guid InvitationId, Guid SecretaryId, string Email, string LinkToken)
+    /// <summary>Fails every query that reads guest sessions, as an unreachable database would.</summary>
+    internal sealed class GuestReadFailureInterceptor : DbCommandInterceptor
+    {
+        internal bool Enabled;
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(DbCommand command,
+            CommandEventData eventData, InterceptionResult<DbDataReader> result, CancellationToken cancellationToken = default)
+            => Enabled && command.CommandText.Contains("guest_sessions", StringComparison.Ordinal)
+                ? throw new Npgsql.NpgsqlException("Injected guest session read failure.") : ValueTask.FromResult(result);
+    }
+
+    internal sealed record Scenario(Guid MeetingId, Guid InvitationId, Guid SecretaryId, Guid ItemId, string Email, string LinkToken)
     {
         internal string Url => $"/api/guest-access/invitations/{InvitationId}";
     }
@@ -115,8 +127,10 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
         db.Meetings.Add(meeting);
         db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = meeting.Id, UserId = secretary.Id, Role = MeetingRole.Secretary });
         db.MeetingGuestInvitations.Add(invitation);
+        var item = new AgendaItem { MeetingId = meeting.Id, Title = "Mục 1", Position = 1 };
+        db.AgendaItems.Add(item);
         await db.SaveChangesAsync();
-        return new(meeting.Id, invitation.Id, secretary.Id, invitation.Email,
+        return new(meeting.Id, invitation.Id, secretary.Id, item.Id, invitation.Email,
             Host.Services.GetRequiredService<GuestCredentials>().LinkToken(invitation.Id));
     }
 

@@ -23,7 +23,7 @@ public sealed class AttendanceService(TrustCabinetDbContext db, AttendanceReposi
     {
         if (actor.Guest is { } g)
             return actor.UserId is null && g.IsValid && s is not null && g.MeetingId == s.Meeting.Id
-                && ParticipantRules.Published(s.Meeting.Status) && s.Guests.Any(x => x.Id == g.InvitationId)
+                && ParticipantRules.GuestCanView(s.Meeting.Status) && s.Guests.Any(x => x.Id == g.InvitationId)
                 && await guests.CanAccessAsync(g, ct) ? AttendanceFailure.None : AttendanceFailure.NotFound;
         if (actor.UserId is not { } id || !await db.Users.AnyAsync(u => u.Id == id && u.IsActive, ct)) return AttendanceFailure.Forbidden;
         return s is not null && MeetingReadPolicy.CanRead(s.Meeting, id) ? AttendanceFailure.None : AttendanceFailure.NotFound;

@@ -1,5 +1,7 @@
 # SCRUM-25 — contract tích hợp Guest cho người triển khai UC-04
 
+**Cập nhật SCRUM-116 (30/10/2026):** UC-04 đã triển khai adapter production ([contract UC-04](16-truy-cap-khach-uc04.md)): `GuestTokenIdentityResolver` và `GuestSessionAccess` thay hai bản mặc định. Theo PO 30/10/2026, Khách **không** còn đọc Agenda khi cuộc họp `Ended`: mọi chỗ ghi Published/InProgress/Ended cho Khách bên dưới nay là Published/InProgress (`AgendaRules.GuestCanViewMeeting`), Khách nhận `404` và không nhận event sau khi cuộc họp kết thúc. Adapter còn đòi Khách đã khai tên hiển thị (UC-04 bước 5).
+
 **Cập nhật bàn giao SCRUM-20 ngày 14/10/2026:** SCRUM-20 đã lưu invitation (grants đã bỏ theo PO 20/10/2026) và consumer contracts; OTP, profile tự khai, session/credential **production tách sang UC-04** theo quyết định người phụ trách. Phân công UC-04/SCRUM-20 chung trong bản gốc bên dưới được làm rõ bởi [contract mới](09-thanh-phan-tham-du-guest-uc04.md). Cả Agenda và Participants vẫn fail-closed với Guest cho đến khi adapters production được tích hợp; không nghiệm thu Guest E2E từ test-only adapter.
 
 Phạm vi đã chốt ngày 13/10/2026: SCRUM-25 chuẩn bị phần đọc Agenda/realtime cho Guest theo ADR-0016; UC-04/SCRUM-20 triển khai lời mời, OTP, profile, session và lưu trữ. Không thêm endpoint xác thực, entity, migration, gửi email hoặc tạo User giả trong SCRUM-25. Các adapter mặc định **từ chối Guest**; không bật tính năng bằng cấu hình cho phép tất cả.

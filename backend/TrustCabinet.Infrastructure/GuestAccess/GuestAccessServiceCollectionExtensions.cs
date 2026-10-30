@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Domain.Participants;
 
@@ -21,6 +22,9 @@ public static class GuestAccessServiceCollectionExtensions
         services.AddSingleton<GuestCredentials>();
         services.AddScoped<IGuestAccessService, GuestAccessService>();
         services.Replace(ServiceDescriptor.Scoped<IGuestInvitationLinkProvider, GuestInvitationLinkProvider>());
+        services.AddScoped<GuestSessionAccess>();
+        services.Replace(ServiceDescriptor.Scoped<IAgendaGuestAccess>(p => p.GetRequiredService<GuestSessionAccess>()));
+        services.Replace(ServiceDescriptor.Scoped<IParticipantGuestAccess>(p => p.GetRequiredService<GuestSessionAccess>()));
         return services;
     }
 }

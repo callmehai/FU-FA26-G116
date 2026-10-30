@@ -29,6 +29,8 @@ public static class ParticipantRules
     public static bool Preparation(MeetingStatus status) => status is MeetingStatus.Draft or MeetingStatus.Rejected or MeetingStatus.Approved;
     public static bool Published(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress or MeetingStatus.Ended;
     public static bool Respondable(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress;
+    /// <summary>A guest sees the meeting only while it is open; once Ended nothing of it is shown (PO 30/10/2026).</summary>
+    public static bool GuestCanView(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress;
     /// <summary>
     /// As in AI-eCabinet: an invitee answers once, while the meeting is Published or InProgress. The Chair runs the
     /// meeting and is never asked. The answer is a courtesy: it changes no access, only hides a declined meeting from

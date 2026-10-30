@@ -21,7 +21,7 @@ public sealed class AttendanceChangePublisher(IHubContext<MeetingHub> hub, IPart
         var readers = await db.Users.AsNoTracking().Where(u => u.IsActive && candidates.Contains(u.Id))
             .Select(u => u.Id).ToArrayAsync(ct);
         var groups = readers.Select(id => MeetingHub.Group(change.MeetingId, id)).ToList();
-        if (ParticipantRules.Published(s.Meeting.Status))
+        if (ParticipantRules.GuestCanView(s.Meeting.Status))
         {
             var sessions = await guests.ListReadersAsync(change.MeetingId, ct);
             foreach (var session in sessions.Distinct())

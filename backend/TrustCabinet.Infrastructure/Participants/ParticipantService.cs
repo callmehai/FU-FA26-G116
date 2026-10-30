@@ -105,7 +105,7 @@ public sealed partial class ParticipantService(
                 || !guest.IsValid
                 || s is null
                 || guest.MeetingId != s.Meeting.Id
-                || !ParticipantRules.Published(s.Meeting.Status)
+                || !ParticipantRules.GuestCanView(s.Meeting.Status)
                 || !s.Guests.Any(g => g.Id == guest.InvitationId)
                 || !await guestAccess.CanAccessAsync(guest, ct)
             )
@@ -646,7 +646,7 @@ public sealed partial class ParticipantService(
         Meeting meeting,
         CancellationToken ct
     ) =>
-        ParticipantRules.Published(meeting.Status)
+        ParticipantRules.GuestCanView(meeting.Status)
             ? (await guestAccess.ListReadersAsync(meeting.Id, ct))
                 .Where(g => g.IsValid && g.MeetingId == meeting.Id)
                 .ToArray()
