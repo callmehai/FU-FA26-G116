@@ -196,6 +196,48 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
     }
 
     [Fact]
+    public async Task Update_without_document_ids_keeps_links_and_an_empty_list_clears_them()
+    {
+        var s = await fixture.Seed();
+        using var client = fixture.Client(s.Secretary);
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input(documents: [s.DocumentId])), 200, "MSG61");
+        var count = fixture.Events.Count;
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}",
+            new { title = "Tiêu đề", description = "Dòng 1\nDòng 2" }), 200, "MSG61");
+        // Nothing changed, so no event either.
+        Assert.Equal(count, fixture.Events.Count);
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", new { title = "Đổi tên" }), 200, "MSG61");
+        await using (var db = fixture.Db()) Assert.Equal(s.Items[0], await AgendaFixture.LinkedItem(db, s.DocumentId));
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input(documents: [])), 200, "MSG61");
+        await using (var db = fixture.Db()) Assert.Null(await AgendaFixture.LinkedItem(db, s.DocumentId));
+        var created = await AssertCode(await client.PostAsJsonAsync(s.Url, new { title = "Mới" }), 201, "MSG60");
+        var snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.Empty(snapshot.GetProperty("items").EnumerateArray()
+            .Single(i => i.GetProperty("id").GetGuid() == created.GetProperty("agendaItemId").GetGuid())
+            .GetProperty("documents").EnumerateArray());
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.Published, true)]
+    [InlineData(MeetingStatus.InProgress, true)]
+    [InlineData(MeetingStatus.Ended, false)]
+    public async Task Can_link_documents_follows_the_document_rules_not_planning(MeetingStatus status, bool open)
+    {
+        var s = await fixture.Seed(status, 1);
+        async Task<bool> CanLink(Guid actor)
+        {
+            using var client = fixture.Client(actor);
+            var snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
+            return snapshot.GetProperty("items")[0].GetProperty("actions").GetProperty("canLinkDocuments").GetBoolean();
+        }
+        // The Chair links documents (UC-33b) though only the Secretary plans the agenda.
+        Assert.Equal(open, await CanLink(s.Chair));
+        Assert.Equal(open, await CanLink(s.Secretary));
+        Assert.False(await CanLink(s.Member));
+        Assert.False(await CanLink(s.Organizer));
+    }
+
+    [Fact]
     public async Task Execution_and_locked_fields_obey_role_state_and_server_clock()
     {
         var s = await fixture.Seed();

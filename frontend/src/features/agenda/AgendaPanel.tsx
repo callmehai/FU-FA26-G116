@@ -16,30 +16,47 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useCallback, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { completeAgendaItem, deleteAgendaItem, startAgendaItem } from '../../api/agenda'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
-import { Icon } from '../../components/Icon'
+import { Icon, type IconName } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
+import { useAnchoredPopover, useOutsidePress } from '../../components/useAnchoredPopover'
 import { avatarColors, initials } from '../../lib/avatar'
 import { formatClock } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import type { AgendaItem, AgendaMutationResponse } from '../../types/agenda'
+import type { Meeting } from '../../types/meeting'
+import { AddDocumentsDialog, type DocumentSource } from '../documents/AddDocumentsDialog'
+import { useMeetingDocuments } from '../documents/useMeetingDocuments'
 import { AgendaConclusion } from './AgendaConclusion'
 import { AgendaItemDialog } from './AgendaItemDialog'
 import { useAgenda } from './useAgenda'
 
-type Open = { kind: 'edit'; item: AgendaItem | null } | { kind: 'delete'; item: AgendaItem }
+type Open =
+  | { kind: 'edit'; item: AgendaItem | null }
+  | { kind: 'delete'; item: AgendaItem }
+  | { kind: 'attach'; item: AgendaItem; number: number; source: DocumentSource }
 
 /**
  * The meeting's agenda (SCRUM-25, SCRUM-98, UC-77), written once for the detail tab and the call
  * room's side panel (ADR-0011). It reads its own data and what the caller may do comes from the
  * server's `actions`: the Secretary plans (add, edit, delete, drag to reorder), the Chair starts and
  * closes items while the meeting runs, either writes conclusions. Laid out as AI-eCabinet does: one
- * line per item, opened in place for its notes, documents and conclusion.
+ * line per item, opened in place for its notes, documents and conclusion. On the page, the Chair and
+ * the Secretary link documents to an item from its paperclip (UC-33b), which needs the meeting itself.
  */
-export function AgendaPanel({ meetingId, variant }: { meetingId: string; variant: 'page' | 'room' }) {
+export function AgendaPanel({
+  meetingId,
+  variant,
+  meeting,
+}: {
+  meetingId: string
+  variant: 'page' | 'room'
+  /** The page's meeting, for adding documents; the room links none (BR-316). */
+  meeting?: Meeting
+}) {
   const toast = useToast()
   const { state, reload, run, reorder, reordering } = useAgenda(meetingId)
   const [open, setOpen] = useState<Open | null>(null)
@@ -138,6 +155,11 @@ export function AgendaPanel({ meetingId, variant }: { meetingId: string; variant
           expanded={isOpen(item.id)}
           onToggle={() => toggle(item.id)}
           onEdit={() => setOpen({ kind: 'edit', item })}
+          onAttach={
+            meeting && !room && item.actions.canLinkDocuments
+              ? (source) => setOpen({ kind: 'attach', item, number: index + 1, source })
+              : undefined
+          }
           onDelete={() => setOpen({ kind: 'delete', item })}
           onStart={() => void run(() => startAgendaItem(meetingId, item.id))}
           onComplete={() => void run(() => completeAgendaItem(meetingId, item.id))}
@@ -217,6 +239,25 @@ export function AgendaPanel({ meetingId, variant }: { meetingId: string; variant
           onClose={() => setOpen(null)}
         />
       )}
+      {open?.kind === 'attach' && meeting && (
+        <AttachDialog
+          meeting={meeting}
+          item={open.item}
+          number={open.number}
+          source={open.source}
+          onClose={() => setOpen(null)}
+          onAdded={(message) => {
+            setOpen(null)
+            toast.show(message)
+            void reload()
+          }}
+          onStale={(message) => {
+            setOpen(null)
+            toast.show(message, 'error')
+            void reload()
+          }}
+        />
+      )}
       {open?.kind === 'delete' && (
         <ConfirmDialog
           title="Xoá nội dung"
@@ -251,6 +292,7 @@ function AgendaRow({
   expanded,
   onToggle,
   onEdit,
+  onAttach,
   onDelete,
   onStart,
   onComplete,
@@ -267,6 +309,8 @@ function AgendaRow({
   expanded: boolean
   onToggle: () => void
   onEdit: () => void
+  /** The Chair's or Secretary's paperclip (UC-33b); absent when they may not link documents. */
+  onAttach?: (source: DocumentSource) => void
   onDelete: () => void
   onStart: () => void
   onComplete: () => void
@@ -317,7 +361,7 @@ function AgendaRow({
           <span>{item.title}</span>
         </button>
 
-        {(actions.canSetCurrent || actions.canComplete || actions.canEdit || actions.canDelete) && (
+        {(actions.canSetCurrent || actions.canComplete || onAttach || actions.canEdit || actions.canDelete) && (
           <div className="row-actions agenda-actions">
             {actions.canSetCurrent && (
               <button type="button" className="btn btn-outline btn-sm" onClick={onStart}>
@@ -331,6 +375,7 @@ function AgendaRow({
                 Xong
               </button>
             )}
+            {onAttach && <AttachMenu title={item.title} onPick={onAttach} />}
             {actions.canEdit && (
               <button
                 type="button"
@@ -409,6 +454,129 @@ function AgendaRow({
         </div>
       )}
     </li>
+  )
+}
+
+const ATTACH_SOURCES: { source: DocumentSource; icon: IconName; label: string }[] = [
+  { source: 'computer', icon: 'upload', label: 'Tải tệp lên từ máy' },
+  { source: 'meeting', icon: 'fileText', label: 'Chọn từ tài liệu cuộc họp' },
+  { source: 'library', icon: 'folder', label: 'Chọn từ kho của tôi' },
+]
+
+/** The paperclip: a menu of where to take documents from, as AI-eCabinet has it; each opens the add dialog there. */
+function AttachMenu({ title, onPick }: { title: string; onPick: (source: DocumentSource) => void }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const menuId = useId()
+  const close = useCallback(() => setOpen(false), [])
+  useOutsidePress(open, rootRef, close)
+  useAnchoredPopover(open, triggerRef, menuRef, { matchWidth: false })
+  useEffect(() => {
+    if (open) menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus()
+  }, [open])
+
+  function onMenuKey(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      setOpen(false)
+      triggerRef.current?.focus()
+      return
+    }
+    // Tab leaves the menu for the next control, so the menu goes with it.
+    if (event.key === 'Tab') return setOpen(false)
+    const items = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]')]
+    const at = items.indexOf(document.activeElement as HTMLElement)
+    const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0
+    if (!step) return
+    event.preventDefault()
+    items[(at + step + items.length) % items.length]?.focus()
+  }
+
+  return (
+    <div ref={rootRef}>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="icon-button icon-button-sm agenda-attach-trigger"
+        aria-label={`Thêm tài liệu: ${title}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        data-tooltip={open ? undefined : 'Thêm tài liệu'}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <Icon name="paperclip" size={16} />
+      </button>
+      {open && (
+        <div
+          ref={menuRef}
+          id={menuId}
+          className="select-menu"
+          role="menu"
+          aria-label="Thêm tài liệu từ"
+          popover="manual"
+          onKeyDown={onMenuKey}
+        >
+          {ATTACH_SOURCES.map(({ source, icon, label }) => (
+            <button
+              key={source}
+              type="button"
+              role="menuitem"
+              tabIndex={-1}
+              className="select-option agenda-attach-option"
+              onClick={() => {
+                setOpen(false)
+                onPick(source)
+              }}
+            >
+              <Icon name={icon} size={16} />
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** The add dialog for one item, with the meeting's documents for "Trong cuộc họp" read while it is open. */
+function AttachDialog({
+  meeting,
+  item,
+  number,
+  source,
+  onClose,
+  onAdded,
+  onStale,
+}: {
+  meeting: Meeting
+  item: AgendaItem
+  number: number
+  source: DocumentSource
+  onClose: () => void
+  onAdded: (message: string) => void
+  onStale: (message: string) => void
+}) {
+  const { state } = useMeetingDocuments(meeting.id)
+  const data = state.kind === 'loaded' || state.kind === 'error' ? state.data : null
+  // A document linked to several items is listed once.
+  const all = [...(data?.agendaItems.flatMap((i) => i.documents) ?? []), ...(data?.general ?? [])]
+  const documents = state.kind === 'loading' ? null : [...new Map(all.map((d) => [d.id, d])).values()]
+
+  return (
+    <AddDocumentsDialog
+      meeting={meeting}
+      item={{ id: item.id, number, title: item.title, documentIds: item.documents.map((d) => d.id) }}
+      meetingDocuments={documents}
+      initialSource={source}
+      onClose={onClose}
+      onAdded={onAdded}
+      // The upload queue's tray follows the files; `documentsChanged` re-reads the agenda when they land.
+      onQueued={onClose}
+      onStale={onStale}
+    />
   )
 }
 

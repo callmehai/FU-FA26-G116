@@ -2347,9 +2347,11 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .agenda-empty p { margin: 8px 0 0; color: var(--ink); font-weight: 600; }
 .agenda-empty small { color: var(--muted-ink); font-size: 13px; }
 .agenda-skeleton { width: 60%; height: 18px; }
-.agenda-pick-list { height: auto; max-height: 220px; }
-.agenda-pick-list .pick-row > svg { flex: none; color: var(--label-ink); }
-.agenda-pick-title { min-width: 0; overflow-wrap: anywhere; }
+/* The row's paperclip menu: where to take documents from (UC-33b), styled as a Select's menu. */
+.agenda-attach-option { width: 100%; min-height: 40px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+.agenda-attach-option > svg { flex: none; color: var(--label-ink); }
+.agenda-attach-option:is(:hover, :focus-visible) { outline: none; background: var(--brand-wash); }
+.agenda-attach-trigger[aria-expanded='true'] { background: var(--surface-alt); }
 .agenda-room { overflow-y: auto; }
 
 /* Wide enough for AI-eCabinet's single line: facts in fixed columns between title and actions. */

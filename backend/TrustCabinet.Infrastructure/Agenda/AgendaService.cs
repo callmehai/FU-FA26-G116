@@ -90,7 +90,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                     i.Conclusion, i.ConclusionUpdatedById, i.ConclusionUpdatedBy?.FullName, i.ConclusionUpdatedAt,
                     true, byItem[i.Id].Select(d => new AgendaDocument(d.Id, d.Title)).ToArray(),
                     actorId is { } userId ? AgendaRules.Actions(meeting, userId, i, items, hasMinutes)
-                        : new(false, false, false, false, false, false));
+                        : new(false, false, false, false, false, false, false));
             }).ToArray()));
     }
 
@@ -154,6 +154,8 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                     if (errors.Count != 0) return new(AgendaFailure.Invalid, Errors: errors);
                     var existingDocuments = item is null ? [] : (await documents.ListAsync(meetingId, token))
                         .Where(d => d.AgendaItemIds.Contains(item.Id)).Select(d => d.Id).ToArray();
+                    // Omitted keeps the item's links: the editor no longer picks documents, UC-33b links them.
+                    input = input with { DocumentIds = input.DocumentIds ?? existingDocuments };
                     var presenterChanged = item is null ? input.PresenterId.HasValue || input.PresenterGuestInvitationId.HasValue
                         : item.PresenterId != input.PresenterId || item.PresenterGuestInvitationId != input.PresenterGuestInvitationId;
                     var planningChanged = item is null || presenterChanged || !string.IsNullOrEmpty(item.LegacyPresenterName)
