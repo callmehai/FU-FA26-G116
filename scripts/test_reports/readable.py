@@ -103,6 +103,19 @@ def literal_end(text,i):
     return j
 
 
+def squash(text):
+    """Collapse whitespace to single spaces outside string and char literals; a literal keeps its spaces."""
+    out=[];i=0
+    while i<len(text):
+        if text[i] in '"\'':
+            j=literal_end(text,i);out.append(text[i:j]);i=j;continue
+        if text[i].isspace():
+            while i<len(text) and text[i].isspace():i+=1
+            out.append(' ');continue
+        out.append(text[i]);i+=1
+    return ''.join(out).strip()
+
+
 def statements(body):
     """Top-level statements of a method body, comments removed and whitespace collapsed."""
     text=body.strip()
@@ -110,7 +123,7 @@ def statements(body):
     elif text.startswith('{') and text.endswith('}'):text=text[1:-1]
     out=[];buf=[];depth=0;i=0
     def flush():
-        s=' '.join(''.join(buf).split()).strip()
+        s=squash(''.join(buf))
         if s and s!=';':out.append(s.rstrip(';').strip())
         buf.clear()
     while i<len(text):
@@ -135,14 +148,14 @@ def statements(body):
 
 
 def clip(text,limit):
-    text=' '.join(str(text).split())
+    text=squash(str(text))
     return text if len(text)<=limit else text[:limit-1].rstrip()+'…'
 
 
 DOCUMENTS={'root','body','json','doc','document','error','problem','payload','rejected','content','response'}
 def simplify(x):
     """Readable form of a C# expression: JSON lookups become paths, noise is dropped."""
-    x=' '.join(x.split())
+    x=squash(x)
     x=re.sub(r'\bawait\s+|\.ConfigureAwait\(false\)|\.ToString\(\)|!(?=[.)\],;]|$)','',x)
     x=re.sub(r'\b(?:Npgsql|System\.Text\.Json|System\.Net|Microsoft\.AspNetCore\.Authorization|TrustCabinet\.Infrastructure|TrustCabinet\.Domain(?:\.\w+)?)\.(?=[A-Z])','',x)
     def path(m):
@@ -489,26 +502,34 @@ def last_call(statement):
     return best
 
 
+def unit_call(c):
+    """(statement, name, args, results) of the call under test, or None when the test makes none.
+
+    The first awaited action with a non-LINQ call, else the last such action; an assert-only test
+    calls the subject inside the assertion: Assert.Empty(Policy.Select(x)).
+    """
+    _,actions,_=split(c)
+    results={n for s in actions for m in [re.match(r'^(?:using\s+)?var\s+(\w+|\([^)]*\))\s*=',s)] if m for n in re.findall(r'\w+',m[1])}
+    found=[(s,last_call(s)) for s in actions if not SETUP.search(s)];found=[x for x in found if x[1]]
+    if found:
+        s,(name,args)=next((x for x in found if 'await ' in x[0]),found[-1])
+        return s,name,args,results
+    subject=re.sub(r'Tests?$','',c['className'])
+    for a in c['assertions']:
+        flat=' '.join(a.split());m=re.search(rf'\b{re.escape(subject)}\.(\w+)\s*\(',flat) or re.search(r'\.(\w+Async)\s*\(',flat)
+        if m:return flat,m[1],call_args(flat,m.end()-1)[0],set()
+    return None
+
+
 def unit_fields(c):
     """(precondition, call, expected) in the Return / Exception / Log Message style of the unit template."""
-    setup,actions,_=split(c)
-    results={n for s in actions for m in [re.match(r'^(?:using\s+)?var\s+(\w+|\([^)]*\))\s*=',s)] if m for n in re.findall(r'\w+',m[1])}
+    setup,_,_=split(c)
     pre=environment(c)+bullets(c,setup,4)
     if c.get('skip'):pre.append('- Skipped in source: '+c['skip'])
-    call=''
-    # The call under test: the first awaited action with a non-LINQ call, else the last such action.
-    found=[(s,last_call(s)) for s in actions if not SETUP.search(s)];found=[x for x in found if x[1]]
-    subject=re.sub(r'Tests?$','',c['className'])
-    if not found:
-        # Assert-only tests call the subject inside the assertion: Assert.Empty(Policy.Select(x)).
-        for a in c['assertions']:
-            flat=' '.join(a.split());m=re.search(rf'\b{re.escape(subject)}\.(\w+)\s*\(',flat) or re.search(r'\.(\w+Async)\s*\(',flat)
-            if m:found=[(flat,(m[1],call_args(flat,m.end()-1)[0]))];results=set();break
-    # Input parameters hold only the data handed to the call, as in the template (a=0; b=0).
-    if found:
-        _,(name,args)=next((x for x in found if 'await ' in x[0]),found[-1])
-        call='; '.join(clip(simplify(x),70) for x in args if x) or 'N/A'
-    else:call='N/A'
+    found=unit_call(c);results=found[3] if found else set()
+    # Input parameters hold only the data handed to the call, as in the template (a=0; b=0);
+    # values.case_inputs replaces each argument with the value it holds.
+    call='; '.join(clip(simplify(x),70) for x in found[2] if x) or 'N/A' if found else 'N/A'
     returns=[];exceptions=[];logs=[];other=[]
     for a in c['assertions']:
         kind,target,value=result_of(a)

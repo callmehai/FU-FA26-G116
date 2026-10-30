@@ -18,8 +18,13 @@ bố cục bảng và các phần cố định của mẫu. Nội dung dự án 
 vào `artifacts/test-report-build/template-edition/templates/` rồi sinh từ bản đó, file mẫu gốc không
 bị sửa. Mỗi module (`Access`, `Meetings`, …) là một sheet. Trong sheet, mỗi test method là một dòng
 tiêu đề in đậm, bên dưới là các dòng `UTCnnn`: một dòng cho `Fact`, một dòng cho mỗi `InlineData`
-của `Theory`. *Input parameters* chỉ ghi dữ liệu truyền vào (`a=0; b=0` hoặc các đối số của lời
-gọi), *Expected Results* theo mẫu `Return / Exception / Log Message` và chỉ ghi kết quả.
+của `Theory`. *Input parameters* ghi **giá trị thật** truyền vào, mỗi tham số một dòng
+`tên = giá trị` (`email = "thuky@trustcabinet.local"`, `roleId = 01a0ce78-7204-…`):
+`scripts/test_reports/values.py` lần theo biến, field, hằng số (`BuiltInRoles.Member`) và helper
+(`NewUser()`, `ValidInput(...)`) trong source tới giá trị gốc, và thay giá trị `InlineData` vào lời gọi.
+Id mà test sinh lúc chạy (`Guid.CreateVersion7()`) không có giá trị cố định nên ghi một id mẫu kèm
+`(generated)`; giờ tính từ `DateTimeOffset.UtcNow` được tính theo ngày sinh báo cáo và ghi chú như vậy.
+*Expected Results* theo mẫu `Return / Exception / Log Message` và chỉ ghi kết quả.
 Cột *Type* (Normal/Abnormal/Boundary) **được suy ra từ tên test và dữ liệu** — tester cần rà lại.
 Danh sách chọn trạng thái thêm `Failed` (mẫu gốc thiếu) để khớp công thức đếm. Test Statistics đếm
 theo **test case (UTC)**, không phải theo method, nên tổng của 5.1 lớn hơn số method UNIT trong

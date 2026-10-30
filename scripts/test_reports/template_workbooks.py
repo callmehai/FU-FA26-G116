@@ -12,7 +12,8 @@ import re
 import io,posixpath
 from PIL import Image,ImageDraw,ImageFont
 from lxml import etree as E
-from readable import csharp_split,test_date,table_fields,unit_fields,description,endpoint,authored
+from readable import test_date,table_fields,unit_fields,description,endpoint,authored
+from values import case_inputs
 
 S='http://schemas.openxmlformats.org/spreadsheetml/2006/main'
 R='http://schemas.openxmlformats.org/officeDocument/2006/relationships'
@@ -384,19 +385,6 @@ def cover(t,title,date,history=None):
     return s
 
 
-def unit_inputs(c,call=''):
-    """One input description per test case: an InlineData row, a MemberData source or the call a Fact makes."""
-    names=[re.sub(r'\s*=.*$','',p,flags=re.S).split()[-1] for p in csharp_split(c['parameters'].strip()[1:-1]) if p.split()]
-    rows=[]
-    for d in c['data']:
-        kind,_,inner=d.partition('(');inner=inner[:-1] if inner.endswith(')') else inner
-        if kind=='InlineData':
-            values=csharp_split(inner)
-            rows.append('; '.join(f'{n}={v}' for n,v in zip(names,values)) if len(values)==len(names) else inner)
-        else:rows.append(f'Every row of {kind}({inner})')
-    return rows or [call or 'N/A']
-
-
 ABNORMAL=re.compile(r'(?i)(^|_)(reject|refuse|invalid|fail|throw|error|den(y|ies|ied)|forbid|unauthori[sz]ed|not_?found|missing|wrong|expired?|conflict|cannot|can_?not|blocked|duplicate|bad|disallow|no_longer|unknown|locked|inactive|deactivated|mismatch|blank|null|empty|outside|revoked|tamper|malformed|unsupported|answers_msg|stale|too_)')
 BOUNDARY=re.compile(r'(?i)(^|_)(boundary|limit|limits|max|maximum|min|minimum|exactly|edge|threshold|length|longest|shortest|at_most|at_least|last|zero|immediately|cap|caps|capped|upper|lower|equal_to)(_|$)')
 def unit_type(c,inputs):
@@ -453,8 +441,8 @@ def unit_book(path,cases,meta,history):
         row=12;n=0;counts=dict(Passed=0,Failed=0,Pending=0,Normal=0,Abnormal=0,Boundary=0)
         for c in sorted(items,key=lambda c:(c['className'],c['line'])):
             s.row(header,row);s.put(f'A{row}',c['method']);row+=1
-            pre,call,expected=unit_fields(c);result=UNIT_RESULT.get(c['status'],'Pending');pre=fit(pre,w['B']);expected=fit(expected,w['D'])
-            for inputs in unit_inputs(c,call):
+            pre,_,expected=unit_fields(c);result=UNIT_RESULT.get(c['status'],'Pending');pre=fit(pre,w['B']);expected=fit(expected,w['D'])
+            for inputs in case_inputs(c):
                 n+=1;kind=unit_type(c,inputs);counts[kind]+=1;counts[result]=counts.get(result,0)+1;inputs=fit(inputs,w['C'])
                 s.row(case,row,height([(pre,w['B']),(inputs,w['C']),(expected,w['D'])]))
                 # Note stays empty: the method header row above already names the test.
