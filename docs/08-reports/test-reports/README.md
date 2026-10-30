@@ -3,7 +3,11 @@
 Sáu file Office trong thư mục này được sinh **bằng tiếng Anh**, theo yêu cầu của người dùng.
 Nguồn định dạng là sáu file mẫu trong `C:\Users\nguye\Downloads`; script giữ style, theme,
 bố cục bảng và các phần cố định của mẫu. Nội dung dự án ACCE, người kiểm thử và kết quả mẫu
-được thay bằng nội dung TrustCabinet.
+được thay bằng nội dung TrustCabinet. Riêng **phông chữ được thống nhất về Times New Roman** (theo
+yêu cầu, 30/10/2026): các mẫu gốc dùng lẫn Tahoma, Calibri, MS PGothic, Cambria, Arial…, nên sau khi
+sinh, `scripts/test_reports/fonts.py` đổi mọi phông trong ô, đoạn văn, theme, biểu đồ và hình
+phản hồi về một phông; cỡ chữ, màu và bố cục giữ nguyên. Ảnh chụp mã nguồn trong 5.0 vẫn dùng
+Consolas vì là mã.
 
 | File | Nội dung |
 |---|---|

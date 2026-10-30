@@ -7,6 +7,7 @@ S='http://schemas.openxmlformats.org/spreadsheetml/2006/main'
 R='http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 N={'s':S,'w':'http://schemas.openxmlformats.org/wordprocessingml/2006/main'}
 ROOT=Path(__file__).resolve().parents[2]
+import fonts
 
 def cells(z,path):
     ss=[''.join(x.itertext()) for x in E.fromstring(z.read('xl/sharedStrings.xml'))] if 'xl/sharedStrings.xml' in z.namelist() else []
@@ -39,7 +40,8 @@ def verify(directory,templates):
                 # The 5.1 template is legacy .xls; compare with the .xlsx copy Excel made during generation.
                 reference=ROOT/'artifacts/test-report-build/template-edition/templates/Report-5.1_Unit Test.xlsx' if 'Unit' in name else templates/source
                 with ZipFile(reference) as sourcezip:
-                    for part in ['xl/styles.xml','xl/theme/theme1.xml']:assert z.read(part)==sourcezip.read(part),'Template styling changed: '+name
+                    # Fonts are set to one typeface on purpose (fonts.py); anything else in the styling must match.
+                    for part in ['xl/styles.xml','xl/theme/theme1.xml']:assert z.read(part)==fonts.part(part,sourcezip.read(part)),'Template styling changed: '+name
                 wb=E.fromstring(z.read('xl/workbook.xml'));sheets=wb.find('{'+S+'}sheets');seen=set()
                 for i,sh in enumerate(sheets,1):
                     assert sh.get('name') not in seen;seen.add(sh.get('name'))
@@ -60,7 +62,7 @@ def verify(directory,templates):
             else:
                 reference=templates/'FA25_SEP490-G158_Report5.0_Test Documentation.docx'
                 with ZipFile(reference) as sourcezip:
-                    for part in ['word/styles.xml','word/numbering.xml','word/fontTable.xml','word/theme/theme1.xml','word/header1.xml','word/media/image7.png']:assert z.read(part)==sourcezip.read(part),'Word preserve-only part changed: '+part
+                    for part in ['word/styles.xml','word/numbering.xml','word/fontTable.xml','word/theme/theme1.xml','word/header1.xml','word/media/image7.png']:assert z.read(part)==fonts.part(part,sourcezip.read(part)),'Word preserve-only part changed: '+part
                     sr=E.fromstring(sourcezip.read('word/document.xml'));fr=E.fromstring(z.read('word/document.xml'))
                     assert len(sr.findall('.//w:tbl',N))==len(fr.findall('.//w:tbl',N))==9
                     assert len(sr.findall('.//w:sdt',N))==len(fr.findall('.//w:sdt',N))

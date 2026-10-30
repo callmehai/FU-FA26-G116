@@ -14,6 +14,7 @@ from manual_cases import scenarios
 from template_workbooks import unit_book,table_book,uat_book
 from template_document import make_document,refresh_cached_toc
 from readable import TESTER
+from fonts import unify as unify_fonts
 FILES={'UNIT':'Report5.1_Unit_Test.xlsx','INTEGRATION':'Report5.2_Integration_Test.xlsx','API':'Report5.2.2_Integration_Test_API_Test.xlsx','SYSTEM':'Report5.3_System_Test.xlsx','UAT':'Report5.4_Acceptance_Test.xlsx'}
 TEMPLATES={**FILES,'UNIT':'Report-5.1_Unit Test.xls','API':'FA25_SEP490-G158_Report5.2.2_Integration Test_API Test.xlsx','DOCX':'FA25_SEP490-G158_Report5.0_Test Documentation.docx'}
 
@@ -139,9 +140,11 @@ def main():
     specs=build/'authoring.json';write_json(specs,[book.spec(FILES[k]) for k,book in books.items()]);authored=build/'authored'
     subprocess.run([a.node,str(ROOT/'scripts/test_reports/author_workbooks.mjs'),str(specs),str(authored),str(a.artifact_module)],cwd=ROOT,check=True)
     out.mkdir(parents=True,exist_ok=True)
-    for k,book in books.items():book.save(out/FILES[k],authored/FILES[k])
+    for k,book in books.items():book.save(out/FILES[k],authored/FILES[k]);unify_fonts(out/FILES[k])
     subprocess.run([a.node,str(ROOT/'scripts/test_reports/render_workbooks.mjs'),str(out),str(build/'previews'),str(a.artifact_module)],cwd=ROOT,check=True)
     make_document(a.template_dir/TEMPLATES['DOCX'],out/'Report5.0_Test_Documentation.docx',tests,manual,meta,build)
+    # Before Word renders it, so the page numbers in the table of contents are those of the final font.
+    unify_fonts(out/'Report5.0_Test_Documentation.docx')
     pdf=build/'final-word.pdf'
     subprocess.run(['C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-File',str(ROOT/'scripts/test_reports/render_word.ps1'),'-InputPath',str(out/'Report5.0_Test_Documentation.docx'),'-PdfPath',str(pdf)],cwd=ROOT,check=True)
     meta['tocEntriesRefreshed']=refresh_cached_toc(out/'Report5.0_Test_Documentation.docx',str(pdf)+'.toc.json')

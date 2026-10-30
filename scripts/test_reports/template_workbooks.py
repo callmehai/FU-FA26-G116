@@ -318,8 +318,8 @@ class Template:
                 if node is not None:node.text=title
                 parts[chart]=xml(tree)
         if 'Customers Feedbacks' in self.original:
-            font=ImageFont.truetype('C:/Windows/Fonts/arial.ttf',42)
-            bold=ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf',52)
+            font=ImageFont.truetype('C:/Windows/Fonts/times.ttf',42)
+            bold=ImageFont.truetype('C:/Windows/Fonts/timesbd.ttf',52)
             panels=[['Business role','Meeting preparation','Approval workflow'],['Publication and schedule changes','Meeting confidentiality','Password recovery'],['Ease of use','Suggested improvements','Overall satisfaction']]
             for index,questions in enumerate(panels,2):
                 image=Image.new('RGB',(1932,2500),'white');draw=ImageDraw.Draw(image)
