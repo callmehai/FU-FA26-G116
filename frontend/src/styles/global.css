@@ -2346,6 +2346,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .agenda-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 40px 16px; color: var(--label-ink); text-align: center; }
 .agenda-empty p { margin: 8px 0 0; color: var(--ink); font-weight: 600; }
 .agenda-empty small { color: var(--muted-ink); font-size: 13px; }
+/* The calendar's dashed day box shares the class: inset it like the list, not on the card's edge. */
+.agenda-panel .agenda-empty { margin: 12px 16px 16px; }
+.agenda-panel-room .agenda-empty { margin: 0; }
 .agenda-skeleton { width: 60%; height: 18px; }
 /* The row's paperclip menu: where to take documents from (UC-33b), styled as a Select's menu. */
 .agenda-attach-option { width: 100%; min-height: 40px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
@@ -2372,7 +2375,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .agenda-panel .agenda-body { padding-left: 12px; }
   .agenda-toolbar { padding-left: 12px; padding-right: 12px; }
   .agenda-list { padding-left: 12px; padding-right: 12px; }
+  .agenda-panel .agenda-empty { margin-left: 12px; margin-right: 12px; }
   .agenda-panel-room .agenda-list { padding: 0; }
+  .agenda-panel-room .agenda-empty { margin: 0; }
 }
 
 /* ---------- Placeholder screens ----------
