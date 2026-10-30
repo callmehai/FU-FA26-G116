@@ -17,6 +17,12 @@ public static class VoteRules
     public static bool Preparation(MeetingStatus status) => status is MeetingStatus.Approved
         or MeetingStatus.Published or MeetingStatus.InProgress;
 
+    /// <summary>
+    /// A Guest sees the votes while the meeting is Published or InProgress and loses access once it ends (PO
+    /// 30/10/2026). The same rule as <c>ParticipantRules.GuestCanView</c> in PR #203; use that one once it merges.
+    /// </summary>
+    public static bool GuestCanView(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress;
+
     /// <summary>Ending the meeting does not close its vote, so the Chair may still close and conclude it (ADR-0017, BR-270).</summary>
     public static bool Closable(MeetingStatus status) => status is MeetingStatus.InProgress or MeetingStatus.Ended;
 
@@ -92,24 +98,6 @@ public static class VoteRules
         => meeting.Participants.Where(p => ParticipantRules.Active(p) && roles.Contains(p.Role)
                 && MeetingReadPolicy.CanRead(meeting, p.UserId))
             .Select(p => p.UserId).Distinct().Order().ToArray();
-
-    /// <summary>
-    /// What a ballot chose. In a secret vote nothing on this row may lead back to the voter (BR-259): no voter
-    /// columns, and none of the values a database reader could line up with the voter's receipt written in the same
-    /// request. So the id is a random v4 — the default v7 grows with time and would sort choices in the receipts'
-    /// order — and the timestamps are the vote's opening time, the same on every choice. When the ballot was cast
-    /// lives on the receipt only. Public votes get the same treatment; their choice names the voter anyway.
-    /// </summary>
-    public static VoteChoice Choice(VotingSession vote, Guid optionId, VoteViewer voter) => new()
-    {
-        Id = Guid.NewGuid(),
-        VotingSessionId = vote.Id,
-        VotingOptionId = optionId,
-        VoterId = vote.IsAnonymous ? null : voter.UserId,
-        GuestInvitationId = vote.IsAnonymous ? null : voter.GuestInvitationId,
-        CreatedAt = vote.OpenedAt!.Value,
-        UpdatedAt = vote.OpenedAt.Value
-    };
 
     public static double? Percentage(int count, int ballots)
         => ballots == 0 ? null : Math.Round(count * 100d / ballots, 2, MidpointRounding.AwayFromZero);

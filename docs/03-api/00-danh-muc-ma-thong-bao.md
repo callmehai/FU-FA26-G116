@@ -275,7 +275,7 @@ cuộc họp, hoặc không chọn tài liệu nào), 400/`MSG164`, 400/`MSG288`
 | `MSG225` | 409 | Biểu quyết không Open hoặc cuộc họp không InProgress; xác nhận đọc khi không biểu quyết nào của người gọi gắn tài liệu đó còn Open | Biểu quyết này không còn nhận phiếu. |
 | `MSG226` | 409 | Đã bỏ phiếu, kể cả hai phiếu gửi cùng lúc | Phiếu của bạn đã được ghi nhận, không thể đổi hoặc rút. |
 | `MSG227` | 200 | Bỏ phiếu | Đã ghi nhận phiếu của bạn. |
-| `MSG228` | 503 | Ghi phiếu lỗi DB; không còn receipt lẫn choice | Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại. |
+| `MSG228` | 503 | Ghi phiếu lỗi DB; không có receipt, bộ đếm phương án không đổi | Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại. |
 | `MSG229` | 200 | Đóng biểu quyết, body kèm `result` | Đã đóng biểu quyết. Kết quả đã sẵn sàng. |
 | `MSG230` | 409 | Không phải Chair hiện hành, cuộc họp ngoài InProgress/Ended, hoặc biểu quyết không Open | Chỉ Chủ toạ hiện hành được đóng biểu quyết đang mở, khi cuộc họp đang diễn ra hoặc đã kết thúc. |
 | `MSG231` | 503 | Đóng biểu quyết lỗi DB | Không đóng được biểu quyết. Biểu quyết và các phiếu đã ghi vẫn giữ nguyên. Vui lòng thử lại. |

@@ -55,7 +55,7 @@ public sealed class AgendaRulesTests
         Assert.Equal("X", input.Title);
         Assert.Equal("A\nB", input.Description);
         Assert.Empty(AgendaRules.Validate(input));
-        Assert.Empty(input.DocumentIds!);
+        Assert.Null(input.DocumentIds);
         Assert.NotEmpty(AgendaRules.Validate(AgendaRules.Normalize(new(" "))));
     }
 }

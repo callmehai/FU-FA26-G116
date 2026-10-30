@@ -12,6 +12,8 @@ export interface AgendaItemActions {
   canSetCurrent: boolean
   canComplete: boolean
   canRecordConclusion: boolean
+  /** UC-33b: the Chair's or Secretary's until the meeting ends; not tied to planning. */
+  canLinkDocuments: boolean
 }
 
 export interface AgendaItem {
@@ -67,7 +69,7 @@ export interface AgendaItemInput {
   description: string
   presenterId: string | null
   presenterGuestInvitationId: string | null
-  documentIds: string[]
+  // No documentIds: omitted keeps the item's links, which change through UC-33b (api/documents.ts).
 }
 
 export interface AgendaMutationResponse {

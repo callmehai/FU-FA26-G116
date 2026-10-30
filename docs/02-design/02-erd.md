@@ -47,9 +47,9 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED | Giữ. |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
 | VotingSession | Một lần biểu quyết trong cuộc họp | IMPLEMENTED (bảng); đổi theo mô hình đích ở SCRUM-96 | Mô hình đích bỏ `Kind`, `OpensAt`, `ClosesAt` và `AgendaItemId` — Vote thuộc Meeting, không gắn mục nghị sự (BR-285, ADR-0014/0019); thêm `OpenedAt`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, BR-257), `Conclusion` Passed/NotPassed/Deferred, `ConclusionNote`, `ConcludedById`, `ConcludedAt` (BR-262). Tối đa một Vote `Open` mỗi Meeting do unique index có điều kiện ép (BR-266). |
-| VotingOption | Phương án | IMPLEMENTED | Giữ. |
+| VotingOption | Phương án | IMPLEMENTED | `BallotCount` là tally của mọi phiếu, kể cả phiếu kín (SCRUM-28). |
 | VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Người bỏ phiếu là đúng một trong `VoterId` (User) và `GuestInvitationId` (Guest, ADR-0016); duy nhất theo (session, voter) và (session, guest). |
-| VoteChoice | Lựa chọn đã bỏ | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Giữ tách khỏi receipt; `VoterId` và `GuestInvitationId` cùng null khi phiếu kín, nhiều nhất một cột có giá trị khi công khai. Không có `CastAt`; Id v4, thời điểm = `OpenedAt` (SCRUM-28). Xem “Biểu quyết ẩn danh”. |
+| VoteChoice | Ai chọn gì trong phiếu **công khai** | IMPLEMENTED; Guest thêm ở SCRUM-96 | Phiếu kín không ghi dòng nào (SCRUM-28). Đúng một trong `VoterId` và `GuestInvitationId`; không có `CastAt`. Xem “Biểu quyết ẩn danh”. |
 | VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 30 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
 | VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 30 thực thể) | IMPLEMENTED (bảng: migration `VotesBelongToMeetingWithEligibleVotersAndDocuments`; endpoint: SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
 | DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
@@ -339,6 +339,7 @@ erDiagram
         uuid VotingSessionId FK
         int Position UK
         string Label
+        int BallotCount "tally; phiếu kín chỉ ghi ở đây"
     }
     VoteReceipt {
         uuid Id PK
@@ -351,9 +352,8 @@ erDiagram
         uuid Id PK
         uuid VotingSessionId FK
         uuid VotingOptionId FK
-        uuid VoterId FK "NULL khi phiên ẩn danh"
-        uuid GuestInvitationId FK "NULL khi phiên ẩn danh"
-        timestamptz CreatedAt "= OpenedAt của phiên"
+        uuid VoterId FK "nullable; đúng một trong VoterId và GuestInvitationId"
+        uuid GuestInvitationId FK "nullable; Guest"
     }
     MeetingDocument ||--o{ DocumentReadConfirmation : "confirmed as read"
     User ||--o{ DocumentReadConfirmation : "confirming"
@@ -369,18 +369,19 @@ erDiagram
 
 ### Biểu quyết ẩn danh — đọc kỹ chỗ này
 
-Tách **`VoteReceipt`** (ai đã bỏ phiếu) khỏi **`VoteChoice`** (phiếu chọn gì) là cách làm cho phiếu
-kín **khó truy ngược hơn**, chưa phải kín tuyệt đối:
+**`VoteReceipt`** ghi ai đã bỏ phiếu. Phiếu kín **không ghi lựa chọn ở đâu cả**, chỉ tăng bộ đếm của phương án
+(SCRUM-28, review PR #200):
 
 - `VoteReceipt` có unique index `(VotingSessionId, VoterId)` và `(VotingSessionId, GuestInvitationId)` → một người một phiếu, kể cả Guest, do database ép,
   không phải do một câu `if` mà hai request đồng thời có thể cùng vượt qua.
-- `VoteChoice.VoterId` và `VoteChoice.GuestInvitationId` **cùng để NULL khi phiên ẩn danh** → không có khoá nào nối người (User hay Guest) với
-  lựa chọn. Ẩn tên trên giao diện là không đủ: liên kết vẫn nằm đó cho bất cứ ai đọc được DB.
-- **Không ghép theo thời điểm hay thứ tự Id (SCRUM-28):** `VoteChoice` không có `CastAt`; Id là UUID v4 ngẫu nhiên và `CreatedAt` = `UpdatedAt` =
-  `OpenedAt` của phiên trên mọi phiếu, nên không cột nào của `vote_choices` sắp được theo thứ tự `vote_receipts`. Thời điểm bỏ phiếu chỉ còn ở receipt.
-- **Còn hở, ngoài tầm cột:** receipt và choice ghi trong cùng một transaction nên cột hệ thống `xmin` của PostgreSQL giống nhau, và thứ tự vật lý
-  của dòng trên đĩa theo thứ tự ghi. Người có quyền đọc thẳng DB (không qua API) vẫn có thể dùng hai thứ đó. Đừng mô tả phiếu kín là không thể truy
-  ngược đối với quản trị viên cơ sở dữ liệu.
+- **Vì sao không ghi một dòng choice không tên:** dòng đó vẫn ghép được với receipt. Một câu `SELECT` thường (không `ORDER BY`) trả các dòng theo
+  thứ tự ghi, khớp với `vote_receipts` sắp theo `CastAt`; ngoài ra còn cột hệ thống `xmin` (cùng transaction). Ẩn tên, bỏ thời điểm hay đổi Id sang
+  ngẫu nhiên đều không chặn được.
+- **Bộ đếm `VotingOption.BallotCount`:** mỗi phiếu ghi lại mọi phương án của phiên trong cùng một câu `UPDATE` (cộng 1 cho phương án được chọn, 0
+  cho phần còn lại) và không đổi `UpdatedAt`, nên các dòng phương án cùng một `xmin` và không lộ dòng nào vừa tăng. Kiểm phiếu đọc bộ đếm.
+- **`VoteChoice` chỉ dành cho phiếu công khai**, mỗi dòng ghi người chọn; ràng buộc `ck_vote_choices_one_voter` chặn ở DB mọi choice không tên.
+- **Còn hở:** người theo dõi DB liên tục trong lúc phiếu đang mở có thể so hai lần đọc để thấy bộ đếm nào vừa tăng khi một receipt mới xuất hiện.
+  Một ảnh chụp DB tại một thời điểm thì không ghép được. Đừng mô tả phiếu kín là không thể truy ngược với người đang quan sát cơ sở dữ liệu.
 
 **Hệ quả phải biết:** phiên ẩn danh thì **không đổi phiếu được**, vì không có gì xác định phải thay
 dòng nào. Đặc tả hiện hành chốt phiếu đã ghi không sửa, không rút với mọi loại phiếu (BR-265), nên
@@ -650,7 +651,7 @@ erDiagram
 8. Để công bố hoặc bắt đầu Meeting, phải có đúng một Chair và ít nhất một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động (BR-124, BR-125, BR-127).
 9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-105). Điểm danh chỉ Present/Absent; chưa ghi nhận giữ null, không coi là Absent.
 10. MeetingDocument tham chiếu một StoredFile bất biến; mỗi StoredFile có tối đa một MeetingDocument đang hiệu lực (`RemovedAt` null) trong mỗi Meeting. Một tài liệu gắn được nhiều mục nghị sự của cùng Meeting qua MeetingDocumentAgendaItem (BR-277, BR-278). Không thêm, gỡ hay đổi liên kết được khi Meeting đã kết thúc (BR-185, ADR-0020).
-11. VoteReceipt duy nhất theo (VotingSessionId, VoterId). VoteChoice ẩn danh phải có VoterId null; không gộp receipt với choice.
+11. VoteReceipt duy nhất theo (VotingSessionId, VoterId). Phiếu kín không ghi VoteChoice, chỉ tăng VotingOption.BallotCount; VoteChoice (phiếu công khai) luôn ghi người chọn.
 12. Mỗi Recording có tối đa một Transcript; mỗi Meeting có tối đa một MeetingSummary hiện hành.
 13. MeetingStatusHistory và AuditLogEntry là bằng chứng chỉ ghi thêm.
 14. Phòng trực tuyến thuộc Meeting và chỉ mở khi Meeting `InProgress` với hình thức Online/Hybrid. Vào/rời phòng và điều khiển media không làm đổi vòng đời meeting; mỗi Meeting có tối đa một CallSession MeetingRoom đang Active.
