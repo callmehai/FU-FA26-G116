@@ -241,9 +241,49 @@ Dùng lại cho cùng tình huống: `MSG161`/`MSG162`/`MSG166`/`MSG172` (thêm 
 | `MSG204` | 500 | GET góp ý lỗi đọc DB | Không tải được góp ý của tài liệu. Vui lòng thử lại. |
 | `MSG251` | 409 | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc lúc đang gửi (BR-282) | Cuộc họp đã kết thúc nên góp ý chỉ còn để đọc. |
 
+## Biểu quyết — contract Backend SCRUM-28
+
+UC-52a–UC-57 đã có Backend theo [contract biểu quyết](15-bieu-quyet.md). `MSG207` (danh sách rỗng) do FE tự hiển thị;
+`MSG252` (chưa xác nhận đọc tài liệu biểu quyết) vẫn dành sẵn cho SCRUM-96. Dùng lại 415/MSG34 và 413/MSG87 cho
+content-type và body 64 KiB; 401 authentication, 403 body rỗng khi tài khoản đã bị vô hiệu hoá.
+
+| Mã | HTTP | Endpoint / tình huống | Thông báo |
+|---|---|---|---|
+| `MSG205` | 404 | Không đọc được cuộc họp, biểu quyết không tồn tại / của cuộc họp khác, hoặc nháp mà người gọi không được thấy | Không truy cập được biểu quyết của cuộc họp này. |
+| `MSG206` | 500 | GET danh sách lỗi đọc DB | Không tải được danh sách biểu quyết. Vui lòng thử lại. |
+| `MSG208` | 500 | GET chi tiết lỗi đọc DB | Không tải được trạng thái hoặc kết quả biểu quyết. Vui lòng thử lại. |
+| `MSG209` | 400 | POST/PUT cấu hình sai (`errors` theo trường) hoặc body không đọc được | Thông tin biểu quyết không hợp lệ. Kiểm tra các trường được đánh dấu. |
+| `MSG210` | 201 | Tạo nháp | Tạo biểu quyết nháp thành công. |
+| `MSG211` | 200 | Sửa nháp | Cập nhật biểu quyết nháp thành công. |
+| `MSG212` | 200 | Xoá nháp | Xoá biểu quyết nháp thành công. |
+| `MSG213` | 409 | Không phải Chair/Secretary hiện hành, cuộc họp ngoài Approved/Published/InProgress, hoặc biểu quyết không còn Draft | Chỉ Chủ toạ hoặc Thư ký hiện hành được quản lý biểu quyết nháp, khi cuộc họp đã duyệt, đã công bố hoặc đang diễn ra. |
+| `MSG214` | 503 | Tạo nháp lỗi DB | Không tạo được biểu quyết nháp. Chưa có nháp nào được tạo. Vui lòng thử lại. |
+| `MSG215` | 503 | Sửa nháp lỗi DB | Không cập nhật được biểu quyết nháp. Nháp vẫn giữ nguyên. Vui lòng thử lại. |
+| `MSG216` | 503 | Xoá nháp lỗi DB | Không xoá được biểu quyết nháp. Nháp vẫn giữ nguyên. Vui lòng thử lại. |
+| `MSG217` | 200 | Mở biểu quyết, kể cả tạo kèm `openImmediately: true` | Mở biểu quyết thành công. |
+| `MSG218` | 409 | Không phải Chair hiện hành, cuộc họp chưa InProgress, hoặc biểu quyết không còn Draft | Chỉ Chủ toạ hiện hành được mở biểu quyết nháp, khi cuộc họp đang diễn ra. |
+| `MSG219` | 409 | Cuộc họp đã có biểu quyết Open khác, kể cả khi hai lệnh mở đến cùng lúc | Cuộc họp đang có biểu quyết khác đang mở. Hãy đóng biểu quyết đó trước. |
+| `MSG220` | 409 | Không ai giữ các vai trò đã chọn lúc mở | Không có ai đủ điều kiện bỏ phiếu theo các vai trò đã chọn. Biểu quyết chưa được mở. |
+| `MSG221` | 503 | Mở biểu quyết lỗi DB; với `openImmediately` thì không để lại nháp | Không mở được biểu quyết. Biểu quyết chưa được mở. Vui lòng thử lại. |
+| `MSG222` | 400 | Bỏ phiếu thiếu `optionId` hoặc body không đọc được | Chọn một phương án trước khi gửi phiếu. |
+| `MSG223` | 400 | `optionId` không thuộc biểu quyết này | Phương án đã chọn không thuộc biểu quyết này. |
+| `MSG224` | 409 | Người gọi không có trong danh sách chốt lúc mở | Bạn không có trong danh sách được bỏ phiếu của biểu quyết này. |
+| `MSG225` | 409 | Biểu quyết không Open hoặc cuộc họp không InProgress | Biểu quyết này không còn nhận phiếu. |
+| `MSG226` | 409 | Đã bỏ phiếu, kể cả hai phiếu gửi cùng lúc | Phiếu của bạn đã được ghi nhận, không thể đổi hoặc rút. |
+| `MSG227` | 200 | Bỏ phiếu | Đã ghi nhận phiếu của bạn. |
+| `MSG228` | 503 | Ghi phiếu lỗi DB; không còn receipt lẫn choice | Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại. |
+| `MSG229` | 200 | Đóng biểu quyết, body kèm `result` | Đã đóng biểu quyết. Kết quả đã sẵn sàng. |
+| `MSG230` | 409 | Không phải Chair hiện hành, cuộc họp ngoài InProgress/Ended, hoặc biểu quyết không Open | Chỉ Chủ toạ hiện hành được đóng biểu quyết đang mở, khi cuộc họp đang diễn ra hoặc đã kết thúc. |
+| `MSG231` | 503 | Đóng biểu quyết lỗi DB | Không đóng được biểu quyết. Biểu quyết và các phiếu đã ghi vẫn giữ nguyên. Vui lòng thử lại. |
+| `MSG232` | 400 | Kết luận ngoài `Passed`/`NotPassed`/`Deferred`, ghi chú quá 2000 ký tự, hoặc body không đọc được | Chọn Thông qua, Không thông qua hoặc Hoãn. |
+| `MSG233` | 409 | Đã có kết luận | Kết luận biểu quyết đã được ghi và không thể sửa. |
+| `MSG234` | 409 | Không phải Chair hiện hành, cuộc họp ngoài InProgress/Ended, hoặc biểu quyết chưa Closed | Chỉ Chủ toạ hiện hành được ghi kết luận cho biểu quyết đã đóng, khi cuộc họp đang diễn ra hoặc đã kết thúc. |
+| `MSG235` | 200 | Ghi kết luận | Ghi kết luận biểu quyết thành công. |
+| `MSG236` | 503 | Ghi kết luận lỗi DB | Không ghi được kết luận biểu quyết. Chưa có kết luận nào được ghi. Vui lòng thử lại. |
+
 ## Mã tiếp theo
 
-**`MSG368`** — `MSG366`–`MSG367` cấp cho xoá một lượt ghi của bản ghi phòng (SCRUM-29, PO 29/10/2026; AI-eCabinet không có). `MSG359`–`MSG365` cấp cho mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi (ADR-0041). `MSG358` cấp cho bản ghi phòng của cuộc họp trực tuyến (ADR-0040: cách ghi suy ra từ hình thức họp; `MSG324`–`MSG327` của endpoint đổi cách ghi âm và `MSG344` của ghi âm cả cuộc gọi ngừng dùng). `MSG351`–`MSG354` cấp cho loại câu khỏi bản ghi theo micro (SCRUM-109), `MSG355`–`MSG357` cho tải bản ghi và xuất bản gỡ băng (SCRUM-29, SCRUM-31), cả hai bê từ AI-eCabinet. `MSG346`–`MSG348` đã cấp cho kho tài liệu cá nhân và góp ý tài liệu (SCRUM-58, SCRUM-23, PR #169), chưa lên `main`. Cuộc họp đã huỷ là trạng thái cuối (BR-299): thay đổi bị từ chối bằng `MSG349` (tải tài liệu lên; gắn/gỡ tài liệu và góp ý trên cuộc họp đã huỷ dùng lại mã này), phòng họp trực tuyến báo `MSG350` (FE). Huỷ cuộc họp (SCRUM-99, UC-75) dùng `MSG261`–`MSG264` đã dành sẵn và `MSG345` (lý do quá dài). Thông báo FE của phòng họp trực tuyến (SCRUM-41) dùng `MSG328`–`MSG344`; `MSG119`–`MSG122`, `MSG125` ngừng dùng, không tái cấp. Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`; ghi âm theo micro từng người (SCRUM-109) dùng `MSG318`–`MSG327`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG265`–`MSG270` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` dành sẵn cho đặc tả FE-11 (UC-52a, UC-52b, UC-53–UC-57), chưa triển khai. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG368`** — `MSG366`–`MSG367` cấp cho xoá một lượt ghi của bản ghi phòng (SCRUM-29, PO 29/10/2026; AI-eCabinet không có). `MSG359`–`MSG365` cấp cho mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi (ADR-0041). `MSG358` cấp cho bản ghi phòng của cuộc họp trực tuyến (ADR-0040: cách ghi suy ra từ hình thức họp; `MSG324`–`MSG327` của endpoint đổi cách ghi âm và `MSG344` của ghi âm cả cuộc gọi ngừng dùng). `MSG351`–`MSG354` cấp cho loại câu khỏi bản ghi theo micro (SCRUM-109), `MSG355`–`MSG357` cho tải bản ghi và xuất bản gỡ băng (SCRUM-29, SCRUM-31), cả hai bê từ AI-eCabinet. `MSG346`–`MSG348` đã cấp cho kho tài liệu cá nhân và góp ý tài liệu (SCRUM-58, SCRUM-23, PR #169), chưa lên `main`. Cuộc họp đã huỷ là trạng thái cuối (BR-299): thay đổi bị từ chối bằng `MSG349` (tải tài liệu lên; gắn/gỡ tài liệu và góp ý trên cuộc họp đã huỷ dùng lại mã này), phòng họp trực tuyến báo `MSG350` (FE). Huỷ cuộc họp (SCRUM-99, UC-75) dùng `MSG261`–`MSG264` đã dành sẵn và `MSG345` (lý do quá dài). Thông báo FE của phòng họp trực tuyến (SCRUM-41) dùng `MSG328`–`MSG344`; `MSG119`–`MSG122`, `MSG125` ngừng dùng, không tái cấp. Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`; ghi âm theo micro từng người (SCRUM-109) dùng `MSG318`–`MSG327`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, chỉ `MSG252`–`MSG255` và `MSG265`–`MSG270` còn dành sẵn cho thay đổi Report 3 ngày 18/10/2026 (UC-28b, UC-55, UC-73, UC-74, UC-75, UC-76, UC-77). `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` của FE-11 (UC-52a, UC-52b, UC-53–UC-57) đã triển khai trong SCRUM-28, trừ `MSG207` do FE hiển thị. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -770,42 +810,42 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 
 ### Biểu quyết — FE-11 (UC-52a, UC-52b, UC-53–UC-57)
 
-Các mã dưới đây được dành sẵn cho đặc tả nghiệp vụ trong Report 3 ngày 14/10/2026; chưa xác nhận endpoint runtime đã triển khai.
+Các mã dưới đây được dành sẵn cho đặc tả nghiệp vụ trong Report 3 ngày 14/10/2026 và đã triển khai Backend trong SCRUM-28; HTTP của từng mã ở [bảng contract biểu quyết](#biểu-quyết--contract-backend-scrum-28).
 
 | Mã | Nguồn / tình huống | Thông báo chuẩn |
 |---|---|---|
-| `MSG205` | UC-52a, UC-52b / EX-1; UC-53, UC-54 / EX-6; UC-55 / EX-7; UC-56 / EX-3; UC-57 / EX-5 · Dành sẵn | Meeting votes are not accessible. |
-| `MSG206` | UC-52a / EX-2 · Dành sẵn | Unable to load the meeting votes. Please try again. |
-| `MSG207` | UC-52a / AF-1 · Dành sẵn | No votes to display. |
-| `MSG208` | UC-52b / EX-2 · Dành sẵn | Unable to load the vote status or result. Please try again. |
-| `MSG209` | UC-53, UC-54 / Invalid configuration · Dành sẵn | Invalid vote information. Check the highlighted fields. |
-| `MSG210` | UC-53 / Normal Flow · Dành sẵn | Vote draft created successfully. |
-| `MSG211` | UC-53 / AF-1 · Dành sẵn | Vote draft updated successfully. |
-| `MSG212` | UC-53 / AF-2 · Dành sẵn | Vote draft deleted successfully. |
-| `MSG213` | UC-53 / EX-2; UC-76a, UC-76b / EX-1 · Dành sẵn | Only Draft votes may be managed by the current Chair or Secretary while the meeting is Approved, Published or InProgress. |
-| `MSG214` | UC-53 / EX-3 · Dành sẵn | Unable to create the vote draft. No draft was created. Please try again. |
-| `MSG215` | UC-53 / EX-4 · Dành sẵn | Unable to update the vote draft. The draft remains unchanged. Please try again. |
-| `MSG216` | UC-53 / EX-5 · Dành sẵn | Unable to delete the vote draft. The draft remains unchanged. Please try again. |
-| `MSG217` | UC-54 / Normal Flow · Dành sẵn | Voting opened successfully. |
-| `MSG218` | UC-54 / EX-2 · Dành sẵn | Only the current Chair can open a Draft vote while the meeting is InProgress. |
-| `MSG219` | UC-54 / EX-3 · Dành sẵn | Another vote is already open in this meeting. Close it before opening this vote. |
-| `MSG220` | UC-54 / EX-4 · Dành sẵn | No eligible voters are available for the selected roles. Voting was not opened. |
-| `MSG221` | UC-54 / EX-5 · Dành sẵn | Unable to open voting. Voting was not opened. Please try again. |
-| `MSG222` | UC-55 / EX-1 · Dành sẵn | Select one option before submitting your ballot. |
-| `MSG223` | UC-55 / EX-2 · Dành sẵn | The selected option is not available for this vote. |
-| `MSG224` | UC-55 / EX-3 · Dành sẵn | You are not eligible to cast a ballot in this vote. |
-| `MSG225` | UC-55 / EX-4 · Dành sẵn | This vote is no longer accepting ballots. |
-| `MSG226` | UC-55 / EX-5 · Dành sẵn | Your ballot has already been recorded. It cannot be changed or withdrawn. |
-| `MSG227` | UC-55 / Normal Flow · Dành sẵn | Your ballot has been recorded. |
-| `MSG228` | UC-55 / EX-6 · Dành sẵn | Unable to record your ballot. No ballot was recorded. Please try again. |
-| `MSG229` | UC-56 / Normal Flow · Dành sẵn | Voting closed. The result is available. |
-| `MSG230` | UC-56 / EX-1 · Dành sẵn | Only the current Chair can close an Open vote while the meeting is InProgress or Ended. |
-| `MSG231` | UC-56 / EX-2 · Dành sẵn | Unable to close voting. The vote and saved ballots remain unchanged. Please try again. |
-| `MSG232` | UC-57 / EX-1 · Dành sẵn | Select Passed, NotPassed or Deferred. |
-| `MSG233` | UC-57 / EX-2 · Dành sẵn | The vote conclusion has already been recorded and cannot be changed. |
-| `MSG234` | UC-57 / EX-3 · Dành sẵn | Only the current Chair can record a conclusion for a Closed vote while the meeting is InProgress or Ended. |
-| `MSG235` | UC-57 / Normal Flow · Dành sẵn | Vote conclusion recorded successfully. |
-| `MSG236` | UC-57 / EX-4 · Dành sẵn | Unable to record the vote conclusion. No conclusion was recorded. Please try again. |
+| `MSG205` | UC-52a, UC-52b / EX-1; UC-53, UC-54 / EX-6; UC-55 / EX-7; UC-56 / EX-3; UC-57 / EX-5 · Đã triển khai SCRUM-28 | Meeting votes are not accessible. |
+| `MSG206` | UC-52a / EX-2 · Đã triển khai SCRUM-28 | Unable to load the meeting votes. Please try again. |
+| `MSG207` | UC-52a / AF-1 · FE hiển thị (SCRUM-28) | No votes to display. |
+| `MSG208` | UC-52b / EX-2 · Đã triển khai SCRUM-28 | Unable to load the vote status or result. Please try again. |
+| `MSG209` | UC-53, UC-54 / Invalid configuration · Đã triển khai SCRUM-28 | Invalid vote information. Check the highlighted fields. |
+| `MSG210` | UC-53 / Normal Flow · Đã triển khai SCRUM-28 | Vote draft created successfully. |
+| `MSG211` | UC-53 / AF-1 · Đã triển khai SCRUM-28 | Vote draft updated successfully. |
+| `MSG212` | UC-53 / AF-2 · Đã triển khai SCRUM-28 | Vote draft deleted successfully. |
+| `MSG213` | UC-53 / EX-2; UC-76a, UC-76b / EX-1 · Đã triển khai SCRUM-28 | Only Draft votes may be managed by the current Chair or Secretary while the meeting is Approved, Published or InProgress. |
+| `MSG214` | UC-53 / EX-3 · Đã triển khai SCRUM-28 | Unable to create the vote draft. No draft was created. Please try again. |
+| `MSG215` | UC-53 / EX-4 · Đã triển khai SCRUM-28 | Unable to update the vote draft. The draft remains unchanged. Please try again. |
+| `MSG216` | UC-53 / EX-5 · Đã triển khai SCRUM-28 | Unable to delete the vote draft. The draft remains unchanged. Please try again. |
+| `MSG217` | UC-54 / Normal Flow · Đã triển khai SCRUM-28 | Voting opened successfully. |
+| `MSG218` | UC-54 / EX-2 · Đã triển khai SCRUM-28 | Only the current Chair can open a Draft vote while the meeting is InProgress. |
+| `MSG219` | UC-54 / EX-3 · Đã triển khai SCRUM-28 | Another vote is already open in this meeting. Close it before opening this vote. |
+| `MSG220` | UC-54 / EX-4 · Đã triển khai SCRUM-28 | No eligible voters are available for the selected roles. Voting was not opened. |
+| `MSG221` | UC-54 / EX-5 · Đã triển khai SCRUM-28 | Unable to open voting. Voting was not opened. Please try again. |
+| `MSG222` | UC-55 / EX-1 · Đã triển khai SCRUM-28 | Select one option before submitting your ballot. |
+| `MSG223` | UC-55 / EX-2 · Đã triển khai SCRUM-28 | The selected option is not available for this vote. |
+| `MSG224` | UC-55 / EX-3 · Đã triển khai SCRUM-28 | You are not eligible to cast a ballot in this vote. |
+| `MSG225` | UC-55 / EX-4 · Đã triển khai SCRUM-28 | This vote is no longer accepting ballots. |
+| `MSG226` | UC-55 / EX-5 · Đã triển khai SCRUM-28 | Your ballot has already been recorded. It cannot be changed or withdrawn. |
+| `MSG227` | UC-55 / Normal Flow · Đã triển khai SCRUM-28 | Your ballot has been recorded. |
+| `MSG228` | UC-55 / EX-6 · Đã triển khai SCRUM-28 | Unable to record your ballot. No ballot was recorded. Please try again. |
+| `MSG229` | UC-56 / Normal Flow · Đã triển khai SCRUM-28 | Voting closed. The result is available. |
+| `MSG230` | UC-56 / EX-1 · Đã triển khai SCRUM-28 | Only the current Chair can close an Open vote while the meeting is InProgress or Ended. |
+| `MSG231` | UC-56 / EX-2 · Đã triển khai SCRUM-28 | Unable to close voting. The vote and saved ballots remain unchanged. Please try again. |
+| `MSG232` | UC-57 / EX-1 · Đã triển khai SCRUM-28 | Select Passed, NotPassed or Deferred. |
+| `MSG233` | UC-57 / EX-2 · Đã triển khai SCRUM-28 | The vote conclusion has already been recorded and cannot be changed. |
+| `MSG234` | UC-57 / EX-3 · Đã triển khai SCRUM-28 | Only the current Chair can record a conclusion for a Closed vote while the meeting is InProgress or Ended. |
+| `MSG235` | UC-57 / Normal Flow · Đã triển khai SCRUM-28 | Vote conclusion recorded successfully. |
+| `MSG236` | UC-57 / EX-4 · Đã triển khai SCRUM-28 | Unable to record the vote conclusion. No conclusion was recorded. Please try again. |
 | `MSG237` | FE-11 · Ngừng dùng | Retired: closing or cancelling the UI does not require a system message. Do not reuse. |
 
 ### Tài liệu và liên kết mục nghị sự — ADR-0020 (15/10/2026)

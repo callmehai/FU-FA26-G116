@@ -2363,10 +2363,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("CastAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("cast_at");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -2604,8 +2600,8 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.Property<string>("ConclusionNote")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("conclusion_note");
 
                     b.Property<DateTimeOffset>("CreatedAt")

@@ -49,7 +49,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | VotingSession | Một lần biểu quyết trong cuộc họp | IMPLEMENTED (bảng); đổi theo mô hình đích ở SCRUM-96 | Mô hình đích bỏ `Kind`, `OpensAt`, `ClosesAt` và `AgendaItemId` — Vote thuộc Meeting, không gắn mục nghị sự (BR-285, ADR-0014/0019); thêm `OpenedAt`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, BR-257), `Conclusion` Passed/NotPassed/Deferred, `ConclusionNote`, `ConcludedById`, `ConcludedAt` (BR-262). Tối đa một Vote `Open` mỗi Meeting do unique index có điều kiện ép (BR-266). |
 | VotingOption | Phương án | IMPLEMENTED | Giữ. |
 | VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Người bỏ phiếu là đúng một trong `VoterId` (User) và `GuestInvitationId` (Guest, ADR-0016); duy nhất theo (session, voter) và (session, guest). |
-| VoteChoice | Lựa chọn đã bỏ | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Giữ tách khỏi receipt; `VoterId` và `GuestInvitationId` cùng null khi phiếu kín, nhiều nhất một cột có giá trị khi công khai. Chưa kín tuyệt đối: xem “Biểu quyết ẩn danh”. |
+| VoteChoice | Lựa chọn đã bỏ | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Giữ tách khỏi receipt; `VoterId` và `GuestInvitationId` cùng null khi phiếu kín, nhiều nhất một cột có giá trị khi công khai. Không có `CastAt`; Id v4, thời điểm = `OpenedAt` (SCRUM-28). Xem “Biểu quyết ẩn danh”. |
 | VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 30 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
 | VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 30 thực thể) | PLANNED (SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
 | DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
@@ -353,7 +353,7 @@ erDiagram
         uuid VotingOptionId FK
         uuid VoterId FK "NULL khi phiên ẩn danh"
         uuid GuestInvitationId FK "NULL khi phiên ẩn danh"
-        timestamptz CastAt
+        timestamptz CreatedAt "= OpenedAt của phiên"
     }
     MeetingDocument ||--o{ DocumentReadConfirmation : "confirmed as read"
     User ||--o{ DocumentReadConfirmation : "confirming"
@@ -376,9 +376,11 @@ kín **khó truy ngược hơn**, chưa phải kín tuyệt đối:
   không phải do một câu `if` mà hai request đồng thời có thể cùng vượt qua.
 - `VoteChoice.VoterId` và `VoteChoice.GuestInvitationId` **cùng để NULL khi phiên ẩn danh** → không có khoá nào nối người (User hay Guest) với
   lựa chọn. Ẩn tên trên giao diện là không đủ: liên kết vẫn nằm đó cho bất cứ ai đọc được DB.
-- **Còn hở:** `CastAt` có trên cả `VoteReceipt` và `VoteChoice`, và khoá chính là UUID v7 (sắp theo thời gian). Ai đọc được DB có thể ghép phiếu với
-  người bỏ phiếu bằng thời điểm hoặc thứ tự Id, nhất là khi ít người bỏ phiếu. Cách sửa (bỏ `CastAt` khỏi `VoteChoice`, Id ngẫu nhiên cho phiếu kín) làm ở PR code SCRUM-96;
-  cho đến lúc đó đừng mô tả phiếu kín là không thể truy ngược.
+- **Không ghép theo thời điểm hay thứ tự Id (SCRUM-28):** `VoteChoice` không có `CastAt`; Id là UUID v4 ngẫu nhiên và `CreatedAt` = `UpdatedAt` =
+  `OpenedAt` của phiên trên mọi phiếu, nên không cột nào của `vote_choices` sắp được theo thứ tự `vote_receipts`. Thời điểm bỏ phiếu chỉ còn ở receipt.
+- **Còn hở, ngoài tầm cột:** receipt và choice ghi trong cùng một transaction nên cột hệ thống `xmin` của PostgreSQL giống nhau, và thứ tự vật lý
+  của dòng trên đĩa theo thứ tự ghi. Người có quyền đọc thẳng DB (không qua API) vẫn có thể dùng hai thứ đó. Đừng mô tả phiếu kín là không thể truy
+  ngược đối với quản trị viên cơ sở dữ liệu.
 
 **Hệ quả phải biết:** phiên ẩn danh thì **không đổi phiếu được**, vì không có gì xác định phải thay
 dòng nào. Đặc tả hiện hành chốt phiếu đã ghi không sửa, không rút với mọi loại phiếu (BR-265), nên

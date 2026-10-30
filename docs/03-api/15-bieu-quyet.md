@@ -1,7 +1,8 @@
 # Biểu quyết — thiết kế contract cho BE (FE-11 / SCRUM-96)
 
-Ngày 28/10/2026. **Chưa triển khai endpoint.** Contract này chốt đường dẫn, quyền, body và mã
-`MSG` để BE viết code; FE tích hợp sau khi API usable.
+Ngày 28/10/2026; cập nhật 30/10/2026. **Backend SCRUM-28 đã triển khai** UC-52a, UC-52b, UC-53–UC-57
+(xem, nháp, mở, bỏ phiếu, đóng, kết luận) và sự kiện realtime ở [§7](#7-đã-triển-khai--scrum-28). Gắn / gỡ tài
+liệu (UC-76a/76b), xác nhận đã đọc (UC-74) và chặn `MSG252` **chưa** có — thuộc SCRUM-96.
 
 Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-159/160/165/181/189/190/252–274/
 285/287–293/304/305; ADR-0014/0016/0017/0019/0020; sequence
@@ -23,8 +24,7 @@ Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-15
 - Ẩn tài nguyên: meeting/vote không được đọc → `404` cùng body (không `403` lộ tồn tại).
 - Mutation khóa Meeting (như agenda); kiểm lại quyền/trạng thái trong transaction trước khi ghi.
 - Tally khi đóng: **tính từ `VoteChoice`**, không lưu cột tổng (theo class diagram §6f — NEEDS REVIEW nếu PO muốn lưu).
-- Realtime: sequence không bắt hub. Khuyến nghị phát `voteChanged` trên `/hubs/meetings` sau commit
-  (cùng nhóm JoinMeeting); FE vẫn GET lại. Có thể thêm ở PR code nếu cần.
+- Realtime: `voteChanged` trên `/hubs/meetings` sau commit (cùng nhóm JoinMeeting); FE GET lại — xem §7.
 
 ## 2. Quyền theo trạng thái
 
@@ -98,8 +98,9 @@ Một lựa chọn; không đổi/rút sau khi ghi (BR-265). Phiếu kín: ghi `
 { "conclusion": "Passed", "note": "" }
 ```
 
-`conclusion` ∈ `Passed|NotPassed|Deferred`; `note` tùy chọn, tối đa 2000. Ghi một lần, không sửa
-(BR-262). Hệ thống không suy từ tally (BR-263).
+`conclusion` ∈ `Passed|NotPassed|Deferred` (đúng hoa thường); `note` tùy chọn, trim, tối đa 2000 — doc,
+validation và cột `conclusion_note` cùng một số từ SCRUM-28. Ghi một lần, không sửa (BR-262). Hệ thống không
+suy từ tally (BR-263).
 
 ### Gắn từ tài liệu cuộc họp / kho
 
@@ -201,3 +202,67 @@ migration tạo trên `main` mới nhất. Cần có: `VotingSession`, `VotingOp
 
 Còn thiếu bảng **`document_read_confirmations`** (UC-74 / BR-290–293): xem ERD mục tiêu; thêm
 cùng PR code với endpoint xác nhận đọc.
+
+## 7. Đã triển khai — SCRUM-28
+
+Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabinet.Infrastructure/Votes/`,
+`backend/TrustCabinet.Domain/Votes/`; test `tests/TrustCabinet.Web.Tests/Votes/`. HTTP của từng mã ở
+[catalogue](00-danh-muc-ma-thong-bao.md#biểu-quyết--contract-backend-scrum-28).
+
+### Khác hoặc chốt thêm so với các mục trên
+
+- **Đường dẫn** theo §3 (`/api/meetings/{meetingId}/votes/{voteId}/…`), không phải `/api/votes/{id}/…` như mô tả
+  ticket SCRUM-28.
+- **Thứ tự kiểm tra khi bỏ phiếu** theo sequence UC-55: không đọc được → `404/MSG205`; không trong danh sách chốt →
+  `409/MSG224`; không Open hoặc cuộc họp không InProgress → `409/MSG225`; đã bỏ → `409/MSG226`; rồi mới tới
+  `400/MSG222` (thiếu `optionId`) và `400/MSG223`.
+- **Guest đủ điều kiện** = lời mời chưa thu hồi lúc mở phiếu. "Email đã xác minh" là việc của UC-04, chưa có ở Backend;
+  khi bỏ phiếu, Guest vẫn phải có phiên còn hiệu lực (adapter `IParticipantGuestAccess`).
+- **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.
+  Điểm danh không liên quan (BR-190).
+- **Phương án trùng** so sánh sau trim, không phân biệt hoa thường (`Đồng ý` và `đồng ý` là trùng).
+- **Mở từ form** (`openImmediately: true`) trả `200/MSG217`, không phải `201`. Thư ký gửi kèm cờ này nhận `409/MSG218`
+  và không có nháp nào được lưu.
+- **Đóng phiếu** trả kèm `result` (cùng dạng `result` của chi tiết).
+- **Tài khoản bị vô hiệu hoá** nhận `403` body rỗng, như điểm danh.
+
+### Chi tiết (GET `/votes/{voteId}`)
+
+Ngoài các trường của dòng danh sách: `description`, `options[] { id, position, label }`, `isEligible`, `hasVoted`
+(cả hai theo người gọi), `result` (null khi chưa Closed):
+
+```json
+{
+  "ballotCount": 2,
+  "options": [{ "optionId": "<guid>", "label": "Đồng ý", "count": 1, "percentage": 50 }],
+  "voters": [{ "id": "<userId | invitationId>", "kind": "Internal", "displayName": "…", "optionId": null }]
+}
+```
+
+`percentage` làm tròn 2 chữ số, null khi chưa ai bỏ (BR-261). `voters` chỉ có ở phiếu công khai — `optionId: null`
+là chưa bỏ (BR-273); phiếu kín luôn `voters: null` (BR-259). Dòng danh sách có thêm `hasVoted`.
+
+### Realtime
+
+Sự kiện `voteChanged` `{ eventId, meetingId, voteId, changeType, title, occurredAt }`, `changeType` ∈
+`DraftCreated | DraftUpdated | DraftDeleted | Opened | BallotCast | Closed | ConclusionRecorded`.
+
+- Ba sự kiện `Draft*` chỉ gửi Chair/Secretary hiện hành (BR-253); còn lại gửi mọi người đang đọc được cuộc họp, kể cả
+  Guest.
+- `title` chỉ có ở `Opened`, cho thông báo nổi "Chủ toạ mở biểu quyết: {nội dung}". `BallotCast` không có gì về người
+  bỏ phiếu.
+- Thao tác bị từ chối hoặc lỗi không phát gì.
+
+### Phiếu kín ở tầng dữ liệu
+
+`VoteChoice` không còn `CastAt` (migration `VoteChoicesWithoutCastTime`); Id là UUID v4 ngẫu nhiên, `CreatedAt` =
+`UpdatedAt` = `OpenedAt` của phiên, áp dụng cho mọi phiếu. Thời điểm bỏ phiếu chỉ còn ở `VoteReceipt`. Test
+`A_secret_ballot_leaves_nothing_that_pairs_a_choice_with_its_voter` khoá danh sách cột của `vote_choices` và các giá
+trị đó. Còn lại ngoài tầm cột: cột hệ thống `xmin` của PostgreSQL (receipt và choice cùng một transaction) và thứ tự
+vật lý trên đĩa — xem [ERD](../02-design/02-erd.md#biểu-quyết-ẩn-danh--đọc-kỹ-chỗ-này).
+
+### Khoá và đồng thời
+
+Mọi thao tác ghi khoá `meetings` trước (bỏ phiếu: `FOR SHARE`, còn lại `FOR UPDATE`), rồi tài khoản người gọi
+(`FOR SHARE`), rồi phiên biểu quyết. Hai lệnh mở cùng lúc: một `MSG217`, một `MSG219`. Hai phiếu cùng người cùng lúc:
+một `MSG227`, một `MSG226` — unique index của `vote_receipts` giữ phiếu đầu.

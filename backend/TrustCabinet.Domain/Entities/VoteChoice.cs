@@ -3,7 +3,9 @@ using TrustCabinet.Domain.Entities.Common;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// A vote actually cast, counted to produce the result.
+/// A vote actually cast, counted to produce the result. It has no time of its own: when a ballot was cast is
+/// recorded on the <see cref="VoteReceipt"/> only, because in a secret vote a second timestamp here would let
+/// anyone with database access pair each choice with its receipt (BR-259). See VoteRules.Choice.
 /// </summary>
 public class VoteChoice : Entity
 {
@@ -28,6 +30,4 @@ public class VoteChoice : Entity
     /// </summary>
     public Guid? GuestInvitationId { get; set; }
     public MeetingGuestInvitation? GuestInvitation { get; set; }
-
-    public DateTimeOffset CastAt { get; set; } = DateTimeOffset.UtcNow;
 }
