@@ -221,7 +221,7 @@ public static class DocumentFileRules
     }
 
     /// <summary>Control and format characters: a right-to-left override (U+202E) before "xcod.pdf" shows the name as "fdp.docx".</summary>
-    private static bool IsInvisible(char c)
+    public static bool IsInvisible(char c)
         => char.IsControl(c) || CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.Format;
 
     /// <summary>The browser counts pages with pdf.js; a value it could not produce is stored as unknown.</summary>

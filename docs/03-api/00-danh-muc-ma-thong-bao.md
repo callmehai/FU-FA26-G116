@@ -255,7 +255,7 @@ hồi hay cuộc họp không còn mở đều trả cùng `MSG371`, không lộ
 | `MSG374` | 503 | `/api/guest-access/*`: không đọc/lưu được dữ liệu hoặc không gửi được email (EX-3) | Không thể xác minh lúc này. Vui lòng thử lại sau. |
 | `MSG375` | 200 | `POST …/code`: đã gửi mã | Đã gửi mã xác minh tới email được mời. |
 | `MSG376` | 200 | `PUT /api/guest-access/session/profile`: lưu hồ sơ tự khai | Đã lưu thông tin hiển thị. |
-| `MSG377` | 400 | `PUT …/session/profile`: tên hiển thị trống/quá 200 ký tự, chức vụ quá 200 ký tự | Thông tin hiển thị không hợp lệ. |
+| `MSG377` | 400 | `PUT …/session/profile`: tên hiển thị trống/quá 200 ký tự, chức vụ quá 200 ký tự, hoặc có ký tự điều khiển/định dạng | Thông tin hiển thị không hợp lệ. |
 | `MSG378` | 404 | `GET`/`PUT /api/guest-access/session…`: phiên hết hạn, đã đăng xuất, lời mời bị thu hồi hoặc cuộc họp không còn mở | Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email. |
 
 ## Mã tiếp theo

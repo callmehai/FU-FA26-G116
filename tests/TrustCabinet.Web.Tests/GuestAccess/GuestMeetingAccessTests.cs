@@ -62,8 +62,13 @@ public sealed class GuestMeetingAccessTests(GuestAccessFixture f) : IClassFixtur
     public async Task Meeting_is_closed_until_the_guest_declares_a_display_name()
     {
         var s = await f.Seed();
-        var (guest, _) = await f.SignIn(s, profile: false);
+        var (guest, token) = await f.SignIn(s, profile: false);
         Assert.Equal(HttpStatusCode.NotFound, (await guest.GetAsync(Agenda(s.MeetingId))).StatusCode);
+        await using (var hub = Hub(token))
+        {
+            await hub.StartAsync();
+            await Assert.ThrowsAnyAsync<Exception>(() => hub.InvokeAsync("JoinMeeting", s.MeetingId));
+        }
         Assert.Equal(HttpStatusCode.NotFound, (await guest.GetAsync($"/api/meetings/{s.MeetingId}/participants")).StatusCode);
         await Expect(await guest.PutAsJsonAsync("/api/guest-access/session/profile", new { displayName = "Khách" }), 200, "MSG376");
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Agenda(s.MeetingId))).StatusCode);

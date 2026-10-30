@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.GuestAccess;
@@ -77,17 +78,26 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
 
         // Sent after commit, outside the row lock. The code goes straight to the transport, never into
         // the stored email queue, so the only copy at rest is the hash.
-        if (await PasswordResetEmailSender.SendNowAsync(sender, email.Value, logger,
-                CodeEmail(invitation, code, limits.CodeLifetimeMinutes), "guest verification", ct))
-            return new(Data: new GuestCodeSent(limits.CodeLifetimeMinutes * 60, limits.ResendIntervalSeconds));
-
-        // Nobody received this code: drop it so the guest may retry at once and the previous code stays usable.
-        try { await db.GuestVerificationChallenges.Where(c => c.Id == challenge.Id).ExecuteDeleteAsync(ct); }
-        catch (Exception ex) when (IsPersistence(ex))
+        var sent = false;
+        try
         {
-            logger.LogError(ex, "Could not remove an undelivered code of guest invitation {InvitationId}.", invitationId);
+            sent = await PasswordResetEmailSender.SendNowAsync(sender, email.Value, logger,
+                CodeEmail(invitation, code, limits.CodeLifetimeMinutes), "guest verification", ct);
         }
-        return Unavailable;
+        finally
+        {
+            // Nobody received this code (the send failed, or the client went away mid-send): drop it, even
+            // after cancellation, so the guest may retry at once and the previous code stays usable.
+            if (!sent)
+            {
+                try { await db.GuestVerificationChallenges.Where(c => c.Id == challenge.Id).ExecuteDeleteAsync(CancellationToken.None); }
+                catch (Exception ex) when (IsPersistence(ex))
+                {
+                    logger.LogError(ex, "Could not remove an undelivered code of guest invitation {InvitationId}.", invitationId);
+                }
+            }
+        }
+        return sent ? new(Data: new GuestCodeSent(limits.CodeLifetimeMinutes * 60, limits.ResendIntervalSeconds)) : Unavailable;
     }
 
     public async Task<GuestAccessResult> VerifyAsync(Guid invitationId, string? linkToken, string? code, CancellationToken ct)
@@ -154,10 +164,12 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
         var name = displayName?.Trim() ?? "";
         var title = string.IsNullOrWhiteSpace(jobTitle) ? null : jobTitle.Trim();
         var errors = new Dictionary<string, string[]>();
-        if (name.Length is 0 or > ProfileFieldLength)
-            errors["displayName"] = [$"Tên hiển thị bắt buộc, tối đa {ProfileFieldLength} ký tự."];
-        if (title?.Length > ProfileFieldLength)
-            errors["jobTitle"] = [$"Chức vụ tối đa {ProfileFieldLength} ký tự."];
+        // Shown to every member of the meeting: control and format characters (NUL, U+202E…) are refused,
+        // as for document names, so a name cannot hide or reverse text on the roster.
+        if (name.Length is 0 or > ProfileFieldLength || name.Any(DocumentFileRules.IsInvisible))
+            errors["displayName"] = [$"Tên hiển thị bắt buộc, tối đa {ProfileFieldLength} ký tự, không chứa ký tự điều khiển."];
+        if (title?.Length > ProfileFieldLength || title?.Any(DocumentFileRules.IsInvisible) == true)
+            errors["jobTitle"] = [$"Chức vụ tối đa {ProfileFieldLength} ký tự, không chứa ký tự điều khiển."];
         try
         {
             var current = await FindSessionAsync(session, tracked: true, ct);
@@ -240,7 +252,7 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
     {
         var at = address.LastIndexOf('@');
         if (at <= 0) return "***";
-        return $"{address[..(at > 2 ? 2 : 1)]}***{address[at..]}";
+        return $"{address[..(at > 3 ? 2 : 1)]}***{address[at..]}";
     }
 
     internal static bool IsPersistence(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;

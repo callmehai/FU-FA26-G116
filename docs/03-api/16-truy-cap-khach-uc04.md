@@ -78,8 +78,8 @@ Body `{ "token": "…", "code": "123456" }`. Chỉ mã mới nhất của lời 
 | HTTP | Tình huống |
 |---|---|
 | 200 | `{ "accessToken", "expiresAt", "meetingId", "profileCompleted": false }` — mã bị tiêu thụ, phiên mới được tạo |
-| 400 `MSG126` | Mã sai, hết hạn, đã dùng, chưa từng gửi, hoặc không phải 6 chữ số (EX-2). Mã sai làm tăng số lần sai |
-| 400 `MSG372` | Mã đã bị khoá vì sai đủ 5 lần (kể cả lần sai thứ 5 và khi sau đó nhập đúng). Phải gửi mã mới |
+| 400 `MSG126` | Mã sai, hết hạn, đã dùng, chưa từng gửi, hoặc không phải 6 chữ số (EX-2). Mã sai (đủ 6 chữ số) làm tăng số lần sai |
+| 400 `MSG372` | Mã đã bị khoá vì sai đủ 5 lần: lần sai thứ 5 và mọi lần nhập sau đó, kể cả mã đúng hay chuỗi không phải 6 chữ số. Phải gửi mã mới |
 | 404 `MSG371` | EX-1, kể cả khi lời mời bị thu hồi giữa lúc gửi mã và xác minh |
 | 503 `MSG374` | Không lưu được kết quả xác minh (EX-3); không có phiên nào được tạo |
 
@@ -110,7 +110,8 @@ FE còn token thì gọi endpoint này trước: `200` thì vào thẳng cuộc 
 ### 4.2 `PUT /api/guest-access/session/profile` — hồ sơ tự khai (BR-180)
 
 Body `{ "displayName": "…", "jobTitle": "…" }`. `displayName` bắt buộc, cắt khoảng trắng hai đầu, tối
-đa 200 ký tự; `jobTitle` tuỳ chọn, tối đa 200 ký tự, rỗng thành `null`. Lưu vào
+đa 200 ký tự; `jobTitle` tuỳ chọn, tối đa 200 ký tự, rỗng thành `null`. Cả hai không được chứa ký tự điều
+khiển hay định dạng (NUL, xuống dòng, U+202E…), cùng luật với tên tài liệu. Lưu vào
 `meeting_guest_invitations.self_declared_display_name` / `self_declared_job_title`, **không** ghi đè
 `invited_name` hay `email`. Khai lại thì ghi đè lần khai trước (dùng chung cho mọi phiên của lời mời).
 

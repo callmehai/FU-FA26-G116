@@ -104,6 +104,35 @@ public sealed class GuestVerificationTests(GuestAccessFixture f) : IClassFixture
     }
 
     [Fact]
+    public async Task Concurrent_sends_create_one_code_and_one_email()
+    {
+        var s = await f.Seed();
+        using var client = f.Host.CreateClient();
+        var responses = await Task.WhenAll(Enumerable.Range(0, 6)
+            .Select(_ => client.PostAsJsonAsync(s.Url + "/code", new { token = s.LinkToken })));
+        Assert.Single(responses, r => r.IsSuccessStatusCode);
+        foreach (var waiting in responses.Where(r => !r.IsSuccessStatusCode)) await Expect(waiting, 429, "MSG373");
+        Assert.Single(f.Mail.Sent, m => m.ToAddress == s.Email);
+        await using var db = f.Db();
+        Assert.Equal(1, await db.GuestVerificationChallenges.CountAsync(c => c.InvitationId == s.InvitationId));
+    }
+
+    [Fact]
+    public async Task Concurrent_wrong_guesses_are_all_counted_and_lock_at_five()
+    {
+        var s = await f.Seed();
+        using var client = f.Host.CreateClient();
+        var code = await f.SendCode(client, s);
+        var responses = await Task.WhenAll(Enumerable.Range(0, 12).Select(_ => Verify(client, s, Wrong(code))));
+        var codes = await Task.WhenAll(responses.Select(async r => (await Expect(r, 400)).GetProperty("code").GetString()));
+        Assert.Equal(4, codes.Count(c => c == "MSG126"));
+        Assert.Equal(8, codes.Count(c => c == "MSG372"));
+        await using var db = f.Db();
+        Assert.Equal(5, (await db.GuestVerificationChallenges.SingleAsync(c => c.InvitationId == s.InvitationId)).FailedAttempts);
+        await Expect(await Verify(client, s, code), 400, "MSG372");
+    }
+
+    [Fact]
     public async Task Code_expires_after_fifteen_minutes()
     {
         var s = await f.Seed();
