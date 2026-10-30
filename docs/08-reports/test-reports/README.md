@@ -73,8 +73,8 @@ tiếng Việt của sản phẩm; phần diễn giải báo cáo là tiếng An
 
 ## Kết quả và evidence
 
-**Bản hiện tại (29/10/2026):** sinh từ commit `19363382` với 1099 test method (448 Unit — 654 test
-case, 198 Integration, 453 API), **chưa ghi kết quả**: mọi Round đều `Pending`, cột Test date và
+**Bản hiện tại (30/10/2026):** sinh từ commit `1579fe72` (đã gồm `main` tới `94427943`) với 1129 test
+method (447 Unit — 653 test case, 203 Integration, 479 API) và 89 case UI, 10 SYS, 8 UAT, **chưa ghi kết quả**: mọi Round đều `Pending`, cột Test date và
 Tester để trống cho tới khi form được chốt và chạy test thật. Khi có kết quả, tester là HuyNT
 (`TESTER` trong `readable.py`) và ngày test chỉ ghi `dd/mm/yyyy`.
 

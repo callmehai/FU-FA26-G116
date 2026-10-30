@@ -279,6 +279,25 @@
    "pre": [
     "A Published meeting and an unrelated outsider account."
    ]
+  },
+  {
+   "group": "Tạo cuộc họp",
+   "d": "Pick the date and times with the date and time fields.",
+   "steps": [
+    "Open \"Tạo cuộc họp\".",
+    "In Ngày họp type 15/11/2026, then use \"Chọn ngày trên lịch\" to pick another day.",
+    "In Bắt đầu type 09:00, then open \"Chọn giờ\" and pick 09:30.",
+    "Open the list of Kết thúc.",
+    "Change Hình thức between Trực tiếp, Trực tuyến and Kết hợp."
+   ],
+   "exp": [
+    "Dates read dd/mm/yyyy and times hh:mm on the 24-hour clock, whatever the browser language.",
+    "The end-time list starts after the start time and shows how long the meeting would last.",
+    "Under Hình thức the hint says how it is recorded: \"Ghi âm: Thư ký ghi cả phòng.\", \"Ghi âm: mỗi người ghi micro của mình.\" or \"Ghi âm: mic phòng và micro người trực tuyến.\"."
+   ],
+   "pre": [
+    "Signed in as thuky@trustcabinet.local."
+   ]
   }
  ]
 }

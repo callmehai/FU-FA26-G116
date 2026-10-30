@@ -8,7 +8,7 @@
    "d": "The Secretary builds the agenda: add, edit, reorder and delete items.",
    "steps": [
     "Open tab \"Nội dung cuộc họp\" and click \"Thêm nội dung\".",
-    "Enter Nội dung cần bàn: Dự toán ngân sách năm 2027, choose Người trình bày and a document, click Lưu.",
+    "Enter Nội dung cần bàn: Dự toán ngân sách năm 2027, choose Người trình bày, click Lưu.",
     "Add two more items and drag one to a new position (\"Kéo để đổi vị trí\").",
     "Edit an item (\"Sửa\"), then delete one (\"Xoá nội dung\")."
    ],
@@ -96,6 +96,25 @@
    ],
    "pre": [
     "A published meeting with thanhvien invited."
+   ]
+  },
+  {
+   "group": "Nội dung cuộc họp",
+   "d": "The Chair or Secretary adds documents to an agenda item from its paperclip.",
+   "steps": [
+    "On an agenda item click the paperclip (\"Thêm tài liệu\").",
+    "Choose \"Chọn từ tài liệu cuộc họp\", tick a document and click \"Gắn 1 tài liệu\".",
+    "Open the paperclip again, choose \"Tải tệp lên từ máy\" and add a PDF; then \"Chọn từ kho của tôi\" and add a library document.",
+    "Sign in as thanhvien and open the agenda."
+   ],
+   "exp": [
+    "The dialog \"Thêm tài liệu cho mục 1\" opens on the chosen source.",
+    "\"Đã gắn tài liệu vào mục nghị sự.\" appears and the documents show under the item.",
+    "An uploaded or library document is also added to the meeting's documents.",
+    "thanhvien sees the documents but no paperclip; after the meeting ends nobody can add documents."
+   ],
+   "pre": [
+    "A Published or InProgress meeting with agenda items and documents; signed in as chutoa or thuky."
    ]
   }
  ]

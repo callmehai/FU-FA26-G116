@@ -275,6 +275,16 @@
      "d": "Verify minutes in any status lock the conclusion, even with empty content.",
      "steps": ["Create empty minutes for the meeting.", "For each minutes status, as the Secretary PUT the conclusion \"Locked\"."],
      "exp": ["Each request returns HTTP 409 with code \"MSG273\".", "No conclusion is saved."],
-     "pre": ["An InProgress meeting with a started item."]}
+     "pre": ["An InProgress meeting with a started item."]},
+    {"id": "TC-DBD1686F2564", "group": "PUT /api/meetings/{id}/agenda/{itemId}",
+     "d": "Verify an update without documentIds keeps the links and an empty list clears them.",
+     "steps": ["As the Secretary, PUT /api/meetings/<id>/agenda/<item> linking one meeting document.", "PUT with { \"title\": \"Tiêu đề\", \"description\": \"Dòng 1\\nDòng 2\" } (no change).", "PUT { \"title\": \"Đổi tên\" }, then { \"title\": \"Đổi tên\", \"documentIds\": null }.", "PUT with \"documentIds\": [].", "POST /api/meetings/<id>/agenda { \"title\": \"Mới\" } and GET the agenda."],
+     "exp": ["Every PUT returns HTTP 200 with code \"MSG61\" (\"Cập nhật mục nghị sự thành công.\"); the unchanged update sends no realtime event.", "Omitting documentIds, or sending null, keeps the document linked to the item.", "An empty list unlinks it; the document itself stays in the meeting.", "The new item returns HTTP 201 \"MSG60\" and has no documents."],
+     "pre": ["A meeting with an agenda item and one meeting document; signed in as its Secretary."]},
+    {"id": "TC-5EFC5C3B2CCA", "group": "GET /api/meetings/{id}/agenda",
+     "d": "Verify canLinkDocuments follows the document rules, not agenda planning (Published, InProgress, Ended).",
+     "steps": ["For a Published meeting, GET /api/meetings/<id>/agenda as the Chair, the Secretary, a Member and the organizer; read items[0].actions.canLinkDocuments.", "Repeat for an InProgress and an Ended meeting."],
+     "exp": ["Published and InProgress: true for the Chair and the Secretary; false for the Member and the organizer.", "Ended: false for everyone."],
+     "pre": ["Meetings in each status with one agenda item; Chair, Secretary and Member on the roster; the organizer is not."]}
   ]
 }
