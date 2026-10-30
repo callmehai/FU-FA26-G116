@@ -224,7 +224,8 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
 - **Phương án trùng** so sánh sau trim, không phân biệt hoa thường (`Đồng ý` và `đồng ý` là trùng).
 - **Mở từ form** (`openImmediately: true`) dùng được ở cả POST (tạo) lẫn PUT (sửa nháp), trả `200/MSG217`, không phải `201`.
   Mở lỗi thì không lưu gì: POST không để lại nháp, PUT giữ nháp như trước khi sửa (UC-54 AF-1, EX-5). Thư ký gửi kèm cờ
-  này nhận `409/MSG218`; Thành viên nhận `409/MSG213` như mọi thao tác nháp (nhánh EX-2 đi trước AF-3 trong sequence UC-53).
+  này nhận `409/MSG218`. Thành viên gọi POST nhận `409/MSG213` (nhánh EX-2 đi trước AF-3 trong sequence UC-53); gọi PUT
+  thì nhận `404/MSG205`, vì nháp bị ẩn với Thành viên như ở mọi thao tác trên nháp có sẵn (BR-253).
 - **Thứ tự kiểm tra khi mở từ form** theo sequence UC-54: `MSG218` → `MSG219` → `MSG209` → `MSG220`.
 - **Đóng phiếu** trả kèm `result` (cùng dạng `result` của chi tiết).
 - **Tài khoản bị vô hiệu hoá** nhận `403` body rỗng, như điểm danh.
