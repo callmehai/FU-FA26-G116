@@ -216,8 +216,11 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
   `409/MSG224`; không Open hoặc cuộc họp không InProgress → `409/MSG225`; đã bỏ → `409/MSG226`; rồi mới tới
   `400/MSG222` (thiếu `optionId`) và `400/MSG223`.
 - **Guest đủ điều kiện** = lời mời chưa thu hồi lúc mở phiếu. "Email đã xác minh" là việc của UC-04, chưa có ở Backend;
-  khi bỏ phiếu, Guest vẫn phải có phiên còn hiệu lực (adapter `IParticipantGuestAccess`). Chờ PO chốt có lọc theo phiên
-  Khách đã xác minh lúc mở phiếu không, sau khi PR #203 (UC-04) merge.
+  khi bỏ phiếu, Guest vẫn phải có phiên đã xác minh còn hiệu lực (adapter `IParticipantGuestAccess`). Xác minh sau lúc mở
+  phiếu vẫn bỏ phiếu được (PO 30/10/2026).
+- **Khách được mời trong lúc phiếu đang Open** (PO 30/10/2026): nếu phiếu có chọn vai trò Khách, lời mời mới được thêm vào
+  danh sách người bỏ phiếu và `eligibleCount` tăng 1, cùng transaction với `POST …/guest-invitations`. Đây là ngoại lệ
+  duy nhất của BR-190; người nội bộ được thêm sau lúc mở vẫn không vào danh sách (đang hỏi PO, Jira SCRUM-28).
 - **Guest chỉ xem biểu quyết khi cuộc họp Published hoặc InProgress**; cuộc họp kết thúc thì Guest nhận `404/MSG205`
   (PO 30/10/2026, cùng luật `ParticipantRules.GuestCanView` của PR #203). Người nội bộ vẫn xem được sau khi kết thúc.
 - **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.
