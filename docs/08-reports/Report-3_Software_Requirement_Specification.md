@@ -6,7 +6,7 @@ CAPSTONE PROJECT REPORT
 
 Report 3 – Software Requirement Specification
 
-– Hanoi, Aug 2026 –
+– Hanoi, Sep 2026 –
 
 Table of Contents
 
@@ -45,6 +45,7 @@ Table of Contents
 | 28/10/2026 | M | KhanhPG | BA Final Review for FE-07 (SCRUM-23, SCRUM-58, SCRUM-110–113): align UC-71b, UC-72a, UC-72b, UC-35, UC-33a–UC-33d and UC-34b with implemented code; add exception flows for MSG347 (invalid document name), MSG348 (text too long for folders and comments), and MSG349 (meeting cancelled); update UC-34b UI and rules (button disabled for active accounts with tooltip, no search/filter, reactivated account redirect, automatic fallback to library root); add locked account library reading to Permission Matrix; update System Messages table. |
 | 29/10/2026 | M | KhanhPG | BA Final Review for FE-04, FE-05 and FE-13 (SCRUM-99, SCRUM-69, SCRUM-15, SCRUM-25, SCRUM-98): UC-75 adds the automatic cancellation of an overdue Meeting (AF-2), the notice to the Meeting Approver when a Meeting awaiting approval is cancelled and the 1,000-character limit on the reason (EX-4, MSG345); BR-301 rewritten (24 hours after the planned start time, any Meeting not yet started, PO 27/10/2026), BR-302 retired, BR-298 and BR-300 updated; UC-17 Calendar group for Cancelled Meetings; UC-26 adds the read-only Guest view; data dictionary updated for Meeting cancellation, status history without actor, Agenda Item presenter and conclusion (no duration); UC-21, UC-22 and the email rules checked against the code with no change; provider names removed from the SMTP interface descriptions; System Messages table updated. |
 | 29/10/2026 | M | KhanhPG | BA Final Review for FE-08 (SCRUM-39, SCRUM-41, SCRUM-42, SCRUM-43): specify UC-37, UC-38, UC-39a–UC-39d, UC-40, UC-41, UC-42 and UC-78 as built; add UC-79 Register to Speak (SCRUM-27, requirement); remove one-to-one calls (SCRUM-40) from the data dictionary; add BR-323–BR-332 (room entry, leaving, one-way mute, one presenter, temporary chat, one connection per account, role change in the room, presence is not attendance, browser devices, floating window), BR-336 (50 people per room) and BR-337–BR-339 (speaking requests); add the room messages MSG328–MSG343 and MSG350; UC-73 POST-4; update the UC list and the Meeting Lobby and Video Grid screens. |
+| 30/10/2026 | M | HuyNQ | Fix review findings: correct the UC IDs in the Actors table (4.1), replace the UC-09 and UC-13 placeholder descriptions in 4.2, rename ALT-1 to AF-1, add UC, FE, API, JOB and ADR to Definition and Acronyms, set the cover date to the date of the first Change Log entry, and refresh the Table of Contents on open. |
 
 *A - Added M - Modified D - Deleted
 
@@ -58,6 +59,11 @@ Table of Contents
 | BF | Business Flow |
 | BR | Business Rule |
 | MSG | Message |
+| UC | Use Case |
+| FE | Feature |
+| API | Application Programming Interface |
+| JOB | Background Job |
+| ADR | Architecture Decision Record |
 
 ## I. Overall Requirements
 
@@ -621,8 +627,8 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | 6 | Secretary | A user assigned to support a specific meeting by preparing agenda items, managing the meeting roster and official attendance, managing authorized meeting documents, uploading the post-meeting audio, reviewing transcripts and summaries, and preparing/finalizing meeting minutes. |
 | 7 | Participant | An internal user assigned to participate in a specific meeting. A Participant may perform authorized meeting activities such as joining the online meeting room, viewing or commenting on meeting documents, responding to invitations, and voting. Chair and Secretary are meeting-specific roles with additional responsibilities. |
 | 8 | Google Identity Provider | An external identity provider used for Google-based authentication and verified identity data exchange. It participates primarily in UC-02 Sign in with Google and supports the authentication flow shown in the context diagram. |
-| 9 | AI / Speech Processing Provider | An external processing provider that receives approved Meeting audio and returns speaker-attributed transcript data and draft summaries. It supports transcript and summary processing such as UC-62 Upload Meeting Audio, UC-64 View Speaker-Attributed Transcript, UC-65 Edit Transcript & Speaker Attribution, and UC-90 Generate / Regenerate Meeting Summary. |
-| 10 | Email / SMTP Service | An external outbound email service used to deliver password-reset messages, meeting invitations, guest-access emails, notifications, and minutes-signing related emails. It supports flows such as UC-07 Reset Password, UC-21 Publish Meeting, UC-80 Submit Meeting Minutes for Signing, and notification delivery under FE-13. |
+| 9 | AI / Speech Processing Provider | An external processing provider that receives approved Meeting audio and returns speaker-attributed transcript data and draft summaries. It supports transcript and summary processing such as UC-44 Upload Meeting Audio, UC-45 View Speaker-Attributed Transcript, UC-46 Edit Transcript & Speaker Attribution, and UC-47 Generate / Regenerate Meeting Summary. |
+| 10 | Email / SMTP Service | An external outbound email service used to deliver password-reset messages, meeting invitations, guest-access emails, notifications, and minutes-signing related emails. It supports flows such as UC-07 Reset Password, UC-20 Publish Meeting, UC-61 Submit Meeting Minutes for Signing, and notification delivery under FE-13. |
 
 #### 4.2 Use Cases (UC)
 
@@ -636,11 +642,11 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-06 | Manage User Accounts | User & Profile Management | Create, update, deactivate, or reactivate user accounts; the operation is specified in UC-06a–UC-06c. |
 | UC-07 | Reset User Password | User & Profile Management | Initiate a password reset for an eligible user account. |
 | UC-08 | Assign System Role to User | User & Profile Management | Assign or change the system role of a user account. |
-| UC-09 | Unlock User Account | User & Profile Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-09 | Unlock User Account | User & Profile Management | Unlock a user account that the authentication security controls have locked. |
 | UC-10 | View Role & Permission Matrix | Role-Based Access Control | View system roles and their assigned permissions. |
 | UC-11 | Configure Role Permissions | Role-Based Access Control | Configure permissions assigned to a system role. |
 | UC-12 | Manage Roles | Role-Based Access Control | Create, update, or delete custom roles; see the detailed UC-12a–UC-12c specifications. |
-| UC-13 | View Audit Log | Role-Based Access Control | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-13 | View Audit Log | Role-Based Access Control | Review recorded system events for security, accountability and operational investigation. |
 | UC-14 | Create Meeting | Meeting Management | Create one independent Meeting with its planned start and end times, mode, location, confidentiality, other required details and its initial participants. |
 | UC-15 | Update Meeting | Meeting Management | Update Meeting information while Draft/Rejected, or reschedule a Published Meeting before it begins when authorized. |
 | UC-16 | View Meeting Details | Meeting Management | View authorized Meeting details, including planned schedule, actual start/end times, Meeting lifecycle status and, for a Cancelled Meeting, its cancellation reason. |
@@ -983,7 +989,7 @@ Notes:
 | Preconditions | ● PRE-1: The Guest has received a valid invitation for a meeting.<br>● PRE-2: The invitation has not been revoked or expired. |  |  |
 | Postconditions | POST-1: Verified Guest access is limited to the invited Meeting.<br>POST-2: The Guest may use Member participation functions and receive additional Meeting permissions. Email control is verified; display name and job title are self-declared. |  |  |
 | Normal Flow | Access Meeting via Guest Invitation<br>1. The Guest opens the invitation link.<br>2. The system checks the invitation and requests the one-time code sent to the invited email.<br>3. The Guest enters the code.<br>4. The system validates the code and invitation and verifies control of the invited email. (BR-153)<br>5. The Guest enters the display name and job title for presentation in the Meeting; the system labels this information as self-declared. (BR-180)<br>6. The system establishes Meeting-scoped Guest access and displays the invited Meeting. |  |  |
-| Alternative Flows | ALT-1: If the Guest reopens a valid link during an active verified session, the system opens the same invited meeting without requesting another code. |  |  |
+| Alternative Flows | AF-1: If the Guest reopens a valid link during an active verified session, the system opens the same invited meeting without requesting another code. |  |  |
 | Exception Flows | EX-1: The invitation is missing, expired, or revoked: the system denies access and explains that the invitation is no longer valid.<br>EX-2: The code is incorrect, expired, or already used: the system denies verification and allows the Guest to request or enter a valid code.<br>EX-3: The verification service is unavailable: the system reports that verification could not be completed and does not establish a session. |  |  |
 
 Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation. This single end-to-end sequence covers code request, invited-email verification, self-declared display information and access to the invited Meeting; these steps remain part of UC-04, not additional Use Cases.
@@ -1066,7 +1072,7 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 | Preconditions | ● PRE-1: The System Admin is authenticated and authorized to manage user accounts.<br>● PRE-2: The selected user account exists and is currently locked. |  |  |
 | Postconditions | ● POST-1: The account lock is cleared and the user can attempt to sign in, subject to account status and credentials.<br>● POST-2: The unlock action is recorded in the audit log. |  |  |
 | Normal Flow | Unlock User Account<br>1. The System Admin opens User Accounts and selects the locked account.<br>2. The system displays the account status and available account actions.<br>3. The System Admin selects Unlock Account and confirms the action.<br>4. The system clears the lock state and resets the failed-attempt lock counter.<br>5. The system confirms the unlock and records the action. |  |  |
-| Alternative Flows | ALT-1: If the account is already unlocked when the request is processed, the system leaves it unchanged and refreshes the displayed status. |  |  |
+| Alternative Flows | AF-1: If the account is already unlocked when the request is processed, the system leaves it unchanged and refreshes the displayed status. |  |  |
 | Exception Flows | EX-1: The account does not exist or is outside the Admin's scope: the system denies the action.<br>EX-2: The account is inactive: the system does not make it sign-in eligible and explains that reactivation is required.<br>EX-3: The update fails: the system retains the existing lock state and reports that the account could not be unlocked. |  |  |
 
 ### 3. FE-03 – Role-Based Access Control
@@ -1136,7 +1142,7 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 | Preconditions | ● PRE-1: The System Admin is authenticated and has permission to view the audit log. |  |  |
 | Postconditions | ● POST-1: The requested audit entries are displayed read-only.<br>● POST-2: No audit entry is changed by viewing or filtering the log. |  |  |
 | Normal Flow | View Audit Log<br>1. The System Admin opens Audit Log.<br>2. The system retrieves audit entries within the Admin's requested date range and filters.<br>3. The system displays entries in reverse chronological order with actor, event, target, time, and outcome where recorded.<br>4. The System Admin opens an entry or changes filters/pages the results.<br>5. The system displays the matching entries and preserves the read-only state. |  |  |
-| Alternative Flows | ALT-1: If no entries match the filters, the system displays an empty-result message and permits the Admin to revise the filters. |  |  |
+| Alternative Flows | AF-1: If no entries match the filters, the system displays an empty-result message and permits the Admin to revise the filters. |  |  |
 | Exception Flows | EX-1: Invalid filter or date-range values: the system identifies the invalid criteria and does not apply them.<br>EX-2: The audit log cannot be loaded: the system reports the failure and provides a retry action. |  |  |
 
 ### 4. FE-04 – Meeting Management
@@ -2120,7 +2126,7 @@ Field Description
 | Resend code [Gửi lại mã] | Text link next to Verify; sends a new one-time code to the invited email address. |
 | Recording notice | Read-only yellow info box: “The meeting may be recorded to prepare the minutes. Your information is used only for this meeting.” [Cuộc họp có thể được ghi âm để lập biên bản. Thông tin của bạn chỉ dùng cho cuộc họp này.] |
 | Guest scope notice | Read-only scope notice: “Khách chỉ truy cập cuộc họp được mời và toàn bộ tài liệu gắn trong cuộc họp theo quyền Thành viên. Email đã được xác minh; tên hiển thị và chức vụ do khách tự khai.” (BR-180, BR-181) |
-| Already verified | When the Guest reopens a valid link during an active verified Guest session, this screen is skipped and the invited meeting opens directly (UC-04 ALT-1). |
+| Already verified | When the Guest reopens a valid link during an active verified Guest session, this screen is skipped and the invited meeting opens directly (UC-04 AF-1). |
 
 ### 2. FE-02 – User & Profile Management
 
