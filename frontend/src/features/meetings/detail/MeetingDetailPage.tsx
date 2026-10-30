@@ -364,7 +364,7 @@ function MeetingDetail({
           ) : tab === 'attendees' ? (
             <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
           ) : tab === 'agenda' ? (
-            <AgendaPanel meetingId={meeting.id} variant="page" />
+            <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
           ) : tab === 'documents' ? (
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : tab === 'recordings' ? (

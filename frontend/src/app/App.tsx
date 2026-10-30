@@ -59,8 +59,8 @@ export function App() {
         {/* Public and outside the session gate: whoever opens the emailed link has no session. */}
         <Route path={routes.resetPassword} element={<ResetPasswordPage />} />
 
-        {/* The bare root lands on the meeting list. */}
-        <Route path="/" element={<Navigate to={routes.meetings} replace />} />
+        {/* The bare root lands on the calendar, the home page after sign-in. */}
+        <Route path="/" element={<Navigate to={routes.calendar} replace />} />
 
         <Route element={<RequireAuth />}>
           {/* The call room fills the window, outside the shell. Anyone may open the URL; the

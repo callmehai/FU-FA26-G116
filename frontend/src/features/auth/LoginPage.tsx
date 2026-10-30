@@ -58,13 +58,13 @@ export function LoginPage() {
 
   if (status === 'loading') return <div className="route-fallback">Đang khôi phục phiên đăng nhập…</div>
 
-  // Signed in — including right after a successful submit — go where the user was headed. `from` may
-  // be the previous account's page, so the flag lets NotFound send this one to the meeting list
-  // instead when it cannot open it (SCRUM-66).
+  // Signed in — including right after a successful submit — go where the user was headed, else the
+  // calendar. `from` may be the previous account's page, so the flag lets NotFound send this one to
+  // the calendar instead when it cannot open it (SCRUM-66).
   if (status === 'authenticated') {
     return (
       <Navigate
-        to={from ? `${from.pathname}${from.search ?? ''}` : routes.meetings}
+        to={from ? `${from.pathname}${from.search ?? ''}` : routes.calendar}
         replace
         state={{ [JUST_SIGNED_IN]: true }}
       />
