@@ -73,13 +73,8 @@ public static class VoteEndpoints
 
     public static void MapVoteEndpoints(this IEndpointRouteBuilder app)
     {
-        // A ballot or an open vote's turnout must never be served from a cache.
-        var group = app.MapGroup("/api/meetings/{meetingId:guid}/votes").RequireAuthorization()
-            .AddEndpointFilter(async (context, next) =>
-            {
-                context.HttpContext.Response.Headers.CacheControl = "no-store";
-                return await next(context);
-            });
+        // A ballot, an open vote's turnout or a read confirmation must never be served from a cache.
+        var group = app.MapGroup("/api/meetings/{meetingId:guid}/votes").RequireAuthorization().AddEndpointFilter(NoStore);
         group.MapGet("", async (Guid meetingId, HttpContext context, IVoteService service,
             IMeetingGuestIdentityResolver identities, CancellationToken ct)
             => Map(await service.ListAsync(meetingId, Actor(context, identities), ct), meetingId));
@@ -110,7 +105,7 @@ public static class VoteEndpoints
 
         // UC-74: on the document, because one confirmation counts for every vote that links it (BR-291).
         app.MapGroup("/api/meetings/{meetingId:guid}/documents/{meetingDocumentId:guid}/read-confirmation")
-            .RequireAuthorization()
+            .RequireAuthorization().AddEndpointFilter(NoStore)
             .MapPost("", async (Guid meetingId, Guid meetingDocumentId, HttpContext context, IVoteService service,
                 IMeetingGuestIdentityResolver identities, CancellationToken ct) =>
             {
@@ -132,6 +127,12 @@ public static class VoteEndpoints
                 if (operation == VoteOperation.AttachFromLibrary) await PublishDocumentsAsync(outcome, meetingId, documents, logs);
                 return Map(outcome, meetingId, operation, input.OpenImmediately);
             });
+    }
+
+    private static async ValueTask<object?> NoStore(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        context.HttpContext.Response.Headers.CacheControl = "no-store";
+        return await next(context);
     }
 
     /// <summary>UC-76a AF-1: the same checks and write order as uploading to the meeting (UC-33a AF-1).</summary>
@@ -346,6 +347,9 @@ public static class VoteEndpoints
         {
             // A meeting the caller cannot see, a removed document and one no visible vote links: the same answer.
             VoteFailure.DocumentUnavailable => (404, Msg156DocumentsUnavailable, "Không truy cập được tài liệu của cuộc họp."),
+            // Only a voter of an Open vote that links the document confirms it; UC-55's codes for the same situations.
+            VoteFailure.NotEligible => (409, Msg224NotEligible, "Bạn không có trong danh sách được bỏ phiếu của biểu quyết này."),
+            VoteFailure.NotAccepting => (409, Msg225NotAccepting, "Biểu quyết này không còn nhận phiếu."),
             VoteFailure.LastPageNotReached => (400, Msg254LastPageNotReached, "Hãy cuộn tới trang cuối của tài liệu trước khi xác nhận đã đọc."),
             VoteFailure.UnsupportedMedia => (415, Msg34UnsupportedMedia, "Yêu cầu phải dùng Content-Type application/json."),
             VoteFailure.TooLarge => (413, Msg87BodyTooLarge, "Nội dung yêu cầu vượt quá 64 KiB."),

@@ -102,12 +102,44 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         await Code(await Confirm(member, s, draftOnly), 404, "MSG156");
         await Code(await Confirm(outsider, s, draftOnly), 404, "MSG156");
         await Code(await Confirm(secretary, s, Guid.CreateVersion7()), 404, "MSG156");
-        await Code(await Confirm(secretary, s, draftOnly), 200, "MSG253");
-
-        // Detaching keeps the confirmation (BR-305).
-        await Code(await secretary.DeleteAsync($"{s.Url}/votes/{vote}/documents/{draftOnly}"), 200, "MSG268");
+        // The Secretary sees the draft, but nobody votes in it yet: no confirmation waits for a ballot.
+        await Code(await Confirm(secretary, s, draftOnly), 409, "MSG224");
         await using var db = f.Db();
-        Assert.True(await db.DocumentReadConfirmations.AnyAsync(c => c.MeetingDocumentId == draftOnly && c.UserId == s.Secretary));
+        Assert.False(await db.DocumentReadConfirmations.AnyAsync(c => c.MeetingDocumentId == draftOnly));
+    }
+
+    [Fact]
+    public async Task Only_a_voter_of_an_open_vote_confirms_and_the_confirmation_outlives_a_detach()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary); using var member = f.Client(s.Member);
+        var shared = await Document(s, "Dùng chung.pdf");
+        var chairOnly = await Draft(secretary, s, Body(roles: ["Chair"]));
+        await Attach(secretary, s, chairOnly, shared);
+        var draft = await Draft(secretary, s);
+        await Attach(secretary, s, draft, shared);
+        await Code(await chair.PostAsync($"{s.Url}/votes/{chairOnly}/open", null), 200, "MSG217");
+
+        // The Member sees the Open vote but is not on its fixed list (UC-55's MSG224).
+        await Code(await Confirm(member, s, shared), 409, "MSG224");
+        var confirmed = await Confirm(chair, s, shared);
+        await Code(confirmed, 200, "MSG253");
+        // A confirmation must never be served from a cache.
+        Assert.True(confirmed.Headers.CacheControl?.NoStore);
+
+        // Detaching from the draft keeps the confirmation (BR-305).
+        await Code(await secretary.DeleteAsync($"{s.Url}/votes/{draft}/documents/{shared}"), 200, "MSG268");
+        await using (var db = f.Db())
+            Assert.True(await db.DocumentReadConfirmations.AnyAsync(c => c.MeetingDocumentId == shared && c.UserId == s.Chair));
+
+        // Once the vote stops taking ballots there is nothing left to confirm for (UC-55's MSG225).
+        var later = await Document(s, "Sau khi đóng.pdf");
+        var closing = await Draft(secretary, s, Body(roles: ["Chair"]));
+        await Attach(secretary, s, closing, later);
+        await Code(await chair.PostAsync($"{s.Url}/votes/{chairOnly}/close", null), 200, "MSG229");
+        await Code(await chair.PostAsync($"{s.Url}/votes/{closing}/open", null), 200, "MSG217");
+        await Code(await chair.PostAsync($"{s.Url}/votes/{closing}/close", null), 200, "MSG229");
+        await Code(await Confirm(chair, s, later), 409, "MSG225");
     }
 
     [Fact]
@@ -133,6 +165,6 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         // Stored apart from ballots: nothing on the row points at a vote, an option or a choice (BR-293).
         var columns = db.Model.FindEntityType(typeof(DocumentReadConfirmation))!.GetProperties().Select(p => p.Name).Order();
         Assert.Equal(["ConfirmedAt", "CreatedAt", "GuestInvitationId", "Id", "MeetingDocumentId", "UpdatedAt", "UserId"], columns);
-        Assert.Null((await db.VoteChoices.SingleAsync(c => c.VotingSessionId == vote)).GuestInvitationId);
+        Assert.False(await db.VoteChoices.AnyAsync(c => c.VotingSessionId == vote && c.GuestInvitationId != null));
     }
 }

@@ -297,23 +297,35 @@ test `tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs` và `Vote
 ### Xác nhận đã đọc (UC-74)
 
 `POST /api/meetings/{meetingId}/documents/{meetingDocumentId}/read-confirmation`, body `{ "lastPageReached": true }`;
-Guest dùng được (phiên khách còn hiệu lực).
+Guest dùng được (phiên khách còn hiệu lực). Response có `Cache-Control: no-store`, như các endpoint biểu quyết.
+
+> **Không phải chốt bảo mật (BR-290).** Server chỉ ghi nhận **lời xác nhận của người dùng**, không kiểm việc đọc: nó
+> không biết người dùng đã mở, cuộn hay đọc tài liệu, và ai gửi thẳng `lastPageReached: true` cũng được ghi nhận. Việc
+> cuộn tới trang cuối do viewer (UC-32c, FE) đảm bảo. Không có cách nào phía server chứng minh người dùng đọc thật (ghi lại
+> lần mở tài liệu cũng chỉ chặn được người lười), nên PO chốt 30/10/2026 giữ như vậy, không thêm bảng hay migration.
 
 ```json
 { "code": "MSG253", "message": "…", "meetingId": "…", "meetingDocumentId": "…",
   "confirmedAt": "2026-10-30T09:00:00+00:00", "alreadyConfirmed": false }
 ```
 
-- Thứ tự theo sequence UC-74: không thấy cuộc họp, tài liệu đã gỡ / của cuộc họp khác, hoặc tài liệu không gắn biểu
-  quyết nào mà người gọi được thấy → `404/MSG156`; **đã xác nhận rồi → `200/MSG253`, `alreadyConfirmed: true`, giữ
-  `confirmedAt` cũ** (AF-1, kể cả khi lần này gửi `lastPageReached: false`); `lastPageReached` khác `true` hoặc body không
-  đọc được → `400/MSG254`; lưu lỗi → `503/MSG255`. Hai lần bấm cùng lúc: unique index giữ lần đầu, lần sau nhận
-  `alreadyConfirmed: true`.
+- Thứ tự kiểm tra:
+  1. không thấy cuộc họp, tài liệu đã gỡ / của cuộc họp khác, hoặc tài liệu không gắn biểu quyết nào mà người gọi được
+     thấy → `404/MSG156`;
+  2. người gọi không có trong danh sách bỏ phiếu đã chốt của biểu quyết nào gắn tài liệu này → `409/MSG224` (kể cả Chủ
+     toạ / Thư ký khi tài liệu chỉ gắn với nháp: nháp chưa có ai được bỏ phiếu);
+  3. không biểu quyết nào trong số đó còn Open, hoặc cuộc họp không InProgress → `409/MSG225`;
+  4. **đã xác nhận rồi → `200/MSG253`, `alreadyConfirmed: true`, giữ `confirmedAt` cũ** (AF-1, kể cả khi lần này gửi
+     `lastPageReached: false`);
+  5. `lastPageReached` khác `true` hoặc body không đọc được → `400/MSG254`; lưu lỗi → `503/MSG255`.
+
+  Bước 2–3 dùng lại mã của UC-55 cho cùng tình huống, để chỉ người đang chờ bỏ phiếu mới tạo được bản ghi đã đọc
+  (review PR #202). Chạy trong một transaction, chia sẻ khoá dòng `meetings` như khi bỏ phiếu. Hai lần bấm cùng lúc:
+  unique index giữ lần đầu, lần sau nhận `alreadyConfirmed: true`.
 - "Biểu quyết người gọi được thấy": Chủ toạ / Thư ký — mọi biểu quyết; người khác — chỉ biểu quyết Open / Closed. Tài liệu
   chỉ gắn với nháp trả `MSG156` cho Thành viên / Khách, để không lộ có nháp (BR-253).
 - Xác nhận thuộc (người, tài liệu cuộc họp), dùng cho mọi biểu quyết gắn cùng tài liệu, không rút (BR-291). Bảng
   `document_read_confirmations` không có cột nào trỏ tới biểu quyết, phương án hay phiếu (BR-293).
-- Server chỉ ghi nhận cờ `lastPageReached` mà viewer gửi; việc cuộn tới trang cuối do FE (UC-32c) đảm bảo.
 
 ### Bỏ phiếu khi biểu quyết có tài liệu (UC-55 EX-8)
 
@@ -328,4 +340,5 @@ Guest dùng được (phiên khách còn hiệu lực).
 ### Còn hở
 
 - Guest xác nhận đọc được, nhưng endpoint xem nội dung tài liệu (`GET …/documents/{id}/content`, UC-32c) hiện chỉ nhận
-  người dùng nội bộ, nên Guest chưa mở được tài liệu để cuộn tới trang cuối.
+  người dùng nội bộ, nên Guest chưa mở được tài liệu để cuộn tới trang cuối. Mở `GET …/documents` và `…/content` cho
+  Khách bằng phiên Khách của PR #203 là SCRUM-123 (dưới SCRUM-116), làm trước bước FE của SCRUM-96.

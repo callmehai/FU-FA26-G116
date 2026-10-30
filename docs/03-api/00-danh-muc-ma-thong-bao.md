@@ -249,7 +249,7 @@ hiển thị. Dùng lại 415/MSG34 và 413/MSG87 cho content-type và body 64 K
 khoản đã bị vô hiệu hoá. Gắn tài liệu dùng lại mã của UC-33a cho cùng tình huống: 404/`MSG170` (tài liệu không còn trong
 cuộc họp, hoặc không chọn tài liệu nào), 400/`MSG164`, 400/`MSG288`, 409/`MSG346` (tải từ máy), 400/`MSG249`,
 409/`MSG165` (chọn từ kho), 503/`MSG166` (lưu lỗi khi tài liệu mới được thêm vào cuộc họp); xác nhận đọc dùng lại
-404/`MSG156`.
+404/`MSG156`, và 409/`MSG224`, 409/`MSG225` của UC-55 (chỉ người bỏ phiếu của một biểu quyết Open mới xác nhận được).
 
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
 |---|---|---|---|
@@ -271,8 +271,8 @@ cuộc họp, hoặc không chọn tài liệu nào), 400/`MSG164`, 400/`MSG288`
 | `MSG221` | 503 | Mở biểu quyết lỗi DB; với `openImmediately` thì không để lại nháp mới, nháp đang sửa giữ nguyên | Không mở được biểu quyết. Biểu quyết chưa được mở. Vui lòng thử lại. |
 | `MSG222` | 400 | Bỏ phiếu thiếu `optionId` hoặc body không đọc được | Chọn một phương án trước khi gửi phiếu. |
 | `MSG223` | 400 | `optionId` không thuộc biểu quyết này | Phương án đã chọn không thuộc biểu quyết này. |
-| `MSG224` | 409 | Người gọi không có trong danh sách chốt lúc mở | Bạn không có trong danh sách được bỏ phiếu của biểu quyết này. |
-| `MSG225` | 409 | Biểu quyết không Open hoặc cuộc họp không InProgress | Biểu quyết này không còn nhận phiếu. |
+| `MSG224` | 409 | Người gọi không có trong danh sách chốt lúc mở; xác nhận đọc (UC-74) khi không có trong danh sách bỏ phiếu của biểu quyết nào gắn tài liệu đó | Bạn không có trong danh sách được bỏ phiếu của biểu quyết này. |
+| `MSG225` | 409 | Biểu quyết không Open hoặc cuộc họp không InProgress; xác nhận đọc khi không biểu quyết nào của người gọi gắn tài liệu đó còn Open | Biểu quyết này không còn nhận phiếu. |
 | `MSG226` | 409 | Đã bỏ phiếu, kể cả hai phiếu gửi cùng lúc | Phiếu của bạn đã được ghi nhận, không thể đổi hoặc rút. |
 | `MSG227` | 200 | Bỏ phiếu | Đã ghi nhận phiếu của bạn. |
 | `MSG228` | 503 | Ghi phiếu lỗi DB; không còn receipt lẫn choice | Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại. |

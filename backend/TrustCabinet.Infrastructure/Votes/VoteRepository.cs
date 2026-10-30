@@ -96,6 +96,23 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
             && l.MeetingDocument.RemovedAt == null && l.VotingSession.MeetingId == meetingId
             && (includeDrafts || l.VotingSession.Status != VotingStatus.Draft), ct);
 
+    /// <summary>
+    /// Whether <paramref name="viewer"/> is on the fixed voter list of a vote that links the document, and whether one
+    /// of those votes is Open. Only a voter waiting to cast needs a confirmation.
+    /// </summary>
+    public async Task<(bool Eligible, bool Open)> ReadRequirementAsync(Guid meetingDocumentId, VoteViewer viewer,
+        CancellationToken ct)
+    {
+        var userId = viewer.UserId;
+        var guestId = viewer.GuestInvitationId;
+        var statuses = await db.VoteDocuments.AsNoTracking()
+            .Where(l => l.MeetingDocumentId == meetingDocumentId
+                && l.VotingSession.EligibleVoters.Any(e => (userId != null && e.UserId == userId)
+                    || (guestId != null && e.GuestInvitationId == guestId)))
+            .Select(l => l.VotingSession.Status).ToListAsync(ct);
+        return (statuses.Count != 0, statuses.Contains(VotingStatus.Open));
+    }
+
     public Task<DocumentReadConfirmation?> FindReadConfirmationAsync(Guid meetingDocumentId, VoteViewer viewer, CancellationToken ct)
         => db.DocumentReadConfirmations.AsNoTracking().SingleOrDefaultAsync(c => c.MeetingDocumentId == meetingDocumentId
             && ((viewer.UserId != null && c.UserId == viewer.UserId)

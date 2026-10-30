@@ -256,6 +256,10 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         VoteViewer? viewer = null;
         try
         {
+            await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+            // Shares the meeting lock as a ballot does: closing the vote or removing the document waits for this.
+            await votes.LockMeetingAsync(meetingId, true, ct);
+            if (actor.UserId is { } userId) await votes.ShareUserAsync(userId, ct);
             var s = await participants.LoadAsync(meetingId, false, ct);
             (var failure, viewer) = await AccessAsync(s, actor, ct);
             if (failure == VoteFailure.Inactive) return new(failure);
@@ -263,11 +267,17 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             if (failure != VoteFailure.None
                 || !await votes.IsVisibleVoteDocumentAsync(meetingId, meetingDocumentId, VoteRules.IsManager(s!.Meeting, viewer!), ct))
                 return new(VoteFailure.DocumentUnavailable);
+            // Only a voter of an Open vote that links the document confirms it, in UC-55's order: not on the fixed list,
+            // then no longer accepting ballots. A confirmation nobody's ballot waits for is not recorded.
+            var (eligible, open) = await votes.ReadRequirementAsync(meetingDocumentId, viewer!, ct);
+            if (!eligible) return new(VoteFailure.NotEligible);
+            if (!open || s.Meeting.Status != MeetingStatus.InProgress) return new(VoteFailure.NotAccepting);
             // Confirmed once, for every vote that links the document, and never withdrawn (UC-74 AF-1, BR-291).
             if (await votes.FindReadConfirmationAsync(meetingDocumentId, viewer!, ct) is { } existing)
                 return new(Data: new DocumentReadView(meetingDocumentId, existing.ConfirmedAt, true));
             if (input.ParseFailure is VoteFailure.UnsupportedMedia or VoteFailure.TooLarge) return new(input.ParseFailure);
-            // Only the viewer knows the last page was reached; the flag is what it says so (BR-290).
+            // The server records the reader's word, nothing more: only the viewer knows the last page was reached, and
+            // nothing here can prove the document was read (BR-290). It is not a security check.
             if (input.LastPageReached != true) return new(VoteFailure.LastPageNotReached);
             var now = Now;
             // Nothing here points at a ballot, so it cannot reveal a secret choice (BR-293).
@@ -277,6 +287,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
                 ConfirmedAt = now, CreatedAt = now, UpdatedAt = now
             });
             await db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
             return new(Data: new DocumentReadView(meetingDocumentId, now, false));
         }
         catch (DbUpdateException ex) when (ReadConfirmationIndexes.Any(index => Violates(ex, index)))

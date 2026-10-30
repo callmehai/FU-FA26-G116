@@ -198,6 +198,14 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
             new { meetingDocumentIds = new[] { document } }))));
         fixture.SaveFailure.When = db => db.ChangeTracker.Entries<VoteDocument>().Any(e => e.State == EntityState.Deleted);
         Assert.Equal((503, "MSG270"), Pick(await Read(await secretary.DeleteAsync($"{Documents(s, vote)}/{document}"))));
+
+        // Read confirmation waits for an Open vote the Secretary may cast in.
+        fixture.SaveFailure.When = null;
+        var open = await Draft(s, s.Secretary);
+        Assert.Equal((200, "MSG265"), Pick(await Read(await secretary.PostAsJsonAsync(Documents(s, open),
+            new { meetingDocumentIds = new[] { document } }))));
+        using (var chair = fixture.Client(s.Chair))
+            Assert.Equal((200, "MSG217"), Pick(await Read(await chair.PostAsync($"{Votes(s)}/{open}/open", null))));
         fixture.SaveFailure.When = db => db.ChangeTracker.Entries<DocumentReadConfirmation>().Any(e => e.State == EntityState.Added);
         Assert.Equal((503, "MSG255"), Pick(await Read(await secretary.PostAsJsonAsync(
             $"/api/meetings/{s.MeetingId}/documents/{document}/read-confirmation", new { lastPageReached = true }))));
