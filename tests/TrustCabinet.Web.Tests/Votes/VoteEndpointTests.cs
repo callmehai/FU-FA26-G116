@@ -359,6 +359,33 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
     }
 
     [Fact]
+    public async Task A_guest_invited_while_the_vote_is_open_may_still_vote()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary);
+        var id = await Opened(chair, s);
+        var options = await Options(chair, s, id);
+        Assert.Equal(3, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
+
+        // PO 30/10/2026: unlike internal participants, a Guest invited after opening joins the list.
+        var created = await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post,
+            new { invitedName = "Khách đến muộn", email = $"{Guid.NewGuid():N}@guests.test" }, await Tag(secretary, s.Url)), 201, "MSG96");
+        var invitation = created.GetProperty("createdIds")[0].GetGuid();
+        Assert.Equal(4, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
+        using var guest = f.Guest(s.MeetingId, invitation);
+        await Code(await Ballot(guest, s, id, options[1]), 200, "MSG227");
+
+        // A vote that does not admit Guests is left as it was.
+        await Code(await chair.PostAsync($"{s.Url}/votes/{id}/close", null), 200, "MSG229");
+        var membersOnly = await Opened(chair, s, Body("Chỉ thành viên", roles: ["Member"]));
+        await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post,
+            new { invitedName = "Khách khác", email = $"{Guid.NewGuid():N}@guests.test" }, await Tag(secretary, s.Url)), 201, "MSG96");
+        Assert.Equal(1, (await Detail(chair, s, membersOnly)).GetProperty("eligibleCount").GetInt32());
+        await using var db = f.Db();
+        Assert.False(await db.VoteEligibleVoters.AnyAsync(e => e.VotingSessionId == membersOnly && e.GuestInvitationId != null));
+    }
+
+    [Fact]
     public async Task After_the_meeting_ends_the_chair_still_closes_and_concludes_once()
     {
         var s = await f.Seed(MeetingStatus.InProgress);
