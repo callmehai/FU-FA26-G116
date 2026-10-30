@@ -89,10 +89,9 @@ public static class VoteEndpoints
     private static ParticipantActor Actor(HttpContext context, IMeetingGuestIdentityResolver identities)
         => new(CapabilityGate.CurrentUserId(context.User), identities.Resolve(context.User));
 
-    private sealed record CreateBody(string? Title, string? Description, string?[]? Options, bool? IsAnonymous,
-        string?[]? EligibleRoles, bool? OpenImmediately);
+    /// <summary>Create and update alike; <c>openImmediately</c> opens from the form (UC-53 AF-3).</summary>
     private sealed record DraftBody(string? Title, string? Description, string?[]? Options, bool? IsAnonymous,
-        string?[]? EligibleRoles);
+        string?[]? EligibleRoles, bool? OpenImmediately);
     private sealed record BallotBody(Guid? OptionId);
     private sealed record ConclusionBody(string? Conclusion, string? Note);
 
@@ -128,13 +127,10 @@ public static class VoteEndpoints
                 case VoteOperation.RecordConclusion:
                     var conclusion = json.RootElement.Deserialize<ConclusionBody>(InputJson)!;
                     return new(Conclusion: conclusion.Conclusion, Note: conclusion.Note);
-                case VoteOperation.Create:
-                    var created = json.RootElement.Deserialize<CreateBody>(InputJson)!;
-                    return new(created.Title, created.Description, created.Options, created.IsAnonymous, created.EligibleRoles,
-                        created.OpenImmediately ?? false);
                 default:
                     var draft = json.RootElement.Deserialize<DraftBody>(InputJson)!;
-                    return new(draft.Title, draft.Description, draft.Options, draft.IsAnonymous, draft.EligibleRoles);
+                    return new(draft.Title, draft.Description, draft.Options, draft.IsAnonymous, draft.EligibleRoles,
+                        draft.OpenImmediately ?? false);
             }
         }
         catch (JsonException) { return new(ParseFailure: invalid); }
@@ -152,7 +148,8 @@ public static class VoteEndpoints
 
     private static IResult Map(VoteOutcome result, Guid meetingId, VoteOperation? operation = null, bool openImmediately = false)
     {
-        var opening = operation == VoteOperation.Open || (operation == VoteOperation.Create && openImmediately);
+        var opening = operation == VoteOperation.Open
+            || (operation is VoteOperation.Create or VoteOperation.Update && openImmediately);
         if (result.Failure == VoteFailure.Inactive) return Results.Forbid();
         if (result.Failure != VoteFailure.None)
         {

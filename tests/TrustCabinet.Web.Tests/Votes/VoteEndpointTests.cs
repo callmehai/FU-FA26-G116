@@ -70,8 +70,9 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         Assert.Equal(new[] { "Member" }, detail.GetProperty("eligibleRoles").EnumerateArray().Select(r => r.GetString()!).ToArray());
         Assert.Equal(new[] { "1 Có", "2 Không" }, detail.GetProperty("options").EnumerateArray()
             .Select(o => $"{o.GetProperty("position").GetInt32()} {o.GetProperty("label").GetString()}").ToArray());
-        // openImmediately belongs to creating only.
-        await Code(await secretary.PutAsJsonAsync($"{s.Url}/votes/{id}", Body(openImmediately: false)), 400, "MSG209");
+        // Only the Chair opens from the form, and only during the sitting (UC-53 AF-3).
+        await Code(await secretary.PutAsJsonAsync($"{s.Url}/votes/{id}", Body(openImmediately: true)), 409, "MSG218");
+        Assert.Equal("Đã sửa", (await Detail(secretary, s, id)).GetProperty("title").GetString());
 
         await Code(await chair.DeleteAsync($"{s.Url}/votes/{id}"), 200, "MSG212");
         await Code(await chair.GetAsync($"{s.Url}/votes/{id}"), 404, "MSG205");
@@ -183,6 +184,43 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         Assert.Equal(VotingStatus.Open, vote.Status);
         Assert.Equal(3, vote.EligibleCount);
         Assert.False(await db.VotingSessions.AnyAsync(v => v.MeetingId == published.MeetingId));
+    }
+
+    [Fact]
+    public async Task Opening_from_the_edit_form_keeps_the_edits_only_when_the_vote_opens()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary);
+        var id = await Draft(secretary, s, Body("Bản cũ"));
+        var other = await Opened(chair, s, Body("Đang mở"));
+
+        async Task Unchanged()
+        {
+            await using var db = f.Db();
+            var vote = await db.VotingSessions.Include(v => v.Options).AsNoTracking().SingleAsync(v => v.Id == id);
+            Assert.Equal(("Bản cũ", VotingStatus.Draft, 3), (vote.Title, vote.Status, vote.Options.Count));
+            Assert.False(await db.VoteEligibleVoters.AnyAsync(e => e.VotingSessionId == id));
+        }
+
+        await Code(await chair.PutAsJsonAsync($"{s.Url}/votes/{id}", Body("Bản mới", openImmediately: true)), 409, "MSG219");
+        await Unchanged();
+        // Another Open vote is reported before the form is validated, as in UC-54 — for creating and editing alike.
+        await Code(await chair.PutAsJsonAsync($"{s.Url}/votes/{id}", Body(" ", openImmediately: true)), 409, "MSG219");
+        await Code(await chair.PostAsJsonAsync(s.Url + "/votes", Body(" ", openImmediately: true)), 409, "MSG219");
+        await Unchanged();
+
+        await Code(await chair.PostAsync($"{s.Url}/votes/{other}/close", null), 200, "MSG229");
+        await Code(await secretary.PutAsJsonAsync($"{s.Url}/votes/{id}", Body("Bản mới", openImmediately: true)), 409, "MSG218");
+        await Code(await chair.PutAsJsonAsync($"{s.Url}/votes/{id}", Body("Bản mới", roles: ["Guest"], openImmediately: true)), 409, "MSG220");
+        await Unchanged();
+
+        await Code(await chair.PutAsJsonAsync($"{s.Url}/votes/{id}",
+            Body("Bản mới", options: ["Có", "Không"], openImmediately: true)), 200, "MSG217");
+        await using var check = f.Db();
+        var opened = await check.VotingSessions.Include(v => v.Options).AsNoTracking().SingleAsync(v => v.Id == id);
+        Assert.Equal(("Bản mới", VotingStatus.Open, 3), (opened.Title, opened.Status, opened.EligibleCount));
+        Assert.Equal(new[] { "Có", "Không" }, opened.Options.OrderBy(o => o.Position).Select(o => o.Label).ToArray());
+        Assert.Equal(f.Clock.Now, opened.OpenedAt);
     }
 
     [Fact]

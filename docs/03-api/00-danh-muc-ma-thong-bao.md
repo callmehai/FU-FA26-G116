@@ -260,11 +260,11 @@ content-type và body 64 KiB; 401 authentication, 403 body rỗng khi tài kho�
 | `MSG214` | 503 | Tạo nháp lỗi DB | Không tạo được biểu quyết nháp. Chưa có nháp nào được tạo. Vui lòng thử lại. |
 | `MSG215` | 503 | Sửa nháp lỗi DB | Không cập nhật được biểu quyết nháp. Nháp vẫn giữ nguyên. Vui lòng thử lại. |
 | `MSG216` | 503 | Xoá nháp lỗi DB | Không xoá được biểu quyết nháp. Nháp vẫn giữ nguyên. Vui lòng thử lại. |
-| `MSG217` | 200 | Mở biểu quyết, kể cả tạo kèm `openImmediately: true` | Mở biểu quyết thành công. |
+| `MSG217` | 200 | Mở biểu quyết, kể cả tạo hoặc sửa nháp kèm `openImmediately: true` | Mở biểu quyết thành công. |
 | `MSG218` | 409 | Không phải Chair hiện hành, cuộc họp chưa InProgress, hoặc biểu quyết không còn Draft | Chỉ Chủ toạ hiện hành được mở biểu quyết nháp, khi cuộc họp đang diễn ra. |
 | `MSG219` | 409 | Cuộc họp đã có biểu quyết Open khác, kể cả khi hai lệnh mở đến cùng lúc | Cuộc họp đang có biểu quyết khác đang mở. Hãy đóng biểu quyết đó trước. |
 | `MSG220` | 409 | Không ai giữ các vai trò đã chọn lúc mở | Không có ai đủ điều kiện bỏ phiếu theo các vai trò đã chọn. Biểu quyết chưa được mở. |
-| `MSG221` | 503 | Mở biểu quyết lỗi DB; với `openImmediately` thì không để lại nháp | Không mở được biểu quyết. Biểu quyết chưa được mở. Vui lòng thử lại. |
+| `MSG221` | 503 | Mở biểu quyết lỗi DB; với `openImmediately` thì không để lại nháp mới, nháp đang sửa giữ nguyên | Không mở được biểu quyết. Biểu quyết chưa được mở. Vui lòng thử lại. |
 | `MSG222` | 400 | Bỏ phiếu thiếu `optionId` hoặc body không đọc được | Chọn một phương án trước khi gửi phiếu. |
 | `MSG223` | 400 | `optionId` không thuộc biểu quyết này | Phương án đã chọn không thuộc biểu quyết này. |
 | `MSG224` | 409 | Người gọi không có trong danh sách chốt lúc mở | Bạn không có trong danh sách được bỏ phiếu của biểu quyết này. |

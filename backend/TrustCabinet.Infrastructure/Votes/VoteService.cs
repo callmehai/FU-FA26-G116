@@ -127,7 +127,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             if (operation == VoteOperation.Create) (outcome, vote) = await CreateAsync(s, viewer!, input, now, ct);
             else outcome = operation switch
             {
-                VoteOperation.Update => Update(meeting, viewer!, vote!, input, now),
+                VoteOperation.Update => await UpdateAsync(s, viewer!, vote!, input, now, ct),
                 VoteOperation.Delete => Delete(meeting, viewer!, vote!),
                 VoteOperation.Open => await OpenAsync(s, viewer!, vote!, now, ct),
                 VoteOperation.Cast => await CastAsync(meeting, viewer!, vote!, input, now, ct),
@@ -138,7 +138,8 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
 
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
-            var opened = operation == VoteOperation.Open || (operation == VoteOperation.Create && input.OpenImmediately);
+            var opened = operation == VoteOperation.Open
+                || (operation is VoteOperation.Create or VoteOperation.Update && input.OpenImmediately);
             managersOnly = operation is VoteOperation.Create or VoteOperation.Update or VoteOperation.Delete && !opened;
             var changeType = opened ? "Opened" : operation switch
             {
@@ -177,8 +178,8 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         var meeting = s.Meeting;
         if (!VoteRules.CanManageDraft(meeting, viewer)) return (new(VoteFailure.DraftDenied), null);
         if (input.ParseFailure != VoteFailure.None) return (new(input.ParseFailure), null);
-        if (input.OpenImmediately && !(VoteRules.IsChair(meeting, viewer) && meeting.Status == MeetingStatus.InProgress))
-            return (new(VoteFailure.OpenDenied), null);
+        if (await OpenFromFormDeniedAsync(meeting, viewer, null, input, ct) is var denied and not VoteFailure.None)
+            return (new(denied), null);
         input = VoteRules.Normalize(input);
         var errors = VoteRules.Validate(input, out var roles);
         if (errors.Count != 0) return (new(VoteFailure.Invalid, Errors: errors), null);
@@ -196,11 +197,15 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         return (new(VoteId: vote.Id), vote);
     }
 
-    private VoteOutcome Update(Meeting meeting, VoteViewer viewer, VotingSession vote, VoteInput input, DateTimeOffset now)
+    private async Task<VoteOutcome> UpdateAsync(ParticipantSnapshot s, VoteViewer viewer, VotingSession vote, VoteInput input,
+        DateTimeOffset now, CancellationToken ct)
     {
+        var meeting = s.Meeting;
         // Open and Closed votes keep their configuration (BR-254).
         if (!VoteRules.CanManageDraft(meeting, viewer) || vote.Status != VotingStatus.Draft) return new(VoteFailure.DraftDenied);
         if (input.ParseFailure != VoteFailure.None) return new(input.ParseFailure);
+        if (await OpenFromFormDeniedAsync(meeting, viewer, vote.Id, input, ct) is var denied and not VoteFailure.None)
+            return new(denied);
         input = VoteRules.Normalize(input);
         var errors = VoteRules.Validate(input, out var roles);
         if (errors.Count != 0) return new(VoteFailure.Invalid, Errors: errors);
@@ -223,7 +228,23 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             }
         }
         db.VotingOptions.RemoveRange(existing.Skip(labels.Length));
+        // Opening from the edit form keeps the edits only if the vote opens; otherwise the saved draft stays as it
+        // was (UC-54 AF-1), because nothing is saved when this returns a failure.
+        if (input.OpenImmediately && await OpenNowAsync(s, vote, now, ct) is var opened and not VoteFailure.None)
+            return new(opened);
         return new(VoteId: vote.Id);
+    }
+
+    /// <summary>
+    /// Opening straight from the create or edit form (UC-53 AF-3): only the current Chair, while the meeting is
+    /// InProgress, and checked for another Open vote before the form is validated, in UC-54's order.
+    /// </summary>
+    private async Task<VoteFailure> OpenFromFormDeniedAsync(Meeting meeting, VoteViewer viewer, Guid? voteId, VoteInput input,
+        CancellationToken ct)
+    {
+        if (!input.OpenImmediately) return VoteFailure.None;
+        if (!VoteRules.IsChair(meeting, viewer) || meeting.Status != MeetingStatus.InProgress) return VoteFailure.OpenDenied;
+        return await votes.AnotherOpenAsync(meeting.Id, voteId, ct) ? VoteFailure.AnotherOpen : VoteFailure.None;
     }
 
     private VoteOutcome Delete(Meeting meeting, VoteViewer viewer, VotingSession vote)

@@ -49,6 +49,7 @@ Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-15
 | DELETE | `/api/meetings/{meetingId}/votes/{voteId}` | UC-53 AF-2 | 200/MSG212 |
 | POST | `/api/meetings/{meetingId}/votes/{voteId}/open` | UC-54 | 200/MSG217 |
 | POST | `/api/meetings/{meetingId}/votes` + `"openImmediately": true` | UC-53 AF-3 → UC-54 | 200/MSG217 (không tạo Draft nếu mở lỗi) |
+| PUT | `/api/meetings/{meetingId}/votes/{voteId}` + `"openImmediately": true` | UC-53 AF-3 → UC-54 AF-1 | 200/MSG217 (mở lỗi thì nháp giữ nguyên, không lưu phần sửa) |
 | POST | `/api/meetings/{meetingId}/votes/{voteId}/ballots` | UC-55 | 200/MSG227 |
 | POST | `/api/meetings/{meetingId}/votes/{voteId}/close` | UC-56 | 200/MSG229 + tally |
 | POST | `/api/meetings/{meetingId}/votes/{voteId}/conclusion` | UC-57 | 200/MSG235 |
@@ -79,7 +80,7 @@ trừ khi BE và FE thống nhất lại trong cùng PR.
 - `title` trim 1–300; `description` mặc định `""`, tối đa 4000.
 - `options`: ≥ 2 chuỗi khác nhau sau trim, mỗi chuỗi 1–200; không nhận `id` từ client khi tạo.
 - `isAnonymous` bắt buộc bool; `eligibleRoles` ≥ 1 giá trị trong `Chair|Secretary|Member|Guest`.
-- PUT thay toàn bộ trường cấu hình; chỉ khi Vote còn `Draft`.
+- PUT thay toàn bộ trường cấu hình; chỉ khi Vote còn `Draft`. PUT cũng nhận `openImmediately` (mở từ form sửa).
 - `openImmediately: true`: chỉ Chair + Meeting `InProgress`; thành công → status `Open`, không
   để lại Draft lỗi; thất bại giữ form phía FE, DB không đổi nháp cũ (UC-53 AF-3).
 
@@ -221,8 +222,10 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
 - **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.
   Điểm danh không liên quan (BR-190).
 - **Phương án trùng** so sánh sau trim, không phân biệt hoa thường (`Đồng ý` và `đồng ý` là trùng).
-- **Mở từ form** (`openImmediately: true`) trả `200/MSG217`, không phải `201`. Thư ký gửi kèm cờ này nhận `409/MSG218`
-  và không có nháp nào được lưu.
+- **Mở từ form** (`openImmediately: true`) dùng được ở cả POST (tạo) lẫn PUT (sửa nháp), trả `200/MSG217`, không phải `201`.
+  Mở lỗi thì không lưu gì: POST không để lại nháp, PUT giữ nháp như trước khi sửa (UC-54 AF-1, EX-5). Thư ký gửi kèm cờ
+  này nhận `409/MSG218`; Thành viên nhận `409/MSG213` như mọi thao tác nháp (nhánh EX-2 đi trước AF-3 trong sequence UC-53).
+- **Thứ tự kiểm tra khi mở từ form** theo sequence UC-54: `MSG218` → `MSG219` → `MSG209` → `MSG220`.
 - **Đóng phiếu** trả kèm `result` (cùng dạng `result` của chi tiết).
 - **Tài khoản bị vô hiệu hoá** nhận `403` body rỗng, như điểm danh.
 
