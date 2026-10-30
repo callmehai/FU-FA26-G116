@@ -11,6 +11,7 @@ using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Infrastructure.Calls;
 using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Infrastructure.Meetings;
@@ -33,6 +34,8 @@ builder.Services.AddTrustCabinetMeetings(builder.Configuration);
 builder.Services.AddTrustCabinetAgenda();
 builder.Services.AddTrustCabinetParticipants();
 builder.Services.AddTrustCabinetAttendance();
+// SCRUM-116: UC-04 guest access; replaces the fail-closed guest adapters registered above.
+builder.Services.AddTrustCabinetGuestAccess(builder.Configuration);
 builder.Services.AddSingleton<IMeetingGuestIdentityResolver, UnavailableMeetingGuestIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
@@ -197,6 +200,8 @@ app.MapMeetingEndpoints();
 app.MapAgendaEndpoints();
 app.MapParticipantEndpoints();
 app.MapAttendanceEndpoints();
+// SCRUM-116: UC-04 — invitation link, one-time code, guest session.
+app.MapGuestAccessEndpoints();
 app.MapMeetingDocumentEndpoints();
 // SCRUM-58: the personal library and its folders; SCRUM-23: comments on a meeting document.
 app.MapPersonalLibraryEndpoints();
