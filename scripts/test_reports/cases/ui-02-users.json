@@ -1,0 +1,142 @@
+{
+ "prefix": "USER_FT",
+ "module": "Users",
+ "source": "frontend/src/features/access/UsersPage.tsx",
+ "cases": [
+  {
+   "group": "Người dùng & Quyền",
+   "d": "The administrator sees, searches and filters every account.",
+   "steps": [
+    "Sign in as quantri@trustcabinet.local and open Người dùng & Quyền.",
+    "Type \"thu\" in \"Tìm theo tên hoặc email…\".",
+    "Choose a role in \"Lọc theo vai trò\" and \"Đã vô hiệu hoá\" in \"Lọc theo trạng thái\".",
+    "Click to clear the filters."
+   ],
+   "exp": [
+    "The table lists accounts with name, email, role, Trạng thái and Ngày tạo; the administrator's row is marked \"Bạn\".",
+    "The search narrows the list to matching names or emails.",
+    "With no match \"Không có tài khoản nào khớp bộ lọc.\" is shown."
+   ],
+   "pre": [
+    "Seeded accounts exist.",
+    "quantri@trustcabinet.local has AdminUsers."
+   ]
+  },
+  {
+   "group": "Người dùng & Quyền",
+   "d": "Create a new account with a role.",
+   "steps": [
+    "Click \"Tạo tài khoản\".",
+    "Enter Họ tên: Trần Chủ Toạ, Email: chutoa2@trustcabinet.local, a password (or use the generated one and \"Sao chép mật khẩu\"), choose role Chủ toạ.",
+    "Click Lưu."
+   ],
+   "exp": [
+    "The toast \"Tạo tài khoản thành công.\" appears.",
+    "The new account is in the list as Đang hoạt động with role Chủ toạ.",
+    "The new account can sign in with the password."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local.",
+    "No account uses chutoa2@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Người dùng & Quyền",
+   "d": "The account form refuses an empty name, an invalid or duplicate email and a missing role, keeping what was typed.",
+   "steps": [
+    "Click \"Tạo tài khoản\" and click Lưu with empty fields.",
+    "Enter email \"khong-phai-email\".",
+    "Enter email thanhvien@trustcabinet.local with a name and role and save.",
+    "Correct the email to a new one and save."
+   ],
+   "exp": [
+    "Errors \"Họ tên không được để trống.\", \"Email không hợp lệ.\" and \"Vui lòng chọn vai trò.\" appear under the fields.",
+    "The duplicate shows \"Email đã được sử dụng.\" and the form keeps the typed values.",
+    "After the correction exactly one new account is created."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Người dùng & Quyền",
+   "d": "Edit an account's name, email and role.",
+   "steps": [
+    "Open the row menu of an account and choose \"Sửa hồ sơ\".",
+    "Change the name and the role to Thư ký and save."
+   ],
+   "exp": [
+    "The toast \"Cập nhật tài khoản thành công.\" appears.",
+    "The row shows the new name and role.",
+    "If the email changes, the form warns \"Đổi email sẽ đăng xuất người này khỏi mọi thiết bị.\"."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Người dùng & Quyền",
+   "d": "Deactivate and reactivate an account.",
+   "steps": [
+    "Open the row menu of thanhvien and choose \"Vô hiệu hoá\", then confirm \"Vô hiệu hoá tài khoản\".",
+    "Try to sign in as thanhvien in another browser.",
+    "Choose \"Kích hoạt lại\", then \"Kích hoạt lại tài khoản\"."
+   ],
+   "exp": [
+    "The toast \"Đổi trạng thái tài khoản thành công.\" appears and the row shows Đã vô hiệu hoá.",
+    "thanhvien cannot sign in while deactivated.",
+    "After reactivation the row shows Đang hoạt động and sign-in works again."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Người dùng & Quyền",
+   "d": "The last active administrator is protected.",
+   "steps": [
+    "Open your own row (quantri).",
+    "Try to deactivate yourself.",
+    "Try to change your own role away from Quản trị viên."
+   ],
+   "exp": [
+    "Deactivating yourself is not offered: \"Không thể tự đổi trạng thái tài khoản của mình\".",
+    "Changing the role shows \"Không thể đổi vai trò: sau thao tác này sẽ không còn tài khoản quản trị nào đang hoạt động.\"."
+   ],
+   "pre": [
+    "quantri@trustcabinet.local is the only active account with AdminUsers."
+   ]
+  },
+  {
+   "group": "Người dùng & Quyền",
+   "d": "A reset link cannot be sent to a deactivated or Google-only account.",
+   "steps": [
+    "Open the row menu of a deactivated account.",
+    "Open the row menu of an account that signs in only with Google."
+   ],
+   "exp": [
+    "The reset action is disabled with \"Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu\".",
+    "For the Google-only account: \"Tài khoản chỉ đăng nhập bằng Google — không có mật khẩu để đặt lại\"."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local; such accounts exist."
+   ]
+  },
+  {
+   "group": "Người dùng & Quyền",
+   "d": "Restricted administration screens are hidden from other users.",
+   "steps": [
+    "Sign in as thuky@trustcabinet.local.",
+    "Look at the sidebar.",
+    "Open http://localhost:5173/mgmt/admin/users directly."
+   ],
+   "exp": [
+    "Người dùng & Quyền and Vai trò are not in the sidebar.",
+    "The address shows the not-found page, the same as an unknown URL."
+   ],
+   "pre": [
+    "thuky@trustcabinet.local has no AdminUsers."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "prefix": "REC_FT",
+ "module": "Recordings",
+ "source": "frontend/src/features/recordings/RecordingsPanel.tsx",
+ "cases": [
+  {
+   "group": "Bản ghi",
+   "d": "The Secretary records or uploads a recording with consent and gets a transcript.",
+   "steps": [
+    "Open tab \"Bản ghi\" during the meeting.",
+    "Click \"Bắt đầu ghi âm\", enter Mục đích ghi âm \"Lập biên bản cuộc họp\", tick the consent statement and click \"Bắt đầu ghi\"; later stop and save (\"Lưu tệp ghi âm\").",
+    "Or click \"Tải tệp ghi âm lên\" and choose an audio file.",
+    "Open \"Nghe và xem bản gỡ băng\"."
+   ],
+   "exp": [
+    "\"Đã lưu bản ghi.\" appears; the recording shows Ghi trực tiếp or Tải lên and \"Đang chuyển chữ\".",
+    "When done it shows \"Có bản gỡ băng\"; the transcript lists speakers and times.",
+    "Without ticking consent the recording cannot start."
+   ],
+   "pre": [
+    "An InProgress meeting; signed in as its Secretary; speech worker running."
+   ]
+  },
+  {
+   "group": "Bản ghi",
+   "d": "The Secretary corrects the transcript and names speakers; members only listen.",
+   "steps": [
+    "In the transcript click \"Sửa đoạn này\", change the text and Lưu.",
+    "Assign \"Người nói 1\" to a participant.",
+    "As thanhvien, open the same transcript."
+   ],
+   "exp": [
+    "\"Đã lưu đoạn gỡ băng.\" and \"Đã gán người nói.\" appear.",
+    "thanhvien can listen and read but has no edit actions."
+   ],
+   "pre": [
+    "A recording with a completed transcript."
+   ]
+  },
+  {
+   "group": "Bản ghi",
+   "d": "Delete a recording; the audio and transcript are erased.",
+   "steps": [
+    "Click \"Xoá bản ghi\" and confirm."
+   ],
+   "exp": [
+    "\"Đã xoá bản ghi.\" appears; the audio and its transcript are erased; the row shows Đã xoá and can no longer be played."
+   ],
+   "pre": [
+    "A stored recording; signed in as the Secretary."
+   ]
+  },
+  {
+   "group": "Lời nói",
+   "d": "Per-microphone capture turns each participant's sentences into text.",
+   "steps": [
+    "In a per-microphone meeting room, open Lời nói and click \"Ghi lời tôi\".",
+    "Say a sentence and pause.",
+    "Delete one of your sentences (\"Xoá câu này\")."
+   ],
+   "exp": [
+    "The status shows \"Đang ghi\"; each sentence appears as text under your name.",
+    "Deleting shows \"Đã xoá câu nói.\" and the sentence leaves the transcript."
+   ],
+   "pre": [
+    "An InProgress meeting whose Cách ghi âm is per microphone; speech worker running."
+   ]
+  }
+ ]
+}

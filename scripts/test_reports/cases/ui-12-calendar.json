@@ -1,0 +1,53 @@
+{
+ "prefix": "CAL_FT",
+ "module": "Calendar",
+ "source": "frontend/src/features/calendar/CalendarPage.tsx",
+ "cases": [
+  {
+   "group": "Lịch làm việc",
+   "d": "Switch calendar views and open a meeting.",
+   "steps": [
+    "Open Lịch làm việc.",
+    "Switch between Tuần làm việc, Cả tuần, Tháng and Danh sách; click Hôm nay and move between weeks.",
+    "Click a meeting to see its overview, then open its detail."
+   ],
+   "exp": [
+    "Meetings appear at their local times in each view; today is highlighted.",
+    "The overview shows time, Hình thức, Địa điểm and Chủ tọa.",
+    "The correct meeting detail opens."
+   ],
+   "pre": [
+    "The user has meetings across several weeks."
+   ]
+  },
+  {
+   "group": "Lịch làm việc",
+   "d": "Calendar filters by status and sensitivity; restricted meetings stay hidden.",
+   "steps": [
+    "Open \"Bộ lọc\", choose a status and Mức độ, tick \"Gồm cả cuộc họp nháp\".",
+    "Click \"Đặt lại\"."
+   ],
+   "exp": [
+    "Only matching meetings remain; with none, \"Không có cuộc họp nào khớp bộ lọc trong khoảng này.\".",
+    "Meetings the user may not see never appear."
+   ],
+   "pre": [
+    "Meetings in several statuses exist."
+   ]
+  },
+  {
+   "group": "Lịch làm việc",
+   "d": "An invitee answers from the calendar.",
+   "steps": [
+    "As thanhvien, open a published meeting in the calendar.",
+    "At \"Xác nhận tham dự?\" choose to attend."
+   ],
+   "exp": [
+    "The answer is saved and the calendar entry shows it."
+   ],
+   "pre": [
+    "thanhvien is invited to a published meeting that has not been answered."
+   ]
+  }
+ ]
+}
