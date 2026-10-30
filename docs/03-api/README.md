@@ -11,6 +11,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 - [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-98, UC-23a–d/24/25/26/77; [bàn giao SCRUM-25 lịch sử](08-chuong-trinh-nghi-su-ban-giao.md).
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
+- [`16-truy-cap-khach-uc04.md`](16-truy-cap-khach-uc04.md) — UC-04 / SCRUM-116: link mời, OTP, phiên và token Khách (`/api/guest-access/*`); giá trị OTP và hạn phiên đã chốt; mã `MSG126`, `MSG371`–`MSG378`.
 
 - [`00-danh-muc-ma-thong-bao.md`](00-danh-muc-ma-thong-bao.md) — **danh mục mọi mã `MSGnn`**:
   quy tắc đặt mã, mã tiếp theo còn trống, từng mã trả ở endpoint nào với HTTP và câu thông báo gì,
