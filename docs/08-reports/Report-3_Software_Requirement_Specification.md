@@ -715,6 +715,26 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-78 | Keep Meeting in a Floating Window | Online Meeting Room Management | A person connected to the online room keeps the call in a small always-on-top window while working in other tabs and brings it back to the main window; the floating window uses the same room connection. |
 | UC-79 | Register to Speak | Online Meeting Room Management | A person in the online room raises a hand to ask for the floor; the Chair sees the raised hands in order, invites one person at a time to speak and closes each turn. |
 
+Feature priority. The features are prioritised with the Product Owner: FE-01 to FE-13 are Must-have and FE-14 and FE-15 are Should-have.
+
+| Feature | Name | Priority |
+| --- | --- | --- |
+| FE-01 | Authentication & Account Security | Must-have |
+| FE-02 | User & Profile Management | Must-have |
+| FE-03 | Role-Based Access Control | Must-have |
+| FE-04 | Meeting Management | Must-have |
+| FE-05 | Agenda Management | Must-have |
+| FE-06 | Meeting Participant Management | Must-have |
+| FE-07 | Personal Document Library & Meeting Document Management | Must-have |
+| FE-08 | Online Meeting Room Management | Must-have |
+| FE-09 | Meeting Audio Upload & Media Library | Must-have |
+| FE-10 | Speaker-Attributed Transcription & Meeting Summary | Must-have |
+| FE-11 | Voting Management | Must-have |
+| FE-12 | Meeting Minutes & Digital Signing | Must-have |
+| FE-13 | Email & In-App Notification | Must-have |
+| FE-14 | Personal Dashboard & Meeting Workspace | Should-have |
+| FE-15 | Reporting & Statistics | Should-have |
+
 #### 4.3 Use Case Diagrams
 
 ##### 4.3.1 UCs for System Admin
