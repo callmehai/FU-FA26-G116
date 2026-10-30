@@ -207,6 +207,8 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         // Nothing changed, so no event either.
         Assert.Equal(count, fixture.Events.Count);
         await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", new { title = "Đổi tên" }), 200, "MSG61");
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}",
+            new { title = "Đổi tên", documentIds = (Guid[]?)null }), 200, "MSG61");
         await using (var db = fixture.Db()) Assert.Equal(s.Items[0], await AgendaFixture.LinkedItem(db, s.DocumentId));
         await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input(documents: [])), 200, "MSG61");
         await using (var db = fixture.Db()) Assert.Null(await AgendaFixture.LinkedItem(db, s.DocumentId));

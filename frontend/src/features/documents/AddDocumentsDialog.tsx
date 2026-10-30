@@ -9,6 +9,7 @@ import {
 import { getLibrary } from '../../api/library'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
+import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
@@ -61,6 +62,7 @@ export function AddDocumentsDialog({
   meeting,
   item,
   meetingDocuments = [],
+  meetingDocumentsError,
   initialSource,
   onClose,
   onAdded,
@@ -72,6 +74,8 @@ export function AddDocumentsDialog({
   item?: { id: string; number: number; title: string; documentIds: string[] }
   /** Every document of the meeting, for "Trong cuộc họp"; null while it loads. */
   meetingDocuments?: MeetingDocument[] | null
+  /** Why `meetingDocuments` could not be read, with a retry; the tab says so instead of "no documents". */
+  meetingDocumentsError?: { message: string; retry: () => void } | null
   /** The tab to open on, when the user already chose where from (the agenda row's menu). */
   initialSource?: Source
   onClose: () => void
@@ -221,7 +225,15 @@ export function AddDocumentsDialog({
         )}
 
         {source === 'meeting' &&
-          (meetingDocuments === null ? (
+          (meetingDocumentsError ? (
+            <div className="alert alert-error" role="alert">
+              <p>{meetingDocumentsError.message}</p>
+              <button type="button" className="btn btn-outline btn-sm" onClick={meetingDocumentsError.retry}>
+                <Icon name="refresh" size={16} />
+                Thử lại
+              </button>
+            </div>
+          ) : meetingDocuments === null ? (
             <p className="documents-empty" aria-busy="true">
               Đang tải…
             </p>

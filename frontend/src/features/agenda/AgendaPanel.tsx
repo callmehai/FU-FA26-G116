@@ -488,10 +488,19 @@ function AttachMenu({ title, onPick }: { title: string; onPick: (source: Documen
     if (event.key === 'Tab') return setOpen(false)
     const items = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]')]
     const at = items.indexOf(document.activeElement as HTMLElement)
-    const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0
-    if (!step) return
+    const next =
+      event.key === 'ArrowDown'
+        ? (at + 1) % items.length
+        : event.key === 'ArrowUp'
+          ? (at + items.length - 1) % items.length
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? items.length - 1
+              : -1
+    if (next < 0) return
     event.preventDefault()
-    items[(at + step + items.length) % items.length]?.focus()
+    items[next]?.focus()
   }
 
   return (
@@ -527,6 +536,8 @@ function AttachMenu({ title, onPick }: { title: string; onPick: (source: Documen
               tabIndex={-1}
               className="select-option agenda-attach-option"
               onClick={() => {
+                // The dialog returns focus to whatever had it when it opened: the paperclip, not a gone item.
+                triggerRef.current?.focus()
                 setOpen(false)
                 onPick(source)
               }}
@@ -559,17 +570,25 @@ function AttachDialog({
   onAdded: (message: string) => void
   onStale: (message: string) => void
 }) {
-  const { state } = useMeetingDocuments(meeting.id)
+  const { state, reload } = useMeetingDocuments(meeting.id)
   const data = state.kind === 'loaded' || state.kind === 'error' ? state.data : null
-  // A document linked to several items is listed once.
-  const all = [...(data?.agendaItems.flatMap((i) => i.documents) ?? []), ...(data?.general ?? [])]
-  const documents = state.kind === 'loading' ? null : [...new Map(all.map((d) => [d.id, d])).values()]
+  // A document linked to several items is listed once; a failed read is never an empty list.
+  const documents = data
+    ? [...new Map([...data.agendaItems.flatMap((i) => i.documents), ...data.general].map((d) => [d.id, d])).values()]
+    : null
+  const loadError =
+    state.kind === 'gone'
+      ? 'Bạn không còn xem được tài liệu của cuộc họp này.'
+      : state.kind === 'error' && !data
+        ? state.message
+        : null
 
   return (
     <AddDocumentsDialog
       meeting={meeting}
       item={{ id: item.id, number, title: item.title, documentIds: item.documents.map((d) => d.id) }}
       meetingDocuments={documents}
+      meetingDocumentsError={loadError ? { message: loadError, retry: () => void reload() } : null}
       initialSource={source}
       onClose={onClose}
       onAdded={onAdded}
