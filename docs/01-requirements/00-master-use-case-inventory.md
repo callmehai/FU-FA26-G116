@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 79 Use Case (UC-01 → UC-79).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 15 Feature, 81 Use Case (UC-01 → UC-81).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 9 UC chi tiết.
@@ -30,13 +30,15 @@ Bổ sung ngày 29/10/2026 (BA Final Review FE-08, SCRUM-27): **UC-79** Register
 Chủ toạ mời từng người theo lượt (`<<extend>>` UC-37); là yêu cầu, chưa cài (mới có bảng `speaking_requests`).
 Gọi 1–1 (SCRUM-40) đã bỏ khỏi phạm vi nên không có UC nào cho nó.
 
+Bổ sung ngày 30/10/2026 (BA Final Review FE-09/FE-10): tổ chức lại theo code as-built (ghi âm theo hình thức họp ADR-0040, mic phòng từng lượt ADR-0041, mic từng người ADR-0038/0039, Voice ID ADR-0042). Thêm **UC-80** Manage My Recorded Speech, **UC-81** Manage My Voice ID (UC-81a–UC-81f), **UC-46d** Delete a Sentence. UC-43–UC-46 đổi nội dung và tách các UC con (UC-43a–c, UC-44a–e, UC-45a–c, UC-46a–d). UC-47–UC-51 tạm giữ dưới FE-10.
+
 ## Các quyết định đã áp dụng
 
 | # | Quyết định | Hệ quả trên danh mục UC |
 |---|---|---|
 | D1 | **Bỏ Meeting Session.** Một cuộc họp = một buổi họp; lịch (`PlannedStartTime`, `PlannedEndTime`), agenda, biểu quyết, ghi âm, biên bản gắn thẳng vào Meeting ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)) | Feature *Meeting Session Management* bị xoá; 6 UC phiên họp không còn. Lịch nhập khi tạo cuộc họp (UC-14); sau `Published` chỉ dời được giờ, địa điểm, link (UC-15 — *Reschedule*) |
 | D2 | **Chỉ mở và gửi phiếu trong cuộc họp.** Chair chuẩn bị nháp ở Approved/Published/InProgress; sau Ended vẫn đóng/kiểm phiếu cũ và ghi kết luận. Không time-boxed, quorum hoặc Resolution ([ADR-0014](../05-decisions/0014-bieu-quyet-chi-trong-cuoc-hop.md), [ADR-0017](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md), [ADR-0019](../05-decisions/0019-chuan-bi-bieu-quyet-truoc-khi-hop.md)) | FE-11 *Voting Management*; Vote thuộc Meeting, không gắn mục nghị sự. UC-57: Chair ghi `Passed` / `NotPassed` / `Deferred`, ghi rồi không sửa |
-| D3 | **Secretary tự upload audio.** Không có vai trò Audio Uploader | UC-44 chỉ có actor Secretary |
+| D3 | **Cách ghi suy ra từ hình thức họp** (ADR-0040); mic phòng Thư ký ghi từng lượt nối thành một bản ghi (ADR-0041); mic từng người tự ghi khi bật mic (ADR-0038/0039). Thư ký tải tệp audio khi cần | FE-09 *Meeting Recording*; Thư ký điều khiển mic phòng (UC-44a/b), xóa lượt (UC-44d), xóa bản ghi (UC-44e) hoặc upload tệp (UC-44c); người dự quản lý câu của mình (UC-80). Không có vai trò Audio Uploader riêng |
 | D4 | **Bỏ uỷ quyền tham dự (delegation).** Phản hồi lời mời chỉ còn `Accepted` / `Declined` (BR-105) | UC-29 không còn nhánh Delegated |
 | D5 | **Gom UC nhỏ.** Các thao tác CRUD cùng một màn hình được gom thành một UC, tách thành UC con có hậu tố chữ (`UC-06a`, `UC-06b`…) | Danh mục từ 94 UC (88 đang dùng) xuống **70 UC**; toàn bộ UC được đánh số lại liền mạch theo Feature |
 | D6 | **Tài liệu không có phiên bản** (ADR-0018), cập nhật quyền đọc và liên kết theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md) | UC-32b vẫn bỏ; UC-33b tái cấp cho gắn mục, UC-33d bỏ gắn một mục. Ai xem được Meeting thì đọc được tài liệu. Chair/Secretary thêm, gỡ và sửa liên kết trước khi kết thúc; một tài liệu gắn nhiều mục. Sau Ended tài liệu và bình luận chỉ đọc. Thư mục tự tạo dùng ngày bắt đầu dự kiến, giờ Việt Nam |
@@ -70,7 +72,7 @@ Gọi 1–1 (SCRUM-40) đã bỏ khỏi phạm vi nên không có UC nào cho n�
 | **Participant** | Thành viên được mời: phản hồi lời mời, vào phòng họp, xem tài liệu, bình luận, bỏ phiếu, ký biên bản khi được chỉ định |
 | **Guest** | Khách ngoài, không có tài khoản; truy cập đúng một cuộc họp qua lời mời và mã xác minh email (UC-04) |
 | *Google Identity Provider* | Actor hệ thống ngoài của UC-02 |
-| *AI / Speech Processing Provider* | Actor hệ thống ngoài: audio → transcript có speaker → bản nháp tóm tắt (UC-44 → UC-47) |
+| *Speech Recognition Service* | Actor hệ thống ngoài: dịch vụ nhận dạng giọng nói chạy trong hệ thống (ADR-0026), gỡ băng audio cuộc họp (UC-44b/c, UC-45c) và trích xuất vector giọng nói cho Voice ID (UC-81c) |
 | *Email / SMTP Service* | Actor hệ thống ngoài: email đặt lại mật khẩu, thư mời, email liên quan ký biên bản |
 
 Chair, Secretary, Participant là **vai trò trong cuộc họp** (`MeetingParticipant.MeetingRole`), độc lập với vai trò hệ
@@ -178,24 +180,26 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-78 | Giữ cuộc họp trong cửa sổ nổi *(Keep Meeting in a Floating Window)* | User đang trong phòng | Đã đặc tả | `<<extend>>` UC-37 |
 | UC-79 | Đăng ký phát biểu *(Register to Speak)* — giơ tay, Chủ toạ mời từng người, phát biểu theo lượt | Chair, Secretary, Participant, Guest trong phòng; Chair mời | Đã đặc tả (yêu cầu, chưa cài) | `<<extend>>` UC-37 |
 
-## FE-09 — Upload audio & Thư viện media *(Meeting Audio Upload & Media Library)*
+## FE-09 — Ghi âm cuộc họp *(Meeting Recording)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-43 | Xem & phát audio cuộc họp *(View & Play Meeting Audio)* — gồm UC-43a Xem thư viện media, UC-43b Phát audio | User có quyền | Placeholder | `<<extend>>` UC-16 |
-| UC-44 | Upload audio cuộc họp *(Upload Meeting Audio)* — chỉ sau khi `Ended`, có xác nhận đồng ý ghi âm | **Secretary**; AI / Speech Provider | Placeholder | `<<extend>>` UC-43 |
+| UC-43 | Xem & nghe bản ghi cuộc họp *(View & Play Meeting Recordings)* — gồm UC-43a Xem danh sách bản ghi, UC-43b Phát audio (bản ghi phòng hoặc câu nói), UC-43c Tải bản ghi audio (Chủ toạ, Thư ký; cấm khi cuộc họp Mật) | User có quyền | Đã đặc tả các UC con | `<<extend>>` UC-16 |
+| UC-44 | Ghi âm phòng họp & Tải tệp audio *(Record Room Audio)* — gồm UC-44a Bắt đầu ghi mic phòng (hỏi xác nhận trước lượt đầu), UC-44b Dừng và lưu lượt ghi (nối vào bản ghi phòng duy nhất, tự xếp hàng gỡ băng), UC-44c Tải tệp âm thanh cuộc họp (khi InProgress hoặc Ended), UC-44d Xoá một lượt ghi, UC-44e Xoá bản ghi cuộc họp (xoá tệp và transcript, giữ vết kiểm toán) | **Secretary**; System (tự lưu, hết hạn) | Đã đặc tả các UC con | `<<extend>>` UC-43a |
+| UC-80 | Quản lý câu nói đã ghi của tôi *(Manage My Recorded Speech)* — xem câu chờ gửi và đã lưu, nghe lại, rút/xoá câu của mình khỏi dòng thời gian | Chair, Secretary, Participant hiện hành | Đã đặc tả | `<<extend>>` UC-37, UC-43a |
 
-## FE-10 — Transcript có speaker & Tóm tắt *(Speaker-Attributed Transcription & Meeting Summary)*
+## FE-10 — Gỡ băng, nhận diện người nói và tóm tắt *(Transcription, Speaker Identification & Meeting Summary)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-45 | Xem transcript có speaker *(View Speaker-Attributed Transcript)* | Secretary | Placeholder | `<<extend>>` UC-16 |
-| UC-46 | Chỉnh transcript & speaker *(Edit Transcript & Speaker Attribution)* | Secretary | Placeholder | `<<extend>>` UC-45 |
-| UC-47 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* | Secretary; AI / Speech Provider | Placeholder | `<<extend>>` UC-45 |
+| UC-45 | Xem bản gỡ băng cuộc họp *(View Meeting Transcript)* — gồm UC-45a Xem bản gỡ băng (đoạn có giờ, tên người nói, vạch phân lượt, chữ do người sửa phân biệt với chữ máy; gợi ý tên chỉ Thư ký thấy), UC-45b Xuất bản gỡ băng .txt (Chủ toạ, Thư ký; cấm khi Mật), UC-45c Gỡ băng bản ghi cuộc họp (Thư ký chạy lại bản đã xong / khi lỗi / hệ thống tự xếp hàng) | User có quyền; Secretary; Speech Recognition Service | Đã đặc tả các UC con | `<<extend>>` UC-43a (UC-45c `<<include>>` từ UC-44b, UC-44c) |
+| UC-46 | Chỉnh sửa bản gỡ băng & gán người nói *(Edit Transcript & Speaker Attribution)* — gồm UC-46a Sửa chữ đoạn gỡ băng hoặc câu nói, UC-46b Gán người nói cho giọng (có gợi ý Voice ID, gán cả nhóm), UC-46c Loại hoặc đưa lại câu khỏi bản ghi (lý do Lẫn tiếng/Khác; chỉ Chủ toạ/Thư ký), UC-46d Xoá câu nói khỏi dòng thời gian (Thư ký xoá câu) | Secretary, Chair | Đã đặc tả các UC con | `<<extend>>` UC-43a, UC-45a |
+| UC-47 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* | Secretary; AI Summary Service | Placeholder | `<<extend>>` UC-45a |
 | UC-48 | Xem tóm tắt *(View Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-16 |
 | UC-49 | Chỉnh tóm tắt *(Edit Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-48 |
 | UC-50 | Duyệt tóm tắt *(Approve Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-48 |
 | UC-51 | Công bố tóm tắt *(Publish Meeting Summary)* — bước riêng sau khi duyệt | Secretary | Placeholder | `<<extend>>` UC-48 |
+| UC-81 | Quản lý nhận diện giọng nói cá nhân *(Manage My Voice ID)* — gồm UC-81a Xem thông tin giọng nói, UC-81b Xác nhận đồng ý Voice ID (thông báo riêng bản 1.1), UC-81c Thu âm mẫu giọng (tối đa 5 mẫu, 6–60s), UC-81d Nghe lại mẫu giọng (chỉ chính chủ), UC-81e Xoá mẫu giọng, UC-81f Rút đồng ý Voice ID (xoá ngay mọi mẫu và mọi gợi ý) | Internal user; Speech Recognition Service | Đã đặc tả các UC con | Độc lập (UC-81b–f `<<extend>>` UC-81a) |
 
 ## FE-11 — Biểu quyết *(Voting Management)*
 
@@ -318,9 +322,10 @@ UC-36 Upload vào kho cá nhân → UC-34 → UC-33a chọn từ kho (hoặc upl
 UC-72 thư mục, UC-71 đổi tên / chuyển / xoá trong kho. Xoá khỏi kho: cuộc họp vẫn giữ tham chiếu riêng; file không còn ai tham chiếu thì job nền dọn.
 Tải thẳng từ máy vào cuộc họp: dòng kho vào thư mục `<tên cuộc họp> - dd/mm/yyyy` của người tải
 
-Audio → Tóm tắt (sau khi Ended)
-UC-44 Secretary upload audio → AI transcript có speaker → UC-45 Xem → UC-46 Sửa → UC-47 Sinh tóm tắt
-→ UC-48 Xem → UC-49 Sửa → UC-50 Duyệt → UC-51 Công bố
+Audio → Gỡ băng & Tóm tắt
+- Họp Trực tiếp: UC-44a Bật mic phòng (từng lượt) / UC-44c Upload audio → UC-44b Lưu lượt (ghép vào một bản ghi) → Hệ thống tự xếp hàng gỡ băng (UC-45c) → UC-45a Xem gỡ băng → UC-46a Sửa chữ, UC-46b Gán người nói (có gợi ý Voice ID từ UC-81c) → UC-47 Sinh tóm tắt → UC-48 Xem → UC-49 Sửa → UC-50 Duyệt → UC-51 Công bố.
+- Họp Trực tuyến: UC-39a Bật mic gửi từng câu → câu lưu trong tab Bản ghi (UC-43a) → UC-46a Thư ký sửa chữ, UC-46c Loại/đưa lại câu lọt tiếng, UC-80 Người nói xem/nghe/rút câu của mình.
+- Tải về: UC-43c Tải bản ghi audio, UC-45b Xuất bản gỡ băng .txt (Chủ toạ, Thư ký; cấm khi cuộc họp Mật).
 
 Biểu quyết (ADR-0019: chuẩn bị nháp trước khi họp)
 UC-53 Tạo/cấu hình nháp khi Approved / Published / InProgress
@@ -344,14 +349,14 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-06 | Meeting Participant Management | 6 | 3 |
 | FE-07 | Personal Document Library & Meeting Document Management | 8 | 13 |
 | FE-08 | Online Meeting Room Management | 7 | 4 |
-| FE-09 | Meeting Audio Upload & Media Library | 2 | 2 |
-| FE-10 | Speaker-Attributed Transcription & Meeting Summary | 7 | — |
+| FE-09 | Meeting Recording | 3 | 8 |
+| FE-10 | Transcription, Speaker Identification & Meeting Summary | 8 | 13 |
 | FE-11 | Voting Management | 7 | 4 |
 | FE-12 | Meeting Minutes & Digital Signing | 8 | — |
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **78** | **40** |
+| **Tổng** | | **80** | **59** |
 
 # 8. Ngoài phạm vi UC
 
@@ -359,8 +364,6 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
   promote hay dọn code.
 - Không làm (Report 1): theo dõi task / action item, ký HSM thật, triển khai air-gapped,
   tích hợp eOffice, nhiều tổ chức / đơn vị ([ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
-- Đưa vào phạm vi 23/10/2026 theo nhận xét hội đồng: nhận diện người nói bằng giọng mẫu (Voice ID) có đồng ý riêng —
-  [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md). UC cho đồng ý / ghi giọng mẫu / rút đồng ý chưa đánh số, BA bổ sung (SCRUM-35).
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
 
 Guest 13/10/2026: [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md); UC-27/30 cần quyền xem tương ứng như Member, UC-40 xem người đang kết nối mặc định. BR-122 đã chốt; xem [quyết định mới](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md).

@@ -1,0 +1,76 @@
+title UC-81b - Give Voice ID Consent
+
+actor "Internal User" as Actor
+boundary "My Voice Page" as VoicePage
+control ":Voice ID Controller" as VoiceController
+control ":Voice ID Service" as VoiceService
+participant ":Voice ID Repository" as VoiceRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->VoicePage: Tick the separate Voice ID consent after reading the notice,\nor choose Accept new terms - AF-1
+activate VoicePage
+VoicePage->VoiceController: Give consent to the notice version read
+activate VoiceController
+VoiceController->VoiceService: grant(actorId, noticeVersion)
+activate VoiceService
+VoiceService->VoiceService: Check the version read is the current notice version (BR-362)
+
+alt Notice version read is not the current one - EX-1
+    VoiceService-->VoiceController: MSG313 - Invalid submission data.
+    VoiceController-->VoicePage: MSG313 - Invalid submission data.
+    VoicePage-->Actor: MSG313 - Invalid submission data.
+else Notice version is current
+    VoiceService->VoiceRepository: Lock the actor's standing consent
+    activate VoiceRepository
+    VoiceRepository->Database: Retrieve consent not withdrawn for update
+    activate Database
+    Database-->VoiceRepository: Consent / None
+    deactivate Database
+    VoiceRepository-->VoiceService: Consent / None
+    deactivate VoiceRepository
+
+    alt Consent given to an older notice version - AF-1
+        VoiceService->VoiceRepository: Renew the consent in place to the current notice version and purpose;\nthe voice samples are kept (BR-362)
+        activate VoiceRepository
+        VoiceRepository->Database: Update consent
+        activate Database
+        Database-->VoiceRepository: Saved / Save failed
+        deactivate Database
+        VoiceRepository-->VoiceService: Saved / Save failed
+        deactivate VoiceRepository
+        VoiceService->AuditService: Record the renewal with the previous and current notice versions
+        activate AuditService
+        AuditService-->VoiceService: Entry saved
+        deactivate AuditService
+    else No consent yet
+        VoiceService->VoiceRepository: Add a consent of its own, separate from recording consent, with the time,\nnotice version and purpose (BR-361, BR-362)
+        activate VoiceRepository
+        VoiceRepository->Database: Insert consent
+        activate Database
+        Database-->VoiceRepository: Saved / Save failed
+        deactivate Database
+        VoiceRepository-->VoiceService: Saved / Save failed
+        deactivate VoiceRepository
+        VoiceService->AuditService: Record the consent with its notice version and purpose
+        activate AuditService
+        AuditService-->VoiceService: Entry saved
+        deactivate AuditService
+    else Consent to the current notice already given
+        VoiceService->VoiceService: Keep the consent unchanged
+    end
+
+    alt Consent cannot be saved - EX-2
+        VoiceService-->VoiceController: MSG315 - Unable to save changes. Please try again.
+        VoiceController-->VoicePage: MSG315 - Unable to save changes. Please try again.
+        VoicePage-->Actor: MSG315 - Unable to save changes. Please try again.
+    else Consent saved
+        VoiceService-->VoiceController: MSG305 - Voice identification enabled for your account.
+        VoiceController-->VoicePage: MSG305 - Voice identification enabled for your account.
+        VoicePage-->Actor: MSG305 - Voice identification enabled for your account.
+    end
+end
+
+deactivate VoiceService
+deactivate VoiceController
+deactivate VoicePage

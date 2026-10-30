@@ -21,6 +21,7 @@ Mỗi file giữ nguyên phạm vi cần sửa. Khi ticket sang **BA Final Revie
 | 16 | [Ghi âm và Voice ID 28–29/10](16-ghi-am-voice-id-28-29-10-2026.md) | SCRUM-29, 31, 35, 109 (PR #184 → #193) | Cách ghi theo hình thức họp, mic phòng từng lượt, nghe lại câu và giọng mẫu, MSG351–MSG367; **thay §3–§5 của note 11 và phần lưu trữ của note 03** |
 | 17 | [Plan sửa phần còn lại sau note 14](17-plan-sua-con-lai-sau-note-14.md) | SCRUM-99, 69, 15, 25, 98, 41 | 6 lượt: FE-04 huỷ cuộc họp, ERD drawio, UC-21/22, email, nghị sự, phòng họp; nguyên tắc Report 3 không kỹ thuật |
 | 18 | [Sửa wireframe và việc ngoài phạm vi](18-sua-wireframe-va-viec-ngoai-pham-vi.md) | SCRUM-99, 25, 98 (+ bảng ticket đã chuyển 29/10) | Màn hình agenda bỏ thời lượng, màn huỷ cuộc họp, ERD muc-tieu/hien-tai, Permission Matrix, câu hỏi PO UC-26 |
+| 19 | [Plan FE-09 / FE-10 ghi âm, gỡ băng, Voice ID](19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md) | SCRUM-29, 31, 35, 109, 102, 103 | Tổ chức lại UC-43–46 (thêm 46d), thêm UC-80 (Ghi âm của tôi), UC-81 (Voice ID), BR-340+, MSG Report 3, 24 sequence, 2 class diagram as-built; tách tóm tắt thành FE-11 hoãn |
 Plan gom cả sáu note. **Thứ tự làm và cách giao cho agent: [plan 05 mục 8](05-plan-sua-uc-br-msg-diagram.md#8-thứ-tự-và-cách-chạy-agent-đọc-mục-này-trước)** —
 làm lần lượt từng lượt, mỗi lượt một session mới.
 

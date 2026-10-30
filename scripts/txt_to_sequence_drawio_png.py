@@ -21,6 +21,7 @@ Ví dụ:
 from __future__ import annotations
 
 import argparse
+import math
 import os
 import re
 import shutil
@@ -37,8 +38,9 @@ PNG_DIR = ROOT / "docs/06-sequencediagram/drawio-png"
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 PNG_IEND = b"\x00\x00\x00\x00IEND\xaeB`\x82"
-# Draw.io CLI trên máy này cắt ảnh khi một chiều vượt ~2900 px.
-MAX_PNG_EDGE_PX = 2900.0
+# Draw.io CLI 32.6.1 cắt phần dưới ảnh khi ảnh vượt khoảng 29 triệu pixel (đo 30/10/2026: 5238x5538 trọn,
+# 7481x7910 bị cắt ở ~3970 px). Giới hạn theo diện tích thay vì theo cạnh để trang dài vẫn được scale lớn như tab cũ.
+MAX_PNG_PIXELS = 28_000_000.0
 DEFAULT_SCALE = 2.0
 
 DECL_RE = re.compile(
@@ -131,7 +133,7 @@ def read_title(txt: str) -> str:
 
 
 def txt_to_mermaid(text: str) -> str:
-    lines = ["sequenceDiagram"]
+    lines = ['%%{init: {"sequence": {"mirrorActors": false}}}%%', "sequenceDiagram"]
     for raw in text.splitlines():
         line = raw.strip()
         if not line or line.startswith("title "):
@@ -146,9 +148,11 @@ def txt_to_mermaid(text: str) -> str:
         match = MSG_RE.match(line)
         if match:
             src, arrow, dst, msg = match.groups()
+            # Không bọc nhãn trong dấu nháy: Mermaid của draw.io giữ dấu nháy thành chữ trên sơ đồ
+            # (mermaidData của các tab biểu quyết, agenda không có dấu nháy).
             msg = msg.replace("\\n", "<br/>").replace('"', "'")
             op = "-->>" if arrow == "-->" else "->>"
-            lines.append(f'    {src}{op}{dst}: "{msg}"')
+            lines.append(f"    {src}{op}{dst}: {msg}")
             continue
         match = ACT_RE.match(line)
         if match:
@@ -160,7 +164,7 @@ def txt_to_mermaid(text: str) -> str:
             if keyword == "end":
                 lines.append("    end")
             elif rest:
-                lines.append(f'    {keyword} "{rest}"')
+                lines.append(f"    {keyword} {rest}")
             else:
                 lines.append(f"    {keyword}")
     return "\n".join(lines) + "\n"
@@ -225,6 +229,22 @@ def apply_agenda_styles(model: ET.Element, kinds: dict[str, str], labels: dict[s
         if element.tag != "mxCell":
             continue
         style = element.get("style") or ""
+        # Khung alt/opt/loop và guard như tab biểu quyết: viền mảnh, guard 13px căn trái ngay sau marker.
+        if "shape=umlFrame" in style:
+            style = re.sub(r"strokeWidth=[^;]*;", "strokeWidth=1;", style)
+            style = re.sub(r"fillColor=[^;]*;", "fillColor=none;", style)
+            style = re.sub(r"fontSize=[^;]*;", "fontSize=13;", style)
+            element.set("style", style)
+            continue
+        if style.startswith("text;"):
+            # Guard (con của khung) căn trái; nhãn self-message (cấp trên cùng) giữ căn giữa. Cả hai 13px như message.
+            if element.get("parent") not in (None, "1"):
+                style = re.sub(r"align=[^;]*;", "align=left;", style)
+            style = re.sub(r"fontSize=[^;]*;", "fontSize=13;", style)
+            if "labelBackgroundColor=" not in style:
+                style += "labelBackgroundColor=#ffffff;"
+            element.set("style", style)
+            continue
         if "edgeStyle=sequenceEdgeStyle" not in style and "endArrow=" not in style:
             continue
         if element.get("edge") != "1" and "edgeStyle=sequenceEdgeStyle" not in style:
@@ -241,8 +261,7 @@ def apply_agenda_styles(model: ET.Element, kinds: dict[str, str], labels: dict[s
                 "fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;",
                 style,
             )
-        if "labelBackgroundColor=" not in style:
-            style += "labelBackgroundColor=#ffffff;"
+        style = re.sub(r"labelBackgroundColor=[^;]*;", "", style) + "labelBackgroundColor=#ffffff;"
         for key, value in (
             ("strokeColor", "#000000"),
             ("fontColor", "#000000"),
@@ -282,8 +301,19 @@ def add_title(model: ET.Element, page_id: str, title_text: str) -> None:
             float(geometry.get("x") or 0) + float(geometry.get("width") or 0),
         )
 
-    for geometry in model.iter("mxGeometry"):
+    # Dời xuống nhường chỗ tiêu đề: chỉ cell cấp trên cùng và điểm của edge cấp trên cùng. Dời cả cell con
+    # (activation trong lifeline, guard trong khung) làm chúng lệch 50 px khỏi cha; không dời điểm edge thì mọi
+    # message nằm cao hơn activation của nó 50 px — mũi tên gọi/trả về chồng lên nhau.
+    for cell in model.iter("mxCell"):
+        if cell.get("parent") != "1":
+            continue
+        geometry = cell.find("mxGeometry")
+        if geometry is None:
+            continue
         if geometry.get("relative") == "1":
+            for point in geometry.iter("mxPoint"):
+                if point.get("y") is not None:
+                    point.set("y", str(float(point.get("y")) + 50))
             continue
         if geometry.get("y") is not None:
             geometry.set("y", str(float(geometry.get("y")) + 50))
@@ -340,9 +370,9 @@ def choose_scale(model: ET.Element, requested: float | None) -> str:
     if requested is not None:
         return f"{requested:g}"
     width, height = diagram_extent(model)
-    scale = min(DEFAULT_SCALE, MAX_PNG_EDGE_PX / width, MAX_PNG_EDGE_PX / height)
-    # Làm tròn xuống 1 chữ số thập phân để ổn định giữa các lần chạy.
-    scale = max(0.4, round(scale - 1e-9, 1))
+    scale = min(DEFAULT_SCALE, math.sqrt(MAX_PNG_PIXELS / (width * height)))
+    # Làm tròn xuống 1 chữ số thập phân để ổn định giữa các lần chạy và không vượt giới hạn.
+    scale = max(0.4, math.floor(scale * 10 + 1e-9) / 10)
     return f"{scale:g}"
 
 
@@ -351,7 +381,7 @@ def convert_txt(
     txt_path: Path,
     page_id: str,
     work_dir: Path,
-) -> tuple[ET.Element, str]:
+) -> tuple[ET.Element, str, str]:
     raw = txt_path.read_text(encoding="utf-8")
     kinds, labels = parse_decls(raw)
     title_text = read_title(raw)
@@ -397,7 +427,7 @@ def convert_txt(
         "</mxfile>\n"
     )
     out_drawio.write_text(single, encoding="utf-8")
-    return model, str(out_drawio)
+    return model, str(out_drawio), title_text
 
 
 def _xml_escape(value: str) -> str:
@@ -409,26 +439,33 @@ def _xml_escape(value: str) -> str:
     )
 
 
-def splice_into_combined(page_id: str, model: ET.Element) -> None:
+def splice_into_combined(page_id: str, model: ET.Element, title_text: str = "") -> None:
     text = COMBINED.read_text(encoding="utf-8")
     pattern = re.compile(
         rf'(<diagram\b[^>]*\bid="{re.escape(page_id)}"[^>]*>)(.*?)(</diagram>)',
         re.DOTALL,
     )
     match = pattern.search(text)
-    if not match:
-        raise RuntimeError(f"Không thấy tab id={page_id} trong file gộp")
-    model_xml = ET.tostring(model, encoding="unicode")
-    COMBINED.write_text(
-        text[: match.start()]
-        + match.group(1)
-        + "\n    "
-        + model_xml
-        + "\n  "
-        + match.group(3)
-        + text[match.end() :],
-        encoding="utf-8",
-    )
+    model_xml = ET.tostring(model, encoding="unicode").strip()
+    if match:
+        COMBINED.write_text(
+            text[: match.start()]
+            + match.group(1)
+            + "\n    "
+            + model_xml
+            + "\n  "
+            + match.group(3)
+            + text[match.end() :],
+            encoding="utf-8",
+        )
+    else:
+        end_tag = "</mxfile>"
+        idx = text.rfind(end_tag)
+        if idx == -1:
+            raise RuntimeError(f"Không tìm thấy {end_tag} trong {COMBINED.name}")
+        name = _xml_escape(title_text or page_id)
+        new_tab = f'  <diagram id="{page_id}" name="{name}">\n    {model_xml}\n  </diagram>\n'
+        COMBINED.write_text(text[:idx] + new_tab + text[idx:], encoding="utf-8")
 
 
 def repair_png(path: Path) -> None:
@@ -505,10 +542,10 @@ def process_one(
 ) -> Path:
     page_id = stem_to_page_id(txt_path.stem)
     print(f"→ {txt_path.name}  ({page_id})", flush=True)
-    model, single_path = convert_txt(drawio, txt_path, page_id, work_dir)
+    model, single_path, title_text = convert_txt(drawio, txt_path, page_id, work_dir)
     chosen_scale = choose_scale(model, scale)
     if splice:
-        splice_into_combined(page_id, model)
+        splice_into_combined(page_id, model, title_text)
         print(f"  spliced vào {COMBINED.name}", flush=True)
     out = export_png(drawio, Path(single_path), page_id, chosen_scale)
     print(f"  PNG scale={chosen_scale} → {out.name} ({out.stat().st_size} bytes)", flush=True)

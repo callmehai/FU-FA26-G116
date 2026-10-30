@@ -123,22 +123,43 @@
 - [UC-78 — Keep Meeting in a Floating Window](#uc-78--keep-meeting-in-a-floating-window)
 - [UC-79 — Register to Speak](#uc-79--register-to-speak)
 
-### FE-09 — Meeting Audio Upload & Media Library
+### FE-09 — Meeting Recording
 
-- [UC-43 — View & Play Meeting Audio](#uc-43--view--play-meeting-audio)
-  - [UC-43a — View Media Library](#uc-43a--view-media-library)
-  - [UC-43b — Play Meeting Audio](#uc-43b--play-meeting-audio)
-- [UC-44 — Upload Meeting Audio](#uc-44--upload-meeting-audio)
+- [UC-43 — View & Play Meeting Recordings](#uc-43--view--play-meeting-recordings)
+  - [UC-43a — View Meeting Recordings](#uc-43a--view-meeting-recordings)
+  - [UC-43b — Play Meeting Recording](#uc-43b--play-meeting-recording)
+  - [UC-43c — Download Meeting Recording](#uc-43c--download-meeting-recording)
+- [UC-44 — Record Room Audio](#uc-44--record-room-audio)
+  - [UC-44a — Start Room Recording](#uc-44a--start-room-recording)
+  - [UC-44b — Stop and Save Room Recording](#uc-44b--stop-and-save-room-recording)
+  - [UC-44c — Upload Meeting Audio File](#uc-44c--upload-meeting-audio-file)
+  - [UC-44d — Delete Recording Take](#uc-44d--delete-recording-take)
+  - [UC-44e — Erase Meeting Recording](#uc-44e--erase-meeting-recording)
+- [UC-80 — Manage My Recorded Speech](#uc-80--manage-my-recorded-speech)
 
-### FE-10 — Speaker-Attributed Transcription & Meeting Summary
+### FE-10 — Transcription, Speaker Identification & Meeting Summary
 
-- [UC-45 — View Speaker-Attributed Transcript](#uc-45--view-speaker-attributed-transcript)
+- [UC-45 — View Meeting Transcript](#uc-45--view-meeting-transcript)
+  - [UC-45a — View Recording Transcript](#uc-45a--view-recording-transcript)
+  - [UC-45b — Export Meeting Transcript](#uc-45b--export-meeting-transcript)
+  - [UC-45c — Transcribe Meeting Recording](#uc-45c--transcribe-meeting-recording)
 - [UC-46 — Edit Transcript & Speaker Attribution](#uc-46--edit-transcript--speaker-attribution)
+  - [UC-46a — Edit Transcript Text](#uc-46a--edit-transcript-text)
+  - [UC-46b — Assign Speaker](#uc-46b--assign-speaker)
+  - [UC-46c — Exclude or Restore a Sentence](#uc-46c--exclude-or-restore-a-sentence)
+  - [UC-46d — Delete a Sentence](#uc-46d--delete-a-sentence)
 - [UC-47 — Generate / Regenerate Meeting Summary](#uc-47--generate--regenerate-meeting-summary)
 - [UC-48 — View Meeting Summary](#uc-48--view-meeting-summary)
 - [UC-49 — Edit Meeting Summary](#uc-49--edit-meeting-summary)
 - [UC-50 — Approve Meeting Summary](#uc-50--approve-meeting-summary)
 - [UC-51 — Publish Meeting Summary](#uc-51--publish-meeting-summary)
+- [UC-81 — Manage My Voice ID](#uc-81--manage-my-voice-id)
+  - [UC-81a — View My Voice ID](#uc-81a--view-my-voice-id)
+  - [UC-81b — Give Voice ID Consent](#uc-81b--give-voice-id-consent)
+  - [UC-81c — Record Voice Sample](#uc-81c--record-voice-sample)
+  - [UC-81d — Play Voice Sample](#uc-81d--play-voice-sample)
+  - [UC-81e — Delete Voice Sample](#uc-81e--delete-voice-sample)
+  - [UC-81f — Withdraw Voice ID Consent](#uc-81f--withdraw-voice-id-consent)
 
 ### FE-11 — Voting Management
 
@@ -1126,7 +1147,7 @@ SCRUM-21/22/23 — 22/10/2026 (BA, tham khảo AI-eCabinet; PO duyệt và đã 
 | **Description** | Allows a person who currently holds access to an In Progress Online or Hybrid Meeting to check the camera and microphone and enter its online meeting room. The room opens only while the Meeting is In Progress: joining does not start, resume or change the Meeting. A person who opens the room before the Meeting starts waits in the lobby, which opens by itself when the Meeting starts. |
 | **Preconditions** | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a valid invitation. (BR-120, BR-152 – BR-157, BR-181)<br>● PRE-2: The Meeting is In Progress and its mode is Online or Hybrid. (BR-143)<br>● PRE-3: The actor holds a current participant assignment of the Meeting, or a valid Guest access relationship for it. Being the Organizer or the Approver alone is not enough. (BR-97, BR-100, BR-101, BR-323)<br>● PRE-4: Fewer than 50 people are connected to the room. (BR-336) |
 | **Postconditions** | ● POST-1: The actor is connected to the meeting room and appears in the Participants panel of everyone in the room. (BR-330)<br>● POST-2: The Meeting lifecycle, its roster, its roles and its attendance are unchanged. (BR-324, BR-330)<br>● POST-3: The connection lasts until the actor leaves (UC-38) or the Meeting ends; presence in the room is never recorded as attendance. (BR-324, BR-330) |
-| **Normal Flow** | Join Meeting Room<br>1. On the Meeting detail of an In Progress Online or Hybrid Meeting, the actor chooses Join online room.<br>2. The system rechecks that the actor may still view the Meeting, that it is In Progress, that it has an online room and that the actor holds a current room-entry relationship. (BR-97, BR-101, BR-143, BR-323)<br>3. The system opens the Meeting Lobby with the camera preview, the microphone and camera switches and the microphone, speaker and camera pickers, with the microphone on and the camera off by default. (BR-331) When recording applies to the Meeting, the lobby also tells the actor that the meeting is recorded for the minutes and that the recording is deleted automatically after 180 days; turning on the microphone then means the actor’s own speech is recorded (see FE-09 – Meeting Audio Upload & Media Library).<br>4. The actor checks the preview, optionally chooses other devices through UC-39d and switches the microphone or camera through UC-39a and UC-39b.<br>5. The actor chooses Join room.<br>6. The system rechecks room-entry eligibility and asks the room service for a connection for that actor, carrying the actor's current Meeting Role. (BR-323, BR-329)<br>7. The system connects the actor and shows the Online Meeting Room – Video Grid with the people already in the room. (UC-40)<br>8. The system shows the actor in the room; no separate success message is displayed, because the Video Grid is the result. |
+| **Normal Flow** | Join Meeting Room<br>1. On the Meeting detail of an In Progress Online or Hybrid Meeting, the actor chooses Join online room.<br>2. The system rechecks that the actor may still view the Meeting, that it is In Progress, that it has an online room and that the actor holds a current room-entry relationship. (BR-97, BR-101, BR-143, BR-323)<br>3. The system opens the Meeting Lobby with the camera preview, the microphone and camera switches and the microphone, speaker and camera pickers, with the microphone on and the camera off by default. (BR-331) When recording applies to the Meeting, the lobby also tells the actor that the meeting is recorded for the minutes and that the recording is deleted automatically after 180 days; turning on the microphone then means the actor’s own speech is recorded (see UC-39a, UC-80).<br>4. The actor checks the preview, optionally chooses other devices through UC-39d and switches the microphone or camera through UC-39a and UC-39b.<br>5. The actor chooses Join room.<br>6. The system rechecks room-entry eligibility and asks the room service for a connection for that actor, carrying the actor's current Meeting Role. (BR-323, BR-329)<br>7. The system connects the actor and shows the Online Meeting Room – Video Grid with the people already in the room. (UC-40)<br>8. The system shows the actor in the room; no separate success message is displayed, because the Video Grid is the result. |
 | **Alternative Flows** | AF-1 – Rejoin after a lost connection<br>1. At Step 2, the actor reopens the room after the connection was lost while the Meeting is still In Progress.<br>2. The system offers Rejoin in place of Join room and, on success, the flow resumes at Step 7 of the Main Flow.<br>3. No new room and no new Meeting are created. (BR-324)<br>AF-2 – Join from a Guest invitation<br>1. At Step 1, the Guest continues from the verified invitation instead of the Meeting detail.<br>2. The system verifies the invitation and that the Meeting is In Progress, then the flow resumes at Step 3 of the Main Flow. (BR-152 – BR-157, BR-181)<br>AF-3 – Opened before the Meeting starts<br>1. At Step 2, the Meeting is Published and has not been started.<br>2. The system shows the waiting lobby with MSG117 – “The meeting room opens only while the meeting is in progress.” and no Join room button. (BR-143)<br>3. When the Chair starts the Meeting (UC-21), the lobby opens by itself and the flow resumes at Step 3 of the Main Flow.<br>AF-4 – The browser blocks audio playback<br>1. At Step 7, the browser does not let the page play sound until the actor interacts with it.<br>2. The system displays MSG338 – “The browser is blocking audio playback.” with the button “Click to hear everyone”.<br>3. The actor clicks it, the sound plays and the flow resumes at Step 8 of the Main Flow. |
 | **Exception Flows** | EX-1 – The Meeting has ended<br>1. At Step 2 or Step 6, the Meeting has ended, including while the actor was in the lobby.<br>2. No connection is made. The system displays MSG331 – “The meeting has ended, the meeting room is closed.” and offers Back to the meeting page. (BR-143)<br>3. The use case ends.<br>EX-2 – Meeting is held in person<br>1. At Step 2, the Meeting mode is In Person, so it has no online room.<br>2. No lobby is opened. The system displays MSG280 – “This meeting is held in person, so it has no online meeting room.”<br>3. The use case ends.<br>EX-3 – Room service is not configured<br>1. At Step 6, the system cannot issue a room connection because the room service is not configured.<br>2. No connection is made. The system displays MSG281 – “The online meeting room is not ready. Please contact the administrator.”<br>3. The use case ends.<br>EX-4 – Actor is no longer eligible<br>1. At Step 2 or Step 6, the actor was removed from the roster or the Guest invitation was revoked. (BR-97, BR-100, BR-101)<br>2. No connection is made and the system answers as if the Meeting did not exist, so the actor cannot tell that a room exists.<br>3. The use case ends.<br>EX-5 – Join cannot be completed<br>1. At Step 7, the system cannot read or save the room state.<br>2. No connection is made. The system displays MSG118 – “Unable to join the meeting room. Please try again.”<br>3. The use case ends.<br>EX-6 – The Meeting was cancelled<br>1. At Step 2 or Step 6, the Meeting is Cancelled. (BR-299)<br>2. No connection is made and no Join room button is offered. The system displays MSG350 – “The meeting was cancelled, so the meeting room does not open.”<br>3. The use case ends.<br>EX-7 – The room is full<br>1. At Step 7, 50 people are already connected to the room. (BR-336)<br>2. No connection is made and the actor stays in the lobby; the actor may try again when someone leaves. No catalogue message is assigned to this case yet.<br>3. The use case ends.<br>EX-8 – The room status cannot be loaded<br>1. At Step 2, the system cannot read the state of the meeting room.<br>2. No lobby is opened. The system displays MSG283 – “Unable to load the meeting room status. Please try again.”<br>3. The use case ends. |
 
@@ -1153,12 +1174,12 @@ _UC gom — đặc tả nằm ở các UC con UC-39a, UC-39b… bên dưới._
 |---|---|
 | **Primary Actors** | Chair, Secretary, Participant, Guest |
 | **Secondary Actors** | None |
-| **Description** | Allows a person in the Meeting Lobby or in the meeting room to turn his or her own microphone on or off. It changes only that person's microphone: turning another person's microphone off is UC-41. |
+| **Description** | Allows a person in the Meeting Lobby or in the meeting room to turn his or her own microphone on or off. It changes only that person's microphone: turning another person's microphone off is UC-41. While recording applies to the Meeting, the microphone button is also the only recording switch (AF-2). |
 | **Preconditions** | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a valid invitation.<br>● PRE-2: The actor is in the Meeting Lobby or connected to the meeting room of an In Progress Meeting. (UC-37)<br>● PRE-3: The browser reports at least one microphone. |
-| **Postconditions** | ● POST-1: The actor's microphone is on or off as chosen, for that actor only.<br>● POST-2: The browser remembers the on/off state for the next visit on that device. (BR-331)<br>● POST-3: No other person's audio, the Meeting lifecycle and attendance are unchanged.<br>● POST-4: While recording applies to the Meeting, a microphone that is on means the actor’s own speech is recorded for the minutes; turning it off stops it. The microphone button is the only switch. (FE-09 – Meeting Audio Upload & Media Library) |
+| **Postconditions** | ● POST-1: The actor's microphone is on or off as chosen, for that actor only.<br>● POST-2: The browser remembers the on/off state for the next visit on that device. (BR-331)<br>● POST-3: No other person's audio, the Meeting lifecycle and attendance are unchanged.<br>● POST-4: While recording applies to the Meeting, a microphone that is on means the actor’s own speech is recorded for the minutes; turning it off stops it. The microphone button is the only switch. (AF-2, UC-80, BR-352) |
 | **Normal Flow** | Manage Microphone<br>1. The actor chooses the microphone button in the lobby or in the call controls, or presses Ctrl+D (Cmd+D on a Mac).<br>2. The system turns the actor's microphone on or off and shows the new state on the button and in the actor's video tile; while it is off, everyone in the room sees the microphone marked as off. (UC-40)<br>3. The system remembers the new state for the next visit on this device. (BR-331)<br>4. The microphone follows the choice; no separate message is displayed, because the button and the tile carry the state. |
-| **Alternative Flows** | AF-1 – Choose another microphone<br>1. At Step 1, the actor opens the arrow beside the microphone button and chooses another microphone through UC-39d.<br>2. The system switches the live audio to that microphone, keeps the on/off state and remembers the device. (BR-331)<br>3. The flow resumes at Step 2 of the Main Flow. |
-| **Exception Flows** | EX-1 – The browser blocks the microphone<br>1. At Step 2, the browser has not granted microphone permission.<br>2. The microphone stays off and the actor stays in the room and can still hear everyone. The system displays MSG334 – “The browser is blocking the microphone. Click the lock icon beside the address bar, choose Allow and reload the page. You can still join the room to listen.” (BR-331)<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-2 – No microphone is available<br>1. At Step 1, the browser reports no microphone, or the chosen microphone was disconnected.<br>2. The microphone picker is disabled and says why, and the actor can still join the room to listen. The system displays MSG335 – “No {device} was found on this computer.”<br>3. The use case ends.<br>EX-3 – Another application holds the microphone<br>1. At Step 2, the browser cannot open the microphone because another application is using it.<br>2. The microphone stays off and the actor can still hear everyone. The system displays MSG336 – “The {device} is being used by another application (Zoom, Teams…). Close that application and try again.”<br>3. The flow resumes at Step 1 of the Main Flow. |
+| **Alternative Flows** | AF-1 – Choose another microphone<br>1. At Step 1, the actor opens the arrow beside the microphone button and chooses another microphone through UC-39d.<br>2. The system switches the live audio to that microphone, keeps the on/off state and remembers the device. (BR-331)<br>3. The flow resumes at Step 2 of the Main Flow.<br>AF-2 – Speech recorded while the microphone is on<br>1. At Step 2, the actor turns the microphone on in an Online or Hybrid Meeting that is In Progress. This does not apply to a Guest, whose own microphone is not recorded; a Guest’s speech reaches the record only through the room recording. (BR-340, BR-352, BR-370)<br>2. While the microphone is on, the system captures the actor’s speech sentence by sentence, converts each sentence into text and keeps it with its time and the actor’s name. Sentences with only silence or background noise are not kept. (BR-352)<br>3. A sentence that repeats a neighbouring person’s speech picked up by the actor’s microphone is marked as overlapping, not hidden. (BR-356)<br>4. A sentence that cannot be delivered right away stays on the actor’s device and is delivered later, up to 7 days after the Meeting ends. (BR-354)<br>5. Saved sentences can be reviewed, listened to and deleted by the actor in My Recorded Speech (UC-80), and are erased automatically 180 days after they are saved. (BR-347, BR-355)<br>6. The flow resumes at Step 3 of the Main Flow. |
+| **Exception Flows** | EX-1 – The browser blocks the microphone<br>1. At Step 2, the browser has not granted microphone permission.<br>2. The microphone stays off and the actor stays in the room and can still hear everyone. The system displays MSG334 – “The browser is blocking the microphone. Click the lock icon beside the address bar, choose Allow and reload the page. You can still join the room to listen.” (BR-331)<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-2 – No microphone is available<br>1. At Step 1, the browser reports no microphone, or the chosen microphone was disconnected.<br>2. The microphone picker is disabled and says why, and the actor can still join the room to listen. The system displays MSG335 – “No {device} was found on this computer.”<br>3. The use case ends.<br>EX-3 – Another application holds the microphone<br>1. At Step 2, the browser cannot open the microphone because another application is using it.<br>2. The microphone stays off and the actor can still hear everyone. The system displays MSG336 – “The {device} is being used by another application (Zoom, Teams…). Close that application and try again.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-4 – Speech Recognition Service unavailable<br>1. At Step 2 of AF-2, the Speech Recognition Service cannot convert a sentence into text.<br>2. The sentence stays on the actor’s device and is sent again later; the microphone and the actor’s place in the room are not affected. The system displays MSG312 – “Speech recognition service is currently unavailable. Please try again later.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-5 – The Meeting cannot be recorded now<br>1. At Step 2 of AF-2, the Meeting is held in person, has not started, or ended more than 7 days ago. (BR-340, BR-354)<br>2. The sentence is not accepted and is not kept. The system displays MSG320 – “In-person meetings do not record per-mic speech, or the meeting is no longer running.”<br>3. The use case ends. |
 
 #### UC-39b – Manage Camera
 
@@ -1266,35 +1287,235 @@ _UC gom — đặc tả nằm ở các UC con UC-39a, UC-39b… bên dưới._
 
 ---
 
-## FE-09 — Meeting Audio Upload & Media Library
+## FE-09 — Meeting Recording
 
-### UC-43 – View & Play Meeting Audio
+### UC-43 – View & Play Meeting Recordings
 
 _UC gom — đặc tả nằm ở các UC con UC-43a, UC-43b… bên dưới._
 
-#### UC-43a – View Media Library
+#### UC-43a – View Meeting Recordings
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows a person who currently holds a Chair, Secretary or Participant assignment of a Meeting to view what was recorded in it on the Recordings tab: the sentences recorded from each person's own microphone and the recordings of the meeting room. |
+| **Preconditions** | ● PRE-1: The actor is signed in as an internal user and may view the Meeting. (BR-370)<br>● PRE-2: The actor currently holds a Chair, Secretary or Participant assignment of the Meeting. Being the Organizer or the Approver alone is not enough. (BR-350) |
+| **Postconditions** | ● POST-1: The actor sees the recorded sentences and the room recordings that apply to the Meeting's format. Nothing is changed.<br>● POST-2: A Guest, or a person who is not on the current roster, sees no recording and cannot tell that any exists. (BR-350, BR-370)<br>● POST-3: A sentence excluded from the record appears to everyone except the Chair and the Secretary as an empty entry, without its text. (BR-357) |
+| **Normal Flow** | View Meeting Recordings<br>1. On the Meeting detail, the actor selects the Recordings tab.<br>2. The system checks that the actor currently holds a Chair, Secretary or Participant assignment and loads the recorded sentences and the room recordings of the Meeting. (BR-350, BR-370)<br>3. The system shows the recorded sentences as a timeline with the speaker, the time and the text of each sentence. A sentence that repeats a neighbour's speech picked up by another microphone is marked as overlapping. (BR-356)<br>4. For an In-person or Hybrid Meeting, the system also shows each room recording with its state (Recording, Available or Erased), its source (room microphone or uploaded file), its length, the date it will be erased, its takes and the state of its transcript. (BR-340, BR-347)<br>5. While a room take is being recorded, the system shows everyone on the tab a Recording indicator. |
+| **Alternative Flows** | AF-1 – Online Meeting<br>1. At Step 4, the Meeting is held online.<br>2. The system shows only the recorded sentences. No room recording and no audio upload is offered, because an Online Meeting records each person's own microphone. (BR-340)<br>3. The flow resumes at Step 5 of the Main Flow.<br>AF-2 – Sentence excluded from the record<br>1. At Step 3, the Chair or the Secretary has excluded a sentence from the record.<br>2. The Chair and the Secretary see the sentence with its text and the reason. Everyone else sees an empty entry in its place: they can tell that a sentence once existed, but cannot read or play it. (BR-357)<br>3. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Recordings cannot be loaded<br>1. At Step 2, the system cannot read the recordings.<br>2. Nothing is shown. The system displays MSG297 – “Unable to load meeting recordings.”<br>3. The use case ends.<br>EX-2 – Recorded sentences cannot be loaded<br>1. At Step 2, the system cannot read the recorded sentences.<br>2. The sentences are not shown. The system displays MSG299 – “Unable to load transcript.”<br>3. The use case ends.<br>EX-3 – Actor is not on the current roster<br>1. At Step 2, the actor is a Guest or no longer holds a Chair, Secretary or Participant assignment. (BR-350, BR-370)<br>2. Nothing is shown and the system answers as if the Meeting had no recordings, so the actor cannot tell that any exist.<br>3. The use case ends. |
 
-#### UC-43b – Play Meeting Audio
+#### UC-43b – Play Meeting Recording
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows a person who currently holds a Chair, Secretary or Participant assignment of a Meeting to listen to a room recording or to a single recorded sentence. |
+| **Preconditions** | ● PRE-1: The actor is viewing the Recordings tab of a Meeting in which the actor currently holds a Chair, Secretary or Participant assignment. (UC-43a, BR-350)<br>● PRE-2: The recording or the sentence has not been erased or deleted. |
+| **Postconditions** | ● POST-1: The audio plays for the actor. Nothing is saved to the actor's device and the record is not changed.<br>● POST-2: Only the Chair and the Secretary can play a sentence excluded from the record. (BR-357) |
+| **Normal Flow** | Play Meeting Recording<br>1. The actor selects Play on a room recording or on a recorded sentence.<br>2. The system checks that the actor currently holds a Chair, Secretary or Participant assignment and may hear this item. (BR-350, BR-357)<br>3. The system opens the player and plays the recording, or the chosen sentence, from its beginning.<br>4. The actor can pause, move to another position, change the volume and change the playback speed. |
+| **Alternative Flows** | AF-1 – Play an excluded sentence<br>1. At Step 1, the actor is the current Chair or Secretary and selects a sentence excluded from the record.<br>2. The system confirms that the actor is the Chair or the Secretary and allows the playback. (BR-357)<br>3. The flow resumes at Step 3 of the Main Flow. |
+| **Exception Flows** | EX-1 – Audio cannot be loaded<br>1. At Step 2 or Step 3, the system cannot load the audio.<br>2. Nothing plays. The system displays MSG297 – “Unable to load meeting recordings.”<br>3. The use case ends.<br>EX-2 – Actor no longer has access<br>1. At Step 2, the actor is no longer on the roster, or the sentence is excluded from the record and the actor is neither the Chair nor the Secretary. (BR-350, BR-357)<br>2. Nothing plays and the system answers as if the audio did not exist.<br>3. The use case ends. |
 
-### UC-44 – Upload Meeting Audio
+#### UC-43c – Download Meeting Recording
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Chair or Secretary to download the audio file of a room recording to the computer. |
+| **Preconditions** | ● PRE-1: The actor is signed in and currently holds the Chair or Secretary assignment of the Meeting. (BR-351)<br>● PRE-2: The Meeting is not Secret. (BR-351)<br>● PRE-3: The recording is Available, not Erased. |
+| **Postconditions** | ● POST-1: The audio file is saved on the actor's device.<br>● POST-2: The download is recorded in the audit log. (BR-351) |
+| **Normal Flow** | Download Meeting Recording<br>1. On the Recordings tab, the actor selects Download on an available room recording.<br>2. The system checks that the actor is the current Chair or Secretary and that the Meeting is not Secret. (BR-351)<br>3. The system records the download in the audit log. (BR-351)<br>4. The system delivers the audio file and the browser saves it. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Participant tries to download<br>1. At Step 2, the actor is a Participant, not the Chair or the Secretary. (BR-351)<br>2. No file is delivered and nothing is logged. The system displays MSG355 – “Only the Chair or Secretary may download meeting recordings and transcripts.”<br>3. The use case ends.<br>EX-2 – Secret Meeting<br>1. At Step 2, the Meeting is Secret. (BR-351)<br>2. No file is delivered. The system displays MSG356 – “Recordings and transcripts of Secret meetings cannot be downloaded.”<br>3. The use case ends. |
+
+### UC-44 – Record Room Audio
+
+_UC gom — đặc tả nằm ở các UC con UC-44a, UC-44b… bên dưới._
+
+#### UC-44a – Start Room Recording
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Secretary to record the sound of the meeting room by turning on the room microphone. Each time the microphone is turned on starts a new take; the take is saved when the microphone is turned off (UC-44b). |
+| **Preconditions** | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-341)<br>● PRE-2: The Meeting is In-person or Hybrid and is In Progress. (BR-340, BR-342)<br>● PRE-3: No other room take is open for this Meeting. (BR-344) |
+| **Postconditions** | ● POST-1: A new room take is open and the room sound is being kept while it is spoken. The part not yet delivered stays on the Secretary's device, so a short loss of connection loses nothing.<br>● POST-2: Everyone on the Recordings tab sees the Recording indicator.<br>● POST-3: The confirmation that attendees were informed, with its time and purpose, is kept with the recording. (BR-343) |
+| **Normal Flow** | Start Room Recording<br>1. On the recording card or on the Recordings tab, the Secretary turns the room microphone on.<br>2. If this is the first room take of the Meeting, the system asks the Secretary to confirm that attendees were informed and nobody objected, and to enter the purpose of the recording (optional). (BR-343)<br>3. The Secretary confirms.<br>4. The system checks the Secretary's role, the format and the status of the Meeting and that no other take is open, opens a new take and keeps the time of the confirmation and the purpose. (BR-341, BR-342, BR-343, BR-344)<br>5. The Secretary's browser starts the microphone and sends the sound to the system as it is recorded. No text is shown while recording.<br>6. The system shows everyone watching the Meeting the Recording indicator. |
+| **Alternative Flows** | AF-1 – Reopening the Meeting while a take is open<br>1. At Step 1, the Secretary closed the tab or the browser while the room microphone was on and opens the Meeting again.<br>2. The system offers Continue recording or Save recorded part.<br>3. If the Secretary chooses Continue recording, the recording carries on in the same take and the flow resumes at Step 5 of the Main Flow.<br>4. If the Secretary chooses Save recorded part, the part already recorded is saved as a take through UC-44b, which completes the take.<br>AF-2 – Later take of the same Meeting<br>1. At Step 2, an earlier take of the Meeting already received the confirmation.<br>2. The system does not ask again and the flow resumes at Step 4 of the Main Flow. (BR-343)<br>AF-3 – Take reaches the size limit<br>1. At Step 5, the take is close to the limit of 300 MB for one recording.<br>2. The system saves that take by itself as in UC-44b and opens a new take, so recording goes on without a break and the Secretary does not need to act. (BR-344, BR-345)<br>3. The flow resumes at Step 5 of the Main Flow. |
+| **Exception Flows** | EX-1 – Invalid recording information<br>1. At Step 4, the confirmation is missing or the recording information is incomplete.<br>2. No take is opened. The system displays MSG291 – “Invalid recording information.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 4, the actor is not the current Secretary. (BR-341)<br>2. No take is opened. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-3 – Recording cannot be saved<br>1. At Step 4 or Step 5, the system cannot keep the recording.<br>2. The system displays MSG298 – “Unable to save recording changes. Please try again.” Sound not yet delivered stays on the Secretary's device and is sent again.<br>3. The use case ends.<br>EX-4 – Online Meeting<br>1. At Step 4, the Meeting is Online. (BR-340)<br>2. No take is opened. The system displays MSG358 – “Online meetings record per-mic speech; room recordings are not available.”<br>3. The use case ends.<br>EX-5 – Meeting is not In Progress<br>1. At Step 4, the Meeting is not In Progress. (BR-342)<br>2. No take is opened. The system displays MSG359 – “Room microphone can only be turned on while the meeting is in progress.”<br>3. The use case ends.<br>EX-6 – A take is already open on another device<br>1. At Step 4, another take of the Meeting is open on a different device or tab. (BR-344)<br>2. No take is opened. The system displays MSG360 – “Room microphone is currently active on another device.”<br>3. The use case ends.<br>EX-7 – Part of the recording is not valid<br>1. At Step 5, the system receives a part of the recorded sound that is damaged or does not follow on from the sound already kept.<br>2. That part is not accepted and the sound already kept is not affected. The system displays MSG361 – “The recorded audio is not valid.”<br>3. The use case ends. |
+
+#### UC-44b – Stop and Save Room Recording
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary, System |
+| **Secondary Actors** | None |
+| **Description** | Allows the Secretary to turn the room microphone off and save the take, and lets the system save a take that was left open. The saved take is added to the Meeting's room recording and the whole recording is put in line for transcription. |
+| **Preconditions** | ● PRE-1: A room take is open for the Meeting. (BR-344)<br>● PRE-2: The actor is the current Secretary, or the take has received no sound for 12 hours. (BR-341, BR-346) |
+| **Postconditions** | ● POST-1: The take is added to the Meeting's room recording, which stays one recording for the Meeting. (BR-345)<br>● POST-2: The whole recording is put in line to be transcribed again. (BR-345) |
+| **Normal Flow** | Stop and Save Room Recording<br>1. The Secretary turns the room microphone off, or selects Save take.<br>2. The system closes the open take, keeps the sound it received and adds it to the end of the Meeting's room recording, updating the length of the recording and where the take starts. (BR-345)<br>3. The system puts the whole recording in line for transcription. (UC-45c, BR-345)<br>4. The system displays MSG363 – “Room recording take saved.” and the Recording indicator disappears. |
+| **Alternative Flows** | AF-1 – No sound received<br>1. At Step 2, the take received no sound at all.<br>2. The system discards the take and leaves the recording unchanged. It displays MSG365 – “Microphone detected no speech; take was not saved.”<br>3. The take is closed and the use case ends, because there is nothing to add to the recording.<br>AF-2 – Take left open for 12 hours<br>1. At Step 1, an open take receives no sound for 12 hours, for instance because the Secretary left it open and went away.<br>2. The system saves the take by itself, without a message. (BR-346)<br>3. The flow resumes at Step 2 of the Main Flow.<br>AF-3 – Take left open on another device<br>1. At Step 1, the take is still open on another computer.<br>2. The Secretary selects Save take on this device. (BR-341)<br>3. The flow resumes at Step 2 of the Main Flow.<br>AF-4 – Room recording is full<br>1. At Step 2, adding the take would make the Meeting's room recording larger than 300 MB. (BR-345)<br>2. The system keeps the take as a new room recording instead of adding it to the existing one.<br>3. The flow resumes at Step 3 of the Main Flow. |
+| **Exception Flows** | EX-1 – Take already saved<br>1. At Step 2, the take was already saved by another action.<br>2. Nothing is added. The system displays MSG362 – “This recording take has been closed and cannot accept additional audio.”<br>3. The use case ends.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 2, the actor is not the current Secretary. (BR-341)<br>2. The take stays as it was. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-3 – Take cannot be saved<br>1. At Step 2, the system cannot add the take to the recording.<br>2. The recording is unchanged. The system displays MSG298 – “Unable to save recording changes. Please try again.”<br>3. The use case ends. |
+
+#### UC-44c – Upload Meeting Audio File
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Secretary to add an audio file recorded outside the system to the recordings of an In-person or Hybrid Meeting. |
+| **Preconditions** | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-341)<br>● PRE-2: The Meeting is In-person or Hybrid and is In Progress or Ended. (BR-340, BR-342) |
+| **Postconditions** | ● POST-1: The audio file is kept as a room recording of the Meeting and put in line for transcription. (UC-45c)<br>● POST-2: The confirmation that attendees were informed, with its time and purpose, is kept with the recording, and the upload is recorded in the audit log. (BR-343) |
+| **Normal Flow** | Upload Meeting Audio File<br>1. On the Recordings tab, the Secretary selects Upload audio file.<br>2. The Secretary chooses an audio file from the computer.<br>3. The Secretary confirms that attendees were informed and nobody objected, and may enter the purpose of the recording. (BR-343)<br>4. The Secretary selects Upload.<br>5. The system checks the Secretary's role, the format and the status of the Meeting, the type and the size of the file, keeps the file and puts it in line for transcription. (BR-340, BR-341, BR-342, BR-343)<br>6. The system displays MSG290 – “Meeting recording saved.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Invalid recording information<br>1. At Step 5, the confirmation is missing or the recording information is incomplete.<br>2. No file is kept. The system displays MSG291 – “Invalid recording information.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-2 – Unsupported audio type<br>1. At Step 5, the file is not one of the supported audio types.<br>2. No file is kept. The system displays MSG292 – “Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-3 – File is too large<br>1. At Step 5, the file is larger than 300 MB.<br>2. No file is kept. The system displays MSG293 – “Recording exceeds 300 MB.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-4 – Meeting is not in a valid state<br>1. At Step 5, the Meeting is neither In Progress nor Ended. (BR-342)<br>2. No file is kept. The system displays MSG294 – “Recordings may only be saved while the meeting is in progress or has ended.”<br>3. The use case ends.<br>EX-5 – Actor is not the current Secretary<br>1. At Step 5, the actor is not the current Secretary. (BR-341)<br>2. No file is kept. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-6 – File cannot be saved<br>1. At Step 5, the system cannot keep the file.<br>2. Nothing is saved. The system displays MSG298 – “Unable to save recording changes. Please try again.”<br>3. The use case ends.<br>EX-7 – Online Meeting<br>1. At Step 5, the Meeting is Online. (BR-340)<br>2. No file is kept. The system displays MSG358 – “Online meetings record per-mic speech; room recordings are not available.”<br>3. The use case ends. |
+
+#### UC-44d – Delete Recording Take
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Secretary to remove one take from a room recording: the sound and the sentences of that take are cut out while the other takes are kept. |
+| **Preconditions** | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-341)<br>● PRE-2: The recording has at least two takes. (BR-349)<br>● PRE-3: No take of the recording is being recorded at the moment. |
+| **Postconditions** | ● POST-1: The sound and the sentences of the deleted take are removed from the recording and the later takes move up to close the gap. (BR-349)<br>● POST-2: Text edited and names assigned on the other takes are kept. (BR-349)<br>● POST-3: The deletion is recorded in the audit log. |
+| **Normal Flow** | Delete Recording Take<br>1. On the Recordings tab, the Secretary opens the takes of a room recording and selects Delete take on one of them.<br>2. The system warns that the sound and the sentences of this take will be removed and asks for confirmation.<br>3. The Secretary confirms.<br>4. The system cuts the take out of the recording, removes its sentences from the transcript, moves the later takes up and records the deletion in the audit log. (BR-341, BR-349)<br>5. The system displays MSG366 – “Recording take deleted.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Recording has only one take<br>1. At Step 4, the recording has only one take. (BR-349)<br>2. Nothing is removed. The system displays MSG367 – “Recording contains only one take. Erase the entire recording to remove it.”<br>3. The use case ends.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 4, the actor is not the current Secretary. (BR-341)<br>2. Nothing is removed. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends. |
+
+#### UC-44e – Erase Meeting Recording
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary, System |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Secretary, or the system when the 180-day period ends, to erase the audio and the transcript of a recording while keeping the fact that it existed. |
+| **Preconditions** | ● PRE-1: The actor is the current Secretary, or the recording is more than 180 days past the day it was saved. (BR-341, BR-347)<br>● PRE-2: No take of the recording is being recorded at the moment. |
+| **Postconditions** | ● POST-1: The audio and the transcript of the recording are permanently removed. (BR-348)<br>● POST-2: The Meeting still shows that a recording existed, that it was erased, when, and by whom or that it expired. (BR-348) |
+| **Normal Flow** | Erase Meeting Recording<br>1. On the Recordings tab, the Secretary selects Erase recording on a room recording.<br>2. The system asks for confirmation and explains that the audio and the transcript will be permanently removed.<br>3. The Secretary confirms.<br>4. The system removes the audio and the transcript, marks the recording as Erased with the date and the Secretary, and records the erasure in the audit log. (BR-348)<br>5. The system displays MSG296 – “Meeting recording erased.” |
+| **Alternative Flows** | AF-1 – Automatic erasure after 180 days<br>1. At Step 1, a recording is more than 180 days past the day it was saved.<br>2. The system erases its audio and transcript by itself, marks it as Erased because it expired and records the erasure in the audit log. (BR-347, BR-348)<br>3. The recording is erased as in Step 4 of the Main Flow, which completes the use case. |
+| **Exception Flows** | EX-1 – A take is being recorded<br>1. At Step 4, a take of the recording is being recorded.<br>2. Nothing is erased. The system displays MSG364 – “Room microphone is currently recording. Turn off the microphone before erasing.”<br>3. The use case ends.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 4, the actor is not the current Secretary. (BR-341)<br>2. Nothing is erased. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-3 – Recording cannot be erased<br>1. At Step 4, the system cannot remove the audio or the transcript.<br>2. The recording stays as it was. The system displays MSG298 – “Unable to save recording changes. Please try again.”<br>3. The use case ends. |
+
+### UC-80 – Manage My Recorded Speech
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows a person who currently holds a Chair, Secretary or Participant assignment to review the sentences recorded from his or her own microphone, listen to them again and delete a sentence of his or her own. |
+| **Preconditions** | ● PRE-1: The actor is signed in as an internal user and currently holds a Chair, Secretary or Participant assignment of the Meeting. A Guest cannot use this function. (BR-355, BR-370) |
+| **Postconditions** | ● POST-1: A deleted sentence, with its text and its audio, is permanently removed from the Meeting record. (BR-355) |
+| **Normal Flow** | Manage My Recorded Speech<br>1. In the online room or on the Recordings tab, the actor opens My Recorded Speech.<br>2. The system lists the actor's sentences: those still waiting on this device to be delivered and those already saved, each with its time and its text. (BR-354)<br>3. The actor selects a sentence to listen to it.<br>4. The actor selects Delete on a sentence and confirms.<br>5. The system permanently removes the text and the audio of the sentence and records the deletion in the audit log. (BR-355)<br>6. The system displays MSG322 – “Spoken sentence deleted.” and refreshes the list. |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Sentence belongs to someone else<br>1. At Step 5, the sentence belongs to another speaker and the actor is not the Secretary. (BR-355)<br>2. Nothing is removed. The system displays MSG323 – “Only the speaker or the Secretary may delete this sentence.”<br>3. The use case ends.<br>EX-2 – Sentence cannot be deleted<br>1. At Step 5, the system cannot remove the sentence.<br>2. The sentence stays as it was. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends. |
 
 ---
 
-## FE-10 — Speaker-Attributed Transcription & Meeting Summary
+## FE-10 — Transcription, Speaker Identification & Meeting Summary
 
-### UC-45 – View Speaker-Attributed Transcript
+### UC-45 – View Meeting Transcript
 
-Placeholder only – detailed Use Case Specification will be added later.
+_UC gom — đặc tả nằm ở các UC con UC-45a, UC-45b… bên dưới._
+
+#### UC-45a – View Recording Transcript
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary, Participant |
+| **Secondary Actors** | None |
+| **Description** | Allows a person who currently holds a Chair, Secretary or Participant assignment to view the transcript of a room recording: its state, the text with times and speakers, the dividers between takes and the text corrected by a person. |
+| **Preconditions** | ● PRE-1: The actor is signed in as an internal user and currently holds a Chair, Secretary or Participant assignment of the Meeting. (BR-350)<br>● PRE-2: The Meeting has a room recording that has not been erased. |
+| **Postconditions** | ● POST-1: The actor sees the state of the transcript and, once it is Completed, its passages with times, speakers and take dividers.<br>● POST-2: Suggested speaker names are visible only to the Secretary. (BR-366) |
+| **Normal Flow** | View Recording Transcript<br>1. On the Recordings tab, the actor selects View transcript on a room recording.<br>2. The system checks that the actor currently holds a Chair, Secretary or Participant assignment and loads the transcript. (BR-350)<br>3. The system shows the state of the transcript: Pending, Processing, Completed or Failed. For a Failed transcript it also shows the reason.<br>4. When the transcript is Completed, the system shows each passage with its start and end time and its speaker (Speaker N, or the name assigned), a divider where one take ends and the next begins, and marks the text corrected by a person to tell it from the text produced by the system.<br>5. For the Secretary, the system also shows the suggested names next to each unnamed speaker and the control to assign a speaker (UC-46b). (BR-366) |
+| **Alternative Flows** | AF-1 – Transcript is not completed yet<br>1. At Step 3, the transcript is Pending or Processing.<br>2. The system shows the state without text.<br>3. When the transcript is Completed, the flow resumes at Step 4 of the Main Flow.<br>AF-2 – Transcript failed<br>1. At Step 3, the transcript is Failed.<br>2. The system shows the reason. The Secretary may transcribe the recording again (UC-45c), after which the flow resumes at Step 3 of the Main Flow. |
+| **Exception Flows** | EX-1 – Transcript cannot be loaded<br>1. At Step 2, the system cannot read the transcript.<br>2. Nothing is shown. The system displays MSG299 – “Unable to load transcript.”<br>3. The use case ends. |
+
+#### UC-45b – Export Meeting Transcript
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Chair or Secretary to export the transcript of a room recording, or the sentences recorded from each person's own microphone, as a text file. |
+| **Preconditions** | ● PRE-1: The actor is signed in and currently holds the Chair or Secretary assignment of the Meeting. (BR-351)<br>● PRE-2: The Meeting is not Secret. (BR-351)<br>● PRE-3: For a room recording, its transcript is Completed. |
+| **Postconditions** | ● POST-1: A text file with the transcript is delivered to the actor.<br>● POST-2: Sentences excluded from the record are left out of the file. (BR-358)<br>● POST-3: The export is recorded in the audit log. (BR-351) |
+| **Normal Flow** | Export Meeting Transcript<br>1. On the Recordings tab or in the transcript, the actor selects Export transcript.<br>2. The system checks that the actor is the current Chair or Secretary, that the Meeting is not Secret and that the transcript is Completed. (BR-351)<br>3. The system builds the text file without the sentences excluded from the record. (BR-358)<br>4. The system records the export in the audit log and delivers the file. (BR-351) |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Participant tries to export<br>1. At Step 2, the actor is a Participant, not the Chair or the Secretary. (BR-351)<br>2. No file is delivered. The system displays MSG355 – “Only the Chair or Secretary may download meeting recordings and transcripts.”<br>3. The use case ends.<br>EX-2 – Secret Meeting<br>1. At Step 2, the Meeting is Secret. (BR-351)<br>2. No file is delivered. The system displays MSG356 – “Recordings and transcripts of Secret meetings cannot be downloaded.”<br>3. The use case ends.<br>EX-3 – Transcript is not ready<br>1. At Step 2, the transcript is Pending, Processing or Failed.<br>2. No file is delivered. The system displays MSG357 – “Transcript is not ready for download.”<br>3. The use case ends. |
+
+#### UC-45c – Transcribe Meeting Recording
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary, System |
+| **Secondary Actors** | Speech Recognition Service |
+| **Description** | Allows a room recording to be converted into timed text with its speakers told apart: by the system itself when a recording is saved, or when the Secretary asks, including a new run after a failure or on a transcript that is already completed. |
+| **Preconditions** | ● PRE-1: The recording exists and its audio has not been erased.<br>● PRE-2: For a request made by hand, the actor is the current Secretary. (BR-341) |
+| **Postconditions** | ● POST-1: The recording is waiting for transcription.<br>● POST-2: When processed, the transcript is Completed, with timed text for each speaker and, where possible, suggested names of consenting people on the roster (BR-366), or it is Failed with the reason. |
+| **Normal Flow** | Transcribe Meeting Recording<br>1. The Secretary selects Transcribe on a room recording that has no transcript yet.<br>2. The system checks that the actor is the current Secretary and that the recording is not already waiting or being transcribed. (BR-341)<br>3. The system puts the recording in line for transcription and displays MSG300 – “Recording queued for transcription.”<br>4. The Speech Recognition Service, which runs inside the system, converts the audio into text with punctuation and capital letters and tells the speakers apart. The audio never leaves the system. (BR-369)<br>5. The system keeps the text and the speakers, marks the transcript Completed and, for each unnamed speaker, prepares a suggested name when a consenting person on the roster has a similar voice. (BR-366, BR-369) |
+| **Alternative Flows** | AF-1 – Automatic transcription after saving<br>1. At Step 1, a take is saved (UC-44b) or an audio file is uploaded (UC-44c).<br>2. The system puts the recording in line without any action by the Secretary and the flow resumes at Step 4 of the Main Flow. (BR-345)<br>AF-2 – Run again after a failure<br>1. At Step 1, the transcript is Failed and the Secretary selects Transcribe again.<br>2. The flow resumes at Step 2 of the Main Flow.<br>AF-3 – Transcribe a completed transcript again<br>1. At Step 1, the Secretary selects Transcribe again on a Completed transcript.<br>2. The system warns that all text edited and all names assigned will be replaced and asks for confirmation. (BR-360)<br>3. When the Secretary confirms, the flow resumes at Step 2 of the Main Flow. |
+| **Exception Flows** | EX-1 – Transcription already in progress<br>1. At Step 2, the recording is waiting or is being transcribed.<br>2. Nothing changes. The system displays MSG301 – “The recording is currently queued or being transcribed and cannot be rerun yet.”<br>3. The use case ends.<br>EX-2 – Recording cannot be put in line<br>1. At Step 3, the system cannot accept the request.<br>2. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends.<br>EX-3 – Transcription fails<br>1. At Step 4, the recording cannot be transcribed, for instance because the service is unavailable or the audio cannot be read.<br>2. No text is kept. The transcript becomes Failed and the Secretary sees the reason. No catalogue message is assigned to this case yet.<br>3. The Secretary may run it again (AF-2). The use case ends. |
 
 ### UC-46 – Edit Transcript & Speaker Attribution
 
-Placeholder only – detailed Use Case Specification will be added later.
+_UC gom — đặc tả nằm ở các UC con UC-46a, UC-46b… bên dưới._
+
+#### UC-46a – Edit Transcript Text
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Secretary to correct the text of a transcript passage or of a recorded sentence. |
+| **Preconditions** | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-359)<br>● PRE-2: The passage or the sentence exists. |
+| **Postconditions** | ● POST-1: The corrected text is saved with the name of the Secretary and the time of the change. (BR-359) |
+| **Normal Flow** | Edit Transcript Text<br>1. In the transcript or on the timeline of recorded sentences, the Secretary selects a passage or a sentence to edit.<br>2. The Secretary changes the text and saves.<br>3. The system checks that the text is not empty and has at most 8,000 characters, saves it with the name of the Secretary and the time of the change, and records the change in the audit log. (BR-359)<br>4. The system displays MSG302 – “Transcript segment saved.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Invalid text<br>1. At Step 3, the text is empty or longer than 8,000 characters.<br>2. The text is not saved. The system displays MSG303 – “Transcript text is invalid.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Change cannot be saved<br>1. At Step 3, the system cannot save the change.<br>2. The text stays as it was. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends.<br>EX-3 – Actor is not the current Secretary<br>1. At Step 3, the actor is not the current Secretary. (BR-359)<br>2. The text stays as it was. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends. |
+
+#### UC-46b – Assign Speaker
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Secretary to give a speaker of a transcript the name of a person on the Meeting roster, or to clear it, using the suggested names when they are shown. |
+| **Preconditions** | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-341)<br>● PRE-2: The transcript of the room recording is Completed. |
+| **Postconditions** | ● POST-1: The chosen name is shown on every passage of that speaker, or the name is cleared. (BR-367)<br>● POST-2: The change is recorded in the audit log. |
+| **Normal Flow** | Assign Speaker<br>1. In the transcript, the Secretary sees each speaker as Speaker N or with the name assigned, and any suggested name. (BR-366)<br>2. The Secretary chooses a person from the Meeting roster, or clears the assignment. (BR-368)<br>3. The system checks that the person is on the current roster. (BR-368)<br>4. The system applies the name to every passage of that speaker and records the change in the audit log. (BR-367)<br>5. The system displays MSG316 – “Speaker assigned.” |
+| **Alternative Flows** | AF-1 – Several voices of the same person<br>1. At Step 2, the suggestions show that two or more speakers may be the same person.<br>2. The Secretary assigns the person to the whole group of speakers in one action. The system never assigns a name by itself. (BR-366, BR-367)<br>3. The flow resumes at Step 3 of the Main Flow. |
+| **Exception Flows** | EX-1 – Person is not on the roster<br>1. At Step 3, the chosen person is not on the current roster of the Meeting. (BR-368)<br>2. The name is not assigned. The system displays MSG317 – “Assigned person must be on the current meeting roster.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 3, the actor is not the current Secretary. (BR-341)<br>2. Nothing is changed. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends. |
+
+#### UC-46c – Exclude or Restore a Sentence
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Chair, Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Chair or Secretary to exclude a recorded sentence from the record, for instance because it picked up a neighbour's speech, giving a reason, or to restore a sentence that was excluded. |
+| **Preconditions** | ● PRE-1: The actor is the current Chair or Secretary of the Meeting. (BR-357)<br>● PRE-2: The sentence exists on the timeline of recorded sentences. |
+| **Postconditions** | ● POST-1: An excluded sentence is marked with its reason. It is not deleted: the Chair and the Secretary can still read and play it, while everyone else sees an empty entry in its place. (BR-357)<br>● POST-2: Excluded sentences are left out of exported transcripts. (BR-358) |
+| **Normal Flow** | Exclude or Restore a Sentence<br>1. On the timeline of recorded sentences, the actor selects Exclude sentence on a sentence.<br>2. The system asks for the reason: Overlapping speech or Other.<br>3. The actor chooses a reason and confirms.<br>4. The system marks the sentence as excluded, keeps the reason, the actor and the time, and records the change in the audit log. (BR-357)<br>5. The system displays MSG351 – “Sentence excluded from meeting record.” |
+| **Alternative Flows** | AF-1 – Restore an excluded sentence<br>1. At Step 1, the actor selects Restore sentence on an excluded sentence.<br>2. The system clears the exclusion, so the sentence is part of the record again, and displays MSG352 – “Sentence restored to meeting record.” (BR-357)<br>3. The use case is complete. |
+| **Exception Flows** | EX-1 – Actor is not the Chair or the Secretary<br>1. At Step 4, the actor is neither the current Chair nor the current Secretary. (BR-357)<br>2. The sentence is unchanged. The system displays MSG353 – “Only the Chair or Secretary may exclude a sentence from the meeting record.”<br>3. The use case ends.<br>EX-2 – Invalid reason<br>1. At Step 4, the reason is not one of the two offered.<br>2. The sentence is unchanged. The system displays MSG354 – “Invalid sentence exclusion reason.”<br>3. The flow resumes at Step 2 of the Main Flow. |
+
+#### UC-46d – Delete a Sentence
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Secretary |
+| **Secondary Actors** | None |
+| **Description** | Allows the current Secretary to permanently delete any recorded sentence, with its audio, from the timeline. Unlike excluding a sentence (UC-46c), a deleted sentence cannot be brought back. |
+| **Preconditions** | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-355)<br>● PRE-2: The sentence exists on the timeline of recorded sentences. |
+| **Postconditions** | ● POST-1: The text and the audio of the sentence are permanently removed. (BR-355) |
+| **Normal Flow** | Delete a Sentence<br>1. On the timeline of recorded sentences, the Secretary selects Delete on a sentence.<br>2. The system asks for confirmation and warns that the text and the audio will be permanently destroyed.<br>3. The Secretary confirms.<br>4. The system removes the text and the audio of the sentence and records the deletion in the audit log. (BR-355)<br>5. The system displays MSG322 – “Spoken sentence deleted.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Actor is neither the Secretary nor the speaker<br>1. At Step 4, the actor is neither the Secretary nor the person who spoke the sentence (who deletes it through UC-80). (BR-355)<br>2. The sentence is unchanged. The system displays MSG323 – “Only the speaker or the Secretary may delete this sentence.”<br>3. The use case ends.<br>EX-2 – Sentence cannot be deleted<br>1. At Step 4, the system cannot remove the sentence.<br>2. The sentence stays as it was. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends. |
 
 ### UC-47 – Generate / Regenerate Meeting Summary
 
@@ -1315,6 +1536,88 @@ Placeholder only – detailed Use Case Specification will be added later.
 ### UC-51 – Publish Meeting Summary
 
 Placeholder only – detailed Use Case Specification will be added later.
+
+### UC-81 – Manage My Voice ID
+
+_UC gom — đặc tả nằm ở các UC con UC-81a, UC-81b… bên dưới._
+
+#### UC-81a – View My Voice ID
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to see his or her own Voice ID: whether consent was given, which version of the notice was accepted and which voice samples were recorded. |
+| **Preconditions** | ● PRE-1: The actor is signed in as an internal user. |
+| **Postconditions** | ● POST-1: The actor sees the consent status, the accepted notice version and the list of voice samples. Nothing is changed. |
+| **Normal Flow** | View My Voice ID<br>1. The actor opens My voice from the sidebar.<br>2. The system loads the actor's consent and voice samples.<br>3. The system shows the consent status, the notice version the actor accepted, the list of voice samples (length and date recorded) and, while fewer than 5 samples exist, the option to record a new one. (BR-362, BR-363) |
+| **Alternative Flows** | AF-1 – Notice has been updated<br>1. At Step 3, the actor consented under an earlier version of the notice than the current one.<br>2. The system tells the actor that the terms have changed and offers Accept new terms (UC-81b). (BR-362)<br>3. The flow resumes at Step 3 of the Main Flow. |
+| **Exception Flows** | EX-1 – Voice ID cannot be loaded<br>1. At Step 2, the system cannot read the Voice ID information.<br>2. Nothing is shown. The system displays MSG314 – “Unable to load voice profile information.”<br>3. The use case ends. |
+
+#### UC-81b – Give Voice ID Consent
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to give separate, explicit consent to Voice ID, or to accept the current version of the notice when it changed. This consent is not part of the consent to recording. |
+| **Preconditions** | ● PRE-1: The actor is signed in as an internal user and is on the My voice page.<br>● PRE-2: The actor has not consented yet, or consented under an earlier version of the notice. (BR-361, BR-362) |
+| **Postconditions** | ● POST-1: The consent is recorded with the version of the notice the actor accepted, the purpose and the time. (BR-361, BR-362) |
+| **Normal Flow** | Give Voice ID Consent<br>1. On the My voice page, the actor reads the Voice ID notice. It states the purpose, the data that is kept (the features of the voice and a protected copy of the sample recordings), who controls the data, the rights of the actor and that voice data is sensitive personal data. (BR-361, BR-369)<br>2. The actor ticks the consent box, which is not ticked by default, and selects Enable Voice ID.<br>3. The system records the consent with the current version of the notice and the time, and records it in the audit log. (BR-361, BR-362)<br>4. The system displays MSG305 – “Voice identification enabled for your account.” |
+| **Alternative Flows** | AF-1 – Accept the updated notice<br>1. At Step 1, the actor consented under an earlier version of the notice and the page offers Accept new terms.<br>2. The actor reads the current notice and selects Accept new terms.<br>3. The system renews the consent on the current version of the notice. Voice samples already recorded are kept. (BR-362)<br>4. The flow resumes at Step 4 of the Main Flow. |
+| **Exception Flows** | EX-1 – Notice version is not current<br>1. At Step 3, the version of the notice the actor read is not the current one. (BR-362)<br>2. No consent is recorded. The system displays MSG313 – “Invalid submission data.”<br>3. The use case ends.<br>EX-2 – Consent cannot be saved<br>1. At Step 3, the system cannot save the consent.<br>2. No consent is recorded. The system displays MSG315 – “Unable to save changes. Please try again.”<br>3. The use case ends. |
+
+#### UC-81c – Record Voice Sample
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | Speech Recognition Service |
+| **Description** | Allows an internal user with Voice ID consent to record a short reading so that the system can offer his or her name as a suggestion when the Secretary names the speakers of a transcript. |
+| **Preconditions** | ● PRE-1: The actor has given Voice ID consent and has not withdrawn it. (BR-361)<br>● PRE-2: The actor has fewer than 5 voice samples. (BR-363) |
+| **Postconditions** | ● POST-1: A new voice sample is stored protected and the features of the voice are kept for matching. (BR-363, BR-364, BR-369) |
+| **Normal Flow** | Record Voice Sample<br>1. On the My voice page, the actor selects Record sample.<br>2. The system shows a passage to read and asks the actor to read it aloud.<br>3. The actor selects Start recording, reads the passage and selects Stop.<br>4. The system receives the recording.<br>5. The system checks that the recording has 6 to 60 seconds of clear speech from one person. (BR-363)<br>6. The Speech Recognition Service, which runs inside the system, learns the features of the voice from the recording and the system stores the sample protected. (BR-364, BR-369)<br>7. The system displays MSG307 – “Voice sample saved.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Consent missing or withdrawn<br>1. At Step 4, the actor has no active Voice ID consent. (BR-361)<br>2. The sample is not kept. The system displays MSG308 – “Voice identification consent is required before recording a voice sample.”<br>3. The use case ends.<br>EX-2 – Unsupported audio type<br>1. At Step 4, the recording is not of a supported audio type.<br>2. The sample is not kept. The system displays MSG292 – “Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-3 – Sample does not meet the quality requirements<br>1. At Step 5, the recording is too short, too long, too quiet, distorted or has more than one speaker. (BR-363)<br>2. The sample is not kept. The system displays MSG309 – “Voice sample did not meet quality requirements. Please read the full sample text clearly.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-4 – Sample limit reached<br>1. At Step 1, the actor already has 5 voice samples. (BR-363)<br>2. No recording starts. The system displays MSG310 – “Maximum of 5 voice samples reached. Delete an existing sample before recording a new one.”<br>3. The use case ends.<br>EX-5 – Speech Recognition Service unavailable<br>1. At Step 6, the Speech Recognition Service is unavailable.<br>2. The sample is not kept. The system displays MSG312 – “Speech recognition service is currently unavailable. Please try again later.”<br>3. The use case ends.<br>EX-6 – Invalid submission<br>1. At Step 4, the recording is missing or the submission is incomplete.<br>2. The sample is not kept. The system displays MSG313 – “Invalid submission data.”<br>3. The use case ends.<br>EX-7 – Sample cannot be saved<br>1. At Step 6, the system cannot store the sample.<br>2. The sample is not kept. The system displays MSG315 – “Unable to save changes. Please try again.”<br>3. The use case ends. |
+
+#### UC-81d – Play Voice Sample
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to listen to one of his or her own voice samples. |
+| **Preconditions** | ● PRE-1: The actor is signed in and is the owner of the voice sample. (BR-364)<br>● PRE-2: The recording of the sample was kept. Samples recorded under an earlier notice kept only the features of the voice and cannot be played. (BR-364) |
+| **Postconditions** | ● POST-1: The actor hears the sample. Nothing is changed and nobody else can play it. (BR-364) |
+| **Normal Flow** | Play Voice Sample<br>1. On the My voice page, the actor selects Play next to a voice sample.<br>2. The system checks that the actor owns the sample, unprotects the recording and plays it to the actor. (BR-364) |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Sample cannot be played<br>1. At Step 2, the recording of the sample was not kept or cannot be read.<br>2. Nothing plays. No catalogue message is assigned to this case yet.<br>3. The use case ends. |
+
+#### UC-81e – Delete Voice Sample
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to delete one of his or her own voice samples. |
+| **Preconditions** | ● PRE-1: The actor is signed in and owns the voice sample. (BR-364) |
+| **Postconditions** | ● POST-1: The sample, its recording and the features of its voice are permanently deleted.<br>● POST-2: The actor's other samples are unchanged. Each remaining sample is still used on its own to suggest the actor's name. |
+| **Normal Flow** | Delete Voice Sample<br>1. On the My voice page, the actor selects Delete on a voice sample.<br>2. The system asks for confirmation.<br>3. The actor confirms.<br>4. The system deletes the sample, its recording and the features of its voice, and records the deletion in the audit log.<br>5. The system displays MSG311 – “Voice sample deleted.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Sample cannot be deleted<br>1. At Step 4, the system cannot delete the sample.<br>2. The sample stays as it was. The system displays MSG315 – “Unable to save changes. Please try again.”<br>3. The use case ends. |
+
+#### UC-81f – Withdraw Voice ID Consent
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Internal user |
+| **Secondary Actors** | None |
+| **Description** | Allows an internal user to withdraw Voice ID consent. Withdrawing deletes all of the actor's voice samples and every speaker suggestion that points to the actor. |
+| **Preconditions** | ● PRE-1: The actor is signed in and has active Voice ID consent. (BR-361) |
+| **Postconditions** | ● POST-1: All voice samples of the actor, their recordings and the features of the voices are permanently deleted. (BR-365)<br>● POST-2: Every speaker suggestion that points to the actor, in every Meeting, is cleared at once. (BR-365)<br>● POST-3: Names already assigned by Secretaries are kept. (BR-365) |
+| **Normal Flow** | Withdraw Voice ID Consent<br>1. On the My voice page, the actor selects Withdraw consent.<br>2. The system shows a confirmation explaining that all voice samples will be permanently deleted.<br>3. The actor confirms.<br>4. The system deletes all voice samples with their recordings and voice features, clears every speaker suggestion that points to the actor, marks the consent as withdrawn and records it in the audit log. (BR-365)<br>5. The system displays MSG306 – “Voice identification disabled and all voice samples deleted.” |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | EX-1 – Consent cannot be withdrawn<br>1. At Step 4, the system cannot complete the deletion.<br>2. The consent and the samples stay as they were. The system displays MSG315 – “Unable to save changes. Please try again.”<br>3. The use case ends. |
 
 ---
 

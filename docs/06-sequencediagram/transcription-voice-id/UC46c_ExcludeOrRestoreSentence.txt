@@ -1,0 +1,86 @@
+title UC-46c - Exclude or Restore a Sentence
+
+actor "Chair / Secretary" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Speech Clip Controller" as ClipController
+control ":Speech Clip Service" as ClipService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Speech Clip Repository" as ClipRepository
+participant ":Audit Service" as AuditService
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+Actor->RecordingsTab: Confirm Exclude with a reason (Overheard or Other),\nor Restore an excluded sentence - AF-1
+activate RecordingsTab
+RecordingsTab->ClipController: Set the sentence exclusion
+activate ClipController
+ClipController->ClipService: setExclusion(clipId, actorId, excluded, reason)
+activate ClipService
+ClipService->ClipService: When excluding, check the reason is Overheard or Other (BR-357)
+
+alt Exclusion reason is invalid - EX-2
+    ClipService-->ClipController: MSG354 - Invalid sentence exclusion reason.
+    ClipController-->RecordingsTab: MSG354 - Invalid sentence exclusion reason.
+    RecordingsTab-->Actor: MSG354 - Invalid sentence exclusion reason.
+else Reason is valid, or restoring
+    ClipService->ClipRepository: Get the sentence
+    activate ClipRepository
+    ClipRepository->Database: Retrieve sentence
+    activate Database
+    Database-->ClipRepository: Sentence / Not found
+    deactivate Database
+    ClipRepository-->ClipService: Sentence / Not found
+    deactivate ClipRepository
+    ClipService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->ClipService: Meeting and roster
+    deactivate MeetingRepository
+    ClipService->ClipService: Check the actor is the current Chair or Secretary (BR-357)
+
+    alt Actor is not the current Chair or Secretary - EX-1
+        ClipService-->ClipController: MSG353 - Only the Chair or Secretary may exclude a sentence from the meeting record.
+        ClipController-->RecordingsTab: MSG353 - Only the Chair or Secretary may exclude a sentence from the meeting record.
+        RecordingsTab-->Actor: MSG353 - Only the Chair or Secretary may exclude a sentence from the meeting record.
+    else Actor may change the exclusion
+        ClipService->AuditService: Record the exclusion or restoration with its reason
+        activate AuditService
+        AuditService-->ClipService: Entry saved
+        deactivate AuditService
+        ClipService->ClipRepository: Excluding: keep the sentence and save the reason, actor and time.\nRestoring: clear them. Nothing is deleted (BR-357)
+        activate ClipRepository
+        ClipRepository->Database: Update sentence
+        activate Database
+        Database-->ClipRepository: Sentence saved / Save failed
+        deactivate Database
+        ClipRepository-->ClipService: Sentence saved / Save failed
+        deactivate ClipRepository
+
+        alt Exclusion cannot be saved
+            ClipService-->ClipController: MSG304 - Unable to save transcript changes. Please try again.
+            ClipController-->RecordingsTab: MSG304 - Unable to save transcript changes. Please try again.
+            RecordingsTab-->Actor: MSG304 - Unable to save transcript changes. Please try again.
+        else Exclusion saved
+            ClipService->Publisher: Tell everyone in the Meeting that the speech timeline changed
+            activate Publisher
+            Publisher-->ClipService: Change published
+            deactivate Publisher
+            alt Sentence restored - AF-1
+                ClipService-->ClipController: MSG352 - Sentence restored to meeting record.
+                ClipController-->RecordingsTab: MSG352 - Sentence restored to meeting record.
+                RecordingsTab-->Actor: MSG352 - Sentence restored to meeting record.
+            else Sentence excluded
+                ClipService-->ClipController: MSG351 - Sentence excluded from meeting record.
+                ClipController-->RecordingsTab: MSG351 - Sentence excluded from meeting record.
+                RecordingsTab-->Actor: MSG351 - Sentence excluded from meeting record.
+            end
+        end
+    end
+end
+
+deactivate ClipService
+deactivate ClipController
+deactivate RecordingsTab

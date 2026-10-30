@@ -1,0 +1,104 @@
+title UC-44d - Delete Recording Take
+
+actor "Secretary" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Recording Controller" as RecordingController
+control ":Room Take Service" as RoomTakeService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Recording Repository" as RecordingRepository
+participant ":Transcript Repository" as TranscriptRepository
+participant ":Recording Storage" as RecordingStorage
+participant ":Audit Service" as AuditService
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+Actor->RecordingsTab: Confirm Delete Take on one take of a room recording
+activate RecordingsTab
+RecordingsTab->RecordingController: Delete the take
+activate RecordingController
+RecordingController->RoomTakeService: deleteTake(recordingId, take, actorId)
+activate RoomTakeService
+
+RoomTakeService->MeetingRepository: Lock the Meeting and get its current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting for update with current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->RoomTakeService: Meeting and roster
+deactivate MeetingRepository
+RoomTakeService->RecordingRepository: Lock the room recording with its takes
+activate RecordingRepository
+RecordingRepository->Database: Retrieve recording for update
+activate Database
+Database-->RecordingRepository: Recording with takes / Not found
+deactivate Database
+RecordingRepository-->RoomTakeService: Recording with takes / Not found
+deactivate RecordingRepository
+RoomTakeService->RoomTakeService: Check the recording is Available and has this take,\nthe actor is the current Secretary (BR-341) and more than one take remains (BR-349)
+
+alt Recording or take no longer exists
+    RoomTakeService-->RecordingController: Take not found
+    RecordingController-->RecordingsTab: Take not found
+    RecordingsTab-->Actor: Show the take as no longer available
+else Actor is not the current Secretary - EX-2
+    RoomTakeService-->RecordingController: MSG295 - Only the meeting Secretary may manage recordings.
+    RecordingController-->RecordingsTab: MSG295 - Only the meeting Secretary may manage recordings.
+    RecordingsTab-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+else Recording has only one take - EX-1
+    RoomTakeService-->RecordingController: MSG367 - Recording contains only one take. Erase the entire recording to remove it.
+    RecordingController-->RecordingsTab: MSG367 - Recording contains only one take. Erase the entire recording to remove it.
+    RecordingsTab-->Actor: MSG367 - Recording contains only one take. Erase the entire recording to remove it.
+else Take can be deleted
+    RoomTakeService->RecordingStorage: Make a new audio file without the take's audio
+    activate RecordingStorage
+    RecordingStorage-->RoomTakeService: Shorter audio / Storage failed
+    deactivate RecordingStorage
+    RoomTakeService->TranscriptRepository: Get the transcript of the recording
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve transcript with segments and speakers
+    activate Database
+    Database-->TranscriptRepository: Transcript
+    deactivate Database
+    TranscriptRepository-->RoomTakeService: Transcript
+    deactivate TranscriptRepository
+    RoomTakeService->RoomTakeService: Remove the take's sentences and move later ones up by its length,\nkeeping edited text and assigned names elsewhere; a transcript still\nbeing made is queued again instead (BR-349)
+    RoomTakeService->AuditService: Record the deleted take with its time and length
+    activate AuditService
+    AuditService-->RoomTakeService: Entry saved
+    deactivate AuditService
+    RoomTakeService->RecordingRepository: Save the recording with the remaining takes, new length and transcript
+    activate RecordingRepository
+    RecordingRepository->Database: Update recording, transcript segments and speakers
+    activate Database
+    Database-->RecordingRepository: Changes saved / Save failed
+    deactivate Database
+    RecordingRepository-->RoomTakeService: Changes saved / Save failed
+    deactivate RecordingRepository
+
+    alt Take cannot be deleted
+        RoomTakeService->RecordingStorage: Delete the new audio file, keep the original
+        activate RecordingStorage
+        RecordingStorage-->RoomTakeService: File deleted
+        deactivate RecordingStorage
+        RoomTakeService-->RecordingController: MSG298 - Unable to save recording changes. Please try again.
+        RecordingController-->RecordingsTab: MSG298 - Unable to save recording changes. Please try again.
+        RecordingsTab-->Actor: MSG298 - Unable to save recording changes. Please try again.
+    else Take deleted
+        RoomTakeService->RecordingStorage: Delete the previous audio file
+        activate RecordingStorage
+        RecordingStorage-->RoomTakeService: File deleted
+        deactivate RecordingStorage
+        RoomTakeService->Publisher: Tell everyone in the Meeting that the recordings changed
+        activate Publisher
+        Publisher-->RoomTakeService: Change published
+        deactivate Publisher
+        RoomTakeService-->RecordingController: MSG366 - Recording take deleted.
+        RecordingController-->RecordingsTab: MSG366 - Recording take deleted.
+        RecordingsTab-->Actor: MSG366 - Recording take deleted.
+    end
+end
+
+deactivate RoomTakeService
+deactivate RecordingController
+deactivate RecordingsTab

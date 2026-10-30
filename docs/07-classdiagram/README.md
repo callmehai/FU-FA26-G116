@@ -19,10 +19,12 @@ trích xuất nguyên trạng các class C# đã triển khai.
 | FE-05 Agenda Management | [drawio](feature-05-agenda-management-class-diagram.drawio) · [PNG](feature-05-agenda-management-class-diagram.drawio.png) | UC-23a/b/c/d, UC-24–UC-26, UC-77 |
 | FE-06 Meeting Participant Management | [drawio](feature-06-meeting-participant-management-class-diagram.drawio) · [PNG](feature-06-meeting-participant-management-class-diagram.drawio.png) | UC-27, UC-28a/b/c, UC-29–UC-31, UC-73 |
 | FE-07 Meeting Document Management | [drawio](feature-07-document-management-class-diagram.drawio) · [PNG](feature-07-document-management-class-diagram.drawio.png) | UC-32a, UC-32c, UC-33a–UC-33d, UC-34, UC-34b, UC-35, UC-36, UC-71a/b/c, UC-72a/b/c/d (as-built, xem §6e) |
+| FE-09 Meeting Recording | [drawio](feature-09-meeting-recording-class-diagram.drawio) · [PNG](feature-09-meeting-recording-class-diagram.drawio.png) | UC-43a–UC-43c, UC-44a–UC-44e, UC-80 (xem §6g) |
+| FE-10 Transcription & Speaker Identification | [drawio](feature-10-transcription-voice-id-class-diagram.drawio) · [PNG](feature-10-transcription-voice-id-class-diagram.drawio.png) | UC-45a–UC-45c, UC-46a–UC-46d, UC-81a–UC-81f (xem §6g) |
 | FE-11 Voting Management | [drawio](feature-11-voting-management-class-diagram.drawio) · [PNG](feature-11-voting-management-class-diagram.drawio.png) | UC-52a, UC-52b, UC-53–UC-57, UC-76a, UC-76b |
 | FE-13 Notification | [drawio](feature-13-notification-management-class-diagram.drawio) · [PNG](feature-13-notification-management-class-diagram.drawio.png) | UC-66, UC-67a/b, UC-68 |
 
-FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026) và tải từ máy vào cuộc họp (UC-33a AF-1 — SCRUM-107, 23/10/2026): thêm `uploadDocuments` từ `MeetingDocumentsTab` xuống service, `FileStorage.write/delete` (R2, [ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)), `FolderRepository`, entity `Folder` và `Document` (dòng kho), `StoredFile.originalFileName`, và làn bên trái cho job dọn file mồ côi `OrphanFilePurgeJob` + `StoredFileRepository` (BR-213). Cùng đợt sửa `downloadDocument` của `DocumentViewer` thêm `meetingId` cho khớp controller. Sau đó (27/10/2026, PR 166): `DocumentRepository.sumStoredBytes` / `MeetingDocumentRepository.sumStoredBytes` (hạn mức 10 GB, BR-333, ADR-0034) và `viewLockedLibrary` + `findOwnerLibrary` trên `DocumentController`/`DocumentService`/`DocumentRepository` (UC-34b, BR-334, ADR-0035; code ở `PersonalLibraryService`); `User Repository` và `AuditLog` của UC-34b là lớp ngoài feature, chưa vẽ. Ảnh PNG xuất scale 1.2 với `--disable-gpu --disable-software-rasterizer` vì scale 2 bị cắt trên máy này. Luồng chọn từ kho, gỡ/gắn tài liệu, xem/quản lý kho (UC-33a luồng chính, UC-33b–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58/SCRUM-92) đã vẽ ngày 27/10/2026 và chuyển as-built ngày 28/10/2026 (§6e). Còn thiếu quan hệ tác giả `DocumentComment.authorId` → `User` (mới vẽ phía Guest); để lại cho SCRUM-23. FE-11 có class diagram thiết kế (25/10/2026, §6f); FE-08–FE-10, FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
+FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026) và tải từ máy vào cuộc họp (UC-33a AF-1 — SCRUM-107, 23/10/2026): thêm `uploadDocuments` từ `MeetingDocumentsTab` xuống service, `FileStorage.write/delete` (R2, [ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)), `FolderRepository`, entity `Folder` và `Document` (dòng kho), `StoredFile.originalFileName`, và làn bên trái cho job dọn file mồ côi `OrphanFilePurgeJob` + `StoredFileRepository` (BR-213). Cùng đợt sửa `downloadDocument` của `DocumentViewer` thêm `meetingId` cho khớp controller. Sau đó (27/10/2026, PR 166): `DocumentRepository.sumStoredBytes` / `MeetingDocumentRepository.sumStoredBytes` (hạn mức 10 GB, BR-333, ADR-0034) và `viewLockedLibrary` + `findOwnerLibrary` trên `DocumentController`/`DocumentService`/`DocumentRepository` (UC-34b, BR-334, ADR-0035; code ở `PersonalLibraryService`); `User Repository` và `AuditLog` của UC-34b là lớp ngoài feature, chưa vẽ. Ảnh PNG xuất scale 1.2 với `--disable-gpu --disable-software-rasterizer` vì scale 2 bị cắt trên máy này. Luồng chọn từ kho, gỡ/gắn tài liệu, xem/quản lý kho (UC-33a luồng chính, UC-33b–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58/SCRUM-92) đã vẽ ngày 27/10/2026 và chuyển as-built ngày 28/10/2026 (§6e). Còn thiếu quan hệ tác giả `DocumentComment.authorId` → `User` (mới vẽ phía Guest); để lại cho SCRUM-23. FE-11 có class diagram thiết kế (25/10/2026, §6f); FE-09 và FE-10 có class diagram đối chiếu với code 30/10/2026 (§6g); FE-08, FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
 đã bị bỏ theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md); FE-05 hiện tại là Agenda.
 UC-07 hiện nằm trong FE-02, không còn một bản 02b độc lập.
 
@@ -275,6 +277,89 @@ nên tên/tham số là **PROPOSED**. Return, SQL I/O, activation và `alt` khô
   không tránh được). Không có chồng chữ hay cạnh xuyên class. PNG xuất bằng draw.io 29.6.1, chunk `zTXt` đã viết lại zlib + CRC đúng, `IEND`
   đủ, XML nhúng khớp source; CLI hiện tại không mở lại được PNG (kể cả FE-06 cũ) nên **chưa kiểm roundtrip bằng draw.io**.
 
+
+## 6g. FE-09 và FE-10 — ghi âm, gỡ băng và Voice ID · 30/10/2026
+
+Dựng 2 class diagram của FE-09 và FE-10, đối chiếu với code `main` (9442794) ngày 30/10/2026, và 24 sequence của
+[meeting-recording](../06-sequencediagram/meeting-recording/README.md),
+[transcription-voice-id](../06-sequencediagram/transcription-voice-id/README.md) và
+[`UC39a_RecordSpeechWhileMicrophoneOn`](../06-sequencediagram/online-meeting-room/UC39a_RecordSpeechWhileMicrophoneOn.txt):
+`feature-09-meeting-recording-class-diagram.drawio` (+ `.drawio.png`) và
+`feature-10-transcription-voice-id-class-diagram.drawio` (+ `.drawio.png`). Kế hoạch:
+[plan 19 §8](../notes/ban-giao-ba-final-review/19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md).
+
+Nguồn chữ ký: `Domain/Recordings/{RecordingContracts,SpeechClipContracts}.cs`, `Domain/Transcription/TranscriptionContracts.cs`,
+`Domain/VoiceId/VoiceIdContracts.cs`, `Domain/Entities/{Recording,SpeechClip,Transcript,TranscriptSegment,TranscriptSpeaker,VoiceConsent,VoiceSample}.cs`,
+`Domain/Enums/RecordingEnums.cs` và cấu hình EF trong `Infrastructure/Configurations/`. Tên operation là tên interface bỏ `Async` và
+`CancellationToken`, viết thường chữ đầu. Lớp `<<boundary>>` liệt kê hàm `frontend/src/api/{recordings,speech,transcripts,voice}.ts`
+mà component gọi; lớp `<<control>>` là nhóm route Minimal API (`RecordingEndpoints`, `SpeechClipEndpoints`, `TranscriptEndpoints`,
+`VoiceIdEndpoints`) — route không có tên hàm nên tên operation ở tầng này đặt theo service nó gọi. Hai `BackgroundService`
+(`RecordingRetentionWorker`, `TranscriptionWorker`) vẽ là `<<control>>` vì chúng khởi phát UC-44b AF-2, UC-44e AF-1 và sơ đồ hệ thống UC-45c.
+
+Quan hệ theo cấu hình EF: `Meeting 1 — 0..* Recording`; `Recording 1 ◆— 0..1 Transcript` (cascade, `recording_id` unique);
+`Recording 1 ◆— 0..* RecordingTake` (cột JSON); `Transcript 1 ◆— 0..* TranscriptSegment`, `1 ◆— 0..* TranscriptSpeaker`;
+`Meeting 1 — 0..* SpeechClip`; `User 1 — 0..* SpeechClip` (speaker); `SpeechClip 1 ◆— 0..* SpeechClipSegment` (cột JSON);
+`TranscriptSpeaker 0..* — 0..1 User` hai lần (suggestedUser, assignedUser); `User 1 — 0..* VoiceConsent`;
+`VoiceConsent 1 — 0..* VoiceSample`; `User 1 — 0..* VoiceSample`. Các khoá tới `User` khác (`editedBy`, `excludedBy`,
+`assignedBy`) chỉ ghi ở thuộc tính, không vẽ cạnh.
+
+### Bảng đối chiếu Sequence → Class → Operation
+
+| Sequence (message tới receiver) | Class → operation |
+|---|---|
+| UC-39a AF-2 `canCapture`, `add` | `ISpeechClipService.canCapture`, `add`; `IMeetingRepository.findWorkflow`; `SpeechClipRules.accepts`, `RecordingRules.canListen`; `ISpeechEngine.transcribe` (một câu); `IRecordingStorage.save`; `SpeechClips` (DbSet) thêm câu; `ISpeechChangePublisher.publish` |
+| UC-43a `list` (câu), `list` (bản ghi) | `ISpeechClipService.list`; `IRecordingService.list`; `IMeetingRepository.findWorkflow`; `IRecordingRepository.list`; `RecordingRules.isSecretary`, `uploadAllowed`, `hasRoom`, `canRecord`, `export` |
+| UC-43b `playback` | `IRecordingService.playback` + `IRecordingPlaybackSigner.sign`; `ISpeechClipService.playback` + `ISpeechClipAudioSigner.sign`; tải âm thanh: `findPlayable` / `findAudio` + `IRecordingStorage.openRead` |
+| UC-43c `download` | `IRecordingService.download`; `RecordingRules.export`; `IAuditService.record`; `IRecordingPlaybackSigner.sign(download = true)` |
+| UC-44a `begin`, `append` | `IRoomTakeService.begin`, `append`; `IRecordingRepository.list`, `findRoomRecording`, `add`, `find(forUpdate)`; `IRecordingStorage.create`, `writeAt`, `truncate`; `IAuditService.record`; `ISpeechChangePublisher.publish` |
+| UC-44b `complete` | `IRoomTakeService.complete` (hệ thống: `completeIdle`); `IRecordingStorage.truncate`, `sealWav`, `concat`, `delete`; `IRecordingRepository.findRoomRecording`, `remove`; `ITranscriptRepository.findByRecording`, `add`; `IAuditService.record`; `ISpeechChangePublisher.publish` |
+| UC-44c `canUpload`, `add` | `IRecordingService.canUpload`, `add`; `IRecordingStorage.save`, `delete`; `RecordingRules.validate`; `IRecordingRepository.add`; `IAuditService.record` |
+| UC-44d `deleteTake` | `IRoomTakeService.deleteTake`; `IRecordingStorage.cut`, `sealWav`, `delete`; `ITranscriptRepository.findByRecording`; `IAuditService.record` |
+| UC-44e `erase` | `IRecordingService.erase` (hệ thống: `eraseExpired`); `IRecordingRepository.deleteTranscript`, `saveChanges`; `IRecordingStorage.delete`; `IAuditService.record` |
+| UC-80 `delete` | `ISpeechClipService.delete`; `SpeechClips` (DbSet) xoá câu; `IRecordingStorage.delete`; `IAuditService.record` |
+| UC-45a `get` | `ITranscriptionService.get`; `IRecordingRepository.find`; `ITranscriptRepository.findByRecording`; `SpeakerMatcher.sameAs` (chỉ Thư ký) |
+| UC-45b `export` | `ITranscriptionService.export`; `ISpeechClipService.export`; `RecordingRules.export`; `IAuditService.record` |
+| UC-45c `retry` | `ITranscriptionService.retry`; `ITranscriptRepository.findByRecording`, `add`, `saveChanges`; `IAuditService.record` (chạy lại bản đã xong) |
+| UC-45c hệ thống `processNext` | `TranscriptionWorker.execute`; `ITranscriptionService.processNext` (`requeueInterrupted` khi khởi động); `ITranscriptRepository.claimNext`, `findForProcessing`, `reload`, `deleteSegments`, `addSegments`, `deleteSpeakers`, `addSpeakers`; `IRecordingStorage.openRead`; `ISpeechEngine.transcribe` (diarize); `IVoiceIdRepository.listMatchableSamples`; `IVoiceprintProtector.unprotect`; `SpeakerMatcher.suggest`; `ISpeechChangePublisher.publish` |
+| UC-46a `editSegment`, `edit` | `ITranscriptionService.editSegment` + `ITranscriptRepository.findSegment`; `ISpeechClipService.edit`; `IAuditService.record` |
+| UC-46b `assignSpeaker` | `ITranscriptionService.assignSpeaker`; `IMeetingRepository.findWorkflow` (thành phần); `ITranscriptRepository.findByRecording`, `saveChanges`; `IAuditService.record` |
+| UC-46c `setExclusion` | `ISpeechClipService.setExclusion`; `SpeechClipRules.runsRecord`; `IAuditService.record` |
+| UC-46d `delete` | `ISpeechClipService.delete`; `IRecordingStorage.delete`; `IAuditService.record` |
+| UC-81a `get` | `IVoiceIdService.get`; `IVoiceIdRepository.findActiveConsent`, `listSamples` |
+| UC-81b `grant` | `IVoiceIdService.grant`; `VoiceIdRules.NoticeVersion`; `IVoiceIdRepository.inTransaction`, `findActiveConsent`, `add(consent)`; `IAuditService.record` |
+| UC-81c `addSample` | `IVoiceIdService.addSample`; `IVoiceEmbedder.embed`; `IVoiceprintProtector.protect`, `protectAudio`; `IVoiceIdRepository.add(sample)`; `IAuditService.record` |
+| UC-81d `sampleAudio` | `IVoiceIdService.sampleAudio`; `IVoiceIdRepository.listSamples`; `IVoiceprintProtector.unprotectAudio` |
+| UC-81e `deleteSample` | `IVoiceIdService.deleteSample`; `IVoiceIdRepository.listSamples`, `remove`; `IAuditService.record` |
+| UC-81f `withdraw` | `IVoiceIdService.withdraw`; `IVoiceIdRepository.inTransaction`, `deleteSamples`, `clearSuggestions`; `IAuditService.record` |
+
+Lifeline sequence → class: `:Meeting Repository` → `IMeetingRepository`; `:Speech Clip Repository` → `TrustCabinetDbContext.SpeechClips`;
+`:Playback Link Signer` → `IRecordingPlaybackSigner` / `ISpeechClipAudioSigner`; `:Speech Recognition Service` → `ISpeechEngine`
+(gỡ băng) / `IVoiceEmbedder` (giọng mẫu), cùng cài đặt `SpeechWorkerClient`; `:Speaker Matcher` → `SpeakerMatcher`.
+Return, activation, `alt` và self-call kiểm quyền không sinh operation; kiểm quyền nằm ở `RecordingRules` / `SpeechClipRules`.
+
+### SOURCE_CONFLICT / NEEDS REVIEW
+
+- **`RecordingSource.CallRoom`, `RecordingStatus.Failed`** còn trong `Domain/Enums/RecordingEnums.cs` nhưng không còn đường nào ghi:
+  ADR-0040 bỏ ghi cả cuộc gọi, form tải lên chỉ nhận `Upload`, mic phòng ghi `BrowserCapture`; không code nào đặt `Failed`.
+  Diagram vẽ kèm chú thích. **NEEDS REVIEW (BE):** bỏ hai giá trị bằng migration hay giữ cho dữ liệu cũ.
+- **`MeetingSummary`** có entity và bảng `meeting_summaries` nhưng không có service, endpoint hay màn hình (UC-47 → UC-51 là Placeholder,
+  plan 19 D3): **không vẽ**.
+- **Guest không được ghi theo micro và không đọc được bản ghi** (D6, BR-370 — **NEEDS REVIEW PO**): mọi route `recordings`,
+  `speech-clips`, `transcript*` chặn bằng `RequireActiveUser` (tài khoản nội bộ đang hoạt động), `RecordingRules.canListen` đòi có tên
+  trong thành phần. Lời Guest chỉ vào bản ghi qua mic phòng (họp Hybrid); họp Online có Guest thì lời Guest không có trong bản ghi.
+- **Câu nói không có repository:** `SpeechClipService` dùng thẳng `TrustCabinetDbContext.SpeechClips`; diagram vẽ `<<repository>>`
+  `TrustCabinetDbContext.SpeechClips` thay cho một interface không tồn tại.
+- **Không có hồ sơ giọng gộp:** mỗi `VoiceSample` một đặc trưng mã hoá; `SpeakerMatcher.suggest` lấy mẫu giống nhất của từng người.
+  Xoá một mẫu (UC-81e) không tính lại gì — bản nháp trước ghi "recalculate composite voiceprint" là sai.
+- **Đặc trưng giọng của cuộc họp không lưu:** `SpeechSpeaker.Embedding` chỉ dùng trong `processNext` rồi bỏ; chỉ
+  `TranscriptSpeaker.suggestedUserId` và `suggestionScore` được lưu.
+- **`TranscriptSegment.speakerUserId`** có trong entity nhưng code hiện không ghi (tên người nói lấy từ `TranscriptSpeaker.assignedUserId`
+  theo `speakerLabel`). Giữ theo code; BE quyết định bỏ cột hay dùng.
+- **Lớp ngoài feature** (`Meeting`, `User`, `IMeetingRepository`, `IAuditService`, phần FE-09 dùng lại trong FE-10) chỉ vẽ phần được dùng,
+  ghi "(used part)".
+- **Hình học:** `validate.py --score` cả hai file: 0 lỗi, 0 cạnh xuyên class, 0 chồng hình; còn 38 (FE-09) và 34 (FE-10) cảnh báo cạnh giao
+  nhau, đều ở bó cạnh service → hạ tầng (mỗi service phụ thuộc 3–5 interface hạ tầng, đi chung hành lang phía trên hàng service).
+  PNG xuất bằng draw.io CLI scale 1 với `--disable-gpu --disable-software-rasterizer`, không nhúng XML; đã mở xem, không bị cắt.
 
 ## 7. Rà soát hiện trạng · 14/10/2026
 

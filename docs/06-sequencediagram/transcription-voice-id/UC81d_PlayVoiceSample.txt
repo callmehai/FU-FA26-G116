@@ -1,0 +1,48 @@
+title UC-81d - Play Voice Sample
+
+actor "Internal User" as Actor
+boundary "My Voice Page" as VoicePage
+control ":Voice ID Controller" as VoiceController
+control ":Voice ID Service" as VoiceService
+participant ":Voice ID Repository" as VoiceRepository
+participant ":Voiceprint Protector" as Protector
+database ":Database" as Database
+
+Actor->VoicePage: Play one of the own voice samples
+activate VoicePage
+VoicePage->VoiceController: Get the sample recording
+activate VoiceController
+VoiceController->VoiceService: sampleAudio(actorId, sampleId)
+activate VoiceService
+VoiceService->VoiceRepository: Get the actor's own voice samples only (BR-364)
+activate VoiceRepository
+VoiceRepository->Database: Retrieve samples of the actor
+activate Database
+Database-->VoiceRepository: Own samples
+deactivate Database
+VoiceRepository-->VoiceService: Own samples
+deactivate VoiceRepository
+
+alt Sample is not the actor's, or its recording was not kept under the notice consented to - EX-1
+    VoiceService-->VoiceController: No sample recording
+    VoiceController-->VoicePage: No sample recording
+    VoicePage-->Actor: Show the sample as not playable
+else Sample recording kept
+    VoiceService->Protector: Unprotect the sample recording for its owner (BR-364)
+    activate Protector
+    Protector-->VoiceService: Sample recording / Cannot be unprotected
+    deactivate Protector
+    alt Recording cannot be unprotected - EX-1
+        VoiceService-->VoiceController: No sample recording
+        VoiceController-->VoicePage: No sample recording
+        VoicePage-->Actor: Show the sample as not playable
+    else Recording available
+        VoiceService-->VoiceController: Sample recording
+        VoiceController-->VoicePage: Sample recording, not cached
+        VoicePage-->Actor: Play the sample
+    end
+end
+
+deactivate VoiceService
+deactivate VoiceController
+deactivate VoicePage

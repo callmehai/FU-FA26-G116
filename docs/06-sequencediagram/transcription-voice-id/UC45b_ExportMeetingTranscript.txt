@@ -1,0 +1,122 @@
+title UC-45b - Export Meeting Transcript
+
+actor "Chair / Secretary" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Transcript Controller" as TranscriptController
+control ":Speech Clip Controller" as ClipController
+control ":Transcription Service" as TranscriptionService
+control ":Speech Clip Service" as ClipService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Recording Repository" as RecordingRepository
+participant ":Transcript Repository" as TranscriptRepository
+participant ":Speech Clip Repository" as ClipRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->RecordingsTab: Export a transcript as a text file
+activate RecordingsTab
+
+alt Transcript of a room recording
+    RecordingsTab->TranscriptController: Export the recording transcript
+    activate TranscriptController
+    TranscriptController->TranscriptionService: export(recordingId, actorId)
+    activate TranscriptionService
+    TranscriptionService->RecordingRepository: Get the recording
+    activate RecordingRepository
+    RecordingRepository->Database: Retrieve recording
+    activate Database
+    Database-->RecordingRepository: Recording / Not found
+    deactivate Database
+    RecordingRepository-->TranscriptionService: Recording / Not found
+    deactivate RecordingRepository
+    TranscriptionService->MeetingRepository: Get the Meeting with its sensitivity and current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->TranscriptionService: Meeting and roster
+    deactivate MeetingRepository
+    TranscriptionService->TranscriptionService: Check the actor is the current Chair or Secretary\nand the Meeting is not Secret (BR-350, BR-351)
+
+    alt Actor is not the current Chair or Secretary - EX-1
+        TranscriptionService-->TranscriptController: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+        TranscriptController-->RecordingsTab: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+        RecordingsTab-->Actor: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+    else Meeting is Secret - EX-2
+        TranscriptionService-->TranscriptController: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+        TranscriptController-->RecordingsTab: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+        RecordingsTab-->Actor: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+    else Export allowed
+        TranscriptionService->TranscriptRepository: Get the transcript with its segments and assigned names
+        activate TranscriptRepository
+        TranscriptRepository->Database: Retrieve transcript
+        activate Database
+        Database-->TranscriptRepository: Transcript / None
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Transcript / None
+        deactivate TranscriptRepository
+        alt Transcript is not Completed - EX-3
+            TranscriptionService-->TranscriptController: MSG357 - Transcript is not ready for download.
+            TranscriptController-->RecordingsTab: MSG357 - Transcript is not ready for download.
+            RecordingsTab-->Actor: MSG357 - Transcript is not ready for download.
+        else Transcript is Completed
+            TranscriptionService->TranscriptionService: Write the text file: each segment with its time\nand the assigned name or Speaker N
+            TranscriptionService->AuditService: Record the export with the actor and time (BR-351)
+            activate AuditService
+            AuditService-->TranscriptionService: Entry saved
+            deactivate AuditService
+            TranscriptionService-->TranscriptController: Transcript text file
+            TranscriptController-->RecordingsTab: Transcript text file
+            RecordingsTab-->Actor: The browser saves the .txt file
+        end
+    end
+    deactivate TranscriptionService
+    deactivate TranscriptController
+
+else Per-mic speech timeline
+    RecordingsTab->ClipController: Export the speech timeline
+    activate ClipController
+    ClipController->ClipService: export(meetingId, actorId)
+    activate ClipService
+    ClipService->MeetingRepository: Get the Meeting with its sensitivity and current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->ClipService: Meeting and roster
+    deactivate MeetingRepository
+    ClipService->ClipService: Check the actor is the current Chair or Secretary\nand the Meeting is not Secret (BR-350, BR-351)
+
+    alt Actor is not the current Chair or Secretary - EX-1
+        ClipService-->ClipController: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+        ClipController-->RecordingsTab: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+        RecordingsTab-->Actor: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+    else Meeting is Secret - EX-2
+        ClipService-->ClipController: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+        ClipController-->RecordingsTab: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+        RecordingsTab-->Actor: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+    else Export allowed
+        ClipService->ClipRepository: Get the Meeting sentences that are not excluded (BR-358)
+        activate ClipRepository
+        ClipRepository->Database: Retrieve sentences in spoken order
+        activate Database
+        Database-->ClipRepository: Sentences
+        deactivate Database
+        ClipRepository-->ClipService: Sentences
+        deactivate ClipRepository
+        ClipService->ClipService: Write the text file: each sentence with its time and speaker
+        ClipService->AuditService: Record the export with the actor and time (BR-351)
+        activate AuditService
+        AuditService-->ClipService: Entry saved
+        deactivate AuditService
+        ClipService-->ClipController: Speech timeline text file
+        ClipController-->RecordingsTab: Speech timeline text file
+        RecordingsTab-->Actor: The browser saves the .txt file
+    end
+    deactivate ClipService
+    deactivate ClipController
+end
+
+deactivate RecordingsTab
