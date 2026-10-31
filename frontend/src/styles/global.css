@@ -2354,6 +2354,116 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .agenda-attach-option { width: 100%; min-height: 40px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
 .agenda-attach-option > svg { flex: none; color: var(--label-ink); }
 .agenda-attach-option:is(:hover, :focus-visible) { outline: none; background: var(--brand-wash); }
+
+/* ---------- Votes (SCRUM-28) ----------
+   One line per vote, like the agenda: the title, then its facts on a second line; an open vote
+   carries the live green edge and its turnout bar. The same panel sits in the call room at 360px. */
+.vote-panel { container-type: inline-size; }
+.vote-toolbar { flex-wrap: nowrap; }
+.vote-alert { margin: 12px 16px 0; }
+.vote-panel .vote-empty { margin: 12px 16px 16px; }
+.vote-panel-room .vote-empty { margin: 0; }
+.vote-room { overflow-y: auto; }
+.vote-panel-room .vote-toolbar { margin: 0; padding: 0 0 12px; border: 0; }
+.vote-list { list-style: none; margin: 0; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.vote-panel-room .vote-list { padding: 0; }
+.vote-item { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.vote-item-open { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
+.vote-item-draft { border-style: dashed; border-color: var(--control-line); }
+.vote-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px 12px 8px; }
+.vote-break { flex-basis: 100%; height: 0; }
+.vote-title {
+  display: flex; flex: 1; align-items: flex-start; gap: 6px; min-width: 0; min-height: 40px; padding: 10px 0;
+  border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 600; text-align: left;
+  cursor: pointer;
+}
+.vote-title > svg { flex: none; margin-top: 3px; color: var(--label-ink); }
+.vote-title > span { min-width: 0; overflow-wrap: anywhere; }
+.vote-title:hover > span { color: var(--brand); }
+.vote-actions { flex: none; gap: 6px; }
+.vote-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: 22px; }
+.vote-status, .vote-conclusion-chip { font-size: 13px; }
+.vote-fact { display: inline-flex; align-items: center; gap: 4px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+.vote-fact > svg { flex: none; color: var(--label-ink); }
+.vote-voted, .vote-voted > svg { color: var(--chip-emerald-fg); }
+.vote-turnout { padding: 0 12px 12px 34px; }
+.vote-bar {
+  display: block; width: 100%; height: 8px; border: 0; border-radius: 4px; overflow: hidden;
+  background: var(--surface-alt); color: var(--brand); appearance: none;
+}
+.vote-bar::-webkit-progress-bar { background: var(--surface-alt); }
+.vote-bar::-webkit-progress-value { background: var(--brand); }
+.vote-bar::-moz-progress-bar { background: var(--brand); }
+.vote-body { display: flex; flex-direction: column; gap: 12px; padding: 0 12px 12px 34px; }
+.vote-text { margin: 0; color: var(--muted-ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+.vote-roles { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; font-size: 13px; }
+.vote-roles-label { color: var(--label-ink); }
+.vote-times { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: var(--muted-ink); font-variant-numeric: tabular-nums; }
+.vote-times > svg { color: var(--label-ink); }
+.vote-docs li { align-items: center; gap: 8px; }
+.vote-read { flex: none; margin-left: auto; color: var(--chip-emerald-fg); font-size: 12px; font-weight: 600; }
+.vote-unread { color: var(--chip-amber-fg); }
+.vote-doc-detach { flex: none; margin-left: auto; }
+.vote-read + .vote-doc-detach { margin-left: 0; }
+.vote-option-list { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.vote-state { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--muted-ink); }
+.vote-state-done { color: var(--chip-emerald-fg); font-weight: 600; }
+.vote-ballot { display: flex; flex-direction: column; gap: 10px; }
+.vote-choices { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.vote-choice {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px;
+  border: 1px solid var(--control-line); border-radius: var(--radius); cursor: pointer;
+}
+.vote-choice:hover { background: var(--surface-alt); }
+.vote-choice:has(input:checked) { border-color: var(--brand); background: var(--brand-wash); font-weight: 600; }
+.vote-choice:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 1px; }
+.vote-choice input { flex: none; width: 16px; height: 16px; padding: 0; box-shadow: none; accent-color: var(--brand); }
+.vote-choice > span { min-width: 0; overflow-wrap: anywhere; }
+.vote-choices:disabled .vote-choice { cursor: progress; opacity: .7; }
+.vote-ballot-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.vote-result { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vote-result li { display: grid; grid-template-columns: minmax(0, 160px) minmax(60px, 1fr) auto; align-items: center; gap: 12px; }
+.vote-result-label { min-width: 0; overflow-wrap: anywhere; }
+.vote-result-count { min-width: 64px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.vote-result-count small { color: var(--muted-ink); font-size: 13px; font-weight: 500; }
+.vote-voters { font-size: 13px; }
+.vote-voters summary { min-height: 34px; display: flex; align-items: center; color: var(--brand); cursor: pointer; }
+.vote-voters ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.vote-voters li { display: flex; justify-content: space-between; gap: 12px; }
+.vote-voters li > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.vote-voters li small { color: var(--label-ink); }
+.vote-box { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 10px 12px 12px; border-radius: var(--radius); background: var(--surface-alt); }
+.vote-box h4 { margin: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.vote-box textarea { width: 100%; background: var(--surface); }
+.vote-conclusion { margin: 0; }
+.vote-form-actions { display: flex; justify-content: flex-end; }
+.vote-pending { margin: 0; font-size: 13px; }
+.vote-skeleton { width: 60%; height: 18px; }
+/* At the room's width a result row stacks: the label above its bar and count. */
+@container (max-width: 480px) {
+  /* The title keeps the whole row; the actions go under it instead of squeezing it to a word a line. */
+  .vote-title { flex-basis: 100%; }
+  .vote-actions:not(:empty) { order: 1; padding-left: 22px; }
+  .vote-break { order: 2; }
+  .vote-meta { order: 3; }
+  .vote-result li { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+  .vote-result-label { grid-column: 1 / -1; }
+  .vote-turnout, .vote-body { padding-left: 12px; }
+  .vote-meta { padding-left: 0; }
+}
+/* The create / edit dialog. */
+.vote-options-field, fieldset.field { min-width: 0; margin: 0; padding: 0; border: 0; }
+fieldset.field > legend { margin-bottom: 8px; padding: 0; font-size: 14px; font-weight: 500; line-height: 1; color: var(--ink); }
+.vote-option-inputs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vote-option-inputs li { display: flex; align-items: center; gap: 6px; }
+.vote-option-inputs input { flex: 1; min-width: 0; }
+.vote-option-add { align-self: flex-start; margin-top: 4px; color: var(--brand); }
+.vote-role-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+.vote-role-pick {
+  display: inline-flex; align-items: center; gap: 8px; min-height: var(--control-height); padding: 0 12px;
+  border: 1px solid var(--control-line); border-radius: var(--radius); font-size: 14px; cursor: pointer;
+}
+.vote-role-pick:has(input:checked) { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand-ink); }
 .agenda-attach-trigger[aria-expanded='true'] { background: var(--surface-alt); }
 .agenda-room { overflow-y: auto; }
 
@@ -2682,6 +2792,29 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   color: var(--chip-amber-fg);
   font-size: 14px;
 }
+
+/* "Chủ toạ mở biểu quyết" (SCRUM-28): floats under the title bar, over the stage, until answered. */
+.room-vote-notice {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(520px, calc(100vw - 32px));
+  padding: 10px 10px 10px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  transform: translateX(-50%);
+}
+.room-vote-notice > svg { flex: none; color: var(--brand); }
+.room-vote-notice p { flex: 1; min-width: 0; margin: 0; display: grid; }
+.room-vote-notice-lead { color: var(--label-ink); font-size: 12px; }
+.room-vote-notice strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-vote-notice .btn { flex: none; }
 
 .room-body { flex: 1; min-height: 0; display: flex; }
 .room-stage { flex: 1; min-width: 0; min-height: 0; padding: 16px; display: flex; }
@@ -3776,6 +3909,8 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .viewer-body { display: flex; flex: 1; min-height: 0; }
 .viewer-stage { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
 .viewer-count { min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand-wash); color: var(--brand); font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; }
+/* UC-74: a vote document confirmed as read (SCRUM-28). */
+.viewer-read-done { display: inline-flex; flex: none; align-items: center; gap: 6px; color: var(--chip-emerald-fg); font-weight: 600; }
 .viewer-head .btn.is-active { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand); }
 .viewer-comments { display: flex; flex: none; flex-direction: column; width: 360px; min-height: 0; border-left: 1px solid var(--line); background: var(--surface); }
 .viewer-comments-head { display: flex; flex: none; align-items: center; gap: 4px; min-height: 48px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--line); }

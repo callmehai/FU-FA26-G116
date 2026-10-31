@@ -6,6 +6,7 @@ import type { DocumentsChangedEvent } from '../../types/document'
 import type { AgendaChangedEvent } from '../../types/meeting'
 import type { ParticipantsChangedEvent } from '../../types/participant'
 import type { SpeechChangedEvent } from '../../types/speech'
+import type { VoteChangedEvent } from '../../types/vote'
 
 /**
  * What the meeting's hub announces; each only says "re-read". `agendaChanged` is any change to the
@@ -14,7 +15,9 @@ import type { SpeechChangedEvent } from '../../types/speech'
  * `documentsChanged` follows an upload (SCRUM-21). The per-mic transcript (SCRUM-109) says `speechChanged` for a
  * sentence added or corrected, which a read of what changed since the last one catches, and `speechRemoved` for a
  * sentence taken back or the capture mode changed, which only a full read shows. The room recordings (ADR-0041) say
- * `recordingsChanged` when a take opens or is saved, a file is kept or erased, or a transcript is done.
+ * `recordingsChanged` when a take opens or is saved, a file is kept or erased, or a transcript is done. Votes
+ * (SCRUM-28) say `voteChanged` for any change, and `voteOpened` as well when the Chair opens one, so the call room
+ * can tell everyone.
  */
 export type MeetingEvent =
   | 'participantsChanged'
@@ -25,6 +28,8 @@ export type MeetingEvent =
   | 'speechChanged'
   | 'speechRemoved'
   | 'recordingsChanged'
+  | 'voteChanged'
+  | 'voteOpened'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -87,6 +92,12 @@ function open(meetingId: string): Channel {
           ? 'speechRemoved'
           : 'speechChanged',
     )
+  })
+  connection.on('voteChanged', (event: VoteChangedEvent) => {
+    if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
+    seen.add(event.eventId)
+    notify('voteChanged')
+    if (event.changeType === 'Opened') notify('voteOpened')
   })
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {
