@@ -1,0 +1,140 @@
+title UC-46a - Edit Transcript Text
+
+actor "Secretary" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Transcript Controller" as TranscriptController
+control ":Speech Clip Controller" as ClipController
+control ":Transcription Service" as TranscriptionService
+control ":Speech Clip Service" as ClipService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Transcript Repository" as TranscriptRepository
+participant ":Speech Clip Repository" as ClipRepository
+participant ":Audit Service" as AuditService
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+Actor->RecordingsTab: Save the edited text of a transcript segment or a sentence
+activate RecordingsTab
+
+alt Segment of a room recording transcript
+    RecordingsTab->TranscriptController: Save the segment text
+    activate TranscriptController
+    TranscriptController->TranscriptionService: editSegment(segmentId, actorId, text)
+    activate TranscriptionService
+    TranscriptionService->TranscriptRepository: Get the segment with its transcript and recording
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve segment
+    activate Database
+    Database-->TranscriptRepository: Segment / Not found
+    deactivate Database
+    TranscriptRepository-->TranscriptionService: Segment / Not found
+    deactivate TranscriptRepository
+    TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->TranscriptionService: Meeting and roster
+    deactivate MeetingRepository
+    TranscriptionService->TranscriptionService: Check the actor is the current Secretary (BR-359)\nand the text has 1 to 8,000 characters
+
+    alt Actor is not the current Secretary - EX-3
+        TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptController-->RecordingsTab: MSG295 - Only the meeting Secretary may manage recordings.
+        RecordingsTab-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+    else Text is empty or too long - EX-1
+        TranscriptionService-->TranscriptController: MSG303 - Transcript text is invalid.
+        TranscriptController-->RecordingsTab: MSG303 - Transcript text is invalid.
+        RecordingsTab-->Actor: MSG303 - Transcript text is invalid.
+    else Text is valid
+        opt Text changed
+            TranscriptionService->AuditService: Record the edit of the segment
+            activate AuditService
+            AuditService-->TranscriptionService: Entry saved
+            deactivate AuditService
+        end
+        TranscriptionService->TranscriptRepository: Save the text with the editor and edit time (BR-359)
+        activate TranscriptRepository
+        TranscriptRepository->Database: Update segment
+        activate Database
+        Database-->TranscriptRepository: Segment saved / Save failed
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Segment saved / Save failed
+        deactivate TranscriptRepository
+        alt Segment cannot be saved - EX-2
+            TranscriptionService-->TranscriptController: MSG304 - Unable to save transcript changes. Please try again.
+            TranscriptController-->RecordingsTab: MSG304 - Unable to save transcript changes. Please try again.
+            RecordingsTab-->Actor: MSG304 - Unable to save transcript changes. Please try again.
+        else Segment saved
+            TranscriptionService-->TranscriptController: MSG302 - Transcript segment saved.
+            TranscriptController-->RecordingsTab: MSG302 - Transcript segment saved.
+            RecordingsTab-->Actor: MSG302 - Transcript segment saved.
+        end
+    end
+    deactivate TranscriptionService
+    deactivate TranscriptController
+
+else Sentence of the per-mic speech timeline
+    RecordingsTab->ClipController: Save the sentence text
+    activate ClipController
+    ClipController->ClipService: edit(clipId, actorId, text)
+    activate ClipService
+    ClipService->ClipRepository: Get the sentence
+    activate ClipRepository
+    ClipRepository->Database: Retrieve sentence
+    activate Database
+    Database-->ClipRepository: Sentence / Not found
+    deactivate Database
+    ClipRepository-->ClipService: Sentence / Not found
+    deactivate ClipRepository
+    ClipService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->ClipService: Meeting and roster
+    deactivate MeetingRepository
+    ClipService->ClipService: Check the actor is the current Secretary (BR-359)\nand the text has 1 to 8,000 characters
+
+    alt Actor is not the current Secretary - EX-3
+        ClipService-->ClipController: MSG295 - Only the meeting Secretary may manage recordings.
+        ClipController-->RecordingsTab: MSG295 - Only the meeting Secretary may manage recordings.
+        RecordingsTab-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+    else Text is empty or too long - EX-1
+        ClipService-->ClipController: MSG303 - Transcript text is invalid.
+        ClipController-->RecordingsTab: MSG303 - Transcript text is invalid.
+        RecordingsTab-->Actor: MSG303 - Transcript text is invalid.
+    else Text is valid
+        ClipService->AuditService: Record the edit of the sentence
+        activate AuditService
+        AuditService-->ClipService: Entry saved
+        deactivate AuditService
+        ClipService->ClipRepository: Save the text with the editor and edit time (BR-359)
+        activate ClipRepository
+        ClipRepository->Database: Update sentence
+        activate Database
+        Database-->ClipRepository: Sentence saved / Save failed
+        deactivate Database
+        ClipRepository-->ClipService: Sentence saved / Save failed
+        deactivate ClipRepository
+        alt Sentence cannot be saved - EX-2
+            ClipService-->ClipController: MSG304 - Unable to save transcript changes. Please try again.
+            ClipController-->RecordingsTab: MSG304 - Unable to save transcript changes. Please try again.
+            RecordingsTab-->Actor: MSG304 - Unable to save transcript changes. Please try again.
+        else Sentence saved
+            ClipService->Publisher: Tell everyone in the Meeting that the speech timeline changed
+            activate Publisher
+            Publisher-->ClipService: Change published
+            deactivate Publisher
+            ClipService-->ClipController: MSG302 - Transcript segment saved.
+            ClipController-->RecordingsTab: MSG302 - Transcript segment saved.
+            RecordingsTab-->Actor: MSG302 - Transcript segment saved.
+        end
+    end
+    deactivate ClipService
+    deactivate ClipController
+end
+
+deactivate RecordingsTab

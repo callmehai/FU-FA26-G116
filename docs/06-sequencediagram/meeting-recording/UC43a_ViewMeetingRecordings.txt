@@ -1,0 +1,100 @@
+title UC-43a - View Meeting Recordings
+
+actor "Participant" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Speech Clip Controller" as ClipController
+control ":Recording Controller" as RecordingController
+control ":Speech Clip Service" as ClipService
+control ":Recording Service" as RecordingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Speech Clip Repository" as ClipRepository
+participant ":Recording Repository" as RecordingRepository
+database ":Database" as Database
+
+Actor->RecordingsTab: Open the Recordings tab of a Meeting
+activate RecordingsTab
+
+RecordingsTab->ClipController: Get the Meeting speech timeline
+activate ClipController
+ClipController->ClipService: list(meetingId, actorId, since)
+activate ClipService
+ClipService->MeetingRepository: Get the Meeting with its format, status and current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->ClipService: Meeting and roster
+deactivate MeetingRepository
+ClipService->ClipService: Check the actor is an internal user who is the current Chair,\nSecretary or a Participant of the Meeting (BR-350, BR-370)
+
+alt Actor is not on the current roster - EX-3
+    ClipService-->ClipController: Meeting not found
+    ClipController-->RecordingsTab: Meeting not found
+    RecordingsTab-->Actor: Show the Meeting as not found
+else Actor may listen
+    ClipService->ClipRepository: Get the Meeting sentences in spoken order
+    activate ClipRepository
+    ClipRepository->Database: Retrieve sentences with speaker, text and audio
+    activate Database
+    Database-->ClipRepository: Sentences / Load failed
+    deactivate Database
+    ClipRepository-->ClipService: Sentences / Load failed
+    deactivate ClipRepository
+
+    alt Sentences cannot be loaded - EX-2
+        ClipService-->ClipController: MSG299 - Unable to load transcript.
+        ClipController-->RecordingsTab: MSG299 - Unable to load transcript.
+        RecordingsTab-->Actor: MSG299 - Unable to load transcript.
+    else Sentences loaded
+        ClipService->ClipService: Mark a sentence that repeats a neighbour's speech picked up\nby another microphone, without hiding it (BR-356)
+        opt Actor is not the current Chair or Secretary - AF-2
+            ClipService->ClipService: Keep each excluded sentence as an empty line:\nno words, no audio (BR-357)
+        end
+        ClipService-->ClipController: Speech timeline
+        ClipController-->RecordingsTab: Speech timeline
+
+        RecordingsTab->RecordingController: Get the Meeting room recordings
+        activate RecordingController
+        RecordingController->RecordingService: list(meetingId, actorId)
+        activate RecordingService
+        RecordingService->MeetingRepository: Get the Meeting with its format, status and current roster
+        activate MeetingRepository
+        MeetingRepository->Database: Retrieve Meeting and current roster
+        activate Database
+        Database-->MeetingRepository: Meeting and roster
+        deactivate Database
+        MeetingRepository-->RecordingService: Meeting and roster
+        deactivate MeetingRepository
+        RecordingService->RecordingService: Check the actor may listen (BR-350, BR-370)
+        RecordingService->RecordingRepository: Get the Meeting recordings with their takes and transcript status
+        activate RecordingRepository
+        RecordingRepository->Database: Retrieve recordings
+        activate Database
+        Database-->RecordingRepository: Recordings / Load failed
+        deactivate Database
+        RecordingRepository-->RecordingService: Recordings / Load failed
+        deactivate RecordingRepository
+
+        alt Recordings cannot be loaded - EX-1
+            RecordingService-->RecordingController: MSG297 - Unable to load meeting recordings.
+            RecordingController-->RecordingsTab: MSG297 - Unable to load meeting recordings.
+            RecordingsTab-->Actor: MSG297 - Unable to load meeting recordings.
+        else Recordings loaded
+            RecordingService->RecordingService: Decide what the actor may do: record the room and upload\nonly for the current Secretary of an In-person or Hybrid Meeting,\ndownload only for the current Chair or Secretary (BR-340, BR-341, BR-342, BR-351)
+            RecordingService-->RecordingController: Recordings with status, source, takes, retention date\nand transcript status
+            RecordingController-->RecordingsTab: Recordings with status, source, takes, retention date\nand transcript status
+            alt Meeting is Online - AF-1
+                RecordingsTab-->Actor: Show the speech timeline only, without room recording or upload controls
+            else Meeting is In-person or Hybrid
+                RecordingsTab-->Actor: Show the speech timeline and the room recordings,\nwith a Recording badge while a room take is open
+            end
+        end
+        deactivate RecordingService
+        deactivate RecordingController
+    end
+end
+
+deactivate ClipService
+deactivate ClipController
+deactivate RecordingsTab

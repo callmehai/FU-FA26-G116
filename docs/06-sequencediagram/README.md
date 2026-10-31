@@ -554,8 +554,10 @@ deactivate MeetingPage
 | [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 |
 | [document-management/](document-management/README.md) | UC-32a, UC-32c, UC-33a (AF-1), UC-35, UC-74 |
 | [voting-management/](voting-management/README.md) | UC-52a → UC-57, UC-76a, UC-76b |
+| [meeting-recording/](meeting-recording/README.md) | UC-43a → UC-43c, UC-44a → UC-44e, UC-80 |
+| [transcription-voice-id/](transcription-voice-id/README.md) | UC-45a → UC-45c (UC-45c có thêm sơ đồ hệ thống xử lý hàng chờ), UC-46a → UC-46d, UC-81a → UC-81f |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
-| [online-meeting-room/](online-meeting-room/README.md) | UC-37, UC-38, UC-39a → UC-39d, UC-40, UC-41, UC-42, UC-78, UC-79 |
+| [online-meeting-room/](online-meeting-room/README.md) | UC-37, UC-38, UC-39a → UC-39d (UC-39a AF-2 ghi lời theo micro: `UC39a_RecordSpeechWhileMicrophoneOn`), UC-40, UC-41, UC-42, UC-78, UC-79 |
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).
 

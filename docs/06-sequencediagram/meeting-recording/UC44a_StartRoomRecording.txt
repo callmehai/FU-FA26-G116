@@ -1,0 +1,132 @@
+title UC-44a - Start Room Recording
+
+actor "Secretary" as Actor
+boundary "Room Recorder Card" as RecorderCard
+control ":Recording Controller" as RecordingController
+control ":Room Take Service" as RoomTakeService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Recording Repository" as RecordingRepository
+participant ":Recording Storage" as RecordingStorage
+participant ":Audit Service" as AuditService
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+Actor->RecorderCard: Turn the room microphone on, confirming before the first take\nthat attendees were informed and nobody objected
+activate RecorderCard
+RecorderCard->RecordingController: Open a room take with the confirmation and purpose
+activate RecordingController
+RecordingController->RoomTakeService: begin(meetingId, actorId, start)
+activate RoomTakeService
+
+RoomTakeService->MeetingRepository: Lock the Meeting and get its format, status and current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting for update with current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->RoomTakeService: Meeting and roster
+deactivate MeetingRepository
+RoomTakeService->RecordingRepository: Get the Meeting recordings and its room recording
+activate RecordingRepository
+RecordingRepository->Database: Retrieve recordings and the newest kept room recording
+activate Database
+Database-->RecordingRepository: Recordings, open take, room recording
+deactivate Database
+RecordingRepository-->RoomTakeService: Recordings, open take, room recording
+deactivate RecordingRepository
+RoomTakeService->RoomTakeService: Check current Secretary (BR-341), In-person or Hybrid (BR-340),\nIn Progress (BR-342), no open take (BR-344) and, before the first take only,\nthe attendee notice confirmation (BR-343)
+
+alt Actor is not the current Secretary - EX-2
+    RoomTakeService-->RecordingController: MSG295 - Only the meeting Secretary may manage recordings.
+    RecordingController-->RecorderCard: MSG295 - Only the meeting Secretary may manage recordings.
+    RecorderCard-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+else Meeting is Online - EX-4
+    RoomTakeService-->RecordingController: MSG358 - Online meetings record per-mic speech; room recordings are not available.
+    RecordingController-->RecorderCard: MSG358 - Online meetings record per-mic speech; room recordings are not available.
+    RecorderCard-->Actor: MSG358 - Online meetings record per-mic speech; room recordings are not available.
+else Meeting is not In Progress - EX-5
+    RoomTakeService-->RecordingController: MSG359 - Room microphone can only be turned on while the meeting is in progress.
+    RecordingController-->RecorderCard: MSG359 - Room microphone can only be turned on while the meeting is in progress.
+    RecorderCard-->Actor: MSG359 - Room microphone can only be turned on while the meeting is in progress.
+else A take is already open on another device - EX-6
+    RoomTakeService-->RecordingController: MSG360 - Room microphone is currently active on another device.
+    RecordingController-->RecorderCard: MSG360 - Room microphone is currently active on another device.
+    RecorderCard-->Actor: MSG360 - Room microphone is currently active on another device.
+else First take without the notice confirmation, or purpose too long - EX-1
+    RoomTakeService-->RecordingController: MSG291 - Invalid recording information.
+    RecordingController-->RecorderCard: MSG291 - Invalid recording information.
+    RecorderCard-->Actor: MSG291 - Invalid recording information.
+else Take can be opened (a later take needs no confirmation - AF-2)
+    RoomTakeService->RecordingStorage: Create an empty audio file for the take
+    activate RecordingStorage
+    RecordingStorage-->RoomTakeService: New file / Storage failed
+    deactivate RecordingStorage
+    RoomTakeService->RecordingRepository: Add an open take with the confirmation time and purpose\nof the room recording, kept for 180 days (BR-343, BR-344, BR-347)
+    activate RecordingRepository
+    RecordingRepository->Database: Insert open take
+    activate Database
+    Database-->RecordingRepository: Take saved / Save failed
+    deactivate Database
+    RecordingRepository-->RoomTakeService: Take saved / Save failed
+    deactivate RecordingRepository
+    RoomTakeService->AuditService: Record that the take started, and whether it is the first
+    activate AuditService
+    AuditService-->RoomTakeService: Entry saved
+    deactivate AuditService
+
+    alt Take cannot be opened - EX-3
+        RoomTakeService-->RecordingController: MSG298 - Unable to save recording changes. Please try again.
+        RecordingController-->RecorderCard: MSG298 - Unable to save recording changes. Please try again.
+        RecorderCard-->Actor: MSG298 - Unable to save recording changes. Please try again.
+    else Take opened
+        RoomTakeService->Publisher: Tell everyone in the Meeting that the room is being recorded
+        activate Publisher
+        Publisher-->RoomTakeService: Change published
+        deactivate Publisher
+        RoomTakeService-->RecordingController: Open take with its part size and size limit
+        RecordingController-->RecorderCard: Open take with its part size and size limit
+        RecorderCard-->Actor: Show the room microphone on and the Recording badge
+
+        loop While the room microphone is on
+            RecorderCard->RecorderCard: Keep the recorded audio on this device until each part is accepted
+            RecorderCard->RecordingController: Send the next audio part
+            RecordingController->RoomTakeService: append(recordingId, actorId, part, content, length, final)
+            RoomTakeService->RecordingRepository: Lock the open take
+            activate RecordingRepository
+            RecordingRepository->Database: Retrieve take for update
+            activate Database
+            Database-->RecordingRepository: Open take
+            deactivate Database
+            RecordingRepository-->RoomTakeService: Open take
+            deactivate RecordingRepository
+            RoomTakeService->RoomTakeService: Check the part follows the previous one and has the expected size
+            alt Audio part is invalid - EX-7
+                RoomTakeService-->RecordingController: MSG361 - The recorded audio is not valid.
+                RecordingController-->RecorderCard: MSG361 - The recorded audio is not valid.
+                RecorderCard-->Actor: MSG361 - The recorded audio is not valid.
+            else Part accepted
+                RoomTakeService->RecordingStorage: Write the part at its place in the take file
+                activate RecordingStorage
+                RecordingStorage-->RoomTakeService: Part written
+                deactivate RecordingStorage
+                RoomTakeService->RecordingRepository: Save the take size and duration
+                activate RecordingRepository
+                RecordingRepository->Database: Update take
+                activate Database
+                Database-->RecordingRepository: Take updated
+                deactivate Database
+                RecordingRepository-->RoomTakeService: Take updated
+                deactivate RecordingRepository
+                RoomTakeService-->RecordingController: Part accepted
+                RecordingController-->RecorderCard: Part accepted
+                opt Take nears its size limit - AF-3
+                    RecorderCard->RecorderCard: ref UC-44b - save this take, then open the next take\nwithout stopping the recording (BR-345)
+                end
+            end
+        end
+    end
+end
+
+deactivate RoomTakeService
+deactivate RecordingController
+deactivate RecorderCard
