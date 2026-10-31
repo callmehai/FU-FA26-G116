@@ -3,7 +3,7 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Domain.GuestAccess;
 
 /// <summary>UC-04 outcomes. Each maps to one message code at the endpoint (docs/03-api/16-truy-cap-khach-uc04.md).</summary>
-public enum GuestAccessFailure { None, InvalidInvitation, InvalidCode, CodeLocked, TooSoon, Unavailable, InvalidProfile, SessionEnded }
+public enum GuestAccessFailure { None, InvalidInvitation, InvalidCode, CodeLocked, TooSoon, DailyLimit, Unavailable, InvalidProfile, SessionEnded }
 
 public sealed record GuestMeetingView(Guid Id, string Title, string Status,
     DateTimeOffset PlannedStartTime, DateTimeOffset PlannedEndTime);

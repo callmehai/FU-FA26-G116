@@ -16,8 +16,9 @@ Adapter tích hợp: [Agenda](08-agenda-contract-tich-hop-guest-uc04.md),
 | Hiệu lực mã OTP | 15 phút kể từ lúc tạo | `CodeLifetimeMinutes` = 15 |
 | Nhập sai tối đa | 5 lần cho một mã; lần sai thứ 5 vô hiệu mã | `MaxFailedAttempts` = 5 |
 | Gửi lại mã | cách lần gửi trước tối thiểu 1 phút | `ResendIntervalSeconds` = 60 |
+| Số mã tối đa | 20 mã đã gửi được cho một lời mời trong 24 giờ bất kỳ (cửa sổ trượt, chốt 31/10/2026 khi review PR #203; BA bổ sung vào UC-04/BR-153) | `MaxCodesPerDay` = 20 |
 | Hiệu lực phiên Khách (BR-155) | 12 giờ kể từ lúc xác minh; token hết hạn cùng lúc, không có refresh | `SessionLifetimeHours` = 12 |
-| Khách sau khi cuộc họp kết thúc | mất mọi quyền đọc (Agenda, thành phần, realtime…) khi cuộc họp `Ended` | — |
+| Khách sau khi cuộc họp kết thúc | mất mọi quyền đọc (Agenda, thành phần, realtime…) khi cuộc họp `Ended` — PO chốt 30/10/2026 (Jira SCRUM-116) | — |
 
 Phiên Khách còn hiệu lực khi **tất cả** đúng: phiên chưa hết hạn, chưa bị thu hồi (đăng xuất); lời mời
 chưa bị thu hồi; cuộc họp đang `Published` hoặc `InProgress`. Agenda, Thành phần tham dự và realtime
@@ -37,6 +38,8 @@ Thư mời Khách (SCRUM-20) chứa link:
 - `linkToken` là HMAC-SHA256 của `invitationId` bằng khoá suy ra từ `Authentication:SigningKey`, mã
   hoá base64url. Không lưu trong database, không đổi khi dispatch retry; thu hồi lời mời là đủ để link
   chết (mời lại sinh `invitationId` mới).
+- Đổi `Authentication:SigningKey` thì mọi link mời đã gửi đều chết (cùng mọi token Khách và nội bộ): Thư ký
+  phải mời lại từng Khách. Xem [deploy/README.md](../../deploy/README.md).
 - Token nằm sau `#` nên không tới server, log hay `Referer`. FE đọc fragment rồi gửi trong body.
 - Đoán `invitationId` không đủ: mọi endpoint ẩn danh dưới đây đều đòi `linkToken` đúng.
 
@@ -62,12 +65,14 @@ Chỉ đọc. FE gọi khi mở link để hiện tên cuộc họp và email b�
 
 Tạo mã 6 chữ số, gửi ngay tới **email được mời** (BR-153), không qua hàng đợi email và không lưu mã
 thô (chỉ lưu HMAC). Mã mới vô hiệu mã cũ. Hai request đồng thời được xếp hàng bằng khoá dòng lời mời,
-nên chỉ một mã được tạo.
+nên chỉ một mã được tạo. Mỗi lời mời gửi được tối đa 20 mã trong 24 giờ bất kỳ; mã gửi lỗi đã bị xoá nên
+không tính. Khoảng chờ 1 phút được xét trước giới hạn này.
 
 | HTTP | Body |
 |---|---|
 | 200 | `{ "code": "MSG375", "message", "expiresInSeconds": 900, "resendAfterSeconds": 60 }` |
 | 429 | `{ "code": "MSG373", "message", "retryAfterSeconds": n }` + header `Retry-After` — FE đếm ngược theo `retryAfterSeconds`, không tự tính |
+| 429 | `{ "code": "MSG379", "message", "retryAfterSeconds": n }` + header `Retry-After` — đã gửi đủ 20 mã trong 24 giờ; `n` là số giây tới khi mã cũ nhất ra khỏi cửa sổ |
 | 404 | `MSG371` |
 | 503 | `MSG374` — không lưu được mã hoặc không gửi được email (EX-3). Mã chưa gửi được bị xoá, nên bấm gửi lại được ngay |
 
@@ -171,10 +176,11 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 | `MSG376` | 200 | Lưu hồ sơ tự khai | Đã lưu thông tin hiển thị. |
 | `MSG377` | 400 | Hồ sơ tự khai không hợp lệ | Thông tin hiển thị không hợp lệ. |
 | `MSG378` | 404 | Phiên Khách không còn hiệu lực | Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email. |
+| `MSG379` | 429 | Đã gửi đủ 20 mã cho lời mời trong 24 giờ | Bạn đã yêu cầu quá số mã cho phép trong 24 giờ. Vui lòng thử lại sau hoặc liên hệ Thư ký cuộc họp. |
 
 ## 8. Ngoài phạm vi
 
 - Thư ký thu hồi từng phiên riêng lẻ của Khách: chưa có màn hình; thu hồi lời mời đã cắt mọi phiên.
 - Đọc tài liệu, góp ý, biểu quyết, phòng họp trực tuyến cho Khách: ticket của từng feature dùng lại
   phiên này.
-- Giới hạn số lần gửi mã theo giờ/ngày ngoài khoảng chờ 1 phút.
+- Khoá tên hiển thị sau lần khai đầu: tạm chưa làm (31/10/2026); Khách khai lại thì ghi đè (§4.2).
