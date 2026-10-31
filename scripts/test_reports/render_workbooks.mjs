@@ -7,7 +7,7 @@ const [out,preview,modulePath,jobIndex]=process.argv.slice(2);
 const {SpreadsheetFile,FileBlob}=await import(pathToFileURL(modulePath).href);
 await fs.mkdir(preview,{recursive:true});
 const jobs=[
- ['Report5.1_Unit_Test.xlsx',[['Cover','A1:F16','unit-cover'],['MethodList','A1:F12','unit-list'],['Statistics','A1:I19','unit-statistics']]],
+ ['Report5.1_Unit_Test.xlsx',[['Cover','A1:F16','unit-cover'],['Test Cases','B1:F20','unit-list'],['Test Statistics','A1:I22','unit-statistics']]],
  ['Report5.2_Integration_Test.xlsx',[['Cover','A1:F16','integration-cover'],['Test Statistics','B1:H22','integration-statistics']]],
  ['Report5.2.2_Integration_Test_API_Test.xlsx',[['Cover','A1:F16','api-cover'],['Test Statistics','B1:H22','api-statistics']]],
  ['Report5.3_System_Test.xlsx',[['Cover','A1:F16','system-cover'],['Test Statistics','B1:H23','system-statistics'],['WorkFlow1','A1:F13','system-case']]],
@@ -30,8 +30,8 @@ for(const [file,areas] of [jobs[Number(jobIndex)]]){
  }
  if(file.includes('Unit')){
    const sheets=JSON.parse(await fs.readFile(path.join(path.dirname(preview),'authoring.json'),'utf8'))[0].sheets;
-   const s=sheets.find(s=>s.name.startsWith('U001-'));
-   const img=await wb.render({sheetName:s.name,range:'A1:T23',scale:1,format:'png'});
+   const s=sheets[3];
+   const img=await wb.render({sheetName:s.name,range:'A1:P30',scale:1,format:'png'});
    await fs.writeFile(path.join(preview,'unit-case.png'),new Uint8Array(await img.arrayBuffer()));
  }
  if(file==='Report5.2_Integration_Test.xlsx'){

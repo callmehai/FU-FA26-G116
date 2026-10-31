@@ -1,0 +1,131 @@
+{
+ "prefix": "REC_FT",
+ "module": "Recordings",
+ "source": "frontend/src/features/recordings/RecordingsPanel.tsx",
+ "cases": [
+  {
+   "group": "Bản ghi",
+   "d": "The Secretary records the room with the room mic, or uploads a file, with consent, and gets a transcript.",
+   "steps": [
+    "Open tab \"Bản ghi\" of an in-person meeting during the meeting.",
+    "In the mic card click \"Bật mic phòng\"; in \"Bắt đầu ghi âm\" enter Mục đích ghi âm \"Lập biên bản cuộc họp\", tick the statement that participants were told and click \"Bắt đầu ghi\".",
+    "Speak for a while, then click \"Tắt mic, lưu lượt ghi\".",
+    "Switch the mic on and off again for a second take.",
+    "Or click \"Tải tệp lên\", choose an audio file and confirm \"Tải lên\" in \"Lưu tệp ghi âm\".",
+    "Open \"Nghe và xem bản gỡ băng\"."
+   ],
+   "exp": [
+    "While recording the card shows \"Đang ghi cả phòng\" and the list shows \"Mic phòng đang ghi\" to everyone.",
+    "Switching off shows \"Đã lưu lượt ghi.\"; the recording shows Mic phòng and \"Đang chuyển chữ\".",
+    "The second take needs no new consent and is appended to the same recording, which is transcribed again.",
+    "An uploaded file shows Tải lên.",
+    "When done it shows \"Có bản gỡ băng\"; the transcript lists speakers and times.",
+    "Without ticking consent the mic cannot start; an Online meeting has no room mic."
+   ],
+   "pre": [
+    "An InProgress in-person meeting; signed in as its Secretary; microphone allowed; speech worker running."
+   ]
+  },
+  {
+   "group": "Bản ghi",
+   "d": "The Secretary corrects the transcript and names speakers; members only listen.",
+   "steps": [
+    "In the transcript click \"Sửa đoạn này\", change the text and Lưu.",
+    "Assign \"Người nói 1\" to a participant.",
+    "As thanhvien, open the same transcript."
+   ],
+   "exp": [
+    "\"Đã lưu đoạn gỡ băng.\" and \"Đã gán người nói.\" appear.",
+    "thanhvien can listen and read but has no edit actions."
+   ],
+   "pre": [
+    "A recording with a completed transcript."
+   ]
+  },
+  {
+   "group": "Bản ghi",
+   "d": "Delete a recording; the audio and transcript are erased.",
+   "steps": [
+    "Click \"Xoá bản ghi\" and confirm."
+   ],
+   "exp": [
+    "\"Xoá bản ghi?\" is asked first.",
+    "\"Đã xoá bản ghi.\" appears; the recording leaves the tab and can no longer be played; its audio and transcript are erased."
+   ],
+   "pre": [
+    "A stored recording; signed in as the Secretary."
+   ]
+  },
+  {
+   "group": "Lời nói",
+   "d": "In an online meeting each participant's microphone turns their sentences into text and audio.",
+   "steps": [
+    "Join the room of an InProgress Online meeting and turn the microphone on.",
+    "Say a sentence and pause.",
+    "Open \"Ghi âm của tôi\" and play the sentence back (\"Nghe lại\").",
+    "Click \"Xoá câu này\" and confirm \"Xoá câu\"."
+   ],
+   "exp": [
+    "The room shows \"Cuộc họp được ghi âm để lập biên bản · tự xoá sau 180 ngày\" and \"Đang ghi lời bạn\".",
+    "Each sentence appears as text under \"Micro của <name>\" in tab \"Bản ghi\" and can be heard back.",
+    "Deleting shows \"Đã xoá câu nói.\" and the sentence and its audio leave the meeting."
+   ],
+   "pre": [
+    "An InProgress Online (or Hybrid) meeting; signed in as a participant; microphone allowed; speech worker running."
+   ]
+  },
+  {
+   "group": "Bản ghi",
+   "d": "The Secretary deletes one take of the room recording.",
+   "steps": [
+    "Open the transcript of a room recording with several takes.",
+    "On one take click \"Xoá lượt này\" and confirm \"Xoá lượt\"."
+   ],
+   "exp": [
+    "The dialog warns the take's sound and words are removed for good.",
+    "\"Đã xoá lượt ghi.\" appears; the take's lines leave the transcript, later lines move up, corrected text and assigned names stay.",
+    "With only one take left, deleting it is refused: delete the whole recording instead."
+   ],
+   "pre": [
+    "A room recording with at least two takes and a completed transcript; signed in as its Secretary."
+   ]
+  },
+  {
+   "group": "Bản ghi",
+   "d": "The Chair or Secretary saves the recording and the transcript to the computer.",
+   "steps": [
+    "On a recording click \"Tải tệp ghi âm\".",
+    "In the transcript click \"Tải bản gỡ băng (.txt)\".",
+    "For an Online meeting click \"Tải lời thoại (.txt)\".",
+    "Sign in as thanhvien and open the same meeting."
+   ],
+   "exp": [
+    "The original audio file and a text transcript with names and times are downloaded.",
+    "The per-microphone text leaves out sentences taken out of the record.",
+    "thanhvien sees no download buttons.",
+    "For a Mật meeting nobody can download."
+   ],
+   "pre": [
+    "An Internal meeting with a transcribed recording; signed in as chutoa or thuky."
+   ]
+  },
+  {
+   "group": "Lời nói",
+   "d": "The Chair or Secretary takes a sentence out of the record and puts it back.",
+   "steps": [
+    "In tab \"Bản ghi\" of an Online meeting, on a sentence click \"Bỏ khỏi biên bản\".",
+    "Sign in as thanhvien and look at the same sentence.",
+    "As the Chair click \"Khôi phục\"."
+   ],
+   "exp": [
+    "\"Đã loại câu khỏi bản ghi.\" appears; the Chair still sees the words marked as left out.",
+    "thanhvien sees \"Câu đã được bỏ khỏi biên bản.\" without the words or audio.",
+    "Restoring shows \"Đã đưa câu trở lại bản ghi.\".",
+    "A quieter copy of another person's sentence is highlighted as possibly theirs."
+   ],
+   "pre": [
+    "An Online meeting with stored sentences; signed in as chutoa."
+   ]
+  }
+ ]
+}

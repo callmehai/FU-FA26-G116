@@ -1,0 +1,53 @@
+{
+ "prefix": "NOTI_FT",
+ "module": "Notifications",
+ "source": "frontend/src/features/notifications/NotificationPanel.tsx",
+ "cases": [
+  {
+   "group": "Thông báo",
+   "d": "Receive a notification live and mark it read.",
+   "steps": [
+    "Sign in as chutoa in browser A.",
+    "In browser B, as thuky, submit a meeting to chutoa for approval.",
+    "In browser A, open the bell (\"Thông báo\") and click the notification."
+   ],
+   "exp": [
+    "The bell's unread count increases without reloading.",
+    "Clicking opens the meeting and the notification becomes read."
+   ],
+   "pre": [
+    "Two browsers; Redis and the notification hub are running."
+   ]
+  },
+  {
+   "group": "Thông báo",
+   "d": "Mark all notifications read; an old notification to a meeting no longer visible is handled.",
+   "steps": [
+    "Click \"Đánh dấu tất cả đã đọc\" and reload.",
+    "Click an old notification of a meeting from which the user was removed."
+   ],
+   "exp": [
+    "The unread count is 0 after reload.",
+    "\"Thông báo này không còn khả dụng.\" is shown and no meeting content is revealed."
+   ],
+   "pre": [
+    "The user has several notifications, one for a meeting they were removed from."
+   ]
+  },
+  {
+   "group": "Thông báo",
+   "d": "A reminder arrives before a published meeting starts.",
+   "steps": [
+    "Publish a meeting that starts in about 15 minutes.",
+    "Wait until 15 minutes before the start as an invitee."
+   ],
+   "exp": [
+    "Each active invitee receives one reminder notification.",
+    "No duplicate reminder is sent."
+   ],
+   "pre": [
+    "The notification worker is running."
+   ]
+  }
+ ]
+}

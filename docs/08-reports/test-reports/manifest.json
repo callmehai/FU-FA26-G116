@@ -1,41 +1,59 @@
 {
   "project": "TrustCabinet",
   "projectCode": "SEP490-G116",
-  "date": "2026-10-23",
-  "generatedAt": "2026-10-23T11:25:54.651586+00:00",
-  "commit": "f87bb032fd17446fe3fd6b506efba694a96ab9c4",
-  "sourceDigest": "158abd6697f2ee12d7ab7080896ccd52f6d31766dba6c2a96dfa2999c891f57d",
+  "date": "2026-10-30",
+  "generatedAt": "2026-10-30T11:09:26.759792+00:00",
+  "commit": "176d1026024606bcffcf807ff96cef8ec522a940",
+  "sourceDigest": "700521e186b491c4ff9163b195f05705e0306d8736931ef418fa31a8534066a4",
   "evidenceVerified": false,
-  "testMethods": 734,
+  "testMethods": 1129,
   "classification": {
-    "INTEGRATION": 169,
-    "API": 249,
-    "UNIT": 316
+    "INTEGRATION": 203,
+    "UNIT": 447,
+    "API": 479
   },
   "status": {
-    "NotRun": 734
+    "NotRun": 1129
   },
   "manualCases": {
-    "UI": 20,
-    "SYS": 9,
+    "UI": 89,
+    "SYS": 10,
     "UAT": 8
   },
   "executions": 0,
   "templates": {
-    "Report5.1_Unit_Test.xlsx": "78d86f35e153a4777c21412b196bceb82be16ee3cdc1ed4b74a7b34313a2b3ac",
+    "Report-5.1_Unit Test.xls": "1091302a3563d9f67818162c370d33514ece270fbba8321240947accd129618b",
     "Report5.2_Integration_Test.xlsx": "0323b56405aa0cefc580bb2643d8ff47bc8b5f9e05174200b9298533799c049f",
     "FA25_SEP490-G158_Report5.2.2_Integration Test_API Test.xlsx": "c0be54919832f942307887ebc0d6fe27ab91e447d994e33f3f7d12690fc4c1ef",
     "Report5.3_System_Test.xlsx": "5f6ff278eb367e0e90cdf498950d76f0a6a448e9512324dbd6b21b6c16b9beae",
     "Report5.4_Acceptance_Test.xlsx": "0f79e99b4fdc711a8297b476442f69186db1a4d643f067b506d7ffd8b1f517f2",
     "FA25_SEP490-G158_Report5.0_Test Documentation.docx": "d25bfbcecc2519fae31654ed85c6008c3683bbf319179c61820bfaf11fe2cb54"
   },
+  "history": [
+    [
+      "2026-10-23",
+      "1.0",
+      "Report 5",
+      "A",
+      "Generate test documents from source"
+    ],
+    [
+      "2026-10-30",
+      "1.1",
+      "Test cases",
+      "M",
+      "Regenerate: 1129 xUnit methods",
+      ""
+    ]
+  ],
+  "unitCases": 653,
   "tocEntriesRefreshed": 26,
   "files": {
-    "Report5.0_Test_Documentation.docx": "0779f409a66f537adfbf807e2bd57ab28ff2de6fbda0f9e8823bd5a0ec1e4af0",
-    "Report5.1_Unit_Test.xlsx": "43f7f5baf82d0e189e52e2c87aac688669c0286879ff43a2d4d26581ec4b73f6",
-    "Report5.2.2_Integration_Test_API_Test.xlsx": "d923e73ed5de82212fe1db77c0a95939bb4e6a9f7fc6d8c6f05030c9885087fa",
-    "Report5.2_Integration_Test.xlsx": "a71a69d7f332271db09e4bb96728db618167dfa54186fdad719683ae8f1a469d",
-    "Report5.3_System_Test.xlsx": "3bec71034fda60ada6e6cee593530f12df3baf9dd8ecb05edce137230a6e5b69",
-    "Report5.4_Acceptance_Test.xlsx": "71582e2dab31133ee4648bcaeca1192757de0a7ea2c5b16db1820d17d0dea4da"
+    "Report5.0_Test_Documentation.docx": "dda0c31b0e1e45c4f5de4edfc73114baf58ce122e778a5871895b6068da93d84",
+    "Report5.1_Unit_Test.xlsx": "bd93687ed51be27d5dad79f0a0052138983bca318055fe605d9569aea5235ddc",
+    "Report5.2.2_Integration_Test_API_Test.xlsx": "27fddae4dcc1fe7b2eb45acb44ef37cb211903721e28ad9bbebb4b13205bbad0",
+    "Report5.2_Integration_Test.xlsx": "c3d42e88d0186e7bf45b201badf669d8b6689ef049e2bda1b17ebc5462267413",
+    "Report5.3_System_Test.xlsx": "c8c779a582b1b8d709482031306284553d0a82bb73bbaeaf9e1c51b186d61672",
+    "Report5.4_Acceptance_Test.xlsx": "dabb2786d8971a60c104a6163ccb307dadea8a99dca5d58c78d216a0d162fc51"
   }
 }

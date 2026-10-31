@@ -1,0 +1,102 @@
+{
+ "prefix": "MDOC_FT",
+ "module": "Meeting documents",
+ "source": "frontend/src/features/documents/DocumentsPanel.tsx",
+ "cases": [
+  {
+   "group": "Tài liệu",
+   "d": "Upload meeting documents from the computer.",
+   "steps": [
+    "Open tab \"Tài liệu\" and add documents (\"Tải từ máy\").",
+    "Drop two PDFs and one DOCX in \"Kéo tệp vào đây hoặc bấm để chọn\" and confirm."
+   ],
+   "exp": [
+    "The upload tray shows each file; then \"Đã thêm tài liệu vào cuộc họp.\".",
+    "The files are listed under Tài liệu chung and copied into the uploader's Kho tài liệu."
+   ],
+   "pre": [
+    "A Published meeting; signed in as its Secretary; file storage configured."
+   ]
+  },
+  {
+   "group": "Tài liệu",
+   "d": "Upload limits and wrong file types are refused.",
+   "steps": [
+    "Try to add a PNG renamed to .pdf.",
+    "Try to add 11 files at once.",
+    "Try a PDF larger than 50 MB."
+   ],
+   "exp": [
+    "The wrong type is refused with \"Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.\" and nothing is added.",
+    "11 files: \"Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB.\".",
+    "The large file is refused naming the 50 MB limit."
+   ],
+   "pre": [
+    "Signed in as the meeting Secretary."
+   ]
+  },
+  {
+   "group": "Tài liệu",
+   "d": "Attach documents to an agenda item and remove them.",
+   "steps": [
+    "Under an agenda item click \"Thêm tài liệu cho mục này\" and pick a meeting document.",
+    "Use \"Gỡ khỏi mục này\".",
+    "Use \"Gỡ khỏi cuộc họp\" on a general document."
+   ],
+   "exp": [
+    "\"Đã gắn tài liệu vào mục nghị sự.\" then \"Đã gỡ tài liệu khỏi mục nghị sự.\" appear.",
+    "A document removed from the meeting disappears from every list."
+   ],
+   "pre": [
+    "A meeting with agenda items and documents; signed in as Chair or Secretary."
+   ]
+  },
+  {
+   "group": "Tài liệu",
+   "d": "Read a document and comment on a page.",
+   "steps": [
+    "As thanhvien, open a PDF from tab Tài liệu.",
+    "Zoom in and out (\"Phóng to\", \"Thu nhỏ\").",
+    "Open Góp ý, tick \"Gắn trang\", write \"Xem lại số liệu\" and click \"Gửi góp ý\"; reply to it."
+   ],
+   "exp": [
+    "The document opens full screen with \"‹ Tài liệu\" to go back.",
+    "\"Đã gửi góp ý.\" appears; the comment shows the page number and the reply joins its thread.",
+    "In a Secret meeting the document can only be viewed (\"Cuộc họp Mật: tài liệu chỉ xem trực tuyến, không tải về\")."
+   ],
+   "pre": [
+    "A Published meeting with a PDF; thanhvien is invited."
+   ]
+  },
+  {
+   "group": "Tài liệu",
+   "d": "Add documents from my library to the meeting.",
+   "steps": [
+    "In tab Tài liệu, add documents and choose \"Từ kho của tôi\".",
+    "Select two library documents and confirm."
+   ],
+   "exp": [
+    "\"Đã thêm tài liệu vào cuộc họp.\" appears.",
+    "The meeting uses the current names; renaming them later in the library does not rename them in the meeting."
+   ],
+   "pre": [
+    "The Secretary has documents in Kho tài liệu."
+   ]
+  },
+  {
+   "group": "Tài liệu",
+   "d": "Documents of an ended or cancelled meeting stay readable but cannot be changed or commented.",
+   "steps": [
+    "Open tab Tài liệu of an ended meeting and open a document.",
+    "Repeat for a cancelled meeting."
+   ],
+   "exp": [
+    "Documents open; add and remove actions are not offered.",
+    "The comment panel says \"Cuộc họp đã kết thúc nên không góp ý thêm được.\" or \"Cuộc họp đã huỷ nên không góp ý thêm được.\"."
+   ],
+   "pre": [
+    "An ended and a cancelled meeting with documents."
+   ]
+  }
+ ]
+}

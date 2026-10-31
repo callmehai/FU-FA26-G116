@@ -1,0 +1,72 @@
+{
+ "prefix": "CALL_FT",
+ "module": "Meeting room",
+ "source": "frontend/src/features/calls/room/MeetingRoomPage.tsx",
+ "cases": [
+  {
+   "group": "Phòng họp trực tuyến",
+   "d": "Join the online meeting room with camera and microphone.",
+   "steps": [
+    "After the Chair starts an online meeting, click \"Vào phòng họp\".",
+    "Check the preview (\"Xem trước hình của bạn\"), toggle \"Tắt micro\" / \"Bật camera\" and click \"Vào phòng\".",
+    "Open Người dự, Tin nhắn and Tài liệu in the room.",
+    "Click \"Rời phòng\"."
+   ],
+   "exp": [
+    "The room opens full screen; other participants appear with their names and \"Đang nói\" indicators.",
+    "Chat messages appear for people in the room only.",
+    "Leaving returns to the meeting page."
+   ],
+   "pre": [
+    "A Published online meeting; LiveKit configured; browser camera and microphone allowed."
+   ]
+  },
+  {
+   "group": "Phòng họp trực tuyến",
+   "d": "The room is closed before the start and for in-person meetings; only the Chair mutes others.",
+   "steps": [
+    "Open the room of a meeting that has not started.",
+    "Open the room of an in-person meeting in progress.",
+    "In a running room, as a member try to mute someone; as the Chair, mute a member (\"Tắt mic\")."
+   ],
+   "exp": [
+    "Not started: \"Phòng họp chỉ mở khi cuộc họp đang diễn ra\".",
+    "In person: the room says the meeting is held in person.",
+    "Only the Chair has \"Tắt mic\"; the member's microphone turns off."
+   ],
+   "pre": [
+    "Meetings as described."
+   ]
+  },
+  {
+   "group": "Phòng họp trực tuyến",
+   "d": "Share the screen and use the floating window.",
+   "steps": [
+    "In the room, click \"Chia sẻ màn hình\" and choose a window.",
+    "Click \"Dừng chia sẻ\".",
+    "Click \"Mở cửa sổ nổi\", switch to another tab, then \"Đóng cửa sổ nổi\"."
+   ],
+   "exp": [
+    "Others see the shared screen and \"Bạn đang trình bày cho mọi người\" is shown to you.",
+    "In the floating window \"Bạn vẫn đang trong phòng và có thể làm việc khác ở tab hoặc ứng dụng khác.\" and the call continues."
+   ],
+   "pre": [
+    "A running online meeting room with two participants."
+   ]
+  },
+  {
+   "group": "Phòng họp trực tuyến",
+   "d": "Open a meeting document from inside the room.",
+   "steps": [
+    "In the room, open Tài liệu and click a document."
+   ],
+   "exp": [
+    "The document opens in a new tab (\"Mở ở tab mới, bạn vẫn ở trong phòng\").",
+    "The call in the first tab keeps running."
+   ],
+   "pre": [
+    "A running online meeting with documents."
+   ]
+  }
+ ]
+}
