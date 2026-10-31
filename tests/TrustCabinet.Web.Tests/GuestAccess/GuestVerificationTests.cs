@@ -81,7 +81,14 @@ public sealed class GuestVerificationTests(GuestAccessFixture f) : IClassFixture
 
         f.Clock.Now = f.Clock.Now.AddSeconds(40);
         var second = await f.SendCode(client, s);
-        if (second != first) await Expect(await Verify(client, s, first), 400, "MSG126");
+        if (second != first)
+        {
+            // The replaced code, typed before the new email arrived: refused, but not a wrong guess on the new one.
+            await Expect(await Verify(client, s, first), 400, "MSG126");
+            await using var db = f.Db();
+            Assert.Equal(0, (await db.GuestVerificationChallenges.Where(c => c.InvitationId == s.InvitationId)
+                .OrderByDescending(c => c.CreatedAt).FirstAsync()).FailedAttempts);
+        }
         await Expect(await Verify(client, s, second), 200);
     }
 
@@ -111,6 +118,11 @@ public sealed class GuestVerificationTests(GuestAccessFixture f) : IClassFixture
 
         f.Clock.Now = f.Clock.Now.AddMinutes(55);
         await Expect(await Verify(client, s, await f.SendCode(client, s)), 200);
+        // The code that left the window was deleted by that send; the 20 of the last 24 hours remain.
+        await using var check = f.Db();
+        var kept = await check.GuestVerificationChallenges.Where(c => c.InvitationId == s.InvitationId).Select(c => c.CreatedAt).ToListAsync();
+        Assert.Equal(20, kept.Count);
+        Assert.All(kept, at => Assert.True(at > f.Clock.Now.AddDays(-1)));
     }
 
     [Fact]

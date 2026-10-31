@@ -1,6 +1,6 @@
 # SCRUM-20 — bàn giao tích hợp Guest cho UC-04
 
-**Cập nhật SCRUM-116 (30/10/2026):** UC-04 đã cung cấp `IParticipantGuestAccess`, `IGuestInvitationLinkProvider` và resolver production ([contract UC-04](16-truy-cap-khach-uc04.md)); "Blocked by UC-04" bên dưới không còn đúng. PO đã chốt 30/10/2026 (Jira SCRUM-116), gate 6 và mục consumer bên dưới đã sửa theo: Khách **không** đọc được gì khi cuộc họp `Ended` (roster, response, attendance, realtime đều `404`/không gửi), dùng rule riêng `ParticipantRules.GuestCanView`; rule của người nội bộ không đổi.
+**Cập nhật SCRUM-116 (30/10/2026):** UC-04 đã cung cấp `IParticipantGuestAccess`, `IGuestInvitationLinkProvider` và resolver production ([contract UC-04](16-truy-cap-khach-uc04.md)); "Blocked by UC-04" bên dưới không còn đúng. PO đã chốt 30/10/2026 (Jira SCRUM-116), gate 6 và mục consumer bên dưới đã sửa theo: Khách **không** đọc được gì khi cuộc họp `Ended` (roster, response, attendance, realtime đều `404`/không gửi), dùng luật chung `GuestAccessRules.MeetingOpen`; rule của người nội bộ không đổi.
 
 Đã thống nhất tách OTP, profile tự khai và session production khỏi SCRUM-20. Backend SCRUM-20 lưu lời mời và tiêu thụ kết quả xác thực, **chưa cung cấp Guest login thật**. Không dùng test JWT/adapters để demo nghiệm thu production.
 

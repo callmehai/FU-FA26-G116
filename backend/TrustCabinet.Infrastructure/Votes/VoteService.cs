@@ -10,6 +10,7 @@ using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Votes;
 using TrustCabinet.Infrastructure.Documents;
+using TrustCabinet.Domain.GuestAccess;
 
 namespace TrustCabinet.Infrastructure.Votes;
 
@@ -47,7 +48,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
     {
         if (actor.Guest is { } g)
             return actor.UserId is null && g.IsValid && s is not null && g.MeetingId == s.Meeting.Id
-                && VoteRules.GuestCanView(s.Meeting.Status) && s.Guests.Any(x => x.Id == g.InvitationId)
+                && GuestAccessRules.MeetingOpen(s.Meeting.Status) && s.Guests.Any(x => x.Id == g.InvitationId)
                 && await guests.CanAccessAsync(g, ct)
                 ? (VoteFailure.None, new(null, g.InvitationId)) : (VoteFailure.NotFound, null);
         if (actor.UserId is not { } id || !await db.Users.AnyAsync(u => u.Id == id && u.IsActive, ct))

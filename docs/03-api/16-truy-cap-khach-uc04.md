@@ -83,7 +83,7 @@ Body `{ "token": "…", "code": "123456" }`. Chỉ mã mới nhất của lời 
 | HTTP | Tình huống |
 |---|---|
 | 200 | `{ "accessToken", "expiresAt", "meetingId", "profileCompleted": false }` — mã bị tiêu thụ, phiên mới được tạo |
-| 400 `MSG126` | Mã sai, hết hạn, đã dùng, chưa từng gửi, hoặc không phải 6 chữ số (EX-2). Mã sai (đủ 6 chữ số) làm tăng số lần sai |
+| 400 `MSG126` | Mã sai, hết hạn, đã dùng, chưa từng gửi, hoặc không phải 6 chữ số (EX-2). Mã sai (đủ 6 chữ số) làm tăng số lần sai, trừ khi đó là mã vừa bị thay bằng mã mới (Khách nhập mã cũ trước khi thư mới tới): vẫn `MSG126` nhưng không tính là lần sai |
 | 400 `MSG372` | Mã đã bị khoá vì sai đủ 5 lần: lần sai thứ 5 và mọi lần nhập sau đó, kể cả mã đúng hay chuỗi không phải 6 chữ số. Phải gửi mã mới |
 | 404 `MSG371` | EX-1, kể cả khi lời mời bị thu hồi giữa lúc gửi mã và xác minh |
 | 503 `MSG374` | Không lưu được kết quả xác minh (EX-3); không có phiên nào được tạo |
@@ -156,8 +156,8 @@ Khách dùng token này cho: `GET /api/meetings/{id}/agenda`, các GET của th�
 
 | Bảng | Cột chính | Ghi chú |
 |---|---|---|
-| `guest_verification_challenges` | `invitation_id`, `code_hash`, `expires_at`, `failed_attempts`, `consumed_at` | HMAC-SHA256 của mã, không lưu mã thô. Xoá theo lời mời |
-| `guest_sessions` | `invitation_id`, `expires_at`, `revoked_at` | Một dòng mỗi lần xác minh thành công; `id` là `SessionId` ổn định khi reconnect |
+| `guest_verification_challenges` | `invitation_id`, `code_hash`, `expires_at`, `failed_attempts`, `consumed_at` | HMAC-SHA256 của mã, không lưu mã thô. Xoá theo lời mời; mã tạo quá 24 giờ (đã hết hạn, ngoài cửa sổ giới hạn 20 mã) bị xoá ở lần gửi mã kế tiếp của lời mời đó |
+| `guest_sessions` | `invitation_id`, `expires_at`, `revoked_at` | Một dòng mỗi lần xác minh thành công; `id` là `SessionId` ổn định khi reconnect. Giữ lại sau khi hết hạn: đây là bằng chứng Khách đã xác minh email (không chứa dữ liệu cá nhân ngoài id và thời điểm) |
 | `meeting_guest_invitations` | thêm `self_declared_display_name`, `self_declared_job_title` | Nullable; tách khỏi `invited_name`/`email` |
 
 Không ghi mã OTP, link token hay access token vào log, audit hay `email_messages`. Link mời nằm trong
