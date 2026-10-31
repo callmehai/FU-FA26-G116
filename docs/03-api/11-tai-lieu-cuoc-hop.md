@@ -183,7 +183,9 @@ xem).
 **Nhật ký kiểm toán** (BR-318): cuộc họp `Confidential` hoặc `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
 xem / tải thành công — `action` `document.viewed` hoặc `document.downloaded`, `objectType` `MeetingDocument`,
 `objectId` là MeetingDocument ID, `details` có `meetingId`, `fileName`, `sensitivity`; Khách đọc thì `actorId` là `null`
-và `details` có thêm `guestInvitationId`. Dòng được ghi sau khi mở được
+và `details` có thêm `guestInvitationId`. **Lưu ý cho màn nhật ký (SCRUM-16):** `actorId = null` vốn nghĩa là
+hệ thống tự làm (BR-301); dòng có `details.guestInvitationId` là Khách, phải hiện là Khách (tên mời / email của lời
+mời), không phải "Hệ thống". Dòng được ghi sau khi mở được
 tệp và **trước** khi gửi byte; không ghi được thì không gửi tệp (`MSG158`/`MSG160`). Cuộc họp `Normal`/`Internal`
 không ghi.
 

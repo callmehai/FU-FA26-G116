@@ -18,7 +18,7 @@ Adapter tích hợp: [Agenda](08-agenda-contract-tich-hop-guest-uc04.md),
 | Gửi lại mã | cách lần gửi trước tối thiểu 1 phút | `ResendIntervalSeconds` = 60 |
 | Số mã tối đa | 20 mã đã gửi được cho một lời mời trong 24 giờ bất kỳ (cửa sổ trượt, chốt 31/10/2026 khi review PR #203; BA bổ sung vào UC-04/BR-153) | `MaxCodesPerDay` = 20 |
 | Hiệu lực phiên Khách (BR-155) | 12 giờ kể từ lúc xác minh; token hết hạn cùng lúc, không có refresh | `SessionLifetimeHours` = 12 |
-| Khách sau khi cuộc họp kết thúc | mất mọi quyền đọc (Agenda, thành phần, realtime…) khi cuộc họp `Ended` — PO chốt 30/10/2026 (Jira SCRUM-116) | — |
+| Khách sau khi cuộc họp kết thúc | mất mọi quyền đọc (Agenda, thành phần, tài liệu, realtime…) khi cuộc họp `Ended` — PO chốt 30/10/2026 (Jira SCRUM-116) | — |
 
 Phiên Khách còn hiệu lực khi **tất cả** đúng: phiên chưa hết hạn, chưa bị thu hồi (đăng xuất); lời mời
 chưa bị thu hồi; cuộc họp đang `Published` hoặc `InProgress`. Agenda, Thành phần tham dự và realtime
