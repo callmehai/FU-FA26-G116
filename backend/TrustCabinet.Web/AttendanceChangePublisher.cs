@@ -5,6 +5,7 @@ using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Attendance;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Domain.GuestAccess;
 
 namespace TrustCabinet.Web;
 
@@ -21,7 +22,7 @@ public sealed class AttendanceChangePublisher(IHubContext<MeetingHub> hub, IPart
         var readers = await db.Users.AsNoTracking().Where(u => u.IsActive && candidates.Contains(u.Id))
             .Select(u => u.Id).ToArrayAsync(ct);
         var groups = readers.Select(id => MeetingHub.Group(change.MeetingId, id)).ToList();
-        if (ParticipantRules.GuestCanView(s.Meeting.Status))
+        if (GuestAccessRules.MeetingOpen(s.Meeting.Status))
         {
             var sessions = await guests.ListReadersAsync(change.MeetingId, ct);
             foreach (var session in sessions.Distinct())

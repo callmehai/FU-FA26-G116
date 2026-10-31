@@ -5,6 +5,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 
@@ -147,7 +148,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct)) return null;
             // Rechecked on the meeting read here, as Agenda does: it may have ended since the session check.
             var guestMeeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
-            return guestMeeting is not null && AgendaRules.GuestCanViewMeeting(guestMeeting.Status) ? guestMeeting : null;
+            return guestMeeting is not null && GuestAccessRules.MeetingOpen(guestMeeting.Status) ? guestMeeting : null;
         }
         var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
         return meeting is not null && reader.UserId is { } userId && MeetingReadPolicy.CanRead(meeting, userId) ? meeting : null;

@@ -64,6 +64,10 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             if (recent.Count >= limits.MaxCodesPerDay)
                 return new(GuestAccessFailure.DailyLimit,
                     RetryAfterSeconds: (int)Math.Ceiling((recent[^1].AddDays(1) - now).TotalSeconds));
+            // Codes older than the window have expired and no longer count, so nothing needs them: the table stays
+            // bounded per invitation. A session row, not its code, is the evidence of a verification.
+            await db.GuestVerificationChallenges.Where(c => c.InvitationId == invitationId && c.CreatedAt <= since)
+                .ExecuteDeleteAsync(ct);
             challenge = new GuestVerificationChallenge
             {
                 InvitationId = invitationId, CreatedAt = now, UpdatedAt = now,
@@ -114,15 +118,18 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             var invitation = await LockOpenAsync(invitationId, ct);
             if (invitation is null) return Invalid;
             var now = clock.GetUtcNow();
-            var challenge = await db.GuestVerificationChallenges.Where(c => c.InvitationId == invitationId)
-                .OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id).FirstOrDefaultAsync(ct);
+            var recent = await db.GuestVerificationChallenges.Where(c => c.InvitationId == invitationId)
+                .OrderByDescending(c => c.CreatedAt).ThenByDescending(c => c.Id).Take(2).ToListAsync(ct);
+            var challenge = recent.FirstOrDefault();
             if (challenge is null || challenge.ConsumedAt is not null || challenge.ExpiresAt <= now) return InvalidCode;
             if (challenge.FailedAttempts >= limits.MaxFailedAttempts) return Locked;
             if (code is not { Length: 6 } || !code.All(char.IsAsciiDigit)) return InvalidCode;
             challenge.UpdatedAt = now;
-            if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(credentials.CodeHash(challenge.Id, code)),
-                    Encoding.ASCII.GetBytes(challenge.CodeHash)))
+            if (!Matches(challenge, code))
             {
+                // The code this one replaced, typed before the new email arrived: still refused, but it is the
+                // guest's own code, not a guess, so it does not count against the new one.
+                if (recent is [_, var replaced] && Matches(replaced, code)) return InvalidCode;
                 challenge.FailedAttempts++;
                 await db.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
@@ -147,6 +154,10 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             return Unavailable;
         }
     }
+
+    private bool Matches(GuestVerificationChallenge challenge, string code)
+        => CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(credentials.CodeHash(challenge.Id, code)),
+            Encoding.ASCII.GetBytes(challenge.CodeHash));
 
     public async Task<GuestAccessResult> GetSessionAsync(MeetingGuestSession session, CancellationToken ct)
     {
@@ -226,15 +237,14 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
 
     /// <summary>UC-04 EX-1: an invitation works only while it stands and its meeting is Published or InProgress.</summary>
     internal static readonly Expression<Func<MeetingGuestInvitation, bool>> OpenInvitation = g => g.RevokedAt == null
-        && (g.Meeting.Status == MeetingStatus.Published || g.Meeting.Status == MeetingStatus.InProgress);
+        && GuestAccessRules.OpenStatuses.Contains(g.Meeting.Status);
 
     /// <summary>
-    /// Not logged out, not expired, invitation standing, meeting Published or InProgress. A guest loses
-    /// everything once the meeting has Ended (PO 30/10/2026), unlike an internal participant.
+    /// Not logged out, not expired, invitation standing, meeting open to guests (<see cref="GuestAccessRules"/>).
     /// </summary>
     internal static IQueryable<GuestSession> CurrentSessions(TrustCabinetDbContext db, DateTimeOffset now)
         => db.GuestSessions.AsNoTracking().Where(x => x.RevokedAt == null && x.ExpiresAt > now && x.Invitation.RevokedAt == null
-            && (x.Invitation.Meeting.Status == MeetingStatus.Published || x.Invitation.Meeting.Status == MeetingStatus.InProgress));
+            && GuestAccessRules.OpenStatuses.Contains(x.Invitation.Meeting.Status));
 
     private Task<MeetingGuestInvitation?> FindOpenAsync(Guid invitationId, CancellationToken ct)
         => db.MeetingGuestInvitations.AsNoTracking().Include(g => g.Meeting).Where(OpenInvitation)

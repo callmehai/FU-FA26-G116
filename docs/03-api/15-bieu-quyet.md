@@ -222,7 +222,7 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
   danh sách người bỏ phiếu và `eligibleCount` tăng 1, cùng transaction với `POST …/guest-invitations`. Đây là ngoại lệ
   duy nhất của BR-190; người nội bộ được thêm sau lúc mở vẫn không vào danh sách (đang hỏi PO, Jira SCRUM-28).
 - **Guest chỉ xem biểu quyết khi cuộc họp Published hoặc InProgress**; cuộc họp kết thúc thì Guest nhận `404/MSG205`
-  (PO 30/10/2026, cùng luật `ParticipantRules.GuestCanView` của PR #203). Người nội bộ vẫn xem được sau khi kết thúc.
+  (PO 30/10/2026, cùng luật `GuestAccessRules.MeetingOpen` với mọi đường đọc của Khách). Người nội bộ vẫn xem được sau khi kết thúc.
 - **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.
   Điểm danh không liên quan (BR-190).
 - **Phương án trùng** so sánh sau trim, không phân biệt hoa thường (`Đồng ý` và `đồng ý` là trùng).

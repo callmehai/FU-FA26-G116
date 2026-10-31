@@ -9,10 +9,6 @@ namespace TrustCabinet.Domain.Agenda;
 
 public static class AgendaRules
 {
-    /// <summary>A guest loses the agenda once the meeting has Ended (PO 30/10/2026), unlike a member.</summary>
-    public static bool GuestCanViewMeeting(MeetingStatus status) => status is MeetingStatus.Published
-        or MeetingStatus.InProgress;
-
     public static bool PlanningAllowed(MeetingStatus status) => status is MeetingStatus.Draft
         or MeetingStatus.WaitingApproval or MeetingStatus.Rejected or MeetingStatus.Approved
         or MeetingStatus.Published or MeetingStatus.InProgress;
