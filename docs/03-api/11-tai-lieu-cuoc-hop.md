@@ -191,7 +191,7 @@ không ghi.
 
 | HTTP | Mã | Endpoint | Khi nào |
 |---|---|---|---|
-| 401 / 403 | — | cả hai | Chưa đăng nhập / tài khoản bị khoá (body rỗng). Token Khách không bao giờ nhận `403` ở hai endpoint này |
+| 401 / 403 | — | cả hai | Chưa đăng nhập / tài khoản bị khoá (body rỗng). Token Khách không bao giờ nhận `403` body rỗng ở hai endpoint này |
 | 404 | `MSG156` | cả hai | Không xem được cuộc họp, cuộc họp không tồn tại, tài liệu đã gỡ, hoặc ID tài liệu của cuộc họp khác — **cùng một body** |
 | 500 | `MSG157` | danh sách | Lỗi đọc DB; FE không được hiển thị như danh sách rỗng |
 | 403 | `MSG159` | `content?download=true` | Cuộc họp `Secret` |
@@ -215,6 +215,11 @@ Không đạt điều nào → `404/MSG156`, cùng body với tài liệu không
 (danh sách), `503/MSG158` / `503/MSG160` (nội dung), không bao giờ coi là có quyền. Mọi endpoint **ghi** (tải lên, thêm từ
 kho, gỡ, gắn/gỡ mục nghị sự) vẫn từ chối Khách bằng `403` body rỗng. Góp ý (SCRUM-23) chưa mở cho Khách; `commentCount`
 vẫn có trong danh sách.
+
+Kiểm thử: `tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs` (PostgreSQL thật, phiên Khách đi qua
+luồng UC-04 thật) — danh sách, xem, tải về, kiểm toán, Mật; cuộc họp khác; endpoint ghi `403`; chưa khai tên, đăng xuất,
+`Ended`, thu hồi, hết hạn; lỗi đọc DB; token người dùng mang claim Khách; tài khoản bị khoá; luồng mở tài liệu → xác nhận
+đã đọc → bỏ phiếu.
 
 Khách đã nhận `documentsChanged` qua hub từ SCRUM-120, nên FE của Khách tải lại danh sách như thành viên. Đây là đường đọc để
 Khách xác nhận đã đọc tài liệu của biểu quyết (UC-74) trước khi bỏ phiếu (`MSG252`, [contract biểu quyết](15-bieu-quyet.md)).

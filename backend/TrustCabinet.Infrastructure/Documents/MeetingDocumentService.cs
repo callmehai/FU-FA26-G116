@@ -145,7 +145,9 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         if (reader.Guest is { } guest)
         {
             if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct)) return null;
-            return await meetings.FindWorkflowAsync(meetingId, ct: ct);
+            // Rechecked on the meeting read here, as Agenda does: it may have ended since the session check.
+            var guestMeeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+            return guestMeeting is not null && AgendaRules.GuestCanViewMeeting(guestMeeting.Status) ? guestMeeting : null;
         }
         var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
         return meeting is not null && reader.UserId is { } userId && MeetingReadPolicy.CanRead(meeting, userId) ? meeting : null;

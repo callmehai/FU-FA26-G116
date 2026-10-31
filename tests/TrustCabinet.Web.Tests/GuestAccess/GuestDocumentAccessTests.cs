@@ -1,7 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
@@ -167,6 +171,40 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         var (expiring, _) = await f.SignIn(expiringMeeting);
         f.Clock.Now = f.Clock.Now.AddHours(12);
         await Closed(expiring, expiringMeeting, expiringDocument);
+    }
+
+    [Fact]
+    public async Task A_user_token_carrying_a_guest_claim_is_denied_as_a_guest_never_read_as_the_user()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        var document = await AddDocument(s, "Tờ trình.pdf");
+        using (var secretary = f.UserClient(s.SecretaryId))
+            Assert.Equal(HttpStatusCode.OK, (await secretary.GetAsync(Documents(s.MeetingId))).StatusCode);
+
+        var token = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("TrustCabinet", "TrustCabinet",
+            [new Claim("sub", s.SecretaryId.ToString()), new Claim("guest_meeting", s.MeetingId.ToString())],
+            expires: DateTime.UtcNow.AddMinutes(10), signingCredentials: new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Agenda.AgendaFixture.SigningKey)), SecurityAlgorithms.HmacSha256)));
+        using var forged = f.Host.CreateClient();
+        forged.DefaultRequestHeaders.Authorization = new("Bearer", token);
+        await Expect(await forged.GetAsync(Documents(s.MeetingId)), 404, "MSG156");
+        await Expect(await forged.GetAsync(Content(s.MeetingId, document)), 404, "MSG156");
+    }
+
+    [Fact]
+    public async Task An_inactive_user_still_gets_an_empty_403_on_both_reads()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        var document = await AddDocument(s, "Tờ trình.pdf");
+        await using (var db = f.Db())
+            await db.Users.Where(u => u.Id == s.SecretaryId).ExecuteUpdateAsync(set => set.SetProperty(u => u.IsActive, false));
+        using var secretary = f.UserClient(s.SecretaryId);
+        foreach (var url in new[] { Documents(s.MeetingId), Content(s.MeetingId, document) })
+        {
+            using var denied = await secretary.GetAsync(url);
+            Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+            Assert.Empty(await denied.Content.ReadAsStringAsync());
+        }
     }
 
     [Fact]
