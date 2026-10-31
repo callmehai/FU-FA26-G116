@@ -49,8 +49,8 @@ public sealed class GuestMeetingAccessTests(GuestAccessFixture f) : IClassFixtur
         await Expect(await guest.PutAsJsonAsync($"/api/meetings/{s.MeetingId}/invitation-response", new { response = "Accepted" }), 200, "MSG105");
 
         // Internal APIs never accept a guest token: no Guid subject, no capability.
-        foreach (var url in new[] { "/api/meetings", $"/api/meetings/{s.MeetingId}", $"/api/meetings/{s.MeetingId}/documents",
-                     "/api/notifications", "/api/documents", "/api/users" })
+        // The meeting's documents are a guest read since SCRUM-123 (GuestDocumentAccessTests).
+        foreach (var url in new[] { "/api/meetings", $"/api/meetings/{s.MeetingId}", "/api/notifications", "/api/documents", "/api/users" })
             Assert.Equal(HttpStatusCode.Forbidden, (await guest.GetAsync(url)).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await guest.GetAsync("/api/auth/me")).StatusCode);
 

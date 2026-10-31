@@ -154,7 +154,7 @@ dòng nguồn UC phía dưới giữ để truy vết. Không cấp mã mới.
 
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
 |---|---|---|---|
-| `MSG156` | 404 | Không xem được cuộc họp, cuộc họp không tồn tại, hoặc tài liệu đã gỡ / không thuộc cuộc họp này (cùng body) | Không truy cập được tài liệu của cuộc họp. |
+| `MSG156` | 404 | Không xem được cuộc họp, cuộc họp không tồn tại, hoặc tài liệu đã gỡ / không thuộc cuộc họp này (cùng body); Khách mà phiên UC-04 không còn hiệu lực hay cuộc họp không còn `Published`/`InProgress` (SCRUM-123) | Không truy cập được tài liệu của cuộc họp. |
 | `MSG157` | 500 | GET danh sách lỗi đọc DB | Không tải được danh sách tài liệu. Vui lòng thử lại. |
 | `MSG158` | 503 | GET content (xem) không đọc được tệp: object thiếu, kho chưa cấu hình/lỗi, DB lỗi, hoặc không ghi được nhật ký kiểm toán | Không hiển thị được tài liệu. Vui lòng thử lại. |
 | `MSG159` | 403 | `?download=true` với cuộc họp `Secret` (BR-188) | Tài liệu của cuộc họp Mật chỉ được xem trực tuyến, không được tải về. |
@@ -796,7 +796,7 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 
 | Mã | Tình huống / trạng thái | Thông điệp |
 |---|---|---|
-| `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Đã triển khai SCRUM-21, SCRUM-23 | Meeting documents are not accessible. |
+| `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Đã triển khai SCRUM-21, SCRUM-23, SCRUM-123 | Meeting documents are not accessible. |
 | `MSG157` | UC-32a / EX-2 · Dành sẵn | Unable to load the document list. Please try again. |
 | `MSG158` | UC-32c / EX-2; UC-34b / EX-3 · Dành sẵn | Unable to display the document. Please try again. |
 | `MSG159` | UC-32c / EX-3 · Dành sẵn | Secret Meeting documents can only be viewed online and cannot be downloaded. |

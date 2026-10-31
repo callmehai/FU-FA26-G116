@@ -120,7 +120,7 @@ UC-32a, UC-32c. Sequence: [UC32a_ViewMeetingDocuments](../06-sequencediagram/doc
 **Quyền đọc** = quyền xem cuộc họp (`MeetingReadPolicy`, cùng luật với `GET /api/meetings/{id}`): Người tổ chức,
 Người duyệt (từ khi gửi duyệt), Chủ toạ/Thư ký hiện tại, thành viên hiện tại khi cuộc họp đã `Published`,
 `InProgress` hoặc `Ended`. Không có quyền đọc tài liệu riêng (BR-181, BR-275). Cả hai endpoint cần bearer token của
-tài khoản đang hoạt động; **Guest chưa được hỗ trợ** vì chưa có xác thực Guest (UC-04).
+tài khoản đang hoạt động, **hoặc token Khách** của UC-04 — xem [Khách đọc tài liệu (SCRUM-123)](#khách-đọc-tài-liệu-scrum-123).
 
 ### `GET /api/meetings/{meetingId}/documents` — UC-32a
 
@@ -182,7 +182,8 @@ xem).
 
 **Nhật ký kiểm toán** (BR-318): cuộc họp `Confidential` hoặc `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
 xem / tải thành công — `action` `document.viewed` hoặc `document.downloaded`, `objectType` `MeetingDocument`,
-`objectId` là MeetingDocument ID, `details` có `meetingId`, `fileName`, `sensitivity`. Dòng được ghi sau khi mở được
+`objectId` là MeetingDocument ID, `details` có `meetingId`, `fileName`, `sensitivity`; Khách đọc thì `actorId` là `null`
+và `details` có thêm `guestInvitationId`. Dòng được ghi sau khi mở được
 tệp và **trước** khi gửi byte; không ghi được thì không gửi tệp (`MSG158`/`MSG160`). Cuộc họp `Normal`/`Internal`
 không ghi.
 
@@ -190,12 +191,33 @@ không ghi.
 
 | HTTP | Mã | Endpoint | Khi nào |
 |---|---|---|---|
-| 401 / 403 | — | cả hai | Chưa đăng nhập / tài khoản bị khoá (body rỗng) |
+| 401 / 403 | — | cả hai | Chưa đăng nhập / tài khoản bị khoá (body rỗng). Token Khách không bao giờ nhận `403` ở hai endpoint này |
 | 404 | `MSG156` | cả hai | Không xem được cuộc họp, cuộc họp không tồn tại, tài liệu đã gỡ, hoặc ID tài liệu của cuộc họp khác — **cùng một body** |
 | 500 | `MSG157` | danh sách | Lỗi đọc DB; FE không được hiển thị như danh sách rỗng |
 | 403 | `MSG159` | `content?download=true` | Cuộc họp `Secret` |
 | 503 | `MSG158` | `content` | Không đưa được tệp: object thiếu trên kho, kho chưa cấu hình hoặc lỗi, DB lỗi, không ghi được nhật ký kiểm toán |
 | 503 | `MSG160` | `content?download=true` | Như `MSG158`. Riêng lỗi DB ở bước kiểm tài khoản đang hoạt động (trước khi đọc tham số) luôn trả `MSG158` |
+
+### Khách đọc tài liệu (SCRUM-123)
+
+Khách (token từ `POST /api/guest-access/invitations/{id}/verify`, [contract UC-04](16-truy-cap-khach-uc04.md)) gọi được
+**hai endpoint đọc** ở trên, với cùng response như thành viên. PO chốt 30/10/2026: Khách xem **mọi** tài liệu của cuộc họp
+(không chỉ tài liệu gắn mục nghị sự hay biểu quyết) và **được tải về** — trừ cuộc họp `Secret`, vẫn `403/MSG159` như mọi
+người (BR-188).
+
+Mỗi request kiểm lại phiên Khách trong DB (`GuestSessionAccess`, cùng luật với Agenda / Thành phần tham dự, SCRUM-120):
+
+- phiên chưa đăng xuất, chưa quá 12 giờ; lời mời chưa thu hồi; Khách đã khai tên hiển thị (`PUT …/session/profile`);
+- `meetingId` trên đường dẫn là cuộc họp của lời mời;
+- cuộc họp đang `Published` hoặc `InProgress` — `Ended` thì Khách mất quyền, thành viên vẫn đọc được.
+
+Không đạt điều nào → `404/MSG156`, cùng body với tài liệu không tồn tại. Lỗi đọc DB khi kiểm phiên → `500/MSG157`
+(danh sách), `503/MSG158` / `503/MSG160` (nội dung), không bao giờ coi là có quyền. Mọi endpoint **ghi** (tải lên, thêm từ
+kho, gỡ, gắn/gỡ mục nghị sự) vẫn từ chối Khách bằng `403` body rỗng. Góp ý (SCRUM-23) chưa mở cho Khách; `commentCount`
+vẫn có trong danh sách.
+
+Khách đã nhận `documentsChanged` qua hub từ SCRUM-120, nên FE của Khách tải lại danh sách như thành viên. Đây là đường đọc để
+Khách xác nhận đã đọc tài liệu của biểu quyết (UC-74) trước khi bỏ phiếu (`MSG252`, [contract biểu quyết](15-bieu-quyet.md)).
 
 ### Realtime
 

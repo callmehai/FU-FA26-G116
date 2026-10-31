@@ -3,13 +3,15 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using TrustCabinet.Domain.Documents;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
 /// UC-32a, UC-32c — list, view and download meeting documents (SCRUM-21); UC-33a AF-1 — upload
 /// files from the computer into a meeting (SCRUM-107, ADR-0024); UC-33a from the library, UC-33b,
-/// UC-33c, UC-33d — add, link, remove and unlink (SCRUM-58).
+/// UC-33c, UC-33d — add, link, remove and unlink (SCRUM-58). A guest with a current UC-04 session reads the
+/// list and the content too (SCRUM-123); every change stays internal-only.
 /// </summary>
 public static class MeetingDocumentEndpoints
 {
@@ -95,14 +97,15 @@ public static class MeetingDocumentEndpoints
     public static void MapMeetingDocumentEndpoints(this IEndpointRouteBuilder app)
     {
         const string prefix = "/api/meetings/{meetingId:guid}/documents";
-        app.MapGroup(prefix).RequireActiveUser(ReadError(DocumentReadFailure.ReadFailed, Msg157ListFailed))
-            .MapGet("", async (Guid meetingId, HttpContext context, IMeetingDocumentService service, CancellationToken ct) =>
+        app.MapGroup(prefix).RequireActiveUserOrGuest(ReadError(DocumentReadFailure.ReadFailed, Msg157ListFailed))
+            .MapGet("", async (Guid meetingId, HttpContext context, IMeetingDocumentService service,
+                IMeetingGuestIdentityResolver identities, CancellationToken ct) =>
             {
-                var outcome = await service.ListAsync(meetingId, CapabilityGate.GatedUserId(context.User), ct);
+                var outcome = await service.ListAsync(meetingId, Reader(context, identities), ct);
                 return outcome.List is { } list ? Results.Ok(list) : ReadError(outcome.Failure, Msg157ListFailed);
             });
         // The gate cannot tell a view from a download, so a database failure there reads as a failed view.
-        app.MapGroup(prefix).RequireActiveUser(ReadError(DocumentReadFailure.ReadFailed, Msg158ViewFailed))
+        app.MapGroup(prefix).RequireActiveUserOrGuest(ReadError(DocumentReadFailure.ReadFailed, Msg158ViewFailed))
             .MapGet("/{meetingDocumentId:guid}/content", ContentAsync);
         app.MapGroup(prefix)
             .RequireActiveUser(Map(new(DocumentUploadFailure.StoreFailed), Guid.Empty))
@@ -168,14 +171,17 @@ public static class MeetingDocumentEndpoints
     /// <paramref name="download"/> marks the attachment as a download, refused for a Secret meeting (BR-188).
     /// </summary>
     private static async Task<IResult> ContentAsync(Guid meetingId, Guid meetingDocumentId, HttpContext context,
-        IMeetingDocumentService service, CancellationToken ct, bool download = false)
+        IMeetingDocumentService service, IMeetingGuestIdentityResolver identities, CancellationToken ct, bool download = false)
     {
-        var outcome = await service.OpenContentAsync(meetingId, meetingDocumentId,
-            CapabilityGate.GatedUserId(context.User), download, ct);
+        var outcome = await service.OpenContentAsync(meetingId, meetingDocumentId, Reader(context, identities), download, ct);
         return outcome.Content is { } file
             ? Stream(context, file)
             : ReadError(outcome.Failure, download ? Msg160DownloadFailed : Msg158ViewFailed);
     }
+
+    /// <summary>A guest token reads as the guest, never as a user; otherwise the gated user.</summary>
+    private static ParticipantActor Reader(HttpContext context, IMeetingGuestIdentityResolver identities)
+        => identities.Resolve(context.User) is { } guest ? new(Guest: guest) : new(CapabilityGate.GatedUserId(context.User));
 
     /// <summary>Hands over an opened file; the personal library's content endpoint uses it too.</summary>
     internal static IResult Stream(HttpContext context, MeetingDocumentContent file)

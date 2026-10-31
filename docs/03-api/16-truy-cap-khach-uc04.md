@@ -175,6 +175,7 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 ## 8. Ngoài phạm vi
 
 - Thư ký thu hồi từng phiên riêng lẻ của Khách: chưa có màn hình; thu hồi lời mời đã cắt mọi phiên.
-- Đọc tài liệu, góp ý, biểu quyết, phòng họp trực tuyến cho Khách: ticket của từng feature dùng lại
-  phiên này.
+- Góp ý, phòng họp trực tuyến cho Khách: ticket của từng feature dùng lại phiên này. Đọc và tải tài liệu cuộc họp
+  đã mở cho Khách ở SCRUM-123 ([contract tài liệu](11-tai-lieu-cuoc-hop.md#khách-đọc-tài-liệu-scrum-123)); biểu quyết
+  của Khách theo [contract biểu quyết](15-bieu-quyet.md).
 - Giới hạn số lần gửi mã theo giờ/ngày ngoài khoảng chờ 1 phút.

@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
@@ -54,18 +56,17 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
 }
 
 public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeetingDocumentRepository documents,
-    TrustCabinetDbContext db, StoredFileWriter writer, IFileStorage storage, IAuditService audit, TimeProvider clock,
-    ILogger<MeetingDocumentService> logger) : IMeetingDocumentService
+    TrustCabinetDbContext db, StoredFileWriter writer, IFileStorage storage, IAuditService audit, IAgendaGuestAccess guests,
+    TimeProvider clock, ILogger<MeetingDocumentService> logger) : IMeetingDocumentService
 {
     private static bool PersistenceError(Exception ex) => StoredFileWriter.PersistenceError(ex);
 
-    public async Task<MeetingDocumentListOutcome> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
+    public async Task<MeetingDocumentListOutcome> ListAsync(Guid meetingId, ParticipantActor reader, CancellationToken ct = default)
     {
         try
         {
-            var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
             // Same answer for a meeting that does not exist and one the caller cannot see (SCRUM-22).
-            if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(DocumentReadFailure.NotFound);
+            if (await FindReadableAsync(meetingId, reader, ct) is null) return new(DocumentReadFailure.NotFound);
             return new(List: await documents.ListAsync(meetingId, ct));
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -76,14 +77,14 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
     }
 
     public async Task<MeetingDocumentContentOutcome> OpenContentAsync(Guid meetingId, Guid meetingDocumentId,
-        Guid actorId, bool download, CancellationToken ct = default)
+        ParticipantActor reader, bool download, CancellationToken ct = default)
     {
         Meeting? meeting;
         AttachedDocumentFile? file;
         try
         {
-            meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
-            if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(DocumentReadFailure.NotFound);
+            meeting = await FindReadableAsync(meetingId, reader, ct);
+            if (meeting is null) return new(DocumentReadFailure.NotFound);
             file = await documents.FindAttachedFileAsync(meetingId, meetingDocumentId, ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -114,9 +115,13 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             // audit row, no content (BR-318).
             try
             {
+                // A guest has no user row, so its invitation names who read it.
+                object details = reader.Guest is { } guest
+                    ? new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString(),
+                        guestInvitationId = guest.InvitationId }
+                    : new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString() };
                 await audit.RecordAsync(download ? AuditActions.DocumentDownloaded : AuditActions.DocumentViewed,
-                    AuditActions.MeetingDocumentObjectType, meetingDocumentId, actorId,
-                    new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString() }, ct);
+                    AuditActions.MeetingDocumentObjectType, meetingDocumentId, reader.UserId, details, ct);
             }
             catch (Exception ex)
             {
@@ -128,6 +133,22 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         }
 
         return new(Content: new(content, file.FileName, file.ContentType, file.ByteSize));
+    }
+
+    /// <summary>
+    /// The meeting when <paramref name="reader"/> may read it now: an internal user by <see cref="MeetingReadPolicy"/>,
+    /// a guest only through a current UC-04 session of this very meeting, rechecked on every call (SCRUM-120 rules:
+    /// not logged out or expired, invitation standing, meeting Published or InProgress). Persistence errors propagate.
+    /// </summary>
+    private async Task<Meeting?> FindReadableAsync(Guid meetingId, ParticipantActor reader, CancellationToken ct)
+    {
+        if (reader.Guest is { } guest)
+        {
+            if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct)) return null;
+            return await meetings.FindWorkflowAsync(meetingId, ct: ct);
+        }
+        var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+        return meeting is not null && reader.UserId is { } userId && MeetingReadPolicy.CanRead(meeting, userId) ? meeting : null;
     }
 
     public async Task<DocumentUploadOutcome> CheckUploadAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)

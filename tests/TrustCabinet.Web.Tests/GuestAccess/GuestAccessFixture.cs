@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
@@ -26,6 +27,7 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
     internal readonly Mailbox Mail = new();
     internal readonly SaveFailureInterceptor SaveFailure = new();
     internal readonly GuestReadFailureInterceptor ReadFailure = new();
+    internal readonly Documents.MemoryFileStorage Storage = new();
     internal Factory Host = null!;
 
     internal TrustCabinetDbContext Db() => new(new DbContextOptionsBuilder<TrustCabinetDbContext>()
@@ -57,6 +59,8 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
                     .AddInterceptors(fixture.SaveFailure, fixture.ReadFailure));
                 services.RemoveAll<TimeProvider>();
                 services.AddSingleton<TimeProvider>(fixture.Clock);
+                services.RemoveAll<IFileStorage>();
+                services.AddSingleton<IFileStorage>(fixture.Storage);
                 services.RemoveAll<IEmailSender>();
                 services.AddSingleton<IEmailSender>(fixture.Mail);
                 // Switched on after binding, so the queue worker is never registered.
