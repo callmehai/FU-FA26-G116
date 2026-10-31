@@ -42,6 +42,7 @@ public class DatabaseModelTests
             [
                 "agenda_items", "audit_log", "call_participants", "call_sessions",
                 "document_comments", "document_read_confirmations", "documents", "email_messages", "folders",
+                "guest_sessions", "guest_verification_challenges",
                 "meeting_document_agenda_items", "meeting_documents", "meeting_guest_invitations", "meeting_invitation_dispatches",
                 "meeting_minutes", "meeting_notes", "meeting_participants",
                 "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",

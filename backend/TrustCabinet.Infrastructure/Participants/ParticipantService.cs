@@ -12,6 +12,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Domain.GuestAccess;
 
 namespace TrustCabinet.Infrastructure.Participants;
 
@@ -105,7 +106,7 @@ public sealed partial class ParticipantService(
                 || !guest.IsValid
                 || s is null
                 || guest.MeetingId != s.Meeting.Id
-                || !ParticipantRules.Published(s.Meeting.Status)
+                || !GuestAccessRules.MeetingOpen(s.Meeting.Status)
                 || !s.Guests.Any(g => g.Id == guest.InvitationId)
                 || !await guestAccess.CanAccessAsync(guest, ct)
             )
@@ -646,7 +647,7 @@ public sealed partial class ParticipantService(
         Meeting meeting,
         CancellationToken ct
     ) =>
-        ParticipantRules.Published(meeting.Status)
+        GuestAccessRules.MeetingOpen(meeting.Status)
             ? (await guestAccess.ListReadersAsync(meeting.Id, ct))
                 .Where(g => g.IsValid && g.MeetingId == meeting.Id)
                 .ToArray()

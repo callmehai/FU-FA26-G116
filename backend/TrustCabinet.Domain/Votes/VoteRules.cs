@@ -17,12 +17,6 @@ public static class VoteRules
     public static bool Preparation(MeetingStatus status) => status is MeetingStatus.Approved
         or MeetingStatus.Published or MeetingStatus.InProgress;
 
-    /// <summary>
-    /// A Guest sees the votes while the meeting is Published or InProgress and loses access once it ends (PO
-    /// 30/10/2026). The same rule as <c>ParticipantRules.GuestCanView</c> in PR #203; use that one once it merges.
-    /// </summary>
-    public static bool GuestCanView(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress;
-
     /// <summary>Ending the meeting does not close its vote, so the Chair may still close and conclude it (ADR-0017, BR-270).</summary>
     public static bool Closable(MeetingStatus status) => status is MeetingStatus.InProgress or MeetingStatus.Ended;
 

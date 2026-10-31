@@ -649,6 +649,88 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.ToTable("folders", (string)null);
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.GuestSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("InvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invitation_id");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_guest_sessions");
+
+                    b.HasIndex("InvitationId")
+                        .HasDatabaseName("ix_guest_sessions_invitation_id");
+
+                    b.ToTable("guest_sessions", (string)null);
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.GuestVerificationChallenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code_hash");
+
+                    b.Property<DateTimeOffset?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("consumed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_attempts");
+
+                    b.Property<Guid>("InvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invitation_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_guest_verification_challenges");
+
+                    b.HasIndex("InvitationId", "CreatedAt")
+                        .HasDatabaseName("ix_guest_verification_challenges_invitation_id_created_at");
+
+                    b.ToTable("guest_verification_challenges", (string)null);
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Meeting", b =>
                 {
                     b.Property<Guid>("Id")
@@ -945,6 +1027,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Property<Guid?>("RevokedById")
                         .HasColumnType("uuid")
                         .HasColumnName("revoked_by_id");
+
+                    b.Property<string>("SelfDeclaredDisplayName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("self_declared_display_name");
+
+                    b.Property<string>("SelfDeclaredJobTitle")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("self_declared_job_title");
 
                     b.Property<string>("SensitivityAtInvitation")
                         .IsRequired()
@@ -2964,6 +3056,28 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("Owner");
 
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.GuestSession", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "Invitation")
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_guest_sessions_meeting_guest_invitations_invitation_id");
+
+                    b.Navigation("Invitation");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.GuestVerificationChallenge", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_guest_verification_challenges_meeting_guest_invitations_inv");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Meeting", b =>

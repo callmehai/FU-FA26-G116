@@ -11,6 +11,7 @@ using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Infrastructure.Calls;
 using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Infrastructure.Meetings;
@@ -35,7 +36,9 @@ builder.Services.AddTrustCabinetAgenda();
 builder.Services.AddTrustCabinetParticipants();
 builder.Services.AddTrustCabinetAttendance();
 builder.Services.AddTrustCabinetVotes();
-builder.Services.AddSingleton<IMeetingGuestIdentityResolver, UnavailableMeetingGuestIdentityResolver>();
+// SCRUM-116: UC-04 guest access; replaces the fail-closed guest adapters registered above.
+builder.Services.AddTrustCabinetGuestAccess(builder.Configuration);
+builder.Services.AddSingleton<IMeetingGuestIdentityResolver, GuestTokenIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
@@ -202,6 +205,8 @@ app.MapParticipantEndpoints();
 app.MapAttendanceEndpoints();
 // SCRUM-28: votes during the meeting — drafts, open, ballots, close, conclusion.
 app.MapVoteEndpoints();
+// SCRUM-116: UC-04 — invitation link, one-time code, guest session.
+app.MapGuestAccessEndpoints();
 app.MapMeetingDocumentEndpoints();
 // SCRUM-58: the personal library and its folders; SCRUM-23: comments on a meeting document.
 app.MapPersonalLibraryEndpoints();

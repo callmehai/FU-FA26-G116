@@ -16,6 +16,8 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<MeetingParticipant> MeetingParticipants => Set<MeetingParticipant>();
     public DbSet<MeetingGuestInvitation> MeetingGuestInvitations => Set<MeetingGuestInvitation>();
     public DbSet<MeetingInvitationDispatch> MeetingInvitationDispatches => Set<MeetingInvitationDispatch>();
+    public DbSet<GuestVerificationChallenge> GuestVerificationChallenges => Set<GuestVerificationChallenge>();
+    public DbSet<GuestSession> GuestSessions => Set<GuestSession>();
     public DbSet<MeetingStatusHistory> MeetingStatusHistory => Set<MeetingStatusHistory>();
     public DbSet<AgendaItem> AgendaItems => Set<AgendaItem>();
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
