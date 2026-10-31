@@ -221,7 +221,8 @@ docker compose -f deploy/docker-compose.yml up -d --build
 
 - `SITE_ADDRESS` — tên miền ở bước 3. Đổi về sau thì sửa dòng này rồi `up -d`.
 - `POSTGRES_PASSWORD`, `SIGNING_KEY` — sinh một lần, đừng đổi: đổi `POSTGRES_PASSWORD` sau khi
-  database đã tạo thì app không kết nối được nữa; đổi `SIGNING_KEY` thì mọi người bị đăng xuất.
+  database đã tạo thì app không kết nối được nữa; đổi `SIGNING_KEY` thì mọi người bị đăng xuất, và mọi link mời Khách đã gửi
+  (UC-04) chết theo vì link ký bằng khoá suy ra từ nó — Thư ký phải mời lại từng Khách.
 - `LIVEKIT_API_SECRET` — khoá để backend ký vé vào phòng họp. Quên dòng này cũng không sao: workflow
   deploy tự sinh và thêm vào `deploy/.env` nếu chưa có.
 

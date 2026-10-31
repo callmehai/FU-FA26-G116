@@ -1,6 +1,6 @@
 # SCRUM-20 — bàn giao tích hợp Guest cho UC-04
 
-**Cập nhật SCRUM-116 (30/10/2026):** UC-04 đã cung cấp `IParticipantGuestAccess`, `IGuestInvitationLinkProvider` và resolver production ([contract UC-04](16-truy-cap-khach-uc04.md)); "Blocked by UC-04" bên dưới không còn đúng. Theo PO 30/10/2026, gate 6 đổi: Khách **không** đọc được gì khi cuộc họp `Ended` (roster, response, attendance, realtime đều `404`/không gửi), dùng rule riêng `ParticipantRules.GuestCanView`; rule của người nội bộ không đổi.
+**Cập nhật SCRUM-116 (30/10/2026):** UC-04 đã cung cấp `IParticipantGuestAccess`, `IGuestInvitationLinkProvider` và resolver production ([contract UC-04](16-truy-cap-khach-uc04.md)); "Blocked by UC-04" bên dưới không còn đúng. PO đã chốt 30/10/2026 (Jira SCRUM-116), gate 6 và mục consumer bên dưới đã sửa theo: Khách **không** đọc được gì khi cuộc họp `Ended` (roster, response, attendance, realtime đều `404`/không gửi), dùng rule riêng `ParticipantRules.GuestCanView`; rule của người nội bộ không đổi.
 
 Đã thống nhất tách OTP, profile tự khai và session production khỏi SCRUM-20. Backend SCRUM-20 lưu lời mời và tiêu thụ kết quả xác thực, **chưa cung cấp Guest login thật**. Không dùng test JWT/adapters để demo nghiệm thu production.
 
@@ -23,7 +23,7 @@ UC-04 đăng ký adapter scoped thay các default (`Replace` hoặc đăng ký c
 
 Readiness probe chạy trước meeting lock; unavailable retry 1m/5m/30m/6h. PrepareAsync chạy bên trong transaction materialize: meeting lock → dispatch lock → provider → EmailMessage + dispatch SaveChanges. Dùng cùng DbContext/unit of work; **không commit riêng**, không gọi email/SMS/HTTP trong lock. Nếu kiến trúc UC-04 cần external persistence phải chốt recovery/idempotency contract và test riêng trước tích hợp. Provider không rotate secret mỗi retry; key/expiry/hash do UC-04 quyết định, không lưu raw OTP/token trong payload/audit/log. EmailMessage chứa link để gửi, quyền đọc bảng này phải giới hạn như email outbox hiện có.
 
-Consumer kiểm thêm meeting Published/InProgress/Ended và invitation chưa revoked. Respond chỉ Published/InProgress. Revoke invitation làm mọi session của invitation không còn hiệu lực ở consumer; re-invite tạo ID mới. Profile/GetProfiles lỗi kỹ thuật trả lỗi đọc, không giả danh sách rỗng thành thành công.
+Consumer kiểm thêm meeting Published/InProgress (Khách không đọc gì khi `Ended`, PO 30/10/2026) và invitation chưa revoked. Respond chỉ Published/InProgress. Revoke invitation làm mọi session của invitation không còn hiệu lực ở consumer; re-invite tạo ID mới. Profile/GetProfiles lỗi kỹ thuật trả lỗi đọc, không giả danh sách rỗng thành thành công.
 
 ## Agenda, hub và room
 
@@ -36,7 +36,7 @@ UC-04 phải cung cấp cả adapters Agenda: [contract SCRUM-25](08-agenda-cont
 3. Guest hợp lệ đọc roster/response/totals; không có grants. Kiểm REST và hub/event recipients, session expiry/revoke theo TimeProvider trong test.
 4. Hai session một invitation; revoke riêng session và revoke invitation toàn bộ. Link cũ không hồi sinh invitation; re-invite có ID khác.
 5. Retry/crash provider trước/sau persist cùng transaction; không duplicate credential rotate hoặc EmailMessage. Link Ready đúng origin, không lộ room URL trước verify.
-6. Guest Ended đọc được view có quyền nhưng không respond; inactive internal không thể dùng đường Guest để vượt account policy.
+6. Cuộc họp `Ended`: Guest không đọc được roster, response, attendance hay realtime (`404`/không gửi) và không respond; inactive internal không thể dùng đường Guest để vượt account policy.
 
 Hiện có consumer integration tests với test-only adapter cho verified/unverified/expired/mixed identity/revoked invitation và delivery dependency. **Guest E2E production: Blocked by UC-04**, không tính các test đó là đã nghiệm thu OTP/session thật.
 

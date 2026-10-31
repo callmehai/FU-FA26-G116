@@ -86,6 +86,34 @@ public sealed class GuestVerificationTests(GuestAccessFixture f) : IClassFixture
     }
 
     [Fact]
+    public async Task Twenty_codes_in_24_hours_is_the_cap_until_the_oldest_leaves_the_window()
+    {
+        var s = await f.Seed();
+        using var client = f.Host.CreateClient();
+        // 19 delivered codes, the oldest 23 hours ago, then the 20th through the API.
+        await using (var db = f.Db())
+        {
+            db.GuestVerificationChallenges.AddRange(Enumerable.Range(0, 19).Select(i => new Domain.Entities.GuestVerificationChallenge
+            {
+                InvitationId = s.InvitationId, CodeHash = new string('0', 64), CreatedAt = f.Clock.Now.AddHours(-23).AddMinutes(i),
+                UpdatedAt = f.Clock.Now, ExpiresAt = f.Clock.Now.AddHours(-23).AddMinutes(i + 15),
+            }));
+            await db.SaveChangesAsync();
+        }
+        await f.SendCode(client, s);
+
+        f.Clock.Now = f.Clock.Now.AddMinutes(5);
+        var capped = await client.PostAsJsonAsync(s.Url + "/code", new { token = s.LinkToken });
+        var body = await Expect(capped, 429, "MSG379");
+        // The oldest code was sent 23 h 5 min ago, so one slot frees in 55 minutes.
+        Assert.Equal(55 * 60, body.GetProperty("retryAfterSeconds").GetInt32());
+        Assert.Equal("3300", capped.Headers.GetValues("Retry-After").Single());
+
+        f.Clock.Now = f.Clock.Now.AddMinutes(55);
+        await Expect(await Verify(client, s, await f.SendCode(client, s)), 200);
+    }
+
+    [Fact]
     public async Task Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent()
     {
         var s = await f.Seed();

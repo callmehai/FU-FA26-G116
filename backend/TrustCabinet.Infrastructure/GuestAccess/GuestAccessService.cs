@@ -55,11 +55,15 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             invitation = await LockOpenAsync(invitationId, ct);
             if (invitation is null) return Invalid;
             var now = clock.GetUtcNow();
-            var last = await db.GuestVerificationChallenges.Where(c => c.InvitationId == invitationId)
-                .MaxAsync(c => (DateTimeOffset?)c.CreatedAt, ct);
-            var wait = last + TimeSpan.FromSeconds(limits.ResendIntervalSeconds) - now;
-            if (wait > TimeSpan.Zero)
-                return new(GuestAccessFailure.TooSoon, RetryAfterSeconds: (int)Math.Ceiling(wait.Value.TotalSeconds));
+            // The codes of the last 24 hours, newest first: the first one sets the resend wait, the count the daily cap.
+            var since = now.AddDays(-1);
+            var recent = await db.GuestVerificationChallenges.Where(c => c.InvitationId == invitationId && c.CreatedAt > since)
+                .OrderByDescending(c => c.CreatedAt).Select(c => c.CreatedAt).Take(limits.MaxCodesPerDay).ToListAsync(ct);
+            if (recent.Count > 0 && recent[0].AddSeconds(limits.ResendIntervalSeconds) - now is var wait && wait > TimeSpan.Zero)
+                return new(GuestAccessFailure.TooSoon, RetryAfterSeconds: (int)Math.Ceiling(wait.TotalSeconds));
+            if (recent.Count >= limits.MaxCodesPerDay)
+                return new(GuestAccessFailure.DailyLimit,
+                    RetryAfterSeconds: (int)Math.Ceiling((recent[^1].AddDays(1) - now).TotalSeconds));
             challenge = new GuestVerificationChallenge
             {
                 InvitationId = invitationId, CreatedAt = now, UpdatedAt = now,

@@ -15,6 +15,7 @@ public static class GuestAccessEndpoints
     private const string Msg376ProfileSaved = "MSG376";
     private const string Msg377ProfileInvalid = "MSG377";
     private const string Msg378SessionEnded = "MSG378";
+    private const string Msg379DailyLimit = "MSG379";
 
     private sealed record LinkBody(string? Token);
     private sealed record VerifyBody(string? Token, string? Code);
@@ -78,9 +79,10 @@ public static class GuestAccessEndpoints
             case GuestAccessFailure.CodeLocked:
                 return Error(400, Msg372CodeLocked, "Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.");
             case GuestAccessFailure.TooSoon:
-                context.Response.Headers.RetryAfter = result.RetryAfterSeconds.ToString(CultureInfo.InvariantCulture);
-                return Results.Json(new { code = Msg373TooSoon, message = "Vui lòng chờ trước khi gửi lại mã.",
-                    retryAfterSeconds = result.RetryAfterSeconds }, statusCode: 429);
+                return TooMany(context, result, Msg373TooSoon, "Vui lòng chờ trước khi gửi lại mã.");
+            case GuestAccessFailure.DailyLimit:
+                return TooMany(context, result, Msg379DailyLimit,
+                    "Bạn đã yêu cầu quá số mã cho phép trong 24 giờ. Vui lòng thử lại sau hoặc liên hệ Thư ký cuộc họp.");
             case GuestAccessFailure.InvalidProfile:
                 return Results.Json(new { code = Msg377ProfileInvalid, message = "Thông tin hiển thị không hợp lệ.",
                     errors = result.Errors }, statusCode: 400);
@@ -89,6 +91,12 @@ public static class GuestAccessEndpoints
             default:
                 return Error(503, Msg374Unavailable, "Không thể xác minh lúc này. Vui lòng thử lại sau.");
         }
+    }
+
+    private static IResult TooMany(HttpContext context, GuestAccessResult result, string code, string message)
+    {
+        context.Response.Headers.RetryAfter = result.RetryAfterSeconds.ToString(CultureInfo.InvariantCulture);
+        return Results.Json(new { code, message, retryAfterSeconds = result.RetryAfterSeconds }, statusCode: 429);
     }
 
     private static IResult Error(int status, string code, string message)

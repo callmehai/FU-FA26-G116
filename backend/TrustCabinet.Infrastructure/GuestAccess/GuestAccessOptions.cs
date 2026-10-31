@@ -17,6 +17,10 @@ public sealed class GuestAccessOptions
     [Range(1, 3600)]
     public int ResendIntervalSeconds { get; set; } = 60;
 
+    /// <summary>Codes sent to one invitation in any 24 hours (settled 31/10/2026, PR #203 review). Undelivered codes are deleted, so they do not count.</summary>
+    [Range(1, 1000)]
+    public int MaxCodesPerDay { get; set; } = 20;
+
     /// <summary>BR-155. The guest token expires with the session; there is no refresh.</summary>
     [Range(1, 72)]
     public int SessionLifetimeHours { get; set; } = 12;
