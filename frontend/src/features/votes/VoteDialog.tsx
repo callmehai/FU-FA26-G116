@@ -154,9 +154,11 @@ export function VoteDialog({
     }
   }
 
+  // Enter in a field only ever saves a draft: opening fixes who may vote and cannot be undone, so it takes
+  // a click on "Mở biểu quyết" itself.
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    void save(canOpen)
+    void save(false)
   }
 
   return (
@@ -170,16 +172,20 @@ export function VoteDialog({
             Huỷ
           </button>
           <button
-            type={canOpen ? 'button' : 'submit'}
+            type="submit"
             form="vote-form"
             className={canOpen ? 'btn btn-outline' : 'btn btn-primary'}
-            onClick={canOpen ? () => void save(false) : undefined}
             disabled={pending !== null || !initial}
           >
             {pending === 'draft' ? 'Đang lưu…' : 'Lưu nháp'}
           </button>
           {canOpen && (
-            <button type="submit" form="vote-form" className="btn btn-primary" disabled={pending !== null || !initial}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => void save(true)}
+              disabled={pending !== null || !initial}
+            >
               {pending === 'open' ? 'Đang mở…' : 'Mở biểu quyết'}
             </button>
           )}

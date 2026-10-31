@@ -2447,13 +2447,27 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .vote-break { order: 2; }
   .vote-meta { order: 3; }
   .vote-result li { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+  /* "Không thông qua" does not fit beside "Hoãn" at the room's width: the short label instead. */
+  .vote-conclusion-form .segmented-full { display: none; }
+  .vote-conclusion-form .segmented-short { display: inline; }
+  .vote-conclusion-form .segmented-option > span { min-width: 0; padding: 0 6px; }
+  /* Under the role chips once they wrap, not pushed alone to the right edge. */
+  .vote-times { margin-left: 0; }
   .vote-result-label { grid-column: 1 / -1; }
   .vote-turnout, .vote-body { padding-left: 12px; }
   .vote-meta { padding-left: 0; }
 }
+/* Too narrow for three side by side even with the short label (a phone's page): one per row, each 40px. */
+@container (max-width: 300px) {
+  .vote-conclusion-form .segmented { flex-direction: column; height: auto; }
+  .vote-conclusion-form .segmented-option { min-height: var(--control-height); }
+  .vote-conclusion-form .segmented-option + .segmented-option { border-left: 0; border-top: 1px solid var(--control-line); }
+  .vote-conclusion-form .segmented-full { display: inline; }
+  .vote-conclusion-form .segmented-short { display: none; }
+}
 /* The create / edit dialog. */
-.vote-options-field, fieldset.field { min-width: 0; margin: 0; padding: 0; border: 0; }
-fieldset.field > legend { margin-bottom: 8px; padding: 0; font-size: 14px; font-weight: 500; line-height: 1; color: var(--ink); }
+#vote-form fieldset.field { min-width: 0; margin: 0; padding: 0; border: 0; }
+#vote-form fieldset.field > legend { margin-bottom: 8px; padding: 0; font-size: 14px; font-weight: 500; line-height: 1; color: var(--ink); }
 .vote-option-inputs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .vote-option-inputs li { display: flex; align-items: center; gap: 6px; }
 .vote-option-inputs input { flex: 1; min-width: 0; }

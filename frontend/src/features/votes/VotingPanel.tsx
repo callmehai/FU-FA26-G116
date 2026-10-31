@@ -287,8 +287,8 @@ export function VotingPanel({
           }}
           onClose={() => setOpen(null)}
         >
-          Đóng “{open.vote.title}”? Đã bỏ {open.vote.receiptCount}/{open.vote.eligibleCount}; đóng rồi không ai bỏ thêm
-          được.
+          {/* The list as it is now: ballots keep arriving while the dialog is open. */}
+          <CloseQuestion vote={votes.find((v) => v.id === open.vote.id) ?? open.vote} />
         </ConfirmDialog>
       )}
     </section>,
@@ -435,6 +435,14 @@ function VoteCard({
         />
       )}
     </li>
+  )
+}
+
+function CloseQuestion({ vote }: { vote: VoteSummary }) {
+  return (
+    <>
+      Đóng “{vote.title}”? Đã bỏ {vote.receiptCount}/{vote.eligibleCount}; đóng rồi không ai bỏ thêm được.
+    </>
   )
 }
 

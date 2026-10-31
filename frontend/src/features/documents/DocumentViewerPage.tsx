@@ -11,7 +11,7 @@ import { useAccessLost } from '../auth/useAccessLost'
 import { CommentsPanel } from './CommentsPanel'
 import { SensitivityBadge } from '../meetings/StatusBadge'
 import { useMeeting } from '../meetings/useMeeting'
-import { ReadConfirmButton } from '../votes/ReadConfirmButton'
+import { ReadConfirmButton, type ReadProgress } from '../votes/ReadConfirmButton'
 import { isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
 import { DocxView, PdfView } from './renderers'
@@ -113,7 +113,7 @@ function Viewer({
   const [params] = useSearchParams()
   const reading = params.get('read') === '1'
   const stage = useRef<HTMLElement>(null)
-  const reachedEnd = useReachedEnd(stage, reading && content.state.kind === 'loaded')
+  const progress = useReachedEnd(stage, reading && content.state.kind === 'loaded')
 
   return (
     <>
@@ -134,7 +134,7 @@ function Viewer({
           </span>
         )}
         <ViewerZoom zoom={zoom} onZoom={setZoom} />
-        {reading && <ReadConfirmButton meetingId={meeting.id} meetingDocumentId={doc.id} reachedEnd={reachedEnd} />}
+        {reading && <ReadConfirmButton meetingId={meeting.id} meetingDocumentId={doc.id} progress={progress} />}
         <button
           type="button"
           className={commentsOpen ? 'btn btn-outline is-active' : 'btn btn-outline'}
@@ -206,19 +206,21 @@ function Viewer({
 }
 
 /**
- * True once the reader has scrolled to the end of what is drawn (BR-290) — the last PDF page or the
- * end of a DOCX — or the whole document fits on screen. Nothing drawn yet is never the end. Once true
- * it stays true. Checked on scroll and every second, since pages keep drawing after the file loads.
+ * `reached` once the reader has scrolled to the end of what is drawn (BR-290) — the last PDF page or the
+ * end of a DOCX — or the whole document fits on screen. Nothing drawn yet is never the end. `unreadable`
+ * when the renderer could not draw the file, so the reader is told instead of waiting on a locked button.
+ * Either one stays. Checked on scroll and every second, since pages keep drawing after the file loads.
  */
 function useReachedEnd(stage: RefObject<HTMLElement | null>, active: boolean) {
-  const [reached, setReached] = useState(false)
+  const [progress, setProgress] = useState<ReadProgress>('reading')
   useEffect(() => {
     const el = stage.current
-    if (!active || reached || !el) return
+    if (!active || progress !== 'reading' || !el) return
     const check = () => {
       const scroller = el.querySelector<HTMLElement>('.viewer-scroll')
+      if (scroller?.querySelector('.viewer-message .alert-error')) return setProgress('unreadable')
       if (!scroller?.querySelector('.pdf-page, .docx-sheet > div > *')) return
-      if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8) setReached(true)
+      if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8) setProgress('reached')
     }
     // Scroll does not bubble: listen in the capture phase for the renderer's own scroll box.
     el.addEventListener('scroll', check, { capture: true, passive: true })
@@ -227,8 +229,8 @@ function useReachedEnd(stage: RefObject<HTMLElement | null>, active: boolean) {
       el.removeEventListener('scroll', check, { capture: true })
       window.clearInterval(timer)
     }
-  }, [stage, active, reached])
-  return reached
+  }, [stage, active, progress])
+  return progress
 }
 
 /**
