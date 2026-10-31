@@ -8,7 +8,7 @@ public class VoteChoiceConfiguration : IEntityTypeConfiguration<VoteChoice>
 {
     public void Configure(EntityTypeBuilder<VoteChoice> builder)
     {
-        // Counting the result reads every choice in a session.
+        // A public vote's result reads every choice in a session.
         builder.HasIndex(c => new { c.VotingSessionId, c.VotingOptionId });
 
         builder.HasOne(c => c.VotingSession)
@@ -23,10 +23,10 @@ public class VoteChoiceConfiguration : IEntityTypeConfiguration<VoteChoice>
             .HasForeignKey(c => c.VotingOptionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Null in a secret vote; in a public one exactly one is set so the result can name each
-        // voter's choice. The database can only rule out both at once.
+        // Only public votes write here, and each row names its voter. A choice naming nobody would be a secret
+        // ballot stored where it can be paired with its receipt (BR-259), so the database refuses it.
         builder.ToTable(t => t.HasCheckConstraint(
-            "ck_vote_choices_at_most_one_voter", "num_nonnulls(voter_id, guest_invitation_id) <= 1"));
+            "ck_vote_choices_one_voter", "num_nonnulls(voter_id, guest_invitation_id) = 1"));
 
         builder.HasOne(c => c.Voter)
             .WithMany()
