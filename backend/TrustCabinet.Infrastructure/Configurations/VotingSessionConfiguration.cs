@@ -12,7 +12,7 @@ public class VotingSessionConfiguration : IEntityTypeConfiguration<VotingSession
         builder.Property(v => v.Description).HasMaxLength(4000);
         builder.Property(v => v.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(v => v.Conclusion).HasConversion<string>().HasMaxLength(32);
-        builder.Property(v => v.ConclusionNote).HasMaxLength(4000);
+        builder.Property(v => v.ConclusionNote).HasMaxLength(2000);
 
         // A text[] of role names, so the stored values read the same as every other enum column.
         builder.PrimitiveCollection(v => v.EligibleRoles)

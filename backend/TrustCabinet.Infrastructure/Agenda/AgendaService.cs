@@ -5,6 +5,7 @@ using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.GuestAccess;
 
 namespace TrustCabinet.Infrastructure.Agenda;
 
@@ -27,7 +28,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
             if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct))
                 return new(AgendaFailure.NotFound);
             var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
-            if (meeting is null || !AgendaRules.GuestCanViewMeeting(meeting.Status))
+            if (meeting is null || !GuestAccessRules.MeetingOpen(meeting.Status))
                 return new(AgendaFailure.NotFound);
             return await SnapshotAsync(meeting, null, false, ct);
         }

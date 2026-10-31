@@ -422,6 +422,62 @@ namespace TrustCabinet.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.DocumentReadConfirmation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("GuestInvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_invitation_id");
+
+                    b.Property<Guid>("MeetingDocumentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meeting_document_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_document_read_confirmations");
+
+                    b.HasIndex("GuestInvitationId")
+                        .HasDatabaseName("ix_document_read_confirmations_guest_invitation_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_document_read_confirmations_user_id");
+
+                    b.HasIndex("MeetingDocumentId", "GuestInvitationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_document_read_confirmations_meeting_document_id_guest_invit")
+                        .HasFilter("guest_invitation_id IS NOT NULL");
+
+                    b.HasIndex("MeetingDocumentId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_document_read_confirmations_meeting_document_id_user_id")
+                        .HasFilter("user_id IS NOT NULL");
+
+                    b.ToTable("document_read_confirmations", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_document_read_confirmations_one_reader", "num_nonnulls(user_id, guest_invitation_id) = 1");
+                        });
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.EmailMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -591,6 +647,88 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasFilter("meeting_id IS NOT NULL");
 
                     b.ToTable("folders", (string)null);
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.GuestSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("InvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invitation_id");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_guest_sessions");
+
+                    b.HasIndex("InvitationId")
+                        .HasDatabaseName("ix_guest_sessions_invitation_id");
+
+                    b.ToTable("guest_sessions", (string)null);
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.GuestVerificationChallenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code_hash");
+
+                    b.Property<DateTimeOffset?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("consumed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_attempts");
+
+                    b.Property<Guid>("InvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invitation_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_guest_verification_challenges");
+
+                    b.HasIndex("InvitationId", "CreatedAt")
+                        .HasDatabaseName("ix_guest_verification_challenges_invitation_id_created_at");
+
+                    b.ToTable("guest_verification_challenges", (string)null);
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Meeting", b =>
@@ -889,6 +1027,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Property<Guid?>("RevokedById")
                         .HasColumnType("uuid")
                         .HasColumnName("revoked_by_id");
+
+                    b.Property<string>("SelfDeclaredDisplayName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("self_declared_display_name");
+
+                    b.Property<string>("SelfDeclaredJobTitle")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("self_declared_job_title");
 
                     b.Property<string>("SensitivityAtInvitation")
                         .IsRequired()
@@ -2363,10 +2511,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("CastAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("cast_at");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -2408,7 +2552,7 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.ToTable("vote_choices", null, t =>
                         {
-                            t.HasCheckConstraint("ck_vote_choices_at_most_one_voter", "num_nonnulls(voter_id, guest_invitation_id) <= 1");
+                            t.HasCheckConstraint("ck_vote_choices_one_voter", "num_nonnulls(voter_id, guest_invitation_id) = 1");
                         });
                 });
 
@@ -2546,6 +2690,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<int>("BallotCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("ballot_count");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -2575,7 +2723,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_voting_options_voting_session_id_position");
 
-                    b.ToTable("voting_options", (string)null);
+                    b.ToTable("voting_options", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_voting_options_ballot_count", "ballot_count >= 0");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VotingSession", b =>
@@ -2604,8 +2755,8 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.Property<string>("ConclusionNote")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("conclusion_note");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -2840,6 +2991,34 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("ParentComment");
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.DocumentReadConfirmation", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "GuestInvitation")
+                        .WithMany()
+                        .HasForeignKey("GuestInvitationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_document_read_confirmations_meeting_guest_invitations_guest");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingDocument", "MeetingDocument")
+                        .WithMany("ReadConfirmations")
+                        .HasForeignKey("MeetingDocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_document_read_confirmations_meeting_documents_meeting_docum");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_document_read_confirmations_users_user_id");
+
+                    b.Navigation("GuestInvitation");
+
+                    b.Navigation("MeetingDocument");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.EmailMessage", b =>
                 {
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
@@ -2877,6 +3056,28 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("Owner");
 
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.GuestSession", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "Invitation")
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_guest_sessions_meeting_guest_invitations_invitation_id");
+
+                    b.Navigation("Invitation");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.GuestVerificationChallenge", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", null)
+                        .WithMany()
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_guest_verification_challenges_meeting_guest_invitations_inv");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Meeting", b =>
@@ -3681,6 +3882,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("AgendaItemLinks");
 
                     b.Navigation("Comments");
+
+                    b.Navigation("ReadConfirmations");
 
                     b.Navigation("VoteLinks");
                 });

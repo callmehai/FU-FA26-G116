@@ -11,6 +11,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 
 - [`08-chuong-trinh-nghi-su.md`](08-chuong-trinh-nghi-su.md) — contract Backend SCRUM-98, UC-23a–d/24/25/26/77; [bàn giao SCRUM-25 lịch sử](08-chuong-trinh-nghi-su-ban-giao.md).
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
+- [`16-truy-cap-khach-uc04.md`](16-truy-cap-khach-uc04.md) — UC-04 / SCRUM-116: link mời, OTP, phiên và token Khách (`/api/guest-access/*`); giá trị OTP và hạn phiên đã chốt; mã `MSG126`, `MSG371`–`MSG378`.
 
 - [`00-danh-muc-ma-thong-bao.md`](00-danh-muc-ma-thong-bao.md) — **danh mục mọi mã `MSGnn`**:
   quy tắc đặt mã, mã tiếp theo còn trống, từng mã trả ở endpoint nào với HTTP và câu thông báo gì,
@@ -77,14 +78,15 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   SCRUM-21: danh sách tài liệu nhóm theo mục nghị sự (UC-32a), xem / tải về đúng byte gốc, chặn tải về cuộc họp
   Mật, nhật ký kiểm toán Confidential/Secret (UC-32c), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE.
   SCRUM-58 (SCRUM-112): thêm từ kho (UC-33a), gắn mục nghị sự ba nguồn (UC-33b), gỡ khỏi cuộc họp (UC-33c), gỡ khỏi
-  mục (UC-33d). SCRUM-23: góp ý và trả lời một cấp trên tài liệu (UC-35). Cuộc họp đã huỷ chỉ còn đọc (`MSG349`)
+  mục (UC-33d). SCRUM-23: góp ý và trả lời một cấp trên tài liệu (UC-35). Cuộc họp đã huỷ chỉ còn đọc (`MSG349`).
+  SCRUM-123: Khách có phiên UC-04 đọc danh sách và nội dung (xem, tải về) tài liệu cuộc họp; mọi thao tác ghi vẫn từ chối Khách
 - [`14-kho-tai-lieu-ca-nhan.md`](14-kho-tai-lieu-ca-nhan.md) — SCRUM-58 (SCRUM-110, SCRUM-111): thư mục kho cá nhân
   (UC-72a–d), xem / tải lên / đổi tên / chuyển / xoá tài liệu trong kho (UC-34, UC-36, UC-71a–c), hạn mức 10 GB
   của cả hệ thống (ADR-0034), Quản trị viên đọc kho của tài khoản đã khoá có kiểm toán; mã `MSG175`–`MSG198`, `MSG346`–`MSG348`
 - [`10-scrum97-ket-qua-kiem-thu.md`](10-scrum97-ket-qua-kiem-thu.md) — kết quả riêng của phần SCRUM-97 bổ sung trên baseline SCRUM-20; kèm change note Jira để owner đăng.
 - [`12-ban-ghi-cuoc-hop.md`](12-ban-ghi-cuoc-hop.md) — SCRUM-29: lưu, nghe (link ký sẵn), xoá bản ghi cuộc họp; đồng ý, mục đích, hạn lưu trữ và job tự xoá; mã `MSG290`–`MSG298`. SCRUM-31: hàng chờ chuyển thành chữ trên worker tự chạy, xem, chạy lại, sửa đoạn; mã `MSG299`–`MSG304`
 - [`13-nhan-dien-giong-noi.md`](13-nhan-dien-giong-noi.md) — SCRUM-35: Voice ID của chính mình (đồng ý, giọng mẫu mã hoá, rút đồng ý), gợi ý và gán tên người nói trong bản gỡ băng; nghĩa vụ dữ liệu sinh trắc học; mã `MSG305`–`MSG317`
-- [`15-bieu-quyet.md`](15-bieu-quyet.md) — thiết kế contract FE-11 / SCRUM-96 (chưa triển khai): danh sách/nháp/mở/bỏ phiếu/đóng/kết luận, gắn-gỡ tài liệu Vote (UC-76), xác nhận đã đọc (UC-74); mã `MSG205`–`MSG236`, `MSG252`–`MSG255`, `MSG265`–`MSG270`. Note bàn giao: [NOTE-ban-giao-fe11-bieu-quyet-cho-be.md](../notes/NOTE-ban-giao-fe11-bieu-quyet-cho-be.md)
+- [`15-bieu-quyet.md`](15-bieu-quyet.md) — contract FE-11 (Backend đã triển khai: SCRUM-28, SCRUM-96): danh sách/nháp/mở/bỏ phiếu/đóng/kết luận, gắn-gỡ tài liệu Vote (UC-76), xác nhận đã đọc (UC-74); mã `MSG205`–`MSG236`, `MSG252`–`MSG255`, `MSG265`–`MSG270`. Note bàn giao: [NOTE-ban-giao-fe11-bieu-quyet-cho-be.md](../notes/NOTE-ban-giao-fe11-bieu-quyet-cho-be.md)
 
 Dự kiến có thêm:
 

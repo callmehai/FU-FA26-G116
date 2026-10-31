@@ -9,9 +9,6 @@ namespace TrustCabinet.Domain.Agenda;
 
 public static class AgendaRules
 {
-    public static bool GuestCanViewMeeting(MeetingStatus status) => status is MeetingStatus.Published
-        or MeetingStatus.InProgress or MeetingStatus.Ended;
-
     public static bool PlanningAllowed(MeetingStatus status) => status is MeetingStatus.Draft
         or MeetingStatus.WaitingApproval or MeetingStatus.Rejected or MeetingStatus.Approved
         or MeetingStatus.Published or MeetingStatus.InProgress;
