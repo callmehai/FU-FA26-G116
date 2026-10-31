@@ -49,6 +49,8 @@ import { type Meeting } from '../../../types/meeting'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
+import { VoteOpenedNotice } from '../../votes/VoteOpenedNotice'
+import { VotingPanel } from '../../votes/VotingPanel'
 import { MyClips } from '../../speech/MyClips'
 import { useSpeech } from '../../speech/useSpeech'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
@@ -62,13 +64,14 @@ import { deviceErrorMessage, roomMessage } from './roomSupport'
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 
-type PanelId = 'people' | 'agenda' | 'attendance' | 'documents' | 'chat'
+type PanelId = 'people' | 'agenda' | 'attendance' | 'documents' | 'votes' | 'chat'
 
 const PANEL_LABEL: Record<PanelId, string> = {
   people: 'Người dự',
   agenda: 'Nội dung họp',
   attendance: 'Điểm danh',
   documents: 'Tài liệu',
+  votes: 'Biểu quyết',
   chat: 'Chat',
 }
 
@@ -77,6 +80,7 @@ const TUCKED_PANELS: { id: PanelId; icon: IconName }[] = [
   { id: 'agenda', icon: 'list' },
   { id: 'attendance', icon: 'userCheck' },
   { id: 'documents', icon: 'fileText' },
+  { id: 'votes', icon: 'vote' },
 ]
 
 const CHAT_MAX = 1000
@@ -320,6 +324,14 @@ function RoomLayout({
         </div>
       )}
       <StartAudioBanner />
+      <VoteOpenedNotice
+        meetingId={meeting.id}
+        panelOpen={panel === 'votes'}
+        onShow={() => {
+          if (panel === 'chat') setSeenMessages(chat.chatMessages.length)
+          setPanel('votes')
+        }}
+      />
 
       <div className="room-body">
         <main className="room-stage" aria-label="Người trong phòng">
@@ -367,6 +379,8 @@ function RoomLayout({
               <AttendancePanel meetingId={meeting.id} />
             ) : panel === 'documents' ? (
               <DocumentsPanel meeting={meeting} variant="room" />
+            ) : panel === 'votes' ? (
+              <VotingPanel meetingId={meeting.id} variant="room" />
             ) : (
               <ChatPanel messages={chat.chatMessages} send={chat.send} isSending={chat.isSending} />
             )}

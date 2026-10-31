@@ -30,6 +30,7 @@ import { useRoomRecorder } from '../../recordings/useRoomRecorder'
 import { useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { SpeechPanel } from '../../speech/SpeechPanel'
 import { useSpeech } from '../../speech/useSpeech'
+import { VotingPanel } from '../../votes/VotingPanel'
 import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
@@ -51,6 +52,7 @@ const TABS = [
   { id: 'attendees', label: 'Thành phần tham dự' },
   { id: 'agenda', label: 'Nội dung cuộc họp' },
   { id: 'documents', label: 'Tài liệu' },
+  { id: 'votes', label: 'Biểu quyết' },
   { id: 'recordings', label: 'Bản ghi' },
   { id: 'minutes', label: 'Biên bản' },
 ] as const
@@ -58,7 +60,10 @@ const TABS = [
 type TabId = (typeof TABS)[number]['id']
 
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
-const TAB_BLOCKED_ON: Record<Exclude<TabId, 'overview' | 'attendees' | 'agenda' | 'documents' | 'recordings'>, string> = {
+const TAB_BLOCKED_ON: Record<
+  Exclude<TabId, 'overview' | 'attendees' | 'agenda' | 'documents' | 'votes' | 'recordings'>,
+  string
+> = {
   minutes: 'GET /api/meetings/{id}/minutes',
 }
 
@@ -367,6 +372,8 @@ function MeetingDetail({
             <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
           ) : tab === 'documents' ? (
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
+          ) : tab === 'votes' ? (
+            <VotingPanel meetingId={meeting.id} variant="page" meeting={meeting} />
           ) : tab === 'recordings' ? (
             <div className="recordings-tab">
               <SpeechPanel speech={speech} perMic={perMic} userId={user?.id} startedAt={meeting.actualStartedAt} />

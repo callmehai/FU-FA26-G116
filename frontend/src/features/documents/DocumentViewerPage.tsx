@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getMeetingDocumentContent } from '../../api/documents'
 import { Icon } from '../../components/Icon'
@@ -11,6 +11,7 @@ import { useAccessLost } from '../auth/useAccessLost'
 import { CommentsPanel } from './CommentsPanel'
 import { SensitivityBadge } from '../meetings/StatusBadge'
 import { useMeeting } from '../meetings/useMeeting'
+import { ReadConfirmButton, type ReadProgress } from '../votes/ReadConfirmButton'
 import { isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
 import { DocxView, PdfView } from './renderers'
@@ -108,11 +109,16 @@ function Viewer({
   const { download, busyId } = useDocumentDownload(meeting.id, onStale)
   const pdf = isPdf(doc)
   const canDownload = meeting.sensitivity !== 'Secret'
+  // Opened from a vote still waiting on this reader (UC-74): confirm once the last page is reached.
+  const [params] = useSearchParams()
+  const reading = params.get('read') === '1'
+  const stage = useRef<HTMLElement>(null)
+  const progress = useReachedEnd(stage, reading && content.state.kind === 'loaded')
 
   return (
     <>
       <header className="viewer-head">
-        <BackToDocuments meetingId={meeting.id} />
+        <BackToDocuments meetingId={meeting.id} fromVote={reading} />
         <FileTypeTag pdf={pdf} />
         <h1 className="viewer-title" data-tooltip={doc.fileName}>
           {doc.fileName}
@@ -128,6 +134,7 @@ function Viewer({
           </span>
         )}
         <ViewerZoom zoom={zoom} onZoom={setZoom} />
+        {reading && <ReadConfirmButton meetingId={meeting.id} meetingDocumentId={doc.id} progress={progress} />}
         <button
           type="button"
           className={commentsOpen ? 'btn btn-outline is-active' : 'btn btn-outline'}
@@ -154,7 +161,7 @@ function Viewer({
       </header>
 
       <div className="viewer-body">
-        <main className="viewer-stage">
+        <main className="viewer-stage" ref={stage}>
           {content.state.kind === 'error' ? (
             <div className="viewer-message">
               <div className="alert alert-error" role="alert">
@@ -199,14 +206,42 @@ function Viewer({
 }
 
 /**
- * "‹ Tài liệu": the tab the call room opened (`?from=room`, nothing before it) closes, so the room's
- * tab comes back; otherwise back to the meeting's Tài liệu tab. A browser that refuses to close the
- * tab navigates instead.
+ * `reached` once the reader has scrolled to the end of what is drawn (BR-290) — the last PDF page or the
+ * end of a DOCX — or the whole document fits on screen. Nothing drawn yet is never the end. `unreadable`
+ * when the renderer could not draw the file, so the reader is told instead of waiting on a locked button.
+ * Either one stays. Checked on scroll and every second, since pages keep drawing after the file loads.
  */
-function BackToDocuments({ meetingId }: { meetingId: string }) {
+function useReachedEnd(stage: RefObject<HTMLElement | null>, active: boolean) {
+  const [progress, setProgress] = useState<ReadProgress>('reading')
+  useEffect(() => {
+    const el = stage.current
+    if (!active || progress !== 'reading' || !el) return
+    const check = () => {
+      const scroller = el.querySelector<HTMLElement>('.viewer-scroll')
+      if (scroller?.querySelector('.viewer-message .alert-error')) return setProgress('unreadable')
+      if (!scroller?.querySelector('.pdf-page, .docx-sheet > div > *')) return
+      if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8) setProgress('reached')
+    }
+    // Scroll does not bubble: listen in the capture phase for the renderer's own scroll box.
+    el.addEventListener('scroll', check, { capture: true, passive: true })
+    const timer = window.setInterval(check, 1000)
+    return () => {
+      el.removeEventListener('scroll', check, { capture: true })
+      window.clearInterval(timer)
+    }
+  }, [stage, active, progress])
+  return progress
+}
+
+/**
+ * "‹ Tài liệu": the tab the call room opened (`?from=room`, nothing before it) closes, so the room's
+ * tab comes back; otherwise back to the meeting's Tài liệu tab — or its Biểu quyết tab when the
+ * document was opened to be read for a vote. A browser that refuses to close the tab navigates instead.
+ */
+function BackToDocuments({ meetingId, fromVote }: { meetingId: string; fromVote: boolean }) {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const to = `${routes.meeting(meetingId)}?tab=documents`
+  const to = `${routes.meeting(meetingId)}?tab=${fromVote ? 'votes' : 'documents'}`
   return (
     <Link
       className="back-link viewer-back"
@@ -219,7 +254,7 @@ function BackToDocuments({ meetingId }: { meetingId: string }) {
       }}
     >
       <Icon name="chevronLeft" size={16} />
-      Tài liệu
+      {fromVote ? 'Biểu quyết' : 'Tài liệu'}
     </Link>
   )
 }

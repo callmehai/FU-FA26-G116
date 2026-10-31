@@ -40,10 +40,11 @@ export function uploadMeetingDocuments(
   return api.upload<DocumentUploadResponse>(`${base(meetingId)}/upload`, filesForm(files), options)
 }
 
-type Upload = { file: File; pageCount: number | null }[]
-type UploadOptions = { onProgress?: (loaded: number, total: number) => void; signal?: AbortSignal }
+export type Upload = { file: File; pageCount: number | null }[]
+export type UploadOptions = { onProgress?: (loaded: number, total: number) => void; signal?: AbortSignal }
 
-function filesForm(files: Upload) {
+/** The multipart body every document upload sends: `files` and their `pageCounts`, in the same order. */
+export function filesForm(files: Upload) {
   const form = new FormData()
   for (const { file, pageCount } of files) {
     form.append('files', file)
