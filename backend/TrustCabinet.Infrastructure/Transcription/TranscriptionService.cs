@@ -254,11 +254,15 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             else
             {
                 await transcripts.DeleteSegmentsAsync(transcriptId, token);
-                transcripts.AddSegments(result.Segments.Where(s => s.Text.Length > 0).Select((s, i) => new TranscriptSegment
+                transcripts.AddSegments(result.Segments.Where(s => s.Text.Length > 0).Select((s, i) =>
                 {
-                    TranscriptId = transcriptId, Position = i + 1, StartMs = s.StartMs, EndMs = s.EndMs,
-                    Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
-                    SpeakerLabel = s.Speaker ?? "", CreatedAt = now, UpdatedAt = now,
+                    var (startMs, endMs) = TranscriptRules.FitToTake(s.StartMs, s.EndMs, recording.Takes);
+                    return new TranscriptSegment
+                    {
+                        TranscriptId = transcriptId, Position = i + 1, StartMs = startMs, EndMs = endMs,
+                        Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
+                        SpeakerLabel = s.Speaker ?? "", CreatedAt = now, UpdatedAt = now,
+                    };
                 }));
                 await transcripts.DeleteSpeakersAsync(transcriptId, token);
                 var suggestions = await SuggestSpeakersAsync(recording.MeetingId, result, token);
