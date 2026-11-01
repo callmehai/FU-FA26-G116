@@ -24,6 +24,7 @@ Mỗi file giữ nguyên phạm vi cần sửa. Khi ticket sang **BA Final Revie
 | 19 | [Plan FE-09 / FE-10 ghi âm, gỡ băng, Voice ID](19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md) | SCRUM-29, 31, 35, 109, 102, 103 | Tổ chức lại UC-43–46 (thêm 46d), thêm UC-80 (Ghi âm của tôi), UC-81 (Voice ID), BR-340+, MSG Report 3, 24 sequence, 2 class diagram as-built; tách tóm tắt thành FE-11 hoãn |
 | 20 | [Việc Jira sau khi merge PR ghi âm / Voice ID](20-viec-jira-sau-khi-merge-pr-ghi-am-voice-id.md) | SCRUM-29, 31, 35, 109, 102, 103 | Ticket nào comment, chuyển kiểm thử hay Done sau khi PR merge; việc còn dở |
 | 21 | [SCRUM-116 truy cập Khách UC-04](21-scrum-116-truy-cap-khach-uc04.md) | SCRUM-116–123 (PR #203, #208) | 6 điểm khác tài liệu: giới hạn OTP và phiên 12 giờ, Khách mất quyền khi Ended (UC-26, BR-181, ADR-0016), khai tên bắt buộc, MSG371–379; câu hỏi PO |
+| 22 | [PR #201 gắn tài liệu từ dòng nghị sự](22-pr201-gan-tai-lieu-tu-dong-nghi-su.md) | không có ticket (PR #201) | 7 điểm khác tài liệu: form mục không còn chọn tài liệu (UC-23a/b), kẹp giấy là điểm vào UC-33b, `documentIds` thiếu thì giữ, `canLinkDocuments`, đăng nhập vào lịch (UC-01/02), BR-280; chưa làm gì, gồm cả đặc tả màn hình |
 Plan gom cả sáu note. **Thứ tự làm và cách giao cho agent: [plan 05 mục 8](05-plan-sua-uc-br-msg-diagram.md#8-thứ-tự-và-cách-chạy-agent-đọc-mục-này-trước)** —
 làm lần lượt từng lượt, mỗi lượt một session mới.
 
