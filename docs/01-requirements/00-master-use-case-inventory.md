@@ -71,9 +71,18 @@ Bổ sung ngày 30/10/2026 (BA Final Review FE-09/FE-10): tổ chức lại theo
 | **Secretary** | Thư ký: agenda, thành phần, điểm danh, tài liệu, upload audio, transcript, tóm tắt, biên bản |
 | **Participant** | Thành viên được mời: phản hồi lời mời, vào phòng họp, xem tài liệu, bình luận, bỏ phiếu, ký biên bản khi được chỉ định |
 | **Guest** | Khách ngoài, không có tài khoản; truy cập đúng một cuộc họp qua lời mời và mã xác minh email (UC-04) |
-| *Google Identity Provider* | Actor hệ thống ngoài của UC-02 |
-| *Speech Recognition Service* | Actor hệ thống ngoài: dịch vụ nhận dạng giọng nói chạy trong hệ thống (ADR-0026), gỡ băng audio cuộc họp (UC-44b/c, UC-45c) và trích xuất vector giọng nói cho Voice ID (UC-81c) |
-| *Email / SMTP Service* | Actor hệ thống ngoài: email đặt lại mật khẩu, thư mời, email liên quan ký biên bản |
+| *OAuth Provider* | Actor hệ thống ngoài: xác thực tài khoản Google và trả danh tính đã xác minh (UC-02) |
+| *Google AI Provider* | Actor hệ thống ngoài: dịch vụ AI tạo tóm tắt nháp từ bản gỡ băng đã được Thư ký rà soát (UC-47, chưa làm). Chỉ nhận chữ, không nhận âm thanh |
+| *Resend Email* | Actor hệ thống ngoài: gửi email đặt lại mật khẩu, thư mời, email liên quan ký biên bản |
+| *Cloudflare R2* | Actor hệ thống ngoài: kho đối tượng giữ byte tệp tài liệu cá nhân và tài liệu cuộc họp (ADR-0024) |
+
+**Khoá actor (01/11/2026): 7 actor người và 4 actor hệ thống ngoài, không thêm bớt khi chưa có quyết định của PO.**
+Actor người: System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest. Actor ngoài:
+OAuth Provider, Google AI Provider, Resend Email, Cloudflare R2. Quy tắc để một bên là actor ngoài: nó là hệ thống
+bên ngoài ranh giới TrustCabinet mà backend gọi ra (hoặc nó gọi vào) trong luồng của một UC. Vì vậy **không phải
+actor**: gỡ băng và Voice ID (worker chạy trong hệ thống, không gửi gì ra ngoài, ADR-0026/0036), LiveKit (hạ tầng
+phòng họp), PostgreSQL, Redis và SMTP dự phòng của Resend Email. "Internal user" và "System" không có trong bảng
+actor của Report 3 §4.1; các UC còn ghi hai tên này sẽ được thay bằng danh sách vai trò khi BA rà tiếp.
 
 Chair, Secretary, Participant là **vai trò trong cuộc họp** (`MeetingParticipant.MeetingRole`), độc lập với vai trò hệ
 thống. Quyền chi tiết theo actor nằm ở [Report 3 §I.4.4 Permission Matrix](../08-reports/Report-3_Software_Requirement_Specification.md#44-permission-matrix).
@@ -93,9 +102,9 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-01 | Đăng nhập bằng Email và Mật khẩu *(Sign in with Email and Password)* | Internal user | Đã đặc tả | Độc lập |
-| UC-02 | Đăng nhập bằng Google *(Sign in with Google)* | Internal user; Google Identity Provider | Đã đặc tả | Độc lập |
-| UC-03 | Đăng xuất *(Sign Out)* | Internal user | Đã đặc tả | Độc lập |
+| UC-01 | Đăng nhập bằng Email và Mật khẩu *(Sign in with Email and Password)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Độc lập |
+| UC-02 | Đăng nhập bằng Google *(Sign in with Google)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant; OAuth Provider | Đã đặc tả | Độc lập |
+| UC-03 | Đăng xuất *(Sign Out)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Độc lập |
 | UC-04 | Truy cập cuộc họp qua lời mời Guest *(Access Meeting via Guest Invitation)* | Guest; Email / SMTP | Đã đặc tả | Độc lập — xác minh email + profile tự khai, guest access cho UC-29/32/35/37/55 |
 
 ## FE-02 — Quản lý Người dùng & Hồ sơ *(User & Profile Management)*
@@ -159,12 +168,12 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 |---|---|---|---|---|
 | UC-32 | Xem tài liệu cuộc họp *(View Meeting Documents)* — UC-32a Xem danh sách, UC-32c Xem trước/tải về; quyền đọc theo quyền xem Meeting. `Secret` không tải về; UC-32b vẫn bỏ | Người có quyền xem Meeting, gồm Guest có lời mời đã xác minh còn hiệu lực | Đã đặc tả các UC con | Internal: `<<extend>>` UC-16; Guest qua UC-04 |
 | UC-33 | Quản lý tài liệu cuộc họp *(Manage Meeting Documents)* — UC-33a Thêm một hoặc nhiều tài liệu cùng lần, UC-33b Gắn vào mục (tái cấp theo ADR-0020), UC-33c Gỡ khỏi cuộc họp, UC-33d Bỏ gắn một mục; khoá khi Meeting kết thúc. Nhóm tài liệu thêm cùng lần thành công toàn bộ hoặc không thêm tài liệu nào | Chair, Secretary hiện hành có quyền xem Meeting | Đã đặc tả bốn UC con | `<<extend>>` UC-32 |
-| UC-34 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | Internal user | Đã đặc tả | Độc lập |
+| UC-34 | Xem kho tài liệu cá nhân *(View Personal Document Library)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Độc lập |
 | UC-34b | Xem kho cá nhân của tài khoản đã khoá *(View a Locked Account’s Personal Library)* — Quản trị viên chỉ đọc, mỗi lần đọc ghi nhật ký kiểm toán (BR-334, BR-335) | System Admin | Đã đặc tả | Độc lập |
 | UC-35 | Bình luận tài liệu cuộc họp *(Comment on Meeting Document)* — người có quyền đọc được bình luận trước khi Meeting kết thúc; sau đó chỉ đọc | System Admin, Organizer, Approver, Chair, Secretary, Participant, Guest có quyền xem Meeting | Đã đặc tả | `<<extend>>` UC-32 |
-| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 200 MB mỗi lần, 50 MB mỗi tệp; tổng kho cả hệ thống 10 GB), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | Internal user | Đã đặc tả | `<<extend>>` UC-34 |
-| UC-71 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-71a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-71b Đổi tên, UC-71c Chuyển thư mục | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
-| UC-72 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-72a Tạo, UC-72b Đổi tên, UC-72c Chuyển, UC-72d Xoá thư mục rỗng; lồng tối đa 5 cấp | Internal user | Đã đặc tả các UC con | `<<extend>>` UC-34 |
+| UC-36 | Tải tài liệu lên kho cá nhân *(Upload Document to Personal Library)* — một hoặc nhiều PDF/DOCX cùng lần (tối đa 10 tệp / 200 MB mỗi lần, 50 MB mỗi tệp; tổng kho cả hệ thống 10 GB), vào thư mục đang chọn; cả nhóm thành công hoặc không thêm tài liệu nào | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-34 |
+| UC-71 | Quản lý tài liệu trong kho *(Manage Personal Documents)* — gồm UC-71a Xoá khỏi kho (tài liệu đã gắn vào cuộc họp vẫn giữ nguyên), UC-71b Đổi tên, UC-71c Chuyển thư mục | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | `<<extend>>` UC-34 |
+| UC-72 | Quản lý thư mục kho *(Manage Library Folders)* — gồm UC-72a Tạo, UC-72b Đổi tên, UC-72c Chuyển, UC-72d Xoá thư mục rỗng; lồng tối đa 5 cấp | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | `<<extend>>` UC-34 |
 | UC-74 | Xác nhận đã đọc tài liệu biểu quyết *(Confirm Document Read)* — cuộn tới trang cuối rồi xác nhận; bắt buộc trước khi bỏ phiếu | Chair, Secretary, Participant, Guest có quyền bỏ phiếu | Đã đặc tả | Được gọi trước UC-55 |
 
 ## FE-08 — Phòng họp trực tuyến *(Online Meeting Room Management)*
@@ -192,14 +201,14 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-45 | Xem bản gỡ băng cuộc họp *(View Meeting Transcript)* — gồm UC-45a Xem bản gỡ băng (đoạn có giờ, tên người nói, vạch phân lượt, chữ do người sửa phân biệt với chữ máy; gợi ý tên chỉ Thư ký thấy), UC-45b Xuất bản gỡ băng .txt (Chủ toạ, Thư ký; cấm khi Mật), UC-45c Gỡ băng bản ghi cuộc họp (Thư ký chạy lại bản đã xong / khi lỗi / hệ thống tự xếp hàng) | User có quyền; Secretary; Speech Recognition Service | Đã đặc tả các UC con | `<<extend>>` UC-43a (UC-45c `<<include>>` từ UC-44b, UC-44c) |
+| UC-45 | Xem bản gỡ băng cuộc họp *(View Meeting Transcript)* — gồm UC-45a Xem bản gỡ băng (đoạn có giờ, tên người nói, vạch phân lượt, chữ do người sửa phân biệt với chữ máy; gợi ý tên chỉ Thư ký thấy), UC-45b Xuất bản gỡ băng .txt (Chủ toạ, Thư ký; cấm khi Mật), UC-45c Gỡ băng bản ghi cuộc họp (Thư ký chạy lại bản đã xong / khi lỗi / hệ thống tự xếp hàng) | User có quyền; Secretary | Đã đặc tả các UC con | `<<extend>>` UC-43a (UC-45c `<<include>>` từ UC-44b, UC-44c) |
 | UC-46 | Chỉnh sửa bản gỡ băng & gán người nói *(Edit Transcript & Speaker Attribution)* — gồm UC-46a Sửa chữ đoạn gỡ băng hoặc câu nói, UC-46b Gán người nói cho giọng (có gợi ý Voice ID, gán cả nhóm), UC-46c Loại hoặc đưa lại câu khỏi bản ghi (lý do Lẫn tiếng/Khác; chỉ Chủ toạ/Thư ký), UC-46d Xoá câu nói khỏi dòng thời gian (Thư ký xoá câu) | Secretary, Chair | Đã đặc tả các UC con | `<<extend>>` UC-43a, UC-45a |
-| UC-47 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* | Secretary; AI Summary Service | Placeholder | `<<extend>>` UC-45a |
+| UC-47 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* | Secretary; Google AI Provider | Placeholder | `<<extend>>` UC-45a |
 | UC-48 | Xem tóm tắt *(View Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-16 |
 | UC-49 | Chỉnh tóm tắt *(Edit Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-48 |
 | UC-50 | Duyệt tóm tắt *(Approve Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-48 |
 | UC-51 | Công bố tóm tắt *(Publish Meeting Summary)* — bước riêng sau khi duyệt | Secretary | Placeholder | `<<extend>>` UC-48 |
-| UC-81 | Quản lý nhận diện giọng nói cá nhân *(Manage My Voice ID)* — gồm UC-81a Xem thông tin giọng nói, UC-81b Xác nhận đồng ý Voice ID (thông báo riêng bản 1.1), UC-81c Thu âm mẫu giọng (tối đa 5 mẫu, 6–60s), UC-81d Nghe lại mẫu giọng (chỉ chính chủ), UC-81e Xoá mẫu giọng, UC-81f Rút đồng ý Voice ID (xoá ngay mọi mẫu và mọi gợi ý) | Internal user; Speech Recognition Service | Đã đặc tả các UC con | Độc lập (UC-81b–f `<<extend>>` UC-81a) |
+| UC-81 | Quản lý nhận diện giọng nói cá nhân *(Manage My Voice ID)* — gồm UC-81a Xem thông tin giọng nói, UC-81b Xác nhận đồng ý Voice ID (thông báo riêng bản 1.1), UC-81c Thu âm mẫu giọng (tối đa 5 mẫu, 6–60s), UC-81d Nghe lại mẫu giọng (chỉ chính chủ), UC-81e Xoá mẫu giọng, UC-81f Rút đồng ý Voice ID (xoá ngay mọi mẫu và mọi gợi ý) | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Độc lập (UC-81b–f `<<extend>>` UC-81a) |
 
 ## FE-11 — Biểu quyết *(Voting Management)*
 
@@ -230,15 +239,15 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-66 | Xem thông báo *(View Notifications)* | Internal user | Đã đặc tả | Nền |
-| UC-67 | Đánh dấu đã đọc *(Mark Notifications as Read)* — gồm UC-67a Một thông báo, UC-67b Tất cả | Internal user | Đã đặc tả | `<<extend>>` UC-66 |
-| UC-68 | Mở đối tượng từ thông báo *(Open Notification Target)* | Internal user | Đã đặc tả | `<<extend>>` UC-66 |
+| UC-66 | Xem thông báo *(View Notifications)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | Nền |
+| UC-67 | Đánh dấu đã đọc *(Mark Notifications as Read)* — gồm UC-67a Một thông báo, UC-67b Tất cả | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-66 |
+| UC-68 | Mở đối tượng từ thông báo *(Open Notification Target)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-66 |
 
 ## FE-14 — Dashboard cá nhân & Không gian họp *(Personal Dashboard & Meeting Workspace)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-69 | Xem dashboard cá nhân & không gian họp *(View Personal Dashboard & Meeting Workspace)* | Internal user | Placeholder | Độc lập |
+| UC-69 | Xem dashboard cá nhân & không gian họp *(View Personal Dashboard & Meeting Workspace)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Placeholder | Độc lập |
 
 ## FE-15 — Báo cáo & Thống kê *(Reporting & Statistics)*
 
@@ -348,7 +357,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-05 | Agenda Management | 5 | 4 |
 | FE-06 | Meeting Participant Management | 6 | 3 |
 | FE-07 | Personal Document Library & Meeting Document Management | 8 | 13 |
-| FE-08 | Online Meeting Room Management | 7 | 4 |
+| FE-08 | Online Meeting Room Management | 8 | 4 |
 | FE-09 | Meeting Recording | 3 | 8 |
 | FE-10 | Transcription, Speaker Identification & Meeting Summary | 8 | 13 |
 | FE-11 | Voting Management | 7 | 4 |
@@ -356,7 +365,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **80** | **59** |
+| **Tổng** | | **81** | **59** |
 
 # 8. Ngoài phạm vi UC
 

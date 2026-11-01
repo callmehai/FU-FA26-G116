@@ -42,17 +42,20 @@ Markdown snapshot của Report 1–7.
 ## Quy trình một lần sửa
 
 1. Sửa DOCX trong `source/`. Không sửa tay Markdown snapshot.
-2. Sinh lại snapshot:
+2. **Kiểm tra DOCX mở được và đúng font:** `python scripts/check_docx.py docs/08-reports/source/<tên>.docx`
+   (xem [Kiểm tra DOCX mở được trong Word](#kiểm-tra-docx-mở-được-trong-word)). Với Report 3 chạy
+   thêm `--fix-fonts` để đưa mọi font về Times New Roman. Phải ra `OK` trước khi sang bước sau.
+3. Sinh lại snapshot:
    `python scripts/sync_reports.py --source docs/08-reports/source/<tên>.docx --report <số>`
-3. Rà `git diff -- docs/08-reports`, chắc diff chỉ nằm trong vùng vừa sửa.
-4. **Khi được yêu cầu phát hành** (không tự động, không bắt buộc mỗi lần sửa):
+4. Rà `git diff -- docs/08-reports`, chắc diff chỉ nằm trong vùng vừa sửa.
+5. **Khi được yêu cầu phát hành** (không tự động, không bắt buộc mỗi lần sửa):
    - `python scripts/push_reports.py <số> --check` — xem Drive đang lệch bao nhiêu;
    - `python scripts/push_reports.py <số>` — dry run, in ra file đích;
    - `python scripts/push_reports.py <số> --confirm` — ghi đè nội dung, giữ nguyên ID/link;
    - `python scripts/push_reports.py <số> --check` — phải ra `UP TO DATE`.
    `<số>` nhận `1`–`4`, `5.0`, `5.2`; `minutes` cho cả thư mục biên bản họp; `all` cho mọi đích.
    Biên bản họp là file mới mỗi buổi nên `minutes` tạo file còn thiếu thay vì thay nội dung file cũ.
-5. Push cần credential Drive trong môi trường, scope `https://www.googleapis.com/auth/drive`:
+6. Push cần credential Drive trong môi trường, scope `https://www.googleapis.com/auth/drive`:
    - **Refresh token — làm một lần, khuyến nghị.** Tạo OAuth client loại *Desktop app* trong Google
      Cloud project có bật Drive API, đặt `GOOGLE_DRIVE_CLIENT_ID` và `GOOGLE_DRIVE_CLIENT_SECRET`,
      rồi chạy `python scripts/google_drive_token.py`. Script mở trình duyệt, in refresh token kèm
@@ -80,6 +83,40 @@ Markdown snapshot của Report 1–7.
   cách kết thúc hoặc tiếp tục use case.
 - Với report khác Report 3, giữ style sẵn có của report đó. Không áp style UC-23a hoặc Times New
   Roman sang tài liệu khác nếu chưa được yêu cầu.
+
+## Kiểm tra DOCX mở được trong Word
+
+Sau **mọi** lần sửa hoặc merge một DOCX trong `source/`, chạy trước khi báo xong, trước khi commit
+và trước khi đẩy Drive:
+
+```powershell
+python scripts/check_docx.py                                               # mọi DOCX trong source/
+python scripts/check_docx.py docs/08-reports/source/<tên>.docx             # một file
+```
+
+Lệnh in `OK` hoặc `FAIL` kèm lý do cho từng file, và trả mã thoát 1 khi có lỗi. Nó bắt các lỗi làm
+Word hiện hộp "Word found unreadable content … Do you want to recover": zip hỏng, XML sai cú pháp,
+`mc:Ignorable` nêu prefix mà thẻ gốc không khai báo, prefix dùng mà không khai báo, bookmark hoặc
+`wp:docPr` trùng id, `w14:paraId` vượt `0x7FFFFFFF`, và relationship trỏ tới mục không có.
+
+- **Font của Report 3 phải là Times New Roman.** Với Report 3, lệnh trên còn báo `FAIL` khi có run
+  hoặc style dùng font khác (dán từ web hoặc email, style của Word, `asciiTheme`). Sửa bằng
+  `python scripts/check_docx.py --fix-fonts`, lệnh đưa font về Times New Roman rồi kiểm tra lại.
+  Ký hiệu công thức và bullet (`Cambria Math`, `Symbol`, `Wingdings`) được giữ nguyên. Các report
+  khác giữ font riêng, script không đụng tới. Lưu lại bằng Word có thể bỏ các font nhúng lẻ
+  (Cardo, Georgia…); không sao vì Times New Roman có sẵn trên máy.
+- **Lỗi hay gặp nhất: merge hoặc script ghi lại `word/document.xml`.** Công cụ ghi lại làm rơi các
+  `xmlns:*` trên thẻ gốc `<w:document>` trong khi `mc:Ignorable` vẫn nêu `w15 w16se w16cid …`; Word
+  coi cả file là hỏng. Cách sửa: chép nguyên thẻ gốc từ một bản DOCX còn tốt (bản trước merge), giữ
+  nguyên thân tài liệu. Đừng chỉ chạy `testzip` hay mở bằng `python-docx` rồi kết luận file tốt:
+  cả hai đều không bắt được lỗi này.
+- **Sau khi merge DOCX (git merge hoặc xử lý conflict nhị phân), kiểm tra lại dù không sửa gì.**
+  Git không gộp được DOCX; người merge thường chọn một bản rồi dán phần còn lại bằng script, đúng
+  chỗ dễ sinh lỗi trên.
+- Trên máy có Word, mở file thật một lần cho chắc. Kiểm tra bằng script là điều kiện cần, không thay
+  được việc nhìn trang.
+- Lỗi mà `check_docx.py` không có trong danh sách thì mở bằng Word, ghi nguyên nhân vào đây và thêm
+  vào script trong cùng commit.
 
 ## Bảo toàn DOCX
 

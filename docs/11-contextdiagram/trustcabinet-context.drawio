@@ -31,13 +31,13 @@
         <mxCell id="E07" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Guest" vertex="1">
           <mxGeometry height="140" width="400" x="2750" y="3600" as="geometry" />
         </mxCell>
-        <mxCell id="E08" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Google Identity Provider" vertex="1">
+        <mxCell id="E08" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="OAuth Provider" vertex="1">
           <mxGeometry height="140" width="400" x="4340" y="1220" as="geometry" />
         </mxCell>
-        <mxCell id="E09" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="AI Provider" vertex="1">
+        <mxCell id="E09" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Google AI Provider" vertex="1">
           <mxGeometry height="140" width="400" x="4330" y="1720" as="geometry" />
         </mxCell>
-        <mxCell id="E10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Email / SMTP Service" vertex="1">
+        <mxCell id="E10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Resend Email" vertex="1">
           <mxGeometry height="140" width="400" x="4310" y="2500" as="geometry" />
         </mxCell>
         <mxCell id="E01-in" data-flow-ids="A01 A02 A03 C01 C03 K02" edge="1" parent="1" source="E01" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.6000000000;exitY=1.0000000000;exitPerimeter=0;entryX=0.7485989775;entryY=0.0661814338;entryPerimeter=0;" target="TC" value="&lt;div style=&quot;width:630px;text-align:left;line-height:1.22;&quot;&gt;&lt;font style=&quot;font-size: 42px;&quot;&gt;Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;User, role &amp;amp; permission data&lt;br&gt;Audit search criteria&lt;/font&gt;&lt;/div&gt;">
@@ -328,6 +328,35 @@
         <mxCell id="XrI3U0wopgR4zhom4ko2-6" connectable="0" parent="E10-out" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Email delivery data&lt;/font&gt;&lt;/span&gt;" vertex="1">
           <mxGeometry relative="1" x="-0.2823" y="8" as="geometry">
             <mxPoint x="-25" y="-2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="E11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Cloudflare R2" vertex="1">
+          <mxGeometry height="140" width="400" x="4310" y="2880" as="geometry" />
+        </mxCell>
+        <mxCell id="E11-out" data-flow-ids="F01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0.941;exitY=0.735;exitPerimeter=0;exitDx=0;exitDy=0;entryX=0;entryY=0.7;entryDx=0;entryDy=0;" target="E11" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2825" y="2050" />
+              <mxPoint x="2825" y="2978" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="E11-out-label" connectable="0" parent="E11-out" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Files to store&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.76" y="0" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="E11-in" data-flow-ids="F02" edge="1" parent="1" source="E11" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=26;align=left;verticalAlign=middle;labelBackgroundColor=#ffffff;exitX=0;exitY=0.2857142857;exitDx=0;exitDy=0;entryX=0.9635;entryY=0.687;entryPerimeter=0;" target="TC" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2870" y="2920" />
+              <mxPoint x="2870" y="2009" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="E11-in-label" connectable="0" parent="E11-in" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;span style=&quot;color: rgb(17, 17, 17); font-family: Arial; text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 56px;&quot;&gt;Stored files&lt;/font&gt;&lt;/span&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.41" y="0" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
           </mxGeometry>
         </mxCell>
       </root>
