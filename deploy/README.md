@@ -2,7 +2,7 @@
 
 Một bản TrustCabinet chạy 24/7 để cả nhóm (Tester, BA, giảng viên) mở bằng trình duyệt, không cần
 cài gì. Chạy trên **một máy AWS Lightsail** bằng Docker Compose: app, PostgreSQL, Redis, LiveKit (phòng
-họp trực tuyến), Caddy (tự lấy chứng chỉ HTTPS), và máy chuyển chữ (trên server nếu máy đủ 4 GB RAM, hoặc trên máy của nhóm qua Tailscale, §10). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
+họp trực tuyến), Caddy (tự lấy chứng chỉ HTTPS), và máy chuyển chữ (§10). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
 này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 
 > **Đây là môi trường test, không phải production.** App chạy ở chế độ `Development`: tự migrate,
@@ -31,11 +31,22 @@ phần: `chutoa@` (chủ toạ), `thuky@` (thư ký), `thanhvien@` (thành viên
 họp**, cho trình duyệt dùng micro và camera. Muốn thấy nhau thì mỗi người một cửa sổ, đăng nhập bằng
 một tài khoản khác nhau.
 
-- Server nhỏ (1 GB RAM, CPU chia sẻ): thử với **khoảng 5–6 người bật camera** là vừa, đừng mời cả
-  lớp vào một lúc.
+- Server có 4 GB RAM nhưng chỉ 2 vCPU chia sẻ, và **chưa đo sức chịu tải** (mục dưới). Tạm thử với
+  **khoảng 5–6 người bật camera**, đừng mời cả lớp vào một lúc. Đang chuyển chữ một bản ghi dài thì
+  phòng họp có thể giật.
 - Media đi thẳng tới server qua cổng **7882/UDP**, mạng chặn UDP thì qua **7881/TCP**. Wi-Fi công ty
   hay trường học chặn cả hai thì không vào được phòng (vẫn dùng được các màn khác); khi đó dùng 4G
   hoặc mạng nhà. Server test không có TURN qua cổng 443.
+
+### Sức chịu tải: chưa đo
+
+Con số 5–6 người ở trên là ước lượng. Cần benchmark trên máy 4 GB để trả lời:
+
+- Họp trực tuyến: bao nhiêu người cùng **bật camera**, bao nhiêu người **chỉ bật micro**.
+- Ghi âm: bao nhiêu người được **ghi theo micro** cùng lúc, bao nhiêu bản ghi **chuyển chữ** cùng lúc.
+- Bao nhiêu cuộc họp **trực tiếp** và bao nhiêu cuộc họp **trực tuyến** chạy cùng lúc.
+
+Đo đến khi CPU hoặc RAM chạm trần, hình hoặc tiếng bắt đầu giật, hoặc trang chậm hẳn.
 
 Server chạy đúng code của `main`. Merge PR xong khoảng 10 phút (CI rồi deploy) là bản mới lên server;
 tính năng chưa merge thì chưa có.
@@ -45,8 +56,8 @@ tính năng chưa merge thì chưa có.
 [.github/workflows/deploy.yml](../.github/workflows/deploy.yml) là job cuối của CI trên `main`, chạy
 khi build & test đã xanh (hoặc được bỏ qua vì commit không đụng tới): build image trên runner của
 GitHub, chép sang server qua SSH, đưa code trên server về đúng commit đó rồi khởi động lại container.
-App tự áp dụng migration mới khi khởi động. Không build trên server: máy 1 GB tự build mất 15–20 phút
-và đốt hết CPU burst.
+App tự áp dụng migration mới khi khởi động. Không build trên server: tự build trên máy 1 GB mất 15–20 phút
+và đốt hết CPU burst; máy 4 GB vẫn chỉ có 2 vCPU burst.
 
 Mỗi image chỉ build lại khi code của nó đổi: image app theo `backend/`, `frontend/` và `Dockerfile`,
 máy chuyển chữ theo `workers/speech/`. Commit chỉ sửa docs hay `deploy/` vẫn deploy (server chuyển
@@ -148,8 +159,9 @@ Lightsail → **Create instance**:
 
 - Location: **Singapore**.
 - Platform **Linux operating system**, blueprint **Ubuntu 24.04 LTS**.
-- Plan **General purpose**, network **Dual-stack**, size **$7** (1 GB RAM, 2 vCPU). Tài khoản AWS mới
-  bị Lightsail chặn các gói lớn hơn; muốn lớn hơn thì gửi case *Account and billing* cho AWS Support.
+- Plan **General purpose**, network **Dual-stack**, size **$24** (4 GB RAM, 2 vCPU) để chạy được máy chuyển
+  chữ (§10 cách A); chỉ cần web và phòng họp thì **$7** (1 GB) là đủ. Tài khoản AWS mới có thể bị Lightsail
+  chặn gói lớn hơn $7; khi đó gửi case *Account and billing* cho AWS Support.
 - Đặt tên `trustcabinet`, bỏ qua snapshot, tag, advanced settings → **Create instance**.
 
 ### 2. Mạng
@@ -175,7 +187,7 @@ miễn phí trả về IP nằm ngay trong tên: IP `13.250.1.2` → `13-250-1-2
 Terminal của server (**Connect using SSH**):
 
 ```bash
-# 4 GB swap: máy chỉ có 1 GB RAM
+# 4 GB swap: đỡ cho máy khi RAM đầy
 sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile
 sudo mkswap /swapfile && sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
@@ -303,7 +315,8 @@ Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/202
 Chuyển bản ghi thành chữ, Voice ID và ghi theo micro từng người đều cần worker nhận dạng giọng nói
 ([`workers/speech`](../workers/speech/README.md), [ADR-0026](../docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)).
 Chưa bật thì app vẫn chạy, các chức năng đó báo `MSG312`. Worker cần khoảng 2,5 GB RAM, máy $7 (1 GB) **không chạy
-nổi**: bật trên máy 1 GB thì server hết RAM. Có hai cách, chỉ khác nhau ở `deploy/.env`.
+nổi**: bật trên máy 1 GB thì server hết RAM. Có hai cách, chỉ khác nhau ở `deploy/.env`. Server test chạy
+**cách A** từ 01/11/2026.
 
 Dù chọn cách nào, đặt khoá mã hoá giọng mẫu **một lần** rồi giữ nguyên (đổi khoá là mất mọi giọng mẫu đã lưu):
 
@@ -315,11 +328,14 @@ echo "VOICE_ID_KEY=$(openssl rand -base64 32)" >> ~/TrustCabinet/deploy/.env
 
 Âm thanh không rời server; worker không mở cổng, chỉ app gọi vào trong mạng Docker.
 
-1. **Lên máy 4 GB**: Lightsail → máy `trustcabinet` → **Snapshots → Create snapshot**. Từ snapshot
-   đó → **Create new instance**, chọn size **$24** (4 GB). Lightsail không đổi size tại chỗ. Tài khoản bị chặn
-   gói này thì gửi case *Account and billing* cho AWS Support (xem §1).
-2. **Chuyển IP tĩnh** sang máy mới: **Networking → IP tĩnh → Attach** vào máy mới. Tên miền giữ nguyên.
-   Mở lại firewall như §2 (máy mới tạo từ snapshot không mang theo firewall).
+1. **Lên máy 4 GB**: Lightsail → máy `trustcabinet` → **Stop**, rồi **Snapshots → Create snapshot**. Dừng
+   máy trước để PostgreSQL ghi xong xuống đĩa. Từ **đúng snapshot vừa chụp** (xem ngày: tạo nhầm từ snapshot cũ
+   là mất dữ liệu từ ngày đó tới nay) → **Create new instance**, chọn size **$24** (4 GB). Lightsail không đổi
+   size tại chỗ. Tài khoản bị chặn gói này thì gửi case *Account and billing* cho AWS Support (xem §1).
+2. **Chuyển IP tĩnh** sang máy mới: menu trái **Networking** → IP tĩnh → **Detach** khỏi máy cũ → **Attach**
+   vào máy mới. Tên miền giữ nguyên. Mở lại firewall như §2 (máy mới tạo từ snapshot không mang theo firewall).
+   Máy mới có **SSH host key mới**: cập nhật secret `DEPLOY_HOST_KEY` như bước 3 của *Thiết lập một lần*, không
+   thì deploy báo `REMOTE HOST IDENTIFICATION HAS CHANGED`.
 3. Trên máy mới, thêm vào `deploy/.env`:
 
    ```bash
@@ -327,10 +343,10 @@ echo "VOICE_ID_KEY=$(openssl rand -base64 32)" >> ~/TrustCabinet/deploy/.env
    SPEECH_URL=http://speech:8090
    ```
 
-4. GitHub → **Actions → Deploy server test → Run workflow**. Lần đầu workflow build image worker (~770 MB) rồi
+4. GitHub → **Actions → Deploy server test → Run workflow**. Lần đầu workflow build image worker (~950 MB) rồi
    chép sang, mất thêm vài phút. Các lần sau chỉ chép lại khi `workers/speech` đổi. Bước *Kiểm tra máy chuyển
    chữ* xanh là xong.
-5. Xoá máy 1 GB cũ khi máy mới đã chạy ổn, để không bị tính tiền hai máy.
+5. Xoá máy 1 GB cũ và các snapshot khi máy mới đã chạy ổn: máy đã Stop và snapshot vẫn bị tính tiền.
 
 CPU của Lightsail là loại *burst*: chạy hết công suất được trong thời gian ngắn, chạy liên tục thì bị giới hạn.
 Một câu nói chuyển chữ trong vài giây. Một bản ghi dài chạy chậm dần, và lúc đó phòng họp cũng có thể giật.
