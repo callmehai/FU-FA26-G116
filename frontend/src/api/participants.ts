@@ -78,3 +78,7 @@ export const revokeGuest = (meetingId: string, revision: string, invitationId: s
  */
 export const respondToInvitation = (meetingId: string, response: 'Accepted' | 'Declined') =>
   api.put<InvitationResponseResult>(`${base(meetingId)}/invitation-response`, { response })
+
+/** The caller's own invitation and whether they may still answer it, from Published on. Used by a guest (UC-04). */
+export const getMyInvitationResponse = (meetingId: string) =>
+  api.get<InvitationResponseResult['response']>(`${base(meetingId)}/invitation-response`)

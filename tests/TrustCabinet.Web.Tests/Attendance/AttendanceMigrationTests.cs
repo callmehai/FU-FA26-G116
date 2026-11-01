@@ -47,14 +47,20 @@ public sealed class AttendanceMigrationTests
             var property = db.Model.FindEntityType(type)!.FindProperty("AttendanceVersion")!;
             Assert.False(property.IsConcurrencyToken); Assert.Equal(typeof(long), property.ClrType);
         }
-        var row = await db.MeetingParticipants.SingleAsync(); var guest = await db.MeetingGuestInvitations.SingleAsync();
-        Assert.Equal(0, row.AttendanceVersion); Assert.Equal(0, guest.AttendanceVersion);
-        Assert.Equal("Excused", row.Attendance.ToString()); Assert.Equal("Absent", guest.Attendance.ToString());
+        // The guest row is read with SQL: the entity has gained columns this older schema does not have.
+        var row = await db.MeetingParticipants.SingleAsync();
+        Assert.Equal(0, row.AttendanceVersion); Assert.Equal(0L, await GuestVersion());
+        Assert.Equal("Excused", row.Attendance.ToString());
+        Assert.Equal("Absent", await db.Database.SqlQuery<string>($"SELECT attendance AS \"Value\" FROM meeting_guest_invitations WHERE id = {g}").SingleAsync());
         Assert.Equal(user.Id, row.AttendanceRecordedById); Assert.Equal(now, row.AttendanceRecordedAt);
-        Assert.Equal("Declined", row.Response.ToString()); Assert.Equal("Accepted", guest.Response.ToString());
+        Assert.Equal("Declined", row.Response.ToString());
+        Assert.Equal("Accepted", await db.Database.SqlQuery<string>($"SELECT response AS \"Value\" FROM meeting_guest_invitations WHERE id = {g}").SingleAsync());
         await db.GetService<IMigrator>().MigrateAsync(previous);
         Assert.Equal("Excused", await db.Database.SqlQuery<string>($"SELECT attendance AS \"Value\" FROM meeting_participants WHERE id = {p}").SingleAsync());
         await db.GetService<IMigrator>().MigrateAsync(db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last()); db.ChangeTracker.Clear();
-        Assert.Equal(0, (await db.MeetingGuestInvitations.SingleAsync()).AttendanceVersion);
+        Assert.Equal(0L, await GuestVersion());
+
+        Task<long> GuestVersion() => db.Database
+            .SqlQuery<long>($"SELECT attendance_version AS \"Value\" FROM meeting_guest_invitations WHERE id = {g}").SingleAsync();
     }
 }

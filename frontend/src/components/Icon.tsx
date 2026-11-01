@@ -8,6 +8,7 @@ import {
   RotateCw,
   UserRoundSearch,
   VolumeX,
+  Vote,
   Captions,
   ArrowRight,
   LogIn,
@@ -203,6 +204,8 @@ const ICONS = {
   // SCRUM-25: drag an agenda item; an item that has a conclusion.
   grip: GripVertical,
   clipboardCheck: ClipboardCheck,
+  // SCRUM-28: votes during the meeting.
+  vote: Vote,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

@@ -5,6 +5,7 @@ using TrustCabinet.Infrastructure;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Web.Endpoints;
+using TrustCabinet.Domain.GuestAccess;
 
 namespace TrustCabinet.Web;
 
@@ -63,7 +64,7 @@ public sealed class MeetingHub(IMeetingRepository meetings, IMeetingGuestIdentit
         if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, Context.ConnectionAborted))
             return false;
         var meeting = await meetings.FindWorkflowAsync(meetingId, ct: Context.ConnectionAborted);
-        return meeting is not null && AgendaRules.GuestCanViewMeeting(meeting.Status);
+        return meeting is not null && GuestAccessRules.MeetingOpen(meeting.Status);
     }
 }
 
@@ -91,7 +92,7 @@ public sealed class AgendaChangePublisher(IHubContext<MeetingHub> hub, IMeetingR
         var active = await db.Users.AsNoTracking().Where(u => candidates.Contains(u.Id) && u.IsActive)
             .Select(u => u.Id).ToListAsync(ct);
         var groups = active.Select(actor => MeetingHub.Group(meeting.Id, actor)).ToList();
-        if (AgendaRules.GuestCanViewMeeting(meeting.Status))
+        if (GuestAccessRules.MeetingOpen(meeting.Status))
         {
             var readers = await guests.ListReadersAsync(meeting.Id, ct);
             groups.AddRange(readers.Where(g => g.IsValid && g.MeetingId == meeting.Id)

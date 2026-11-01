@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
 
@@ -10,12 +11,14 @@ namespace TrustCabinet.Infrastructure.Calls;
 
 /// <summary>
 /// Meeting call room rules (SCRUM-39, SCRUM-41): who may enter, chair mute, and keeping
-/// <c>call_sessions</c>/<c>call_participants</c> in step with what LiveKit reports.
+/// <c>call_sessions</c>/<c>call_participants</c> in step with what LiveKit reports. Verified guests (SCRUM-59)
+/// enter like members — same grants, no chair mute — under a <see cref="CallMember"/> identity of their own.
 /// </summary>
 public sealed class CallRoomService(
     ICallRepository calls,
     ILiveKitGateway liveKit,
     IOptions<LiveKitOptions> options,
+    IAuditService audit,
     ILogger<CallRoomService> logger,
     TimeProvider? timeProvider = null) : ICallRoomService
 {
@@ -33,12 +36,12 @@ public sealed class CallRoomService(
         if (session is not null) await calls.EndSessionAsync(session.Id, closedAt, ct);
     }
 
-    public async Task<CallResult<CallRoomView>> GetRoomAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
+    public async Task<CallResult<CallRoomView>> GetRoomAsync(Guid meetingId, CallCaller caller, CancellationToken ct = default)
     {
         CallRoomAccess? access;
         try
         {
-            access = await calls.FindRoomAccessAsync(meetingId, actorId, ct);
+            access = await FindAccessAsync(meetingId, caller, ct);
         }
         catch (Exception error) when (IsDatabaseFailure(error))
         {
@@ -69,12 +72,13 @@ public sealed class CallRoomService(
         return CallResult<CallRoomView>.Ok(new CallRoomView(meetingId, status, access.Role, liveKit.IsConfigured, count));
     }
 
-    public async Task<CallResult<CallJoinTicket>> JoinAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
+    public async Task<CallResult<CallJoinTicket>> JoinAsync(
+        Guid meetingId, CallCaller caller, bool recordingNoticeAcknowledged = false, CancellationToken ct = default)
     {
         CallRoomAccess? access;
         try
         {
-            access = await calls.FindRoomAccessAsync(meetingId, actorId, ct);
+            access = await FindAccessAsync(meetingId, caller, ct);
         }
         catch (Exception error) when (IsDatabaseFailure(error))
         {
@@ -102,14 +106,38 @@ public sealed class CallRoomService(
             return CallResult<CallJoinTicket>.Fail(CallOutcome.NotConfigured);
         }
 
-        // Nothing is written here: the session starts when LiveKit reports the person actually in.
+        var member = MemberOf(meetingId, caller)!.Value;
+        if (caller.Guest is { } guest)
+        {
+            // A guest has no account consent behind them: the recording notice is confirmed on the pre-join screen
+            // and kept as evidence before any token exists (SCRUM-59). The audit row also carries the guest's IP.
+            if (!recordingNoticeAcknowledged)
+            {
+                return CallResult<CallJoinTicket>.Fail(CallOutcome.RecordingNoticeRequired);
+            }
+
+            try
+            {
+                await audit.RecordAsync(AuditActions.CallGuestAdmitted, AuditActions.GuestSessionObjectType, guest.SessionId,
+                    actorId: null,
+                    new { meetingId, invitationId = guest.InvitationId, displayName = access.FullName, recordingNoticeAcknowledged = true },
+                    ct);
+            }
+            catch (Exception error) when (IsDatabaseFailure(error))
+            {
+                logger.LogError(error, "Could not record the admission of guest session {SessionId}", guest.SessionId);
+                return CallResult<CallJoinTicket>.Fail(CallOutcome.ReadFailed);
+            }
+        }
+
+        // Nothing else is written here: the session starts when LiveKit reports the person actually in.
         var metadata = JsonSerializer.Serialize(new { meetingRole = access.Role.ToString() });
         return CallResult<CallJoinTicket>.Ok(liveKit.CreateJoinTicket(
-            CallRoomNames.ForMeeting(meetingId), actorId, access.FullName, metadata,
+            CallRoomNames.ForMeeting(meetingId), member.Identity, access.FullName, metadata,
             TimeSpan.FromMinutes(Math.Clamp(options.Value.TokenTtlMinutes, 1, 60))));
     }
 
-    public async Task<CallOutcome> MuteAsync(Guid meetingId, Guid actorId, Guid targetUserId, CancellationToken ct = default)
+    public async Task<CallOutcome> MuteAsync(Guid meetingId, Guid actorId, CallMember target, CancellationToken ct = default)
     {
         CallRoomAccess? access;
         try
@@ -145,9 +173,9 @@ public sealed class CallRoomService(
         var room = CallRoomNames.ForMeeting(meetingId);
         try
         {
-            var target = (await liveKit.ListParticipantsAsync(room, ct))
-                .FirstOrDefault(p => p.Identity == targetUserId.ToString("D"));
-            var microphone = target?.Tracks.FirstOrDefault(t => t.Source == CallTrackSource.Microphone);
+            var participant = (await liveKit.ListParticipantsAsync(room, ct))
+                .FirstOrDefault(p => p.Identity == target.Identity);
+            var microphone = participant?.Tracks.FirstOrDefault(t => t.Source == CallTrackSource.Microphone);
             if (microphone is null)
             {
                 return CallOutcome.TargetNotInRoom;
@@ -156,14 +184,14 @@ public sealed class CallRoomService(
             // Mute only, never unmute: nobody gets their microphone switched on by someone else.
             if (!microphone.Muted)
             {
-                await liveKit.MuteTrackAsync(room, target!.Identity, microphone.Sid, ct);
+                await liveKit.MuteTrackAsync(room, participant!.Identity, microphone.Sid, ct);
             }
 
             return CallOutcome.Success;
         }
         catch (LiveKitUnavailableException error)
         {
-            logger.LogWarning(error, "Could not mute {UserId} in meeting {MeetingId}", targetUserId, meetingId);
+            logger.LogWarning(error, "Could not mute {Identity} in meeting {MeetingId}", target.Identity, meetingId);
             return CallOutcome.ProviderFailed;
         }
     }
@@ -179,21 +207,28 @@ public sealed class CallRoomService(
         switch (webhook.Event)
         {
             case "participant_joined":
-                if (TryUser(webhook, out var joiner))
+                if (CallMember.TryParse(webhook.ParticipantIdentity, out var joiner))
                 {
                     var joinedAt = webhook.ParticipantJoinedAt ?? webhook.CreatedAt;
-                    var session = await calls.EnsureActiveRoomSessionAsync(meetingId, joiner, joinedAt, ct);
+                    var session = await calls.EnsureActiveRoomSessionAsync(meetingId, joiner.UserId, joinedAt, ct);
                     await calls.RecordJoinAsync(session.Id, joiner, joinedAt, ct);
 
                     // A join ticket outlives the meeting by up to its TTL, and LiveKit recreates a
                     // deleted room for whoever still holds one. Close it again now (UC-22, BR-143)
                     // instead of at the next reconciliation; the stint above records the visit.
-                    if (await calls.FindRoomAccessAsync(meetingId, joiner, ct) is { } access
-                        && CallRoomRules.StatusOf(access.Status, access.Mode) != CallRoomStatus.Open)
+                    var access = await FindAccessAsync(meetingId, joiner, ct);
+                    if (access is not null && CallRoomRules.StatusOf(access.Status, access.Mode) != CallRoomStatus.Open)
                     {
-                        logger.LogInformation("Closing {Room} again: {UserId} joined after it closed", webhook.RoomName, joiner);
+                        logger.LogInformation("Closing {Room} again: {Identity} joined after it closed", webhook.RoomName, joiner.Identity);
                         await liveKit.DeleteRoomAsync(webhook.RoomName!, ct);
                         await calls.EndSessionAsync(session.Id, UtcNow, ct);
+                    }
+                    else if (access is null && joiner.IsGuest && options.Value.EnforceRoster)
+                    {
+                        // The same old ticket, held by a guest whose session or invitation has ended since:
+                        // guests lose the meeting entirely, so there is no room status to read; just take them out.
+                        logger.LogInformation("Removing {Identity} from {Room}: guest access ended", joiner.Identity, webhook.RoomName);
+                        await liveKit.RemoveParticipantAsync(webhook.RoomName!, joiner.Identity, ct);
                     }
                 }
 
@@ -201,7 +236,7 @@ public sealed class CallRoomService(
 
             case "participant_left":
             case "participant_connection_aborted":
-                if (TryUser(webhook, out var leaver)
+                if (CallMember.TryParse(webhook.ParticipantIdentity, out var leaver)
                     && await calls.FindActiveRoomSessionAsync(meetingId, ct) is { } open)
                 {
                     await calls.RecordLeaveAsync(open.Id, leaver, webhook.CreatedAt, ct);
@@ -248,10 +283,27 @@ public sealed class CallRoomService(
         }
     }
 
+    public async Task EnforceRoomAccessAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        if (!liveKit.IsConfigured)
+        {
+            return;
+        }
+
+        // ponytail: lists every active room to find one; a by-meeting query if rooms ever number in the hundreds.
+        // No active session means nobody is known to be in the room (a Published meeting, an empty room): nothing to
+        // take anyone out of, so LiveKit is not called. A room whose joins were all lost is the janitor's.
+        if ((await calls.ListActiveRoomSessionsAsync(ct)).FirstOrDefault(s => s.MeetingId == meetingId) is { } session)
+        {
+            await ReconcileRoomAsync(meetingId, session, UtcNow, ct);
+        }
+    }
+
     private async Task ReconcileRoomAsync(Guid meetingId, ActiveRoomSession? session, DateTimeOffset now, CancellationToken ct)
     {
         var room = CallRoomNames.ForMeeting(meetingId);
-        var allowed = await calls.ListAllowedUserIdsAsync(meetingId, ct);
+        var allowedUsers = await calls.ListAllowedUserIdsAsync(meetingId, ct);
+        var allowedGuests = await calls.ListAllowedGuestSessionIdsAsync(meetingId, ct);
         var live = await liveKit.ListParticipantsAsync(room, ct);
 
         // A meeting that left InProgress (or was switched to in-person) closes its room.
@@ -263,10 +315,11 @@ public sealed class CallRoomService(
             return;
         }
 
-        var present = new List<RoomParticipant>();
+        var present = new List<(RoomParticipant Participant, CallMember Member)>();
         foreach (var participant in live)
         {
-            var isMember = Guid.TryParse(participant.Identity, out var userId) && allowed.Contains(userId);
+            var isMember = CallMember.TryParse(participant.Identity, out var member)
+                && (member.GuestSessionId is { } guest ? allowedGuests.Contains(guest) : allowedUsers.Contains(member.UserId!.Value));
             if (!isMember && options.Value.EnforceRoster)
             {
                 logger.LogInformation("Removing {Identity} from {Room}: no longer allowed in", participant.Identity, room);
@@ -276,7 +329,7 @@ public sealed class CallRoomService(
 
             if (isMember)
             {
-                present.Add(participant);
+                present.Add((participant, member));
             }
         }
 
@@ -294,9 +347,9 @@ public sealed class CallRoomService(
                 return;
             }
 
-            var first = present.MinBy(p => p.JoinedAt)!;
-            var created = await calls.EnsureActiveRoomSessionAsync(meetingId, Guid.Parse(first.Identity), first.JoinedAt, ct);
-            session = new ActiveRoomSession(created.Id, meetingId, MeetingStatus.InProgress, MeetingMode.Online, new HashSet<Guid>());
+            var first = present.MinBy(p => p.Participant.JoinedAt);
+            var created = await calls.EnsureActiveRoomSessionAsync(meetingId, first.Member.UserId, first.Participant.JoinedAt, ct);
+            session = new ActiveRoomSession(created.Id, meetingId, MeetingStatus.InProgress, MeetingMode.Online, new HashSet<CallMember>());
         }
 
         if (present.Count == 0 && live.Count == 0)
@@ -305,15 +358,15 @@ public sealed class CallRoomService(
             return;
         }
 
-        var presentIds = present.Select(p => Guid.Parse(p.Identity)).ToHashSet();
-        foreach (var gone in session.OpenUserIds.Where(id => !presentIds.Contains(id)))
+        var presentMembers = present.Select(p => p.Member).ToHashSet();
+        foreach (var gone in session.OpenMembers.Where(m => !presentMembers.Contains(m)))
         {
             await calls.RecordLeaveAsync(session.SessionId, gone, now, ct);
         }
 
-        foreach (var participant in present.Where(p => !session.OpenUserIds.Contains(Guid.Parse(p.Identity))))
+        foreach (var (participant, member) in present.Where(p => !session.OpenMembers.Contains(p.Member)))
         {
-            await calls.RecordJoinAsync(session.SessionId, Guid.Parse(participant.Identity), participant.JoinedAt, ct);
+            await calls.RecordJoinAsync(session.SessionId, member, participant.JoinedAt, ct);
         }
     }
 
@@ -338,8 +391,19 @@ public sealed class CallRoomService(
         }
     }
 
-    private static bool TryUser(CallWebhookEvent webhook, out Guid userId)
-        => Guid.TryParseExact(webhook.ParticipantIdentity, "D", out userId);
+    /// <summary>The caller as a room member; null for a guest token of another meeting, which is answered as 404.</summary>
+    private static CallMember? MemberOf(Guid meetingId, CallCaller caller)
+        => caller.Guest is { } guest
+            ? guest.IsValid && guest.MeetingId == meetingId ? CallMember.Guest(guest.SessionId) : null
+            : CallMember.User(caller.UserId ?? throw new ArgumentException("A caller is a user or a guest.", nameof(caller)));
+
+    private Task<CallRoomAccess?> FindAccessAsync(Guid meetingId, CallCaller caller, CancellationToken ct)
+        => MemberOf(meetingId, caller) is { } member ? FindAccessAsync(meetingId, member, ct) : Task.FromResult<CallRoomAccess?>(null);
+
+    private Task<CallRoomAccess?> FindAccessAsync(Guid meetingId, CallMember member, CancellationToken ct)
+        => member.GuestSessionId is { } guest
+            ? calls.FindGuestRoomAccessAsync(meetingId, guest, ct)
+            : calls.FindRoomAccessAsync(meetingId, member.UserId!.Value, ct);
 
     private static bool IsDatabaseFailure(Exception error)
         => error is DbUpdateException or NpgsqlException or TimeoutException;

@@ -11,6 +11,9 @@ internal sealed class FakeCallRepository : ICallRepository
 
     public Dictionary<Guid, HashSet<Guid>> Allowed { get; } = [];
 
+    /// <summary>Guest sessions with room access, by session id.</summary>
+    public Dictionary<Guid, CallRoomAccess> GuestAccess { get; } = [];
+
     public List<CallSession> Sessions { get; } = [];
 
     public List<CallParticipant> Stints { get; } = [];
@@ -43,11 +46,35 @@ internal sealed class FakeCallRepository : ICallRepository
     public Task<IReadOnlySet<Guid>> ListAllowedUserIdsAsync(Guid meetingId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlySet<Guid>>(Allowed.GetValueOrDefault(meetingId) ?? []);
 
+    /// <summary>A verified, named guest session of the meeting (UC-04); revoke by removing it.</summary>
+    public FakeCallRepository AdmitGuest(
+        Guid meetingId, Guid guestSessionId, MeetingStatus status = MeetingStatus.InProgress, MeetingMode mode = MeetingMode.Online)
+    {
+        GuestAccess[guestSessionId] = new CallRoomAccess(meetingId, status, mode, MeetingRole.Guest, "Khách tự khai");
+        return this;
+    }
+
+    public Task<CallRoomAccess?> FindGuestRoomAccessAsync(Guid meetingId, Guid guestSessionId, CancellationToken ct = default)
+    {
+        if (ReadThrows is { } error)
+        {
+            throw error;
+        }
+
+        return Task.FromResult(GuestAccess.GetValueOrDefault(guestSessionId) is { } access && access.MeetingId == meetingId ? access : null);
+    }
+
+    public Task<IReadOnlySet<Guid>> ListAllowedGuestSessionIdsAsync(Guid meetingId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlySet<Guid>>(GuestAccess
+            .Where(g => g.Value.MeetingId == meetingId && g.Value.Status == MeetingStatus.InProgress && g.Value.Mode != MeetingMode.InPerson)
+            .Select(g => g.Key)
+            .ToHashSet());
+
     public Task<CallSession?> FindActiveRoomSessionAsync(Guid meetingId, CancellationToken ct = default)
         => Task.FromResult(Sessions.SingleOrDefault(s => s.MeetingId == meetingId && s.Status == CallStatus.Active));
 
     public async Task<CallSession> EnsureActiveRoomSessionAsync(
-        Guid meetingId, Guid startedById, DateTimeOffset startedAt, CancellationToken ct = default)
+        Guid meetingId, Guid? startedById, DateTimeOffset startedAt, CancellationToken ct = default)
     {
         if (await FindActiveRoomSessionAsync(meetingId, ct) is { } existing)
         {
@@ -66,19 +93,24 @@ internal sealed class FakeCallRepository : ICallRepository
         return session;
     }
 
-    public Task RecordJoinAsync(Guid sessionId, Guid userId, DateTimeOffset joinedAt, CancellationToken ct = default)
+    public Task RecordJoinAsync(Guid sessionId, CallMember member, DateTimeOffset joinedAt, CancellationToken ct = default)
     {
-        if (!Stints.Any(p => p.CallSessionId == sessionId && p.UserId == userId && p.LeftAt == null))
+        if (!Stints.Any(p => p.CallSessionId == sessionId && Of(p) == member && p.LeftAt == null))
         {
-            Stints.Add(new CallParticipant { CallSessionId = sessionId, UserId = userId, JoinedAt = joinedAt });
+            Stints.Add(new CallParticipant
+            {
+                CallSessionId = sessionId, UserId = member.UserId, GuestSessionId = member.GuestSessionId, JoinedAt = joinedAt,
+            });
         }
 
         return Task.CompletedTask;
     }
 
-    public Task RecordLeaveAsync(Guid sessionId, Guid userId, DateTimeOffset leftAt, CancellationToken ct = default)
+    private static CallMember Of(CallParticipant stint) => new(stint.UserId, stint.GuestSessionId);
+
+    public Task RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default)
     {
-        foreach (var stint in Stints.Where(p => p.CallSessionId == sessionId && p.UserId == userId && p.LeftAt == null))
+        foreach (var stint in Stints.Where(p => p.CallSessionId == sessionId && Of(p) == member && p.LeftAt == null))
         {
             stint.LeftAt = leftAt;
         }
@@ -110,7 +142,7 @@ internal sealed class FakeCallRepository : ICallRepository
                     s.MeetingId!.Value,
                     MeetingStatusOf(s.MeetingId!.Value),
                     status?.Mode ?? MeetingMode.Online,
-                    Stints.Where(p => p.CallSessionId == s.Id && p.LeftAt == null).Select(p => p.UserId).ToHashSet());
+                    Stints.Where(p => p.CallSessionId == s.Id && p.LeftAt == null).Select(Of).ToHashSet());
             })
             .ToArray());
 
@@ -140,13 +172,13 @@ internal sealed class FakeLiveKitGateway : ILiveKitGateway
 
     public CallWebhookEvent? NextWebhook { get; set; }
 
-    public (string Room, Guid UserId, string Name, string Metadata, TimeSpan Ttl)? LastTicket { get; private set; }
+    public (string Room, string Identity, string Name, string Metadata, TimeSpan Ttl)? LastTicket { get; private set; }
 
     public RoomParticipant Join(string room, Guid userId, params RoomTrack[] tracks)
-    {
-        var participant = new RoomParticipant(userId.ToString("D"), "name", DateTimeOffset.UtcNow, tracks);
-        return Join(room, participant);
-    }
+        => Join(room, CallMember.User(userId), tracks);
+
+    public RoomParticipant Join(string room, CallMember member, params RoomTrack[] tracks)
+        => Join(room, new RoomParticipant(member.Identity, "name", DateTimeOffset.UtcNow, tracks));
 
     public RoomParticipant Join(string room, RoomParticipant participant)
     {
@@ -154,10 +186,10 @@ internal sealed class FakeLiveKitGateway : ILiveKitGateway
         return participant;
     }
 
-    public CallJoinTicket CreateJoinTicket(string roomName, Guid userId, string displayName, string metadataJson, TimeSpan ttl)
+    public CallJoinTicket CreateJoinTicket(string roomName, string identity, string displayName, string metadataJson, TimeSpan ttl)
     {
-        LastTicket = (roomName, userId, displayName, metadataJson, ttl);
-        return new CallJoinTicket("ws://livekit.test", "token", roomName, userId.ToString("D"), DateTimeOffset.UtcNow.Add(ttl));
+        LastTicket = (roomName, identity, displayName, metadataJson, ttl);
+        return new CallJoinTicket("ws://livekit.test", "token", roomName, identity, DateTimeOffset.UtcNow.Add(ttl));
     }
 
     public Task<IReadOnlyList<RoomParticipant>> ListParticipantsAsync(string roomName, CancellationToken ct)

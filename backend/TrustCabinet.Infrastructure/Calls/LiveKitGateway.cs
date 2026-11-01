@@ -50,10 +50,10 @@ public sealed class LiveKitGateway(
     public bool IsConfigured => O.IsConfigured;
 
     public CallJoinTicket CreateJoinTicket(
-        string roomName, Guid userId, string displayName, string metadataJson, TimeSpan ttl)
+        string roomName, string identity, string displayName, string metadataJson, TimeSpan ttl)
     {
         EnsureConfigured();
-        var identity = userId.ToString("D");
+        // Members and guests get the same grants (ADR-0016): media, screen share and chat, no room admin.
         var token = new AccessToken(O.ApiKey, O.ApiSecret)
             .WithIdentity(identity)
             .WithName(displayName)

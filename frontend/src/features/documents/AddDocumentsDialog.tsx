@@ -7,8 +7,10 @@ import {
   uploadToAgendaItem,
 } from '../../api/documents'
 import { getLibrary } from '../../api/library'
+import { attachVoteDocuments, attachVoteFromLibrary, uploadVoteDocuments } from '../../api/votes'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
+import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { routes } from '../../lib/routes'
@@ -21,7 +23,8 @@ import { FileUploadFields } from './FileUploadFields'
 import { useFileUpload } from './useFileUpload'
 import { LibraryPicker } from './LibraryPicker'
 
-type Source = 'computer' | 'library' | 'meeting'
+export type DocumentSource = 'computer' | 'library' | 'meeting'
+type Source = DocumentSource
 
 const folderDate = new Intl.DateTimeFormat('vi-VN', {
   day: '2-digit',
@@ -45,13 +48,17 @@ function isStale(err: unknown) {
     isApiError(err, 403, 'MSG240') ||
     isApiError(err, 409, 'MSG247') ||
     isApiError(err, 404, 'MSG242') ||
-    isApiError(err, 404, 'MSG170')
+    isApiError(err, 404, 'MSG170') ||
+    // A vote (UC-76a): no longer a draft or no longer the caller's to manage, or no longer visible.
+    isApiError(err, 409, 'MSG213') ||
+    isApiError(err, 404, 'MSG205')
   )
 }
 
 /**
  * Adding documents to a meeting (SCRUM-107, SCRUM-58): to the general group (UC-33a) from the computer or the
- * library, or to one agenda item (UC-33b) from the meeting's own documents, the library or the computer.
+ * library, or to one agenda item (UC-33b) or one draft vote (UC-76a, SCRUM-96) from the meeting's own documents,
+ * the library or the computer.
  * A choice from the library or the meeting is all or none (BR-304). Files from the computer go to the upload
  * queue, one request each (PO 27/10/2026): each is all or none on its own, meeting and library together
  * (BR-194), and lands in the uploader's library, in the meeting's folder (BR-192).
@@ -59,17 +66,26 @@ function isStale(err: unknown) {
 export function AddDocumentsDialog({
   meeting,
   item,
+  vote,
   meetingDocuments = [],
+  meetingDocumentsError,
+  initialSource,
   onClose,
   onAdded,
   onQueued,
   onStale,
 }: {
   meeting: Meeting
-  /** The agenda item to link to; the general group when absent. */
+  /** The agenda item to link to; the general group when neither this nor `vote` is given. */
   item?: { id: string; number: number; title: string; documentIds: string[] }
-  /** Every document of the meeting, for "Trong cuộc họp". */
-  meetingDocuments?: MeetingDocument[]
+  /** The draft vote to attach to (UC-76a). */
+  vote?: { id: string; title: string; documentIds: string[] }
+  /** Every document of the meeting, for "Trong cuộc họp"; null while it loads. */
+  meetingDocuments?: MeetingDocument[] | null
+  /** Why `meetingDocuments` could not be read, with a retry; the tab says so instead of "no documents". */
+  meetingDocumentsError?: { message: string; retry: () => void } | null
+  /** The tab to open on, when the user already chose where from (the agenda row's menu). */
+  initialSource?: Source
   onClose: () => void
   onAdded: (message: string) => void
   /** Files from the computer are in the upload queue; the tray follows them. */
@@ -77,13 +93,17 @@ export function AddDocumentsDialog({
   onStale: (message: string) => void
 }) {
   const handleAccessLost = useAccessLost()
-  const linkable = item ? meetingDocuments.filter((d) => !item.documentIds.includes(d.id)) : []
+  // An agenda item or a vote: something the meeting's own documents can be linked to.
+  const target = item ?? vote
+  const linkable = target ? (meetingDocuments ?? []).filter((d) => !target.documentIds.includes(d.id)) : []
   const sources = [
-    ...(item ? [{ value: 'meeting' as const, label: 'Trong cuộc họp', short: 'Cuộc họp' }] : []),
+    ...(target ? [{ value: 'meeting' as const, label: 'Trong cuộc họp', short: 'Cuộc họp' }] : []),
     { value: 'computer' as const, label: 'Tải từ máy', short: 'Máy' },
     { value: 'library' as const, label: 'Từ kho của tôi', short: 'Kho' },
   ] satisfies { value: Source; label: string; short: string }[]
-  const [source, setSource] = useState<Source>(item && linkable.length > 0 ? 'meeting' : 'computer')
+  const [source, setSource] = useState<Source>(
+    initialSource ?? (target && linkable.length > 0 ? 'meeting' : 'computer'),
+  )
   const [fromLibrary, setFromLibrary] = useState(new Map<string, LibraryDocument>())
   const [fromMeeting, setFromMeeting] = useState(new Set<string>())
   const [libraryReload, setLibraryReload] = useState(0)
@@ -108,15 +128,17 @@ export function AddDocumentsDialog({
     toRequest: ({ file, pdf, pages }) => ({
       name: file.name,
       kind: pdf ? 'pdf' : 'docx',
-      where: item ? `${meeting.title} · mục ${item.number}` : meeting.title,
-      href: `${routes.meeting(meeting.id)}?tab=documents`,
+      where: item ? `${meeting.title} · mục ${item.number}` : vote ? `${meeting.title} · biểu quyết` : meeting.title,
+      href: `${routes.meeting(meeting.id)}?tab=${vote ? 'votes' : 'documents'}`,
       target: `meeting:${meeting.id}`,
       isExpected: isStale,
       send: async (options) => {
         const files = [{ file, pageCount: await pages }]
         return item
           ? uploadToAgendaItem(meeting.id, item.id, files, options)
-          : uploadMeetingDocuments(meeting.id, files, options)
+          : vote
+            ? uploadVoteDocuments(meeting.id, vote.id, files, options)
+            : uploadMeetingDocuments(meeting.id, files, options)
       },
     }),
     roomLeft,
@@ -134,8 +156,11 @@ export function AddDocumentsDialog({
     setFailure(null)
     try {
       const ids = source === 'library' ? [...fromLibrary.keys()] : [...fromMeeting]
-      const response =
-        source === 'meeting'
+      const response = vote
+        ? source === 'meeting'
+          ? await attachVoteDocuments(meeting.id, vote.id, ids)
+          : await attachVoteFromLibrary(meeting.id, vote.id, ids)
+        : source === 'meeting'
           ? await linkToAgendaItem(meeting.id, item!.id, ids)
           : item
             ? await linkFromLibrary(meeting.id, item.id, ids)
@@ -150,7 +175,7 @@ export function AddDocumentsDialog({
         setFromLibrary(new Map())
         setLibraryReload((n) => n + 1)
       }
-      // MSG165 already in the meeting, MSG243 already on this item, a save error: the choice stays.
+      // MSG165 already in the meeting, MSG243 / MSG266 already on this item or vote, a save error: the choice stays.
       setFailure(errorMessage(err))
     }
   }
@@ -167,7 +192,9 @@ export function AddDocumentsDialog({
 
   return (
     <Dialog
-      title={item ? `Thêm tài liệu cho mục ${item.number}` : 'Thêm tài liệu chung'}
+      title={
+        item ? `Thêm tài liệu cho mục ${item.number}` : vote ? 'Thêm tài liệu cho biểu quyết' : 'Thêm tài liệu chung'
+      }
       size="lg"
       onClose={close}
       footer={
@@ -187,7 +214,7 @@ export function AddDocumentsDialog({
       }
     >
       <div className="upload-body">
-        {item && <p className="dialog-text add-docs-item">{item.title}</p>}
+        {target && <p className="dialog-text add-docs-item">{target.title}</p>}
         <SegmentedControl
           label="Lấy tài liệu từ"
           value={source}
@@ -217,8 +244,22 @@ export function AddDocumentsDialog({
         )}
 
         {source === 'meeting' &&
-          (linkable.length === 0 ? (
-            <p className="documents-empty">Mọi tài liệu của cuộc họp đã gắn với mục này.</p>
+          (meetingDocumentsError ? (
+            <div className="alert alert-error" role="alert">
+              <p>{meetingDocumentsError.message}</p>
+              <button type="button" className="btn btn-outline btn-sm" onClick={meetingDocumentsError.retry}>
+                <Icon name="refresh" size={16} />
+                Thử lại
+              </button>
+            </div>
+          ) : meetingDocuments === null ? (
+            <p className="documents-empty" aria-busy="true">
+              Đang tải…
+            </p>
+          ) : meetingDocuments.length === 0 ? (
+            <p className="documents-empty">Cuộc họp chưa có tài liệu.</p>
+          ) : linkable.length === 0 ? (
+            <p className="documents-empty">Mọi tài liệu của cuộc họp đã gắn với {vote ? 'biểu quyết' : 'mục'} này.</p>
           ) : (
             <ul className="picker-list" aria-label="Tài liệu của cuộc họp">
               {linkable.map((doc) => (
@@ -260,6 +301,8 @@ export function AddDocumentsDialog({
             </>
           ) : source === 'library' ? (
             'Cuộc họp dùng tên hiện tại của tài liệu; đổi tên trong kho sau đó không đổi tên trong cuộc họp.'
+          ) : vote ? (
+            'Tài liệu vẫn ở trong cuộc họp, chỉ gắn thêm vào biểu quyết này.'
           ) : (
             'Tài liệu vẫn ở các mục đang gắn, chỉ thêm vào mục này.'
           )}{' '}

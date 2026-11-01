@@ -7,7 +7,9 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Participants;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
@@ -175,6 +177,28 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
             }
         }
         finally { f.Clock.Now = originalTime; }
+    }
+
+    [Fact]
+    public async Task Real_guest_link_is_stable_across_retries_and_materializes_once()
+    {
+        var s = await f.Seed(); var id = await AddGuest(s);
+        var credentials = new GuestCredentials(Options.Create(new AuthenticationOptions { SigningKey = "khoa-ky-chi-dung-trong-test-du-32-ky-tu" }));
+        var links = new GuestInvitationLinkProvider(credentials, Options.Create(_options));
+        await using var db = f.Db();
+        var invitationId = await db.MeetingInvitationDispatches.Where(d => d.Id == id).Select(d => d.GuestInvitationId!.Value).SingleAsync();
+        var link = await links.PrepareAsync(invitationId, default);
+        Assert.Equal(link, await links.PrepareAsync(invitationId, default));
+        Assert.Equal($"https://meetings.test/guest/{invitationId}#token={credentials.LinkToken(invitationId)}", link.Url);
+        async Task<int> Run()
+        {
+            await using var context = f.Db();
+            return await new MeetingInvitationDispatchProcessor(context, Options.Create(_options), f.Clock, links,
+                NullLogger<MeetingInvitationDispatchProcessor>.Instance).ProcessAsync(id, default);
+        }
+        Assert.Equal(1, (await Task.WhenAll(Run(), Run())).Sum());
+        Assert.Equal(0, await Run());
+        Assert.Contains(link.Url!, (await db.EmailMessages.SingleAsync(e => e.MeetingId == s.MeetingId)).Body);
     }
 
     [Fact]

@@ -1,3 +1,5 @@
+using TrustCabinet.Domain.Participants;
+
 namespace TrustCabinet.Domain.Documents;
 
 /// <summary>
@@ -90,14 +92,17 @@ public sealed record MeetingDocumentContentOutcome(DocumentReadFailure Failure =
 
 public interface IMeetingDocumentService
 {
-    /// <summary>UC-32a, for anyone who can currently view the meeting (BR-181, BR-275).</summary>
-    Task<MeetingDocumentListOutcome> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default);
+    /// <summary>
+    /// UC-32a, for anyone who can currently view the meeting (BR-181, BR-275), or a guest of it whose UC-04
+    /// session is current (SCRUM-123).
+    /// </summary>
+    Task<MeetingDocumentListOutcome> ListAsync(Guid meetingId, ParticipantActor reader, CancellationToken ct = default);
 
     /// <summary>
     /// UC-32c: opens a document still attached to the meeting. Downloading a Secret meeting's
     /// document is refused (BR-188); a Confidential or Secret one is audited (BR-318).
     /// </summary>
-    Task<MeetingDocumentContentOutcome> OpenContentAsync(Guid meetingId, Guid meetingDocumentId, Guid actorId,
+    Task<MeetingDocumentContentOutcome> OpenContentAsync(Guid meetingId, Guid meetingDocumentId, ParticipantActor reader,
         bool download, CancellationToken ct = default);
 
     /// <summary>The access check alone, so a caller who may not upload is refused before the body is read.</summary>

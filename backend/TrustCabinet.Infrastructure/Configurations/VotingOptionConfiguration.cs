@@ -9,6 +9,7 @@ public class VotingOptionConfiguration : IEntityTypeConfiguration<VotingOption>
     public void Configure(EntityTypeBuilder<VotingOption> builder)
     {
         builder.Property(o => o.Label).HasMaxLength(200).IsRequired();
+        builder.ToTable(t => t.HasCheckConstraint("ck_voting_options_ballot_count", "ballot_count >= 0"));
 
         // Options are written once when the session is created, so unlike agenda items there is no
         // reordering to trip over the uniqueness.

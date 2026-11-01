@@ -506,6 +506,53 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .login-divider { display: flex; align-items: center; gap: 12px; margin: 0; color: var(--label-ink); font-size: 12px; }
 .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 
+/* ---------- Guest (UC-04, screen 1.3) ----------
+   The invitation link opens on the sign-in card's band; once verified, the meeting sits under a thin
+   bar with only the logo, who the guest said they are and "Thoát" — no sidebar, no internal menu (BR-156). */
+.guest-card { max-width: 440px; }
+.guest-loading { margin: 0; color: var(--muted-ink); text-align: center; }
+.guest-caption { margin: 0; color: var(--muted-ink); font-size: 13px; }
+.login-head .guest-title { font-size: 20px; line-height: 28px; overflow-wrap: anywhere; }
+.guest-scope { margin: 0; color: var(--muted-ink); font-size: 13px; }
+.guest-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.guest-actions .btn-primary { flex: 1 1 160px; }
+
+.otp { display: grid; grid-template-columns: repeat(6, minmax(0, 48px)); justify-content: center; gap: 8px; }
+.otp-box {
+  width: 100%;
+  height: 52px;
+  padding: 0;
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.otp + .field-error, .otp + .field-hint { text-align: center; }
+
+.guest-page { display: flex; flex-direction: column; min-height: 100vh; background: var(--paper); }
+.guest-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: inset 0 -2px 0 var(--gold-soft);
+}
+.guest-brand { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; font-weight: 700; color: var(--brand); }
+.guest-who { display: inline-flex; align-items: center; gap: 8px; min-width: 0; color: var(--muted-ink); }
+.guest-who-name { display: flex; flex-direction: column; min-width: 0; color: var(--ink); font-weight: 500; line-height: 18px; }
+.guest-who-name, .guest-who-name small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.guest-who-name small { color: var(--muted-ink); font-size: 12px; font-weight: 400; }
+.guest-main { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 24px 32px; }
+@media (max-width: 480px) {
+  .guest-bar { padding: 6px 16px; gap: 8px; }
+  .guest-main { padding: 16px; }
+  .guest-leave-label, .guest-brand-text { display: none; }
+  .otp { gap: 6px; }
+}
+
 /* Google draws the button inside this host; it only needs a width to measure and centring. */
 .google-button { display: flex; justify-content: center; min-height: 40px; }
 .google-button-disabled { opacity: .5; pointer-events: none; }
@@ -2005,12 +2052,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   line-height: 1.35;
 }
 .cal-event:hover { z-index: 2; box-shadow: 0 2px 8px #1a243326; }
-.cal-event-short { justify-content: center; padding: 2px 10px; }
+/* Too short for two lines, as on Google Calendar: title then time on one line, the title cut with an ellipsis. */
+.cal-event-short { flex-direction: row; align-items: center; gap: 6px; padding: 0 10px; }
 .cal-event-time { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .cal-event-title { display: -webkit-box; overflow: hidden; font-weight: 600; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 /* A cancelled meeting stays where it was planned, grey and struck through, so nobody turns up for it. */
 .cal-cancelled .cal-event-title, .cal-cancelled .month-event-title { text-decoration: line-through; }
-.cal-event-short .cal-event-title { display: block; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.cal-event-short .cal-event-title { display: block; flex: 1; order: -1; min-width: 0; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .cal-event-place { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
 .cal-event-secret { display: inline-flex; align-items: center; gap: 3px; height: 18px; margin-left: auto; padding: 0 6px; border-radius: 4px; background: var(--surface); color: var(--chip-red-fg); font-size: 11px; }
 .cal-event-live { border-color: var(--live); background: var(--live); color: #fff; }
@@ -2053,7 +2101,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   75% { transform: translateX(3px); }
 }
 .cal-event-crowded .cal-event-time { overflow: hidden; }
-.calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 
 .calendar-legend { display: flex; flex: none; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line-soft); background: #fbfcfd; color: var(--muted-ink); font-size: 12px; }
 .calendar-legend span { display: flex; align-items: center; gap: 5px; }
@@ -2534,10 +2581,139 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .agenda-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 40px 16px; color: var(--label-ink); text-align: center; }
 .agenda-empty p { margin: 8px 0 0; color: var(--ink); font-weight: 600; }
 .agenda-empty small { color: var(--muted-ink); font-size: 13px; }
+/* The calendar's dashed day box shares the class: inset it like the list, not on the card's edge. */
+.agenda-panel .agenda-empty { margin: 12px 16px 16px; }
+.agenda-panel-room .agenda-empty { margin: 0; }
 .agenda-skeleton { width: 60%; height: 18px; }
-.agenda-pick-list { height: auto; max-height: 220px; }
-.agenda-pick-list .pick-row > svg { flex: none; color: var(--label-ink); }
-.agenda-pick-title { min-width: 0; overflow-wrap: anywhere; }
+/* The row's paperclip menu: where to take documents from (UC-33b), styled as a Select's menu. */
+.agenda-attach-option { width: 100%; min-height: 40px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+.agenda-attach-option > svg { flex: none; color: var(--label-ink); }
+.agenda-attach-option:is(:hover, :focus-visible) { outline: none; background: var(--brand-wash); }
+
+/* ---------- Votes (SCRUM-28) ----------
+   One line per vote, like the agenda: the title, then its facts on a second line; an open vote
+   carries the live green edge and its turnout bar. The same panel sits in the call room at 360px. */
+.vote-panel { container-type: inline-size; }
+.vote-toolbar { flex-wrap: nowrap; }
+.vote-alert { margin: 12px 16px 0; }
+.vote-panel .vote-empty { margin: 12px 16px 16px; }
+.vote-panel-room .vote-empty { margin: 0; }
+.vote-room { overflow-y: auto; }
+.vote-panel-room .vote-toolbar { margin: 0; padding: 0 0 12px; border: 0; }
+.vote-list { list-style: none; margin: 0; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.vote-panel-room .vote-list { padding: 0; }
+.vote-item { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.vote-item-open { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
+.vote-item-draft { border-style: dashed; border-color: var(--control-line); }
+.vote-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px 12px 8px; }
+.vote-break { flex-basis: 100%; height: 0; }
+.vote-title {
+  display: flex; flex: 1; align-items: flex-start; gap: 6px; min-width: 0; min-height: 40px; padding: 10px 0;
+  border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 600; text-align: left;
+  cursor: pointer;
+}
+.vote-title > svg { flex: none; margin-top: 3px; color: var(--label-ink); }
+.vote-title > span { min-width: 0; overflow-wrap: anywhere; }
+.vote-title:hover > span { color: var(--brand); }
+.vote-actions { flex: none; gap: 6px; }
+.vote-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: 22px; }
+.vote-status, .vote-conclusion-chip { font-size: 13px; }
+.vote-fact { display: inline-flex; align-items: center; gap: 4px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+.vote-fact > svg { flex: none; color: var(--label-ink); }
+.vote-voted, .vote-voted > svg { color: var(--chip-emerald-fg); }
+.vote-turnout { padding: 0 12px 12px 34px; }
+.vote-bar {
+  display: block; width: 100%; height: 8px; border: 0; border-radius: 4px; overflow: hidden;
+  background: var(--surface-alt); color: var(--brand); appearance: none;
+}
+.vote-bar::-webkit-progress-bar { background: var(--surface-alt); }
+.vote-bar::-webkit-progress-value { background: var(--brand); }
+.vote-bar::-moz-progress-bar { background: var(--brand); }
+.vote-body { display: flex; flex-direction: column; gap: 12px; padding: 0 12px 12px 34px; }
+.vote-text { margin: 0; color: var(--muted-ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+.vote-roles { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; font-size: 13px; }
+.vote-roles-label { color: var(--label-ink); }
+.vote-times { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: var(--muted-ink); font-variant-numeric: tabular-nums; }
+.vote-times > svg { color: var(--label-ink); }
+.vote-docs li { align-items: center; gap: 8px; }
+.vote-read { flex: none; margin-left: auto; color: var(--chip-emerald-fg); font-size: 12px; font-weight: 600; }
+.vote-unread { color: var(--chip-amber-fg); }
+.vote-doc-detach { flex: none; margin-left: auto; }
+.vote-read + .vote-doc-detach { margin-left: 0; }
+.vote-option-list { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.vote-state { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--muted-ink); }
+.vote-state-done { color: var(--chip-emerald-fg); font-weight: 600; }
+.vote-ballot { display: flex; flex-direction: column; gap: 10px; }
+.vote-choices { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.vote-choice {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px;
+  border: 1px solid var(--control-line); border-radius: var(--radius); cursor: pointer;
+}
+.vote-choice:hover { background: var(--surface-alt); }
+.vote-choice:has(input:checked) { border-color: var(--brand); background: var(--brand-wash); font-weight: 600; }
+.vote-choice:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 1px; }
+.vote-choice input { flex: none; width: 16px; height: 16px; padding: 0; box-shadow: none; accent-color: var(--brand); }
+.vote-choice > span { min-width: 0; overflow-wrap: anywhere; }
+.vote-choices:disabled .vote-choice { cursor: progress; opacity: .7; }
+.vote-ballot-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.vote-result { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vote-result li { display: grid; grid-template-columns: minmax(0, 160px) minmax(60px, 1fr) auto; align-items: center; gap: 12px; }
+.vote-result-label { min-width: 0; overflow-wrap: anywhere; }
+.vote-result-count { min-width: 64px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.vote-result-count small { color: var(--muted-ink); font-size: 13px; font-weight: 500; }
+.vote-voters { font-size: 13px; }
+.vote-voters summary { min-height: 34px; display: flex; align-items: center; color: var(--brand); cursor: pointer; }
+.vote-voters ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.vote-voters li { display: flex; justify-content: space-between; gap: 12px; }
+.vote-voters li > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.vote-voters li small { color: var(--label-ink); }
+.vote-box { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 10px 12px 12px; border-radius: var(--radius); background: var(--surface-alt); }
+.vote-box h4 { margin: 0; color: var(--label-ink); font-size: 13px; font-weight: 600; }
+.vote-box textarea { width: 100%; background: var(--surface); }
+.vote-conclusion { margin: 0; }
+.vote-form-actions { display: flex; justify-content: flex-end; }
+.vote-pending { margin: 0; font-size: 13px; }
+.vote-skeleton { width: 60%; height: 18px; }
+/* At the room's width a result row stacks: the label above its bar and count. */
+@container (max-width: 480px) {
+  /* The title keeps the whole row; the actions go under it instead of squeezing it to a word a line. */
+  .vote-title { flex-basis: 100%; }
+  .vote-actions:not(:empty) { order: 1; padding-left: 22px; }
+  .vote-break { order: 2; }
+  .vote-meta { order: 3; }
+  .vote-result li { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+  /* "Không thông qua" does not fit beside "Hoãn" at the room's width: the short label instead. */
+  .vote-conclusion-form .segmented-full { display: none; }
+  .vote-conclusion-form .segmented-short { display: inline; }
+  .vote-conclusion-form .segmented-option > span { min-width: 0; padding: 0 6px; }
+  /* Under the role chips once they wrap, not pushed alone to the right edge. */
+  .vote-times { margin-left: 0; }
+  .vote-result-label { grid-column: 1 / -1; }
+  .vote-turnout, .vote-body { padding-left: 12px; }
+  .vote-meta { padding-left: 0; }
+}
+/* Too narrow for three side by side even with the short label (a phone's page): one per row, each 40px. */
+@container (max-width: 300px) {
+  .vote-conclusion-form .segmented { flex-direction: column; height: auto; }
+  .vote-conclusion-form .segmented-option { min-height: var(--control-height); }
+  .vote-conclusion-form .segmented-option + .segmented-option { border-left: 0; border-top: 1px solid var(--control-line); }
+  .vote-conclusion-form .segmented-full { display: inline; }
+  .vote-conclusion-form .segmented-short { display: none; }
+}
+/* The create / edit dialog. */
+#vote-form fieldset.field { min-width: 0; margin: 0; padding: 0; border: 0; }
+#vote-form fieldset.field > legend { margin-bottom: 8px; padding: 0; font-size: 14px; font-weight: 500; line-height: 1; color: var(--ink); }
+.vote-option-inputs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vote-option-inputs li { display: flex; align-items: center; gap: 6px; }
+.vote-option-inputs input { flex: 1; min-width: 0; }
+.vote-option-add { align-self: flex-start; margin-top: 4px; color: var(--brand); }
+.vote-role-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+.vote-role-pick {
+  display: inline-flex; align-items: center; gap: 8px; min-height: var(--control-height); padding: 0 12px;
+  border: 1px solid var(--control-line); border-radius: var(--radius); font-size: 14px; cursor: pointer;
+}
+.vote-role-pick:has(input:checked) { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand-ink); }
+.agenda-attach-trigger[aria-expanded='true'] { background: var(--surface-alt); }
 .agenda-room { overflow-y: auto; }
 
 /* Wide enough for AI-eCabinet's single line: facts in fixed columns between title and actions. */
@@ -2558,7 +2734,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .agenda-panel .agenda-body { padding-left: 12px; }
   .agenda-toolbar { padding-left: 12px; padding-right: 12px; }
   .agenda-list { padding-left: 12px; padding-right: 12px; }
+  .agenda-panel .agenda-empty { margin-left: 12px; margin-right: 12px; }
   .agenda-panel-room .agenda-list { padding: 0; }
+  .agenda-panel-room .agenda-empty { margin: 0; }
 }
 
 /* ---------- Placeholder screens ----------
@@ -2721,6 +2899,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .prejoin-side > .alert { width: 100%; margin-top: 16px; text-align: left; }
 .prejoin-recording { display: flex; align-items: flex-start; justify-content: center; gap: 6px; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
 .prejoin-recording svg { flex: none; margin-top: 2px; color: var(--danger); }
+/* A guest confirms the notice before joining (SCRUM-59): the whole line is the checkbox's label, 40px tall to tap. */
+.prejoin-consent { align-items: center; min-height: 40px; color: var(--ink); text-align: left; cursor: pointer; }
+.prejoin-consent input[type='checkbox'] { flex: none; width: 18px; height: 18px; }
 .prejoin-join {
   position: relative;
   width: 240px;
@@ -2863,6 +3044,29 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   color: var(--chip-amber-fg);
   font-size: 14px;
 }
+
+/* "Chủ toạ mở biểu quyết" (SCRUM-28): floats under the title bar, over the stage, until answered. */
+.room-vote-notice {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(520px, calc(100vw - 32px));
+  padding: 10px 10px 10px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  transform: translateX(-50%);
+}
+.room-vote-notice > svg { flex: none; color: var(--brand); }
+.room-vote-notice p { flex: 1; min-width: 0; margin: 0; display: grid; }
+.room-vote-notice-lead { color: var(--label-ink); font-size: 12px; }
+.room-vote-notice strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-vote-notice .btn { flex: none; }
 
 .room-body { flex: 1; min-height: 0; display: flex; }
 .room-stage { flex: 1; min-width: 0; min-height: 0; padding: 16px; display: flex; }
@@ -3596,7 +3800,9 @@ audio.recording-player { height: 40px; }
 }
 /* Narrow (a phone, the call room's panel): the time column goes, the time moves next to the name. */
 @container (max-width: 560px) {
-  .tl-group { grid-template-columns: 18px minmax(0, 1fr); }
+  /* A row's 14px side padding comes out of its subgrid's first track: 24px leaves the rail the dot's 10px, so it
+     stays round, and the narrower gap keeps the text where it was. */
+  .tl-group { grid-template-columns: 24px minmax(0, 1fr); column-gap: 2px; }
   .tl-row > .tl-time { display: none; }
   .tl-time-inline { display: inline; }
   .tl-speakers ul { display: flex; overflow-x: auto; scrollbar-width: none; }
@@ -3957,6 +4163,8 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .viewer-body { display: flex; flex: 1; min-height: 0; }
 .viewer-stage { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
 .viewer-count { min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand-wash); color: var(--brand); font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; }
+/* UC-74: a vote document confirmed as read (SCRUM-28). */
+.viewer-read-done { display: inline-flex; flex: none; align-items: center; gap: 6px; color: var(--chip-emerald-fg); font-weight: 600; }
 .viewer-head .btn.is-active { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand); }
 .viewer-comments { display: flex; flex: none; flex-direction: column; width: 360px; min-height: 0; border-left: 1px solid var(--line); background: var(--surface); }
 .viewer-comments-head { display: flex; flex: none; align-items: center; gap: 4px; min-height: 48px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--line); }

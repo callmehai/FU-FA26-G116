@@ -195,7 +195,8 @@ export function RecorderCard({
           </span>
           {on && room.startedAt !== null && (
             <span className="mic-clock" data-tooltip="Thời lượng lượt ghi này">
-              {formatDuration(now - room.startedAt)}
+              {/* The clock stands still while the mic is off: until its next tick it is behind the new start. */}
+              {formatDuration(Math.max(0, now - room.startedAt))}
             </span>
           )}
         </div>

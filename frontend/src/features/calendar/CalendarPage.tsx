@@ -415,11 +415,6 @@ function WeekGrid({
                     onMore={() => onOpenDay(day)}
                   />
                 ))}
-                {schedule.kind === 'loaded' && events.length === 0 && (
-                  <span className="calendar-free" style={{ top: (WORKDAY_START_HOUR + 2) * HOUR_HEIGHT }}>
-                    Không có lịch họp
-                  </span>
-                )}
                 {today && <span className="calendar-now-line" style={{ top: nowTop }} />}
               </div>
             )
@@ -467,7 +462,8 @@ function GridEvent({
         data-tooltip={`${meeting.title}\n${timeRange(entry)}`}
       >
         <span className="cal-event-time">
-          {timeRange(entry)}
+          {/* A one-line tile keeps the room for the title: its start only, the range is in the tooltip. */}
+          {tall ? timeRange(entry) : formatClock(entry.start)}
           {meeting.sensitivity === 'Secret' && (
             <span className="cal-event-secret">
               <Icon name="lock" size={11} />

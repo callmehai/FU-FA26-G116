@@ -5,6 +5,7 @@ using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.GuestAccess;
 
 namespace TrustCabinet.Infrastructure.Agenda;
 
@@ -27,7 +28,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
             if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct))
                 return new(AgendaFailure.NotFound);
             var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
-            if (meeting is null || !AgendaRules.GuestCanViewMeeting(meeting.Status))
+            if (meeting is null || !GuestAccessRules.MeetingOpen(meeting.Status))
                 return new(AgendaFailure.NotFound);
             return await SnapshotAsync(meeting, null, false, ct);
         }
@@ -90,7 +91,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                     i.Conclusion, i.ConclusionUpdatedById, i.ConclusionUpdatedBy?.FullName, i.ConclusionUpdatedAt,
                     true, byItem[i.Id].Select(d => new AgendaDocument(d.Id, d.Title)).ToArray(),
                     actorId is { } userId ? AgendaRules.Actions(meeting, userId, i, items, hasMinutes)
-                        : new(false, false, false, false, false, false));
+                        : new(false, false, false, false, false, false, false));
             }).ToArray()));
     }
 
@@ -154,6 +155,8 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                     if (errors.Count != 0) return new(AgendaFailure.Invalid, Errors: errors);
                     var existingDocuments = item is null ? [] : (await documents.ListAsync(meetingId, token))
                         .Where(d => d.AgendaItemIds.Contains(item.Id)).Select(d => d.Id).ToArray();
+                    // Omitted keeps the item's links: the editor no longer picks documents, UC-33b links them.
+                    input = input with { DocumentIds = input.DocumentIds ?? existingDocuments };
                     var presenterChanged = item is null ? input.PresenterId.HasValue || input.PresenterGuestInvitationId.HasValue
                         : item.PresenterId != input.PresenterId || item.PresenterGuestInvitationId != input.PresenterGuestInvitationId;
                     var planningChanged = item is null || presenterChanged || !string.IsNullOrEmpty(item.LegacyPresenterName)

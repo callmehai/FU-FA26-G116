@@ -53,7 +53,7 @@ public sealed class AgendaPoRequirementsTests(AgendaFixture fixture) : IClassFix
         var options = await client.GetFromJsonAsync<JsonElement>(s.Url + "/editor-options");
         Assert.Contains(options.GetProperty("presenters").EnumerateArray(), p => p.GetProperty("kind").GetString() == "Guest" && p.GetProperty("id").GetGuid() == guest.Id);
         Assert.Equal(2, Assert.Single(options.GetProperty("documents").EnumerateArray()).GetProperty("agendaItemIds").GetArrayLength());
-        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", new { title = "Only title" }), 200, "MSG61");
+        await AssertCode(await client.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", new { title = "Only title", documentIds = Array.Empty<Guid>() }), 200, "MSG61");
         await using var check = fixture.Db();
         var updated = await check.AgendaItems.SingleAsync(i => i.Id == s.Items[0]);
         Assert.Equal(status, updated.Status);

@@ -1,0 +1,73 @@
+title UC-45a - View Recording Transcript
+
+actor "Participant" as Actor
+boundary "Transcript View" as TranscriptView
+control ":Transcript Controller" as TranscriptController
+control ":Transcription Service" as TranscriptionService
+participant ":Recording Repository" as RecordingRepository
+participant ":Meeting Repository" as MeetingRepository
+participant ":Transcript Repository" as TranscriptRepository
+database ":Database" as Database
+
+Actor->TranscriptView: Open the transcript of a room recording
+activate TranscriptView
+TranscriptView->TranscriptController: Get the recording transcript
+activate TranscriptController
+TranscriptController->TranscriptionService: get(recordingId, actorId)
+activate TranscriptionService
+
+TranscriptionService->RecordingRepository: Get the recording
+activate RecordingRepository
+RecordingRepository->Database: Retrieve recording
+activate Database
+Database-->RecordingRepository: Recording / Not found / Load failed
+deactivate Database
+RecordingRepository-->TranscriptionService: Recording / Not found / Load failed
+deactivate RecordingRepository
+TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->TranscriptionService: Meeting and roster
+deactivate MeetingRepository
+TranscriptionService->TranscriptionService: Check the actor is on the current roster and the recording is Available (BR-350, BR-370)
+
+alt Actor not on the roster, or recording not Available
+    TranscriptionService-->TranscriptController: Recording not found
+    TranscriptController-->TranscriptView: Recording not found
+    TranscriptView-->Actor: Show the recording as no longer available
+else Actor may read the transcript
+    TranscriptionService->TranscriptRepository: Get the transcript with its segments and voices
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve transcript, segments, speakers and editors
+    activate Database
+    Database-->TranscriptRepository: Transcript / None / Load failed
+    deactivate Database
+    TranscriptRepository-->TranscriptionService: Transcript / None / Load failed
+    deactivate TranscriptRepository
+
+    alt Transcript cannot be loaded - EX-1
+        TranscriptionService-->TranscriptController: MSG299 - Unable to load transcript.
+        TranscriptController-->TranscriptView: MSG299 - Unable to load transcript.
+        TranscriptView-->Actor: MSG299 - Unable to load transcript.
+    else Transcript loaded
+        opt Actor is the current Secretary
+            TranscriptionService->TranscriptionService: Add the Voice ID suggestions, voices suggested as the same person\nand the roster to assign from (BR-366, BR-367)
+        end
+        TranscriptionService-->TranscriptController: Transcript status, segments with times and speaker,\nassigned names, edits; suggestions for the Secretary only
+        TranscriptController-->TranscriptView: Transcript status, segments with times and speaker,\nassigned names, edits; suggestions for the Secretary only
+        alt No transcript yet, Pending or Processing - AF-1
+            TranscriptView-->Actor: Show the status, and Transcribe for the Secretary when there is none (UC-45c)
+        else Failed - AF-2
+            TranscriptView-->Actor: Show Failed with its reason, and Transcribe again for the Secretary (UC-45c)
+        else Completed
+            TranscriptView-->Actor: Show the segments with start time, Speaker N or the assigned name,\ntake dividers and edited text marked apart from machine text
+        end
+    end
+end
+
+deactivate TranscriptionService
+deactivate TranscriptController
+deactivate TranscriptView

@@ -25,7 +25,7 @@
         <mxCell id="a5" parent="adm" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Unlock Account" vertex="1">
           <mxGeometry height="50" width="170" x="25" y="1060" as="geometry" />
         </mxCell>
-        <mxCell id="usr" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Internal User" vertex="1">
+        <mxCell id="usr" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="User" vertex="1">
           <mxGeometry height="1330" width="420" x="240" y="20" as="geometry" />
         </mxCell>
         <mxCell id="u1" parent="usr" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Open TrustCabinet" vertex="1">
@@ -76,7 +76,7 @@
         <mxCell id="t9" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Sign In &amp; Load Role Permissions" vertex="1">
           <mxGeometry height="50" width="170" x="225" y="970" as="geometry" />
         </mxCell>
-        <mxCell id="ggl" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Google Identity Provider" vertex="1">
+        <mxCell id="ggl" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="OAuth Provider" vertex="1">
           <mxGeometry height="1330" width="220" x="1280" y="20" as="geometry" />
         </mxCell>
         <mxCell id="g1" parent="ggl" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Verify Google Account &amp; Return Identity" vertex="1">

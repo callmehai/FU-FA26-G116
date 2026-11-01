@@ -18,6 +18,7 @@ else Microphone can be switched
     RoomProvider-->Page: Everyone in the room sees the microphone state (UC-40)
     deactivate RoomProvider
     Page->Page: Remember the on/off state for the next visit on this device (BR-331)
+    Page->Page: ref UC-39a AF-2 Record Speech While Microphone On - while the microphone is on\nand the Meeting records per-mic speech, each spoken sentence is recorded (BR-352)
     Page-->Actor: Button and video tile show the new state
 end
 deactivate Page

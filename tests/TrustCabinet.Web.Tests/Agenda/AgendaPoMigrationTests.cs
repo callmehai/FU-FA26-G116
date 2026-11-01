@@ -24,8 +24,13 @@ public sealed class AgendaPoMigrationTests
         var meeting = new Meeting { Title = "Preserve", CreatedById = user.Id, PlannedStartTime = now, PlannedEndTime = now.AddHours(1) };
         db.Add(user); await db.SaveChangesAsync();
         await LegacyMeetingRows.InsertAsync(db, meeting);
+        // Raw SQL: the entity has gained columns this older schema does not have.
         var guest = new MeetingGuestInvitation { MeetingId = meeting.Id, InvitedName = "Legacy guest", Email = "guest@agenda.test", InvitedById = user.Id };
-        db.Add(guest); await db.SaveChangesAsync();
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO meeting_guest_invitations (id, meeting_id, invited_name, email, invited_by_id, sensitivity_at_invitation,
+              response, attendance, initial_invitation_delivery_key, created_at, updated_at)
+            VALUES ({guest.Id}, {meeting.Id}, {guest.InvitedName}, {guest.Email}, {user.Id}, 'Internal', 'Pending', 'Unknown', '', {now}, {now})
+            """);
         var ids = Enumerable.Range(0, 3).Select(_ => Guid.CreateVersion7()).ToArray();
         for (var i = 0; i < ids.Length; i++)
         {

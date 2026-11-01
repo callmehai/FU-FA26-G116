@@ -16,7 +16,8 @@ type State =
  * A meeting's agenda (SCRUM-25, SCRUM-98), shared by the detail tab and the call room's panel.
  *
  * It re-reads on `agendaChanged`, on `participantsChanged` (removing someone clears the items they
- * present) and when the window regains focus — never two reads at once. Every write answers only a
+ * present), on `documentsChanged` (a document linked to or removed from an item) and when the
+ * window regains focus — never two reads at once. Every write answers only a
  * message, so `run` shows it and re-reads; a failure (someone else's change, a lock, a lost role)
  * is said once and the re-read shows what is true now.
  */
@@ -69,7 +70,7 @@ export function useAgenda(meetingId: string) {
     }
   }, [load])
 
-  useMeetingEvents(meetingId, () => void load(), ['agendaChanged', 'participantsChanged'])
+  useMeetingEvents(meetingId, () => void load(), ['agendaChanged', 'participantsChanged', 'documentsChanged'])
 
   useEffect(() => {
     const onFocus = () => void load()

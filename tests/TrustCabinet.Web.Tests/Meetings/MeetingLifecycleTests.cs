@@ -171,7 +171,7 @@ public sealed partial class MeetingLifecycleTests(MeetingLifecycleFixture fixtur
                 .OrderBy(i => i.Id).Select(i => new { i.Id, i.Status, i.ActualStartedAt, i.ActualEndedAt, i.UpdatedAt }).ToArrayAsync(),
             Votes = await db.VotingSessions.Where(v => v.MeetingId == id).Select(v => new { v.Id, v.Status, v.UpdatedAt, v.ClosedAt }).ToArrayAsync(),
             Receipts = await db.VoteReceipts.Where(v => v.VotingSession.MeetingId == id).Select(v => new { v.Id, v.VoterId, v.CastAt, v.UpdatedAt }).ToArrayAsync(),
-            Choices = await db.VoteChoices.Where(v => v.VotingSession.MeetingId == id).Select(v => new { v.Id, v.VoterId, v.VotingOptionId, v.CastAt, v.UpdatedAt }).ToArrayAsync(),
+            Choices = await db.VoteChoices.Where(v => v.VotingSession.MeetingId == id).Select(v => new { v.Id, v.VoterId, v.VotingOptionId, v.CreatedAt, v.UpdatedAt }).ToArrayAsync(),
         });
 
     [Theory]
@@ -256,7 +256,7 @@ public sealed partial class MeetingLifecycleTests(MeetingLifecycleFixture fixtur
         {
             var repo = scope.ServiceProvider.GetRequiredService<ICallRepository>();
             var session = await repo.EnsureActiveRoomSessionAsync(s.MeetingId, s.Chair, fixture.Clock.Now.AddMinutes(-10));
-            await repo.RecordJoinAsync(session.Id, s.Chair, fixture.Clock.Now.AddMinutes(-9));
+            await repo.RecordJoinAsync(session.Id, CallMember.User(s.Chair), fixture.Clock.Now.AddMinutes(-9));
         }
         try
         {

@@ -112,29 +112,46 @@ public static class CapabilityGate
         this RouteGroupBuilder group, IResult databaseFailure)
         => group
             .RequireAuthorization()
-            .AddEndpointFilter(async (context, next) =>
-            {
-                try
-                {
-                    if (!await IsActiveUserAsync(context))
-                    {
-                        return Results.Forbid();
-                    }
-                }
-                catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested)
-                {
-                    throw;
-                }
-                catch (Exception exception) when (exception is DbUpdateException or NpgsqlException or TimeoutException)
-                {
-                    context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
-                        .CreateLogger(nameof(CapabilityGate))
-                        .LogError(exception, "Could not check active account for meeting request.");
-                    return databaseFailure;
-                }
+            .AddEndpointFilter((context, next) => ActiveUserAsync(context, next, databaseFailure));
 
-                return await next(context);
-            });
+    /// <summary>
+    /// <see cref="RequireActiveUser"/>, except that a guest token (UC-04) passes through untouched: the
+    /// handler must recheck the guest session itself, so use it only for reads that do.
+    /// </summary>
+    public static RouteGroupBuilder RequireActiveUserOrGuest(
+        this RouteGroupBuilder group, IResult databaseFailure)
+        => group
+            .RequireAuthorization()
+            .AddEndpointFilter((context, next) =>
+                context.HttpContext.RequestServices.GetRequiredService<IMeetingGuestIdentityResolver>()
+                    .Resolve(context.HttpContext.User) is not null
+                    ? next(context)
+                    : ActiveUserAsync(context, next, databaseFailure));
+
+    private static async ValueTask<object?> ActiveUserAsync(EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next, IResult databaseFailure)
+    {
+        try
+        {
+            if (!await IsActiveUserAsync(context))
+            {
+                return Results.Forbid();
+            }
+        }
+        catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is DbUpdateException or NpgsqlException or TimeoutException)
+        {
+            context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                .CreateLogger(nameof(CapabilityGate))
+                .LogError(exception, "Could not check active account for meeting request.");
+            return databaseFailure;
+        }
+
+        return await next(context);
+    }
 
     /// <summary>
     /// Whether the caller still holds <paramref name="capability"/> according to the database, as

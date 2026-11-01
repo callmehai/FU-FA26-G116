@@ -3,7 +3,12 @@ using TrustCabinet.Domain.Entities.Common;
 namespace TrustCabinet.Domain.Entities;
 
 /// <summary>
-/// A vote actually cast, counted to produce the result.
+/// Who chose what in a **public** vote, so the closed result can name each voter's choice (BR-273).
+///
+/// A secret vote writes no row here at all (BR-259). A row per secret ballot, even one naming nobody, would still
+/// line up with the voter's <see cref="VoteReceipt"/>: a plain SELECT returns both tables in the order they were
+/// written. A secret ballot only moves <see cref="VotingOption.BallotCount"/>. The tally of every vote is read from
+/// that counter; these rows only say who. A recorded ballot is never changed or withdrawn (BR-265).
 /// </summary>
 public class VoteChoice : Entity
 {
@@ -13,21 +18,11 @@ public class VoteChoice : Entity
     public Guid VotingOptionId { get; set; }
     public VotingOption VotingOption { get; set; } = null!;
 
-    /// <summary>
-    /// Who cast it — and **always null when the vote is secret** (BR-259). That is the whole point of
-    /// this column being nullable, and it is the one invariant in this table worth writing a test
-    /// around. In a public vote it is set, so the result can show who chose what. Either way a
-    /// recorded ballot is never changed or withdrawn (BR-265).
-    /// </summary>
+    /// <summary>The internal user who chose it. Exactly one of this and <see cref="GuestInvitationId"/> is set.</summary>
     public Guid? VoterId { get; set; }
     public User? Voter { get; set; }
 
-    /// <summary>
-    /// The Guest who cast it in a public vote (ADR-0016); like <see cref="VoterId"/>, always null in
-    /// a secret one. At most one of the two is set.
-    /// </summary>
+    /// <summary>The Guest who chose it (ADR-0016).</summary>
     public Guid? GuestInvitationId { get; set; }
     public MeetingGuestInvitation? GuestInvitation { get; set; }
-
-    public DateTimeOffset CastAt { get; set; } = DateTimeOffset.UtcNow;
 }

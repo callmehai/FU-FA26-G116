@@ -24,13 +24,13 @@ interface Values {
   title: string
   description: string
   presenter: PresenterValue
-  documentIds: string[]
 }
 
 /**
  * UC-23a / UC-23b: add an agenda item or edit one, in any status (SCRUM-98). The presenter is one of
- * the meeting's current people or guests; the documents are the meeting's own, and one may already
- * sit under other items. The server re-checks all of it and answers field errors under MSG66.
+ * the meeting's current people or guests. Documents are not picked here: the row's paperclip links
+ * them (UC-33b), and leaving `documentIds` out keeps the item's links. The server re-checks all of it
+ * and answers field errors under MSG66.
  */
 export function AgendaItemDialog({
   meetingId,
@@ -52,7 +52,6 @@ export function AgendaItemDialog({
     title: item?.title ?? '',
     description: item?.description ?? '',
     presenter: presenterOf(item),
-    documentIds: item?.documents.map((d) => d.id) ?? [],
   }
   const [values, setValues] = useState(initial)
   const [options, setOptions] = useState<AgendaEditorOptions | null>(null)
@@ -73,8 +72,7 @@ export function AgendaItemDialog({
   const dirty =
     values.title !== initial.title ||
     values.description !== initial.description ||
-    values.presenter !== initial.presenter ||
-    values.documentIds.join() !== initial.documentIds.join()
+    values.presenter !== initial.presenter
   const close = () => {
     if (pending) return
     if (dirty) setConfirmDiscard(true)
@@ -102,7 +100,6 @@ export function AgendaItemDialog({
       description: values.description,
       presenterId: values.presenter.startsWith('u:') ? values.presenter.slice(2) : null,
       presenterGuestInvitationId: values.presenter.startsWith('g:') ? values.presenter.slice(2) : null,
-      documentIds: values.documentIds,
     }
     setPending(true)
     setFormError(null)
@@ -132,11 +129,6 @@ export function AgendaItemDialog({
       label: p.kind === 'Guest' ? `${p.fullName} (khách)` : p.fullName,
     })),
   ]
-  const toggleDocument = (id: string) =>
-    set(
-      'documentIds',
-      values.documentIds.includes(id) ? values.documentIds.filter((d) => d !== id) : [...values.documentIds, id],
-    )
 
   return (
     <Dialog
@@ -175,7 +167,15 @@ export function AgendaItemDialog({
             onChange={(v) => set('presenter', v)}
             disabled={!options}
           />
-          {fieldErrors.presenterId || fieldErrors.presenterGuestInvitationId ? (
+          {loadError ? (
+            <small className="field-error">
+              {loadError}{' '}
+              <button type="button" className="btn btn-outline btn-sm" onClick={loadOptions}>
+                <Icon name="refresh" size={16} />
+                Thử lại
+              </button>
+            </small>
+          ) : fieldErrors.presenterId || fieldErrors.presenterGuestInvitationId ? (
             <small className="field-error">{fieldErrors.presenterId ?? fieldErrors.presenterGuestInvitationId}</small>
           ) : item?.legacyPresenterName && !values.presenter ? (
             <small className="field-hint">
@@ -202,38 +202,6 @@ export function AgendaItemDialog({
             </small>
           </span>
         </label>
-
-        <div className="field">
-          <span>Tài liệu</span>
-          <div className="pick-list agenda-pick-list" aria-busy={options === null && !loadError}>
-            {loadError ? (
-              <div className="pick-note pick-note-error">
-                {loadError}{' '}
-                <button type="button" className="btn btn-outline btn-sm" onClick={loadOptions}>
-                  <Icon name="refresh" size={16} />
-                  Thử lại
-                </button>
-              </div>
-            ) : options === null ? (
-              <p className="pick-note">Đang tải…</p>
-            ) : options.documents.length === 0 ? (
-              <p className="pick-note">Cuộc họp chưa có tài liệu. Tải tài liệu lên ở tab Tài liệu.</p>
-            ) : (
-              options.documents.map((doc) => (
-                <label key={doc.id} className="pick-row">
-                  <input
-                    type="checkbox"
-                    checked={values.documentIds.includes(doc.id)}
-                    onChange={() => toggleDocument(doc.id)}
-                  />
-                  <Icon name="fileText" size={16} />
-                  <span className="agenda-pick-title">{doc.title}</span>
-                </label>
-              ))
-            )}
-          </div>
-          {fieldErrors.documentIds && <small className="field-error">{fieldErrors.documentIds}</small>}
-        </div>
 
         {formError && (
           <p className="alert alert-error dialog-error" role="alert">

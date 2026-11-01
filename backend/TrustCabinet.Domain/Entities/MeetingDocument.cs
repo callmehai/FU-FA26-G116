@@ -34,5 +34,6 @@ public class MeetingDocument : Entity
 
     public ICollection<MeetingDocumentAgendaItem> AgendaItemLinks { get; set; } = [];
     public ICollection<VoteDocument> VoteLinks { get; set; } = [];
+    public ICollection<DocumentReadConfirmation> ReadConfirmations { get; set; } = [];
     public ICollection<DocumentComment> Comments { get; set; } = [];
 }

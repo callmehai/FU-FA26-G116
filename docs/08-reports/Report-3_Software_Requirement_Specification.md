@@ -6,7 +6,7 @@ CAPSTONE PROJECT REPORT
 
 Report 3 – Software Requirement Specification
 
-– Hanoi, Aug 2026 –
+– Hanoi, Sep 2026 –
 
 Table of Contents
 
@@ -45,6 +45,9 @@ Table of Contents
 | 28/10/2026 | M | KhanhPG | BA Final Review for FE-07 (SCRUM-23, SCRUM-58, SCRUM-110–113): align UC-71b, UC-72a, UC-72b, UC-35, UC-33a–UC-33d and UC-34b with implemented code; add exception flows for MSG347 (invalid document name), MSG348 (text too long for folders and comments), and MSG349 (meeting cancelled); update UC-34b UI and rules (button disabled for active accounts with tooltip, no search/filter, reactivated account redirect, automatic fallback to library root); add locked account library reading to Permission Matrix; update System Messages table. |
 | 29/10/2026 | M | KhanhPG | BA Final Review for FE-04, FE-05 and FE-13 (SCRUM-99, SCRUM-69, SCRUM-15, SCRUM-25, SCRUM-98): UC-75 adds the automatic cancellation of an overdue Meeting (AF-2), the notice to the Meeting Approver when a Meeting awaiting approval is cancelled and the 1,000-character limit on the reason (EX-4, MSG345); BR-301 rewritten (24 hours after the planned start time, any Meeting not yet started, PO 27/10/2026), BR-302 retired, BR-298 and BR-300 updated; UC-17 Calendar group for Cancelled Meetings; UC-26 adds the read-only Guest view; data dictionary updated for Meeting cancellation, status history without actor, Agenda Item presenter and conclusion (no duration); UC-21, UC-22 and the email rules checked against the code with no change; provider names removed from the SMTP interface descriptions; System Messages table updated. |
 | 29/10/2026 | M | KhanhPG | BA Final Review for FE-08 (SCRUM-39, SCRUM-41, SCRUM-42, SCRUM-43): specify UC-37, UC-38, UC-39a–UC-39d, UC-40, UC-41, UC-42 and UC-78 as built; add UC-79 Register to Speak (SCRUM-27, requirement); remove one-to-one calls (SCRUM-40) from the data dictionary; add BR-323–BR-332 (room entry, leaving, one-way mute, one presenter, temporary chat, one connection per account, role change in the room, presence is not attendance, browser devices, floating window), BR-336 (50 people per room) and BR-337–BR-339 (speaking requests); add the room messages MSG328–MSG343 and MSG350; UC-73 POST-4; update the UC list and the Meeting Lobby and Video Grid screens. |
+| 30/10/2026 | M | HuyNQ | Fix review findings: correct the UC IDs in the Actors table (4.1) and describe the AI / Speech Processing Provider as an in-house worker; replace the UC-09 and UC-13 placeholder descriptions in 4.2; add the feature priority table to 4.2 (FE-01 to FE-13 Must-have, FE-14 and FE-15 Should-have); rename ALT-1 to AF-1; add UC, FE, API, JOB and ADR to Definition and Acronyms; keep requirement apart from design in 5.2, 16.2 and 17 (no class names, internal paths, configuration keys or timeouts), mark 17.4 and 17.5 as built and describe 17.6 as the in-house worker (ADR-0026); remove SCRUM and ADR codes and "as in AI-eCabinet" from descriptions and keep them in the Source column; set the cover date to the date of the first Change Log entry; refresh the Table of Contents. |
+| 30/10/2026 | M, A | KhanhPG | Reorganize FE-09/FE-10 to match the as-built recording, transcription and Voice ID; add UC-80 Manage My Recorded Speech and UC-81 Manage My Voice ID |
+| 01/11/2026 | M | KhanhPG | Align FE-09/FE-10 with the code on main after review: a take added to a room recording replaces the edited text and assigned names (BR-345, BR-360, UC-44b, UC-45c); erasure records who or why in the audit log only (UC-44e, BR-348); a take still being recorded does not block deleting a take or erasing another recording (UC-44d, UC-44e, UC-44a AF-2); the 180 days count from the first take (BR-347); add MSG298 to UC-44d, MSG304 to UC-46b, MSG319 and MSG321 to UC-39a; correct BR-349, UC-44c POST-1 and UC-43a PRE-1. Lock the external actors to OAuth Provider, Google AI Provider, Resend Email and Cloudflare R2 (4.1, 1. Context Diagram, 17.3, 17.6, new 17.7); speech recognition runs inside the system and is no longer an actor (UC-39a, UC-45c, UC-81c) |
 
 *A - Added M - Modified D - Deleted
 
@@ -58,18 +61,25 @@ Table of Contents
 | BF | Business Flow |
 | BR | Business Rule |
 | MSG | Message |
+| UC | Use Case |
+| FE | Feature |
+| API | Application Programming Interface |
+| JOB | Background Job |
+| ADR | Architecture Decision Record |
 
 ## I. Overall Requirements
 
 ### 1. Context Diagram
 
-TrustCabinet is an Internal Meeting and Document Management System that interacts with the following human/internal actors: Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant, and Guest. The context diagram also shows three external service actors: Google Identity Provider, AI / Speech Processing Provider, and Email / SMTP Service.
+TrustCabinet is an Internal Meeting and Document Management System that interacts with the following human/internal actors: Meeting Organizer, Meeting Approver, System Admin, Chair, Secretary, Participant, and Guest. The context diagram also shows four service actors outside the TrustCabinet backend: OAuth Provider, Google AI Provider, Resend Email and Cloudflare R2.
 
-- Google Identity Provider supports Google-based sign-in and provides verified identity information for users accessing TrustCabinet.
+- OAuth Provider supports Google-based sign-in and provides verified identity information for users accessing TrustCabinet.
 
-- AI / Speech Processing Provider processes meeting audio after the meeting to produce a speaker-attributed transcript and an editable draft summary derived from that transcript. The Secretary may correct transcript text and speaker attribution before generating or regenerating the summary. Formal meeting minutes are prepared separately from approved meeting records and are not directly generated by the AI provider from secretary notes or arbitrary meeting documents.
+- Google AI Provider creates an editable draft summary from the transcript of a meeting (UC-47). Transcription and speaker identification run inside the system and do not use any external service. The Secretary may correct transcript text and speaker attribution before generating or regenerating the summary. Formal meeting minutes are prepared separately from approved meeting records and are not directly generated by the AI provider from secretary notes or arbitrary meeting documents.
 
-- Email / SMTP Service handles outbound email delivery, including password-reset messages, meeting invitations, and other meeting-related communications.
+- Resend Email handles outbound email delivery, including password-reset messages, meeting invitations, and other meeting-related communications.
+
+- Cloudflare R2 stores the files uploaded to TrustCabinet, such as personal and meeting documents, and returns them to the system when an authorized user opens or downloads them.
 
 Through these interactions, TrustCabinet acts as the central point connecting meeting participants, meeting records, documents, voting results, and post-meeting minutes, while external services are used only for specific supporting functions outside the main system boundary.
 
@@ -390,7 +400,7 @@ The option chosen in a Vote. For a Public Vote, exactly one of VoterId and Guest
 
 Entity 18: Document
 
-Entry in a user's personal library. It refers to one immutable Stored File; documents have no versions, so changing a document means uploading a new file (ADR-0018).
+Entry in a user's personal library. It refers to one immutable Stored File; documents have no versions, so changing a document means uploading a new file.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -403,7 +413,7 @@ Entry in a user's personal library. It refers to one immutable Stored File; docu
 
 Entity 19: StoredFile
 
-One uploaded file in object storage. It is immutable; personal library entries and Meeting documents only refer to it. A periodic cleanup deletes the object once nothing refers to it (ADR-0018).
+One uploaded file in object storage. It is immutable; personal library entries and Meeting documents only refer to it. A periodic cleanup deletes the object once nothing refers to it.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -581,7 +591,7 @@ Outgoing email kept in a queue so it can be sent in the background, retried on f
 
 Entity 30: Folder
 
-Folder in a user’s personal library. Folders nest at most five levels; a folder created for a meeting upload keeps a link to that Meeting so later uploads find it after a rename or move (ADR-0018).
+Folder in a user’s personal library. Folders nest at most five levels; a folder created for a meeting upload keeps a link to that Meeting so later uploads find it after a rename or move.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -620,9 +630,10 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | 5 | Chair | A user assigned to chair a meeting, start/end it, control agenda execution, open/close Votes and record their conclusions, and moderate authorized meeting-room interactions. |
 | 6 | Secretary | A user assigned to support a specific meeting by preparing agenda items, managing the meeting roster and official attendance, managing authorized meeting documents, uploading the post-meeting audio, reviewing transcripts and summaries, and preparing/finalizing meeting minutes. |
 | 7 | Participant | An internal user assigned to participate in a specific meeting. A Participant may perform authorized meeting activities such as joining the online meeting room, viewing or commenting on meeting documents, responding to invitations, and voting. Chair and Secretary are meeting-specific roles with additional responsibilities. |
-| 8 | Google Identity Provider | An external identity provider used for Google-based authentication and verified identity data exchange. It participates primarily in UC-02 Sign in with Google and supports the authentication flow shown in the context diagram. |
-| 9 | AI / Speech Processing Provider | An external processing provider that receives approved Meeting audio and returns speaker-attributed transcript data and draft summaries. It supports transcript and summary processing such as UC-62 Upload Meeting Audio, UC-64 View Speaker-Attributed Transcript, UC-65 Edit Transcript & Speaker Attribution, and UC-90 Generate / Regenerate Meeting Summary. |
-| 10 | Email / SMTP Service | An external outbound email service used to deliver password-reset messages, meeting invitations, guest-access emails, notifications, and minutes-signing related emails. It supports flows such as UC-07 Reset Password, UC-21 Publish Meeting, UC-80 Submit Meeting Minutes for Signing, and notification delivery under FE-13. |
+| 8 | OAuth Provider | An external identity provider used for Google-based authentication and verified identity data exchange. It participates primarily in UC-02 Sign in with Google and supports the authentication flow shown in the context diagram. |
+| 9 | Google AI Provider | An external generative-AI service that receives the transcript of a Meeting and returns a draft summary for the Secretary to review. It supports UC-47 Generate / Regenerate Meeting Summary. Transcription and speaker identification are not part of this actor: they run inside the system. |
+| 10 | Resend Email | An external outbound email service used to deliver password-reset messages, meeting invitations, guest-access emails, notifications, and minutes-signing related emails. It supports flows such as UC-07 Reset Password, UC-20 Publish Meeting, UC-61 Submit Meeting Minutes for Signing, and notification delivery under FE-13. |
+| 11 | Cloudflare R2 | An external object-storage service that keeps the files uploaded to TrustCabinet, such as personal documents and meeting documents, and returns them to the system when an authorized user opens or downloads them. It supports the document flows of UC-32 to UC-36. |
 
 #### 4.2 Use Cases (UC)
 
@@ -636,11 +647,11 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-06 | Manage User Accounts | User & Profile Management | Create, update, deactivate, or reactivate user accounts; the operation is specified in UC-06a–UC-06c. |
 | UC-07 | Reset User Password | User & Profile Management | Initiate a password reset for an eligible user account. |
 | UC-08 | Assign System Role to User | User & Profile Management | Assign or change the system role of a user account. |
-| UC-09 | Unlock User Account | User & Profile Management | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-09 | Unlock User Account | User & Profile Management | Unlock a user account that the authentication security controls have locked. |
 | UC-10 | View Role & Permission Matrix | Role-Based Access Control | View system roles and their assigned permissions. |
 | UC-11 | Configure Role Permissions | Role-Based Access Control | Configure permissions assigned to a system role. |
 | UC-12 | Manage Roles | Role-Based Access Control | Create, update, or delete custom roles; see the detailed UC-12a–UC-12c specifications. |
-| UC-13 | View Audit Log | Role-Based Access Control | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-13 | View Audit Log | Role-Based Access Control | Review recorded system events for security, accountability and operational investigation. |
 | UC-14 | Create Meeting | Meeting Management | Create one independent Meeting with its planned start and end times, mode, location, confidentiality, other required details and its initial participants. |
 | UC-15 | Update Meeting | Meeting Management | Update Meeting information while Draft/Rejected, or reschedule a Published Meeting before it begins when authorized. |
 | UC-16 | View Meeting Details | Meeting Management | View authorized Meeting details, including planned schedule, actual start/end times, Meeting lifecycle status and, for a Cancelled Meeting, its cancellation reason. |
@@ -671,15 +682,15 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-40 | View Meeting Room Participants | Online Meeting Room Management | View the users currently connected to the online meeting room and their current room presence. |
 | UC-41 | Moderate Meeting Room | Online Meeting Room Management | Allow the current Chair to mute another person's microphone in the meeting room; muting is one-way and the person may turn the microphone on again. |
 | UC-42 | Use In-room Chat | Online Meeting Room Management | Exchange text messages with authorized users currently connected to the online meeting room. |
-| UC-43 | View & Play Meeting Audio | Meeting Audio Upload & Media Library | View the Meeting media library and play Meeting audio; see UC-43a–UC-43b. |
-| UC-44 | Upload Meeting Audio | Meeting Audio Upload & Media Library | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-45 | View Speaker-Attributed Transcript | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-46 | Edit Transcript & Speaker Attribution | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-47 | Generate / Regenerate Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-48 | View Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-49 | Edit Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-50 | Approve Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
-| UC-51 | Publish Meeting Summary | Speaker-Attributed Transcription & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-43 | View & Play Meeting Recordings | Meeting Recording | View meeting recordings and play room recordings or per-mic speech clips; see UC-43a–UC-43c. |
+| UC-44 | Record Room Audio | Meeting Recording | Record room audio through the browser or upload an audio file; see UC-44a–UC-44e. |
+| UC-45 | View Meeting Transcript | Transcription, Speaker Identification & Meeting Summary | View, export and request transcription of meeting recordings; see UC-45a–UC-45c. |
+| UC-46 | Edit Transcript & Speaker Attribution | Transcription, Speaker Identification & Meeting Summary | Edit transcript text, assign speakers to voices, exclude sentences or delete sentences; see UC-46a–UC-46d. |
+| UC-47 | Generate / Regenerate Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-48 | View Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-49 | Edit Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-50 | Approve Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-51 | Publish Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
 | UC-52 | View Meeting Votes | Voting Management | View visible Meeting Votes and their status or result through UC-52a and UC-52b. |
 | UC-53 | Create / Configure Vote | Voting Management | Allows the current Chair or Secretary to prepare a Vote draft and configure or delete an existing draft; only the Chair may proceed to opening the Vote. Draft preparation is allowed before the Meeting starts, while it is Approved or Published, and during InProgress. Each Vote belongs directly to its Meeting; its documents are managed through UC-76. |
 | UC-54 | Open Vote | Voting Management | Allows the current Chair to open a valid Vote during an InProgress Meeting. Opening fixes the eligible-voter list and count. Only one Vote may be Open in a Meeting at a time. |
@@ -708,6 +719,28 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | UC-77 | Record Agenda Item Conclusion | Agenda Management | The current Chair or Secretary records or updates what was concluded for an InProgress or Done Agenda Item, until the minutes draft is generated; minutes include each Item conclusion. |
 | UC-78 | Keep Meeting in a Floating Window | Online Meeting Room Management | A person connected to the online room keeps the call in a small always-on-top window while working in other tabs and brings it back to the main window; the floating window uses the same room connection. |
 | UC-79 | Register to Speak | Online Meeting Room Management | A person in the online room raises a hand to ask for the floor; the Chair sees the raised hands in order, invites one person at a time to speak and closes each turn. |
+| UC-80 | Manage My Recorded Speech | Meeting Recording | View sentences recorded from the user's own microphone, listen to playback and withdraw/delete personal speech. |
+| UC-81 | Manage My Voice ID | Transcription, Speaker Identification & Meeting Summary | Manage personal voice biometric consent, record and listen to voice samples, or withdraw consent; see UC-81a–UC-81f. |
+
+Feature priority. The features are prioritised with the Product Owner: FE-01 to FE-13 are Must-have and FE-14 and FE-15 are Should-have.
+
+| Feature | Name | Priority |
+| --- | --- | --- |
+| FE-01 | Authentication & Account Security | Must-have |
+| FE-02 | User & Profile Management | Must-have |
+| FE-03 | Role-Based Access Control | Must-have |
+| FE-04 | Meeting Management | Must-have |
+| FE-05 | Agenda Management | Must-have |
+| FE-06 | Meeting Participant Management | Must-have |
+| FE-07 | Personal Document Library & Meeting Document Management | Must-have |
+| FE-08 | Online Meeting Room Management | Must-have |
+| FE-09 | Meeting Audio Upload & Media Library | Must-have |
+| FE-10 | Speaker-Attributed Transcription & Meeting Summary | Must-have |
+| FE-11 | Voting Management | Must-have |
+| FE-12 | Meeting Minutes & Digital Signing | Must-have |
+| FE-13 | Email & In-App Notification | Must-have |
+| FE-14 | Personal Dashboard & Meeting Workspace | Should-have |
+| FE-15 | Reporting & Statistics | Should-have |
 
 #### 4.3 Use Case Diagrams
 
@@ -900,7 +933,7 @@ Notes:
 | 8.3 | In-Room Participants Panel | FE-08 Online Meeting Room Management | Allows users in the online room to view who is connected with their meeting role, who is speaking and who is muted, allows the Chair to mute a participant, and, in a separate Attendance panel, lets the Secretary record Present or Absent without leaving the room. |
 | 8.4 | Screen Sharing & Chat | FE-08 Online Meeting Room Management | Allows users connected to the online room to present their screen on the main stage, follow a shared screen and exchange text chat messages that are not kept after the meeting. |
 | 8.5 | In-Room Voting Panel | FE-08 Online Meeting Room Management | Planned: allows eligible voters in the online room to follow the open Vote and cast a ballot without leaving the room. |
-| 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Built (SCRUM-21): allows users in the online room to read the meeting documents, current Agenda Item first, opening each document in a new tab so the call continues. |
+| 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Built: allows users in the online room to read the meeting documents, current Agenda Item first, opening each document in a new tab so the call continues. |
 | 8.7 | In-Room Attendance Panel | FE-08 Online Meeting Room Management | Allows the Secretary to record Present or Absent for any current internal participant or Guest from a separate Attendance panel without leaving the online room; choosing a value saves it. Other users see the same attendance read-only. No totals are shown. |
 | 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
 | 9.2 | Upload Audio Dialog | FE-09 Meeting Audio Upload & Media Library | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 500 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
@@ -924,12 +957,13 @@ Notes:
 
 | # | API Name | Calling Path | Description |
 | --- | --- | --- | --- |
-| 1 | Google Identity Services (Sign in with Google, browser SDK) | Frontend GoogleSignInButton (src/features/auth) → loads https://accounts.google.com/gsi/client → returns Google ID token (credential) to the SPA | Google's sign-in popup authenticates the user's Google account in the browser and hands the SPA a signed ID token; no client secret and no server-side OAuth redirect/callback is used. |
-| 2 | Google Identity Platform – ID token verification (OpenID Connect) | AuthEndpoints → POST /api/auth/google → AuthenticationService.SignInWithGoogleAsync → GoogleTokenVerifier (Infrastructure/Authentication, Google.Apis.Auth) | Backend verifies the Google ID token (signature against Google's published signing certificates, issuer, audience = configured Client ID, expiry, email_verified, sub) and then signs the user in, auto-linking the Google account on first use by verified email (ADR-0009). |
-| 3 | SMTP mail server (any provider) | EmailDeliveryWorker → EmailQueueProcessor → SmtpEmailSender (Infrastructure/Email, MailKit); PasswordResetEmailSender → SmtpEmailSender | Sends meeting invitation emails (with .ics calendar attachment) from the email_messages outbox queue, and password-reset link emails sent directly when an administrator resets a password. |
-| 4 | LiveKit server – RoomService API & client signalling (planned) | Planned: CallEndpoints → POST /api/meetings/{id}/call/join → CallRoomService → LiveKitGateway (Infrastructure/Calls, Livekit.Server.Sdk.Dotnet); browser livekit-client → LiveKit WebSocket /rtc | Self-hosted LiveKit SFU for the online meeting room: backend issues LiveKit access tokens after permission checks and calls RoomService (list/mute/remove participants, delete room); media and signalling flow browser ↔ LiveKit. Designed and accepted but not yet in the main codebase. |
-| 5 | LiveKit webhook (planned) | Planned: LiveKit server → POST /api/livekit/webhook → CallEndpoints → CallRoomService.HandleWebhookAsync | Inbound callback from LiveKit on participant_joined/left, room_finished and track_published, used to record call sessions/attendance and enforce the one-screen-share rule. |
-| 6 | AI / Speech Processing Provider (planned – provider not yet decided) | Planned background processing of an uploaded Recording → Transcript / TranscriptSegment → MeetingSummary (no client component exists yet) | Converts uploaded meeting audio into a speaker-attributed (diarized) transcript and a draft meeting summary for the Secretary to review; whether the model is self-hosted or an external API is still open, so the provider name/model is stored per result. |
+| 1 | Google Identity Services (Sign in with Google, browser SDK) | Frontend sign-in button → Google Identity Services SDK in the browser → Google ID token returned to the SPA | Google's sign-in popup authenticates the user's Google account in the browser and hands the SPA a signed ID token; no client secret and no server-side OAuth redirect/callback is used. |
+| 2 | Google Identity Platform – ID token verification (OpenID Connect) | Frontend → TrustCabinet backend (Google sign-in) → Google Identity Platform | Backend verifies the Google ID token (signature against Google's published signing certificates, issuer, audience = configured Client ID, expiry, email_verified, sub) and then signs the user in, auto-linking the Google account on first use by verified email. |
+| 3 | Resend Email (outbound email API; SMTP as an alternative) | Invitation email delivery and password-reset email → Resend Email | Sends meeting invitation emails (with .ics calendar attachment) from the invitation email queue, and password-reset link emails sent directly when an administrator resets a password. |
+| 4 | LiveKit server – RoomService API & client signalling | TrustCabinet backend (room join) → LiveKit server; browser → LiveKit real-time connection | Self-hosted LiveKit SFU for the online meeting room: backend issues LiveKit access tokens after permission checks and calls RoomService (list/mute/remove participants, delete room); media and signalling flow browser ↔ LiveKit. |
+| 5 | LiveKit webhook | LiveKit server → TrustCabinet backend (room events) | Inbound callback from LiveKit on participant_joined/left, room_finished and track_published, used to record call sessions/attendance and enforce the one-screen-share rule. |
+| 6 | Google AI Provider (planned) | Planned background processing of an uploaded recording → transcript → meeting summary | Converts uploaded meeting audio into a speaker-attributed (diarized) transcript and a draft meeting summary for the Secretary to review; the model runs in-house, and the provider name and model are stored per result. |
+| 7 | Cloudflare R2 – S3-compatible object storage | Document upload, view and download → TrustCabinet backend → Cloudflare R2 | Stores the bytes of uploaded personal and meeting documents in a private bucket; the backend reads them back after checking the permission of the caller, and a periodic clean-up removes files that were never linked to a document. |
 
 #### 5.3 Background Job Inventory
 
@@ -955,7 +989,7 @@ Notes:
 
 #### 1.2 UC-02 – Sign in with Google
 
-| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | Google Identity Provider |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | OAuth Provider |
 | --- | --- | --- | --- |
 | Description | As an internal system user, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account. |  |  |
 | Preconditions | ● PRE-1: The user has an existing internal account.<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
@@ -977,16 +1011,16 @@ Notes:
 
 #### 1.4 UC-04 – Access Meeting via Guest Invitation
 
-| Primary Actors | Guest | Secondary Actors | Email / SMTP Service |
+| Primary Actors | Guest | Secondary Actors | Resend Email |
 | --- | --- | --- | --- |
 | Description | Allows an invited Guest to verify control of the invited email and enter self-declared display information for the invited Meeting. |  |  |
 | Preconditions | ● PRE-1: The Guest has received a valid invitation for a meeting.<br>● PRE-2: The invitation has not been revoked or expired. |  |  |
 | Postconditions | POST-1: Verified Guest access is limited to the invited Meeting.<br>POST-2: The Guest may use Member participation functions and receive additional Meeting permissions. Email control is verified; display name and job title are self-declared. |  |  |
 | Normal Flow | Access Meeting via Guest Invitation<br>1. The Guest opens the invitation link.<br>2. The system checks the invitation and requests the one-time code sent to the invited email.<br>3. The Guest enters the code.<br>4. The system validates the code and invitation and verifies control of the invited email. (BR-153)<br>5. The Guest enters the display name and job title for presentation in the Meeting; the system labels this information as self-declared. (BR-180)<br>6. The system establishes Meeting-scoped Guest access and displays the invited Meeting. |  |  |
-| Alternative Flows | ALT-1: If the Guest reopens a valid link during an active verified session, the system opens the same invited meeting without requesting another code. |  |  |
+| Alternative Flows | AF-1: If the Guest reopens a valid link during an active verified session, the system opens the same invited meeting without requesting another code. |  |  |
 | Exception Flows | EX-1: The invitation is missing, expired, or revoked: the system denies access and explains that the invitation is no longer valid.<br>EX-2: The code is incorrect, expired, or already used: the system denies verification and allows the Guest to request or enter a valid code.<br>EX-3: The verification service is unavailable: the system reports that verification could not be completed and does not establish a session. |  |  |
 
-Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation. This single end-to-end sequence covers code request, invited-email verification, self-declared display information and access to the invited Meeting; these steps remain part of UC-04, not additional Use Cases.
+This single end-to-end sequence covers code request, invited-email verification, self-declared display information and access to the invited Meeting; these steps remain part of UC-04, not additional Use Cases.
 
 ### 2. FE-02 – User & Profile Management
 
@@ -1066,7 +1100,7 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 | Preconditions | ● PRE-1: The System Admin is authenticated and authorized to manage user accounts.<br>● PRE-2: The selected user account exists and is currently locked. |  |  |
 | Postconditions | ● POST-1: The account lock is cleared and the user can attempt to sign in, subject to account status and credentials.<br>● POST-2: The unlock action is recorded in the audit log. |  |  |
 | Normal Flow | Unlock User Account<br>1. The System Admin opens User Accounts and selects the locked account.<br>2. The system displays the account status and available account actions.<br>3. The System Admin selects Unlock Account and confirms the action.<br>4. The system clears the lock state and resets the failed-attempt lock counter.<br>5. The system confirms the unlock and records the action. |  |  |
-| Alternative Flows | ALT-1: If the account is already unlocked when the request is processed, the system leaves it unchanged and refreshes the displayed status. |  |  |
+| Alternative Flows | AF-1: If the account is already unlocked when the request is processed, the system leaves it unchanged and refreshes the displayed status. |  |  |
 | Exception Flows | EX-1: The account does not exist or is outside the Admin's scope: the system denies the action.<br>EX-2: The account is inactive: the system does not make it sign-in eligible and explains that reactivation is required.<br>EX-3: The update fails: the system retains the existing lock state and reports that the account could not be unlocked. |  |  |
 
 ### 3. FE-03 – Role-Based Access Control
@@ -1136,7 +1170,7 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 | Preconditions | ● PRE-1: The System Admin is authenticated and has permission to view the audit log. |  |  |
 | Postconditions | ● POST-1: The requested audit entries are displayed read-only.<br>● POST-2: No audit entry is changed by viewing or filtering the log. |  |  |
 | Normal Flow | View Audit Log<br>1. The System Admin opens Audit Log.<br>2. The system retrieves audit entries within the Admin's requested date range and filters.<br>3. The system displays entries in reverse chronological order with actor, event, target, time, and outcome where recorded.<br>4. The System Admin opens an entry or changes filters/pages the results.<br>5. The system displays the matching entries and preserves the read-only state. |  |  |
-| Alternative Flows | ALT-1: If no entries match the filters, the system displays an empty-result message and permits the Admin to revise the filters. |  |  |
+| Alternative Flows | AF-1: If no entries match the filters, the system displays an empty-result message and permits the Admin to revise the filters. |  |  |
 | Exception Flows | EX-1: Invalid filter or date-range values: the system identifies the invalid criteria and does not apply them.<br>EX-2: The audit log cannot be loaded: the system reports the failure and provides a retry action. |  |  |
 
 ### 4. FE-04 – Meeting Management
@@ -1242,7 +1276,7 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 
 #### 4.10 UC-75 – Cancel Meeting
 
-| Primary Actors | Meeting Organizer | Secondary Actors | Email / SMTP Service |
+| Primary Actors | Meeting Organizer | Secondary Actors | Resend Email |
 | --- | --- | --- | --- |
 | Description | Allows the Meeting Organizer to cancel a Meeting that will no longer take place, before it starts. A Cancelled Meeting stays in the system as a read-only record with its cancellation reason; it cannot be edited, published or started again. A Meeting that is still not started long after its planned start time is cancelled by the system itself (BR-301). |  |  |
 | Preconditions | ● PRE-1: The actor is signed in and is the Meeting Organizer of the Meeting.<br>● PRE-2: The Meeting is Draft, WaitingApproval, Rejected, Approved or Published. An InProgress Meeting is ended through UC-22 instead. (BR-297) |  |  |
@@ -1360,7 +1394,7 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 
 ##### 6.2.1 UC-28a – Add Meeting Participant
 
-| Primary Actors | Meeting Organizer, Secretary (before publication, also Chair) | Secondary Actors | Email / SMTP Service |
+| Primary Actors | Meeting Organizer, Secretary (before publication, also Chair) | Secondary Actors | Resend Email |
 | --- | --- | --- | --- |
 | Description | Allows the Organizer to assign a Secretary when none is current in Draft, Rejected or Approved, initially or after removal; current Secretaries add internal participants or invite a Guest. The initial participants of a new Meeting are chosen in the Create Meeting form (UC-14); this use case adds people afterwards. |  |  |
 | Preconditions | ● PRE-1: The actor is either a current assigned Secretary (before publication, a current Chair may also add participants), or the Meeting Organizer restoring/initializing a missing Secretary in Draft, Rejected or Approved.<br>● PRE-2: The Meeting permits roster management. WaitingApproval remains read-only. (BR-78–BR-80, BR-122) |  |  |
@@ -1424,7 +1458,7 @@ Sequence source and PNG: docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuest
 | Alternative Flows | AF-1 – Revise saved attendance<br>1. At Step 3, the Secretary changes the saved attendance for one or more current people.<br>2. The system applies the same validation and atomic-save rules at Steps 4–5. (BR-172)<br>AF-2 – Record the full roster<br>1. At Step 3, the Secretary selects every current internal participant and Guest.<br>2. The system applies the same validation and atomic-save rules at Steps 4–5. A full-roster submission is optional; it is not required to save attendance or end the Meeting. (BR-172) |  |  |
 | Exception Flows | EX-1 – Submitted attendance value is invalid<br>1. At Step 4, a submitted value is not Present or Absent.<br>2. No submitted change is saved. The system displays MSG148 – “Select Present or Absent for each submitted participant or Guest.” The Secretary corrects the value and resumes at Step 3.<br>EX-2 – Meeting is no longer InProgress<br>1. At Step 4, the Meeting changed from InProgress before the submission was saved.<br>2. No submitted change is saved. The system displays MSG149 – “Attendance can only be recorded while the meeting is in progress.” The use case ends unsuccessfully.<br>EX-3 – Secretary is no longer authorized<br>1. At Step 4, the actor is no longer the active current assigned Secretary.<br>2. No submitted change is saved. The system denies the operation under current authorization; existing attendance remains unchanged. The use case ends unsuccessfully.<br>EX-4 – A submitted person is no longer current or their attendance has changed<br>1. At Step 4, one or more submitted internal participants were removed, the Guest invitation was revoked, or another Secretary changed the person’s attendance after the roster was displayed.<br>2. No submitted change is saved and no unsaved selection is kept. The system displays MSG151 – “The participant or attendance data has changed. Please reload and review before saving.” The system reloads the roster and the Secretary selects again, resuming at Step 2. Unrelated new roster entries, and changes to a person’s role or invitation response, do not invalidate the submission. (BR-172)<br>EX-5 – Attendance cannot be saved<br>1. At Step 5, the system cannot persist all submitted changes.<br>2. Attendance is never saved in part. If the connection was lost while saving, the outcome cannot be confirmed.<br>3. The system displays MSG150 – “Unable to confirm the attendance save result. Please reload the data before trying again.” The Secretary reloads attendance to see what was saved. The use case ends unsuccessfully.<br>EX-6 – Attendance cannot be loaded<br>1. At Step 2, the system cannot read the attendance of the Meeting.<br>2. No attendance is changed. The system displays MSG289 – “Unable to load attendance data.” The failed load is not presented as an empty or unmarked roster. The use case ends unsuccessfully. |  |  |
 
-Delivery scope: UC-31 attendance remains in SCRUM-26, separate from SCRUM-20 roster/invitation/response implementation. SCRUM-20 removal/revocation must preserve historical response and attendance evidence. Shared FE-06 documentation does not merge the implementation tasks.
+Delivery scope: UC-31 attendance is delivered separately from the roster, invitation and response use cases. Removal or revocation of a participant must preserve historical response and attendance evidence. Shared FE-06 documentation does not merge these deliveries.
 
 #### 6.6 UC-73 – Hand Over Chair to Another Participant
 
@@ -1439,7 +1473,7 @@ Delivery scope: UC-31 attendance remains in SCRUM-26, separate from SCRUM-20 ros
 
 ### 7. FE-07 – Personal Document Library & Meeting Document Management
 
-ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassigned to linking an existing Meeting document to an Agenda Item; UC-33d removes only one Item link. UC-32b remains retired. Meeting-document reading follows Meeting viewing access. Document additions, removals and Item-link changes stop when the Meeting ends; Agenda Item status does not lock document links. PO follow-up: Meeting documents and comments are read-only after the Meeting ends. Deleting an Agenda Item keeps its documents in the Meeting. Readding a removed document does not restore previous comments. Personal-library quotas remain undecided.
+15/10/2026: Sixteen detailed Document use cases. UC-33b is reassigned to linking an existing Meeting document to an Agenda Item; UC-33d removes only one Item link. UC-32b remains retired. Meeting-document reading follows Meeting viewing access. Document additions, removals and Item-link changes stop when the Meeting ends; Agenda Item status does not lock document links. PO follow-up: Meeting documents and comments are read-only after the Meeting ends. Deleting an Agenda Item keeps its documents in the Meeting. Readding a removed document does not restore previous comments. Personal-library quotas remain undecided.
 
 #### 7.1 UC-32 – View Meeting Documents
 
@@ -1451,7 +1485,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 | Preconditions | ● PRE-1: The internal user is signed in, or the Guest has a valid verified invitation for this Meeting.<br>● PRE-2: The selected Meeting exists and the user can currently view the Meeting. (BR-181, BR-275, BR-153, BR-155, BR-157) |  |  |
 | Postconditions | ● POST-1: Only currently attached documents available to the user are displayed.<br>● POST-2: Meeting documents, personal libraries and Meeting status remain unchanged. |  |  |
 | Normal Flow | View Meeting Documents<br>1. The user opens the Documents tab of the selected Meeting.<br>2. The system checks the user's current permission to view the Meeting, including the current invitation for a Guest. Anyone who can currently view the Meeting may read its documents; there is no separate document-reading permission. Guest access through a verified invitation belongs to UC-04 and is not built in this version. (BR-181, BR-275, BR-200)<br>3. The system displays the Meeting documents grouped by Agenda Item, in agenda order, with their names, file types, the people who added them and comment counts. A document linked to several Agenda Items appears under each of them; a document with no Agenda Item link appears as a general Meeting document. Removed documents are excluded. Agenda Items with no documents are listed as well, so a document can still be attached to them (UC-33b). The list refreshes by itself when the system announces that the Meeting's document list has changed. After the Meeting ends, documents and comments are read-only. (BR-211, BR-277, BR-280, BR-282)<br>4. The user reviews the displayed groups or empty result, and may switch to another grouping or finish viewing. Selecting a document opens UC-32c. |  |  |
-| Alternative Flows | AF-1 – View by Vote or general documents<br>1. At Step 4, the user chooses to view the documents attached to Votes, or the general Meeting documents. The Vote grouping is the target and is not built in this version: it appears when a document can be attached to a Vote (UC-74, SCRUM-96).<br>2. The system displays the documents attached to each Vote of the Meeting, with the user's read confirmation for each, or only the documents with no Agenda Item link. (BR-280, BR-291)<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – No documents to display<br>1. At Step 3, the Meeting has no currently attached documents, or the grouping chosen in AF-1 has no documents.<br>2. The system displays an empty result and explains that no documents are available for the current grouping.<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-3 – View documents from the online meeting room<br>1. At Step 1, the user is in the online meeting room of an InProgress Meeting and opens the room's Documents panel instead of the Documents tab.<br>2. The system applies the same access check and displays the same documents, starting with the current Agenda Item: the server marks which Item is current and the panel places it first, leaving the order the server returns unchanged. Adding, linking and removing documents are not offered in the panel. (BR-275, BR-316)<br>3. The flow resumes at Step 4 of the Main Flow; selecting a document opens UC-32c without leaving the room. (BR-315) |  |  |
+| Alternative Flows | AF-1 – View by Vote or general documents<br>1. At Step 4, the user chooses to view the documents attached to Votes, or the general Meeting documents. The Vote grouping is the target and is not built in this version: it appears when a document can be attached to a Vote (UC-74).<br>2. The system displays the documents attached to each Vote of the Meeting, with the user's read confirmation for each, or only the documents with no Agenda Item link. (BR-280, BR-291)<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – No documents to display<br>1. At Step 3, the Meeting has no currently attached documents, or the grouping chosen in AF-1 has no documents.<br>2. The system displays an empty result and explains that no documents are available for the current grouping.<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-3 – View documents from the online meeting room<br>1. At Step 1, the user is in the online meeting room of an InProgress Meeting and opens the room's Documents panel instead of the Documents tab.<br>2. The system applies the same access check and displays the same documents, starting with the current Agenda Item: the server marks which Item is current and the panel places it first, leaving the order the server returns unchanged. Adding, linking and removing documents are not offered in the panel. (BR-275, BR-316)<br>3. The flow resumes at Step 4 of the Main Flow; selecting a document opens UC-32c without leaving the room. (BR-315) |  |  |
 | Exception Flows | EX-1 – Meeting documents are not accessible<br>1. At Step 2, the Meeting is unavailable or the user can no longer view the Meeting, including removal of a participant or revocation or expiry of a Guest invitation.<br>2. No document names or contents are disclosed. No Meeting information is changed. The system displays MSG156 – “Meeting documents are not accessible.”<br>3. The use case ends.<br>EX-2 – Document list cannot be loaded<br>1. At Step 3, the system cannot retrieve the available document list.<br>2. No Meeting information is changed. The system displays MSG157 – “Unable to load the document list. Please try again.”; the failed load is not presented as an empty list.<br>3. The use case ends. |  |  |
 
 ##### 7.1.2 UC-32c – Preview Meeting Document
@@ -1460,8 +1494,8 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 | --- | --- | --- | --- |
 | Description | Allows an authorized user to read a Meeting document online and download the same file when permitted. Comments are covered separately in UC-35. Guest access through a verified invitation belongs to UC-04 and is not built in this version. (BR-181, BR-188) |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in, or the Guest has a valid verified invitation for this Meeting.<br>● PRE-2: The selected document is currently attached to the Meeting and the user can currently view the Meeting. (BR-181, BR-211, BR-275, BR-153, BR-155, BR-157) |  |  |
-| Postconditions | ● POST-1: The selected document is displayed for online reading; in AF-1, the user also receives the permitted download.<br>● POST-2: The file content, its Meeting association and its comments remain unchanged.<br>● POST-3: When the user reaches the last page in the viewer, the system records it for that user and document; this enables read confirmation in UC-74. This recording is not built in this version: it belongs to UC-74 (SCRUM-96). (BR-290) |  |  |
-| Normal Flow | Preview Meeting Document<br>1. The user selects a document in the Meeting Documents tab, the documents of an Agenda Item, or the Documents panel of the online meeting room.<br>2. The system checks current permission to view the Meeting and that the document is still attached to this Meeting. Anyone who can currently view the Meeting may read its documents; there is no separate document-reading permission. (BR-181, BR-211, BR-275, BR-200)<br>3. The system opens the document viewer and displays the file name, its content and the Meeting sensitivity, which the screen takes from the Meeting details. A viewer opened from the online meeting room opens separately, so the user stays in the room. For a Confidential or Secret Meeting, the system records the view in the audit log before it sends the file; if that entry cannot be written, no content is sent and EX-2 applies. (BR-315, BR-318)<br>4. The user reads the document. When the user scrolls to the last page, the system records it and, for a Vote document, offers read confirmation through UC-74; that recording is not built in this version (UC-74, SCRUM-96). (BR-290) After the Meeting ends, the document and comments are read-only. Downloading remains available when the Meeting is not Secret. (BR-188, BR-282)<br>Known risk: for a Secret Meeting only Download is blocked. Viewing still delivers the original file to the browser, so a technically skilled user can save it; each view is recorded in the audit log. (BR-188, BR-318) |  |  |
+| Postconditions | ● POST-1: The selected document is displayed for online reading; in AF-1, the user also receives the permitted download.<br>● POST-2: The file content, its Meeting association and its comments remain unchanged.<br>● POST-3: When the user reaches the last page in the viewer, the system records it for that user and document; this enables read confirmation in UC-74. This recording is not built in this version: it belongs to UC-74. (BR-290) |  |  |
+| Normal Flow | Preview Meeting Document<br>1. The user selects a document in the Meeting Documents tab, the documents of an Agenda Item, or the Documents panel of the online meeting room.<br>2. The system checks current permission to view the Meeting and that the document is still attached to this Meeting. Anyone who can currently view the Meeting may read its documents; there is no separate document-reading permission. (BR-181, BR-211, BR-275, BR-200)<br>3. The system opens the document viewer and displays the file name, its content and the Meeting sensitivity, which the screen takes from the Meeting details. A viewer opened from the online meeting room opens separately, so the user stays in the room. For a Confidential or Secret Meeting, the system records the view in the audit log before it sends the file; if that entry cannot be written, no content is sent and EX-2 applies. (BR-315, BR-318)<br>4. The user reads the document. When the user scrolls to the last page, the system records it and, for a Vote document, offers read confirmation through UC-74; that recording is not built in this version (UC-74). (BR-290) After the Meeting ends, the document and comments are read-only. Downloading remains available when the Meeting is not Secret. (BR-188, BR-282)<br>Known risk: for a Secret Meeting only Download is blocked. Viewing still delivers the original file to the browser, so a technically skilled user can save it; each view is recorded in the audit log. (BR-188, BR-318) |  |  |
 | Alternative Flows | AF-1 – Download the document<br>1. At Step 4, the user chooses Download for a Meeting that is not Secret.<br>2. The system rechecks current access, that the document remains attached and the current Meeting sensitivity. (BR-181, BR-211, BR-188, BR-275, BR-200)<br>3. The system provides the same uploaded file to the user and, for a Confidential Meeting, records the download in the audit log. (BR-183, BR-216, BR-318)<br>4. The flow resumes at Step 4 of the Main Flow. |  |  |
 | Exception Flows | EX-1 – Document is no longer accessible<br>1. At Step 2, or during the access check in AF-1, the document was removed or the user can no longer view the Meeting.<br>2. No further document content or download is provided. The file and Meeting remain unchanged. The system displays MSG156 – “Meeting documents are not accessible.”<br>3. The use case ends.<br>EX-2 – Preview cannot be displayed<br>1. At Step 3, the system cannot display the selected file.<br>2. The document remains attached and its content is unchanged. The system displays MSG158 – “Unable to display the document. Please try again.”<br>3. The use case ends.<br>EX-3 – Download is prohibited<br>1. During Step 2 of AF-1, the Meeting is Secret, including when its sensitivity changed after the viewer opened.<br>2. No download is provided. The document remains unchanged. The system displays MSG159 – “Secret Meeting documents can only be viewed online and cannot be downloaded.” (BR-188)<br>3. The flow resumes at Step 4 of the Main Flow for online reading.<br>EX-4 – Download cannot be provided<br>1. At Step 3 of AF-1, the system cannot provide the file.<br>2. The file and its Meeting association remain unchanged. The system displays MSG160 – “Unable to download the document. Please try again.”<br>3. The flow resumes at Step 4 of the Main Flow. |  |  |
 
@@ -1513,7 +1547,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 #### 7.3 UC-34 – View Personal Document Library
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows an internal user to browse their own folders and documents and see permitted Meeting-usage details. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |  |  |
@@ -1546,7 +1580,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 #### 7.5 UC-36 – Upload Document to Personal Library
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows an internal user to upload one or more PDF or DOCX files to the selected location in their personal library. Uploading to the library does not add them to a Meeting. (BR-286) |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |  |  |
@@ -1559,7 +1593,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 ##### 7.6.1 UC-71a – Delete Document from Personal Library
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows an internal user to delete a document from their personal library without removing documents already attached to Meetings. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The selected document is in the user's library. |  |  |
@@ -1570,7 +1604,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 ##### 7.6.2 UC-71b – Rename Document
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows the owner to rename a personal-library document without changing its file content. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The document exists in the user's library. |  |  |
@@ -1581,7 +1615,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 ##### 7.6.3 UC-71c – Move Document to Folder
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows the owner to move a personal-library document to another owned folder or the library root. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The document exists in the user's library. |  |  |
@@ -1594,7 +1628,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 ##### 7.7.1 UC-72a – Create Folder
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows an internal user to create a folder at the library root or inside an owned folder. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242) |  |  |
@@ -1605,7 +1639,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 ##### 7.7.2 UC-72b – Rename Folder
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows the owner to rename a folder without moving it or changing its contents. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists in the user's library. |  |  |
@@ -1616,7 +1650,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 ##### 7.7.3 UC-72c – Move Folder
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows the owner to move a folder with its contents to another owned folder or the library root. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists in the user's library. |  |  |
@@ -1627,7 +1661,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 ##### 7.7.4 UC-72d – Delete Folder
 
-| Primary Actors | Internal user | Secondary Actors | None |
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
 | Description | Allows the owner to delete an empty personal-library folder. If an automatic Meeting folder is deleted, a later direct Meeting upload recreates it. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in.<br>● PRE-2: The operation concerns the user's own personal library. Guest has no personal library. (BR-204, BR-242)<br>● PRE-3: The folder exists and contains no documents or subfolders. (BR-223) |  |  |
@@ -1656,7 +1690,7 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 | Description | Allows a person who currently holds access to an In Progress Online or Hybrid Meeting to check the camera and microphone and enter its online meeting room. The room opens only while the Meeting is In Progress: joining does not start, resume or change the Meeting. A person who opens the room before the Meeting starts waits in the lobby, which opens by itself when the Meeting starts. |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a valid invitation. (BR-120, BR-152 – BR-157, BR-181)<br>● PRE-2: The Meeting is In Progress and its mode is Online or Hybrid. (BR-143)<br>● PRE-3: The actor holds a current participant assignment of the Meeting, or a valid Guest access relationship for it. Being the Organizer or the Approver alone is not enough. (BR-97, BR-100, BR-101, BR-323)<br>● PRE-4: Fewer than 50 people are connected to the room. (BR-336) |  |  |
 | Postconditions | ● POST-1: The actor is connected to the meeting room and appears in the Participants panel of everyone in the room. (BR-330)<br>● POST-2: The Meeting lifecycle, its roster, its roles and its attendance are unchanged. (BR-324, BR-330)<br>● POST-3: The connection lasts until the actor leaves (UC-38) or the Meeting ends; presence in the room is never recorded as attendance. (BR-324, BR-330) |  |  |
-| Normal Flow | Join Meeting Room<br>1. On the Meeting detail of an In Progress Online or Hybrid Meeting, the actor chooses Join online room.<br>2. The system rechecks that the actor may still view the Meeting, that it is In Progress, that it has an online room and that the actor holds a current room-entry relationship. (BR-97, BR-101, BR-143, BR-323)<br>3. The system opens the Meeting Lobby with the camera preview, the microphone and camera switches and the microphone, speaker and camera pickers, with the microphone on and the camera off by default. (BR-331) When recording applies to the Meeting, the lobby also tells the actor that the meeting is recorded for the minutes and that the recording is deleted automatically after 180 days; turning on the microphone then means the actor’s own speech is recorded (see FE-09 – Meeting Audio Upload & Media Library).<br>4. The actor checks the preview, optionally chooses other devices through UC-39d and switches the microphone or camera through UC-39a and UC-39b.<br>5. The actor chooses Join room.<br>6. The system rechecks room-entry eligibility and asks the room service for a connection for that actor, carrying the actor's current Meeting Role. (BR-323, BR-329)<br>7. The system connects the actor and shows the Online Meeting Room – Video Grid with the people already in the room. (UC-40)<br>8. The system shows the actor in the room; no separate success message is displayed, because the Video Grid is the result. |  |  |
+| Normal Flow | Join Meeting Room<br>1. On the Meeting detail of an In Progress Online or Hybrid Meeting, the actor chooses Join online room.<br>2. The system rechecks that the actor may still view the Meeting, that it is In Progress, that it has an online room and that the actor holds a current room-entry relationship. (BR-97, BR-101, BR-143, BR-323)<br>3. The system opens the Meeting Lobby with the camera preview, the microphone and camera switches and the microphone, speaker and camera pickers, with the microphone on and the camera off by default. (BR-331) When recording applies to the Meeting, the lobby also tells the actor that the meeting is recorded for the minutes and that the recording is deleted automatically after 180 days; turning on the microphone then means the actor’s own speech is recorded (see UC-39a, UC-80).<br>4. The actor checks the preview, optionally chooses other devices through UC-39d and switches the microphone or camera through UC-39a and UC-39b.<br>5. The actor chooses Join room.<br>6. The system rechecks room-entry eligibility and asks the room service for a connection for that actor, carrying the actor's current Meeting Role. (BR-323, BR-329)<br>7. The system connects the actor and shows the Online Meeting Room – Video Grid with the people already in the room. (UC-40)<br>8. The system shows the actor in the room; no separate success message is displayed, because the Video Grid is the result. |  |  |
 | Alternative Flows | AF-1 – Rejoin after a lost connection<br>1. At Step 2, the actor reopens the room after the connection was lost while the Meeting is still In Progress.<br>2. The system offers Rejoin in place of Join room and, on success, the flow resumes at Step 7 of the Main Flow.<br>3. No new room and no new Meeting are created. (BR-324)<br>AF-2 – Join from a Guest invitation<br>1. At Step 1, the Guest continues from the verified invitation instead of the Meeting detail.<br>2. The system verifies the invitation and that the Meeting is In Progress, then the flow resumes at Step 3 of the Main Flow. (BR-152 – BR-157, BR-181)<br>AF-3 – Opened before the Meeting starts<br>1. At Step 2, the Meeting is Published and has not been started.<br>2. The system shows the waiting lobby with MSG117 – “The meeting room opens only while the meeting is in progress.” and no Join room button. (BR-143)<br>3. When the Chair starts the Meeting (UC-21), the lobby opens by itself and the flow resumes at Step 3 of the Main Flow.<br>AF-4 – The browser blocks audio playback<br>1. At Step 7, the browser does not let the page play sound until the actor interacts with it.<br>2. The system displays MSG338 – “The browser is blocking audio playback.” with the button “Click to hear everyone”.<br>3. The actor clicks it, the sound plays and the flow resumes at Step 8 of the Main Flow. |  |  |
 | Exception Flows | EX-1 – The Meeting has ended<br>1. At Step 2 or Step 6, the Meeting has ended, including while the actor was in the lobby.<br>2. No connection is made. The system displays MSG331 – “The meeting has ended, the meeting room is closed.” and offers Back to the meeting page. (BR-143)<br>3. The use case ends.<br>EX-2 – Meeting is held in person<br>1. At Step 2, the Meeting mode is In Person, so it has no online room.<br>2. No lobby is opened. The system displays MSG280 – “This meeting is held in person, so it has no online meeting room.”<br>3. The use case ends.<br>EX-3 – Room service is not configured<br>1. At Step 6, the system cannot issue a room connection because the room service is not configured.<br>2. No connection is made. The system displays MSG281 – “The online meeting room is not ready. Please contact the administrator.”<br>3. The use case ends.<br>EX-4 – Actor is no longer eligible<br>1. At Step 2 or Step 6, the actor was removed from the roster or the Guest invitation was revoked. (BR-97, BR-100, BR-101)<br>2. No connection is made and the system answers as if the Meeting did not exist, so the actor cannot tell that a room exists.<br>3. The use case ends.<br>EX-5 – Join cannot be completed<br>1. At Step 7, the system cannot read or save the room state.<br>2. No connection is made. The system displays MSG118 – “Unable to join the meeting room. Please try again.”<br>3. The use case ends.<br>EX-6 – The Meeting was cancelled<br>1. At Step 2 or Step 6, the Meeting is Cancelled. (BR-299)<br>2. No connection is made and no Join room button is offered. The system displays MSG350 – “The meeting was cancelled, so the meeting room does not open.”<br>3. The use case ends.<br>EX-7 – The room is full<br>1. At Step 7, 50 people are already connected to the room. (BR-336)<br>2. No connection is made and the actor stays in the lobby; the actor may try again when someone leaves. No catalogue message is assigned to this case yet.<br>3. The use case ends.<br>EX-8 – The room status cannot be loaded<br>1. At Step 2, the system cannot read the state of the meeting room.<br>2. No lobby is opened. The system displays MSG283 – “Unable to load the meeting room status. Please try again.”<br>3. The use case ends. |  |  |
 
@@ -1677,12 +1711,12 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 
 | Primary Actors | Chair, Secretary, Participant, Guest | Secondary Actors | None |
 | --- | --- | --- | --- |
-| Description | Allows a person in the Meeting Lobby or in the meeting room to turn his or her own microphone on or off. It changes only that person's microphone: turning another person's microphone off is UC-41. |  |  |
+| Description | Allows a person in the Meeting Lobby or in the meeting room to turn his or her own microphone on or off. It changes only that person's microphone: turning another person's microphone off is UC-41. While recording applies to the Meeting, the microphone button is also the only recording switch (AF-2). |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a valid invitation.<br>● PRE-2: The actor is in the Meeting Lobby or connected to the meeting room of an In Progress Meeting. (UC-37)<br>● PRE-3: The browser reports at least one microphone. |  |  |
-| Postconditions | ● POST-1: The actor's microphone is on or off as chosen, for that actor only.<br>● POST-2: The browser remembers the on/off state for the next visit on that device. (BR-331)<br>● POST-3: No other person's audio, the Meeting lifecycle and attendance are unchanged.<br>● POST-4: While recording applies to the Meeting, a microphone that is on means the actor’s own speech is recorded for the minutes; turning it off stops it. The microphone button is the only switch. (FE-09 – Meeting Audio Upload & Media Library) |  |  |
+| Postconditions | ● POST-1: The actor's microphone is on or off as chosen, for that actor only.<br>● POST-2: The browser remembers the on/off state for the next visit on that device. (BR-331)<br>● POST-3: No other person's audio, the Meeting lifecycle and attendance are unchanged.<br>● POST-4: While recording applies to the Meeting, a microphone that is on means the actor’s own speech is recorded for the minutes; turning it off stops it. The microphone button is the only switch. (AF-2, UC-80, BR-352) |  |  |
 | Normal Flow | Manage Microphone<br>1. The actor chooses the microphone button in the lobby or in the call controls, or presses Ctrl+D (Cmd+D on a Mac).<br>2. The system turns the actor's microphone on or off and shows the new state on the button and in the actor's video tile; while it is off, everyone in the room sees the microphone marked as off. (UC-40)<br>3. The system remembers the new state for the next visit on this device. (BR-331)<br>4. The microphone follows the choice; no separate message is displayed, because the button and the tile carry the state. |  |  |
-| Alternative Flows | AF-1 – Choose another microphone<br>1. At Step 1, the actor opens the arrow beside the microphone button and chooses another microphone through UC-39d.<br>2. The system switches the live audio to that microphone, keeps the on/off state and remembers the device. (BR-331)<br>3. The flow resumes at Step 2 of the Main Flow. |  |  |
-| Exception Flows | EX-1 – The browser blocks the microphone<br>1. At Step 2, the browser has not granted microphone permission.<br>2. The microphone stays off and the actor stays in the room and can still hear everyone. The system displays MSG334 – “The browser is blocking the microphone. Click the lock icon beside the address bar, choose Allow and reload the page. You can still join the room to listen.” (BR-331)<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-2 – No microphone is available<br>1. At Step 1, the browser reports no microphone, or the chosen microphone was disconnected.<br>2. The microphone picker is disabled and says why, and the actor can still join the room to listen. The system displays MSG335 – “No {device} was found on this computer.”<br>3. The use case ends.<br>EX-3 – Another application holds the microphone<br>1. At Step 2, the browser cannot open the microphone because another application is using it.<br>2. The microphone stays off and the actor can still hear everyone. The system displays MSG336 – “The {device} is being used by another application (Zoom, Teams…). Close that application and try again.”<br>3. The flow resumes at Step 1 of the Main Flow. |  |  |
+| Alternative Flows | AF-1 – Choose another microphone<br>1. At Step 1, the actor opens the arrow beside the microphone button and chooses another microphone through UC-39d.<br>2. The system switches the live audio to that microphone, keeps the on/off state and remembers the device. (BR-331)<br>3. The flow resumes at Step 2 of the Main Flow.<br>AF-2 – Speech recorded while the microphone is on<br>1. At Step 2, the actor turns the microphone on in an Online or Hybrid Meeting that is In Progress. This does not apply to a Guest, whose own microphone is not recorded; a Guest’s speech reaches the record only through the room recording. (BR-340, BR-352, BR-370)<br>2. While the microphone is on, the system captures the actor’s speech sentence by sentence, converts each sentence into text and keeps it with its time and the actor’s name. Sentences with only silence or background noise are not kept. (BR-352)<br>3. A sentence that repeats a neighbouring person’s speech picked up by the actor’s microphone is marked as overlapping, not hidden. (BR-356)<br>4. A sentence that cannot be delivered right away stays on the actor’s device and is delivered later, up to 7 days after the Meeting ends. (BR-354)<br>5. Saved sentences can be reviewed, listened to and deleted by the actor in My Recorded Speech (UC-80), and are erased automatically 180 days after they are saved. (BR-347, BR-355)<br>6. The flow resumes at Step 3 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – The browser blocks the microphone<br>1. At Step 2, the browser has not granted microphone permission.<br>2. The microphone stays off and the actor stays in the room and can still hear everyone. The system displays MSG334 – “The browser is blocking the microphone. Click the lock icon beside the address bar, choose Allow and reload the page. You can still join the room to listen.” (BR-331)<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-2 – No microphone is available<br>1. At Step 1, the browser reports no microphone, or the chosen microphone was disconnected.<br>2. The microphone picker is disabled and says why, and the actor can still join the room to listen. The system displays MSG335 – “No {device} was found on this computer.”<br>3. The use case ends.<br>EX-3 – Another application holds the microphone<br>1. At Step 2, the browser cannot open the microphone because another application is using it.<br>2. The microphone stays off and the actor can still hear everyone. The system displays MSG336 – “The {device} is being used by another application (Zoom, Teams…). Close that application and try again.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-4 – Speech recognition unavailable<br>1. At Step 2 of AF-2, the system cannot convert a sentence into text.<br>2. The sentence stays on the actor’s device and is sent again later; the microphone and the actor’s place in the room are not affected. The system displays MSG312 – “Speech recognition service is currently unavailable. Please try again later.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-5 – The Meeting cannot be recorded now<br>1. At Step 2 of AF-2, the Meeting is held in person, has not started, or ended more than 7 days ago. (BR-340, BR-354)<br>2. The sentence is not accepted and is not kept. The system displays MSG320 – “In-person meetings do not record per-mic speech, or the meeting is no longer running.”<br>3. The use case ends.<br>EX-6 – Sentence audio is not valid<br>1. At Step 2 of AF-2, the audio of the sentence is not a supported audio file, or its start time or length is missing or wrong, or its length is outside 1 millisecond to 60 seconds.<br>2. The sentence is not accepted and is not kept. The system displays MSG319 – “Spoken sentence audio is invalid.”<br>3. The use case ends.<br>EX-7 – Sentence is too long<br>1. At Step 2 of AF-2, the audio of the sentence is larger than 3 MB.<br>2. The sentence is not accepted and is not kept. The system displays MSG321 – “A spoken sentence cannot exceed 60 seconds.”<br>3. The use case ends. |  |  |
 
 ##### 8.3.2 UC-39b – Manage Camera
 
@@ -1772,51 +1806,281 @@ ADR-0020 — 15/10/2026: Sixteen detailed Document use cases. UC-33b is reassign
 | Alternative Flows | AF-1 – Lower the hand<br>1. At any step before Step 6, the person chooses Lower hand.<br>2. The system cancels the request, lowers the hand and removes it from the queue. (BR-337)<br>3. The use case ends.<br>AF-2 – The Chair reorders the queue<br>1. At Step 3, the Chair moves a request up or down in the queue.<br>2. The system keeps the new order for everyone who sees the queue. (BR-338)<br>3. The flow resumes at Step 3 of the Main Flow.<br>AF-3 – The Chair declines a request<br>1. At Step 4, the Chair removes a request without inviting the person.<br>2. The system cancels the request and lowers the hand. (BR-338)<br>3. The flow resumes at Step 3 of the Main Flow. |  |  |
 | Exception Flows | EX-1 – The Meeting is no longer In Progress<br>1. At Step 2 or Step 4, the Meeting ended.<br>2. No request is created or changed. The system displays MSG117 – “The meeting room opens only while the meeting is in progress.”<br>3. The use case ends.<br>EX-2 – The person already has an open request<br>1. At Step 2, the actor’s earlier request is still open.<br>2. Nothing changes and the hand stays raised. (BR-337)<br>3. The use case ends.<br>EX-3 – The person leaves the room<br>1. At Step 3 to Step 6, the person leaves the room or is disconnected. (UC-38)<br>2. The system cancels the open request and the Chair’s queue moves up. (BR-337)<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-4 – The actor is no longer the Chair<br>1. At Step 4, the Chair role was handed over through UC-73.<br>2. The Chair controls disappear from the actor’s panel and nothing is changed. (BR-338)<br>3. The use case ends.<br>EX-5 – The room service does not respond<br>1. At Step 2, Step 4 or Step 7, the room service fails or refuses the request.<br>2. The request stays as it was. The system displays MSG124 – “The meeting room server did not respond. Please try again.”<br>3. The flow resumes at the step where the failure happened. |  |  |
 
-### 9. FE-09 – Meeting Audio Upload & Media Library
+### 9. FE-09 – Meeting Recording
 
-#### 9.1 UC-43 – View & Play Meeting Audio
+#### 9.1 UC-43 – View & Play Meeting Recordings
 
-##### 9.1.1 UC-43a – View Media Library
+##### 9.1.1 UC-43a – View Meeting Recordings
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a person who currently holds a Chair, Secretary or Participant assignment of a Meeting to view what was recorded in it on the Recordings tab: the sentences recorded from each person's own microphone and the recordings of the meeting room. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in as an internal user and may view the Meeting.<br>● PRE-2: The actor currently holds a Chair, Secretary or Participant assignment of the Meeting. Being the Organizer or the Approver alone is not enough. (BR-350) |  |  |
+| Postconditions | ● POST-1: The actor sees the recorded sentences and the room recordings that apply to the Meeting's format. Nothing is changed.<br>● POST-2: A Guest, or a person who is not on the current roster, sees no recording and cannot tell that any exists. (BR-350, BR-370)<br>● POST-3: A sentence excluded from the record appears to everyone except the Chair and the Secretary as an empty entry, without its text. (BR-357) |  |  |
+| Normal Flow | View Meeting Recordings<br>1. On the Meeting detail, the actor selects the Recordings tab.<br>2. The system checks that the actor currently holds a Chair, Secretary or Participant assignment and loads the recorded sentences and the room recordings of the Meeting. (BR-350, BR-370)<br>3. The system shows the recorded sentences as a timeline with the speaker, the time and the text of each sentence. A sentence that repeats a neighbour's speech picked up by another microphone is marked as overlapping. (BR-356)<br>4. For an In-person or Hybrid Meeting, the system also shows each room recording with its state (Recording, Available or Erased), its source (room microphone or uploaded file), its length, the date it will be erased, its takes and the state of its transcript. (BR-340, BR-347)<br>5. While a room take is being recorded, the system shows everyone on the tab a Recording indicator. |  |  |
+| Alternative Flows | AF-1 – Online Meeting<br>1. At Step 4, the Meeting is held online.<br>2. The system shows only the recorded sentences. No room recording and no audio upload is offered, because an Online Meeting records each person's own microphone. (BR-340)<br>3. The flow resumes at Step 5 of the Main Flow.<br>AF-2 – Sentence excluded from the record<br>1. At Step 3, the Chair or the Secretary has excluded a sentence from the record.<br>2. The Chair and the Secretary see the sentence with its text and the reason. Everyone else sees an empty entry in its place: they can tell that a sentence once existed, but cannot read or play it. (BR-357)<br>3. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Recordings cannot be loaded<br>1. At Step 2, the system cannot read the recordings.<br>2. Nothing is shown. The system displays MSG297 – “Unable to load meeting recordings.”<br>3. The use case ends.<br>EX-2 – Recorded sentences cannot be loaded<br>1. At Step 2, the system cannot read the recorded sentences.<br>2. The sentences are not shown. The system displays MSG299 – “Unable to load transcript.”<br>3. The use case ends.<br>EX-3 – Actor is not on the current roster<br>1. At Step 2, the actor is a Guest or no longer holds a Chair, Secretary or Participant assignment. (BR-350, BR-370)<br>2. Nothing is shown and the system answers as if the Meeting had no recordings, so the actor cannot tell that any exist.<br>3. The use case ends. |  |  |
 
-##### 9.1.2 UC-43b – Play Meeting Audio
+##### 9.1.2 UC-43b – Play Meeting Recording
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a person who currently holds a Chair, Secretary or Participant assignment of a Meeting to listen to a room recording or to a single recorded sentence. |  |  |
+| Preconditions | ● PRE-1: The actor is viewing the Recordings tab of a Meeting in which the actor currently holds a Chair, Secretary or Participant assignment. (UC-43a, BR-350)<br>● PRE-2: The recording or the sentence has not been erased or deleted. |  |  |
+| Postconditions | ● POST-1: The audio plays for the actor. Nothing is saved to the actor's device and the record is not changed.<br>● POST-2: Only the Chair and the Secretary can play a sentence excluded from the record. (BR-357) |  |  |
+| Normal Flow | Play Meeting Recording<br>1. The actor selects Play on a room recording or on a recorded sentence.<br>2. The system checks that the actor currently holds a Chair, Secretary or Participant assignment and may hear this item. (BR-350, BR-357)<br>3. The system opens the player and plays the recording, or the chosen sentence, from its beginning.<br>4. The actor can pause, move to another position, change the volume and change the playback speed. |  |  |
+| Alternative Flows | AF-1 – Play an excluded sentence<br>1. At Step 1, the actor is the current Chair or Secretary and selects a sentence excluded from the record.<br>2. The system confirms that the actor is the Chair or the Secretary and allows the playback. (BR-357)<br>3. The flow resumes at Step 3 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Audio cannot be loaded<br>1. At Step 2 or Step 3, the system cannot load the audio.<br>2. Nothing plays. The system displays MSG297 – “Unable to load meeting recordings.”<br>3. The use case ends.<br>EX-2 – Actor no longer has access<br>1. At Step 2, the actor is no longer on the roster, or the sentence is excluded from the record and the actor is neither the Chair nor the Secretary. (BR-350, BR-357)<br>2. Nothing plays and the system answers as if the audio did not exist.<br>3. The use case ends. |  |  |
 
-#### 9.2 UC-44 – Upload Meeting Audio
+##### 9.1.3 UC-43c – Download Meeting Recording
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Chair, Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair or Secretary to download the audio file of a room recording to the computer. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and currently holds the Chair or Secretary assignment of the Meeting. (BR-351)<br>● PRE-2: The Meeting is not Secret. (BR-351)<br>● PRE-3: The recording is Available, not Erased. |  |  |
+| Postconditions | ● POST-1: The audio file is saved on the actor's device.<br>● POST-2: The download is recorded in the audit log. (BR-351) |  |  |
+| Normal Flow | Download Meeting Recording<br>1. On the Recordings tab, the actor selects Download on an available room recording.<br>2. The system checks that the actor is the current Chair or Secretary and that the Meeting is not Secret. (BR-351)<br>3. The system records the download in the audit log. (BR-351)<br>4. The system delivers the audio file and the browser saves it. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Participant tries to download<br>1. At Step 2, the actor is a Participant, not the Chair or the Secretary. (BR-351)<br>2. No file is delivered and nothing is logged. The system displays MSG355 – “Only the Chair or Secretary may download meeting recordings and transcripts.”<br>3. The use case ends.<br>EX-2 – Secret Meeting<br>1. At Step 2, the Meeting is Secret. (BR-351)<br>2. No file is delivered. The system displays MSG356 – “Recordings and transcripts of Secret meetings cannot be downloaded.”<br>3. The use case ends. |  |  |
 
-### 10. FE-10 – Speaker-Attributed Transcription & Meeting Summary
+#### 9.2 UC-44 – Record Room Audio
 
-#### 10.1 UC-45 – View Speaker-Attributed Transcript
+##### 9.2.1 UC-44a – Start Room Recording
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Secretary to record the sound of the meeting room by turning on the room microphone. Each time the microphone is turned on starts a new take; the take is saved when the microphone is turned off (UC-44b). |  |  |
+| Preconditions | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-341)<br>● PRE-2: The Meeting is In-person or Hybrid and is In Progress. (BR-340, BR-342)<br>● PRE-3: No other room take is open for this Meeting. (BR-344) |  |  |
+| Postconditions | ● POST-1: A new room take is open and the room sound is being kept while it is spoken. The part not yet delivered stays on the Secretary's device, so a short loss of connection loses nothing.<br>● POST-2: Everyone on the Recordings tab sees the Recording indicator.<br>● POST-3: The confirmation that attendees were informed, with its time and purpose, is kept with the recording. (BR-343) |  |  |
+| Normal Flow | Start Room Recording<br>1. On the recording card or on the Recordings tab, the Secretary turns the room microphone on.<br>2. If this is the first room take of the Meeting, the system asks the Secretary to confirm that attendees were informed and nobody objected, and to enter the purpose of the recording (optional). (BR-343)<br>3. The Secretary confirms.<br>4. The system checks the Secretary's role, the format and the status of the Meeting and that no other take is open, opens a new take and keeps the time of the confirmation and the purpose. (BR-341, BR-342, BR-343, BR-344)<br>5. The Secretary's browser starts the microphone and sends the sound to the system as it is recorded. No text is shown while recording.<br>6. The system shows everyone watching the Meeting the Recording indicator. |  |  |
+| Alternative Flows | AF-1 – Reopening the Meeting while a take is open<br>1. At Step 1, the Secretary closed the tab or the browser while the room microphone was on and opens the Meeting again.<br>2. The system offers Continue recording or Save recorded part.<br>3. If the Secretary chooses Continue recording, the recording carries on in the same take and the flow resumes at Step 5 of the Main Flow.<br>4. If the Secretary chooses Save recorded part, the part already recorded is saved as a take through UC-44b, which completes the take.<br>AF-2 – Later take of the same Meeting<br>1. At Step 2, the Meeting still has a room recording, so an earlier take of it already received the confirmation.<br>2. The system does not ask again and the flow resumes at Step 4 of the Main Flow. (BR-343) If that room recording was erased (UC-44e), the confirmation is asked again.<br>AF-3 – Take reaches the size limit<br>1. At Step 5, the take is close to the limit of 300 MB for one recording.<br>2. The system saves that take by itself as in UC-44b and opens a new take, so recording goes on without a break and the Secretary does not need to act. (BR-344, BR-345)<br>3. The flow resumes at Step 5 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Invalid recording information<br>1. At Step 4, the confirmation is missing or the recording information is incomplete.<br>2. No take is opened. The system displays MSG291 – “Invalid recording information.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 4, the actor is not the current Secretary. (BR-341)<br>2. No take is opened. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-3 – Recording cannot be saved<br>1. At Step 4 or Step 5, the system cannot keep the recording.<br>2. The system displays MSG298 – “Unable to save recording changes. Please try again.” Sound not yet delivered stays on the Secretary's device and is sent again.<br>3. The use case ends.<br>EX-4 – Online Meeting<br>1. At Step 4, the Meeting is Online. (BR-340)<br>2. No take is opened. The system displays MSG358 – “Online meetings record per-mic speech; room recordings are not available.”<br>3. The use case ends.<br>EX-5 – Meeting is not In Progress<br>1. At Step 4, the Meeting is not In Progress. (BR-342)<br>2. No take is opened. The system displays MSG359 – “Room microphone can only be turned on while the meeting is in progress.”<br>3. The use case ends.<br>EX-6 – A take is already open on another device<br>1. At Step 4, another take of the Meeting is open on a different device or tab. (BR-344)<br>2. No take is opened. The system displays MSG360 – “Room microphone is currently active on another device.”<br>3. The use case ends.<br>EX-7 – Part of the recording is not valid<br>1. At Step 5, the system receives a part of the recorded sound that is damaged or does not follow on from the sound already kept.<br>2. That part is not accepted and the sound already kept is not affected. The system displays MSG361 – “The recorded audio is not valid.”<br>3. The use case ends. |  |  |
+
+##### 9.2.2 UC-44b – Stop and Save Room Recording
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the Secretary to turn the room microphone off and save the take, and lets the system save a take that was left open. The saved take is added to the Meeting's room recording and the whole recording is put in line for transcription. |  |  |
+| Preconditions | ● PRE-1: A room take is open for the Meeting. (BR-344)<br>● PRE-2: The actor is the current Secretary, or the take has received no sound for 12 hours. (BR-341, BR-346) |  |  |
+| Postconditions | ● POST-1: The take is added to the Meeting's room recording, which stays one recording for the Meeting. (BR-345)<br>● POST-2: The whole recording is put in line to be transcribed again, and the new transcript replaces the text edited and the names assigned on the earlier takes. (BR-345, BR-360) |  |  |
+| Normal Flow | Stop and Save Room Recording<br>1. The Secretary turns the room microphone off, or selects Save take.<br>2. The system closes the open take, keeps the sound it received and adds it to the end of the Meeting's room recording, updating the length of the recording and where the take starts. (BR-345)<br>3. The system puts the whole recording in line for transcription. When the recording already has a transcript, the new transcript replaces it, with the text edited and the names assigned so far, without a warning. (UC-45c, BR-345, BR-360)<br>4. The system displays MSG363 – “Room recording take saved.” and the Recording indicator disappears. |  |  |
+| Alternative Flows | AF-1 – No sound received<br>1. At Step 2, the take received no sound at all.<br>2. The system discards the take and leaves the recording unchanged. It displays MSG365 – “Microphone detected no speech; take was not saved.”<br>3. The take is closed and the use case ends, because there is nothing to add to the recording.<br>AF-2 – Take left open for 12 hours<br>1. At Step 1, an open take receives no sound for 12 hours, for instance because the Secretary left it open and went away.<br>2. The system saves the take by itself, without a message. (BR-346)<br>3. The flow resumes at Step 2 of the Main Flow.<br>AF-3 – Take left open on another device<br>1. At Step 1, the take is still open on another computer.<br>2. The Secretary selects Save take on this device. (BR-341)<br>3. The flow resumes at Step 2 of the Main Flow.<br>AF-4 – Room recording is full<br>1. At Step 2, adding the take would make the Meeting's room recording larger than 300 MB. (BR-345)<br>2. The system keeps the take as a new room recording instead of adding it to the existing one.<br>3. The flow resumes at Step 3 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Take already saved<br>1. At Step 2, the take was already saved by another action.<br>2. Nothing is added. The system displays MSG362 – “This recording take has been closed and cannot accept additional audio.”<br>3. The use case ends.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 2, the actor is not the current Secretary. (BR-341)<br>2. The take stays as it was. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-3 – Take cannot be saved<br>1. At Step 2, the system cannot add the take to the recording.<br>2. The recording is unchanged. The system displays MSG298 – “Unable to save recording changes. Please try again.”<br>3. The use case ends. |  |  |
+
+##### 9.2.3 UC-44c – Upload Meeting Audio File
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Secretary to add an audio file recorded outside the system to the recordings of an In-person or Hybrid Meeting. |  |  |
+| Preconditions | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-341)<br>● PRE-2: The Meeting is In-person or Hybrid and is In Progress or Ended. (BR-340, BR-342) |  |  |
+| Postconditions | ● POST-1: The audio file is kept as a recording of its own and put in line for transcription. Takes recorded with the room microphone are never added to it. (UC-45c)<br>● POST-2: The confirmation that attendees were informed, with its time and purpose, is kept with the recording, and the upload is recorded in the audit log. (BR-343) |  |  |
+| Normal Flow | Upload Meeting Audio File<br>1. On the Recordings tab, the Secretary selects Upload audio file.<br>2. The Secretary chooses an audio file from the computer.<br>3. The Secretary confirms that attendees were informed and nobody objected, and may enter the purpose of the recording. (BR-343)<br>4. The Secretary selects Upload.<br>5. The system checks the Secretary's role, the format and the status of the Meeting, the type and the size of the file, keeps the file and puts it in line for transcription. (BR-340, BR-341, BR-342, BR-343)<br>6. The system displays MSG290 – “Meeting recording saved.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Invalid recording information<br>1. At Step 5, the confirmation is missing or the recording information is incomplete.<br>2. No file is kept. The system displays MSG291 – “Invalid recording information.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-2 – Unsupported audio type<br>1. At Step 5, the file is not one of the supported audio types.<br>2. No file is kept. The system displays MSG292 – “Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-3 – File is too large<br>1. At Step 5, the file is larger than 300 MB.<br>2. No file is kept. The system displays MSG293 – “Recording exceeds 300 MB.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-4 – Meeting is not in a valid state<br>1. At Step 5, the Meeting is neither In Progress nor Ended. (BR-342)<br>2. No file is kept. The system displays MSG294 – “Recordings may only be saved while the meeting is in progress or has ended.”<br>3. The use case ends.<br>EX-5 – Actor is not the current Secretary<br>1. At Step 5, the actor is not the current Secretary. (BR-341)<br>2. No file is kept. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-6 – File cannot be saved<br>1. At Step 5, the system cannot keep the file.<br>2. Nothing is saved. The system displays MSG298 – “Unable to save recording changes. Please try again.”<br>3. The use case ends.<br>EX-7 – Online Meeting<br>1. At Step 5, the Meeting is Online. (BR-340)<br>2. No file is kept. The system displays MSG358 – “Online meetings record per-mic speech; room recordings are not available.”<br>3. The use case ends. |  |  |
+
+##### 9.2.4 UC-44d – Delete Recording Take
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Secretary to remove one take from a room recording: the sound and the sentences of that take are cut out while the other takes are kept. |  |  |
+| Preconditions | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-341)<br>● PRE-2: The recording has at least two takes. (BR-349)<br>● PRE-3: The recording is Available. Another take of the Meeting may be open at the same time: a take still being recorded is not yet part of a recording and cannot be deleted here. |  |  |
+| Postconditions | ● POST-1: The sound and the sentences of the deleted take are removed from the recording and the later takes move up to close the gap. (BR-349)<br>● POST-2: Text edited and names assigned on the other takes are kept, unless the transcript was still waiting or being made (AF-1). A voice heard only in the deleted take loses its assigned name. (BR-349)<br>● POST-3: The deletion is recorded in the audit log. |  |  |
+| Normal Flow | Delete Recording Take<br>1. On the Recordings tab, the Secretary opens the takes of a room recording and selects Delete take on one of them.<br>2. The system warns that the sound and the sentences of this take will be removed and asks for confirmation.<br>3. The Secretary confirms.<br>4. The system cuts the take out of the recording, removes its sentences from the transcript, moves the later takes up and records the deletion in the audit log. (BR-341, BR-349)<br>5. The system displays MSG366 – “Recording take deleted.” |  |  |
+| Alternative Flows | AF-1 – Transcript still waiting or being made<br>1. At Step 4, the transcript of the recording is waiting or is being made.<br>2. The system does not remove sentences. It puts the whole recording, now without the deleted take, in line for transcription again, so nothing edited is kept. (UC-45c, BR-349)<br>3. The flow resumes at Step 5 of the Main Flow.<br>AF-2 – Voice heard only in the deleted take<br>1. At Step 4, a speaker has no sentence left outside the deleted take.<br>2. The system removes that speaker from the transcript together with the name assigned and the name suggested for it. (BR-349)<br>3. The flow resumes at Step 5 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Recording has only one take<br>1. At Step 4, the recording has only one take. (BR-349)<br>2. Nothing is removed. The system displays MSG367 – “Recording contains only one take. Erase the entire recording to remove it.”<br>3. The use case ends.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 4, the actor is not the current Secretary. (BR-341)<br>2. Nothing is removed. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-3 – Take cannot be deleted<br>1. At Step 4, the system cannot cut the take out of the recording or save the change.<br>2. The recording is unchanged. The system displays MSG298 – “Unable to save recording changes. Please try again.”<br>3. The use case ends. |  |  |
+
+##### 9.2.5 UC-44e – Erase Meeting Recording
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Secretary, or the system when the 180-day period ends, to erase the audio and the transcript of a recording while keeping the fact that it existed. |  |  |
+| Preconditions | ● PRE-1: The actor is the current Secretary, or the retention period of the recording has ended. (BR-341, BR-347)<br>● PRE-2: The recording is not a take that is still being recorded. Another take of the Meeting may be open at the same time. |  |  |
+| Postconditions | ● POST-1: The audio and the transcript of the recording are permanently removed. (BR-348)<br>● POST-2: The Meeting still shows that a recording existed, that it was erased and when. Who erased it, or that it expired, is kept in the audit log only. (BR-348)<br>● POST-3: After the room recording of a Meeting is erased, the next take of that Meeting asks again for the confirmation that attendees were informed. (UC-44a) |  |  |
+| Normal Flow | Erase Meeting Recording<br>1. On the Recordings tab, the Secretary selects Erase recording on a room recording.<br>2. The system asks for confirmation and explains that the audio and the transcript will be permanently removed.<br>3. The Secretary confirms.<br>4. The system removes the audio and the transcript, marks the recording as Erased with the date, and records the erasure and the Secretary in the audit log. (BR-348)<br>5. The system displays MSG296 – “Meeting recording erased.” |  |  |
+| Alternative Flows | AF-1 – Automatic erasure after 180 days<br>1. At Step 1, the retention period of a recording has ended: 180 days from the day its first take was started, or from the day an uploaded file was saved.<br>2. The system erases its audio and transcript by itself, marks it as Erased and records in the audit log that it expired. (BR-347, BR-348)<br>3. The recording is erased as in Step 4 of the Main Flow, which completes the use case. |  |  |
+| Exception Flows | EX-1 – A take is being recorded<br>1. At Step 4, the recording is a take that is still being recorded.<br>2. Nothing is erased. The system displays MSG364 – “Room microphone is currently recording. Turn off the microphone before erasing.”<br>3. The use case ends.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 4, the actor is not the current Secretary. (BR-341)<br>2. Nothing is erased. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-3 – Recording cannot be erased<br>1. At Step 4, the system cannot remove the audio or the transcript.<br>2. The recording stays as it was. The system displays MSG298 – “Unable to save recording changes. Please try again.”<br>3. The use case ends. |  |  |
+
+#### 9.3 UC-80 – Manage My Recorded Speech
+
+| Primary Actors | Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a person who currently holds a Chair, Secretary or Participant assignment to review the sentences recorded from his or her own microphone, listen to them again and delete a sentence of his or her own. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in as an internal user and currently holds a Chair, Secretary or Participant assignment of the Meeting. A Guest cannot use this function. (BR-355, BR-370) |  |  |
+| Postconditions | ● POST-1: A deleted sentence, with its text and its audio, is permanently removed from the Meeting record. (BR-355) |  |  |
+| Normal Flow | Manage My Recorded Speech<br>1. In the online room or on the Recordings tab, the actor opens My Recorded Speech.<br>2. The system lists the actor's sentences: those still waiting on this device to be delivered and those already saved, each with its time and its text. (BR-354)<br>3. The actor selects a sentence to listen to it.<br>4. The actor selects Delete on a sentence and confirms.<br>5. The system permanently removes the text and the audio of the sentence and records the deletion in the audit log. (BR-355)<br>6. The system displays MSG322 – “Spoken sentence deleted.” and refreshes the list. |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Sentence belongs to someone else<br>1. At Step 5, the sentence belongs to another speaker and the actor is not the Secretary. (BR-355)<br>2. Nothing is removed. The system displays MSG323 – “Only the speaker or the Secretary may delete this sentence.”<br>3. The use case ends.<br>EX-2 – Sentence cannot be deleted<br>1. At Step 5, the system cannot remove the sentence.<br>2. The sentence stays as it was. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends. |  |  |
+
+### 10. FE-10 – Transcription, Speaker Identification & Meeting Summary
+
+#### 10.1 UC-45 – View Meeting Transcript
+
+##### 10.1.1 UC-45a – View Recording Transcript
+
+| Primary Actors | Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a person who currently holds a Chair, Secretary or Participant assignment to view the transcript of a room recording: its state, the text with times and speakers, the dividers between takes and the text corrected by a person. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in as an internal user and currently holds a Chair, Secretary or Participant assignment of the Meeting. (BR-350)<br>● PRE-2: The Meeting has a room recording that has not been erased. |  |  |
+| Postconditions | ● POST-1: The actor sees the state of the transcript and, once it is Completed, its passages with times, speakers and take dividers.<br>● POST-2: Suggested speaker names are visible only to the Secretary. (BR-366) |  |  |
+| Normal Flow | View Recording Transcript<br>1. On the Recordings tab, the actor selects View transcript on a room recording.<br>2. The system checks that the actor currently holds a Chair, Secretary or Participant assignment and loads the transcript. (BR-350)<br>3. The system shows the state of the transcript: Pending, Processing, Completed or Failed. For a Failed transcript it also shows the reason.<br>4. When the transcript is Completed, the system shows each passage with its start and end time and its speaker (Speaker N, or the name assigned), a divider where one take ends and the next begins, and marks the text corrected by a person to tell it from the text produced by the system.<br>5. For the Secretary, the system also shows the suggested names next to each unnamed speaker and the control to assign a speaker (UC-46b). (BR-366) |  |  |
+| Alternative Flows | AF-1 – Transcript is not completed yet<br>1. At Step 3, the transcript is Pending or Processing.<br>2. The system shows the state without text.<br>3. When the transcript is Completed, the flow resumes at Step 4 of the Main Flow.<br>AF-2 – Transcript failed<br>1. At Step 3, the transcript is Failed.<br>2. The system shows the reason. The Secretary may transcribe the recording again (UC-45c), after which the flow resumes at Step 3 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Transcript cannot be loaded<br>1. At Step 2, the system cannot read the transcript.<br>2. Nothing is shown. The system displays MSG299 – “Unable to load transcript.”<br>3. The use case ends. |  |  |
+
+##### 10.1.2 UC-45b – Export Meeting Transcript
+
+| Primary Actors | Chair, Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair or Secretary to export the transcript of a room recording, or the sentences recorded from each person's own microphone, as a text file. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and currently holds the Chair or Secretary assignment of the Meeting. (BR-351)<br>● PRE-2: The Meeting is not Secret. (BR-351)<br>● PRE-3: For a room recording, its transcript is Completed. |  |  |
+| Postconditions | ● POST-1: A text file with the transcript is delivered to the actor.<br>● POST-2: Sentences excluded from the record are left out of the file. (BR-358)<br>● POST-3: The export is recorded in the audit log. (BR-351) |  |  |
+| Normal Flow | Export Meeting Transcript<br>1. On the Recordings tab or in the transcript, the actor selects Export transcript.<br>2. The system checks that the actor is the current Chair or Secretary, that the Meeting is not Secret and that the transcript is Completed. (BR-351)<br>3. The system builds the text file without the sentences excluded from the record. (BR-358)<br>4. The system records the export in the audit log and delivers the file. (BR-351) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Participant tries to export<br>1. At Step 2, the actor is a Participant, not the Chair or the Secretary. (BR-351)<br>2. No file is delivered. The system displays MSG355 – “Only the Chair or Secretary may download meeting recordings and transcripts.”<br>3. The use case ends.<br>EX-2 – Secret Meeting<br>1. At Step 2, the Meeting is Secret. (BR-351)<br>2. No file is delivered. The system displays MSG356 – “Recordings and transcripts of Secret meetings cannot be downloaded.”<br>3. The use case ends.<br>EX-3 – Transcript is not ready<br>1. At Step 2, the transcript is Pending, Processing or Failed.<br>2. No file is delivered. The system displays MSG357 – “Transcript is not ready for download.”<br>3. The use case ends. |  |  |
+
+##### 10.1.3 UC-45c – Transcribe Meeting Recording
+
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows a room recording to be converted into timed text with its speakers told apart: by the system itself when a recording is saved, or when the Secretary asks, including a new run after a failure or on a transcript that is already completed. |  |  |
+| Preconditions | ● PRE-1: The recording exists and its audio has not been erased.<br>● PRE-2: For a request made by hand, the actor is the current Secretary. (BR-341) |  |  |
+| Postconditions | ● POST-1: The recording is waiting for transcription.<br>● POST-2: When processed, the transcript is Completed, with timed text for each speaker and, where possible, suggested names of consenting people on the roster (BR-366), or it is Failed with the reason. |  |  |
+| Normal Flow | Transcribe Meeting Recording<br>1. The Secretary selects Transcribe on a room recording that has no transcript yet.<br>2. The system checks that the actor is the current Secretary and that the recording is not already waiting or being transcribed. (BR-341)<br>3. The system puts the recording in line for transcription and displays MSG300 – “Recording queued for transcription.”<br>4. The system converts the audio into text with punctuation and capital letters and tells the speakers apart. The audio never leaves the system. (BR-369)<br>5. The system keeps the text and the speakers, marks the transcript Completed and, for each unnamed speaker, prepares a suggested name when a consenting person on the roster has a similar voice. (BR-366, BR-369) |  |  |
+| Alternative Flows | AF-1 – Automatic transcription after saving<br>1. At Step 1, a take is saved (UC-44b) or an audio file is uploaded (UC-44c).<br>2. The system puts the recording in line without any action by the Secretary and the flow resumes at Step 4 of the Main Flow. (BR-345) When the take is added to a room recording that already has a transcript, the transcript is made again from the whole recording and the text edited and the names assigned so far are replaced without a warning. (BR-360)<br>AF-2 – Run again after a failure<br>1. At Step 1, the transcript is Failed and the Secretary selects Transcribe again.<br>2. The flow resumes at Step 2 of the Main Flow.<br>AF-3 – Transcribe a completed transcript again<br>1. At Step 1, the Secretary selects Transcribe again on a Completed transcript.<br>2. The system warns that all text edited and all names assigned will be replaced and asks for confirmation. (BR-360)<br>3. When the Secretary confirms, the flow resumes at Step 2 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Transcription already in progress<br>1. At Step 2, the recording is waiting or is being transcribed.<br>2. Nothing changes. The system displays MSG301 – “The recording is currently queued or being transcribed and cannot be rerun yet.”<br>3. The use case ends.<br>EX-2 – Recording cannot be put in line<br>1. At Step 3, the system cannot accept the request.<br>2. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends.<br>EX-3 – Transcription fails<br>1. At Step 4, the recording cannot be transcribed, for instance because the service is unavailable or the audio cannot be read.<br>2. No text is kept. The transcript becomes Failed and the Secretary sees the reason. No catalogue message is assigned to this case yet.<br>3. The Secretary may run it again (AF-2). The use case ends. |  |  |
 
 #### 10.2 UC-46 – Edit Transcript & Speaker Attribution
 
-Placeholder only – detailed Use Case Specification will be added later.
+##### 10.2.1 UC-46a – Edit Transcript Text
 
-#### 10.3 UC-47 – Generate / Regenerate Meeting Summary
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Secretary to correct the text of a transcript passage or of a recorded sentence. |  |  |
+| Preconditions | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-359)<br>● PRE-2: The passage or the sentence exists. |  |  |
+| Postconditions | ● POST-1: The corrected text is saved with the name of the Secretary and the time of the change. (BR-359) |  |  |
+| Normal Flow | Edit Transcript Text<br>1. In the transcript or on the timeline of recorded sentences, the Secretary selects a passage or a sentence to edit.<br>2. The Secretary changes the text and saves.<br>3. The system checks that the text is not empty and has at most 8,000 characters, saves it with the name of the Secretary and the time of the change, and records the change in the audit log. (BR-359)<br>4. The system displays MSG302 – “Transcript segment saved.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Invalid text<br>1. At Step 3, the text is empty or longer than 8,000 characters.<br>2. The text is not saved. The system displays MSG303 – “Transcript text is invalid.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Change cannot be saved<br>1. At Step 3, the system cannot save the change.<br>2. The text stays as it was. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends.<br>EX-3 – Actor is not the current Secretary<br>1. At Step 3, the actor is not the current Secretary. (BR-359)<br>2. The text stays as it was. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends. |  |  |
 
-Placeholder only – detailed Use Case Specification will be added later.
+##### 10.2.2 UC-46b – Assign Speaker
 
-#### 10.4 UC-48 – View Meeting Summary
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Secretary to give a speaker of a transcript the name of a person on the Meeting roster, or to clear it, using the suggested names when they are shown. |  |  |
+| Preconditions | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-341)<br>● PRE-2: The transcript of the room recording is Completed. |  |  |
+| Postconditions | ● POST-1: The chosen name is shown on every passage of that speaker, or the name is cleared. (BR-367)<br>● POST-2: The change is recorded in the audit log. |  |  |
+| Normal Flow | Assign Speaker<br>1. In the transcript, the Secretary sees each speaker as Speaker N or with the name assigned, and any suggested name. (BR-366)<br>2. The Secretary chooses a person from the Meeting roster, or clears the assignment. (BR-368)<br>3. The system checks that the person is on the current roster. (BR-368)<br>4. The system applies the name to every passage of that speaker and records the change in the audit log. (BR-367)<br>5. The system displays MSG316 – “Speaker assigned.” |  |  |
+| Alternative Flows | AF-1 – Several voices of the same person<br>1. At Step 2, the suggestions show that two or more speakers may be the same person.<br>2. The Secretary assigns the person to the whole group of speakers in one action. The system never assigns a name by itself. (BR-366, BR-367)<br>3. The flow resumes at Step 3 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Person is not on the roster<br>1. At Step 3, the chosen person is not on the current roster of the Meeting. (BR-368)<br>2. The name is not assigned. The system displays MSG317 – “Assigned person must be on the current meeting roster.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-2 – Actor is not the current Secretary<br>1. At Step 3, the actor is not the current Secretary. (BR-341)<br>2. Nothing is changed. The system displays MSG295 – “Only the meeting Secretary may manage recordings.”<br>3. The use case ends.<br>EX-3 – Assignment cannot be saved<br>1. At Step 4, the system cannot save the name assigned.<br>2. The speaker is unchanged. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends. |  |  |
 
-Placeholder only – detailed Use Case Specification will be added later.
+##### 10.2.3 UC-46c – Exclude or Restore a Sentence
 
-#### 10.5 UC-49 – Edit Meeting Summary
+| Primary Actors | Chair, Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Chair or Secretary to exclude a recorded sentence from the record, for instance because it picked up a neighbour's speech, giving a reason, or to restore a sentence that was excluded. |  |  |
+| Preconditions | ● PRE-1: The actor is the current Chair or Secretary of the Meeting. (BR-357)<br>● PRE-2: The sentence exists on the timeline of recorded sentences. |  |  |
+| Postconditions | ● POST-1: An excluded sentence is marked with its reason. It is not deleted: the Chair and the Secretary can still read and play it, while everyone else sees an empty entry in its place. (BR-357)<br>● POST-2: Excluded sentences are left out of exported transcripts. (BR-358) |  |  |
+| Normal Flow | Exclude or Restore a Sentence<br>1. On the timeline of recorded sentences, the actor selects Exclude sentence on a sentence.<br>2. The system asks for the reason: Overlapping speech or Other.<br>3. The actor chooses a reason and confirms.<br>4. The system marks the sentence as excluded, keeps the reason, the actor and the time, and records the change in the audit log. (BR-357)<br>5. The system displays MSG351 – “Sentence excluded from meeting record.” |  |  |
+| Alternative Flows | AF-1 – Restore an excluded sentence<br>1. At Step 1, the actor selects Restore sentence on an excluded sentence.<br>2. The system clears the exclusion, so the sentence is part of the record again, and displays MSG352 – “Sentence restored to meeting record.” (BR-357)<br>3. The use case is complete. |  |  |
+| Exception Flows | EX-1 – Actor is not the Chair or the Secretary<br>1. At Step 4, the actor is neither the current Chair nor the current Secretary. (BR-357)<br>2. The sentence is unchanged. The system displays MSG353 – “Only the Chair or Secretary may exclude a sentence from the meeting record.”<br>3. The use case ends.<br>EX-2 – Invalid reason<br>1. At Step 4, the reason is not one of the two offered.<br>2. The sentence is unchanged. The system displays MSG354 – “Invalid sentence exclusion reason.”<br>3. The flow resumes at Step 2 of the Main Flow. |  |  |
 
-Placeholder only – detailed Use Case Specification will be added later.
+##### 10.2.4 UC-46d – Delete a Sentence
 
-#### 10.6 UC-50 – Approve Meeting Summary
+| Primary Actors | Secretary | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows the current Secretary to permanently delete any recorded sentence, with its audio, from the timeline. Unlike excluding a sentence (UC-46c), a deleted sentence cannot be brought back. |  |  |
+| Preconditions | ● PRE-1: The actor is the current Secretary of the Meeting. (BR-355)<br>● PRE-2: The sentence exists on the timeline of recorded sentences. |  |  |
+| Postconditions | ● POST-1: The text and the audio of the sentence are permanently removed. (BR-355) |  |  |
+| Normal Flow | Delete a Sentence<br>1. On the timeline of recorded sentences, the Secretary selects Delete on a sentence.<br>2. The system asks for confirmation and warns that the text and the audio will be permanently destroyed.<br>3. The Secretary confirms.<br>4. The system removes the text and the audio of the sentence and records the deletion in the audit log. (BR-355)<br>5. The system displays MSG322 – “Spoken sentence deleted.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Actor is neither the Secretary nor the speaker<br>1. At Step 4, the actor is neither the Secretary nor the person who spoke the sentence (who deletes it through UC-80). (BR-355)<br>2. The sentence is unchanged. The system displays MSG323 – “Only the speaker or the Secretary may delete this sentence.”<br>3. The use case ends.<br>EX-2 – Sentence cannot be deleted<br>1. At Step 4, the system cannot remove the sentence.<br>2. The sentence stays as it was. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends. |  |  |
 
-Placeholder only – detailed Use Case Specification will be added later.
+#### 10.3 UC-81 – Manage My Voice ID
 
-#### 10.7 UC-51 – Publish Meeting Summary
+##### 10.3.1 UC-81a – View My Voice ID
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to see his or her own Voice ID: whether consent was given, which version of the notice was accepted and which voice samples were recorded. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in as an internal user. |  |  |
+| Postconditions | ● POST-1: The actor sees the consent status, the accepted notice version and the list of voice samples. Nothing is changed. |  |  |
+| Normal Flow | View My Voice ID<br>1. The actor opens My voice from the sidebar.<br>2. The system loads the actor's consent and voice samples.<br>3. The system shows the consent status, the notice version the actor accepted, the list of voice samples (length and date recorded) and, while fewer than 5 samples exist, the option to record a new one. (BR-362, BR-363) |  |  |
+| Alternative Flows | AF-1 – Notice has been updated<br>1. At Step 3, the actor consented under an earlier version of the notice than the current one.<br>2. The system tells the actor that the terms have changed and offers Accept new terms (UC-81b). (BR-362)<br>3. The flow resumes at Step 3 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Voice ID cannot be loaded<br>1. At Step 2, the system cannot read the Voice ID information.<br>2. Nothing is shown. The system displays MSG314 – “Unable to load voice profile information.”<br>3. The use case ends. |  |  |
+
+##### 10.3.2 UC-81b – Give Voice ID Consent
+
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to give separate, explicit consent to Voice ID, or to accept the current version of the notice when it changed. This consent is not part of the consent to recording. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in as an internal user and is on the My voice page.<br>● PRE-2: The actor has not consented yet, or consented under an earlier version of the notice. (BR-361, BR-362) |  |  |
+| Postconditions | ● POST-1: The consent is recorded with the version of the notice the actor accepted, the purpose and the time. (BR-361, BR-362) |  |  |
+| Normal Flow | Give Voice ID Consent<br>1. On the My voice page, the actor reads the Voice ID notice. It states the purpose, the data that is kept (the features of the voice and a protected copy of the sample recordings), who controls the data, the rights of the actor and that voice data is sensitive personal data. (BR-361, BR-369)<br>2. The actor ticks the consent box, which is not ticked by default, and selects Enable Voice ID.<br>3. The system records the consent with the current version of the notice and the time, and records it in the audit log. (BR-361, BR-362)<br>4. The system displays MSG305 – “Voice identification enabled for your account.” |  |  |
+| Alternative Flows | AF-1 – Accept the updated notice<br>1. At Step 1, the actor consented under an earlier version of the notice and the page offers Accept new terms.<br>2. The actor reads the current notice and selects Accept new terms.<br>3. The system renews the consent on the current version of the notice. Voice samples already recorded are kept. (BR-362)<br>4. The flow resumes at Step 4 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – Notice version is not current<br>1. At Step 3, the version of the notice the actor read is not the current one. (BR-362)<br>2. No consent is recorded. The system displays MSG313 – “Invalid submission data.”<br>3. The use case ends.<br>EX-2 – Consent cannot be saved<br>1. At Step 3, the system cannot save the consent.<br>2. No consent is recorded. The system displays MSG315 – “Unable to save changes. Please try again.”<br>3. The use case ends. |  |  |
+
+##### 10.3.3 UC-81c – Record Voice Sample
+
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user with Voice ID consent to record a short reading so that the system can offer his or her name as a suggestion when the Secretary names the speakers of a transcript. |  |  |
+| Preconditions | ● PRE-1: The actor has given Voice ID consent and has not withdrawn it. (BR-361)<br>● PRE-2: The actor has fewer than 5 voice samples. (BR-363) |  |  |
+| Postconditions | ● POST-1: A new voice sample is stored protected and the features of the voice are kept for matching. (BR-363, BR-364, BR-369) |  |  |
+| Normal Flow | Record Voice Sample<br>1. On the My voice page, the actor selects Record sample.<br>2. The system shows a passage to read and asks the actor to read it aloud.<br>3. The actor selects Start recording, reads the passage and selects Stop.<br>4. The system receives the recording.<br>5. The system checks that the recording has 6 to 60 seconds of clear speech from one person. (BR-363)<br>6. The system learns the features of the voice from the recording and the system stores the sample protected. (BR-364, BR-369)<br>7. The system displays MSG307 – “Voice sample saved.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Consent missing or withdrawn<br>1. At Step 4, the actor has no active Voice ID consent. (BR-361)<br>2. The sample is not kept. The system displays MSG308 – “Voice identification consent is required before recording a voice sample.”<br>3. The use case ends.<br>EX-2 – Unsupported audio type<br>1. At Step 4, the recording is not of a supported audio type.<br>2. The sample is not kept. The system displays MSG292 – “Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-3 – Sample does not meet the quality requirements<br>1. At Step 5, the recording is too short, too long, too quiet, distorted or has more than one speaker. (BR-363)<br>2. The sample is not kept. The system displays MSG309 – “Voice sample did not meet quality requirements. Please read the full sample text clearly.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-4 – Sample limit reached<br>1. At Step 1, the actor already has 5 voice samples. (BR-363)<br>2. No recording starts. The system displays MSG310 – “Maximum of 5 voice samples reached. Delete an existing sample before recording a new one.”<br>3. The use case ends.<br>EX-5 – Speech recognition unavailable<br>1. At Step 6, the speech recognition of the system is unavailable.<br>2. The sample is not kept. The system displays MSG312 – “Speech recognition service is currently unavailable. Please try again later.”<br>3. The use case ends.<br>EX-6 – Invalid submission<br>1. At Step 4, the recording is missing or the submission is incomplete.<br>2. The sample is not kept. The system displays MSG313 – “Invalid submission data.”<br>3. The use case ends.<br>EX-7 – Sample cannot be saved<br>1. At Step 6, the system cannot store the sample.<br>2. The sample is not kept. The system displays MSG315 – “Unable to save changes. Please try again.”<br>3. The use case ends. |  |  |
+
+##### 10.3.4 UC-81d – Play Voice Sample
+
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to listen to one of his or her own voice samples. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and is the owner of the voice sample. (BR-364)<br>● PRE-2: The recording of the sample was kept. Samples recorded under an earlier notice kept only the features of the voice and cannot be played. (BR-364) |  |  |
+| Postconditions | ● POST-1: The actor hears the sample. Nothing is changed and nobody else can play it. (BR-364) |  |  |
+| Normal Flow | Play Voice Sample<br>1. On the My voice page, the actor selects Play next to a voice sample.<br>2. The system checks that the actor owns the sample, unprotects the recording and plays it to the actor. (BR-364) |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Sample cannot be played<br>1. At Step 2, the recording of the sample was not kept or cannot be read.<br>2. Nothing plays. No catalogue message is assigned to this case yet.<br>3. The use case ends. |  |  |
+
+##### 10.3.5 UC-81e – Delete Voice Sample
+
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to delete one of his or her own voice samples. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and owns the voice sample. (BR-364) |  |  |
+| Postconditions | ● POST-1: The sample, its recording and the features of its voice are permanently deleted.<br>● POST-2: The actor's other samples are unchanged. Each remaining sample is still used on its own to suggest the actor's name. |  |  |
+| Normal Flow | Delete Voice Sample<br>1. On the My voice page, the actor selects Delete on a voice sample.<br>2. The system asks for confirmation.<br>3. The actor confirms.<br>4. The system deletes the sample, its recording and the features of its voice, and records the deletion in the audit log.<br>5. The system displays MSG311 – “Voice sample deleted.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Sample cannot be deleted<br>1. At Step 4, the system cannot delete the sample.<br>2. The sample stays as it was. The system displays MSG315 – “Unable to save changes. Please try again.”<br>3. The use case ends. |  |  |
+
+##### 10.3.6 UC-81f – Withdraw Voice ID Consent
+
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Allows an internal user to withdraw Voice ID consent. Withdrawing deletes all of the actor's voice samples and every speaker suggestion that points to the actor. |  |  |
+| Preconditions | ● PRE-1: The actor is signed in and has active Voice ID consent. (BR-361) |  |  |
+| Postconditions | ● POST-1: All voice samples of the actor, their recordings and the features of the voices are permanently deleted. (BR-365)<br>● POST-2: Every speaker suggestion that points to the actor, in every Meeting, is cleared at once. (BR-365)<br>● POST-3: Names already assigned by Secretaries are kept. (BR-365) |  |  |
+| Normal Flow | Withdraw Voice ID Consent<br>1. On the My voice page, the actor selects Withdraw consent.<br>2. The system shows a confirmation explaining that all voice samples will be permanently deleted.<br>3. The actor confirms.<br>4. The system deletes all voice samples with their recordings and voice features, clears every speaker suggestion that points to the actor, marks the consent as withdrawn and records it in the audit log. (BR-365)<br>5. The system displays MSG306 – “Voice identification disabled and all voice samples deleted.” |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | EX-1 – Consent cannot be withdrawn<br>1. At Step 4, the system cannot complete the deletion.<br>2. The consent and the samples stay as they were. The system displays MSG315 – “Unable to save changes. Please try again.”<br>3. The use case ends. |  |  |
+
+#### 10.4 UC-47 – Generate / Regenerate Meeting Summary
+
+Placeholder only – not implemented in the current release.
+
+#### 10.5 UC-48 – View Meeting Summary
+
+Placeholder only – not implemented in the current release.
+
+#### 10.6 UC-49 – Edit Meeting Summary
+
+Placeholder only – not implemented in the current release.
+
+#### 10.7 UC-50 – Approve Meeting Summary
+
+Placeholder only – not implemented in the current release.
+
+#### 10.8 UC-51 – Publish Meeting Summary
+
+Placeholder only – not implemented in the current release.
 
 ### 11. FE-11 – Voting Management
 
@@ -2120,7 +2384,7 @@ Field Description
 | Resend code [Gửi lại mã] | Text link next to Verify; sends a new one-time code to the invited email address. |
 | Recording notice | Read-only yellow info box: “The meeting may be recorded to prepare the minutes. Your information is used only for this meeting.” [Cuộc họp có thể được ghi âm để lập biên bản. Thông tin của bạn chỉ dùng cho cuộc họp này.] |
 | Guest scope notice | Read-only scope notice: “Khách chỉ truy cập cuộc họp được mời và toàn bộ tài liệu gắn trong cuộc họp theo quyền Thành viên. Email đã được xác minh; tên hiển thị và chức vụ do khách tự khai.” (BR-180, BR-181) |
-| Already verified | When the Guest reopens a valid link during an active verified Guest session, this screen is skipped and the invited meeting opens directly (UC-04 ALT-1). |
+| Already verified | When the Guest reopens a valid link during an active verified Guest session, this screen is skipped and the invited meeting opens directly (UC-04 AF-1). |
 
 ### 2. FE-02 – User & Profile Management
 
@@ -2701,7 +2965,7 @@ Field Description
 | Content to discuss [Nội dung cần bàn] * | Text input, required (*); the title of the agenda item. Empty shows the field error “Agenda item title is required.” (MSG66, BR-66). |
 | Presenter [Người trình bày] | Dropdown, optional; the hint “Không bắt buộc, có thể chọn sau.” is shown under it. Lists the current internal participants and external Guests of the Meeting; a Guest is shown with “(guest)” [(khách)], e.g. “Ngô Thanh Vân (khách)”. Editable whatever the Item’s status. (BR-68, BR-306) |
 | Note [Ghi chú] | Textarea, optional; description of what will be presented or discussed. Editable whatever the Item’s status. |
-| Documents [Tài liệu] | Checklist of the documents already uploaded to this Meeting (file type badge and file name); the ticked ones are linked to the item (FE-07, UC-33b). The drawer has no “+ Add document” menu and no upload: files are uploaded in the Documents tab (SCRUM-107), and “My documents” [Tài liệu của tôi] waits for SCRUM-58. A document not available to the Meeting gives “One or more selected documents are not available to this meeting.” (MSG66). Editable whatever the Item’s status. (BR-68) |
+| Documents [Tài liệu] | Checklist of the documents already uploaded to this Meeting (file type badge and file name); the ticked ones are linked to the item (FE-07, UC-33b). The drawer has no “+ Add document” menu and no upload: files are uploaded in the Documents tab, and “My documents” [Tài liệu của tôi] is not built yet. A document not available to the Meeting gives “One or more selected documents are not available to this meeting.” (MSG66). Editable whatever the Item’s status. (BR-68) |
 | Cancel [Huỷ] | Text button; closes the drawer without saving. |
 | Save [Lưu] | Primary button. Validates the fields and saves. Create: a Pending item is added at the end of the Meeting agenda (BR-67), toast MSG60; Edit: toast MSG61. MSG67 if the Meeting is no longer Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the user is no longer its Secretary (BR-65, BR-68); failure MSG68 / MSG69. Successful changes automatically refresh the complete Agenda for authorized viewers. (BR-68, BR-73) |
 
@@ -2851,10 +3115,10 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Meeting header | Read-only: title with status chip In Progress [Đang họp] and confidentiality chip; second line actual start time (e.g. “Started 08:32”) and mode · location. |
-| Save result | There is no Save button: choosing a value sends that person’s attendance at once, and the cell shows the chosen value while the request runs. Success MSG147 “Meeting attendance saved successfully.”; invalid value MSG148; status restriction MSG149. MSG151 “The participant or attendance data has changed. Please reload and review before saving.” when someone else changed the same person’s attendance or the person is no longer on the roster: nothing is saved, the table is reloaded and the Secretary chooses again, no unsaved choice is kept (ADR-0025). MSG150 “Unable to confirm the attendance save result. Please reload the data before trying again.” when the result cannot be confirmed; the Secretary reloads to see what was saved. MSG289 “Unable to load attendance data.” with a Retry button when the attendance cannot be read; a failed load is never shown as an empty roster. Attendance completeness never blocks End Meeting. (BR-170–BR-172, BR-178) |
+| Save result | There is no Save button: choosing a value sends that person’s attendance at once, and the cell shows the chosen value while the request runs. Success MSG147 “Meeting attendance saved successfully.”; invalid value MSG148; status restriction MSG149. MSG151 “The participant or attendance data has changed. Please reload and review before saving.” when someone else changed the same person’s attendance or the person is no longer on the roster: nothing is saved, the table is reloaded and the Secretary chooses again, no unsaved choice is kept. MSG150 “Unable to confirm the attendance save result. Please reload the data before trying again.” when the result cannot be confirmed; the Secretary reloads to see what was saved. MSG289 “Unable to load attendance data.” with a Retry button when the attendance cannot be read; a failed load is never shown as an empty roster. Attendance completeness never blocks End Meeting. (BR-170–BR-172, BR-178) |
 | Participant [Thành phần] | Column: avatar initials, full name (with “(Tôi)” for the signed-in user) and email of each current internal participant and external Guest, with the response label of UC-30 beside the name. |
 | Role [Vai trò] | Read-only column: Chair [Chủ tọa], Secretary [Thư ký], Member [Thành viên] or Guest [Khách], each as a square chip of its own tint. |
-| Attendance [Điểm danh] | For the Secretary a small dropdown: dot and text Present [Có mặt] (green dot) or Absent [Vắng] (grey dot); a dashed empty dropdown reading “Điểm danh” while the person has never been recorded. For everyone else a read-only dot and text, or “Chưa điểm danh” when never recorded. The tooltip reads “<name> điểm danh lúc <hh:mm dd/mm/yyyy>” (who recorded it and when). Each person’s attendance has its own version (ADR-0025). Invitation responses and online-room connections never select or save official attendance automatically. Revision is allowed only while InProgress. (BR-116, BR-170–BR-172) |
+| Attendance [Điểm danh] | For the Secretary a small dropdown: dot and text Present [Có mặt] (green dot) or Absent [Vắng] (grey dot); a dashed empty dropdown reading “Điểm danh” while the person has never been recorded. For everyone else a read-only dot and text, or “Chưa điểm danh” when never recorded. The tooltip reads “<name> điểm danh lúc <hh:mm dd/mm/yyyy>” (who recorded it and when). Each person’s attendance has its own version. Invitation responses and online-room connections never select or save official attendance automatically. Revision is allowed only while InProgress. (BR-116, BR-170–BR-172) |
 
 #### 6.4 Invitation Response
 
@@ -2953,7 +3217,7 @@ Field Description
 
 #### 7.3 Meeting Detail – Documents Tab
 
-The Meeting Detail – Documents tab lists the documents attached to the selected Meeting in two groups: By meeting content, with one block per Agenda Item in agenda order; and General documents, linked to no Agenda Item. A Voting group, with the documents attached to each Vote and the user's read confirmation, is planned and appears once documents can be attached to a Vote (UC-74, SCRUM-96). A file linked to several Agenda Items appears under each of them and is uploaded only once. The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Anyone who can view the Meeting reads its documents; the Chair and the Secretary upload documents until the Meeting ends, and attach them to an Agenda Item in the Add / Edit Agenda Item Drawer (5.2). Choosing from the personal library and the ⋯ menu to unlink or remove a document are not built yet and wait for SCRUM-58 (UC-32a, UC-32c, UC-33a, UC-33b, UC-33c, UC-33d, BR-275, BR-277).
+The Meeting Detail – Documents tab lists the documents attached to the selected Meeting in two groups: By meeting content, with one block per Agenda Item in agenda order; and General documents, linked to no Agenda Item. A Voting group, with the documents attached to each Vote and the user's read confirmation, is planned and appears once documents can be attached to a Vote (UC-74). A file linked to several Agenda Items appears under each of them and is uploaded only once. The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Anyone who can view the Meeting reads its documents; the Chair and the Secretary upload documents until the Meeting ends, and attach them to an Agenda Item in the Add / Edit Agenda Item Drawer (5.2). Choosing from the personal library and the ⋯ menu to unlink or remove a document are not built yet (UC-32a, UC-32c, UC-33a, UC-33b, UC-33c, UC-33d, BR-275, BR-277).
 
 This screen allows users who can view the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, and a Guest once UC-04 is built) to:
 
@@ -2969,7 +3233,7 @@ On the screen, the Chair and the Secretary can also:
 
 - Attach to Agenda Item: done in the Add / Edit Agenda Item Drawer (5.2) by ticking the Meeting’s documents; the Documents tab has no paperclip menu (UC-33b).
 
-- Unlink or Remove Document: the ⋯ menu of a row (Remove from this item, Remove from the meeting) is not built yet and waits for SCRUM-58 (UC-33d, UC-33c).
+- Unlink or Remove Document: the ⋯ menu of a row (Remove from this item, Remove from the meeting) is not built yet (UC-33d, UC-33c).
 
 Field Description
 
@@ -2977,22 +3241,22 @@ Field Description
 | --- | --- |
 | Meeting header | Read-only: back link “‹ Meetings” [‹ Cuộc họp], meeting title with status chip (e.g. Draft [Nháp], In Progress [Đang họp]) and confidentiality chip (e.g. Normal [Thường]); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
 | Tabs | Documents [Tài liệu] is selected. Other tabs: General Information, Participants, Meeting Content, Voting, Recordings, Summary, Minutes. |
-| Grouping [Theo nội dung họp / Biểu quyết / Tài liệu chung] | Segmented control: By meeting content (default) and General documents; each segment shows its number of documents (UC-32a). A Voting segment is planned (UC-74, SCRUM-96). |
+| Grouping [Theo nội dung họp / Biểu quyết / Tài liệu chung] | Segmented control: By meeting content (default) and General documents; each segment shows its number of documents (UC-32a). A Voting segment is planned (UC-74). |
 | Agenda Item block | Collapsible block per Agenda Item, numbered by its place in the agenda list rather than the stored position, with title and number of documents; during an In Progress Meeting the current item is expanded first. Tooltip: “A document can be attached to several items.” [Một tài liệu có thể gắn ở nhiều mục.] (BR-277). |
-| Attach to item | There is no paperclip menu. A document is uploaded here with “Thêm tài liệu chung” and attached to an Agenda Item in the Add / Edit Agenda Item Drawer (5.2) (UC-33a, UC-33b). “Choose from my library” [Chọn từ Tài liệu của tôi] is not built yet and waits for SCRUM-58 [chờ SCRUM-58]. |
+| Attach to item | There is no paperclip menu. A document is uploaded here with “Thêm tài liệu chung” and attached to an Agenda Item in the Add / Edit Agenda Item Drawer (5.2) (UC-33a, UC-33b). “Choose from my library” [Chọn từ Tài liệu của tôi] is not built yet [chưa làm]. |
 | Document row | File type badge, file name, page count and number of comments, e.g. “Ke-hoach-kinh-doanh-2027.pdf · 14 pages · 4 comments”. The page count is shown only when it is known (a PDF whose page count was recorded) and is left out otherwise. Who added the document and when are shown in a tooltip on the name. Clicking the row opens the Document Viewer (7.5). |
-| Vote documents | In the planned Voting group, each Vote lists its documents with the user’s own state Read [Đã đọc] or Not read [Chưa đọc]; not built yet, it arrives with UC-74 (SCRUM-96). |
-| Row menu [⋯] | Not built yet; waits for SCRUM-58 [chờ SCRUM-58]. Intended for the Chair and Secretary until the Meeting ends: Remove from this item [Gỡ khỏi mục này] unlinks the document from that Agenda Item only (UC-33d); Remove from the meeting [Gỡ khỏi cuộc họp] asks for confirmation and removes the document from every item; its comments are kept as history but no longer listed (UC-33c, BR-281). |
+| Vote documents | In the planned Voting group, each Vote lists its documents with the user’s own state Read [Đã đọc] or Not read [Chưa đọc]; not built yet, it arrives with UC-74. |
+| Row menu [⋯] | Not built yet [chưa làm]. Intended for the Chair and Secretary until the Meeting ends: Remove from this item [Gỡ khỏi mục này] unlinks the document from that Agenda Item only (UC-33d); Remove from the meeting [Gỡ khỏi cuộc họp] asks for confirmation and removes the document from every item; its comments are kept as history but no longer listed (UC-33c, BR-281). |
 | Add document [Thêm tài liệu] | Button “Thêm tài liệu chung” [Add general document], Chair and Secretary only; opens the Add Document to Meeting Dialog (7.4) to upload files. |
 | Access rules | Anyone who can currently view the Meeting reads its documents, including the Meeting Approver; a Guest reads them once UC-04 is built. There is no separate reading permission (BR-275). After the Meeting ends every add, link and remove control is hidden and the documents are read-only (BR-185, BR-282). |
 
 #### 7.4 Add Document to Meeting Dialog
 
-The Add Document to Meeting Dialog opens from “Thêm tài liệu chung” on the Documents tab. It has no tabs: the Chair or the Secretary drops or chooses files from the computer in one area. “From my library” [Từ kho của tôi] is not built yet and waits for SCRUM-58 [chờ SCRUM-58]; once built, a document selected from the personal library will remain in that library. A file uploaded from the computer is also stored in the uploader’s personal library, in the folder named after the meeting. All submitted documents are added together, or none is added (UC-33a, BR-184, BR-192, BR-286).
+The Add Document to Meeting Dialog opens from “Thêm tài liệu chung” on the Documents tab. It has no tabs: the Chair or the Secretary drops or chooses files from the computer in one area. “From my library” [Từ kho của tôi] is not built yet [chưa làm]; once built, a document selected from the personal library will remain in that library. A file uploaded from the computer is also stored in the uploader’s personal library, in the folder named after the meeting. All submitted documents are added together, or none is added (UC-33a, BR-184, BR-192, BR-286).
 
 This screen allows the Chair or the Secretary to:
 
-- Select Documents from Library: on the “From my library” tab tick one or more files of his/her personal library; not built yet, waits for SCRUM-58 (UC-33a).
+- Select Documents from Library: on the “From my library” tab tick one or more files of his/her personal library; not built yet (UC-33a).
 
 - Upload from Computer: drop or choose up to 10 PDF or DOCX files at a time (UC-33a, BR-319). The extension must be .pdf or .docx and must match the file’s content; a file of the wrong type, an empty file, a file over 50 MB or a file name that cannot be used is named in the error and nothing is added (MSG164).
 
@@ -3007,8 +3271,8 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Dialog title | “Thêm tài liệu chung” [Add general document]. |
-| Tabs | There are no tabs: the dialog has one upload area. “From my library” [Từ kho của tôi] is not built yet and waits for SCRUM-58 [chờ SCRUM-58]. |
-| Library file list | Not built yet; waits for SCRUM-58 [chờ SCRUM-58]. Planned: From my library tab with folder picker, search by file name and rows with checkbox, file type badge, file name and upload date (e.g. “09/10”). Only the user’s own library files are listed; a file already in this Meeting is greyed out with “Already in the meeting” [Đã có trong cuộc họp]. At least one file must be selected. |
+| Tabs | There are no tabs: the dialog has one upload area. “From my library” [Từ kho của tôi] is not built yet [chưa làm]. |
+| Library file list | Not built yet [chưa làm]. Planned: From my library tab with folder picker, search by file name and rows with checkbox, file type badge, file name and upload date (e.g. “09/10”). Only the user’s own library files are listed; a file already in this Meeting is greyed out with “Already in the meeting” [Đã có trong cuộc họp]. At least one file must be selected. |
 | Upload area | Drop zone “Drag files here or click to choose” [Kéo tệp vào đây hoặc bấm để chọn]. Only PDF or DOCX, at most 50 MB each, and at most 10 files totalling 200 MB per submission; the extension must be .pdf or .docx and must match the file’s content. Before reading any file the system checks the user’s authority: a user who is no longer the Chair or Secretary receives MSG162 whatever the files are, and one who can no longer view the Meeting receives MSG174. A submission of more than 10 files or more than 200 MB, or a request that declares more than 201 MB, shows MSG288 before the files are received; a missing file, an invalid request, a file name that cannot be used or a file of the wrong type shows MSG164 naming the files at fault; in every case nothing is added (MSG162, MSG164, MSG174, MSG288, BR-187, BR-215, BR-319). |
 | Access notice | Info box: “Ai xem được cuộc họp đều đọc được tài liệu đã thêm.” [Anyone who can view the Meeting can read the added documents.] (BR-275) |
 | Cancel [Huỷ] | Text button “Huỷ” [Cancel]; closes the dialog. It is disabled once every byte has been sent, because the server may already be saving. |
@@ -3016,7 +3280,7 @@ Field Description
 
 #### 7.5 Document Viewer – Preview & Comments
 
-The Document Viewer opens when a user clicks a document on the Documents tab, on an Agenda Item or in the Documents panel of the online room; opened from the room, it opens in a new browser tab so the call continues (BR-315). It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom; the comment panel is planned and arrives with SCRUM-23. Users who can view the Meeting preview the document and download it unless the Meeting is Secret (UC-32c). Comments and their replies belong to UC-35 and are not built yet.
+The Document Viewer opens when a user clicks a document on the Documents tab, on an Agenda Item or in the Documents panel of the online room; opened from the room, it opens in a new browser tab so the call continues (BR-315). It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom; the comment panel is planned. Users who can view the Meeting preview the document and download it unless the Meeting is Secret (UC-32c). Comments and their replies belong to UC-35 and are not built yet.
 
 This screen allows users who can view the meeting (Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, verified Guest) to:
 
@@ -3043,8 +3307,8 @@ Field Description
 | Page indicator [Trang 2 / 6] | Read-only current page and total number of pages; updates while scrolling. Shown for PDF documents only. |
 | Zoom − / + | Two square buttons that decrease or increase the zoom level of the preview. |
 | Download [Tải về] | Secondary button; downloads the original file. In a Secret Meeting it is replaced by the chip “View online only” [Chỉ xem trực tuyến] (BR-188). |
-| Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous scrollable document; the highlighted passage that marks the area a comment refers to arrives with SCRUM-23. No name or time is stamped on the document, and a Secret document is not given a watermark. Each view or download of a Confidential or Secret Meeting’s document is recorded in the audit log (BR-318). |
-| Comments tab [Bình luận 4] | Tab with the number of comments. Each comment shows avatar initials, author, page and relative time (e.g. “Page 2 · 2 hours ago”), the text and a “Reply” [Trả lời] link; replies are indented under it. A Guest’s comment shows the name the Guest gave with the label Guest [Khách mời] (ADR-0016). The comment panel is not built yet and arrives with SCRUM-23 (UC-35). |
+| Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous scrollable document; the highlighted passage that marks the area a comment refers to is not built yet. No name or time is stamped on the document, and a Secret document is not given a watermark. Each view or download of a Confidential or Secret Meeting’s document is recorded in the audit log (BR-318). |
+| Comments tab [Bình luận 4] | Tab with the number of comments. Each comment shows avatar initials, author, page and relative time (e.g. “Page 2 · 2 hours ago”), the text and a “Reply” [Trả lời] link; replies are indented under it. A Guest’s comment shows the name the Guest gave with the label Guest [Khách mời]. The comment panel is not built yet (UC-35). |
 | Comment box [Viết bình luận…] | Textarea, required to send; for a PDF the comment is linked to the page being viewed, a DOCX comment has no page. Hidden after the Meeting ends, when comments are read-only (BR-282, MSG251). |
 | Send [Gửi] | Primary button; posts the comment or reply, which appears in the list and increases the comment count on the Documents tab (UC-35). |
 
@@ -3182,7 +3446,7 @@ Field Description
 
 #### 8.5 In-Room Voting Panel
 
-The In-Room Voting Panel is planned (SCRUM-96) and not part of the current version. It adds a Voting icon next to Participants and Chat; the white 360 px panel reuses the components of the Voting tab of the meeting detail page (ADR-0011). When the Chair opens a Vote, the panel opens for everyone in the room (UC-52b, UC-55).
+The In-Room Voting Panel is planned and not part of the current version. It adds a Voting icon next to Participants and Chat; the white 360 px panel reuses the components of the Voting tab of the meeting detail page. When the Chair opens a Vote, the panel opens for everyone in the room (UC-52b, UC-55).
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
 
@@ -3195,7 +3459,7 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Panel title [Biểu quyết] | Title of the panel; label “Planned” [Chưa làm] in the wireframe. |
-| Vote status line | Status chip “Open” [Đang mở] (green) followed by “Opened at 13:58 · secret ballot”. A Vote belongs to the Meeting, not to an Agenda Item (ADR-0019). |
+| Vote status line | Status chip “Open” [Đang mở] (green) followed by “Opened at 13:58 · secret ballot”. A Vote belongs to the Meeting, not to an Agenda Item. |
 | Vote question | Read-only bold text, e.g. “Thông qua kế hoạch kinh doanh năm 2027”. |
 | Ballot progress | “Voted 7/11” [Đã bỏ phiếu 7/11]: ballots cast out of eligible voters; no option results while the Vote is open, and for a secret ballot no indication of who has just voted. |
 | Vote options | Radio cards, exactly one may be selected: Đồng ý [Agree], Không đồng ý [Disagree], Không ý kiến [Abstain]. |
@@ -3203,13 +3467,13 @@ Field Description
 
 #### 8.6 In-Room Documents Panel
 
-The In-Room Documents Panel is built (SCRUM-21) and opens from the Documents icon in the bottom bar of the online room. It reuses the Documents tab component in its room variant (ADR-0011) and is read-only: the current Agenda Item comes first with its documents open and the other items folded, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted (UC-32a, UC-32c, BR-315, BR-316). On a phone the panel sits behind the ⋯ menu together with Meeting content and Attendance.
+The In-Room Documents Panel is built and opens from the Documents icon in the bottom bar of the online room. It reuses the Documents tab component in its room variant and is read-only: the current Agenda Item comes first with its documents open and the other items folded, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted (UC-32a, UC-32c, BR-315, BR-316). On a phone the panel sits behind the ⋯ menu together with Meeting content and Attendance.
 
 This screen allows users connected to the room (Chair, Secretary, Participant, and a Guest once UC-04 is built) to:
 
 - View Meeting Documents: see the documents of the current Agenda Item first, the other items collapsed and the general documents (UC-32a).
 
-- Open Document: click a document to read it in a new tab while staying in the room; comments arrive with SCRUM-23 (UC-32c, BR-315).
+- Open Document: click a document to read it in a new tab while staying in the room; comments are not available there yet (UC-32c, BR-315).
 
 Field Description
 
@@ -3763,7 +4027,7 @@ Runs inside the backend every 5 seconds. Each cycle creates the “meeting start
 
 #### 16.2 Deliver Meeting Invitation Emails (JOB-02)
 
-Runs inside the backend only when Email:Smtp:Enabled is true. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails one at a time from the email outbox, and waits Email:PollingIntervalSeconds before polling again when the queue is empty. A failed email is retried with exponential back-off up to Email:MaxAttempts times (8 by default) and then marked permanently failed (API-03, 17.3).
+Runs inside the backend only when SMTP is enabled. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails one at a time from the email queue, and waits before polling again when the queue is empty. A failed email is retried with exponential back-off up to the configured number of attempts (8 by default) and then marked permanently failed (API-03, 17.3).
 
 ### 17. External API Inventory
 
@@ -3772,66 +4036,77 @@ Runs inside the backend only when Email:Smtp:Enabled is true. It queues the invi
 | URL | Browser loads https://accounts.google.com/gsi/client (Google Identity Services JavaScript SDK) |
 | --- | --- |
 | Purpose | Lets a user prove their Google identity in a Google popup so the SPA receives a signed Google ID token. |
-| Caller | TrustCabinet frontend (GoogleSignInButton) → Google Identity Services; the backend is not involved at this step. |
-| Auth | Public OAuth 2.0 Client ID only (google.accounts.id.initialize); no client secret is used by this flow. |
+| Caller | TrustCabinet frontend → Google Identity Services; the backend is not involved at this step. |
+| Auth | Public OAuth 2.0 Client ID only; no client secret is used by this flow. |
 | Request / Response | In: client_id. Out: callback with response.credential = Google ID token (JWT); a cancelled popup or Google error yields no credential and the login page shows MSG03 itself. |
 | Failure handling | If the GIS script fails to load or no credential is returned, the SPA shows 'Đăng nhập bằng Google không thành công' (MSG03) without calling the backend. |
-| Configuration | Client ID constant in frontend GoogleSignInButton.tsx and Authentication:Google:ClientId in appsettings.json (must match). |
+| Configuration | The public Google Client ID, which must be the same in the frontend and the backend. |
 
 #### 17.2 POST: /api/auth/google – Google ID token verification (API-02)
 
-| URL | POST: /api/auth/google (inbound from SPA); outbound: Google's published OAuth 2.0 signing certificates, fetched and cached by Google.Apis.Auth GoogleJsonWebSignature.ValidateAsync |
+| URL | POST: /api/auth/google (inbound from SPA); outbound: Google's published OAuth 2.0 signing certificates |
 | --- | --- |
 | Purpose | Signs a user in with a verified Google account and issues TrustCabinet's own access and refresh tokens. |
-| Caller | SPA → TrustCabinet backend (AuthEndpoints); backend GoogleTokenVerifier → Google Identity Platform. |
+| Caller | SPA → TrustCabinet backend; backend → Google Identity Platform. |
 | Auth | Anonymous endpoint; the Google ID token in the body is the credential. Token must be signed by Google, audience = configured Client ID, not expired, email_verified = true, non-empty sub. |
 | Request / Response | Request: { idToken }. 200: access token + user in body, refresh token in HttpOnly/Secure/SameSite=Strict cookie tc_refresh_token (Path=/api/auth). 401 + MSG03 (invalid token), MSG05 (Google account not linked/authorised), MSG02 (account deactivated). 404 when Google sign-in is disabled. |
-| Failure handling | Invalid/malformed tokens collapse to MSG03 and are logged without the token. First sign-in auto-links the account by verified email (ADR-0009) and writes an audit entry. Network failure fetching Google certificates is not caught (surfaces as HTTP 500). |
-| Configuration | Authentication:Google:Enabled, Authentication:Google:ClientId (validated on startup when enabled). |
+| Failure handling | Invalid/malformed tokens collapse to MSG03 and are logged without the token. First sign-in auto-links the account by verified email and writes an audit entry. Network failure fetching Google certificates is not caught (surfaces as HTTP 500). |
+| Configuration | Google sign-in can be switched on or off, and the Google Client ID is set by configuration; the system checks it at startup when sign-in is enabled. |
 
-#### 17.3 SMTP mail server – outbound email (API-03)
+#### 17.3 Resend Email – outbound email (API-03)
 
-| URL | smtp://{Email:Smtp:Host}:{Email:Smtp:Port} (default port 587; provider-neutral) |
+| URL | Resend's email API over HTTPS; or the configured SMTP host and port (default port 587) when SMTP is used instead |
 | --- | --- |
 | Purpose | Delivers meeting invitation emails with an .ics calendar invite and password-reset link emails. |
-| Caller | TrustCabinet backend (EmailDeliveryWorker/EmailQueueProcessor and PasswordResetEmailSender via SmtpEmailSender, MailKit) → SMTP server. |
-| Auth | SMTP username/password over STARTTLS (default), SSL-on-connect or none (internal relay only); credentials kept in user-secrets/environment variables. |
+| Caller | TrustCabinet backend (invitation email delivery and password-reset email) → Resend Email. |
+| Auth | Resend API key sent as a bearer token over HTTPS; when SMTP is used instead, username/password over STARTTLS (default), SSL-on-connect or none (internal relay only). Credentials are kept in user-secrets/environment variables. |
 | Request / Response | MIME message: From (FromName/FromAddress), To, Subject, plain-text body; invitations add text/calendar METHOD:REQUEST attachment 'thu-moi-hop.ics'. Reset links are {ApplicationBaseUrl}/reset-password#token=… (token in URL fragment). |
-| Failure handling | Invitations go through a database outbox (email_messages) with leasing (120 s), per-attempt timeout 60 s, SMTP client timeout 30 s, up to 8 attempts with exponential back-off from 60 s; then marked permanently failed. Failed QUIT after acceptance is treated as sent. Password-reset emails are sent synchronously with the same timeout; failure returns false (MSG15 to the admin). Worker only runs when Email:Smtp:Enabled = true. |
-| Configuration | Email:ApplicationBaseUrl, Email:MaxAttempts, Email:RetryDelaySeconds, Email:PollingIntervalSeconds, Email:ProcessingLeaseSeconds, Email:SendAttemptTimeoutSeconds, Email:Smtp:{Enabled, Host, Port, Security, Username, Password, FromAddress, FromName, TimeoutSeconds}. |
+| Failure handling | Invitations are queued and retried: up to 8 attempts with exponential back-off, then marked permanently failed. Password-reset emails are sent immediately; a failure is reported to the administrator (MSG15). Delivery only runs when email delivery is enabled. |
+| Configuration | Resend API address and key (or SMTP host, port, security mode and credentials), sender address and name, retry limits and timeouts, and the application base URL used in links; set by configuration, with credentials kept out of the code base. |
 
-#### 17.4 LiveKit server – RoomService API and access tokens (API-04) – planned
+#### 17.4 LiveKit server – RoomService API and access tokens (API-04)
 
-| URL | Backend → {LiveKit:ApiUrl} (http(s)://…:7880, RoomService: ListParticipants, MutePublishedTrack, RemoveParticipant, DeleteRoom); browser → {LiveKit:PublicUrl} (ws(s)://…:7880/rtc). Exposed via planned GET /api/meetings/{id}/call, POST /api/meetings/{id}/call/join, POST /api/meetings/{id}/call/participants/{userId}/mute. |
+| URL | Backend → the LiveKit server's management API (list participants, mute a track, remove a participant, close a room); browser → the LiveKit server's real-time connection. Exposed through the meeting room endpoints (view room, join, mute a participant). |
 | --- | --- |
 | Purpose | Runs the online meeting room on a self-hosted LiveKit SFU while the backend decides who may join and enforces chair controls. |
-| Caller | TrustCabinet backend (planned LiveKitGateway) → LiveKit server; browser (livekit-client) → LiveKit server with a backend-issued token. |
-| Auth | LiveKit API key/secret; backend signs HS256 JWT access tokens (identity = userId, room = meeting-{meetingId}, ~10-minute lifetime); secret only in user-secrets/environment. |
-| Failure handling | Planned: backend still starts without LiveKit config, call endpoints return 503; LiveKit errors/timeouts (HTTP client timeout 5 s) return 502; a 30-second CallRoomJanitor reconciles room state. |
-| Configuration | LiveKit:{PublicUrl, ApiUrl, ApiKey, ApiSecret, TokenTtlMinutes, EnforceRoster} (planned; docker compose profile 'calls'). |
-| Status | Accepted design, planned (ADR-0010, docs/02-design/08-ke-hoach-phong-hop-truc-tuyen.md). |
+| Caller | TrustCabinet backend → LiveKit server; browser → LiveKit server with a backend-issued token. |
+| Auth | LiveKit API key and secret; the backend issues short-lived access tokens (about 10 minutes) that identify the user and the Meeting room; the secret is kept outside the code base. |
+| Failure handling | The backend still starts without LiveKit configuration and the room endpoints answer 503; LiveKit errors or timeouts answer 502; a periodic check reconciles room state. |
+| Configuration | LiveKit addresses, API key and secret, token lifetime and whether the roster is enforced; set by configuration. |
+| Status | Built. |
 
-#### 17.5 POST: /api/livekit/webhook – LiveKit webhook (API-05) – planned
+#### 17.5 POST: /api/livekit/webhook – LiveKit webhook (API-05)
 
 | URL | POST: /api/livekit/webhook |
 | --- | --- |
 | Purpose | Receives room events from LiveKit so the system can record who joined/left the online meeting and close finished rooms. |
-| Caller | LiveKit server → TrustCabinet backend (planned CallEndpoints). |
-| Auth | Anonymous route verified by signature: Authorization header carries a raw HS256 JWT (iss = API key) signed with the LiveKit API secret, containing a sha256 claim of the request body. |
+| Caller | LiveKit server → TrustCabinet backend. |
+| Auth | Anonymous route verified by signature: the request carries a token signed with the LiveKit API secret that covers the request body. |
 | Request / Response | Events: participant_joined, participant_left, participant_connection_aborted, room_finished, track_published (SCREEN_SHARE). 200 OK; 401 bad signature; 503 not configured; 500 on database error so LiveKit retries. |
-| Failure handling | Handlers are idempotent; timestamps taken from the payload; lost webhooks are compensated by the 30-second janitor reconciliation. |
-| Status | Accepted design, planned (ADR-0010). |
+| Failure handling | Handlers are idempotent; timestamps taken from the payload; lost webhooks are compensated by a periodic reconciliation. |
+| Status | Built. |
 
-#### 17.6 AI / Speech Processing Provider – transcription, diarization and summary (API-06) – planned
+#### 17.6 Google AI Provider – draft meeting summary (API-06) – planned
 
-| URL | To be decided: either a self-hosted model service or an external AI/ASR API; no endpoint is configured in the code yet. |
+| URL | An external generative-AI service called over HTTPS (Google's AI API); not connected yet. |
 | --- | --- |
-| Purpose | Turns meeting audio uploaded by the Secretary into a speaker-attributed transcript and a draft meeting summary. |
-| Caller | TrustCabinet backend background processing (planned) → AI / Speech Processing Provider. |
-| Auth | To be decided with the provider (e.g. API key or internal network access). |
-| Request / Response | Input: uploaded audio of a Recording (language default 'vi'). Output: Transcript with timed TranscriptSegments per speaker, and a MeetingSummary draft; the provider name (Transcript.Provider) and model (MeetingSummary.Model) are stored per result. |
+| Purpose | Turns the transcript reviewed by the Secretary into a draft meeting summary (UC-47). Transcription and speaker identification are not part of this interface: they run inside the system. |
+| Caller | TrustCabinet backend background processing (planned) → Google AI Provider. |
+| Auth | API key kept in user-secrets/environment variables, never in the code base. |
+| Request / Response | Input: the transcript text of a Recording after the Secretary has reviewed it. Output: a MeetingSummary draft; the provider name and model are stored per result. |
 | Failure handling | Transcript has status Pending/Processing/Completed/Failed, ProgressPercent and ErrorMessage so a failure is shown and can be re-run; the AI never writes formal minutes and summaries stay marked unreviewed until the Secretary reviews them. |
-| Status | Planned (FE-10, UC-62/64/90); hosting decision open — voice data leaves the system only if an external service is chosen, which is why the provider is recorded. |
+| Status | Planned (FE-10, UC-47). Only transcript text that the Secretary has reviewed is sent, never audio or voice data; the AI never writes formal minutes and the summary stays a draft until the Secretary approves it. |
+
+#### 17.7 Cloudflare R2 – file storage (API-07)
+
+| URL | Cloudflare R2 over an S3-compatible API, through the configured service address and bucket (a local S3-compatible store in development). |
+| --- | --- |
+| Purpose | Keeps the bytes of every uploaded document, so the application server does not store files itself. Files are served only through the application, which checks the permission of the caller on every request. |
+| Caller | TrustCabinet backend (document upload, view and download) → Cloudflare R2. |
+| Auth | Access key and secret key kept in user-secrets/environment variables, never in the code base; the bucket is private and has no public address. |
+| Request / Response | Input: the file bytes with their stored name. Output: the stored bytes when the file is read; the system never gives the browser a direct address of the bucket. |
+| Failure handling | If the store cannot be reached, the upload or download is refused with a message and nothing is recorded as stored; files that were written but never linked to a document are removed by a periodic clean-up. |
+| Status | Built. |
 
 ## IV. Non-Functional Requirements
 
@@ -3843,7 +4118,7 @@ TrustCabinet is a self-hosted web application installed for a single organisatio
 
 - Hardware interface: The system requires no special-purpose hardware. Clients: any PC, laptop, tablet or phone able to run a supported browser; joining the online meeting room additionally requires a microphone and speakers/headset, and optionally a camera, granted to the browser by the user. The system never activates a user's microphone or camera on its own and never records the meeting (Report 1, LI-01). Server: a single x86-64 host (physical or virtual) running Linux inside TrustSoft's network; recommended baseline 8 vCPU, 16 GB RAM and 500 GB of storage for documents and meeting audio, excluding speech/AI processing. If the speech-processing model is self-hosted, additional compute (possibly a GPU) is sized once the processing environment is decided (Report 2, risk R03).
 
-- Software interfaces: (1) PostgreSQL 17 - the system's single relational data store for all business data, audit log and outbox queues. (2) Redis - short-lived security data (refresh-session and password-reset credentials) with automatic expiry. (3) SMTP mail server (any standards-compliant provider configured by TrustSoft) - outgoing invitation (with .ics calendar attachment), reminder, approval, signing and password-reset emails. (4) Google Identity Services / Google OpenID Connect - optional 'Sign in with Google' for internal users whose Google email is linked to an existing account; email/password sign-in must remain available when Google is unreachable. (5) Self-hosted media server (LiveKit SFU, planned) - audio, video and screen-sharing for the online meeting room. (6) Speech-processing and summarisation provider - converts uploaded meeting audio into a speaker-attributed Vietnamese transcript and a draft summary. Whether this runs self-hosted or as an external API is not yet decided; the provider must be reachable through one internal interface so it can be replaced without changing the rest of the system, and the provider/model used is recorded with every result. No other third-party system (HRM, ERP, calendar, chat) is integrated in v1 (Report 1, LI-07).
+- Software interfaces: (1) PostgreSQL 17 - the system's single relational data store for all business data, audit log and outbox queues. (2) Redis - short-lived security data (refresh-session and password-reset credentials) with automatic expiry. (3) Resend Email (outbound email API; any standards-compliant SMTP server can be used instead) - outgoing invitation (with .ics calendar attachment), reminder, approval, signing and password-reset emails. (4) Google Identity Services / Google OpenID Connect - optional 'Sign in with Google' for internal users whose Google email is linked to an existing account; email/password sign-in must remain available when Google is unreachable. (5) Self-hosted media server (LiveKit SFU, planned) - audio, video and screen-sharing for the online meeting room. (6) Speech-processing and summarisation provider - converts uploaded meeting audio into a speaker-attributed Vietnamese transcript and a draft summary. Whether this runs self-hosted or as an external API is not yet decided; the provider must be reachable through one internal interface so it can be replaced without changing the rest of the system, and the provider/model used is recorded with every result. No other third-party system (HRM, ERP, calendar, chat) is integrated in v1 (Report 1, LI-07).
 
 - Communication interfaces: All browser-server traffic uses HTTPS (TLS 1.2 or later) on a single origin; plain HTTP is redirected to HTTPS or refused. Data is exchanged as JSON (UTF-8) over a REST-style API. Real-time in-app notifications, agenda and vote updates use a WebSocket channel secured with TLS (WSS) and fall back to automatic reconnection when the connection drops. Online meeting media is transmitted with WebRTC and is always encrypted in transit (DTLS-SRTP); a relay (TURN) path over TLS is available for clients behind restrictive firewalls. Outgoing email is sent over SMTP with TLS (implicit TLS or STARTTLS). Calls from the server to Google and to any external speech/AI provider use HTTPS only. A health-check endpoint is exposed for monitoring the running instance.
 
@@ -3874,7 +4149,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | Search and list views | Paginated meeting, document, user, notification and audit-log lists, including search, filter and sort, return the first page within 2 s for 95% of requests | Data volume up to 10,000 meetings, 50,000 documents and 1,000,000 audit-log entries |
 | Document upload and preview | Documents up to 50 MB per file are accepted; after the transfer completes the file is stored and listed within 5 s; in-browser preview of a document up to 10 MB opens within 3 s | Up to 10 simultaneous uploads; transfer time depends on the user's network |
 | Meeting audio upload and AI processing | Audio files up to 500 MB and up to 4 hours long are accepted. The upload is acknowledged and the file queued within 5 s after transfer. The speaker-attributed transcript is ready within 1.5 x the audio duration (e.g. a 60-minute recording within 90 minutes) after processing starts, and a summary is generated within 5 minutes of the Secretary's request | One recording processed at a time per processing worker; targets apply whichever processing environment (self-hosted or external) is selected; queued jobs wait their turn without blocking other functions |
-| Notification and real-time update latency | In-app notifications and the unread count reach a connected recipient within 10 s of the triggering event; current-agenda and vote-status changes are visible to other users in the same session within 2 s (BR-73); an email is handed to the SMTP server within 2 minutes; 'starting soon' reminders are sent 15 minutes (± 1 minute) before a session starts | Normal operation, mail server reachable; email retries do not delay in-app delivery |
+| Notification and real-time update latency | In-app notifications and the unread count reach a connected recipient within 10 s of the triggering event; current-agenda and vote-status changes are visible to other users in the same session within 2 s (BR-73); an email is handed to the email service within 2 minutes; 'starting soon' reminders are sent 15 minutes (± 1 minute) before a session starts | Normal operation, mail server reachable; email retries do not delay in-app delivery |
 | Concurrent users | The system remains fully functional with 200 signed-in users, of whom up to 100 perform operations at the same time, without errors or time-outs and within the response-time targets above | Single-server Docker deployment with the recommended baseline hardware |
 | Online meeting room capacity | Each meeting room supports up to 30 participants with audio and video plus one screen share, with a hard limit of 50 connected users; joining the room takes ≤ 5 s; mouth-to-ear audio delay ≤ 400 ms; at least 3 rooms can run at the same time | Participants inside the company network or on a stable connection of ≥ 2 Mbps per participant; self-hosted media server on the deployment host |
 | Report generation and export | A statistics report covering up to 12 months of data is displayed within 5 s and exported to a file within 10 s | Data volume as in 'Search and list views'; up to 5 users generating reports at the same time |
@@ -3975,7 +4250,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-27 | Meeting information may be edited in Draft or Rejected; in Published, the Meeting Organizer may reschedule only times or location. | UC-15 |  |  |
 | BR-28 | Updating meeting information must not implicitly change the meeting lifecycle status. | UC-15 |  |  |
 | BR-29 | A user may access a meeting only when the user has an authorized relationship with that meeting as its Meeting Organizer, assigned Meeting Approver, Chair, Secretary, or Participant. Authentication alone does not grant access to a meeting. | UC-16, UC-17, UC-26, UC-27, UC-30, UC-32a, UC-37, UC-68 |  |  |
-| BR-30 | The Meeting list offers fixed time choices. Today and This week match a Meeting whose own planned start/end interval overlaps that day or week in the viewer's time zone. Not yet held matches a Meeting whose planned start time is later than the current time; Already held matches a Meeting whose planned start time is the current time or earlier, so a Meeting in progress counts as Already held. | UC-17 | SCRUM-18 (PR #111) — fixed time choices as in AI-eCabinet |  |
+| BR-30 | The Meeting list offers fixed time choices. Today and This week match a Meeting whose own planned start/end interval overlaps that day or week in the viewer's time zone. Not yet held matches a Meeting whose planned start time is later than the current time; Already held matches a Meeting whose planned start time is the current time or earlier, so a Meeting in progress counts as Already held. | UC-17 | SCRUM-18 (PR #111) — fixed time choices |  |
 | BR-31 | When multiple search or filter criteria are applied, a record must satisfy all applicable criteria to appear in the result. | UC-05, UC-17 |  |  |
 | BR-32 | The meeting list must support sorting, and the current search, filter, and sorting criteria must be preserved when navigating between pages. | UC-17 |  |  |
 | BR-33 | Meeting approval submission requires all mandatory information including the planned schedule and Draft or Rejected status. | UC-18 |  |  |
@@ -4038,7 +4313,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-103 | Historical or revoked roster records are excluded from the current roster, current access checks, and required-role counts. | UC-27, UC-28c, UC-30 |  |  |
 | BR-104 | Only the owner of a current invitation may respond to that invitation. | UC-29 |  |  |
 | BR-105 | Current internal participants and external Guests may respond only Accepted or Declined. The Chair does not respond because the Chair runs the Meeting. Responding does not transfer or change any Meeting Role. | UC-29 | PO 21/10/2026 — Chair does not respond |  |
-| BR-106 | Each invitation is answered once while the Meeting is Published or InProgress. After an Accepted or Declined response is recorded it cannot be changed; submitting the same response again is not an error and changes nothing. | UC-29 | PO 21/10/2026 — answer once, as in AI-eCabinet |  |
+| BR-106 | Each invitation is answered once while the Meeting is Published or InProgress. After an Accepted or Declined response is recorded it cannot be changed; submitting the same response again is not an error and changes nothing. | UC-29 | PO 21/10/2026 — answer once |  |
 | BR-115 | The Invitation Response and its response time are recorded once for each current invitation; an invitation that is not answered stays Pending. The Chair's response is not displayed, even when the Chair answered earlier as another role; changing a member's role does not reset the response. | UC-29, UC-30 |  |  |
 | BR-116 | Invitation Response and Attendance are independent; Accepted does not mean the invitee attended the Meeting. | UC-29, UC-30, UC-31 |  |  |
 | BR-117 | Roster and invitation-response information is accessible only to users whose relationship with the Meeting permits that information. | UC-16, UC-27, UC-29, UC-30 |  |  |
@@ -4081,7 +4356,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-169 | Replacing or handing over the Chair changes the outgoing Chair to Member and the incoming current internal participant to Chair together. The final list must retain the required Secretary and Chair. If either change fails, both people keep their previous roles. | UC-28b, UC-73 | FE-06 revision, 12/10/2026; PO 16/10/2026 — Chair hands over the Chair role; Secretary does not replace the Chair | Meeting Participant Management |
 | BR-170 | Only an active current assigned Secretary may save or revise official attendance while the Meeting is InProgress. For each current internal participant or current Guest, the only official saved attendance values are Present or Absent. | UC-31 | FE-06 revision, 12/10/2026 | Meeting Participant Management |
 | BR-171 | A person whose attendance has not been recorded remains unmarked. An unmarked person must not be counted as Absent. Only Present and Absent may be saved as official attendance. | UC-31 | FE-06 revision, 12/10/2026 | Meeting Participant Management |
-| BR-172 | Attendance may be saved or revised for one or more selected current internal participants or Guests without covering the full roster. Every submitted entry must identify a current person and contain Present or Absent; omitted entries retain their saved or unmarked value. All submitted changes succeed together or none are saved, with the responsible Secretary and save time. Revalidate submitted entries and current authority/status when saving; unrelated roster additions do not require attendance for those people. Each person’s attendance has its own version, which changes only when that attendance changes, not when the person’s role or invitation response changes; a submission carrying an out-of-date version is rejected as a whole, nothing is saved, and the Secretary reloads and selects again — unsaved selections are not kept (ADR-0025). Attendance completeness never prevents End Meeting. | UC-31 | PO 13/10/2026 | Meeting Participant Management |
+| BR-172 | Attendance may be saved or revised for one or more selected current internal participants or Guests without covering the full roster. Every submitted entry must identify a current person and contain Present or Absent; omitted entries retain their saved or unmarked value. All submitted changes succeed together or none are saved, with the responsible Secretary and save time. Revalidate submitted entries and current authority/status when saving; unrelated roster additions do not require attendance for those people. Each person’s attendance has its own version, which changes only when that attendance changes, not when the person’s role or invitation response changes; a submission carrying an out-of-date version is rejected as a whole, nothing is saved, and the Secretary reloads and selects again — unsaved selections are not kept. Attendance completeness never prevents End Meeting. | UC-31 | PO 13/10/2026 | Meeting Participant Management |
 | BR-173 | Each current internal participant has exactly one meeting role: Chair, Secretary or Member. Each role provides predefined permissions for that Meeting. Meeting roles and additional meeting permissions are independent of the person’s system role. | UC-27, UC-28a, UC-28b, UC-29, UC-30 | FE-06 revision, 12/10/2026 | Meeting Participant Management |
 | BR-174 | A current assigned Secretary may grant additional Meeting permissions to current internal participants and current Guest invitations, supplementing the permissions already provided by their Meeting role. View meeting participants and View invitation responses are examples, not an exhaustive list. The available permission catalogue and role-to-permission grant matrix remain to be specified; this rule does not invent either. Grants apply to this Meeting only and do not change system roles or internal Meeting roles. Guest-specific exclusions remain under BR-181. | UC-27, UC-28a, UC-28b, UC-30 | PO 13/10/2026 | Meeting Participant Management |
 | BR-175 | Only a current assigned Secretary may grant, change or revoke individual additional Meeting permissions while roster management is permitted. An internal participant retains their existing Meeting role; a Guest retains Guest access without acquiring an internal role. Organizer Secretary initialization/recovery does not itself grant permission-management authority. | UC-28a, UC-28b | PO 13/10/2026 | Meeting Participant Management |
@@ -4217,16 +4492,16 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-316 | The online meeting room offers Meeting documents for reading and commenting only; adding, linking and removing documents are done outside the room. | UC-32a | SCRUM-21, BA 22/10/2026 — ADR-0011, PO approved 22/10/2026 | Document Management |
 | BR-317 | A reply belongs to one top-level comment of the same Meeting document; replies are not nested further. | UC-35 | SCRUM-23, BA 22/10/2026 — PO approved 22/10/2026 | Document Management |
 | BR-318 | Each view or download of a document of a Confidential or Secret Meeting is recorded in the audit log with the user and time. | UC-32c | SCRUM-22, PO 13/10/2026 | Document Management |
-| BR-319 | One upload from the computer — to a Meeting (UC-33a, UC-33b) or to the personal library (UC-36) — contains at most 10 files with a total size of at most 200 MB. | UC-33a, UC-33b, UC-36 | PO 22/10/2026 — as in AI-eCabinet; extended to UC-33b and UC-36 by PO 27/10/2026 (SCRUM-58) | Document Management |
+| BR-319 | One upload from the computer — to a Meeting (UC-33a, UC-33b) or to the personal library (UC-36) — contains at most 10 files with a total size of at most 200 MB. | UC-33a, UC-33b, UC-36 | PO 22/10/2026 — extended to UC-33b and UC-36 by PO 27/10/2026 (SCRUM-58) | Document Management |
 | BR-320 | When a Meeting is created, the Organizer chooses 1 to 100 initial participants. Each is an existing active internal user listed once, with the Meeting Role Chair, Secretary or Member, and exactly one participant is the Chair. A Secretary is optional, the Organizer need not be a participant, and Guests cannot be added at creation. The participants are saved with the Meeting in one save, each with a Pending response, and no invitation is sent while the Meeting is Draft. | UC-14 | PO 20/10/2026 | Meeting Management |
-| BR-321 | An invitee who has not answered is treated as attending. A Declined response only hides the Meeting from that invitee's own calendar; it does not change the invitee's Meeting Role, access to the Meeting, its documents or its online room, and the Meeting still appears in the Meeting list. The Chair is never hidden, even when an earlier Declined response exists. | UC-17, UC-29, UC-30 | PO 21/10/2026 — as in AI-eCabinet | Meeting Participant Management |
+| BR-321 | An invitee who has not answered is treated as attending. A Declined response only hides the Meeting from that invitee's own calendar; it does not change the invitee's Meeting Role, access to the Meeting, its documents or its online room, and the Meeting still appears in the Meeting list. The Chair is never hidden, even when an earlier Declined response exists. | UC-17, UC-29, UC-30 | PO 21/10/2026 | Meeting Participant Management |
 | BR-322 | No one receives an in-app notification about their own action. Email still goes to the actor too, so their calendar updates. | UC-15, UC-21, UC-23a, UC-23b, UC-28b, UC-73 | BA Final Review, PR #136 | Email & In-App Notification |
 | BR-323 | A person may enter a Meeting's online room only while holding a current participant assignment of that Meeting or a valid Guest access relationship for it; being the Organizer or the Approver alone is not enough. | UC-37 | SCRUM-39 audit 25/10/2026 — the room follows the current roster | Meeting Room |
 | BR-324 | Leaving the online room, or being disconnected from it, does not change the Meeting lifecycle, its roster, its roles, its attendance or its ballots. | UC-37, UC-38 | SCRUM-39 audit 25/10/2026 — the Meeting continues for everyone else | Meeting Room |
 | BR-325 | Only the current Chair may mute another person's microphone in the online room, and muting only turns the microphone off: the Chair cannot unmute it, and the person may turn it on again. | UC-39a, UC-41 | SCRUM-41 audit 25/10/2026 — chair mute is one-way | Meeting Room |
-| BR-326 | At most one person presents a screen in the online room at a time; when another person starts presenting, the previous presentation stops. | UC-39c | SCRUM-43 audit 25/10/2026 — one presenter, as in AI-eCabinet | Meeting Room |
+| BR-326 | At most one person presents a screen in the online room at a time; when another person starts presenting, the previous presentation stops. | UC-39c | SCRUM-43 audit 25/10/2026 — one presenter | Meeting Room |
 | BR-327 | In-room chat messages are delivered only to the people connected to the room at the time and are never stored; a person who joins later does not receive earlier messages. | UC-42 | SCRUM-41 audit 25/10/2026 — temporary chat, PO 25/10/2026 | Meeting Room |
-| BR-328 | One account holds one connection to a Meeting's online room at a time; joining from a second tab or device closes the earlier connection. | UC-37, UC-38 | SCRUM-39 audit 25/10/2026 — one identity per room, as in AI-eCabinet | Meeting Room |
+| BR-328 | One account holds one connection to a Meeting's online room at a time; joining from a second tab or device closes the earlier connection. | UC-37, UC-38 | SCRUM-39 audit 25/10/2026 — one identity per room | Meeting Room |
 | BR-329 | A change of Meeting Role takes effect in the online room without the person rejoining: the room shows the new role and the new permissions from that moment. A change of Meeting Role is not blocked while the Meeting is in progress. | UC-40, UC-41, UC-73 | SCRUM-97 audit 25/10/2026, PO 26/10/2026 — Chair hand-over while the room is open | Meeting Room |
 | BR-330 | Being connected to the online room is not attendance and never sets an attendance value; attendance is recorded only through the Attendance function. | UC-31, UC-37, UC-38, UC-40 | SCRUM-26, SCRUM-39 audit 25/10/2026 — room presence is not attendance | Meeting Room |
 | BR-331 | Microphone, speaker and camera choices belong to the person's browser on that device; they change no Meeting setting and are not stored with the Meeting. | UC-39a, UC-39b, UC-39d | SCRUM-42 audit 25/10/2026 — devices are a browser choice | Meeting Room |
@@ -4236,8 +4511,39 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-335 | Every read of a locked account’s library by a System Admin — a folder listing or a document — is written to the audit log with who read, whose library, which item and when. If the entry cannot be saved, the read is refused. | UC-34b | PO 27/10/2026 (SCRUM-58) | Audit |
 | BR-336 | At most 50 people are connected to a Meeting's online room at the same time; a further person cannot join until someone leaves. | UC-37 | SCRUM-39 audit 29/10/2026 — room capacity of ADR-0010 | Meeting Room |
 | BR-337 | A person has at most one open speaking request in a Meeting at a time. The request ends when the person lowers the hand, finishes speaking, leaves the room or the Meeting ends. | UC-79 | SCRUM-27 — Register to Speak, requirement 29/10/2026 | Meeting Room |
-| BR-338 | Raised hands are queued in the order they were made. Only the current Chair may reorder the queue, invite a person to speak, decline a request or close a turn; one person holds the floor at a time, and being invited never turns a microphone on or off. | UC-79 | SCRUM-27 — turn-based speaking, as in AI-eCabinet | Meeting Room |
+| BR-338 | Raised hands are queued in the order they were made. Only the current Chair may reorder the queue, invite a person to speak, decline a request or close a turn; one person holds the floor at a time, and being invited never turns a microphone on or off. | UC-79 | SCRUM-27 — turn-based speaking | Meeting Room |
 | BR-339 | A speaking request, its order, its invitation and the start and end of each turn are kept with the Meeting after it ends as a record of who spoke and for how long; they are not tasks and have no assignee or due date. | UC-79 | SCRUM-27 — evidence for the minutes | Meeting Room |
+| BR-340 | How a Meeting is recorded follows its format: an Online Meeting records each person's own microphone, an In-person Meeting records the room, and a Hybrid Meeting records both. Nobody chooses the method. | UC-39a, UC-44a, UC-44c | ADR-0040 — recording method follows the Meeting format | Meeting Recording |
+| BR-341 | Only the current Secretary may record the room, upload an audio file, delete a take or erase a recording. | UC-44a, UC-44b, UC-44c, UC-44d, UC-44e | SCRUM-29 / AI-eCabinet — room recording administration | Meeting Recording |
+| BR-342 | The room may be recorded only while the Meeting is In Progress; an audio file may be uploaded while it is In Progress or Ended. | UC-44a, UC-44c | ADR-0040 / SCRUM-29 — sitting recording lifecycle | Meeting Recording |
+| BR-343 | Before the first room take of a Meeting, and before each upload, the Secretary confirms that attendees were informed and nobody objected; the confirmation time and purpose are kept with the recording. | UC-44a, UC-44c | Luật 91/2025/QH15 / SCRUM-29 — data protection notice & purpose | Meeting Recording |
+| BR-344 | A Meeting has at most one open room take at a time. | UC-44a | ADR-0041 — one open room take at a time | Meeting Recording |
+| BR-345 | Each saved take is appended to the Meeting's room recording, and the whole recording is transcribed again; the text edited and the names assigned before are replaced by the new transcript (BR-360). When adding the take would make the recording larger than 300 MB, the take becomes a new recording instead. | UC-44b, UC-45c | ADR-0041 — one room recording per Meeting | Meeting Recording |
+| BR-346 | A room take that receives no audio for 12 hours is saved by the system. | UC-44b | ADR-0041 / PO 29/10/2026 — unattended take saved automatically | Meeting Recording |
+| BR-347 | Recordings, transcripts and recorded sentences are kept for 180 days and are then erased automatically. For the room recording of a Meeting the 180 days count from the day its first take was started, and takes added later do not extend them; for an uploaded file and for the sentences recorded from a person's own microphone they count from the day it was saved. | UC-39a, UC-44e | Luật 91/2025/QH15 — retention limit | Meeting Recording |
+| BR-348 | Erasing a recording removes its audio and transcript but keeps the fact that it existed and when it was erased. Who erased it, or that it expired, is kept in the audit log. | UC-44e | SCRUM-29 — audit trail for erased media | Meeting Recording |
+| BR-349 | Deleting a take removes its audio and sentences; edited text and assigned names elsewhere in the recording are kept. A voice heard only in the deleted take loses its assigned name. The only take of a recording cannot be deleted: the Secretary erases the whole recording instead (UC-44e). | UC-44d | SCRUM-29 / PO 29/10/2026 — take deletion semantics | Meeting Recording |
+| BR-350 | Only the current Chair, Secretary and Participants may list and play a Meeting's recordings. | UC-43a, UC-43b, UC-45a | SCRUM-29 — meeting attendees only | Meeting Recording |
+| BR-351 | Only the current Chair or Secretary may download a recording or export a transcript, and nobody may for a Secret Meeting. Each download is recorded in the audit log. | UC-43c, UC-45b | SCRUM-29, SCRUM-31 / AI-eCabinet — export control | Meeting Recording |
+| BR-352 | In the online room, a person's microphone switch is the only recording switch: speech is recorded only while that person's microphone is on. | UC-39a | ADR-0040 / SCRUM-109 — single microphone toggle | Meeting Room |
+| BR-353 | Before joining, the lobby tells the person that the Meeting is recorded for the minutes and erased after 180 days. | UC-37, UC-39a | Luật 91/2025/QH15 — prior notice requirement | Meeting Room |
+| BR-354 | A sentence not yet sent stays on the person's device and is accepted up to 7 days after the Meeting ends, if it was spoken during the Meeting. | UC-39a, UC-80 | ADR-0038 / SCRUM-109 — unsent sentences kept on the device | Meeting Recording |
+| BR-355 | A person may withdraw their own sentence, and the Secretary may delete any sentence; deleting removes its text and audio. | UC-80, UC-46d | SCRUM-109 — individual deletion and moderation | Meeting Recording |
+| BR-356 | A sentence that repeats a neighbour's speech picked up by another microphone is marked, not hidden. | UC-39a, UC-43a | ADR-0038 / SCRUM-109 — cross-talk indication | Meeting Recording |
+| BR-357 | Only the current Chair or Secretary may exclude a sentence from the record, with a reason, or restore it. An excluded sentence is not deleted; only they can read and play it. | UC-46c | SCRUM-109 / AI-eCabinet — exclusion from minutes | Meeting Recording |
+| BR-358 | Excluded sentences are left out of an exported transcript. | UC-45b | SCRUM-109 — export exclusion | Transcription |
+| BR-359 | Only the Secretary may edit transcript text; edited text shows who edited it and when. | UC-46a | SCRUM-31 — transcript editing provenance | Transcription |
+| BR-360 | Transcribing a completed transcript again replaces all its text, edits and assigned names, whether the Secretary asks for it or the system does it because a take was added to the recording (BR-345). | UC-45c | SCRUM-31 / PO 29/10/2026 — retranscription overwrite | Transcription |
+| BR-361 | Voice ID requires the person's own separate consent, not combined with consent to recording and never pre-selected. | UC-81b | Luật 91/2025/QH15 — sensitive biometric consent | Voice ID |
+| BR-362 | Consent is tied to the notice version the person read; when the notice changes, the person must accept the new version. | UC-81a, UC-81b | ADR-0042 / SCRUM-35 — versioned biometric consent | Voice ID |
+| BR-363 | A person may keep at most five voice samples; a sample must contain 6 to 60 seconds of one person's clear speech. | UC-81c | SCRUM-35 — voice sample quality & limit | Voice ID |
+| BR-364 | Voice samples are stored protected; only their owner may play them back. | UC-81c, UC-81d | Luật 91/2025/QH15 / ADR-0042 — biometric audio privacy | Voice ID |
+| BR-365 | Withdrawing consent deletes all the person's voice samples and every speaker suggestion pointing to them at once; names already assigned by the Secretary are kept. | UC-81f | Luật 91/2025/QH15 / ADR-0027 — consent revocation | Voice ID |
+| BR-366 | Speaker suggestions compare only with consenting people on that Meeting's current roster, are shown only to the Secretary, and never assign a name by themselves. | UC-45a, UC-46b | SCRUM-35 — human-in-the-loop attribution | Transcription |
+| BR-367 | One person may be suggested for several voices; those voices are grouped as the same speaker. | UC-46b | SCRUM-35 / PO 29/10/2026 — multi-voice matching | Transcription |
+| BR-368 | A speaker may be assigned only to a person on the Meeting's current roster. | UC-46b | SCRUM-35 — roster constraint on speaker assignment | Transcription |
+| BR-369 | Meeting audio and voice samples are processed inside the system and never sent to an outside service. | UC-39a, UC-45c, UC-81c | ADR-0026 — on-premises speech processing | Meeting Recording / Voice ID |
+| BR-370 | A Guest's own microphone is not recorded and a Guest cannot open the Meeting's recordings; a Guest's speech reaches the record only through the room recording. | UC-39a, UC-43a | NEEDS REVIEW PO — D6: Guests have no internal account; not yet confirmed by PO | Meeting Recording |
 
 ### 2. System Messages
 
@@ -4527,8 +4833,8 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 288 | MSG282 | Toast | UC-41 – Moderate Meeting Room / Exception Flows | This person is no longer in the room or has no microphone on. |
 | 289 | MSG283 | Toast | UC-37 – Join Meeting Room / Exception Flows | Unable to load the meeting room status. Please try again. |
 | 290 | MSG284 | Toast | UC-41 – Moderate Meeting Room / Exception Flows | Unable to mute the microphone. Please try again. |
-| 291 | MSG287 | Toast | Common – Access update (front-end event capabilitiesChanged, SCRUM-105) | Your access rights have just been updated. |
-| 292 | MSG346 | Form error | UC-33a / EX-9; UC-33b / AF-1; UC-36 / EX-5 (the 10 GB storage limit of the whole system would be exceeded, ADR-0034) | The system’s document storage is full. No documents were uploaded. Please contact an administrator. |
+| 291 | MSG287 | Toast | Common – Access update (front-end event: access rights changed) | Your access rights have just been updated. |
+| 292 | MSG346 | Form error | UC-33a / EX-9; UC-33b / AF-1; UC-36 / EX-5 (the 10 GB storage limit of the whole system would be exceeded) | The system’s document storage is full. No documents were uploaded. Please contact an administrator. |
 | 293 | MSG347 | Form error | UC-71b / EX-3 (document name invalid: blank, extension only, control characters, exceeds 255 chars, or changes extension) | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
 | 294 | MSG348 | Form error | UC-72a / EX-5; UC-72b / EX-4 (folder name exceeds 400 characters); UC-35 / EX-6 (comment exceeds 4,000 characters) | The text is longer than allowed. |
 | 295 | MSG349 | Form error | UC-33a / EX-10; UC-33b / EX-8; UC-33c / EX-6; UC-33d / EX-8; UC-35 / EX-7 (meeting is cancelled, BR-299) | This meeting was cancelled and can no longer be modified. |
@@ -4551,9 +4857,65 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 312 | MSG343 | Inline / Form error | UC-42 – Use In-room Chat / Exception Flows (EX-1) | Unable to send the message. Please try again. |
 | 313 | MSG350 | Dialog | UC-37 – Join Meeting Room / Exception Flows (EX-6) | The meeting was cancelled, so the meeting room does not open. |
 | 314 | MSG345 | Form error | UC-75 / EX-4 | Cancellation reason must not exceed 1000 characters. |
+| 315 | MSG290 | Toast / Inline success | UC-44c / Main Flow | Meeting recording saved. |
+| 316 | MSG291 | Form error | UC-44a / EX-1, UC-44c / EX-1 | Invalid recording information. |
+| 317 | MSG292 | Form error | UC-44c / EX-2, UC-81c / EX-2 | Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG. |
+| 318 | MSG293 | Form error | UC-44c / EX-3, UC-44a / AF-3 | Recording exceeds 300 MB. |
+| 319 | MSG294 | Dialog / Banner | UC-44c / EX-4 | Recordings may only be saved while the meeting is in progress or has ended. |
+| 320 | MSG295 | Inline error | UC-44a / EX-2, UC-44b / EX-2, UC-44c / EX-5, UC-44d / EX-2, UC-44e / EX-2, UC-46a / EX-3, UC-46b / EX-2 | Only the meeting Secretary may manage recordings. |
+| 321 | MSG296 | Toast / Inline success | UC-44e / Main Flow | Meeting recording erased. |
+| 322 | MSG297 | Inline error | UC-43a / EX-1, UC-43b / EX-1 | Unable to load meeting recordings. |
+| 323 | MSG298 | Inline error | UC-44a / EX-3, UC-44b / EX-3, UC-44c / EX-6, UC-44e / EX-3 | Unable to save recording changes. Please try again. |
+| 324 | MSG299 | Inline error | UC-43a / EX-2, UC-45a / EX-1 | Unable to load transcript. |
+| 325 | MSG300 | Toast / Inline success | UC-45c / Main Flow | Recording queued for transcription. |
+| 326 | MSG301 | Dialog | UC-45c / EX-1 | The recording is currently queued or being transcribed and cannot be rerun yet. |
+| 327 | MSG302 | Toast / Inline success | UC-46a / Main Flow | Transcript segment saved. |
+| 328 | MSG303 | Form error | UC-46a / EX-1 | Transcript text is invalid. |
+| 329 | MSG304 | Inline error | UC-45c / EX-2, UC-46a / EX-2, UC-46d / EX-2, UC-80 / EX-2 | Unable to save transcript changes. Please try again. |
+| 330 | MSG305 | Toast / Inline success | UC-81b / Main Flow | Voice identification enabled for your account. |
+| 331 | MSG306 | Toast / Inline success | UC-81f / Main Flow | Voice identification disabled and all voice samples deleted. |
+| 332 | MSG307 | Toast / Inline success | UC-81c / Main Flow | Voice sample saved. |
+| 333 | MSG308 | Inline error | UC-81c / EX-1 | Voice identification consent is required before recording a voice sample. |
+| 334 | MSG309 | Inline error | UC-81c / EX-3 | Voice sample did not meet quality requirements. Please read the full sample text clearly. |
+| 335 | MSG310 | Inline error | UC-81c / EX-4 | Maximum of 5 voice samples reached. Delete an existing sample before recording a new one. |
+| 336 | MSG311 | Toast / Inline success | UC-81e / Main Flow | Voice sample deleted. |
+| 337 | MSG312 | Inline error | UC-39a / EX-4, UC-81c / EX-5 | Speech recognition service is currently unavailable. Please try again later. |
+| 338 | MSG313 | Inline error | UC-81b / EX-1, UC-81c / EX-6 | Invalid submission data. |
+| 339 | MSG314 | Inline error | UC-81a / EX-1 | Unable to load voice profile information. |
+| 340 | MSG315 | Inline error | UC-81b / EX-2, UC-81c / EX-7, UC-81e / EX-1, UC-81f / EX-1 | Unable to save changes. Please try again. |
+| 341 | MSG316 | Toast / Inline success | UC-46b / Main Flow | Speaker assigned. |
+| 342 | MSG317 | Inline error | UC-46b / EX-1 | Assigned person must be on the current meeting roster. |
+| 343 | MSG318 | Toast / Inline success | System-level, not shown in a Use Case (UC-39a / AF-2 saves the sentence) | Spoken sentence recorded. |
+| 344 | MSG319 | Inline error | System-level, not shown in a Use Case (UC-39a / AF-2) | Spoken sentence audio is invalid. |
+| 345 | MSG320 | Dialog / Banner | UC-39a / EX-5 | In-person meetings do not record per-mic speech, or the meeting is no longer running. |
+| 346 | MSG321 | Inline error | System-level, not shown in a Use Case (UC-39a / AF-2) | A spoken sentence cannot exceed 60 seconds. |
+| 347 | MSG322 | Toast / Inline success | UC-46d / Main Flow, UC-80 / Main Flow | Spoken sentence deleted. |
+| 348 | MSG323 | Inline error | UC-46d / EX-1, UC-80 / EX-1 | Only the speaker or the Secretary may delete this sentence. |
+| 349 | MSG324 | Retired | Retired — the recording method follows the Meeting format (ADR-0040) | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
+| 350 | MSG325 | Retired | Retired — the recording method follows the Meeting format (ADR-0040) | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
+| 351 | MSG326 | Retired | Retired — the recording method follows the Meeting format (ADR-0040) | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
+| 352 | MSG327 | Retired | Retired — the recording method follows the Meeting format (ADR-0040) | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
+| 353 | MSG344 | Retired | Retired — the online room no longer records the whole call (ADR-0040) | Retired: the online room records each person’s own microphone instead of the whole call. |
+| 354 | MSG351 | Toast / Inline success | UC-46c / Main Flow | Sentence excluded from meeting record. |
+| 355 | MSG352 | Toast / Inline success | UC-46c / AF-1 | Sentence restored to meeting record. |
+| 356 | MSG353 | Inline error | UC-46c / EX-1 | Only the Chair or Secretary may exclude a sentence from the meeting record. |
+| 357 | MSG354 | Inline error | UC-46c / EX-2 | Invalid sentence exclusion reason. |
+| 358 | MSG355 | Inline error | UC-43c / EX-1, UC-45b / EX-1 | Only the Chair or Secretary may download meeting recordings and transcripts. |
+| 359 | MSG356 | Inline error | UC-43c / EX-2, UC-45b / EX-2 | Recordings and transcripts of Secret meetings cannot be downloaded. |
+| 360 | MSG357 | Inline error | UC-45b / EX-3 | Transcript is not ready for download. |
+| 361 | MSG358 | Dialog / Banner | UC-44a / EX-4, UC-44c / EX-7 | Online meetings record per-mic speech; room recordings are not available. |
+| 362 | MSG359 | Dialog / Banner | UC-44a / EX-5 | Room microphone can only be turned on while the meeting is in progress. |
+| 363 | MSG360 | Dialog / Banner | UC-44a / EX-6 | Room microphone is currently active on another device. |
+| 364 | MSG361 | Inline error | UC-44a / EX-7 | The recorded audio is not valid. |
+| 365 | MSG362 | Inline error | UC-44b / EX-1 | This recording take has been closed and cannot accept additional audio. |
+| 366 | MSG363 | Toast / Inline success | UC-44b / Main Flow | Room recording take saved. |
+| 367 | MSG364 | Dialog / Banner | UC-44e / EX-1 | Room microphone is currently recording. Turn off the microphone before erasing. |
+| 368 | MSG365 | Toast / Inline notice | UC-44b / AF-1 | Microphone detected no speech; take was not saved. |
+| 369 | MSG366 | Toast / Inline success | UC-44d / Main Flow | Recording take deleted. |
+| 370 | MSG367 | Dialog / Banner | UC-44d / EX-1 | Recording contains only one take. Erase the entire recording to remove it. |
 
 ### 3. Other Requirements
 
 …
 
-²⁰ Only the personal library of a locked account, read-only without modifying anything, subject to audit logging and excluding documents and folders of Confidential and Secret Meetings (UC-34b, BR-334, BR-335, ADR-0035).
+²⁰ Only the personal library of a locked account, read-only without modifying anything, subject to audit logging and excluding documents and folders of Confidential and Secret Meetings (UC-34b, BR-334, BR-335).

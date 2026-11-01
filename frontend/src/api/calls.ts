@@ -13,13 +13,15 @@ export const getMeetingCall = (meetingId: string) => api.get<CallRoomState>(`/ap
  * A short-lived LiveKit token. Ask for it when the user clicks "join", not when the page opens:
  * it expires in minutes and is only needed for the first connection.
  * 409 MSG117 not in progress · 409 MSG280 in-person meeting · 503 MSG281 LiveKit not configured.
+ * A guest (SCRUM-59) sends `recordingNoticeAcknowledged: true` once they confirmed the recording notice;
+ * without it 400 MSG380. A member sends no body.
  */
-export const joinMeetingCall = (meetingId: string) =>
-  api.post<CallJoinResponse>(`/api/meetings/${meetingId}/call/join`)
+export const joinMeetingCall = (meetingId: string, body?: { recordingNoticeAcknowledged: true }) =>
+  api.post<CallJoinResponse>(`/api/meetings/${meetingId}/call/join`, body)
 
 /**
- * Chair only; mutes, never unmutes. 204 on success.
+ * Chair only; mutes, never unmutes. `identity` is the LiveKit one: a user id, or `guest-{session}`. 204 on success.
  * 403 MSG123 not the chair · 409 MSG282 not in the room / no microphone · 502 MSG124 LiveKit down.
  */
-export const muteCallParticipant = (meetingId: string, userId: string) =>
-  api.post<void>(`/api/meetings/${meetingId}/call/participants/${userId}/mute`)
+export const muteCallParticipant = (meetingId: string, identity: string) =>
+  api.post<void>(`/api/meetings/${meetingId}/call/participants/${encodeURIComponent(identity)}/mute`)

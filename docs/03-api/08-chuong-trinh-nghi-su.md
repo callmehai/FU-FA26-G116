@@ -26,7 +26,7 @@ Meeting cho planning: Draft, WaitingApproval, Rejected, Approved, Published, InP
 {"title":"Báo cáo tiến độ","description":"Nội dung","presenterId":null,"presenterGuestInvitationId":null,"documentIds":[]}
 ```
 
-Title trim 1–300; description mặc định rỗng, tối đa 4000. PUT thay toàn bộ trường chỉnh sửa; field tùy chọn thiếu trở về null/rỗng. Internal presenter dùng User ID của participant current và active; Guest dùng invitation ID thuộc Meeting, chưa revoked, không cần OTP/session và không loại Declined. Hai ID không đồng thời có giá trị, không nhận Guid.Empty. Cả hai null nghĩa là bỏ presenter. Không dùng tên/email để gán.
+Title trim 1–300; description mặc định rỗng, tối đa 4000. PUT thay toàn bộ trường chỉnh sửa; field tùy chọn thiếu trở về null/rỗng — trừ `documentIds`: thiếu (hoặc null) thì giữ nguyên tài liệu đang gắn với item, `[]` mới gỡ hết; POST thiếu `documentIds` tạo item chưa có tài liệu. Từ 30/10/2026 FE không gửi `documentIds` nữa: dialog Sửa nội dung không chọn tài liệu, việc gắn tài liệu đi qua nút ghim trên từng dòng (UC-33b, [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md)). Internal presenter dùng User ID của participant current và active; Guest dùng invitation ID thuộc Meeting, chưa revoked, không cần OTP/session và không loại Declined. Hai ID không đồng thời có giá trị, không nhận Guid.Empty. Cả hai null nghĩa là bỏ presenter. Không dùng tên/email để gán.
 
 Document IDs là MeetingDocument ID, không rỗng/trùng, cùng Meeting, chưa removed. Một tài liệu gắn nhiều item; PUT chỉ sửa link của item hiện tại. Xóa item không xóa tài liệu/StoredFile hoặc link khác. Mọi reader có quyền Meeting đọc metadata theo ADR-0020; download vẫn kiểm quyền riêng.
 
@@ -48,7 +48,7 @@ Mỗi item gồm `id, position, title, description, presenterId, presenterGuestI
 
 Không còn plannedDurationMinutes/actualDurationSeconds. Chỉ trả timestamp thực tế, không tính elapsed duration. Presenter name resolve từ User.FullName/Guest.InvitedName khi assignment hiện tại hợp lệ; ID/name hiện tại null nếu không hợp lệ. Tên tự nhập cũ hoặc tên internal không còn hợp lệ hiển thị ở legacyPresenterName, không là assignment và không gửi thông báo. PUT thành công thay assignment và xóa legacy name. Conclusion cùng ba metadata null khi chưa ghi.
 
-Actions: `canEdit`, `canEditPlanningFields` (alias của canEdit), `canDelete`, `canSetCurrent`, `canComplete`, `canRecordConclusion`. CanReorder cần ít nhất hai item. CanSetCurrent áp dụng mọi Pending khi Chair và không current khác. FE dùng flags; không suy quyền từ vai trò hệ thống.
+Actions: `canEdit`, `canEditPlanningFields` (alias của canEdit), `canDelete`, `canSetCurrent`, `canComplete`, `canRecordConclusion`, `canLinkDocuments`. `canLinkDocuments` theo quyền UC-33b chứ không theo planning: Chair hoặc Secretary hiện hành, cuộc họp chưa Ended/Cancelled (cùng điều kiện `DocumentFileRules.UploadAccess` mà các endpoint `…/agenda/{itemId}/documents` kiểm lại). CanReorder cần ít nhất hai item. CanSetCurrent áp dụng mọi Pending khi Chair và không current khác. FE dùng flags; không suy quyền từ vai trò hệ thống.
 
 ```json
 {"presenters":[{"id":"user-id","kind":"Internal","fullName":"Nguyễn Văn A"},{"id":"invitation-id","kind":"Guest","fullName":"Trần Văn B"}],"documents":[{"id":"document-id","title":"Báo cáo.pdf","agendaItemIds":["item-1","item-3"]}]}

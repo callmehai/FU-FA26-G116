@@ -1,0 +1,107 @@
+title UC-81c - Record Voice Sample
+
+actor "Internal User" as Actor
+boundary "My Voice Page" as VoicePage
+control ":Voice ID Controller" as VoiceController
+control ":Voice ID Service" as VoiceService
+participant ":Voice ID Repository" as VoiceRepository
+participant ":Speech Recognition Service" as SpeechEngine
+participant ":Voiceprint Protector" as Protector
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->VoicePage: Stop recording the sample passage and save it
+activate VoicePage
+VoicePage->VoiceController: Save the voice sample
+activate VoiceController
+VoiceController->VoiceController: Read the form: one audio file of at most 10 MB in a supported format
+
+alt No audio file, or the form is unreadable - EX-6
+    VoiceController-->VoicePage: MSG313 - Invalid submission data.
+    VoicePage-->Actor: MSG313 - Invalid submission data.
+else Audio format is not supported - EX-2
+    VoiceController-->VoicePage: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
+    VoicePage-->Actor: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
+else Audio received
+    VoiceController->VoiceService: addSample(actorId, audio, contentType)
+    activate VoiceService
+    VoiceService->VoiceRepository: Get the actor's standing consent and samples
+    activate VoiceRepository
+    VoiceRepository->Database: Retrieve consent not withdrawn and samples
+    activate Database
+    Database-->VoiceRepository: Consent and samples
+    deactivate Database
+    VoiceRepository-->VoiceService: Consent and samples
+    deactivate VoiceRepository
+    VoiceService->VoiceService: Check consent is given (BR-361) and fewer than 5 samples are kept (BR-363)
+
+    alt No standing consent - EX-1
+        VoiceService-->VoiceController: MSG308 - Voice identification consent is required before recording a voice sample.
+        VoiceController-->VoicePage: MSG308 - Voice identification consent is required before recording a voice sample.
+        VoicePage-->Actor: MSG308 - Voice identification consent is required before recording a voice sample.
+    else Five samples already kept - EX-4
+        VoiceService-->VoiceController: MSG310 - Maximum of 5 voice samples reached. Delete an existing sample before recording a new one.
+        VoiceController-->VoicePage: MSG310 - Maximum of 5 voice samples reached. Delete an existing sample before recording a new one.
+        VoicePage-->Actor: MSG310 - Maximum of 5 voice samples reached. Delete an existing sample before recording a new one.
+    else Sample may be added
+        VoiceService->SpeechEngine: Check the sample and make its voiceprint inside the system (BR-369)
+        activate SpeechEngine
+        SpeechEngine-->VoiceService: Voiceprint with speech length / Sample rejected with a reason / Unavailable
+        deactivate SpeechEngine
+
+        alt Sample fails the quality rules - 6 to 60 seconds of clear speech by one person (BR-363) - EX-3
+            VoiceService-->VoiceController: MSG309 - Voice sample did not meet quality requirements. Please read the full sample text clearly.
+            VoiceController-->VoicePage: MSG309 - Voice sample did not meet quality requirements. Please read the full sample text clearly.
+            VoicePage-->Actor: MSG309 - Voice sample did not meet quality requirements. Please read the full sample text clearly.
+        else Speech Recognition Service unavailable - EX-5
+            VoiceService-->VoiceController: MSG312 - Speech recognition service is currently unavailable. Please try again later.
+            VoiceController-->VoicePage: MSG312 - Speech recognition service is currently unavailable. Please try again later.
+            VoicePage-->Actor: MSG312 - Speech recognition service is currently unavailable. Please try again later.
+        else Voiceprint made
+            VoiceService->VoiceRepository: Lock the consent and recheck it and the 5-sample limit
+            activate VoiceRepository
+            VoiceRepository->Database: Retrieve consent for update and samples
+            activate Database
+            Database-->VoiceRepository: Consent and samples
+            deactivate Database
+            VoiceRepository-->VoiceService: Consent and samples
+            deactivate VoiceRepository
+            VoiceService->Protector: Protect the voiceprint, bound to the owner, the sample and its model (BR-364)
+            activate Protector
+            Protector-->VoiceService: Protected voiceprint
+            deactivate Protector
+            opt Consent is to a notice version that keeps the sample recording
+                VoiceService->Protector: Protect the sample recording for its owner to hear (BR-364)
+                activate Protector
+                Protector-->VoiceService: Protected recording
+                deactivate Protector
+            end
+            VoiceService->AuditService: Record the new sample with its model and speech length
+            activate AuditService
+            AuditService-->VoiceService: Entry saved
+            deactivate AuditService
+            VoiceService->VoiceRepository: Save the sample under the consent
+            activate VoiceRepository
+            VoiceRepository->Database: Insert voice sample
+            activate Database
+            Database-->VoiceRepository: Sample saved / Save failed
+            deactivate Database
+            VoiceRepository-->VoiceService: Sample saved / Save failed
+            deactivate VoiceRepository
+
+            alt Sample cannot be saved - EX-7
+                VoiceService-->VoiceController: MSG315 - Unable to save changes. Please try again.
+                VoiceController-->VoicePage: MSG315 - Unable to save changes. Please try again.
+                VoicePage-->Actor: MSG315 - Unable to save changes. Please try again.
+            else Sample saved
+                VoiceService-->VoiceController: MSG307 - Voice sample saved.
+                VoiceController-->VoicePage: MSG307 - Voice sample saved.
+                VoicePage-->Actor: MSG307 - Voice sample saved.
+            end
+        end
+    end
+    deactivate VoiceService
+end
+
+deactivate VoiceController
+deactivate VoicePage

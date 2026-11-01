@@ -233,6 +233,11 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
 `speakerLabel` là nhãn trong **riêng bản ghi này** (`SPEAKER_00` → FE hiện *Người nói 1*); gán tên
 thật là việc của SCRUM-35. Không có vector giọng nói nào trong response hay trong database.
 
+Với bản ghi mic phòng có nhiều lượt (ADR-0041), mỗi đoạn nằm gọn trong **một lượt**: lượt chứa phần lớn đoạn
+đó, `startMs`/`endMs` bị cắt về ranh giới lượt. Worker đặt các đoạn nối liền nhau (đoạn sau bắt đầu đúng chỗ đoạn
+trước kết thúc), nên mốc bắt đầu có thể lùi vào lượt trước; xếp theo mốc bắt đầu thì lời của lượt này hiện dưới
+lượt trước.
+
 ### `POST /api/recordings/{recordingId}/transcribe`
 
 Thư ký chạy lần đầu cho bản ghi `None`, chạy lại khi lần trước lỗi, hoặc **làm lại bản đã xong** (model

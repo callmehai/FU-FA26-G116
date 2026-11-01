@@ -25,8 +25,9 @@ public sealed record AgendaPresenter(Guid Id, string Kind, string FullName);
 public sealed record AgendaEditorOptions(IReadOnlyList<AgendaPresenter> Presenters,
     IReadOnlyList<AgendaDocumentOption> Documents);
 public sealed record AgendaPermissions(bool CanCreate, bool CanReorder);
+/// <summary><c>CanLinkDocuments</c> follows UC-33b (Chair or Secretary until the meeting ends), not planning.</summary>
 public sealed record AgendaActions(bool CanEdit, bool CanEditPlanningFields, bool CanDelete,
-    bool CanSetCurrent, bool CanComplete, bool CanRecordConclusion);
+    bool CanSetCurrent, bool CanComplete, bool CanRecordConclusion, bool CanLinkDocuments);
 public sealed record AgendaItemView(Guid Id, int Position, string Title, string Description,
     Guid? PresenterId, Guid? PresenterGuestInvitationId, string? PresenterName, string? LegacyPresenterName, string Status,
     DateTimeOffset? ActualStartedAt, DateTimeOffset? ActualEndedAt,

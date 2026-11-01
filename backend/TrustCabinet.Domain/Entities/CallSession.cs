@@ -20,8 +20,9 @@ public class CallSession : Entity
 
     public CallStatus Status { get; set; } = CallStatus.Ringing;
 
-    public Guid StartedById { get; set; }
-    public User StartedBy { get; set; } = null!;
+    /// <summary>Null when a guest was the first one into a meeting room (SCRUM-59).</summary>
+    public Guid? StartedById { get; set; }
+    public User? StartedBy { get; set; }
 
     public DateTimeOffset StartedAt { get; set; } = DateTimeOffset.UtcNow;
 

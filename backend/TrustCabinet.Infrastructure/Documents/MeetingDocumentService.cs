@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
@@ -54,18 +57,17 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
 }
 
 public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeetingDocumentRepository documents,
-    TrustCabinetDbContext db, StoredFileWriter writer, IFileStorage storage, IAuditService audit, TimeProvider clock,
-    ILogger<MeetingDocumentService> logger) : IMeetingDocumentService
+    TrustCabinetDbContext db, StoredFileWriter writer, IFileStorage storage, IAuditService audit, IAgendaGuestAccess guests,
+    TimeProvider clock, ILogger<MeetingDocumentService> logger) : IMeetingDocumentService
 {
     private static bool PersistenceError(Exception ex) => StoredFileWriter.PersistenceError(ex);
 
-    public async Task<MeetingDocumentListOutcome> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
+    public async Task<MeetingDocumentListOutcome> ListAsync(Guid meetingId, ParticipantActor reader, CancellationToken ct = default)
     {
         try
         {
-            var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
             // Same answer for a meeting that does not exist and one the caller cannot see (SCRUM-22).
-            if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(DocumentReadFailure.NotFound);
+            if (await FindReadableAsync(meetingId, reader, ct) is null) return new(DocumentReadFailure.NotFound);
             return new(List: await documents.ListAsync(meetingId, ct));
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -76,14 +78,14 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
     }
 
     public async Task<MeetingDocumentContentOutcome> OpenContentAsync(Guid meetingId, Guid meetingDocumentId,
-        Guid actorId, bool download, CancellationToken ct = default)
+        ParticipantActor reader, bool download, CancellationToken ct = default)
     {
         Meeting? meeting;
         AttachedDocumentFile? file;
         try
         {
-            meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
-            if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(DocumentReadFailure.NotFound);
+            meeting = await FindReadableAsync(meetingId, reader, ct);
+            if (meeting is null) return new(DocumentReadFailure.NotFound);
             file = await documents.FindAttachedFileAsync(meetingId, meetingDocumentId, ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -114,9 +116,13 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             // audit row, no content (BR-318).
             try
             {
+                // A guest has no user row, so its invitation names who read it.
+                object details = reader.Guest is { } guest
+                    ? new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString(),
+                        guestInvitationId = guest.InvitationId }
+                    : new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString() };
                 await audit.RecordAsync(download ? AuditActions.DocumentDownloaded : AuditActions.DocumentViewed,
-                    AuditActions.MeetingDocumentObjectType, meetingDocumentId, actorId,
-                    new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString() }, ct);
+                    AuditActions.MeetingDocumentObjectType, meetingDocumentId, reader.UserId, details, ct);
             }
             catch (Exception ex)
             {
@@ -128,6 +134,24 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         }
 
         return new(Content: new(content, file.FileName, file.ContentType, file.ByteSize));
+    }
+
+    /// <summary>
+    /// The meeting when <paramref name="reader"/> may read it now: an internal user by <see cref="MeetingReadPolicy"/>,
+    /// a guest only through a current UC-04 session of this very meeting, rechecked on every call (SCRUM-120 rules:
+    /// not logged out or expired, invitation standing, meeting Published or InProgress). Persistence errors propagate.
+    /// </summary>
+    private async Task<Meeting?> FindReadableAsync(Guid meetingId, ParticipantActor reader, CancellationToken ct)
+    {
+        if (reader.Guest is { } guest)
+        {
+            if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct)) return null;
+            // Rechecked on the meeting read here, as Agenda does: it may have ended since the session check.
+            var guestMeeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+            return guestMeeting is not null && GuestAccessRules.MeetingOpen(guestMeeting.Status) ? guestMeeting : null;
+        }
+        var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+        return meeting is not null && reader.UserId is { } userId && MeetingReadPolicy.CanRead(meeting, userId) ? meeting : null;
     }
 
     public async Task<DocumentUploadOutcome> CheckUploadAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
@@ -158,7 +182,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             // the role, while the files were uploading (EX-1, EX-6).
             var (meeting, access) = await LockAsync(meetingId, actorId, token);
             if (access != DocumentUploadFailure.None) return new DocumentUploadOutcome(access);
-            var added = await AddUploadsAsync(meeting!, actorId, stored, now, null, token);
+            var added = await AddUploadsAsync(db, documents, meeting!, actorId, stored, now, null, null, token);
             await meetings.SaveChangesAsync(token);
             return new DocumentUploadOutcome(Documents: added);
         }, outcome => outcome.Failure == DocumentUploadFailure.None, new(DocumentUploadFailure.StoreFailed),
@@ -167,7 +191,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
     public Task<DocumentUploadOutcome> AddFromLibraryAsync(Guid meetingId, Guid actorId, IReadOnlyList<Guid> documentIds,
         CancellationToken ct = default)
         => InMeetingLockAsync(meetingId, actorId, "add library documents to",
-            (meeting, now, token) => AddLibraryDocumentsAsync(meeting, actorId, documentIds, now, null, token), ct);
+            (meeting, now, token) => AddLibraryDocumentsAsync(db, meeting, actorId, documentIds, now, null, null, token), ct);
 
     public Task<DocumentUploadOutcome> RemoveAsync(Guid meetingId, Guid meetingDocumentId, Guid actorId,
         CancellationToken ct = default)
@@ -191,7 +215,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         {
             if (!await ItemExistsAsync(meeting.Id, agendaItemId, token)) return DocumentUploadFailure.AgendaItemNotFound;
             if (source == DocumentAttachSource.Library)
-                return await AddLibraryDocumentsAsync(meeting, actorId, documentIds, now, agendaItemId, token);
+                return await AddLibraryDocumentsAsync(db, meeting, actorId, documentIds, now, agendaItemId, null, token);
 
             var ids = documentIds.Distinct().ToArray();
             var found = await db.MeetingDocuments
@@ -230,7 +254,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             if (access != DocumentUploadFailure.None) return new DocumentUploadOutcome(access);
             if (!await ItemExistsAsync(meetingId, agendaItemId, token))
                 return new DocumentUploadOutcome(DocumentUploadFailure.AgendaItemNotFound);
-            var added = await AddUploadsAsync(meeting!, actorId, stored, now, agendaItemId, token);
+            var added = await AddUploadsAsync(db, documents, meeting!, actorId, stored, now, agendaItemId, null, token);
             await meetings.SaveChangesAsync(token);
             return new DocumentUploadOutcome(Documents: added);
         }, outcome => outcome.Failure == DocumentUploadFailure.None, new(DocumentUploadFailure.StoreFailed),
@@ -297,12 +321,14 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
     }
 
     /// <summary>
-    /// UC-33a and UC-33b AF-2: the actor's own library documents, none of them already in the meeting (BR-193,
-    /// BR-209), become general meeting documents under their current name (BR-276) — linked to
-    /// <paramref name="agendaItemId"/> when given. No byte is copied (ADR-0018).
+    /// UC-33a, UC-33b AF-2 and UC-76a AF-2: the actor's own library documents, none of them already in the meeting
+    /// (BR-193, BR-209), become general meeting documents under their current name (BR-276) — linked to
+    /// <paramref name="agendaItemId"/> or attached to <paramref name="voteId"/> when given. No byte is copied
+    /// (ADR-0018).
     /// </summary>
-    private async Task<DocumentUploadFailure> AddLibraryDocumentsAsync(Meeting meeting, Guid actorId,
-        IReadOnlyList<Guid> documentIds, DateTimeOffset now, Guid? agendaItemId, CancellationToken ct)
+    internal static async Task<DocumentUploadFailure> AddLibraryDocumentsAsync(TrustCabinetDbContext db, Meeting meeting,
+        Guid actorId, IReadOnlyList<Guid> documentIds, DateTimeOffset now, Guid? agendaItemId, Guid? voteId,
+        CancellationToken ct)
     {
         var ids = documentIds.Distinct().ToArray();
         var library = await db.Documents.Include(d => d.StoredFile)
@@ -320,17 +346,20 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                 StoredFile = document.StoredFile, DocumentId = document.Id, FileName = document.FileName,
                 AddedById = actorId, AddedAt = now, CreatedAt = now, UpdatedAt = now };
             if (agendaItemId is { } item) meetingDocument.AgendaItemLinks.Add(new() { AgendaItemId = item });
+            if (voteId is { } vote) meetingDocument.VoteLinks.Add(new() { VotingSessionId = vote });
             db.MeetingDocuments.Add(meetingDocument);
         }
         return DocumentUploadFailure.None;
     }
 
     /// <summary>
-    /// UC-33a AF-1 and UC-33b AF-1: a library document in the meeting's upload folder and a meeting document per
-    /// stored file, both pointing at it (BR-210) — linked to <paramref name="agendaItemId"/> when given.
+    /// UC-33a AF-1, UC-33b AF-1 and UC-76a AF-1: a library document in the meeting's upload folder and a meeting
+    /// document per stored file, both pointing at it (BR-210) — linked to <paramref name="agendaItemId"/> or attached
+    /// to <paramref name="voteId"/> when given.
     /// </summary>
-    private async Task<List<UploadedMeetingDocument>> AddUploadsAsync(Meeting meeting, Guid actorId,
-        StoredFile[] stored, DateTimeOffset now, Guid? agendaItemId, CancellationToken ct)
+    internal static async Task<List<UploadedMeetingDocument>> AddUploadsAsync(TrustCabinetDbContext db,
+        IMeetingDocumentRepository documents, Meeting meeting, Guid actorId, StoredFile[] stored, DateTimeOffset now,
+        Guid? agendaItemId, Guid? voteId, CancellationToken ct)
     {
         // The upload folder must not be deleted or moved away while it is being filled.
         await PersonalLibraryService.LockLibraryAsync(db, actorId, ct);
@@ -353,6 +382,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                 DocumentId = document.Id, FileName = file.OriginalFileName, AddedById = actorId, AddedAt = now,
                 CreatedAt = now, UpdatedAt = now };
             if (agendaItemId is { } item) meetingDocument.AgendaItemLinks.Add(new() { AgendaItemId = item });
+            if (voteId is { } vote) meetingDocument.VoteLinks.Add(new() { VotingSessionId = vote });
             documents.AddUpload(document, meetingDocument);
             added.Add(new(meetingDocument.Id, file.OriginalFileName, file.ContentType, file.ByteSize, file.PageCount));
         }

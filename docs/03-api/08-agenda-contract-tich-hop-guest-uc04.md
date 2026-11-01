@@ -1,5 +1,7 @@
 # SCRUM-25 — contract tích hợp Guest cho người triển khai UC-04
 
+**Cập nhật SCRUM-116 (30/10/2026):** UC-04 đã triển khai adapter production ([contract UC-04](16-truy-cap-khach-uc04.md)): `GuestTokenIdentityResolver` và `GuestSessionAccess` thay hai bản mặc định. PO đã chốt 30/10/2026 (Jira SCRUM-116): Khách **không** còn đọc Agenda khi cuộc họp `Ended` — Khách nhận `404` và không nhận event sau khi cuộc họp kết thúc (`GuestAccessRules.MeetingOpen`, luật trạng thái chung cho mọi đường đọc của Khách). Các mục bên dưới đã sửa theo; người nội bộ vẫn đọc khi `Ended`. Adapter còn đòi Khách đã khai tên hiển thị (UC-04 bước 5).
+
 **Cập nhật bàn giao SCRUM-20 ngày 14/10/2026:** SCRUM-20 đã lưu invitation (grants đã bỏ theo PO 20/10/2026) và consumer contracts; OTP, profile tự khai, session/credential **production tách sang UC-04** theo quyết định người phụ trách. Phân công UC-04/SCRUM-20 chung trong bản gốc bên dưới được làm rõ bởi [contract mới](09-thanh-phan-tham-du-guest-uc04.md). Cả Agenda và Participants vẫn fail-closed với Guest cho đến khi adapters production được tích hợp; không nghiệm thu Guest E2E từ test-only adapter.
 
 Phạm vi đã chốt ngày 13/10/2026: SCRUM-25 chuẩn bị phần đọc Agenda/realtime cho Guest theo ADR-0016; UC-04/SCRUM-20 triển khai lời mời, OTP, profile, session và lưu trữ. Không thêm endpoint xác thực, entity, migration, gửi email hoặc tạo User giả trong SCRUM-25. Các adapter mặc định **từ chối Guest**; không bật tính năng bằng cấu hình cho phép tất cả.
@@ -7,7 +9,7 @@ Phạm vi đã chốt ngày 13/10/2026: SCRUM-25 chuẩn bị phần đọc Agen
 ## Phần Agenda đã thực hiện
 
 - Giữ `GET /api/meetings/{meetingId}/agenda` và `/hubs/meetings`, không thêm endpoint Guest riêng. DTO/event không đổi. Đường đi User nội bộ giữ `MeetingReadPolicy` và kiểm user active.
-- `IAgendaService.GetForGuestAsync` kiểm identity hợp lệ, đúng meeting, quyền hiện tại qua adapter, meeting tồn tại và ở Published/InProgress/Ended như Member. Guest hợp lệ nhận metadata `{id,title}` của tài liệu gắn vào item trong meeting theo ADR-0016; không nhận file path, version chưa cấp qua meeting, email hoặc entity User.
+- `IAgendaService.GetForGuestAsync` kiểm identity hợp lệ, đúng meeting, quyền hiện tại qua adapter, meeting tồn tại và ở Published/InProgress (khác Member: Khách mất quyền khi `Ended`, PO 30/10/2026). Guest hợp lệ nhận metadata `{id,title}` của tài liệu gắn vào item trong meeting theo ADR-0016; không nhận file path, version chưa cấp qua meeting, email hoặc entity User.
 - Guest chỉ đọc: `permissions/actions` đều false. Editor options và cả sáu mutation bị chặn `403` body rỗng. Không lấy quyền Secretary/Chair từ bất kỳ User ID trùng invitation/session ID hoặc subject nào. Presenter lựa chọn vẫn là internal participant active; tên tự nhập không tạo Guest.
 - Hub kiểm quyền khi kết nối và mỗi `JoinMeeting`. Group do server tạo theo **meeting + invitation + session**, tách namespace User. `LeaveMeeting` chỉ tác động connection hiện tại và gọi lặp an toàn, kể cả sau mất quyền.
 - Publisher lấy lại danh sách Guest session còn quyền trước mỗi lần phát event sau commit; group của session đã hết hạn/thu hồi không nằm trong danh sách gửi mới. Session khác của cùng invitation không kéo dài quyền cho session cũ. Sai meeting/identity rỗng trong kết quả adapter không được gửi. Nếu adapter đọc quyền lỗi, lần publish thất bại và được log, không fallback broadcast và không đổi kết quả mutation đã commit.
@@ -28,7 +30,7 @@ Identity sử dụng ba GUID không rỗng, không phải schema bắt buộc c�
 1. Invitation tồn tại và thuộc MeetingId của identity.
 2. Session tồn tại, thuộc đúng InvitationId, đã được thiết lập sau xác minh email lời mời; không suy ra verified chỉ từ claim client.
 3. Invitation và session đều chưa hết hạn, chưa bị thu hồi/vô hiệu hóa; dùng UTC từ TimeProvider. Thu hồi invitation phải loại tất cả session của nó.
-4. Mọi giới hạn truy cập Guest hiện hành của UC-04; không dựa vào việc đã join hub thành công trước đó. Agenda tự kiểm trạng thái Published/InProgress/Ended, không cho adapter mở quyền đọc Draft/WaitingApproval/Rejected/Approved.
+4. Mọi giới hạn truy cập Guest hiện hành của UC-04; không dựa vào việc đã join hub thành công trước đó. Agenda tự kiểm trạng thái Published/InProgress (Khách không đọc khi `Ended`), không cho adapter mở quyền đọc Draft/WaitingApproval/Rejected/Approved.
 
 Khi không đủ quyền trả false/danh sách không chứa session. Khi đọc dữ liệu lỗi, propagate lỗi persistence/cancellation theo convention hiện tại (`DbUpdateException`, `NpgsqlException`, `TimeoutException`, `OperationCanceledException`); không dùng lỗi kỹ thuật làm bằng chứng được cấp quyền. GET map lỗi persistence thành `500/MSG128`; publisher log và không phát. Adapter ngoài EF/Npgsql phải chuyển lỗi lưu trữ dự kiến về convention tương thích tại adapter, không catch mọi lỗi lập trình.
 

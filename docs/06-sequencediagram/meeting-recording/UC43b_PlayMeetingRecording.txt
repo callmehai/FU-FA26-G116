@@ -1,0 +1,114 @@
+title UC-43b - Play Meeting Recording
+
+actor "Participant" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Recording Controller" as RecordingController
+control ":Speech Clip Controller" as ClipController
+control ":Recording Service" as RecordingService
+control ":Speech Clip Service" as ClipService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Recording Repository" as RecordingRepository
+participant ":Speech Clip Repository" as ClipRepository
+participant ":Playback Link Signer" as Signer
+participant ":Recording Storage" as RecordingStorage
+database ":Database" as Database
+
+Actor->RecordingsTab: Play a room recording or one sentence
+activate RecordingsTab
+
+alt Room recording selected
+    RecordingsTab->RecordingController: Get a playback link for the room recording
+    activate RecordingController
+    RecordingController->RecordingService: playback(recordingId, actorId)
+    activate RecordingService
+    RecordingService->RecordingRepository: Get the recording
+    activate RecordingRepository
+    RecordingRepository->Database: Retrieve recording
+    activate Database
+    Database-->RecordingRepository: Recording / Not found / Load failed
+    deactivate Database
+    RecordingRepository-->RecordingService: Recording / Not found / Load failed
+    deactivate RecordingRepository
+    RecordingService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->RecordingService: Meeting and roster
+    deactivate MeetingRepository
+    RecordingService->RecordingService: Check the actor is on the current roster (BR-350, BR-370)\nand the recording is Available
+
+    alt Recording cannot be loaded - EX-1
+        RecordingService-->RecordingController: MSG297 - Unable to load meeting recordings.
+        RecordingController-->RecordingsTab: MSG297 - Unable to load meeting recordings.
+        RecordingsTab-->Actor: MSG297 - Unable to load meeting recordings.
+    else Actor no longer has access, or recording not Available - EX-2
+        RecordingService-->RecordingController: Recording not found
+        RecordingController-->RecordingsTab: Recording not found
+        RecordingsTab-->Actor: Show the recording as no longer available
+    else Recording can be played
+        RecordingService->Signer: Sign a short-lived playback link
+        activate Signer
+        Signer-->RecordingService: Playback link
+        deactivate Signer
+        RecordingService-->RecordingController: Playback link
+        RecordingController-->RecordingsTab: Playback link
+        RecordingsTab->RecordingStorage: Stream the recording audio through the playback link
+        activate RecordingStorage
+        RecordingStorage-->RecordingsTab: Audio stream
+        deactivate RecordingStorage
+        RecordingsTab-->Actor: Play in the playback bar with pause, seek and speed
+    end
+    deactivate RecordingService
+    deactivate RecordingController
+
+else Sentence selected
+    RecordingsTab->ClipController: Get a playback link for the sentence
+    activate ClipController
+    ClipController->ClipService: playback(clipId, actorId)
+    activate ClipService
+    ClipService->ClipRepository: Get the sentence with its audio and exclusion
+    activate ClipRepository
+    ClipRepository->Database: Retrieve sentence
+    activate Database
+    Database-->ClipRepository: Sentence / Not found / Load failed
+    deactivate Database
+    ClipRepository-->ClipService: Sentence / Not found / Load failed
+    deactivate ClipRepository
+    ClipService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->ClipService: Meeting and roster
+    deactivate MeetingRepository
+    ClipService->ClipService: Check the actor is on the current roster (BR-350, BR-370);\nan excluded sentence is played only for the current Chair or Secretary (BR-357)
+
+    alt Sentence cannot be loaded - EX-1
+        ClipService-->ClipController: MSG297 - Unable to load meeting recordings.
+        ClipController-->RecordingsTab: MSG297 - Unable to load meeting recordings.
+        RecordingsTab-->Actor: MSG297 - Unable to load meeting recordings.
+    else Actor no longer has access, sentence has no audio, or it is excluded and actor is not Chair or Secretary - EX-2
+        ClipService-->ClipController: Sentence not found
+        ClipController-->RecordingsTab: Sentence not found
+        RecordingsTab-->Actor: Show the sentence as not playable
+    else Sentence can be played, including an excluded one for the Chair or Secretary - AF-1
+        ClipService->Signer: Sign a short-lived playback link
+        activate Signer
+        Signer-->ClipService: Playback link
+        deactivate Signer
+        ClipService-->ClipController: Playback link
+        ClipController-->RecordingsTab: Playback link
+        RecordingsTab->RecordingStorage: Stream the sentence audio through the playback link
+        activate RecordingStorage
+        RecordingStorage-->RecordingsTab: Audio stream
+        deactivate RecordingStorage
+        RecordingsTab-->Actor: Play the sentence
+    end
+    deactivate ClipService
+    deactivate ClipController
+end
+
+deactivate RecordingsTab

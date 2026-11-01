@@ -136,8 +136,9 @@ public sealed class AgendaGuestTests(AgendaFixture fixture) : IClassFixture<Agen
     [InlineData(MeetingStatus.Rejected, 404)]
     [InlineData(MeetingStatus.Approved, 404)]
     [InlineData(MeetingStatus.Published, 200)]
-    [InlineData(MeetingStatus.Ended, 200)]
-    public async Task Guest_keeps_member_meeting_visibility(MeetingStatus status, int expected)
+    [InlineData(MeetingStatus.InProgress, 200)]
+    [InlineData(MeetingStatus.Ended, 404)]
+    public async Task Guest_sees_the_agenda_only_while_the_meeting_is_open(MeetingStatus status, int expected)
     {
         var s = await fixture.Seed(status);
         using var client = Client(Grant(s.MeetingId));
