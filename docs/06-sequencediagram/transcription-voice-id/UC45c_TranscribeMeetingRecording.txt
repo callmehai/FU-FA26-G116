@@ -1,0 +1,103 @@
+title UC-45c - Transcribe Meeting Recording
+
+actor "Secretary" as Actor
+boundary "Transcript View" as TranscriptView
+control ":Transcript Controller" as TranscriptController
+control ":Transcription Service" as TranscriptionService
+participant ":Recording Repository" as RecordingRepository
+participant ":Meeting Repository" as MeetingRepository
+participant ":Transcript Repository" as TranscriptRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->TranscriptView: Confirm Transcribe, or Transcribe again for a completed transcript
+activate TranscriptView
+TranscriptView->TranscriptController: Queue the recording for transcription
+activate TranscriptController
+TranscriptController->TranscriptionService: retry(recordingId, actorId)
+activate TranscriptionService
+
+TranscriptionService->RecordingRepository: Lock the recording
+activate RecordingRepository
+RecordingRepository->Database: Retrieve recording for update
+activate Database
+Database-->RecordingRepository: Recording / Not found
+deactivate Database
+RecordingRepository-->TranscriptionService: Recording / Not found
+deactivate RecordingRepository
+TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->TranscriptionService: Meeting and roster
+deactivate MeetingRepository
+TranscriptionService->TranscriptionService: Check the recording is Available and the actor is the current Secretary (BR-341, BR-350)
+
+alt Recording not Available or actor not on the roster
+    TranscriptionService-->TranscriptController: Recording not found
+    TranscriptController-->TranscriptView: Recording not found
+    TranscriptView-->Actor: Show the recording as no longer available
+else Actor is not the current Secretary
+    TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
+    TranscriptController-->TranscriptView: MSG295 - Only the meeting Secretary may manage recordings.
+    TranscriptView-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+else Secretary may queue the recording
+    TranscriptionService->TranscriptRepository: Get the transcript of the recording
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve transcript for update
+    activate Database
+    Database-->TranscriptRepository: Transcript / None
+    deactivate Database
+    TranscriptRepository-->TranscriptionService: Transcript / None
+    deactivate TranscriptRepository
+
+    alt Transcript is Pending or Processing - EX-1
+        TranscriptionService-->TranscriptController: MSG301 - The recording is currently queued or being transcribed and cannot be rerun yet.
+        TranscriptController-->TranscriptView: MSG301 - The recording is currently queued or being transcribed and cannot be rerun yet.
+        TranscriptView-->Actor: MSG301 - The recording is currently queued or being transcribed and cannot be rerun yet.
+    else Transcript can be queued
+        alt Recording has no transcript yet
+            TranscriptionService->TranscriptRepository: Add a Pending transcript
+            activate TranscriptRepository
+            TranscriptRepository->Database: Insert transcript
+            activate Database
+            Database-->TranscriptRepository: Saved / Save failed
+            deactivate Database
+            TranscriptRepository-->TranscriptionService: Saved / Save failed
+            deactivate TranscriptRepository
+        else Transcript is Failed - AF-2, or Completed - AF-3
+            opt Transcript is Completed
+                TranscriptionService->AuditService: Record the rerun: its text, edits and assigned names
+will be replaced when it completes (BR-360)
+                activate AuditService
+                AuditService-->TranscriptionService: Entry saved
+                deactivate AuditService
+            end
+            TranscriptionService->TranscriptRepository: Put the transcript back to Pending and clear the previous error
+            activate TranscriptRepository
+            TranscriptRepository->Database: Update transcript
+            activate Database
+            Database-->TranscriptRepository: Saved / Save failed
+            deactivate Database
+            TranscriptRepository-->TranscriptionService: Saved / Save failed
+            deactivate TranscriptRepository
+        end
+
+        alt Recording cannot be queued - EX-2
+            TranscriptionService-->TranscriptController: MSG304 - Unable to save transcript changes. Please try again.
+            TranscriptController-->TranscriptView: MSG304 - Unable to save transcript changes. Please try again.
+            TranscriptView-->Actor: MSG304 - Unable to save transcript changes. Please try again.
+        else Recording queued
+            TranscriptionService->TranscriptionService: ref UC-45c Process Transcription Queue - processed in the background
+            TranscriptionService-->TranscriptController: MSG300 - Recording queued for transcription.
+            TranscriptController-->TranscriptView: MSG300 - Recording queued for transcription.
+            TranscriptView-->Actor: MSG300 - Recording queued for transcription.
+        end
+    end
+end
+
+deactivate TranscriptionService
+deactivate TranscriptController
+deactivate TranscriptView

@@ -213,6 +213,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("declined");
 
+                    b.Property<Guid?>("GuestSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_session_id");
+
                     b.Property<DateTimeOffset>("JoinedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("joined_at");
@@ -225,12 +229,15 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
                         .HasName("pk_call_participants");
+
+                    b.HasIndex("GuestSessionId")
+                        .HasDatabaseName("ix_call_participants_guest_session_id");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_call_participants_user_id");
@@ -238,7 +245,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("CallSessionId", "UserId")
                         .HasDatabaseName("ix_call_participants_call_session_id_user_id");
 
-                    b.ToTable("call_participants", (string)null);
+                    b.ToTable("call_participants", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_call_participants_one_member", "(user_id IS NULL) <> (guest_session_id IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.CallSession", b =>
@@ -274,7 +284,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("started_at");
 
-                    b.Property<Guid>("StartedById")
+                    b.Property<Guid?>("StartedById")
                         .HasColumnType("uuid")
                         .HasColumnName("started_by_id");
 
@@ -2896,14 +2906,21 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_call_participants_call_sessions_call_session_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.GuestSession", "GuestSession")
+                        .WithMany()
+                        .HasForeignKey("GuestSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_call_participants_guest_sessions_guest_session_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_call_participants_users_user_id");
 
                     b.Navigation("CallSession");
+
+                    b.Navigation("GuestSession");
 
                     b.Navigation("User");
                 });
@@ -2926,7 +2943,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("StartedById")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_call_sessions_users_started_by_id");
 
                     b.Navigation("Meeting");

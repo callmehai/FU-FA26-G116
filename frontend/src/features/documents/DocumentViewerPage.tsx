@@ -4,10 +4,11 @@ import { getMeetingDocumentContent } from '../../api/documents'
 import { Icon } from '../../components/Icon'
 import { NotFound } from '../../components/NotFound'
 import { errorMessage, isApiError } from '../../lib/errors'
-import { routes } from '../../lib/routes'
 import type { MeetingDocument } from '../../types/document'
+import type { GuestMeeting } from '../../types/guest'
 import type { Meeting } from '../../types/meeting'
 import { useAccessLost } from '../auth/useAccessLost'
+import { useGuest, useMeetingPagePath } from '../guest/guestContext'
 import { CommentsPanel } from './CommentsPanel'
 import { SensitivityBadge } from '../meetings/StatusBadge'
 import { useMeeting } from '../meetings/useMeeting'
@@ -38,7 +39,25 @@ type Content =
  */
 export function DocumentViewerPage() {
   const { meetingId = '', documentId = '' } = useParams()
-  const meeting = useMeeting(meetingId)
+  return <DocumentViewer meetingId={meetingId} documentId={documentId} meeting={useMeeting(meetingId)} />
+}
+
+/** The meeting the viewer shows: the internal page reads it; a guest's comes from their session (UC-04). */
+export interface ViewerMeetingSource {
+  state: ReturnType<typeof useMeeting>['state'] | { kind: 'loaded'; meeting: GuestMeeting }
+  retry: () => void
+  reload: () => unknown
+}
+
+export function DocumentViewer({
+  meetingId,
+  documentId,
+  meeting,
+}: {
+  meetingId: string
+  documentId: string
+  meeting: ViewerMeetingSource
+}) {
   const documents = useMeetingDocuments(meetingId)
   const content = useContent(meetingId, documentId)
 
@@ -96,7 +115,7 @@ function Viewer({
   content,
   onStale,
 }: {
-  meeting: Meeting
+  meeting: Meeting | GuestMeeting
   doc: MeetingDocument
   content: ReturnType<typeof useContent>
   onStale: () => void
@@ -108,7 +127,11 @@ function Viewer({
   const [commentCount, setCommentCount] = useState(doc.commentCount)
   const { download, busyId } = useDocumentDownload(meeting.id, onStale)
   const pdf = isPdf(doc)
-  const canDownload = meeting.sensitivity !== 'Secret'
+  // A guest is not told the sensitivity (UC-04): a Secret meeting's download is refused by the server (MSG159).
+  const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
+  const canDownload = sensitivity !== 'Secret'
+  // Comments are not open to guests yet (SCRUM-123).
+  const guest = useGuest() !== null
   // Opened from a vote still waiting on this reader (UC-74): confirm once the last page is reached.
   const [params] = useSearchParams()
   const reading = params.get('read') === '1'
@@ -125,7 +148,7 @@ function Viewer({
         </h1>
         {/* On a phone the name gets the first line to itself, the controls go under it. */}
         <span className="viewer-break" aria-hidden="true" />
-        {meeting.sensitivity !== 'Normal' && <SensitivityBadge sensitivity={meeting.sensitivity} />}
+        {sensitivity && sensitivity !== 'Normal' && <SensitivityBadge sensitivity={sensitivity} />}
         <span className="viewer-meeting">{meeting.title}</span>
         <span className="viewer-spacer" />
         {pdf && page && (
@@ -135,16 +158,18 @@ function Viewer({
         )}
         <ViewerZoom zoom={zoom} onZoom={setZoom} />
         {reading && <ReadConfirmButton meetingId={meeting.id} meetingDocumentId={doc.id} progress={progress} />}
-        <button
-          type="button"
-          className={commentsOpen ? 'btn btn-outline is-active' : 'btn btn-outline'}
-          aria-pressed={commentsOpen}
-          onClick={() => setCommentsOpen(!commentsOpen)}
-        >
-          <Icon name="messageSquare" size={16} />
-          <span className="viewer-download-label">Góp ý</span>
-          {commentCount > 0 && <span className="viewer-count">{commentCount}</span>}
-        </button>
+        {!guest && (
+          <button
+            type="button"
+            className={commentsOpen ? 'btn btn-outline is-active' : 'btn btn-outline'}
+            aria-pressed={commentsOpen}
+            onClick={() => setCommentsOpen(!commentsOpen)}
+          >
+            <Icon name="messageSquare" size={16} />
+            <span className="viewer-download-label">Góp ý</span>
+            {commentCount > 0 && <span className="viewer-count">{commentCount}</span>}
+          </button>
+        )}
         {canDownload ? (
           <button
             type="button"
@@ -184,7 +209,7 @@ function Viewer({
             </div>
           )}
         </main>
-        {commentsOpen && (
+        {commentsOpen && !guest && (
           <CommentsPanel
             meetingId={meeting.id}
             meetingDocumentId={doc.id}
@@ -241,7 +266,7 @@ function useReachedEnd(stage: RefObject<HTMLElement | null>, active: boolean) {
 function BackToDocuments({ meetingId, fromVote }: { meetingId: string; fromVote: boolean }) {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const to = `${routes.meeting(meetingId)}?tab=${fromVote ? 'votes' : 'documents'}`
+  const to = useMeetingPagePath()(meetingId, fromVote ? 'votes' : 'documents')
   return (
     <Link
       className="back-link viewer-back"

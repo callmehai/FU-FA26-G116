@@ -1,0 +1,55 @@
+title UC-81f - Withdraw Voice ID Consent
+
+actor "Internal User" as Actor
+boundary "My Voice Page" as VoicePage
+control ":Voice ID Controller" as VoiceController
+control ":Voice ID Service" as VoiceService
+participant ":Voice ID Repository" as VoiceRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->VoicePage: Confirm Withdraw consent
+activate VoicePage
+VoicePage->VoiceController: Withdraw the Voice ID consent
+activate VoiceController
+VoiceController->VoiceService: withdraw(actorId)
+activate VoiceService
+VoiceService->VoiceRepository: Lock the actor's standing consent
+activate VoiceRepository
+VoiceRepository->Database: Retrieve consent not withdrawn for update
+activate Database
+Database-->VoiceRepository: Consent / None
+deactivate Database
+VoiceRepository-->VoiceService: Consent / None
+deactivate VoiceRepository
+
+alt Consent was already withdrawn
+    VoiceService->VoiceService: Nothing to change
+else Consent stands
+    VoiceService->VoiceRepository: In one step: delete every voice sample of the actor, clear every speaker\nsuggestion pointing to the actor, keep names a Secretary assigned,\nand mark the consent withdrawn (BR-365)
+    activate VoiceRepository
+    VoiceRepository->Database: Delete samples, clear suggestions, update consent
+    activate Database
+    Database-->VoiceRepository: Changes saved / Save failed
+    deactivate Database
+    VoiceRepository-->VoiceService: Samples deleted, suggestions cleared / Save failed
+    deactivate VoiceRepository
+    VoiceService->AuditService: Record the withdrawal with the number of samples and suggestions erased
+    activate AuditService
+    AuditService-->VoiceService: Entry saved
+    deactivate AuditService
+end
+
+alt Withdrawal cannot be saved; nothing is erased - EX-1
+    VoiceService-->VoiceController: MSG315 - Unable to save changes. Please try again.
+    VoiceController-->VoicePage: MSG315 - Unable to save changes. Please try again.
+    VoicePage-->Actor: MSG315 - Unable to save changes. Please try again.
+else Consent withdrawn
+    VoiceService-->VoiceController: MSG306 - Voice identification disabled and all voice samples deleted.
+    VoiceController-->VoicePage: MSG306 - Voice identification disabled and all voice samples deleted.
+    VoicePage-->Actor: MSG306 - Voice identification disabled and all voice samples deleted.
+end
+
+deactivate VoiceService
+deactivate VoiceController
+deactivate VoicePage

@@ -1,0 +1,124 @@
+title UC-44c - Upload Meeting Audio File
+
+actor "Secretary" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Recording Controller" as RecordingController
+control ":Recording Service" as RecordingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Recording Repository" as RecordingRepository
+participant ":Recording Storage" as RecordingStorage
+participant ":Audit Service" as AuditService
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+Actor->RecordingsTab: Upload the selected audio file, confirming that attendees\nwere informed and nobody objected, with an optional purpose
+activate RecordingsTab
+RecordingsTab->RecordingController: Upload the meeting audio file
+activate RecordingController
+RecordingController->RecordingService: canUpload(meetingId, actorId)
+activate RecordingService
+RecordingService->MeetingRepository: Get the Meeting with its format, status and current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->RecordingService: Meeting and roster
+deactivate MeetingRepository
+RecordingService->RecordingService: Check current Secretary (BR-341), In-person or Hybrid (BR-340),\nIn Progress or Ended (BR-342) before any audio is stored
+
+alt Actor is not the current Secretary - EX-5
+    RecordingService-->RecordingController: MSG295 - Only the meeting Secretary may manage recordings.
+    RecordingController-->RecordingsTab: MSG295 - Only the meeting Secretary may manage recordings.
+    RecordingsTab-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+else Meeting is Online - EX-7
+    RecordingService-->RecordingController: MSG358 - Online meetings record per-mic speech; room recordings are not available.
+    RecordingController-->RecordingsTab: MSG358 - Online meetings record per-mic speech; room recordings are not available.
+    RecordingsTab-->Actor: MSG358 - Online meetings record per-mic speech; room recordings are not available.
+else Meeting is not In Progress or Ended - EX-4
+    RecordingService-->RecordingController: MSG294 - Recordings may only be saved while the meeting is in progress or has ended.
+    RecordingController-->RecordingsTab: MSG294 - Recordings may only be saved while the meeting is in progress or has ended.
+    RecordingsTab-->Actor: MSG294 - Recordings may only be saved while the meeting is in progress or has ended.
+else Upload allowed
+    RecordingService-->RecordingController: Upload allowed
+    RecordingController->RecordingController: Read the form: one file, its audio format,\nthe notice confirmation and purpose
+
+    alt Audio format is not MP3, M4A, AAC, WAV, WebM or OGG - EX-2
+        RecordingController-->RecordingsTab: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
+        RecordingsTab-->Actor: MSG292 - Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG.
+    else Form has no file or is unreadable - EX-1
+        RecordingController-->RecordingsTab: MSG291 - Invalid recording information.
+        RecordingsTab-->Actor: MSG291 - Invalid recording information.
+    else File received
+        RecordingController->RecordingStorage: Store the file as it arrives, up to 300 MB
+        activate RecordingStorage
+        RecordingStorage-->RecordingController: Stored file / Too large
+        deactivate RecordingStorage
+
+        alt File exceeds 300 MB - EX-3
+            RecordingController->RecordingStorage: Delete the partly stored file
+            activate RecordingStorage
+            RecordingStorage-->RecordingController: File deleted
+            deactivate RecordingStorage
+            RecordingController-->RecordingsTab: MSG293 - Recording exceeds 300 MB.
+            RecordingsTab-->Actor: MSG293 - Recording exceeds 300 MB.
+        else File stored
+            RecordingController->RecordingService: add(meetingId, actorId, upload)
+            RecordingService->MeetingRepository: Lock the Meeting and recheck Secretary, format and status
+            activate MeetingRepository
+            MeetingRepository->Database: Retrieve Meeting for update with current roster
+            activate Database
+            Database-->MeetingRepository: Meeting and roster
+            deactivate Database
+            MeetingRepository-->RecordingService: Meeting and roster
+            deactivate MeetingRepository
+            RecordingService->RecordingService: Check the notice confirmation is given, purpose at most 1,000 characters,\nfile name and size valid (BR-343)
+
+            alt Notice confirmation missing or upload information invalid - EX-1
+                RecordingService->RecordingStorage: Delete the stored file
+                activate RecordingStorage
+                RecordingStorage-->RecordingService: File deleted
+                deactivate RecordingStorage
+                RecordingService-->RecordingController: MSG291 - Invalid recording information.
+                RecordingController-->RecordingsTab: MSG291 - Invalid recording information.
+                RecordingsTab-->Actor: MSG291 - Invalid recording information.
+            else Upload valid
+                RecordingService->RecordingRepository: Add an Available recording from Upload with the confirmation time,\npurpose and retention date 180 days later, and a Pending transcript\n(BR-343, BR-347)
+                activate RecordingRepository
+                RecordingRepository->Database: Insert recording and Pending transcript
+                activate Database
+                Database-->RecordingRepository: Recording saved / Save failed
+                deactivate Database
+                RecordingRepository-->RecordingService: Recording saved / Save failed
+                deactivate RecordingRepository
+                RecordingService->AuditService: Record the upload with file, size, purpose and retention date
+                activate AuditService
+                AuditService-->RecordingService: Entry saved
+                deactivate AuditService
+
+                alt Recording cannot be saved - EX-6
+                    RecordingService->RecordingStorage: Delete the stored file
+                    activate RecordingStorage
+                    RecordingStorage-->RecordingService: File deleted
+                    deactivate RecordingStorage
+                    RecordingService-->RecordingController: MSG298 - Unable to save recording changes. Please try again.
+                    RecordingController-->RecordingsTab: MSG298 - Unable to save recording changes. Please try again.
+                    RecordingsTab-->Actor: MSG298 - Unable to save recording changes. Please try again.
+                else Recording saved
+                    RecordingService->Publisher: Tell everyone in the Meeting that the recordings changed
+                    activate Publisher
+                    Publisher-->RecordingService: Change published
+                    deactivate Publisher
+                    RecordingService->RecordingService: ref UC-45c - the queued transcript is processed in the background
+                    RecordingService-->RecordingController: MSG290 - Meeting recording saved.
+                    RecordingController-->RecordingsTab: MSG290 - Meeting recording saved.
+                    RecordingsTab-->Actor: MSG290 - Meeting recording saved.
+                end
+            end
+        end
+    end
+end
+
+deactivate RecordingService
+deactivate RecordingController
+deactivate RecordingsTab

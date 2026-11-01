@@ -39,6 +39,14 @@ const LibraryViewerPage = lazy(() =>
 const UserLibraryPage = lazy(() =>
   import('../features/documents/UserLibraryPage').then((m) => ({ default: m.UserLibraryPage })),
 )
+const GuestPage = lazy(() => import('../features/guest/GuestPage').then((m) => ({ default: m.GuestPage })))
+const GuestMeetingPage = lazy(() =>
+  import('../features/guest/GuestMeetingPage').then((m) => ({ default: m.GuestMeetingPage })),
+)
+const GuestRoomPage = lazy(() => import('../features/guest/GuestRoomPage').then((m) => ({ default: m.GuestRoomPage })))
+const GuestDocumentPage = lazy(() =>
+  import('../features/guest/GuestMeetingPage').then((m) => ({ default: m.GuestDocumentPage })),
+)
 const VoicePage = lazy(() => import('../features/voice/VoicePage').then((m) => ({ default: m.VoicePage })))
 
 /**
@@ -58,6 +66,12 @@ export function App() {
         <Route path={routes.login} element={<LoginPage />} />
         {/* Public and outside the session gate: whoever opens the emailed link has no session. */}
         <Route path={routes.resetPassword} element={<ResetPasswordPage />} />
+        {/* A guest's invitation link (UC-04): its own token, never the internal session, and no sidebar. */}
+        <Route path={routes.guest(':invitationId')} element={<GuestPage />}>
+          <Route index element={<GuestMeetingPage />} />
+          <Route path="documents/:documentId" element={<GuestDocumentPage />} />
+          <Route path="room" element={<GuestRoomPage />} />
+        </Route>
 
         {/* The bare root lands on the calendar, the home page after sign-in. */}
         <Route path="/" element={<Navigate to={routes.calendar} replace />} />

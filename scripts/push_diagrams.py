@@ -43,6 +43,7 @@ When a diagram folder is added or a Drive name changes, change it here.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import sys
@@ -119,6 +120,9 @@ GROUPS: tuple[Group, ...] = (
                     "notification-management": "Notification Management",
                     "document-management": "Document Management",
                     "voting-management": "Voting Management",
+                    "meeting-recording": "Meeting Recording",
+                    "transcription-voice-id": "Transcription & Voice ID",
+                    "online-meeting-room": "Online Meeting Room",
                     "drawio-png": "drawio",
                 },
                 file_map={
@@ -617,6 +621,12 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="compare with Drive and exit 1 on drift")
     parser.add_argument("--confirm", action="store_true", help="actually write to Drive")
     parser.add_argument(
+        "--jobs",
+        type=int,
+        default=8,
+        help="files uploaded in parallel with --confirm (default 8; 1 = one at a time)",
+    )
+    parser.add_argument(
         "--prune",
         action="store_true",
         help="with --confirm, move Drive-only files in mapped folders to the trash",
@@ -683,21 +693,31 @@ def main() -> int:
         print("\nDry run. Re-run with --confirm to write, --check to compare.")
         return 0
 
-    for action in actions:
-        if action.kind == "unchanged" and not action.rename_to:
-            continue
+    writes = [
+        action for action in actions if not (action.kind == "unchanged" and not action.rename_to)
+    ]
+    # Folders are resolved (and created) one at a time: the folder cache is not
+    # thread-safe, and two workers must not create the same folder twice.
+    folder_ids: dict[int, str] = {}
+    for index, action in enumerate(writes):
         entry = action.entry
         folder_id = drive.folder(entry.group.drive_folder, entry.remote_dir)
         if folder_id is None:
             raise SystemExit(f"Drive folder disappeared while writing: {entry.remote_path}")
+        folder_ids[index] = folder_id
+
+    def write(index: int) -> None:
+        action = writes[index]
+        entry = action.entry
+        folder_id = folder_ids[index]
 
         if action.kind == "create":
             result = drive.create_file(folder_id, entry.remote_name, entry.local)
             action.file_id = result.get("id")
-            print(f"created  {entry.group.key}: {entry.remote_path}")
+            print(f"created  {entry.group.key}: {entry.remote_path}", flush=True)
         elif action.kind == "update":
             result = drive.update_file(action.file_id or "", entry.local)
-            print(f"updated  {entry.group.key}: {entry.remote_path}")
+            print(f"updated  {entry.group.key}: {entry.remote_path}", flush=True)
         else:
             result = None
 
@@ -711,7 +731,22 @@ def main() -> int:
 
         if action.rename_to:
             drive.rename(action.file_id or "", action.rename_to)
-            print(f"renamed  {entry.group.key}: {entry.remote_path} -> {action.rename_to}")
+            print(
+                f"renamed  {entry.group.key}: {entry.remote_path} -> {action.rename_to}",
+                flush=True,
+            )
+
+    # Each file is its own request, so they upload in parallel. A failure stops
+    # the run; files already written are idempotent on the next run.
+    with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
+        futures = [pool.submit(write, index) for index in range(len(writes))]
+        try:
+            for future in futures:
+                future.result()
+        except BaseException:
+            for future in futures:
+                future.cancel()
+            raise
 
     if args.prune:
         for extra in extras:

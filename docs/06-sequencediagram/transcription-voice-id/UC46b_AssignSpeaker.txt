@@ -1,0 +1,82 @@
+title UC-46b - Assign Speaker
+
+actor "Secretary" as Actor
+boundary "Transcript View" as TranscriptView
+control ":Transcript Controller" as TranscriptController
+control ":Transcription Service" as TranscriptionService
+participant ":Recording Repository" as RecordingRepository
+participant ":Meeting Repository" as MeetingRepository
+participant ":Transcript Repository" as TranscriptRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->TranscriptView: Assign a person on the roster to a voice, or clear the name
+activate TranscriptView
+
+loop For the chosen voice, and each voice suggested as the same person - AF-1 (BR-367)
+    TranscriptView->TranscriptController: Assign the person to the voice
+    activate TranscriptController
+    TranscriptController->TranscriptionService: assignSpeaker(recordingId, label, userId, actorId)
+    activate TranscriptionService
+    TranscriptionService->RecordingRepository: Get the recording
+    activate RecordingRepository
+    RecordingRepository->Database: Retrieve recording
+    activate Database
+    Database-->RecordingRepository: Recording / Not found
+    deactivate Database
+    RecordingRepository-->TranscriptionService: Recording / Not found
+    deactivate RecordingRepository
+    TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting and current roster
+    activate Database
+    Database-->MeetingRepository: Meeting and roster
+    deactivate Database
+    MeetingRepository-->TranscriptionService: Meeting and roster
+    deactivate MeetingRepository
+    TranscriptionService->TranscriptRepository: Get the transcript voices
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve transcript with speakers
+    activate Database
+    Database-->TranscriptRepository: Voices
+    deactivate Database
+    TranscriptRepository-->TranscriptionService: Voices
+    deactivate TranscriptRepository
+    TranscriptionService->TranscriptionService: Check the actor is the current Secretary (BR-341), the voice exists\nand the person, when given, is on the current roster (BR-368)
+
+    alt Actor is not the current Secretary - EX-2
+        TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptController-->TranscriptView: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptView-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+    else Person is not on the current roster - EX-1
+        TranscriptionService-->TranscriptController: MSG317 - Assigned person must be on the current meeting roster.
+        TranscriptController-->TranscriptView: MSG317 - Assigned person must be on the current meeting roster.
+        TranscriptView-->Actor: MSG317 - Assigned person must be on the current meeting roster.
+    else Assignment valid
+        TranscriptionService->AuditService: Record the assignment and whether it accepted the Voice ID suggestion
+        activate AuditService
+        AuditService-->TranscriptionService: Entry saved
+        deactivate AuditService
+        TranscriptionService->TranscriptRepository: Save the name on the voice, so every segment of that voice\nshows it; the suggestion itself never names anyone (BR-366)
+        activate TranscriptRepository
+        TranscriptRepository->Database: Update speaker
+        activate Database
+        Database-->TranscriptRepository: Speaker saved / Save failed
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Speaker saved / Save failed
+        deactivate TranscriptRepository
+        alt Assignment cannot be saved
+            TranscriptionService-->TranscriptController: MSG304 - Unable to save transcript changes. Please try again.
+            TranscriptController-->TranscriptView: MSG304 - Unable to save transcript changes. Please try again.
+            TranscriptView-->Actor: MSG304 - Unable to save transcript changes. Please try again.
+        else Speaker assigned
+            TranscriptionService-->TranscriptController: MSG316 - Speaker assigned.
+            TranscriptController-->TranscriptView: MSG316 - Speaker assigned.
+            TranscriptView-->Actor: MSG316 - Speaker assigned.
+        end
+    end
+    deactivate TranscriptionService
+    deactivate TranscriptController
+end
+
+deactivate TranscriptView

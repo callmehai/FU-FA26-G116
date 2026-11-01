@@ -6,7 +6,6 @@ import { Icon } from '../../components/Icon'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { useToast } from '../../components/toastContext'
 import { formatClock, formatDateTime } from '../../lib/format'
-import { routes } from '../../lib/routes'
 import {
   VOTE_CONCLUSION_LABEL,
   VOTE_ROLE_LABEL,
@@ -17,6 +16,7 @@ import {
   type VoteSummary,
 } from '../../types/vote'
 import type { Meeting } from '../../types/meeting'
+import { useDocumentPath } from '../guest/guestContext'
 import { AddDocumentsDialog, type DocumentSource } from '../documents/AddDocumentsDialog'
 import { AttachMenu } from '../documents/AttachMenu'
 import { useMeetingDocuments } from '../documents/useMeetingDocuments'
@@ -581,13 +581,14 @@ function VoteDocuments({
   detail: VoteDetail
   onDetach?: (doc: VoteDocument) => void
 }) {
+  const documentPath = useDocumentPath()
   const voter = detail.status === 'Open' && detail.isEligible && !detail.hasVoted
   const linkTo = (id: string, read: boolean) => {
     const query = new URLSearchParams()
     if (room) query.set('from', 'room')
     if (read) query.set('read', '1')
     const search = query.toString()
-    return `${routes.meetingDocument(meetingId, id)}${search ? `?${search}` : ''}`
+    return `${documentPath(meetingId, id)}${search ? `?${search}` : ''}`
   }
   return (
     <ul className="agenda-doc-list vote-docs">

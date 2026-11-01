@@ -1,0 +1,43 @@
+title UC-81a - View My Voice ID
+
+actor "Internal User" as Actor
+boundary "My Voice Page" as VoicePage
+control ":Voice ID Controller" as VoiceController
+control ":Voice ID Service" as VoiceService
+participant ":Voice ID Repository" as VoiceRepository
+database ":Database" as Database
+
+Actor->VoicePage: Open My voice from the sidebar
+activate VoicePage
+VoicePage->VoiceController: Get the own Voice ID
+activate VoiceController
+VoiceController->VoiceService: get(actorId)
+activate VoiceService
+VoiceService->VoiceRepository: Get the actor's standing consent and voice samples, never anyone else's
+activate VoiceRepository
+VoiceRepository->Database: Retrieve consent not withdrawn and samples of the actor
+activate Database
+Database-->VoiceRepository: Consent and samples / Load failed
+deactivate Database
+VoiceRepository-->VoiceService: Consent and samples / Load failed
+deactivate VoiceRepository
+
+alt Voice ID cannot be loaded - EX-1
+    VoiceService-->VoiceController: MSG314 - Unable to load voice profile information.
+    VoiceController-->VoicePage: MSG314 - Unable to load voice profile information.
+    VoicePage-->Actor: MSG314 - Unable to load voice profile information.
+else Voice ID loaded
+    VoiceService-->VoiceController: Consent with its notice version, samples with length, date and whether playable,\nat most 5 samples, the current notice, its purpose and the data controller (BR-362, BR-363)
+    VoiceController-->VoicePage: Consent with its notice version, samples with length, date and whether playable,\nat most 5 samples, the current notice, its purpose and the data controller (BR-362, BR-363)
+    alt No consent
+        VoicePage-->Actor: Show the Voice ID notice with an unticked consent box (UC-81b)
+    else Consent given to an older notice version - AF-1
+        VoicePage-->Actor: Show the samples and Accept new terms (UC-81b, BR-362)
+    else Consent given to the current notice version
+        VoicePage-->Actor: Show the consent, the samples and Record sample while fewer than 5 (BR-363)
+    end
+end
+
+deactivate VoiceService
+deactivate VoiceController
+deactivate VoicePage

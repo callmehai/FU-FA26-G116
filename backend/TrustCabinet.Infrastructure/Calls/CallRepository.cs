@@ -4,6 +4,7 @@ using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Infrastructure.GuestAccess;
 
 namespace TrustCabinet.Infrastructure.Calls;
 
@@ -13,8 +14,9 @@ namespace TrustCabinet.Infrastructure.Calls;
 /// stricter rule than reading the meeting (the creator or approver alone may not join).
 ///
 /// Only current, active internal assignments grant room access; removed assignments remain history.
+/// Guests come from their UC-04 session instead and are never read from or written to <c>meeting_participants</c>.
 /// </summary>
-public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
+public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock = null) : ICallRepository
 {
     public const string ActiveRoomIndex = "ux_call_sessions_active_meeting_room";
 
@@ -45,12 +47,31 @@ public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
             .ToListAsync(ct))
             .ToHashSet();
 
+    public Task<CallRoomAccess?> FindGuestRoomAccessAsync(Guid meetingId, Guid guestSessionId, CancellationToken ct = default)
+        => AdmittedGuests(meetingId)
+            .Where(x => x.Id == guestSessionId)
+            .Select(x => new CallRoomAccess(meetingId, x.Invitation.Meeting.Status, x.Invitation.Meeting.Mode,
+                MeetingRole.Guest, x.Invitation.SelfDeclaredDisplayName!))
+            .SingleOrDefaultAsync(ct);
+
+    public async Task<IReadOnlySet<Guid>> ListAllowedGuestSessionIdsAsync(Guid meetingId, CancellationToken ct = default)
+        => (await AdmittedGuests(meetingId)
+            .Where(x => x.Invitation.Meeting.Status == MeetingStatus.InProgress && x.Invitation.Meeting.Mode != MeetingMode.InPerson)
+            .Select(x => x.Id)
+            .ToListAsync(ct))
+            .ToHashSet();
+
+    /// <summary>The same sessions the guest's agenda and roster reads accept (GuestSessionAccess): current, and named.</summary>
+    private IQueryable<GuestSession> AdmittedGuests(Guid meetingId)
+        => GuestAccessService.CurrentSessions(db, (clock ?? TimeProvider.System).GetUtcNow())
+            .Where(x => x.Invitation.MeetingId == meetingId && x.Invitation.SelfDeclaredDisplayName != null);
+
     public Task<CallSession?> FindActiveRoomSessionAsync(Guid meetingId, CancellationToken ct = default)
         => db.CallSessions.SingleOrDefaultAsync(
             s => s.MeetingId == meetingId && s.Kind == CallKind.MeetingRoom && s.Status == CallStatus.Active, ct);
 
     public async Task<CallSession> EnsureActiveRoomSessionAsync(
-        Guid meetingId, Guid startedById, DateTimeOffset startedAt, CancellationToken ct = default)
+        Guid meetingId, Guid? startedById, DateTimeOffset startedAt, CancellationToken ct = default)
     {
         if (await FindActiveRoomSessionAsync(meetingId, ct) is { } existing)
         {
@@ -83,24 +104,27 @@ public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
         }
     }
 
-    public async Task RecordJoinAsync(Guid sessionId, Guid userId, DateTimeOffset joinedAt, CancellationToken ct = default)
+    public async Task RecordJoinAsync(Guid sessionId, CallMember member, DateTimeOffset joinedAt, CancellationToken ct = default)
     {
-        var alreadyOpen = await db.CallParticipants.AnyAsync(
-            p => p.CallSessionId == sessionId && p.UserId == userId && p.LeftAt == null, ct);
+        var alreadyOpen = await OpenStints(sessionId, member).AnyAsync(ct);
         if (alreadyOpen)
         {
             return;
         }
 
-        db.CallParticipants.Add(new CallParticipant { CallSessionId = sessionId, UserId = userId, JoinedAt = joinedAt });
+        db.CallParticipants.Add(new CallParticipant
+        {
+            CallSessionId = sessionId,
+            UserId = member.UserId,
+            GuestSessionId = member.GuestSessionId,
+            JoinedAt = joinedAt,
+        });
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task RecordLeaveAsync(Guid sessionId, Guid userId, DateTimeOffset leftAt, CancellationToken ct = default)
+    public async Task RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default)
     {
-        var open = await db.CallParticipants
-            .Where(p => p.CallSessionId == sessionId && p.UserId == userId && p.LeftAt == null)
-            .ToListAsync(ct);
+        var open = await OpenStints(sessionId, member).ToListAsync(ct);
         foreach (var stint in open)
         {
             stint.LeftAt = leftAt < stint.JoinedAt ? stint.JoinedAt : leftAt;
@@ -109,6 +133,11 @@ public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
 
         await db.SaveChangesAsync(ct);
     }
+
+    private IQueryable<CallParticipant> OpenStints(Guid sessionId, CallMember member)
+        => member.GuestSessionId is { } guest
+            ? db.CallParticipants.Where(p => p.CallSessionId == sessionId && p.GuestSessionId == guest && p.LeftAt == null)
+            : db.CallParticipants.Where(p => p.CallSessionId == sessionId && p.UserId == member.UserId && p.LeftAt == null);
 
     public async Task EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default)
     {
@@ -149,12 +178,13 @@ public sealed class CallRepository(TrustCabinetDbContext db) : ICallRepository
                 MeetingId = s.MeetingId!.Value,
                 s.Meeting!.Status,
                 s.Meeting.Mode,
-                Open = s.Participants.Where(p => p.LeftAt == null).Select(p => p.UserId).ToList(),
+                Open = s.Participants.Where(p => p.LeftAt == null).Select(p => new { p.UserId, p.GuestSessionId }).ToList(),
             })
             .ToListAsync(ct);
 
         return rows
-            .Select(r => new ActiveRoomSession(r.Id, r.MeetingId, r.Status, r.Mode, r.Open.ToHashSet()))
+            .Select(r => new ActiveRoomSession(r.Id, r.MeetingId, r.Status, r.Mode,
+                r.Open.Select(p => new CallMember(p.UserId, p.GuestSessionId)).ToHashSet()))
             .ToArray();
     }
 }

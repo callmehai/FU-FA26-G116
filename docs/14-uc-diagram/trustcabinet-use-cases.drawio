@@ -184,7 +184,7 @@
         <mxCell id="rel-77-17-extend" edge="1" parent="1" source="uc-77" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.725;entryY=0.947;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-17" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Google Identity Provider" vertex="1">
+        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="OAuth Provider" vertex="1">
           <mxGeometry height="61" width="31" x="1153" y="223.03" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">
@@ -372,7 +372,7 @@
         <mxCell id="rel-82-77-extend" edge="1" parent="1" source="uc-82" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Google Identity Provider" vertex="1">
+        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="39" x="1425" y="173" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">
@@ -563,7 +563,7 @@
         <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0.933;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Google Identity Provider" vertex="1">
+        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="32" x="1155" y="122" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">
@@ -821,7 +821,7 @@
         <mxCell id="rel-93-77-extend" edge="1" parent="1" source="uc-93" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Google Identity Provider" vertex="1">
+        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="35" x="1581" y="193" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">
@@ -1126,13 +1126,13 @@
         <mxCell id="rel-93-77-extend" edge="1" parent="1" source="uc-93" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.068;entryY=0.724;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=9;" value="Google Identity Provider" vertex="1">
+        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=9;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="34" x="1729" y="364" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ai-provider" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=9;" value="AI / Speech Processing Provider" vertex="1">
+        <mxCell id="ai-provider" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=9;" value="Google AI Provider" vertex="1">
           <mxGeometry height="53.5" width="29.5" x="1744" y="1586" as="geometry" />
         </mxCell>
         <mxCell id="assoc-ai-provider" edge="1" parent="1" source="ai-provider" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-90" value="">
@@ -1337,7 +1337,7 @@
         <mxCell id="rel-manage-folders-89-extend" edge="1" parent="1" source="uc-manage-library-folders" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0.933;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Google Identity Provider" vertex="1">
+        <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="OAuth Provider" vertex="1">
           <mxGeometry height="62" width="32" x="1408" y="173" as="geometry" />
         </mxCell>
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">

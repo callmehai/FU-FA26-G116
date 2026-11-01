@@ -484,6 +484,53 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .login-divider { display: flex; align-items: center; gap: 12px; margin: 0; color: var(--label-ink); font-size: 12px; }
 .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 
+/* ---------- Guest (UC-04, screen 1.3) ----------
+   The invitation link opens on the sign-in card's band; once verified, the meeting sits under a thin
+   bar with only the logo, who the guest said they are and "Thoát" — no sidebar, no internal menu (BR-156). */
+.guest-card { max-width: 440px; }
+.guest-loading { margin: 0; color: var(--muted-ink); text-align: center; }
+.guest-caption { margin: 0; color: var(--muted-ink); font-size: 13px; }
+.login-head .guest-title { font-size: 20px; line-height: 28px; overflow-wrap: anywhere; }
+.guest-scope { margin: 0; color: var(--muted-ink); font-size: 13px; }
+.guest-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.guest-actions .btn-primary { flex: 1 1 160px; }
+
+.otp { display: grid; grid-template-columns: repeat(6, minmax(0, 48px)); justify-content: center; gap: 8px; }
+.otp-box {
+  width: 100%;
+  height: 52px;
+  padding: 0;
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.otp + .field-error, .otp + .field-hint { text-align: center; }
+
+.guest-page { display: flex; flex-direction: column; min-height: 100vh; background: var(--paper); }
+.guest-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: inset 0 -2px 0 var(--gold-soft);
+}
+.guest-brand { display: inline-flex; align-items: center; gap: 8px; margin-right: auto; font-weight: 700; color: var(--brand); }
+.guest-who { display: inline-flex; align-items: center; gap: 8px; min-width: 0; color: var(--muted-ink); }
+.guest-who-name { display: flex; flex-direction: column; min-width: 0; color: var(--ink); font-weight: 500; line-height: 18px; }
+.guest-who-name, .guest-who-name small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.guest-who-name small { color: var(--muted-ink); font-size: 12px; font-weight: 400; }
+.guest-main { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 24px 32px; }
+@media (max-width: 480px) {
+  .guest-bar { padding: 6px 16px; gap: 8px; }
+  .guest-main { padding: 16px; }
+  .guest-leave-label, .guest-brand-text { display: none; }
+  .otp { gap: 6px; }
+}
+
 /* Google draws the button inside this host; it only needs a width to measure and centring. */
 .google-button { display: flex; justify-content: center; min-height: 40px; }
 .google-button-disabled { opacity: .5; pointer-events: none; }
@@ -2664,6 +2711,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .prejoin-side > .alert { width: 100%; margin-top: 16px; text-align: left; }
 .prejoin-recording { display: flex; align-items: flex-start; justify-content: center; gap: 6px; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
 .prejoin-recording svg { flex: none; margin-top: 2px; color: var(--danger); }
+/* A guest confirms the notice before joining (SCRUM-59): the whole line is the checkbox's label, 40px tall to tap. */
+.prejoin-consent { align-items: center; min-height: 40px; color: var(--ink); text-align: left; cursor: pointer; }
+.prejoin-consent input[type='checkbox'] { flex: none; width: 18px; height: 18px; }
 .prejoin-join {
   position: relative;
   width: 240px;

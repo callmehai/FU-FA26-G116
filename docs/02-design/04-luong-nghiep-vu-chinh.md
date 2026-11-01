@@ -42,9 +42,9 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 | Swimlane | Việc chính |
 |---|---|
 | System Admin | Tạo / quản lý vai trò tuỳ chỉnh (UC-12), cấu hình quyền (UC-11), tạo / cập nhật tài khoản (UC-06), gán vai trò (UC-08), mở khoá tài khoản (UC-09) |
-| Internal User | Mở TrustCabinet, chọn đăng nhập Google hoặc email + mật khẩu, dùng các chức năng được phép |
+| User | Mở TrustCabinet, chọn đăng nhập Google hoặc email + mật khẩu, dùng các chức năng được phép |
 | TrustCabinet | Lưu thay đổi và ghi audit log (BR-16); kiểm tra thông tin đăng nhập, liên kết tài khoản, trạng thái active; khoá tài khoản khi sai quá số lần |
-| Google Identity Provider | Xác minh tài khoản Google và trả danh tính (UC-02) |
+| OAuth Provider | Xác minh tài khoản Google và trả danh tính (UC-02) |
 
 **Luồng:**
 

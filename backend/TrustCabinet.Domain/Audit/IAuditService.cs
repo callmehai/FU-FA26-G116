@@ -159,4 +159,13 @@ public static class AuditActions
     /// The <c>ObjectId</c> is the owner; the details say which folder was listed or which document was opened.
     /// </summary>
     public const string PersonalLibraryRead = "library.read";
+
+    /// <summary>
+    /// SCRUM-59 — a verified guest was given a room token after confirming the recording notice. There is no actor
+    /// (guests are not users); the <c>ObjectId</c> is the guest session, the details carry the meeting, invitation,
+    /// self-declared name and the notice, and the row's IP is the guest's. The visit itself is in <c>call_participants</c>.
+    /// </summary>
+    public const string CallGuestAdmitted = "call.guest_admitted";
+
+    public const string GuestSessionObjectType = "GuestSession";
 }

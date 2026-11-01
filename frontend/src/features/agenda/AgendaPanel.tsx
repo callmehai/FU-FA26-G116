@@ -24,9 +24,9 @@ import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { avatarColors, initials } from '../../lib/avatar'
 import { formatClock } from '../../lib/format'
-import { routes } from '../../lib/routes'
 import type { AgendaItem, AgendaMutationResponse } from '../../types/agenda'
 import type { Meeting } from '../../types/meeting'
+import { useDocumentPath } from '../guest/guestContext'
 import { AddDocumentsDialog, type DocumentSource } from '../documents/AddDocumentsDialog'
 import { AttachMenu } from '../documents/AttachMenu'
 import { useMeetingDocuments } from '../documents/useMeetingDocuments'
@@ -316,6 +316,7 @@ function AgendaRow({
   onComplete: () => void
   children: ReactNode
 }) {
+  const documentPath = useDocumentPath()
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
     disabled: !sortable || locked,
@@ -436,7 +437,7 @@ function AgendaRow({
                   {item.documents.map((doc) => (
                     <li key={doc.id}>
                       <Link
-                        to={`${routes.meetingDocument(meetingId, doc.id)}${room ? '?from=room' : ''}`}
+                        to={`${documentPath(meetingId, doc.id)}${room ? '?from=room' : ''}`}
                         {...(room && { target: '_blank', rel: 'noopener' })}
                       >
                         <Icon name="fileText" size={16} />

@@ -16,7 +16,9 @@ public sealed class CallRoomServiceTests
     private readonly Guid _chair = Guid.CreateVersion7();
     private readonly Guid _member = Guid.CreateVersion7();
 
-    private CallRoomService Service => new(_calls, _liveKit, Options.Create(_options), NullLogger<CallRoomService>.Instance);
+    private readonly Users.FakeAuditService _audit = new();
+
+    private CallRoomService Service => new(_calls, _liveKit, Options.Create(_options), _audit, NullLogger<CallRoomService>.Instance);
 
     private string Room => CallRoomNames.ForMeeting(_meetingId);
 
@@ -51,7 +53,7 @@ public sealed class CallRoomServiceTests
         Assert.Equal(CallOutcome.Success, result.Outcome);
         var ticket = _liveKit.LastTicket!.Value;
         Assert.Equal(Room, ticket.Room);
-        Assert.Equal(_chair, ticket.UserId);
+        Assert.Equal(_chair.ToString("D"), ticket.Identity);
         Assert.Equal("Chair", JsonDocument.Parse(ticket.Metadata).RootElement.GetProperty("meetingRole").GetString());
         Assert.Equal(TimeSpan.FromMinutes(10), ticket.Ttl);
     }
@@ -103,10 +105,10 @@ public sealed class CallRoomServiceTests
         _calls.Invite(_meetingId, _chair, MeetingRole.Chair).Invite(_meetingId, _member);
         _liveKit.Join(Room, _member, new RoomTrack("TR_mic", CallTrackSource.Microphone, Muted: false));
 
-        Assert.Equal(CallOutcome.NotChair, await Service.MuteAsync(_meetingId, _member, _chair));
+        Assert.Equal(CallOutcome.NotChair, await Service.MuteAsync(_meetingId, _member, CallMember.User(_chair)));
         Assert.Empty(_liveKit.Muted);
 
-        Assert.Equal(CallOutcome.Success, await Service.MuteAsync(_meetingId, _chair, _member));
+        Assert.Equal(CallOutcome.Success, await Service.MuteAsync(_meetingId, _chair, CallMember.User(_member)));
         Assert.Equal((Room, _member.ToString("D"), "TR_mic"), Assert.Single(_liveKit.Muted));
     }
 
@@ -114,14 +116,14 @@ public sealed class CallRoomServiceTests
     public async Task Muting_someone_absent_or_already_muted()
     {
         _calls.Invite(_meetingId, _chair, MeetingRole.Chair);
-        Assert.Equal(CallOutcome.TargetNotInRoom, await Service.MuteAsync(_meetingId, _chair, _member));
+        Assert.Equal(CallOutcome.TargetNotInRoom, await Service.MuteAsync(_meetingId, _chair, CallMember.User(_member)));
 
         _liveKit.Join(Room, _member, new RoomTrack("TR_mic", CallTrackSource.Microphone, Muted: true));
-        Assert.Equal(CallOutcome.Success, await Service.MuteAsync(_meetingId, _chair, _member));
+        Assert.Equal(CallOutcome.Success, await Service.MuteAsync(_meetingId, _chair, CallMember.User(_member)));
         Assert.Empty(_liveKit.Muted);
 
         _liveKit.Unavailable = new LiveKitUnavailableException("down");
-        Assert.Equal(CallOutcome.ProviderFailed, await Service.MuteAsync(_meetingId, _chair, _member));
+        Assert.Equal(CallOutcome.ProviderFailed, await Service.MuteAsync(_meetingId, _chair, CallMember.User(_member)));
     }
 
     [Fact]

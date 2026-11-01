@@ -13,7 +13,7 @@ CLI / PNG phình to):
 python scripts/txt_to_sequence_drawio_png.py docs/06-sequencediagram/<feature>/UC….txt
 ```
 
-Scale tự chọn ≤ 2 để ảnh không cắt (~2900 px mỗi chiều). Thêm `--no-splice` nếu chỉ muốn PNG, không
+Scale tự chọn ≤ 2 sao cho ảnh không quá khoảng 28 triệu pixel (draw.io CLI 32.6.1 cắt phần dưới ảnh lớn hơn). Thêm `--no-splice` nếu chỉ muốn PNG, không
 ghi vào file draw.io gộp. `--scale 0.5` để ép scale.
 
 ## Đồng bộ toàn bộ từ file gộp (cũ, chậm hơn)
@@ -61,3 +61,12 @@ vì scale 2 bị cắt nửa dưới, như UC-32c.
 **27/10/2026 (FE-07):** dựng lại tab UC-32a, UC-32c, UC-33a (tải lên) và thêm 13 tab UC-33a (thư viện), UC-33b, UC-33c, UC-33d, UC-34, UC-36, UC-71a/b/c, UC-72a/b/c/d từ các `.txt` trong `document-management/`; xuất lại 16 ảnh. Cả 16 ảnh xuất ở scale 2 bằng draw.io 32.6.1 (bản 29.6.1 không vẽ biểu tượng actor/boundary/control/database).
 
 **28/10/2026 (BA Final Review FE-07):** dựng lại 9 tab as-built đã đổi MSG/Controller (UC-33a×2, UC-33b–d, UC-35, UC-71b, UC-72a/b) bằng `scripts/txt_to_sequence_drawio_png.py` (style agenda: actor/boundary/control/database, title UC, message 13px). Scale tự chọn — UC-33b ~0.4 vì ~177 message / 35 nhánh `else`.
+
+**30/10/2026 (BA Final Review FE-09/FE-10):** thêm 24 tab (UC-43a → UC-46d, UC-80, UC-81a → UC-81f, UC-39a ghi lời theo micro) và
+dựng lại tab UC-39a Manage Microphone. Sửa `txt_to_sequence_drawio_png.py` cho tab dựng từ `.txt` giống tab biểu quyết / agenda:
+nhãn Mermaid không bọc dấu nháy (trước đó dấu nháy hiện thành chữ), khi chèn tiêu đề chỉ dời cell cấp trên cùng và điểm của edge
+(trước đó activation và guard bị dời lệch 50 px, mũi tên gọi / trả về chồng nhau, guard trôi giữa khung), khung `alt`/`opt` viền
+mảnh, guard 13px căn trái, nhãn self-message 13px, và scale chọn theo diện tích ảnh (ảnh 3600–7000 px thay vì ≤ 2900 px). Các tab
+FE-07 / FE-08 dựng trước bằng bản script cũ vẫn còn dấu nháy; chạy lại script cho `.txt` tương ứng nếu muốn đồng bộ. Ảnh tab biểu
+quyết, agenda… xuất bằng draw.io 29.6.1 nên không có biểu tượng actor / boundary / control (lỗi đã ghi ở mục 27/10); ảnh mới xuất
+bằng 32.6.1 nên có biểu tượng, cùng style lifeline trong file gộp.
