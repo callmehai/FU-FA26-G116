@@ -178,7 +178,23 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 | `MSG378` | 404 | Phiên Khách không còn hiệu lực | Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email. |
 | `MSG379` | 429 | Đã gửi đủ 20 mã cho lời mời trong 24 giờ | Bạn đã yêu cầu quá số mã cho phép trong 24 giờ. Vui lòng thử lại sau hoặc liên hệ Thư ký cuộc họp. |
 
-## 8. Ngoài phạm vi
+## 8. Màn hình FE (SCRUM-121, SCRUM-123)
+
+- Link mời mở `/guest/{invitationId}#token=…` (màn 1.3), ngoài phiên nội bộ và sidebar (BR-156). FE đọc `token` trong
+  fragment rồi xoá khỏi thanh địa chỉ. Mở màn là gửi mã (`…/code`); `429/MSG373` lúc mở trang nghĩa là mã vừa gửi vẫn
+  dùng được, chỉ đếm ngược "Gửi lại mã" theo `retryAfterSeconds`.
+- Token Khách và link token lưu trong `localStorage` (`trustcabinet.guest`, theo `invitationId`), tách khỏi phiên nội bộ.
+  Còn phiên thì mở lại link vào thẳng cuộc họp (ALT-1). Khi trang Khách đang mở, mọi request và hub của tab dùng token
+  Khách, không dùng phiên nội bộ dù trình duyệt đang đăng nhập.
+- Sau xác minh: form tên hiển thị / chức vụ (bước 5), rồi trang cuộc họp `/guest/{invitationId}` với các tab Nội dung,
+  Tài liệu, Biểu quyết, Thành phần tham dự và câu hỏi "Bạn có tham dự cuộc họp này?" (UC-29). Tài liệu mở ở
+  `/guest/{invitationId}/documents/{meetingDocumentId}`; Khách không có góp ý.
+- Trang kiểm lại `GET /session` mỗi 20 giây, khi tab được focus và sau mọi `404` của panel. `404` thì bỏ toàn bộ dữ liệu
+  cuộc họp khỏi màn hình rồi mở lại lời mời: còn mở được thì xin mã mới (kèm `MSG378`), không thì hiện "Cuộc họp đã kết
+  thúc hoặc lời mời đã bị thu hồi" (BE không cho biết lý do cụ thể, EX-1).
+- Kết quả kiểm thử: [16-truy-cap-khach-uc04-ket-qua-kiem-thu.md](16-truy-cap-khach-uc04-ket-qua-kiem-thu.md).
+
+## 9. Ngoài phạm vi
 
 - Thư ký thu hồi từng phiên riêng lẻ của Khách: chưa có màn hình; thu hồi lời mời đã cắt mọi phiên.
 - Góp ý, phòng họp trực tuyến cho Khách: ticket của từng feature dùng lại phiên này. Đọc và tải tài liệu cuộc họp
