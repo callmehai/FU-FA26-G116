@@ -198,7 +198,8 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 ## 9. Ngoài phạm vi
 
 - Thư ký thu hồi từng phiên riêng lẻ của Khách: chưa có màn hình; thu hồi lời mời đã cắt mọi phiên.
-- Góp ý, phòng họp trực tuyến cho Khách: ticket của từng feature dùng lại phiên này. Đọc và tải tài liệu cuộc họp
+- Góp ý cho Khách: ticket riêng dùng lại phiên này. Phòng họp trực tuyến cho Khách: SCRUM-59
+  ([contract phòng họp](09-phong-hop-truc-tuyen.md#khách-scrum-59)). Đọc và tải tài liệu cuộc họp
   đã mở cho Khách ở SCRUM-123 ([contract tài liệu](11-tai-lieu-cuoc-hop.md#khách-đọc-tài-liệu-scrum-123)); biểu quyết
   của Khách theo [contract biểu quyết](15-bieu-quyet.md).
 - Khoá tên hiển thị sau lần khai đầu: tạm chưa làm (31/10/2026); Khách khai lại thì ghi đè (§4.2).

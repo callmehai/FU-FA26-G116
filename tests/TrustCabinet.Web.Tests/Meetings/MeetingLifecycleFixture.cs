@@ -163,8 +163,8 @@ public sealed class MeetingLifecycleFixture : IAsyncLifetime
     internal sealed class Gateway(MeetingLifecycleFixture fixture) : ILiveKitGateway
     {
         public bool IsConfigured => fixture.ProviderConfigured;
-        public CallJoinTicket CreateJoinTicket(string room, Guid user, string name, string metadata, TimeSpan ttl)
-            => new("ws://test", "test-token", room, user.ToString(), DateTimeOffset.UtcNow.Add(ttl));
+        public CallJoinTicket CreateJoinTicket(string room, string identity, string name, string metadata, TimeSpan ttl)
+            => new("ws://test", "test-token", room, identity, DateTimeOffset.UtcNow.Add(ttl));
         public Task<IReadOnlyList<RoomParticipant>> ListParticipantsAsync(string room, CancellationToken ct)
             => Task.FromResult<IReadOnlyList<RoomParticipant>>([]);
         public Task<IReadOnlyList<string>> ListRoomNamesAsync(CancellationToken ct)

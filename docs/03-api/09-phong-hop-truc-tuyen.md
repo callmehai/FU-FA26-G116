@@ -1,4 +1,4 @@
-# SCRUM-39 · SCRUM-41 · SCRUM-42 · SCRUM-43 · Phòng họp trực tuyến
+# SCRUM-39 · SCRUM-41 · SCRUM-42 · SCRUM-43 · SCRUM-59 · Phòng họp trực tuyến
 
 Phòng họp chạy trên LiveKit tự host ([ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md)).
 Âm thanh, hình và signalling (SDP/ICE) đi thẳng giữa trình duyệt và LiveKit. Backend chỉ quyết
@@ -21,21 +21,45 @@ Tất cả điều kiện sau phải đúng:
 
 Người tạo hay người duyệt cuộc họp mà **không** có tên trong thành phần tham dự thì không vào được.
 
-**Guest chưa vào được phòng.** Cả ba endpoint gắn `RequireActiveUser` và `FindRoomAccessAsync` chỉ
-so `meeting_participants.UserId`, trong khi xác thực Guest (SCRUM-25) chưa cài — Guest mở phòng nhận
-`404` như cuộc họp không tồn tại. Yêu cầu Guest vào phòng (ADR-0016, UC-37 AF-2) vẫn giữ trong đặc
-tả; việc còn lại của BE ghi ở [note rà soát FE-08](../notes/NOTE-phong-hop-truc-tuyen-25-10-2026.md).
+### Khách (SCRUM-59)
 
-Tên phòng LiveKit là `meeting-{meetingId}`, danh tính (`identity`) là `userId`, cả hai do server
-đặt. `metadata` của người trong phòng là `{"meetingRole":"Chair"|"Secretary"|"Member"|"Guest"}` —
-FE đọc để hiện huy hiệu chủ toạ.
+Khách gọi `GET …/call` và `POST …/call/join` bằng **token Khách** của UC-04
+([16-truy-cap-khach-uc04.md](16-truy-cap-khach-uc04.md)), cùng đường dẫn với thành viên. Khách vào được khi:
+
+- phiên Khách còn hiệu lực (chưa đăng xuất, chưa hết hạn), lời mời chưa bị thu hồi, đúng cuộc họp của token;
+- đã khai tên hiển thị (UC-04 bước 5);
+- cuộc họp `InProgress`, hình thức `Online`/`Hybrid` — như thành viên (UC-37). Khi cuộc họp `Published`,
+  `GET …/call` trả `NotStarted`; khi `Ended`/`Cancelled` Khách mất toàn bộ quyền với cuộc họp nên nhận `404`;
+- **xác nhận đã đọc thông báo ghi âm**: body `{ "recordingNoticeAcknowledged": true }`, thiếu thì `400 MSG380`.
+  Thành viên không cần gửi body.
+
+Mỗi lần cấp token cho Khách ghi một dòng `audit_log` `call.guest_admitted` (`object_type = GuestSession`,
+`object_id` = phiên, `actor_id` rỗng, `ip_address` của Khách, `details` gồm `meetingId`, `invitationId`, tên tự
+khai, `recordingNoticeAcknowledged: true`) — đây là bằng chứng Khách đã thấy và xác nhận thông báo ghi âm, ghi
+**trước** khi có token. Không ghi được thì không cấp token (`500 MSG118`).
+
+Khách có quyền trong phòng như thành viên (ADR-0016): micro, camera, chia sẻ màn hình, chat, xem ai đang trong
+phòng. Không tắt mic người khác: `POST …/mute` bằng token Khách trả `403`. Khách **không** được ghi vào
+`meeting_participants`, không có vai trò chủ toạ/thư ký và không tính vào điều kiện nào của cuộc họp.
+
+Thu hồi lời mời Khách (`DELETE …/guest-invitations/{id}`) hoặc gỡ thành viên đối soát ngay phòng của cuộc họp đó
+(`IMeetingParticipantAccessPublisher`): người không còn quyền bị đưa ra khỏi phòng, không chờ job 30 giây. Phiên
+hết hạn hay Khách đăng xuất thì job đối soát đưa ra trong tối đa 30 giây.
+
+### Danh tính trong LiveKit
+
+Tên phòng LiveKit là `meeting-{meetingId}`. Danh tính (`identity`) là `userId` với thành viên và
+`guest-{guestSessionId}` với Khách — cả hai do server đặt, nên danh tính Khách không bao giờ đọc ra một `userId`.
+Mỗi phiên Khách một kết nối (như BR-328): mở cùng phiên ở tab khác thì tab cũ bị ngắt; hai thiết bị đã xác minh
+riêng là hai phiên, hai kết nối. Tên hiển thị của Khách là tên **tự khai**. `metadata` của người trong phòng là
+`{"meetingRole":"Chair"|"Secretary"|"Member"|"Guest"}` — FE đọc để hiện huy hiệu chủ toạ, và nhãn Khách (tên tự khai).
 
 ## REST API
 
 | Method | Path | Kết quả |
 |---|---|---|
-| `GET` | `/api/meetings/{id}/call` | `200 { meetingId, status, myRole, available, participantCount }` |
-| `POST` | `/api/meetings/{id}/call/join` | `200 { serverUrl, token, roomName, identity, expiresAt }` |
+| `GET` | `/api/meetings/{id}/call` | `200 { meetingId, status, myRole, available, participantCount }` — thành viên hoặc Khách |
+| `POST` | `/api/meetings/{id}/call/join` | `200 { serverUrl, token, roomName, identity, expiresAt }` — thành viên hoặc Khách; Khách gửi `{ "recordingNoticeAcknowledged": true }` |
 | `POST` | `/api/meetings/{id}/call/participants/{userId}/mute` | `204` |
 | `POST` | `/api/livekit/webhook` | Chỉ LiveKit gọi, xác thực bằng chữ ký |
 
@@ -44,7 +68,7 @@ Chi tiết từng trường của `GET …/call`:
 - **`status`**: `Open`, `NotStarted`, `Ended`, `Cancelled` hoặc `InPersonOnly`. Tính từ trạng thái và
   hình thức cuộc họp; `InPersonOnly` xét trước. `Cancelled` là cuộc họp đã huỷ (SCRUM-99), màn chờ báo `MSG350`;
   như quyền xem cuộc họp, chỉ cuộc họp bị huỷ **sau khi công bố** mới trả `Cancelled`, huỷ trước đó vẫn là `404`.
-- **`myRole`**: vai trò của người gọi trong cuộc họp.
+- **`myRole`**: vai trò của người gọi trong cuộc họp; Khách là `Guest`.
 - **`available`**: `false` khi máy chủ chưa cấu hình LiveKit.
 - **`participantCount`**: số người đang trong phòng. `null` khi phòng chưa mở hoặc không hỏi được
   LiveKit — trường hợp này không làm hỏng cả response.
@@ -64,13 +88,14 @@ Tắt mic chỉ **tắt**, không bao giờ bật hộ. Người đã tắt sẵ
 | Endpoint | HTTP | Mã | Khi nào |
 |---|---|---|---|
 | mọi endpoint (trừ webhook) | `401` | — | Chưa đăng nhập |
-| mọi endpoint (trừ webhook) | `403` | — | Tài khoản bị vô hiệu hoá |
-| mọi endpoint (trừ webhook) | `404` | — | Cuộc họp không tồn tại, hoặc người gọi không được vào phòng — không phân biệt, để không lộ cuộc họp |
+| mọi endpoint (trừ webhook) | `403` | — | Tài khoản bị vô hiệu hoá; `POST …/mute` bằng token Khách |
+| mọi endpoint (trừ webhook) | `404` | — | Cuộc họp không tồn tại, hoặc người gọi không được vào phòng — không phân biệt, để không lộ cuộc họp. Với Khách: token của cuộc họp khác, phiên/lời mời hết hiệu lực, chưa khai tên, cuộc họp đã kết thúc hoặc huỷ |
 | `GET …/call` | `500` | `MSG283` | Lỗi database |
 | `POST …/join` | `409` | `MSG280` | Cuộc họp `InPerson` |
 | `POST …/join` | `409` | `MSG117` | Cuộc họp không `InProgress` |
 | `POST …/join` | `503` | `MSG281` | Chưa cấu hình LiveKit |
-| `POST …/join` | `500` | `MSG118` | Lỗi database |
+| `POST …/join` | `400` | `MSG380` | Khách chưa xác nhận thông báo ghi âm |
+| `POST …/join` | `500` | `MSG118` | Lỗi database, hoặc không ghi được bằng chứng xác nhận ghi âm của Khách |
 | `POST …/mute` | `403` | `MSG123` | Người gọi được mời nhưng không phải chủ toạ |
 | `POST …/mute` | `409` | `MSG117` | Phòng không mở |
 | `POST …/mute` | `409` | `MSG282` | Người bị tắt không còn trong phòng, hoặc không có micro |
@@ -123,18 +148,19 @@ Chữ ký sai hoặc hết hạn → `401`. Chưa cấu hình → `503`. Lỗi d
 
 | Sự kiện | Xử lý |
 |---|---|
-| `participant_joined` | Tạo `call_sessions` `Active` nếu phòng chưa có, mở một dòng `call_participants` (lặp lại không tạo trùng) |
+| `participant_joined` | Tạo `call_sessions` `Active` nếu phòng chưa có, mở một dòng `call_participants` (lặp lại không tạo trùng). Khách mở phòng thì `started_by_id` rỗng. Khách vào bằng token cũ sau khi đã mất quyền thì vẫn ghi lượt vào, rồi bị đưa ra ngay |
 | `participant_left`, `participant_connection_aborted` | Đặt `left_at` cho dòng đang mở |
 | `room_finished` | Phiên `Ended`, đóng mọi dòng đang mở |
 | `track_published` nguồn `SCREEN_SHARE` | Tắt phần chia sẻ màn hình của **người khác** trong phòng — mỗi lúc một người trình bày |
 
-Tên phòng không phải `meeting-…` hoặc danh tính không phải `userId` thì bỏ qua.
+Tên phòng không phải `meeting-…` hoặc danh tính không phải `userId`/`guest-{guestSessionId}` thì bỏ qua.
 
 Webhook **không đảm bảo tới nơi**. Job `CallRoomJanitor` chạy mỗi 30 giây và:
 
 - đóng phòng của cuộc họp đã rời `InProgress` (mọi người nhận "phòng đã đóng");
 - đưa ra khỏi phòng người không còn được vào — tài khoản bị vô hiệu hoá, bị gỡ khỏi thành phần
-  tham dự. Tắt được bằng `LiveKit:EnforceRoster = false`, chỉ dùng khi load test;
+  tham dự; Khách có phiên hết hạn, đã đăng xuất hoặc lời mời bị thu hồi. Tắt được bằng
+  `LiveKit:EnforceRoster = false`, chỉ dùng khi load test;
 - bù các lượt vào/ra có webhook bị mất.
 
 Mỗi cuộc họp chỉ có **một** phiên `Active`: index duy nhất có điều kiện
@@ -145,6 +171,10 @@ Mỗi cuộc họp chỉ có **một** phiên `Active`: index duy nhất có đi
 Chỉ lưu ai vào/ra phòng và lúc nào. Không lưu âm thanh, hình, chat; không ghi âm phía server
 (Report 1 LI-01).
 
+Lượt vào/ra của Khách nằm trong `call_participants` với `guest_session_id` (không có `user_id`); tên, email đi qua
+phiên → lời mời, IP và bằng chứng thông báo ghi âm nằm ở dòng audit `call.guest_admitted`. Lượt của Khách xoá theo
+phiên (`ON DELETE CASCADE`), tức theo lời mời; audit giữ theo chính sách lưu giữ audit như với người dùng nội bộ.
+
 ## Hợp đồng tích hợp FE
 
 - Types: `frontend/src/types/call.ts`. API: `frontend/src/api/calls.ts`. UI:
@@ -154,7 +184,10 @@ Chỉ lưu ai vào/ra phòng và lúc nào. Không lưu âm thanh, hình, chat; 
 - `404` từ `GET …/call` → hiện `NotFound` như cuộc họp không tồn tại.
 - Mã `MSG328`–`MSG343`, `MSG350` chỉ có ở FE; đừng chờ backend trả chúng, và đừng
   thêm nhánh `isApiError` cho chúng.
-- Guest chưa được hỗ trợ ở cả ba endpoint (xem đầu tài liệu); đừng mở nút vào phòng cho Guest.
+- Khách (SCRUM-59): trang Khách gọi `GET …/call` và `POST …/call/join` bằng token Khách. Màn chờ của Khách phải
+  hiện thông báo ghi âm (mục đích, thời hạn lưu) và chỉ gửi `recordingNoticeAcknowledged: true` khi Khách bấm xác
+  nhận; `400 MSG380` nghĩa là chưa gửi. Không có nút tắt mic người khác cho Khách. `404` → coi như phiên/lời mời
+  đã hết hiệu lực, cùng xử lý với các tab khác của trang Khách.
 
 SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát cùng dùng `ParticipantRules.ActiveExpression`. Gỡ rồi mời lại chỉ xét assignment Current mới; dòng lịch sử không tạo quyền hoặc làm truy vấn trả nhiều dòng.
 

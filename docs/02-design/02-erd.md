@@ -64,7 +64,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | EmailMessage | Bản ghi gửi email/outbox | IMPLEMENTED | Giữ khóa chống trùng và thông tin thử gửi lại; id thư phía Resend và kết quả giao thư từ webhook ([ADR-0031](../05-decisions/0031-gui-email-qua-resend.md)). |
 | AuditLogEntry | Bằng chứng kiểm toán nghiệp vụ | IMPLEMENTED | Chỉ ghi thêm. |
 | CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting. |
-| CallParticipant | Một lượt kết nối của User hoặc khách | NEED MIGRATION / RESTRUCTURE | UserId XOR GuestInvitationId. |
+| CallParticipant | Một lượt kết nối của User hoặc khách | DONE (SCRUM-59) | UserId XOR GuestSessionId (`ck_call_participants_one_member`). |
 
 `MeetingSession` (bảng `meeting_sessions`) **đã bị bỏ** từ 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Migration `MeetingOwnsScheduleDropSessions` chép lịch về `meetings` rồi drop bảng; migration cũ trên `main` giữ nguyên.
 
@@ -483,7 +483,7 @@ erDiagram
     CallSession ||--o{ CallParticipant : "connecting through"
     User o|--o{ CallSession : "initiating"
     Recording o|--o{ CallSession : "recording"
-    MeetingGuestInvitation o|--o{ CallParticipant : "connecting as guest"
+    GuestSession o|--o{ CallParticipant : "connecting as guest"
     User o|--o{ CallParticipant : "connecting as user"
 
     CallSession {
@@ -500,14 +500,14 @@ erDiagram
         uuid Id PK
         uuid CallSessionId FK
         uuid UserId FK "nullable"
-        uuid GuestInvitationId FK "nullable"
+        uuid GuestSessionId FK "nullable"
         timestamptz JoinedAt
         timestamptz LeftAt
         bool Declined
     }
 ```
 
-Chỉ lưu **sự kiện cuộc gọi**, không lưu media. Mỗi CallParticipant phải tham chiếu đúng một identity: User XOR MeetingGuestInvitation. Rớt mạng vào lại sinh một dòng mới cho connection stint tiếp theo. Mỗi Meeting có tối đa một MeetingRoom CallSession Active.
+Chỉ lưu **sự kiện cuộc gọi**, không lưu media. Mỗi CallParticipant phải tham chiếu đúng một identity: User XOR GuestSession (SCRUM-59; phiên dẫn tới lời mời, nên vẫn biết lượt đó của Khách nào, và biết thiết bị/phiên nào khi một lời mời có nhiều phiên). Lượt của Khách xoá theo phiên. `CallSession.StartedById` rỗng khi Khách vào phòng đầu tiên. Rớt mạng vào lại sinh một dòng mới cho connection stint tiếp theo. Mỗi Meeting có tối đa một MeetingRoom CallSession Active.
 
 Từ [ADR-0010](../05-decisions/0010-phong-hop-truc-tuyen-dung-livekit-sfu.md), âm thanh, hình và
 signalling đi qua LiveKit (SFU), không phải trực tiếp giữa các trình duyệt, và backend không làm tín
@@ -639,7 +639,7 @@ erDiagram
 | Meeting | 0..1 → 0..* | CallSession | Cung cấp phòng |
 | CallSession | 1 → 0..* | CallParticipant | Kết nối qua |
 | User | 0..1 → 0..* | CallParticipant | Kết nối với tư cách nội bộ |
-| MeetingGuestInvitation | 0..1 → 0..* | CallParticipant | Kết nối với tư cách khách ngoài |
+| GuestSession | 0..1 → 0..* | CallParticipant | Kết nối với tư cách khách ngoài |
 
 ## Quy tắc nghiệp vụ và ràng buộc dữ liệu không thể hiện trên ERD
 

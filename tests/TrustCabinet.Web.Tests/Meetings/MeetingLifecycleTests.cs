@@ -256,7 +256,7 @@ public sealed partial class MeetingLifecycleTests(MeetingLifecycleFixture fixtur
         {
             var repo = scope.ServiceProvider.GetRequiredService<ICallRepository>();
             var session = await repo.EnsureActiveRoomSessionAsync(s.MeetingId, s.Chair, fixture.Clock.Now.AddMinutes(-10));
-            await repo.RecordJoinAsync(session.Id, s.Chair, fixture.Clock.Now.AddMinutes(-9));
+            await repo.RecordJoinAsync(session.Id, CallMember.User(s.Chair), fixture.Clock.Now.AddMinutes(-9));
         }
         try
         {
