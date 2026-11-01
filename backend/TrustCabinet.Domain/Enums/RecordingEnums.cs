@@ -24,6 +24,15 @@ public enum RecordingStatus
     Deleted,
 }
 
+/// <summary>Why a recording was erased: kept on the row as evidence of how an erasure was honoured (Luật 91/2025).</summary>
+public enum RecordingDeletion
+{
+    /// <summary>A Secretary erased it.</summary>
+    Erased,
+    /// <summary>Its retention date ran out.</summary>
+    Expired,
+}
+
 /// <summary>Speech-to-text runs in the background, so its state is visible (SCRUM-31).</summary>
 public enum TranscriptStatus
 {

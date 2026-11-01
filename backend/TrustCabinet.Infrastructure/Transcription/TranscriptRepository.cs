@@ -43,6 +43,14 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
         => db.TranscriptSegments.Where(s => s.TranscriptId == transcriptId).ExecuteDeleteAsync(ct);
 
+    public async Task<(int LastPosition, int NextVoice)> CountLinesAsync(Guid transcriptId, CancellationToken ct)
+    {
+        var last = await db.TranscriptSegments.Where(s => s.TranscriptId == transcriptId)
+            .MaxAsync(s => (int?)s.Position, ct) ?? 0;
+        var labels = await db.TranscriptSpeakers.Where(s => s.TranscriptId == transcriptId).Select(s => s.Label).ToListAsync(ct);
+        return (last, labels.Select(TranscriptRules.VoiceNumber).Max() is { } n ? n + 1 : 0);
+    }
+
     public void Add(Transcript transcript) => db.Transcripts.Add(transcript);
 
     public Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct)
@@ -53,4 +61,20 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public void AddSegments(IEnumerable<TranscriptSegment> segments) => db.TranscriptSegments.AddRange(segments);
 
     public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
+}
+
+/// <summary>
+/// One take is transcribed whole already; two or more were added take by take while the meeting ran. A run still busy on
+/// the latest takes throws its result away (its <c>AppendFromMs</c> no longer matches).
+/// </summary>
+public sealed class RoomTranscriptMeetingEnd(TrustCabinetDbContext db) : IRoomTranscriptMeetingEnd
+{
+    public Task<int> RedoAsync(Guid meetingId, DateTimeOffset endedAt, CancellationToken ct = default)
+        => db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE transcripts t SET status = 'Pending', append_from_ms = NULL, progress_percent = 0, error_message = '',
+                updated_at = {endedAt}
+            FROM recordings r
+            WHERE t.recording_id = r.id AND r.meeting_id = {meetingId} AND r.status = 'Available'
+                AND r.takes IS NOT NULL AND jsonb_array_length(r.takes) > 1
+            """, ct);
 }

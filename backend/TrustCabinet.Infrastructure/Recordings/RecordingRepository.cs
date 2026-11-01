@@ -8,7 +8,7 @@ namespace TrustCabinet.Infrastructure.Recordings;
 public sealed class RecordingRepository(TrustCabinetDbContext db) : IRecordingRepository
 {
     public async Task<IReadOnlyList<Recording>> ListAsync(Guid meetingId, CancellationToken ct)
-        => await db.Recordings.AsNoTracking().Include(r => r.CreatedBy).Include(r => r.Transcript)
+        => await db.Recordings.AsNoTracking().Include(r => r.CreatedBy).Include(r => r.DeletedBy).Include(r => r.Transcript)
             .Where(r => r.MeetingId == meetingId)
             .OrderByDescending(r => r.CreatedAt).ThenByDescending(r => r.Id).ToListAsync(ct);
 

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Domain.Transcription;
 
@@ -101,6 +102,15 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         }
     }
 
+    /// <summary>The Chair ends the meeting, as from the meeting screen.</summary>
+    private async Task End(RecordingFixture.Scenario s)
+    {
+        using var scope = fixture.Host.Services.CreateScope();
+        var ended = await scope.ServiceProvider.GetRequiredService<IMeetingLifecycleService>()
+            .TransitionAsync(s.MeetingId, new MeetingTransitionCommand(MeetingTransitionAction.End), s.Chair);
+        Assert.True(ended.Succeeded);
+    }
+
     private async Task<byte[]> StoredBytes(Guid recordingId)
     {
         await using var db = fixture.Db();
@@ -161,10 +171,14 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
     }
 
     [Fact]
-    public async Task A_later_take_is_appended_to_the_room_recording_and_the_whole_is_transcribed_again()
+    public async Task A_later_take_is_appended_to_the_room_recording_and_only_it_is_transcribed_until_the_meeting_ends()
     {
         var s = await fixture.Seed(mode: MeetingMode.InPerson);
         fixture.Speech.Failure = null;
+        // Two voices, one line each, in every run.
+        fixture.Speech.Result = new(249, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(0, 100, "SPEAKER_00", "Một."), new(120, 240, "SPEAKER_01", "Hai.")],
+            [new("SPEAKER_00", 100, []), new("SPEAKER_01", 120, [])]);
         using var secretary = fixture.Client(s.Secretary);
         var first = Tape(2 * Part + 12, 1);
         var room = (await Record(secretary, await Open(secretary, s), first)).GetProperty("recordingId").GetGuid();
@@ -192,13 +206,77 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         var stored = await StoredBytes(room);
         Assert.Equal(merged[44..], stored[44..]);
         Assert.Equal((uint)merged.Length - 44, BinaryPrimitives.ReadUInt32LittleEndian(stored.AsSpan(40)));
+        // ADR-0044: the meeting runs, so only the new take is transcribed, and its lines and voices follow the first's.
+        await ProcessAll();
+        Assert.Equal(second[44..], fixture.Speech.LastAudio![44..]);
+        Assert.Equal((uint)second.Length - 44, BinaryPrimitives.ReadUInt32LittleEndian(fixture.Speech.LastAudio.AsSpan(40)));
+        var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
+        Assert.Equal("Completed", transcript.GetProperty("status").GetString());
+        Assert.True(transcript.GetProperty("provisional").GetBoolean());
+        Assert.False(transcript.GetProperty("canEdit").GetBoolean());
+        var lines = transcript.GetProperty("segments").EnumerateArray().ToArray();
+        Assert.Equal([1, 2, 3, 4], lines.Select(l => l.GetProperty("position").GetInt32()));
+        Assert.Equal(["SPEAKER_00", "SPEAKER_01", "SPEAKER_02", "SPEAKER_03"],
+            lines.Select(l => l.GetProperty("speakerLabel").GetString()));
+        Assert.Equal(takes[1].GetProperty("offsetMs").GetInt64(), lines[2].GetProperty("startMs").GetInt64());
+        Assert.Equal(4, transcript.GetProperty("speakers").GetArrayLength());
+
+        // Nobody corrects the first pass: it is made again once the meeting ends.
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{lines[0].GetProperty("id").GetGuid()}",
+            new { text = "Sửa giữa chừng." }), 409, "MSG382");
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{room}/speakers/SPEAKER_00", new { userId = s.Chair }),
+            409, "MSG382");
+
+        // The meeting ends: the whole file, voices told apart across both takes, and editable.
+        await End(s);
+        Assert.Equal("Pending", (await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript"))
+            .GetProperty("status").GetString());
         await ProcessAll();
         Assert.Equal(stored, fixture.Speech.LastAudio);
-        Assert.Equal("Completed", (await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript"))
-            .GetProperty("status").GetString());
+        transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
+        Assert.Equal("Completed", transcript.GetProperty("status").GetString());
+        Assert.False(transcript.GetProperty("provisional").GetBoolean());
+        Assert.True(transcript.GetProperty("canEdit").GetBoolean());
+        Assert.Equal(2, transcript.GetProperty("segments").GetArrayLength());
         // Nothing of the take is left beside the room recording.
         await using var db = fixture.Db();
         Assert.False(await db.Recordings.AnyAsync(r => r.Id == take));
+    }
+
+    [Fact]
+    public async Task Erasing_the_take_still_waiting_to_be_transcribed_leaves_the_first_pass_as_it_was()
+    {
+        var s = await fixture.Seed(mode: MeetingMode.InPerson);
+        fixture.Speech.Failure = null;
+        fixture.Speech.Result = new(249, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [new(0, 100, "SPEAKER_00", "Một.")],
+            [new("SPEAKER_00", 100, [])]);
+        using var secretary = fixture.Client(s.Secretary);
+        var room = (await Record(secretary, await Open(secretary, s), Tape(2 * Part + 12, 1))).GetProperty("recordingId").GetGuid();
+        await ProcessAll();
+        await Record(secretary, await Open(secretary, s, consent: false), Tape(Part + 460, 2));
+
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/2"), 200, "MSG366");
+        var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
+        Assert.Equal("Completed", transcript.GetProperty("status").GetString());
+        Assert.Equal("Một.", Assert.Single(transcript.GetProperty("segments").EnumerateArray()).GetProperty("text").GetString());
+    }
+
+    [Fact]
+    public async Task The_room_recording_is_not_cut_or_erased_while_the_mic_records_the_next_take()
+    {
+        var s = await fixture.Seed(mode: MeetingMode.InPerson);
+        fixture.Speech.Failure = null;
+        using var secretary = fixture.Client(s.Secretary);
+        var room = (await Record(secretary, await Open(secretary, s), Tape(Part, 1))).GetProperty("recordingId").GetGuid();
+        await Record(secretary, await Open(secretary, s, consent: false), Tape(Part, 2));
+        var open = await Open(secretary, s, consent: false);
+
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/1"), 409, "MSG381");
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}"), 409, "MSG381");
+
+        // Mic off: the take is appended, and the room recording can be cut again.
+        await AssertCode(await Complete(secretary, open), 200, "MSG365");
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/1"), 200, "MSG366");
     }
 
     [Fact]
@@ -357,6 +435,8 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         fixture.Speech.Result = new(511, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
             new(10, 200, "SPEAKER_00", "Lượt một."), new(259, 350, "SPEAKER_01", "Lượt hai."), new(397, 480, "SPEAKER_00", "Lượt ba.")],
             [new("SPEAKER_00", 273, []), new("SPEAKER_01", 91, [])]);
+        // Corrected once the meeting has ended (ADR-0044).
+        await End(s);
         await ProcessAll();
         var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
         var third = transcript.GetProperty("segments")[2].GetProperty("id").GetGuid();

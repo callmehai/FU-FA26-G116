@@ -54,6 +54,13 @@ public class Recording : Entity
     /// </summary>
     public DateTimeOffset? DeletedAt { get; set; }
 
+    /// <summary>The Secretary who erased it; null when the retention date ran out (<see cref="DeletionReason"/>).</summary>
+    public Guid? DeletedById { get; set; }
+    public User? DeletedBy { get; set; }
+
+    /// <summary>Why the bytes are gone: a Secretary's request or the end of the retention period.</summary>
+    public RecordingDeletion? DeletionReason { get; set; }
+
     /// <summary>
     /// The room mic's takes in this recording, in order: where each starts in the audio and when it was spoken, so the
     /// transcript reads on the meeting's clock. Null for an uploaded file.

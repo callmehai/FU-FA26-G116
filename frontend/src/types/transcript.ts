@@ -48,6 +48,11 @@ export interface Transcript {
   people: TranscriptPerson[]
   /** Finished, and the caller (Chair or Secretary, not a Secret meeting) may save it as text. */
   canExport: boolean
+  /**
+   * ADR-0044: the room recording of a meeting still running, transcribed take by take. Nobody edits or names it; the
+   * whole is transcribed again when the meeting ends.
+   */
+  provisional: boolean
 }
 
 export interface TranscriptMessage {

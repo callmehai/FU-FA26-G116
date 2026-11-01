@@ -69,7 +69,8 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
       "byteSize": 1048576, "durationMs": 65000, "source": "BrowserCapture",
       "status": "Available", "createdAt": "…", "createdById": "…", "createdByName": "Nguyễn Văn A",
       "consentObtainedAt": "…", "consentPurpose": "Lập biên bản cuộc họp",
-      "retainUntil": "…", "deletedAt": null, "canErase": true, "canClose": false,
+      "retainUntil": "…", "deletedAt": null, "deletedByName": null, "deletionReason": null,
+      "canErase": true, "canClose": false,
       "takes": [
         { "offsetMs": 0, "durationMs": 40000, "startedAt": "2026-10-29T02:00:00Z" },
         { "offsetMs": 40000, "durationMs": 25000, "startedAt": "2026-10-29T02:10:00Z" }
@@ -81,7 +82,9 @@ bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng ng�
 
 `status`: `Pending` | `Available` | `Deleted`. `Pending` là lượt mic phòng đang ghi: mọi người thấy, không ai nghe
 được, không xoá được (`409 MSG364`). `source`: `Upload` | `BrowserCapture` (mic phòng). Mới nhất lên đầu.
-`takes`: các lượt mic phòng trong bản ghi, `null` với tệp tải lên. `canRecord`: người gọi bật được mic phòng ngay lúc
+`takes`: các lượt mic phòng trong bản ghi, `null` với tệp tải lên. Bản đã xoá có `deletionReason`: `Erased` (Thư ký
+xoá, tên ở `deletedByName`) hoặc `Expired` (hết hạn lưu trữ, `deletedByName: null`); PO 01/11/2026, FE vẫn không hiện
+bản đã xoá (PO 29/10/2026). `canRecord`: người gọi bật được mic phòng ngay lúc
 này (Thư ký, cuộc họp `InProgress`, có phòng). `canClose`: Thư ký lưu hộ được lượt đang mở.
 `durationMs = 0` nghĩa là chưa biết (trình duyệt không gửi); gỡ băng sẽ điền giá trị thật. Bản ghi mic phòng tính độ
 dài từ số byte. Không trả đường dẫn lưu trữ.
@@ -108,7 +111,12 @@ lý do gì khiến bản ghi không được giữ (thiếu đồng ý, lỗi da
 
 Theo [ADR-0041](../05-decisions/0041-mic-phong-ghi-tung-luot.md), như AI-eCabinet. Bật mic là mở một **lượt**.
 Trong khi ghi, trình duyệt gửi tiếng lên từng phần, và giữ phần chưa gửi trong IndexedDB. Tắt mic là lưu lượt: lượt
-được nối vào bản ghi phòng của cuộc họp, rồi cả bản được chuyển chữ lại. Mỗi cuộc họp chỉ một lượt mở.
+được nối vào bản ghi phòng của cuộc họp. Mỗi cuộc họp chỉ một lượt mở.
+
+Chuyển chữ theo [ADR-0044](../05-decisions/0044-ban-go-bang-so-bo-khi-dang-hop.md) (PO 01/11/2026, khác AI-eCabinet):
+trong khi họp, mỗi lượt vừa lưu chỉ **lượt đó** được chuyển chữ và thêm vào sau các câu đã có (bản **sơ bộ**: không sửa
+chữ, không gán người nói, `409 MSG382`). Chủ toạ kết thúc họp thì **cả bản** được chuyển chữ lại, tách người nói trên
+toàn bộ cuộc họp; từ đó mới sửa và gán tên.
 
 ### `POST /api/meetings/{meetingId}/recordings/takes` — `{ "consentConfirmed": true, "consentPurpose": "…" }`
 
@@ -137,7 +145,9 @@ Tắt mic. Người mở lượt gọi, hoặc một Thư ký lưu hộ lượt 
 - Lượt đầu của cuộc họp thành bản ghi phòng.
 - Lượt sau được nối vào bản ghi phòng mới nhất, và thêm một dòng vào `takes`.
 - Bản ghi phòng đầy giới hạn thì lượt này mở bản ghi mới.
-- Bản gỡ băng của cả bản trở về `Pending`. Lần chạy đang dở trên tệp ngắn hơn bị bỏ kết quả.
+- Bản gỡ băng trở về `Pending`. Cuộc họp đang diễn ra: chỉ chuyển chữ các lượt chưa có chữ, nhãn người nói đánh số tiếp
+  (`SPEAKER_02`… sau `SPEAKER_01` của lần trước). Đã kết thúc: chuyển chữ lại cả bản. Lần chạy đang dở bị bỏ kết quả
+  và chạy lại cả phần đang chờ.
 
 `200 MSG363` `{ code, message, recordingId, appended }`. Gọi lại trên lượt đã lưu vẫn trả mã này. Lượt chưa thu
 được tiếng nào bị bỏ: `200 MSG365`, `recordingId: null`. Lỗi: `403 MSG295`, `409 MSG362`, `503 MSG298`.
@@ -153,7 +163,9 @@ Thư ký xoá lượt thứ `take` (đếm từ 1) của một bản ghi phòng 
   lượt sau dời lên đúng độ dài của nó.
 - Bản gỡ băng đã xong: câu bắt đầu trong lượt bị bỏ, câu sau dời giờ lên. Chữ đã sửa và tên đã gán của các lượt khác
   giữ nguyên. Giọng chỉ có trong lượt đó bị bỏ cùng. Không chuyển chữ lại.
-- Bản gỡ băng còn chờ hoặc đang chạy: chạy lại từ tệp ngắn hơn.
+- Bản gỡ băng còn chờ hoặc đang chạy cả bản: chạy lại từ tệp ngắn hơn. Đang chờ chỉ các lượt mới (ADR-0044): câu đã
+  có giữ nguyên, phần chờ dời theo; xoá đúng lượt đang chờ thì không còn gì phải chạy.
+- Mic phòng đang ghi lượt khác: `409 MSG381` (lượt đó sắp được nối vào chính tệp này), tắt mic rồi xoá.
 - Nhật ký kiểm toán ghi `recording.take_deleted` kèm lượt, độ dài và số câu đã bỏ.
 
 `200 MSG366` `{ code, message, recordingId }`. Bản ghi chỉ còn một lượt: `409 MSG367`, xoá cả bản ghi thay vào.
@@ -190,7 +202,9 @@ trả `Content-Disposition: attachment` với tên tệp gốc. Chữ ký của 
 
 ### `DELETE /api/recordings/{recordingId}`
 
-Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá vẫn `200 MSG296`.
+Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá vẫn `200 MSG296`. Dòng bản ghi giữ lại, ghi
+`deletedById` và `deletionReason = Erased`; job hết hạn ghi `Expired` và không có người xoá. Xoá bản ghi phòng trong lúc
+mic phòng đang ghi: `409 MSG381`.
 
 ## Cấu hình (`Recordings:*`)
 
@@ -223,6 +237,7 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
   "recordingId": "…", "status": "Completed",
   "provider": "self-hosted:gipformer-1.5-68m-int8@b528768939c7",
   "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
+  "provisional": false,
   "segments": [
     { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
       "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null }
@@ -237,6 +252,9 @@ Với bản ghi mic phòng có nhiều lượt (ADR-0041), mỗi đoạn nằm g
 đó, `startMs`/`endMs` bị cắt về ranh giới lượt. Worker đặt các đoạn nối liền nhau (đoạn sau bắt đầu đúng chỗ đoạn
 trước kết thúc), nên mốc bắt đầu có thể lùi vào lượt trước; xếp theo mốc bắt đầu thì lời của lượt này hiện dưới
 lượt trước.
+
+`provisional: true`: bản ghi mic phòng của cuộc họp còn `InProgress` (ADR-0044). Khi đó `canEdit` là `false`, và
+`PUT /api/transcript-segments/{id}`, `PUT /api/recordings/{id}/speakers/{label}` trả `409 MSG382`.
 
 ### `POST /api/recordings/{recordingId}/transcribe`
 

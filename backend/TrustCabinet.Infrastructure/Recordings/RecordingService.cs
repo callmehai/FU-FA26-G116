@@ -174,7 +174,11 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 if (recording.Status == RecordingStatus.Deleted) return new(RecordingId: recording.Id);
                 // A take still streaming is saved first (switching the mic off), then erased like any recording.
                 if (recording.Status == RecordingStatus.Pending) return new(RecordingFailure.TakeOpen);
-                path = await MarkErasedAsync(recording, actorId, "request", token);
+                // Nor is the room recording a take is about to be appended to: switch the mic off first.
+                if (recording.Takes is not null && (await recordings.ListAsync(recording.MeetingId, token))
+                        .Any(r => r is { Source: RecordingSource.BrowserCapture, Status: RecordingStatus.Pending }))
+                    return new(RecordingFailure.TakeRecording);
+                path = await MarkErasedAsync(recording, actorId, token);
                 return new RecordingOutcome(RecordingId: recording.Id);
             }, ct);
             if (path is not null)
@@ -201,7 +205,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             {
                 var recording = await recordings.FindAsync(id, true, token);
                 if (recording is { Status: not RecordingStatus.Deleted, RetainUntil: { } until } && until < clock.GetUtcNow())
-                    path = await MarkErasedAsync(recording, null, "retention", token);
+                    path = await MarkErasedAsync(recording, null, token);
                 return 0;
             }, ct);
             if (path is null) continue;
@@ -216,16 +220,20 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     /// in another form. The file itself is deleted by the caller once the transaction has committed, so a rollback
     /// never leaves a row pointing at bytes that are already gone.
     /// </summary>
-    private async Task<string> MarkErasedAsync(Recording recording, Guid? actorId, string reason, CancellationToken ct)
+    private async Task<string> MarkErasedAsync(Recording recording, Guid? actorId, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
         var path = recording.StoragePath;
+        // No actor: the retention date ran out.
+        var reason = actorId is null ? RecordingDeletion.Expired : RecordingDeletion.Erased;
         recording.Status = RecordingStatus.Deleted;
         recording.DeletedAt = now;
+        recording.DeletedById = actorId;
+        recording.DeletionReason = reason;
         recording.UpdatedAt = now;
         await recordings.DeleteTranscriptAsync(recording.Id, ct);
         await audit.RecordAsync(AuditActions.RecordingErased, AuditActions.RecordingObjectType, recording.Id, actorId,
-            new { recording.MeetingId, recording.FileName, reason }, ct);
+            new { recording.MeetingId, recording.FileName, reason = reason == RecordingDeletion.Expired ? "retention" : "request" }, ct);
         await recordings.SaveChangesAsync(ct);
         return path;
     }
@@ -268,5 +276,5 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         r.ByteSize, r.DurationMs, r.Source.ToString(), r.Status.ToString(), r.CreatedAt, r.CreatedBy.FullName,
         r.ConsentObtainedAt, r.ConsentPurpose, r.RetainUntil, r.DeletedAt, secretary && r.Status == RecordingStatus.Available,
         r.Transcript?.Status.ToString() ?? "None", export && r.Status == RecordingStatus.Available, r.CreatedById, r.Takes,
-        secretary && r.Status == RecordingStatus.Pending);
+        secretary && r.Status == RecordingStatus.Pending, r.DeletedBy?.FullName, r.DeletionReason?.ToString());
 }

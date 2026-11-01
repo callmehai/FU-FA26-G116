@@ -29,6 +29,9 @@ export interface Recording {
   consentPurpose: string
   retainUntil: string | null
   deletedAt: string | null
+  /** Who erased it: null when its retention date ran out. */
+  deletedByName: string | null
+  deletionReason: 'Erased' | 'Expired' | null
   canErase: boolean
   /** SCRUM-31 — "None" for a recording kept before speech to text existed. */
   transcriptStatus: TranscriptStatus

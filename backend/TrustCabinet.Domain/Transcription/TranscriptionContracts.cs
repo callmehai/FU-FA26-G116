@@ -35,7 +35,9 @@ public sealed class SpeechEngineException(string userMessage, Exception? inner =
 public enum TranscriptFailure
 {
     None, NotFound, Inactive, Forbidden, NotRetryable, Invalid, InvalidSpeaker, ReadFailed, SaveFailed, ExportForbidden,
-    SecretMeeting, NotReady
+    SecretMeeting, NotReady,
+    /// <summary>ADR-0044: the room transcript of a running meeting is provisional; it is corrected once the meeting ends.</summary>
+    Provisional
 }
 
 public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFailure.None, object? Data = null,
@@ -57,7 +59,7 @@ public sealed record TranscriptPerson(Guid Id, string FullName);
 public sealed record TranscriptView(Guid RecordingId, string Status, string Provider, string Language,
     string ErrorMessage, DateTimeOffset? CompletedAt, long DurationMs, bool CanEdit,
     IReadOnlyList<TranscriptSegmentView> Segments, IReadOnlyList<TranscriptSpeakerView> Speakers,
-    IReadOnlyList<TranscriptPerson> People, bool CanExport = false);
+    IReadOnlyList<TranscriptPerson> People, bool CanExport = false, bool Provisional = false);
 
 public interface ITranscriptionService
 {
@@ -86,11 +88,22 @@ public interface ITranscriptRepository
     /// <summary>Reads the transcript's own columns again, as they are once its recording's row is locked.</summary>
     Task ReloadAsync(Transcript transcript, CancellationToken ct);
     Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct);
+    /// <summary>The last line's position and the next free voice number, for lines added after these (ADR-0044).</summary>
+    Task<(int LastPosition, int NextVoice)> CountLinesAsync(Guid transcriptId, CancellationToken ct);
     void Add(Transcript transcript);
     Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct);
     void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers);
     void AddSegments(IEnumerable<TranscriptSegment> segments);
     Task SaveChangesAsync(CancellationToken ct);
+}
+
+/// <summary>
+/// ADR-0044 — when a meeting ends, the room recording its takes were added to is transcribed again as a whole. Caller owns
+/// the meeting lock and the transaction.
+/// </summary>
+public interface IRoomTranscriptMeetingEnd
+{
+    Task<int> RedoAsync(Guid meetingId, DateTimeOffset endedAt, CancellationToken ct = default);
 }
 
 public static class TranscriptRules
@@ -99,6 +112,17 @@ public static class TranscriptRules
 
     /// <summary>Gipformer, run in-house; the version pins which model wrote a given transcript.</summary>
     public static string Provider(string asrModel) => $"self-hosted:{asrModel}";
+
+    /// <summary>
+    /// "SPEAKER_01" of a run over the latest takes, numbered after the voices already there (ADR-0044): each run tells
+    /// voices apart on its own, so its SPEAKER_00 is not the earlier one. Anything else is kept as it is.
+    /// </summary>
+    public static string ShiftLabel(string label, int by)
+        => by > 0 && VoiceNumber(label) is { } n ? $"SPEAKER_{n + by:D2}" : label;
+
+    public static int? VoiceNumber(string label)
+        => label.StartsWith("SPEAKER_", StringComparison.Ordinal)
+            && int.TryParse(label.AsSpan(8), System.Globalization.NumberStyles.None, null, out var n) ? n : null;
 
     /// <summary>
     /// A segment of a room recording (ADR-0041) placed in the take that holds most of it, and cut to that take. The

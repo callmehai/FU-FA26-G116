@@ -33,7 +33,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         {
             var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, ct);
             if (recording is null || meeting is null) return new(failure);
-            var canEdit = RecordingRules.IsSecretary(meeting, actorId);
+            var provisional = Provisional(recording, meeting);
+            var canEdit = RecordingRules.IsSecretary(meeting, actorId) && !provisional;
             var canExport = RecordingRules.Export(meeting, actorId) == RecordingFailure.None;
             var transcript = await transcripts.FindByRecordingAsync(recordingId, false, ct);
             // Who the secretary may name a voice as: the meeting's own people, offered only to the secretary.
@@ -42,7 +43,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     .DistinctBy(p => p.Id).OrderBy(p => p.FullName)]
                 : [];
             if (transcript is null)
-                return new(Data: new TranscriptView(recordingId, "None", "", "vi", "", null, recording.DurationMs, canEdit, [], [], people));
+                return new(Data: new TranscriptView(recordingId, "None", "", "vi", "", null, recording.DurationMs, canEdit, [], [], people,
+                    Provisional: provisional));
             // The machine's guess at a voice is a hint for the Secretary who names it, and a guess about someone's
             // biometric identity: nobody else gets it, only the name the Secretary assigned.
             var sameAs = canEdit
@@ -56,7 +58,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
                     canEdit ? s.SuggestionScore : null, s.AssignedUserId, s.AssignedUser?.FullName,
                     sameAs.GetValueOrDefault(s.Label)))],
-                people, canExport && transcript.Status == TranscriptStatus.Completed));
+                people, canExport && transcript.Status == TranscriptStatus.Completed, provisional));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -86,6 +88,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                         await audit.RecordAsync(AuditActions.TranscriptRerun, AuditActions.RecordingObjectType, recordingId,
                             actorId, new { recording.MeetingId, previousProvider = transcript.Provider }, token);
                     transcript.Status = TranscriptStatus.Pending;
+                    transcript.AppendFromMs = null;
                     transcript.ErrorMessage = "";
                     transcript.ProgressPercent = 0;
                     transcript.UpdatedAt = now;
@@ -145,6 +148,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             var (recording, meeting, failure) = await ReadableAsync(segment.Transcript.RecordingId, actorId, ct);
             if (recording is null || meeting is null) return new(failure);
             if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
+            if (Provisional(recording, meeting)) return new(TranscriptFailure.Provisional);
             var trimmed = text?.Trim() ?? "";
             if (trimmed.Length is 0 or > TranscriptRules.MaxSegmentText)
                 return new(TranscriptFailure.Invalid, Errors: new Dictionary<string, string[]>
@@ -177,6 +181,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, ct);
             if (recording is null || meeting is null) return new(failure);
             if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
+            if (Provisional(recording, meeting)) return new(TranscriptFailure.Provisional);
             var transcript = await transcripts.FindByRecordingAsync(recordingId, true, ct);
             var speaker = transcript?.Speakers.SingleOrDefault(s => s.Label == label);
             if (speaker is null) return new(TranscriptFailure.NotFound);
@@ -210,29 +215,58 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         var transcript = await transcripts.FindForProcessingAsync(transcriptId, ct);
         if (transcript is null) return true;
         var recording = transcript.Recording;
+        // ADR-0044: only the room-mic takes added while the meeting runs, cut out of the file as a WAV of their own.
+        var from = recording.Takes is not null ? transcript.AppendFromMs : null;
+        string? slice = null;
         SpeechTranscription result;
         try
         {
             if (recording.Status != RecordingStatus.Available) throw new SpeechEngineException("Bản ghi đã bị xoá.");
-            await using var audio = storage.OpenRead(recording.StoragePath);
+            if (from is { } fromMs)
+            {
+                slice = await storage.CutAsync(recording.StoragePath, RecordingRules.WavHeaderBytes,
+                    fromMs * (RecordingRules.RoomBytesPerSecond / 1000), ct);
+                storage.SealWav(slice);
+            }
+            await using var audio = storage.OpenRead(slice ?? recording.StoragePath);
             result = await engine.TranscribeAsync(audio, recording.ContentType, diarize: true, clip: false, ct);
         }
         catch (Exception ex) when (ex is SpeechEngineException or FileNotFoundException or DirectoryNotFoundException)
         {
             var message = ex is SpeechEngineException speech ? speech.UserMessage : "Tệp âm thanh không còn trên máy chủ.";
             logger.LogWarning(ex, "Transcription of recording {RecordingId} failed: {Reason}", recording.Id, message);
-            await FinishAsync(transcriptId, null, message, ct);
+            await FinishAsync(transcriptId, null, message, from, ct);
             return true;
         }
-        await FinishAsync(transcriptId, result, null, ct);
+        finally
+        {
+            if (slice is not null) DeleteQuietly(slice);
+        }
+        await FinishAsync(transcriptId, result, null, from, ct);
         return true;
+    }
+
+    /// <summary>
+    /// ADR-0044 — the room recording of a running meeting is transcribed take by take as the mic goes off, so its lines are
+    /// a first pass: nobody corrects or names them until the meeting ends and the whole is transcribed again.
+    /// </summary>
+    private static bool Provisional(Recording recording, Meeting meeting)
+        => recording.Takes is not null && meeting.Status == MeetingStatus.InProgress;
+
+    private void DeleteQuietly(string path)
+    {
+        try { storage.Delete(path); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogError(ex, "Could not delete the audio cut out for transcription {Path}", path);
+        }
     }
 
     /// <summary>
     /// Writes the result under the recording's row lock — the same lock erasure takes — so a recording erased while
     /// the worker was busy never gets its transcript written back afterwards.
     /// </summary>
-    private async Task FinishAsync(Guid transcriptId, SpeechTranscription? result, string? error, CancellationToken ct)
+    private async Task FinishAsync(Guid transcriptId, SpeechTranscription? result, string? error, long? from, CancellationToken ct)
     {
         var meetingId = await meetings.InTransactionAsync(async token =>
         {
@@ -243,7 +277,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             // A room-mic take was appended while this ran (ADR-0041): the result is of a shorter file, and the
             // transcript already waits to be made again from the whole.
             await transcripts.ReloadAsync(current, token);
-            if (current.Status != TranscriptStatus.Processing) return null;
+            if (current.Status != TranscriptStatus.Processing || current.AppendFromMs != from) return null;
             var now = clock.GetUtcNow();
             current.UpdatedAt = now;
             if (result is null)
@@ -253,25 +287,32 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             }
             else
             {
-                await transcripts.DeleteSegmentsAsync(transcriptId, token);
+                // Adding the latest takes (ADR-0044): their lines go after the ones there, their voices numbered on.
+                var offsetMs = from ?? 0;
+                var (lastPosition, voices) = from is null ? (0, 0) : await transcripts.CountLinesAsync(transcriptId, token);
+                if (from is null)
+                {
+                    await transcripts.DeleteSegmentsAsync(transcriptId, token);
+                    await transcripts.DeleteSpeakersAsync(transcriptId, token);
+                }
                 transcripts.AddSegments(result.Segments.Where(s => s.Text.Length > 0).Select((s, i) =>
                 {
-                    var (startMs, endMs) = TranscriptRules.FitToTake(s.StartMs, s.EndMs, recording.Takes);
+                    var (startMs, endMs) = TranscriptRules.FitToTake(s.StartMs + offsetMs, s.EndMs + offsetMs, recording.Takes);
                     return new TranscriptSegment
                     {
-                        TranscriptId = transcriptId, Position = i + 1, StartMs = startMs, EndMs = endMs,
+                        TranscriptId = transcriptId, Position = lastPosition + i + 1, StartMs = startMs, EndMs = endMs,
                         Text = s.Text.Length > TranscriptRules.MaxSegmentText ? s.Text[..TranscriptRules.MaxSegmentText] : s.Text,
-                        SpeakerLabel = s.Speaker ?? "", CreatedAt = now, UpdatedAt = now,
+                        SpeakerLabel = TranscriptRules.ShiftLabel(s.Speaker ?? "", voices), CreatedAt = now, UpdatedAt = now,
                     };
                 }));
-                await transcripts.DeleteSpeakersAsync(transcriptId, token);
                 var suggestions = await SuggestSpeakersAsync(recording.MeetingId, result, token);
                 transcripts.AddSpeakers(result.Speakers.Select(sp => new TranscriptSpeaker
                 {
-                    TranscriptId = transcriptId, Label = sp.Label, SpeechMs = sp.SpeechMs,
+                    TranscriptId = transcriptId, Label = TranscriptRules.ShiftLabel(sp.Label, voices), SpeechMs = sp.SpeechMs,
                     SuggestedUserId = suggestions.GetValueOrDefault(sp.Label)?.UserId,
                     SuggestionScore = suggestions.GetValueOrDefault(sp.Label)?.Score, CreatedAt = now, UpdatedAt = now,
                 }));
+                current.AppendFromMs = null;
                 current.Status = TranscriptStatus.Completed;
                 current.Provider = TranscriptRules.Provider(result.AsrModel);
                 current.Language = result.Language;

@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Domain.Transcription;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -15,6 +16,7 @@ namespace TrustCabinet.Infrastructure.Meetings;
 public sealed class MeetingLifecycleService(
     IMeetingRepository meetings,
     IAgendaMeetingEnd agendaEnd,
+    IRoomTranscriptMeetingEnd transcriptEnd,
     IAgendaChangePublisher publisher,
     INotificationService notifications,
     ICallRoomService rooms,
@@ -65,6 +67,8 @@ public sealed class MeetingLifecycleService(
                         ?? new AgendaChange(Guid.CreateVersion7(), meetingId, "MeetingEnded", null, null, now);
                     meeting.ActualEndedAt = now;
                     closeRoom = meeting.Mode is MeetingMode.Online or MeetingMode.Hybrid;
+                    // ADR-0044: the room transcript built take by take during the meeting is made again from the whole.
+                    await transcriptEnd.RedoAsync(meetingId, now, token);
                 }
 
                 meeting.Status = starting ? MeetingStatus.InProgress : MeetingStatus.Ended;

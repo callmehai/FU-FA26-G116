@@ -20,7 +20,9 @@ public enum RecordingFailure
     TakeClosed,
     TooLarge,
     /// <summary>The recording has one take left: erasing it is erasing the recording.</summary>
-    LastTake
+    LastTake,
+    /// <summary>The room mic streams a take now: the room recording it will be appended to is not cut or erased meanwhile.</summary>
+    TakeRecording
 }
 
 public sealed record RecordingOutcome(RecordingFailure Failure = RecordingFailure.None, object? Data = null,
@@ -36,12 +38,15 @@ public sealed record RecordingUpload(string FileName, string ContentType, string
 /// <summary>
 /// <c>Status</c> <c>Pending</c> is the room mic's take being streamed: everyone sees that the room is being recorded,
 /// nobody hears it yet. <c>CanClose</c> lets the Chair or a Secretary save a take left open on another device.
+/// An erased one says who erased it and why: <c>DeletionReason</c> <c>Erased</c> (by <c>DeletedByName</c>) or
+/// <c>Expired</c>.
 /// </summary>
 public sealed record RecordingView(Guid Id, string FileName, string ContentType, long ByteSize, long DurationMs,
     string Source, string Status, DateTimeOffset CreatedAt, string CreatedByName, DateTimeOffset? ConsentObtainedAt,
     string ConsentPurpose, DateTimeOffset? RetainUntil, DateTimeOffset? DeletedAt, bool CanErase,
     string TranscriptStatus, bool CanDownload = false, Guid CreatedById = default,
-    IReadOnlyList<RecordingTake>? Takes = null, bool CanClose = false);
+    IReadOnlyList<RecordingTake>? Takes = null, bool CanClose = false, string? DeletedByName = null,
+    string? DeletionReason = null);
 
 /// <summary><c>CanRecord</c>: the caller may switch the room mic on now (ADR-0041).</summary>
 public sealed record RecordingList(Guid MeetingId, bool CanUpload, IReadOnlyList<RecordingView> Items, bool CanRecord = false);
@@ -82,7 +87,7 @@ public interface IRecordingService
 /// <summary>
 /// ADR-0041 — the room mic, as in AI-eCabinet: the Secretary's browser streams what the room says in parts while the
 /// mic is on, so a closed tab or a crash loses nothing the server has; switching it off saves the take into the
-/// meeting's one room recording, which is transcribed again as a whole.
+/// meeting's one room recording: that take is transcribed alone while the meeting runs, the whole once it ends (ADR-0044).
 /// </summary>
 public interface IRoomTakeService
 {
