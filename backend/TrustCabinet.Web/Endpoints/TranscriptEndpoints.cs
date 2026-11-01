@@ -18,9 +18,9 @@ public static class TranscriptEndpoints
     private const string Msg356SecretMeeting = "MSG356";
     private const string Msg357TranscriptNotReady = "MSG357";
 
-    private sealed record SegmentBody(string? Text);
+    internal sealed record SegmentBody(string? Text);
     /// <summary>A user of the meeting or one of its guests, at most one of them; neither clears the name.</summary>
-    private sealed record SpeakerBody(Guid? UserId, Guid? GuestId);
+    internal sealed record SpeakerBody(Guid? UserId, Guid? GuestId);
 
     public static void MapTranscriptEndpoints(this IEndpointRouteBuilder app)
     {

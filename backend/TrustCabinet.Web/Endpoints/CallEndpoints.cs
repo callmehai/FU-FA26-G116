@@ -85,7 +85,7 @@ public static class CallEndpoints
     }
 
     /// <summary>Only a guest must send it; a member's join takes no body.</summary>
-    private sealed record JoinBody(bool? RecordingNoticeAcknowledged);
+    internal sealed record JoinBody(bool? RecordingNoticeAcknowledged);
 
     /// <summary>A guest token for this meeting, or the signed-in user the filter already checked is active.</summary>
     private static CallCaller Caller(ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities)

@@ -23,7 +23,7 @@ public static class VoiceIdEndpoints
     private const string Msg314ReadFailed = "MSG314";
     private const string Msg315SaveFailed = "MSG315";
 
-    private sealed record ConsentBody(string? NoticeVersion);
+    internal sealed record ConsentBody(string? NoticeVersion);
 
     public static void MapVoiceIdEndpoints(this IEndpointRouteBuilder app)
     {

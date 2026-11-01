@@ -289,6 +289,8 @@ migrate hết, hoặc migrate tới một migration cụ thể cho test migratio
 nó một lần vào database mẫu `trustcabinet_template_<GUID v7>`, rồi mỗi test tạo database của mình
 bằng `CREATE DATABASE … TEMPLATE` — bản sao y hệt, nhanh hơn nhiều so với chạy lại migration. Test
 vẫn gọi `MigrateAsync`/`EnsureCreatedAsync` như cũ; trên bản sao các lệnh đó không còn gì để làm.
+Fixture mới gọi `Database.CreateFromTemplateAsync(TestSchema.Migrated)` (hoặc schema nó cần) trước
+kết nối đầu tiên; quên dòng đó thì test vẫn đúng, chỉ chậm vì tự migrate lại từ đầu.
 Database mẫu chỉ thuộc lượt chạy đã dựng nó và bị xoá khi tiến trình test thoát; lượt bị kill giữa
 chừng để lại mẫu thì lượt sau xoá các mẫu cũ hơn 12 giờ. Đừng mở kết nối vào database mẫu:
 PostgreSQL từ chối sao chép database đang có phiên mở.

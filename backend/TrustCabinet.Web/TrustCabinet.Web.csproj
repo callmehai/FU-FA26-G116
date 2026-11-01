@@ -23,6 +23,12 @@
       one per test case. Endpoints the generator cannot handle fall back to the runtime path.
     -->
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+    <!--
+      RDG002 is that fallback, for a handler passed in as a Delegate (the personal library maps its
+      changes through one helper): it still works, only it is built at runtime. A body record the
+      generator cannot see (RDG012) is not let through: make it internal, not private.
+    -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);RDG002</WarningsNotAsErrors>
     <UserSecretsId>fef72953-37bf-4db0-94b5-883c71ad21bd</UserSecretsId>
   </PropertyGroup>
 

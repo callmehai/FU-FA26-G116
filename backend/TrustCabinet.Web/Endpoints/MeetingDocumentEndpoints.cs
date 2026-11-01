@@ -92,7 +92,7 @@ public static class MeetingDocumentEndpoints
         Msg245UnlinkFailed, "Không gỡ được liên kết tài liệu. Chưa có liên kết nào thay đổi. Vui lòng thử lại.");
 
     /// <summary>Meeting document IDs for UC-33b, library document IDs for UC-33a and UC-33b AF-2.</summary>
-    private sealed record DocumentIdsBody(Guid[]? DocumentIds);
+    internal sealed record DocumentIdsBody(Guid[]? DocumentIds);
 
     public static void MapMeetingDocumentEndpoints(this IEndpointRouteBuilder app)
     {
