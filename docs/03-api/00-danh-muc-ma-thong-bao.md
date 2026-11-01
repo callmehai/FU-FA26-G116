@@ -544,8 +544,8 @@ lại `MSG295` — cùng tình huống "không phải Thư ký mà quản lý b�
 | `MSG302` | 200 | `PUT /api/transcript-segments/{id}` | Thư ký sửa chữ một đoạn; ghi người sửa và lúc sửa | `Đã lưu đoạn gỡ băng.` | BE |
 | `MSG303` | 400 | `PUT /api/transcript-segments/{id}` | Nội dung rỗng hoặc quá 8000 ký tự | `Nội dung đoạn gỡ băng không hợp lệ.` | BE |
 | `MSG304` | 503 | `POST …/transcribe`, `PUT /api/transcript-segments/{id}` | Lỗi database khi lưu | `Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại.` | BE |
-| `MSG316` | 200 | `PUT /api/recordings/{id}/speakers/{label}` | Thư ký gán (hoặc bỏ gán, `userId: null`) tên thật cho một giọng — SCRUM-35 | `Đã gán người nói.` | BE |
-| `MSG317` | 400 | `PUT /api/recordings/{id}/speakers/{label}` | Người được gán không có trong danh sách thành phần hiện tại của cuộc họp | `Người được gán phải có trong danh sách cuộc họp.` | BE |
+| `MSG316` | 200 | `PUT /api/recordings/{id}/speakers/{label}` | Thư ký gán (hoặc bỏ gán, `userId` và `guestId` cùng `null`) tên thật cho một giọng: người dùng hoặc Khách của cuộc họp — SCRUM-35 | `Đã gán người nói.` | BE |
+| `MSG317` | 400 | `PUT /api/recordings/{id}/speakers/{label}` | Người được gán không có trong danh sách thành phần hiện tại của cuộc họp, Khách không có lời mời còn hiệu lực của cuộc họp, hoặc gửi cả `userId` lẫn `guestId` | `Người được gán phải có trong danh sách cuộc họp.` | BE |
 
 ### Voice ID của chính mình — SCRUM-35 (`/api/me/voice`)
 

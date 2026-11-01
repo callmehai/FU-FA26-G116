@@ -12,6 +12,7 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
         var query = db.Transcripts.Include(t => t.Segments).ThenInclude(s => s.EditedBy)
             .Include(t => t.Speakers).ThenInclude(s => s.SuggestedUser)
             .Include(t => t.Speakers).ThenInclude(s => s.AssignedUser)
+            .Include(t => t.Speakers).ThenInclude(s => s.AssignedGuest)
             .AsSplitQuery().Where(t => t.RecordingId == recordingId);
         return await (tracked ? query : query.AsNoTracking()).SingleOrDefaultAsync(ct);
     }
@@ -51,6 +52,11 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers) => db.TranscriptSpeakers.AddRange(speakers);
 
     public void AddSegments(IEnumerable<TranscriptSegment> segments) => db.TranscriptSegments.AddRange(segments);
+
+    public async Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct)
+        => (await db.MeetingGuestInvitations.AsNoTracking().Where(g => g.MeetingId == meetingId && g.RevokedAt == null)
+                .Select(g => new { g.Id, Name = g.SelfDeclaredDisplayName ?? g.InvitedName }).ToListAsync(ct))
+            .Select(g => new TranscriptPerson(g.Id, g.Name, Guest: true)).ToList();
 
     public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
 }
