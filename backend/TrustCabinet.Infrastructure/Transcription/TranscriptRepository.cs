@@ -12,6 +12,7 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
         var query = db.Transcripts.Include(t => t.Segments).ThenInclude(s => s.EditedBy)
             .Include(t => t.Speakers).ThenInclude(s => s.SuggestedUser)
             .Include(t => t.Speakers).ThenInclude(s => s.AssignedUser)
+            .Include(t => t.Speakers).ThenInclude(s => s.AssignedGuest)
             .AsSplitQuery().Where(t => t.RecordingId == recordingId);
         return await (tracked ? query : query.AsNoTracking()).SingleOrDefaultAsync(ct);
     }
@@ -51,6 +52,20 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
         return (last, labels.Select(TranscriptRules.VoiceNumber).Max() is { } n ? n + 1 : 0);
     }
 
+    public async Task<IReadOnlyList<(string Label, long StartMs, long EndMs)>> ListLinesAsync(Guid transcriptId,
+        CancellationToken ct)
+        => (await db.TranscriptSegments.AsNoTracking().Where(s => s.TranscriptId == transcriptId)
+                .Select(s => new { s.SpeakerLabel, s.StartMs, s.EndMs }).ToListAsync(ct))
+            .Select(s => (s.SpeakerLabel, s.StartMs, s.EndMs)).ToList();
+
+    public async Task<IReadOnlyList<TranscriptSpeaker>> ListSpeakersAsync(Guid transcriptId, CancellationToken ct)
+        => await db.TranscriptSpeakers.Where(s => s.TranscriptId == transcriptId).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct)
+        => (await db.MeetingGuestInvitations.AsNoTracking().Where(g => g.MeetingId == meetingId && g.RevokedAt == null)
+                .Select(g => new { g.Id, Name = g.SelfDeclaredDisplayName ?? g.InvitedName }).ToListAsync(ct))
+            .Select(g => new TranscriptPerson(g.Id, g.Name, Guest: true)).ToList();
+
     public void Add(Transcript transcript) => db.Transcripts.Add(transcript);
 
     public Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct)
@@ -61,20 +76,4 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public void AddSegments(IEnumerable<TranscriptSegment> segments) => db.TranscriptSegments.AddRange(segments);
 
     public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
-}
-
-/// <summary>
-/// One take is transcribed whole already; two or more were added take by take while the meeting ran. A run still busy on
-/// the latest takes throws its result away (its <c>AppendFromMs</c> no longer matches).
-/// </summary>
-public sealed class RoomTranscriptMeetingEnd(TrustCabinetDbContext db) : IRoomTranscriptMeetingEnd
-{
-    public Task<int> RedoAsync(Guid meetingId, DateTimeOffset endedAt, CancellationToken ct = default)
-        => db.Database.ExecuteSqlInterpolatedAsync($"""
-            UPDATE transcripts t SET status = 'Pending', append_from_ms = NULL, progress_percent = 0, error_message = '',
-                updated_at = {endedAt}
-            FROM recordings r
-            WHERE t.recording_id = r.id AND r.meeting_id = {meetingId} AND r.status = 'Available'
-                AND r.takes IS NOT NULL AND jsonb_array_length(r.takes) > 1
-            """, ct);
 }

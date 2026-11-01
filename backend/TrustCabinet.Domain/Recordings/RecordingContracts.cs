@@ -87,7 +87,7 @@ public interface IRecordingService
 /// <summary>
 /// ADR-0041 — the room mic, as in AI-eCabinet: the Secretary's browser streams what the room says in parts while the
 /// mic is on, so a closed tab or a crash loses nothing the server has; switching it off saves the take into the
-/// meeting's one room recording: that take is transcribed alone while the meeting runs, the whole once it ends (ADR-0044).
+/// meeting's one room recording, where that take alone is transcribed and its lines added (ADR-0044).
 /// </summary>
 public interface IRoomTakeService
 {
@@ -135,6 +135,12 @@ public interface IRecordingStorage
     Task<string> ConcatAsync(string first, string second, long skip, CancellationToken ct);
     /// <summary>A new file of <paramref name="source"/> without the <paramref name="length"/> bytes at <paramref name="from"/>.</summary>
     Task<string> CutAsync(string source, long from, long length, CancellationToken ct);
+    /// <summary>
+    /// A new file of <paramref name="source"/>'s first <paramref name="header"/> bytes, then each of its byte ranges in turn
+    /// (a length past the end runs to it), <paramref name="gap"/> zero bytes after every range but the last.
+    /// </summary>
+    Task<string> PieceAsync(string source, long header, IReadOnlyList<(long From, long Length)> ranges, long gap,
+        CancellationToken ct);
     /// <summary>Writes the real lengths into a streamed WAV's header, which went out before they were known.</summary>
     void SealWav(string storagePath);
     Stream OpenRead(string storagePath);

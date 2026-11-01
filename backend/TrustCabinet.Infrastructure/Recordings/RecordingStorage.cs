@@ -142,6 +142,34 @@ public sealed class LocalRecordingStorage(IOptions<RecordingOptions> options) : 
         return relative;
     }
 
+    public async Task<string> PieceAsync(string source, long header, IReadOnlyList<(long From, long Length)> ranges, long gap,
+        CancellationToken ct)
+    {
+        var relative = Create(Path.GetExtension(source));
+        try
+        {
+            await using var target = new FileStream(Resolve(relative), FileMode.Open, FileAccess.Write, FileShare.None, 81920, true);
+            await using var input = OpenRead(source);
+            await CopyRangeAsync(input, target, header, ct);
+            var silence = new byte[81920];
+            for (var i = 0; i < ranges.Count; i++)
+            {
+                var (from, length) = ranges[i];
+                input.Position = Math.Min(input.Length, header + from);
+                await CopyRangeAsync(input, target, Math.Min(length, input.Length - input.Position), ct);
+                if (i == ranges.Count - 1) break;
+                for (var left = gap; left > 0; left -= silence.Length)
+                    await target.WriteAsync(silence.AsMemory(0, (int)Math.Min(left, silence.Length)), ct);
+            }
+        }
+        catch
+        {
+            File.Delete(Resolve(relative));
+            throw;
+        }
+        return relative;
+    }
+
     private static async Task CopyRangeAsync(Stream input, Stream target, long count, CancellationToken ct)
     {
         var buffer = new byte[81920];

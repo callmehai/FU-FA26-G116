@@ -35,9 +35,7 @@ public sealed class SpeechEngineException(string userMessage, Exception? inner =
 public enum TranscriptFailure
 {
     None, NotFound, Inactive, Forbidden, NotRetryable, Invalid, InvalidSpeaker, ReadFailed, SaveFailed, ExportForbidden,
-    SecretMeeting, NotReady,
-    /// <summary>ADR-0044: the room transcript of a running meeting is provisional; it is corrected once the meeting ends.</summary>
-    Provisional
+    SecretMeeting, NotReady
 }
 
 public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFailure.None, object? Data = null,
@@ -50,16 +48,19 @@ public sealed record TranscriptSegmentView(Guid Id, int Position, long StartMs, 
 /// SCRUM-35 — one voice of the recording. <c>Suggested*</c> is the machine's guess from enrolled voices;
 /// <c>Assigned*</c> is the secretary's decision, and only that one names the speaker. <c>SameAsLabel</c> is another
 /// voice suggested as the same person more surely: perhaps one person the machine split in two (Secretary only).
+/// A voice is named as a user or as a guest of the meeting (<c>AssignedGuestId</c>), never both.
 /// </summary>
 public sealed record TranscriptSpeakerView(string Label, long SpeechMs, Guid? SuggestedUserId, string? SuggestedName,
-    double? SuggestionScore, Guid? AssignedUserId, string? AssignedName, string? SameAsLabel = null);
+    double? SuggestionScore, Guid? AssignedUserId, string? AssignedName, string? SameAsLabel = null,
+    Guid? AssignedGuestId = null);
 
-public sealed record TranscriptPerson(Guid Id, string FullName);
+/// <summary>Someone a voice can be named as: a person of the meeting, or a guest invited to it (<c>Guest</c>).</summary>
+public sealed record TranscriptPerson(Guid Id, string FullName, bool Guest = false);
 
 public sealed record TranscriptView(Guid RecordingId, string Status, string Provider, string Language,
     string ErrorMessage, DateTimeOffset? CompletedAt, long DurationMs, bool CanEdit,
     IReadOnlyList<TranscriptSegmentView> Segments, IReadOnlyList<TranscriptSpeakerView> Speakers,
-    IReadOnlyList<TranscriptPerson> People, bool CanExport = false, bool Provisional = false);
+    IReadOnlyList<TranscriptPerson> People, bool CanExport = false, bool Appending = false);
 
 public interface ITranscriptionService
 {
@@ -69,8 +70,9 @@ public interface ITranscriptionService
     /// <summary>The finished transcript as a text file (<see cref="ExportedText"/>).</summary>
     Task<TranscriptOutcome> ExportAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     Task<TranscriptOutcome> EditSegmentAsync(Guid segmentId, Guid actorId, string? text, CancellationToken ct = default);
-    /// <summary>SCRUM-35 — the secretary says who a voice is, or clears it with null.</summary>
-    Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid actorId, CancellationToken ct = default);
+    /// <summary>SCRUM-35 — the secretary says who a voice is (a user or a guest of the meeting), or clears it with both null.</summary>
+    Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid? guestId, Guid actorId,
+        CancellationToken ct = default);
     /// <summary>Takes the oldest waiting transcript and runs it; false when there was nothing to do.</summary>
     Task<bool> ProcessNextAsync(CancellationToken ct = default);
     /// <summary>Puts back transcripts a previous process was running when it stopped.</summary>
@@ -90,20 +92,16 @@ public interface ITranscriptRepository
     Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct);
     /// <summary>The last line's position and the next free voice number, for lines added after these (ADR-0044).</summary>
     Task<(int LastPosition, int NextVoice)> CountLinesAsync(Guid transcriptId, CancellationToken ct);
+    /// <summary>Every line's voice and time, untracked: where samples of the voices already there are cut from (ADR-0044).</summary>
+    Task<IReadOnlyList<(string Label, long StartMs, long EndMs)>> ListLinesAsync(Guid transcriptId, CancellationToken ct);
+    Task<IReadOnlyList<TranscriptSpeaker>> ListSpeakersAsync(Guid transcriptId, CancellationToken ct);
+    /// <summary>The guests invited to the meeting and not revoked, by the name they gave or were invited by.</summary>
+    Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct);
     void Add(Transcript transcript);
     Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct);
     void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers);
     void AddSegments(IEnumerable<TranscriptSegment> segments);
     Task SaveChangesAsync(CancellationToken ct);
-}
-
-/// <summary>
-/// ADR-0044 — when a meeting ends, the room recording its takes were added to is transcribed again as a whole. Caller owns
-/// the meeting lock and the transaction.
-/// </summary>
-public interface IRoomTranscriptMeetingEnd
-{
-    Task<int> RedoAsync(Guid meetingId, DateTimeOffset endedAt, CancellationToken ct = default);
 }
 
 public static class TranscriptRules
@@ -113,12 +111,64 @@ public static class TranscriptRules
     /// <summary>Gipformer, run in-house; the version pins which model wrote a given transcript.</summary>
     public static string Provider(string asrModel) => $"self-hosted:{asrModel}";
 
+    /// <summary>How much of each voice already there is played to the worker ahead of the latest takes (ADR-0044).</summary>
+    public const long SampleMs = 6000;
+    /// <summary>A voice heard for less than this is not sampled: too little to be told apart.</summary>
+    public const long MinSampleMs = 1500;
+    /// <summary>Silence between the samples and before the takes, so no sentence of the worker spans two of them.</summary>
+    public const long SampleGapMs = 1500;
+
     /// <summary>
-    /// "SPEAKER_01" of a run over the latest takes, numbered after the voices already there (ADR-0044): each run tells
-    /// voices apart on its own, so its SPEAKER_00 is not the earlier one. Anything else is kept as it is.
+    /// ADR-0044 — up to <see cref="SampleMs"/> of each voice already in the transcript, cut from the ends of its longest
+    /// lines before <paramref name="beforeMs"/>: a line's end is where its words stopped, its start may reach back into
+    /// the line before (see <see cref="FitToTake"/>).
     /// </summary>
-    public static string ShiftLabel(string label, int by)
-        => by > 0 && VoiceNumber(label) is { } n ? $"SPEAKER_{n + by:D2}" : label;
+    public static IReadOnlyList<(string Label, long StartMs, long EndMs)> PickSamples(
+        IEnumerable<(string Label, long StartMs, long EndMs)> lines, long beforeMs)
+    {
+        var samples = new List<(string, long, long)>();
+        foreach (var voice in lines.Where(l => l.Label.Length > 0 && l.EndMs <= beforeMs && l.EndMs > l.StartMs)
+                     .GroupBy(l => l.Label).OrderBy(g => g.Key, StringComparer.Ordinal))
+        {
+            var picked = new List<(string, long, long)>();
+            var left = SampleMs;
+            foreach (var line in voice.OrderByDescending(l => l.EndMs - l.StartMs).ThenBy(l => l.StartMs))
+            {
+                if (left <= 0) break;
+                var length = Math.Min(left, line.EndMs - line.StartMs);
+                picked.Add((voice.Key, line.EndMs - length, line.EndMs));
+                left -= length;
+            }
+            if (SampleMs - left >= MinSampleMs) samples.AddRange(picked.OrderBy(p => p.Item2));
+        }
+        return samples;
+    }
+
+    /// <summary>
+    /// ADR-0044 — which voices of a run over samples-then-takes are voices already there. <paramref name="placed"/> is where
+    /// each sample sits in the audio sent. A voice of the run is an earlier voice when it holds at least half of that
+    /// voice's samples and more of them than of any other's; the worker told the voices apart, this only reads its answer.
+    /// </summary>
+    public static IReadOnlyDictionary<string, string> SameVoices(IReadOnlyList<SpeechSegment> segments,
+        IReadOnlyList<(string Label, long StartMs, long EndMs)> placed)
+    {
+        var sampled = placed.GroupBy(p => p.Label).ToDictionary(g => g.Key, g => g.Sum(p => p.EndMs - p.StartMs));
+        var held = new Dictionary<(string Run, string Earlier), long>();
+        foreach (var segment in segments.Where(s => !string.IsNullOrEmpty(s.Speaker)))
+            foreach (var sample in placed)
+            {
+                var overlap = Math.Min(segment.EndMs, sample.EndMs) - Math.Max(segment.StartMs, sample.StartMs);
+                if (overlap > 0) held[(segment.Speaker!, sample.Label)] = held.GetValueOrDefault((segment.Speaker!, sample.Label)) + overlap;
+            }
+        var same = new Dictionary<string, string>();
+        foreach (var run in held.GroupBy(h => h.Key.Run))
+        {
+            var best = run.Select(h => (h.Key.Earlier, Share: (double)h.Value / sampled[h.Key.Earlier]))
+                .OrderByDescending(h => h.Share).ThenBy(h => h.Earlier, StringComparer.Ordinal).First();
+            if (best.Share >= 0.5) same[run.Key] = best.Earlier;
+        }
+        return same;
+    }
 
     public static int? VoiceNumber(string label)
         => label.StartsWith("SPEAKER_", StringComparison.Ordinal)

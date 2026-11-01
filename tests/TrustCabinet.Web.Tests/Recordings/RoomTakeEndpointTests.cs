@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Recordings;
@@ -171,22 +172,31 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
     }
 
     [Fact]
-    public async Task A_later_take_is_appended_to_the_room_recording_and_only_it_is_transcribed_until_the_meeting_ends()
+    public async Task A_later_take_is_appended_and_only_it_is_transcribed_a_voice_heard_before_keeping_its_name()
     {
         var s = await fixture.Seed(mode: MeetingMode.InPerson);
         fixture.Speech.Failure = null;
-        // Two voices, one line each, in every run.
-        fixture.Speech.Result = new(249, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
-            new(0, 100, "SPEAKER_00", "Một."), new(120, 240, "SPEAKER_01", "Hai.")],
-            [new("SPEAKER_00", 100, []), new("SPEAKER_01", 120, [])]);
+        // Two voices, two seconds each: long enough to be sampled.
+        fixture.Speech.Result = new(4000, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(0, 2000, "SPEAKER_00", "Một."), new(2000, 4000, "SPEAKER_01", "Hai.")],
+            [new("SPEAKER_00", 2000, []), new("SPEAKER_01", 2000, [])]);
         using var secretary = fixture.Client(s.Secretary);
-        var first = Tape(2 * Part + 12, 1);
+        var first = Tape(44 + 4000 * 32, 1);
         var room = (await Record(secretary, await Open(secretary, s), first)).GetProperty("recordingId").GetGuid();
         await ProcessAll();
         fixture.Clock.Now = fixture.Clock.Now.AddMinutes(10);
 
+        // ADR-0044: corrected and named while the meeting runs, and kept.
+        var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
+        Assert.True(transcript.GetProperty("canEdit").GetBoolean());
+        await AssertCode(await secretary.PutAsJsonAsync(
+            $"/api/transcript-segments/{transcript.GetProperty("segments")[0].GetProperty("id").GetGuid()}",
+            new { text = "Một, đã sửa." }), 200, "MSG302");
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{room}/speakers/SPEAKER_01", new { userId = s.Chair }),
+            200, "MSG316");
+
         // The participants were told before the first take; switching the mic on again asks nothing.
-        var second = Tape(Part + 460, 2);
+        var second = Tape(44 + 3000 * 32, 2);
         var take = await Open(secretary, s, consent: false);
         var saved = await Record(secretary, take, second);
         Assert.Equal(room, saved.GetProperty("recordingId").GetGuid());
@@ -197,8 +207,8 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         Assert.Equal("Pending", item.GetProperty("transcriptStatus").GetString());
         var takes = item.GetProperty("takes").EnumerateArray().ToArray();
         Assert.Equal(2, takes.Length);
-        Assert.Equal((2 * Part + 12 - 44) * 1000L / 32_000, takes[1].GetProperty("offsetMs").GetInt64());
-        Assert.Equal((Part + 460 - 44) * 1000L / 32_000, takes[1].GetProperty("durationMs").GetInt64());
+        Assert.Equal(4000, takes[1].GetProperty("offsetMs").GetInt64());
+        Assert.Equal(3000, takes[1].GetProperty("durationMs").GetInt64());
         Assert.Equal(fixture.Clock.Now, takes[1].GetProperty("startedAt").GetDateTimeOffset());
 
         // One file: the first take, then the second without its own header.
@@ -206,41 +216,117 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         var stored = await StoredBytes(room);
         Assert.Equal(merged[44..], stored[44..]);
         Assert.Equal((uint)merged.Length - 44, BinaryPrimitives.ReadUInt32LittleEndian(stored.AsSpan(40)));
-        // ADR-0044: the meeting runs, so only the new take is transcribed, and its lines and voices follow the first's.
-        await ProcessAll();
-        Assert.Equal(second[44..], fixture.Speech.LastAudio![44..]);
-        Assert.Equal((uint)second.Length - 44, BinaryPrimitives.ReadUInt32LittleEndian(fixture.Speech.LastAudio.AsSpan(40)));
-        var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
-        Assert.Equal("Completed", transcript.GetProperty("status").GetString());
-        Assert.True(transcript.GetProperty("provisional").GetBoolean());
-        Assert.False(transcript.GetProperty("canEdit").GetBoolean());
-        var lines = transcript.GetProperty("segments").EnumerateArray().ToArray();
-        Assert.Equal([1, 2, 3, 4], lines.Select(l => l.GetProperty("position").GetInt32()));
-        Assert.Equal(["SPEAKER_00", "SPEAKER_01", "SPEAKER_02", "SPEAKER_03"],
-            lines.Select(l => l.GetProperty("speakerLabel").GetString()));
-        Assert.Equal(takes[1].GetProperty("offsetMs").GetInt64(), lines[2].GetProperty("startMs").GetInt64());
-        Assert.Equal(4, transcript.GetProperty("speakers").GetArrayLength());
 
-        // Nobody corrects the first pass: it is made again once the meeting ends.
-        await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{lines[0].GetProperty("id").GetGuid()}",
-            new { text = "Sửa giữa chừng." }), 409, "MSG382");
-        await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{room}/speakers/SPEAKER_00", new { userId = s.Chair }),
-            409, "MSG382");
+        // The lines there stay open to correction while the new take is added.
+        transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
+        Assert.True(transcript.GetProperty("appending").GetBoolean());
+        Assert.True(transcript.GetProperty("canEdit").GetBoolean());
 
-        // The meeting ends: the whole file, voices told apart across both takes, and editable.
-        await End(s);
-        Assert.Equal("Pending", (await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript"))
-            .GetProperty("status").GetString());
-        await ProcessAll();
-        Assert.Equal(stored, fixture.Speech.LastAudio);
+        // Sent: two seconds of each voice there, 1.5 s of silence after each, then the new take. The worker hears the
+        // second voice's sample and the new take's first words as one voice, and a voice it never heard before.
+        fixture.Speech.Answer = audio =>
+        {
+            Assert.Equal(44 + (2000 + 1500 + 2000 + 1500 + 3000) * 32, audio.Length);
+            Assert.Equal(first[44..(44 + 2000 * 32)], audio[44..(44 + 2000 * 32)]);
+            Assert.All(audio[(44 + 2000 * 32)..(44 + 3500 * 32)], b => Assert.Equal(0, b));
+            Assert.Equal(second[44..], audio[(44 + 7000 * 32)..]);
+            return new(10000, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+                new(0, 2000, "SPEAKER_01", "Một."), new(2000, 5500, "SPEAKER_00", "Hai."),
+                new(5500, 8500, "SPEAKER_00", "Ba."), new(8500, 10000, "SPEAKER_02", "Bốn.")],
+                [new("SPEAKER_00", 5000, []), new("SPEAKER_01", 2000, []), new("SPEAKER_02", 1500, [])]);
+        };
+        try
+        {
+            await ProcessAll();
+        }
+        finally
+        {
+            fixture.Speech.Answer = null;
+        }
         transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
         Assert.Equal("Completed", transcript.GetProperty("status").GetString());
-        Assert.False(transcript.GetProperty("provisional").GetBoolean());
-        Assert.True(transcript.GetProperty("canEdit").GetBoolean());
-        Assert.Equal(2, transcript.GetProperty("segments").GetArrayLength());
+        Assert.False(transcript.GetProperty("appending").GetBoolean());
+        var lines = transcript.GetProperty("segments").EnumerateArray().ToArray();
+        Assert.Equal(["Một, đã sửa.", "Hai.", "Ba.", "Bốn."], lines.Select(l => l.GetProperty("text").GetString()));
+        Assert.Equal([1, 2, 3, 4], lines.Select(l => l.GetProperty("position").GetInt32()));
+        // The voice heard before keeps its label and so its name; the new one is numbered after the last.
+        Assert.Equal(["SPEAKER_00", "SPEAKER_01", "SPEAKER_01", "SPEAKER_02"],
+            lines.Select(l => l.GetProperty("speakerLabel").GetString()));
+        // "Ba." reached back into the samples: it starts where the take does.
+        Assert.Equal([(4000L, 5500L), (5500L, 7000L)], lines[2..].Select(l =>
+            (l.GetProperty("startMs").GetInt64(), l.GetProperty("endMs").GetInt64())));
+        var speakers = transcript.GetProperty("speakers").EnumerateArray().ToArray();
+        Assert.Equal(["SPEAKER_00", "SPEAKER_01", "SPEAKER_02"], speakers.Select(v => v.GetProperty("label").GetString()));
+        Assert.Equal(s.Chair, speakers[1].GetProperty("assignedUserId").GetGuid());
+        Assert.Equal([2000L, 3500L, 1500L], speakers.Select(v => v.GetProperty("speechMs").GetInt64()));
+
+        // Ending the meeting transcribes nothing again.
+        await End(s);
+        Assert.Equal("Completed", (await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript"))
+            .GetProperty("status").GetString());
         // Nothing of the take is left beside the room recording.
         await using var db = fixture.Db();
         Assert.False(await db.Recordings.AnyAsync(r => r.Id == take));
+    }
+
+    [Fact]
+    public async Task The_secretary_names_a_voice_as_a_guest_of_the_meeting_and_not_as_anyone_elses()
+    {
+        var s = await fixture.Seed(mode: MeetingMode.InPerson);
+        fixture.Speech.Failure = null;
+        fixture.Speech.Result = new(4000, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [new(0, 2000, "SPEAKER_00", "Một.")],
+            [new("SPEAKER_00", 2000, [])]);
+        Guid guest, revoked, elsewhere;
+        await using (var db = fixture.Db())
+        {
+            MeetingGuestInvitation Invite(Guid meetingId, string email, string? declared = null) => new()
+            {
+                MeetingId = meetingId, InvitedById = s.Secretary, InvitedName = "Khách mời", Email = email,
+                SelfDeclaredDisplayName = declared, CreatedAt = fixture.Clock.Now, UpdatedAt = fixture.Clock.Now,
+            };
+            var other = await fixture.Seed(mode: MeetingMode.InPerson);
+            var invitations = new[]
+            {
+                Invite(s.MeetingId, "khach@ngoai.test", "Bà Lan (tự khai)"),
+                Invite(s.MeetingId, "da-thu-hoi@ngoai.test"),
+                Invite(other.MeetingId, "noi-khac@ngoai.test"),
+            };
+            invitations[1].RevokedAt = fixture.Clock.Now;
+            invitations[1].RevokedById = s.Secretary;
+            db.MeetingGuestInvitations.AddRange(invitations);
+            await db.SaveChangesAsync();
+            (guest, revoked, elsewhere) = (invitations[0].Id, invitations[1].Id, invitations[2].Id);
+        }
+        using var secretary = fixture.Client(s.Secretary);
+        using var member = fixture.Client(s.Member);
+        var room = (await Record(secretary, await Open(secretary, s), Tape(44 + 4000 * 32, 1))).GetProperty("recordingId").GetGuid();
+        await ProcessAll();
+
+        // Offered beside the meeting's people, by the name the guest gave; never to anyone but the Secretary.
+        var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
+        var offered = transcript.GetProperty("people").EnumerateArray().Single(p => p.GetProperty("id").GetGuid() == guest);
+        Assert.Equal("Bà Lan (tự khai)", offered.GetProperty("fullName").GetString());
+        Assert.True(offered.GetProperty("guest").GetBoolean());
+        Assert.DoesNotContain(transcript.GetProperty("people").EnumerateArray(), p => p.GetProperty("id").GetGuid() == revoked);
+        Assert.Empty((await member.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript")).GetProperty("people").EnumerateArray());
+
+        var url = $"/api/recordings/{room}/speakers/SPEAKER_00";
+        foreach (var body in new object[] { new { guestId = revoked }, new { guestId = elsewhere }, new { userId = s.Chair, guestId = guest } })
+            await AssertCode(await secretary.PutAsJsonAsync(url, body), 400, "MSG317");
+        var named = await AssertCode(await secretary.PutAsJsonAsync(url, new { guestId = guest }), 200, "MSG316");
+        Assert.Equal("Bà Lan (tự khai)", named.GetProperty("speaker").GetProperty("assignedName").GetString());
+
+        var voice = Assert.Single((await member.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript"))
+            .GetProperty("speakers").EnumerateArray());
+        Assert.Equal(guest, voice.GetProperty("assignedGuestId").GetGuid());
+        Assert.Equal(JsonValueKind.Null, voice.GetProperty("assignedUserId").ValueKind);
+        Assert.Equal("Bà Lan (tự khai)", voice.GetProperty("assignedName").GetString());
+
+        // Named as someone else: the guest's name goes.
+        await AssertCode(await secretary.PutAsJsonAsync(url, new { userId = s.Chair }), 200, "MSG316");
+        await using var check = fixture.Db();
+        var row = await check.TranscriptSpeakers.SingleAsync(v => v.Transcript.RecordingId == room);
+        Assert.Equal((s.Chair, (Guid?)null), (row.AssignedUserId!.Value, row.AssignedGuestId));
     }
 
     [Fact]
@@ -435,8 +521,6 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         fixture.Speech.Result = new(511, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
             new(10, 200, "SPEAKER_00", "Lượt một."), new(259, 350, "SPEAKER_01", "Lượt hai."), new(397, 480, "SPEAKER_00", "Lượt ba.")],
             [new("SPEAKER_00", 273, []), new("SPEAKER_01", 91, [])]);
-        // Corrected once the meeting has ended (ADR-0044).
-        await End(s);
         await ProcessAll();
         var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
         var third = transcript.GetProperty("segments")[2].GetProperty("id").GetGuid();

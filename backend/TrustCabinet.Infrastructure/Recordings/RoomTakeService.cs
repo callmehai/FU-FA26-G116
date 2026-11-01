@@ -15,9 +15,9 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// <summary>
 /// ADR-0041 — the room mic, as in AI-eCabinet. While it is on, the Secretary's browser streams the room as 16 kHz PCM
 /// in parts of a fixed size, so a part's place in the file follows from its number and sending one again is harmless.
-/// Switching it off saves the take: appended to the meeting's one room recording. While the meeting runs only the new
-/// take is transcribed and its lines added (ADR-0044); once it ends the whole is transcribed again, so the transcript
-/// reads as one meeting and its voices are told apart across takes.
+/// Switching it off saves the take: appended to the meeting's one room recording. Only the new take is transcribed and its
+/// lines added after the ones there, its voices matched to the voices already heard (ADR-0044), so what the Secretary
+/// corrected and named stays.
 ///
 /// The take is personal data from its first byte: the participants are told before the meeting's first take, the
 /// purpose and retention date are those of the recording it goes into, and a take the mic heard nothing in is dropped.
@@ -155,7 +155,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 if (take.Status == RecordingStatus.Available)
                     return (new RecordingOutcome(Data: new RoomTakeSaved(take.Id, false), RecordingId: take.Id), []);
                 if (take.Status != RecordingStatus.Pending) return (new(RecordingFailure.TakeClosed), []);
-                return await SaveAsync(take, actorId, meeting.Status == MeetingStatus.InProgress, token);
+                return await SaveAsync(take, actorId, token);
             }, ct);
             foreach (var path in obsolete) DeleteQuietly(path);
             if (outcome.Failure == RecordingFailure.None) await PublishAsync(found.MeetingId, ct);
@@ -178,11 +178,11 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             if (found is null) continue;
             var (_, obsolete) = await meetings.InTransactionAsync(async token =>
             {
-                var meeting = await meetings.FindWorkflowAsync(found.MeetingId, true, token);
+                _ = await meetings.FindWorkflowAsync(found.MeetingId, true, token);
                 var take = await recordings.FindAsync(id, true, token);
                 if (take is not { Status: RecordingStatus.Pending } || take.UpdatedAt >= before)
                     return (new RecordingOutcome(), Array.Empty<string>());
-                return await SaveAsync(take, null, meeting?.Status == MeetingStatus.InProgress, token);
+                return await SaveAsync(take, null, token);
             }, ct);
             foreach (var path in obsolete) DeleteQuietly(path);
             await PublishAsync(found.MeetingId, ct);
@@ -195,7 +195,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
     /// Saves a take under the meeting's lock. Returns the files that are no longer anyone's, deleted by the caller once
     /// the transaction has committed, so a rollback never leaves a row pointing at bytes that are gone.
     /// </summary>
-    private async Task<(RecordingOutcome, string[])> SaveAsync(Recording take, Guid? actorId, bool running, CancellationToken ct)
+    private async Task<(RecordingOutcome, string[])> SaveAsync(Recording take, Guid? actorId, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
         // Whole milliseconds of PCM (under 1 ms dropped at the end): a take's place in the room recording is kept in ms,
@@ -242,13 +242,13 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             room.ByteSize += take.ByteSize - RecordingRules.WavHeaderBytes;
             room.DurationMs = RecordingRules.PcmMs(room.ByteSize);
             room.UpdatedAt = now;
-            // ADR-0044: while the meeting runs, only what has not been transcribed yet is, and added to the lines already
-            // there; otherwise the whole is transcribed again. A run already busy throws its result away either way.
+            // ADR-0044: only what has not been transcribed yet is, and added to the lines already there. A run already busy
+            // throws its result away.
             var transcript = await transcripts.FindByRecordingAsync(room.Id, true, ct);
             if (transcript is null) transcripts.Add(new Transcript { RecordingId = room.Id, CreatedAt = now, UpdatedAt = now });
             else
             {
-                transcript.AppendFromMs = !running ? null : transcript.Status switch
+                transcript.AppendFromMs = transcript.Status switch
                 {
                     TranscriptStatus.Completed => offsetMs,
                     // Waiting already: from the earliest take still waiting, or the whole if that is what waits.

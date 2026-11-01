@@ -40,7 +40,8 @@ export function personOf(speakers: readonly TranscriptSpeaker[]): Map<string, st
   const out = new Map<string, string>()
   const byLabel = new Map(speakers.map((s) => [s.label, s]))
   const keyOf = (s: TranscriptSpeaker): string => {
-    if (s.assignedUserId) return `p:${s.assignedUserId}`
+    const named = s.assignedUserId ?? s.assignedGuestId
+    if (named) return `p:${named}`
     const lead = s.sameAsLabel ? byLabel.get(s.sameAsLabel) : undefined
     return lead && lead !== s && !lead.sameAsLabel ? keyOf(lead) : `l:${s.label}`
   }

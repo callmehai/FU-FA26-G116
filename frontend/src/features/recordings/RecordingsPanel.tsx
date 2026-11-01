@@ -22,8 +22,8 @@ import { RECORDINGS_EVENTS } from './useRoomRecordings'
 /**
  * SCRUM-29 — the meeting's room recordings, in the Bản ghi tab. The Secretary records the room with the mic card in
  * the corner of every tab (RecorderCard), and uploads a file recorded elsewhere from here. ADR-0041: each take of the
- * room mic is appended to one recording, its words added to a first pass while the meeting runs and the whole transcribed
- * again once it ends (ADR-0044), so the tab reads as one meeting; the take being
+ * room mic is appended to one recording and its words added after the ones there (ADR-0044), so the tab reads as one
+ * meeting; the take being
  * recorded shows as such to everyone, and nobody hears it before the mic goes off.
  *
  * Nothing is kept before the Secretary confirms the participants were told and nobody objected; the purpose they

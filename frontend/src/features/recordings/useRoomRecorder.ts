@@ -9,8 +9,7 @@ import { DEFAULT_PURPOSE } from './useRecordingSave'
 
 /**
  * ADR-0041 — the Secretary's room mic, held by the meeting page so that moving between its tabs never stops it. One
- * switch: on opens a take, off saves it into the meeting's room recording; ADR-0044 transcribes that take alone while
- * the meeting runs and the whole once it ends. A
+ * switch: on opens a take, off saves it into the meeting's room recording; ADR-0044 transcribes that take alone. A
  * take this device kept from a session cut off (a closed tab, a crash) is offered to carry on or to save. It stops on
  * its own when the meeting is no longer running, and when the page is left.
  */

@@ -2293,6 +2293,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assigned_by_id");
 
+                    b.Property<Guid?>("AssignedGuestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_guest_id");
+
                     b.Property<Guid?>("AssignedUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("assigned_user_id");
@@ -2333,6 +2337,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("AssignedById")
                         .HasDatabaseName("ix_transcript_speakers_assigned_by_id");
 
+                    b.HasIndex("AssignedGuestId")
+                        .HasDatabaseName("ix_transcript_speakers_assigned_guest_id");
+
                     b.HasIndex("AssignedUserId")
                         .HasDatabaseName("ix_transcript_speakers_assigned_user_id");
 
@@ -2343,7 +2350,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_transcript_speakers_transcript_id_label");
 
-                    b.ToTable("transcript_speakers", (string)null);
+                    b.ToTable("transcript_speakers", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_transcript_speakers_one_assignee", "assigned_user_id IS NULL OR assigned_guest_id IS NULL");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.User", b =>
@@ -3635,6 +3645,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_transcript_speakers_users_assigned_by_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "AssignedGuest")
+                        .WithMany()
+                        .HasForeignKey("AssignedGuestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_transcript_speakers_meeting_guest_invitations_assigned_gues");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "AssignedUser")
                         .WithMany()
                         .HasForeignKey("AssignedUserId")
@@ -3655,6 +3671,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_transcript_speakers_transcripts_transcript_id");
 
                     b.Navigation("AssignedBy");
+
+                    b.Navigation("AssignedGuest");
 
                     b.Navigation("AssignedUser");
 

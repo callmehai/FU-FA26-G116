@@ -151,8 +151,8 @@ export function TranscriptView({
 
   const { transcript } = state
   const running = transcript.status === 'Pending' || transcript.status === 'Processing'
-  // A room recording that just had a take appended keeps showing what it said so far while the new take is added, or
-  // while the whole is redone once the meeting has ended (ADR-0044).
+  // A room recording that just had a take appended keeps showing what it said so far while the new take is added
+  // (ADR-0044), as a recording transcribed again keeps its earlier text until the new one is in.
   if (running && transcript.segments.length === 0)
     return (
       <p className="transcript-status transcript-running" role="status">
@@ -195,25 +195,14 @@ export function TranscriptView({
       {running && (
         <p className="transcript-status transcript-running" role="status">
           <span className="transcript-spinner" aria-hidden="true" />
-          {transcript.provisional
+          {transcript.appending
             ? 'Đang chuyển chữ lượt ghi mới…'
             : 'Đang chuyển chữ lại cả bản ghi. Chữ dưới đây là bản trước.'}
         </p>
       )}
       <div className="transcript-note">
-        {transcript.provisional ? (
-          <>
-            <Badge tone="amber">Bản sơ bộ</Badge>
-            <span className="field-hint">
-              Họp xong máy chuyển chữ lại cả bản, khi đó mới sửa chữ và gán người nói.
-            </span>
-          </>
-        ) : (
-          <>
-            <Badge tone="outline">Máy nhận dạng</Badge>
-            <span className="field-hint">Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.</span>
-          </>
-        )}
+        <Badge tone="outline">Máy nhận dạng</Badge>
+        <span className="field-hint">Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.</span>
         <span className="transcript-tools">
           {transcript.canExport && (
             <button

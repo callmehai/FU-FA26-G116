@@ -113,10 +113,10 @@ Theo [ADR-0041](../05-decisions/0041-mic-phong-ghi-tung-luot.md), như AI-eCabin
 Trong khi ghi, trình duyệt gửi tiếng lên từng phần, và giữ phần chưa gửi trong IndexedDB. Tắt mic là lưu lượt: lượt
 được nối vào bản ghi phòng của cuộc họp. Mỗi cuộc họp chỉ một lượt mở.
 
-Chuyển chữ theo [ADR-0044](../05-decisions/0044-ban-go-bang-so-bo-khi-dang-hop.md) (PO 01/11/2026, khác AI-eCabinet):
-trong khi họp, mỗi lượt vừa lưu chỉ **lượt đó** được chuyển chữ và thêm vào sau các câu đã có (bản **sơ bộ**: không sửa
-chữ, không gán người nói, `409 MSG382`). Chủ toạ kết thúc họp thì **cả bản** được chuyển chữ lại, tách người nói trên
-toàn bộ cuộc họp; từ đó mới sửa và gán tên.
+Chuyển chữ theo [ADR-0044](../05-decisions/0044-chuyen-chu-tung-luot-giu-nguoi-noi.md) (PO 01/11/2026, khác AI-eCabinet):
+mỗi lượt vừa lưu chỉ **lượt đó** được chuyển chữ và thêm vào sau các câu đã có. Trước tiếng của lượt, server đặt một
+đoạn mẫu của từng người nói đã có, nên người nói lại giữ nhãn cũ và tên Thư ký đã gán. Chữ đã sửa và tên đã gán không
+bị lần chạy sau ghi đè, nên Thư ký sửa ngay trong lúc họp. Kết thúc họp không chuyển chữ lại.
 
 ### `POST /api/meetings/{meetingId}/recordings/takes` — `{ "consentConfirmed": true, "consentPurpose": "…" }`
 
@@ -145,9 +145,12 @@ Tắt mic. Người mở lượt gọi, hoặc một Thư ký lưu hộ lượt 
 - Lượt đầu của cuộc họp thành bản ghi phòng.
 - Lượt sau được nối vào bản ghi phòng mới nhất, và thêm một dòng vào `takes`.
 - Bản ghi phòng đầy giới hạn thì lượt này mở bản ghi mới.
-- Bản gỡ băng trở về `Pending`. Cuộc họp đang diễn ra: chỉ chuyển chữ các lượt chưa có chữ, nhãn người nói đánh số tiếp
-  (`SPEAKER_02`… sau `SPEAKER_01` của lần trước). Đã kết thúc: chuyển chữ lại cả bản. Lần chạy đang dở bị bỏ kết quả
-  và chạy lại cả phần đang chờ.
+- Bản gỡ băng trở về `Pending`, chỉ chuyển chữ các lượt chưa có chữ (`appending: true`). Tệp gửi worker: với mỗi
+  nhãn đã có, tối đa 6 giây lấy từ cuối các câu dài nhất của nhãn đó (nhãn nói dưới 1,5 giây bỏ qua), mỗi đoạn cách
+  nhau 1,5 giây im lặng, rồi tới tiếng các lượt mới. Câu worker nghe trong phần mẫu bị bỏ. Giọng của lần chạy giữ ít
+  nhất một nửa phần mẫu của một nhãn cũ (và nhiều hơn mọi nhãn khác) thì mang nhãn cũ đó; giọng khác đánh số tiếp
+  (`SPEAKER_03`… sau `SPEAKER_02`), không bỏ số. Không vector giọng nào được lưu. Bản gỡ băng chưa từng xong (lỗi,
+  chưa chạy) thì chuyển chữ cả bản. Lần chạy đang dở bị bỏ kết quả và chạy lại cả phần đang chờ.
 
 `200 MSG363` `{ code, message, recordingId, appended }`. Gọi lại trên lượt đã lưu vẫn trả mã này. Lượt chưa thu
 được tiếng nào bị bỏ: `200 MSG365`, `recordingId: null`. Lỗi: `403 MSG295`, `409 MSG362`, `503 MSG298`.
@@ -237,7 +240,7 @@ Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
   "recordingId": "…", "status": "Completed",
   "provider": "self-hosted:gipformer-1.5-68m-int8@b528768939c7",
   "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
-  "provisional": false,
+  "appending": false,
   "segments": [
     { "id": "…", "position": 1, "startMs": 0, "endMs": 5800, "text": "Kính thưa các đồng chí, …",
       "speakerLabel": "SPEAKER_00", "editedAt": null, "editedByName": null }
@@ -253,8 +256,8 @@ Với bản ghi mic phòng có nhiều lượt (ADR-0041), mỗi đoạn nằm g
 trước kết thúc), nên mốc bắt đầu có thể lùi vào lượt trước; xếp theo mốc bắt đầu thì lời của lượt này hiện dưới
 lượt trước.
 
-`provisional: true`: bản ghi mic phòng của cuộc họp còn `InProgress` (ADR-0044). Khi đó `canEdit` là `false`, và
-`PUT /api/transcript-segments/{id}`, `PUT /api/recordings/{id}/speakers/{label}` trả `409 MSG382`.
+`appending: true`: các lượt mic phòng mới đang được chuyển chữ để thêm vào sau (ADR-0044). Các câu đang có giữ
+nguyên, Thư ký vẫn sửa chữ và gán người nói được.
 
 ### `POST /api/recordings/{recordingId}/transcribe`
 

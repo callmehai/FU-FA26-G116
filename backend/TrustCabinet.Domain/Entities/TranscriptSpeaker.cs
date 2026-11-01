@@ -28,6 +28,13 @@ public class TranscriptSpeaker : Entity
     public Guid? AssignedUserId { get; set; }
     public User? AssignedUser { get; set; }
 
+    /// <summary>
+    /// A guest of the meeting the voice was named as, instead of a user: guests have no account and no enrolled voice, so
+    /// the machine never suggests one. Never set together with <see cref="AssignedUserId"/>.
+    /// </summary>
+    public Guid? AssignedGuestId { get; set; }
+    public MeetingGuestInvitation? AssignedGuest { get; set; }
+
     public Guid? AssignedById { get; set; }
     public User? AssignedBy { get; set; }
 

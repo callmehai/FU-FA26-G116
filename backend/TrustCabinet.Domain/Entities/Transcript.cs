@@ -32,9 +32,9 @@ public class Transcript : Entity
     public DateTimeOffset? CompletedAt { get; set; }
 
     /// <summary>
-    /// ADR-0044 — while the meeting runs, only the room-mic takes added since the last run are transcribed, from this
-    /// offset of the audio, and their lines are added after the ones already there. Null: the whole recording is
-    /// transcribed and replaces every line, as when the meeting ends.
+    /// ADR-0044 — only the room-mic takes added since the last run are transcribed, from this offset of the audio, and
+    /// their lines are added after the ones already there. Null: the whole recording is transcribed and replaces every
+    /// line, as on a first run or when the Secretary asks for it again.
     /// </summary>
     public long? AppendFromMs { get; set; }
 

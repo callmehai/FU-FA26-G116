@@ -63,9 +63,12 @@ export function SpeakerList({ transcript, onChanged }: { transcript: Transcript;
   )
 }
 
+/** Who the Secretary named the voice as: a user or a guest of the meeting. */
+const assignedOf = (speaker: TranscriptSpeaker) => speaker.assignedUserId ?? speaker.assignedGuestId ?? null
+
 /** The voice suggested as the same person more surely, read as its speaker. */
 function leadOf(transcript: Transcript, speaker: TranscriptSpeaker) {
-  if (speaker.assignedUserId !== null || !speaker.suggestedUserId || !speaker.sameAsLabel) return null
+  if (assignedOf(speaker) || !speaker.suggestedUserId || !speaker.sameAsLabel) return null
   return transcript.speakers.find((s) => s.label === speaker.sameAsLabel) ?? null
 }
 
@@ -92,12 +95,13 @@ export function SpeakerPicker({
   const lead = [leadOf(transcript, speaker)].find((l) => l && !voice.labels.includes(l.label)) ?? null
 
   // With `alsoLead`, the voice it sounds like is named too: one person the machine split in two.
-  const assign = async (userId: string | null, alsoLead = false) => {
+  const assign = async (id: string | null, alsoLead = false) => {
     setSaving(true)
     try {
       const labels = alsoLead && lead ? [...voice.labels, lead.label] : voice.labels
+      const who = transcript.people.find((p) => p.id === id) ?? null
       let message = ''
-      for (const label of labels) message = (await assignSpeaker(transcript.recordingId, label, userId)).message
+      for (const label of labels) message = (await assignSpeaker(transcript.recordingId, label, who)).message
       toast.show(message, 'success')
       onChanged()
     } catch (error) {
@@ -111,13 +115,13 @@ export function SpeakerPicker({
   const label = speakerName(speaker.label)
   // The machine's guess is a person, not a score: it leads the picker as "Khớp giọng nhất" and names itself on
   // hover. A percentage meant nothing to the people reading it.
-  const suggested = speaker.assignedUserId === null ? speaker.suggestedUserId : null
+  const suggested = assignedOf(speaker) ? null : speaker.suggestedUserId
   const same = lead ? voiceName(lead) : null
   const hint =
     suggested && speaker.suggestedName
       ? `Khớp giọng nhất: ${speaker.suggestedName}${same ? ` · cùng giọng với ${same}, có thể là một người bị tách làm hai` : ''}`
       : undefined
-  const both = lead && lead.assignedUserId === null && speaker.suggestedName ? speaker.suggestedName : null
+  const both = lead && !assignedOf(lead) && speaker.suggestedName ? speaker.suggestedName : null
   const ordered = suggested
     ? [...transcript.people].sort((a, b) => Number(b.id === suggested) - Number(a.id === suggested))
     : transcript.people
@@ -125,7 +129,7 @@ export function SpeakerPicker({
     <Select
       size="sm"
       label={`Tên của ${voiceName(speaker)}`}
-      value={speaker.assignedUserId}
+      value={assignedOf(speaker)}
       placeholder={label}
       marker={inline ? undefined : speakerColor(speaker.label)}
       tooltip={hint}
@@ -135,9 +139,9 @@ export function SpeakerPicker({
         ...ordered.map((p) => ({
           value: p.id,
           label: p.fullName,
-          hint: p.id === suggested ? 'Khớp giọng nhất' : undefined,
+          hint: p.id === suggested ? 'Khớp giọng nhất' : p.guest ? 'Khách' : undefined,
         })),
-        ...(speaker.assignedUserId ? [{ value: NOBODY, label: `Bỏ tên, để lại "${label}"` }] : []),
+        ...(assignedOf(speaker) ? [{ value: NOBODY, label: `Bỏ tên, để lại "${label}"` }] : []),
       ]}
       onChange={(value) =>
         void (value.startsWith(BOTH) ? assign(value.slice(BOTH.length), true) : assign(value === NOBODY ? null : value))
