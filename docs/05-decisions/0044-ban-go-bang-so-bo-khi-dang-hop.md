@@ -30,6 +30,8 @@ Theo ADR-0041, như AI-eCabinet, mỗi lần Thư ký tắt mic phòng thì lư�
    - Bản gỡ băng mic phòng của cuộc họp `InProgress` có `provisional: true`, `canEdit: false`.
    - Sửa chữ hoặc gán người nói trả `409 MSG382`.
    - FE hiện nhãn "Bản sơ bộ" và một dòng: "Họp xong máy chuyển chữ lại cả bản, khi đó mới sửa chữ và gán người nói."
+   - FE cũng ẩn nút xoá lượt trên bản sơ bộ (PO 01/11/2026), vì nút đi theo `canEdit`. API vẫn cho xoá lượt khi
+     mic không ghi; Thư ký xoá lượt sau khi họp xong.
 3. **Kết thúc họp: chuyển chữ lại cả bản.**
    - Chủ toạ kết thúc họp: trong cùng transaction, bản gỡ băng của bản ghi phòng có từ hai lượt trở lên trở về
      `Pending`, chạy cả tệp. Tách người nói trên toàn bộ cuộc họp, nên một người nói ở nhiều lượt thành một giọng.
