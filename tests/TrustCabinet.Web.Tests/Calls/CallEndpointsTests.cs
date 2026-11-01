@@ -9,7 +9,9 @@ using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Users;
+using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Web.Endpoints;
 using TrustCabinet.Web.Tests.Users;
 
@@ -30,6 +32,8 @@ public sealed class CallEndpointsTests : IDisposable
 
         internal FakeUserAccountRepository Accounts { get; } = new();
 
+        internal FakeAuditService Audit { get; } = new();
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
@@ -41,6 +45,8 @@ public sealed class CallEndpointsTests : IDisposable
                 services.AddSingleton<ICallRepository>(Calls);
                 services.RemoveAll<ILiveKitGateway>();
                 services.AddSingleton<ILiveKitGateway>(LiveKit);
+                services.RemoveAll<TrustCabinet.Domain.Audit.IAuditService>();
+                services.AddSingleton<TrustCabinet.Domain.Audit.IAuditService>(Audit);
             });
         }
 
@@ -49,6 +55,15 @@ public sealed class CallEndpointsTests : IDisposable
             var client = CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                 "Bearer", Services.GetRequiredService<ITokenIssuer>().CreateAccessToken(user, []));
+            return client;
+        }
+
+        /// <summary>A UC-04 guest token, signed as the verify endpoint signs it; access comes from the fake repository.</summary>
+        internal HttpClient ClientFor(MeetingGuestSession guest)
+        {
+            var client = CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                "Bearer", Services.GetRequiredService<GuestCredentials>().AccessToken(guest, DateTimeOffset.UtcNow.AddHours(1)));
             return client;
         }
     }
@@ -193,6 +208,55 @@ public sealed class CallEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable,
             (await _factory.CreateClient().PostAsync("/api/livekit/webhook", new StringContent("{}"))).StatusCode);
+    }
+
+    [Fact]
+    public async Task Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice()
+    {
+        var guest = new MeetingGuestSession(_meetingId, Guid.CreateVersion7(), Guid.CreateVersion7());
+        _factory.Calls.AdmitGuest(_meetingId, guest.SessionId);
+        var client = _factory.ClientFor(guest);
+
+        var room = await client.GetFromJsonAsync<CallRoomResponse>(CallPath);
+        Assert.Equal(("Open", "Guest"), (room!.Status, room.MyRole));
+
+        await AssertError(await client.PostAsync($"{CallPath}/join", null), HttpStatusCode.BadRequest, "MSG380");
+        await AssertError(await client.PostAsJsonAsync($"{CallPath}/join", new { recordingNoticeAcknowledged = false }),
+            HttpStatusCode.BadRequest, "MSG380");
+
+        var join = await client.PostAsJsonAsync($"{CallPath}/join", new { recordingNoticeAcknowledged = true });
+        Assert.Equal(HttpStatusCode.OK, join.StatusCode);
+        Assert.Equal(CallMember.Guest(guest.SessionId).Identity, (await join.Content.ReadFromJsonAsync<CallJoinResponse>())!.Identity);
+        Assert.Equal(guest.SessionId, Assert.Single(_factory.Audit.Records).ObjectId);
+
+        // Muting stays a chair's: a guest token never passes the active-user gate.
+        Assert.Equal(HttpStatusCode.Forbidden,
+            (await client.PostAsync($"{CallPath}/participants/{Guid.CreateVersion7()}/mute", null)).StatusCode);
+
+        // The chair mutes the guest by its room identity; anything that is not an identity is an unknown participant.
+        var chair = GivenUser("chair@trustcabinet.local");
+        _factory.Calls.Invite(_meetingId, chair.Id, MeetingRole.Chair);
+        var identity = CallMember.Guest(guest.SessionId).Identity;
+        _factory.LiveKit.Join(CallRoomNames.ForMeeting(_meetingId), CallMember.Guest(guest.SessionId),
+            new RoomTrack("TR_guest_mic", CallTrackSource.Microphone, Muted: false));
+        var chairClient = _factory.ClientFor(chair);
+        Assert.Equal(HttpStatusCode.NoContent, (await chairClient.PostAsync($"{CallPath}/participants/{identity}/mute", null)).StatusCode);
+        Assert.Equal(identity, Assert.Single(_factory.LiveKit.Muted).Identity);
+        Assert.Equal(HttpStatusCode.NotFound, (await chairClient.PostAsync($"{CallPath}/participants/guest-x/mute", null)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Guest_token_of_another_meeting_gets_the_same_empty_404()
+    {
+        var guest = new MeetingGuestSession(Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7());
+        _factory.Calls.AdmitGuest(guest.MeetingId, guest.SessionId);
+        var client = _factory.ClientFor(guest);
+
+        using var read = await client.GetAsync(CallPath);
+        Assert.Equal(HttpStatusCode.NotFound, read.StatusCode);
+        Assert.Empty(await read.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.NotFound,
+            (await client.PostAsJsonAsync($"{CallPath}/join", new { recordingNoticeAcknowledged = true })).StatusCode);
     }
 
     private static async Task AssertError(HttpResponseMessage response, HttpStatusCode status, string code)

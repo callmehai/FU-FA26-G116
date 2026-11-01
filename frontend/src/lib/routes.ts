@@ -11,6 +11,14 @@ export const routes = {
   login: '/login',
   // Public: opened from the UC-07 email; the token travels in the fragment, never the query.
   resetPassword: '/reset-password',
+  /**
+   * Public: a guest's invitation link (UC-04), `/guest/{invitationId}#token=…`, then the invited meeting
+   * itself under the same path once verified. Outside the internal session and the sidebar.
+   */
+  guest: (invitationId: string) => `/guest/${invitationId}`,
+  guestDocument: (invitationId: string, documentId: string) => `/guest/${invitationId}/documents/${documentId}`,
+  /** The guest's way into the call room (SCRUM-59): the members' room, on the guest's token. */
+  guestRoom: (invitationId: string) => `/guest/${invitationId}/room`,
 
   mgmt: '/mgmt',
   meetings: '/mgmt/meetings',

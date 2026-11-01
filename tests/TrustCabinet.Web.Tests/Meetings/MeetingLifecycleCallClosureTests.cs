@@ -22,7 +22,7 @@ public sealed partial class MeetingLifecycleTests
             await using var scope = fixture.Host.Services.CreateAsyncScope();
             var calls = scope.ServiceProvider.GetRequiredService<ICallRepository>();
             var session = await calls.EnsureActiveRoomSessionAsync(s.MeetingId, s.Chair, meetingEndedAt.AddMinutes(-5));
-            await calls.RecordJoinAsync(session.Id, s.Chair, meetingEndedAt.AddMinutes(-5));
+            await calls.RecordJoinAsync(session.Id, CallMember.User(s.Chair), meetingEndedAt.AddMinutes(-5));
         }
         fixture.BeforeRoomClosed = async (id, ct) =>
         {
@@ -78,9 +78,9 @@ public sealed partial class MeetingLifecycleTests
             sessionId = session.Id;
             if (latestEvidence != "start")
             {
-                await calls.RecordJoinAsync(session.Id, s.Chair, latestEvidence == "join" ? latest : now);
-                if (latestEvidence == "leave") await calls.RecordLeaveAsync(session.Id, s.Chair, latest);
-                await calls.RecordJoinAsync(session.Id, s.Member, now);
+                await calls.RecordJoinAsync(session.Id, CallMember.User(s.Chair), latestEvidence == "join" ? latest : now);
+                if (latestEvidence == "leave") await calls.RecordLeaveAsync(session.Id, CallMember.User(s.Chair), latest);
+                await calls.RecordJoinAsync(session.Id, CallMember.User(s.Member), now);
             }
             await calls.EndSessionAsync(session.Id, now);
             await calls.EndSessionAsync(session.Id, now.AddMinutes(1));

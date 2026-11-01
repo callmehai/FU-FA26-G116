@@ -20,6 +20,8 @@ export interface ApiErrorBody {
   code: string
   message: string
   errors?: Record<string, string>
+  /** How long to wait before asking again, for a 429 (UC-04's MSG373 / MSG379). */
+  retryAfterSeconds?: number
 }
 
 /** A non-2xx response from the backend. Keeps the status and, when there was one, the body. */
@@ -51,17 +53,30 @@ export interface AuthHooks {
 }
 
 let auth: AuthHooks | null = null
+/**
+ * A guest page's own token (UC-04). While one is on screen, every authenticated request and hub of this
+ * tab goes as the guest, never with an internal session the same browser may also hold; the guest pages
+ * set it on mount and clear it on unmount, and no internal screen is on screen at the same time.
+ */
+let guestAuth: AuthHooks | null = null
 
 export function configureAuth(hooks: AuthHooks) {
   auth = hooks
 }
+
+export function setGuestAuth(hooks: AuthHooks | null) {
+  guestAuth = hooks
+}
+
+const currentAuth = () => guestAuth ?? auth
 
 /**
  * The session's access token, refreshed first when it is about to expire. For the realtime hubs,
  * which authenticate their own connection instead of going through `request`.
  */
 export function getAccessToken(): Promise<string | null> {
-  return auth ? auth.getAccessToken() : Promise.resolve(null)
+  const hooks = currentAuth()
+  return hooks ? hooks.getAccessToken() : Promise.resolve(null)
 }
 
 interface RequestOptions extends RequestInit {
@@ -104,13 +119,13 @@ async function send(path: string, init: RequestOptions, token: string | null) {
 
 /** One request with the session's token, refreshed and retried once on a 401; non-2xx throws `ApiError`. */
 async function fetchOk(path: string, init: RequestOptions): Promise<Response> {
-  const authenticated = !init.anonymous && auth !== null
-  let res = await send(path, init, authenticated ? await auth!.getAccessToken() : null)
+  const hooks = init.anonymous ? null : currentAuth()
+  let res = await send(path, init, hooks ? await hooks.getAccessToken() : null)
 
   // An expired or revoked access token: refresh once and retry once. A second 401 means the
   // session is really gone, and `recoverFromUnauthorized` has already signed the user out.
-  if (res.status === 401 && authenticated) {
-    const token = await auth!.recoverFromUnauthorized()
+  if (res.status === 401 && hooks) {
+    const token = await hooks.recoverFromUnauthorized()
     if (token) res = await send(path, init, token)
   }
 
@@ -152,10 +167,10 @@ async function upload<T>(
       xhr.send(form)
     })
 
-  const authenticated = auth !== null
-  let xhr = await attempt(authenticated ? await auth!.getAccessToken() : null)
-  if (xhr.status === 401 && authenticated) {
-    const token = await auth!.recoverFromUnauthorized()
+  const hooks = currentAuth()
+  let xhr = await attempt(hooks ? await hooks.getAccessToken() : null)
+  if (xhr.status === 401 && hooks) {
+    const token = await hooks.recoverFromUnauthorized()
     if (token) xhr = await attempt(token)
   }
   if (xhr.status < 200 || xhr.status >= 300) throw apiError(xhr.status, path, 'POST', xhr.responseText)

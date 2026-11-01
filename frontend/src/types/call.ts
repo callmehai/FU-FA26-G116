@@ -13,7 +13,7 @@ export const MEETING_ROLE_LABEL: Record<MeetingRole, string> = {
   Chair: 'Chủ toạ',
   Secretary: 'Thư ký',
   Member: 'Thành viên',
-  Guest: 'Khách mời',
+  Guest: 'Khách',
 }
 
 /** GET /api/meetings/{id}/call */
