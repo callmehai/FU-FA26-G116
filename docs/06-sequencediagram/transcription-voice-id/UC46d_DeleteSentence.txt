@@ -1,0 +1,82 @@
+title UC-46d - Delete a Sentence
+
+actor "Secretary" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Speech Clip Controller" as ClipController
+control ":Speech Clip Service" as ClipService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Speech Clip Repository" as ClipRepository
+participant ":Audit Service" as AuditService
+participant ":Recording Storage" as RecordingStorage
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+Actor->RecordingsTab: Confirm Delete on a sentence of the speech timeline
+activate RecordingsTab
+RecordingsTab->ClipController: Delete the sentence
+activate ClipController
+ClipController->ClipService: delete(clipId, actorId)
+activate ClipService
+
+ClipService->ClipRepository: Get the sentence
+activate ClipRepository
+ClipRepository->Database: Retrieve sentence
+activate Database
+Database-->ClipRepository: Sentence / Not found
+deactivate Database
+ClipRepository-->ClipService: Sentence / Not found
+deactivate ClipRepository
+ClipService->MeetingRepository: Get the Meeting with its current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->ClipService: Meeting and roster
+deactivate MeetingRepository
+ClipService->ClipService: Check the actor is the current Secretary or the speaker of the sentence (BR-355)
+
+alt Sentence no longer exists or actor is not on the roster
+    ClipService-->ClipController: Sentence not found
+    ClipController-->RecordingsTab: Sentence not found
+    RecordingsTab-->Actor: Remove the sentence from the timeline
+else Actor is neither the Secretary nor the speaker - EX-1
+    ClipService-->ClipController: MSG323 - Only the speaker or the Secretary may delete this sentence.
+    ClipController-->RecordingsTab: MSG323 - Only the speaker or the Secretary may delete this sentence.
+    RecordingsTab-->Actor: MSG323 - Only the speaker or the Secretary may delete this sentence.
+else Secretary deletes the sentence
+    ClipService->AuditService: Record the deletion, made by the Secretary (BR-355)
+    activate AuditService
+    AuditService-->ClipService: Entry saved
+    deactivate AuditService
+    ClipService->ClipRepository: Delete the sentence with its text; it cannot be restored
+    activate ClipRepository
+    ClipRepository->Database: Delete sentence
+    activate Database
+    Database-->ClipRepository: Sentence deleted / Save failed
+    deactivate Database
+    ClipRepository-->ClipService: Sentence deleted / Save failed
+    deactivate ClipRepository
+
+    alt Sentence cannot be deleted - EX-2
+        ClipService-->ClipController: MSG304 - Unable to save transcript changes. Please try again.
+        ClipController-->RecordingsTab: MSG304 - Unable to save transcript changes. Please try again.
+        RecordingsTab-->Actor: MSG304 - Unable to save transcript changes. Please try again.
+    else Sentence deleted
+        ClipService->RecordingStorage: Delete the sentence audio (BR-355)
+        activate RecordingStorage
+        RecordingStorage-->ClipService: Audio deleted
+        deactivate RecordingStorage
+        ClipService->Publisher: Tell everyone in the Meeting that the speech timeline changed
+        activate Publisher
+        Publisher-->ClipService: Change published
+        deactivate Publisher
+        ClipService-->ClipController: MSG322 - Spoken sentence deleted.
+        ClipController-->RecordingsTab: MSG322 - Spoken sentence deleted.
+        RecordingsTab-->Actor: MSG322 - Spoken sentence deleted.
+    end
+end
+
+deactivate ClipService
+deactivate ClipController
+deactivate RecordingsTab

@@ -1,0 +1,107 @@
+title UC-45c - Transcribe Meeting Recording: Process Transcription Queue (System)
+
+actor "System" as System
+control ":Transcription Worker" as Worker
+control ":Transcription Service" as TranscriptionService
+participant ":Transcript Repository" as TranscriptRepository
+participant ":Recording Repository" as RecordingRepository
+participant ":Recording Storage" as RecordingStorage
+participant ":Speech Recognition Service" as SpeechEngine
+participant ":Meeting Repository" as MeetingRepository
+participant ":Voice ID Repository" as VoiceIdRepository
+participant ":Voiceprint Protector" as Protector
+participant ":Speaker Matcher" as SpeakerMatcher
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+System->Worker: Check the transcription queue at a regular interval
+activate Worker
+Worker->TranscriptionService: processNext()
+activate TranscriptionService
+TranscriptionService->TranscriptRepository: Claim the oldest Pending transcript and mark it Processing
+activate TranscriptRepository
+TranscriptRepository->Database: Claim the oldest Pending transcript
+activate Database
+Database-->TranscriptRepository: Transcript with its recording / None
+deactivate Database
+TranscriptRepository-->TranscriptionService: Transcript with its recording / None
+deactivate TranscriptRepository
+
+alt Queue is empty
+    TranscriptionService-->Worker: Nothing to do
+else A transcript was claimed
+    TranscriptionService->RecordingStorage: Read the recording audio
+    activate RecordingStorage
+    RecordingStorage-->TranscriptionService: Audio / File missing
+    deactivate RecordingStorage
+    TranscriptionService->SpeechEngine: Transcribe with punctuation and capital letters and tell the voices apart,\ninside the system (BR-369)
+    activate SpeechEngine
+    SpeechEngine-->TranscriptionService: Timed segments with voice labels and a voice profile per voice / Failed
+    deactivate SpeechEngine
+    TranscriptionService->RecordingRepository: Lock the recording and reread the transcript
+    activate RecordingRepository
+    RecordingRepository->Database: Retrieve recording for update and transcript
+    activate Database
+    Database-->RecordingRepository: Recording and transcript
+    deactivate Database
+    RecordingRepository-->TranscriptionService: Recording and transcript
+    deactivate RecordingRepository
+
+    alt Recording was erased, or a take was appended while running
+        TranscriptionService->TranscriptionService: Discard the result: an erased recording keeps no transcript,\nan extended one is already queued again (BR-345, BR-348)
+    else Transcription failed - EX-3
+        TranscriptionService->TranscriptRepository: Mark the transcript Failed with the reason for the Secretary
+        activate TranscriptRepository
+        TranscriptRepository->Database: Update transcript
+        activate Database
+        Database-->TranscriptRepository: Transcript saved
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Transcript saved
+        deactivate TranscriptRepository
+    else Transcription completed
+        TranscriptionService->MeetingRepository: Get the Meeting current roster
+        activate MeetingRepository
+        MeetingRepository->Database: Retrieve current roster
+        activate Database
+        Database-->MeetingRepository: Current roster
+        deactivate Database
+        MeetingRepository-->TranscriptionService: Current roster
+        deactivate MeetingRepository
+        TranscriptionService->VoiceIdRepository: Get voice samples of roster members whose Voice ID consent stands (BR-366)
+        activate VoiceIdRepository
+        VoiceIdRepository->Database: Retrieve matchable voice samples
+        activate Database
+        Database-->VoiceIdRepository: Protected voice samples
+        deactivate Database
+        VoiceIdRepository-->TranscriptionService: Protected voice samples
+        deactivate VoiceIdRepository
+        TranscriptionService->Protector: Unprotect each sample voiceprint
+        activate Protector
+        Protector-->TranscriptionService: Voiceprints
+        deactivate Protector
+        TranscriptionService->SpeakerMatcher: Suggest who each voice is: the best sample of each person,\nonly when close enough and clearly ahead (BR-366, BR-367)
+        activate SpeakerMatcher
+        SpeakerMatcher-->TranscriptionService: Suggested person per voice
+        deactivate SpeakerMatcher
+        TranscriptionService->TranscriptRepository: Replace segments and voices with the new ones and their suggestions,\nwithout naming anyone; mark the transcript Completed (BR-360, BR-366)
+        activate TranscriptRepository
+        TranscriptRepository->Database: Replace segments and speakers, update transcript
+        activate Database
+        Database-->TranscriptRepository: Transcript saved
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Transcript saved
+        deactivate TranscriptRepository
+        TranscriptionService->TranscriptionService: Drop the voice profiles of the Meeting, they are never stored
+    end
+
+    opt Transcript was saved Failed or Completed
+        TranscriptionService->Publisher: Tell everyone in the Meeting that the recordings changed
+        activate Publisher
+        Publisher-->TranscriptionService: Change published
+        deactivate Publisher
+    end
+    TranscriptionService-->Worker: One transcript processed
+end
+
+deactivate TranscriptionService
+deactivate Worker

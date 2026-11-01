@@ -1,0 +1,82 @@
+title UC-80 - Manage My Recorded Speech
+
+actor "Participant" as Actor
+boundary "My Recorded Speech Panel" as MySpeechPanel
+control ":Speech Clip Controller" as ClipController
+control ":Speech Clip Service" as ClipService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Speech Clip Repository" as ClipRepository
+participant ":Audit Service" as AuditService
+participant ":Recording Storage" as RecordingStorage
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+Actor->MySpeechPanel: Confirm Delete on one of the own saved sentences
+activate MySpeechPanel
+MySpeechPanel->ClipController: Delete the sentence
+activate ClipController
+ClipController->ClipService: delete(clipId, actorId)
+activate ClipService
+
+ClipService->ClipRepository: Get the sentence
+activate ClipRepository
+ClipRepository->Database: Retrieve sentence
+activate Database
+Database-->ClipRepository: Sentence / Not found
+deactivate Database
+ClipRepository-->ClipService: Sentence / Not found
+deactivate ClipRepository
+ClipService->MeetingRepository: Get the Meeting with its current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->ClipService: Meeting and roster
+deactivate MeetingRepository
+ClipService->ClipService: Check the actor is an internal user on the current roster (BR-350, BR-370)\nand is the speaker of the sentence or the current Secretary (BR-355)
+
+alt Sentence no longer exists or actor is not on the roster
+    ClipService-->ClipController: Sentence not found
+    ClipController-->MySpeechPanel: Sentence not found
+    MySpeechPanel-->Actor: Remove the sentence from the list
+else Actor is neither the speaker nor the Secretary - EX-1
+    ClipService-->ClipController: MSG323 - Only the speaker or the Secretary may delete this sentence.
+    ClipController-->MySpeechPanel: MSG323 - Only the speaker or the Secretary may delete this sentence.
+    MySpeechPanel-->Actor: MSG323 - Only the speaker or the Secretary may delete this sentence.
+else Speaker withdraws the own sentence
+    ClipService->AuditService: Record the deletion, made by the speaker (BR-355)
+    activate AuditService
+    AuditService-->ClipService: Entry saved
+    deactivate AuditService
+    ClipService->ClipRepository: Delete the sentence with its text
+    activate ClipRepository
+    ClipRepository->Database: Delete sentence
+    activate Database
+    Database-->ClipRepository: Sentence deleted / Save failed
+    deactivate Database
+    ClipRepository-->ClipService: Sentence deleted / Save failed
+    deactivate ClipRepository
+
+    alt Sentence cannot be deleted - EX-2
+        ClipService-->ClipController: MSG304 - Unable to save transcript changes. Please try again.
+        ClipController-->MySpeechPanel: MSG304 - Unable to save transcript changes. Please try again.
+        MySpeechPanel-->Actor: MSG304 - Unable to save transcript changes. Please try again.
+    else Sentence deleted
+        ClipService->RecordingStorage: Delete the sentence audio (BR-355)
+        activate RecordingStorage
+        RecordingStorage-->ClipService: Audio deleted
+        deactivate RecordingStorage
+        ClipService->Publisher: Tell everyone in the Meeting that the speech timeline changed
+        activate Publisher
+        Publisher-->ClipService: Change published
+        deactivate Publisher
+        ClipService-->ClipController: MSG322 - Spoken sentence deleted.
+        ClipController-->MySpeechPanel: MSG322 - Spoken sentence deleted.
+        MySpeechPanel-->Actor: MSG322 - Spoken sentence deleted.
+    end
+end
+
+deactivate ClipService
+deactivate ClipController
+deactivate MySpeechPanel

@@ -1,0 +1,65 @@
+title UC-81e - Delete Voice Sample
+
+actor "Internal User" as Actor
+boundary "My Voice Page" as VoicePage
+control ":Voice ID Controller" as VoiceController
+control ":Voice ID Service" as VoiceService
+participant ":Voice ID Repository" as VoiceRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->VoicePage: Confirm Delete on one of the own voice samples
+activate VoicePage
+VoicePage->VoiceController: Delete the voice sample
+activate VoiceController
+VoiceController->VoiceService: deleteSample(actorId, sampleId)
+activate VoiceService
+VoiceService->VoiceRepository: Get the actor's own voice samples only (BR-364)
+activate VoiceRepository
+VoiceRepository->Database: Retrieve samples of the actor
+activate Database
+Database-->VoiceRepository: Own samples / Load failed
+deactivate Database
+VoiceRepository-->VoiceService: Own samples / Load failed
+deactivate VoiceRepository
+
+alt Sample is not one of the actor's samples
+    VoiceService-->VoiceController: Sample not found
+    VoiceController-->VoicePage: Sample not found
+    VoicePage-->Actor: Show the sample as no longer available
+else Sample belongs to the actor
+    VoiceService->AuditService: Record the deleted sample
+    activate AuditService
+    AuditService-->VoiceService: Entry saved
+    deactivate AuditService
+    VoiceService->VoiceRepository: Delete the sample with its protected voiceprint and recording;\nthe other samples stay as they are
+    activate VoiceRepository
+    VoiceRepository->Database: Delete voice sample
+    activate Database
+    Database-->VoiceRepository: Sample deleted / Save failed
+    deactivate Database
+    VoiceRepository-->VoiceService: Sample deleted / Save failed
+    deactivate VoiceRepository
+
+    alt Sample cannot be deleted - EX-1
+        VoiceService-->VoiceController: MSG315 - Unable to save changes. Please try again.
+        VoiceController-->VoicePage: MSG315 - Unable to save changes. Please try again.
+        VoicePage-->Actor: MSG315 - Unable to save changes. Please try again.
+    else Sample deleted
+        VoiceService->VoiceRepository: Get the updated Voice ID
+        activate VoiceRepository
+        VoiceRepository->Database: Retrieve consent and samples of the actor
+        activate Database
+        Database-->VoiceRepository: Consent and samples
+        deactivate Database
+        VoiceRepository-->VoiceService: Consent and samples
+        deactivate VoiceRepository
+        VoiceService-->VoiceController: MSG311 - Voice sample deleted.
+        VoiceController-->VoicePage: MSG311 - Voice sample deleted.
+        VoicePage-->Actor: MSG311 - Voice sample deleted.
+    end
+end
+
+deactivate VoiceService
+deactivate VoiceController
+deactivate VoicePage

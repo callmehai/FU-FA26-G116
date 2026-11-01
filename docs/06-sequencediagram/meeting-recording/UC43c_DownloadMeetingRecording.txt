@@ -1,0 +1,75 @@
+title UC-43c - Download Meeting Recording
+
+actor "Chair / Secretary" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Recording Controller" as RecordingController
+control ":Recording Service" as RecordingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Recording Repository" as RecordingRepository
+participant ":Audit Service" as AuditService
+participant ":Playback Link Signer" as Signer
+participant ":Recording Storage" as RecordingStorage
+database ":Database" as Database
+
+Actor->RecordingsTab: Download an available room recording
+activate RecordingsTab
+RecordingsTab->RecordingController: Get a download link for the recording
+activate RecordingController
+RecordingController->RecordingService: download(recordingId, actorId)
+activate RecordingService
+
+RecordingService->RecordingRepository: Get the recording
+activate RecordingRepository
+RecordingRepository->Database: Retrieve recording
+activate Database
+Database-->RecordingRepository: Recording / Not found
+deactivate Database
+RecordingRepository-->RecordingService: Recording / Not found
+deactivate RecordingRepository
+RecordingService->MeetingRepository: Get the Meeting with its sensitivity and current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->RecordingService: Meeting and roster
+deactivate MeetingRepository
+RecordingService->RecordingService: Check the actor is on the current roster and the recording is Available (BR-350),\nthen that the actor is the current Chair or Secretary and the Meeting is not Secret (BR-351)
+
+alt Actor not on the roster, or recording not Available
+    RecordingService-->RecordingController: Recording not found
+    RecordingController-->RecordingsTab: Recording not found
+    RecordingsTab-->Actor: Show the recording as no longer available
+else Actor is not the current Chair or Secretary - EX-1
+    RecordingService-->RecordingController: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+    RecordingController-->RecordingsTab: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+    RecordingsTab-->Actor: MSG355 - Only the Chair or Secretary may download meeting recordings and transcripts.
+else Meeting is Secret - EX-2
+    RecordingService-->RecordingController: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+    RecordingController-->RecordingsTab: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+    RecordingsTab-->Actor: MSG356 - Recordings and transcripts of Secret meetings cannot be downloaded.
+else Download allowed
+    RecordingService->AuditService: Record the download with the actor and time (BR-351)
+    activate AuditService
+    AuditService->Database: Insert audit entry
+    activate Database
+    Database-->AuditService: Entry saved
+    deactivate Database
+    AuditService-->RecordingService: Entry saved
+    deactivate AuditService
+    RecordingService->Signer: Sign a short-lived download link, separate from playback links
+    activate Signer
+    Signer-->RecordingService: Download link
+    deactivate Signer
+    RecordingService-->RecordingController: Download link
+    RecordingController-->RecordingsTab: Download link
+    RecordingsTab->RecordingStorage: Fetch the original file through the download link
+    activate RecordingStorage
+    RecordingStorage-->RecordingsTab: Original audio file
+    deactivate RecordingStorage
+    RecordingsTab-->Actor: The browser saves the original audio file
+end
+
+deactivate RecordingService
+deactivate RecordingController
+deactivate RecordingsTab

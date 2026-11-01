@@ -9,9 +9,11 @@ Run:
     python scripts/push_reports.py 3 --confirm        # replace the Drive content
     python scripts/push_reports.py minutes --check    # the Meeting_Minutes folder
     python scripts/push_reports.py minutes --confirm
+    python scripts/push_reports.py minutes --confirm --full   # also when only formatting changed
+    python scripts/push_reports.py tests --check      # the whole Report 5 set
     python scripts/push_reports.py all --check        # every target
 
-Reports 1-4, 5.0 and 5.2 each have one fixed Drive file, listed in
+Reports 1-4 and 5.0-5.5 (5.2.2 is created on first push) each have one fixed Drive file, listed in
 `docs/08-reports/README.md` ("Link Drive chuẩn"); a report is only ever written
 to that ID. Meeting minutes are matched by file name inside the Drive folder
 "Meeting_Minutes" and created there when the local file is new, because a new
@@ -97,12 +99,47 @@ TARGETS: dict[str, tuple[str, Path, Path | None]] = {
         TEST_DIR / "Report5.0_Test_Documentation.docx",
         None,
     ),
+    "5.1": (
+        "12TjU1izNI0KtQ9EfbgLCdYm-IrDnLP58",
+        TEST_DIR / "Report5.1_Unit_Test.xlsx",
+        None,
+    ),
     "5.2": (
         "1a9L8H_WE1PvDpXkqj8zpM9hv7plsShqV",
         TEST_DIR / "Report5.2_Integration_Test.xlsx",
         None,
     ),
+    # Local "System Test" is the Drive "System Test_FRs"; local "Acceptance Test" is the
+    # Drive "5.5 Acceptance Test Scripts". Drive 5.4 (System Test_NFRs) has no local source.
+    "5.3": (
+        "1a8pRvfEquTioVXf6XRXf0iiBukVWEXzQ",
+        TEST_DIR / "Report5.3_System_Test.xlsx",
+        None,
+    ),
+    "5.5": (
+        "1cbHwanGSqSqumHlFE-UR_HLSWwSKf1cq",
+        TEST_DIR / "Report5.4_Acceptance_Test.xlsx",
+        None,
+    ),
 }
+
+# Report files with no Drive counterpart yet: created in the Docs folder, then replaced
+# in place on later pushes. key -> (Drive folder, local file, Drive name)
+DOCS_FOLDER = "19wdKDAYViFGn4nlrmCnyNJkDQ0IOw-Z7"
+NEW_FILES: dict[str, tuple[str, Path, str]] = {
+    "5.2.2": (
+        DOCS_FOLDER,
+        TEST_DIR / "Report5.2.2_Integration_Test_API_Test.xlsx",
+        "Report-5.2.2_Integration Test_API Test.xlsx",
+    ),
+}
+
+# The complete Report 5 set, in report order.
+TEST_SET = ("5.0", "5.1", "5.2", "5.2.2", "5.3", "5.5")
+
+# A minutes file renamed locally keeps its Drive file: the old Drive name is renamed and
+# its content replaced, instead of leaving a second copy beside a new one.
+MINUTES_RENAMED = {"Meeting_Minutes_21-10-2026_Week7.docx": "Meeting_Minutes_22-10-2026_Week7.docx"}
 
 # The Drive folder that holds the meeting minutes. Minutes are not fixed targets:
 # each session adds a new file, so they are matched by name inside this folder.
@@ -193,9 +230,12 @@ def multipart(metadata_body: dict, path: Path) -> tuple[str, bytes]:
     return boundary, body
 
 
-def upload(file_id: str, path: Path, mime_type: str) -> dict:
-    """Replace the content, keeping the file's existing ID, name and mime type."""
-    boundary, body = multipart({"mimeType": mime_type}, path)
+def upload(file_id: str, path: Path, mime_type: str, name: str | None = None) -> dict:
+    """Replace the content, keeping the file's ID; the name changes only when given."""
+    meta = {"mimeType": mime_type}
+    if name:
+        meta["name"] = name
+    boundary, body = multipart(meta, path)
     request = urllib.request.Request(
         f"{UPLOAD}/files/{file_id}?uploadType=multipart&supportsAllDrives=true",
         data=body,
@@ -314,7 +354,12 @@ def run_target(key: str, args: argparse.Namespace) -> int:
         return 0
 
     print("\nUploading ...")
-    upload(file_id, local, before["mimeType"])
+    # A stored .xls receiving an .xlsx workbook is retyped and renamed together, so Excel
+    # never opens .xlsx bytes under an .xls name. ID and link stay.
+    mime, new_name = before["mimeType"], None
+    if before["mimeType"] != DOC_MIME and before["name"].lower().endswith(".xls") and local.suffix.lower() == ".xlsx":
+        mime, new_name = XLSX_MIME, before["name"] + "x"
+    upload(file_id, local, mime, new_name)
     after = metadata(file_id)
     describe("After", after)
 
@@ -323,6 +368,40 @@ def run_target(key: str, args: argparse.Namespace) -> int:
     if after.get("modifiedTime") == before.get("modifiedTime"):
         raise SystemExit("modifiedTime did not change; the upload probably did not apply.")
     print("\nOK: same file id, content replaced.")
+    return 0
+
+
+def run_new_file(key: str, args: argparse.Namespace) -> int:
+    folder_id, local, name = NEW_FILES[key]
+    if not local.is_file():
+        raise SystemExit(f"Local file not found: {local.relative_to(ROOT)}")
+    info = folder_files(folder_id).get(name)
+    same = info is not None and md5(local) == info.get("md5Checksum")
+
+    if args.check:
+        if info is None:
+            print(f"MISSING: {name} is not on Drive yet.")
+            return 1
+        print(f"{'UP TO DATE' if same else 'OUT OF DATE'}: {name} (id={info['id']})")
+        return 0 if same else 1
+
+    print(f"Local  {local.relative_to(ROOT)} ({local.stat().st_size:,} bytes)")
+    if info is None:
+        print(f"Drive  {name!r} does not exist; would create it in the Docs folder")
+    else:
+        writable(info, "The Drive target")
+        print(f"Drive  {name!r} id={info['id']} ({'same bytes' if same else 'differs'})")
+    if not args.confirm:
+        print("\nDry run. Re-run with --confirm to write, --check to compare.")
+        return 0
+    if same:
+        print("\nOK: already up to date.")
+    elif info is None:
+        result = create(folder_id, local, name)
+        print(f"\nOK: created {name!r} -> id={result['id']}")
+    else:
+        upload(info["id"], local, info["mimeType"])
+        print(f"\nOK: replaced {name!r} in place (id={info['id']})")
     return 0
 
 
@@ -354,7 +433,8 @@ def run_minutes(args: argparse.Namespace) -> int:
             else:
                 outdated += 1
                 print(f"{path.name:<58} {'OUT OF DATE':<12} text matches {ratio:.1%}")
-        for name in sorted(set(remote) - {path.name for path in local}):
+        renamed_from = {old for new, old in MINUTES_RENAMED.items() if new not in remote}
+        for name in sorted(set(remote) - {path.name for path in local} - renamed_from):
             print(f"{name:<58} {'DRIVE ONLY':<12} not in the repo; left alone")
         print(
             f"\n{len(local)} local, {missing} missing, {outdated} out of date, "
@@ -365,11 +445,15 @@ def run_minutes(args: argparse.Namespace) -> int:
     if not args.confirm:
         for path in local:
             info = remote.get(path.name)
+            old_name = MINUTES_RENAMED.get(path.name)
+            if info is None and old_name in remote:
+                print(f"would rename  {old_name} -> {path.name} and replace (id={remote[old_name]['id']})")
+                continue
             if info is None:
                 print(f"would create  {path.name} ({path.stat().st_size:,} bytes)")
                 continue
             same, _ = text_state(path, info)
-            print(f"{'up to date   ' if same else 'would replace'} {path.name} (id={info['id']})")
+            print(f"{'up to date   ' if same and not args.full else 'would replace'} {path.name} (id={info['id']})")
         print("\nDry run. Re-run with --confirm to write to Drive, --check to compare.")
         return 0
 
@@ -377,13 +461,20 @@ def run_minutes(args: argparse.Namespace) -> int:
     created = replaced = 0
     for path in local:
         info = remote.get(path.name)
+        old_name = MINUTES_RENAMED.get(path.name)
+        if info is None and old_name in remote:
+            old = remote[old_name]
+            upload(old["id"], path, old["mimeType"], path.name)
+            replaced += 1
+            print(f"renamed       {old_name} -> {path.name} (id={old['id']})")
+            continue
         if info is None:
             result = create(MINUTES_FOLDER, path, path.name)
             created += 1
             print(f"created       {path.name} -> id={result['id']}")
             continue
         same, _ = text_state(path, info)
-        if same:
+        if same and not args.full:
             print(f"up to date    {path.name}")
             continue
         upload(info["id"], path, info["mimeType"])
@@ -397,28 +488,45 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("target", help="report key (1-4, 5.0, 5.2), 'minutes' or 'all'")
+    parser.add_argument(
+        "target", help="report key (1-4, 5.0-5.3, 5.2.2, 5.5), 'tests', 'minutes' or 'all'"
+    )
     action = parser.add_mutually_exclusive_group()
     action.add_argument("--check", action="store_true", help="compare Drive with the local file")
     action.add_argument("--confirm", action="store_true", help="actually upload")
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="minutes only: replace every Drive file even when its text already matches "
+        "(after a formatting-only change)",
+    )
     args = parser.parse_args()
+
+    def run_key(key: str) -> int:
+        return run_new_file(key, args) if key in NEW_FILES else run_target(key, args)
 
     if args.target == "all":
         status = 0
-        for key in TARGETS:
+        for key in (*TARGETS, *NEW_FILES):
             print(f"--- Report {key}")
-            status = max(status, run_target(key, args))
+            status = max(status, run_key(key))
         print("--- Meeting minutes")
         return max(status, run_minutes(args))
 
     if args.target == "minutes":
         return run_minutes(args)
 
-    if args.target not in TARGETS:
-        raise SystemExit(
-            f"Unknown target {args.target!r}; use one of {sorted(TARGETS)}, 'minutes' or 'all'."
-        )
-    return run_target(args.target, args)
+    if args.target == "tests":
+        status = 0
+        for key in TEST_SET:
+            print(f"--- Report {key}")
+            status = max(status, run_key(key))
+        return status
+
+    if args.target not in TARGETS and args.target not in NEW_FILES:
+        known = sorted({*TARGETS, *NEW_FILES})
+        raise SystemExit(f"Unknown target {args.target!r}; use one of {known}, 'tests', 'minutes' or 'all'.")
+    return run_key(args.target)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,86 @@
+title UC-44e - Erase Meeting Recording
+
+actor "Secretary" as Actor
+boundary "Meeting Recordings Tab" as RecordingsTab
+control ":Recording Controller" as RecordingController
+control ":Recording Service" as RecordingService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Recording Repository" as RecordingRepository
+participant ":Recording Storage" as RecordingStorage
+participant ":Audit Service" as AuditService
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+Actor->RecordingsTab: Confirm Erase Recording
+activate RecordingsTab
+RecordingsTab->RecordingController: Erase the recording
+activate RecordingController
+RecordingController->RecordingService: erase(recordingId, actorId)
+activate RecordingService
+
+RecordingService->RecordingRepository: Lock the recording
+activate RecordingRepository
+RecordingRepository->Database: Retrieve recording for update
+activate Database
+Database-->RecordingRepository: Recording / Not found
+deactivate Database
+RecordingRepository-->RecordingService: Recording / Not found
+deactivate RecordingRepository
+RecordingService->MeetingRepository: Get the Meeting with its current roster
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting and current roster
+activate Database
+Database-->MeetingRepository: Meeting and roster
+deactivate Database
+MeetingRepository-->RecordingService: Meeting and roster
+deactivate MeetingRepository
+RecordingService->RecordingService: Check the actor is the current Secretary (BR-341)\nand the recording is not a take still being recorded
+
+alt Recording no longer exists or actor is not on the roster
+    RecordingService-->RecordingController: Recording not found
+    RecordingController-->RecordingsTab: Recording not found
+    RecordingsTab-->Actor: Show the recording as no longer available
+else Actor is not the current Secretary - EX-2
+    RecordingService-->RecordingController: MSG295 - Only the meeting Secretary may manage recordings.
+    RecordingController-->RecordingsTab: MSG295 - Only the meeting Secretary may manage recordings.
+    RecordingsTab-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+else Room microphone is still recording this take - EX-1
+    RecordingService-->RecordingController: MSG364 - Room microphone is currently recording. Turn off the microphone before erasing.
+    RecordingController-->RecordingsTab: MSG364 - Room microphone is currently recording. Turn off the microphone before erasing.
+    RecordingsTab-->Actor: MSG364 - Room microphone is currently recording. Turn off the microphone before erasing.
+else Recording can be erased (already erased: same answer, nothing changes)
+    RecordingService->RecordingRepository: Mark the recording Deleted with the erase time, keep the record\nthat it existed and delete its transcript (BR-348)
+    activate RecordingRepository
+    RecordingRepository->Database: Update recording, delete transcript with segments and speakers
+    activate Database
+    Database-->RecordingRepository: Changes saved / Save failed
+    deactivate Database
+    RecordingRepository-->RecordingService: Changes saved / Save failed
+    deactivate RecordingRepository
+    RecordingService->AuditService: Record the erasure with the actor and reason request (BR-348)
+    activate AuditService
+    AuditService-->RecordingService: Entry saved
+    deactivate AuditService
+
+    alt Recording cannot be erased - EX-3
+        RecordingService-->RecordingController: MSG298 - Unable to save recording changes. Please try again.
+        RecordingController-->RecordingsTab: MSG298 - Unable to save recording changes. Please try again.
+        RecordingsTab-->Actor: MSG298 - Unable to save recording changes. Please try again.
+    else Recording erased
+        RecordingService->RecordingStorage: Delete the audio file
+        activate RecordingStorage
+        RecordingStorage-->RecordingService: File deleted
+        deactivate RecordingStorage
+        RecordingService->Publisher: Tell everyone in the Meeting that the recordings changed
+        activate Publisher
+        Publisher-->RecordingService: Change published
+        deactivate Publisher
+        RecordingService-->RecordingController: MSG296 - Meeting recording erased.
+        RecordingController-->RecordingsTab: MSG296 - Meeting recording erased.
+        RecordingsTab-->Actor: MSG296 - Meeting recording erased.
+    end
+end
+
+deactivate RecordingService
+deactivate RecordingController
+deactivate RecordingsTab
