@@ -190,6 +190,8 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 - Sau xác minh: form tên hiển thị / chức vụ (bước 5), rồi trang cuộc họp `/guest/{invitationId}` với các tab Nội dung,
   Tài liệu, Biểu quyết, Thành phần tham dự và câu hỏi "Bạn có tham dự cuộc họp này?" (UC-29). Tài liệu mở ở
   `/guest/{invitationId}/documents/{meetingDocumentId}`; Khách không có góp ý.
+- Phòng họp trực tuyến của Khách (SCRUM-127): `/guest/{invitationId}/room`, xem
+  [09-phong-hop-truc-tuyen.md](09-phong-hop-truc-tuyen.md#hợp-đồng-tích-hợp-fe).
 - Trang kiểm lại `GET /session` mỗi 20 giây, khi tab được focus và sau mọi `404` của panel. `404` thì bỏ toàn bộ dữ liệu
   cuộc họp khỏi màn hình rồi mở lại lời mời: còn mở được thì xin mã mới (kèm `MSG378`), không thì hiện "Cuộc họp đã kết
   thúc hoặc lời mời đã bị thu hồi" (BE không cho biết lý do cụ thể, EX-1) và quên link token. Trình duyệt chưa từng có

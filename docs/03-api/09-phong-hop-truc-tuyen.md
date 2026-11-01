@@ -197,8 +197,10 @@ phiên (`ON DELETE CASCADE`), tức theo lời mời; audit giữ theo chính s�
   là 180 ngày, ghi cứng ở FE vì Khách không được đọc danh sách câu ghi âm; nếu đổi `RecordingStorage:RetentionDays`
   thì cần BE trả thời hạn trong `GET …/call`. Khách không gắn bộ ghi âm theo micro (SCRUM-109): không gọi endpoint
   speech-clip nào, kể cả gửi lại câu còn kẹt trong trình duyệt. Bị LiveKit đưa ra (`PARTICIPANT_REMOVED`) thì trang
-  Khách kiểm lại phiên ngay và chuyển sang màn "Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi"; cuộc họp kết thúc thì
-  hiện `MSG331`, rồi lần kiểm lại phiên kế tiếp (tối đa 20 giây) chuyển sang màn đó.
+  Khách kiểm lại phiên ngay: lời mời bị thu hồi → màn "Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi", không vào lại
+  được; phiên hết hạn hoặc Khách đăng xuất ở tab khác (job đối soát đưa ra trong khoảng 20–30 giây) → lời mời vẫn còn,
+  nên về màn nhập mã với `MSG378` như UC-04 (xác minh lại thì vào lại được). Cuộc họp kết thúc thì hiện `MSG331`, rồi lần
+  kiểm lại phiên kế tiếp (tối đa 20 giây) chuyển sang màn kết thúc.
 
 SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát cùng dùng `ParticipantRules.ActiveExpression`. Gỡ rồi mời lại chỉ xét assignment Current mới; dòng lịch sử không tạo quyền hoặc làm truy vấn trả nhiều dòng.
 

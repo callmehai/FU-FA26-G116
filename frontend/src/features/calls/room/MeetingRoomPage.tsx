@@ -429,7 +429,7 @@ function PreJoin({
                 onChange={(event) => setAcknowledged(event.target.checked)}
               />
               <span>
-                Tôi biết cuộc họp được ghi âm để lập biên bản, tự xoá sau {retentionDays ?? GUEST_RETENTION_DAYS} ngày
+                Tôi biết cuộc họp được ghi âm để lập biên bản, tự xoá sau {retentionDays} ngày
               </span>
             </label>
           ) : (
