@@ -12,7 +12,7 @@ using TrustCabinet.Infrastructure;
 namespace TrustCabinet.Infrastructure.Migrations
 {
     [DbContext(typeof(TrustCabinetDbContext))]
-    [Migration("20261101165549_TranscriptSpeakerGuest")]
+    [Migration("20261101174951_TranscriptSpeakerGuest")]
     partial class TranscriptSpeakerGuest
     {
         /// <inheritdoc />
@@ -1764,15 +1764,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<Guid?>("DeletedById")
-                        .HasColumnType("uuid")
-                        .HasColumnName("deleted_by_id");
-
-                    b.Property<string>("DeletionReason")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("deletion_reason");
-
                     b.Property<long>("DurationMs")
                         .HasColumnType("bigint")
                         .HasColumnName("duration_ms");
@@ -1822,9 +1813,6 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_recordings_created_by_id");
-
-                    b.HasIndex("DeletedById")
-                        .HasDatabaseName("ix_recordings_deleted_by_id");
 
                     b.HasIndex("MeetingId")
                         .HasDatabaseName("ix_recordings_meeting_id");
@@ -2151,10 +2139,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
-
-                    b.Property<long?>("AppendFromMs")
-                        .HasColumnType("bigint")
-                        .HasColumnName("append_from_ms");
 
                     b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone")
@@ -3492,12 +3476,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_recordings_users_created_by_id");
 
-                    b.HasOne("TrustCabinet.Domain.Entities.User", "DeletedBy")
-                        .WithMany()
-                        .HasForeignKey("DeletedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_recordings_users_deleted_by_id");
-
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithMany("Recordings")
                         .HasForeignKey("MeetingId")
@@ -3506,8 +3484,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_recordings_meetings_meeting_id");
 
                     b.Navigation("CreatedBy");
-
-                    b.Navigation("DeletedBy");
 
                     b.Navigation("Meeting");
                 });

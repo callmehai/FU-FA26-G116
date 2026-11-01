@@ -105,8 +105,8 @@ từ bộ nhớ, không ghi ra đĩa.
 ```
 
 `people` là thành phần hiện tại của cuộc họp và Khách được mời chưa bị thu hồi lời mời (`guest: true`, tên Khách tự
-khai, chưa khai thì tên lúc mời), chỉ trả cho Thư ký (để chọn tên); người khác nhận mảng rỗng. Khách không có giọng
-mẫu nên không bao giờ được gợi ý: Thư ký gán tay, và lượt ghi sau tự giữ tên đó (ADR-0044). **`suggestedUserId`, `suggestedName`, `suggestionScore` cũng chỉ trả cho Thư ký**: đó là phỏng đoán
+khai, chưa khai thì tên lúc mời; như AI-eCabinet), chỉ trả cho Thư ký (để chọn tên); người khác nhận mảng rỗng. Khách
+không có giọng mẫu nên không bao giờ được gợi ý. **`suggestedUserId`, `suggestedName`, `suggestionScore` cũng chỉ trả cho Thư ký**: đó là phỏng đoán
 của máy về danh tính sinh trắc học của một người, để Thư ký quyết định, không phải thông tin cho cả cuộc
 họp; người khác nhận `null`. Tên hiển thị của một giọng: `assignedName` nếu Thư ký đã gán, nếu không thì
 *Người nói N*.

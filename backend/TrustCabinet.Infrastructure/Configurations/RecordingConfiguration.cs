@@ -18,7 +18,6 @@ public class RecordingConfiguration : IEntityTypeConfiguration<Recording>
         builder.Property(r => r.ConsentPurpose).HasMaxLength(1000);
         builder.Property(r => r.Source).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(r => r.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
-        builder.Property(r => r.DeletionReason).HasConversion<string>().HasMaxLength(32);
         // jsonb: read whole with its recording, never queried inside.
         builder.Property(r => r.Takes).HasColumnType("jsonb").HasConversion(
             takes => takes == null ? null : JsonSerializer.Serialize(takes, Json),
@@ -45,11 +44,6 @@ public class RecordingConfiguration : IEntityTypeConfiguration<Recording>
         builder.HasOne(r => r.CreatedBy)
             .WithMany()
             .HasForeignKey(r => r.CreatedById)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(r => r.DeletedBy)
-            .WithMany()
-            .HasForeignKey(r => r.DeletedById)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

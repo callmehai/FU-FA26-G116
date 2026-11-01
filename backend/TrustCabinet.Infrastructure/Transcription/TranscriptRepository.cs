@@ -44,28 +44,6 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
         => db.TranscriptSegments.Where(s => s.TranscriptId == transcriptId).ExecuteDeleteAsync(ct);
 
-    public async Task<(int LastPosition, int NextVoice)> CountLinesAsync(Guid transcriptId, CancellationToken ct)
-    {
-        var last = await db.TranscriptSegments.Where(s => s.TranscriptId == transcriptId)
-            .MaxAsync(s => (int?)s.Position, ct) ?? 0;
-        var labels = await db.TranscriptSpeakers.Where(s => s.TranscriptId == transcriptId).Select(s => s.Label).ToListAsync(ct);
-        return (last, labels.Select(TranscriptRules.VoiceNumber).Max() is { } n ? n + 1 : 0);
-    }
-
-    public async Task<IReadOnlyList<(string Label, long StartMs, long EndMs)>> ListLinesAsync(Guid transcriptId,
-        CancellationToken ct)
-        => (await db.TranscriptSegments.AsNoTracking().Where(s => s.TranscriptId == transcriptId)
-                .Select(s => new { s.SpeakerLabel, s.StartMs, s.EndMs }).ToListAsync(ct))
-            .Select(s => (s.SpeakerLabel, s.StartMs, s.EndMs)).ToList();
-
-    public async Task<IReadOnlyList<TranscriptSpeaker>> ListSpeakersAsync(Guid transcriptId, CancellationToken ct)
-        => await db.TranscriptSpeakers.Where(s => s.TranscriptId == transcriptId).ToListAsync(ct);
-
-    public async Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct)
-        => (await db.MeetingGuestInvitations.AsNoTracking().Where(g => g.MeetingId == meetingId && g.RevokedAt == null)
-                .Select(g => new { g.Id, Name = g.SelfDeclaredDisplayName ?? g.InvitedName }).ToListAsync(ct))
-            .Select(g => new TranscriptPerson(g.Id, g.Name, Guest: true)).ToList();
-
     public void Add(Transcript transcript) => db.Transcripts.Add(transcript);
 
     public Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct)
@@ -74,6 +52,11 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers) => db.TranscriptSpeakers.AddRange(speakers);
 
     public void AddSegments(IEnumerable<TranscriptSegment> segments) => db.TranscriptSegments.AddRange(segments);
+
+    public async Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct)
+        => (await db.MeetingGuestInvitations.AsNoTracking().Where(g => g.MeetingId == meetingId && g.RevokedAt == null)
+                .Select(g => new { g.Id, Name = g.SelfDeclaredDisplayName ?? g.InvitedName }).ToListAsync(ct))
+            .Select(g => new TranscriptPerson(g.Id, g.Name, Guest: true)).ToList();
 
     public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
 }

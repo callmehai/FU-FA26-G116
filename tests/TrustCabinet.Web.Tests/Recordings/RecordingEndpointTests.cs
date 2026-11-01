@@ -230,9 +230,6 @@ public sealed class RecordingEndpointTests(RecordingFixture fixture) : IClassFix
         var item = (await secretary.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("items")[0];
         Assert.Equal("Deleted", item.GetProperty("status").GetString());
         Assert.Equal(fixture.Clock.Now, item.GetProperty("deletedAt").GetDateTimeOffset());
-        // Who erased it and why stay on the row, not only in the audit log.
-        Assert.Equal("Erased", item.GetProperty("deletionReason").GetString());
-        Assert.False(string.IsNullOrEmpty(item.GetProperty("deletedByName").GetString()));
         Assert.False(item.GetProperty("canErase").GetBoolean());
         using var browser = fixture.Client();
         Assert.Equal(HttpStatusCode.NotFound, (await browser.GetAsync(url)).StatusCode);
@@ -257,10 +254,7 @@ public sealed class RecordingEndpointTests(RecordingFixture fixture) : IClassFix
             using var scope = fixture.Host.Services.CreateScope();
             Assert.True(await scope.ServiceProvider.GetRequiredService<IRecordingService>().EraseExpiredAsync() >= 1);
             await using var db = fixture.Db();
-            var expired = await db.Recordings.SingleAsync(r => r.Id == old);
-            Assert.Equal(RecordingStatus.Deleted, expired.Status);
-            Assert.Equal(RecordingDeletion.Expired, expired.DeletionReason);
-            Assert.Null(expired.DeletedById);
+            Assert.Equal(RecordingStatus.Deleted, (await db.Recordings.SingleAsync(r => r.Id == old)).Status);
             Assert.Equal(RecordingStatus.Available, (await db.Recordings.SingleAsync(r => r.Id == recent)).Status);
             var audit = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.RecordingErased && a.ObjectId == old);
             Assert.Null(audit.ActorId);

@@ -82,8 +82,6 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal Exception? Failure;
         /// <summary>Runs while the "worker" is busy, to change the world under a running transcription.</summary>
         internal Func<Task>? During;
-        /// <summary>Answers from the audio sent, when set; otherwise <see cref="Result"/>.</summary>
-        internal Func<byte[], SpeechTranscription>? Answer;
         internal int Calls;
         internal byte[]? LastAudio;
         internal bool? LastDiarize;
@@ -109,7 +107,7 @@ public sealed class RecordingFixture : IAsyncLifetime
             await audio.CopyToAsync(copy, ct);
             LastAudio = copy.ToArray();
             if (During is { } during) await during();
-            return Failure is { } failure ? throw failure : Answer?.Invoke(LastAudio) ?? Result;
+            return Failure is { } failure ? throw failure : Result;
         }
     }
 

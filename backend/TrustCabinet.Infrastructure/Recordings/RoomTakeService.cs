@@ -15,9 +15,8 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// <summary>
 /// ADR-0041 — the room mic, as in AI-eCabinet. While it is on, the Secretary's browser streams the room as 16 kHz PCM
 /// in parts of a fixed size, so a part's place in the file follows from its number and sending one again is harmless.
-/// Switching it off saves the take: appended to the meeting's one room recording. Only the new take is transcribed and its
-/// lines added after the ones there, its voices matched to the voices already heard (ADR-0044), so what the Secretary
-/// corrected and named stays.
+/// Switching it off saves the take: appended to the meeting's one room recording, which is then transcribed again as a
+/// whole, so the transcript reads as one meeting and its voices are told apart across takes.
 ///
 /// The take is personal data from its first byte: the participants are told before the meeting's first take, the
 /// purpose and retention date are those of the recording it goes into, and a take the mic heard nothing in is dropped.
@@ -236,25 +235,16 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
         {
             storage.SealWav(merged);
             var previous = room.StoragePath;
-            var offsetMs = RecordingRules.PcmMs(room.ByteSize);
-            room.Takes = [.. room.Takes ?? [], new(offsetMs, takeMs, take.CreatedAt)];
+            room.Takes = [.. room.Takes ?? [], new(RecordingRules.PcmMs(room.ByteSize), takeMs, take.CreatedAt)];
             room.StoragePath = merged;
             room.ByteSize += take.ByteSize - RecordingRules.WavHeaderBytes;
             room.DurationMs = RecordingRules.PcmMs(room.ByteSize);
             room.UpdatedAt = now;
-            // ADR-0044: only what has not been transcribed yet is, and added to the lines already there. A run already busy
-            // throws its result away.
+            // The whole is transcribed again: a run already busy on the shorter file throws its result away.
             var transcript = await transcripts.FindByRecordingAsync(room.Id, true, ct);
             if (transcript is null) transcripts.Add(new Transcript { RecordingId = room.Id, CreatedAt = now, UpdatedAt = now });
             else
             {
-                transcript.AppendFromMs = transcript.Status switch
-                {
-                    TranscriptStatus.Completed => offsetMs,
-                    // Waiting already: from the earliest take still waiting, or the whole if that is what waits.
-                    TranscriptStatus.Pending or TranscriptStatus.Processing => transcript.AppendFromMs,
-                    _ => null,
-                };
                 transcript.Status = TranscriptStatus.Pending;
                 transcript.ErrorMessage = "";
                 transcript.ProgressPercent = 0;
@@ -292,10 +282,6 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                     || take < 1 || take > takes.Count) return (new(RecordingFailure.NotFound), null);
                 if (!RecordingRules.IsSecretary(meeting, actorId)) return (new(RecordingFailure.Forbidden), null);
                 if (takes.Count == 1) return (new(RecordingFailure.LastTake), null);
-                // The take being streamed is appended at the end: the file it goes into is not cut meanwhile.
-                if ((await recordings.ListAsync(recording.MeetingId, token))
-                        .Any(r => r is { Source: RecordingSource.BrowserCapture, Status: RecordingStatus.Pending }))
-                    return (new(RecordingFailure.TakeRecording), null);
 
                 var now = clock.GetUtcNow();
                 var gone = takes[take - 1];
@@ -312,7 +298,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 recording.Takes = [.. takes.Take(take - 1), .. takes.Skip(take).Select(t => t with { OffsetMs = t.OffsetMs - gone.DurationMs })];
                 recording.UpdatedAt = now;
                 var transcript = await transcripts.FindByRecordingAsync(recording.Id, true, token);
-                var lines = transcript is null ? 0 : CutTranscript(transcript, gone, recording.DurationMs, now);
+                var lines = transcript is null ? 0 : CutTranscript(transcript, gone, now);
                 await audit.RecordAsync(AuditActions.RecordingTakeDeleted, AuditActions.RecordingObjectType, recording.Id, actorId,
                     new { recording.MeetingId, take, gone.StartedAt, gone.DurationMs, lines, totalMs = recording.DurationMs }, token);
                 await recordings.SaveChangesAsync(token);
@@ -336,29 +322,17 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
 
     /// <summary>
     /// Takes the erased take's lines out and moves the later ones up by its length; edits, names and positions stay. A
-    /// transcript still being made of the whole is made again from the shorter file instead: its result would place
-    /// lines wrongly. One only adding the latest takes (ADR-0044) keeps its lines and starts those takes again.
+    /// transcript still being made is made again from the shorter file instead: its result would place lines wrongly.
     /// </summary>
-    private static int CutTranscript(Transcript transcript, RecordingTake gone, long totalMs, DateTimeOffset now)
+    private static int CutTranscript(Transcript transcript, RecordingTake gone, DateTimeOffset now)
     {
         transcript.UpdatedAt = now;
-        var busy = transcript.Status is TranscriptStatus.Pending or TranscriptStatus.Processing;
-        if (busy && transcript.AppendFromMs is null)
+        if (transcript.Status is TranscriptStatus.Pending or TranscriptStatus.Processing)
         {
             transcript.Status = TranscriptStatus.Pending;
             transcript.ErrorMessage = "";
             transcript.ProgressPercent = 0;
             return 0;
-        }
-        if (busy && transcript.AppendFromMs is { } from)
-        {
-            // The waiting takes move up when an earlier one goes; when the erased one was all that waited, nothing does.
-            var next = gone.OffsetMs < from ? from - gone.DurationMs : from;
-            // Nothing transcribed is left before it: the whole is made, which is the same thing.
-            transcript.AppendFromMs = next > 0 && next < totalMs ? next : null;
-            transcript.Status = next < totalMs ? TranscriptStatus.Pending : TranscriptStatus.Completed;
-            transcript.ErrorMessage = "";
-            transcript.ProgressPercent = next < totalMs ? 0 : 100;
         }
         var start = gone.OffsetMs;
         var end = gone.OffsetMs + gone.DurationMs;

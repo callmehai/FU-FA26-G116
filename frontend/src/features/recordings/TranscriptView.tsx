@@ -151,8 +151,7 @@ export function TranscriptView({
 
   const { transcript } = state
   const running = transcript.status === 'Pending' || transcript.status === 'Processing'
-  // A room recording that just had a take appended keeps showing what it said so far while the new take is added
-  // (ADR-0044), as a recording transcribed again keeps its earlier text until the new one is in.
+  // A room recording that just had a take appended keeps showing what it said so far while the whole is redone.
   if (running && transcript.segments.length === 0)
     return (
       <p className="transcript-status transcript-running" role="status">
@@ -195,9 +194,7 @@ export function TranscriptView({
       {running && (
         <p className="transcript-status transcript-running" role="status">
           <span className="transcript-spinner" aria-hidden="true" />
-          {transcript.appending
-            ? 'Đang chuyển chữ lượt ghi mới…'
-            : 'Đang chuyển chữ lại cả bản ghi. Chữ dưới đây là bản trước.'}
+          Đang chuyển chữ lại cả bản ghi, có lượt ghi mới. Chữ dưới đây là bản trước.
         </p>
       )}
       <div className="transcript-note">

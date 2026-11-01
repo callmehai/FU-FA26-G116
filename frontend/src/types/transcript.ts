@@ -52,11 +52,6 @@ export interface Transcript {
   people: TranscriptPerson[]
   /** Finished, and the caller (Chair or Secretary, not a Secret meeting) may save it as text. */
   canExport: boolean
-  /**
-   * ADR-0044: the latest room-mic takes are being transcribed and added after these lines, which stay as they are and
-   * can still be corrected and named.
-   */
-  appending: boolean
 }
 
 export interface TranscriptMessage {

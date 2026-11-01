@@ -22,8 +22,7 @@ import { RECORDINGS_EVENTS } from './useRoomRecordings'
 /**
  * SCRUM-29 — the meeting's room recordings, in the Bản ghi tab. The Secretary records the room with the mic card in
  * the corner of every tab (RecorderCard), and uploads a file recorded elsewhere from here. ADR-0041: each take of the
- * room mic is appended to one recording and its words added after the ones there (ADR-0044), so the tab reads as one
- * meeting; the take being
+ * room mic is appended to one recording, transcribed again as a whole, so the tab reads as one meeting; the take being
  * recorded shows as such to everyone, and nobody hears it before the mic goes off.
  *
  * Nothing is kept before the Secretary confirms the participants were told and nobody objected; the purpose they
@@ -246,7 +245,7 @@ function OpenTakeRow({ take }: { take: Recording }) {
         <span
           className="recording-meta"
           tabIndex={0}
-          data-tooltip="Tắt mic thì lượt này được nối vào bản ghi phòng và chuyển thành chữ."
+          data-tooltip="Tắt mic thì lượt này được nối vào bản ghi phòng và chuyển chữ lại cả bản."
         >
           <Badge tone="red">Đang ghi</Badge>
           <span>{take.createdByName}</span>

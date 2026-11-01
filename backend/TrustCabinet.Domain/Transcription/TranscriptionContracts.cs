@@ -60,7 +60,7 @@ public sealed record TranscriptPerson(Guid Id, string FullName, bool Guest = fal
 public sealed record TranscriptView(Guid RecordingId, string Status, string Provider, string Language,
     string ErrorMessage, DateTimeOffset? CompletedAt, long DurationMs, bool CanEdit,
     IReadOnlyList<TranscriptSegmentView> Segments, IReadOnlyList<TranscriptSpeakerView> Speakers,
-    IReadOnlyList<TranscriptPerson> People, bool CanExport = false, bool Appending = false);
+    IReadOnlyList<TranscriptPerson> People, bool CanExport = false);
 
 public interface ITranscriptionService
 {
@@ -90,17 +90,12 @@ public interface ITranscriptRepository
     /// <summary>Reads the transcript's own columns again, as they are once its recording's row is locked.</summary>
     Task ReloadAsync(Transcript transcript, CancellationToken ct);
     Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct);
-    /// <summary>The last line's position and the next free voice number, for lines added after these (ADR-0044).</summary>
-    Task<(int LastPosition, int NextVoice)> CountLinesAsync(Guid transcriptId, CancellationToken ct);
-    /// <summary>Every line's voice and time, untracked: where samples of the voices already there are cut from (ADR-0044).</summary>
-    Task<IReadOnlyList<(string Label, long StartMs, long EndMs)>> ListLinesAsync(Guid transcriptId, CancellationToken ct);
-    Task<IReadOnlyList<TranscriptSpeaker>> ListSpeakersAsync(Guid transcriptId, CancellationToken ct);
-    /// <summary>The guests invited to the meeting and not revoked, by the name they gave or were invited by.</summary>
-    Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct);
     void Add(Transcript transcript);
     Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct);
     void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers);
     void AddSegments(IEnumerable<TranscriptSegment> segments);
+    /// <summary>The guests invited to the meeting and not revoked, by the name they gave or were invited by.</summary>
+    Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);
 }
 
@@ -110,69 +105,6 @@ public static class TranscriptRules
 
     /// <summary>Gipformer, run in-house; the version pins which model wrote a given transcript.</summary>
     public static string Provider(string asrModel) => $"self-hosted:{asrModel}";
-
-    /// <summary>How much of each voice already there is played to the worker ahead of the latest takes (ADR-0044).</summary>
-    public const long SampleMs = 6000;
-    /// <summary>A voice heard for less than this is not sampled: too little to be told apart.</summary>
-    public const long MinSampleMs = 1500;
-    /// <summary>Silence between the samples and before the takes, so no sentence of the worker spans two of them.</summary>
-    public const long SampleGapMs = 1500;
-
-    /// <summary>
-    /// ADR-0044 — up to <see cref="SampleMs"/> of each voice already in the transcript, cut from the ends of its longest
-    /// lines before <paramref name="beforeMs"/>: a line's end is where its words stopped, its start may reach back into
-    /// the line before (see <see cref="FitToTake"/>).
-    /// </summary>
-    public static IReadOnlyList<(string Label, long StartMs, long EndMs)> PickSamples(
-        IEnumerable<(string Label, long StartMs, long EndMs)> lines, long beforeMs)
-    {
-        var samples = new List<(string, long, long)>();
-        foreach (var voice in lines.Where(l => l.Label.Length > 0 && l.EndMs <= beforeMs && l.EndMs > l.StartMs)
-                     .GroupBy(l => l.Label).OrderBy(g => g.Key, StringComparer.Ordinal))
-        {
-            var picked = new List<(string, long, long)>();
-            var left = SampleMs;
-            foreach (var line in voice.OrderByDescending(l => l.EndMs - l.StartMs).ThenBy(l => l.StartMs))
-            {
-                if (left <= 0) break;
-                var length = Math.Min(left, line.EndMs - line.StartMs);
-                picked.Add((voice.Key, line.EndMs - length, line.EndMs));
-                left -= length;
-            }
-            if (SampleMs - left >= MinSampleMs) samples.AddRange(picked.OrderBy(p => p.Item2));
-        }
-        return samples;
-    }
-
-    /// <summary>
-    /// ADR-0044 — which voices of a run over samples-then-takes are voices already there. <paramref name="placed"/> is where
-    /// each sample sits in the audio sent. A voice of the run is an earlier voice when it holds at least half of that
-    /// voice's samples and more of them than of any other's; the worker told the voices apart, this only reads its answer.
-    /// </summary>
-    public static IReadOnlyDictionary<string, string> SameVoices(IReadOnlyList<SpeechSegment> segments,
-        IReadOnlyList<(string Label, long StartMs, long EndMs)> placed)
-    {
-        var sampled = placed.GroupBy(p => p.Label).ToDictionary(g => g.Key, g => g.Sum(p => p.EndMs - p.StartMs));
-        var held = new Dictionary<(string Run, string Earlier), long>();
-        foreach (var segment in segments.Where(s => !string.IsNullOrEmpty(s.Speaker)))
-            foreach (var sample in placed)
-            {
-                var overlap = Math.Min(segment.EndMs, sample.EndMs) - Math.Max(segment.StartMs, sample.StartMs);
-                if (overlap > 0) held[(segment.Speaker!, sample.Label)] = held.GetValueOrDefault((segment.Speaker!, sample.Label)) + overlap;
-            }
-        var same = new Dictionary<string, string>();
-        foreach (var run in held.GroupBy(h => h.Key.Run))
-        {
-            var best = run.Select(h => (h.Key.Earlier, Share: (double)h.Value / sampled[h.Key.Earlier]))
-                .OrderByDescending(h => h.Share).ThenBy(h => h.Earlier, StringComparer.Ordinal).First();
-            if (best.Share >= 0.5) same[run.Key] = best.Earlier;
-        }
-        return same;
-    }
-
-    public static int? VoiceNumber(string label)
-        => label.StartsWith("SPEAKER_", StringComparison.Ordinal)
-            && int.TryParse(label.AsSpan(8), System.Globalization.NumberStyles.None, null, out var n) ? n : null;
 
     /// <summary>
     /// A segment of a room recording (ADR-0041) placed in the take that holds most of it, and cut to that take. The

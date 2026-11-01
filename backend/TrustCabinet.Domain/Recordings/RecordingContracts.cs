@@ -20,9 +20,7 @@ public enum RecordingFailure
     TakeClosed,
     TooLarge,
     /// <summary>The recording has one take left: erasing it is erasing the recording.</summary>
-    LastTake,
-    /// <summary>The room mic streams a take now: the room recording it will be appended to is not cut or erased meanwhile.</summary>
-    TakeRecording
+    LastTake
 }
 
 public sealed record RecordingOutcome(RecordingFailure Failure = RecordingFailure.None, object? Data = null,
@@ -38,15 +36,12 @@ public sealed record RecordingUpload(string FileName, string ContentType, string
 /// <summary>
 /// <c>Status</c> <c>Pending</c> is the room mic's take being streamed: everyone sees that the room is being recorded,
 /// nobody hears it yet. <c>CanClose</c> lets the Chair or a Secretary save a take left open on another device.
-/// An erased one says who erased it and why: <c>DeletionReason</c> <c>Erased</c> (by <c>DeletedByName</c>) or
-/// <c>Expired</c>.
 /// </summary>
 public sealed record RecordingView(Guid Id, string FileName, string ContentType, long ByteSize, long DurationMs,
     string Source, string Status, DateTimeOffset CreatedAt, string CreatedByName, DateTimeOffset? ConsentObtainedAt,
     string ConsentPurpose, DateTimeOffset? RetainUntil, DateTimeOffset? DeletedAt, bool CanErase,
     string TranscriptStatus, bool CanDownload = false, Guid CreatedById = default,
-    IReadOnlyList<RecordingTake>? Takes = null, bool CanClose = false, string? DeletedByName = null,
-    string? DeletionReason = null);
+    IReadOnlyList<RecordingTake>? Takes = null, bool CanClose = false);
 
 /// <summary><c>CanRecord</c>: the caller may switch the room mic on now (ADR-0041).</summary>
 public sealed record RecordingList(Guid MeetingId, bool CanUpload, IReadOnlyList<RecordingView> Items, bool CanRecord = false);
@@ -87,7 +82,7 @@ public interface IRecordingService
 /// <summary>
 /// ADR-0041 — the room mic, as in AI-eCabinet: the Secretary's browser streams what the room says in parts while the
 /// mic is on, so a closed tab or a crash loses nothing the server has; switching it off saves the take into the
-/// meeting's one room recording, where that take alone is transcribed and its lines added (ADR-0044).
+/// meeting's one room recording, which is transcribed again as a whole.
 /// </summary>
 public interface IRoomTakeService
 {
@@ -135,12 +130,6 @@ public interface IRecordingStorage
     Task<string> ConcatAsync(string first, string second, long skip, CancellationToken ct);
     /// <summary>A new file of <paramref name="source"/> without the <paramref name="length"/> bytes at <paramref name="from"/>.</summary>
     Task<string> CutAsync(string source, long from, long length, CancellationToken ct);
-    /// <summary>
-    /// A new file of <paramref name="source"/>'s first <paramref name="header"/> bytes, then each of its byte ranges in turn
-    /// (a length past the end runs to it), <paramref name="gap"/> zero bytes after every range but the last.
-    /// </summary>
-    Task<string> PieceAsync(string source, long header, IReadOnlyList<(long From, long Length)> ranges, long gap,
-        CancellationToken ct);
     /// <summary>Writes the real lengths into a streamed WAV's header, which went out before they were known.</summary>
     void SealWav(string storagePath);
     Stream OpenRead(string storagePath);

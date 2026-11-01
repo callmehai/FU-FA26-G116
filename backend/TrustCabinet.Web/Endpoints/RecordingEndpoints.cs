@@ -33,7 +33,6 @@ public static class RecordingEndpoints
     private const string Msg365TakeEmpty = "MSG365";
     private const string Msg366TakeDeleted = "MSG366";
     private const string Msg367LastTake = "MSG367";
-    private const string Msg381TakeRecording = "MSG381";
     private const int MaxFieldBytes = 4 * 1024;
 
     public static void MapRecordingEndpoints(this IEndpointRouteBuilder app)
@@ -224,8 +223,6 @@ public static class RecordingEndpoints
                 RecordingFailure.TakeClosed => (409, Msg362TakeClosed, "Lượt ghi này đã được lưu, không thêm tiếng vào được nữa."),
                 RecordingFailure.TooLarge => (413, Msg293TooLarge, "Bản ghi vượt quá giới hạn dung lượng."),
                 RecordingFailure.LastTake => (409, Msg367LastTake, "Bản ghi chỉ còn một lượt ghi. Xoá cả bản ghi nếu muốn bỏ lượt này."),
-                RecordingFailure.TakeRecording => (409, Msg381TakeRecording,
-                    "Mic phòng đang ghi. Tắt mic để lưu lượt đang ghi rồi mới xoá được."),
                 RecordingFailure.Invalid => (400, Msg291Invalid, "Thông tin bản ghi không hợp lệ."),
                 RecordingFailure.ReadFailed => (500, Msg297ReadFailed, "Không tải được danh sách bản ghi."),
                 _ => (503, Msg298SaveFailed, "Không lưu được thay đổi bản ghi. Vui lòng thử lại.")
