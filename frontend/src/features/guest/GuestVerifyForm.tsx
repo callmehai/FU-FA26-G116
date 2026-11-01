@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { sendGuestCode, verifyGuestCode } from '../../api/guest'
+import { BrandMark } from '../../components/BrandMark'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -53,16 +54,21 @@ export function GuestVerifyForm({
   /** When "Gửi lại mã" opens again, as a timestamp; the label counts down to it. */
   const [resendAt, setResendAt] = useState(0)
   const [validMinutes, setValidMinutes] = useState<number | null>(null)
+  /** Opened within a minute of the last code (MSG373): that code may already have been used, or not. */
+  const [recent, setRecent] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   const boxes = useRef<(HTMLInputElement | null)[]>([])
   const sentOnOpen = useRef(false)
 
   const wait = Math.max(0, Math.ceil((resendAt - now) / 1000))
   useEffect(() => {
-    if (wait === 0) return
-    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    if (resendAt <= Date.now()) return
+    const timer = window.setInterval(() => {
+      setNow(Date.now())
+      if (Date.now() >= resendAt) window.clearInterval(timer)
+    }, 1000)
     return () => window.clearInterval(timer)
-  }, [wait])
+  }, [resendAt])
 
   const send = useCallback(
     async (onOpen: boolean) => {
@@ -74,6 +80,7 @@ export function GuestVerifyForm({
         setNow(Date.now())
         setResendAt(Date.now() + sent.resendAfterSeconds * 1000)
         setValidMinutes(Math.round(sent.expiresInSeconds / 60))
+        setRecent(false)
         if (!onOpen) {
           toast.show(sent.message)
           setDigits(Array(DIGITS).fill(''))
@@ -85,8 +92,9 @@ export function GuestVerifyForm({
         if (isApiError(err, 429)) {
           setNow(Date.now())
           setResendAt(Date.now() + (err.body?.retryAfterSeconds ?? 60) * 1000)
-          // Opening the page again within the minute: the code already sent is the one to type.
-          if (onOpen && err.code === 'MSG373') return
+          // Opened again within the minute: no new code. The last one still works unless it was used (a guest
+          // coming back in after Thoát, or after a lapsed session), so say both.
+          if (onOpen && err.code === 'MSG373') return setRecent(true)
         }
         setError({ message: errorMessage(err), locked: false })
       } finally {
@@ -158,6 +166,9 @@ export function GuestVerifyForm({
   return (
     <>
       <div className="login-head">
+        <span className="login-mark">
+          <BrandMark size={56} />
+        </span>
         <p className="guest-caption">TrustCabinet mời bạn họp</p>
         <h1 className="guest-title">{invitation.meeting.title}</h1>
         <p className="login-sub">
@@ -167,7 +178,7 @@ export function GuestVerifyForm({
             </>
           ) : (
             <>
-              Nhập mã {DIGITS} số vừa gửi tới <strong>{invitation.maskedEmail}</strong> để xem cuộc họp.
+              Nhập mã {DIGITS} số đã gửi tới <strong>{invitation.maskedEmail}</strong> để xem cuộc họp.
             </>
           )}
         </p>
@@ -219,7 +230,11 @@ export function GuestVerifyForm({
             </small>
           ) : (
             <small id="guest-code-note" className="field-hint">
-              {validMinutes ? `Mã có hiệu lực trong ${validMinutes} phút.` : 'Mã chỉ dùng được một lần.'}
+              {recent
+                ? 'Mã vừa gửi chưa tới 1 phút. Đã dùng mã đó thì chờ gửi lại mã mới.'
+                : validMinutes
+                  ? `Mã có hiệu lực trong ${validMinutes} phút.`
+                  : 'Mã chỉ dùng được một lần.'}
             </small>
           )}
         </div>

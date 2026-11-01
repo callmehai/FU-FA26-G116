@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { saveGuestProfile } from '../../api/guest'
+import { BrandMark } from '../../components/BrandMark'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -60,6 +61,9 @@ export function GuestProfileForm({
   return (
     <>
       <div className="login-head">
+        <span className="login-mark">
+          <BrandMark size={56} />
+        </span>
         <p className="guest-caption">Thông tin hiển thị</p>
         <h1 className="guest-title">{session.meeting.title}</h1>
         <p className="login-sub">

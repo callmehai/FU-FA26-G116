@@ -181,8 +181,8 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 ## 8. Màn hình FE (SCRUM-121, SCRUM-123)
 
 - Link mời mở `/guest/{invitationId}#token=…` (màn 1.3), ngoài phiên nội bộ và sidebar (BR-156). FE đọc `token` trong
-  fragment rồi xoá khỏi thanh địa chỉ. Mở màn là gửi mã (`…/code`); `429/MSG373` lúc mở trang nghĩa là mã vừa gửi vẫn
-  dùng được, chỉ đếm ngược "Gửi lại mã" theo `retryAfterSeconds`.
+  fragment rồi xoá khỏi thanh địa chỉ. Mở màn là gửi mã (`…/code`); `429/MSG373` lúc mở trang nghĩa là đã có mã gửi
+  chưa tới 1 phút (có thể đã dùng): FE nói cả hai khả năng và đếm ngược "Gửi lại mã" theo `retryAfterSeconds`.
 - Token Khách và link token lưu trong `localStorage` (`trustcabinet.guest`, theo `invitationId`), tách khỏi phiên nội bộ.
   Còn phiên thì mở lại link vào thẳng cuộc họp (ALT-1). Khi trang Khách đang mở, mọi request và hub của tab dùng token
   Khách, không dùng phiên nội bộ dù trình duyệt đang đăng nhập.
@@ -191,7 +191,8 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
   `/guest/{invitationId}/documents/{meetingDocumentId}`; Khách không có góp ý.
 - Trang kiểm lại `GET /session` mỗi 20 giây, khi tab được focus và sau mọi `404` của panel. `404` thì bỏ toàn bộ dữ liệu
   cuộc họp khỏi màn hình rồi mở lại lời mời: còn mở được thì xin mã mới (kèm `MSG378`), không thì hiện "Cuộc họp đã kết
-  thúc hoặc lời mời đã bị thu hồi" (BE không cho biết lý do cụ thể, EX-1).
+  thúc hoặc lời mời đã bị thu hồi" (BE không cho biết lý do cụ thể, EX-1) và quên link token. Trình duyệt chưa từng có
+  phiên mà mở link đã hết hiệu lực chỉ thấy "Không mở được lời mời".
 - Kết quả kiểm thử: [16-truy-cap-khach-uc04-ket-qua-kiem-thu.md](16-truy-cap-khach-uc04-ket-qua-kiem-thu.md).
 
 ## 9. Ngoài phạm vi

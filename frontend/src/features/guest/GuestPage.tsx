@@ -15,8 +15,10 @@ import { GuestVerifyForm } from './GuestVerifyForm'
 const INVALID_LINK = 'Lời mời không còn hiệu lực. Vui lòng liên hệ Thư ký cuộc họp.'
 /** How often an open meeting re-checks the session: the hub stops telling a guest anything once it ends. */
 const RECHECK_MS = 20_000
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 /** One re-check at a time; a tab shows one guest page. */
 let rechecking = false
+let shownGate: Gate['kind'] = 'checking'
 
 type Gate =
   | { kind: 'checking' }
@@ -47,10 +49,15 @@ export function GuestPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const [gate, setGate] = useState<Gate>({ kind: 'checking' })
+  // What the gate shows, for the re-check, which only has work to do while the meeting is on screen.
+  useEffect(() => {
+    shownGate = gate.kind
+  }, [gate.kind])
 
   // The link token travels in the fragment, never to a server; keep it, then drop it from the address bar.
+  // An id that is no GUID can open nothing, so nothing is kept for it.
   const hashToken = new URLSearchParams(location.hash.slice(1)).get('token')?.trim() || null
-  if (hashToken && readGuestEntry(invitationId).linkToken !== hashToken) {
+  if (hashToken && GUID.test(invitationId) && readGuestEntry(invitationId).linkToken !== hashToken) {
     updateGuestEntry(invitationId, { linkToken: hashToken })
   }
   useEffect(() => {
@@ -76,8 +83,15 @@ export function GuestPage() {
         }
       }
       // Closed after the guest was in — on screen now, or in a session this browser kept: most likely it ended.
-      const closed = (message: string) =>
-        setGate((g) => ({ kind: 'closed', message, wasIn: hadSession || g.kind === 'in' }))
+      // The link opens nothing any more, so this browser forgets it.
+      const closed = (message: string) => {
+        updateGuestEntry(invitationId, { linkToken: undefined })
+        setGate((g) => ({
+          kind: 'closed',
+          message,
+          wasIn: hadSession || g.kind === 'in' || (g.kind === 'closed' && g.wasIn),
+        }))
+      }
       if (!entry.linkToken) return closed(INVALID_LINK)
       try {
         setGate({ kind: 'verify', invitation: await openInvitation(invitationId, entry.linkToken), notice })
@@ -94,15 +108,16 @@ export function GuestPage() {
   }, [enter])
 
   /**
-   * One re-check at a time; a good answer only replaces the session when something in it changed. Stable,
-   * since the panels' loaders depend on it through useAccessLost.
+   * One re-check at a time, and only while the meeting is on screen: a panel's request still in flight when
+   * the meeting gave way must not start the gate over. A good answer only replaces the session when
+   * something in it changed. Stable, since the panels' loaders depend on it through useAccessLost.
    */
   const recheck = useCallback(async () => {
-    const token = readGuestEntry(invitationId).accessToken
-    if (rechecking) return
-    if (!token) return void enter()
+    if (rechecking || shownGate !== 'in') return
     rechecking = true
     try {
+      const token = readGuestEntry(invitationId).accessToken
+      if (!token) return await enter()
       const session = await getGuestSession(token)
       setGate((g) =>
         g.kind === 'in' && JSON.stringify(g.session) !== JSON.stringify(session) ? { kind: 'in', session } : g,
@@ -116,8 +131,8 @@ export function GuestPage() {
   }, [invitationId, enter])
   const recheckNow = useCallback(() => void recheck(), [recheck])
 
-  // The panels and the hub take the guest token from here; a 401 means it is no longer good. Set before
-  // the children's effects run, so their first requests already go as the guest.
+  // The panels and the hub take the guest token from here; a 401 means it is no longer good. The panels
+  // only mount once the gate has been through the network, long after this has run.
   useLayoutEffect(() => {
     setGuestAuth({
       getAccessToken: async () => readGuestEntry(invitationId).accessToken ?? null,
