@@ -3562,7 +3562,9 @@ audio.recording-player { height: 40px; }
 }
 /* Narrow (a phone, the call room's panel): the time column goes, the time moves next to the name. */
 @container (max-width: 560px) {
-  .tl-group { grid-template-columns: 18px minmax(0, 1fr); }
+  /* A row's 14px side padding comes out of its subgrid's first track: 24px leaves the rail the dot's 10px, so it
+     stays round, and the narrower gap keeps the text where it was. */
+  .tl-group { grid-template-columns: 24px minmax(0, 1fr); column-gap: 2px; }
   .tl-row > .tl-time { display: none; }
   .tl-time-inline { display: inline; }
   .tl-speakers ul { display: flex; overflow-x: auto; scrollbar-width: none; }
