@@ -18,6 +18,9 @@ export const GuestContext = createContext<GuestScope | null>(null)
 
 export const useGuest = () => useContext(GuestContext)
 
+/** The name the guest gave (self-declared), or the one the Secretary invited them by until they do. */
+export const guestName = (session: GuestSession) => session.displayName ?? session.invitedName
+
 /** Where a meeting's document opens: the guest's own viewer on a guest page, the internal one elsewhere. */
 export function useDocumentPath() {
   const invitationId = useGuest()?.invitationId
@@ -26,6 +29,12 @@ export function useDocumentPath() {
       invitationId ? routes.guestDocument(invitationId, documentId) : routes.meetingDocument(meetingId, documentId),
     [invitationId],
   )
+}
+
+/** The meeting's own page: the guest's on a guest page, the internal one elsewhere. */
+export function useMeetingHome(meetingId: string) {
+  const invitationId = useGuest()?.invitationId
+  return invitationId ? routes.guest(invitationId) : routes.meeting(meetingId)
 }
 
 /** The meeting page a document's "‹ Tài liệu" returns to, on the given tab. */

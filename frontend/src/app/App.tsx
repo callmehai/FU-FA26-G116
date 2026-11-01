@@ -43,6 +43,7 @@ const GuestPage = lazy(() => import('../features/guest/GuestPage').then((m) => (
 const GuestMeetingPage = lazy(() =>
   import('../features/guest/GuestMeetingPage').then((m) => ({ default: m.GuestMeetingPage })),
 )
+const GuestRoomPage = lazy(() => import('../features/guest/GuestRoomPage').then((m) => ({ default: m.GuestRoomPage })))
 const GuestDocumentPage = lazy(() =>
   import('../features/guest/GuestMeetingPage').then((m) => ({ default: m.GuestDocumentPage })),
 )
@@ -69,6 +70,7 @@ export function App() {
         <Route path={routes.guest(':invitationId')} element={<GuestPage />}>
           <Route index element={<GuestMeetingPage />} />
           <Route path="documents/:documentId" element={<GuestDocumentPage />} />
+          <Route path="room" element={<GuestRoomPage />} />
         </Route>
 
         {/* The bare root lands on the calendar, the home page after sign-in. */}

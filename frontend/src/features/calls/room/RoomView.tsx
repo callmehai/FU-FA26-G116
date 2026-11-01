@@ -45,6 +45,7 @@ import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
 import { routes } from '../../../lib/routes'
 import { MEETING_ROLE_LABEL, type MeetingRole } from '../../../types/call'
+import type { GuestMeeting } from '../../../types/guest'
 import { type Meeting } from '../../../types/meeting'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
@@ -55,6 +56,7 @@ import { MyClips } from '../../speech/MyClips'
 import { useSpeech } from '../../speech/useSpeech'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
+import { useGuest } from '../../guest/guestContext'
 import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
 import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
@@ -109,7 +111,7 @@ export function RoomView({
   onLeave,
 }: {
   room: Room
-  meeting: Meeting
+  meeting: Meeting | GuestMeeting
   myRole: MeetingRole
   onLeave: () => Promise<void>
 }) {
@@ -134,7 +136,7 @@ function RoomLayout({
   onLeave,
 }: {
   room: Room
-  meeting: Meeting
+  meeting: Meeting | GuestMeeting
   myRole: MeetingRole
   onLeave: () => Promise<void>
 }) {
@@ -157,11 +159,7 @@ function RoomLayout({
   const floating = usePipWindow()
   const tray = useDeviceTray()
   const micTrack = localParticipant.getTrackPublication(Track.Source.Microphone)?.audioTrack
-  // SCRUM-109, ADR-0040: what this person says goes into the per-mic record while their call mic is on. The call's mic
-  // is the one switch: muted, nobody hears them and nothing is written down. Everyone was told before joining.
-  const speech = useSpeech(meeting.id, { micOn: isMicrophoneEnabled, deviceId: room.getActiveDevice('audioinput') })
-  const [myClips, setMyClips] = useState(false)
-  const failedClips = speech.capture.refused + speech.capture.retrying
+  const guest = useGuest()
 
   // Closing the tab while connected asks first; the browser shows its own wording.
   useBeforeUnload((event) => event.preventDefault())
@@ -266,7 +264,8 @@ function RoomLayout({
     else void startScreenShare()
   }
 
-  const restricted = meeting.sensitivity === 'Secret' || meeting.sensitivity === 'Confidential'
+  const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
+  const restricted = sensitivity === 'Secret' || sensitivity === 'Confidential'
 
   return (
     <div className={`room${panel ? ' room-with-panel' : ''}`}>
@@ -288,33 +287,15 @@ function RoomLayout({
           {participants.length}
           <span className="room-count-label">người trong phòng</span>
         </span>
-        {restricted && <SensitivityBadge sensitivity={meeting.sensitivity} />}
-        {speech.capture.state === 'elsewhere' && speech.capturing ? (
-          // Two tabs of one person would write every sentence twice: one records, this one can take over.
-          <button type="button" className="room-recording" onClick={speech.capture.takeOver}>
-            <Icon name="mic" size={13} />
-            <span className="room-recording-long">Đang ghi ở tab khác · Ghi ở đây</span>
-            <span className="room-recording-short" aria-hidden="true">
-              Ghi ở đây
-            </span>
-          </button>
-        ) : (
-          (speech.capturing || failedClips > 0) && (
-            <button
-              type="button"
-              className="room-recording"
-              onClick={() => setMyClips(true)}
-              data-tooltip="Ghi âm của tôi"
-            >
-              <Icon name={speech.capturing ? 'mic' : 'alertCircle'} size={13} />
-              {/* A phone's header has no room for the whole sentence; the dot says the rest. */}
-              <span className="room-recording-long">{speech.capturing ? 'Đang ghi lời bạn' : 'Chưa gửi hết lời bạn'}</span>
-              <span className="room-recording-short" aria-hidden="true">
-                {speech.capturing ? 'Đang ghi' : 'Chưa gửi'}
-              </span>
-              {failedClips > 0 && <span className="room-recording-badge">{failedClips}</span>}
-            </button>
-          )
+        {restricted && sensitivity && <SensitivityBadge sensitivity={sensitivity} />}
+        {/* SCRUM-109 is for members only: a guest's words are not captured per microphone, and the server refuses them. */}
+        {'actualStartedAt' in meeting && !guest && (
+          <SpeechCapture
+            meeting={meeting}
+            micOn={isMicrophoneEnabled}
+            deviceId={room.getActiveDevice('audioinput')}
+            identity={localParticipant.identity}
+          />
         )}
       </header>
 
@@ -378,7 +359,7 @@ function RoomLayout({
             ) : panel === 'attendance' ? (
               <AttendancePanel meetingId={meeting.id} />
             ) : panel === 'documents' ? (
-              <DocumentsPanel meeting={meeting} variant="room" />
+              <DocumentsPanel meeting={meeting} variant="room" onMeetingStale={guest?.recheck} />
             ) : panel === 'votes' ? (
               <VotingPanel meetingId={meeting.id} variant="room" />
             ) : (
@@ -531,10 +512,65 @@ function RoomLayout({
           Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.
         </ConfirmDialog>
       )}
+    </div>
+  )
+}
 
+/**
+ * SCRUM-109, ADR-0040: what this person says goes into the per-mic record while their call mic is on. The call's mic
+ * is the one switch: muted, nobody hears them and nothing is written down. Everyone was told before joining.
+ * Its own component so a guest never mounts it: mounting it reads the speech list and sends the sentences an earlier
+ * visit left in this browser, which a guest's token may not do.
+ */
+function SpeechCapture({
+  meeting,
+  micOn,
+  deviceId,
+  identity,
+}: {
+  meeting: Meeting
+  micOn: boolean
+  deviceId: string | undefined
+  identity: string
+}) {
+  const speech = useSpeech(meeting.id, { micOn, deviceId })
+  const [myClips, setMyClips] = useState(false)
+  const failedClips = speech.capture.refused + speech.capture.retrying
+
+  return (
+    <>
+      {speech.capture.state === 'elsewhere' && speech.capturing ? (
+        // Two tabs of one person would write every sentence twice: one records, this one can take over.
+        <button type="button" className="room-recording" onClick={speech.capture.takeOver}>
+          <Icon name="mic" size={13} />
+          <span className="room-recording-long">Đang ghi ở tab khác · Ghi ở đây</span>
+          <span className="room-recording-short" aria-hidden="true">
+            Ghi ở đây
+          </span>
+        </button>
+      ) : (
+        (speech.capturing || failedClips > 0) && (
+          <button
+            type="button"
+            className="room-recording"
+            onClick={() => setMyClips(true)}
+            data-tooltip="Ghi âm của tôi"
+          >
+            <Icon name={speech.capturing ? 'mic' : 'alertCircle'} size={13} />
+            {/* A phone's header has no room for the whole sentence; the dot says the rest. */}
+            <span className="room-recording-long">
+              {speech.capturing ? 'Đang ghi lời bạn' : 'Chưa gửi hết lời bạn'}
+            </span>
+            <span className="room-recording-short" aria-hidden="true">
+              {speech.capturing ? 'Đang ghi' : 'Chưa gửi'}
+            </span>
+            {failedClips > 0 && <span className="room-recording-badge">{failedClips}</span>}
+          </button>
+        )
+      )}
       {myClips && (
         <MyClips
-          clips={speech.clips.filter((c) => c.speakerId === localParticipant.identity)}
+          clips={speech.clips.filter((c) => c.speakerId === identity)}
           pending={speech.capture.pending}
           startedAt={meeting.actualStartedAt}
           recordHref={`${routes.meeting(meeting.id)}?tab=recordings`}
@@ -542,7 +578,7 @@ function RoomLayout({
           onChanged={speech.reload}
         />
       )}
-    </div>
+    </>
   )
 }
 
@@ -993,6 +1029,7 @@ function ParticipantTile({ trackRef, style }: { trackRef: TrackReferenceOrPlaceh
         {micMuted && <Icon name="micOff" size={14} />}
         <span>{participant.isLocal ? `${name} (Bạn)` : name}</span>
         {role === 'Chair' && <span className="room-role">Chủ toạ</span>}
+        {role === 'Guest' && <span className="room-role">{MEETING_ROLE_LABEL.Guest}</span>}
       </figcaption>
     </figure>
   )
@@ -1080,7 +1117,14 @@ function PersonRow({
           {name}
           {participant.isLocal && ' (Bạn)'}
         </strong>
-        <small>{role ? MEETING_ROLE_LABEL[role] : 'Thành viên'}</small>
+        {/* A guest's name is the one they gave; nothing here shows their email (SCRUM-59). */}
+        {role === 'Guest' ? (
+          <small tabIndex={0} data-tooltip="Tên tự khai">
+            {MEETING_ROLE_LABEL.Guest}
+          </small>
+        ) : (
+          <small>{role ? MEETING_ROLE_LABEL[role] : 'Thành viên'}</small>
+        )}
       </span>
       {speaking && <span className="room-speaking-dot" title="Đang nói" aria-label="Đang nói" />}
       <span className={`room-person-mic${micMuted ? ' is-muted' : ''}`} title={micMuted ? 'Micro tắt' : 'Micro bật'}>

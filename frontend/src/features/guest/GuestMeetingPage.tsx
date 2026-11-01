@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useOutletContext, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
 import { endGuestSession } from '../../api/guest'
 import { getMyInvitationResponse } from '../../api/participants'
 import { BrandMark } from '../../components/BrandMark'
@@ -7,8 +7,10 @@ import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import { formatSchedule } from '../../lib/format'
+import { routes } from '../../lib/routes'
 import type { InvitationResponseResult } from '../../types/participant'
 import { AgendaPanel } from '../agenda/AgendaPanel'
+import { roomMessage } from '../calls/room/roomSupport'
 import { DocumentsPanel } from '../documents/DocumentsPanel'
 import { DocumentViewer } from '../documents/DocumentViewerPage'
 import { StatusBadge } from '../meetings/StatusBadge'
@@ -16,9 +18,10 @@ import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import { ParticipantsPanel } from '../participants/ParticipantsPanel'
 import { RsvpButtons, RsvpChip } from '../participants/Rsvp'
 import { VotingPanel } from '../votes/VotingPanel'
-import { useGuest } from './guestContext'
+import { guestName, useGuest } from './guestContext'
 import type { GuestOutletContext } from './GuestPage'
 import { dropGuestSession, readGuestEntry } from './guestStore'
+import { useGuestCall } from './useGuestCall'
 
 const TABS = [
   { id: 'agenda', label: 'Nội dung cuộc họp' },
@@ -42,6 +45,14 @@ export function GuestMeetingPage() {
   // `?tab=` is where the document viewer's back link lands.
   const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'agenda')
   const invitation = useMyInvitation(meeting.id)
+  // SCRUM-59: the call room, as for a member; until it opens the page says why, and asks again on its own.
+  const call = useGuestCall(meeting.id).call
+  const roomNote =
+    call?.status === 'NotStarted'
+      ? roomMessage.notStarted
+      : call?.status === 'InPersonOnly'
+        ? roomMessage.inPersonOnly
+        : null
 
   return (
     <div className="guest-page">
@@ -59,8 +70,22 @@ export function GuestMeetingPage() {
                 <Icon name="clock" size={16} />
                 {formatSchedule(meeting.plannedStartTime, meeting.plannedEndTime)}
               </span>
+              {roomNote && (
+                <span>
+                  <Icon name="video" size={16} />
+                  {roomNote}
+                </span>
+              )}
             </p>
           </div>
+          {call?.status === 'Open' && (
+            <div className="page-header-actions">
+              <Link className="btn btn-live btn-lg btn-cta" to={routes.guestRoom(guest.invitationId)}>
+                <Icon name="video" size={18} />
+                Vào phòng họp
+              </Link>
+            </div>
+          )}
         </div>
 
         {invitation.current?.canRespond && (
@@ -133,7 +158,7 @@ function GuestBar() {
   const { signedOut } = useOutletContext<GuestOutletContext>()
   const [leaving, setLeaving] = useState(false)
   const { session, invitationId } = guest
-  const name = session.displayName ?? session.invitedName
+  const name = guestName(session)
 
   async function leave() {
     const token = readGuestEntry(invitationId).accessToken

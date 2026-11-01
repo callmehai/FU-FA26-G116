@@ -190,6 +190,15 @@ phiên (`ON DELETE CASCADE`), tức theo lời mời; audit giữ theo chính s�
   hiện thông báo ghi âm (mục đích, thời hạn lưu) và chỉ gửi `recordingNoticeAcknowledged: true` khi Khách bấm xác
   nhận; `400 MSG380` nghĩa là chưa gửi. Không có nút tắt mic người khác cho Khách. `404` → coi như phiên/lời mời
   đã hết hiệu lực, cùng xử lý với các tab khác của trang Khách.
+- Đã làm (SCRUM-127): phòng của Khách ở `/guest/{invitationId}/room` (`features/guest/GuestRoomPage.tsx`), dùng lại
+  màn chờ và `RoomView` của thành viên. Trang Khách hiện nút **Vào phòng họp** khi `status = Open`, còn `NotStarted`
+  / `InPersonOnly` thì hiện `MSG117` / `MSG280`. Bắt đầu cuộc họp không báo gì cho Khách (chỉ có thông báo cho thành
+  viên), nên khi phòng chưa mở FE hỏi lại `GET …/call` mỗi 10 giây và khi quay lại tab. Thời hạn trong thông báo ghi âm
+  là 180 ngày, ghi cứng ở FE vì Khách không được đọc danh sách câu ghi âm; nếu đổi `RecordingStorage:RetentionDays`
+  thì cần BE trả thời hạn trong `GET …/call`. Khách không gắn bộ ghi âm theo micro (SCRUM-109): không gọi endpoint
+  speech-clip nào, kể cả gửi lại câu còn kẹt trong trình duyệt. Bị LiveKit đưa ra (`PARTICIPANT_REMOVED`) thì trang
+  Khách kiểm lại phiên ngay và chuyển sang màn "Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi"; cuộc họp kết thúc thì
+  hiện `MSG331`, rồi lần kiểm lại phiên kế tiếp (tối đa 20 giây) chuyển sang màn đó.
 
 SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát cùng dùng `ParticipantRules.ActiveExpression`. Gỡ rồi mời lại chỉ xét assignment Current mới; dòng lịch sử không tạo quyền hoặc làm truy vấn trả nhiều dòng.
 

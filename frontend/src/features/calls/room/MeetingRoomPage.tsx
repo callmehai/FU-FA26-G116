@@ -17,11 +17,12 @@ import { BrandMark } from '../../../components/BrandMark'
 import { useToast } from '../../../components/toastContext'
 import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
-import { routes } from '../../../lib/routes'
 import type { CallRoomState } from '../../../types/call'
+import type { GuestMeeting } from '../../../types/guest'
 import type { Meeting } from '../../../types/meeting'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
+import { guestName, useGuest, useMeetingHome } from '../../guest/guestContext'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useMeeting } from '../../meetings/useMeeting'
 import { useNotifications } from '../../notifications/notificationsContext'
@@ -35,6 +36,13 @@ import {
   noDeviceReason,
   roomMessage,
 } from './roomSupport'
+
+/**
+ * How long a guest's recording is kept (RecordingStorage.RetentionDays). A guest may not read the speech-clip list
+ * that tells members, so the notice says the configured default.
+ */
+// ponytail: mirrors the server default; have GET …/call return retentionDays if it is ever configured otherwise.
+const GUEST_RETENTION_DAYS = 180
 
 type Phase = { kind: 'lobby' } | { kind: 'inRoom' } | { kind: 'left'; reason: DisconnectReason | undefined }
 
@@ -145,22 +153,31 @@ export function MeetingRoomPage() {
   return <RoomLifecycle meeting={meetingState.meeting} call={call} />
 }
 
-function RoomLifecycle({ meeting, call }: { meeting: Meeting; call: CallRoomState }) {
+/**
+ * The lobby, the room and what is left after it, for a member or a guest (SCRUM-59). A guest's room is the members'
+ * with less: a guest coordinates nothing and their words are not captured per microphone.
+ */
+export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeting; call: CallRoomState }) {
   const [room] = useState(() => new Room(ROOM_OPTIONS))
   const [phase, setPhase] = useState<Phase>({ kind: 'lobby' })
   const leavingRef = useRef(false)
   const navigate = useNavigate()
+  const home = useMeetingHome(meeting.id)
+  const recheckGuest = useGuest()?.recheck
 
   useEffect(() => {
     function onDisconnected(reason?: DisconnectReason) {
       if (leavingRef.current) return
       setPhase({ kind: 'left', reason })
+      // Put out by the server: for a guest that is a revoked invitation or a lapsed session, and the guest page
+      // then replaces the room with its closed screen, taking the meeting off the screen.
+      if (reason === DisconnectReason.PARTICIPANT_REMOVED) recheckGuest?.()
     }
     room.on(RoomEvent.Disconnected, onDisconnected)
     return () => {
       room.off(RoomEvent.Disconnected, onDisconnected)
     }
-  }, [room])
+  }, [room, recheckGuest])
 
   // Leaving the page (Back, closing the route) leaves the room.
   useEffect(() => () => void room.disconnect(), [room])
@@ -168,8 +185,8 @@ function RoomLifecycle({ meeting, call }: { meeting: Meeting; call: CallRoomStat
   const leave = useCallback(async () => {
     leavingRef.current = true
     await room.disconnect()
-    navigate(routes.meeting(meeting.id))
-  }, [room, navigate, meeting.id])
+    navigate(home)
+  }, [room, navigate, home])
 
   if (call.status !== 'Open') {
     const text = {
@@ -207,9 +224,11 @@ function RoomLifecycle({ meeting, call }: { meeting: Meeting; call: CallRoomStat
 }
 
 /** How many days a sentence is kept, when the meeting records what is said in the call; null when it does not. */
-function useRecordingNotice(meetingId: string) {
-  const [days, setDays] = useState<number | null>(null)
+function useRecordingNotice(meetingId: string, asGuest: boolean) {
+  const [days, setDays] = useState<number | null>(asGuest ? GUEST_RETENTION_DAYS : null)
   useEffect(() => {
+    // A guest may not read the speech-clip list (403), and is always told: the room is recorded either way.
+    if (asGuest) return
     let cancelled = false
     // Asking for what changed from now on brings the meeting's terms without its sentences.
     listSpeechClips(meetingId, new Date().toISOString()).then(
@@ -220,7 +239,7 @@ function useRecordingNotice(meetingId: string) {
     return () => {
       cancelled = true
     }
-  }, [meetingId])
+  }, [meetingId, asGuest])
   return days
 }
 
@@ -231,10 +250,13 @@ function PreJoin({
   onJoined,
 }: {
   room: Room
-  meeting: Meeting
+  meeting: Meeting | GuestMeeting
   call: CallRoomState
   onJoined: () => void
 }) {
+  const guest = useGuest()
+  // A guest confirms the recording notice before the join button works (SCRUM-59); the server keeps that as evidence.
+  const [acknowledged, setAcknowledged] = useState(false)
   const [prefs, setPrefs] = useState(loadPrefs)
   const [micAllowed, setMicAllowed] = useState(false)
   const [micError, setMicError] = useState<string | null>(null)
@@ -257,9 +279,10 @@ function PreJoin({
   } = useCameraPreview(prefs.cam, camId, reloadDevices)
   const { track: micTrack, release: releaseMic } = useMicPreview(micOn && micAllowed, micId)
   const user = useAuth().user
-  // The room has no identity before connecting; the preview uses the signed-in name.
-  const myName = user?.fullName ?? ''
-  const retentionDays = useRecordingNotice(meeting.id)
+  // The room has no identity before connecting; the preview uses the signed-in name, or the name a guest gave.
+  const myName = guest ? guestName(guest.session) : (user?.fullName ?? '')
+  const retentionDays = useRecordingNotice(meeting.id, guest !== null)
+  const home = useMeetingHome(meeting.id)
 
   useEffect(() => {
     let cancelled = false
@@ -281,7 +304,7 @@ function PreJoin({
     setJoining(true)
     setJoinError(null)
     try {
-      const ticket = await joinMeetingCall(meeting.id)
+      const ticket = await joinMeetingCall(meeting.id, guest ? { recordingNoticeAcknowledged: true } : undefined)
       // The previews hold the camera and microphone; release them so publishing can open them again.
       releasePreview()
       releaseMic()
@@ -313,7 +336,8 @@ function PreJoin({
   }
 
   const camOn = prefs.cam && !previewError
-  const restricted = meeting.sensitivity === 'Secret' || meeting.sensitivity === 'Confidential'
+  const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
+  const restricted = sensitivity === 'Secret' || sensitivity === 'Confidential'
   const labelOf = (id: string) => devices.find((d) => d.deviceId === id)?.label ?? ''
 
   return (
@@ -387,7 +411,7 @@ function PreJoin({
         <section className="prejoin-side" aria-labelledby="prejoin-title">
           <h1 id="prejoin-title">Sẵn sàng tham gia?</h1>
           <p className="prejoin-meeting">{meeting.title}</p>
-          {restricted && <SensitivityBadge sensitivity={meeting.sensitivity} />}
+          {restricted && sensitivity && <SensitivityBadge sensitivity={sensitivity} />}
           <p className="prejoin-presence">
             {call.participantCount === null
               ? 'Cuộc họp đang diễn ra'
@@ -396,15 +420,29 @@ function PreJoin({
                 : `Đang có ${call.participantCount} người trong phòng`}
           </p>
           {/* Law 91/2025, art. 32: the people of a recorded meeting are told before it records them (ADR-0040). */}
-          {retentionDays !== null && (
-            <p
-              className="prejoin-recording"
-              tabIndex={0}
-              data-tooltip="Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình."
-            >
-              <Icon name="mic" size={16} />
-              Cuộc họp được ghi âm để lập biên bản · tự xoá sau {retentionDays} ngày
-            </p>
+          {guest ? (
+            // Someone from outside is told, and confirms, before the room can record them (Law 91/2025, art. 32).
+            <label className="prejoin-recording prejoin-consent">
+              <input
+                type="checkbox"
+                checked={acknowledged}
+                onChange={(event) => setAcknowledged(event.target.checked)}
+              />
+              <span>
+                Tôi biết cuộc họp được ghi âm để lập biên bản, tự xoá sau {retentionDays ?? GUEST_RETENTION_DAYS} ngày
+              </span>
+            </label>
+          ) : (
+            retentionDays !== null && (
+              <p
+                className="prejoin-recording"
+                tabIndex={0}
+                data-tooltip="Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình."
+              >
+                <Icon name="mic" size={16} />
+                Cuộc họp được ghi âm để lập biên bản · tự xoá sau {retentionDays} ngày
+              </p>
+            )
           )}
 
           {micError && (
@@ -423,10 +461,15 @@ function PreJoin({
             </div>
           )}
 
-          <button type="button" className="prejoin-join" disabled={joining} onClick={() => void join()}>
+          <button
+            type="button"
+            className="prejoin-join"
+            disabled={joining || (guest !== null && !acknowledged)}
+            onClick={() => void join()}
+          >
             {joining ? 'Đang vào phòng…' : 'Vào phòng'}
           </button>
-          <Link className="prejoin-text-button" to={routes.meeting(meeting.id)}>
+          <Link className="prejoin-text-button" to={home}>
             <Icon name="chevronLeft" size={18} />
             Quay lại trang cuộc họp
           </Link>
@@ -544,10 +587,17 @@ function useCameraPreview(enabled: boolean, deviceId: string, onOpened?: () => v
   return { attachVideo: setVideo, ready: track !== undefined, error, release: () => track?.stop() }
 }
 
-/** The room's own page outside the call, as Meet's: its mark on the left, who is signed in on the right. */
-function RoomPage({ children }: { children: ReactNode }) {
+/**
+ * The room's own page outside the call, as Meet's: its mark on the left, who is signed in on the right — a guest as
+ * the name they gave, never an internal session the browser may also hold.
+ */
+export function RoomPage({ children }: { children: ReactNode }) {
   const user = useAuth().user
-  const colors = avatarColors(user?.fullName ?? '')
+  const guest = useGuest()
+  const me = guest
+    ? { name: guestName(guest.session), detail: 'Khách' }
+    : user && { name: user.fullName, detail: user.email }
+  const colors = avatarColors(me?.name ?? '')
   return (
     <div className="prejoin">
       <header className="prejoin-top">
@@ -555,18 +605,18 @@ function RoomPage({ children }: { children: ReactNode }) {
           <BrandMark size={32} />
           TrustCabinet
         </span>
-        {user && (
+        {me && (
           <span className="prejoin-account">
             <span className="prejoin-account-text">
-              <span className="prejoin-account-name">{user.fullName}</span>
-              <span className="prejoin-account-mail">{user.email}</span>
+              <span className="prejoin-account-name">{me.name}</span>
+              <span className="prejoin-account-mail">{me.detail}</span>
             </span>
             <span
               className="prejoin-avatar"
               style={{ backgroundColor: colors.bg, color: colors.fg }}
               aria-hidden="true"
             >
-              {initials(user.fullName)}
+              {initials(me.name)}
             </span>
           </span>
         )}
@@ -576,7 +626,7 @@ function RoomPage({ children }: { children: ReactNode }) {
   )
 }
 
-function LobbyMessage({
+export function LobbyMessage({
   meetingId,
   title,
   text,
@@ -587,13 +637,14 @@ function LobbyMessage({
   text: string
   children?: ReactNode
 }) {
+  const home = useMeetingHome(meetingId)
   return (
     <RoomPage>
       <main className="prejoin-message">
         <h1>{text}</h1>
         <p className="prejoin-meeting">{title}</p>
         <div className="prejoin-message-actions">
-          <Link className="btn btn-outline" to={routes.meeting(meetingId)}>
+          <Link className="btn btn-outline" to={home}>
             Về trang cuộc họp
           </Link>
           {children}

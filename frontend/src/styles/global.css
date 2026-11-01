@@ -2711,6 +2711,9 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .prejoin-side > .alert { width: 100%; margin-top: 16px; text-align: left; }
 .prejoin-recording { display: flex; align-items: flex-start; justify-content: center; gap: 6px; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
 .prejoin-recording svg { flex: none; margin-top: 2px; color: var(--danger); }
+/* A guest confirms the notice before joining (SCRUM-59): the whole line is the checkbox's label, 40px tall to tap. */
+.prejoin-consent { align-items: center; min-height: 40px; color: var(--ink); text-align: left; cursor: pointer; }
+.prejoin-consent input[type='checkbox'] { flex: none; width: 18px; height: 18px; }
 .prejoin-join {
   position: relative;
   width: 240px;

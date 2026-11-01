@@ -17,6 +17,8 @@ export const routes = {
    */
   guest: (invitationId: string) => `/guest/${invitationId}`,
   guestDocument: (invitationId: string, documentId: string) => `/guest/${invitationId}/documents/${documentId}`,
+  /** The guest's way into the call room (SCRUM-59): the members' room, on the guest's token. */
+  guestRoom: (invitationId: string) => `/guest/${invitationId}/room`,
 
   mgmt: '/mgmt',
   meetings: '/mgmt/meetings',
