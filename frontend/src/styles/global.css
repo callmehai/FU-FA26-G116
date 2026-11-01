@@ -1894,12 +1894,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   line-height: 1.35;
 }
 .cal-event:hover { z-index: 2; box-shadow: 0 2px 8px #1a243326; }
-.cal-event-short { justify-content: center; padding: 2px 10px; }
+/* Too short for two lines, as on Google Calendar: title then time on one line, the title cut with an ellipsis. */
+.cal-event-short { flex-direction: row; align-items: center; gap: 6px; padding: 0 10px; }
 .cal-event-time { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .cal-event-title { display: -webkit-box; overflow: hidden; font-weight: 600; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 /* A cancelled meeting stays where it was planned, grey and struck through, so nobody turns up for it. */
 .cal-cancelled .cal-event-title, .cal-cancelled .month-event-title { text-decoration: line-through; }
-.cal-event-short .cal-event-title { display: block; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.cal-event-short .cal-event-title { display: block; flex: 1; order: -1; min-width: 0; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .cal-event-place { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
 .cal-event-secret { display: inline-flex; align-items: center; gap: 3px; height: 18px; margin-left: auto; padding: 0 6px; border-radius: 4px; background: var(--surface); color: var(--chip-red-fg); font-size: 11px; }
 .cal-event-live { border-color: var(--live); background: var(--live); color: #fff; }
@@ -1916,7 +1917,6 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .cal-more:hover { background: var(--brand-wash); }
 .cal-event.cal-event-crowded { padding-right: 52px; }
 .cal-event-crowded .cal-event-time { overflow: hidden; }
-.calendar-free { position: absolute; right: 8px; left: 8px; color: var(--label-ink); font-size: 13px; text-align: center; }
 
 .calendar-legend { display: flex; flex: none; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line-soft); background: #fbfcfd; color: var(--muted-ink); font-size: 12px; }
 .calendar-legend span { display: flex; align-items: center; gap: 5px; }
@@ -3612,7 +3612,9 @@ audio.recording-player { height: 40px; }
 }
 /* Narrow (a phone, the call room's panel): the time column goes, the time moves next to the name. */
 @container (max-width: 560px) {
-  .tl-group { grid-template-columns: 18px minmax(0, 1fr); }
+  /* A row's 14px side padding comes out of its subgrid's first track: 24px leaves the rail the dot's 10px, so it
+     stays round, and the narrower gap keeps the text where it was. */
+  .tl-group { grid-template-columns: 24px minmax(0, 1fr); column-gap: 2px; }
   .tl-row > .tl-time { display: none; }
   .tl-time-inline { display: inline; }
   .tl-speakers ul { display: flex; overflow-x: auto; scrollbar-width: none; }
