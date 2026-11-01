@@ -43,7 +43,7 @@ public static class CallEndpoints
         app.MapGroup("/api/meetings/{id:guid}/call")
             .WithTags("Calls")
             .RequireActiveUser(ServerError(Msg284MuteFailed, "Không thể tắt micro. Vui lòng thử lại."))
-            .MapPost("/participants/{userId:guid}/mute", MuteAsync);
+            .MapPost("/participants/{identity}/mute", MuteAsync);
 
         // Anonymous at the HTTP layer: LiveKit proves itself with a signature over the body.
         app.MapPost("/api/livekit/webhook", ReceiveWebhookAsync)
@@ -91,10 +91,16 @@ public static class CallEndpoints
     private static CallCaller Caller(ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities)
         => identities.Resolve(principal) is { } guest ? new CallCaller(Guest: guest) : CapabilityGate.GatedUserId(principal);
 
+    /// <param name="identity">The LiveKit identity from the room: a user id, or <c>guest-{guestSessionId}</c>.</param>
     private static async Task<IResult> MuteAsync(
-        Guid id, Guid userId, ClaimsPrincipal principal, ICallRoomService service, CancellationToken ct)
+        Guid id, string identity, ClaimsPrincipal principal, ICallRoomService service, CancellationToken ct)
     {
-        var outcome = await service.MuteAsync(id, CapabilityGate.GatedUserId(principal), userId, ct);
+        if (!CallMember.TryParse(identity, out var target))
+        {
+            return Results.NotFound();
+        }
+
+        var outcome = await service.MuteAsync(id, CapabilityGate.GatedUserId(principal), target, ct);
         return outcome switch
         {
             CallOutcome.Success => Results.NoContent(),

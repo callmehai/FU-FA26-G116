@@ -232,6 +232,17 @@ public sealed class CallEndpointsTests : IDisposable
         // Muting stays a chair's: a guest token never passes the active-user gate.
         Assert.Equal(HttpStatusCode.Forbidden,
             (await client.PostAsync($"{CallPath}/participants/{Guid.CreateVersion7()}/mute", null)).StatusCode);
+
+        // The chair mutes the guest by its room identity; anything that is not an identity is an unknown participant.
+        var chair = GivenUser("chair@trustcabinet.local");
+        _factory.Calls.Invite(_meetingId, chair.Id, MeetingRole.Chair);
+        var identity = CallMember.Guest(guest.SessionId).Identity;
+        _factory.LiveKit.Join(CallRoomNames.ForMeeting(_meetingId), CallMember.Guest(guest.SessionId),
+            new RoomTrack("TR_guest_mic", CallTrackSource.Microphone, Muted: false));
+        var chairClient = _factory.ClientFor(chair);
+        Assert.Equal(HttpStatusCode.NoContent, (await chairClient.PostAsync($"{CallPath}/participants/{identity}/mute", null)).StatusCode);
+        Assert.Equal(identity, Assert.Single(_factory.LiveKit.Muted).Identity);
+        Assert.Equal(HttpStatusCode.NotFound, (await chairClient.PostAsync($"{CallPath}/participants/guest-x/mute", null)).StatusCode);
     }
 
     [Fact]

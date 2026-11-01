@@ -90,7 +90,8 @@ public interface ICallRoomService
     Task<CallResult<CallJoinTicket>> JoinAsync(
         Guid meetingId, CallCaller caller, bool recordingNoticeAcknowledged = false, CancellationToken ct = default);
 
-    Task<CallOutcome> MuteAsync(Guid meetingId, Guid actorId, Guid targetUserId, CancellationToken ct = default);
+    /// <param name="target">A member or a guest: the chair mutes anyone in the room (UC-41, ADR-0016).</param>
+    Task<CallOutcome> MuteAsync(Guid meetingId, Guid actorId, CallMember target, CancellationToken ct = default);
 
     Task HandleWebhookAsync(CallWebhookEvent webhook, CancellationToken ct = default);
 

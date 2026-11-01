@@ -39,12 +39,14 @@ khai, `recordingNoticeAcknowledged: true`) — đây là bằng chứng Khách �
 **trước** khi có token. Không ghi được thì không cấp token (`500 MSG118`).
 
 Khách có quyền trong phòng như thành viên (ADR-0016): micro, camera, chia sẻ màn hình, chat, xem ai đang trong
-phòng. Không tắt mic người khác: `POST …/mute` bằng token Khách trả `403`. Khách **không** được ghi vào
+phòng. Không tắt mic người khác: `POST …/mute` bằng token Khách trả `403`. Chủ toạ tắt mic Khách như thành viên, bằng
+danh tính `guest-{guestSessionId}` lấy từ phòng. Khách **không** được ghi vào
 `meeting_participants`, không có vai trò chủ toạ/thư ký và không tính vào điều kiện nào của cuộc họp.
 
 Thu hồi lời mời Khách (`DELETE …/guest-invitations/{id}`) hoặc gỡ thành viên đối soát ngay phòng của cuộc họp đó
-(`IMeetingParticipantAccessPublisher`): người không còn quyền bị đưa ra khỏi phòng, không chờ job 30 giây. Phiên
-hết hạn hay Khách đăng xuất thì job đối soát đưa ra trong tối đa 30 giây.
+(`IMeetingParticipantAccessPublisher`): người không còn quyền bị đưa ra khỏi phòng, không chờ job 30 giây. Việc này
+chỉ chạy khi phòng có phiên `Active`, và chờ LiveKit tối đa 2 giây — quá thì job đối soát làm nốt, thao tác thu hồi vẫn
+thành công. Phiên hết hạn hay Khách đăng xuất thì job đối soát đưa ra trong tối đa 30 giây.
 
 ### Danh tính trong LiveKit
 
@@ -60,7 +62,7 @@ riêng là hai phiên, hai kết nối. Tên hiển thị của Khách là tên 
 |---|---|---|
 | `GET` | `/api/meetings/{id}/call` | `200 { meetingId, status, myRole, available, participantCount }` — thành viên hoặc Khách |
 | `POST` | `/api/meetings/{id}/call/join` | `200 { serverUrl, token, roomName, identity, expiresAt }` — thành viên hoặc Khách; Khách gửi `{ "recordingNoticeAcknowledged": true }` |
-| `POST` | `/api/meetings/{id}/call/participants/{userId}/mute` | `204` |
+| `POST` | `/api/meetings/{id}/call/participants/{identity}/mute` | `204` — `identity` là danh tính LiveKit của người bị tắt: `userId` hoặc `guest-{guestSessionId}` |
 | `POST` | `/api/livekit/webhook` | Chỉ LiveKit gọi, xác thực bằng chữ ký |
 
 Chi tiết từng trường của `GET …/call`:

@@ -11,5 +11,13 @@ namespace TrustCabinet.Infrastructure.Calls;
 /// </summary>
 internal sealed class CallRoomAccessPublisher(ICallRoomService rooms) : IMeetingParticipantAccessPublisher
 {
-    public Task PublishAsync(MeetingAccessChange change, CancellationToken ct) => rooms.EnforceRoomAccessAsync(change.MeetingId, ct);
+    /// <summary>The secretary's request waits for this, so LiveKit gets 2 seconds (as the agenda publisher); then the janitor.</summary>
+    private static readonly TimeSpan Budget = TimeSpan.FromSeconds(2);
+
+    public async Task PublishAsync(MeetingAccessChange change, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(Budget);
+        await rooms.EnforceRoomAccessAsync(change.MeetingId, timeout.Token);
+    }
 }

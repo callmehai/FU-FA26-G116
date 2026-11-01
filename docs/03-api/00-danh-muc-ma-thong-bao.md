@@ -467,15 +467,15 @@ Các câu phòng họp tự hiện (không có response từ server) dùng `MSG3
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG117` | 409 | `POST …/call/join`, `POST …/call/participants/{userId}/mute` | Cuộc họp không ở trạng thái `InProgress` | `Phòng họp chỉ mở khi cuộc họp đang diễn ra.` | BE |
+| `MSG117` | 409 | `POST …/call/join`, `POST …/call/participants/{identity}/mute` | Cuộc họp không ở trạng thái `InProgress` | `Phòng họp chỉ mở khi cuộc họp đang diễn ra.` | BE |
 | `MSG118` | 500 | `POST …/call/join` | Lỗi database khi kiểm quyền vào phòng | `Không thể vào phòng họp. Vui lòng thử lại.` | BE |
-| `MSG123` | 403 | `POST …/call/participants/{userId}/mute` | Người gọi được mời nhưng không phải chủ toạ | `Chỉ chủ toạ mới tắt được micro của người khác.` | BE |
-| `MSG124` | 502 | `POST …/call/participants/{userId}/mute` | LiveKit không phản hồi hoặc từ chối | `Máy chủ phòng họp không phản hồi. Vui lòng thử lại.` | BE |
+| `MSG123` | 403 | `POST …/call/participants/{identity}/mute` | Người gọi được mời nhưng không phải chủ toạ | `Chỉ chủ toạ mới tắt được micro của người khác.` | BE |
+| `MSG124` | 502 | `POST …/call/participants/{identity}/mute` | LiveKit không phản hồi hoặc từ chối | `Máy chủ phòng họp không phản hồi. Vui lòng thử lại.` | BE |
 | `MSG280` | 409 | `POST …/call/join` | Cuộc họp hình thức `InPerson` — không có phòng trực tuyến | `Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến.` | BE |
 | `MSG281` | 503 | `POST …/call/join`, `POST …/mute` | Máy chủ chưa cấu hình LiveKit | `Phòng họp trực tuyến chưa sẵn sàng. Vui lòng liên hệ quản trị viên.` | BE |
-| `MSG282` | 409 | `POST …/call/participants/{userId}/mute` | Người bị tắt mic không còn trong phòng hoặc không có micro | `Người này không còn trong phòng hoặc chưa bật micro.` | BE |
+| `MSG282` | 409 | `POST …/call/participants/{identity}/mute` | Người bị tắt mic không còn trong phòng hoặc không có micro | `Người này không còn trong phòng hoặc chưa bật micro.` | BE |
 | `MSG283` | 500 | `GET …/call` | Lỗi database khi tải trạng thái phòng | `Không thể tải trạng thái phòng họp. Vui lòng thử lại.` | BE |
-| `MSG284` | 500 | `POST …/call/participants/{userId}/mute` | Lỗi database khi kiểm quyền tắt mic | `Không thể tắt micro. Vui lòng thử lại.` | BE |
+| `MSG284` | 500 | `POST …/call/participants/{identity}/mute` | Lỗi database khi kiểm quyền tắt mic | `Không thể tắt micro. Vui lòng thử lại.` | BE |
 | `MSG380` | 400 | `POST …/call/join` | Khách (SCRUM-59) xin vào phòng mà chưa xác nhận đã đọc thông báo ghi âm (`recordingNoticeAcknowledged` khác `true`) | `Vui lòng xác nhận đã đọc thông báo ghi âm trước khi vào phòng họp.` | BE |
 | `MSG328` | — | — (FE, phòng ngắt kết nối) | Tab này tự ngắt khỏi phòng mà không qua nút Rời phòng | `Bạn đã rời phòng họp.` | FE |
 | `MSG329` | — | — (FE, phòng ngắt kết nối) | Cùng tài khoản vừa vào phòng từ tab hoặc thiết bị khác (mỗi tài khoản một kết nối); có nút Vào lại | `Bạn đã vào phòng này từ tab hoặc thiết bị khác. Tab này đã rời phòng.` | FE |
@@ -491,7 +491,7 @@ Các câu phòng họp tự hiện (không có response từ server) dùng `MSG3
 | `MSG339` | — | — (FE, người bị tắt mic) | Chủ toạ vừa tắt micro của mình (`MSG123`/`MSG282` là phía Chủ toạ) | `Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu.` | FE |
 | `MSG340` | — | — (FE, đang chia sẻ màn hình) | Người khác bắt đầu trình bày nên phần chia sẻ của mình tự dừng | `{Tên} bắt đầu trình bày, phần chia sẻ của bạn đã dừng.` | FE |
 | `MSG341` | — | — (FE, nút Chia sẻ màn hình) | Không chia sẻ được màn hình (không tính khi người dùng tự huỷ hộp chọn) | `Không chia sẻ được màn hình. Vui lòng thử lại.` | FE |
-| `MSG342` | — | — (FE, sau `POST …/call/participants/{userId}/mute` thành công) | Chủ toạ tắt micro người khác thành công; endpoint trả `204` không body | `Đã tắt micro của {tên}.` | FE |
+| `MSG342` | — | — (FE, sau `POST …/call/participants/{identity}/mute` thành công) | Chủ toạ tắt micro người khác thành công; endpoint trả `204` không body | `Đã tắt micro của {tên}.` | FE |
 | `MSG343` | — | — (FE, chat trong phòng) | Gửi tin nhắn chat qua LiveKit không thành; nội dung đang soạn được giữ | `Không gửi được tin nhắn. Vui lòng thử lại.` | FE |
 | `MSG344` | — | ~~— (FE, hộp thoại Rời phòng)~~ | **Ngừng dùng** — ADR-0040: họp trực tuyến ghi theo micro từng người, phòng gọi không còn ghi âm cả cuộc gọi (SCRUM-44). Không tái cấp. | ~~`Bạn đang ghi âm cuộc họp. Bấm Dừng và lưu ở panel Bản ghi trước khi rời phòng.`~~ | — |
 | `MSG350` | — | — (FE, màn chờ khi `GET …/call` trả `Cancelled`) | Mở link phòng họp của một cuộc họp đã huỷ; không có nút Vào | `Cuộc họp đã huỷ nên phòng họp không mở.` | FE |

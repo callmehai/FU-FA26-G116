@@ -137,7 +137,7 @@ public sealed class CallRoomService(
             TimeSpan.FromMinutes(Math.Clamp(options.Value.TokenTtlMinutes, 1, 60))));
     }
 
-    public async Task<CallOutcome> MuteAsync(Guid meetingId, Guid actorId, Guid targetUserId, CancellationToken ct = default)
+    public async Task<CallOutcome> MuteAsync(Guid meetingId, Guid actorId, CallMember target, CancellationToken ct = default)
     {
         CallRoomAccess? access;
         try
@@ -173,9 +173,9 @@ public sealed class CallRoomService(
         var room = CallRoomNames.ForMeeting(meetingId);
         try
         {
-            var target = (await liveKit.ListParticipantsAsync(room, ct))
-                .FirstOrDefault(p => p.Identity == CallMember.User(targetUserId).Identity);
-            var microphone = target?.Tracks.FirstOrDefault(t => t.Source == CallTrackSource.Microphone);
+            var participant = (await liveKit.ListParticipantsAsync(room, ct))
+                .FirstOrDefault(p => p.Identity == target.Identity);
+            var microphone = participant?.Tracks.FirstOrDefault(t => t.Source == CallTrackSource.Microphone);
             if (microphone is null)
             {
                 return CallOutcome.TargetNotInRoom;
@@ -184,14 +184,14 @@ public sealed class CallRoomService(
             // Mute only, never unmute: nobody gets their microphone switched on by someone else.
             if (!microphone.Muted)
             {
-                await liveKit.MuteTrackAsync(room, target!.Identity, microphone.Sid, ct);
+                await liveKit.MuteTrackAsync(room, participant!.Identity, microphone.Sid, ct);
             }
 
             return CallOutcome.Success;
         }
         catch (LiveKitUnavailableException error)
         {
-            logger.LogWarning(error, "Could not mute {UserId} in meeting {MeetingId}", targetUserId, meetingId);
+            logger.LogWarning(error, "Could not mute {Identity} in meeting {MeetingId}", target.Identity, meetingId);
             return CallOutcome.ProviderFailed;
         }
     }
@@ -291,8 +291,12 @@ public sealed class CallRoomService(
         }
 
         // ponytail: lists every active room to find one; a by-meeting query if rooms ever number in the hundreds.
-        var session = (await calls.ListActiveRoomSessionsAsync(ct)).FirstOrDefault(s => s.MeetingId == meetingId);
-        await ReconcileRoomAsync(meetingId, session, UtcNow, ct);
+        // No active session means nobody is known to be in the room (a Published meeting, an empty room): nothing to
+        // take anyone out of, so LiveKit is not called. A room whose joins were all lost is the janitor's.
+        if ((await calls.ListActiveRoomSessionsAsync(ct)).FirstOrDefault(s => s.MeetingId == meetingId) is { } session)
+        {
+            await ReconcileRoomAsync(meetingId, session, UtcNow, ct);
+        }
     }
 
     private async Task ReconcileRoomAsync(Guid meetingId, ActiveRoomSession? session, DateTimeOffset now, CancellationToken ct)
