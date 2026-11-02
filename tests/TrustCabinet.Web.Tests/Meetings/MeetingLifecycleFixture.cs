@@ -67,6 +67,7 @@ public sealed class MeetingLifecycleFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         SaveFailure = new SaveFailureInterceptor(this);
+        await Database.CreateFromTemplateAsync(TestSchema.Migrated);
         await using var db = Db();
         await db.Database.MigrateAsync();
         Host = new Factory(this);

@@ -38,7 +38,7 @@ public sealed class ParticipantFixture : IAsyncLifetime
     internal Factory Host = null!;
     internal TrustCabinetDbContext Db() => new(new DbContextOptionsBuilder<TrustCabinetDbContext>().UseNpgsql(Database.DataSource,
         o => o.MigrationsHistoryTable("__ef_migrations_history")).UseSnakeCaseNamingConvention().Options);
-    public async Task InitializeAsync() { await using var db = Db(); await db.Database.MigrateAsync(); Guests.Clock = Clock; Host = new(this); _ = Host.Server; }
+    public async Task InitializeAsync() { await Database.CreateFromTemplateAsync(TestSchema.Migrated); await using var db = Db(); await db.Database.MigrateAsync(); Guests.Clock = Clock; Host = new(this); _ = Host.Server; }
     public async Task DisposeAsync() { await Host.DisposeAsync(); await Database.DisposeAsync(); }
     internal sealed class Factory(ParticipantFixture f) : TrustCabinetApiFactory
     {

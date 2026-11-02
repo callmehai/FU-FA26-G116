@@ -31,8 +31,8 @@ public static class SpeechClipEndpoints
     private const string Msg355ExportForbidden = "MSG355";
     private const string Msg356SecretMeeting = "MSG356";
 
-    private sealed record TextBody(string? Text);
-    private sealed record ExclusionBody(bool Excluded, string? Reason);
+    internal sealed record TextBody(string? Text);
+    internal sealed record ExclusionBody(bool Excluded, string? Reason);
 
     public static void MapSpeechClipEndpoints(this IEndpointRouteBuilder app)
     {

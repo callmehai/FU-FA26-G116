@@ -23,6 +23,7 @@ public sealed class NotificationRepositoryPostgresTests : IAsyncLifetime
         _db = NewContext();
         try
         {
+            await _database.CreateFromTemplateAsync(TestSchema.EnsureCreated);
             await _db.Database.EnsureCreatedAsync();
         }
         catch (NpgsqlException exception)

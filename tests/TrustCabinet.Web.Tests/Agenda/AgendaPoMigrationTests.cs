@@ -18,6 +18,7 @@ public sealed class AgendaPoMigrationTests
             .UseNpgsql(database.DataSource, o => o.MigrationsHistoryTable("__ef_migrations_history"))
             .UseSnakeCaseNamingConvention().Options);
         var previous = db.Database.GetMigrations().TakeWhile(m => !m.EndsWith("SynchronizeAgendaWithPoRequirements", StringComparison.Ordinal)).Last();
+        await database.CreateFromTemplateAsync(TestSchema.MigratedTo(previous));
         await db.GetService<IMigrator>().MigrateAsync(previous);
         var user = new User { Email = "legacy@agenda.test", FullName = "Legacy User", PasswordHash = "test-only" };
         var now = new DateTimeOffset(2026, 10, 24, 0, 0, 0, TimeSpan.Zero);

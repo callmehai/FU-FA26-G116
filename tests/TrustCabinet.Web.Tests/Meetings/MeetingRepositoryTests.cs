@@ -77,13 +77,8 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         try
         {
-            await using var admin = new NpgsqlConnection(AdminConnectionString);
-            await admin.OpenAsync();
-            await using (var create = admin.CreateCommand())
-            {
-                create.CommandText = $"CREATE DATABASE \"{_databaseName}\"";
-                await create.ExecuteNonQueryAsync();
-            }
+            await PostgreSqlSchemaTemplates.CreateDatabaseAsync(
+                _connectionString, TestSchema.MigratedWithDefaultHistoryTable);
 
             _db = NewContext();
             await _db.Database.MigrateAsync();

@@ -40,6 +40,7 @@ public class RolesAsDataMigrationTests : IAsyncLifetime
 
         try
         {
+            await _database.CreateFromTemplateAsync(TestSchema.MigratedTo(BeforeRolesAsData));
             await MigrateToAsync(BeforeRolesAsData);
         }
         catch (NpgsqlException e)
