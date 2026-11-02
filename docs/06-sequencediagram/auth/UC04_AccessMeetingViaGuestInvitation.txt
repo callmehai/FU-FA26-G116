@@ -21,10 +21,11 @@ activate Database
 Database-->Repository: Current information / Read failure
 Repository-->Service: Current information / Read failure
 Service->Service: Check current invitation and Meeting scope (BR-152–BR-157)
-alt Invitation is missing, expired or revoked - EX-1
+alt Invitation is missing or revoked, or the Meeting is no longer open - EX-1
 Service-->Controller: Deny access; no protected Meeting content
-Controller-->Page: Invitation is no longer valid
-Page-->Guest: Invitation is no longer valid
+Service-->Controller: MSG371 - The guest invitation is no longer valid.
+Controller-->Page: MSG371 - The guest invitation is no longer valid.
+Page-->Guest: MSG371 - The guest invitation is no longer valid.
 else Verification/access service is unavailable - EX-3
 Service-->Controller: Verification could not be completed; no Guest session
 Controller-->Page: Verification unavailable
@@ -36,7 +37,17 @@ Service-->Controller: Invited Meeting and allowed Member participation actions
 Controller-->Page: Display invited Meeting; subsequent requests recheck access
 Page-->Guest: Invited Meeting available
 else First access without verified email
-Service->Repository: Prepare one-time code for the invited email only (BR-153)
+Service->Service: Check resend interval and daily code limit for this invitation (BR-371)
+alt Previous code was sent less than 1 minute ago - EX-5
+Service-->Controller: MSG373 - Wait before requesting another code.
+Controller-->Page: MSG373 - Wait before requesting another code.
+Page-->Guest: MSG373 - Wait before requesting another code.
+else 20 codes were already sent for this invitation within 24 hours - EX-6
+Service-->Controller: MSG379 - Too many codes requested. Try again later or contact the Meeting Secretary.
+Controller-->Page: MSG379 - Too many codes requested. Try again later or contact the Meeting Secretary.
+Page-->Guest: MSG379 - Too many codes requested. Try again later or contact the Meeting Secretary.
+else Code request is allowed
+Service->Repository: Prepare one-time code for the invited email only; a newer code replaces the previous one (BR-153)
 Repository->Database: Save verification challenge
 Database-->Repository: Saved / Failure
 Repository-->Service: Challenge result
@@ -64,6 +75,10 @@ alt Code is incorrect, expired or already used - EX-2
 Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.
 Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
 Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+else Code is locked after 5 incorrect entries - EX-4
+Service-->Controller: MSG372 - Too many incorrect codes. Request a new code.
+Controller-->Page: MSG372 - Too many incorrect codes. Request a new code.
+Page-->Guest: MSG372 - Too many incorrect codes. Request a new code.
 else Code and invitation are valid
 Service->Repository: Consume code and record invited-email verification consistently
 Repository->Database: Save verification; recheck current invitation and unused challenge
@@ -84,8 +99,19 @@ Page-->Guest: Enter display name and optional job title for presentation
 Guest->Page: Submit self-declared display information
 Page->Controller: Complete invited-Meeting access
 Controller->Service: Complete Guest access for this invitation
+Service->Service: Check display name is present and display information is valid (BR-180)
+Service->Service: Check the display information is not already declared\nwith different values for this invitation (BR-180)
+alt Display information is invalid - EX-7
+Service-->Controller: MSG377 - Invalid display information.
+Controller-->Page: MSG377 - Invalid display information.
+Page-->Guest: MSG377 - Invalid display information.
+else Display information was already declared with different values - EX-9
+Service-->Controller: MSG381 - The display name was already declared.
+Controller-->Page: MSG381 - The display name was already declared.
+Page-->Guest: MSG381 - The display name was already declared.
+else Display information is valid
 Service->Service: Keep display fields self-declared, separate from verified email (BR-180)
-Service->Repository: Save display information and establish Meeting-scoped Guest access
+Service->Repository: Save display information and establish Meeting-scoped Guest access valid for 12 hours (BR-155)
 Repository->Database: Save profile and Guest access
 Database-->Repository: Saved / Failure
 Repository-->Service: Access result
@@ -97,12 +123,14 @@ Page-->Guest: Access could not be completed
 else Guest access is established
 Service-->Controller: Invited Meeting and allowed Member participation actions
 Controller-->Page: Display invited Meeting; subsequent requests recheck access
-Page-->Guest: Invited Meeting available; email verified, display information self-declared
+Page-->Guest: MSG376 - Display information saved; invited Meeting available, email verified, display information self-declared
+end
 end
 end
 end
 end
     deactivate Email
+end
 end
 end
 end
