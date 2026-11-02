@@ -275,7 +275,9 @@ người khác; ở 0.6 thì không, và cũng không bỏ sót thêm ai. Từ 0
 sót người. Vì vậy backend mặc định dùng `VoiceId:SuggestThreshold = 0.6`.
 
 Giọng thứ hai của cùng một người phải đạt `VoiceId:SecondVoiceThreshold = 0.7`, và từ `VoiceId:AutoAssignThreshold =
-0.75` máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Số đo và lý do
+0.75` máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Giọng còn
+chưa có tên mà giống giọng đầu của một người từ `VoiceId:InheritVoiceThreshold = 0.8` thì nhận người đó
+([ADR-0050](../../docs/05-decisions/0050-giong-gan-trung-nhan-cung-ten.md), đo bằng `evaluate.py --inherit`). Số đo và lý do
 chọn nằm trong [13-nhan-dien-giong-noi.md](../../docs/03-api/13-nhan-dien-giong-noi.md#gợi-ý-và-gán-tên-trong-bản-gỡ-băng).
 
 **Tách người nói và chuyển chữ** được đo trên hai loại âm thanh:

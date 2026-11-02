@@ -139,6 +139,12 @@ public static class VoiceIdRules
 /// least <c>secondVoice</c> against the person: two people recorded by one room mic can sound as alike as one person
 /// split in two (0.745 against 0.777 on the test server, 31/10/2026), but the stranger scores lower against the sample.
 /// </para>
+/// <para>
+/// A voice left unnamed that sounds nearly the same as a person's first voice (<c>inherit</c>) is that person: the
+/// clustering split them, and the split-off part (singing, a changed tone) scores low against a sample read aloud. On
+/// the test server one person singing came out as four voices at 0.81–0.85 to each other (03/11/2026), none of them
+/// suggested; two different people never came closer than 0.745.
+/// </para>
 /// </summary>
 public static class SpeakerMatcher
 {
@@ -159,7 +165,8 @@ public static class SpeakerMatcher
     }
 
     public static IReadOnlyDictionary<string, Suggestion> Suggest(IReadOnlyList<SpeechSpeaker> speakers,
-        IReadOnlyList<Candidate> candidates, double threshold, double margin, double sameVoice, double secondVoice)
+        IReadOnlyList<Candidate> candidates, double threshold, double margin, double sameVoice, double secondVoice,
+        double inherit)
     {
         var voices = speakers.ToDictionary(s => s.Label, s => s.Embedding);
         // A person's score for a voice is their best sample against it: samples differ by mood, mic and room.
@@ -180,6 +187,13 @@ public static class SpeakerMatcher
                 continue;
             result[label] = new(userId, Math.Round(score, 4));
             first.TryAdd(userId, label);
+        }
+        // Takes the first voice's suggestion, score included: it is the same voice, so it is named as surely.
+        foreach (var label in voices.Keys.Where(l => !result.ContainsKey(l)).ToArray())
+        {
+            if (first.Count == 0) break;
+            var closest = first.Values.MaxBy(lead => Cosine(voices[label], voices[lead]))!;
+            if (Cosine(voices[label], voices[closest]) >= inherit) result[label] = result[closest];
         }
         return result;
     }

@@ -383,7 +383,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         }
         var options = voiceOptions.Value;
         return (SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin,
-            options.SameVoiceThreshold, options.SecondVoiceThreshold), nameable);
+            options.SameVoiceThreshold, options.SecondVoiceThreshold, options.InheritVoiceThreshold), nameable);
     }
 
     private static bool AutoAssigned(TranscriptSpeaker s) => s.AssignedUserId is not null && s.AssignedById is null;

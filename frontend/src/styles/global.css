@@ -3782,7 +3782,10 @@ audio.recording-player { height: 40px; }
 .tl-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; padding-top: 4px; }
 .tl-name { font-size: 13.5px; font-weight: 600; }
 /* The Secretary's picker as the run's heading: it reads as the name, and opens on a click (AI-eCabinet). */
-.tl-name-pick .select-trigger { height: 28px; min-height: 28px; margin-left: -6px; padding: 0 4px 0 6px; border-color: transparent; border-style: solid; background: transparent; color: inherit; font: inherit; }
+/* The 6px pull to the left sits on the wrapper: on the trigger it made the box 6px narrower than the name. */
+.tl-name-pick { display: inline-flex; max-width: calc(100% + 6px); margin-left: -6px; }
+.tl-name-pick .select { max-width: 100%; }
+.tl-name-pick .select-trigger { width: auto; max-width: 100%; height: auto; min-height: 28px; padding: 0 4px 0 6px; border-color: transparent; border-style: solid; background: transparent; color: inherit; font: inherit; }
 .tl-name-pick .select-trigger:hover, .tl-name-pick .select-trigger[aria-expanded="true"] { border-color: var(--control-line); background: var(--surface); }
 .tl-name-pick .select-value, .tl-name-pick .select-placeholder { color: inherit; font-weight: 600; }
 .tl-text.is-editable { margin: -2px -6px; padding: 2px 6px; border-radius: var(--radius); cursor: text; }
@@ -3911,11 +3914,16 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
 /* SCRUM-35 — voices of a recording and who they are. Several small cells to a row, so six voices
    take two lines on a desktop instead of six. */
 .speaker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 8px 16px; margin: 0; padding: 8px 12px; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speaker-row { display: flex; min-width: 0; align-items: center; gap: 8px; font-size: 14px; }
+.speaker-row { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; gap: 4px 8px; font-size: 14px; }
 .speaker-row .select { min-width: 0; }
 /* The picker fits its name rather than the cell, so the time sits right after it. */
 .speaker-row .select-trigger { width: auto; max-width: 100%; }
-.speaker-row .select-value, .speaker-row .select-placeholder { overflow: hidden; }
+.speaker-row .select-value, .speaker-row .select-placeholder { min-width: 0; }
+/* A person's name is never cut (PO 03/11/2026): where it does not fit, the speaking time moves below it, and a name
+   longer than the whole row wraps rather than ending in "…". */
+.speaker-row .select-trigger, .tl-name-pick .select-trigger { height: auto; min-height: 32px; padding-block: 3px; }
+.tl-name-pick .select-trigger { min-height: 28px; padding-block: 2px; }
+.speaker-row .select-text, .tl-name-pick .select-text { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
 .speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
 .speaker-same { display: inline-flex; flex: none; color: var(--chip-amber-fg); }
 .speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }

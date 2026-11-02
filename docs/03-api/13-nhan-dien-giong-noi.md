@@ -136,6 +136,12 @@ ngồi chung một mic phòng có thể giống nhau như một người bị t�
 khác nhau giống nhau 0,745, một người bị tách làm hai giống nhau 0,777. Điểm so với giọng mẫu thì tách được: người lạ
 0,645, người thật 0,771.
 
+Giọng còn chưa có tên mà giống giọng đầu tiên của một người đã nhận ra từ `VoiceId:InheritVoiceThreshold` (0,8)
+trở lên thì nhận luôn người đó, kèm điểm của giọng đầu, bất kể điểm so với giọng mẫu (ADR-0050). Đó là một người bị
+máy tách ra: trên server test ngày 03/11/2026, Hải hát hai lượt, bản chạy lại cả băng tách giọng Hải thành bốn giọng
+giống nhau 0,81–0,85, giọng hát lại khớp kém với giọng mẫu đọc, nên ba giọng phụ không được gợi ý ai. Hai người khác
+nhau chưa từng giống nhau quá 0,745. Giọng đầu được máy tự gán thì các giọng nhận theo cũng được tự gán.
+
 **Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,75) được gán luôn tên
 người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
 `transcript.speaker_assigned` không có người làm, kèm `automatic: true` và điểm. Thư ký đổi hoặc bỏ tên bằng `PUT`
@@ -176,4 +182,5 @@ không có trong bản ghi: `404`. `200 MSG316` `{ code, message, speaker }`.
 | `SuggestMargin` | `0.1` | |
 | `SameVoiceThreshold` | `0.7` | Giọng thứ hai được gợi ý cùng một người phải giống giọng đầu tới mức này, xem *Một người bị tách làm hai* |
 | `SecondVoiceThreshold` | `0.7` | Điểm tối thiểu so với giọng mẫu của giọng thứ hai trở đi của cùng một người |
+| `InheritVoiceThreshold` | `0.8` | Giọng chưa có tên giống giọng đầu của một người từ mức này thì nhận người đó (ADR-0050) |
 | `AutoAssignThreshold` | `0.75` | Từ điểm này máy tự gán tên, xem *Máy tự gán* |
