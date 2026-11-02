@@ -54,3 +54,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0041](0041-mic-phong-ghi-tung-luot.md) | Mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi, nối thành một bản ghi của cuộc họp và chuyển chữ lại cả bản, như AI-eCabinet | Đề xuất — SCRUM-29, PO 29/10/2026 |
 | [0042](0042-luu-ban-ghi-giong-mau-de-nghe-lai.md) | Lưu bản ghi giọng mẫu đã mã hoá để chính chủ nghe lại, như AI-eCabinet; thông báo đồng ý lên 1.1 | Đề xuất — SCRUM-35, PO 29/10/2026 |
 | [0043](0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) | Lấy một số thành phần của AI-eCabinet, giữ sidebar dọc và nhãn trạng thái cũ: kích thước control, nút gọi hành động có gợn sóng, trạng thái tô cả dòng, danh sách và hộp thoại tạo cuộc họp 2 cột | Đề xuất — PO 30/10/2026 |
+| [0044](0044-server-kiem-cau-truc-va-dem-trang-pdf.md) | Server kiểm cấu trúc PDF và tự đếm số trang bằng PdfPig, không tin số trang trình duyệt gửi | Đề xuất — SCRUM-107, test E2E 02/11/2026 |

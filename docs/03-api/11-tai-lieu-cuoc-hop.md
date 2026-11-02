@@ -15,11 +15,10 @@ Chọn từ kho, gắn / gỡ mục nghị sự, gỡ khỏi cuộc họp: [mụ
 | Part | Lặp | Ý nghĩa |
 |---|---|---|
 | `files` | 1–10 | Tệp. Server **không** tin tên đuôi hay `Content-Type` của part; chỉ đọc nội dung |
-| `pageCounts` | mỗi `files` một lần, cùng thứ tự | Số trang PDF FE đếm bằng pdf.js. Chuỗi rỗng nếu không đếm được hoặc là DOCX |
+| `pageCounts` | tuỳ chọn | **Bị bỏ qua** từ 02/11/2026: server tự đếm số trang PDF ([ADR-0044](../05-decisions/0044-server-kiem-cau-truc-va-dem-trang-pdf.md)). FE cũ vẫn gửi được, không lỗi |
 
-Server cũng nhận tên `files[]` / `pageCounts[]`. `pageCounts[i]` ứng với part tệp thứ `i` trong `files`; part tệp mang
-tên khác bị bỏ qua, part tên khác cũng vậy (không đọc vào bộ nhớ). Một request tối đa 64 part (tệp + giá trị),
-mỗi `pageCounts` tối đa 16 byte; vượt một trong hai → `MSG164`.
+Server cũng nhận tên `files[]`. Part tệp mang tên khác bị bỏ qua, part không phải tệp (kể cả `pageCounts`) cũng vậy
+(không đọc vào bộ nhớ). Một request tối đa 64 part; vượt → `MSG164`.
 
 ### Thứ tự kiểm tra
 
@@ -30,7 +29,8 @@ mỗi `pageCounts` tối đa 16 byte; vượt một trong hai → `MSG164`.
 4. Số tệp ≤ 10, tổng ≤ 200 MB (BR-319).
 5. Từng tệp: tên hợp lệ có đuôi `.pdf` hoặc `.docx`, không rỗng, ≤ 50 MB, và **nội dung** đúng loại mà đuôi
    khai (BR-187, BR-214, BR-215). Đuôi phải khớp nội dung vì tệp sẽ được tải về dưới chính tên đó (SCRUM-21):
-   một trang HTML không được quay về từ origin của mình dưới tên `x.html`.
+   một trang HTML không được quay về từ origin của mình dưới tên `x.html`. PDF còn phải **đọc được cấu trúc** và có ít
+   nhất một trang; số trang lưu vào `StoredFile.PageCount` là số server đếm (ADR-0044).
 6. Ghi trước các dòng `StoredFile` (chưa có gì trỏ tới), đẩy từng tệp lên R2, rồi ghi `Document` và
    `MeetingDocument` trong một transaction có khoá cuộc họp, **kiểm lại quyền và trạng thái dưới khoá**. Lỗi ở
    bất kỳ bước nào thì xoá các object đã đẩy trong lần đó (BR-194, BR-286). Object nào còn sót (xoá lỗi, hay
@@ -40,11 +40,13 @@ mỗi `pageCounts` tối đa 16 byte; vượt một trong hai → `MSG164`.
 
 | Loại | Điều kiện | `contentType` lưu |
 |---|---|---|
-| PDF | Tệp **bắt đầu** bằng `%PDF-` (offset 0; không chấp nhận rác phía trước dù đặc tả PDF cho phép) | `application/pdf` |
+| PDF | Tệp **bắt đầu** bằng `%PDF-` (offset 0; không chấp nhận rác phía trước dù đặc tả PDF cho phép), 1 KB cuối có `startxref` và `%%EOF`, rồi PdfPig mở được ở chế độ nghiêm (không vá) và đếm được ≥ 1 trang. Tệp cần mật khẩu mới mở được cũng bị từ chối (trình xem không mở được) | `application/pdf` |
 | DOCX | zip có central directory ≤ 5.000 entry và ≤ 1 MB; main part là part mà quan hệ `officeDocument` trong `_rels/.rels` trỏ tới (kiểu Transitional, hoặc Strict như Word lưu "Strict Open XML Document"; thường là `word/document.xml`) và có trong zip; trong `[Content_Types].xml`, `Override` của chính part đó — không có thì `Default` theo đuôi của nó — khai `…wordprocessingml.document.main+xml`. Hai part XML này được đọc theo byte nên có BOM vẫn đọc được (Open XML SDK, `System.IO.Packaging` đều ghi BOM và chỉ dùng `Default`); không chấp nhận DTD | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` |
 
-DOCM (có macro), DOTX (mẫu), ảnh đổi đuôi, HTML có chuỗi `%PDF-` trong comment, zip hỏng, zip có central
-directory quá lớn (để `ZipArchive` không phải nạp hàng trăm MB vào RAM), ZIP64 → không hợp lệ. Server không chuyển đổi tệp, lưu
+DOCM (có macro), DOTX (mẫu), ảnh đổi đuôi, HTML có chuỗi `%PDF-` trong comment, PDF chỉ có header (`%PDF-…%%EOF`,
+không có trang — lỗi tìm thấy khi test E2E 26/10 và 02/11), PDF có rác sau `%%EOF` (bộ đọc phải dò `startxref` từng byte,
+51 MB mất ~3 phút, nên bị chặn ở bước kiểm 1 KB cuối), zip hỏng, zip có central directory quá lớn (để `ZipArchive`
+không phải nạp hàng trăm MB vào RAM), ZIP64 → không hợp lệ. Server không chuyển đổi tệp, lưu
 đúng byte đã nhận (BR-183, BR-216).
 
 ### Kết quả thành công — `201`
@@ -64,7 +66,7 @@ directory quá lớn (để `ZipArchive` không phải nạp hàng trăm MB vào
 
 `documents[].id` là **MeetingDocument ID**. Mỗi tệp tạo:
 
-- một `StoredFile` (khoá object `stored-files/{storedFileId}`, SHA-256, `pageCount` chỉ với PDF);
+- một `StoredFile` (khoá object `stored-files/{storedFileId}`, SHA-256, `pageCount` chỉ với PDF, do server đếm);
 - một `Document` trong kho của người tải, ở thư mục `<tên cuộc họp> – dd/mm/yyyy` (ngày bắt đầu dự kiến,
   giờ Việt Nam). Lần đầu tạo thư mục ở gốc kho; lần sau tìm lại theo `Folder.MeetingId` nên đổi tên hay
   chuyển chỗ vẫn dùng lại; thư mục đã bị xoá thì tạo lại ở gốc (BR-192, BR-226–BR-228);
@@ -96,8 +98,8 @@ Khoá là `files[i]` theo thứ tự part tệp; key `files` dùng cho lỗi c�
 
 ## Note cho FE
 
-- Gửi `FormData`: với mỗi tệp `append('files', file)` rồi `append('pageCounts', n ?? '')`. Không đặt
-  header `Content-Type` tay — trình duyệt tự thêm boundary.
+- Gửi `FormData`: với mỗi tệp `append('files', file)`. `pageCounts` không còn được đọc (server tự đếm trang); FE còn
+  gửi cũng không sao. Không đặt header `Content-Type` tay — trình duyệt tự thêm boundary.
 - **Bắt buộc** kiểm giới hạn ở FE trước khi gửi: ≤ 50 MB mỗi tệp, ≤ 10 tệp, ≤ 200 MB tổng, đuôi
   `.pdf`/`.docx`. Body quá lớn bị server từ chối ngay khi trình duyệt còn đang gửi, nên trình duyệt thường chỉ
   thấy lỗi mạng, không đọc được `MSG288`. Vẫn xử lý `MSG164`/`MSG288` từ server: server kiểm theo nội dung, FE
@@ -142,7 +144,13 @@ tài khoản đang hoạt động, **hoặc token Khách** của UC-04 — xem [
       ]
     }
   ],
-  "general": [ { "id": "…", "fileName": "Phụ lục.docx", "pageCount": null, "…": "…" } ]
+  "general": [ { "id": "…", "fileName": "Phụ lục.docx", "pageCount": null, "…": "…" } ],
+  "votes": [
+    {
+      "id": "…", "title": "Thông qua kế hoạch Q4", "status": "Open",
+      "documents": [ { "id": "…", "fileName": "Tờ trình.pdf", "…": "…", "readConfirmedAt": null } ]
+    }
+  ]
 }
 ```
 
@@ -154,7 +162,13 @@ tài khoản đang hoạt động, **hoặc token Khách** của UC-04 — xem [
 - `currentAgendaItemId`: mục đang `InProgress`, hoặc `null`. Panel trong phòng họp dùng nó để đưa mục đang bàn
   lên đầu (BR-316) — server **không** đổi thứ tự theo nơi gọi.
 - `id` là **MeetingDocument ID**, cùng loại với `documents[].id` khi tải lên và `documentIds` của Agenda.
-- `pageCount` chỉ có ở PDF (FE đếm lúc tải lên); DOCX luôn `null`. `commentCount` đếm mọi góp ý và trả lời.
+- `pageCount` chỉ có ở PDF (server đếm lúc tải lên, ADR-0044); DOCX luôn `null`. `commentCount` đếm mọi góp ý và trả lời.
+- `votes` (UC-32a AF-1, thêm 02/11/2026): các biểu quyết **có tài liệu** mà người gọi xem được — `Draft` chỉ Chủ toạ / Thư ký
+  hiện tại thấy (BR-253), như `GET …/votes` — xếp theo lúc tạo, mỗi biểu quyết kèm tài liệu còn trong cuộc họp (cũ trước).
+  Mỗi tài liệu như một dòng của `general` cộng `readConfirmedAt`: lúc **chính người gọi** (người dùng hoặc Khách) xác nhận
+  đã đọc (UC-74), hoặc `null`. Một xác nhận tính cho mọi biểu quyết gắn cùng tài liệu (BR-291). Tài liệu của biểu quyết vẫn
+  nằm ở `general` nếu không gắn mục nào (BR-280 tính theo mục nghị sự), nên trình xem tìm tài liệu chỉ cần `agendaItems` +
+  `general`.
 
 ### `GET /api/meetings/{meetingId}/documents/{meetingDocumentId}/content[?download=true]` — UC-32c
 
@@ -187,7 +201,7 @@ và `details` có thêm `guestInvitationId`. **Lưu ý cho màn nhật ký (SCRU
 hệ thống tự làm (BR-301); dòng có `details.guestInvitationId` là Khách, phải hiện là Khách (tên mời / email của lời
 mời), không phải "Hệ thống". Dòng được ghi sau khi mở được
 tệp và **trước** khi gửi byte; không ghi được thì không gửi tệp (`MSG158`/`MSG160`). Cuộc họp `Normal`/`Internal`
-không ghi.
+không ghi. Object đã mất (`MSG382`) cũng không ghi kiểm toán: không có gì được gửi.
 
 ### Lỗi
 
@@ -197,7 +211,8 @@ không ghi.
 | 404 | `MSG156` | cả hai | Không xem được cuộc họp, cuộc họp không tồn tại, tài liệu đã gỡ, hoặc ID tài liệu của cuộc họp khác — **cùng một body** |
 | 500 | `MSG157` | danh sách | Lỗi đọc DB; FE không được hiển thị như danh sách rỗng |
 | 403 | `MSG159` | `content?download=true` | Cuộc họp `Secret` |
-| 503 | `MSG158` | `content` | Không đưa được tệp: object thiếu trên kho, kho chưa cấu hình hoặc lỗi, DB lỗi, không ghi được nhật ký kiểm toán |
+| 503 | `MSG158` | `content` | Không đưa được tệp, lỗi tạm thời: kho chưa cấu hình hoặc lỗi, DB lỗi, không ghi được nhật ký kiểm toán |
+| 410 | `MSG382` | `content` (xem và tải về) | Dòng tài liệu còn nhưng object đã mất hẳn khỏi kho (`NoSuchKey`, ví dụ ai đó xoá thẳng trong bucket). Trước 02/11/2026 trả `MSG158` "Vui lòng thử lại", thử lại không bao giờ được |
 | 503 | `MSG160` | `content?download=true` | Như `MSG158`. Riêng lỗi DB ở bước kiểm tài khoản đang hoạt động (trước khi đọc tham số) luôn trả `MSG158` |
 
 ### Khách đọc tài liệu (SCRUM-123)
@@ -215,8 +230,8 @@ Mỗi request kiểm lại phiên Khách trong DB (`GuestSessionAccess`, cùng l
 
 Không đạt điều nào → `404/MSG156`, cùng body với tài liệu không tồn tại. Lỗi đọc DB khi kiểm phiên → `500/MSG157`
 (danh sách), `503/MSG158` / `503/MSG160` (nội dung), không bao giờ coi là có quyền. Mọi endpoint **ghi** (tải lên, thêm từ
-kho, gỡ, gắn/gỡ mục nghị sự) vẫn từ chối Khách bằng `403` body rỗng. Góp ý (SCRUM-23) chưa mở cho Khách; `commentCount`
-vẫn có trong danh sách.
+kho, gỡ, gắn/gỡ mục nghị sự) vẫn từ chối Khách bằng `403` body rỗng. **Góp ý mở cho Khách từ 02/11/2026** (BR-181, PO: Khách
+góp ý được như Thành viên) — xem [Khách góp ý](#khách-góp-ý).
 
 Kiểm thử: `tests/TrustCabinet.Web.Tests/GuestAccess/GuestDocumentAccessTests.cs` (PostgreSQL thật, phiên Khách đi qua
 luồng UC-04 thật) — danh sách, xem, tải về, kiểm toán, Mật; cuộc họp khác; endpoint ghi `403`; chưa khai tên, đăng xuất,
@@ -245,10 +260,10 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
 - Nút Tải về ẩn khi `sensitivity === 'Secret'` (lấy từ `GET /api/meetings/{id}`); server vẫn chặn.
 - Chỉ đọc sau khi kết thúc (BR-282), nút Tải lên chỉ cho Chủ toạ/Thư ký: lấy `status` và `myMeetingRole` từ
   `GET /api/meetings/{id}`, endpoint danh sách không lặp lại.
-- Nhóm **Biểu quyết** (UC-32a AF-1) chưa có dữ liệu: mô hình chưa có bảng gắn tài liệu với biểu quyết. Ẩn nhóm này
-  cho tới khi phần biểu quyết / UC-74 thêm bảng đó.
-- `MSG158`/`MSG160` là lỗi tạm thời: hiện nút thử lại. `MSG156` giữa chừng (tài liệu vừa bị gỡ, mất quyền): đóng
-  trình xem và tải lại danh sách.
+- Nhóm **Biểu quyết** (UC-32a AF-1) lấy từ `votes`; tài liệu gắn/gỡ khỏi biểu quyết làm ở tab Biểu quyết (UC-76), không ở
+  tab Tài liệu.
+- `MSG158`/`MSG160` là lỗi tạm thời: hiện nút thử lại. `MSG382` thì không (tệp đã mất). `MSG156` giữa chừng (tài liệu
+  vừa bị gỡ, mất quyền): đóng trình xem và tải lại danh sách.
 - Lắng nghe `documentsChanged` và `agendaChanged` để làm mới tab Tài liệu và panel trong phòng.
 
 ### FE đã làm (SCRUM-21, SCRUM-107)
@@ -263,14 +278,22 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
   chỉ chọn và kiểm tệp, mỗi tệp một request `XMLHttpRequest` (`api.upload`, có tiến độ), chạy lần lượt; khay ở góc theo
   dõi, tự thử lại khi chắc chưa lưu, rồi chờ "Thử lại". Đếm số trang PDF bằng pdf.js ngay khi chọn tệp.
 - Kiểm trước khi gửi dùng lại câu của `MSG164` (sai đuôi, rỗng, quá 50 MB) và `MSG288` (quá 10 tệp / 200 MB), không
-  cấp mã mới.
+  cấp mã mới. Hộp thoại ghi "lưu vào … thư mục của cuộc họp này", không ghi tên thư mục: chủ kho có thể đã đổi tên hay
+  chuyển nó, và lần tải sau vẫn vào đúng thư mục đó (BR-227).
+- pdf.js / docx-preview không vẽ được tệp đã nhận (hỏng, định dạng chưa hỗ trợ): trình xem báo `MSG383` (FE), không có
+  nút Thử lại.
+- DOCX có font nhúng: docx-preview nạp font qua URL `blob:`, nên `font-src` của CSP server test có `blob:` (02/11/2026);
+  trước đó mỗi tệp như vậy ghi 14–19 lỗi CSP trên console và chữ hiện bằng font thay thế.
 - DOCX là nội dung người dùng tải lên, được dựng ngay trong origin của mình: trình xem tắt `renderAltChunks` (HTML nhúng
   sẽ thành `iframe` cùng origin) và chỉ giữ link `http:`, `https:`, `mailto:`, `#…` — link `javascript:` bị bỏ `href`,
   link ngoài mở ở tab mới. CSP của server test là lớp chặn thứ hai, không phải lớp duy nhất.
 - Giới hạn đã biết: không nạp `wasm` và font chuẩn của pdf.js (cần thêm `'wasm-unsafe-eval'` vào CSP), nên ảnh JPEG2000
   trong PDF scan có thể không hiện.
-- Chưa có: nhóm Biểu quyết (chưa có dữ liệu), tab "Từ kho của tôi", ghim ở từng mục và menu Gỡ (SCRUM-58), cột góp ý
-  trong trình xem (SCRUM-23).
+- Nhóm Biểu quyết (02/11/2026): mỗi biểu quyết một khối gập được, nhãn trạng thái như tab Biểu quyết, mỗi tài liệu có
+  "Đã đọc" (giờ xác nhận ở tooltip) hoặc "Chưa đọc". Trong phòng họp là một mục "Biểu quyết" sau các mục nghị sự, chỉ
+  hiện khi có.
+- Điện thoại (≤ 720px): nút thao tác của dòng tài liệu xuống dòng dưới tên khi không đủ chỗ (Chủ toạ/Thư ký có 3 nút),
+  để tên tệp không bị bẻ vài chữ một dòng.
 
 ### Kiểm thử (SCRUM-21)
 
@@ -283,7 +306,7 @@ không ghi kiểm toán; `Secret` xem được và ghi `document.viewed`, tải 
 `Confidential` tải về ghi `document.downloaded`; tài liệu đã gỡ / của cuộc họp khác / không tồn tại → `MSG156`, kể cả
 khi tải về từ cuộc họp `Secret` (không trả `403` để lộ ID); tải về `Secret` khi object thiếu vẫn `MSG159` (chặn trước khi
 chạm kho); lỗi DB lúc tra tài liệu → `MSG158`/`MSG160`;
-object thiếu hoặc kho chưa cấu hình → `MSG158`/`MSG160`, không ghi kiểm toán; lỗi ghi kiểm toán → không gửi tệp;
+object đã mất → `410/MSG382` cả xem lẫn tải, kho chưa cấu hình → `MSG158`, không ghi kiểm toán; lỗi ghi kiểm toán → không gửi tệp;
 tải lên phát `documentsChanged` chỉ cho người đã join cuộc họp đó, tải lên lỗi không phát.
 
 ## SCRUM-58 · Gắn và gỡ tài liệu của cuộc họp
@@ -399,8 +422,8 @@ Người tổ chức. Không xem được cuộc họp, tài liệu đã gỡ, h
 
 - Góp ý gốc xếp cũ trước; trả lời nằm trong `replies` của góp ý gốc, cũ trước, **một cấp** (BR-317).
 - `canComment`: `false` khi cuộc họp đã kết thúc hoặc đã huỷ — ẩn ô viết (BR-282).
-- `author.isGuest` + `guestInvitationId`: góp ý của Guest đã xác minh, `name` là tên tự khai (ADR-0016) — FE hiện kèm nhãn
-  Khách mời.
+- `author.isGuest` + `guestInvitationId`: góp ý của Khách đã xác minh, `name` là tên tự khai ở UC-04 bước 5 (ADR-0016; chưa
+  khai thì tên Thư ký đặt trong lời mời) — FE hiện kèm nhãn **Khách** (thống nhất nhãn từ PR #222).
 - Lỗi: `404 MSG156`, `500 MSG204`.
 
 ### `POST /api/meetings/{id}/documents/{meetingDocumentId}/comments`
@@ -426,12 +449,20 @@ Body `{ "body": "…", "pageNumber": 3, "parentCommentId": null }`. Thứ tự k
 - Trang PDF: gửi `pageNumber` là trang đang xem nếu người dùng chọn gắn trang; DOCX không gửi.
 - `MSG251`/`MSG349` giữa chừng: tải lại góp ý (`canComment` sẽ là `false`) và giữ nội dung đang soạn để người dùng chép lại.
 
-### Guest
+### Khách góp ý
 
-Guest chưa có phiên đăng nhập (UC-04), nên **chưa gọi được** hai endpoint này. Mô hình đã có tác giả Guest
-(`DocumentComment.GuestInvitationId`, check đúng một tác giả) và `GET` đã trả tên + nhãn Guest; khi UC-04 có phiên,
-endpoint cần nhận danh tính Guest qua `IMeetingGuestIdentityResolver` như Agenda và kiểm lời mời còn hiệu lực ở mỗi lần
-gửi (thu hồi lời mời → `MSG156`, góp ý cũ giữ tác giả).
+Từ 02/11/2026 (PO: Khách góp ý được như Thành viên, BR-181; UC-35 có Khách là actor), cả `GET` và `POST` nhận **token Khách**
+của UC-04 (`RequireActiveUserOrGuest`, danh tính qua `IMeetingGuestIdentityResolver`) như hai endpoint đọc tài liệu:
+
+- Mỗi request kiểm lại phiên Khách như [Khách đọc tài liệu](#khách-đọc-tài-liệu-scrum-123): phiên còn hiệu lực, đã khai tên,
+  lời mời chưa thu hồi, đúng cuộc họp, cuộc họp `Published`/`InProgress`. Không đạt → `404 MSG156` (cùng body). `POST` kiểm
+  lại dưới khoá chia sẻ trên dòng cuộc họp, nên thu hồi lời mời hay kết thúc cuộc họp lúc Khách đang gửi vẫn bị chặn.
+- Cuộc họp `Ended`: Khách **mất hẳn** quyền xem cuộc họp (BR-181), nên nhận `MSG156`, không phải `MSG251` chỉ đọc như thành viên.
+- Góp ý ghi `GuestInvitationId` (không có `AuthorId`), `author.name` là tên tự khai. Thu hồi lời mời: góp ý cũ giữ nguyên tác giả.
+- Trả lời một cấp, số trang PDF, giới hạn độ dài, `MSG200`/`MSG348`/`MSG202`/`MSG204` như thành viên.
+
+Kiểm thử: `GuestDocumentAccessTests` (phiên Khách đi qua luồng UC-04 thật) — góp ý, trả lời, tên tự khai, dòng DB; thu hồi
+lời mời → `MSG156`, góp ý cũ vẫn còn; cuộc họp khác, tài liệu của cuộc họp khác, cuộc họp đã kết thúc → `MSG156`.
 
 ## Lưu trữ và cấu hình
 
@@ -443,8 +474,8 @@ mật — `dotnet user-secrets` khi dev, biến môi trường `FileStorage__*` 
 
 - Endpoint tự đọc multipart bằng `MultipartReader` thay vì `ReadFormAsync`: `ReadFormAsync` đọc trọn mọi part
   không phải tệp thành chuỗi, to bao nhiêu cũng vậy (`ValueLengthLimit` chỉ áp cho form urlencoded). Part tệp ghi
-  ra tệp tạm trên đĩa, không giữ trong RAM, và bị xoá khi request kết thúc; `pageCounts` đọc tối đa 16 byte; part
-  khác bị bỏ qua không đọc. Giới hạn body chỉ nâng lên 201 MB cho riêng endpoint này (Kestrel mặc định 30 MB).
+  ra tệp tạm trên đĩa, không giữ trong RAM, và bị xoá khi request kết thúc; part khác (kể cả `pageCounts`) bị bỏ qua
+  không đọc. Giới hạn body chỉ nâng lên 201 MB cho riêng endpoint này (Kestrel mặc định 30 MB).
 - Tên tệp được lưu nguyên văn (chỉ bỏ phần đường dẫn). Endpoint `content` của SCRUM-21 mã hoá tên trong
   `Content-Disposition` (`filename*=UTF-8''…`) thay vì chèn thẳng.
 - Kho tệp có `OpenReadAsync(key)` đọc object theo luồng; endpoint `content` của SCRUM-21 dùng nó. CSP của server test không đổi.
@@ -494,7 +525,8 @@ mục chỉ đổi liên kết của mục đó. UC-33b/UC-33d (SCRUM-58) có en
   tệp / không multipart; Thành viên, Người tổ chức, người ngoài, cuộc họp không tồn tại; Thư ký đã bị
   gỡ, tài khoản bị khoá; cuộc họp đã kết thúc và kết thúc giữa lúc tải; R2 lỗi ở tệp thứ hai; DB lỗi
   sau khi object đã lên; xoá dọn cũng lỗi (object còn lại có dòng `StoredFile` cho job dọn); dòng `StoredFile`
-  có trước khi object được đẩy; `pageCounts` dài quá 16 byte, quá 64 part, part lạ 1 MB bị bỏ qua; chưa cấu hình
+  có trước khi object được đẩy; `pageCounts` (kể cả dài 1 KB) bị bỏ qua và số trang là số server đếm, PDF chỉ có header
+  và PDF có rác sau `%%EOF` → `MSG164`, quá 64 part, part lạ 1 MB bị bỏ qua; chưa cấu hình
   kho; dùng lại thư mục sau khi đổi tên/chuyển,
   tạo lại sau khi xoá; Agenda liệt kê tài liệu vừa tải.
 - `DocumentFileRulesTests`: nhận diện theo nội dung (HTML giả PDF, DOCM giả DOCX, central directory quá lớn;

@@ -26,13 +26,6 @@ import { LibraryPicker } from './LibraryPicker'
 export type DocumentSource = 'computer' | 'library' | 'meeting'
 type Source = DocumentSource
 
-const folderDate = new Intl.DateTimeFormat('vi-VN', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  timeZone: 'Asia/Ho_Chi_Minh',
-})
-
 /**
  * Answers that mean the change no longer applies to this meeting: the role is gone, the meeting has ended or
  * was cancelled, it can no longer be read, the item or a document went away. The page re-reads the meeting.
@@ -295,10 +288,9 @@ export function AddDocumentsDialog({
 
         <p className="alert alert-info">
           {source === 'computer' ? (
-            <>
-              Tệp cũng được lưu vào Kho tài liệu của bạn, thư mục “{meeting.title} –{' '}
-              {folderDate.format(new Date(meeting.plannedStartTime))}”.
-            </>
+            // Not the folder's name: it is "<title> – dd/mm/yyyy" when first made, but the owner may rename or move
+            // it and uploads still go there (BR-227).
+            'Tệp cũng được lưu vào Kho tài liệu của bạn, trong thư mục của cuộc họp này.'
           ) : source === 'library' ? (
             'Cuộc họp dùng tên hiện tại của tài liệu; đổi tên trong kho sau đó không đổi tên trong cuộc họp.'
           ) : vote ? (

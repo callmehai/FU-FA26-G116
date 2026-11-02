@@ -49,7 +49,7 @@ public enum DocumentUploadFailure
 }
 
 /// <summary>A file part as the request delivered it, before anything about it is trusted.</summary>
-public sealed record DocumentUploadCandidate(string? FileName, long Length, Func<Stream> OpenRead, string? PageCount);
+public sealed record DocumentUploadCandidate(string? FileName, long Length, Func<Stream> OpenRead);
 
 /// <summary>A file that passed <see cref="DocumentFileRules.ValidateAsync"/>.</summary>
 public sealed record DocumentUploadFile(string FileName, string ContentType, long Length, string ContentSha256,
@@ -61,7 +61,8 @@ public sealed record DocumentUploadOutcome(DocumentUploadFailure Failure = Docum
     IReadOnlyList<UploadedMeetingDocument>? Documents = null, IReadOnlyList<DocumentUploadFile>? Files = null,
     IReadOnlyDictionary<string, string[]>? Errors = null);
 
-public enum DocumentReadFailure { None, NotFound, DownloadForbidden, ReadFailed }
+/// <summary><see cref="FileMissing"/>: the row is there but its object is gone from the store, so trying again cannot help.</summary>
+public enum DocumentReadFailure { None, NotFound, DownloadForbidden, ReadFailed, FileMissing }
 
 /// <summary>One row of the Documents tab (UC-32a). <see cref="Id"/> is the MeetingDocument ID.</summary>
 public sealed record MeetingDocumentRow(Guid Id, string FileName, string ContentType, long ByteSize, int? PageCount,
@@ -71,12 +72,21 @@ public sealed record MeetingDocumentRow(Guid Id, string FileName, string Content
 public sealed record MeetingDocumentAgendaGroup(Guid Id, int Position, string Title, string Status,
     IReadOnlyList<MeetingDocumentRow> Documents);
 
+/// <summary>A vote's document (UC-32a AF-1): the row of the Documents tab plus when the reader confirmed reading it (UC-74).</summary>
+public sealed record MeetingVoteDocumentRow(Guid Id, string FileName, string ContentType, long ByteSize, int? PageCount,
+    int CommentCount, Meetings.MeetingPerson AddedBy, DateTimeOffset AddedAt, DateTimeOffset? ReadConfirmedAt);
+
+/// <summary>A vote the reader may see, in the order votes are created, with its documents still in the meeting.</summary>
+public sealed record MeetingDocumentVoteGroup(Guid Id, string Title, string Status, IReadOnlyList<MeetingVoteDocumentRow> Documents);
+
 /// <summary>
-/// UC-32a: the current documents grouped by agenda item, plus those linked to no item (BR-280).
+/// UC-32a: the current documents grouped by agenda item, plus those linked to no item (BR-280), plus (AF-1) the
+/// documents of each vote the reader may see — a vote's document still counts as general when no item links it.
 /// <see cref="CurrentAgendaItemId"/> lets the room panel put the item under discussion first (BR-316).
 /// </summary>
 public sealed record MeetingDocumentList(Guid MeetingId, Guid? CurrentAgendaItemId,
-    IReadOnlyList<MeetingDocumentAgendaGroup> AgendaItems, IReadOnlyList<MeetingDocumentRow> General);
+    IReadOnlyList<MeetingDocumentAgendaGroup> AgendaItems, IReadOnlyList<MeetingDocumentRow> General,
+    IReadOnlyList<MeetingDocumentVoteGroup> Votes);
 
 public sealed record MeetingDocumentListOutcome(DocumentReadFailure Failure = DocumentReadFailure.None,
     MeetingDocumentList? List = null);
@@ -153,8 +163,15 @@ public interface IMeetingDocumentRepository
 
     void AddUpload(Entities.Document document, Entities.MeetingDocument meetingDocument);
 
-    /// <summary>Removed documents excluded (BR-211).</summary>
+    /// <summary>Removed documents excluded (BR-211); <see cref="MeetingDocumentList.Votes"/> left empty.</summary>
     Task<MeetingDocumentList> ListAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>
+    /// UC-32a AF-1: the votes that link a document still in the meeting — drafts only with
+    /// <paramref name="includeDrafts"/> (BR-253) — each with the reader's own read confirmations (BR-291).
+    /// </summary>
+    Task<IReadOnlyList<MeetingDocumentVoteGroup>> ListVoteGroupsAsync(Guid meetingId, bool includeDrafts, Guid? userId,
+        Guid? guestInvitationId, CancellationToken ct);
 
     /// <summary>Null when the document is not, or no longer, attached to this meeting.</summary>
     Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct);

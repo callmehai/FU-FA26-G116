@@ -1,3 +1,5 @@
+using TrustCabinet.Domain.Participants;
+
 namespace TrustCabinet.Domain.Documents;
 
 public enum CommentFailure { None, Blank, TooLong, NotFound, Ended, Cancelled, SaveFailed, ReadFailed }
@@ -16,14 +18,18 @@ public sealed record CommentOutcome<T>(CommentFailure Failure = CommentFailure.N
 
 public interface IDocumentCommentService
 {
-    /// <summary>UC-35: the threads of a document still in the meeting, for anyone who can view the meeting (BR-249, BR-275).</summary>
-    Task<CommentOutcome<DocumentCommentThreads>> ListAsync(Guid meetingId, Guid meetingDocumentId, Guid actorId,
+    /// <summary>
+    /// UC-35: the threads of a document still in the meeting, for anyone who can view the meeting (BR-249, BR-275), a
+    /// verified guest of it included while their UC-04 session is current (BR-181).
+    /// </summary>
+    Task<CommentOutcome<DocumentCommentThreads>> ListAsync(Guid meetingId, Guid meetingDocumentId, ParticipantActor actor,
         CancellationToken ct = default);
 
     /// <summary>
     /// UC-35: a comment, or (AF-2) a reply that joins the thread of <paramref name="parentCommentId"/>'s top-level
-    /// comment. <paramref name="pageNumber"/> is kept on a PDF only (BR-248).
+    /// comment. <paramref name="pageNumber"/> is kept on a PDF only (BR-248). A guest writes under their invitation
+    /// (ADR-0016), shown with the name they declared.
     /// </summary>
-    Task<CommentOutcome<DocumentCommentRow>> AddAsync(Guid meetingId, Guid meetingDocumentId, Guid actorId, string? body,
+    Task<CommentOutcome<DocumentCommentRow>> AddAsync(Guid meetingId, Guid meetingDocumentId, ParticipantActor actor, string? body,
         int? pageNumber, Guid? parentCommentId, CancellationToken ct = default);
 }

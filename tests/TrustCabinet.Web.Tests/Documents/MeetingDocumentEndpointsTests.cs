@@ -22,8 +22,10 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
     {
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Secretary);
-        var files = new[] { ("Báo cáo Q3.pdf", SampleFiles.Pdf("a"), "12"), ("Tờ trình.pdf", SampleFiles.Pdf("b"), "3"),
+        // The page counts the browser sends are ignored: the server counts a PDF's pages itself (ADR-0044).
+        var files = new[] { ("Báo cáo Q3.pdf", SampleFiles.Pdf("a", pages: 12), "99"), ("Tờ trình.pdf", SampleFiles.Pdf("b", pages: 3), "3"),
             ("Phụ lục.pdf", SampleFiles.Pdf("c"), null), ("Dự thảo.docx", SampleFiles.Docx(), "7") };
+        int? Pages(string name) => name switch { "Báo cáo Q3.pdf" => 12, "Tờ trình.pdf" => 3, "Phụ lục.pdf" => 1, _ => null };
 
         var body = await AssertCode(await client.PostAsync(s.Url, DocumentFixture.Form(files)), 201, "MSG161");
 
@@ -37,7 +39,7 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal("Họp giao ban – 24/10/2026", folder.Name);
         Assert.Equal(s.MeetingId, folder.MeetingId);
         Assert.Null(folder.ParentId);
-        foreach (var (name, bytes, pages) in files)
+        foreach (var (name, bytes, _) in files)
         {
             var row = meetingDocuments.Single(d => d.FileName == name);
             // Library row and meeting row share one stored file: no copy (ADR-0018, BR-210).
@@ -56,7 +58,7 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
             Assert.Equal(bytes, fixture.Storage.Objects[file.StorageKey]);
             var docx = name.EndsWith(".docx");
             Assert.Equal(docx ? DocumentFileRules.DocxContentType : DocumentFileRules.PdfContentType, file.ContentType);
-            Assert.Equal(docx || pages is null ? null : int.Parse(pages), file.PageCount);
+            Assert.Equal(Pages(name), file.PageCount);
         }
         Assert.Equal(meetingDocuments.Select(d => d.Id).Order(),
             body.GetProperty("documents").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()).Order());
@@ -74,6 +76,8 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
     [InlineData("anh.pdf")]       // a PNG renamed to .pdf
     [InlineData("macro.docx")]    // a macro-enabled document renamed to .docx
     [InlineData("broken.docx")]   // a zip without word/document.xml
+    [InlineData("header.pdf")]    // "%PDF-" and "%%EOF" with nothing between: the old header-only check let it in
+    [InlineData("padded.pdf")]    // a real PDF with junk after its end, which sends a parser on a minutes-long search
     public async Task A_file_that_is_not_really_pdf_or_docx_rejects_the_whole_submission(string badName)
     {
         var s = await fixture.Seed();
@@ -82,6 +86,8 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
         {
             "anh.pdf" => SampleFiles.Png(),
             "macro.docx" => SampleFiles.Docx("application/vnd.ms-word.document.macroEnabled.main+xml"),
+            "header.pdf" => "%PDF-1.4\n% chi co header\n%%EOF\n"u8.ToArray(),
+            "padded.pdf" => [.. SampleFiles.Pdf("padded"), .. new byte[64 * 1024]],
             _ => SampleFiles.Docx(withDocument: false),
         };
         var objects = fixture.Storage.Objects.Count;
@@ -317,7 +323,7 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
-    public async Task A_page_count_part_longer_than_a_number_is_malformed_and_other_parts_are_skipped()
+    public async Task Parts_other_than_files_are_skipped_unread_page_counts_included()
     {
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Secretary);
@@ -326,11 +332,11 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
         form.Add(new ByteArrayContent(new byte[1024]), "attachment", "other.pdf");
         Assert.Equal(1, (await AssertCode(await client.PostAsync(s.Url, form), 201, "MSG161")).GetProperty("addedCount").GetInt32());
 
-        var objects = fixture.Storage.Objects.Count;
-        var tooLong = new MultipartFormDataContent { { new ByteArrayContent(SampleFiles.Pdf()), "files", "b.pdf" },
-            { new StringContent(new string('1', 17)), "pageCounts" } };
-        await AssertCode(await client.PostAsync(s.Url, tooLong), 400, "MSG164");
-        Assert.Equal(objects, fixture.Storage.Objects.Count);
+        // A page count the browser sends, however long, is not read: the server counts (ADR-0044).
+        var long_ = new MultipartFormDataContent { { new ByteArrayContent(SampleFiles.Pdf("b", pages: 2)), "files", "b.pdf" },
+            { new StringContent(new string('1', 1024)), "pageCounts" } };
+        var added = await AssertCode(await client.PostAsync(s.Url, long_), 201, "MSG161");
+        Assert.Equal(2, Assert.Single(added.GetProperty("documents").EnumerateArray()).GetProperty("pageCount").GetInt32());
     }
 
     [Fact]

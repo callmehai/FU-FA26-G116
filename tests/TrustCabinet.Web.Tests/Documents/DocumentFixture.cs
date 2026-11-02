@@ -156,8 +156,29 @@ public sealed class DocumentCollection : ICollectionFixture<DocumentFixture>;
 /// <summary>Sample files built in memory, so no binary fixture has to be committed.</summary>
 internal static class SampleFiles
 {
-    internal static byte[] Pdf(string text = "TrustCabinet")
-        => Encoding.ASCII.GetBytes($"%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\n% {text}\n%%EOF\n");
+    /// <summary>
+    /// A well-formed PDF of blank A4 pages that a parser reads end to end (the server counts the pages itself,
+    /// ADR-0044); <paramref name="text"/> sits in a comment so two files can differ in content.
+    /// </summary>
+    internal static byte[] Pdf(string text = "TrustCabinet", int pages = 1)
+    {
+        var kids = string.Join(" ", Enumerable.Range(3, pages).Select(n => $"{n} 0 R"));
+        string[] objects = ["<< /Type /Catalog /Pages 2 0 R >>", $"<< /Type /Pages /Kids [{kids}] /Count {pages} >>",
+            .. Enumerable.Repeat("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] >>", pages)];
+        var pdf = new List<byte>(Encoding.UTF8.GetBytes($"%PDF-1.7\n% {text}\n"));
+        var offsets = new List<int>();
+        for (var i = 0; i < objects.Length; i++)
+        {
+            offsets.Add(pdf.Count);
+            pdf.AddRange(Encoding.ASCII.GetBytes($"{i + 1} 0 obj\n{objects[i]}\nendobj\n"));
+        }
+        var xref = pdf.Count;
+        var table = new StringBuilder($"xref\n0 {objects.Length + 1}\n0000000000 65535 f \n");
+        foreach (var offset in offsets) table.Append($"{offset:D10} 00000 n \n");
+        table.Append($"trailer\n<< /Size {objects.Length + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n");
+        pdf.AddRange(Encoding.ASCII.GetBytes(table.ToString()));
+        return [.. pdf];
+    }
 
     internal const string DocxMain = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 
@@ -218,8 +239,10 @@ internal sealed class MemoryFileStorage : IFileStorage
         Objects[key] = copy.ToArray();
     }
 
+    /// <summary>As FileStorage: unconfigured is InvalidOperationException ("try again"), a missing key FileNotFoundException.</summary>
     public Task<Stream> OpenReadAsync(string key, CancellationToken ct)
-        => Objects.TryGetValue(key, out var bytes) ? Task.FromResult<Stream>(new MemoryStream(bytes))
+        => !Configured ? throw new InvalidOperationException("FileStorage is not configured.")
+            : Objects.TryGetValue(key, out var bytes) ? Task.FromResult<Stream>(new MemoryStream(bytes))
             : throw new FileNotFoundException(key);
 
     public Task DeleteAsync(string key, CancellationToken ct)

@@ -45,7 +45,35 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
             rows.Where(r => r.ItemIds.Contains(i.Id)).Select(r => r.Row).ToList())).ToList();
         var general = rows.Where(r => r.ItemIds.Count == 0).Select(r => r.Row).ToList();
         var current = items.FirstOrDefault(i => i.Status == AgendaItemStatus.InProgress)?.Id;
-        return new(meetingId, current, groups, general);
+        return new(meetingId, current, groups, general, []);
+    }
+
+    public async Task<IReadOnlyList<MeetingDocumentVoteGroup>> ListVoteGroupsAsync(Guid meetingId, bool includeDrafts,
+        Guid? userId, Guid? guestInvitationId, CancellationToken ct)
+    {
+        var links = await db.VoteDocuments.AsNoTracking()
+            .Where(l => l.VotingSession.MeetingId == meetingId && l.MeetingDocument.MeetingId == meetingId
+                && l.MeetingDocument.RemovedAt == null && (includeDrafts || l.VotingSession.Status != VotingStatus.Draft))
+            .OrderBy(l => l.VotingSession.CreatedAt).ThenBy(l => l.VotingSessionId)
+            .ThenBy(l => l.MeetingDocument.AddedAt).ThenBy(l => l.MeetingDocumentId)
+            .Select(l => new
+            {
+                l.VotingSessionId, l.VotingSession.Title, l.VotingSession.Status,
+                Row = new MeetingVoteDocumentRow(l.MeetingDocumentId, l.MeetingDocument.FileName,
+                    l.MeetingDocument.StoredFile.ContentType, l.MeetingDocument.StoredFile.ByteSize,
+                    l.MeetingDocument.StoredFile.PageCount, l.MeetingDocument.Comments.Count,
+                    new MeetingPerson(l.MeetingDocument.AddedById, l.MeetingDocument.AddedBy.FullName),
+                    l.MeetingDocument.AddedAt,
+                    // One confirmation per person and document counts for every vote that links it (BR-291).
+                    l.MeetingDocument.ReadConfirmations
+                        .Where(c => (userId != null && c.UserId == userId)
+                            || (guestInvitationId != null && c.GuestInvitationId == guestInvitationId))
+                        .Select(c => (DateTimeOffset?)c.ConfirmedAt).FirstOrDefault()),
+            }).ToListAsync(ct);
+        // Ordered above, so grouping keeps the votes' order and each vote's documents oldest first.
+        return links.GroupBy(l => (l.VotingSessionId, l.Title, l.Status))
+            .Select(g => new MeetingDocumentVoteGroup(g.Key.VotingSessionId, g.Key.Title, g.Key.Status.ToString(),
+                g.Select(l => l.Row).ToList())).ToList();
     }
 
     public Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct)
@@ -67,8 +95,13 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         try
         {
             // Same answer for a meeting that does not exist and one the caller cannot see (SCRUM-22).
-            if (await FindReadableAsync(meetingId, reader, ct) is null) return new(DocumentReadFailure.NotFound);
-            return new(List: await documents.ListAsync(meetingId, ct));
+            if (await FindReadableAsync(meetingId, reader, ct) is not { } meeting) return new(DocumentReadFailure.NotFound);
+            var list = await documents.ListAsync(meetingId, ct);
+            // A draft vote and its documents are the Chair's and the Secretary's alone (BR-253).
+            var includeDrafts = reader.UserId is { } userId && ParticipantRules.IsManager(meeting, userId);
+            var votes = await documents.ListVoteGroupsAsync(meetingId, includeDrafts, reader.UserId,
+                reader.Guest?.InvitationId, ct);
+            return new(List: list with { Votes = votes });
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -104,10 +137,10 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            // A missing object, an unconfigured store or the store being down all read as "try again".
+            // An unconfigured store or the store being down read as "try again"; an object gone for good does not.
             logger.LogError(ex, "Failed to open stored object {StorageKey} for document {DocumentId}", file.StorageKey,
                 meetingDocumentId);
-            return new(DocumentReadFailure.ReadFailed);
+            return new(ex is FileNotFoundException ? DocumentReadFailure.FileMissing : DocumentReadFailure.ReadFailed);
         }
 
         if (meeting.Sensitivity is Sensitivity.Confidential or Sensitivity.Secret)

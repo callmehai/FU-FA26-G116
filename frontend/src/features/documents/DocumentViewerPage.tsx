@@ -24,7 +24,8 @@ import { useMeetingDocuments } from './useMeetingDocuments'
 type Content =
   | { kind: 'loading' }
   | { kind: 'loaded'; blob: Blob }
-  | { kind: 'error'; message: string }
+  /** `final`: MSG382, the stored file is gone for good, so "Thử lại" would not help. */
+  | { kind: 'error'; message: string; final?: boolean }
   /** MSG156: removed from the meeting, or no longer readable. */
   | { kind: 'gone' }
 
@@ -35,7 +36,8 @@ type Content =
  * document is audited by the server (BR-318).
  *
  * Opened from the call room it lives in its own tab (BR-315), and "‹ Tài liệu" closes that tab.
- * Comments (UC-35, SCRUM-23) sit beside the document; "Góp ý" shows or hides them.
+ * Comments (UC-35, SCRUM-23) sit beside the document; "Góp ý" shows or hides them — for a verified guest too
+ * (BR-181), whose session ends with the meeting, so a guest never sees the read-only list.
  */
 export function DocumentViewerPage() {
   const { meetingId = '', documentId = '' } = useParams()
@@ -131,8 +133,6 @@ function Viewer({
   const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
   const guestScope = useGuest()
   const canDownload = guestScope ? guestScope.session.canDownload : sensitivity !== 'Secret'
-  // Comments are not open to guests yet (SCRUM-123).
-  const guest = guestScope !== null
   // Opened from a vote still waiting on this reader (UC-74): confirm once the last page is reached.
   const [params] = useSearchParams()
   const reading = params.get('read') === '1'
@@ -159,18 +159,16 @@ function Viewer({
         )}
         <ViewerZoom zoom={zoom} onZoom={setZoom} />
         {reading && <ReadConfirmButton meetingId={meeting.id} meetingDocumentId={doc.id} progress={progress} />}
-        {!guest && (
-          <button
-            type="button"
-            className={commentsOpen ? 'btn btn-outline is-active' : 'btn btn-outline'}
-            aria-pressed={commentsOpen}
-            onClick={() => setCommentsOpen(!commentsOpen)}
-          >
-            <Icon name="messageSquare" size={16} />
-            <span className="viewer-download-label">Góp ý</span>
-            {commentCount > 0 && <span className="viewer-count">{commentCount}</span>}
-          </button>
-        )}
+        <button
+          type="button"
+          className={commentsOpen ? 'btn btn-outline is-active' : 'btn btn-outline'}
+          aria-pressed={commentsOpen}
+          onClick={() => setCommentsOpen(!commentsOpen)}
+        >
+          <Icon name="messageSquare" size={16} />
+          <span className="viewer-download-label">Góp ý</span>
+          {commentCount > 0 && <span className="viewer-count">{commentCount}</span>}
+        </button>
         {canDownload ? (
           <button
             type="button"
@@ -192,10 +190,12 @@ function Viewer({
             <div className="viewer-message">
               <div className="alert alert-error" role="alert">
                 <p>{content.state.message}</p>
-                <button type="button" className="btn btn-outline btn-sm" onClick={content.retry}>
-                  <Icon name="refresh" size={16} />
-                  Thử lại
-                </button>
+                {!content.state.final && (
+                  <button type="button" className="btn btn-outline btn-sm" onClick={content.retry}>
+                    <Icon name="refresh" size={16} />
+                    Thử lại
+                  </button>
+                )}
               </div>
             </div>
           ) : content.state.kind === 'loaded' ? (
@@ -210,7 +210,7 @@ function Viewer({
             </div>
           )}
         </main>
-        {commentsOpen && !guest && (
+        {commentsOpen && (
           <CommentsPanel
             meetingId={meeting.id}
             meetingDocumentId={doc.id}
@@ -285,7 +285,7 @@ function BackToDocuments({ meetingId, fromVote }: { meetingId: string; fromVote:
   )
 }
 
-/** The file's bytes, read once per open; MSG158 is temporary, so "Thử lại" reads again. */
+/** The file's bytes, read once per open; MSG158 is temporary, so "Thử lại" reads again — MSG382 is not. */
 function useContent(meetingId: string, documentId: string) {
   const handleAccessLost = useAccessLost()
   const [state, setState] = useState<Content>({ kind: 'loading' })
@@ -298,7 +298,11 @@ function useContent(meetingId: string, documentId: string) {
       if (current === generation.current) setState({ kind: 'loaded', blob })
     } catch (err) {
       if (current !== generation.current || handleAccessLost(err)) return
-      setState(isApiError(err, 404) ? { kind: 'gone' } : { kind: 'error', message: errorMessage(err) })
+      setState(
+        isApiError(err, 404)
+          ? { kind: 'gone' }
+          : { kind: 'error', message: errorMessage(err), final: isApiError(err, 410, 'MSG382') },
+      )
     }
   }, [meetingId, documentId, handleAccessLost])
 

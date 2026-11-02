@@ -870,7 +870,7 @@ function ConclusionForm({
 }
 
 /** Draft, open or closed, as icon and text (ADR-0028); a draft is seen by the Chair and the Secretary only. */
-function VoteStatusChip({ vote }: { vote: VoteSummary }) {
+export function VoteStatusChip({ vote }: { vote: Pick<VoteSummary, 'status'> }) {
   if (vote.status === 'Open') return <span className="status status-live vote-status">Đang mở</span>
   if (vote.status === 'Draft') {
     return (

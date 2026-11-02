@@ -287,7 +287,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         var owner = await NewUser(fixture);
         var folder = await AddFolder(fixture, owner, "Hồ sơ");
         using var client = fixture.Client(owner);
-        var pdf = SampleFiles.Pdf("kho");
+        var pdf = SampleFiles.Pdf("kho", pages: 3);
         var docx = SampleFiles.Docx();
 
         var (status, code, body) = await Read(await client.PostAsync($"/api/documents/upload?folderId={folder}",
@@ -552,7 +552,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
-    public async Task Owner_opens_their_document_and_a_missing_object_reads_as_try_again()
+    public async Task Owner_opens_their_document_and_a_missing_object_is_gone_for_good()
     {
         var owner = await NewUser(fixture);
         var document = await AddDocument(fixture, owner, "Đọc.pdf");
@@ -564,8 +564,10 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal("attachment", response.Content.Headers.ContentDisposition!.DispositionType);
 
         fixture.Storage.Objects.Clear();
+        Assert.Equal((410, "MSG382"), Pick(await Read(await client.GetAsync($"/api/documents/{document}/content"))));
+        Assert.Equal((410, "MSG382"), Pick(await Read(await client.GetAsync($"/api/documents/{document}/content?download=true"))));
+        fixture.Storage.Configured = false;
         Assert.Equal((503, "MSG158"), Pick(await Read(await client.GetAsync($"/api/documents/{document}/content"))));
-        Assert.Equal((503, "MSG160"), Pick(await Read(await client.GetAsync($"/api/documents/{document}/content?download=true"))));
     }
 
     // ---- PO 27/10/2026: an administrator reads a deactivated person's library ----

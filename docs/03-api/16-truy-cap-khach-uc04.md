@@ -195,7 +195,9 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
   Khách, không dùng phiên nội bộ dù trình duyệt đang đăng nhập.
 - Sau xác minh: form tên hiển thị / chức vụ (bước 5), rồi trang cuộc họp `/guest/{invitationId}` với các tab Nội dung,
   Tài liệu, Biểu quyết, Thành phần tham dự và câu hỏi "Bạn có tham dự cuộc họp này?" (UC-29). Tài liệu mở ở
-  `/guest/{invitationId}/documents/{meetingDocumentId}`; Khách không có góp ý. Cuộc họp Mật (`canDownload = false`)
+  `/guest/{invitationId}/documents/{meetingDocumentId}`, có bảng Góp ý như thành viên (từ 02/11/2026, xem
+  [Khách góp ý](11-tai-lieu-cuoc-hop.md#khách-góp-ý)); tab Tài liệu có nhóm Biểu quyết với "Đã đọc"/"Chưa đọc" của
+  chính Khách. Cuộc họp Mật (`canDownload = false`)
   không có nút "Tải về". Tab Thành phần tham dự không hiện email: BE trả `email = null` cho mọi dòng trừ dòng của
   chính Khách, và tìm kiếm của Khách không so email (PO 01/11/2026).
 - "Thoát" gặp `401`/`404` (phiên đã hết) vẫn xoá token và về màn đã thoát.
@@ -210,7 +212,8 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 ## 9. Ngoài phạm vi
 
 - Thư ký thu hồi từng phiên riêng lẻ của Khách: chưa có màn hình; thu hồi lời mời đã cắt mọi phiên.
-- Góp ý cho Khách: ticket riêng dùng lại phiên này. Phòng họp trực tuyến cho Khách: SCRUM-59
+- Góp ý cho Khách: đã mở 02/11/2026 trên cùng phiên này ([contract tài liệu](11-tai-lieu-cuoc-hop.md#khách-góp-ý)).
+  Phòng họp trực tuyến cho Khách: SCRUM-59
   ([contract phòng họp](09-phong-hop-truc-tuyen.md#khách-scrum-59)). Đọc và tải tài liệu cuộc họp
   đã mở cho Khách ở SCRUM-123 ([contract tài liệu](11-tai-lieu-cuoc-hop.md#khách-đọc-tài-liệu-scrum-123)); biểu quyết
   của Khách theo [contract biểu quyết](15-bieu-quyet.md).

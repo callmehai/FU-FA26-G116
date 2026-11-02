@@ -11,8 +11,11 @@ const GUTTER = 24
  * 880px × 200% on a 2× screen is ~17.5 M pixels, so the drawing resolution is capped there.
  */
 const MAX_CANVAS_PIXELS = 16_777_216
-/** MSG158's wording: the file arrived but cannot be drawn. */
-const CANNOT_DISPLAY = 'Không hiển thị được tài liệu. Vui lòng thử lại.'
+/**
+ * MSG383 (FE): the file arrived but pdf.js or docx-preview cannot draw it — damaged, or written in a way they do not
+ * read. Unlike MSG158 it does not ask to try again: the same bytes would fail the same way.
+ */
+const CANNOT_DISPLAY = 'Trình duyệt không hiển thị được tệp này. Tệp có thể bị hỏng hoặc dùng định dạng chưa hỗ trợ.'
 
 /** The page width at 100%: the stage's width minus the gutters, capped. Follows the window. */
 function useFitWidth() {
