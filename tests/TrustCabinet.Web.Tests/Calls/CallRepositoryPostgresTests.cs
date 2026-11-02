@@ -24,6 +24,7 @@ public sealed class CallRepositoryPostgresTests : IAsyncLifetime
         try
         {
             await _db.Database.EnsureDeletedAsync();
+            await PostgreSqlSchemaTemplates.CreateDatabaseAsync(ConnectionString, TestSchema.EnsureCreated);
             await _db.Database.EnsureCreatedAsync();
         }
         catch (NpgsqlException exception)
@@ -74,8 +75,8 @@ public sealed class CallRepositoryPostgresTests : IAsyncLifetime
         var calls = new CallRepository(_db);
         var session = await calls.EnsureActiveRoomSessionAsync(meeting.Id, users[0].Id, DateTimeOffset.UtcNow);
 
-        await calls.RecordJoinAsync(session.Id, users[0].Id, DateTimeOffset.UtcNow);
-        await calls.RecordJoinAsync(session.Id, users[0].Id, DateTimeOffset.UtcNow);
+        await calls.RecordJoinAsync(session.Id, CallMember.User(users[0].Id), DateTimeOffset.UtcNow);
+        await calls.RecordJoinAsync(session.Id, CallMember.User(users[0].Id), DateTimeOffset.UtcNow);
         await calls.EndSessionAsync(session.Id, DateTimeOffset.UtcNow);
 
         var stint = await _db.CallParticipants.AsNoTracking().SingleAsync();

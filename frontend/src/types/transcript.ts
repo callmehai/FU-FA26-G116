@@ -23,6 +23,8 @@ export interface TranscriptSpeaker {
   /** Cosine similarity, 0–1. */
   suggestionScore: number | null
   assignedUserId: string | null
+  /** A guest of the meeting the voice was named as instead of a user; never set with `assignedUserId`. */
+  assignedGuestId?: string | null
   assignedName: string | null
   /** Another voice suggested as the same person more surely: perhaps one person the machine split in two. */
   sameAsLabel?: string | null
@@ -31,6 +33,8 @@ export interface TranscriptSpeaker {
 export interface TranscriptPerson {
   id: string
   fullName: string
+  /** A guest invited to the meeting rather than a user: never suggested by voice, named by hand. */
+  guest?: boolean
 }
 
 export interface Transcript {
@@ -44,7 +48,7 @@ export interface Transcript {
   canEdit: boolean
   segments: TranscriptSegment[]
   speakers: TranscriptSpeaker[]
-  /** The meeting's people the Secretary may name a voice as; empty for everyone else. */
+  /** The meeting's people and guests the Secretary may name a voice as; empty for everyone else. */
   people: TranscriptPerson[]
   /** Finished, and the caller (Chair or Secretary, not a Secret meeting) may save it as text. */
   canExport: boolean

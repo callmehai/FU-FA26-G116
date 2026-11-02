@@ -8,9 +8,10 @@ import { SegmentedControl } from '../../components/SegmentedControl'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
-import { routes } from '../../lib/routes'
 import type { DocumentsAgendaItem, MeetingDocument, MeetingDocumentList } from '../../types/document'
+import type { GuestMeeting } from '../../types/guest'
 import type { Meeting } from '../../types/meeting'
+import { useDocumentPath } from '../guest/guestContext'
 import { AddDocumentsDialog } from './AddDocumentsDialog'
 import { documentFacts, isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
@@ -40,16 +41,19 @@ const GROUPS = [
  *
  * Status, sensitivity and the caller's role come from the meeting, which the list does not repeat.
  * `onMeetingStale` re-reads it when an answer says it changed (role lost, meeting ended, now Secret).
+ * A guest (UC-04, SCRUM-123) only reads: their meeting carries no role or sensitivity, so they manage
+ * nothing, and a Secret meeting's download is refused by the server (MSG159) rather than hidden here.
  */
 export function DocumentsPanel({
   meeting,
   variant,
   onMeetingStale,
 }: {
-  meeting: Meeting
+  meeting: Meeting | GuestMeeting
   variant: 'page' | 'room'
   onMeetingStale?: () => void
 }) {
+  const full = 'sensitivity' in meeting ? meeting : null
   const { state, reload } = useMeetingDocuments(meeting.id)
   const data = state.kind === 'loaded' || state.kind === 'error' ? state.data : null
   const stale = () => {
@@ -59,14 +63,14 @@ export function DocumentsPanel({
   const { download, busyId } = useDocumentDownload(meeting.id, stale)
   // A queued file ended: show the list as it is; a refusal may also mean the meeting changed (role, status).
   useUploadsSettled(`meeting:${meeting.id}`, (job) => (job.status === 'done' ? void reload() : stale()))
-  const canDownload = meeting.sensitivity !== 'Secret'
+  const canDownload = full?.sensitivity !== 'Secret'
   const total = data && distinctCount([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
 
   const rowProps = { meetingId: meeting.id, variant, canDownload, busyId, onDownload: download }
   const body = !data ? null : variant === 'room' ? (
     <RoomList data={data} row={rowProps} />
   ) : (
-    <PageList data={data} meeting={meeting} row={rowProps} onUploaded={() => void reload()} onStale={stale} />
+    <PageList data={data} meeting={full} row={rowProps} onUploaded={() => void reload()} onStale={stale} />
   )
 
   return (
@@ -123,7 +127,8 @@ function PageList({
   onStale,
 }: {
   data: MeetingDocumentList
-  meeting: Meeting
+  /** Null for a guest, who manages nothing. */
+  meeting: Meeting | null
   row: RowProps
   onUploaded: () => void
   onStale: () => void
@@ -134,6 +139,7 @@ function PageList({
   const [adding, setAdding] = useState<{ item?: DocumentsAgendaItem; number?: number } | null>(null)
   const [removing, setRemoving] = useState<{ doc: MeetingDocument; item?: DocumentsAgendaItem } | null>(null)
   const canManage =
+    meeting !== null &&
     meeting.status !== 'Ended' &&
     meeting.status !== 'Cancelled' &&
     (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary')
@@ -184,7 +190,7 @@ function PageList({
         )}
       </div>
 
-      {adding && (
+      {adding && meeting && (
         <AddDocumentsDialog
           meeting={meeting}
           item={
@@ -227,8 +233,8 @@ function PageList({
             const { doc, item } = removing
             try {
               const done = item
-                ? await unlinkFromAgendaItem(meeting.id, item.id, doc.id)
-                : await removeMeetingDocument(meeting.id, doc.id)
+                ? await unlinkFromAgendaItem(row.meetingId, item.id, doc.id)
+                : await removeMeetingDocument(row.meetingId, doc.id)
               setRemoving(null)
               toast.show(done.message)
               onUploaded()
@@ -378,6 +384,7 @@ function DocumentRows({
  * whole row is a link to a new tab; on the page it opens the viewer in place.
  */
 function DocumentRow({ doc, row, item }: { doc: MeetingDocument; row: RowProps; item?: DocumentsAgendaItem }) {
+  const documentPath = useDocumentPath()
   const facts = documentFacts(doc)
   const room = row.variant === 'room'
   const added = `${doc.addedBy.fullName} thêm lúc ${formatDateTime(doc.addedAt)}`
@@ -386,7 +393,7 @@ function DocumentRow({ doc, row, item }: { doc: MeetingDocument; row: RowProps; 
     <li className="documents-row">
       <Link
         className="documents-row-link"
-        to={`${routes.meetingDocument(row.meetingId, doc.id)}${room ? '?from=room' : ''}`}
+        to={`${documentPath(row.meetingId, doc.id)}${room ? '?from=room' : ''}`}
         data-tooltip={room ? 'Mở ở tab mới, bạn vẫn ở trong phòng' : added}
         {...(room && { target: '_blank', rel: 'noopener' })}
       >

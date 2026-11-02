@@ -99,13 +99,14 @@ từ bộ nhớ, không ghi ra đĩa.
     "assignedUserId": null, "assignedName": null, "sameAsLabel": null },
   { "label": "SPEAKER_01", "speechMs": 7000,
     "suggestedUserId": "…", "suggestedName": "Nguyễn Thư Ký", "suggestionScore": 0.76,
-    "assignedUserId": null, "assignedName": null, "sameAsLabel": "SPEAKER_00" }
+    "assignedUserId": null, "assignedName": null, "sameAsLabel": "SPEAKER_00", "assignedGuestId": null }
 ],
-"people": [ { "id": "…", "fullName": "…" } ]
+"people": [ { "id": "…", "fullName": "…", "guest": false }, { "id": "…", "fullName": "Bà Lan", "guest": true } ]
 ```
 
-`people` là thành phần hiện tại của cuộc họp, chỉ trả cho Thư ký (để chọn tên); người khác nhận mảng
-rỗng. **`suggestedUserId`, `suggestedName`, `suggestionScore` cũng chỉ trả cho Thư ký**: đó là phỏng đoán
+`people` là thành phần hiện tại của cuộc họp và Khách được mời chưa bị thu hồi lời mời (`guest: true`, tên Khách tự
+khai, chưa khai thì tên lúc mời; như AI-eCabinet), chỉ trả cho Thư ký (để chọn tên); người khác nhận mảng rỗng. Khách
+không có giọng mẫu nên không bao giờ được gợi ý. **`suggestedUserId`, `suggestedName`, `suggestionScore` cũng chỉ trả cho Thư ký**: đó là phỏng đoán
 của máy về danh tính sinh trắc học của một người, để Thư ký quyết định, không phải thông tin cho cả cuộc
 họp; người khác nhận `null`. Tên hiển thị của một giọng: `assignedName` nếu Thư ký đã gán, nếu không thì
 *Người nói N*.
@@ -125,10 +126,11 @@ Giọng gợi ý kém chắc hơn có `sameAsLabel`: nhãn của giọng chắc 
 thì nó đứng đầu, gán người khác thì bị loại khỏi nhóm). FE hiện "Cùng giọng với Người nói N" và cho gán cả
 hai trong một lần. Hai giọng đều giữ gợi ý; máy không tự gộp, vì gộp sai là gán nhầm tên người.
 
-### `PUT /api/recordings/{recordingId}/speakers/{label}` — `{ "userId": "…" | null }`
+### `PUT /api/recordings/{recordingId}/speakers/{label}` — `{ "userId": "…" | null, "guestId": "…" | null }`
 
-Thư ký gán tên thật (một lần áp dụng cho mọi đoạn của giọng đó), hoặc bỏ gán bằng `null`. Người được
-gán phải là thành phần hiện tại của cuộc họp (`400 MSG317`). Không phải Thư ký: `403 MSG295`. Nhãn
+Thư ký gán tên thật (một lần áp dụng cho mọi đoạn của giọng đó): một người dùng (`userId`) hoặc một Khách của cuộc
+họp (`guestId`), không cả hai; cả hai `null` là bỏ gán. Người được gán phải là thành phần hiện tại của cuộc họp, Khách
+phải có lời mời của cuộc họp này chưa bị thu hồi, gửi cả hai cũng vậy (`400 MSG317`). Response có `assignedGuestId`. Không phải Thư ký: `403 MSG295`. Nhãn
 không có trong bản ghi: `404`. `200 MSG316` `{ code, message, speaker }`.
 
 ## Cấu hình (`VoiceId:*`)

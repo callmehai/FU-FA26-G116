@@ -23,6 +23,7 @@ public sealed class MeetingScheduleMigrationTests : IAsyncLifetime
         _db = new TrustCabinetDbContext(new DbContextOptionsBuilder<TrustCabinetDbContext>()
             .UseNpgsql(_database.DataSource, options => options.MigrationsHistoryTable("__ef_migrations_history"))
             .UseSnakeCaseNamingConvention().Options);
+        await _database.CreateFromTemplateAsync(TestSchema.MigratedTo(SessionsSchedule));
         await _db.GetService<IMigrator>().MigrateAsync(SessionsSchedule);
     }
 

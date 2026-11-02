@@ -17,7 +17,7 @@ public static class DocumentCommentEndpoints
     private const string Msg348TextTooLong = "MSG348";
     private const string Msg349MeetingCancelled = "MSG349";
 
-    private sealed record CommentBody(string? Body, int? PageNumber, Guid? ParentCommentId);
+    internal sealed record CommentBody(string? Body, int? PageNumber, Guid? ParentCommentId);
 
     public static void MapDocumentCommentEndpoints(this IEndpointRouteBuilder app)
     {

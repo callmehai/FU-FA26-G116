@@ -21,6 +21,7 @@ public sealed class ParticipantMigrationTests
             .UseNpgsql(database.DataSource, o => o.MigrationsHistoryTable("__ef_migrations_history"))
             .UseSnakeCaseNamingConvention().Options);
         var previous = db.Database.GetMigrations().Last(m => m.EndsWith("AgendaExecutionInvariants", StringComparison.Ordinal));
+        await database.CreateFromTemplateAsync(TestSchema.MigratedTo(previous));
         await db.GetService<IMigrator>().MigrateAsync(previous);
         var user = new User { FullName = "Creator", Email = "creator@backfill.test", PasswordHash = "test-only" };
         db.Users.Add(user);
@@ -68,6 +69,7 @@ public sealed class ParticipantMigrationTests
         await using var db = new TrustCabinetDbContext(new DbContextOptionsBuilder<TrustCabinetDbContext>()
             .UseNpgsql(database.DataSource, o => o.MigrationsHistoryTable("__ef_migrations_history")).UseSnakeCaseNamingConvention().Options);
         var previous = db.Database.GetMigrations().Last(m => m.EndsWith("AgendaExecutionInvariants", StringComparison.Ordinal));
+        await database.CreateFromTemplateAsync(TestSchema.MigratedTo(previous));
         await db.GetService<IMigrator>().MigrateAsync(previous);
         var user = new User { FullName = "Migration", Email = "migration@participants.test", PasswordHash = "test-only" };
         var second = new User { FullName = "Second", Email = "second@participants.test", PasswordHash = "test-only" };

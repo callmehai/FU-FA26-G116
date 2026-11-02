@@ -18,6 +18,7 @@ import { AttendanceCell } from '../attendance/AttendanceCell'
 import { useAttendance } from '../attendance/useAttendance'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
+import { useGuest } from '../guest/guestContext'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import { isRefusal, type DialogOutcome } from './outcome'
 import { AddParticipantsDialog, ChangeRoleDialog, InviteGuestDialog } from './ParticipantDialogs'
@@ -58,6 +59,8 @@ type RowOpen = { kind: 'role'; row: ParticipantRow & { role: MeetingRole } } | {
 export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string; onChanged?: () => void }) {
   const toast = useToast()
   const { user } = useAuth()
+  // A guest is their invitation's row, never an internal account the same browser may also be signed in to.
+  const guestInvitationId = useGuest()?.invitationId
   const handleAccessLost = useAccessLost()
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
@@ -280,7 +283,11 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
                       <Person
                         name={row.displayName}
                         email={row.email}
-                        self={row.userId !== null && row.userId === user?.id}
+                        self={
+                          guestInvitationId
+                            ? row.kind === 'Guest' && row.id.toLowerCase() === guestInvitationId.toLowerCase()
+                            : row.userId !== null && row.userId === user?.id
+                        }
                       />
                       {showAttendance && <span className="attendance-inline">{attendanceCell(row.id)}</span>}
                       <span className="chip-row">

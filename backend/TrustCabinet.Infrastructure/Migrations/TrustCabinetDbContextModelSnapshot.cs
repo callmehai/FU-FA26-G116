@@ -213,6 +213,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("declined");
 
+                    b.Property<Guid?>("GuestSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_session_id");
+
                     b.Property<DateTimeOffset>("JoinedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("joined_at");
@@ -225,12 +229,15 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
                         .HasName("pk_call_participants");
+
+                    b.HasIndex("GuestSessionId")
+                        .HasDatabaseName("ix_call_participants_guest_session_id");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_call_participants_user_id");
@@ -238,7 +245,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("CallSessionId", "UserId")
                         .HasDatabaseName("ix_call_participants_call_session_id_user_id");
 
-                    b.ToTable("call_participants", (string)null);
+                    b.ToTable("call_participants", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_call_participants_one_member", "(user_id IS NULL) <> (guest_session_id IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.CallSession", b =>
@@ -274,7 +284,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("started_at");
 
-                    b.Property<Guid>("StartedById")
+                    b.Property<Guid?>("StartedById")
                         .HasColumnType("uuid")
                         .HasColumnName("started_by_id");
 
@@ -2277,6 +2287,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assigned_by_id");
 
+                    b.Property<Guid?>("AssignedGuestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_guest_id");
+
                     b.Property<Guid?>("AssignedUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("assigned_user_id");
@@ -2317,6 +2331,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("AssignedById")
                         .HasDatabaseName("ix_transcript_speakers_assigned_by_id");
 
+                    b.HasIndex("AssignedGuestId")
+                        .HasDatabaseName("ix_transcript_speakers_assigned_guest_id");
+
                     b.HasIndex("AssignedUserId")
                         .HasDatabaseName("ix_transcript_speakers_assigned_user_id");
 
@@ -2327,7 +2344,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_transcript_speakers_transcript_id_label");
 
-                    b.ToTable("transcript_speakers", (string)null);
+                    b.ToTable("transcript_speakers", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_transcript_speakers_one_assignee", "assigned_user_id IS NULL OR assigned_guest_id IS NULL");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.User", b =>
@@ -2886,14 +2906,21 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_call_participants_call_sessions_call_session_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.GuestSession", "GuestSession")
+                        .WithMany()
+                        .HasForeignKey("GuestSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_call_participants_guest_sessions_guest_session_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_call_participants_users_user_id");
 
                     b.Navigation("CallSession");
+
+                    b.Navigation("GuestSession");
 
                     b.Navigation("User");
                 });
@@ -2916,7 +2943,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("StartedById")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_call_sessions_users_started_by_id");
 
                     b.Navigation("Meeting");
@@ -3611,6 +3637,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_transcript_speakers_users_assigned_by_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "AssignedGuest")
+                        .WithMany()
+                        .HasForeignKey("AssignedGuestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_transcript_speakers_meeting_guest_invitations_assigned_gues");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "AssignedUser")
                         .WithMany()
                         .HasForeignKey("AssignedUserId")
@@ -3631,6 +3663,8 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_transcript_speakers_transcripts_transcript_id");
 
                     b.Navigation("AssignedBy");
+
+                    b.Navigation("AssignedGuest");
 
                     b.Navigation("AssignedUser");
 

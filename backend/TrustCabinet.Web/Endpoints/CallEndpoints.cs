@@ -6,6 +6,7 @@ namespace TrustCabinet.Web.Endpoints;
 /// <summary>
 /// The meeting call room (SCRUM-39, SCRUM-41, ADR-0010): room state, joining, chair mute, and the
 /// LiveKit webhook. Media and signalling go through LiveKit; this only decides who may take part.
+/// A verified guest (UC-04 token, SCRUM-59) may read the room and join it; muting stays a chair's.
 /// </summary>
 public static class CallEndpoints
 {
@@ -22,6 +23,7 @@ public static class CallEndpoints
     private const string Msg124ProviderFailed = "MSG124";
     private const string Msg283RoomLoadFailed = "MSG283";
     private const string Msg284MuteFailed = "MSG284";
+    private const string Msg380RecordingNoticeRequired = "MSG380";
 
     /// <summary>A webhook body is a few KB; anything this large is not LiveKit.</summary>
     private const int MaxWebhookBytes = 1024 * 1024;
@@ -30,18 +32,18 @@ public static class CallEndpoints
     {
         app.MapGroup("/api/meetings/{id:guid}/call")
             .WithTags("Calls")
-            .RequireActiveUser(ServerError(Msg283RoomLoadFailed, "Không thể tải trạng thái phòng họp. Vui lòng thử lại."))
+            .RequireActiveUserOrGuest(ServerError(Msg283RoomLoadFailed, "Không thể tải trạng thái phòng họp. Vui lòng thử lại."))
             .MapGet("/", GetAsync);
 
         app.MapGroup("/api/meetings/{id:guid}/call")
             .WithTags("Calls")
-            .RequireActiveUser(ServerError(Msg118JoinFailed, "Không thể vào phòng họp. Vui lòng thử lại."))
+            .RequireActiveUserOrGuest(ServerError(Msg118JoinFailed, "Không thể vào phòng họp. Vui lòng thử lại."))
             .MapPost("/join", JoinAsync);
 
         app.MapGroup("/api/meetings/{id:guid}/call")
             .WithTags("Calls")
             .RequireActiveUser(ServerError(Msg284MuteFailed, "Không thể tắt micro. Vui lòng thử lại."))
-            .MapPost("/participants/{userId:guid}/mute", MuteAsync);
+            .MapPost("/participants/{identity}/mute", MuteAsync);
 
         // Anonymous at the HTTP layer: LiveKit proves itself with a signature over the body.
         app.MapPost("/api/livekit/webhook", ReceiveWebhookAsync)
@@ -52,9 +54,9 @@ public static class CallEndpoints
     }
 
     private static async Task<IResult> GetAsync(
-        Guid id, ClaimsPrincipal principal, ICallRoomService service, CancellationToken ct)
+        Guid id, ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities, ICallRoomService service, CancellationToken ct)
     {
-        var result = await service.GetRoomAsync(id, CapabilityGate.GatedUserId(principal), ct);
+        var result = await service.GetRoomAsync(id, Caller(principal, identities), ct);
         return result.Outcome switch
         {
             CallOutcome.Success => Results.Ok(CallRoomResponse.From(result.Value!)),
@@ -64,9 +66,10 @@ public static class CallEndpoints
     }
 
     private static async Task<IResult> JoinAsync(
-        Guid id, ClaimsPrincipal principal, ICallRoomService service, CancellationToken ct)
+        Guid id, JoinBody? body, ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities,
+        ICallRoomService service, CancellationToken ct)
     {
-        var result = await service.JoinAsync(id, CapabilityGate.GatedUserId(principal), ct);
+        var result = await service.JoinAsync(id, Caller(principal, identities), body?.RecordingNoticeAcknowledged == true, ct);
         return result.Outcome switch
         {
             CallOutcome.Success => Results.Ok(CallJoinResponse.From(result.Value!)),
@@ -74,14 +77,30 @@ public static class CallEndpoints
             CallOutcome.InPersonMeeting => Conflict(Msg280InPersonMeeting, "Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến."),
             CallOutcome.RoomNotOpen => Conflict(Msg117RoomNotOpen, "Phòng họp chỉ mở khi cuộc họp đang diễn ra."),
             CallOutcome.NotConfigured => Unavailable(),
+            CallOutcome.RecordingNoticeRequired => Results.Json(
+                new CallErrorResponse(Msg380RecordingNoticeRequired, "Vui lòng xác nhận đã đọc thông báo ghi âm trước khi vào phòng họp."),
+                statusCode: StatusCodes.Status400BadRequest),
             _ => ServerError(Msg118JoinFailed, "Không thể vào phòng họp. Vui lòng thử lại."),
         };
     }
 
+    /// <summary>Only a guest must send it; a member's join takes no body.</summary>
+    internal sealed record JoinBody(bool? RecordingNoticeAcknowledged);
+
+    /// <summary>A guest token for this meeting, or the signed-in user the filter already checked is active.</summary>
+    private static CallCaller Caller(ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities)
+        => identities.Resolve(principal) is { } guest ? new CallCaller(Guest: guest) : CapabilityGate.GatedUserId(principal);
+
+    /// <param name="identity">The LiveKit identity from the room: a user id, or <c>guest-{guestSessionId}</c>.</param>
     private static async Task<IResult> MuteAsync(
-        Guid id, Guid userId, ClaimsPrincipal principal, ICallRoomService service, CancellationToken ct)
+        Guid id, string identity, ClaimsPrincipal principal, ICallRoomService service, CancellationToken ct)
     {
-        var outcome = await service.MuteAsync(id, CapabilityGate.GatedUserId(principal), userId, ct);
+        if (!CallMember.TryParse(identity, out var target))
+        {
+            return Results.NotFound();
+        }
+
+        var outcome = await service.MuteAsync(id, CapabilityGate.GatedUserId(principal), target, ct);
         return outcome switch
         {
             CallOutcome.Success => Results.NoContent(),

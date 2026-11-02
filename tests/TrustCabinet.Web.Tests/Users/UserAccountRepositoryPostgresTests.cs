@@ -33,6 +33,7 @@ public class UserAccountRepositoryPostgresTests : IAsyncLifetime
         try
         {
             await _db.Database.EnsureDeletedAsync();
+            await PostgreSqlSchemaTemplates.CreateDatabaseAsync(ConnectionString, TestSchema.EnsureCreated);
             await _db.Database.EnsureCreatedAsync();
         }
         catch (Npgsql.NpgsqlException e)

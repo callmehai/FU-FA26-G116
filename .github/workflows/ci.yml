@@ -119,6 +119,15 @@ jobs:
         with:
           global-json-file: global.json
 
+      # Giữ gói NuGet giữa các lần chạy để restore không tải lại từ đầu. Khoá theo global.json và
+      # mọi .csproj: đổi version gói là đổi khoá; restore-keys lấy bản gần nhất rồi restore chỉ
+      # tải phần còn thiếu.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('global.json', '**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
       - run: dotnet restore TrustCabinet.sln
 
       # -warnaserror: warning của compiler và analyzer làm đỏ CI, không trôi qua thành

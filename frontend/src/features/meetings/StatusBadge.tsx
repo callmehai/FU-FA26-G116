@@ -34,7 +34,7 @@ export function StatusBadge({
   plain?: boolean
 }) {
   return (
-    <span className={`status status-${STATUS_TONE[status]}${plain ? ' status-plain' : ''}`}>
+    <span className={`status status-${STATUS_TONE[status]}${status === 'Cancelled' ? ' status-cancelled' : ''}${plain ? ' status-plain' : ''}`}>
       {!plain && STATUS_ICON[status] && <Icon name={STATUS_ICON[status]} size={14} />}
       {label ?? MEETING_STATUS_LABEL[status]}
     </span>
@@ -51,11 +51,11 @@ const LEVEL: Record<Sensitivity, { className: string; icon: IconName }> = {
 /**
  * A meeting's sensitivity as a square-cornered chip with its own icon, so the levels differ by
  * shape as well as colour. Red is reserved for "Mật". "Thường" is the usual case and stays plain
- * text: a chip on every row would make nothing stand out. A row of chips (a record's header, a
- * calendar card) leaves "Thường" out altogether, as the call room does (ADR-0028).
+ * text in a list: a chip on every row would make nothing stand out (ADR-0028). `chip` draws it as a
+ * chip anyway, where it stands once (a meeting's header, ADR-0043).
  */
-export function SensitivityBadge({ sensitivity }: { sensitivity: Sensitivity }) {
-  if (sensitivity === 'Normal') return <span className="level level-plain">{SENSITIVITY_LABEL[sensitivity]}</span>
+export function SensitivityBadge({ sensitivity, chip = false }: { sensitivity: Sensitivity; chip?: boolean }) {
+  if (sensitivity === 'Normal' && !chip) return <span className="level level-plain">{SENSITIVITY_LABEL[sensitivity]}</span>
   const level = LEVEL[sensitivity]
   return (
     <span className={`level ${level.className}`}>

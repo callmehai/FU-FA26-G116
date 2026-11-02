@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Domain.Transcription;
@@ -199,6 +200,61 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         // Nothing of the take is left beside the room recording.
         await using var db = fixture.Db();
         Assert.False(await db.Recordings.AnyAsync(r => r.Id == take));
+    }
+
+    [Fact]
+    public async Task The_secretary_names_a_voice_as_a_guest_of_the_meeting_and_not_as_anyone_elses()
+    {
+        var s = await fixture.Seed(mode: MeetingMode.InPerson);
+        fixture.Speech.Failure = null;
+        fixture.Speech.Result = new(249, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [new(0, 200, "SPEAKER_00", "Một.")],
+            [new("SPEAKER_00", 200, [])]);
+        var other = await fixture.Seed(mode: MeetingMode.InPerson);
+        MeetingGuestInvitation Invite(Guid meetingId, string email, string? declared = null) => new()
+        {
+            MeetingId = meetingId, InvitedById = s.Secretary, InvitedName = "Khách mời", Email = email,
+            SelfDeclaredDisplayName = declared, CreatedAt = fixture.Clock.Now, UpdatedAt = fixture.Clock.Now,
+        };
+        var guest = Invite(s.MeetingId, "khach@ngoai.test", "Bà Lan (tự khai)");
+        var revoked = Invite(s.MeetingId, "da-thu-hoi@ngoai.test");
+        revoked.RevokedAt = fixture.Clock.Now;
+        revoked.RevokedById = s.Secretary;
+        var elsewhere = Invite(other.MeetingId, "noi-khac@ngoai.test");
+        await using (var db = fixture.Db())
+        {
+            db.MeetingGuestInvitations.AddRange(guest, revoked, elsewhere);
+            await db.SaveChangesAsync();
+        }
+        using var secretary = fixture.Client(s.Secretary);
+        using var member = fixture.Client(s.Member);
+        var room = (await Record(secretary, await Open(secretary, s), Tape(2 * Part + 12, 1))).GetProperty("recordingId").GetGuid();
+        await ProcessAll();
+
+        // Offered beside the meeting's people, by the name the guest gave; never to anyone but the Secretary.
+        var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript");
+        var offered = transcript.GetProperty("people").EnumerateArray().Single(p => p.GetProperty("id").GetGuid() == guest.Id);
+        Assert.Equal("Bà Lan (tự khai)", offered.GetProperty("fullName").GetString());
+        Assert.True(offered.GetProperty("guest").GetBoolean());
+        Assert.DoesNotContain(transcript.GetProperty("people").EnumerateArray(), p => p.GetProperty("id").GetGuid() == revoked.Id);
+        Assert.Empty((await member.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript")).GetProperty("people").EnumerateArray());
+
+        var url = $"/api/recordings/{room}/speakers/SPEAKER_00";
+        foreach (var body in new object[] { new { guestId = revoked.Id }, new { guestId = elsewhere.Id }, new { userId = s.Chair, guestId = guest.Id } })
+            await AssertCode(await secretary.PutAsJsonAsync(url, body), 400, "MSG317");
+        var named = await AssertCode(await secretary.PutAsJsonAsync(url, new { guestId = guest.Id }), 200, "MSG316");
+        Assert.Equal("Bà Lan (tự khai)", named.GetProperty("speaker").GetProperty("assignedName").GetString());
+
+        var voice = Assert.Single((await member.GetFromJsonAsync<JsonElement>($"/api/recordings/{room}/transcript"))
+            .GetProperty("speakers").EnumerateArray());
+        Assert.Equal(guest.Id, voice.GetProperty("assignedGuestId").GetGuid());
+        Assert.Equal(JsonValueKind.Null, voice.GetProperty("assignedUserId").ValueKind);
+        Assert.Equal("Bà Lan (tự khai)", voice.GetProperty("assignedName").GetString());
+
+        // Named as someone else: the guest's name goes.
+        await AssertCode(await secretary.PutAsJsonAsync(url, new { userId = s.Chair }), 200, "MSG316");
+        await using var check = fixture.Db();
+        var row = await check.TranscriptSpeakers.SingleAsync(v => v.Transcript.RecordingId == room);
+        Assert.Equal((s.Chair, (Guid?)null), (row.AssignedUserId!.Value, row.AssignedGuestId));
     }
 
     [Fact]

@@ -28,6 +28,7 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
     internal readonly SaveFailureInterceptor SaveFailure = new();
     internal readonly GuestReadFailureInterceptor ReadFailure = new();
     internal readonly Documents.MemoryFileStorage Storage = new();
+    internal readonly Calls.FakeLiveKitGateway LiveKit = new();
     internal Factory Host = null!;
 
     internal TrustCabinetDbContext Db() => new(new DbContextOptionsBuilder<TrustCabinetDbContext>()
@@ -36,6 +37,7 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        await Database.CreateFromTemplateAsync(TestSchema.Migrated);
         await using var db = Db();
         await db.Database.MigrateAsync();
         Host = new Factory(this);
@@ -61,6 +63,8 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
                 services.AddSingleton<TimeProvider>(fixture.Clock);
                 services.RemoveAll<IFileStorage>();
                 services.AddSingleton<IFileStorage>(fixture.Storage);
+                services.RemoveAll<TrustCabinet.Domain.Calls.ILiveKitGateway>();
+                services.AddSingleton<TrustCabinet.Domain.Calls.ILiveKitGateway>(fixture.LiveKit);
                 services.RemoveAll<IEmailSender>();
                 services.AddSingleton<IEmailSender>(fixture.Mail);
                 // Switched on after binding, so the queue worker is never registered.

@@ -16,6 +16,7 @@ public sealed class AttendanceMigrationTests
         await using var db = new TrustCabinetDbContext(new DbContextOptionsBuilder<TrustCabinetDbContext>()
             .UseNpgsql(database.DataSource, o => o.MigrationsHistoryTable("__ef_migrations_history")).UseSnakeCaseNamingConvention().Options);
         var previous = db.Database.GetMigrations().Single(m => m.EndsWith("MeetingParticipantLifecycleAndGuestInvitations", StringComparison.Ordinal));
+        await database.CreateFromTemplateAsync(TestSchema.MigratedTo(previous));
         await db.GetService<IMigrator>().MigrateAsync(previous);
         var user = new User { FullName = "Migration", Email = "migration@attendance.test", PasswordHash = "test-only" };
         db.Users.Add(user); await db.SaveChangesAsync();

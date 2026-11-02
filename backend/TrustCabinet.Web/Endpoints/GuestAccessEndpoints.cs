@@ -17,9 +17,9 @@ public static class GuestAccessEndpoints
     private const string Msg378SessionEnded = "MSG378";
     private const string Msg379DailyLimit = "MSG379";
 
-    private sealed record LinkBody(string? Token);
-    private sealed record VerifyBody(string? Token, string? Code);
-    private sealed record ProfileBody(string? DisplayName, string? JobTitle);
+    internal sealed record LinkBody(string? Token);
+    internal sealed record VerifyBody(string? Token, string? Code);
+    internal sealed record ProfileBody(string? DisplayName, string? JobTitle);
 
     public static void MapGuestAccessEndpoints(this IEndpointRouteBuilder app)
     {
