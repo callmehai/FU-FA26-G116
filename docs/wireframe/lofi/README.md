@@ -3,7 +3,7 @@
 Bản đen trắng, vẽ tay kiểu người thiết kế đưa cho người code: 1 sơ đồ luồng và 20 màn chính. Mỗi tờ
 gồm màn hình bên trái và ghi chú bên phải. Nội dung rút gọn từ
 [wireframe v11](../TrustCabinet-wireframe-v11.html) ngày 02/11/2026, nên v11 và web thật vẫn là nơi
-tra chi tiết: đủ 96 màn, câu chữ và trạng thái.
+tra chi tiết: đủ 100 màn, câu chữ và trạng thái.
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|

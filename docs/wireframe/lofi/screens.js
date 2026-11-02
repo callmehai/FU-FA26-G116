@@ -2,6 +2,8 @@
 // the Figma script draw the same thing. Coordinates are px on a 1240×660 sheet: screen left, notes right.
 const SHEET = { w: 1240, h: 660, screenW: 900 }
 
+const ACTS = { '#2': 2, '#a': 3, '#4': 4 }
+
 function makeDraw() {
   const n = []
   const marks = new Set()
@@ -41,7 +43,7 @@ function makeDraw() {
       cols.forEach(([s, cw]) => { d.text(cx + 10, y + 6, s, { size: 12, b: 1 }); cx += cw })
       rows.forEach((row, r) => {
         const ry = y + 30 + r * rh; d.rect(x, ry - 1.5, w, rh + 1.5); cx = x
-        row.forEach((s, c) => { if (s === '#i') { d.ic(cx + 10, ry + 10) } else if (s === '#a' || s === '#4') { Array.from({ length: s === '#4' ? 4 : 3 }, (_, k) => d.ic(cx + 10 + k * 20, ry + 10)) } else d.text(cx + 10, ry + 8, s, { size: 12 }); cx += cols[c][1] })
+        row.forEach((s, c) => { if (s === '#i') { d.ic(cx + 10, ry + 10) } else if (ACTS[s]) { Array.from({ length: ACTS[s] }, (_, k) => d.ic(cx + 10 + k * 20, ry + 10)) } else d.text(cx + 10, ry + 8, s, { size: 12 }); cx += cols[c][1] })
       })
     },
   }
@@ -52,6 +54,7 @@ const NAV = ['Lịch làm việc', 'Cuộc họp', 'Kho tài liệu', 'Giọng n
 function shell(d, on, o = {}) {
   d.rect(0, 0, 900, 620); d.rect(0, 0, 170, 620)
   d.rect(14, 14, 28, 28, { r: 14 }); d.text(50, 19, 'TrustCabinet', { b: 1 })
+  d.rect(160, 44, 20, 20, { r: 10, fill: 'w' }); d.text(160, 45, '‹', { w: 20, align: 'c', size: 12 })
   d.text(14, 62, 'Nghiệp vụ', { size: 11 })
   NAV.forEach((s, i) => {
     const y = 82 + i * 36
@@ -64,20 +67,19 @@ function shell(d, on, o = {}) {
   }
   d.line(0, 574, 170, 574); d.av(12, 584); d.text(46, 582, o.who || 'Tên người dùng', { size: 12 }); d.text(46, 598, o.role || 'Vai trò', { size: 10 }); d.ic(144, 590)
 }
-const TABS = ['Thông tin chung', 'Thành phần', 'Nội dung họp', 'Tài liệu', 'Biểu quyết', 'Bản ghi', 'Biên bản']
+const TABS = ['Thông tin chung', 'Thành phần tham dự', 'Nội dung cuộc họp', 'Tài liệu', 'Biểu quyết', 'Bản ghi', 'Biên bản']
 function detail(d, tab, o = {}) {
   shell(d, 1, o)
   d.text(190, 16, '‹ Cuộc họp', { size: 12 })
-  d.text(190, 34, 'Tên cuộc họp', { size: 20, b: 1 }); d.text(340, 41, o.st || '○ Trạng thái', { size: 12, b: o.live })
+  d.text(190, 34, 'Tên cuộc họp', { size: 20, b: 1 }); d.text(340, 41, o.st || '○ Trạng thái', { size: 12, b: o.live }); d.rect(440, 39, 56, 20, { r: 3 }); d.text(440, 42, 'Mức độ', { w: 56, align: 'c', size: 11 })
   d.ic(190, 66, 12); d.text(206, 62, 'Thứ, ngày, giờ', { size: 12 }); d.ic(310, 66, 12); d.text(326, 62, 'Hình thức, địa điểm', { size: 12 })
   ;(o.actions || []).forEach(([s, w, main], i, all) => { const right = 880 - all.slice(i + 1).reduce((a, b) => a + b[1] + 8, 0); d.btn(right - w, 30, w, s, { main, icon: 1 }) })
   let y = 86
   if (o.bar) { d.rect(190, y, 690, 50, { r: 4 }); d.ic(202, y + 18); d.text(226, y + 7, o.bar[0], { b: 1, size: 12 }); d.text(226, y + 26, o.bar[1], { size: 11 }); (o.bar[2] || []).forEach(([s, w, main], i, all) => { const right = 870 - all.slice(i + 1).reduce((a, b) => a + b[1] + 8, 0); d.btn(right - w, y + 9, w, s, { main, icon: 1 }) }); y += 60 }
   let tx = 190
-  TABS.forEach((s) => { const w = s.length * 7 + 16; d.text(tx, y + 4, s, { w, align: 'c', size: 12, b: s === TABS[tab] }); if (s === TABS[tab]) d.rect(tx, y + 24, w, 3, { fill: 'k' }); tx += w })
+  TABS.forEach((s) => { const w = s.length * 6.6 + 14; d.text(tx, y + 4, s, { w, align: 'c', size: 12, b: s === TABS[tab] }); if (s === TABS[tab]) d.rect(tx, y + 24, w, 3, { fill: 'k' }); tx += w })
   d.line(190, y + 27, 880, y + 27)
   y += 38
-  if (o.rail === false) return y
   d.rect(710, y, 170, 150, { r: 4 }); d.text(720, y + 8, 'Lịch sử trạng thái', { size: 12, b: 1 })
   ;['Tạo cuộc họp', 'Gửi duyệt', 'Duyệt', 'Công bố'].forEach((s, i) => { d.rect(720, y + 36 + i * 26, 10, 10, { r: 5 }); d.text(736, y + 31 + i * 26, s, { size: 11 }) })
   return y
@@ -121,7 +123,7 @@ const SCREENS = [
       d.btn(330, 338, 240, 'Đăng nhập bằng mật khẩu', { main: 1, icon: 1, h: 36 }); d.text(300, 386, 'hoặc', { w: 300, align: 'c', size: 12 })
       d.btn(330, 412, 240, 'Tiếp tục bằng Google', { icon: 1, h: 36 }); d.note(576, 344, 1)
     } },
-  { id: '02', name: 'Lịch làm việc', notes: ['Trang đầu tiên sau đăng nhập.', 'Bộ lọc mở sẵn cuộc họp sắp diễn ra.', 'Bấm một cuộc họp để vào chi tiết.', 'Có thêm kiểu Tháng và Danh sách, dùng cùng thanh công cụ.'],
+  { id: '02', name: 'Lịch làm việc', notes: ['Trang đầu tiên sau đăng nhập.', 'Bộ lọc mở sẵn cuộc họp sắp diễn ra.', 'Bấm một cuộc họp mở thẻ xem nhanh cạnh ô, không chuyển trang. Xem chi tiết mới vào trang chi tiết.', 'Có thêm kiểu Tháng và Danh sách, dùng cùng thanh công cụ.', 'Thẻ xem nhanh có thêm Xác nhận tham dự khi chưa trả lời lời mời.', 'Họp trực tuyến hoặc kết hợp đang diễn ra: ô có dải Vào phòng họp ở đáy.'],
     draw(d) {
       shell(d, 0)
       d.btn(190, 16, 70, 'Hôm nay'); d.btn(268, 16, 32, '‹'); d.btn(304, 16, 32, '›'); d.text(348, 21, 'Khoảng ngày ⌄', { size: 15, b: 1 })
@@ -129,43 +131,58 @@ const SCREENS = [
       d.rect(190, 60, 690, 520); ['T2', 'T3', 'T4', 'T5', 'T6'].forEach((s, i) => { d.text(240 + i * 128, 66, s, { w: 128, align: 'c', b: 1 }); d.line(240 + i * 128, 60, 240 + i * 128, 580) })
       d.line(190, 92, 880, 92); for (let i = 0; i < 9; i++) { d.text(198, 96 + i * 54, (8 + i) + ':00', { size: 11 }); d.line(240, 146 + i * 54, 880, 146 + i * 54, { sw: 1 }) }
       ;[[248, 150, 90], [376, 260, 70], [632, 204, 110]].forEach(([x, y, h]) => { d.rect(x, y, 112, h, { r: 4 }); d.lines(x + 8, y + 16, 90, 2) })
-      d.note(784, 6, 2); d.note(350, 148, 3); d.note(702, 6, 4)
+      d.rect(496, 104, 240, 372, { r: 6, fill: 'w', sw: 2 }); d.text(508, 114, 'Tên cuộc họp', { b: 1 }); d.text(508, 136, '○ Trạng thái', { size: 11 }); d.line(496, 158, 736, 158)
+      ;['Thời gian', 'Hình thức', 'Địa điểm', 'Chủ tọa'].forEach((s, i) => { d.text(508, 168 + i * 30, s, { size: 11 }); d.line(580, 184 + i * 30, 724, 184 + i * 30, { sw: 1 }) })
+      d.text(508, 292, 'Thành phần tham dự · n', { size: 11 }); [0, 1, 2].forEach((i) => d.av(508 + i * 32, 312))
+      d.line(496, 352, 736, 352); d.text(508, 360, 'Xác nhận tham dự?', { size: 12, b: 1 }); d.btn(508, 382, 90, 'Tham dự', { h: 28 }); d.btn(604, 382, 120, 'Không tham dự', { h: 28 })
+      d.line(496, 424, 736, 424); d.btn(556, 434, 70, 'Đóng', { h: 30 }); d.btn(632, 434, 92, 'Xem chi tiết', { h: 30, main: 1 })
+      d.note(784, 6, 2); d.note(486, 256, 3); d.note(702, 6, 4); d.note(726, 350, 5)
       d.text(190, 590, '■ Trạng thái  □ Trạng thái  □ Trạng thái  □ Trạng thái (chú giải)', { size: 11 })
     } },
-  { id: '03', name: 'Danh sách cuộc họp', notes: ['Bốn ô đếm vừa là số liệu vừa là nút lọc nhanh.', 'Mở trang là lọc Đang diễn ra.', 'Không thấy gì thì có nút Xem mọi cuộc họp.', 'Nút Tạo chỉ hiện với người có quyền.'],
+  { id: '03', name: 'Danh sách cuộc họp', notes: ['Bốn ô đếm vừa là số liệu vừa là nút lọc nhanh.', 'Mở trang là lọc Đang diễn ra.', 'Không thấy gì thì có nút Xem mọi cuộc họp.', 'Nút Tạo chỉ hiện với người có quyền.', 'Thanh lọc nằm trên nền trang, bảng và phân trang trong một thẻ. Địa điểm dưới tên. Bấm tiêu đề Tên hoặc Thời gian diễn ra để sắp xếp.', 'Dòng đang diễn ra nền xanh nhạt, đã huỷ mờ và gạch tên, đã kết thúc chữ xám.'],
     draw(d) {
       shell(d, 1); d.text(190, 22, 'Danh sách cuộc họp', { size: 20, b: 1 }); d.btn(760, 18, 120, 'Tạo cuộc họp', { main: 1, icon: 1, h: 36 })
       ;['Đang diễn ra', 'Đã công bố', 'Chờ duyệt', 'Bản nháp'].forEach((s, i) => { d.rect(190 + i * 175, 66, 165, 60, { r: 4 }); d.text(202 + i * 175, 74, s, { size: 12 }); d.text(202 + i * 175, 92, '0', { size: 20, b: 1 }) })
       d.input(190, 142, 280, '', 'Tìm theo tên…'); d.input(480, 142, 130, '', 'Trạng thái', { sel: 1 }); d.input(620, 142, 120, '', 'Mức độ', { sel: 1 }); d.input(750, 142, 130, '', 'Thời điểm', { sel: 1 })
-      d.table(190, 188, 690, [['STT', 50], ['Tên cuộc họp', 230], ['Thời gian', 130], ['Hình thức', 100], ['Trạng thái', 90], ['Mức độ', 60], ['', 30]], [['1', 'Tên cuộc họp', 'Giờ, ngày', 'Trực tiếp', 'Trạng thái', 'Mức', '#i'], ['2', 'Tên cuộc họp', 'Giờ, ngày', 'Trực tuyến', 'Trạng thái', 'Mức', '#i'], ['3', 'Tên cuộc họp', 'Giờ, ngày', 'Kết hợp', 'Trạng thái', 'Mức', '#i']], { rh: 44 })
-      d.text(190, 590, 'Hiển thị 1–3   Số dòng [20]', { size: 12 }); d.text(800, 590, '‹ 1 2 3 ›', { size: 13 })
-      d.note(344, 58, 1); d.note(600, 134, 2); d.note(750, 10, 4)
+      d.rect(190, 184, 690, 396, { r: 4 })
+      d.table(190, 184, 690, [['STT', 40], ['Tên cuộc họp', 200], ['Thời gian diễn ra', 140], ['Hình thức', 90], ['Trạng thái', 90], ['Mức độ', 60], ['Thao tác', 70]], [['1', 'Tên cuộc họp', 'Giờ, ngày', 'Trực tiếp', 'Trạng thái', 'Mức', '#i'], ['2', 'Tên cuộc họp', 'Giờ, ngày', 'Trực tuyến', 'Trạng thái', 'Mức', '#i'], ['3', 'Tên cuộc họp', 'Giờ, ngày', 'Kết hợp', 'Trạng thái', 'Mức', '#i']], { rh: 44 })
+      d.ic(330, 194, 9); d.ic(548, 194, 9); [0, 2].forEach((r) => d.text(240, 214 + r * 44 + 22, 'Địa điểm', { size: 10 }))
+      d.text(200, 552, 'Hiển thị 1–3   Số dòng [20]', { size: 12 }); d.text(800, 552, '‹ 1 2 3 ›', { size: 13 })
+      d.note(344, 58, 1); d.note(600, 134, 2); d.note(750, 10, 4); d.note(870, 174, 5); d.note(170, 226, 6)
     } },
-  { id: '04', name: 'Tạo cuộc họp', notes: ['Hộp thoại, không phải trang riêng. Form dài thì cuộn trong hộp.', 'Hình thức quyết định ô hiện ra: Trực tiếp có Địa điểm, Trực tuyến có Link, Kết hợp có cả hai.', 'Có dòng báo cách ghi âm theo hình thức.', 'Thành phần: tìm người, mỗi người một vai trò, đúng một Chủ tọa. Sửa cuộc họp dùng lại form này.'],
+  { id: '04', name: 'Tạo cuộc họp', notes: ['Hộp thoại chia 2 cột, không phải trang riêng. Cột phải là khung xám.', 'Hình thức quyết định ô hiện ra: Trực tiếp có Địa điểm, Trực tuyến có Link, Kết hợp có cả hai.', 'Có dòng báo cách ghi âm theo hình thức.', 'Thành phần: tìm người, kết quả vẫn mở sau mỗi lần chọn, mỗi người một vai trò, đúng một Chủ tọa. Sửa cuộc họp dùng lại form này, không có ô người dự.', 'Nút nhanh đặt giờ kết thúc. Nhiều ngày tách thành hai dòng Bắt đầu, Kết thúc, kèm thời lượng.', 'Mỗi mức độ mật có một dòng nói nó làm gì.', 'Đóng khi đã nhập thì hỏi "Bỏ cuộc họp đang soạn?".'],
     draw(d) {
-      shell(d, 1); const b = dialog(d, 620, 570, 'Tạo cuộc họp', [['Huỷ', 70], ['Tạo cuộc họp', 120, 1]])
-      d.input(b.x, b.y, b.w, 'Tên cuộc họp', '', { req: 1 }); d.input(b.x, b.y + 58, b.w, 'Mô tả', '', { h: 44 })
-      const c = (b.w - 20) / 3
-      ;['Ngày họp', 'Bắt đầu', 'Kết thúc'].forEach((s, i) => d.input(b.x + i * (c + 10), b.y + 128, c, s, '', { req: 1, ic: 1 }))
-      d.text(b.x, b.y + 186, 'Hình thức', { size: 12 }); d.seg(b.x, b.y + 204, 280, ['Trực tiếp', 'Trực tuyến', 'Kết hợp'], 2); d.text(b.x + 300, b.y + 186, 'Mức độ mật', { size: 12 }); d.seg(b.x + 300, b.y + 204, 284, ['Thường', 'Nội bộ', 'Hạn chế', 'Mật'], 0)
-      d.input(b.x, b.y + 242, 280, 'Địa điểm'); d.input(b.x + 300, b.y + 242, 284, 'Link trực tuyến')
-      d.ic(b.x, b.y + 300, 12); d.text(b.x + 18, b.y + 296, 'Dòng báo cách ghi âm', { size: 12 })
-      d.input(b.x, b.y + 326, b.w, 'Người dự họp', 'Tìm theo tên hoặc email', { req: 1 })
-      d.rect(b.x, b.y + 382, b.w, 56); d.av(b.x + 8, b.y + 396); d.text(b.x + 42, b.y + 400, 'Tên (Tôi)', { size: 12 }); d.input(b.x + 430, b.y + 394, 110, '', 'Chủ tọa', { sel: 1 }); d.ic(b.x + 556, b.y + 403)
-      d.note(b.x + 262, b.y + 182, 2); d.note(b.x + 150, b.y + 294, 3); d.note(b.x + 566, b.y + 326, 4)
+      shell(d, 1); const b = dialog(d, 860, 590, 'Tạo cuộc họp', [['Huỷ', 70], ['Tạo cuộc họp', 120, 1]])
+      const count = (y, s) => d.text(b.x + 384, y, s, { size: 10 })
+      d.input(b.x, 63, 430, 'Tên cuộc họp', '', { req: 1 }); count(63, '0/300')
+      d.input(b.x, 122, 430, 'Mô tả', '', { h: 50 }); count(122, '0/4.000')
+      d.input(b.x, 198, 210, 'Thời gian', '', { req: 1, ic: 1 }); d.input(b.x + 220, 216, 95, '', '', { ic: 1 }); d.text(b.x + 322, 222, '–', { size: 12 }); d.input(b.x + 335, 216, 95, '', '', { ic: 1 })
+      ;[['30 phút', 58], ['1 giờ', 46, 1], ['2 giờ', 46], ['Nhiều ngày', 78]].reduce((x, [s, w, main]) => { d.btn(x, 254, w, s, { h: 26, main }); return x + w + 6 }, b.x)
+      d.input(b.x, 288, 430, 'Người dự họp', 'Tìm theo tên hoặc email', { req: 1 })
+      ;[['Tên (Tôi)', 'Chủ tọa'], ['Tên', 'Thư ký']].forEach(([n, r], i) => { const y = 346 + i * 52; d.rect(b.x, y - (i ? 1.5 : 0), 430, 52 + (i ? 1.5 : 0)); d.av(b.x + 8, y + 13); d.text(b.x + 42, y + 17, n, { size: 12 }); d.input(b.x + 280, y + 10, 110, '', r, { sel: 1 }); d.ic(b.x + 404, y + 19) })
+      const rx = b.x + 450, ix = rx + 12
+      d.rect(rx, 63, 374, 482, { r: 6 }); d.text(ix, 71, 'Hình thức họp', { size: 12 }); d.seg(ix, 89, 350, ['Trực tiếp', 'Trực tuyến', 'Kết hợp'], 2)
+      d.ic(ix, 126, 12); d.text(ix + 18, 123, 'Dòng báo cách ghi âm', { size: 12 })
+      d.input(ix, 146, 350, 'Địa điểm'); d.input(ix, 204, 350, 'Link họp trực tuyến')
+      d.text(ix, 262, 'Mức độ mật *', { size: 12 })
+      ;['Thường', 'Nội bộ', 'Hạn chế', 'Mật'].forEach((s, i) => { const y = 282 + i * 62; d.rect(ix, y, 350, 56, { r: 4, sw: i ? 1 : 2 }); d.rect(ix + 10, y + 10, 12, 12, { r: 6, fill: i ? undefined : 'k' }); d.text(ix + 30, y + 6, s, { size: 12, b: 1 }); d.text(ix + 30, y + 28, 'Dòng nói mức này làm gì', { size: 10 }) })
+      d.text(b.x, 572, 'Tạo xong, thêm nội dung và tài liệu ở trang chi tiết rồi gửi duyệt.', { size: 11 })
+      d.note(rx - 10, 53, 1); d.note(rx + 355, 80, 2); d.note(ix + 160, 120, 3); d.note(b.x + 420, 284, 4); d.note(b.x + 262, 250, 5); d.note(rx + 355, 258, 6); d.note(826, 22, 7)
     } },
-  { id: '05', name: 'Chi tiết – Thông tin chung', notes: ['Khung chung cho mọi tab: đầu trang, tab, cột Lịch sử trạng thái.', 'Thanh trạng thái đổi theo bước: Bản nháp, Chờ duyệt, Bị từ chối, Đã duyệt. Mỗi vai trò thấy nút của mình.', 'Nút đầu trang đổi theo trạng thái: Chỉnh sửa, Dời lịch, Huỷ cuộc họp, Bắt đầu họp, Kết thúc họp, Vào phòng họp.', 'Không áp dụng thì ẩn, không làm mờ.', 'Từ chối, huỷ: bắt buộc nhập lý do.'],
+  { id: '05', name: 'Chi tiết – Thông tin chung', notes: ['Khung chung cho mọi tab: đầu trang, tab, cột Lịch sử trạng thái.', 'Thanh trạng thái đổi theo bước: Bản nháp, Chờ duyệt, Bị từ chối, Đã duyệt. Mỗi vai trò thấy nút của mình.', 'Nút đầu trang đổi theo trạng thái: Chỉnh sửa, Dời lịch, Huỷ cuộc họp, Bắt đầu họp, Kết thúc họp, Vào phòng họp.', 'Không áp dụng thì ẩn, không làm mờ.', 'Từ chối, huỷ: bắt buộc nhập lý do.', 'Trạng thái và mức độ nằm cạnh tiêu đề, luôn có chip mức độ kể cả Thường. Giờ tạo xem ở Lịch sử trạng thái.', 'Thông tin là cặp nhãn và giá trị, hai cột thẳng hàng. Kết hợp: nhãn Phòng họp thay cho Địa điểm. Người duyệt chỉ hiện với Người tổ chức, Người duyệt.'],
     draw(d) {
       const y = detail(d, 0, { actions: [['Chỉnh sửa', 100], ['Huỷ cuộc họp', 120]], bar: ['Bản nháp — chưa gửi duyệt', 'Thông tin đã đủ. Gửi cho người duyệt khi sẵn sàng.', [['Gửi duyệt', 100, 1]]] })
-      d.rect(190, y, 510, 330, { r: 4 })
-      ;[['Trạng thái', 0, 0], ['Mức độ', 1, 0], ['Thời gian', 0, 1], ['Hình thức', 0, 2], ['Địa điểm', 1, 2], ['Link trực tuyến', 2, 2], ['Chủ tọa', 0, 3], ['Thư ký', 1, 3], ['Người duyệt', 2, 3], ['Mô tả', 0, 4]].forEach(([s, c, r]) => { d.text(204 + c * 165, y + 14 + r * 60, s, { size: 11 }); d.line(204 + c * 165, y + 42 + r * 60, 330 + c * 165, y + 42 + r * 60, { sw: 1 }) })
-      d.note(872, 80, 2); d.note(872, 20, 3)
+      d.rect(190, y, 510, 280, { r: 4 })
+      ;[['Thời gian', 0, 0], ['Hình thức', 0, 1], ['Địa điểm', 0, 2], ['Link họp', 0, 3], ['Chủ tọa', 1, 0], ['Thư ký', 1, 1], ['Người duyệt', 1, 2]].forEach(([s, c, r]) => { const x = 204 + c * 245; d.text(x, y + 16 + r * 48, s, { size: 11 }); d.line(x + 72, y + 32 + r * 48, x + 225, y + 32 + r * 48, { sw: 1 }) })
+      d.text(204, y + 212, 'Mô tả', { size: 11 }); d.line(276, y + 228, 680, y + 228, { sw: 1 }); d.line(276, y + 250, 560, y + 250, { sw: 1 })
+      d.note(872, 80, 2); d.note(872, 20, 3); d.note(500, 34, 6); d.note(692, y + 8, 7)
     } },
-  { id: '06', name: 'Thành phần tham dự', notes: ['Hai nút icon: Mời khách ngoài hệ thống, Thêm người dự họp.', 'Mỗi dòng: Đổi vai trò, Gỡ. Dòng Chủ tọa không có nút.', 'Cột Điểm danh chỉ có khi đang họp hoặc đã kết thúc. Thư ký chọn, chọn là lưu; người khác chỉ đọc.', 'Phản hồi lời mời là nhãn cạnh tên.'],
+  { id: '06', name: 'Thành phần tham dự', notes: ['Hai nút icon: Mời khách ngoài hệ thống, Thêm người dự họp.', 'Mỗi dòng: Đổi vai trò, Gỡ. Dòng Chủ tọa không có nút.', 'Cột Điểm danh chỉ có khi đang họp hoặc đã kết thúc. Thư ký chọn, chọn là lưu; người khác chỉ đọc.', 'Phản hồi lời mời là nhãn cạnh tên; bảng có cột Điểm danh thì nhãn xuống dưới email.'],
     draw(d) {
       const y = detail(d, 1, { st: 'Đang diễn ra', live: 1 })
-      d.rect(190, y, 510, 280, { r: 4 }); d.input(200, y + 10, 240, '', 'Tìm theo tên hoặc email'); d.rect(630, y + 10, 30, 32); d.rect(664, y + 10, 30, 32)
-      d.table(200, y + 54, 490, [['Thành phần', 220], ['Vai trò', 90], ['Điểm danh', 110], ['', 70]], [['Tên (Tôi)', 'Thư ký', 'Điểm danh ⌄', '#a'], ['Tên', 'Chủ tọa', 'Điểm danh ⌄', ''], ['Tên [Tham dự]', 'Thành viên', 'Có mặt ⌄', '#a'], ['Khách', 'Khách', 'Vắng ⌄', '#a']], { rh: 40 })
+      d.rect(190, y, 510, 310, { r: 4 }); d.input(200, y + 10, 240, '', 'Tìm theo tên hoặc email'); d.rect(630, y + 10, 30, 32); d.rect(664, y + 10, 30, 32)
+      d.table(200, y + 54, 490, [['Thành phần', 210], ['Vai trò', 90], ['Điểm danh', 120], ['Thao tác', 70]], [['Tên (Tôi)', 'Thư ký', 'Điểm danh ⌄', '#2'], ['Tên', 'Chủ tọa', 'Điểm danh ⌄', ''], ['Tên', 'Thành viên', 'Có mặt ⌄', '#2'], ['Khách', 'Khách', 'Vắng ⌄', '#2']], { rh: 44 })
+      d.text(210, y + 198, '[Tham dự]', { size: 10 }); d.text(200, y + 274, 'Hiển thị 1–4   Số dòng [20]', { size: 12 })
       d.note(686, y + 2, 1); d.note(590, y + 58, 3); d.note(692, y + 128, 2)
     } },
   { id: '07', name: 'Nội dung cuộc họp', notes: ['Mỗi mục một thẻ, kéo chấm bên trái để đổi thứ tự.', 'Nút trên thẻ: Thêm tài liệu, Sửa, Xoá (mục đã bàn không xoá).', 'Chủ tọa thấy Bắt đầu, Xong để điều hành; hệ thống ghi giờ thực tế.', 'Mở thẻ: khối Tài liệu và khối Kết luận.'],
@@ -176,8 +193,8 @@ const SCREENS = [
         const ty = y + 50 + (i === 2 ? 220 : i * 70), h = i === 1 ? 140 : 60
         d.rect(200, ty, 490, h, { r: 4, sw: i === 1 ? 2 : 1 }); d.text(208, ty + 8, '⋮⋮', { size: 12 }); d.rect(226, ty + 8, 22, 22, { r: 11 }); d.text(226, ty + 11, String(i + 1), { w: 22, align: 'c', size: 11 })
         d.text(258, ty + 9, i === 1 ? '⌄  Tên nội dung' : '›  Tên nội dung', { size: 13, b: 1 }); d.av(258, ty + 34, 18); d.text(282, ty + 34, 'Người trình bày', { size: 11 }); d.text(392, ty + 34, ['Đã xong', 'Đang bàn', ''][i], { size: 11, b: 1 })
-        d.ic(640, ty + 12); d.ic(664, ty + 12)
-        if (i === 1) { d.rect(258, ty + 62, 205, 68, { r: 4 }); d.text(266, ty + 68, 'Tài liệu', { size: 11, b: 1 }); d.lines(266, ty + 92, 180, 2); d.rect(473, ty + 62, 205, 68, { r: 4 }); d.text(481, ty + 68, 'Kết luận', { size: 11, b: 1 }); d.lines(481, ty + 92, 180, 2); d.btn(560, ty + 6, 64, 'Xong', { main: 1, h: 26 }) }
+        d.ic(616, ty + 12); d.ic(640, ty + 12); d.ic(664, ty + 12)
+        if (i === 1) { d.rect(258, ty + 62, 205, 68, { r: 4 }); d.text(266, ty + 68, 'Tài liệu', { size: 11, b: 1 }); d.lines(266, ty + 92, 180, 2); d.rect(473, ty + 62, 205, 68, { r: 4 }); d.text(481, ty + 68, 'Kết luận', { size: 11, b: 1 }); d.lines(481, ty + 92, 180, 2); d.btn(544, ty + 6, 64, 'Xong', { main: 1, h: 26 }) }
       })
       d.note(196, y + 48, 1); d.note(692, y + 62, 2); d.note(536, y + 128, 3); d.note(248, y + 172, 4)
     } },
@@ -210,10 +227,10 @@ const SCREENS = [
       d.text(226, y + 146, '[Đang mở]   ○ Công khai   3/5', { size: 11 }); d.rect(226, y + 168, 450, 6); d.rect(226, y + 168, 270, 6, { fill: 'k' })
       ;['Đồng ý', 'Không đồng ý', 'Không ý kiến'].forEach((s, i) => { d.rect(226, y + 182 + i * 32, 450, 28, { r: 4 }); d.rect(236, y + 189 + i * 32, 14, 14, { r: 7 }); d.text(258, y + 187 + i * 32, s, { size: 12 }) })
       d.text(226, y + 284, 'Gửi rồi không đổi, không rút được.', { size: 11 }); d.btn(596, y + 280, 80, 'Gửi phiếu', { h: 28, main: 1 })
-      d.rect(200, y + 324, 490, 58, { r: 4, dash: 1 }); d.text(210, y + 330, '›  Tên biểu quyết', { b: 1, size: 12 }); d.text(226, y + 354, '○ Nháp   ○ Kín', { size: 11 }); d.ic(640, y + 334); d.ic(664, y + 334)
+      d.rect(200, y + 324, 490, 58, { r: 4, dash: 1 }); d.text(210, y + 330, '›  Tên biểu quyết', { b: 1, size: 12 }); d.text(226, y + 354, '○ Nháp   ○ Kín', { size: 11 }); d.ic(616, y + 334); d.ic(640, y + 334); d.ic(664, y + 334)
       d.note(190, y + 106, 2); d.note(690, y + 314, 1); d.note(572, y + 284, 3); d.note(690, y + 40, 4)
     } },
-  { id: '11', name: 'Bản ghi', notes: ['Trực tiếp: Thư ký ghi cả phòng bằng ô góc màn hình, chuyển tab không dừng.', 'Trực tuyến: mỗi người ghi micro của mình trong phòng họp.', 'Bản ghi trực tiếp: lời nói theo từng câu.', 'Mở bản ghi: trình phát, bản gỡ băng do máy tạo, Thư ký sửa và gán tên người nói.', 'Lưu hoặc bật ghi đều phải xác nhận đã báo người dự (dữ liệu cá nhân).'],
+  { id: '11', name: 'Bản ghi', notes: ['Trực tiếp: Thư ký ghi cả phòng bằng ô góc màn hình, chuyển tab không dừng.', 'Trực tuyến: mỗi người ghi micro của mình trong phòng họp.', 'Bản ghi trực tiếp: lời nói theo từng câu.', 'Mở bản ghi: trình phát, bản gỡ băng do máy tạo, Thư ký sửa và gán tên người nói.', 'Lưu hoặc bật ghi đều phải xác nhận đã báo người dự (dữ liệu cá nhân).', 'Ô ghi âm thu nhỏ thành nút tròn ở góc phải dưới, bấm để mở lại.'],
     draw(d) {
       const y = detail(d, 5, { st: 'Đang diễn ra', live: 1 })
       d.rect(190, y, 510, 130, { r: 4 }); d.text(202, y + 8, 'Bản ghi trực tiếp', { b: 1 }); d.line(190, y + 34, 700, y + 34)
@@ -222,7 +239,7 @@ const SCREENS = [
       d.text(202, y + 186, 'ten-ban-ghi.wav', { size: 12, b: 1 }); d.text(202, y + 204, '[Mic phòng] [Có bản gỡ băng]  thời lượng, dung lượng, giờ', { size: 11 }); [0, 1, 2].forEach((n) => d.ic(640 + n * 20, y + 192))
       d.rect(202, y + 226, 486, 30, { r: 4 }); d.text(212, y + 232, '0:00 / 1:09  ———●———  ‹5  ▶  5›  1×', { size: 11 }); d.lines(202, y + 272, 470, 3)
       d.rect(620, 490, 250, 110, { r: 6, fill: 'w', sw: 2 }); d.rect(620, 490, 250, 28, { fill: 'k' }); d.text(630, 495, 'Tên cuộc họp', { size: 12, c: 'w' }); d.text(632, 526, 'Mic phòng đang tắt', { size: 12, b: 1 }); d.rect(632, 548, 26, 26, { r: 13 }); d.lines(668, 561, 190, 1); d.text(632, 578, 'Báo mọi người trước khi bật mic.', { size: 10 })
-      d.note(608, 480, 1); d.note(188, y - 8, 3); d.note(188, y + 136, 4)
+      d.rect(566, 556, 40, 40, { r: 20, fill: 'w' }); d.ic(579, 569); d.note(608, 480, 1); d.note(188, y - 8, 3); d.note(188, y + 136, 4); d.note(556, 546, 6)
     } },
   { id: '12', name: 'Phòng họp trực tuyến', notes: ['Toàn màn, có màn chờ chọn micro, loa, camera trước khi vào.', 'Thanh giữa đáy: Micro, Camera, Chia sẻ, Cửa sổ nổi, Rời phòng.', 'Góc phải mở panel: Người dự, Nội dung họp, Điểm danh, Tài liệu, Biểu quyết, Chat.', 'Rời phòng không kết thúc cuộc họp. Chat không lưu lại.'],
     draw(d) {
@@ -238,14 +255,14 @@ const SCREENS = [
     draw(d) {
       shell(d, 2); d.text(190, 22, 'Kho tài liệu', { size: 20, b: 1 }); d.btn(620, 18, 116, 'Thư mục mới', { icon: 1, h: 36 }); d.btn(744, 18, 136, 'Tải tài liệu lên', { main: 1, icon: 1, h: 36 })
       d.rect(190, 70, 690, 500); d.input(200, 80, 280, '', 'Tìm trong thư mục này…'); d.input(490, 80, 120, '', 'Loại tệp', { sel: 1 }); d.rect(740, 92, 70, 6); d.text(816, 86, 'x / 10 GB', { size: 11 })
-      d.table(190, 124, 690, [['Tên', 300], ['Kích thước', 100], ['Đang dùng', 110], ['Ngày tạo', 100], ['', 80]], [['▭ Tên thư mục', 'Thư mục', '', 'Ngày', '#a'], ['▭ Tên thư mục', 'Thư mục', '', 'Ngày', '#a'], ['▯ Tên-tệp.pdf', '1 MB', '2 cuộc họp', 'Ngày', '#a'], ['▯ Tên-tệp.docx', '1 MB', 'Chưa dùng', 'Ngày', '#a']], { rh: 42 })
+      d.table(190, 124, 690, [['Tên', 280], ['Kích thước', 110], ['Đang dùng', 100], ['Ngày tạo', 100], ['Thao tác', 100]], [['▭ Tên thư mục', 'Thư mục', '', 'Ngày', '#a'], ['▭ Tên thư mục', 'Thư mục', '', 'Ngày', '#a'], ['▯ Tên-tệp.pdf', '10 trang, 1 MB', '2 cuộc họp', 'Ngày', '#4'], ['▯ Tên-tệp.docx', '1 MB', 'Chưa dùng', 'Ngày', '#4']], { rh: 42 })
       d.note(180, 150, 1); d.note(866, 74, 2); d.note(870, 192, 3)
     } },
   { id: '14', name: 'Người dùng & Vai trò', notes: ['Chỉ quản trị viên thấy. Vai trò có tab ma trận phân quyền, tick rồi Lưu từng dòng.', 'Bốn nút mỗi dòng: Sửa, Vô hiệu hoá, Gửi liên kết đặt lại mật khẩu, Xem kho (chỉ tài khoản đã vô hiệu hoá).', 'Nút không dùng được thì mờ, rê chuột thấy lý do.', 'Không tự khoá mình, không khoá quản trị viên cuối cùng.'],
     draw(d) {
       shell(d, -1, { admin: 1 }); d.text(190, 16, 'Người dùng & Quyền', { size: 20, b: 1 }); d.text(190, 46, 'n tài khoản, n đang hoạt động', { size: 12 }); d.btn(756, 20, 124, 'Tạo tài khoản', { main: 1, icon: 1, h: 36 })
       d.rect(190, 74, 690, 496); d.input(200, 84, 280, '', 'Tìm theo tên hoặc email…'); d.input(490, 84, 130, '', 'Vai trò', { sel: 1 }); d.input(630, 84, 130, '', 'Trạng thái', { sel: 1 })
-      d.table(190, 128, 690, [['Họ tên', 240], ['Vai trò', 110], ['Đăng nhập', 110], ['Trạng thái', 110], ['', 120]], [['Tên / email', 'Chủ toạ', 'Mật khẩu', 'Hoạt động', '#4'], ['Tên / email', 'Thư ký', 'Google', 'Hoạt động', '#4'], ['Tên / email', 'Thành viên', 'Mật khẩu', 'Đã vô hiệu hoá', '#4']], { rh: 46 })
+      d.table(190, 128, 690, [['Họ tên', 200], ['Vai trò', 90], ['Đăng nhập', 100], ['Trạng thái', 110], ['Ngày tạo', 80], ['Thao tác', 110]], [['Tên / email', 'Chủ toạ', 'Mật khẩu', 'Hoạt động', 'Ngày', '#4'], ['Tên / email', 'Thư ký', 'Google', 'Hoạt động', 'Ngày', '#4'], ['Tên / email', 'Thành viên', 'Mật khẩu', 'Đã vô hiệu hoá', 'Ngày', '#4']], { rh: 46 })
       d.note(150, 322, 1); d.note(858, 136, 2)
     } },
   { id: '15', name: 'Biên bản & ký', notes: ['Thư ký soạn từ thông tin cuộc họp và kết luận biểu quyết, rồi gửi ký.', 'Người ký: Ký hoặc Yêu cầu sửa. Sửa thì huỷ chữ ký, ký lại.', 'Đủ chữ ký thì niêm phong, hết sửa được.', 'Dừng ở biên bản: không theo dõi việc sau họp.'],
@@ -301,7 +318,7 @@ const SCREENS = [
       })
       d.note(150, 568, 1); d.note(530, 358, 2); d.note(566, 382, 3)
     } },
-  { id: '19', name: 'Phòng chờ', notes: ['Camera mặc định tắt, micro mặc định bật. Trình duyệt nhớ lựa chọn cho lần sau.', 'Ba nút chọn Micro, Loa, Camera mở danh sách thiết bị. Chưa cấp quyền thì nút báo lý do và bị khoá.', 'Nhãn mức mật chỉ hiện với cuộc họp Hạn chế, Mật.', 'Ngoài giờ họp, đã kết thúc hoặc họp trực tiếp: màn này chỉ còn một câu báo và nút Về trang cuộc họp.'],
+  { id: '19', name: 'Phòng chờ', notes: ['Camera mặc định tắt, micro mặc định bật. Trình duyệt nhớ lựa chọn cho lần sau.', 'Ba nút chọn Micro, Loa, Camera mở danh sách thiết bị. Chưa cấp quyền thì nút báo lý do và bị khoá.', 'Nhãn mức mật chỉ hiện với cuộc họp Hạn chế, Mật.', 'Ngoài giờ họp, đã kết thúc hoặc họp trực tiếp: màn này chỉ còn một câu báo và nút Về trang cuộc họp.', 'Cuộc họp chưa công bố: đường dẫn phòng họp hiện trang Không tìm thấy.'],
     draw(d) {
       d.rect(0, 0, 900, 620); d.rect(14, 12, 28, 28, { r: 14 }); d.text(50, 17, 'TrustCabinet', { b: 1 }); d.text(760, 10, 'Tên người dùng', { size: 12 }); d.text(760, 26, 'email', { size: 10 }); d.av(860, 14)
       d.rect(50, 90, 500, 310, { r: 8 }); d.text(50, 234, 'Camera đang tắt', { w: 500, align: 'c' }); d.rect(64, 354, 32, 32, { r: 16 }); d.text(64, 359, '⋯', { w: 32, align: 'c' })
@@ -312,19 +329,19 @@ const SCREENS = [
       d.btn(610, 316, 240, 'Vào phòng', { main: 1, h: 44 }); d.text(610, 374, '‹ Quay lại trang cuộc họp', { w: 240, align: 'c', size: 12 })
       d.note(358, 336, 1); d.note(556, 424, 2); d.note(670, 208, 3)
     } },
-  { id: '20', name: 'Bản gỡ băng', notes: ['Người nói N là giọng chưa gán. Thư ký chọn tên ở ô trên hoặc ngay tại dòng; chọn một lần là đặt tên cho cả giọng đó.', 'Ô chọn đưa tên Khớp giọng nhất lên đầu. Máy chỉ gợi ý, Thư ký quyết định.', 'Bấm mốc giờ hoặc nút phát để nghe lại đoạn đó.', 'Bấm vào chữ để sửa: Enter lưu, Esc huỷ. Đoạn đã sửa có nhãn đã sửa.', 'Hai nút: Tải bản gỡ băng (.txt), Chuyển thành chữ lại (thay chữ đã sửa và tên đã gán).'],
+  { id: '20', name: 'Bản gỡ băng', notes: ['Người nói N là giọng chưa gán. Thư ký chọn tên ở ô trên hoặc ngay tại dòng; chọn một lần là đặt tên cho cả giọng đó. Ô chọn có cả Khách được mời, không gợi ý Voice ID cho Khách.', 'Ô chọn đưa tên Khớp giọng nhất lên đầu. Máy chỉ gợi ý, Thư ký quyết định.', 'Bấm mốc giờ hoặc nút phát để nghe lại đoạn đó.', 'Bấm vào chữ để sửa: Enter lưu, Esc huỷ. Đoạn đã sửa có nhãn đã sửa.', 'Hai nút: Tải bản gỡ băng (.txt), Chuyển thành chữ lại (thay chữ đã sửa và tên đã gán).'],
     draw(d) {
-      const y = detail(d, 5, { st: '○ Đã kết thúc', rail: false })
-      d.rect(190, y, 690, 46, { r: 4 }); d.rect(202, y + 12, 20, 22); d.text(232, y + 6, 'ten-ban-ghi.wav', { size: 12, b: 1 }); d.text(232, y + 24, '[Có bản gỡ băng]  thời lượng, dung lượng, giờ', { size: 10 }); [0, 1, 2].forEach((n) => d.ic(816 + n * 20, y + 16))
-      d.rect(190, y + 54, 690, 32, { r: 4 }); d.text(202, y + 60, '0:00 / 1:09  ———●———  ‹5  ▶  5›  1×', { size: 11 })
-      d.rect(190, y + 96, 90, 24, { r: 4 }); d.text(190, y + 100, 'Máy nhận dạng', { w: 90, align: 'c', size: 10 }); d.text(290, y + 100, 'Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.', { size: 11 }); d.ic(840, y + 101); d.ic(864, y + 101)
-      ;['Người nói 1', 'Tên', 'Người nói 3', 'Tên'].forEach((s, i) => { const x = 190 + i * 174; d.rect(x, y + 130, 168, 32, { r: 4 }); d.rect(x + 8, y + 141, 10, 10, { r: 5 }); d.text(x + 24, y + 137, s + ' ⌄', { size: 12 }); d.text(x + 128, y + 138, 'mm:ss', { size: 10 }) })
+      const y = detail(d, 5, { st: '○ Đã kết thúc' })
+      d.rect(190, y, 510, 46, { r: 4 }); d.rect(202, y + 12, 20, 22); d.text(232, y + 6, 'ten-ban-ghi.wav', { size: 12, b: 1 }); d.text(232, y + 24, '[Có bản gỡ băng]  thời lượng, dung lượng, giờ', { size: 10 }); [0, 1, 2].forEach((n) => d.ic(636 + n * 20, y + 16))
+      d.rect(190, y + 54, 510, 32, { r: 4 }); d.text(202, y + 60, '0:00 / 1:09  ———●———  ‹5  ▶  5›  1×', { size: 11 })
+      d.rect(190, y + 96, 90, 24, { r: 4 }); d.text(190, y + 100, 'Máy nhận dạng', { w: 90, align: 'c', size: 10 }); d.text(290, y + 100, 'Chữ do máy tạo — bấm mốc giờ để nghe lại.', { size: 11 }); d.ic(660, y + 101); d.ic(684, y + 101)
+      ;['Người nói 1', 'Tên', 'Người nói 3'].forEach((s, i) => { const x = 190 + i * 173; d.rect(x, y + 130, 164, 32, { r: 4 }); d.rect(x + 8, y + 141, 10, 10, { r: 5 }); d.text(x + 24, y + 137, s + ' ⌄', { size: 12 }); d.text(x + 124, y + 138, 'mm:ss', { size: 10 }) })
       d.line(262, y + 180, 262, 610)
-      const run = (top, name, cnt) => { d.text(196, top + 3, 'hh:mm:ss', { size: 10 }); d.rect(257, top + 5, 10, 10, { r: 5, fill: 'k' }); d.text(280, top, name + ' ⌄', { size: 12, b: 1 }); d.ic(372, top + 2); for (let i = 0; i < cnt; i++) { if (i) d.text(196, top + 8 + i * 22, 'hh:mm:ss', { size: 10 }); d.line(280, top + 32 + i * 22, 820, top + 32 + i * 22, { sw: 1 }) } }
+      const run = (top, name, cnt) => { d.text(196, top + 3, 'hh:mm:ss', { size: 10 }); d.rect(257, top + 5, 10, 10, { r: 5, fill: 'k' }); d.text(280, top, name + ' ⌄', { size: 12, b: 1 }); d.ic(372, top + 2); for (let i = 0; i < cnt; i++) { if (i) d.text(196, top + 8 + i * 22, 'hh:mm:ss', { size: 10 }); d.line(280, top + 32 + i * 22, 640, top + 32 + i * 22, { sw: 1 }) } }
       run(y + 178, 'Tên', 2)
-      run(y + 244, 'Người nói 3', 0); d.rect(280, y + 268, 590, 54, { r: 4, sw: 2 }); d.lines(290, y + 284, 560, 2); d.text(280, y + 330, 'Enter để lưu · Esc để huỷ', { size: 11 }); d.btn(760, y + 328, 52, 'Huỷ', { h: 26 }); d.btn(818, y + 328, 52, 'Lưu', { h: 26, main: 1 })
-      run(y + 372, 'Tên', 2); d.text(826, y + 396, 'đã sửa', { size: 10 }); d.ic(866, y + 396)
-      d.note(530, y + 122, 1); d.note(396, y + 242, 2); d.note(392, y + 176, 3); d.note(734, y + 331, 4); d.note(816, y + 98, 5)
+      run(y + 244, 'Người nói 3', 0); d.rect(280, y + 268, 420, 54, { r: 4, sw: 2 }); d.lines(290, y + 284, 400, 2); d.text(280, y + 330, 'Enter để lưu · Esc để huỷ', { size: 11 }); d.btn(590, y + 328, 52, 'Huỷ', { h: 26 }); d.btn(648, y + 328, 52, 'Lưu', { h: 26, main: 1 })
+      run(y + 372, 'Tên', 2); d.text(650, y + 396, 'đã sửa', { size: 10 }); d.ic(686, y + 396)
+      d.note(530, y + 122, 1); d.note(396, y + 242, 2); d.note(392, y + 176, 3); d.note(566, y + 331, 4); d.note(696, y + 92, 5)
     } },
 ]
 

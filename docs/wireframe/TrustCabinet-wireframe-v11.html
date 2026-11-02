@@ -450,6 +450,12 @@ table.t tr.hl td { background: #fbf3f3 }
 .pip-win .me { position: absolute; right: 8px; top: 8px; width: 78px; height: 56px; background: #2a3c5f; border-radius: 6px; font-size: 11px; display: grid; place-items: center }
 /* v11: tooltip chỉ hiện khi rê chuột, không vẽ trên màn; nội dung ghi ở chú thích. */
 .tip { display: none !important }
+/* v11 – 02/11/2026 (ADR-0043): nhãn "Đang diễn ra" không có chấm, dòng đang diễn ra nền xanh, lưới thông tin chung, nút thu gọn sidebar. */
+.chip.st.live::before { display: none }
+table.t tr.row-live td { background: #f1faf5 }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr); gap: 20px 24px; align-items: baseline; padding: 22px 24px }
+.sb { position: relative }
+.sb-toggle { position: absolute; top: 58px; right: -12px; width: 24px; height: 24px; border-radius: 50%; background: var(--sheet); color: var(--ink); display: grid; place-items: center; font-size: 13px; line-height: 1; box-shadow: 0 1px 4px rgba(26, 36, 51, .28); z-index: 3 }
 </style>
 
 <div class="page" id="board">
@@ -466,6 +472,7 @@ table.t tr.hl td { background: #fbf3f3 }
       <p>v9 (26/10/2026) đưa FE-05 và FE-07 về đúng đặc tả UC-23a–UC-23d, UC-33a, SCRUM-107. Nội dung nghị sự không có thời lượng, giờ dự kiến hay ô &quot;cần biểu quyết&quot; (BR-66, PO 16/10/2026); hộp Thêm / sửa nội dung chỉ chọn tài liệu đã có trong cuộc họp, không có menu thêm tài liệu; Thư ký kéo thả đổi thứ tự mọi nội dung kể cả mục Đã xong, sửa được ở mọi trạng thái, chỉ xoá được mục còn chờ (BR-68, BR-237, BR-238, BR-74); panel Nội dung họp 360px trong phòng chỉ hiện thứ tự, không kéo thả. Tab Tài liệu bỏ ghim ba lựa chọn ở mỗi mục: tải tài liệu lên làm ở tab Tài liệu (SCRUM-107), &quot;Từ kho của tôi&quot; thuộc SCRUM-58. Sửa 5.1, 5.2, 5.3, 7.3, 7.4, 7.4b; thêm 5.1b.</p>
       <p>v10 (29/10/2026) bổ sung hai trạng thái của phòng họp trực tuyến cho BA Final Review FE-08 (SCRUM-41, SCRUM-42): màn mới 8.1b Phòng chờ – chọn thiết bị (UC-39d, kèm dòng báo ghi âm khi cuộc họp có ghi âm) và 8.2b Phòng họp – cửa sổ nổi (UC-78: cửa sổ chính báo &quot;Cuộc họp đang ở cửa sổ nổi&quot; cùng cửa sổ nhỏ). Các màn khác giữ nguyên.</p>
       <p>v11 (01/11/2026) thống nhất giao diện toàn bộ màn. Sidebar gồm Lịch làm việc, Cuộc họp, Kho tài liệu, Giọng nói của tôi, Quản trị; trang chi tiết có 7 tab, thanh trạng thái theo từng bước thay cho thanh vòng đời, cột phải luôn là Lịch sử trạng thái; danh sách cuộc họp có bốn ô đếm và cột STT, Thao tác; kho tài liệu mở thư mục ngay trong bảng; nghị sự và biểu quyết dạng thẻ; bản ghi theo mic phòng và từng người. Thống nhất tên hiển thị: Chủ tọa, Đang diễn ra. Thêm 1.4, 1.5, 2.4, 3.1b, 3.1c, 4.4c, 4.4d, 4.4e, 4.5d, 4.10, 4.11, 4.12, 6.2b, 7.2b, 7.2c, 8.8, 8.9, 9.1b, 9.3, 9.4, 9.4b, 9.4c.</p>
+      <p>v11 cập nhật 02/11/2026 sau khi đối chiếu với web thật và main (ADR-0043): thông tin chung là lưới hai cột, đầu trang luôn có chip mức độ, danh sách cuộc họp có thanh lọc ngoài thẻ và cột sắp xếp được, hộp thoại tạo/sửa chia 2 cột, sidebar có nút thu gọn. Sửa 4.1, 4.1b, 4.2, 4.3, 4.3b, 4.4, 4.4b, 4.4c (đổi thành màn tìm người dự), 4.4d, 4.4e, các màn chi tiết, 4.9, 6.3, 6.3b, 8.1, 10.1. Thêm 4.1e, 4.4f, 4.4g, 9.3b.</p>
       <div class="legend" aria-label="Chú giải">
         <span class="chip st blue" style="font:500 12px var(--font)">Trạng thái: bo tròn, có chấm</span>
         <span class="chip lv" style="font:500 12px var(--font)"><i class="ic"></i>Mức độ: góc vuông, có icon</span>
@@ -546,7 +553,7 @@ const F = (label, val, o = {}) => `<div class="fld" ${o.span ? 'style="grid-colu
   <div class="in ${o.ph ? '' : 'val'} ${o.area ? 'area' : ''} ${o.err ? 'err' : ''}">${val}${o.sel ? '<span class="caret"></span>' : ''}</div>
   ${o.hint ? `<span class="hint">${o.hint}</span>` : ''}${o.err ? `<span class="msg">${o.err}</span>` : ''}</div>`
 const T = (cols, rows, o = {}) => `<table class="t"><thead><tr>${cols.map((c) => `<th>${c}</th>`).join('')}</tr></thead>
-  <tbody>${rows.map((r) => `<tr class="${r.hl ? 'hl' : ''}">${(r.cells || r).map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+  <tbody>${rows.map((r) => `<tr class="${r.hl ? 'hl' : ''} ${r.tone || ''}">${(r.cells || r).map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`
 const TABS = (list, on) => `<div class="tabs">${list.map((t) => { const [n, c] = Array.isArray(t) ? t : [t]; return `<span class="${n === on ? 'on' : ''}">${n}${c != null ? `<em>${c}</em>` : ''}</span>` }).join('')}</div>`
 const SEG = (list, on) => `<span class="seg">${list.map((t) => `<span class="${t === on ? 'on' : ''}">${t}</span>`).join('')}</span>`
 const DL = (title, body, actions, w = 480) => `<div class="ov"><div class="dlg" style="width:${w}px"><div class="dlg-h">${title}<span class="grow"></span><span class="sub" style="font-weight:400">×</span></div>
@@ -554,6 +561,8 @@ const DL = (title, body, actions, w = 480) => `<div class="ov"><div class="dlg" 
 const HEAD = (title, sub, actions = '', eb = '') => `<div class="row" style="align-items:flex-end">
   <div class="grow">${eb ? `<div class="eb">${eb}</div>` : ''}<div class="ttl">${title}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</div>${actions}</div>`
 const PAGER = (txt) => `<div class="row" style="padding:10px 14px;font-size:12px;color:var(--mute)"><span>Hiển thị <b style="color:var(--ink)">${txt}</b></span><span class="grow"></span>${B('‹', 'sq')}${B('1', 'sq p')}${B('2', 'sq')}${B('3', 'sq')}${B('›', 'sq')}</div>`
+/* v11: phân trang có ô Số dòng, như danh sách cuộc họp và tab Thành phần trên web. */
+const PAGERN = (txt) => `<div class="row" style="padding:10px 14px;font-size:12px;color:var(--mute)"><span>Hiển thị <b style="color:var(--ink)">${txt}</b></span><span>Số dòng</span><div class="in val" style="width:64px;height:30px">20<span class="caret"></span></div><span class="grow"></span>${B('‹', 'sq')}${B('1', 'sq p')}${B('›', 'sq')}</div>`
 const PAGER1 = (txt) => `<div class="row" style="padding:10px 14px;font-size:12px;color:var(--mute)"><span>Hiển thị <b style="color:var(--ink)">${txt}</b></span><span class="grow"></span>${B('‹', 'sq')}${B('1', 'sq p')}${B('›', 'sq')}</div>`
 
 /* The app's sidebar (v4: mọi mục vẽ như nhau, không còn nhãn "đề xuất"). */
@@ -563,7 +572,7 @@ const ADMIN = [['users', 'Người dùng & Quyền'], ['roles', 'Vai trò']]
 const SB = (on, who = ['Trần Thu Hà', 'Thư ký']) => {
   const item = ([k, t, prop], sub) => `<div class="sb-i ${sub ? 'child' : ''} ${k === on ? 'on' : ''}">${sub ? '' : I('lg')}${t}</div>`
   const admin = ADMIN.some(([k]) => k === on) || who[1] === 'Quản trị viên'
-  return `<aside class="sb"><div class="sb-brand"><span class="mark"></span><span><b>TrustCabinet</b><small>Phòng họp không giấy</small></span></div>
+  return `<aside class="sb"><div class="sb-brand"><span class="mark"></span><span><b>TrustCabinet</b><small>Phòng họp không giấy</small></span></div><span class="sb-toggle">‹</span>
   <div class="sb-g">Nghiệp vụ</div>${WORK.map((e) => item(e)).join('')}
   ${admin ? `<div class="sb-g">Hệ thống</div><div class="sb-i">${I('lg')}Quản trị<span class="sb-caret"></span></div><div class="sb-subs">${ADMIN.map((e) => item(e, 1)).join('')}</div>` : ''}
   <div class="sb-foot">${A(who[0])}<span class="who">${who[0]}<small>${who[1]}</small></span><span class="bell">${I('lg')}<b>2</b></span></div></aside>`
@@ -580,7 +589,7 @@ const DTABS = ['Thông tin chung', 'Thành phần tham dự', 'Nội dung cuộc
 const DTABS_SUM = ['Thông tin chung', 'Thành phần tham dự', 'Nội dung cuộc họp', 'Tài liệu', 'Biểu quyết', 'Bản ghi', 'Tóm tắt', 'Biên bản']
 const DH = (tab, o = {}) => `<span class="back">‹ Cuộc họp</span>
   <div class="row" style="align-items:flex-start"><div class="grow col" style="gap:6px">
-    <div class="row wrap"><span class="ttl">${o.title || M.title}</span>${S(o.st || 'pub')}${(o.lv || 's') === 'n' ? '' : L(o.lv || 's')}${o.chip || ''}</div>
+    <div class="row wrap"><span class="ttl">${o.title || M.title}</span>${S(o.st || 'pub')}${L(o.lv || 's')}${o.chip || ''}</div>
     <div class="row wrap sub" style="gap:18px">${(o.meta || [o.time || 'Thứ Tư, 14/10/2026, 13:00–15:00', (o.mode || 'Trực tiếp') + ', ' + (o.place || M.place)]).map((t, i) => `<span class="row" style="gap:5px">${I(i ? 'r' : '')}${t}</span>`).join('')}</div>
   </div>${o.actions || ''}</div>${o.bar || ''}${TABS(tab === 'Tóm tắt' ? DTABS_SUM : DTABS, tab)}`
 /* v11: cột phải của trang chi tiết (giữ ở mọi tab, trừ Tóm tắt và Biên bản). */
@@ -590,9 +599,14 @@ const HIST_BY = { draft: HIST_T.slice(0, 1), wait: HIST_T.slice(0, 2), ok: HIST_
 const DETAIL = (tab, body, over = '', o = {}) => SH('meet', DH(tab, o) + (o.rail === false || tab === 'Tóm tắt' || tab === 'Biên bản' ? body : `<div class="split" style="align-items:flex-start"><div class="col grow" style="gap:14px">${body}</div>${HIST(o.hist || HIST_BY[o.st || 'pub'])}</div>`), over, o.who)
 const SUBTABS = (list, on) => `<div class="row">${SEG(list, on)}</div>`
 const SPR = (tab, body, over = '', o = {}) => DETAIL(tab, body, over, Object.assign({ title: MS.title, st: 'draft', lv: 'n' }, o, { meta: [MS.time, MS.mode + ', ' + MS.place] }))
-/* v11: thông tin chung dạng lưới 3 cột và các nút đầu trang. k: 's' chiếm cả dòng, 'r' sang dòng mới. */
-const FIELDS = (rows) => `<div class="card" style="padding:18px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px 18px">${rows.map(([n, v, k]) => `<div class="col" style="gap:3px;${k === 's' ? 'grid-column:1/-1;' : k === 'r' ? 'grid-column-start:1;' : ''}"><span class="sub">${n}</span><b style="font-weight:600">${v}</b></div>`).join('')}</div>`
-const INFO_ROWS = (st, apr) => [['Trạng thái', S(st)], ['Mức độ', 'Thường'], ['Thời gian', MS.time, 's'], ['Hình thức', 'Kết hợp'], ['Địa điểm họp trực tiếp', MS.place], ['Link trực tuyến', 'Phòng họp trực tuyến TrustCabinet'], ['Chủ tọa', 'Trần Quốc Bảo', 'r'], ['Thư ký', 'Đỗ Hải Yến'], ['Người duyệt', apr], ['Tạo lúc', '15:02 09/10/2026', 'r'], ['Mô tả', 'Chốt phạm vi Sprint 6: biểu quyết, biên bản, ký số.', 's']]
+/* v11 (02/11/2026, ADR-0043): thông tin chung là lưới cặp "nhãn giá trị": trái là thời gian và nơi họp, phải là người, mô tả ở hàng cuối. Chỉ có chữ; trạng thái và mức độ đã đứng cạnh tiêu đề. k: 'l' trái, 'r' phải, 'w' cả dòng. */
+const FIELDS = (rows) => {
+  const of = (k) => rows.filter((r) => r[2] === k)
+  const last = Math.max(of('l').length, of('r').length) + 1
+  const pair = ([n, v], col, row, pad = '') => `<span class="sub" style="grid-column:${col};grid-row:${row};${pad}">${n}</span><b style="grid-column:${col + 1};grid-row:${row};font-weight:500">${v}</b>`
+  return `<div class="card facts">${of('l').map((f, i) => pair(f, 1, i + 1)).join('')}${of('r').map((f, i) => pair(f, 3, i + 1, 'padding-left:24px')).join('')}${of('w').map(([n, v]) => `<span class="sub" style="grid-column:1;grid-row:${last}">${n}</span><span style="grid-column:2/-1;grid-row:${last}">${v}</span>`).join('')}</div>`
+}
+const INFO_ROWS = (apr) => [['Thời gian', MS.time.replace(', 08:30', ',<br>08:30'), 'l'], ['Hình thức', 'Kết hợp', 'l'], ['Phòng họp', MS.place, 'l'], ['Link họp', 'Phòng họp trực tuyến TrustCabinet', 'l'], ['Chủ tọa', 'Trần Quốc Bảo', 'r'], ['Thư ký', 'Đỗ Hải Yến', 'r'], ['Người duyệt', apr, 'r'], ['Mô tả', 'Chốt phạm vi Sprint 6: biểu quyết, biên bản, ký số.', 'w']]
 const ORG_ACT = (first = 'Chỉnh sửa') => `<span class="row">${B(first, 'lg', true)}${B('Huỷ cuộc họp', 'd lg', true)}</span>`
 const JOIN = `<span class="b lg" style="background:#0e6b44;border-color:#0e6b44;color:#fff">${I()}Vào phòng họp</span>`
 const STEPS = (cur) => { const all = ['Nháp', 'Chờ duyệt', 'Đã duyệt', 'Đã công bố', 'Đang diễn ra', 'Đã kết thúc']; const i = all.indexOf(cur); return `<div class="steps">${all.map((t, k) => `<span class="${k < i ? 'done' : k === i ? 'cur' : ''}">${t}</span>`).join('')}</div>` }
@@ -672,45 +686,58 @@ const ROLEDLG = (role, withChair, btn, w = 480) => DL('Đổi vai trò', `${P('L
   B('Huỷ') + btn, w)
 /* Chi tiết cuộc họp có nhãn phản hồi cạnh tiêu đề (4.5c); DH dùng chung nên chèn chip ở đây. */
 const DETAIL8 = (tab, body, over = '', o = {}) => DETAIL(tab, body, over, o)
-const INFO_PUB = FIELDS(INFO_ROWS('pub', '<span class="sub">Chỉ Người tổ chức, Người duyệt thấy</span>').filter(([n]) => n !== 'Người duyệt'))
+const INFO_PUB = FIELDS(INFO_ROWS('<span class="sub">Chỉ Người tổ chức, Người duyệt thấy</span>').filter(([n]) => n !== 'Người duyệt'))
+/* v11: bảng có cột Điểm danh hẹp hơn nên nhãn phản hồi xuống dưới email. */
+const PRSVP = (n, e, ok) => `<span class="col" style="gap:6px;align-items:flex-start">${P(n, e)}${RSVPC(ok)}</span>`
 const RSVPBAR = `<div class="card row" style="padding:10px 14px;gap:12px;border-color:#bcd0f2;background:#f1f6fe"><span class="b sq gh">${I()}</span><b style="font-size:14px">Bạn có tham dự cuộc họp này?</b><span class="grow"></span>${RSVPB()}</div>`
 
 /* Danh sách cuộc họp v8: mở sẵn bộ lọc Đang diễn ra; Thời điểm là bốn lựa chọn cố định, không còn ô chọn tháng. */
-/* v11: form thật chia bốn phần Nội dung, Thời gian, Hình thức & mức độ, Thành phần tham dự; hộp thoại cuộn trong khung. */
-const MSEC = (t) => `<b style="grid-column:span 2;font-size:13px;margin-top:2px">${t}</b>`
-const FI = (label, val) => `<div class="fld"><label>${label} <b>*</b></label><div class="in val"><span class="grow">${val}</span>${I()}</div></div>`
-const MTOP = `${MSEC('Nội dung')}${F('Tên cuộc họp', 'Họp kế hoạch Sprint 6', { req: 1, span: 1 })}
-    <div class="fld" style="grid-column:span 2"><label>Mô tả</label><div class="in area val">Chốt phạm vi Sprint 6: biểu quyết, biên bản, ký số.</div><span class="hint" style="text-align:right">50/4.000</span></div>
-    ${MSEC('Thời gian')}<div style="grid-column:span 2;display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px">${FI('Ngày họp', '15/10/2026')}${FI('Bắt đầu', '08:30')}${FI('Kết thúc', '09:30')}</div>`
+/* v11 (02/11/2026, ADR-0043): hộp thoại tạo/sửa chia 2 cột. Trái: tên, mô tả, thời gian, người dự họp. Phải: khung xám có hình thức, địa điểm, link và mức độ mật. */
 const SEGW = (list, on) => `<div class="seg" style="display:grid;grid-template-columns:repeat(${list.length},1fr)">${list.map((x) => `<span class="${x === on ? 'on' : ''}" style="text-align:center">${x}</span>`).join('')}</div>`
-const MMID = `${MSEC('Hình thức & mức độ')}<div class="fld"><label>Hình thức</label>${SEGW(['Trực tiếp', 'Trực tuyến', 'Kết hợp'], 'Kết hợp')}<span class="hint">Ghi âm: mic phòng và micro người trực tuyến.</span></div>
-    <div class="fld"><label>Mức độ mật</label>${SEGW(['Thường', 'Nội bộ', 'Hạn chế', 'Mật'], 'Thường')}</div>`
-const MPLACE = `${F('Địa điểm họp trực tiếp', 'Phòng 2.1, tầng 2', { hint: 'Phòng họp hoặc địa chỉ.' })}${F('Link họp trực tuyến', 'Để trống: phòng họp TrustCabinet', { ph: 1, hint: 'Không bắt buộc, tối đa 1.000 ký tự.' })}`
-const MFORM = (roster) => `<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px 18px;align-items:start">${roster ? MMID + MPLACE + roster : MTOP + MMID}</div>`
-const MROSTER = `<div class="fld" style="grid-column:span 2"><b style="font-size:13px">Thành phần tham dự</b><label style="font-size:12px">Người dự họp <b style="color:var(--danger)">*</b></label><div class="in">${I()}Tìm theo tên hoặc email để thêm người dự họp</div>
-      <div class="col" style="gap:0;border:1px solid var(--line);border-radius:6px;margin-top:2px">${[['Nguyễn Minh Anh (Tôi)', 'anh.nm@trustsoft.vn', 'Chủ tọa'], ['Đỗ Hải Yến', 'yen.dh@trustsoft.vn', 'Thư ký'], ['Lê Thu Hà', 'ha.lt@trustsoft.vn', 'Thành viên']].map(([n, e, r], i) => `<div class="row" style="padding:6px 10px;${i < 2 ? 'border-bottom:1px solid #e6eaf0' : ''}">${P(n, e)}<span class="grow"></span><div class="in val" style="width:130px;height:30px">${r}<span class="caret"></span></div><span class="b sq gh">${I()}</span></div>`).join('')}</div></div>`
+const MCOUNT = (label, n, req) => `<label class="row"><span class="grow">${label}${req ? ' <b>*</b>' : ''}</span><span class="sub" style="font-weight:400;font-size:11.5px">${n}</span></label>`
+const LOCKH = '<span class="hint">Đã công bố, không đổi được.</span>'
+const MNAME = (lock) => `<div class="fld">${MCOUNT('Tên cuộc họp', '21/300', 1)}<div class="in ${lock ? 'lock' : 'val'}">Họp kế hoạch Sprint 6</div>${lock ? LOCKH : ''}</div>`
+const MDESC = (lock) => `<div class="fld">${MCOUNT('Mô tả', '50/4.000')}<div class="in area ${lock ? 'lock' : 'val'}">Chốt phạm vi Sprint 6: biểu quyết, biên bản, ký số.</div>${lock ? LOCKH : ''}</div>`
+const TI = (v, w) => `<div class="in val" style="${w ? `width:${w}px;flex:none` : 'flex:1'}"><span class="grow">${v}</span>${I()}</div>`
+const MTIME = (multi) => `<div class="fld"><label>Thời gian <b>*</b></label>${multi
+  ? `<div class="col" style="gap:6px">${[['Bắt đầu', '15/10/2026', '08:30'], ['Kết thúc', '16/10/2026', '09:30']].map(([l, d, t]) => `<div class="row"><span class="sub" style="width:56px">${l}</span>${TI(d)}${TI(t, 104)}</div>`).join('')}</div>`
+  : `<div class="row">${TI('15/10/2026')}${TI('08:30', 104)}<span class="sub">–</span>${TI('09:30', 104)}</div>`}
+    <div class="row" style="gap:6px;margin-top:4px">${['30 phút', '1 giờ', '2 giờ', 'Nhiều ngày'].map((t) => `<span class="b ${t === (multi ? 'Nhiều ngày' : '1 giờ') ? 'p' : ''}" style="height:26px;padding:0 10px;font-size:12px">${t}</span>`).join('')}${multi ? '<span class="sub">1 ngày 1 giờ</span>' : ''}</div></div>`
+const MPICK = `<div class="dlg" style="position:absolute;left:0;right:0;top:56px;z-index:6;max-height:none;border:1px solid var(--line);padding:4px 0">${[['Lê Thu Hà', 'ha.lt@trustsoft.vn', 1], ['Phạm Đức Long', 'long.pd@trustsoft.vn'], ['Bùi Thanh Sơn', 'son.bt@trustsoft.vn']].map(([n, e, on]) => `<div class="row" style="padding:6px 12px;gap:10px"><i class="check ${on ? 'on' : ''}"></i>${P(n, e)}</div>`).join('')}</div>`
+const MROSTER = (open) => `<div class="fld" style="position:relative"><label>Người dự họp <b>*</b></label><div class="in ${open ? 'val' : ''}" style="${open ? 'border-color:var(--brand)' : ''}">${I()}${open ? 'trustsoft' : 'Tìm theo tên hoặc email để thêm người dự họp'}</div>${open ? MPICK : ''}
+      <div class="col" style="gap:0;border:1px solid var(--line);border-radius:6px;margin-top:2px">${[[PSELF('Nguyễn Minh Anh', 'anh.nm@trustsoft.vn'), 'Chủ tọa'], [P('Đỗ Hải Yến', 'yen.dh@trustsoft.vn'), 'Thư ký'], [P('Lê Thu Hà', 'ha.lt@trustsoft.vn'), 'Thành viên']].map(([p, r], i) => `<div class="row" style="padding:5px 10px;${i < 2 ? 'border-bottom:1px solid #e6eaf0' : ''}">${p}<span class="grow"></span><div class="in val" style="width:118px;height:30px">${r}<span class="caret"></span></div><span class="b sq gh">${I()}</span></div>`).join('')}</div></div>`
+const MODE_HINT = { 'Trực tiếp': 'Ghi âm: Thư ký ghi cả phòng.', 'Trực tuyến': 'Ghi âm: mỗi người ghi micro của mình.', 'Kết hợp': 'Ghi âm: mic phòng và micro người trực tuyến.' }
+const MPLACE = (mode) => `${mode === 'Trực tiếp' ? F('Địa điểm', 'Ví dụ: Phòng họp A — Tầng 4', { ph: 1 }) : mode === 'Kết hợp' ? F('Địa điểm họp trực tiếp', 'Phòng 2.1, tầng 2') : ''}${mode === 'Trực tiếp' ? '' : F('Link họp trực tuyến', 'Để trống: phòng họp TrustCabinet', { ph: 1 })}`
+const MLEVELS = [['Thường', 'Người dự họp xem và tải tài liệu.'], ['Nội bộ', 'Như Thường, gắn nhãn chỉ dùng nội bộ.'], ['Hạn chế', 'Mỗi lần xem tài liệu được ghi nhật ký.'], ['Mật', 'Không tải tài liệu, không xuất ghi âm; mỗi lần xem được ghi nhật ký.']]
+const MSIDE = (mode, lock) => `<div class="col" style="gap:12px;padding:14px;border-radius:8px;background:var(--ground)"><div class="fld"><label>Hình thức họp</label>${SEGW(['Trực tiếp', 'Trực tuyến', 'Kết hợp'], mode)}${lock ? LOCKH : `<span class="hint">${MODE_HINT[mode]}</span>`}</div>${MPLACE(mode)}
+      <div class="fld"><label>Mức độ mật <b>*</b></label><div class="col" style="gap:6px;${lock ? 'opacity:.6' : ''}">${MLEVELS.map(([n, d], i) => `<div class="row" style="align-items:flex-start;gap:10px;padding:6px 10px;background:var(--sheet);border:1px solid ${i ? 'var(--line)' : 'var(--brand)'};border-radius:6px"><i class="radio ${i ? '' : 'on'}" style="margin-top:2px"></i><span class="col" style="gap:0"><b style="font-size:12.5px">${n}</b><span class="sub" style="font-size:11.5px">${d}</span></span></div>`).join('')}</div>${lock ? LOCKH : ''}</div></div>`
+const MFORM = ({ mode = 'Kết hợp', roster = true, multi = false, search = false, lock = false } = {}) => `<div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start"><div class="col" style="gap:12px">${MNAME(lock)}${MDESC(lock)}${MTIME(multi)}${roster ? MROSTER(search) : ''}</div>${MSIDE(mode, lock)}</div>`
+const MFOOT = `<span class="sub grow" style="align-self:center">Tạo xong, thêm nội dung và tài liệu ở trang chi tiết rồi gửi duyệt.</span>${B('Huỷ')}${B('Tạo cuộc họp', 'p', true)}`
+const MCREATE = (o, over = '') => DL('Tạo cuộc họp', MFORM(o), MFOOT, 980) + over
 const SUMCARDS = (on, n) => `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">${[['Đang diễn ra', 2], ['Đã công bố', 1], ['Chờ duyệt', 1], ['Bản nháp', 1]].map(([t, c], i) => `<div class="card col" style="padding:10px 14px;gap:2px;${t === on ? 'border-color:var(--brand);background:var(--brand-soft)' : ''}"><span class="sub">${t}</span><b class="num" style="font-size:20px">${n ? n[i] : c}</b></div>`).join('')}</div>`
-const BGLIST = (over) => SH('meet', HEAD('Danh sách cuộc họp', '', B('Tạo cuộc họp', 'p lg', true)) + SUMCARDS('Đang diễn ra') + `<div class="panel grow"><div class="tb"><div class="in" style="width:300px">${I()}Tìm theo tên cuộc họp…</div></div>${X(420)}</div>`, over, WHO.org)
+const BGLIST = (over) => SH('meet', HEAD('Danh sách cuộc họp', '', B('Tạo cuộc họp', 'p lg', true)) + SUMCARDS('Đang diễn ra') + `<div class="row"><div class="in" style="width:290px">${I()}Tìm theo tên cuộc họp…</div></div><div class="panel grow">${X(420)}</div>`, over, WHO.org)
 const WHEN4 = ['Mọi thời điểm', 'Hôm nay', 'Tuần này', 'Chưa diễn ra', 'Đã diễn ra']
-/* v11: cột STT, Tên, Thời gian, Hình thức, Trạng thái, Mức độ, Thao tác. Mức Thường là chữ thường, không có nhãn. */
+/* v11 (02/11/2026, ADR-0043): cột STT, Tên, Thời gian diễn ra, Hình thức, Trạng thái, Mức độ, Thao tác. Thanh lọc nằm trên nền trang, địa điểm hiện dưới tên, dòng đang diễn ra nền xanh. Mức Thường là chữ thường, không có nhãn. */
 const LV_CELL = (k) => k === 'n' ? 'Thường' : L(k)
-const WHERE = (m, p) => p ? `${m}<div class="sub">${p}</div>` : m
+const NAMEP = (t, p) => `<b>${t}</b>${p ? `<div class="sub row" style="gap:4px">${I('r')}${p}</div>` : ''}`
+const WHENC = (t, d) => `<b class="num" style="font-weight:600">${t}</b><div class="sub">${d}</div>`
+const SORTH = (t, on) => `<span class="row" style="display:inline-flex;gap:4px;${on ? 'color:var(--brand)' : ''}">${t}<i class="ic" style="width:10px;height:10px"></i></span>`
 const EYE = `<span class="row" style="justify-content:flex-end"><span class="b sq gh">${I()}</span></span>`
 const LISTROWS = () => ({
   live: [
-    ['1', '<b>Họp Hội đồng quản trị quý IV</b>', '<span class="num">13:00–15:00</span><div class="sub">Thứ Tư, 14/10/2026</div>', WHERE('Trực tiếp', 'Phòng họp A3'), TS('Đang diễn ra', 'live'), LV_CELL('s'), EYE],
-    ['2', '<b>Rà soát ngân sách quý IV</b>', '<span class="num">15:00–16:00</span><div class="sub">Thứ Tư, 14/10/2026</div>', WHERE('Trực tiếp', 'Phòng họp lớn'), TS('Đang diễn ra', 'live'), LV_CELL('c'), EYE],
+    { tone: 'row-live', cells: ['1', NAMEP('Họp Hội đồng quản trị quý IV', 'Phòng họp A3'), WHENC('13:00 – 15:00', 'Thứ Tư, 14/10/2026'), 'Trực tiếp', TS('Đang diễn ra', 'live'), LV_CELL('s'), EYE] },
+    { tone: 'row-live', cells: ['2', NAMEP('Rà soát ngân sách quý IV', 'Phòng họp lớn'), WHENC('15:00 – 16:00', 'Thứ Tư, 14/10/2026'), 'Trực tiếp', TS('Đang diễn ra', 'live'), LV_CELL('c'), EYE] },
   ],
   upcoming: [
-    ['1', '<b>Giao ban kỹ thuật tuần 41</b>', '<span class="num">09:00–10:30</span><div class="sub">Thứ Sáu, 16/10/2026</div>', WHERE('Kết hợp', 'Phòng 3.2'), S('pub'), LV_CELL('i'), EYE],
-    ['2', '<b>Duyệt kiến trúc phòng họp trực tuyến</b>', '<span class="num">14:00–16:00</span><div class="sub">Thứ Sáu, 16/10/2026</div>', 'Trực tuyến', S('wait'), LV_CELL('c'), EYE],
-    ['3', '<b>Họp kế hoạch Sprint 6</b>', '<span class="num">08:30–09:30</span><div class="sub">Thứ Năm, 15/10/2026</div>', WHERE('Kết hợp', 'Phòng 2.1'), S('draft'), LV_CELL('n'), EYE],
+    ['1', NAMEP('Giao ban kỹ thuật tuần 41', 'Phòng 3.2'), WHENC('09:00 – 10:30', 'Thứ Sáu, 16/10/2026'), 'Kết hợp', S('pub'), LV_CELL('i'), EYE],
+    ['2', NAMEP('Duyệt kiến trúc phòng họp trực tuyến'), WHENC('14:00 – 16:00', 'Thứ Sáu, 16/10/2026'), 'Trực tuyến', S('wait'), LV_CELL('c'), EYE],
+    ['3', NAMEP('Họp kế hoạch Sprint 6', 'Phòng 2.1'), WHENC('08:30 – 09:30', 'Thứ Năm, 15/10/2026'), 'Kết hợp', S('draft'), LV_CELL('n'), EYE],
   ],
 })
-const LISTV8 = ({ status, when, open = false, rows, pager }) => SH('meet', HEAD('Danh sách cuộc họp', '', B('Tạo cuộc họp', 'p lg', true)) + SUMCARDS(status) + `<div class="panel grow" style="position:relative;overflow:visible">
-  <div class="tb"><div class="in" style="width:290px">${I()}Tìm theo tên cuộc họp…</div><div class="in val" style="width:150px">${status}<span class="caret"></span></div><div class="in val" style="width:130px">Mọi mức độ<span class="caret"></span></div>
+const LISTV8 = ({ status, when, open = false, rows, pager }) => SH('meet', HEAD('Danh sách cuộc họp', '', B('Tạo cuộc họp', 'p lg', true)) + SUMCARDS(status) + `<div class="row" style="position:relative;z-index:2">
+  <div class="in" style="width:290px">${I()}Tìm theo tên cuộc họp…</div><div class="in val" style="width:150px">${status}<span class="caret"></span></div><div class="in val" style="width:130px">Mọi mức độ<span class="caret"></span></div>
     <div style="position:relative"><div class="in val" style="width:140px;${open ? 'border-color:var(--brand)' : ''}">${when}<span class="caret"></span></div>${open ? `<div class="menu" style="left:0;top:38px;width:170px">${WHEN4.map((w) => `<span style="${w === when ? 'background:var(--brand-soft);color:var(--brand);font-weight:600' : ''}">${w}</span>`).join('')}</div>` : ''}</div><span class="b sq gh">${I()}</span></div>
-  ${T(['STT', 'Tên cuộc họp', 'Thời gian', 'Hình thức', 'Trạng thái', 'Mức độ', 'Thao tác'], rows)}<div class="grow"></div><div class="row" style="padding:10px 14px;font-size:12px;color:var(--mute)"><span>Hiển thị <b style="color:var(--ink)">${pager}</b></span><span>Số dòng</span><div class="in val" style="width:64px;height:30px">20<span class="caret"></span></div><span class="grow"></span>${B('‹', 'sq')}${B('1', 'sq p')}${B('›', 'sq')}</div></div>`, '', WHO.org)
+  <div class="panel grow">${T(['STT', SORTH('Tên cuộc họp'), SORTH('Thời gian diễn ra', 1), 'Hình thức', 'Trạng thái', 'Mức độ', 'Thao tác'], rows)}<div class="grow"></div>${PAGERN(pager)}</div>`, '', WHO.org)
 const RCHIPS = (list) => `<span class="row wrap" style="gap:6px"><span class="sub">Được bỏ phiếu:</span>${list.map((r) => C(r, 'brand')).join('')}</span>`
 
 /* Phòng họp: header xanh viền vàng, sân khấu navy, thanh điều khiển chỉ icon (tooltip),
@@ -750,6 +777,14 @@ const CAL = () => {
   h += `<div class="cal-legend">${[['Đang diễn ra', '#0e6b44', '#0e6b44'], ['Đã công bố', '#2f62d0'], ['Đã duyệt', '#1f9a62'], ['Chờ duyệt', '#c98a12'], ['Nháp', '#9aa3b0'], ['Đã kết thúc', '#9aa3b0'], ['Bị từ chối', '#b4232a'], ['Đã huỷ', '#9aa3b0']].map(([t, c, f]) => `<span style="${t === 'Đã huỷ' ? 'text-decoration:line-through' : ''}"><i style="--c:${c};--f:${f || 'transparent'};${t === 'Chờ duyệt' ? 'border-style:dashed' : ''}"></i>${t}</span>`).join('')}</div>`
   return h
 }
+/* v11 (02/11/2026): thẻ xem nhanh khi bấm một ô lịch. */
+const OVROW = (k, v) => `<div class="row" style="align-items:flex-start;gap:10px"><span class="sub" style="width:110px;flex:none">${k}</span><span class="grow">${v}</span></div>`
+const OVERVIEW = `<div class="card col" style="position:absolute;left:692px;top:96px;width:370px;gap:0;z-index:5;box-shadow:0 6px 20px rgba(26,36,51,.18)">
+  <div class="col" style="padding:14px 16px;gap:6px;border-bottom:1px solid var(--line)"><b style="font-size:15px">Họp kế hoạch Sprint 6</b><span class="row">${S('pub')}</span></div>
+  <div class="col" style="padding:12px 16px;gap:8px">${OVROW('Thời gian', '<b class="num" style="font-weight:600">08:30–09:30</b><div class="sub">Thứ Sáu, 16/10/2026</div>')}${OVROW('Hình thức', 'Kết hợp')}${OVROW('Địa điểm', 'Phòng 2.1')}${OVROW('Liên kết tham gia', 'Phòng họp trực tuyến TrustCabinet')}${OVROW('Chủ tọa', 'Trần Quốc Bảo')}
+    <div class="col" style="gap:6px;padding-top:8px;border-top:1px solid #e6eaf0"><span class="sub">Thành phần tham dự · 6</span><span class="row" style="gap:12px">${['Trần Quốc Bảo', 'Đỗ Hải Yến', 'Lê Thu Hà'].map((n) => A(n)).join('')}<span class="av">+3</span></span></div></div>
+  <div class="col" style="padding:10px 16px;background:var(--brand-soft)"><b style="font-size:12.5px">Xác nhận tham dự?</b>${RSVPB()}</div>
+  <div class="row" style="padding:10px 16px;justify-content:flex-end;border-top:1px solid var(--line)">${B('Đóng', '', true)}<span class="b p">Xem chi tiết${I()}</span></div></div>`
 /* v6: kiểu lịch thêm "Tháng"; nút Bộ lọc dùng chung cho mọi chế độ (`filt` = số tiêu chí đang bật). */
 const CALBAR = (mode, span = 'Tuần làm việc', range = '12/10 – 16/10/2026', filt = 0, pick = 0) => `<div class="row">${B('Hôm nay', 'lg')}<span class="seg" style="height:36px"><span style="padding:8px 12px">‹</span><span style="padding:8px 12px">›</span></span>
   <span class="grow"><b class="rgb ${pick ? 'on' : ''}">${range}<small>${pick ? '▴' : '▾'}</small></b></span>${SEG(['Lịch', 'Danh sách'], mode).replace('class="seg"', 'class="seg vt"')}<div class="in val" style="width:140px;height:36px">${span}<span class="caret"></span></div>${B(`Bộ lọc${filt ? `<span class="cnt">${filt}</span>` : ''}`, filt ? 'lg on' : 'lg', true)}${B('Tạo cuộc họp', 'p lg', true)}</div>`
@@ -838,16 +873,16 @@ const VOTE = 'Thông qua phạm vi biểu quyết chỉ trong cuộc họp'
 
 const LUONG = [
 { id: 'S01', bf: 'BF-02', step: 'Create Meeting (vào từ đây)', actor: 'Mọi người dùng', ucs: 'UC-18 · UC-15', name: 'Danh sách cuộc họp',
-  notes: ['Nút icon: cuối thanh lọc là Xoá bộ lọc; cột Thao tác là Xem chi tiết.', 'Cột "Thời gian" lấy từ chính cuộc họp; không còn cột số phiên họp.', 'Danh sách chỉ trả về cuộc họp người dùng được xem (lọc phía server). Nút "Tạo cuộc họp" chỉ hiện với người có quyền tổ chức.', 'Mở trang là đã lọc Trạng thái = Đang diễn ra (mặc định, như AI-eCabinet); chọn "Mọi trạng thái" hoặc bấm Xoá bộ lọc để xem hết. Không có Đang diễn ra thì hiện "Hiện không có cuộc họp nào đang diễn ra." kèm nút "Xem mọi cuộc họp".', 'Thời điểm chỉ có bốn lựa chọn: Hôm nay, Tuần này, Chưa diễn ra, Đã diễn ra (BR-30); không còn chọn khoảng ngày hay tháng. Cuộc họp mình đã từ chối vẫn hiện trong danh sách (chỉ ẩn khỏi lịch, BR-321).'],
+  notes: ['Nút icon: cuối thanh lọc là Xoá bộ lọc; cột Thao tác là Xem chi tiết.', 'Thanh lọc nằm trên nền trang, bảng và phân trang trong một thẻ trắng. Địa điểm hiện dưới tên. Bấm tiêu đề Tên cuộc họp hoặc Thời gian diễn ra để sắp xếp.', 'Cả dòng đổi theo trạng thái: đang diễn ra nền xanh nhạt; đã huỷ mờ đi và gạch tên; đã kết thúc chữ xám (ADR-0043).', 'Danh sách chỉ trả về cuộc họp người dùng được xem (lọc phía server). Nút "Tạo cuộc họp" chỉ hiện với người có quyền tổ chức.', 'Mở trang là đã lọc Trạng thái = Đang diễn ra (mặc định, như AI-eCabinet); chọn "Mọi trạng thái" hoặc bấm Xoá bộ lọc để xem hết. Không có Đang diễn ra thì hiện "Hiện không có cuộc họp nào đang diễn ra." kèm nút "Xem mọi cuộc họp".', 'Thời điểm chỉ có bốn lựa chọn: Hôm nay, Tuần này, Chưa diễn ra, Đã diễn ra (BR-30); không còn chọn khoảng ngày hay tháng. Cuộc họp mình đã từ chối vẫn hiện trong danh sách (chỉ ẩn khỏi lịch, BR-321).'],
   frames: [{ fig: '4.3', html: LISTV8({ status: 'Đang diễn ra', when: 'Mọi thời điểm', rows: LISTROWS().live, pager: '1–2 trong 2 cuộc họp' }) }] },
 
 { id: 'S02', bf: 'BF-02', step: 'Create Meeting → Save as Draft', actor: 'Meeting Organizer', ucs: 'UC-15', name: 'Tạo cuộc họp',
-  notes: ['Form dài, cuộn trong hộp thoại; phần dưới vẽ ở 4.4c. Ô ngày có icon lịch, ô giờ có icon đồng hồ.', 'Form tạo cuộc họp là popup mở từ nút "Tạo cuộc họp" ở danh sách hoặc lịch, không còn trang riêng (SCRUM-20). Có mục "Thành phần tham dự": tìm người theo tên hoặc email, mỗi người một dòng với ô chọn vai trò (Chủ tọa, Thư ký, Thành viên); chọn ai làm Chủ tọa thì Chủ tọa cũ thành Thành viên, luôn đúng một Chủ tọa. Người tổ chức không bắt buộc có mặt trong danh sách. Thiếu Chủ tọa hay người trùng thì báo MSG277 dưới ô tìm (không vẽ trên giao diện).', 'Lịch nằm ngay trong form (thay cho "Tạo phiên họp" UC-26 cũ). Kết thúc phải sau bắt đầu; giờ bắt đầu phải ở tương lai.', 'Địa điểm và link đổi theo hình thức: Trực tiếp cần địa điểm, Trực tuyến cần link, Kết hợp cần cả hai. Để trống link thì dùng phòng họp trực tuyến của TrustCabinet.', 'Lưu xong là cuộc họp ở trạng thái Nháp; chưa gửi lời mời cho tới khi công bố. Thư ký có thể gán sau ở tab Thành phần tham dự.'],
-  frames: [{ fig: '4.4', html: BGLIST(DL('Tạo cuộc họp', MFORM(''), B('Huỷ') + B('Tạo cuộc họp', 'p', true), 760)) }] },
+  notes: ['Hộp thoại chia 2 cột (ADR-0043). Trái: tên, mô tả, thời gian, người dự họp. Phải: khung xám có hình thức, địa điểm, link và mức độ mật, mỗi mức có một dòng nói nó làm gì. Ô ngày có icon lịch, ô giờ có icon đồng hồ.', 'Form tạo cuộc họp là popup mở từ nút "Tạo cuộc họp" ở danh sách hoặc lịch, không còn trang riêng (SCRUM-20). Có ô "Người dự họp" (4.4c): tìm người theo tên hoặc email, mỗi người một dòng với ô chọn vai trò (Chủ tọa, Thư ký, Thành viên); chọn ai làm Chủ tọa thì Chủ tọa cũ thành Thành viên, luôn đúng một Chủ tọa. Người tổ chức không bắt buộc có mặt trong danh sách. Thiếu Chủ tọa hay người trùng thì báo MSG277 dưới ô tìm (không vẽ trên giao diện).', 'Lịch nằm ngay trong form (thay cho "Tạo phiên họp" UC-26 cũ). Nút 30 phút, 1 giờ, 2 giờ đặt giờ kết thúc theo giờ bắt đầu; Nhiều ngày ở 4.4f. Kết thúc phải sau bắt đầu; giờ bắt đầu phải ở tương lai.', 'Địa điểm và link đổi theo hình thức: Trực tiếp cần địa điểm, Trực tuyến cần link, Kết hợp cần cả hai. Để trống link thì dùng phòng họp trực tuyến của TrustCabinet.', 'Lưu xong là cuộc họp ở trạng thái Nháp; chưa gửi lời mời cho tới khi công bố. Thư ký có thể gán sau ở tab Thành phần tham dự.'],
+  frames: [{ fig: '4.4', html: BGLIST(MCREATE()) }] },
 
 { id: 'S03', bf: 'BF-02', step: 'chuẩn bị trước khi gửi duyệt', actor: 'Organizer, Secretary', ucs: 'UC-17 · UC-16', name: 'Chi tiết cuộc họp · Thông tin chung (Nháp)',
-  notes: ['Bảy tab: Thông tin chung · Thành phần tham dự · Nội dung cuộc họp · Tài liệu · Biểu quyết · Bản ghi · Biên bản. Cột phải luôn là Lịch sử trạng thái, ở mọi tab.', 'Không có thanh vòng đời. Người tổ chức thấy thanh trạng thái dưới đầu trang theo từng bước: Bản nháp — chưa gửi duyệt, Đang chờ <tên> duyệt, Cuộc họp bị từ chối, Cuộc họp đã được duyệt. Người duyệt thấy Cuộc họp đang chờ bạn duyệt. Từ khi công bố thì thanh này không còn.', 'Nút đầu trang đổi theo trạng thái và vai trò: Người tổ chức có Chỉnh sửa (Nháp, Bị từ chối) hoặc Dời lịch (Đã công bố), Huỷ cuộc họp (trước khi bắt đầu); Chủ tọa có Bắt đầu họp, Kết thúc họp; cuộc họp trực tuyến hoặc kết hợp đang diễn ra có Vào phòng họp màu xanh lá. Không áp dụng thì ẩn hẳn, không làm mờ.', 'Thiếu điều kiện thì thanh Bản nháp liệt kê "Cần hoàn thiện trước khi gửi duyệt:" và nút Gửi duyệt khoá, kèm tooltip. Người duyệt chỉ hiện với Người tổ chức và Người duyệt. Mức Thường không có nhãn ở đầu trang.', 'Từ khi công bố, người được mời (trừ Chủ tọa) thấy thanh "Bạn có tham dự cuộc họp này?" (4.5b); trả lời xong thanh biến mất và nhãn phản hồi hiện cạnh tiêu đề (4.5c).'],
-  frames: [{ fig: '4.5', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('draft', '<span class="sub"><i>Chọn khi gửi duyệt</i></span>')), '',
+  notes: ['Bảy tab: Thông tin chung · Thành phần tham dự · Nội dung cuộc họp · Tài liệu · Biểu quyết · Bản ghi · Biên bản. Cột phải luôn là Lịch sử trạng thái, ở mọi tab.', 'Không có thanh vòng đời. Người tổ chức thấy thanh trạng thái dưới đầu trang theo từng bước: Bản nháp — chưa gửi duyệt, Đang chờ <tên> duyệt, Cuộc họp bị từ chối, Cuộc họp đã được duyệt. Người duyệt thấy Cuộc họp đang chờ bạn duyệt. Từ khi công bố thì thanh này không còn.', 'Nút đầu trang đổi theo trạng thái và vai trò: Người tổ chức có Chỉnh sửa (Nháp, Bị từ chối) hoặc Dời lịch (Đã công bố), Huỷ cuộc họp (trước khi bắt đầu); Chủ tọa có Bắt đầu họp, Kết thúc họp; cuộc họp trực tuyến hoặc kết hợp đang diễn ra có Vào phòng họp màu xanh lá. Không áp dụng thì ẩn hẳn, không làm mờ.', 'Thiếu điều kiện thì thanh Bản nháp liệt kê "Cần hoàn thiện trước khi gửi duyệt:" và nút Gửi duyệt khoá, kèm tooltip. Người duyệt chỉ hiện với Người tổ chức và Người duyệt. Đầu trang luôn có chip mức độ, kể cả Thường, nên thông tin chung không còn ô Trạng thái, Mức độ; Tạo lúc xem ở Lịch sử trạng thái (ADR-0043).', 'Từ khi công bố, người được mời (trừ Chủ tọa) thấy thanh "Bạn có tham dự cuộc họp này?" (4.5b); trả lời xong thanh biến mất và nhãn phản hồi hiện cạnh tiêu đề (4.5c).'],
+  frames: [{ fig: '4.5', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('<span class="sub"><i>Chọn khi gửi duyệt</i></span>')), '',
     { who: WHO.org, actions: ORG_ACT(), bar: WBAR('#7a8596', 'Bản nháp — chưa gửi duyệt', 'Thông tin cuộc họp đã đủ. Gửi cho người duyệt khi bạn sẵn sàng.', B('Gửi duyệt', 'p', true)) }) }] },
 
 { id: 'S04', bf: 'BF-02', step: 'Assign First Secretary → Manage Participants → Assign Roles', actor: 'Organizer (Thư ký đầu tiên), Secretary', ucs: 'UC-37 · 38 · 39 · 40 · 42 · 88', name: 'Thành phần tham dự',
@@ -860,7 +895,7 @@ const LUONG = [
       [`<span class="row" style="gap:10px">${P('Phạm Đức Long', 'long.pd@trustsoft.vn')}${RSVPC(false)}</span>`, C('Thành viên'), ACT()],
       [P('Bùi Thanh Sơn', 'son.bt@trustsoft.vn'), C('Thành viên'), ACT()],
       [P('Ngô Thanh Vân', 'van.ngo@doitac.vn · khách ngoài'), C('Khách'), `<span class="row" style="justify-content:flex-end"><span class="b sq gh">${I()}</span></span>`],
-    ])}${PAGER1('1–6 trong 6 thành phần')}</div>`, '', { who: WHO.sec, st: 'pub' }) }] },
+    ])}${PAGERN('1–6 trong 6 thành phần')}</div>`, '', { who: WHO.sec, st: 'pub' }) }] },
 
 { id: 'S05', bf: 'BF-02', step: 'Prepare Agenda Items', actor: 'Secretary', ucs: 'UC-54 · 31 · 32 · 33 · 34', name: 'Nội dung cuộc họp (chương trình nghị sự)',
   notes: ['Nút icon trên mỗi thẻ, từ trái sang phải: Thêm tài liệu · Sửa · Xoá. Chấm bên trái là Kéo để đổi vị trí.', 'Nội dung nghị sự thuộc thẳng cuộc họp. Mỗi nội dung một dòng: số thứ tự, tên, người trình bày, số tài liệu. Thư ký kéo biểu tượng bên trái để đổi thứ tự (chuột, cảm ứng hoặc bàn phím); thêm, sửa, xoá, đổi thứ tự được khi Nháp, Chờ duyệt, Bị từ chối, Đã duyệt, Đã công bố và Đang diễn ra, khoá từ khi Kết thúc (BR-74).', 'Không có thời lượng, giờ dự kiến hay tổng thời lượng (BR-66, PO 16/10/2026). Khi Đang diễn ra, tab này vẫn là màn lập nghị sự (5.1b); Chủ tọa điều hành ở 5.3.'],
@@ -881,20 +916,20 @@ const LUONG = [
 
 { id: 'S07', bf: 'BF-02', step: 'Select Meeting Approver → Submit for Approval', actor: 'Meeting Organizer', ucs: 'UC-19', name: 'Gửi duyệt',
   notes: ['Chỉ liệt kê tài khoản đang hoạt động có quyền duyệt; không được chọn chính mình.', 'Khi chờ duyệt mà người duyệt mất quyền, Người tổ chức có nút Rút về nháp: cuộc họp trở về Nháp rồi chọn người duyệt khác.', 'Gửi xong: trạng thái Chờ duyệt, người duyệt nhận thông báo, nội dung bị khoá sửa. Gửi lại sau khi bị từ chối thì hộp có tên "Gửi duyệt lại cuộc họp".'],
-  frames: [{ fig: '4.6', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('draft', '<span class="sub"><i>Chọn khi gửi duyệt</i></span>')),
+  frames: [{ fig: '4.6', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('<span class="sub"><i>Chọn khi gửi duyệt</i></span>')),
     DL('Gửi duyệt cuộc họp', `<div class="sub">${MS.title}</div>${F('Người duyệt', 'Võ Thị Lan', { req: 1, sel: 1, hint: 'Người duyệt nhận thông báo và quyết định duyệt hoặc từ chối.' })}
       <div class="sub">Trong lúc chờ duyệt, thông tin cuộc họp không sửa được.</div>`, B('Huỷ') + B('Gửi duyệt', 'p', true), 520),
     { who: WHO.org, actions: ORG_ACT(), bar: WBAR('#7a8596', 'Bản nháp — chưa gửi duyệt', 'Thông tin cuộc họp đã đủ. Gửi cho người duyệt khi bạn sẵn sàng.', B('Gửi duyệt', 'p', true)) }) }] },
 
 { id: 'S08', bf: 'BF-02', step: 'Review Meeting → Approve Meeting?', actor: 'Meeting Approver', ucs: 'UC-20', name: 'Duyệt hoặc từ chối',
   notes: ['Người duyệt xem toàn bộ tab ở chế độ chỉ đọc. Từ chối bắt buộc nhập lý do; lý do hiện cho người tổ chức và lưu vào lịch sử.', 'Duyệt không tự công bố. Bị từ chối thì người tổ chức sửa rồi gửi duyệt lại (vòng lặp BF-02).'],
-  frames: [{ fig: '4.7', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('wait', 'Bạn')),
+  frames: [{ fig: '4.7', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('Bạn')),
     DL('Từ chối cuộc họp', `<div class="sub">${MS.title}</div>${F('Lý do từ chối', 'Cần bổ sung tài liệu quy trình ký vào nội dung cuộc họp.', { req: 1, area: 1, hint: 'Người tổ chức sẽ thấy lý do này.' })}<div class="sub" style="text-align:right">55/1.000</div>`, B('Huỷ') + B('Từ chối', 'd', true), 500),
     { who: WHO.apr, st: 'wait', bar: WBAR('#c98a12', 'Cuộc họp đang chờ bạn duyệt', 'Nguyễn Minh Anh gửi cho bạn lúc 16:10 09/10/2026. Xem kỹ thông tin cuộc họp trước khi quyết định.', `<span class="row">${B('Từ chối', 'd', true)}${B('Duyệt', 'p', true)}</span>`) }) }] },
 
 { id: 'S09', bf: 'BF-02', step: 'Publish → Chair & Secretary Assigned? → Published & Invitations', actor: 'Meeting Organizer', ucs: 'UC-21', name: 'Công bố cuộc họp',
   notes: ['Thiếu Chủ tọa hoặc Thư ký đang hoạt động thì không công bố được; hộp thoại chỉ ra người cần bổ sung (Thư ký gán ở 6.1).', 'Công bố là lúc gửi lời mời: thông báo trong ứng dụng cho người nội bộ, email kèm link xác minh cho khách ngoài.'],
-  frames: [{ fig: '4.8', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('ok', 'Võ Thị Lan')),
+  frames: [{ fig: '4.8', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('Võ Thị Lan')),
     DL('Công bố cuộc họp', `<div>Công bố “${MS.title}”? Thành phần tham dự sẽ thấy cuộc họp và nhận lời mời họp. Sau khi công bố, thông tin cuộc họp không sửa được nữa.</div>`, B('Huỷ') + B('Công bố', 'p'), 500),
     { who: WHO.org, st: 'ok', actions: B('Huỷ cuộc họp', 'd lg', true), bar: WBAR('#1f9a62', 'Cuộc họp đã được duyệt', 'Võ Thị Lan đã duyệt lúc 08:15 10/10/2026. Công bố để thành phần tham dự thấy cuộc họp và nhận lời mời.', B('Công bố', 'p', true)) }) }] },
 
@@ -916,12 +951,8 @@ const LUONG = [
 
 { id: 'S11', bf: 'BF-02', step: 'Reschedule Needed? → Reschedule → Notify Invitees', actor: 'Meeting Organizer', ucs: 'UC-16 (sau khi công bố)', name: 'Dời lịch',
   notes: ['Chỉ Người tổ chức, chỉ khi Đã công bố. Chỉ đổi được thời gian, địa điểm, link; các trường khác khoá và ghi rõ vì sao.', 'Lưu xong gửi thông báo và email cập nhật cho mọi người được mời. Phản hồi cũ giữ nguyên.'],
-  frames: [{ fig: '4.9', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('pub', 'Võ Thị Lan')),
-    DL('Dời lịch cuộc họp', `<div class="alert info"><span>Cuộc họp đã công bố: chỉ dời được thời gian, địa điểm và link họp. Lưu xong, mọi người được mời sẽ nhận thông báo lịch mới.</span></div>
-      <div class="fld"><label>Tên cuộc họp <b>*</b></label><div class="in lock">Họp kế hoạch Sprint 6</div><span class="hint">Đã công bố, không đổi được.</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">${FI('Ngày họp', '16/10/2026')}${FI('Bắt đầu', '14:00')}${FI('Kết thúc', '15:00')}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="fld"><label>Hình thức</label>${SEGW(['Trực tiếp', 'Trực tuyến', 'Kết hợp'], 'Kết hợp')}<span class="hint">Đã công bố, không đổi được.</span></div><div class="fld"><label>Mức độ mật</label>${SEGW(['Thường', 'Nội bộ', 'Hạn chế', 'Mật'], 'Thường')}<span class="hint">Đã công bố, không đổi được.</span></div>
-      ${F('Địa điểm họp trực tiếp', 'Phòng 3.2, tầng 3')}${F('Link họp trực tuyến', 'Để trống: phòng họp TrustCabinet', { ph: 1 })}</div>`, B('Huỷ') + B('Lưu và thông báo', 'p', true), 640),
+  frames: [{ fig: '4.9', html: SPR('Thông tin chung', FIELDS(INFO_ROWS('Võ Thị Lan')),
+    DL('Dời lịch cuộc họp', `<div class="alert info"><span>Cuộc họp đã công bố: chỉ dời được thời gian, địa điểm và link họp. Lưu xong, mọi người được mời sẽ nhận thông báo lịch mới.</span></div>${MFORM({ roster: false, lock: true })}`, B('Huỷ') + B('Lưu và thông báo', 'p', true), 980),
     { who: WHO.org, st: 'pub', actions: ORG_ACT('Dời lịch') }) }] },
 
 { id: 'S12', bf: 'BF-03', step: 'Start Meeting → Set Current → Discuss → Complete → More? → End Meeting', actor: 'Chair', ucs: 'UC-43 · 35 · 36 · 44 · 45', name: 'Điều hành cuộc họp',
@@ -935,11 +966,11 @@ const LUONG = [
     ${T(['Thành phần', 'Vai trò', 'Điểm danh', 'Thao tác'], [
       [PSELF('Đỗ Hải Yến', 'yen.dh@trustsoft.vn'), C('Thư ký'), PICK('Có mặt'), ACT()],
       [P('Trần Quốc Bảo', 'bao.tq@trustsoft.vn'), C('Chủ tọa', 'brand'), PICK('Có mặt'), ''],
-      [`<span class="row" style="gap:10px">${P('Lê Thu Hà', 'ha.lt@trustsoft.vn')}${RSVPC(true)}</span>`, C('Thành viên'), PICK('Có mặt'), ACT()],
-      [`<span class="row" style="gap:10px">${P('Phạm Đức Long', 'long.pd@trustsoft.vn')}${RSVPC(false)}</span>`, C('Thành viên'), PICK('Vắng'), ACT()],
+      [PRSVP('Lê Thu Hà', 'ha.lt@trustsoft.vn', true), C('Thành viên'), PICK('Có mặt'), ACT()],
+      [PRSVP('Phạm Đức Long', 'long.pd@trustsoft.vn', false), C('Thành viên'), PICK('Vắng'), ACT()],
       [P('Bùi Thanh Sơn', 'son.bt@trustsoft.vn'), C('Thành viên'), PICK(''), ACT()],
       [P('Ngô Thanh Vân', 'van.ngo@doitac.vn · khách ngoài'), C('Khách'), PICK('Có mặt'), `<span class="row" style="justify-content:flex-end"><span class="b sq gh">${I()}</span></span>`],
-    ])}${PAGER1('1–6 trong 6 thành phần')}</div>`, '', { who: WHO.sec, st: 'live', meta: ['Bắt đầu 08:32', 'Kết hợp · Phòng 2.1, tầng 2'] }) }] },
+    ])}${PAGERN('1–6 trong 6 thành phần')}</div>`, '', { who: WHO.sec, st: 'live', meta: ['Bắt đầu 08:32', 'Kết hợp · Phòng 2.1, tầng 2'] }) }] },
 
 { id: 'S14', bf: 'BF-03', step: 'Create Vote → Open Vote → Cast Vote → Close Vote → Tally → Record Conclusion', actor: 'Chair, eligible voters', ucs: 'UC-52a → UC-57', name: 'Biểu quyết trong cuộc họp',
   notes: ['Chủ tọa chuẩn bị nháp khi cuộc họp Đã duyệt, Đã công bố hoặc Đang diễn ra; chỉ mở khi Đang diễn ra. Biểu quyết thuộc cuộc họp, không gắn mục nghị sự. Không có hạn chót, không quorum.', 'Mỗi biểu quyết, Chủ tọa chọn ít nhất một vai trò trong Chủ tọa / Thư ký / Thành viên / Khách mời (mặc định chọn hết). Danh sách người được bỏ phiếu chốt lúc mở; điểm danh không quyết định quyền bỏ phiếu.', 'Mỗi người bỏ phiếu một lần. Chủ tọa đóng phiếu, hệ thống kiểm phiếu, Chủ tọa ghi kết luận: Thông qua / Không thông qua / Hoãn.'],
@@ -1006,6 +1037,8 @@ LUONG.forEach((s) => s.frames.forEach((f) => { FIG[f.fig] = Object.assign({ luon
 /* ---------- Screens ---------- */
 /* Màn lấy từ luồng cuộc họp (luong-cuoc-hop.html) dùng FIG['x.y']; các màn khác giữ từ v2, đã bỏ phiên họp và nghị quyết. */
 const FROM = (no, name, extra = {}) => Object.assign({ no, name, phone: FIG[no].phone, ucs: FIG[no].ucs, html: FIG[no].html, notes: FIG[no].notes }, extra)
+/* v11 (02/11/2026): trang nền của ô ghi âm mic phòng (9.3, 9.3b). */
+const MICPAGE = (over) => SPR('Nội dung cuộc họp', `<div class="panel">${AGHEAD}${AG2([['1', 'Báo cáo kết quả Sprint 5', 'Trần Quốc Bảo', 1, 'done', 1], ['2', 'Phạm vi biểu quyết trong họp', 'Lê Thu Hà', 2, 'cur']])}</div>`, over, { who: WHO.sec, st: 'live' })
 /* v11: trang Vai trò dùng chung cho 3.1 (danh sách) và 3.1b (hộp thoại xoá). */
 const ROLEPAGE = ['roles', HEAD('Vai trò', '', B('Tạo vai trò', 'p lg', true)) + TABS([['Danh sách vai trò', 5], 'Ma trận phân quyền'], 'Danh sách vai trò') + `<div class="panel">
       ${T(['Tên vai trò', 'Mô tả', 'Tài khoản', 'Thao tác'], [
@@ -1016,7 +1049,7 @@ const ROLEPAGE = ['roles', HEAD('Vai trò', '', B('Tạo vai trò', 'p lg', true
         [`<b>Kiểm soát viên</b>`, 'Xem cuộc họp và biên bản để giám sát.', '4', `<span class="row">${I()}${I()}</span>`],
       ])}</div>`]
 /* v11: phần dưới form tạo cuộc họp theo từng hình thức (4.4d, 4.4e). */
-const MODEF = (mode, hint, place) => `<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px 18px;align-items:start">${MSEC('Hình thức & mức độ')}<div class="fld"><label>Hình thức</label>${SEGW(['Trực tiếp', 'Trực tuyến', 'Kết hợp'], mode)}<span class="hint">${hint}</span></div><div class="fld"><label>Mức độ mật</label>${SEGW(['Thường', 'Nội bộ', 'Hạn chế', 'Mật'], 'Thường')}</div>${place}${MROSTER}</div>`
+
 const GROUPS = [
 { code: 'FE-01', name: 'Xác thực & bảo mật tài khoản', desc: 'Đăng nhập bằng email/mật khẩu hoặc Google, đặt lại mật khẩu từ liên kết trong email, và đường vào của khách mời.', screens: [
   { no: '1.1', name: 'Đăng nhập', ucs: 'UC-01 · UC-02 · UC-03', built: 1,
@@ -1109,16 +1142,19 @@ const GROUPS = [
 { code: 'FE-04', name: 'Quản lý cuộc họp', desc: 'Một cuộc họp là một buổi họp, tự mang lịch họp. Lịch, danh sách, tạo cuộc họp, chi tiết, gửi duyệt – duyệt – công bố và dời lịch.', screens: [
   { no: '4.1', name: 'Lịch làm việc – dạng lịch', ucs: 'UC-17', built: 1,
     html: SH('cal', CALBAR('Lịch') + CAL()),
-    notes: ['Cửa sổ hẹp thì các nút Lịch, Danh sách, Bộ lọc thu lại chỉ còn icon.', 'Không có tiêu đề trang: thanh công cụ là dòng đầu. Kiểu lịch: Tuần làm việc, Cả tuần hoặc Tháng (4.1b). Bộ lọc ở 4.1c.', 'Lưới phủ 24 giờ, cuộn trong khung; tuần hiện tại tự cuộn tới vạch đỏ giờ hiện tại.', 'Mỗi ô là một cuộc họp, tô màu theo trạng thái; "Bị từ chối" gạch ngang tên. Bấm để mở chi tiết; nút quay lại trả về đúng tuần và chế độ.', 'Cuộc họp mình đã trả lời "Không tham dự" không hiện trên lịch của mình ở mọi kiểu lịch và ở chế độ Danh sách (BR-321); Chủ tọa không bao giờ bị ẩn. Cuộc họp đó vẫn có trong Danh sách cuộc họp.'] },
+    notes: ['Cửa sổ hẹp thì các nút Lịch, Danh sách, Bộ lọc thu lại chỉ còn icon.', 'Không có tiêu đề trang: thanh công cụ là dòng đầu. Kiểu lịch: Tuần làm việc, Cả tuần hoặc Tháng (4.1b). Bộ lọc ở 4.1c.', 'Lưới phủ 24 giờ, cuộn trong khung; tuần hiện tại tự cuộn tới vạch đỏ giờ hiện tại.', 'Mỗi ô là một cuộc họp, tô màu theo trạng thái; "Bị từ chối" gạch ngang tên. Bấm mở thẻ xem nhanh (4.1e); nút quay lại từ trang chi tiết trả về đúng tuần và chế độ.', 'Ô của cuộc họp trực tuyến hoặc kết hợp đang diễn ra có dải "Vào phòng họp" liền đáy ô (ADR-0043).', 'Cuộc họp mình đã trả lời "Không tham dự" không hiện trên lịch của mình ở mọi kiểu lịch và ở chế độ Danh sách (BR-321); Chủ tọa không bao giờ bị ẩn. Cuộc họp đó vẫn có trong Danh sách cuộc họp.'] },
   { no: '4.1b', name: 'Lịch làm việc – dạng tháng', ucs: 'UC-17', built: 1,
     html: SH('cal', CALBAR('Lịch', 'Tháng', 'Tháng 10/2026') + MONTH()),
-    notes: ['Chọn "Tháng" trong ô kiểu lịch. Tháng và kiểu lịch nằm trên URL (?span=month&month=2026-10), tải lại hay gửi link vẫn mở đúng tháng.', '‹ › chuyển tháng trước / sau; "Hôm nay" về tháng hiện tại, ngày hôm nay khoanh tròn. Lưới luôn đủ 7 cột Thứ Hai → Chủ Nhật, 4 đến 6 hàng; thứ Bảy, Chủ Nhật nền nhạt.', 'Mỗi cuộc họp một dòng: giờ bắt đầu và tên, màu theo trạng thái như dạng tuần; cuộc họp Mật có nhãn "Mật"; Bị từ chối gạch ngang tên. Bấm vào là mở chi tiết cuộc họp.', 'Lưới luôn vừa khung, không có thanh cuộn: các tuần chia đều chiều cao dù tháng có 4, 5 hay 6 tuần. Mỗi ngày hiện số cuộc họp vừa ô (màn thấp ít hơn, màn cao nhiều hơn), còn lại gom thành "+N cuộc họp" cạnh số ngày. Bấm "+N" hoặc số ngày thì chuyển sang dạng tuần chứa ngày đó.', 'Ngày của tháng trước / sau ở đầu và cuối lưới làm mờ nhưng vẫn hiện cuộc họp.', 'Dữ liệu: GET /api/meetings với from = Thứ Hai đầu lưới, to = Chủ Nhật cuối lưới. Server chỉ trả cuộc họp người dùng được xem (BR-29). Một tháng có thể quá 100 cuộc họp (pageSize tối đa) nên phải tải đủ các trang.'] },
+    notes: ['Chọn "Tháng" trong ô kiểu lịch. Tháng và kiểu lịch nằm trên URL (?span=month&month=2026-10), tải lại hay gửi link vẫn mở đúng tháng.', '‹ › chuyển tháng trước / sau; "Hôm nay" về tháng hiện tại, ngày hôm nay khoanh tròn. Lưới luôn đủ 7 cột Thứ Hai → Chủ Nhật, 4 đến 6 hàng; thứ Bảy, Chủ Nhật nền nhạt.', 'Mỗi cuộc họp một dòng: giờ bắt đầu và tên, màu theo trạng thái như dạng tuần; cuộc họp Mật có nhãn "Mật"; Bị từ chối gạch ngang tên. Bấm vào mở thẻ xem nhanh (4.1e).', 'Lưới luôn vừa khung, không có thanh cuộn: các tuần chia đều chiều cao dù tháng có 4, 5 hay 6 tuần. Mỗi ngày hiện số cuộc họp vừa ô (màn thấp ít hơn, màn cao nhiều hơn), còn lại gom thành "+N cuộc họp" cạnh số ngày. Bấm "+N" hoặc số ngày thì chuyển sang dạng tuần chứa ngày đó.', 'Ngày của tháng trước / sau ở đầu và cuối lưới làm mờ nhưng vẫn hiện cuộc họp.', 'Dữ liệu: GET /api/meetings với from = Thứ Hai đầu lưới, to = Chủ Nhật cuối lưới. Server chỉ trả cuộc họp người dùng được xem (BR-29). Một tháng có thể quá 100 cuộc họp (pageSize tối đa) nên phải tải đủ các trang.'] },
   { no: '4.1c', name: 'Lịch làm việc – bộ lọc', ucs: 'UC-17', built: 1,
     html: SH('cal', CALBAR('Lịch', 'Tháng', 'Tháng 10/2026', 1) + MONTH(['wait', 'ok', '', 'live']), CALFILTER(['wait', 'ok', '', 'live'])),
     notes: ['Nút "Bộ lọc" mở bảng nổi; chọn tới đâu lịch lọc tới đó, "Xong" chỉ đóng bảng. Bộ lọc dùng chung cho Tuần làm việc, Cả tuần, Tháng và chế độ Danh sách, lưu trên URL.', 'Trạng thái theo nhóm, mở sẵn Đã duyệt, Đã công bố, Đang diễn ra; Nháp nằm chung nhóm Đã kết thúc. Mức độ chọn một. Nhóm không có cuộc họp trong khoảng đang xem thì mờ; số bên cạnh là số cuộc họp. Không có lọc theo đơn vị (ADR-0004).', 'Trạng thái cuối cùng không tắt được. "Đặt lại" về mặc định; nút "Bộ lọc" hiện số bộ lọc khác mặc định.', 'Bộ lọc chỉ thu hẹp trong những cuộc họp server đã cho phép xem; nó không phải ranh giới quyền.'] },
   { no: '4.1d', name: 'Lịch làm việc – chọn ngày nhanh', ucs: 'UC-17', built: 1,
     html: SH('cal', CALBAR('Lịch', 'Tuần làm việc', '12/10 – 16/10/2026', 0, 1) + CAL(), DATEPICK()),
     notes: ['Bấm tiêu đề khoảng ngày ("12/10 – 16/10/2026 ▾" hay "Tháng 10/2026 ▾") mở bảng chọn ngày nhanh, ở mọi kiểu lịch và cả chế độ Danh sách. Tham khảo bảng "Chọn ngày nhanh" của AI-eCabinet.', 'Ô Tháng, ô Năm và ‹ › chỉ đổi tháng trong bảng; lịch phía sau chưa đổi cho tới khi bấm một ngày.', 'Bấm một ngày: dạng tuần mở tuần chứa ngày đó, dạng tháng mở tháng chứa ngày đó; bảng đóng lại. Bấm ra ngoài hoặc Esc thì đóng mà không đổi gì.', 'Hôm nay viền vàng; dải xanh là những ngày đang xem ở dạng tuần (Tuần làm việc 5 ngày, Cả tuần 7 ngày). Dạng tháng không có dải.'] },
+  { no: '4.1e', name: 'Lịch làm việc – xem nhanh cuộc họp', ucs: 'UC-17 · UC-29', built: 1,
+    html: SH('cal', CALBAR('Lịch') + CAL(), OVERVIEW),
+    notes: ['Bấm một ô ở dạng tuần hoặc dạng tháng mở thẻ này cạnh ô, không chuyển trang. Trên điện thoại thẻ trượt lên từ đáy màn. Nút Đóng hoặc Esc thì đóng.', 'Thẻ có thời gian, hình thức, địa điểm, Liên kết tham gia (cuộc họp trực tuyến, kết hợp), Chủ tọa, vài dòng mô tả và người dự. Mức Thường không có chip.', 'Chưa trả lời lời mời thì có "Xác nhận tham dự?" với hai nút như 4.2. Xem chi tiết mở trang chi tiết.'] },
   { no: '4.2', name: 'Lịch làm việc – danh sách', ucs: 'UC-17', built: 1,
     html: SH('cal', CALBAR('Danh sách') + `<div class="col" style="gap:14px">
       ${[['Thứ Hai', '12/10/2026', 0, [['08:30', '10:00', 'Họp giao ban tuần 42', 'Trực tiếp · Phòng họp A1', '', 'end', 'n', '#9aa3b0']]],
@@ -1126,7 +1162,7 @@ const GROUPS = [
          ['Thứ Năm', '15/10/2026', 0, [['10:00', '12:00', 'Họp triển khai chuyển đổi số', 'Kết hợp · Phòng họp B2', '', 'pub', 'i', '#2f62d0', 'yes'], ['14:30', '16:00', 'Làm việc với Đoàn kiểm tra', 'Trực tiếp · Phòng khách A', '', 'rej', 'i', '#b4232a']]]].map(([w, d, today, items]) => `<div class="agenda-day">
            <div class="dh2">${today ? `<span class="chip" style="background:var(--brand);color:#fff;border-color:var(--brand);border-radius:5px">Hôm nay</span>` : ''}<b style="font-size:15px">${w}</b><span class="sub" style="font-size:14px">${d}</span><span class="grow"></span><span class="sub">${items.length} cuộc họp</span></div>
            ${items.map(([s, e, n, p, ses, st, lv, c, rs]) => `<div class="agenda-it" style="--c:${c}"><span class="tm">${s}<small>${e}</small></span><i class="dt"></i><div class="crd"><div class="grow col" style="gap:5px">
-             <b style="font-size:14px" class="${st === 'rej' ? 'strike' : ''}">${n}</b><span class="row sub" style="gap:14px"><span class="row">${I('r')}${p}</span>${ses ? `<span class="row">${I('r')}${ses}</span>` : ''}</span><span class="row">${S(st)}${L(lv)}${rs === 'yes' ? RSVPC(true) : ''}</span>${rs === 'ask' ? `<span class="row" style="gap:12px;font-weight:500">Xác nhận tham dự?${RSVPB()}</span>` : ''}</div><span class="pill-btn">Xem chi tiết ›</span></div></div>`).join('')}</div>`).join('')}
+             <b style="font-size:14px" class="${st === 'rej' ? 'strike' : ''}">${n}</b><span class="row sub" style="gap:14px"><span class="row">${I('r')}${p}</span>${ses ? `<span class="row">${I('r')}${ses}</span>` : ''}</span><span class="row">${S(st)}${lv === 'n' ? '' : L(lv)}${rs === 'yes' ? RSVPC(true) : ''}</span>${rs === 'ask' ? `<span class="row" style="gap:12px;font-weight:500">Xác nhận tham dự?${RSVPB()}</span>` : ''}</div><span class="pill-btn">Xem chi tiết ›</span></div></div>`).join('')}</div>`).join('')}
 </div>`),
     notes: ['Cùng dữ liệu với dạng lịch; chế độ nằm trên URL (?mode=list).', 'Mỗi cuộc họp một thẻ: giờ bắt đầu / kết thúc, hình thức · địa điểm, trạng thái, mức độ.', 'Cuộc họp đã công bố hoặc đang họp mà mình chưa trả lời có dòng "Xác nhận tham dự?" với hai nút Tham dự / Không tham dự (UC-29): bấm một nút là xong, trả lời một lần, không đổi lại được. Đã trả lời thì thẻ hiện nhãn "Đã xác nhận tham dự"; chọn Không tham dự thì cuộc họp biến mất khỏi lịch của mình (vẫn có trong danh sách cuộc họp). Chủ tọa và cuộc họp chưa công bố không có nút.', 'Ngày không có cuộc họp nào hiện ô viền đứt "Không có cuộc họp". Danh sách cuộn trong trang.'] },
   FROM('4.3', 'Danh sách cuộc họp', { built: 1 }),
@@ -1134,20 +1170,26 @@ const GROUPS = [
     html: LISTV8({ status: 'Mọi trạng thái', when: 'Chưa diễn ra', open: true, rows: LISTROWS().upcoming, pager: '1–3 trong 3 cuộc họp' }),
     notes: ['Ô Thời điểm mở ra bốn lựa chọn cố định cùng \"Mọi thời điểm\": Hôm nay, Tuần này (thứ Hai đến Chủ Nhật), Chưa diễn ra (giờ bắt đầu sau bây giờ), Đã diễn ra (giờ bắt đầu từ bây giờ trở về trước, nên cuộc họp đang diễn ra cũng tính là Đã diễn ra). Không có ô chọn khoảng ngày (BR-30).', 'Trạng thái \"Mọi trạng thái\" bỏ bộ lọc Đang diễn ra mặc định. Tiêu chí nằm trên URL (?when=upcoming&status=all) nên tải lại hay gửi link vẫn đúng (BR-32).'] },
   FROM('4.4', 'Tạo cuộc họp (popup)', { built: 1 }),
-  { no: '4.4c', name: 'Tạo cuộc họp – cuộn xuống', ucs: 'UC-15', built: 1,
-    html: BGLIST(DL('Tạo cuộc họp', MFORM(MROSTER), B('Huỷ') + B('Tạo cuộc họp', 'p', true), 760)),
-    notes: ['Phần dưới của form 4.4. Người tạo có sẵn trong danh sách, nhãn (Tôi), mặc định Chủ tọa. Ô cuối mỗi dòng là nút × gỡ khỏi danh sách.', 'Họp Trực tiếp chỉ có ô Địa điểm, Trực tuyến chỉ có ô Link.'] },
+  { no: '4.4c', name: 'Tạo cuộc họp – tìm người dự', ucs: 'UC-15', built: 1,
+    html: BGLIST(MCREATE({ search: true })),
+    notes: ['Kết quả tìm mở ra và vẫn mở sau mỗi lần chọn; người đã chọn có dấu tích, bấm lại để bỏ. Danh sách tự lật lên trên khi bên dưới hết chỗ.', 'Người tạo có sẵn trong danh sách, nhãn (Tôi), mặc định Chủ tọa. Ô cuối mỗi dòng là nút × gỡ khỏi danh sách.', 'Danh sách người đã chọn cao tối đa khoảng 4 người rồi tự cuộn, cuộn tới người vừa thêm.'] },
   { no: '4.4d', name: 'Tạo cuộc họp – Trực tiếp', ucs: 'UC-15', built: 1,
-    html: BGLIST(DL('Tạo cuộc họp', MODEF('Trực tiếp', 'Ghi âm: Thư ký ghi cả phòng.', F('Địa điểm', 'Ví dụ: Phòng họp A — Tầng 4', { ph: 1, span: 1, hint: 'Phòng họp hoặc địa chỉ.' })), B('Huỷ') + B('Tạo cuộc họp', 'p', true), 760)),
-    notes: ['Chọn Trực tiếp: chỉ có ô Địa điểm, không có ô Link họp trực tuyến.'] },
+    html: BGLIST(MCREATE({ mode: 'Trực tiếp' })),
+    notes: ['Chọn Trực tiếp: chỉ có ô Địa điểm, không có ô Link họp trực tuyến. Mở form là đang chọn Trực tiếp.'] },
   { no: '4.4e', name: 'Tạo cuộc họp – Trực tuyến', ucs: 'UC-15', built: 1,
-    html: BGLIST(DL('Tạo cuộc họp', MODEF('Trực tuyến', 'Ghi âm: mỗi người ghi micro của mình.', F('Link họp trực tuyến', 'Để trống: phòng họp TrustCabinet', { ph: 1, span: 1, hint: 'Không bắt buộc, tối đa 1.000 ký tự.' })), B('Huỷ') + B('Tạo cuộc họp', 'p', true), 760)),
+    html: BGLIST(MCREATE({ mode: 'Trực tuyến' })),
     notes: ['Chọn Trực tuyến: chỉ có ô Link họp trực tuyến, không có ô Địa điểm. Để trống link thì dùng phòng họp TrustCabinet.'] },
+  { no: '4.4f', name: 'Tạo cuộc họp – nhiều ngày', ucs: 'UC-15', built: 1,
+    html: BGLIST(MCREATE({ multi: true })),
+    notes: ['Bấm Nhiều ngày: thời gian tách thành hai dòng Bắt đầu và Kết thúc, mỗi dòng một ngày một giờ, kèm thời lượng ("1 ngày 1 giờ").'] },
+  { no: '4.4g', name: 'Tạo cuộc họp – bỏ cuộc họp đang soạn', ucs: 'UC-15', built: 1,
+    html: BGLIST(MCREATE({}, DL('Bỏ cuộc họp đang soạn?', 'Những gì bạn vừa nhập sẽ không được lưu.', B('Tiếp tục soạn') + B('Bỏ cuộc họp', 'd'), 480))),
+    notes: ['Đã nhập mà đóng hộp thoại thì hỏi lại trước khi bỏ. Rời trang khi đang soạn thì trình duyệt hỏi xác nhận.', 'Form sửa dùng câu "Bỏ thay đổi chưa lưu?" (4.4b).'] },
   { no: '4.4b', name: 'Sửa cuộc họp (popup)', ucs: 'UC-15', built: 1,
-    html: SPR('Thông tin chung', FIELDS(INFO_ROWS('draft', '<span class="sub"><i>Chọn khi gửi duyệt</i></span>')),
-      DL('Chỉnh sửa cuộc họp', MFORM(''), B('Huỷ') + B('Lưu thay đổi', 'p', true), 760),
+    html: SPR('Thông tin chung', FIELDS(INFO_ROWS('<span class="sub"><i>Chọn khi gửi duyệt</i></span>')),
+      DL('Chỉnh sửa cuộc họp', MFORM({ roster: false }), B('Huỷ') + B('Lưu thay đổi', 'p', true), 980),
       { who: WHO.org, actions: ORG_ACT() }),
-    notes: ['Popup mở từ nút \"Chỉnh sửa\" ở trang chi tiết (Nháp hoặc Bị từ chối). Không có mục Thành phần tham dự: thành phần chỉ chọn lúc tạo, sau đó thêm, đổi vai trò và gỡ ở tab Thành phần tham dự (UC-28a–UC-28c); PUT không nhận danh sách thành phần.', 'Có thay đổi chưa lưu mà bấm Huỷ thì hỏi \"Bỏ thay đổi chưa lưu?\" với hai nút Bỏ thay đổi / Tiếp tục sửa.'] },
+    notes: ['Popup mở từ nút \"Chỉnh sửa\" ở trang chi tiết (Nháp hoặc Bị từ chối). Không có ô Người dự họp: thành phần chỉ chọn lúc tạo, sau đó thêm, đổi vai trò và gỡ ở tab Thành phần tham dự (UC-28a–UC-28c); PUT không nhận danh sách thành phần.', 'Có thay đổi chưa lưu mà bấm Huỷ thì hỏi \"Bỏ thay đổi chưa lưu?\" với hai nút Bỏ thay đổi / Tiếp tục sửa.'] },
   FROM('4.5', 'Chi tiết – Thông tin chung', { built: 1 }),
   { no: '4.5b', name: 'Chi tiết – hỏi tham dự', ucs: 'UC-29 · UC-16', built: 1,
     html: SPR('Thông tin chung', INFO_PUB, '', { who: WHO.mem, st: 'pub', bar: RSVPBAR }),
@@ -1156,22 +1198,22 @@ const GROUPS = [
     html: SPR('Thông tin chung', INFO_PUB, '', { who: WHO.mem, st: 'pub', chip: RSVPC(true) }),
     notes: ['Sau khi trả lời thanh hỏi biến mất; câu trả lời hiện thành nhãn \"Đã xác nhận tham dự\" (hoặc \"Không tham dự\") cạnh tiêu đề. Không có nút đổi lại.', 'Góc nhìn Chủ tọa (và Người tổ chức, Người duyệt không được mời) giống màn này nhưng không có nhãn phản hồi: Chủ tọa không trả lời lời mời (MSG286).'] },
   { no: '4.5d', name: 'Chi tiết – cuộc họp đã huỷ', ucs: 'UC-75', built: 1,
-    html: SPR('Thông tin chung', INFO_PUB.replace(S('pub'), S('cancel')), '', { who: WHO.org, st: 'cancel', hist: [...HIST_T.slice(0, 4), ['Huỷ cuộc họp', '16:05 12/10/2026', '#7a8596']], bar: WBAR('#7a8596', 'Cuộc họp đã huỷ', 'Bạn huỷ lúc 16:05 12/10/2026.<br>Lãnh đạo đi công tác, sẽ xếp lịch lại sau.', '') }),
+    html: SPR('Thông tin chung', INFO_PUB, '', { who: WHO.org, st: 'cancel', hist: [...HIST_T.slice(0, 4), ['Huỷ cuộc họp', '16:05 12/10/2026', '#7a8596']], bar: WBAR('#7a8596', 'Cuộc họp đã huỷ', 'Bạn huỷ lúc 16:05 12/10/2026.<br>Lãnh đạo đi công tác, sẽ xếp lịch lại sau.', '') }),
     notes: ['Thanh dưới đầu trang ghi ai huỷ, lúc nào và lý do (BR-298). Cuộc họp quá 24 giờ sau giờ bắt đầu mà chưa bắt đầu thì hệ thống tự huỷ: thanh ghi "Cuộc họp đã tự huỷ" và "Hệ thống huỷ lúc …".', 'Cuộc họp đã huỷ không còn nút nào ở đầu trang. Trên lịch, nhóm Đã huỷ gạch ngang tên.'] },
   FROM('4.6', 'Gửi duyệt', { built: 1 }),
   FROM('4.7', 'Duyệt / từ chối', { built: 1 }),
   FROM('4.8', 'Công bố cuộc họp'),
   FROM('4.9', 'Dời lịch'),
   { no: '4.10', name: 'Huỷ cuộc họp', ucs: 'UC-75', built: 1,
-    html: SPR('Thông tin chung', FIELDS(INFO_ROWS('pub', 'Võ Thị Lan')),
+    html: SPR('Thông tin chung', FIELDS(INFO_ROWS('Võ Thị Lan')),
       DL('Huỷ cuộc họp?', `<div class="sub">${MS.title}</div>${F('Lý do huỷ', 'Lãnh đạo đi công tác, sẽ xếp lịch lại sau.', { req: 1, area: 1 })}<div class="sub" style="text-align:right">41/1.000</div><div class="sub">Mọi người được mời sẽ nhận thông báo và email kèm lý do. Không hoàn tác được.</div>`, B('Giữ cuộc họp') + B('Huỷ cuộc họp', 'd', true), 500),
       { who: WHO.org, st: 'pub', actions: ORG_ACT('Dời lịch') }),
     notes: ['Nút đỏ "Huỷ cuộc họp" ở đầu trang, chỉ Người tổ chức, trước khi cuộc họp bắt đầu. Lý do bắt buộc, tối đa 1.000 ký tự. Cuộc họp chưa công bố thì câu cuối là: Cuộc họp chưa công bố nên không ai nhận thông báo. Không hoàn tác được. Sau khi huỷ xem màn 4.5d.'] },
   { no: '4.11', name: 'Bắt đầu sớm hơn lịch', ucs: 'UC-43', built: 1,
-    html: SPR('Thông tin chung', FIELDS(INFO_ROWS('pub', 'Võ Thị Lan')), DL('Bắt đầu sớm hơn lịch?', `<div>“${MS.title}” được xếp lịch lúc 08:30 15/10/2026.</div>`, B('Huỷ') + B('Vẫn bắt đầu', 'p'), 480), { who: WHO.chair, st: 'pub', actions: `<span class="b lg" style="background:#0e6b44;border-color:#0e6b44;color:#fff">${I()}Bắt đầu họp</span>` }),
+    html: SPR('Thông tin chung', FIELDS(INFO_ROWS('Võ Thị Lan')), DL('Bắt đầu sớm hơn lịch?', `<div>“${MS.title}” được xếp lịch lúc 08:30 15/10/2026.</div>`, B('Huỷ') + B('Vẫn bắt đầu', 'p'), 480), { who: WHO.chair, st: 'pub', actions: `<span class="b lg" style="background:#0e6b44;border-color:#0e6b44;color:#fff">${I()}Bắt đầu họp</span>` }),
     notes: ['Chủ tọa bấm Bắt đầu họp trước giờ đã xếp thì hỏi lại. Đúng giờ thì bắt đầu ngay, không hỏi.', 'Cuộc họp chưa có Thư ký thì hiện hộp "Chưa thể bắt đầu": Cuộc họp cần ít nhất một Thư ký.'] },
   { no: '4.12', name: 'Kết thúc họp', ucs: 'UC-44', built: 1,
-    html: SPR('Thông tin chung', FIELDS(INFO_ROWS('live', 'Võ Thị Lan')), DL('Kết thúc cuộc họp?', `<div>“${MS.title}” sẽ kết thúc và không mở lại được. Phòng họp trực tuyến đóng, mọi người bị ngắt kết nối.</div>`, B('Huỷ') + B('Kết thúc họp', 'd'), 500), { who: WHO.chair, st: 'live', actions: `<span class="row">${JOIN}${B('Kết thúc họp', 'lg', true)}</span>` }),
+    html: SPR('Thông tin chung', FIELDS(INFO_ROWS('Võ Thị Lan')), DL('Kết thúc cuộc họp?', `<div>“${MS.title}” sẽ kết thúc và không mở lại được. Phòng họp trực tuyến đóng, mọi người bị ngắt kết nối.</div>`, B('Huỷ') + B('Kết thúc họp', 'd'), 500), { who: WHO.chair, st: 'live', actions: `<span class="row">${JOIN}${B('Kết thúc họp', 'lg', true)}</span>` }),
     notes: ['Cuộc họp họp trực tiếp thì câu hỏi không có phần phòng họp trực tuyến.'] },
 ]},
 { code: 'FE-05', name: 'Chương trình nghị sự', desc: 'Nghị sự thuộc thẳng cuộc họp. Thư ký soạn khi Nháp hoặc Bị từ chối; khi Đang diễn ra, Chủ tọa điều hành mục hiện tại.', screens: [
@@ -1214,7 +1256,7 @@ const GROUPS = [
       [`<span class="row" style="gap:10px">${P('Phạm Đức Long', 'long.pd@trustsoft.vn')}${RSVPC(false)}</span>`, C('Thành viên'), SHOW('Vắng')],
       [P('Bùi Thanh Sơn', 'son.bt@trustsoft.vn'), C('Thành viên'), SHOW('')],
       [P('Ngô Thanh Vân', 'van.ngo@doitac.vn · khách ngoài'), C('Khách'), SHOW('Có mặt')],
-    ])}${PAGER1('1–6 trong 6 thành phần')}</div>`, '', { who: WHO.mem, st: 'live', meta: ['Bắt đầu 08:32', 'Kết hợp · Phòng 2.1, tầng 2'] }),
+    ])}${PAGERN('1–6 trong 6 thành phần')}</div>`, '', { who: WHO.mem, st: 'live', meta: ['Bắt đầu 08:32', 'Kết hợp · Phòng 2.1, tầng 2'] }),
     notes: ['Người không phải Thư ký chỉ đọc điểm danh: chấm màu và chữ \"Có mặt\" / \"Vắng\", hoặc \"Chưa điểm danh\" (khác với Vắng). Không có ô chọn, không có cột Thao tác, không có bộ đếm.', 'Ai xem được cuộc họp thì thấy điểm danh. Thư ký sửa ở màn khác thì bảng tự tải lại (SignalR); người này thấy kết quả mới mà không phải làm gì.'] },
   FROM('6.4', 'Phản hồi lời mời'),
   { no: '6.4b', name: 'Phản hồi lời mời – đã trả lời', ucs: 'UC-29', phone: 1, built: 1,
@@ -1279,7 +1321,7 @@ const GROUPS = [
         <div class="row" style="gap:10px">${['Micro MacBook Pro', 'Loa ngoài', 'FaceTime HD Camera'].map((t) => `<span class="pj-dev">${I()}<span class="grow" style="overflow:hidden;text-overflow:ellipsis">${t}</span><span class="caret" style="width:7px;height:7px;border-right:1.5px solid var(--mute);border-bottom:1.5px solid var(--mute);transform:rotate(45deg);flex:none"></span></span>`).join('')}</div></div>
         <div class="col pj-side"><h2>Sẵn sàng tham gia?</h2><b>${M.title}</b><span class="chip lv secret">${I()}Mật</span><span class="sub">Đang có 6 người trong phòng</span><span class="pj-rec row" style="gap:5px">${I()}Cuộc họp được ghi âm để lập biên bản · tự xoá sau 180 ngày</span>
           <span class="pj-join">Vào phòng</span><span class="pj-back">‹ Quay lại trang cuộc họp</span></div></div></div>`,
-    notes: ['Như Google Meet: khung xem trước (camera mặc định tắt, micro mặc định bật), hai nút tròn bật/tắt ở đáy khung; trình duyệt nhớ lựa chọn cho lần sau.', 'Nút ⋯ góc trái khung là Cài đặt. Ba nút chọn Micro, Loa, Camera dưới khung. Chưa cấp quyền thì nút ghi "Chưa có quyền dùng micro…" và bị khoá; trình duyệt không cho chọn loa (Safari, Firefox cũ) thì không có nút Loa.', 'Nhãn mức mật chỉ hiện với cuộc họp Hạn chế/Mật. Dòng dưới là số người đang trong phòng, hoặc "Không có người nào khác ở đây".', 'Ngoài giờ họp, cuộc họp đã kết thúc hoặc họp trực tiếp: màn này chỉ còn một câu báo ("Phòng họp chỉ mở khi cuộc họp đang diễn ra.", "Cuộc họp đã kết thúc, phòng họp đã đóng.", "Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến.") và nút "Về trang cuộc họp". Rớt mạng thì cùng kiểu, kèm nút "Vào lại".'] },
+    notes: ['Như Google Meet: khung xem trước (camera mặc định tắt, micro mặc định bật), hai nút tròn bật/tắt ở đáy khung; trình duyệt nhớ lựa chọn cho lần sau.', 'Nút ⋯ góc trái khung là Cài đặt. Ba nút chọn Micro, Loa, Camera dưới khung. Chưa cấp quyền thì nút ghi "Chưa có quyền dùng micro…" và bị khoá; trình duyệt không cho chọn loa (Safari, Firefox cũ) thì không có nút Loa.', 'Nhãn mức mật chỉ hiện với cuộc họp Hạn chế/Mật. Dòng dưới là số người đang trong phòng, hoặc "Không có người nào khác ở đây".', 'Cuộc họp chưa công bố: phòng họp không tồn tại với người dùng, đường dẫn /room hiện trang Không tìm thấy (1.4).', 'Ngoài giờ họp, cuộc họp đã kết thúc hoặc họp trực tiếp: màn này chỉ còn một câu báo ("Phòng họp chỉ mở khi cuộc họp đang diễn ra.", "Cuộc họp đã kết thúc, phòng họp đã đóng.", "Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến.") và nút "Về trang cuộc họp". Rớt mạng thì cùng kiểu, kèm nút "Vào lại".'] },
   { no: '8.1b', name: 'Phòng chờ – chọn thiết bị', ucs: 'UC-37 · UC-39d',
     html: `<div class="pj"><div class="pj-top"><span class="pj-mark">★</span><b style="font-size:19px">TrustCabinet</b><span class="grow"></span>
       <span class="col" style="align-items:flex-end;gap:0;line-height:1.3"><span>Nguyễn Minh Châu</span><span class="sub">chau.nm@trustcabinet.vn</span></span>${A('Nguyễn Minh Châu')}</div>
@@ -1352,9 +1394,12 @@ const GROUPS = [
         B('Huỷ', 'gh') + B('Tải lên', 'p', true), 520), { who: WHO.sec, st: 'end' }),
     notes: ['Mở từ nút "Tải tệp lên" ở tab Bản ghi. Ô xác nhận là bắt buộc vì bản ghi là dữ liệu cá nhân (Luật 91/2025/QH15, NĐ 356/2025/NĐ-CP).', 'Bật mic phòng (9.3) hỏi cùng nội dung này, hộp có tên "Bắt đầu ghi âm".'] },
   { no: '9.3', name: 'Ô ghi âm mic phòng', ucs: 'UC-61', built: 1,
-    html: SPR('Nội dung cuộc họp', `<div class="panel">${AGHEAD}${AG2([['1', 'Báo cáo kết quả Sprint 5', 'Trần Quốc Bảo', 1, 'done', 1], ['2', 'Phạm vi biểu quyết trong họp', 'Lê Thu Hà', 2, 'cur']])}</div>`, `<div class="card col" style="position:absolute;right:16px;bottom:16px;width:320px;z-index:5;box-shadow:0 6px 20px rgba(26,36,51,.18)"><div class="row" style="padding:9px 12px;background:var(--brand);color:#fff;border-radius:6px 6px 0 0"><b class="grow">${MS.title}</b><span class="b sq">−</span></div>
-      <div class="col" style="padding:12px;gap:8px"><b class="row" style="gap:6px"><i class="dot"></i>Mic phòng đang tắt</b><div class="row">${I('lg')}<div class="grow" style="height:30px;background:var(--fill);border-radius:4px"></div></div><span class="sub">Báo mọi người trước khi bật mic.</span></div></div>`, { who: WHO.sec, st: 'live' }),
+    html: MICPAGE(`<div class="card col" style="position:absolute;right:16px;bottom:16px;width:320px;z-index:5;box-shadow:0 6px 20px rgba(26,36,51,.18)"><div class="row" style="padding:9px 12px;background:var(--brand);color:#fff;border-radius:6px 6px 0 0"><b class="grow">${MS.title}</b><span class="b sq">−</span></div>
+      <div class="col" style="padding:12px;gap:8px"><b class="row" style="gap:6px"><i class="dot"></i>Mic phòng đang tắt</b><div class="row">${I('lg')}<div class="grow" style="height:30px;background:var(--fill);border-radius:4px"></div></div><span class="sub">Báo mọi người trước khi bật mic.</span></div></div>`),
     notes: ['Nút icon: góc trên là Thu nhỏ ô ghi âm; nút bên trái là Bật mic.', 'Ô nổi ở góc phải dưới, kéo đi được và thu nhỏ được, nằm cùng trang nên chuyển tab không làm dừng ghi. Hiện với Thư ký của cuộc họp trực tiếp đang diễn ra.', 'Bấm nút mic thì hỏi xác nhận (như 9.2) rồi ghi. Đang ghi thì mọi người thấy nhãn đỏ "Đang ghi âm" cạnh tiêu đề (ADR-0041). Máy khác đang giữ lượt ghi thì ô báo và cho "Lưu phần đã ghi".'] },
+  { no: '9.3b', name: 'Ô ghi âm mic phòng – thu nhỏ', ucs: 'UC-61', built: 1,
+    html: MICPAGE(`<span style="position:absolute;right:16px;bottom:16px;width:56px;height:56px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;z-index:5;box-shadow:0 6px 20px rgba(26,36,51,.18)">${I('lg')}</span>`),
+    notes: ['Thu nhỏ ô 9.3 thành nút tròn ở góc phải dưới; kéo đi được, bấm để mở lại. Rê chuột thấy tên cuộc họp và trạng thái mic.', 'Icon micro gạch chéo là mic đang tắt, micro thường là đang ghi. Có lỗi hoặc còn phần chưa lưu thì ô tự mở ra.'] },
   { no: '9.4', name: 'Giọng nói của tôi', ucs: 'SCRUM-35 · ADR-0027', built: 1,
     html: SH('voice', HEAD('Giọng nói của tôi', 'Voice ID giúp Thư ký biết ai đang phát biểu trong bản gỡ băng của cuộc họp bạn dự.') + `<div class="card pad col" style="gap:10px;padding:18px 20px"><b style="font-size:15px">Bật nhận diện giọng nói</b>
       ${[['Mục đích', 'Gợi ý tên người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự, để Thư ký lập biên bản.'], ['Lưu gì', 'bản ghi giọng mẫu bạn đọc và đặc trưng giọng (một dãy số), cả hai đã mã hoá. Chỉ bạn nghe lại được bản ghi mẫu.'], ['Dùng ở đâu', 'chỉ so với giọng trong bản ghi các cuộc họp bạn tham dự. Máy chỉ gợi ý, Thư ký quyết định tên.'], ['Quyền của bạn', 'xem và xoá từng giọng mẫu, rút lại đồng ý bất cứ lúc nào ngay trên trang này; rút lại thì giọng mẫu và mọi gợi ý bị xoá ngay.'], ['Bên kiểm soát dữ liệu', 'Nhóm đồ án SEP490-G116, đơn vị vận hành bản thử nghiệm TrustCabinet']].map(([k, v]) => `<span>• <b>${k}:</b> ${v}</span>`).join('')}
@@ -1377,10 +1422,10 @@ const GROUPS = [
     html: SPR('Bản ghi', `<div class="panel"><div class="tb" style="border-bottom:0"><b class="grow">Bản ghi</b>${B('Tải tệp lên', '', true)}</div>${RECH('hop-sprint6-du-phong.m4a', 'Tải lên', '<span class="num">58:02 · 41 MB · 10:05 15/10/2026</span>')}
       <div class="row" style="margin:0 14px;padding:8px 12px;gap:12px;background:var(--fill);border-radius:6px"><span class="num sub">14:02 / 58:02</span><div class="bar grow"><i style="width:24%"></i></div>${I()}<span class="b sq p">▶</span>${I()}<span class="sub">1×</span>${I()}</div>
       <div class="row" style="padding:10px 14px 6px">${C('Máy nhận dạng')}<span class="sub grow">Chữ do máy tạo, có thể sai — bấm vào mốc giờ để nghe lại đoạn đó.</span>${I()}${I()}</div>
-      <div class="row wrap" style="margin:0 14px 8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;gap:8px 16px">${[['Lê Thu Hà', '12:40'], ['Người nói 3', '09:15'], ['Đỗ Hải Yến', '05:02']].map(([n, d]) => `<span class="row" style="gap:8px;position:relative"><span class="in val" style="gap:6px"><i class="dot" style="background:var(--brand)"></i>${n}<span class="caret" style="margin-left:6px"></span></span><span class="sub num">${d}</span>${n === 'Người nói 3' ? `<div class="dlg" style="position:absolute;left:0;top:38px;width:280px;z-index:6;max-height:none;border:1px solid var(--line);padding:4px 0">${[['Phạm Đức Long', 'Khớp giọng nhất'], ['Lê Thu Hà', ''], ['Đỗ Hải Yến', ''], ['Trần Quốc Bảo', '']].map(([p, h], i) => `<div class="row" style="padding:7px 12px;gap:8px;${i ? '' : 'background:var(--brand-soft)'}"><span class="grow">${p}</span>${h ? `<span class="sub">${h}</span>` : ''}</div>`).join('')}</div>` : ''}</span>`).join('')}</div>
+      <div class="row wrap" style="margin:0 14px 8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;gap:8px 16px">${[['Lê Thu Hà', '12:40'], ['Người nói 3', '09:15'], ['Đỗ Hải Yến', '05:02']].map(([n, d]) => `<span class="row" style="gap:8px;position:relative"><span class="in val" style="gap:6px"><i class="dot" style="background:var(--brand)"></i>${n}<span class="caret" style="margin-left:6px"></span></span><span class="sub num">${d}</span>${n === 'Người nói 3' ? `<div class="dlg" style="position:absolute;left:0;top:38px;width:280px;z-index:6;max-height:none;border:1px solid var(--line);padding:4px 0">${[['Phạm Đức Long', 'Khớp giọng nhất'], ['Lê Thu Hà', ''], ['Đỗ Hải Yến', ''], ['Trần Quốc Bảo', ''], ['Ngô Thanh Vân', 'Khách']].map(([p, h], i) => `<div class="row" style="padding:7px 12px;gap:8px;${i ? '' : 'background:var(--brand-soft)'}"><span class="grow">${p}</span>${h ? `<span class="sub">${h}</span>` : ''}</div>`).join('')}</div>` : ''}</span>`).join('')}</div>
       <div class="col" style="margin:0 14px 12px;padding:6px 0;border:1px solid var(--line);border-radius:6px;gap:0">${[['12:40', 'Lê Thu Hà', 'Đề xuất chỉ biểu quyết trong cuộc họp, bỏ phiếu trước và sau họp.', 'đã sửa'], ['14:02', 'Người nói 3', 'Bên tôi đồng ý, miễn biên bản ghi rõ kết luận.', 'edit'], ['15:30', 'Đỗ Hải Yến', 'Ghi nhận. Chủ tọa mở biểu quyết cho mục 2.', '']].map(([t, n, x, k]) => `<div style="display:grid;grid-template-columns:44px 18px minmax(0,1fr);column-gap:8px;padding:0 14px"><span class="num sub" style="padding-top:8px;text-align:right">${t}</span><span style="position:relative;display:flex;justify-content:center"><i style="position:absolute;top:0;bottom:0;left:9px;width:1px;background:var(--line)"></i><i class="dot" style="position:relative;margin-top:11px;width:10px;height:10px;background:var(--brand)"></i></span><div class="col" style="gap:3px;padding:4px 0 8px;min-width:0"><span class="row" style="gap:10px"><b style="font-size:13px">${n}</b><span class="caret" style="width:7px;height:7px;border-right:1.5px solid var(--mute);border-bottom:1.5px solid var(--mute);transform:rotate(45deg)"></span>${I()}</span>${k === 'edit' ? `<div class="in val" style="height:auto;min-height:52px;padding:8px 10px;align-items:flex-start;border-color:var(--brand)">${x}</div><div class="row" style="gap:6px"><span class="sub grow">Enter để lưu · Esc để huỷ</span>${B('Huỷ', 'gh')}${B('Lưu', 'p')}</div>` : `<span>${x}${k ? ` <span class="sub">${k}</span>` : ''}</span>`}</div></div>`).join('')}</div></div>`, '',
       { who: WHO.sec, st: 'end' }),
-    notes: ['Thư ký chọn tên ở hàng người nói hoặc ngay trên tên tại dòng lời nói. Chọn một lần là đặt tên cho mọi đoạn của giọng đó; chỉ tên Thư ký đã gán mới thay cho "Người nói N".', 'Giọng khớp giọng mẫu thì người đó đứng đầu danh sách với nhãn "Khớp giọng nhất". Máy chỉ gợi ý, Thư ký quyết định. Chỉ gợi ý với người đã đồng ý ở màn 9.4.', 'Bấm vào câu để sửa: Enter lưu, Esc huỷ; câu đã sửa có nhãn "đã sửa". Bấm mốc giờ hoặc nút phát để nghe lại từ đoạn đó.'] },
+    notes: ['Thư ký chọn tên ở hàng người nói hoặc ngay trên tên tại dòng lời nói. Chọn một lần là đặt tên cho mọi đoạn của giọng đó; chỉ tên Thư ký đã gán mới thay cho "Người nói N".', 'Giọng khớp giọng mẫu thì người đó đứng đầu danh sách với nhãn "Khớp giọng nhất". Máy chỉ gợi ý, Thư ký quyết định. Chỉ gợi ý với người đã đồng ý ở màn 9.4.', 'Ô chọn có cả Khách được mời chưa thu hồi, nhãn "Khách", hiện tên tự khai (SCRUM-35). Khách không được gợi ý Voice ID.', 'Bấm vào câu để sửa: Enter lưu, Esc huỷ; câu đã sửa có nhãn "đã sửa". Bấm mốc giờ hoặc nút phát để nghe lại từ đoạn đó.'] },
   FROM('10.2', 'Tóm tắt cuộc họp'),
 ]},
 { code: 'FE-11', name: 'Biểu quyết', desc: 'Chủ tọa chuẩn bị biểu quyết nháp từ khi cuộc họp Đã duyệt; chỉ mở khi Đang diễn ra, mỗi lúc một biểu quyết. Biểu quyết thuộc cuộc họp, không gắn mục nghị sự. Người trong danh sách chốt lúc mở bỏ phiếu một lần; Chủ tọa đóng phiếu và ghi kết luận Thông qua / Không thông qua / Hoãn. Không quorum; kết thúc cuộc họp không tự đóng phiếu nhưng ngừng nhận phiếu.', screens: [

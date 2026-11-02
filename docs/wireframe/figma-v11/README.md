@@ -1,6 +1,6 @@
 # Plugin Figma v11
 
-Plugin dựng lại các màn của [TrustCabinet-wireframe-v11.html](../TrustCabinet-wireframe-v11.html) (01/11/2026) trong Figma Desktop.
+Plugin dựng lại các màn của [TrustCabinet-wireframe-v11.html](../TrustCabinet-wireframe-v11.html) (01/11/2026, cập nhật 02/11/2026) trong Figma Desktop.
 
 - `manifest.json` — khai báo plugin, import qua **Plugins → Development → Import plugin from manifest…**
 - `code.js` — dữ liệu các màn (`LAYOUT`) và code dựng màn; sinh bằng `_tools/mk_plugin.js`, không sửa tay.
