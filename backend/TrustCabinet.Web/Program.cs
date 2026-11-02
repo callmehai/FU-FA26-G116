@@ -28,6 +28,13 @@ using TrustCabinet.Web.Endpoints;
 // ADR-0044: this same app, started by PdfPageCounter to parse one uploaded PDF, so a hostile file can only end the child.
 if (args is [PdfPageCounter.ChildArgument, var pdfPath]) Environment.Exit(await PdfPageCounter.RunAsChildAsync(pdfPath));
 
+// ADR-0047: the deploy's deliberate migration step — migrate, seed reference data, exit; no web server.
+if (args is [DatabaseMigrationCommand.Argument, .. var migrationArguments])
+{
+    Environment.ExitCode = await DatabaseMigrationCommand.RunAsync(migrationArguments);
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTrustCabinetDatabase(builder.Configuration);
@@ -154,7 +161,8 @@ var app = builder.Build();
 // at. Set Database:MigrateAndSeedOnStartup to false to take that over yourself.
 //
 // Never outside Development: a web app that migrates on boot will do it from every instance at
-// once, and a deployment wants that step deliberate and reviewable.
+// once, and a deployment wants that step deliberate and reviewable — the `--migrate` switch above,
+// which the test server's deploy runs before it starts the new version (ADR-0047).
 if (app.Environment.IsDevelopment()
     && app.Configuration.GetValue<bool>("Database:MigrateAndSeedOnStartup"))
 {
@@ -237,14 +245,20 @@ app.MapVoiceIdEndpoints();
 // SCRUM-15: Resend's delivery webhook (ADR-0031).
 app.MapEmailEndpoints();
 
-// Health endpoint — the frontend calls this to confirm the backend is alive.
-app.MapGet("/api/health", () => Results.Ok(new
+// Health endpoint. It answers 503 when the database cannot be reached, so the deploy's health check
+// (ADR-0047) rolls a version back that started but cannot serve anything.
+app.MapGet("/api/health", async (TrustCabinetDbContext db, CancellationToken ct) =>
 {
-    status = "ok",
-    service = "TrustCabinet.Web",
-    version = "0.1.0",
-    timeUtc = DateTimeOffset.UtcNow
-}));
+    var databaseUp = await db.Database.CanConnectAsync(ct);
+    return Results.Json(new
+    {
+        status = databaseUp ? "ok" : "unavailable",
+        service = "TrustCabinet.Web",
+        version = "0.1.0",
+        database = databaseUp ? "ok" : "unreachable",
+        timeUtc = DateTimeOffset.UtcNow
+    }, statusCode: databaseUp ? StatusCodes.Status200OK : StatusCodes.Status503ServiceUnavailable);
+});
 
 // The SPA uses client-side routing: any path that matches neither an API endpoint nor a static
 // file falls back to index.html so React Router can handle it (e.g. loading /meetings directly).

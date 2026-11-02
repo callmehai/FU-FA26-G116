@@ -7,7 +7,8 @@ using TrustCabinet.Infrastructure.Authentication;
 namespace TrustCabinet.Infrastructure.Seed;
 
 /// <summary>
-/// Demo rows for local development — NOT reference data, and never seeded outside Development.
+/// Demo rows for local development — NOT reference data. Seeded outside Development only when an operator
+/// asks for it with <c>--migrate --seed-demo</c>, to rebuild the shared test server (ADR-0047).
 ///
 /// The meetings once mirrored the frontend's hard-coded sampleData.ts, so screens built against it
 /// looked the same on the real endpoint. SCRUM-18 deleted that file; this is now the only copy.
@@ -37,8 +38,8 @@ public static class DevelopmentDataSeeder
         // pasted in as a literal — a hash in the source would still be a credential in a public
         // repository, and it would silently stop matching if the hasher's parameters changed.
         //
-        // Development only: this seeder never runs outside it (see MigrateAndSeedDevelopmentAsync),
-        // and nothing in a real deployment has a known password.
+        // Development and the shared test server only (see MigrateAndSeedDevelopmentAsync); nothing
+        // in a real deployment has a known password.
         var demoPasswordHash = new PasswordHasher().Hash(DemoPassword);
 
         if (await db.Users.AnyAsync(ct))

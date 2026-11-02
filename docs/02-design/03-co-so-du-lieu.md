@@ -71,8 +71,13 @@ dotnet run --project backend/TrustCabinet.Web
 không cần nhớ lệnh nào sau khi `git pull` về một migration mới. Muốn tự kiểm soát thì đặt
 `Database:MigrateAndSeedOnStartup` thành `false` trong `appsettings.Development.json`.
 
-Ngoài Development thì **không bao giờ** tự migrate — triển khai thật chạy `dotnet ef database
-update` như một bước có người duyệt.
+Ngoài Development thì **không bao giờ** tự migrate khi khởi động. Migrate là một bước riêng của
+triển khai: `dotnet TrustCabinet.Web.dll --migrate` áp dụng migration còn thiếu cùng dữ liệu tham chiếu
+rồi thoát, không mở web server (mã thoát 0 là xong, 1 là lỗi). Server test chạy lệnh này ở mỗi lần
+deploy, sau khi backup database và trước khi đổi sang bản mới
+([ADR-0047](../05-decisions/0047-server-test-chay-staging-deploy-an-toan.md),
+[deploy/README.md](../../deploy/README.md)). Ở máy mình cũng chạy được:
+`dotnet run --project backend/TrustCabinet.Web -- --migrate`.
 
 ### 4. Phòng họp trực tuyến (chỉ khi làm phần gọi)
 
@@ -167,9 +172,10 @@ Cả 4 tài khoản dùng chung một mật khẩu: **`TrustCabinet@2026`** (h�
 `DevelopmentDataSeeder`). Mật khẩu được băm lúc seed chứ không dán sẵn hash vào source — một hash
 trong repo public thì vẫn là credential, và nó sẽ âm thầm hết khớp nếu tham số của hasher đổi.
 
-> **Mật khẩu biết trước này chỉ tồn tại trong Development.** `DevelopmentDataSeeder` không bao giờ
-> chạy ngoài Development (xem `MigrateAndSeedDevelopmentAsync`), nên không có triển khai thật nào
-> mang tài khoản mật khẩu công khai. Bản ghi trước đây của tài liệu này — *"để repo public mà seed
+> **Mật khẩu biết trước này chỉ tồn tại trong Development và trên server test.** `DevelopmentDataSeeder`
+> chỉ chạy khi app khởi động ở Development (xem `MigrateAndSeedDevelopmentAsync`), hoặc khi người vận hành
+> gọi rõ `--migrate --seed-demo` để dựng lại server test từ database rỗng (ADR-0047). Không triển khai
+> thật nào mang tài khoản mật khẩu công khai. Bản ghi trước đây của tài liệu này — *"để repo public mà seed
 > sẵn mật khẩu biết trước là mời người ta vào"* — nói về việc seed mật khẩu cho **mọi** môi trường;
 > ranh giới Development mới là thứ làm cho việc này an toàn, chứ không phải việc giấu mật khẩu đi.
 

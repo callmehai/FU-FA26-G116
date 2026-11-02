@@ -3,22 +3,26 @@
 # Hướng dẫn: deploy/README.md. Lý do chọn cách này: docs/05-decisions/0015-server-test-tren-lightsail.md
 #
 #   cp deploy/.env.example deploy/.env   # rồi điền giá trị thật, .env đã bị gitignore
-#   docker compose -f deploy/docker-compose.yml up -d --build
+#   docker compose -f deploy/docker-compose.yml build app
+#   docker compose -f deploy/docker-compose.yml run --rm app --migrate --seed-demo   # database mới
+#   docker compose -f deploy/docker-compose.yml up -d
 name: trustcabinet-test
 
 services:
   app:
     # Tên cố định: .github/workflows/deploy.yml build image trên GitHub rồi nạp vào server dưới
-    # đúng tên này; `up -d --build` trên server vẫn build ra cùng tên nếu cần làm tay.
+    # đúng tên này; `up -d --build` trên server vẫn build ra cùng tên nếu cần làm tay. Build tay
+    # thì nhớ migrate trước khi `up -d`: deploy/README.md, "Migrate và backup".
     image: trustcabinet-app:latest
     build:
       context: ..
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      # Development có chủ đích: app tự migrate và seed 4 tài khoản demo khi khởi động. Ngoài
-      # Development thì không có tài khoản nào để đăng nhập — xem ADR-0015.
-      ASPNETCORE_ENVIRONMENT: Development
+      # Staging (ADR-0047): lỗi không trả stack trace, app không tự migrate khi khởi động. Workflow
+      # deploy migrate có chủ đích bằng `docker compose run --rm app --migrate` trước khi đổi sang bản
+      # mới. Thư tới @trustcabinet.local (tài khoản demo) vẫn không gửi đi: appsettings.Staging.json.
+      ASPNETCORE_ENVIRONMENT: Staging
       # App chỉ nhận request qua Caddy (không mở cổng ra ngoài), nên tin X-Forwarded-For từ Caddy
       # là an toàn — nhật ký kiểm toán ghi IP thật của người dùng thay vì IP của Caddy.
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"

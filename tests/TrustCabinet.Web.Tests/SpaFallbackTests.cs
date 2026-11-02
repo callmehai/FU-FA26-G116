@@ -42,11 +42,13 @@ public class SpaFallbackTests : IClassFixture<SpaFallbackTests.WithBuiltFrontend
     [Fact]
     public async Task Health_still_answers_with_a_built_frontend()
     {
-        // HealthEndpointTests runs without an index.html; this is the same call with one present.
+        // HealthEndpointTests runs without an index.html; this is the same call with one present. The
+        // placeholder database is unreachable, so the endpoint answers 503 — but still itself, in JSON.
         var response = await _factory.CreateClient().GetAsync("/api/health");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        Assert.DoesNotContain(WithBuiltFrontendFactory.Marker, await response.Content.ReadAsStringAsync());
     }
 
     [Fact]

@@ -10,13 +10,18 @@
 # RAM, tự build mất 15–20 phút và đốt hết CPU burst. Không dùng registry (GHCR) để khỏi phải cấp
 # thêm token đọc package cho server.
 #
+# Deploy an toàn (ADR-0047): chỉ main; không đưa server về commit cũ hơn bản đang chạy; image app đổi
+# thì backup database rồi migrate có chủ đích trước khi đổi container; health check đỏ thì quay về image
+# và commit trước. Migration đã chạy không tự hoàn tác — khôi phục từ backup: deploy/README.md.
+#
 # Thiết lập một lần (3 secret của repo): deploy/README.md, mục "Tự động deploy".
 name: Deploy server test
 
 on:
   # Gọi từ ci.yml khi backend và frontend đã xanh trên một lần push lên main.
   workflow_call:
-  # Nút "Run workflow" trong tab Actions — deploy lại main mà không cần push.
+  # Nút "Run workflow" trong tab Actions — deploy lại main mà không cần push. Chọn nhánh khác thì
+  # bước đầu tiên từ chối.
   workflow_dispatch:
 
 jobs:
@@ -36,10 +41,24 @@ jobs:
       # Gọi từ CI thì github.sha là commit vừa push lên main.
       SHA: ${{ github.sha }}
       SERVER: ubuntu@${{ secrets.DEPLOY_HOST }}
+      # Số bản backup database giữ trên server (~/backups). Chỉ backup khi image app đổi, nên 14 bản
+      # là vài ngày merge; mỗi bản cỡ vài MB đến vài chục MB trên đĩa 80 GB.
+      BACKUPS_KEPT: 14
     steps:
+      - name: Chỉ main
+        # Server dùng chung database: deploy một nhánh có migration chưa merge là để lại schema mà main
+        # không biết. ci.yml chỉ gọi khi push lên main; chặn ở đây là cho nút Run workflow.
+        run: |
+          if [ "$GITHUB_REF" != refs/heads/main ]; then
+            echo "::error::Chỉ deploy main lên server test, không deploy $GITHUB_REF"
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.SHA }}
+          # Cả lịch sử, để so commit này với commit server đang chạy.
+          fetch-depth: 0
 
       - name: SSH vào server
         env:
@@ -57,8 +76,32 @@ jobs:
           arch=$(ssh "$SERVER" uname -m)
           test "$arch" = x86_64 || { echo "::error::Server là $arch, image build cho x86_64"; exit 1; }
 
+      - name: Bản đang chạy
+        id: server
+        # Hai lần CI trên main có thể xong lệch thứ tự: CI của commit cũ xong sau commit mới thì deploy
+        # của nó sẽ đưa server về code cũ. concurrency chỉ xếp hàng, không biết thứ tự, nên so ở đây.
+        # Deploy lại đúng commit server đang chạy thì vẫn làm (nút Run workflow).
+        # image là image của container app đang chạy: bước Khởi động lại so với nó để biết có phải
+        # backup và migrate không, bước Quay lại dùng nó để quay về.
+        run: |
+          current=$(ssh "$SERVER" "git -C ~/TrustCabinet rev-parse HEAD")
+          image=$(ssh "$SERVER" "cd ~/TrustCabinet
+            id=\$(docker compose -f deploy/docker-compose.yml ps -a -q app | head -n 1)
+            if [ -n \"\$id\" ]; then docker inspect -f '{{.Image}}' \$id; else docker image inspect -f '{{.Id}}' trustcabinet-app:latest 2> /dev/null || true; fi")
+          echo "sha=$current" >> "$GITHUB_OUTPUT"
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+          if [ "$current" = "$SHA" ]; then
+            echo "Server đang chạy đúng $SHA, deploy lại"
+          elif ! git cat-file -e "$current^{commit}" 2> /dev/null; then
+            echo "::warning::Commit $current của server không có trong lịch sử main, vẫn deploy $SHA"
+          elif git merge-base --is-ancestor "$SHA" "$current"; then
+            echo "::notice::Bỏ qua: server đã chạy $current, mới hơn $SHA. Deploy sẽ đưa server về code cũ."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build image
         id: app
+        if: steps.server.outputs.skip != 'true'
         # Image chỉ gói những gì Dockerfile chép vào: tag theo mã băm của đúng các đường dẫn đó, server
         # có rồi thì bỏ qua — merge chỉ sửa docs, deploy/ hay workers/ không build lại app (~5 phút).
         run: |
@@ -72,6 +115,7 @@ jobs:
           docker save "trustcabinet-app:$tag" | gzip | ssh "$SERVER" 'gunzip | docker load'
 
       - name: Máy chuyển chữ
+        if: steps.server.outputs.skip != 'true'
         # Chỉ khi server bật profile speech (cần máy 4 GB, deploy/README.md §10). Image ~950 MB nên chỉ
         # build và chép khi workers/speech đổi: tag theo mã băm thư mục đó, server có rồi thì bỏ qua.
         run: |
@@ -92,33 +136,58 @@ jobs:
             docker images trustcabinet-speech --format '{{.Tag}}' | grep -vxE 'latest|$tree' | xargs -r -I{} docker rmi -f trustcabinet-speech:{} > /dev/null"
 
       - name: Khởi động lại
+        id: restart
+        if: steps.server.outputs.skip != 'true'
         # git đưa server về đúng commit vừa build, để docker-compose.yml và Caddyfile khớp với
         # image. --no-build: dùng image vừa chép sang, không build lại trên server.
         # Secret của LiveKit sinh ngay trên server ở lần deploy đầu có phòng họp, không đi qua GitHub;
         # đã có thì giữ nguyên, vì đổi secret là token đang dùng hết hiệu lực.
+        # Image app đổi thì trước khi đổi container: pg_dump database (định dạng custom, khôi phục bằng
+        # pg_restore) vào ~/backups, giữ BACKUPS_KEPT bản mới nhất, rồi migrate bằng chính image mới
+        # trong một container chạy một lần (`--migrate`, ADR-0047). Migrate lỗi thì dừng ở đó: container app vẫn chạy bản cũ,
+        # bước Quay lại trả tag latest và commit về như trước.
         # Caddyfile và livekit.yaml được mount từng file: git thay bằng file mới nên container đang
         # chạy vẫn đọc bản cũ, còn compose không biết nội dung đã đổi nên không tạo lại container.
         # Đổi thì khởi động lại đúng container đó.
-        # latest là tên docker-compose.yml dùng; image app không đổi thì tag lại cùng image và compose
-        # giữ nguyên container. Bản cũ xoá sau khi container đã chuyển sang bản mới.
+        # latest là tên docker-compose.yml dùng. Image cũ giữ lại tới khi bước Kiểm tra xanh.
         env:
           APP_TAG: ${{ steps.app.outputs.tag }}
+          PREVIOUS_IMAGE: ${{ steps.server.outputs.image }}
+          PREVIOUS_SHA: ${{ steps.server.outputs.sha }}
         run: |
+          compose="docker compose -f deploy/docker-compose.yml"
           ssh "$SERVER" "set -e
             cd ~/TrustCabinet
-            before=\$(git rev-parse HEAD)
+            changed=false
+            [ \"\$(docker image inspect -f '{{.Id}}' trustcabinet-app:$APP_TAG)\" = '$PREVIOUS_IMAGE' ] || changed=true
+            # Backup trước khi git đổi docker-compose.yml: postgres vẫn theo cấu hình đang chạy.
+            if \$changed; then
+              $compose up -d --wait postgres
+              mkdir -p ~/backups
+              chmod 700 ~/backups
+              dump=\$HOME/backups/trustcabinet-\$(date -u +%Y%m%dT%H%M%SZ)-${SHA:0:12}.dump
+              $compose exec -T postgres pg_dump -U trustcabinet -d trustcabinet -Fc > \$dump.part || { rm -f \$dump.part; exit 1; }
+              mv \$dump.part \$dump
+              echo \"Backup database: \$dump, \$(du -h \$dump | cut -f1)\"
+              ls -1t \$HOME/backups/trustcabinet-*.dump | tail -n +$((BACKUPS_KEPT + 1)) | xargs -r rm --
+            fi
             git fetch -q origin
             git checkout -q -B main $SHA
             grep -q '^LIVEKIT_API_SECRET=.' deploy/.env || echo \"LIVEKIT_API_SECRET=\$(openssl rand -hex 32)\" >> deploy/.env
+            if \$changed; then
+              docker tag trustcabinet-app:$APP_TAG trustcabinet-app:latest
+              $compose run --rm -T app --migrate
+            fi
             docker tag trustcabinet-app:$APP_TAG trustcabinet-app:latest
-            docker compose -f deploy/docker-compose.yml up -d --no-build
-            docker images trustcabinet-app --format '{{.Tag}}' | grep -vxE 'latest|$APP_TAG' | xargs -r -I{} docker rmi trustcabinet-app:{} > /dev/null
-            git diff --quiet \$before HEAD -- deploy/Caddyfile || docker compose -f deploy/docker-compose.yml restart caddy
-            git diff --quiet \$before HEAD -- deploy/livekit.yaml || docker compose -f deploy/docker-compose.yml restart livekit
-            docker image prune -f > /dev/null"
+            $compose up -d --no-build
+            git diff --quiet $PREVIOUS_SHA HEAD -- deploy/Caddyfile || $compose restart caddy
+            git diff --quiet $PREVIOUS_SHA HEAD -- deploy/livekit.yaml || $compose restart livekit"
 
       - name: Kiểm tra
         id: check
+        if: steps.server.outputs.skip != 'true'
+        # /api/health trả 503 khi app không tới được database, nên bản mới chạy lên mà hỏng kết nối
+        # cũng bị quay lại.
         run: |
           site=$(ssh "$SERVER" "grep '^SITE_ADDRESS=' ~/TrustCabinet/deploy/.env | cut -d= -f2")
           # /rtc/validate không kèm token: LiveKit trả 401. Caddy không chuyển được tới LiveKit thì
@@ -136,7 +205,17 @@ jobs:
           echo "::error::Sau 150 giây: /api/health trả $health (cần 200), /rtc/validate trả $rtc (cần 401 của LiveKit)"
           exit 1
 
+      - name: Dọn image cũ
+        if: steps.server.outputs.skip != 'true'
+        # Chỉ khi bản mới đã qua Kiểm tra: tới lúc đó image trước vẫn phải còn để quay lại.
+        env:
+          APP_TAG: ${{ steps.app.outputs.tag }}
+        run: |
+          ssh "$SERVER" "docker images trustcabinet-app --format '{{.Tag}}' | grep -vxE 'latest|$APP_TAG|<none>' | xargs -r -I{} docker rmi trustcabinet-app:{} > /dev/null || true
+            docker image prune -f > /dev/null"
+
       - name: Kiểm tra máy chuyển chữ
+        if: steps.server.outputs.skip != 'true'
         # Lần đầu worker nạp model và tự kiểm tra mã băm, mất khoảng một phút.
         run: |
           ssh "$SERVER" "cd ~/TrustCabinet
@@ -148,3 +227,27 @@ jobs:
             done
             echo \"::error::Sau 180 giây máy chuyển chữ vẫn chưa healthy (\$status). Xem: docker compose -f deploy/docker-compose.yml logs speech\"
             exit 1"
+
+      - name: Quay lại bản trước
+        # Migrate lỗi hoặc bản mới không qua Kiểm tra: đưa tag latest về image container app chạy trước
+        # đó, git về commit trước (docker-compose.yml, Caddyfile khớp image cũ), rồi chạy lại. Job vẫn
+        # đỏ. Migration đã áp dụng thì vẫn còn trong database — code cũ phải chạy được trên schema mới
+        # (migration chỉ thêm), không thì khôi phục từ backup: deploy/README.md, "Khôi phục database".
+        if: failure() && (steps.restart.outcome == 'failure' || steps.check.outcome == 'failure')
+        env:
+          PREVIOUS_IMAGE: ${{ steps.server.outputs.image }}
+          PREVIOUS_SHA: ${{ steps.server.outputs.sha }}
+        run: |
+          if [ -z "$PREVIOUS_IMAGE" ] || [ -z "$PREVIOUS_SHA" ]; then
+            echo "::error::Không biết bản chạy trước đó, không quay lại được. Xem deploy/README.md"
+            exit 1
+          fi
+          compose="docker compose -f deploy/docker-compose.yml"
+          ssh "$SERVER" "set -e
+            cd ~/TrustCabinet
+            git checkout -q -B main $PREVIOUS_SHA
+            docker tag $PREVIOUS_IMAGE trustcabinet-app:latest
+            $compose up -d --no-build
+            git diff --quiet $SHA HEAD -- deploy/Caddyfile 2> /dev/null || $compose restart caddy
+            git diff --quiet $SHA HEAD -- deploy/livekit.yaml 2> /dev/null || $compose restart livekit"
+          echo "::error::Deploy $SHA hỏng, server đã quay về $PREVIOUS_SHA. Migration đã chạy (nếu có) không được hoàn tác: deploy/README.md, mục Khôi phục database"
