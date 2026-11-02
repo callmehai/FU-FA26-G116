@@ -46,7 +46,8 @@ public sealed record ParticipantResult(ParticipantFailure Failure = ParticipantF
     IReadOnlyDictionary<string, string[]>? Errors = null);
 public sealed record ParticipantPermissions(bool CanManageParticipants, bool CanReplaceChair, bool CanRespond);
 public sealed record ParticipantContext(Guid MeetingId, string Status, string Revision, string? MyRole, ParticipantPermissions Permissions);
-public sealed record ParticipantRow(Guid Id, string Kind, string DisplayName, string Email, string? Role,
+// Email is null when a Guest reads the roster, except on the Guest's own row (PO 01/11/2026, SCRUM-116).
+public sealed record ParticipantRow(Guid Id, string Kind, string DisplayName, string? Email, string? Role,
     Guid? UserId, bool? IsActive, string? InvitedName, string? SelfDeclaredDisplayName, string? SelfDeclaredJobTitle,
     string Response, DateTimeOffset? RespondedAt);
 public sealed record ParticipantPage(IReadOnlyList<ParticipantRow> Items, int Total, int Page, int PageSize, string Revision);

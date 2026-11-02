@@ -176,10 +176,11 @@ public static class CallEndpoints
 }
 
 public sealed record CallRoomResponse(
-    Guid MeetingId, string Status, string MyRole, bool Available, int? ParticipantCount)
+    Guid MeetingId, string Status, string MyRole, bool Available, int? ParticipantCount, int RetentionDays)
 {
     public static CallRoomResponse From(CallRoomView view) => new(
-        view.MeetingId, view.Status.ToString(), view.MyRole.ToString(), view.Available, view.ParticipantCount);
+        view.MeetingId, view.Status.ToString(), view.MyRole.ToString(), view.Available, view.ParticipantCount,
+        view.RetentionDays);
 }
 
 public sealed record CallJoinResponse(

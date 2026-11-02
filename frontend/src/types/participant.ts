@@ -43,7 +43,8 @@ export interface ParticipantRow {
   id: string
   kind: 'Internal' | 'Guest'
   displayName: string
-  email: string
+  /** Null when a guest reads the roster, except on their own row (PO 01/11/2026). */
+  email: string | null
   /** Null for a guest. */
   role: MeetingRole | null
   userId: string | null

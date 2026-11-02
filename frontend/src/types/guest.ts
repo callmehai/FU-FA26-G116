@@ -48,6 +48,8 @@ export interface GuestSession {
   displayName: string | null
   jobTitle: string | null
   profileCompleted: boolean
+  /** False on a Secret meeting (MSG159): "Tải về" is hidden; the sensitivity itself is not sent. */
+  canDownload: boolean
 }
 
 /** PUT /api/guest-access/session/profile — MSG376. */

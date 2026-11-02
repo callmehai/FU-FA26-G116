@@ -50,7 +50,9 @@ Roster item:
 }
 ```
 
-Guest có role/userId/isActive null; displayName ưu tiên profile tự khai, invitedName/email giữ evidence lời mời. Chỉ current internal và Guest chưa revoke. Sort displayName không phân biệt hoa thường, kind, id. `q` trim, tối đa 200 ký tự, tìm displayName/email/invitedName; page >=1, pageSize 1..100. `total` tính sau search. Không có bộ đếm phản hồi (`totals` đã bỏ, xem §4.1). Options loại mọi current internal và email trùng current Guest.
+Guest có role/userId/isActive null; displayName ưu tiên profile tự khai, invitedName/email giữ evidence lời mời. Chỉ current internal và Guest chưa revoke. Sort displayName không phân biệt hoa thường, kind, id. `q` trim, tối đa 200 ký tự, tìm displayName/email/invitedName; page >=1, pageSize 1..100. Khách gọi (token Khách)
+thì `email = null` ở mọi dòng trừ dòng của chính Khách và `q` không so email, để Khách không dò được địa chỉ của ai
+(PO 01/11/2026, SCRUM-116). `total` tính sau search. Không có bộ đếm phản hồi (`totals` đã bỏ, xem §4.1). Options loại mọi current internal và email trùng current Guest.
 
 ## 4. Ghi
 

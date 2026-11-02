@@ -64,7 +64,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | EmailMessage | Bản ghi gửi email/outbox | IMPLEMENTED | Giữ khóa chống trùng và thông tin thử gửi lại; id thư phía Resend và kết quả giao thư từ webhook ([ADR-0031](../05-decisions/0031-gui-email-qua-resend.md)). |
 | AuditLogEntry | Bằng chứng kiểm toán nghiệp vụ | IMPLEMENTED | Chỉ ghi thêm. |
 | CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting. |
-| CallParticipant | Một lượt kết nối của User hoặc khách | DONE (SCRUM-59) | UserId XOR GuestSessionId (`ck_call_participants_one_member`). |
+| CallParticipant | Một lượt kết nối của User hoặc khách | DONE (SCRUM-59) | UserId XOR GuestSessionId (`ck_call_participants_one_member`). Tối đa một lượt đang mở (`left_at IS NULL`) cho mỗi người trong một phiên: unique index `ux_call_participants_open_user_stint` / `ux_call_participants_open_guest_stint`. |
 
 `MeetingSession` (bảng `meeting_sessions`) **đã bị bỏ** từ 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Migration `MeetingOwnsScheduleDropSessions` chép lịch về `meetings` rồi drop bảng; migration cũ trên `main` giữ nguyên.
 

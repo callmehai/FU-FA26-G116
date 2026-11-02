@@ -105,9 +105,12 @@ FE còn token thì gọi endpoint này trước: `200` thì vào thẳng cuộc 
   "sessionId": "…", "expiresAt": "…",
   "meeting": { "id": "…", "title": "…", "status": "InProgress", "plannedStartTime": "…", "plannedEndTime": "…" },
   "email": "nguoi.duoc.moi@example.com", "invitedName": "Tên Thư ký đã nhập",
-  "displayName": null, "jobTitle": null, "profileCompleted": false
+  "displayName": null, "jobTitle": null, "profileCompleted": false, "canDownload": true
 }
 ```
+
+`canDownload` là `false` khi cuộc họp Mật (tải về bị từ chối bằng `MSG159`): FE ẩn nút "Tải về" thay vì để Khách
+bấm rồi mới bị từ chối. Độ mật không được gửi; server vẫn kiểm lại ở endpoint tải về.
 
 `404/MSG378` khi phiên hết hạn, đã đăng xuất, lời mời bị thu hồi hoặc cuộc họp không còn
 `Published`/`InProgress` — FE xoá token và hiện màn kết thúc / mở lại link.
@@ -118,13 +121,15 @@ Body `{ "displayName": "…", "jobTitle": "…" }`. `displayName` bắt buộc, 
 đa 200 ký tự; `jobTitle` tuỳ chọn, tối đa 200 ký tự, rỗng thành `null`. Cả hai không được chứa ký tự điều
 khiển hay định dạng (NUL, xuống dòng, U+202E…), cùng luật với tên tài liệu. Lưu vào
 `meeting_guest_invitations.self_declared_display_name` / `self_declared_job_title`, **không** ghi đè
-`invited_name` hay `email`. Khai lại thì ghi đè lần khai trước (dùng chung cho mọi phiên của lời mời).
+`invited_name` hay `email`. Tên chỉ khai **một lần** cho lời mời (dùng chung cho mọi phiên; PO 01/11/2026, SCRUM-116):
+đã khai rồi thì gửi lại đúng giá trị cũ trả `200` như lần đầu (bấm lặp), còn khác đi thì `409/MSG381`.
 
 | HTTP | Body |
 |---|---|
 | 200 | `{ "code": "MSG376", "message", "session": { …như 4.1 } }` |
 | 400 | `{ "code": "MSG377", "message", "errors": { "displayName": [...], "jobTitle": [...] } }` |
 | 404 | `MSG378` |
+| 409 | `MSG381` — lời mời đã có tên tự khai; FE đọc lại phiên và vào thẳng cuộc họp |
 | 503 | `MSG374` |
 
 ### 4.3 `DELETE /api/guest-access/session` — đăng xuất Khách
@@ -178,6 +183,7 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
 | `MSG377` | 400 | Hồ sơ tự khai không hợp lệ | Thông tin hiển thị không hợp lệ. |
 | `MSG378` | 404 | Phiên Khách không còn hiệu lực | Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email. |
 | `MSG379` | 429 | Đã gửi đủ 20 mã cho lời mời trong 24 giờ | Bạn đã yêu cầu quá số mã cho phép trong 24 giờ. Vui lòng thử lại sau hoặc liên hệ Thư ký cuộc họp. |
+| `MSG381` | 409 | Đổi tên tự khai sau khi đã khai | Tên hiển thị đã được khai cho lời mời này và không thể đổi. |
 
 ## 8. Màn hình FE (SCRUM-121, SCRUM-123)
 
@@ -189,7 +195,10 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
   Khách, không dùng phiên nội bộ dù trình duyệt đang đăng nhập.
 - Sau xác minh: form tên hiển thị / chức vụ (bước 5), rồi trang cuộc họp `/guest/{invitationId}` với các tab Nội dung,
   Tài liệu, Biểu quyết, Thành phần tham dự và câu hỏi "Bạn có tham dự cuộc họp này?" (UC-29). Tài liệu mở ở
-  `/guest/{invitationId}/documents/{meetingDocumentId}`; Khách không có góp ý.
+  `/guest/{invitationId}/documents/{meetingDocumentId}`; Khách không có góp ý. Cuộc họp Mật (`canDownload = false`)
+  không có nút "Tải về". Tab Thành phần tham dự không hiện email: BE trả `email = null` cho mọi dòng trừ dòng của
+  chính Khách, và tìm kiếm của Khách không so email (PO 01/11/2026).
+- "Thoát" gặp `401`/`404` (phiên đã hết) vẫn xoá token và về màn đã thoát.
 - Phòng họp trực tuyến của Khách (SCRUM-127): `/guest/{invitationId}/room`, xem
   [09-phong-hop-truc-tuyen.md](09-phong-hop-truc-tuyen.md#hợp-đồng-tích-hợp-fe).
 - Trang kiểm lại `GET /session` mỗi 20 giây, khi tab được focus và sau mọi `404` của panel. `404` thì bỏ toàn bộ dữ liệu

@@ -127,11 +127,12 @@ function Viewer({
   const [commentCount, setCommentCount] = useState(doc.commentCount)
   const { download, busyId } = useDocumentDownload(meeting.id, onStale)
   const pdf = isPdf(doc)
-  // A guest is not told the sensitivity (UC-04): a Secret meeting's download is refused by the server (MSG159).
+  // A guest is not told the sensitivity (UC-04); their session says whether downloading is allowed (MSG159).
   const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
-  const canDownload = sensitivity !== 'Secret'
+  const guestScope = useGuest()
+  const canDownload = guestScope ? guestScope.session.canDownload : sensitivity !== 'Secret'
   // Comments are not open to guests yet (SCRUM-123).
-  const guest = useGuest() !== null
+  const guest = guestScope !== null
   // Opened from a vote still waiting on this reader (UC-74): confirm once the last page is reached.
   const [params] = useSearchParams()
   const reading = params.get('read') === '1'

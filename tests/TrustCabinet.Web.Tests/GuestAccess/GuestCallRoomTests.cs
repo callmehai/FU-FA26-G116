@@ -41,6 +41,8 @@ public sealed class GuestCallRoomTests(GuestAccessFixture f) : IClassFixture<Gue
 
         var room = await Expect(await guest.GetAsync(Call(s.MeetingId)), 200);
         Assert.Equal(("Open", "Guest"), (room.GetProperty("status").GetString(), room.GetProperty("myRole").GetString()));
+        // The pre-join notice states how long the recording is kept (Recordings:RetentionDays).
+        Assert.Equal(180, room.GetProperty("retentionDays").GetInt32());
 
         await Expect(await guest.PostAsync(Call(s.MeetingId) + "/join", null), 400, "MSG380");
         await using (var db = f.Db())
@@ -122,6 +124,21 @@ public sealed class GuestCallRoomTests(GuestAccessFixture f) : IClassFixture<Gue
         await using (var db = f.Db())
             Assert.NotNull((await db.CallParticipants.SingleAsync(p => p.GuestSessionId == member.GuestSessionId)).LeftAt);
         Assert.Equal(HttpStatusCode.NotFound, (await guest.PostAsJsonAsync(Call(s.MeetingId) + "/join", Confirmed)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Room_access_checks_the_invitation_the_token_names()
+    {
+        var s = await OnlineMeeting();
+        var (guest, _) = await f.SignIn(s);
+        var session = await SessionId(guest);
+        await using var db = f.Db();
+        var calls = new Infrastructure.Calls.CallRepository(db, f.Clock);
+
+        Assert.NotNull(await calls.FindGuestRoomAccessAsync(s.MeetingId, session, s.InvitationId));
+        // The webhook only knows the session.
+        Assert.NotNull(await calls.FindGuestRoomAccessAsync(s.MeetingId, session, null));
+        Assert.Null(await calls.FindGuestRoomAccessAsync(s.MeetingId, session, Guid.CreateVersion7()));
     }
 
     [Fact]

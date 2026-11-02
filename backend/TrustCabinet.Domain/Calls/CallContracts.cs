@@ -109,8 +109,9 @@ public enum CallOutcome
 public sealed record CallRoomAccess(
     Guid MeetingId, MeetingStatus Status, MeetingMode Mode, MeetingRole Role, string FullName);
 
+/// <summary><c>RetentionDays</c>: how long what is recorded in the room is kept, as the pre-join notice states it.</summary>
 public sealed record CallRoomView(
-    Guid MeetingId, CallRoomStatus Status, MeetingRole MyRole, bool Available, int? ParticipantCount);
+    Guid MeetingId, CallRoomStatus Status, MeetingRole MyRole, bool Available, int? ParticipantCount, int RetentionDays);
 
 public sealed record CallJoinTicket(
     string ServerUrl, string Token, string RoomName, string Identity, DateTimeOffset ExpiresAt);
