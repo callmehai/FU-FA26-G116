@@ -215,7 +215,12 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         Assert.True(speakers["SPEAKER_00"].GetProperty("suggestionScore").GetDouble() > 0.9);
         Assert.Equal(s.Member, speakers["SPEAKER_01"].GetProperty("suggestedUserId").GetGuid());
         Assert.Equal(JsonValueKind.Null, speakers["SPEAKER_02"].GetProperty("suggestedUserId").ValueKind);
-        Assert.All(speakers.Values, x => Assert.Equal(JsonValueKind.Null, x.GetProperty("assignedUserId").ValueKind));
+        // Both matches are sure, so the machine named them itself (PO 01/11/2026); the stranger's voice stays unnamed.
+        Assert.Equal(s.Secretary, speakers["SPEAKER_00"].GetProperty("assignedUserId").GetGuid());
+        Assert.True(speakers["SPEAKER_00"].GetProperty("autoAssigned").GetBoolean());
+        Assert.Equal(s.Member, speakers["SPEAKER_01"].GetProperty("assignedUserId").GetGuid());
+        Assert.Equal(JsonValueKind.Null, speakers["SPEAKER_02"].GetProperty("assignedUserId").ValueKind);
+        Assert.False(speakers["SPEAKER_02"].GetProperty("autoAssigned").GetBoolean());
         Assert.Equal(3, transcript.GetProperty("people").GetArrayLength());
         Assert.DoesNotContain("embedding", transcript.GetRawText(), StringComparison.OrdinalIgnoreCase);
 
@@ -226,14 +231,47 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
 
         var named = await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_00", new { userId = s.Secretary }), 200, "MSG316");
         Assert.Equal("Recording test 0", named.GetProperty("speaker").GetProperty("assignedName").GetString());
+        // Confirmed by the Secretary, the name is theirs now, no longer the machine's.
+        Assert.False(named.GetProperty("speaker").GetProperty("autoAssigned").GetBoolean());
         await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_02", new { userId = s.Outsider }), 400, "MSG317");
         await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_02", new { userId = s.Chair }), 200, "MSG316");
         await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_02", new { userId = (Guid?)null }), 200, "MSG316");
         Assert.Equal(HttpStatusCode.NotFound, (await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_09", new { userId = s.Chair })).StatusCode);
 
         await using var db = fixture.Db();
-        var audit = await db.AuditLog.Where(a => a.Action == AuditActions.TranscriptSpeakerAssigned).OrderBy(a => a.OccurredAt).FirstAsync();
+        var audit = await db.AuditLog.Where(a => a.Action == AuditActions.TranscriptSpeakerAssigned && a.ActorId == s.Secretary)
+            .OrderBy(a => a.OccurredAt).FirstAsync();
         Assert.Contains("\"acceptedSuggestion\":true", audit.Details.Replace(" ", ""));
+        var automatic = (await db.AuditLog.Where(a => a.Action == AuditActions.TranscriptSpeakerAssigned && a.ActorId == null).ToListAsync())
+            .Where(a => a.Details.Contains(id.ToString())).ToList();
+        Assert.Equal(2, automatic.Count);
+        Assert.All(automatic, a => Assert.Contains("\"automatic\":true", a.Details.Replace(" ", "")));
+    }
+
+    [Fact]
+    public async Task Only_a_sure_match_is_named_by_the_machine_and_the_name_goes_with_the_consent()
+    {
+        var s = await fixture.Seed();
+        await Enrol(s.Secretary, 1, 0, 0);
+        await Enrol(s.Member, 0, 1, 0);
+        // Member at 0.995: named at once. Secretary at 0.66: over the suggestion threshold, under the sure one.
+        var id = await UploadAndTranscribe(s, new("SPEAKER_00", 30000, [0.66f, 0.15f, 0.736f]), new("SPEAKER_01", 20000, [0f, 1f, 0.1f]));
+
+        await using var db = fixture.Db();
+        var fair = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_00");
+        Assert.Equal(s.Secretary, fair.SuggestedUserId);
+        Assert.Null(fair.AssignedUserId);
+        var sure = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_01");
+        Assert.Equal(s.Member, sure.AssignedUserId);
+        Assert.Null(sure.AssignedById);
+
+        // The machine's name came from the voice, so it goes when the person withdraws consent.
+        using var member = fixture.Client(s.Member);
+        await AssertCode(await member.DeleteAsync("/api/me/voice/consent"), 200, "MSG306");
+        await db.Entry(sure).ReloadAsync();
+        Assert.Null(sure.AssignedUserId);
+        Assert.Null(sure.AssignedAt);
+        Assert.Null(sure.SuggestedUserId);
     }
 
     [Fact]

@@ -33,6 +33,19 @@ public sealed class VoiceIdOptions
     public double SameVoiceThreshold { get; set; } = 0.7;
 
     /// <summary>
+    /// Lowest score for a second voice suggested as a person already suggested in the recording. Two people recorded by
+    /// one room mic sounded as alike (0.745) as one person split in two (0.777) on the test server (31/10/2026), so
+    /// <see cref="SameVoiceThreshold"/> alone let a stranger at 0.645 be folded into the enrolled person.
+    /// </summary>
+    public double SecondVoiceThreshold { get; set; } = 0.7;
+
+    /// <summary>
+    /// Score at which the machine names a voice itself instead of waiting for the Secretary (PO 01/11/2026). The
+    /// Secretary can still change or remove the name; the machine never names a guest, who has no enrolled voice.
+    /// </summary>
+    public double AutoAssignThreshold { get; set; } = 0.75;
+
+    /// <summary>
     /// The organisation that controls the voice data, named in the consent notice: consent is valid only when the person
     /// knows who that is (Luật Bảo vệ dữ liệu cá nhân 91/2025, Điều 9.2.b). Each deployment sets its own legal name.
     /// </summary>

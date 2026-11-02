@@ -108,7 +108,9 @@ public static class VoiceIdRules
 /// One person may be suggested for several voices, as in AI-eCabinet: diarization splits a person in two, and the
 /// Secretary then sees both as that person, the weaker marked "the same voice as" the stronger
 /// (<see cref="SameAs"/>). A second voice must also sound like the first one (<c>sameVoice</c>): else it is
-/// someone else who scores well against the same sample, such as a person who never enrolled.
+/// someone else who scores well against the same sample, such as a person who never enrolled. It must also score at
+/// least <c>secondVoice</c> against the person: two people recorded by one room mic can sound as alike as one person
+/// split in two (0.745 against 0.777 on the test server, 31/10/2026), but the stranger scores lower against the sample.
 /// </para>
 /// </summary>
 public static class SpeakerMatcher
@@ -130,7 +132,7 @@ public static class SpeakerMatcher
     }
 
     public static IReadOnlyDictionary<string, Suggestion> Suggest(IReadOnlyList<SpeechSpeaker> speakers,
-        IReadOnlyList<Candidate> candidates, double threshold, double margin, double sameVoice)
+        IReadOnlyList<Candidate> candidates, double threshold, double margin, double sameVoice, double secondVoice)
     {
         var voices = speakers.ToDictionary(s => s.Label, s => s.Embedding);
         // A person's score for a voice is their best sample against it: samples differ by mood, mic and room.
@@ -147,7 +149,8 @@ public static class SpeakerMatcher
             if (result.ContainsKey(label) || score < threshold) continue;
             var runnerUp = scores[label].Where(x => x.UserId != userId).Select(x => x.Score).DefaultIfEmpty(0).Max();
             if (score - runnerUp < margin) continue;
-            if (first.TryGetValue(userId, out var lead) && Cosine(voices[label], voices[lead]) < sameVoice) continue;
+            if (first.TryGetValue(userId, out var lead) && (Cosine(voices[label], voices[lead]) < sameVoice || score < secondVoice))
+                continue;
             result[label] = new(userId, Math.Round(score, 4));
             first.TryAdd(userId, label);
         }

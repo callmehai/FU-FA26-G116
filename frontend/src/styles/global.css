@@ -452,6 +452,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .select-value, .select-placeholder { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .select-option-label:has(.select-dot) { display: inline-flex; align-items: center; gap: 6px; }
 .select-option-hint { margin-left: 8px; color: var(--muted-ink); font-size: 12px; font-weight: 400; }
+.select-option-hint-accent { padding: 1px 6px; border-radius: 4px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand-wash-line); color: var(--brand); font-weight: 600; }
 .select-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; }
 .select-trigger:disabled { cursor: progress; opacity: .7; }
 /* The table-row size: 32px, so a row stays one line of text tall. Touch keeps the 40px target. */
