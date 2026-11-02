@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
+using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Infrastructure.Users;
 
@@ -27,6 +28,7 @@ public sealed partial class UserService(
     IPasswordResetTokenStore passwordResetTokens,
     IPasswordResetEmailSender passwordResetEmail,
     ICapabilitiesChangePublisher capabilitiesChanged,
+    IVoiceIdErasure voiceId,
     ILogger<UserService> logger) : IUserService
 {
     /// <summary>
@@ -313,6 +315,15 @@ public sealed partial class UserService(
             actorId,
             new { user.Email, IsActive = isActive },
             ct);
+
+        // Deactivating ends the person's Voice ID too (SCRUM-35, Luật 91/2025/QH15): they can no longer sign in
+        // to withdraw, and a sample kept for as long as the row exists would keep matching their voice. In this
+        // transaction, so the account is never inactive with its voice still enrolled. Reactivating restores
+        // nothing: the person consents and records again.
+        if (!isActive && await voiceId.EndAsync(user.Id, actorId, VoiceIdEndReason.AccountDeactivated, ct))
+        {
+            logger.LogInformation("Voice ID of deactivated account {UserId} was ended.", user.Id);
+        }
 
         logger.LogInformation(
             "Account {UserId} {Change} by {ActorId}.",

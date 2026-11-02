@@ -82,6 +82,8 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
 12. **UC-08 không có endpoint riêng.** Gán / đổi vai trò chạy trên `PUT /api/users/{id}` của
     UC-06b — xem [mục UC-08](#uc-08--gán--đổi-vai-trò-hệ-thống--dùng-put-apiusersid). Sequence diagram
     của UC-08 vẽ một lời gọi `assignSystemRole` riêng; trong code đó là cùng endpoint sửa tài khoản.
+13. **Luật mới không có trong đặc tả (SCRUM-35):** vô hiệu hoá tài khoản kết thúc luôn Voice ID của
+    người đó — xem [Vô hiệu hoá kết thúc Voice ID](#vô-hiệu-hoá-kết-thúc-voice-id).
 
 **Không có thay đổi database.** Cả hai bảng đã có sẵn từ migration `ExpandDomainModel`; story này
 chỉ đọc và ghi vào chúng. UC-07 cũng không thêm migration: token đặt lại mật khẩu sống ở Redis.
@@ -249,6 +251,19 @@ lệ tới khi hết hạn (mặc định 15 phút). Đó là lý do nhóm `/api
 [Người gọi được kiểm lại mỗi request](#người-gọi-được-kiểm-lại-mỗi-request).
 
 Kích hoạt lại thì không đụng tới phiên nào cả: không có phiên nào để dọn.
+
+### Vô hiệu hoá kết thúc Voice ID
+
+Người đã đăng ký giọng mẫu (SCRUM-35) mà bị vô hiệu hoá thì không đăng nhập được để tự rút đồng ý,
+trong khi tài khoản không bao giờ bị xoá: giọng mẫu — dữ liệu sinh trắc học, Luật 91/2025/QH15 — sẽ
+nằm lại và tiếp tục được so mãi. Nên vô hiệu hoá **kết thúc Voice ID như khi chính người đó rút đồng
+ý**, trong cùng transaction với việc đổi `is_active`: xoá mọi giọng mẫu, bỏ gợi ý và tên máy tự gán
+là người đó, đóng dòng `voice_consents`. Tên Thư ký đã gán giữ nguyên. Audit log ghi thêm
+`voice.consent_withdrawn` với `reason: "accountDeactivated"`, người làm là quản trị viên.
+
+Kích hoạt lại **không khôi phục** gì: người đó đồng ý và ghi giọng mẫu lại từ đầu. Response của
+endpoint không đổi. Chi tiết: [13-nhan-dien-giong-noi.md](13-nhan-dien-giong-noi.md),
+[ADR-0049](../05-decisions/0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md).
 
 ### Người gọi được kiểm lại mỗi request
 

@@ -57,3 +57,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0044](0044-server-kiem-cau-truc-va-dem-trang-pdf.md) | Server kiểm cấu trúc PDF và tự đếm số trang bằng PdfPig, không tin số trang trình duyệt gửi | Đề xuất — SCRUM-107, test E2E 02/11/2026 |
 | [0045](0045-may-tu-gan-ten-khi-giong-khop-ro.md) | Máy tự gán tên người nói khi giọng khớp rõ; giọng thứ hai của cùng một người phải khớp cao hơn | Đề xuất — SCRUM-35, PO 01/11/2026 |
 | [0047](0047-server-test-chay-staging-deploy-an-toan.md) | Server test chạy ở `Staging`; deploy migrate có chủ đích, backup database và tự quay lại khi health check đỏ | Đề xuất |
+| [0049](0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md) | Vô hiệu hoá tài khoản kết thúc Voice ID; máy so giọng dưới khoá trên dòng đồng ý | Đề xuất — SCRUM-35, review 02/11/2026 |

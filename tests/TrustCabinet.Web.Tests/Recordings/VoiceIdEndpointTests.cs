@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Domain.Users;
 using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Web.Tests.Recordings;
@@ -303,6 +304,69 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         // Agreeing again starts a new consent; the withdrawn one stays as it was.
         await AssertCode(await Consent(member), 200, "MSG305");
         Assert.Equal(2, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member));
+    }
+
+    [Fact]
+    public async Task Deactivating_an_account_ends_its_voice_id_and_reactivating_restores_nothing()
+    {
+        var s = await fixture.Seed();
+        await Enrol(s.Secretary, 1, 0, 0);
+        await Enrol(s.Member, 0, 1, 0);
+        // SPEAKER_01 is the member, named by the machine; SPEAKER_02 matches nobody and the Secretary names the member.
+        var id = await UploadAndTranscribe(s, new("SPEAKER_00", 30000, [1f, 0.1f, 0f]), new("SPEAKER_01", 20000, [0f, 1f, 0.1f]),
+            new("SPEAKER_02", 10000, [0f, 0f, 1f]));
+        using var secretary = fixture.Client(s.Secretary);
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_02", new { userId = s.Member }), 200, "MSG316");
+
+        // The administrator is the actor; the member cannot sign in to withdraw any more.
+        using (var scope = fixture.Host.Services.CreateScope())
+            Assert.True((await scope.ServiceProvider.GetRequiredService<IUserService>().ChangeStatusAsync(s.Member, false, s.Organizer)).Succeeded);
+
+        await using var db = fixture.Db();
+        Assert.False(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Member));
+        Assert.NotNull((await db.VoiceConsents.SingleAsync(c => c.UserId == s.Member)).WithdrawnAt);
+        var machine = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_01");
+        Assert.Null(machine.SuggestedUserId);
+        Assert.Null(machine.AssignedUserId);
+        var decided = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_02");
+        Assert.Equal(s.Member, decided.AssignedUserId);
+        // Someone else's Voice ID is untouched.
+        Assert.True(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Secretary));
+        var ended = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.VoiceConsentWithdrawn && a.ActorId == s.Organizer);
+        Assert.Contains("\"reason\":\"accountDeactivated\"", ended.Details.Replace(" ", ""));
+
+        using (var scope = fixture.Host.Services.CreateScope())
+            Assert.True((await scope.ServiceProvider.GetRequiredService<IUserService>().ChangeStatusAsync(s.Member, true, s.Organizer)).Succeeded);
+        Assert.Equal(0, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member && c.WithdrawnAt == null));
+        Assert.False(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Member));
+    }
+
+    [Fact]
+    public async Task A_withdrawal_while_the_worker_matches_still_clears_what_it_writes()
+    {
+        var s = await fixture.Seed();
+        await Enrol(s.Secretary, 1, 0, 0);
+        await Enrol(s.Member, 0, 1, 0);
+        Task<HttpResponseMessage>? withdrawal = null;
+        using var member = fixture.Client(s.Member);
+        // Right after the worker read the samples: the member withdraws before the result is written.
+        fixture.Failures.AfterVoiceSampleRead = async () =>
+        {
+            withdrawal = Task.Run(() => member.DeleteAsync("/api/me/voice/consent"));
+            // Long enough for a withdrawal that does not wait for the worker to finish first.
+            await Task.WhenAny(withdrawal, Task.Delay(TimeSpan.FromSeconds(1)));
+        };
+        Guid id;
+        try { id = await UploadAndTranscribe(s, new("SPEAKER_00", 30000, [1f, 0.1f, 0f]), new("SPEAKER_01", 20000, [0f, 1f, 0.1f])); }
+        finally { fixture.Failures.AfterVoiceSampleRead = null; }
+        Assert.NotNull(withdrawal);
+        await AssertCode(await withdrawal, 200, "MSG306");
+
+        await using var db = fixture.Db();
+        var speaker = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_01");
+        Assert.Null(speaker.SuggestedUserId);
+        Assert.Null(speaker.AssignedUserId);
+        Assert.Equal(s.Secretary, (await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == id && x.Label == "SPEAKER_00")).AssignedUserId);
     }
 
     [Fact]
