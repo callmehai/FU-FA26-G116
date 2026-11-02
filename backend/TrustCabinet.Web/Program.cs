@@ -188,8 +188,24 @@ else if (app.Configuration.GetValue<bool>("Database:SeedReferenceDataOnStartup")
 // wwwroot holds the frontend build output (`npm run build` writes here) and is not committed.
 // During development the frontend runs on Vite at http://localhost:5173 and proxies /api here,
 // so wwwroot may be empty — UseStaticFiles then simply matches nothing.
+//
+// index.html names the bundles of the build it came with, so after a deploy the browser must ask for it again:
+// without a Cache-Control it guessed a lifetime from Last-Modified and kept showing the previous release. no-cache
+// lets it keep a copy but revalidate each time (a 304 when nothing changed). The bundles under /assets carry their
+// content hash in their names, so they are kept for a year.
+var frontendFiles = new StaticFileOptions
+{
+    OnPrepareResponse = context =>
+    {
+        var headers = context.Context.Response.Headers;
+        if (context.File.Name.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+            headers.CacheControl = "no-cache";
+        else if (context.Context.Request.Path.StartsWithSegments("/assets"))
+            headers.CacheControl = "public, max-age=31536000, immutable";
+    },
+};
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(frontendFiles);
 
 // Order matters: authentication reads the bearer token into HttpContext.User, authorization then
 // decides whether that principal may proceed. Reversed, every RequireAuthorization endpoint would
@@ -269,7 +285,7 @@ app.MapGet("/api/health", async (TrustCabinetDbContext db, CancellationToken ct)
 // plain 404. Excluding beats mapping an /api/{**path} → 404 endpoint: that one would stay a
 // candidate for real routes and win whenever the matcher discards them, e.g. a POST without a
 // Content-Type to an endpoint that reads a JSON body would get 404 instead of 401.
-app.MapFallbackToFile("{*path:nonfile:regex(^(?!(api|hubs)(/|$)))}", "index.html");
+app.MapFallbackToFile("{*path:nonfile:regex(^(?!(api|hubs)(/|$)))}", "index.html", frontendFiles);
 
 app.Run();
 

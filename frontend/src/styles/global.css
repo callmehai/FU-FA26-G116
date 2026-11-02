@@ -39,6 +39,10 @@
   --gold-soft: #e3c06a;
   --focus: #2f6feb;
   --focus-ring: #2f6feb66;
+  /* A heads-up sign (the lobby's "this meeting is recorded"): a yellow triangle, outlined dark so it stands out on
+     white. Yellow alone is too faint to read as an icon. */
+  --warning-fill: #fcc419;
+  --warning-ink: #8a5300;
   /* Destructive actions, "Mật", the current-time line. */
   --danger: #b4232a;
   --danger-ink: #8e1b21;
@@ -2905,7 +2909,7 @@ a.menu-item { text-decoration: none; }
 /* Inline, not flex: a wrapped flex line is one full-width box, which left the icon alone at the screen's edge on a
    phone. Inline, the icon stays in front of the first word however the line wraps. */
 .prejoin-recording { display: block; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
-.prejoin-recording svg { display: inline-block; margin-right: 6px; color: var(--danger); vertical-align: -3px; }
+.prejoin-recording svg { display: inline-block; margin-right: 6px; color: var(--warning-ink); fill: var(--warning-fill); vertical-align: -3px; }
 /* SCRUM-35 — no voice sample yet: one line and a text button, the why in the tooltip. */
 .prejoin-sample { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; }
 .prejoin-sample svg { flex: none; color: var(--muted-ink); }
