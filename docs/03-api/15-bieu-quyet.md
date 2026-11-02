@@ -353,8 +353,11 @@ Guest dùng được (phiên khách còn hiệu lực). Response có `Cache-Cont
   (danh sách và chi tiết) chỉ đếm tài liệu còn trong cuộc họp.
 - `actions.canCast` **không** xét việc đọc tài liệu: FE khoá nút "Gửi phiếu" khi còn `readConfirmedAt: null`.
 
-### Còn hở
+### Tài liệu của biểu quyết ở tab Tài liệu
 
-- Guest xác nhận đọc được, nhưng endpoint xem nội dung tài liệu (`GET …/documents/{id}/content`, UC-32c) hiện chỉ nhận
-  người dùng nội bộ, nên Guest chưa mở được tài liệu để cuộn tới trang cuối. Mở `GET …/documents` và `…/content` cho
-  Khách bằng phiên Khách của PR #203 là SCRUM-123 (dưới SCRUM-116), làm trước bước FE của SCRUM-96.
+- Khách đã mở được `GET …/documents` và `…/content` từ SCRUM-123, nên đọc tới trang cuối rồi xác nhận như thành viên
+  (lỗ hở ghi ở đây trước kia đã đóng).
+- Từ 02/11/2026, `GET /api/meetings/{id}/documents` trả thêm `votes`: tài liệu theo từng biểu quyết người gọi xem được, kèm
+  `readConfirmedAt` của chính người gọi — nhóm "Biểu quyết" của tab Tài liệu (UC-32a AF-1, SCRUM-21). Cùng luật thấy nháp
+  (BR-253) và cùng dữ liệu xác nhận (BR-291) với chi tiết biểu quyết; xem
+  [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md#get-apimeetingsmeetingiddocuments--uc-32a).

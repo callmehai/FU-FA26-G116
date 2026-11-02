@@ -259,8 +259,99 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         var list = await Expect(await guest.GetAsync(Documents(s.MeetingId)), 200);
         Assert.Equal(document, Assert.Single(list.GetProperty("general").EnumerateArray()).GetProperty("id").GetGuid());
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Content(s.MeetingId, document))).StatusCode);
+        // The vote group (UC-32a AF-1) shows the guest's own confirmation, unread until they tick it (UC-74).
+        var group = Assert.Single(list.GetProperty("votes").EnumerateArray());
+        Assert.Equal(vote, group.GetProperty("id").GetGuid());
+        Assert.Equal(JsonValueKind.Null, Assert.Single(group.GetProperty("documents").EnumerateArray()).GetProperty("readConfirmedAt").ValueKind);
         await Expect(await guest.PostAsJsonAsync($"{Documents(s.MeetingId)}/{document}/read-confirmation",
             new { lastPageReached = true }), 200, "MSG253");
+        list = await Expect(await guest.GetAsync(Documents(s.MeetingId)), 200);
+        Assert.Equal(JsonValueKind.String, list.GetProperty("votes")[0].GetProperty("documents")[0].GetProperty("readConfirmedAt").ValueKind);
         await Expect(await guest.PostAsJsonAsync($"{votes}/{vote}/ballots", new { optionId = option }), 200, "MSG227");
+    }
+
+    private static string Comments(Guid meetingId, Guid documentId) => $"{Documents(meetingId)}/{documentId}/comments";
+
+    [Fact]
+    public async Task Guest_comments_and_replies_under_the_invitation_with_the_name_they_declared()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        var document = await AddDocument(s, "Tờ trình.pdf");
+        var (guest, _) = await f.SignIn(s);
+        using var secretary = f.UserClient(s.SecretaryId);
+
+        var posted = (await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, document),
+            new { body = "Khách góp ý trang 1", pageNumber = 1 }), 201, "MSG199")).GetProperty("comment");
+        var author = posted.GetProperty("author");
+        Assert.True(author.GetProperty("isGuest").GetBoolean());
+        Assert.Equal(s.InvitationId, author.GetProperty("guestInvitationId").GetGuid());
+        Assert.Equal(JsonValueKind.Null, author.GetProperty("userId").ValueKind);
+        // The name the guest declared at UC-04 step 5, not the one the Secretary typed into the invitation.
+        Assert.Equal("Khách tự khai", author.GetProperty("name").GetString());
+        Assert.Equal(1, posted.GetProperty("pageNumber").GetInt32());
+
+        var root = posted.GetProperty("id").GetGuid();
+        var reply = (await Expect(await secretary.PostAsJsonAsync(Comments(s.MeetingId, document),
+            new { body = "Thư ký trả lời", parentCommentId = root }), 201, "MSG199")).GetProperty("comment").GetProperty("id").GetGuid();
+        // A guest replying to a reply joins the same thread (BR-317).
+        await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, document),
+            new { body = "Khách trả lời tiếp", parentCommentId = reply }), 201, "MSG199");
+
+        var threads = await Expect(await guest.GetAsync(Comments(s.MeetingId, document)), 200);
+        Assert.True(threads.GetProperty("canComment").GetBoolean());
+        var thread = Assert.Single(threads.GetProperty("comments").EnumerateArray());
+        Assert.Equal(["Thư ký trả lời", "Khách trả lời tiếp"],
+            thread.GetProperty("replies").EnumerateArray().Select(r => r.GetProperty("body").GetString()));
+        Assert.Equal(3, Assert.Single((await Expect(await guest.GetAsync(Documents(s.MeetingId)), 200))
+            .GetProperty("general").EnumerateArray()).GetProperty("commentCount").GetInt32());
+
+        await using var db = f.Db();
+        var rows = await db.DocumentComments.Where(c => c.MeetingDocumentId == document && c.GuestInvitationId != null).ToListAsync();
+        Assert.Equal(2, rows.Count);
+        Assert.All(rows, r => Assert.Null(r.AuthorId));
+    }
+
+    [Fact]
+    public async Task Revoking_the_invitation_stops_the_next_comment_and_keeps_the_guests_old_ones()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        var document = await AddDocument(s, "Tờ trình.pdf");
+        var (guest, _) = await f.SignIn(s);
+        using var secretary = f.UserClient(s.SecretaryId);
+        await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, document), new { body = "Trước khi bị thu hồi" }), 201, "MSG199");
+
+        await using (var db = f.Db())
+            await db.MeetingGuestInvitations.Where(g => g.Id == s.InvitationId).ExecuteUpdateAsync(set => set
+                .SetProperty(g => g.RevokedAt, f.Clock.Now).SetProperty(g => g.RevokedById, s.SecretaryId));
+
+        await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, document), new { body = "Sau khi bị thu hồi" }), 404, "MSG156");
+        await Expect(await guest.GetAsync(Comments(s.MeetingId, document)), 404, "MSG156");
+        var kept = Assert.Single((await Expect(await secretary.GetAsync(Comments(s.MeetingId, document)), 200))
+            .GetProperty("comments").EnumerateArray());
+        Assert.Equal("Trước khi bị thu hồi", kept.GetProperty("body").GetString());
+        Assert.True(kept.GetProperty("author").GetProperty("isGuest").GetBoolean());
+        Assert.Equal("Khách tự khai", kept.GetProperty("author").GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public async Task A_guest_cannot_comment_on_another_meeting_or_once_the_meeting_ends()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        var other = await f.Seed(MeetingStatus.InProgress);
+        var document = await AddDocument(s, "Tờ trình.pdf");
+        var foreign = await AddDocument(other, "Cuộc họp khác.pdf");
+        // Not before the display name either: the same session check as the documents (covered above).
+        var (guest, _) = await f.SignIn(s);
+
+        await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, document), new { body = "   " }), 400, "MSG200");
+        await Expect(await guest.PostAsJsonAsync(Comments(other.MeetingId, foreign), new { body = "Lạc cuộc họp" }), 404, "MSG156");
+        await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, foreign), new { body = "Lạc tài liệu" }), 404, "MSG156");
+
+        // An ended meeting is closed to a guest altogether (BR-181): MSG156, not the members' read-only MSG251.
+        await SetMeeting(s, MeetingStatus.Ended);
+        await Expect(await guest.PostAsJsonAsync(Comments(s.MeetingId, document), new { body = "Sau khi kết thúc" }), 404, "MSG156");
+        await Expect(await guest.GetAsync(Comments(s.MeetingId, document)), 404, "MSG156");
+        await using var db = f.Db();
+        Assert.False(await db.DocumentComments.AnyAsync(c => c.MeetingDocumentId == document || c.MeetingDocumentId == foreign));
     }
 }

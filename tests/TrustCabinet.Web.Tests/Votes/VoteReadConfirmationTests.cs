@@ -167,4 +167,54 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         Assert.Equal(["ConfirmedAt", "CreatedAt", "GuestInvitationId", "Id", "MeetingDocumentId", "UpdatedAt", "UserId"], columns);
         Assert.False(await db.VoteChoices.AnyAsync(c => c.VotingSessionId == vote && c.GuestInvitationId != null));
     }
+
+    /// <summary>The Documents tab's vote group (UC-32a AF-1, SCRUM-21): <c>votes</c> of GET …/documents.</summary>
+    private static async Task<JsonElement[]> VoteGroups(HttpClient client, ParticipantFixture.Scenario s)
+        => (await List(client, s)).GetProperty("votes").EnumerateArray().ToArray();
+
+    private static async Task<JsonElement> List(HttpClient client, ParticipantFixture.Scenario s)
+    {
+        using var response = await client.GetAsync($"{s.Url}/documents");
+        Assert.Equal(200, (int)response.StatusCode);
+        return JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement.Clone();
+    }
+
+    [Fact]
+    public async Task The_documents_tab_groups_documents_by_vote_with_the_readers_own_confirmation()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary); using var member = f.Client(s.Member);
+        var report = await Document(s, "Tờ trình.pdf"); var annex = await Document(s, "Phụ lục.pdf");
+        var draftOnly = await Document(s, "Dự thảo.pdf");
+        var opened = await Draft(secretary, s);
+        await Attach(secretary, s, opened, report, annex);
+        await Code(await chair.PostAsync($"{s.Url}/votes/{opened}/open", null), 200, "MSG217");
+        var draft = await Draft(secretary, s);
+        await Attach(secretary, s, draft, draftOnly, report);
+
+        // A draft and its documents are the Chair's and the Secretary's alone (BR-253).
+        var forMember = await VoteGroups(member, s);
+        var group = Assert.Single(forMember);
+        Assert.Equal(opened, group.GetProperty("id").GetGuid());
+        Assert.Equal("Open", group.GetProperty("status").GetString());
+        Assert.Equal([report, annex], group.GetProperty("documents").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()));
+        Assert.All(group.GetProperty("documents").EnumerateArray(),
+            d => Assert.Equal(JsonValueKind.Null, d.GetProperty("readConfirmedAt").ValueKind));
+        Assert.Equal([opened, draft], (await VoteGroups(secretary, s)).Select(v => v.GetProperty("id").GetGuid()));
+
+        // Each reader sees their own confirmation, which counts for every vote that links the document (BR-291).
+        await Code(await Confirm(member, s, report), 200, "MSG253");
+        var mine = Assert.Single(await VoteGroups(member, s)).GetProperty("documents").EnumerateArray().ToArray();
+        Assert.Equal(JsonValueKind.String, mine[0].GetProperty("readConfirmedAt").ValueKind);
+        Assert.Equal(JsonValueKind.Null, mine[1].GetProperty("readConfirmedAt").ValueKind);
+        Assert.All((await VoteGroups(secretary, s)).SelectMany(v => v.GetProperty("documents").EnumerateArray()),
+            d => Assert.Equal(JsonValueKind.Null, d.GetProperty("readConfirmedAt").ValueKind));
+
+        // A vote's document no item links stays general too (BR-280); a document removed from the meeting is gone (BR-211).
+        var list = await List(member, s);
+        Assert.Contains(report, list.GetProperty("general").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()));
+        await Code(await secretary.DeleteAsync($"{s.Url}/documents/{annex}"), 200, "MSG167");
+        Assert.Equal([report], Assert.Single(await VoteGroups(member, s)).GetProperty("documents").EnumerateArray()
+            .Select(d => d.GetProperty("id").GetGuid()));
+    }
 }

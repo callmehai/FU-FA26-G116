@@ -3,8 +3,8 @@ using TrustCabinet.Domain.Documents;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// UC-35 — comments on a meeting document (SCRUM-23), for anyone who can view the meeting. Guests cannot reach
-/// it yet: there is no Guest sign-in until UC-04, although a comment can already record a Guest author.
+/// UC-35 — comments on a meeting document (SCRUM-23), for anyone who can view the meeting, and for a verified guest
+/// of it on their UC-04 token (BR-181), who writes under their invitation.
 /// </summary>
 public static class DocumentCommentEndpoints
 {
@@ -22,19 +22,20 @@ public static class DocumentCommentEndpoints
     public static void MapDocumentCommentEndpoints(this IEndpointRouteBuilder app)
     {
         const string pattern = "/api/meetings/{meetingId:guid}/documents/{meetingDocumentId:guid}/comments";
-        app.MapGroup(pattern).RequireActiveUser(Error(CommentFailure.ReadFailed))
+        app.MapGroup(pattern).RequireActiveUserOrGuest(Error(CommentFailure.ReadFailed))
             .MapGet("", async (Guid meetingId, Guid meetingDocumentId, HttpContext context, IDocumentCommentService service,
-                CancellationToken ct) =>
+                IMeetingGuestIdentityResolver identities, CancellationToken ct) =>
             {
-                var outcome = await service.ListAsync(meetingId, meetingDocumentId, CapabilityGate.GatedUserId(context.User), ct);
+                var outcome = await service.ListAsync(meetingId, meetingDocumentId,
+                    MeetingDocumentEndpoints.Reader(context, identities), ct);
                 return outcome.Value is { } threads ? Results.Ok(threads) : Error(outcome.Failure);
             });
-        app.MapGroup(pattern).RequireActiveUser(Error(CommentFailure.SaveFailed))
+        app.MapGroup(pattern).RequireActiveUserOrGuest(Error(CommentFailure.SaveFailed))
             .MapPost("", async (Guid meetingId, Guid meetingDocumentId, CommentBody body, HttpContext context,
-                IDocumentCommentService service, CancellationToken ct) =>
+                IDocumentCommentService service, IMeetingGuestIdentityResolver identities, CancellationToken ct) =>
             {
-                var outcome = await service.AddAsync(meetingId, meetingDocumentId, CapabilityGate.GatedUserId(context.User),
-                    body.Body, body.PageNumber, body.ParentCommentId, ct);
+                var outcome = await service.AddAsync(meetingId, meetingDocumentId,
+                    MeetingDocumentEndpoints.Reader(context, identities), body.Body, body.PageNumber, body.ParentCommentId, ct);
                 return outcome.Value is { } comment
                     ? Results.Json(new { code = Msg199CommentAdded, message = "Đã gửi góp ý.", comment },
                         statusCode: StatusCodes.Status201Created)

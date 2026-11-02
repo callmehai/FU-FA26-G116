@@ -1,4 +1,5 @@
 import type { AgendaItemStatus } from './agenda'
+import type { VoteStatus } from './vote'
 
 /**
  * Meeting documents (SCRUM-107 upload, SCRUM-21 view). Contract in docs/03-api/11-tai-lieu-cuoc-hop.md.
@@ -15,7 +16,7 @@ export interface MeetingDocument {
   /** Detected from the content at upload: `PDF_TYPE` or `DOCX_TYPE`. */
   contentType: string
   byteSize: number
-  /** PDF only, counted by the uploader's browser; always null for DOCX. */
+  /** PDF only, counted by the server from the file (ADR-0044); always null for DOCX. */
   pageCount: number | null
   /** Every comment and reply. */
   commentCount: number
@@ -39,8 +40,22 @@ export interface MeetingDocumentList {
   currentAgendaItemId: string | null
   /** Every agenda item by position, those without documents included. */
   agendaItems: DocumentsAgendaItem[]
-  /** Documents linked to no item (BR-280). */
+  /** Documents linked to no item (BR-280) — a vote's document too, when no item links it. */
   general: MeetingDocument[]
+  /** UC-32a AF-1: each vote the caller may see (drafts for the Chair and Secretary only) with its documents. */
+  votes: DocumentsVote[]
+}
+
+export interface VoteMeetingDocument extends MeetingDocument {
+  /** When the caller confirmed reading it to the last page (UC-74), or null. */
+  readConfirmedAt: string | null
+}
+
+export interface DocumentsVote {
+  id: string
+  title: string
+  status: VoteStatus
+  documents: VoteMeetingDocument[]
 }
 
 /** 201 of POST /api/meetings/{id}/documents/upload: MSG161. */

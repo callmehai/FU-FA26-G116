@@ -85,7 +85,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         {
             logger.LogError(ex, "Failed to open stored object {StorageKey} for library document {DocumentId}",
                 file.StorageKey, documentId);
-            return new(DocumentReadFailure.ReadFailed);
+            return new(ex is FileNotFoundException ? DocumentReadFailure.FileMissing : DocumentReadFailure.ReadFailed);
         }
 
         if (readerId != ownerId)

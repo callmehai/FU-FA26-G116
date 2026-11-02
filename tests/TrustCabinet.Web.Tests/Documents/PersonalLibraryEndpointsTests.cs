@@ -282,12 +282,31 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     // ---- UC-34, UC-36, UC-71a–c: documents ----
 
     [Fact]
+    public async Task A_pdf_built_to_overflow_the_parsers_stack_is_refused_and_the_server_keeps_running()
+    {
+        // Nested page nodes: parsed in the server's own process, 20,000 of them (2 MB) ended it with a stack overflow,
+        // which no catch can stop, and any signed-in person reaches this path through their library (ADR-0044). The
+        // child's stack is 1 MB on Windows and 8 MB on Linux, so 200,000 (about 20 MB) overflow both.
+        var owner = await NewUser(fixture);
+        using var client = fixture.Client(owner);
+        var deep = SampleFiles.DeepPageTreePdf(200_000);
+
+        var refused = await Read(await client.PostAsync("/api/documents/upload", DocumentFixture.Form(("cay-sau.pdf", deep, "1"))));
+        Assert.Equal((400, "MSG164"), Pick(refused));
+        Assert.Equal((200, (string?)null), Pick(await Read(await client.GetAsync("/api/documents"))));
+        // A real file right after it still goes through the child process.
+        var added = await Read(await client.PostAsync("/api/documents/upload",
+            DocumentFixture.Form(("that.pdf", SampleFiles.Pdf("that", pages: 2), null))));
+        Assert.Equal((201, "MSG177"), Pick(added));
+    }
+
+    [Fact]
     public async Task Owner_uploads_into_a_folder_and_sees_the_documents_and_the_storage_used()
     {
         var owner = await NewUser(fixture);
         var folder = await AddFolder(fixture, owner, "Hồ sơ");
         using var client = fixture.Client(owner);
-        var pdf = SampleFiles.Pdf("kho");
+        var pdf = SampleFiles.Pdf("kho", pages: 3);
         var docx = SampleFiles.Docx();
 
         var (status, code, body) = await Read(await client.PostAsync($"/api/documents/upload?folderId={folder}",
@@ -552,7 +571,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
-    public async Task Owner_opens_their_document_and_a_missing_object_reads_as_try_again()
+    public async Task Owner_opens_their_document_and_a_missing_object_is_gone_for_good()
     {
         var owner = await NewUser(fixture);
         var document = await AddDocument(fixture, owner, "Đọc.pdf");
@@ -564,8 +583,10 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.Equal("attachment", response.Content.Headers.ContentDisposition!.DispositionType);
 
         fixture.Storage.Objects.Clear();
+        Assert.Equal((410, "MSG382"), Pick(await Read(await client.GetAsync($"/api/documents/{document}/content"))));
+        Assert.Equal((410, "MSG382"), Pick(await Read(await client.GetAsync($"/api/documents/{document}/content?download=true"))));
+        fixture.Storage.Configured = false;
         Assert.Equal((503, "MSG158"), Pick(await Read(await client.GetAsync($"/api/documents/{document}/content"))));
-        Assert.Equal((503, "MSG160"), Pick(await Read(await client.GetAsync($"/api/documents/{document}/content?download=true"))));
     }
 
     // ---- PO 27/10/2026: an administrator reads a deactivated person's library ----

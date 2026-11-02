@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
+using UglyToad.PdfPig;
 
 namespace TrustCabinet.Domain.Documents;
 
@@ -35,6 +36,10 @@ public static class DocumentFileRules
     private static readonly XNamespace RelationshipsNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
 
     private static readonly byte[] PdfHeader = "%PDF-"u8.ToArray();
+    private static readonly byte[] PdfEndOfFile = "%%EOF"u8.ToArray();
+    private static readonly byte[] PdfStartXref = "startxref"u8.ToArray();
+    /// <summary>Where a reader looks for the end of a PDF: Acrobat accepts <c>%%EOF</c> anywhere in the last 1024 bytes.</summary>
+    private const int PdfTailBytes = 1024;
     private static readonly byte[] ZipHeader = [0x50, 0x4B, 0x03, 0x04];
     private static readonly byte[] EndOfCentralDirectory = [0x50, 0x4B, 0x05, 0x06];
 
@@ -77,11 +82,13 @@ public static class DocumentFileRules
     /// <summary>
     /// Checks the submission limits, then every file by its actual bytes (BR-187, BR-214, BR-215,
     /// BR-319), and hashes what passes. Reports every bad file, not just the first. Streams must
-    /// be seekable — ASP.NET Core buffers form files to disk, so they are.
+    /// be seekable — ASP.NET Core buffers form files to disk, so they are. <paramref name="countPdfPages"/> parses a
+    /// PDF; the web app passes one that runs <see cref="CountPdfPagesAsync"/> in a child process (ADR-0044).
     /// </summary>
     public static async Task<DocumentUploadOutcome> ValidateAsync(IReadOnlyList<DocumentUploadCandidate> candidates,
-        CancellationToken ct)
+        CancellationToken ct, Func<Stream, CancellationToken, Task<int?>>? countPdfPages = null)
     {
+        countPdfPages ??= CountPdfPagesAsync;
         if (candidates.Count == 0)
             return new(DocumentUploadFailure.Invalid, Errors: new Dictionary<string, string[]> { ["files"] = ["Chưa chọn tệp nào."] });
         if (candidates.Count > MaxFiles || candidates.Sum(c => c.Length) > MaxTotalBytes)
@@ -97,6 +104,7 @@ public static class DocumentFileRules
             string? problem = null;
             string? contentType = null;
             string? sha256 = null;
+            int? pageCount = null;
             if (name is null) problem = "tên tệp không hợp lệ.";
             else if (candidate.Length == 0) problem = "tệp rỗng.";
             else if (candidate.Length > MaxFileBytes) problem = "tệp lớn hơn 50 MB.";
@@ -108,6 +116,8 @@ public static class DocumentFileRules
                 // The name must agree with the bytes: the file is downloaded under this name later,
                 // and a PDF-looking HTML page must not come back as "x.html" from our origin.
                 if (contentType != expected) problem = "không phải tệp PDF hoặc DOCX hợp lệ.";
+                else if (contentType == PdfContentType && (pageCount = await countPdfPages(stream, ct)) is null)
+                    problem = "không phải tệp PDF hoặc DOCX hợp lệ.";
                 else
                 {
                     stream.Position = 0;
@@ -121,8 +131,7 @@ public static class DocumentFileRules
                 continue;
             }
 
-            files.Add(new(name!, contentType!, candidate.Length, sha256!,
-                contentType == PdfContentType ? ParsePageCount(candidate.PageCount) : null, candidate.OpenRead));
+            files.Add(new(name!, contentType!, candidate.Length, sha256!, pageCount, candidate.OpenRead));
         }
 
         return errors.Count > 0 ? new(DocumentUploadFailure.Invalid, Errors: errors) : new(Files: files);
@@ -224,7 +233,34 @@ public static class DocumentFileRules
     public static bool IsInvisible(char c)
         => char.IsControl(c) || CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.Format;
 
-    /// <summary>The browser counts pages with pdf.js; a value it could not produce is stored as unknown.</summary>
-    private static int? ParsePageCount(string? value)
-        => int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var count) && count > 0 ? count : null;
+    /// <summary>
+    /// The pages of a PDF whose structure reads end to end, or null for one that does not: a header with nothing behind
+    /// it, a broken cross-reference table, no page at all, or a password needed to open it. The server counts, so a
+    /// client cannot store any page count it likes (ADR-0044). The tail is checked first: a file with megabytes of junk
+    /// after its last <c>%%EOF</c> sends the parser on a byte-by-byte search for <c>startxref</c> that takes minutes,
+    /// while one whose tail is in place but whose body is junk fails in well under a second. The parser recurses down the
+    /// page tree and inflates streams without a cap, so a hostile file can overflow the stack or exhaust memory: call this
+    /// only where that ends nothing but the caller (the web app's child process, or a test).
+    /// </summary>
+    public static async Task<int?> CountPdfPagesAsync(Stream stream, CancellationToken ct)
+    {
+        if (!stream.CanSeek) throw new ArgumentException("The file stream must be seekable.", nameof(stream));
+        var tail = new byte[(int)Math.Min(stream.Length, PdfTailBytes)];
+        stream.Position = stream.Length - tail.Length;
+        await stream.ReadExactlyAsync(tail, ct);
+        if (tail.AsSpan().LastIndexOf(PdfEndOfFile) < 0 || tail.AsSpan().LastIndexOf(PdfStartXref) < 0) return null;
+
+        stream.Position = 0;
+        try
+        {
+            // Strict: a file the lenient parser would patch up is one pdf.js may still refuse to draw.
+            using var pdf = PdfDocument.Open(stream, new ParsingOptions { UseLenientParsing = false, SkipMissingFonts = true });
+            return pdf.NumberOfPages > 0 ? pdf.NumberOfPages : null;
+        }
+        catch (Exception ex) when (ex is not (OperationCanceledException or OutOfMemoryException))
+        {
+            // The parser's own exceptions and whatever else a malformed file shakes out of it: not a PDF we can show.
+            return null;
+        }
+    }
 }

@@ -151,6 +151,7 @@ public static class PersonalLibraryEndpoints
     private static IResult Content(HttpContext context, MeetingDocumentContentOutcome outcome, bool download)
         => outcome.Content is { } file ? MeetingDocumentEndpoints.Stream(context, file)
             : outcome.Failure == DocumentReadFailure.NotFound ? Error(LibraryFailure.NotFound, Msg158ViewFailed)
+            : outcome.Failure == DocumentReadFailure.FileMissing ? MeetingDocumentEndpoints.FileMissing()
             : download ? Json(503, Msg160DownloadFailed, "Không tải về được tài liệu. Vui lòng thử lại.")
             : Failed(Msg158ViewFailed);
 

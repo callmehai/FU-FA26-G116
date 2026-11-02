@@ -86,7 +86,7 @@ public sealed class DocumentFileRulesTests
     public async Task The_name_must_be_pdf_or_docx_and_agree_with_the_bytes(string name, bool pdfBytes)
     {
         var bytes = pdfBytes ? SampleFiles.Pdf() : SampleFiles.Docx();
-        var result = await DocumentFileRules.ValidateAsync([new(name, bytes.Length, () => new MemoryStream(bytes), null)], default);
+        var result = await DocumentFileRules.ValidateAsync([new(name, bytes.Length, () => new MemoryStream(bytes))], default);
         Assert.Equal(name == "BAO-CAO.PDF" ? DocumentUploadFailure.None : DocumentUploadFailure.Invalid, result.Failure);
     }
 
@@ -94,29 +94,61 @@ public sealed class DocumentFileRulesTests
     public async Task Total_size_over_200_MB_is_checked_before_any_file_is_read()
     {
         Stream Unread() => throw new InvalidOperationException("Must not be read.");
-        var five = Enumerable.Range(0, 5).Select(i => new DocumentUploadCandidate($"{i}.pdf", 41L * 1024 * 1024, Unread, null)).ToArray();
+        var five = Enumerable.Range(0, 5).Select(i => new DocumentUploadCandidate($"{i}.pdf", 41L * 1024 * 1024, Unread)).ToArray();
         Assert.Equal(DocumentUploadFailure.TooMany, (await DocumentFileRules.ValidateAsync(five, default)).Failure);
 
-        var exactly = Enumerable.Range(0, 4).Select(i => new DocumentUploadCandidate($"{i}.pdf", 50L * 1024 * 1024, () => new MemoryStream(SampleFiles.Pdf()), null)).ToArray();
+        var exactly = Enumerable.Range(0, 4).Select(i => new DocumentUploadCandidate($"{i}.pdf", 50L * 1024 * 1024, () => new MemoryStream(SampleFiles.Pdf()))).ToArray();
         Assert.NotEqual(DocumentUploadFailure.TooMany, (await DocumentFileRules.ValidateAsync(exactly, default)).Failure);
     }
 
     [Fact]
-    public async Task Every_bad_file_is_reported_and_page_counts_are_kept_for_pdf_only()
+    public async Task Every_bad_file_is_reported_and_the_server_counts_the_pages_of_a_pdf()
     {
         var bad = await DocumentFileRules.ValidateAsync([
-            new("ok.pdf", 10, () => new MemoryStream(SampleFiles.Pdf()), "4"),
-            new("rong.pdf", 0, () => new MemoryStream(), null),
-            new("anh.pdf", 16, () => new MemoryStream(SampleFiles.Png()), null),
+            new("ok.pdf", 10, () => new MemoryStream(SampleFiles.Pdf())),
+            new("rong.pdf", 0, () => new MemoryStream()),
+            new("anh.pdf", 16, () => new MemoryStream(SampleFiles.Png())),
         ], default);
         Assert.Equal(DocumentUploadFailure.Invalid, bad.Failure);
         Assert.Equal(["files[1]", "files[2]"], bad.Errors!.Keys.Order());
 
         var good = await DocumentFileRules.ValidateAsync([
-            new("a.pdf", 10, () => new MemoryStream(SampleFiles.Pdf()), "4"),
-            new("b.pdf", 10, () => new MemoryStream(SampleFiles.Pdf()), "-1"),
-            new("c.docx", 10, () => new MemoryStream(SampleFiles.Docx()), "9"),
+            new("a.pdf", 10, () => new MemoryStream(SampleFiles.Pdf("a", pages: 4))),
+            new("b.pdf", 10, () => new MemoryStream(SampleFiles.Pdf("b"))),
+            new("c.docx", 10, () => new MemoryStream(SampleFiles.Docx())),
         ], default);
-        Assert.Equal([4, null, null], good.Files!.Select(f => f.PageCount));
+        Assert.Equal([4, 1, null], good.Files!.Select(f => f.PageCount));
+    }
+
+    private static Task<int?> Pages(byte[] bytes) => DocumentFileRules.CountPdfPagesAsync(new MemoryStream(bytes), default);
+
+    [Fact]
+    public async Task A_pdf_whose_structure_does_not_read_is_not_a_pdf()
+    {
+        Assert.Equal(3, await Pages(SampleFiles.Pdf(pages: 3)));
+        // A header and an end marker with nothing between: what the old header-only check let through.
+        Assert.Null(await Pages("%PDF-1.4\n% chi co header\n%%EOF\n"u8.ToArray()));
+        Assert.Null(await Pages("%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\n%%EOF\n"u8.ToArray()));
+        // A catalog with no page at all.
+        var empty = System.Text.Encoding.ASCII.GetString(SampleFiles.Pdf(pages: 1))
+            .Replace("/Kids [3 0 R] /Count 1", "/Kids [] /Count 0");
+        Assert.Null(await Pages(System.Text.Encoding.ASCII.GetBytes(empty)));
+        // Body cut short: the cross-reference table points past the end.
+        var real = SampleFiles.Pdf(pages: 2);
+        Assert.Null(await Pages([.. real.AsSpan(0, 40), .. real.AsSpan(real.Length - 60)]));
+    }
+
+    [Fact]
+    public async Task Junk_after_the_end_of_a_pdf_is_refused_without_a_slow_search()
+    {
+        // Megabytes after the last %%EOF send the parser on a byte-by-byte search for startxref (minutes for 50 MB);
+        // the tail check refuses the file first.
+        var padded = new byte[8 * 1024 * 1024];
+        SampleFiles.Pdf(pages: 2).CopyTo(padded, 0);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        Assert.Null(await Pages(padded));
+        Assert.True(watch.Elapsed < TimeSpan.FromSeconds(2), $"took {watch.Elapsed}");
+        // A few trailing bytes, as some writers leave, are fine.
+        Assert.Equal(2, await Pages([.. SampleFiles.Pdf(pages: 2), .. "\r\n\n  \n"u8.ToArray()]));
     }
 }

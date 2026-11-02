@@ -1,4 +1,3 @@
-using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
@@ -50,14 +49,21 @@ public static class MeetingDocumentEndpoints
     internal const string StorageFullMessage =
         "Bộ nhớ tài liệu của hệ thống đã đầy. Chưa có tài liệu nào được tải lên. Hãy báo quản trị viên.";
     private const string Msg349MeetingCancelled = "MSG349";
+    private const string Msg382FileMissing = "MSG382";
+
+    /// <summary>MSG382, for the library's content endpoints as well.</summary>
+    internal static IResult FileMissing() => Results.Json(new
+    {
+        code = Msg382FileMissing,
+        message = "Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.",
+    }, statusCode: StatusCodes.Status410Gone);
 
     /// <summary>The 200 MB of files plus room for the multipart framing and the page counts.</summary>
     private const long MaxRequestBytes = DocumentFileRules.MaxTotalBytes + 1024 * 1024;
 
-    /// <summary>Room for well over 10 files and their page counts, so a few extra files still get
-    /// MSG288; far more is malformed (MSG164).</summary>
+    /// <summary>Room for well over 10 files and the page counts older clients still send, so a few extra
+    /// files still get MSG288; far more is malformed (MSG164).</summary>
     private const int MaxParts = 64;
-    private const int MaxPageCountBytes = 16;
     /// <summary>ASP.NET Core's own form reader allows the same.</summary>
     private const int MaxBoundaryLength = 128;
 
@@ -179,8 +185,8 @@ public static class MeetingDocumentEndpoints
             : ReadError(outcome.Failure, download ? Msg160DownloadFailed : Msg158ViewFailed);
     }
 
-    /// <summary>A guest token reads as the guest, never as a user; otherwise the gated user.</summary>
-    private static ParticipantActor Reader(HttpContext context, IMeetingGuestIdentityResolver identities)
+    /// <summary>A guest token reads as the guest, never as a user; otherwise the gated user. Comments use it too.</summary>
+    internal static ParticipantActor Reader(HttpContext context, IMeetingGuestIdentityResolver identities)
         => identities.Resolve(context.User) is { } guest ? new(Guest: guest) : new(CapabilityGate.GatedUserId(context.User));
 
     /// <summary>Hands over an opened file; the personal library's content endpoint uses it too.</summary>
@@ -197,6 +203,7 @@ public static class MeetingDocumentEndpoints
 
     private static IResult ReadError(DocumentReadFailure failure, string readFailedCode)
     {
+        if (failure == DocumentReadFailure.FileMissing) return FileMissing();
         var (status, code, message) = failure switch
         {
             // Same answer for a meeting that does not exist, one the caller cannot see, and a
@@ -302,7 +309,8 @@ public static class MeetingDocumentEndpoints
             return new(DocumentUploadFailure.Invalid,
                 Errors: new Dictionary<string, string[]> { ["files"] = ["Nội dung multipart không hợp lệ."] });
         }
-        return await DocumentFileRules.ValidateAsync(candidates, ct);
+        // Parsed in a child process: a PDF built to overflow the parser's stack must not end the server (ADR-0044).
+        return await DocumentFileRules.ValidateAsync(candidates, ct, PdfPageCounter.CountAsync);
     }
 
     internal static void DeleteTempFiles(List<string> tempFiles)
@@ -317,8 +325,9 @@ public static class MeetingDocumentEndpoints
     /// <summary>
     /// Reads the multipart body by hand rather than with ReadFormAsync, which reads every
     /// non-file part whole into a string however large it is (its value limit only covers
-    /// urlencoded forms). File parts go to temp files; a page count longer than a few digits,
-    /// or more parts than any real upload has, is malformed. Other parts are skipped unread.
+    /// urlencoded forms). File parts go to temp files; more parts than any real upload has is
+    /// malformed. Other parts are skipped unread — the browser's <c>pageCounts</c> among them,
+    /// since the server counts PDF pages itself (ADR-0044).
     /// </summary>
     private static async Task<DocumentUploadCandidate[]> ReadUploadAsync(HttpRequest request, List<string> tempFiles,
         CancellationToken ct)
@@ -329,7 +338,6 @@ public static class MeetingDocumentEndpoints
         var reader = new MultipartReader(boundary, request.Body) { BodyLengthLimit = MaxRequestBytes };
 
         var files = new List<(string? Name, string Path, long Length)>();
-        var pageCounts = new List<string>();
         var parts = 0;
         // ReadNextSectionAsync drains whatever of the previous part was not read.
         while (await reader.ReadNextSectionAsync(ct) is { } section)
@@ -346,20 +354,11 @@ public static class MeetingDocumentEndpoints
                 await section.Body.CopyToAsync(file, ct);
                 files.Add((section.AsFileSection()!.FileName, path, file.Length));
             }
-            else if (disposition.IsFormDisposition() && name is "pageCounts" or "pageCounts[]")
-            {
-                var buffer = new byte[MaxPageCountBytes + 1];
-                var length = await section.Body.ReadAtLeastAsync(buffer, buffer.Length, throwOnEndOfStream: false, ct);
-                if (length > MaxPageCountBytes) throw new InvalidDataException("Page count too long.");
-                pageCounts.Add(Encoding.UTF8.GetString(buffer, 0, length));
-            }
         }
 
-        // pageCounts[i] belongs to the i-th file part; the browser counts PDF pages with pdf.js.
-        return files.Select((file, index) => new DocumentUploadCandidate(file.Name, file.Length,
+        return files.Select(file => new DocumentUploadCandidate(file.Name, file.Length,
             () => new FileStream(file.Path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920,
-                FileOptions.Asynchronous | FileOptions.SequentialScan),
-            index < pageCounts.Count ? pageCounts[index] : null)).ToArray();
+                FileOptions.Asynchronous))).ToArray();
     }
 
     /// <summary>

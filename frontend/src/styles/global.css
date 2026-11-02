@@ -3917,7 +3917,7 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
   .documents-toolbar .segmented { width: 100%; }
   .documents-toolbar .segmented-option > span { padding: 0 4px; font-size: 13px; }
   .documents-toolbar .segmented-count { margin-left: 4px; }
-  /* About 256px for the group on a 360px phone: "Theo nội dung họp" never fits beside its count. */
+  /* About 256px for the three groups on a 360px phone: the full labels never fit beside their counts. */
   .documents-toolbar .segmented-full { display: none; }
   .documents-toolbar .segmented-short { display: inline; }
 }
@@ -3963,8 +3963,16 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
 .documents-row-name { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .documents-row-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .documents-row-name small { color: var(--label-ink); font-size: 13px; }
-/* A phone has no tooltip to read a cut-off name from, and the row's actions leave it little room: wrap it. */
+.documents-row-actions { display: flex; flex: none; align-items: center; gap: 8px; }
+.documents-row-actions:empty { display: none; }
+/* A phone has no tooltip to read a cut-off name from: wrap it. When the Chair's or Secretary's three actions would
+   leave the name a sliver (a few letters a line), they move under it instead. */
 @media (max-width: 720px) {
+  .documents-row { flex-wrap: wrap; justify-content: flex-end; column-gap: 8px; row-gap: 0; }
+  .documents-row-link { flex: 1 1 220px; }
+  /* A vote's title gets the line to itself when its status and count would squeeze it to a word a line. */
+  .documents-group-head { flex-wrap: wrap; }
+  .documents-group-head .documents-group-title { flex: 1 1 160px; }
   .documents-row-name strong { white-space: normal; overflow-wrap: anywhere; }
 }
 .documents-empty { margin: 0; padding: 16px; color: var(--muted-ink); }

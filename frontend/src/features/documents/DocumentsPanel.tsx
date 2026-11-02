@@ -8,7 +8,7 @@ import { SegmentedControl } from '../../components/SegmentedControl'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
-import type { DocumentsAgendaItem, MeetingDocument, MeetingDocumentList } from '../../types/document'
+import type { DocumentsAgendaItem, DocumentsVote, MeetingDocument, MeetingDocumentList } from '../../types/document'
 import type { GuestMeeting } from '../../types/guest'
 import type { Meeting } from '../../types/meeting'
 import { useDocumentPath, useGuest } from '../guest/guestContext'
@@ -18,13 +18,16 @@ import { FileTypeTag, OnlineOnly } from './DocumentTags'
 import { useUploadsSettled } from '../uploads/uploadsContext'
 import { useDocumentDownload } from './useDocumentDownload'
 import { useMeetingDocuments } from './useMeetingDocuments'
+import { VoteStatusChip } from '../votes/VotingPanel'
 
-type Group = 'agenda' | 'general'
+type Group = 'agenda' | 'votes' | 'general'
 
 const GROUPS = [
-  { value: 'agenda', label: 'Theo nội dung họp', short: 'Nội dung họp' },
-  // "Biểu quyết" (UC-32a AF-1) waits for the table linking documents to votes (UC-74).
-  { value: 'general', label: 'Tài liệu chung' },
+  // Short labels for a phone, where three groups share about 270px with their counts.
+  { value: 'agenda', label: 'Theo nội dung họp', short: 'Nội dung' },
+  // UC-32a AF-1: the documents of each vote, with the reader's own read confirmation (UC-74).
+  { value: 'votes', label: 'Biểu quyết' },
+  { value: 'general', label: 'Tài liệu chung', short: 'Chung' },
 ] satisfies { value: Group; label: string; short?: string }[]
 
 /**
@@ -32,7 +35,7 @@ const GROUPS = [
  * side panel (ADR-0011). It reads its own list and re-reads on the hub.
  *
  * - `page`: the AI-eCabinet layout — by agenda item (a document linked to several items under each,
- *   BR-277) or the general ones (BR-280). While the meeting has not ended or been cancelled, its Chair
+ *   BR-277), by vote with "Đã đọc"/"Chưa đọc" (UC-32a AF-1), or the general ones (BR-280). While the meeting has not ended or been cancelled, its Chair
  *   and Secretary add documents (SCRUM-107, SCRUM-58: from the computer or their library, to the general
  *   group or one item), detach one from an item and remove one from the meeting (BR-184, BR-279, BR-299);
  *   the server checks again.
@@ -147,6 +150,7 @@ function PageList({
   // A document linked to several items counts once, as the room panel's total does.
   const all = distinctDocuments([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
   const agendaCount = distinctCount(data.agendaItems.flatMap((item) => item.documents))
+  const voteCount = distinctCount(data.votes.flatMap((vote) => vote.documents))
   const managed = canManage
     ? { ...row, onRemove: (doc: MeetingDocument, item?: DocumentsAgendaItem) => setRemoving({ doc, item }) }
     : row
@@ -158,7 +162,7 @@ function PageList({
           label="Nhóm tài liệu"
           value={group}
           options={GROUPS}
-          counts={{ agenda: agendaCount, general: data.general.length }}
+          counts={{ agenda: agendaCount, votes: voteCount, general: data.general.length }}
           onChange={setGroup}
         />
         {canManage && (
@@ -183,6 +187,12 @@ function PageList({
                 onAdd={canManage ? () => setAdding({ item, number: i + 1 }) : undefined}
               />
             ))
+          )
+        ) : group === 'votes' ? (
+          data.votes.length === 0 ? (
+            <p className="documents-empty">Chưa có biểu quyết nào có tài liệu.</p>
+          ) : (
+            data.votes.map((vote) => <VoteGroup key={vote.id} vote={vote} row={row} />)
           )
         ) : data.general.length === 0 ? (
           <p className="documents-empty">Chưa có tài liệu chung.</p>
@@ -297,6 +307,16 @@ function RoomList({ data, row }: { data: MeetingDocumentList; row: RowProps }) {
           </div>
         </section>
       )}
+      {data.votes.length > 0 && (
+        <section className="documents-section">
+          <h3 className="documents-section-title">Biểu quyết</h3>
+          <div>
+            {data.votes.map((vote) => (
+              <VoteGroup key={vote.id} vote={vote} row={row} folded />
+            ))}
+          </div>
+        </section>
+      )}
       <section className="documents-section">
         <h3 className="documents-section-title">Tài liệu chung</h3>
         {data.general.length === 0 ? (
@@ -306,6 +326,35 @@ function RoomList({ data, row }: { data: MeetingDocumentList; row: RowProps }) {
         )}
       </section>
     </>
+  )
+}
+
+/**
+ * One vote (UC-32a AF-1): its status and documents, each marked with whether the reader confirmed reading it
+ * (UC-74). Documents are attached and removed from the vote itself, on the Biểu quyết tab, never from here.
+ */
+function VoteGroup({ vote, row, folded }: { vote: DocumentsVote; row: RowProps; folded?: boolean }) {
+  const [open, setOpen] = useState(!folded)
+  return (
+    <div className="documents-group">
+      <div className="documents-group-bar">
+        <button type="button" className="documents-group-head" aria-expanded={open} onClick={() => setOpen(!open)}>
+          <Icon name={open ? 'chevronDown' : 'chevronRight'} size={16} />
+          <span className="documents-group-title">{vote.title}</span>
+          <VoteStatusChip vote={vote} />
+          <Badge tone="outline">
+            {row.variant === 'room' ? vote.documents.length : `${vote.documents.length} tài liệu`}
+          </Badge>
+        </button>
+      </div>
+      {open && (
+        <ul className="documents-rows">
+          {vote.documents.map((doc) => (
+            <DocumentRow key={doc.id} doc={doc} row={{ ...row, onRemove: undefined }} read={doc.readConfirmedAt} />
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
@@ -384,7 +433,18 @@ function DocumentRows({
  * Name, type, page count and comments; who added it and when sit in the tooltip. In the room the
  * whole row is a link to a new tab; on the page it opens the viewer in place.
  */
-function DocumentRow({ doc, row, item }: { doc: MeetingDocument; row: RowProps; item?: DocumentsAgendaItem }) {
+function DocumentRow({
+  doc,
+  row,
+  item,
+  read,
+}: {
+  doc: MeetingDocument
+  row: RowProps
+  item?: DocumentsAgendaItem
+  /** A vote's document: when the reader confirmed reading it, null while unread. Absent elsewhere. */
+  read?: string | null
+}) {
   const documentPath = useDocumentPath()
   const facts = documentFacts(doc)
   const room = row.variant === 'room'
@@ -405,40 +465,55 @@ function DocumentRow({ doc, row, item }: { doc: MeetingDocument; row: RowProps; 
         </span>
         {room && <Icon name="externalLink" size={16} />}
       </Link>
-      {!room && row.canDownload && (
-        <button
-          type="button"
-          className="icon-button icon-button-sm"
-          aria-label={`Tải về ${doc.fileName}`}
-          data-tooltip="Tải về"
-          disabled={row.busyId === doc.id}
-          onClick={() => row.onDownload(doc)}
-        >
-          <Icon name="download" size={16} />
-        </button>
-      )}
-      {!room && row.onRemove && item && (
-        <button
-          type="button"
-          className="icon-button icon-button-sm"
-          aria-label={`Gỡ ${doc.fileName} khỏi mục này`}
-          data-tooltip="Gỡ khỏi mục này"
-          onClick={() => row.onRemove!(doc, item)}
-        >
-          <Icon name="unlink" size={16} />
-        </button>
-      )}
-      {!room && row.onRemove && (
-        <button
-          type="button"
-          className="icon-button icon-button-sm"
-          aria-label={`Gỡ ${doc.fileName} khỏi cuộc họp`}
-          data-tooltip="Gỡ khỏi cuộc họp"
-          onClick={() => row.onRemove!(doc)}
-        >
-          <Icon name="trash" size={16} />
-        </button>
-      )}
+      {/* One block, so on a phone the actions move under the name together rather than one by one. */}
+      <span className="documents-row-actions">
+        {read !== undefined &&
+          (read ? (
+            <span
+              className="documents-read"
+              tabIndex={0}
+              data-tooltip={`Bạn xác nhận đã đọc lúc ${formatDateTime(read)}`}
+            >
+              <Badge tone="emerald">Đã đọc</Badge>
+            </span>
+          ) : (
+            <Badge tone="outline">Chưa đọc</Badge>
+          ))}
+        {!room && row.canDownload && (
+          <button
+            type="button"
+            className="icon-button icon-button-sm"
+            aria-label={`Tải về ${doc.fileName}`}
+            data-tooltip="Tải về"
+            disabled={row.busyId === doc.id}
+            onClick={() => row.onDownload(doc)}
+          >
+            <Icon name="download" size={16} />
+          </button>
+        )}
+        {!room && row.onRemove && item && (
+          <button
+            type="button"
+            className="icon-button icon-button-sm"
+            aria-label={`Gỡ ${doc.fileName} khỏi mục này`}
+            data-tooltip="Gỡ khỏi mục này"
+            onClick={() => row.onRemove!(doc, item)}
+          >
+            <Icon name="unlink" size={16} />
+          </button>
+        )}
+        {!room && row.onRemove && (
+          <button
+            type="button"
+            className="icon-button icon-button-sm"
+            aria-label={`Gỡ ${doc.fileName} khỏi cuộc họp`}
+            data-tooltip="Gỡ khỏi cuộc họp"
+            onClick={() => row.onRemove!(doc)}
+          >
+            <Icon name="trash" size={16} />
+          </button>
+        )}
+      </span>
     </li>
   )
 }

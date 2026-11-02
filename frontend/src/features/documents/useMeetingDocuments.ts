@@ -48,7 +48,8 @@ export function useMeetingDocuments(meetingId: string) {
     }
   }, [load])
 
-  useMeetingEvents(meetingId, () => void load(), ['documentsChanged', 'agendaChanged'])
+  // A vote opened, closed or given documents changes the Biểu quyết group (UC-32a AF-1).
+  useMeetingEvents(meetingId, () => void load(), ['documentsChanged', 'agendaChanged', 'voteChanged', 'voteOpened'])
 
   return { state, reload: load }
 }

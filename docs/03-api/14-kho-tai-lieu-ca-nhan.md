@@ -14,7 +14,7 @@ Gắn tài liệu trong kho vào cuộc họp, gỡ, gắn mục nghị sự: [1
 - Mọi endpoint cần bearer token của tài khoản đang hoạt động (`401`/`403` body rỗng nếu không).
 - Kho **chỉ chủ sở hữu** đọc và sửa. Thư mục hay tài liệu của người khác trả **`404 MSG175`, cùng body với mục không tồn
   tại** (BR-242); thư mục đích của người khác trả `404 MSG179`.
-- Guest không có kho (BR-204): Guest chưa có phiên đăng nhập (UC-04), nên không gọi được các endpoint này.
+- Khách không có kho (BR-204): mọi endpoint ở đây chỉ nhận token của tài khoản nội bộ, token Khách của UC-04 bị từ chối.
 - **Quản trị viên đọc kho của tài khoản đã khoá** (PO 27/10/2026), xem [mục cuối](#quản-trị-viên-đọc-kho-của-tài-khoản-đã-khoá).
 
 Mọi thao tác ghi trên kho của một người chạy trong một transaction có khoá theo chủ kho (`pg_advisory_xact_lock`), nên
@@ -87,7 +87,8 @@ Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`
 
 Như `GET …/meetings/{id}/documents/{meetingDocumentId}/content` (UC-32c): đúng byte gốc, luôn `attachment`,
 `private, no-store`, `nosniff`. Không có quy tắc Mật ở đây (kho không thuộc cuộc họp nào), không ghi kiểm toán khi
-chủ kho tự mở. Lỗi: `404 MSG175`; `503 MSG158` (xem) / `503 MSG160` (tải về) khi object thiếu, kho tệp lỗi hoặc DB lỗi.
+chủ kho tự mở. Lỗi: `404 MSG175`; `410 MSG382` khi object đã mất hẳn khỏi kho (xem và tải về, thử lại không có ích);
+`503 MSG158` (xem) / `503 MSG160` (tải về) khi kho tệp lỗi hay chưa cấu hình, hoặc DB lỗi.
 
 ## Đổi tên — `PUT /api/documents/{documentId}/name` (UC-71b)
 
@@ -180,7 +181,7 @@ dòng `StoredFile` nào còn lại, kể cả khi người khác làm đầy và
 kho chưa cấu hình → `MSG178`; tìm không phân biệt hoa thường, lọc loại, `%`/`_` là ký tự thường, chỉ trong thư mục đang
 mở; `meetingCount` bỏ cuộc họp không xem được và bản đã gỡ; đổi tên giữ đuôi, bản trong cuộc họp giữ tên cũ; chuyển;
 xoá khỏi kho rồi khoá chủ kho, thành viên vẫn mở được bản trong cuộc họp; lỗi DB → `MSG184`/`MSG186`/`MSG181`; mở tệp,
-object thiếu → `MSG158`/`MSG160`; Quản trị viên đọc kho đã khoá (2 dòng kiểm toán), kho còn hoạt động → `MSG175`, người
+object đã mất → `410/MSG382`, kho chưa cấu hình → `MSG158`; Quản trị viên đọc kho đã khoá (2 dòng kiểm toán), kho còn hoạt động → `MSG175`, người
 thường → `403`; tệp và thư mục (cả thư mục con) của cuộc họp Mật bị ẩn, mở trả `MSG175`, cả khi Quản trị viên là thành
 viên cuộc họp (khi đó tải về qua cuộc họp trả `403 MSG159`); tên chỉ có phần đuôi → `MSG347`; hai lần chuyển thư mục chéo
 nhau cùng lúc chỉ một lần thành công; hai lần tải lên cùng lúc sát hạn mức không cùng lọt.
