@@ -37,13 +37,6 @@ import {
   roomMessage,
 } from './roomSupport'
 
-/**
- * How long a guest's recording is kept (RecordingStorage.RetentionDays). A guest may not read the speech-clip list
- * that tells members, so the notice says the configured default.
- */
-// ponytail: mirrors the server default; have GET …/call return retentionDays if it is ever configured otherwise.
-const GUEST_RETENTION_DAYS = 180
-
 type Phase = { kind: 'lobby' } | { kind: 'inRoom' } | { kind: 'left'; reason: DisconnectReason | undefined }
 
 interface Prefs {
@@ -223,9 +216,13 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   return <PreJoin room={room} meeting={meeting} call={call} onJoined={() => setPhase({ kind: 'inRoom' })} />
 }
 
-/** How many days a sentence is kept, when the meeting records what is said in the call; null when it does not. */
-function useRecordingNotice(meetingId: string, asGuest: boolean) {
-  const [days, setDays] = useState<number | null>(asGuest ? GUEST_RETENTION_DAYS : null)
+/**
+ * How many days a sentence is kept, when the meeting records what is said in the call; null when it does not.
+ * A guest may not read the speech-clip list that tells members, so theirs comes from GET …/call.
+ */
+function useRecordingNotice(meetingId: string, guestDays: number | null) {
+  const asGuest = guestDays !== null
+  const [days, setDays] = useState<number | null>(guestDays)
   useEffect(() => {
     // A guest may not read the speech-clip list (403), and is always told: the room is recorded either way.
     if (asGuest) return
@@ -281,7 +278,7 @@ function PreJoin({
   const user = useAuth().user
   // The room has no identity before connecting; the preview uses the signed-in name, or the name a guest gave.
   const myName = guest ? guestName(guest.session) : (user?.fullName ?? '')
-  const retentionDays = useRecordingNotice(meeting.id, guest !== null)
+  const retentionDays = useRecordingNotice(meeting.id, guest ? call.retentionDays : null)
   const home = useMeetingHome(meeting.id)
 
   useEffect(() => {

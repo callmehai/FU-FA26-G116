@@ -19,6 +19,8 @@ namespace TrustCabinet.Infrastructure.Calls;
 public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock = null) : ICallRepository
 {
     public const string ActiveRoomIndex = "ux_call_sessions_active_meeting_room";
+    public const string OpenUserStintIndex = "ux_call_participants_open_user_stint";
+    public const string OpenGuestStintIndex = "ux_call_participants_open_guest_stint";
 
     private static readonly MeetingStatus[] ParticipantVisible =
     [
@@ -47,9 +49,10 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
             .ToListAsync(ct))
             .ToHashSet();
 
-    public Task<CallRoomAccess?> FindGuestRoomAccessAsync(Guid meetingId, Guid guestSessionId, CancellationToken ct = default)
+    public Task<CallRoomAccess?> FindGuestRoomAccessAsync(Guid meetingId, Guid guestSessionId, Guid? invitationId,
+        CancellationToken ct = default)
         => AdmittedGuests(meetingId)
-            .Where(x => x.Id == guestSessionId)
+            .Where(x => x.Id == guestSessionId && (invitationId == null || x.InvitationId == invitationId))
             .Select(x => new CallRoomAccess(meetingId, x.Invitation.Meeting.Status, x.Invitation.Meeting.Mode,
                 MeetingRole.Guest, x.Invitation.SelfDeclaredDisplayName!))
             .SingleOrDefaultAsync(ct);
@@ -112,14 +115,26 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
             return;
         }
 
-        db.CallParticipants.Add(new CallParticipant
+        var stint = new CallParticipant
         {
             CallSessionId = sessionId,
             UserId = member.UserId,
             GuestSessionId = member.GuestSessionId,
             JoinedAt = joinedAt,
-        });
-        await db.SaveChangesAsync(ct);
+        };
+        db.CallParticipants.Add(stint);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException error) when (error.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: OpenUserStintIndex or OpenGuestStintIndex,
+        })
+        {
+            // A concurrent webhook or reconciliation opened the same stint first; theirs stands.
+            db.Entry(stint).State = EntityState.Detached;
+        }
     }
 
     public async Task RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default)

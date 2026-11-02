@@ -169,7 +169,19 @@ public sealed class CallRoomServiceTests
         await Service.HandleWebhookAsync(Webhook("participant_joined", _member));
 
         Assert.Empty(_liveKit.Deleted);
+        Assert.Empty(_liveKit.Removed);
         Assert.Equal(CallStatus.Active, Assert.Single(_calls.Sessions).Status);
+    }
+
+    [Fact]
+    public async Task Member_removed_from_the_roster_joining_with_an_old_ticket_is_taken_out_at_once()
+    {
+        // Not invited (any more): the ticket was issued before the Secretary removed them.
+        await Service.HandleWebhookAsync(Webhook("participant_joined", _member));
+
+        Assert.Equal((Room, CallMember.User(_member).Identity), Assert.Single(_liveKit.Removed));
+        Assert.Single(_calls.Stints); // the visit is still evidence
+        Assert.Empty(_liveKit.Deleted);
     }
 
     [Fact]

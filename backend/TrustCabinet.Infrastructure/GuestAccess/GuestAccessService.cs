@@ -190,6 +190,12 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             var current = await FindSessionAsync(session, tracked: true, ct);
             if (current is null) return Ended;
             if (errors.Count > 0) return new(GuestAccessFailure.InvalidProfile, Errors: errors);
+            // The name is declared once per invitation (PO 01/11/2026, SCRUM-116): the roster, votes and
+            // minutes already show it. Sending the same values again (a retry) is harmless.
+            if (current.Invitation.SelfDeclaredDisplayName is { } declared)
+                return declared == name && current.Invitation.SelfDeclaredJobTitle == title
+                    ? new(Data: View(current))
+                    : new(GuestAccessFailure.ProfileLocked);
             // BR-180: shown as self-declared; InvitedName and Email stay the invitation evidence.
             current.Invitation.SelfDeclaredDisplayName = name;
             current.Invitation.SelfDeclaredJobTitle = title;
@@ -233,7 +239,8 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
     private static GuestSessionView View(GuestSession session) => new(session.Id, session.ExpiresAt,
         Meeting(session.Invitation.Meeting), session.Invitation.Email, session.Invitation.InvitedName,
         session.Invitation.SelfDeclaredDisplayName, session.Invitation.SelfDeclaredJobTitle,
-        session.Invitation.SelfDeclaredDisplayName is not null);
+        session.Invitation.SelfDeclaredDisplayName is not null,
+        session.Invitation.Meeting.Sensitivity != Sensitivity.Secret);
 
     /// <summary>UC-04 EX-1: an invitation works only while it stands and its meeting is Published or InProgress.</summary>
     internal static readonly Expression<Func<MeetingGuestInvitation, bool>> OpenInvitation = g => g.RevokedAt == null

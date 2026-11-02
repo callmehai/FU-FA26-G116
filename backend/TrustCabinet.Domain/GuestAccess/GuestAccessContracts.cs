@@ -3,15 +3,19 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Domain.GuestAccess;
 
 /// <summary>UC-04 outcomes. Each maps to one message code at the endpoint (docs/03-api/16-truy-cap-khach-uc04.md).</summary>
-public enum GuestAccessFailure { None, InvalidInvitation, InvalidCode, CodeLocked, TooSoon, DailyLimit, Unavailable, InvalidProfile, SessionEnded }
+public enum GuestAccessFailure { None, InvalidInvitation, InvalidCode, CodeLocked, TooSoon, DailyLimit, Unavailable, InvalidProfile, SessionEnded, ProfileLocked }
 
 public sealed record GuestMeetingView(Guid Id, string Title, string Status,
     DateTimeOffset PlannedStartTime, DateTimeOffset PlannedEndTime);
 public sealed record GuestInvitationView(Guid InvitationId, GuestMeetingView Meeting, string MaskedEmail);
 public sealed record GuestCodeSent(int ExpiresInSeconds, int ResendAfterSeconds);
 public sealed record GuestVerified(string AccessToken, DateTimeOffset ExpiresAt, Guid MeetingId, bool ProfileCompleted);
+/// <summary>
+/// The guest's own session. <c>CanDownload</c> is false on a Secret meeting (MSG159), so the page hides
+/// "Tải về" instead of refusing it on click; the sensitivity itself is still not sent.
+/// </summary>
 public sealed record GuestSessionView(Guid SessionId, DateTimeOffset ExpiresAt, GuestMeetingView Meeting, string Email,
-    string InvitedName, string? DisplayName, string? JobTitle, bool ProfileCompleted);
+    string InvitedName, string? DisplayName, string? JobTitle, bool ProfileCompleted, bool CanDownload);
 
 public sealed record GuestAccessResult(GuestAccessFailure Failure = GuestAccessFailure.None, object? Data = null,
     int RetryAfterSeconds = 0, IReadOnlyDictionary<string, string[]>? Errors = null);

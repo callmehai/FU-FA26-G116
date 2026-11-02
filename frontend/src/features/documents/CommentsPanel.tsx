@@ -172,7 +172,7 @@ function Comment({ comment }: { comment: DocumentComment }) {
     <article className="comment">
       <header className="comment-head">
         <strong>{comment.author.name}</strong>
-        {comment.author.isGuest && <Badge tone="outline">Khách mời</Badge>}
+        {comment.author.isGuest && <Badge tone="outline">Khách</Badge>}
         {comment.pageNumber !== null && <span className="comment-page">Trang {comment.pageNumber}</span>}
         <time dateTime={comment.createdAt}>{formatDateTime(comment.createdAt)}</time>
       </header>

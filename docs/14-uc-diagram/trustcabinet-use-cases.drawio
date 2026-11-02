@@ -79,7 +79,7 @@
         <mxCell id="uc-56" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Documents" vertex="1">
           <mxGeometry height="44" width="170" x="621.002" y="801.999" as="geometry" />
         </mxCell>
-        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Audio" vertex="1">
+        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Recordings" vertex="1">
           <mxGeometry height="44" width="170" x="693.996" y="865.8109999999999" as="geometry" />
         </mxCell>
         <mxCell id="uc-70" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Votes" vertex="1">
@@ -190,6 +190,47 @@
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="uc-view-locked-library" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View a Locked Account’s Personal Library" vertex="1">
+          <mxGeometry height="64" width="210" x="100" y="1330" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-my-voice-id" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Voice ID" vertex="1">
+          <mxGeometry height="44" width="170" x="76" y="656" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Comment on Meeting Document" vertex="1">
+          <mxGeometry height="44" width="170" x="880" y="802" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-91-56-extend" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-56" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-91" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-91" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="549.9" y="697.8" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="assoc-view-locked-library" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-view-locked-library" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Resend Email" vertex="1">
+          <mxGeometry height="61" width="31" x="1160" y="456" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-resend-email-8" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
+          <mxGeometry height="61" width="31" x="345" y="1520" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="360" y="1310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -252,7 +293,7 @@
         <mxCell id="uc-56" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Documents" vertex="1">
           <mxGeometry height="44" width="170" x="847" y="800" as="geometry" />
         </mxCell>
-        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Audio" vertex="1">
+        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Recordings" vertex="1">
           <mxGeometry height="44" width="170" x="892" y="911" as="geometry" />
         </mxCell>
         <mxCell id="uc-70" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Votes" vertex="1">
@@ -402,6 +443,41 @@
             <mxPoint x="412" y="959" as="targetPoint" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="uc-cancel-meeting" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Cancel Meeting" vertex="1">
+          <mxGeometry height="44" width="170" x="1130" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-my-voice-id" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Voice ID" vertex="1">
+          <mxGeometry height="44" width="170" x="267" y="985" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-cancel-meeting-17-extend" parent="1" source="uc-cancel-meeting" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-17" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1076" y="680" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Resend Email" vertex="1">
+          <mxGeometry height="61" width="31" x="1425" y="575" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-resend-email-21" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-21" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-resend-email-cancel-meeting" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-cancel-meeting" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
+          <mxGeometry height="61" width="31" x="515" y="1560" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="531" y="1330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -458,7 +534,7 @@
         <mxCell id="uc-56" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Documents" vertex="1">
           <mxGeometry height="44" width="170" x="810" y="423" as="geometry" />
         </mxCell>
-        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Audio" vertex="1">
+        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Recordings" vertex="1">
           <mxGeometry height="44" width="170" x="834" y="505" as="geometry" />
         </mxCell>
         <mxCell id="uc-70" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Votes" vertex="1">
@@ -575,6 +651,31 @@
             <mxPoint x="633.44" y="493" as="targetPoint" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="uc-my-voice-id" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Voice ID" vertex="1">
+          <mxGeometry height="44" width="170" x="537" y="593" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Comment on Meeting Document" vertex="1">
+          <mxGeometry height="44" width="170" x="855" y="360" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-91-56-extend" parent="1" source="uc-91" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-56" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-91" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-91" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="343.5" y="388" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
+          <mxGeometry height="61" width="31" x="1160" y="923" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -647,7 +748,7 @@
         <mxCell id="uc-57" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Meeting Documents" vertex="1">
           <mxGeometry height="44" width="170" x="1190" y="790" as="geometry" />
         </mxCell>
-        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Audio" vertex="1">
+        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Recordings" vertex="1">
           <mxGeometry height="44" width="170" x="890" y="866" as="geometry" />
         </mxCell>
         <mxCell id="uc-70" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Votes" vertex="1">
@@ -827,6 +928,133 @@
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="uc-37" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Participants" vertex="1">
+          <mxGeometry height="44" width="170" x="452" y="322" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-42" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Participant Response Status" vertex="1">
+          <mxGeometry height="44" width="170" x="680" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-handover-chair" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Hand Over Chair to Another Participant" vertex="1">
+          <mxGeometry height="56" width="190" x="650" y="372" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-64" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Transcript" vertex="1">
+          <mxGeometry height="44" width="170" x="1300" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-73" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Cast Vote" vertex="1">
+          <mxGeometry height="44" width="170" x="975" y="1074" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-confirm-doc-read" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Confirm Document Read" vertex="1">
+          <mxGeometry height="44" width="170" x="1250" y="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-vote-docs" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Vote Documents" vertex="1">
+          <mxGeometry height="44" width="170" x="1355" y="919" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-agenda-conclusion" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Record Agenda Item Conclusion" vertex="1">
+          <mxGeometry height="50" width="180" x="1250" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-floating-window" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Keep Meeting in a Floating Window" vertex="1">
+          <mxGeometry height="56" width="190" x="1230" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-register-to-speak" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Register to Speak" vertex="1">
+          <mxGeometry height="44" width="170" x="860" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-my-recorded-speech" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Recorded Speech" vertex="1">
+          <mxGeometry height="50" width="180" x="1025" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-my-voice-id" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Voice ID" vertex="1">
+          <mxGeometry height="44" width="170" x="311" y="1210" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-65" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Edit Transcript &amp; Speaker Attribution" vertex="1">
+          <mxGeometry height="44" width="170" x="1340" y="330" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-65-64-extend" parent="1" source="uc-65" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-64" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1480" y="448" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="assoc-65" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-65" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="338" y="555" />
+              <mxPoint x="854" y="442" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="rel-37-17-extend" parent="1" source="uc-37" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-17" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="537" y="609" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="rel-42-37-extend" parent="1" source="uc-42" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-37" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-handover-chair-37-extend" parent="1" source="uc-handover-chair" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-37" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-64-61-extend" parent="1" source="uc-64" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1145" y="560" />
+              <mxPoint x="1145" y="905" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="rel-73-70-extend" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-70" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-73-confirm-doc-read-include" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-confirm-doc-read" value="&amp;#171;include&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-manage-vote-docs-71-extend" parent="1" source="uc-manage-vote-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-71" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-agenda-conclusion-54-extend" parent="1" source="uc-agenda-conclusion" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-54" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-floating-window-45-extend" parent="1" source="uc-floating-window" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-register-to-speak-45-extend" parent="1" source="uc-register-to-speak" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-my-recorded-speech-45-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-my-recorded-speech-61-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1115" y="870" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
+          <mxGeometry height="61" width="31" x="900" y="1450" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="915" y="1430" />
+              <mxPoint x="500" y="1430" />
+              <mxPoint x="500" y="1205" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="assoc-cloudflare-r2-57" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-57" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="915" y="1430" />
+              <mxPoint x="1585" y="1430" />
+              <mxPoint x="1585" y="812" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -839,7 +1067,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TrustCabinet — All Use Cases: Secretary" vertex="1">
-          <mxGeometry height="1849" width="1414" x="270" y="204" as="geometry" />
+          <mxGeometry height="1889" width="1414" x="270" y="204" as="geometry" />
         </mxCell>
         <mxCell id="uc-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign in with Email and Password" vertex="1">
           <mxGeometry height="44" width="170" x="316" y="275" as="geometry" />
@@ -895,13 +1123,13 @@
         <mxCell id="uc-57" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Meeting Documents" vertex="1">
           <mxGeometry height="44" width="170" x="1182" y="1094" as="geometry" />
         </mxCell>
-        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Audio" vertex="1">
+        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Recordings" vertex="1">
           <mxGeometry height="44" width="170" x="1012" y="1337" as="geometry" />
         </mxCell>
-        <mxCell id="uc-62" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Upload Meeting Audio" vertex="1">
+        <mxCell id="uc-62" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Record Room Audio" vertex="1">
           <mxGeometry height="44" width="170" x="1251" y="1393" as="geometry" />
         </mxCell>
-        <mxCell id="uc-64" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Speaker-Attributed Transcript" vertex="1">
+        <mxCell id="uc-64" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Transcript" vertex="1">
           <mxGeometry height="44" width="170" x="1043" y="1481" as="geometry" />
         </mxCell>
         <mxCell id="uc-65" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Edit Transcript &amp; Speaker Attribution" vertex="1">
@@ -1075,7 +1303,7 @@
         <mxCell id="rel-62-61-extend" edge="1" parent="1" source="uc-62" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.975;entryY=0.343;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-61" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel-64-17-extend" edge="1" parent="1" source="uc-64" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.877;entryY=0.828;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-17" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-64-61-extend" edge="1" parent="1" source="uc-64" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-65-64-extend" edge="1" parent="1" source="uc-65" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.975;entryY=0.343;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-64" value="&amp;#171;extend&amp;#187;">
@@ -1141,6 +1369,102 @@
         <mxCell id="1iYewRoq0GkXcdpAiase-3" edge="1" parent="1" source="uc-68" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;innerLoopWaypoints=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="uc-68">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="uc-73" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Cast Vote" vertex="1">
+          <mxGeometry height="44" width="170" x="600" y="1790" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-confirm-doc-read" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Confirm Document Read" vertex="1">
+          <mxGeometry height="44" width="170" x="360" y="1790" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-71" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Create / Configure Vote" vertex="1">
+          <mxGeometry height="44" width="170" x="330" y="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-vote-docs" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Vote Documents" vertex="1">
+          <mxGeometry height="44" width="170" x="300" y="1985" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-agenda-conclusion" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Record Agenda Item Conclusion" vertex="1">
+          <mxGeometry height="50" width="180" x="1235" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-floating-window" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Keep Meeting in a Floating Window" vertex="1">
+          <mxGeometry height="56" width="190" x="1260" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-register-to-speak" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Register to Speak" vertex="1">
+          <mxGeometry height="44" width="170" x="1040" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-my-recorded-speech" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Recorded Speech" vertex="1">
+          <mxGeometry height="50" width="180" x="1440" y="1290" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-my-voice-id" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Voice ID" vertex="1">
+          <mxGeometry height="44" width="170" x="334" y="1650" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-71" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-71" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-73-70-extend" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-70" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-73-confirm-doc-read-include" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-confirm-doc-read" value="&amp;#171;include&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-71-70-extend" parent="1" source="uc-71" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-70" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="604" y="1854" />
+              <mxPoint x="784" y="1848" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="rel-manage-vote-docs-71-extend" parent="1" source="uc-manage-vote-docs" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-71" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-agenda-conclusion-54-extend" parent="1" source="uc-agenda-conclusion" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-54" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-floating-window-45-extend" parent="1" source="uc-floating-window" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-register-to-speak-45-extend" parent="1" source="uc-register-to-speak" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-my-recorded-speech-45-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="993" y="1066" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="rel-my-recorded-speech-61-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Resend Email" vertex="1">
+          <mxGeometry height="61" width="31" x="1330" y="2103" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-resend-email-80" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-80" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
+          <mxGeometry height="61" width="31" x="700" y="2110" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="715" y="2078" />
+              <mxPoint x="563" y="2078" />
+              <mxPoint x="563" y="1640" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="assoc-cloudflare-r2-57" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-57" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="715" y="2078" />
+              <mxPoint x="1720" y="2078" />
+              <mxPoint x="1720" y="1116" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -1203,7 +1527,7 @@
         <mxCell id="uc-56" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Documents" vertex="1">
           <mxGeometry height="44" width="170" x="851" y="467" as="geometry" />
         </mxCell>
-        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Audio" vertex="1">
+        <mxCell id="uc-61" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View &amp; Play Meeting Recordings" vertex="1">
           <mxGeometry height="44" width="170" x="856" y="555" as="geometry" />
         </mxCell>
         <mxCell id="uc-70" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Votes" vertex="1">
@@ -1343,6 +1667,71 @@
         <mxCell id="assoc-google-idp" edge="1" parent="1" source="google-idp" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="uc-2" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="uc-37" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Participants" vertex="1">
+          <mxGeometry height="44" width="170" x="526" y="765" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-42" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Participant Response Status" vertex="1">
+          <mxGeometry height="44" width="170" x="766" y="825" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-64" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Transcript" vertex="1">
+          <mxGeometry height="44" width="170" x="1090" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-confirm-doc-read" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Confirm Document Read" vertex="1">
+          <mxGeometry height="44" width="170" x="1180" y="548" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-floating-window" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Keep Meeting in a Floating Window" vertex="1">
+          <mxGeometry height="56" width="190" x="965" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-register-to-speak" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Register to Speak" vertex="1">
+          <mxGeometry height="44" width="170" x="765" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-my-recorded-speech" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Recorded Speech" vertex="1">
+          <mxGeometry height="50" width="180" x="545" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-my-voice-id" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage My Voice ID" vertex="1">
+          <mxGeometry height="44" width="170" x="305" y="1120" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-37-17-extend" parent="1" source="uc-37" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-17" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-42-37-extend" parent="1" source="uc-42" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-37" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-64-61-extend" parent="1" source="uc-64" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-73-confirm-doc-read-include" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-confirm-doc-read" value="&amp;#171;include&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-floating-window-45-extend" parent="1" source="uc-floating-window" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-register-to-speak-45-extend" parent="1" source="uc-register-to-speak" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-my-recorded-speech-45-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-my-recorded-speech-61-extend" parent="1" source="uc-my-recorded-speech" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-61" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="680" y="461" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" id="assoc-my-voice-id" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-my-voice-id" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
+          <mxGeometry height="61" width="31" x="512" y="1330" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="527" y="1100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -1352,7 +1741,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;" value="TrustCabinet — All Use Cases: Guest" vertex="1">
-          <mxGeometry height="724" width="560" x="460" y="35" as="geometry" />
+          <mxGeometry height="824" width="760" x="460" y="35" as="geometry" />
         </mxCell>
         <mxCell id="uc-41" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Respond to Meeting Invitation" vertex="1">
           <mxGeometry height="44" width="170" x="521" y="99" as="geometry" />
@@ -1423,6 +1812,42 @@
         <mxCell id="rel-73-70-extend" edge="1" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-70" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry">
             </mxGeometry>
+        </mxCell>
+        <mxCell id="uc-37" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Participants" vertex="1">
+          <mxGeometry height="44" width="170" x="538" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-42" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Participant Response Status" vertex="1">
+          <mxGeometry height="44" width="170" x="790" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-confirm-doc-read" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Confirm Document Read" vertex="1">
+          <mxGeometry height="44" width="170" x="1000" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-floating-window" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Keep Meeting in a Floating Window" vertex="1">
+          <mxGeometry height="56" width="190" x="780" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-register-to-speak" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Register to Speak" vertex="1">
+          <mxGeometry height="44" width="170" x="790" y="100" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-37" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-37" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-42-37-extend" parent="1" source="uc-42" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-37" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-73-confirm-doc-read-include" parent="1" source="uc-73" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-confirm-doc-read" value="&amp;#171;include&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-floating-window-45-extend" parent="1" source="uc-floating-window" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="rel-register-to-speak-45-extend" parent="1" source="uc-register-to-speak" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;labelBackgroundColor=#FFFFFF;" target="uc-45" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="resend-email" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Resend Email" vertex="1">
+          <mxGeometry height="61" width="31" x="1240" y="614" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" id="assoc-resend-email-87" parent="1" source="resend-email" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-87" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

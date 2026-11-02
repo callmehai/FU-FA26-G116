@@ -11,7 +11,7 @@ import { formatDateTime } from '../../lib/format'
 import type { DocumentsAgendaItem, MeetingDocument, MeetingDocumentList } from '../../types/document'
 import type { GuestMeeting } from '../../types/guest'
 import type { Meeting } from '../../types/meeting'
-import { useDocumentPath } from '../guest/guestContext'
+import { useDocumentPath, useGuest } from '../guest/guestContext'
 import { AddDocumentsDialog } from './AddDocumentsDialog'
 import { documentFacts, isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
@@ -42,7 +42,7 @@ const GROUPS = [
  * Status, sensitivity and the caller's role come from the meeting, which the list does not repeat.
  * `onMeetingStale` re-reads it when an answer says it changed (role lost, meeting ended, now Secret).
  * A guest (UC-04, SCRUM-123) only reads: their meeting carries no role or sensitivity, so they manage
- * nothing, and a Secret meeting's download is refused by the server (MSG159) rather than hidden here.
+ * nothing; their session says whether downloading is allowed (MSG159 on a Secret meeting), the server checks again.
  */
 export function DocumentsPanel({
   meeting,
@@ -63,7 +63,8 @@ export function DocumentsPanel({
   const { download, busyId } = useDocumentDownload(meeting.id, stale)
   // A queued file ended: show the list as it is; a refusal may also mean the meeting changed (role, status).
   useUploadsSettled(`meeting:${meeting.id}`, (job) => (job.status === 'done' ? void reload() : stale()))
-  const canDownload = full?.sensitivity !== 'Secret'
+  const guest = useGuest()
+  const canDownload = guest ? guest.session.canDownload : full?.sensitivity !== 'Secret'
   const total = data && distinctCount([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
 
   const rowProps = { meetingId: meeting.id, variant, canDownload, busyId, onDownload: download }

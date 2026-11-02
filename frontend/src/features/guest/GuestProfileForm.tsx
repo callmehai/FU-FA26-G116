@@ -45,6 +45,11 @@ export function GuestProfileForm({
     } catch (err) {
       setPending(false)
       if (isApiError(err, 404) || isApiError(err, 401)) return onSessionEnded()
+      // Named already, from another tab (MSG381): the name stands; re-reading the session opens the meeting.
+      if (isApiError(err, 409, 'MSG381')) {
+        toast.show(errorMessage(err), 'error')
+        return onSessionEnded()
+      }
       if (isApiError(err, 400, 'MSG377')) {
         const fields = (err.body?.errors ?? {}) as Record<string, string | string[]>
         const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v)

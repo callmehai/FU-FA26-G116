@@ -87,6 +87,45 @@ public sealed class CallRepositoryPostgresTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task A_second_open_stint_for_one_person_is_rejected_by_postgresql()
+    {
+        var (meeting, users) = await SeedAsync(MeetingStatus.InProgress, MeetingMode.Online, 1);
+        var session = ActiveSession(meeting.Id, users[0].Id);
+        _db.CallSessions.Add(session);
+        await _db.SaveChangesAsync();
+        // A closed stint beside an open one is a rejoin, which is fine.
+        _db.CallParticipants.AddRange(
+            new CallParticipant { CallSessionId = session.Id, UserId = users[0].Id, JoinedAt = DateTimeOffset.UtcNow, LeftAt = DateTimeOffset.UtcNow },
+            new CallParticipant { CallSessionId = session.Id, UserId = users[0].Id, JoinedAt = DateTimeOffset.UtcNow });
+        await _db.SaveChangesAsync();
+
+        _db.CallParticipants.Add(new CallParticipant { CallSessionId = session.Id, UserId = users[0].Id, JoinedAt = DateTimeOffset.UtcNow });
+        var error = await Assert.ThrowsAsync<DbUpdateException>(() => _db.SaveChangesAsync());
+        Assert.Equal(CallRepository.OpenUserStintIndex, Assert.IsType<PostgresException>(error.InnerException).ConstraintName);
+    }
+
+    [Fact]
+    public async Task Concurrent_joins_of_one_person_open_one_stint()
+    {
+        var (meeting, users) = await SeedAsync(MeetingStatus.InProgress, MeetingMode.Online, 1);
+        var session = await new CallRepository(_db).EnsureActiveRoomSessionAsync(meeting.Id, users[0].Id, DateTimeOffset.UtcNow);
+
+        // The webhook and the access reconciliation recording the same join at once: none of them may fail.
+        var contexts = Enumerable.Range(0, 8).Select(_ => NewContext()).ToArray();
+        try
+        {
+            await Task.WhenAll(contexts.Select(db =>
+                new CallRepository(db).RecordJoinAsync(session.Id, CallMember.User(users[0].Id), DateTimeOffset.UtcNow)));
+        }
+        finally
+        {
+            foreach (var db in contexts) await db.DisposeAsync();
+        }
+
+        Assert.Equal(1, await _db.CallParticipants.CountAsync(p => p.CallSessionId == session.Id && p.LeftAt == null));
+    }
+
+    [Fact]
     public async Task Room_access_needs_an_invitation_that_was_not_delegated_and_an_active_account()
     {
         var (meeting, users) = await SeedAsync(MeetingStatus.InProgress, MeetingMode.Hybrid, 4);

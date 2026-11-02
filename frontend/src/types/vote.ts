@@ -17,7 +17,7 @@ export const VOTE_ROLE_LABEL: Record<VoteRole, string> = {
   Chair: 'Chủ toạ',
   Secretary: 'Thư ký',
   Member: 'Thành viên',
-  Guest: 'Khách mời',
+  Guest: 'Khách',
 }
 
 export type VoteConclusionValue = 'Passed' | 'NotPassed' | 'Deferred'
