@@ -11,6 +11,7 @@ import { ApiError } from '../../api/client'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
 import { errorMessage } from '../../lib/errors'
+import { SENSITIVITY_LABEL, type Sensitivity } from '../../types/meeting'
 import {
   MEETING_ROLE_LABEL,
   type MeetingRole,
@@ -210,15 +211,20 @@ export function AddParticipantsDialog({
   )
 }
 
-/** Invite a guest by name and email (POST …/guest-invitations). Guests have no internal role. */
+/**
+ * Invite a guest by name and email (POST …/guest-invitations). Guests have no internal role. A restricted or secret
+ * meeting says what the guest will be able to read before the invite goes out, with no extra step (BR-182).
+ */
 export function InviteGuestDialog({
   meetingId,
   revision,
+  sensitivity,
   onClose,
   onDone,
 }: {
   meetingId: string
   revision: string
+  sensitivity?: Sensitivity
   onClose: () => void
   onDone: (outcome: DialogOutcome) => void
 }) {
@@ -265,6 +271,11 @@ export function InviteGuestDialog({
       }
     >
       <form id="invite-guest" className="dialog-form" onSubmit={submit} noValidate>
+        {(sensitivity === 'Confidential' || sensitivity === 'Secret') && (
+          <p className="alert alert-warning" role="note">
+            Cuộc họp {SENSITIVITY_LABEL[sensitivity]}: khách dự họp như Thành viên và đọc được tài liệu cuộc họp.
+          </p>
+        )}
         <label className="field">
           <span className="field-required">Tên khách</span>
           <input

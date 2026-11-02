@@ -368,7 +368,7 @@ function MeetingDetail({
               approver={isOrganizer || isApprover ? approverLabel(meeting, user?.id, nameOf, approvers) : null}
             />
           ) : tab === 'attendees' ? (
-            <ParticipantsPanel meetingId={meeting.id} onChanged={() => void reload()} />
+            <ParticipantsPanel meetingId={meeting.id} sensitivity={meeting.sensitivity} onChanged={() => void reload()} />
           ) : tab === 'agenda' ? (
             <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
           ) : tab === 'documents' ? (

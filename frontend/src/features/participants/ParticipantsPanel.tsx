@@ -7,6 +7,7 @@ import { Pagination } from '../../components/Pagination'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { useSearchBox } from '../../lib/useSearchBox'
+import type { Sensitivity } from '../../types/meeting'
 import {
   MEETING_ROLE_LABEL,
   type MeetingRole,
@@ -56,7 +57,16 @@ type RowOpen = { kind: 'role'; row: ParticipantRow & { role: MeetingRole } } | {
  * made by anyone — including an invitee's answer — re-reads it. `onChanged` lets the page re-read
  * what it shows too (the Chair and Secretaries in "Thông tin chung").
  */
-export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string; onChanged?: () => void }) {
+export function ParticipantsPanel({
+  meetingId,
+  sensitivity,
+  onChanged,
+}: {
+  meetingId: string
+  /** Only the meeting page passes it: inviting a guest warns when the meeting is restricted or secret. */
+  sensitivity?: Sensitivity
+  onChanged?: () => void
+}) {
   const toast = useToast()
   const { user } = useAuth()
   // A guest is their invitation's row, never an internal account the same browser may also be signed in to.
@@ -342,6 +352,7 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
         <InviteGuestDialog
           meetingId={meetingId}
           revision={roster.revision}
+          sensitivity={sensitivity}
           onClose={() => setOpen(null)}
           onDone={finish}
         />
