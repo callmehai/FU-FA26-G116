@@ -16,10 +16,11 @@ public static class GuestAccessEndpoints
     private const string Msg377ProfileInvalid = "MSG377";
     private const string Msg378SessionEnded = "MSG378";
     private const string Msg379DailyLimit = "MSG379";
+    private const string Msg381ProfileLocked = "MSG381";
 
-    private sealed record LinkBody(string? Token);
-    private sealed record VerifyBody(string? Token, string? Code);
-    private sealed record ProfileBody(string? DisplayName, string? JobTitle);
+    internal sealed record LinkBody(string? Token);
+    internal sealed record VerifyBody(string? Token, string? Code);
+    internal sealed record ProfileBody(string? DisplayName, string? JobTitle);
 
     public static void MapGuestAccessEndpoints(this IEndpointRouteBuilder app)
     {
@@ -86,6 +87,8 @@ public static class GuestAccessEndpoints
             case GuestAccessFailure.InvalidProfile:
                 return Results.Json(new { code = Msg377ProfileInvalid, message = "Thông tin hiển thị không hợp lệ.",
                     errors = result.Errors }, statusCode: 400);
+            case GuestAccessFailure.ProfileLocked:
+                return Error(409, Msg381ProfileLocked, "Tên hiển thị đã được khai cho lời mời này và không thể đổi.");
             case GuestAccessFailure.SessionEnded:
                 return Error(404, Msg378SessionEnded, "Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.");
             default:

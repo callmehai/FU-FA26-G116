@@ -213,13 +213,15 @@ public sealed partial class ParticipantService(
                 snapshot.Guests.Select(g => g.Id).ToArray(),
                 ct
             );
+            // A Guest sees names, not addresses: only their own email reaches them (PO 01/11/2026, SCRUM-116).
+            var viewerGuest = actor.Guest?.InvitationId;
             var internalRows = m
                 .Participants.Where(ParticipantRules.Current)
                 .Select(p => new ParticipantRow(
                     p.Id,
                     "Internal",
                     p.User.FullName,
-                    p.User.Email,
+                    viewerGuest is null ? p.User.Email : null,
                     p.Role.ToString(),
                     p.UserId,
                     p.User.IsActive,
@@ -236,7 +238,7 @@ public sealed partial class ParticipantService(
                     g.Id,
                     "Guest",
                     profile?.DisplayName ?? g.InvitedName,
-                    g.Email,
+                    viewerGuest is null || viewerGuest == g.Id ? g.Email : null,
                     null,
                     null,
                     null,
@@ -258,7 +260,7 @@ public sealed partial class ParticipantService(
             if (!string.IsNullOrEmpty(search))
                 rows = rows.Where(r =>
                         r.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase)
-                        || r.Email.Contains(search, StringComparison.OrdinalIgnoreCase)
+                        || (viewerGuest is null && r.Email!.Contains(search, StringComparison.OrdinalIgnoreCase))
                         || (
                             r.InvitedName?.Contains(search, StringComparison.OrdinalIgnoreCase)
                             ?? false

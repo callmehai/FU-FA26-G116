@@ -194,7 +194,8 @@ export function ParticipantsPanel({ meetingId, onChanged }: { meetingId: string;
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên hoặc email"
+            // A guest is not sent other people's email, so their search matches names only.
+            placeholder={guestInvitationId ? 'Tìm theo tên' : 'Tìm theo tên hoặc email'}
             aria-label="Tìm thành phần"
             maxLength={200}
           />

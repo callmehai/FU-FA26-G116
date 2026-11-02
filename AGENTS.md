@@ -44,8 +44,8 @@ third-party skills, drawio-skill and ui-ux, which exist nowhere else.
 vendored unchanged (see its `VENDORED.md`). Run its CLI as `npx -y github:callmehai/sloplint#v0.3.0
 <scan|diff|static>` from the repository root wherever the skill says `node <skill>/checker/cli.mjs`:
 the repo has no root `node_modules`, and `npx` brings Playwright with it. `.slop.json` declares the
-exceptions our ADRs mandate (sidebar gradient, uppercase column headings, sensitivity icons, the
-call room's Meet pills); pass `--setup .slop.login.mjs` so each page signs in as a seeded user, and
+exceptions our ADRs mandate (sidebar gradient, the call-to-action pings, uppercase column headings,
+sensitivity icons, the call room's Meet pills); pass `--setup .slop.login.mjs` so each page signs in as a seeded user, and
 add `#tab=<tab label>`, `#open=notifications` or `#click=<button name>` to a URL to measure a
 detail tab, the notification panel or a dialog. A list that opens filtered to one status repeats it on every row, so scan it
 with `?status=all`. Lucide icons, Be Vietnam Pro and the blue `--brand` are project choices, not
@@ -108,8 +108,10 @@ global.json                  pins .NET SDK 10.0.401
 Every signed-in screen sits in one shell with one vertical blue sidebar — no app bar, no workspace
 switcher; the `/mgmt` and `/calendar` URL prefixes are kept so old links still work. See
 [ADR-0012](docs/05-decisions/0012-giao-dien-hanh-chinh-sidebar-doc.md) for the layout and palette,
-and [ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md) for what was taken from
-the AI-eCabinet reference and why.
+[ADR-0043](docs/05-decisions/0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) for the components taken
+from AI-eCabinet inside it (control sizes, the pinging calls to act, the listing layout, the
+two-column meeting form), and [ADR-0002](docs/05-decisions/0002-khung-giao-dien-theo-ai-ecabinet.md)
+for what was taken from the AI-eCabinet reference and why.
 
 ## Running in development
 
@@ -237,9 +239,10 @@ adding or changing a message.
 primary colour; gold is only a thin accent edge; red (`--danger`) is only for "Mật", the current
 time and warnings — plus the PDF file icon (`--file-pdf`), red because that is how readers know
 PDF. The UI is **light only** — do not add a `prefers-color-scheme: dark` palette.
-Sizes follow ADR-0012 (256px sidebar, 72px collapsed, 40px controls, 44px page-header action, 6px
-radius, 14px body text, never below 12px; a listing is one `.list-panel` of toolbar, table and
-paging); check against it before inventing new ones. A meeting's state uses `StatusBadge` and its
+Sizes follow ADR-0012 for the shell (256px sidebar, 72px collapsed) and ADR-0043 for the rest (34px
+buttons and 38px in a page header, 38px fields, 40px for both on a touch screen, 8px radius on controls
+and 10px on cards, 14px body text, never below 12px; a listing is a toolbar on the page over one white
+card of table and paging); check against them before inventing new ones. A meeting's state uses `StatusBadge` and its
 sensitivity `SensitivityBadge` — they differ by shape as well as colour. Icons come from `components/Icon.tsx`,
 which maps a name to a Lucide glyph — never import `lucide-react` in a screen.
 

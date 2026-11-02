@@ -18,8 +18,9 @@ public static class TranscriptEndpoints
     private const string Msg356SecretMeeting = "MSG356";
     private const string Msg357TranscriptNotReady = "MSG357";
 
-    private sealed record SegmentBody(string? Text);
-    private sealed record SpeakerBody(Guid? UserId);
+    internal sealed record SegmentBody(string? Text);
+    /// <summary>A user of the meeting or one of its guests, at most one of them; neither clears the name.</summary>
+    internal sealed record SpeakerBody(Guid? UserId, Guid? GuestId);
 
     public static void MapTranscriptEndpoints(this IEndpointRouteBuilder app)
     {
@@ -27,11 +28,11 @@ public static class TranscriptEndpoints
             .RequireActiveUser(Error(500, Msg299ReadFailed, "Không tải được bản gỡ băng."));
         recording.MapGet("/transcript", async (Guid recordingId, HttpContext context, ITranscriptionService service, CancellationToken ct)
             => Map(await service.GetAsync(recordingId, CapabilityGate.GatedUserId(context.User), ct)));
-        // SCRUM-35 — the secretary names a voice (or clears it with userId: null); the machine only suggested.
+        // SCRUM-35 — the secretary names a voice as a user or a guest (or clears it); the machine only suggested.
         recording.MapPut("/speakers/{label}", async (Guid recordingId, string label, SpeakerBody body, HttpContext context,
             ITranscriptionService service, CancellationToken ct)
-            => Map(await service.AssignSpeakerAsync(recordingId, label, body.UserId, CapabilityGate.GatedUserId(context.User), ct),
-                Msg316SpeakerAssigned));
+            => Map(await service.AssignSpeakerAsync(recordingId, label, body.UserId, body.GuestId,
+                CapabilityGate.GatedUserId(context.User), ct), Msg316SpeakerAssigned));
         recording.MapGet("/transcript.txt", async (Guid recordingId, HttpContext context, ITranscriptionService service,
             CancellationToken ct) => Map(await service.ExportAsync(recordingId, CapabilityGate.GatedUserId(context.User), ct)));
         recording.MapPost("/transcribe", async (Guid recordingId, HttpContext context, ITranscriptionService service, CancellationToken ct)

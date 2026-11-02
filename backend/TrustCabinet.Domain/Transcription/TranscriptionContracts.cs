@@ -48,11 +48,14 @@ public sealed record TranscriptSegmentView(Guid Id, int Position, long StartMs, 
 /// SCRUM-35 — one voice of the recording. <c>Suggested*</c> is the machine's guess from enrolled voices;
 /// <c>Assigned*</c> is the secretary's decision, and only that one names the speaker. <c>SameAsLabel</c> is another
 /// voice suggested as the same person more surely: perhaps one person the machine split in two (Secretary only).
+/// A voice is named as a user or as a guest of the meeting (<c>AssignedGuestId</c>), never both.
 /// </summary>
 public sealed record TranscriptSpeakerView(string Label, long SpeechMs, Guid? SuggestedUserId, string? SuggestedName,
-    double? SuggestionScore, Guid? AssignedUserId, string? AssignedName, string? SameAsLabel = null);
+    double? SuggestionScore, Guid? AssignedUserId, string? AssignedName, string? SameAsLabel = null,
+    Guid? AssignedGuestId = null);
 
-public sealed record TranscriptPerson(Guid Id, string FullName);
+/// <summary>Someone a voice can be named as: a person of the meeting, or a guest invited to it (<c>Guest</c>).</summary>
+public sealed record TranscriptPerson(Guid Id, string FullName, bool Guest = false);
 
 public sealed record TranscriptView(Guid RecordingId, string Status, string Provider, string Language,
     string ErrorMessage, DateTimeOffset? CompletedAt, long DurationMs, bool CanEdit,
@@ -67,8 +70,9 @@ public interface ITranscriptionService
     /// <summary>The finished transcript as a text file (<see cref="ExportedText"/>).</summary>
     Task<TranscriptOutcome> ExportAsync(Guid recordingId, Guid actorId, CancellationToken ct = default);
     Task<TranscriptOutcome> EditSegmentAsync(Guid segmentId, Guid actorId, string? text, CancellationToken ct = default);
-    /// <summary>SCRUM-35 — the secretary says who a voice is, or clears it with null.</summary>
-    Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid actorId, CancellationToken ct = default);
+    /// <summary>SCRUM-35 — the secretary says who a voice is (a user or a guest of the meeting), or clears it with both null.</summary>
+    Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid? guestId, Guid actorId,
+        CancellationToken ct = default);
     /// <summary>Takes the oldest waiting transcript and runs it; false when there was nothing to do.</summary>
     Task<bool> ProcessNextAsync(CancellationToken ct = default);
     /// <summary>Puts back transcripts a previous process was running when it stopped.</summary>
@@ -90,6 +94,8 @@ public interface ITranscriptRepository
     Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct);
     void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers);
     void AddSegments(IEnumerable<TranscriptSegment> segments);
+    /// <summary>The guests invited to the meeting and not revoked, by the name they gave or were invited by.</summary>
+    Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);
 }
 

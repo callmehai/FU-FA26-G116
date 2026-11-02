@@ -65,6 +65,47 @@ public sealed class GuestSessionTests(GuestAccessFixture f) : IClassFixture<Gues
     }
 
     [Fact]
+    public async Task The_declared_name_cannot_be_changed_afterwards_even_from_another_session()
+    {
+        var s = await f.Seed();
+        var (first, _) = await f.SignIn(s, profile: false);
+        await Expect(await first.PutAsJsonAsync("/api/guest-access/session/profile",
+            new { displayName = "Nguyễn Văn Khách", jobTitle = "Chuyên gia" }), 200, "MSG376");
+
+        // A retry of the same answer is harmless; any other answer is refused, from this session or a new one.
+        await Expect(await first.PutAsJsonAsync("/api/guest-access/session/profile",
+            new { displayName = " Nguyễn Văn Khách ", jobTitle = "Chuyên gia" }), 200, "MSG376");
+        await Expect(await first.PutAsJsonAsync("/api/guest-access/session/profile",
+            new { displayName = "Giám đốc Sở", jobTitle = "Chuyên gia" }), 409, "MSG381");
+        await Expect(await first.PutAsJsonAsync("/api/guest-access/session/profile",
+            new { displayName = "Nguyễn Văn Khách" }), 409, "MSG381");
+        f.Clock.Now = f.Clock.Now.AddMinutes(1);
+        var (second, _) = await f.SignIn(s, profile: false);
+        await Expect(await second.PutAsJsonAsync("/api/guest-access/session/profile",
+            new { displayName = "Tên khác" }), 409, "MSG381");
+
+        await using var db = f.Db();
+        var invitation = await db.MeetingGuestInvitations.SingleAsync(g => g.Id == s.InvitationId);
+        Assert.Equal(("Nguyễn Văn Khách", "Chuyên gia"), (invitation.SelfDeclaredDisplayName, invitation.SelfDeclaredJobTitle));
+    }
+
+    [Fact]
+    public async Task Session_says_whether_documents_may_be_downloaded_without_telling_the_sensitivity()
+    {
+        var s = await f.Seed();
+        var (client, _) = await f.SignIn(s);
+        var session = await Expect(await client.GetAsync("/api/guest-access/session"), 200);
+        Assert.True(session.GetProperty("canDownload").GetBoolean());
+        Assert.False(session.TryGetProperty("sensitivity", out _));
+        Assert.False(session.GetProperty("meeting").TryGetProperty("sensitivity", out _));
+
+        await using (var db = f.Db())
+            await db.Meetings.Where(m => m.Id == s.MeetingId)
+                .ExecuteUpdateAsync(set => set.SetProperty(m => m.Sensitivity, Domain.Enums.Sensitivity.Secret));
+        Assert.False((await Expect(await client.GetAsync("/api/guest-access/session"), 200)).GetProperty("canDownload").GetBoolean());
+    }
+
+    [Fact]
     public async Task Reopening_with_a_live_session_needs_no_new_code_and_a_second_device_reuses_the_profile()
     {
         var s = await f.Seed();

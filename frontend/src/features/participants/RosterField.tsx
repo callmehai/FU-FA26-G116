@@ -17,6 +17,10 @@ const ROLE_OPTIONS = MEETING_ROLES.map((value) => ({ value, label: MEETING_ROLE_
  * Who attends a new meeting, and in what role (SCRUM-20). Search active accounts, pick, then set
  * each one's role. There is exactly one Chair: making someone Chair hands the previous one
  * "Thành viên", as AI-eCabinet does. The organizer is not added on their own — they need not attend.
+ *
+ * As in AI-eCabinet, many are added from one search: the matches stay open with whoever is in
+ * ticked (a second press takes them out), and the picked list keeps its height, scrolling to whoever
+ * was just added — only the list scrolls, never the dialog under the pointer.
  */
 export function RosterField({
   value,
@@ -36,6 +40,8 @@ export function RosterField({
   const listId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLUListElement>(null)
+  const pickedRef = useRef<HTMLUListElement>(null)
+  const count = useRef(value.length)
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(0)
@@ -76,7 +82,15 @@ export function RosterField({
       const box = input.getBoundingClientRect()
       menu.style.left = `${box.left}px`
       menu.style.width = `${box.width}px`
-      menu.style.top = `${box.bottom + 4}px`
+      // Under the box, unless there is more room above it (the box low in a short window).
+      const below = window.innerHeight - box.bottom
+      if (below >= 300 || below >= box.top) {
+        menu.style.top = `${box.bottom + 4}px`
+        menu.style.bottom = 'auto'
+      } else {
+        menu.style.top = 'auto'
+        menu.style.bottom = `${window.innerHeight - box.top + 4}px`
+      }
     }
     place()
     window.addEventListener('scroll', place, true)
@@ -88,16 +102,23 @@ export function RosterField({
     }
   }, [open])
 
-  const picked = new Set(value.map((p) => p.userId))
-  const matches = result.kind === 'loaded' ? result.items.filter((o) => !picked.has(o.id)).slice(0, SHOWN) : []
+  // The picked list scrolls to whoever was just added; removing someone leaves it where it is.
+  useEffect(() => {
+    const list = pickedRef.current
+    if (list && value.length > count.current) list.scrollTop = list.scrollHeight
+    count.current = value.length
+  }, [value.length])
 
-  function add(option: ParticipantOption) {
-    onChange([...value, { userId: option.id, fullName: option.fullName, email: option.email, role: 'Member' }])
-    setQuery('')
-    setHighlighted(0)
-    // Closed, so the matches do not cover the rows below; typing, a click or ↓ opens it again.
-    setOpen(false)
-    setResult({ kind: 'idle' })
+  const picked = new Set(value.map((p) => p.userId))
+  const matches = result.kind === 'loaded' ? result.items : []
+
+  /** In, or out again if already in; the matches stay open for the next pick. */
+  function toggle(option: ParticipantOption) {
+    onChange(
+      picked.has(option.id)
+        ? value.filter((p) => p.userId !== option.id)
+        : [...value, { userId: option.id, fullName: option.fullName, email: option.email, role: 'Member' }],
+    )
   }
 
   function setRole(userId: string, role: MeetingRole) {
@@ -118,7 +139,7 @@ export function RosterField({
     } else if (event.key === 'Enter') {
       // Never submits the form from the search box.
       event.preventDefault()
-      if (open && matches[highlighted]) add(matches[highlighted])
+      if (open && matches[highlighted]) toggle(matches[highlighted])
     } else if (event.key === 'Escape' && open) {
       event.preventDefault()
       setOpen(false)
@@ -162,6 +183,7 @@ export function RosterField({
             id={listId}
             className="roster-menu"
             role="listbox"
+            aria-multiselectable="true"
             aria-label="Người có thể mời"
             popover="manual"
           >
@@ -171,7 +193,7 @@ export function RosterField({
               <li className="roster-menu-note">Đang tìm…</li>
             ) : matches.length === 0 ? (
               <li className="roster-menu-note">
-                {query.trim() ? 'Không có ai khớp, hoặc người đó đã được chọn.' : 'Mọi người đều đã được chọn.'}
+                {query.trim() ? 'Không có ai khớp.' : 'Chưa có ai để mời.'}
               </li>
             ) : (
               matches.map((option, index) => (
@@ -179,14 +201,17 @@ export function RosterField({
                   key={option.id}
                   id={`${listId}-${option.id}`}
                   role="option"
-                  aria-selected={index === highlighted}
+                  aria-selected={picked.has(option.id)}
                   className={index === highlighted ? 'roster-option roster-option-active' : 'roster-option'}
                   // Keeps focus in the box, so blur does not close the menu before the click lands.
                   onMouseDown={(e) => e.preventDefault()}
                   onMouseEnter={() => setHighlighted(index)}
-                  onClick={() => add(option)}
+                  onClick={() => toggle(option)}
                 >
-                  <Person name={option.fullName} email={option.email} />
+                  <span className="roster-option-person">
+                    <Person name={option.fullName} email={option.email} />
+                  </span>
+                  {picked.has(option.id) && <Icon name="check" size={16} />}
                 </li>
               ))
             )}
@@ -195,7 +220,7 @@ export function RosterField({
       </div>
 
       {value.length > 0 ? (
-        <ul className="roster-list" aria-label="Người đã chọn">
+        <ul ref={pickedRef} className="roster-list" aria-label="Người đã chọn">
           {value.map((p) => (
             <li
               key={p.userId}

@@ -17,6 +17,9 @@ public class TranscriptSpeakerConfiguration : IEntityTypeConfiguration<Transcrip
             .OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(s => s.SuggestedUser).WithMany().HasForeignKey(s => s.SuggestedUserId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(s => s.AssignedUser).WithMany().HasForeignKey(s => s.AssignedUserId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(s => s.AssignedGuest).WithMany().HasForeignKey(s => s.AssignedGuestId).OnDelete(DeleteBehavior.Restrict);
+        builder.ToTable(t => t.HasCheckConstraint("ck_transcript_speakers_one_assignee",
+            "assigned_user_id IS NULL OR assigned_guest_id IS NULL"));
         builder.HasOne(s => s.AssignedBy).WithMany().HasForeignKey(s => s.AssignedById).OnDelete(DeleteBehavior.Restrict);
     }
 }

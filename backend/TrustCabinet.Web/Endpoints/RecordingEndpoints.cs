@@ -242,5 +242,5 @@ public static class RecordingEndpoints
     private static IResult Error(int status, string code, string message, IReadOnlyDictionary<string, string[]>? errors = null)
         => Results.Json(new { code, message, errors }, statusCode: status);
 
-    private sealed record TakeBody(bool ConsentConfirmed, string? ConsentPurpose);
+    internal sealed record TakeBody(bool ConsentConfirmed, string? ConsentPurpose);
 }

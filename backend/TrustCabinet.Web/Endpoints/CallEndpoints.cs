@@ -85,7 +85,7 @@ public static class CallEndpoints
     }
 
     /// <summary>Only a guest must send it; a member's join takes no body.</summary>
-    private sealed record JoinBody(bool? RecordingNoticeAcknowledged);
+    internal sealed record JoinBody(bool? RecordingNoticeAcknowledged);
 
     /// <summary>A guest token for this meeting, or the signed-in user the filter already checked is active.</summary>
     private static CallCaller Caller(ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities)
@@ -176,10 +176,11 @@ public static class CallEndpoints
 }
 
 public sealed record CallRoomResponse(
-    Guid MeetingId, string Status, string MyRole, bool Available, int? ParticipantCount)
+    Guid MeetingId, string Status, string MyRole, bool Available, int? ParticipantCount, int RetentionDays)
 {
     public static CallRoomResponse From(CallRoomView view) => new(
-        view.MeetingId, view.Status.ToString(), view.MyRole.ToString(), view.Available, view.ParticipantCount);
+        view.MeetingId, view.Status.ToString(), view.MyRole.ToString(), view.Available, view.ParticipantCount,
+        view.RetentionDays);
 }
 
 public sealed record CallJoinResponse(

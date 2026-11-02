@@ -32,6 +32,7 @@ public sealed class DocumentFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        await Database.CreateFromTemplateAsync(TestSchema.Migrated);
         await using var db = Db();
         await db.Database.MigrateAsync();
         Host = new Factory(this);
