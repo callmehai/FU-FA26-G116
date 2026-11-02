@@ -55,7 +55,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 [.. transcript.Speakers.OrderBy(s => s.Label).Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                     canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
                     canEdit ? s.SuggestionScore : null, s.AssignedUserId, AssignedName(s), sameAs.GetValueOrDefault(s.Label),
-                    s.AssignedGuestId))],
+                    s.AssignedGuestId, AutoAssigned(s)))],
                 people, canExport && transcript.Status == TranscriptStatus.Completed));
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -275,12 +275,26 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 }));
                 await transcripts.DeleteSpeakersAsync(transcriptId, token);
                 var suggestions = await SuggestSpeakersAsync(recording.MeetingId, result, token);
-                transcripts.AddSpeakers(result.Speakers.Select(sp => new TranscriptSpeaker
+                // A sure match names the voice at once (PO 01/11/2026): no assigner marks the machine's name, which
+                // the Secretary may still change, and which goes when that person withdraws Voice ID consent.
+                var sure = voiceOptions.Value.AutoAssignThreshold;
+                var speakers = result.Speakers.Select(sp =>
                 {
-                    TranscriptId = transcriptId, Label = sp.Label, SpeechMs = sp.SpeechMs,
-                    SuggestedUserId = suggestions.GetValueOrDefault(sp.Label)?.UserId,
-                    SuggestionScore = suggestions.GetValueOrDefault(sp.Label)?.Score, CreatedAt = now, UpdatedAt = now,
-                }));
+                    var guess = suggestions.GetValueOrDefault(sp.Label);
+                    var named = guess is not null && guess.Score >= sure;
+                    return new TranscriptSpeaker
+                    {
+                        TranscriptId = transcriptId, Label = sp.Label, SpeechMs = sp.SpeechMs,
+                        SuggestedUserId = guess?.UserId, SuggestionScore = guess?.Score,
+                        AssignedUserId = named ? guess!.UserId : null, AssignedAt = named ? now : null,
+                        CreatedAt = now, UpdatedAt = now,
+                    };
+                }).ToList();
+                transcripts.AddSpeakers(speakers);
+                foreach (var named in speakers.Where(s => s.AssignedUserId is not null))
+                    await audit.RecordAsync(AuditActions.TranscriptSpeakerAssigned, AuditActions.TranscriptSpeakerObjectType,
+                        named.Id, null, new { recordingId = recording.Id, label = named.Label, userId = named.AssignedUserId,
+                            automatic = true, score = named.SuggestionScore }, token);
                 current.Status = TranscriptStatus.Completed;
                 current.Provider = TranscriptRules.Provider(result.AsrModel);
                 current.Language = result.Language;
@@ -333,8 +347,10 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         }
         var options = voiceOptions.Value;
         return SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin,
-            options.SameVoiceThreshold);
+            options.SameVoiceThreshold, options.SecondVoiceThreshold);
     }
+
+    private static bool AutoAssigned(TranscriptSpeaker s) => s.AssignedUserId is not null && s.AssignedById is null;
 
     private static IEnumerable<MeetingParticipant> Participants(Meeting meeting)
         => meeting.Participants.Where(p => p.MeetingId == meeting.Id && ParticipantRules.Active(p));

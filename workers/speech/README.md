@@ -274,6 +274,10 @@ còn giọng mẫu để sạch. Gợi ý theo luật của backend (`SpeakerMat
 người khác; ở 0.6 thì không, và cũng không bỏ sót thêm ai. Từ 0.65 trở lên, bộ "khác kênh" bắt đầu bỏ
 sót người. Vì vậy backend mặc định dùng `VoiceId:SuggestThreshold = 0.6`.
 
+Giọng thứ hai của cùng một người phải đạt `VoiceId:SecondVoiceThreshold = 0.7`, và từ `VoiceId:AutoAssignThreshold =
+0.75` máy tự gán tên ([ADR-0045](../../docs/05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md)). Số đo và lý do
+chọn nằm trong [13-nhan-dien-giong-noi.md](../../docs/03-api/13-nhan-dien-giong-noi.md#gợi-ý-và-gán-tên-trong-bản-gỡ-băng).
+
 **Tách người nói và chuyển chữ** được đo trên hai loại âm thanh:
 
 - 20 đoạn tổng hợp: 9 đoạn một giọng, 9 đoạn hai giọng, `meeting.wav` và 1 đoạn bốn giọng. Một

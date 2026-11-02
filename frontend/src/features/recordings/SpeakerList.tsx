@@ -9,8 +9,8 @@ import { formatDuration } from './format'
 import { speakerColor, speakerName, voiceName, voicesOf, type Voice } from './speakers'
 
 /**
- * SCRUM-35 — who each voice is. The machine's guess is only a suggestion ("Khớp giọng nhất" at the top of
- * the picker) until the Secretary picks someone; only then does the name replace "Người nói N".
+ * SCRUM-35 — who each voice is. The machine's guess leads the picker as "Khớp giọng nhất"; only a name replaces
+ * "Người nói N". A sure match the machine names itself (PO 01/11/2026), and the Secretary can still pick someone else.
  *
  * Each person is one small cell, several to a row, as AI-eCabinet's speaker grid: voices the Secretary gave one name
  * fold into one cell, with their speech added up, and naming it names every voice it holds.
@@ -113,12 +113,13 @@ export function SpeakerPicker({
   }
 
   const label = speakerName(speaker.label)
-  // The machine's guess is a person, not a score: it leads the picker as "Khớp giọng nhất" and names itself on
-  // hover. A percentage meant nothing to the people reading it.
-  const suggested = assignedOf(speaker) ? null : speaker.suggestedUserId
+  // The machine's guess is a person, not a score: it leads the picker as "Khớp giọng nhất", tagged even once someone
+  // is picked (PO 01/11/2026), and names itself on hover. A percentage meant nothing to the people reading it.
+  const suggested = speaker.suggestedUserId
   const same = lead ? voiceName(lead) : null
-  const hint =
-    suggested && speaker.suggestedName
+  const hint = speaker.autoAssigned
+    ? `Máy tự gán vì giọng khớp rõ với ${speaker.assignedName} — chọn lại nếu sai`
+    : suggested && speaker.suggestedName
       ? `Khớp giọng nhất: ${speaker.suggestedName}${same ? ` · cùng giọng với ${same}, có thể là một người bị tách làm hai` : ''}`
       : undefined
   const both = lead && !assignedOf(lead) && speaker.suggestedName ? speaker.suggestedName : null
@@ -140,6 +141,7 @@ export function SpeakerPicker({
           value: p.id,
           label: p.fullName,
           hint: p.id === suggested ? 'Khớp giọng nhất' : p.guest ? 'Khách' : undefined,
+          hintAccent: p.id === suggested,
         })),
         ...(assignedOf(speaker) ? [{ value: NOBODY, label: `Bỏ tên, để lại "${label}"` }] : []),
       ]}

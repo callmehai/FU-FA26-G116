@@ -9,6 +9,8 @@ export interface SelectOption<T extends string> {
   dot?: string
   /** A muted word after the label, such as "Khớp giọng nhất" on the person a voice most likely belongs to. */
   hint?: string
+  /** Shows the hint as a brand-tinted tag rather than muted text, for the one option the machine points at. */
+  hintAccent?: boolean
 }
 
 /**
@@ -159,7 +161,11 @@ export function Select<T extends string>({
               <span className="select-option-label">
                 {option.dot && <span className="select-dot" style={{ background: option.dot }} aria-hidden="true" />}
                 {option.label}
-                {option.hint && <span className="select-option-hint">{option.hint}</span>}
+                {option.hint && (
+                  <span className={option.hintAccent ? 'select-option-hint select-option-hint-accent' : 'select-option-hint'}>
+                    {option.hint}
+                  </span>
+                )}
               </span>
               <span className="select-check">{option.value === value && <Icon name="check" size={16} />}</span>
             </li>

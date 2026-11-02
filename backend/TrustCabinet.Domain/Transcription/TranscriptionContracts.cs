@@ -48,11 +48,12 @@ public sealed record TranscriptSegmentView(Guid Id, int Position, long StartMs, 
 /// SCRUM-35 — one voice of the recording. <c>Suggested*</c> is the machine's guess from enrolled voices;
 /// <c>Assigned*</c> is the secretary's decision, and only that one names the speaker. <c>SameAsLabel</c> is another
 /// voice suggested as the same person more surely: perhaps one person the machine split in two (Secretary only).
-/// A voice is named as a user or as a guest of the meeting (<c>AssignedGuestId</c>), never both.
+/// A voice is named as a user or as a guest of the meeting (<c>AssignedGuestId</c>), never both. <c>AutoAssigned</c>:
+/// the machine named it because the match was sure enough, and no Secretary has changed it since.
 /// </summary>
 public sealed record TranscriptSpeakerView(string Label, long SpeechMs, Guid? SuggestedUserId, string? SuggestedName,
     double? SuggestionScore, Guid? AssignedUserId, string? AssignedName, string? SameAsLabel = null,
-    Guid? AssignedGuestId = null);
+    Guid? AssignedGuestId = null, bool AutoAssigned = false);
 
 /// <summary>Someone a voice can be named as: a person of the meeting, or a guest invited to it (<c>Guest</c>).</summary>
 public sealed record TranscriptPerson(Guid Id, string FullName, bool Guest = false);

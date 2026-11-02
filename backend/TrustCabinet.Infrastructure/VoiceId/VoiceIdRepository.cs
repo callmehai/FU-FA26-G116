@@ -29,9 +29,14 @@ public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdReposi
     public Task<int> DeleteSamplesAsync(Guid userId, CancellationToken ct)
         => db.VoiceSamples.Where(s => s.UserId == userId).ExecuteDeleteAsync(ct);
 
-    public Task<int> ClearSuggestionsAsync(Guid userId, CancellationToken ct)
-        => db.TranscriptSpeakers.Where(s => s.SuggestedUserId == userId)
+    public async Task<int> ClearSuggestionsAsync(Guid userId, CancellationToken ct)
+    {
+        // A name the machine gave from the voice goes with the consent; one a Secretary gave is their decision and stays.
+        await db.TranscriptSpeakers.Where(s => s.SuggestedUserId == userId && s.AssignedUserId == userId && s.AssignedById == null)
+            .ExecuteUpdateAsync(u => u.SetProperty(s => s.AssignedUserId, (Guid?)null).SetProperty(s => s.AssignedAt, (DateTimeOffset?)null), ct);
+        return await db.TranscriptSpeakers.Where(s => s.SuggestedUserId == userId)
             .ExecuteUpdateAsync(u => u.SetProperty(s => s.SuggestedUserId, (Guid?)null).SetProperty(s => s.SuggestionScore, (double?)null), ct);
+    }
 
     public void Add(VoiceConsent consent) => db.VoiceConsents.Add(consent);
     public void Add(VoiceSample sample) => db.VoiceSamples.Add(sample);

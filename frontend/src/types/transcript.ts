@@ -28,6 +28,8 @@ export interface TranscriptSpeaker {
   assignedName: string | null
   /** Another voice suggested as the same person more surely: perhaps one person the machine split in two. */
   sameAsLabel?: string | null
+  /** The machine named the voice itself, its match being sure enough; the Secretary has not changed it since. */
+  autoAssigned?: boolean
 }
 
 export interface TranscriptPerson {
