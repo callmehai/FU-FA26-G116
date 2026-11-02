@@ -697,6 +697,7 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG376` | UC-04 bước 5 · SCRUM-116 | *Display information saved.* — `Đã lưu thông tin hiển thị.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG377` | UC-04 bước 5 · SCRUM-116 | *Invalid display information.* — `Thông tin hiển thị không hợp lệ.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG378` | UC-04 · SCRUM-116 | *The guest session has ended.* — `Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. FE cũng hiện câu này khi token Khách quá hạn (`401` không body). |
+| `MSG379` | UC-04 / EX-6 · SCRUM-116 | *Too many codes requested. Try again later or contact the Meeting Secretary.* — `Bạn đã yêu cầu quá số mã cho phép trong 24 giờ. Vui lòng thử lại sau hoặc liên hệ Thư ký cuộc họp.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG381` | UC-04 bước 5 · SCRUM-116 | *The display name was already declared.* — `Tên hiển thị đã được khai cho lời mời này và không thể đổi.` — **Đã triển khai** (PO 01/11/2026), xem HTTP contract phía trên. |
 | `MSG127` | ADR-0013 · View Meeting Sessions (UC-53 cũ, đã bỏ) | *Unable to load meeting sessions. Please try again.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG128` | UC-26 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |

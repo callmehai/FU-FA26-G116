@@ -1,23 +1,28 @@
 # Việc Jira sau khi merge PR BA Final Review ghi âm / Voice ID
 
 **Người ghi:** KhanhPG (BA), 01/11/2026. **Nhánh:** `docs/ba-final-review-ghi-am-voice-id` (đã đẩy lên origin).
-**PR:** [#205](https://github.com/callmehai/FU-FA26-G116/pull/205) "docs: BA Final Review for FE-09 (Meeting Recording) and FE-10 (Transcription & Voice ID)", base `main`, đang **OPEN**.
+**PR:** [#205](https://github.com/callmehai/FU-FA26-G116/pull/205) "docs: BA Final Review for FE-09 (Meeting Recording) and FE-10 (Transcription & Voice ID)", base `main`, **đã merge** (`46a79a5`).
 Làm **sau khi PR #205 merge vào `main`**. Trạng thái Jira đọc ngày 01/11/2026.
+
+**Cập nhật 02/11/2026:** mục 1 và 2 đã làm xong. Đã comment cả 8 ticket theo mục 2, rồi chuyển **`In Review`**
+(kiểm thử): SCRUM-29, 31, 35, 109; chuyển **`Done`**: SCRUM-102, 103, 125, 126. Comment của 29, 31, 35, 109 liệt kê
+luôn các việc mục 3 còn treo. Description của SCRUM-102, 103 chưa sửa, chỉ ghi trong comment là lỗi thời và trỏ sang
+note 19. Mục 3 vẫn còn nguyên.
 
 Code của SCRUM-29, 31, 35, 109 đã merge từ 29/10 (PR #184 → #193); PR này chỉ là phần tài liệu BA.
 
 ## 1. Ticket cần cập nhật
 
-| Ticket | Hiện tại | Việc sau khi PR merge |
-|---|---|---|
-| SCRUM-29 Ghi âm phiên họp | BA Final Review | Comment kết quả đối chiếu (mục 2), chuyển **kiểm thử** |
-| SCRUM-31 Chuyển giọng nói thành văn bản | BA Final Review | Như trên |
-| SCRUM-35 Tách người nói trong bản ghi | BA Final Review | Như trên |
-| SCRUM-109 Ghi âm theo micro từng người | BA Final Review | Như trên |
-| SCRUM-102 Đặc tả UC FE-09 Meeting Recording | To Do | Comment danh sách UC đã đặc tả, chuyển **Done** |
-| SCRUM-103 Đặc tả UC FE-10 | To Do | Như trên; ghi UC-47–51 còn Placeholder |
-| SCRUM-125 Class Diagram FE-09 (tạo 01/11/2026, dưới SCRUM-55) | To Do | Diagram đã có trong PR #205; comment link `feature-09-…drawio`, chuyển Done |
-| SCRUM-126 Class Diagram FE-10 (tạo 01/11/2026, dưới SCRUM-55) | To Do | Diagram đã có trong PR #205; comment link `feature-10-…drawio`, chuyển Done |
+| Ticket | Hiện tại | Việc sau khi PR merge | Kết quả 02/11/2026 |
+|---|---|---|---|
+| SCRUM-29 Ghi âm phiên họp | BA Final Review | Comment kết quả đối chiếu (mục 2), chuyển **kiểm thử** | **Đã chuyển In Review** |
+| SCRUM-31 Chuyển giọng nói thành văn bản | BA Final Review | Như trên | **Đã chuyển In Review** |
+| SCRUM-35 Tách người nói trong bản ghi | BA Final Review | Như trên | **Đã chuyển In Review** |
+| SCRUM-109 Ghi âm theo micro từng người | BA Final Review | Như trên | **Đã chuyển In Review** |
+| SCRUM-102 Đặc tả UC FE-09 Meeting Recording | To Do | Comment danh sách UC đã đặc tả, chuyển **Done** | **Đã chuyển Done** |
+| SCRUM-103 Đặc tả UC FE-10 | To Do | Như trên; ghi UC-47–51 còn Placeholder | **Đã chuyển Done** |
+| SCRUM-125 Class Diagram FE-09 (tạo 01/11/2026, dưới SCRUM-55) | To Do | Diagram đã có trong PR #205; comment link `feature-09-…drawio`, chuyển Done | **Đã chuyển Done** |
+| SCRUM-126 Class Diagram FE-10 (tạo 01/11/2026, dưới SCRUM-55) | To Do | Diagram đã có trong PR #205; comment link `feature-10-…drawio`, chuyển Done | **Đã chuyển Done** |
 
 SCRUM-102 và 103 đã đổi title ngày 01/11/2026. Description của hai ticket vẫn viết theo yêu cầu cũ
 (FE-09 "Upload audio & Thư viện media", "không dùng Voice ID", NĐ 13/2023); sửa lại hoặc ghi một dòng
