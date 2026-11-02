@@ -10,6 +10,8 @@ const node = (type) => { const n = { id: String(++uid), type, name: '', children
   resize(w, h) { this.width = w; this.height = h }, resizeWithoutConstraints(w, h) { this.width = w; this.height = h },
   findAll(f) { const o = []; const w = (n) => n.children.forEach((c) => { if (f(c)) o.push(c); w(c) }); w(this); return o },
   findAllWithCriteria({ types }) { return this.findAll((c) => types.includes(c.type)) } }
+  // Figma refuses a gradient stop without a numeric position, so the mock has to as well.
+  Object.defineProperty(n, 'fills', { set(v) { for (const p of v) for (const s of p.gradientStops || []) if (!Number.isFinite(s.position)) throw new Error('gradient stop có position không phải số') } })
   if (type === 'TEXT') Object.defineProperty(n, 'characters', { get() { return this._c || '' }, set(v) { this._c = v; this.width = v.length * 6; this.height = 16 } })
   return n }
 const run = async (page) => {

@@ -36,13 +36,14 @@
     const stops = []
     for (const p of parts) {
       const c = rgba(p); if (!c) return null
-      const pos = p.replace(/rgba?\([^)]*\)/, '').trim().split(/\s+/).filter(Boolean).map((v) => v.endsWith('%') ? parseFloat(v) / 100 : parseFloat(v) / len)
+      const at = (v) => { const k = v.match(/^calc\(([\d.]+)% ([+-]) ([\d.]+)px\)$/); return k ? parseFloat(k[1]) / 100 + (k[2] === '+' ? 1 : -1) * parseFloat(k[3]) / len : v.endsWith('%') ? parseFloat(v) / 100 : parseFloat(v) / len }
+      const pos = (p.replace(/rgba?\([^)]*\)/, '').match(/calc\([^)]*\)|\S+/g) || []).map(at)
       if (!pos.length) stops.push([c, null]); else pos.forEach((v) => stops.push([c, v]))
     }
     if (stops[0][1] == null) stops[0][1] = 0
     if (stops[stops.length - 1][1] == null) stops[stops.length - 1][1] = 1
     for (let i = 1; i < stops.length; i++) { if (stops[i][1] == null) { let j = i; while (stops[j][1] == null) j++; for (let k = i; k < j; k++) stops[k][1] = stops[i - 1][1] + (stops[j][1] - stops[i - 1][1]) * (k - i + 1) / (j - i + 1) } stops[i][1] = Math.max(stops[i][1], stops[i - 1][1]) }
-    return { g: 1, T: [[R(dx), R(dy), R(0.5 - 0.5 * dx - 0.5 * dy)], [R(-dy), R(dx), R(0.5 + 0.5 * dy - 0.5 * dx)]], st: stops.map(([c, p]) => ({ c: hex(c), a: R(c.a), p: R(Math.min(1, Math.max(0, p))) })) }
+    return { g: 1, T: [[R(dx), R(dy), R(0.5 - 0.5 * dx - 0.5 * dy)], [R(-dy), R(dx), R(0.5 + 0.5 * dy - 0.5 * dx)]], st: stops.map(([c, p]) => ({ c: hex(c), a: R(c.a), p: +Math.min(1, Math.max(0, p)).toFixed(4) })) }
   }
 
   const frameProps = (el, cs, w, h) => {
