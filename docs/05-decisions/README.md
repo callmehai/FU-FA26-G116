@@ -60,3 +60,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0047](0047-server-test-chay-staging-deploy-an-toan.md) | Server test chạy ở `Staging`; deploy migrate có chủ đích, backup database và tự quay lại khi health check đỏ | Đề xuất |
 | [0048](0048-thong-bao-voice-id-1-2-may-tu-dien-ten.md) | Thông báo đồng ý Voice ID lên 1.2; máy chỉ tự điền tên người đã đồng ý bản này, người đồng ý bản cũ vẫn chỉ được gợi ý | Đề xuất — SCRUM-35, PO 02/11/2026 |
 | [0049](0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md) | Vô hiệu hoá tài khoản kết thúc Voice ID; máy so giọng dưới khoá trên dòng đồng ý | Đề xuất — SCRUM-35, review 02/11/2026 |
+| [0050](0050-giong-gan-trung-nhan-cung-ten.md) | Giọng chưa có tên giống giọng đầu của một người đã nhận ra từ 0,8 trở lên thì nhận cùng tên, bất kể điểm so với giọng mẫu | Đề xuất — SCRUM-35, PO 03/11/2026 |
