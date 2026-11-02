@@ -133,7 +133,8 @@ export function SpeakerPicker({
       value={assignedOf(speaker)}
       placeholder={label}
       marker={inline ? undefined : speakerColor(speaker.label)}
-      tooltip={hint}
+      // A long name may end in "…" in the cell: hovering always tells it in full.
+      tooltip={hint ?? (assignedOf(speaker) ? voiceName(speaker) : undefined)}
       disabled={saving}
       options={[
         ...(both ? [{ value: `${BOTH}${suggested}`, label: both, hint: `Cả ${same}` }] : []),

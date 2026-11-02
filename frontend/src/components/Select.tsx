@@ -139,7 +139,8 @@ export function Select<T extends string>({
           {(marker ?? selected?.dot) && (
             <span className="select-dot" style={{ background: marker ?? selected?.dot }} aria-hidden="true" />
           )}
-          {selected?.label ?? placeholder ?? label}
+          {/* Its own box, so a long value ends in "…" instead of being cut mid-letter. */}
+          <span className="select-text">{selected?.label ?? placeholder ?? label}</span>
         </span>
         <Icon name="chevronDown" size={16} />
       </button>

@@ -25,6 +25,7 @@ import { useAuth } from '../../auth/useAuth'
 import { guestName, useGuest, useMeetingHome } from '../../guest/guestContext'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useMeeting } from '../../meetings/useMeeting'
+import { VoiceShortcut } from '../../voice/VoiceShortcut'
 import { useNotifications } from '../../notifications/notificationsContext'
 import { DevicePicker, MicLevel } from './devices'
 import { RoomView } from './RoomView'
@@ -441,6 +442,8 @@ function PreJoin({
               </p>
             )
           )}
+          {/* A member about to be recorded can leave a voice sample here; a guest has no Voice ID. */}
+          {!guest && <VoiceShortcut />}
 
           {micError && (
             <div className="alert alert-warning" role="status">

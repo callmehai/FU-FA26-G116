@@ -18,10 +18,17 @@ const CreateMeetingHost = lazy(() =>
 const COLLAPSED_KEY = 'tc.sidebarCollapsed'
 const NARROW_QUERY = '(max-width: 720px)'
 
+/** One's own pages, in the account menu rather than the sidebar (as AI-eCabinet's avatar menu). */
+const PERSONAL = [
+  { to: routes.documents, label: 'Kho tài liệu', icon: 'folder' },
+  { to: routes.myVoice, label: 'Giọng nói của tôi', icon: 'mic' },
+] as const
+
 /**
  * Chrome shared by every signed-in screen (ADR-0012): one vertical sidebar — brand, the sections,
  * then the account and the notification bell at its foot — and the routed content beside it.
- * There is no app bar; the page's own header is the first thing in the content.
+ * There is no app bar; the page's own header is the first thing in the content. The account menu holds
+ * what is one's own, then sign-out, which asks first.
  */
 export function AppShell() {
   const { user, signOut } = useAuth()
@@ -81,6 +88,8 @@ export function AppShell() {
   }
 
   const avatar = avatarColors(user.fullName)
+  // On one's own page no sidebar entry lights up, so the account it opened from does.
+  const onPersonalPage = PERSONAL.some((p) => pathname.startsWith(p.to))
 
   return (
     <div className={`shell${collapsed ? ' shell-collapsed' : ''}`}>
@@ -114,7 +123,11 @@ export function AppShell() {
 
         <div className="sidebar-foot">
           <details className="account" ref={accountMenuRef}>
-            <summary aria-label={`Tài khoản ${user.fullName}`} data-tooltip={collapsed ? user.fullName : undefined}>
+            <summary
+              className={onPersonalPage ? 'active' : undefined}
+              aria-label={`Tài khoản ${user.fullName}`}
+              data-tooltip={collapsed ? user.fullName : undefined}
+            >
               <span className="avatar" style={{ backgroundColor: avatar.bg, color: avatar.fg }}>
                 {initials(user.fullName)}
               </span>
@@ -129,6 +142,13 @@ export function AppShell() {
                 <p className="account-meta">{user.email}</p>
                 <p className="account-meta">{user.roleName}</p>
               </div>
+              <hr />
+              {PERSONAL.map((page) => (
+                <NavLink key={page.to} to={page.to} className="menu-item">
+                  <Icon name={page.icon} size={16} />
+                  {page.label}
+                </NavLink>
+              ))}
               <hr />
               <button type="button" className="menu-item" onClick={askToSignOut}>
                 <Icon name="logOut" size={16} />
