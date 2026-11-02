@@ -102,7 +102,7 @@ Audit `meeting.attendance.recorded`: một dòng/batch thay đổi, object Meeti
 |---|---|
 | 400/MSG148 | Sửa body/entry/token format |
 | 409/MSG149 | Không còn InProgress; tải lại và khóa thao tác |
-| 409/MSG151 | Tải lại, so sánh draft, yêu cầu người dùng quyết định; không auto retry |
+| 409/MSG151 | Tải lại và để người dùng chọn lại nếu vẫn muốn; không giữ lựa chọn chưa lưu, không auto retry |
 | 503/MSG150 | Lỗi lưu hoặc commit chưa xác định; GET lại trước khi thử tiếp |
 | 500/MSG289 | GET lỗi đọc |
 | 400/MSG278 | Query GET sai |
