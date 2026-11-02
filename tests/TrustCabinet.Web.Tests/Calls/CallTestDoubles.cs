@@ -54,7 +54,8 @@ internal sealed class FakeCallRepository : ICallRepository
         return this;
     }
 
-    public Task<CallRoomAccess?> FindGuestRoomAccessAsync(Guid meetingId, Guid guestSessionId, CancellationToken ct = default)
+    public Task<CallRoomAccess?> FindGuestRoomAccessAsync(Guid meetingId, Guid guestSessionId, Guid? invitationId,
+        CancellationToken ct = default)
     {
         if (ReadThrows is { } error)
         {

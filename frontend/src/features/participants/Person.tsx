@@ -2,9 +2,10 @@ import { avatarColors, initials } from '../../lib/avatar'
 
 /**
  * Avatar, name and email: one person in the roster, the picker and its dialogs. `self` marks the
- * signed-in user's own row with a quiet "(Tôi)", as AI-eCabinet does.
+ * signed-in user's own row with a quiet "(Tôi)", as AI-eCabinet does. A guest is not sent other people's
+ * email, so the line is left out when there is none.
  */
-export function Person({ name, email, self = false }: { name: string; email: string; self?: boolean }) {
+export function Person({ name, email, self = false }: { name: string; email: string | null; self?: boolean }) {
   const colors = avatarColors(name)
   return (
     <span className="person">
@@ -16,7 +17,7 @@ export function Person({ name, email, self = false }: { name: string; email: str
           {name}
           {self && <span className="person-self">(Tôi)</span>}
         </span>
-        <span className="cell-sub">{email}</span>
+        {email && <span className="cell-sub">{email}</span>}
       </span>
     </span>
   )

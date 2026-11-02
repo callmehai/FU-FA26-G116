@@ -13,6 +13,8 @@ import { GuestVerifyForm } from './GuestVerifyForm'
 
 /** MSG371's text, for a link the page cannot even try: no token in it, or a malformed invitation id. */
 const INVALID_LINK = 'Lời mời không còn hiệu lực. Vui lòng liên hệ Thư ký cuộc họp.'
+/** MSG378's text, for a token past its time: the server answers that with a bare 401, not MSG378. */
+const SESSION_ENDED = 'Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.'
 /** How often an open meeting re-checks the session: the hub stops telling a guest anything once it ends. */
 const RECHECK_MS = 20_000
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -79,7 +81,7 @@ export function GuestPage() {
             return setGate({ kind: 'error', message: errorMessage(err) })
           dropGuestSession(invitationId)
           hadSession = true
-          notice ??= isApiError(err, 404) ? errorMessage(err) : null
+          notice ??= isApiError(err, 404) ? errorMessage(err) : SESSION_ENDED
         }
       }
       // Closed after the guest was in — on screen now, or in a session this browser kept: most likely it ended.

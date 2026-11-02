@@ -46,7 +46,11 @@ danh tính `guest-{guestSessionId}` lấy từ phòng. Khách **không** đượ
 Thu hồi lời mời Khách (`DELETE …/guest-invitations/{id}`) hoặc gỡ thành viên đối soát ngay phòng của cuộc họp đó
 (`IMeetingParticipantAccessPublisher`): người không còn quyền bị đưa ra khỏi phòng, không chờ job 30 giây. Việc này
 chỉ chạy khi phòng có phiên `Active`, và chờ LiveKit tối đa 2 giây — quá thì job đối soát làm nốt, thao tác thu hồi vẫn
-thành công. Phiên hết hạn hay Khách đăng xuất thì job đối soát đưa ra trong tối đa 30 giây.
+thành công. Phiên hết hạn hay Khách đăng xuất thì job đối soát đưa ra trong tối đa 30 giây. Ai vào lại bằng vé
+LiveKit cũ còn hạn sau khi mất quyền (Khách hay thành viên vừa bị gỡ) bị webhook `participant_joined` đưa ra ngay.
+Mỗi người có tối đa một lượt vào/ra đang mở trong một phiên phòng (unique index
+`ux_call_participants_open_user_stint` / `ux_call_participants_open_guest_stint`, lọc `left_at IS NULL`): webhook và
+lần đối soát ghi cùng lúc thì lần sau bị bỏ qua.
 
 ### Danh tính trong LiveKit
 
@@ -60,7 +64,7 @@ riêng là hai phiên, hai kết nối. Tên hiển thị của Khách là tên 
 
 | Method | Path | Kết quả |
 |---|---|---|
-| `GET` | `/api/meetings/{id}/call` | `200 { meetingId, status, myRole, available, participantCount }` — thành viên hoặc Khách |
+| `GET` | `/api/meetings/{id}/call` | `200 { meetingId, status, myRole, available, participantCount, retentionDays }` — thành viên hoặc Khách |
 | `POST` | `/api/meetings/{id}/call/join` | `200 { serverUrl, token, roomName, identity, expiresAt }` — thành viên hoặc Khách; Khách gửi `{ "recordingNoticeAcknowledged": true }` |
 | `POST` | `/api/meetings/{id}/call/participants/{identity}/mute` | `204` — `identity` là danh tính LiveKit của người bị tắt: `userId` hoặc `guest-{guestSessionId}` |
 | `POST` | `/api/livekit/webhook` | Chỉ LiveKit gọi, xác thực bằng chữ ký |
@@ -74,6 +78,8 @@ Chi tiết từng trường của `GET …/call`:
 - **`available`**: `false` khi máy chủ chưa cấu hình LiveKit.
 - **`participantCount`**: số người đang trong phòng. `null` khi phòng chưa mở hoặc không hỏi được
   LiveKit — trường hợp này không làm hỏng cả response.
+- **`retentionDays`**: số ngày giữ những gì ghi được trong phòng (`Recordings:RetentionDays`, mặc định 180). Màn chờ của
+  Khách nói thời hạn này trong thông báo ghi âm, vì Khách không đọc được danh sách câu ghi âm.
 
 Chi tiết của `POST …/call/join`:
 
@@ -194,12 +200,12 @@ phiên (`ON DELETE CASCADE`), tức theo lời mời; audit giữ theo chính s�
   màn chờ và `RoomView` của thành viên. Trang Khách hiện nút **Vào phòng họp** khi `status = Open`, còn `NotStarted`
   / `InPersonOnly` thì hiện `MSG117` / `MSG280`. Bắt đầu cuộc họp không báo gì cho Khách (chỉ có thông báo cho thành
   viên), nên khi phòng chưa mở FE hỏi lại `GET …/call` mỗi 10 giây và khi quay lại tab. Thời hạn trong thông báo ghi âm
-  là 180 ngày, ghi cứng ở FE vì Khách không được đọc danh sách câu ghi âm; nếu đổi `RecordingStorage:RetentionDays`
-  thì cần BE trả thời hạn trong `GET …/call`. Khách không gắn bộ ghi âm theo micro (SCRUM-109): không gọi endpoint
+  lấy từ `retentionDays` của `GET …/call`. Khách không gắn bộ ghi âm theo micro (SCRUM-109): không gọi endpoint
   speech-clip nào, kể cả gửi lại câu còn kẹt trong trình duyệt. Bị LiveKit đưa ra (`PARTICIPANT_REMOVED`) thì trang
   Khách kiểm lại phiên ngay: lời mời bị thu hồi → màn "Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi", không vào lại
   được; phiên hết hạn hoặc Khách đăng xuất ở tab khác (job đối soát đưa ra trong khoảng 20–30 giây) → lời mời vẫn còn,
-  nên về màn nhập mã với `MSG378` như UC-04 (xác minh lại thì vào lại được). Cuộc họp kết thúc thì hiện `MSG331`, rồi lần
+  nên về màn nhập mã với `MSG378` như UC-04 (xác minh lại thì vào lại được). Token quá hạn nhận `401` không có body;
+  FE vẫn hiện câu của `MSG378` cho trường hợp này. Cuộc họp kết thúc thì hiện `MSG331`, rồi lần
   kiểm lại phiên kế tiếp (tối đa 20 giây) chuyển sang màn kết thúc.
 
 SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát cùng dùng `ParticipantRules.ActiveExpression`. Gỡ rồi mời lại chỉ xét assignment Current mới; dòng lịch sử không tạo quyền hoặc làm truy vấn trả nhiều dòng.

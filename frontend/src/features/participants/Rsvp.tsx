@@ -5,11 +5,12 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { InvitationResponse } from '../../types/participant'
 import { useAccessLost } from '../auth/useAccessLost'
+import { useGuest } from '../guest/guestContext'
 
 /**
  * "Bạn có tham dự cuộc họp này?", as AI-eCabinet asks it: two buttons, shown only while the server
  * says the caller may answer (`canRespond`). The answer is final and changes no access; declining
- * only takes the meeting off the caller's calendar. So there is no confirmation step.
+ * only takes the meeting off the caller's calendar (a guest has none). So there is no confirmation step.
  *
  * `onAnswered` runs after every outcome that changed what the server holds — an answer recorded,
  * or a refusal saying the question no longer applies — so the caller re-reads the meeting.
@@ -25,6 +26,7 @@ export function RsvpButtons({
 }) {
   const toast = useToast()
   const handleAccessLost = useAccessLost()
+  const guest = useGuest() !== null
   const [pending, setPending] = useState<'Accepted' | 'Declined' | null>(null)
 
   async function send(response: 'Accepted' | 'Declined') {
@@ -32,7 +34,9 @@ export function RsvpButtons({
     try {
       const result = await respondToInvitation(meetingId, response)
       toast.show(
-        response === 'Declined' ? `${result.message} Cuộc họp không còn hiện trên lịch của bạn.` : result.message,
+        response === 'Declined' && !guest
+          ? `${result.message} Cuộc họp không còn hiện trên lịch của bạn.`
+          : result.message,
       )
       onAnswered(response)
     } catch (err) {

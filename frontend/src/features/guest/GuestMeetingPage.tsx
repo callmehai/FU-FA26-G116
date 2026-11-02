@@ -5,7 +5,7 @@ import { getMyInvitationResponse } from '../../api/participants'
 import { BrandMark } from '../../components/BrandMark'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
-import { errorMessage } from '../../lib/errors'
+import { errorMessage, isApiError } from '../../lib/errors'
 import { formatSchedule } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import type { InvitationResponseResult } from '../../types/participant'
@@ -165,12 +165,15 @@ function GuestBar() {
     setLeaving(true)
     try {
       if (token) await endGuestSession(token)
-      dropGuestSession(invitationId)
-      signedOut()
     } catch (err) {
-      setLeaving(false)
-      toast.show(errorMessage(err), 'error')
+      // 401/404: the session is already over (expired, revoked), so leaving needs nothing from the server.
+      if (!isApiError(err, 401) && !isApiError(err, 404)) {
+        setLeaving(false)
+        return toast.show(errorMessage(err), 'error')
+      }
     }
+    dropGuestSession(invitationId)
+    signedOut()
   }
 
   return (

@@ -245,6 +245,16 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("CallSessionId", "UserId")
                         .HasDatabaseName("ix_call_participants_call_session_id_user_id");
 
+                    b.HasIndex(new[] { "CallSessionId", "GuestSessionId" }, "ux_call_participants_open_guest_stint")
+                        .IsUnique()
+                        .HasDatabaseName("ux_call_participants_open_guest_stint")
+                        .HasFilter("left_at IS NULL");
+
+                    b.HasIndex(new[] { "CallSessionId", "UserId" }, "ux_call_participants_open_user_stint")
+                        .IsUnique()
+                        .HasDatabaseName("ux_call_participants_open_user_stint")
+                        .HasFilter("left_at IS NULL");
+
                     b.ToTable("call_participants", null, t =>
                         {
                             t.HasCheckConstraint("ck_call_participants_one_member", "(user_id IS NULL) <> (guest_session_id IS NULL)");

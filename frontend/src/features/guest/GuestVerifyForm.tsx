@@ -259,10 +259,7 @@ export function GuestVerifyForm({
       <p className="alert alert-warning">
         Cuộc họp có thể được ghi âm để lập biên bản. Thông tin của bạn chỉ dùng cho cuộc họp này.
       </p>
-      <p className="guest-scope">
-        Khách chỉ truy cập cuộc họp được mời và toàn bộ tài liệu gắn trong cuộc họp theo quyền Thành viên. Email đã được
-        xác minh; tên hiển thị và chức vụ do khách tự khai.
-      </p>
+      <p className="guest-scope">Bạn chỉ xem được cuộc họp này và tài liệu của nó.</p>
     </>
   )
 }

@@ -46,6 +46,23 @@ public sealed class GuestMeetingAccessTests(GuestAccessFixture f) : IClassFixtur
         Assert.Equal("Khách tự khai", row.GetProperty("selfDeclaredDisplayName").GetString());
         Assert.Equal("Khách mời", row.GetProperty("invitedName").GetString());
         Assert.Equal(HttpStatusCode.NotFound, (await guest.GetAsync($"/api/meetings/{other.MeetingId}/participants")).StatusCode);
+        // A guest sees names, not addresses: only their own email reaches them, and search does not match one.
+        Assert.Equal(s.Email, row.GetProperty("email").GetString());
+        var secretaryRow = roster.GetProperty("items").EnumerateArray().Single(r => r.GetProperty("kind").GetString() == "Internal");
+        Assert.Equal(System.Text.Json.JsonValueKind.Null, secretaryRow.GetProperty("email").ValueKind);
+        string secretaryEmail;
+        await using (var db = f.Db()) secretaryEmail = (await db.Users.SingleAsync(u => u.Id == s.SecretaryId)).Email;
+        var byEmail = await Expect(await guest.GetAsync(
+            $"/api/meetings/{s.MeetingId}/participants?q={Uri.EscapeDataString(secretaryEmail)}"), 200);
+        Assert.Equal(0, byEmail.GetProperty("total").GetInt32());
+        Assert.Equal(1, (await Expect(await guest.GetAsync($"/api/meetings/{s.MeetingId}/participants?q=Th%C6%B0%20k%C3%BD"), 200))
+            .GetProperty("total").GetInt32());
+        using (var secretary = f.UserClient(s.SecretaryId))
+        {
+            var internalView = await Expect(await secretary.GetAsync(
+                $"/api/meetings/{s.MeetingId}/participants?q={Uri.EscapeDataString(secretaryEmail)}"), 200);
+            Assert.Equal(secretaryEmail, internalView.GetProperty("items")[0].GetProperty("email").GetString());
+        }
         await Expect(await guest.PutAsJsonAsync($"/api/meetings/{s.MeetingId}/invitation-response", new { response = "Accepted" }), 200, "MSG105");
 
         // Internal APIs never accept a guest token: no Guid subject, no capability.

@@ -25,6 +25,8 @@ export interface CallRoomState {
   available: boolean
   /** People in the room now; null when the room is not open or LiveKit could not be asked. */
   participantCount: number | null
+  /** How long what is recorded in the room is kept (RecordingStorage:RetentionDays); the guest's notice says it. */
+  retentionDays: number
 }
 
 /** POST /api/meetings/{id}/call/join — connect with exactly this serverUrl and token. */

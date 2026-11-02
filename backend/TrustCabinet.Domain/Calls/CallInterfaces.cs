@@ -21,8 +21,11 @@ public interface ICallRepository
     /// A guest session's standing in the meeting's room (SCRUM-59): the session is current (not signed out or
     /// expired, invitation not revoked, meeting Published or InProgress), belongs to this meeting and has a display
     /// name (UC-04 step 5). Null otherwise — guests lose the meeting once it ends, unlike members.
+    /// <paramref name="invitationId"/>, when the caller's token carries one, must be the session's own invitation,
+    /// as GuestSessionAccess.CanReadAsync checks; a webhook only knows the session and passes null.
     /// </summary>
-    Task<CallRoomAccess?> FindGuestRoomAccessAsync(Guid meetingId, Guid guestSessionId, CancellationToken ct = default);
+    Task<CallRoomAccess?> FindGuestRoomAccessAsync(Guid meetingId, Guid guestSessionId, Guid? invitationId,
+        CancellationToken ct = default);
 
     /// <summary>Guest sessions allowed in the room right now, by the same rule; empty unless InProgress online/hybrid.</summary>
     Task<IReadOnlySet<Guid>> ListAllowedGuestSessionIdsAsync(Guid meetingId, CancellationToken ct = default);
