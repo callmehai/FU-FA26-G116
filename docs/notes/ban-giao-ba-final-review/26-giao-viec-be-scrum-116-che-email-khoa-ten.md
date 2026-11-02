@@ -4,9 +4,10 @@
 [comment PO trên SCRUM-116](https://sep490g116.atlassian.net/browse/SCRUM-116?focusedCommentId=10394) (Hải, 02/11/2026).
 Gốc của hai việc này là hai câu hỏi PO ở [note 21 §4.1](21-scrum-116-truy-cap-khach-uc04.md) (điểm A và B).
 
-> **Trạng thái code: CHƯA LÀM.** Đã kiểm trên `origin/main` (`7fa9a4c`, 02/11/2026). #212 (FE màn Khách), #213/#215 (phòng họp),
-> #218 (gán người nói) đã vào `main` nhưng không có phần nào trong hai việc này. Nếu đã có PR riêng, gửi BA số PR để BA đối chiếu
-> thay vì làm lại.
+> **Trạng thái code: ĐÃ LÀM XONG ở PR #222 (`02c7057`, merge vào `main` 02/11/2026).** Cả A (che email) và B (khoá tên) đã có
+> code, test, contract và danh mục mã MSG381. Kết quả: A chọn kiểu `email: null`; B khoá cả `jobTitle`, gửi lại đúng giá trị
+> cũ vẫn `200`. Giới hạn còn lại: chưa khoá dòng nên hai thiết bị khai khác tên cùng lúc vẫn có thể để bên ghi sau thắng. Phần dưới
+> giữ nguyên làm bản giao việc gốc. Việc còn lại là của BA: sửa Report 3, xem [note 21 §3](21-scrum-116-truy-cap-khach-uc04.md).
 
 Hai việc độc lập, làm trong một PR hay hai PR đều được. Mỗi việc ghi rõ: PO chốt gì, code hiện làm gì, cần đổi gì, test, tài liệu.
 

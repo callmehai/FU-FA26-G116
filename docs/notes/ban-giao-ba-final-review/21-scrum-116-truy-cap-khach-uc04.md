@@ -50,22 +50,27 @@ danh mục mã (mục "Truy cập Khách — SCRUM-116"). Note này gom việc B
 - [x] Report 3 §V.2: MSG371–MSG379 (dòng #371–#379, tiếng Anh); danh mục `00-danh-muc-ma-thong-bao.md` thêm dòng tiếng Anh cho MSG379.
 - [x] Sequence `docs/06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt` + PNG: thêm nhánh `alt` EX-1, EX-4..EX-7, MSG376, phiên 12 giờ.
 - [x] Sync: đã chạy `sync_reports.py --report 3` (snapshot MD, 05/06 extract, `uc-map.html` đã sinh lại).
-- Sửa UC-04/BR theo 4 điểm PO chốt (§4.1), kiểm lại code trên `main` ngày 02/11/2026. **Việc giao BE cho A và B (chỗ sửa, test, tài
+- Sửa UC-04/BR theo 4 điểm PO chốt (§4.1), kiểm lại code trên `main` ngày 02/11/2026 (sau khi merge #222: A và B đã có code). **Việc giao BE cho A và B (chỗ sửa, test, tài
   liệu, câu còn mở): [note 26](26-giao-viec-be-scrum-116-che-email-khoa-ten.md).**
   - [x] **C** (không thu hồi riêng một phiên): UC-28c POST-2 đã đúng; đã ghi vào mục "Ngoài phạm vi UC" của
         `docs/01-requirements/00-master-use-case-inventory.md` §8.
-  - [ ] **A** (che email roster khi người xem là Khách): **code chưa làm.** `ParticipantService.ReadAsync` vẫn trả `g.Email` và
-        `p.User.Email` cho mọi người xem, kể cả Khách; contract
-        [09-thanh-phan-tham-du.md](../../03-api/09-thanh-phan-tham-du.md) dòng 47–53 vẫn nêu `email`. #212 (FE màn Khách),
-        #213/#215 (phòng họp), #218 (gán người nói) đã vào `main` nhưng không có phần này. Việc còn lại: hỏi Lộc/gumarr
-        PR che email ở đâu; khi merge thì sửa BR-181 (hoặc BR danh sách thành phần), UC-28 nhóm, contract 09.
-  - [ ] **B** (khoá tên sau lần khai đầu): **code chưa làm.** `GuestAccessService.SaveProfileAsync` vẫn ghi đè
-        `SelfDeclaredDisplayName`; contract [16](../../03-api/16-truy-cap-khach-uc04.md) dòng 208 còn ghi "tạm chưa làm". Khi merge:
-        BR-180 bỏ "chưa khoá tên", UC-04 bước 5 và EX khai lại bị từ chối (lấy mã MSG theo code).
+  - [x] **A** (che email roster khi người xem là Khách): **BE đã merge (PR #222, `02c7057`, 02/11/2026).**
+        `ParticipantService.ReadAsync`: Khách gọi thì `email = null` ở mọi dòng (cả nội bộ lẫn Khách) trừ dòng của chính Khách;
+        `q` không so email khi người xem là Khách. Chọn kiểu (a) `email: null`, giữ khoá. Contract
+        [09-thanh-phan-tham-du.md](../../03-api/09-thanh-phan-tham-du.md) đã cập nhật; FE `Person.tsx`, `ParticipantsPanel.tsx` đã đổi;
+        có test trong `GuestMeetingAccessTests.cs`. Còn lại cho BA: ghi vào Report 3 (BR-181 hoặc BR danh sách thành phần, UC-28 nhóm).
+  - [x] **B** (khoá tên sau lần khai đầu): **BE đã merge (PR #222).** `GuestAccessService.SaveProfileAsync`: đã khai rồi thì gửi lại
+        đúng tên và chức vụ cũ trả `200/MSG376`, khác đi trả `409/MSG381`. **Khoá cả `jobTitle`** (trả lời câu mở của note 26). Contract
+        [16](../../03-api/16-truy-cap-khach-uc04.md) §4.2 và danh mục mã đã có MSG381; `GuestProfileForm.tsx` xử lý 409; có test
+        trong `GuestSessionTests.cs`. Còn lại cho BA: BR-180 bỏ "chưa khoá tên", UC-04 bước 5 và EX khai lại bị từ chối, dòng
+        MSG381 ở Report 3 §V.2.
+        Giới hạn còn lại: code là kiểm rồi ghi (không khoá dòng), nên hai thiết bị khai khác tên **cùng lúc** vẫn có thể
+        để bên ghi sau thắng. Hiếm, chưa chặn; báo Lộc nếu PO muốn chặn hẳn.
+  - [ ] **A và B, phần BA:** sửa Report 3 theo hai mục trên (BR-180, BR-181/BR danh sách, UC-04 bước 5 + EX, §V.2 MSG381), sync, Change Log.
   - [ ] **D** (Khách Online có ghi âm theo micro): chờ SCRUM-129. Code hiện chưa ghi: màn chờ của Khách không gắn bộ ghi âm
         ([note 24](24-pr213-215-scrum-59-127-khach-phong-hop.md)). Khi làm: sửa BR-370 ("NEEDS REVIEW PO") và UC-39a, UC-43a,
         UC-80 ở [note 19](19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md); rà thông báo ghi âm cho Khách (Luật 91/2025/QH15).
-- [x] Change Log của Report 3 (02/11/2026): đã ghi một dòng cho Final Review SCRUM-116. Điểm A, B, D chưa ghi vì chưa sửa gì.
+- [x] Change Log của Report 3 (02/11/2026): đã ghi một dòng cho Final Review SCRUM-116. Điểm A, B chưa ghi vì phần Report 3 chưa sửa (BE đã merge ở #222); điểm D chưa làm.
 - [ ] Ghi kết quả vào comment Jira SCRUM-116 sau khi FE (SCRUM-121) xong.
 
 ## 4. Hỏi PO / Hải
