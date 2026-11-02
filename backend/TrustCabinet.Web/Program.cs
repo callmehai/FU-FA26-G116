@@ -25,6 +25,9 @@ using TrustCabinet.Infrastructure.Votes;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
 
+// ADR-0044: this same app, started by PdfPageCounter to parse one uploaded PDF, so a hostile file can only end the child.
+if (args is [PdfPageCounter.ChildArgument, var pdfPath]) Environment.Exit(await PdfPageCounter.RunAsChildAsync(pdfPath));
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTrustCabinetDatabase(builder.Configuration);

@@ -3970,6 +3970,9 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
 @media (max-width: 720px) {
   .documents-row { flex-wrap: wrap; justify-content: flex-end; column-gap: 8px; row-gap: 0; }
   .documents-row-link { flex: 1 1 220px; }
+  /* A vote's title gets the line to itself when its status and count would squeeze it to a word a line. */
+  .documents-group-head { flex-wrap: wrap; }
+  .documents-group-head .documents-group-title { flex: 1 1 160px; }
   .documents-row-name strong { white-space: normal; overflow-wrap: anywhere; }
 }
 .documents-empty { margin: 0; padding: 16px; color: var(--muted-ink); }

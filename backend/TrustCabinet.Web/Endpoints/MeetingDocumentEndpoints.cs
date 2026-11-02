@@ -55,7 +55,7 @@ public static class MeetingDocumentEndpoints
     internal static IResult FileMissing() => Results.Json(new
     {
         code = Msg382FileMissing,
-        message = "Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo người đã tải tệp lên.",
+        message = "Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.",
     }, statusCode: StatusCodes.Status410Gone);
 
     /// <summary>The 200 MB of files plus room for the multipart framing and the page counts.</summary>
@@ -309,7 +309,8 @@ public static class MeetingDocumentEndpoints
             return new(DocumentUploadFailure.Invalid,
                 Errors: new Dictionary<string, string[]> { ["files"] = ["Nội dung multipart không hợp lệ."] });
         }
-        return await DocumentFileRules.ValidateAsync(candidates, ct);
+        // Parsed in a child process: a PDF built to overflow the parser's stack must not end the server (ADR-0044).
+        return await DocumentFileRules.ValidateAsync(candidates, ct, PdfPageCounter.CountAsync);
     }
 
     internal static void DeleteTempFiles(List<string> tempFiles)

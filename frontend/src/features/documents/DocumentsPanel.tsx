@@ -463,18 +463,22 @@ function DocumentRow({
           <strong>{doc.fileName}</strong>
           {facts && <small>{facts}</small>}
         </span>
+        {room && <Icon name="externalLink" size={16} />}
+      </Link>
+      {/* One block, so on a phone the actions move under the name together rather than one by one. */}
+      <span className="documents-row-actions">
         {read !== undefined &&
           (read ? (
-            <span className="documents-read" data-tooltip={`Bạn xác nhận đã đọc lúc ${formatDateTime(read)}`}>
+            <span
+              className="documents-read"
+              tabIndex={0}
+              data-tooltip={`Bạn xác nhận đã đọc lúc ${formatDateTime(read)}`}
+            >
               <Badge tone="emerald">Đã đọc</Badge>
             </span>
           ) : (
             <Badge tone="outline">Chưa đọc</Badge>
           ))}
-        {room && <Icon name="externalLink" size={16} />}
-      </Link>
-      {/* One block, so on a phone the actions move under the name together rather than one by one. */}
-      <span className="documents-row-actions">
         {!room && row.canDownload && (
           <button
             type="button"

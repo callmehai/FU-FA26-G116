@@ -40,7 +40,7 @@ Server cũng nhận tên `files[]`. Part tệp mang tên khác bị bỏ qua, pa
 
 | Loại | Điều kiện | `contentType` lưu |
 |---|---|---|
-| PDF | Tệp **bắt đầu** bằng `%PDF-` (offset 0; không chấp nhận rác phía trước dù đặc tả PDF cho phép), 1 KB cuối có `startxref` và `%%EOF`, rồi PdfPig mở được ở chế độ nghiêm (không vá) và đếm được ≥ 1 trang. Tệp cần mật khẩu mới mở được cũng bị từ chối (trình xem không mở được) | `application/pdf` |
+| PDF | Tệp **bắt đầu** bằng `%PDF-` (offset 0; không chấp nhận rác phía trước dù đặc tả PDF cho phép), 1 KB cuối có `startxref` và `%%EOF`, rồi PdfPig mở được ở chế độ nghiêm (không vá) và đếm được ≥ 1 trang. PdfPig chạy trong **tiến trình con** có trần heap 384 MB và giới hạn 15 giây, nên tệp dựng để tràn stack hay "bom nén" chỉ làm chết tiến trình con và bị coi là không hợp lệ (ADR-0044). Tệp cần mật khẩu mới mở được cũng bị từ chối (trình xem không mở được) | `application/pdf` |
 | DOCX | zip có central directory ≤ 5.000 entry và ≤ 1 MB; main part là part mà quan hệ `officeDocument` trong `_rels/.rels` trỏ tới (kiểu Transitional, hoặc Strict như Word lưu "Strict Open XML Document"; thường là `word/document.xml`) và có trong zip; trong `[Content_Types].xml`, `Override` của chính part đó — không có thì `Default` theo đuôi của nó — khai `…wordprocessingml.document.main+xml`. Hai part XML này được đọc theo byte nên có BOM vẫn đọc được (Open XML SDK, `System.IO.Packaging` đều ghi BOM và chỉ dùng `Default`); không chấp nhận DTD | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` |
 
 DOCM (có macro), DOTX (mẫu), ảnh đổi đuôi, HTML có chuỗi `%PDF-` trong comment, PDF chỉ có header (`%PDF-…%%EOF`,

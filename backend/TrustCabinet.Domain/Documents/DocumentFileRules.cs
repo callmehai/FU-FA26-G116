@@ -82,11 +82,13 @@ public static class DocumentFileRules
     /// <summary>
     /// Checks the submission limits, then every file by its actual bytes (BR-187, BR-214, BR-215,
     /// BR-319), and hashes what passes. Reports every bad file, not just the first. Streams must
-    /// be seekable — ASP.NET Core buffers form files to disk, so they are.
+    /// be seekable — ASP.NET Core buffers form files to disk, so they are. <paramref name="countPdfPages"/> parses a
+    /// PDF; the web app passes one that runs <see cref="CountPdfPagesAsync"/> in a child process (ADR-0044).
     /// </summary>
     public static async Task<DocumentUploadOutcome> ValidateAsync(IReadOnlyList<DocumentUploadCandidate> candidates,
-        CancellationToken ct)
+        CancellationToken ct, Func<Stream, CancellationToken, Task<int?>>? countPdfPages = null)
     {
+        countPdfPages ??= CountPdfPagesAsync;
         if (candidates.Count == 0)
             return new(DocumentUploadFailure.Invalid, Errors: new Dictionary<string, string[]> { ["files"] = ["Chưa chọn tệp nào."] });
         if (candidates.Count > MaxFiles || candidates.Sum(c => c.Length) > MaxTotalBytes)
@@ -114,7 +116,7 @@ public static class DocumentFileRules
                 // The name must agree with the bytes: the file is downloaded under this name later,
                 // and a PDF-looking HTML page must not come back as "x.html" from our origin.
                 if (contentType != expected) problem = "không phải tệp PDF hoặc DOCX hợp lệ.";
-                else if (contentType == PdfContentType && (pageCount = await CountPdfPagesAsync(stream, ct)) is null)
+                else if (contentType == PdfContentType && (pageCount = await countPdfPages(stream, ct)) is null)
                     problem = "không phải tệp PDF hoặc DOCX hợp lệ.";
                 else
                 {
@@ -236,7 +238,9 @@ public static class DocumentFileRules
     /// it, a broken cross-reference table, no page at all, or a password needed to open it. The server counts, so a
     /// client cannot store any page count it likes (ADR-0044). The tail is checked first: a file with megabytes of junk
     /// after its last <c>%%EOF</c> sends the parser on a byte-by-byte search for <c>startxref</c> that takes minutes,
-    /// while one whose tail is in place but whose body is junk fails in well under a second.
+    /// while one whose tail is in place but whose body is junk fails in well under a second. The parser recurses down the
+    /// page tree and inflates streams without a cap, so a hostile file can overflow the stack or exhaust memory: call this
+    /// only where that ends nothing but the caller (the web app's child process, or a test).
     /// </summary>
     public static async Task<int?> CountPdfPagesAsync(Stream stream, CancellationToken ct)
     {

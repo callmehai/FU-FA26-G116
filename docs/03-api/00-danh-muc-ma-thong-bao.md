@@ -160,7 +160,7 @@ cấp thêm sau lượt test E2E 02/11/2026.
 | `MSG158` | 503 | GET content (xem) không đọc được tệp: kho chưa cấu hình/lỗi, DB lỗi, hoặc không ghi được nhật ký kiểm toán — lỗi tạm thời (object đã mất hẳn là `MSG382`) | Không hiển thị được tài liệu. Vui lòng thử lại. |
 | `MSG159` | 403 | `?download=true` với cuộc họp `Secret` (BR-188) | Tài liệu của cuộc họp Mật chỉ được xem trực tuyến, không được tải về. |
 | `MSG160` | 503 | Như `MSG158` nhưng khi `?download=true` | Không tải về được tài liệu. Vui lòng thử lại. |
-| `MSG382` | 410 | GET content (xem hoặc tải về) của tài liệu cuộc họp, của kho cá nhân, hay kho của tài khoản đã khoá: dòng còn nhưng object đã mất hẳn khỏi kho tệp (`NoSuchKey`) — thử lại không có ích, FE không hiện nút Thử lại | Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo người đã tải tệp lên. |
+| `MSG382` | 410 | GET content (xem hoặc tải về) của tài liệu cuộc họp, của kho cá nhân, hay kho của tài khoản đã khoá: dòng còn nhưng object đã mất hẳn khỏi kho tệp (`NoSuchKey`) — thử lại không có ích, FE không hiện nút Thử lại | Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên. |
 | `MSG383` | — | — (FE, trình xem) Tệp đã về trình duyệt nhưng pdf.js / docx-preview không vẽ được (tệp hỏng, định dạng chưa hỗ trợ); không có nút Thử lại | Trình duyệt không hiển thị được tệp này. Tệp có thể bị hỏng hoặc dùng định dạng chưa hỗ trợ. |
 
 ## Kho tài liệu cá nhân — contract Backend SCRUM-110, SCRUM-111 (SCRUM-58)

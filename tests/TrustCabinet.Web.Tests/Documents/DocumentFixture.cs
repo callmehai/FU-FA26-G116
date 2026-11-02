@@ -163,8 +163,26 @@ internal static class SampleFiles
     internal static byte[] Pdf(string text = "TrustCabinet", int pages = 1)
     {
         var kids = string.Join(" ", Enumerable.Range(3, pages).Select(n => $"{n} 0 R"));
-        string[] objects = ["<< /Type /Catalog /Pages 2 0 R >>", $"<< /Type /Pages /Kids [{kids}] /Count {pages} >>",
-            .. Enumerable.Repeat("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] >>", pages)];
+        return BuildPdf(text, ["<< /Type /Catalog /Pages 2 0 R >>", $"<< /Type /Pages /Kids [{kids}] /Count {pages} >>",
+            .. Enumerable.Repeat("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] >>", pages)]);
+    }
+
+    /// <summary>
+    /// A well-formed PDF whose page tree is a chain of <paramref name="depth"/> nested page nodes over one page: the
+    /// parser recurses once per level, so a few thousand levels overflow its stack (ADR-0044).
+    /// </summary>
+    internal static byte[] DeepPageTreePdf(int depth)
+    {
+        var objects = new List<string> { "<< /Type /Catalog /Pages 2 0 R >>" };
+        for (var level = 0; level < depth; level++)
+            objects.Add($"<< /Type /Pages /Kids [{level + 3} 0 R] /Count 1{(level > 0 ? $" /Parent {level + 1} 0 R" : "")} >>");
+        objects.Add($"<< /Type /Page /Parent {depth + 1} 0 R /MediaBox [0 0 595 842] >>");
+        return BuildPdf("deep", [.. objects]);
+    }
+
+    /// <summary>Objects 1…n in order, a cross-reference table with their offsets, and the trailer.</summary>
+    private static byte[] BuildPdf(string text, string[] objects)
+    {
         var pdf = new List<byte>(Encoding.UTF8.GetBytes($"%PDF-1.7\n% {text}\n"));
         var offsets = new List<int>();
         for (var i = 0; i < objects.Length; i++)

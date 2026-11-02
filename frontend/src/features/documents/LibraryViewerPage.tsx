@@ -16,7 +16,8 @@ import { ZOOMS } from './zoom'
 type State =
   | { kind: 'loading' }
   | { kind: 'loaded'; doc: LibraryDocument; blob: Blob }
-  | { kind: 'error'; message: string }
+  /** `final`: MSG382, the stored file is gone for good, so "Thử lại" would not help. */
+  | { kind: 'error'; message: string; final?: boolean }
   | { kind: 'gone' }
 
 /**
@@ -48,7 +49,11 @@ export function LibraryViewerPage() {
       })
       .catch((err) => {
         if (!live || handleAccessLost(err)) return
-        setState(isApiError(err, 404) ? { kind: 'gone' } : { kind: 'error', message: errorMessage(err) })
+        setState(
+          isApiError(err, 404)
+            ? { kind: 'gone' }
+            : { kind: 'error', message: errorMessage(err), final: isApiError(err, 410, 'MSG382') },
+        )
       })
     return () => {
       live = false
@@ -95,17 +100,19 @@ export function LibraryViewerPage() {
           <div className="viewer-message">
             <div className="alert alert-error" role="alert">
               <p>{state.message}</p>
-              <button
-                type="button"
-                className="btn btn-outline btn-sm"
-                onClick={() => {
-                  setState({ kind: 'loading' })
-                  setAttempt((n) => n + 1)
-                }}
-              >
-                <Icon name="refresh" size={16} />
-                Thử lại
-              </button>
+              {!state.final && (
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => {
+                    setState({ kind: 'loading' })
+                    setAttempt((n) => n + 1)
+                  }}
+                >
+                  <Icon name="refresh" size={16} />
+                  Thử lại
+                </button>
+              )}
             </div>
           </div>
         ) : state.kind === 'loaded' ? (
