@@ -1971,7 +1971,8 @@ a.menu-item { text-decoration: none; }
 .date-pick-swatch-today { box-shadow: inset 0 0 0 2px var(--gold); }
 .date-pick-swatch-viewed { border-radius: 3px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--edge-blue); }
 .calendar-toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
-.calendar-toolbar-end .select { width: 140px; }
+/* Fits the longest view name, "Tuần làm việc", with its chevron. */
+.calendar-toolbar-end .select { width: 160px; }
 .calendar-note { flex: none; margin-bottom: 16px; }
 .calendar-note a { font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
@@ -2415,11 +2416,15 @@ a.menu-item { text-decoration: none; }
 .roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
 .roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
 .roster-role { flex: none; width: 152px; }
+/* A phone gives the name what the role does not need: "Thành viên" and its chevron fit in 128px. */
+@media (max-width: 480px) { .roster-role { width: 128px; } }
 .roster-empty { margin: 0; padding: 14px 16px; border: 1px dashed var(--control-line); border-radius: var(--radius); color: var(--muted-ink); font-size: 14px; }
 
-/* Name over email; both cut with an ellipsis rather than pushing the role off the row. */
+/* Name over email. The name is what people read, so it wraps rather than ending in "…" (a touch screen has no
+   tooltip); the email keeps its "…" so a narrow column is not stacked one syllable per line. */
 .person-text { display: flex; flex-direction: column; min-width: 0; }
 .person-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.person-text > .person-name { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
 
 /* "Bạn có tham dự cuộc họp này?" — the two answers, and the answer once given. */
 .rsvp-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
@@ -2444,7 +2449,7 @@ a.menu-item { text-decoration: none; }
   .participants-panel .participant-cell { gap: 6px 8px; padding-left: 48px; }
   .participants-panel .participant-cell > .person { flex-basis: calc(100% + 48px); margin-left: -48px; }
   /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip). */
-  .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
+  .participants-panel .person-name, .participants-panel .person .cell-sub { white-space: normal; overflow-wrap: anywhere; }
 }
 .participants-alert { margin: 12px 16px 0; }
 
