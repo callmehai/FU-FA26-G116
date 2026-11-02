@@ -40,6 +40,10 @@ xuất lại ngày 27/10/2026 ở scale nhỏ hơn 2 để vẫn trọn vẹn, m
 
 Muốn nét to hơn thì phóng to trực tiếp trong file Draw.io; ảnh chỉ để xem nhanh.
 
+Máy khác có thể ngược lại (02/11/2026, Windows, Draw.io 32.6.1): xuất `uc04_accessmeetingviaguestinvitation` kèm hai cờ trên thì
+treo quá 180 giây, `txt_to_sequence_drawio_png.py` báo lỗi sau khi đã ghép tab; bỏ hai cờ thì xuất trọn trong 15 giây (scale 1.1,
+4243×6194). Khi đó chạy lại bước xuất bằng tay: `draw.io --export --format png --scale <s> --output <ảnh> <file 1 trang>`.
+
 ## Ảnh đang chờ xuất lại (19/10/2026)
 
 Đợt đồng bộ theo Report 3 ngày 18/10/2026 đã sửa source `.txt`, ảnh SequenceDiagram.org và tab trong file Draw.io gộp,

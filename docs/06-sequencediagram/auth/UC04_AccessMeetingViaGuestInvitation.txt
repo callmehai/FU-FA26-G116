@@ -100,10 +100,15 @@ Guest->Page: Submit self-declared display information
 Page->Controller: Complete invited-Meeting access
 Controller->Service: Complete Guest access for this invitation
 Service->Service: Check display name is present and display information is valid (BR-180)
+Service->Service: Check the display information is not already declared\nwith different values for this invitation (BR-180)
 alt Display information is invalid - EX-7
 Service-->Controller: MSG377 - Invalid display information.
 Controller-->Page: MSG377 - Invalid display information.
 Page-->Guest: MSG377 - Invalid display information.
+else Display information was already declared with different values - EX-9
+Service-->Controller: MSG381 - The display name was already declared.
+Controller-->Page: MSG381 - The display name was already declared.
+Page-->Guest: MSG381 - The display name was already declared.
 else Display information is valid
 Service->Service: Keep display fields self-declared, separate from verified email (BR-180)
 Service->Repository: Save display information and establish Meeting-scoped Guest access valid for 12 hours (BR-155)

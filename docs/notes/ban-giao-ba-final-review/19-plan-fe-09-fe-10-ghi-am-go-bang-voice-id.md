@@ -5,7 +5,7 @@
 **Nguồn yêu cầu cuối:** [note 16](16-ghi-am-voice-id-28-29-10-2026.md) (thay §3–§5 note 11 và phần lưu trữ note 03).
 Stack PR #184 → #193 **đã merge vào `main`** (ADR-0040 → ADR-0042 có trên `origin/main`), nên làm được ngay.
 
-> **02/11/2026:** PO đã chốt **D6 ngược lại**: Khách họp Online **có** ghi âm theo micro (SCRUM-129). Các chỗ ghi "Guest không
+> **01/11/2026:** PO đã chốt **D6 ngược lại**: Khách họp Online **có** ghi âm theo micro (SCRUM-129). Các chỗ ghi "Guest không
 > ghi" / BR-370 "NEEDS REVIEW PO" bên dưới là bản lúc lập plan; việc sửa UC/BR xem
 > [note 21 §4.1 D](21-scrum-116-truy-cap-khach-uc04.md).
 

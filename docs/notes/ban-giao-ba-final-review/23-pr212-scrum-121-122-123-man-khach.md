@@ -37,8 +37,8 @@ Jira hay đặc tả. Phần UC-04/BR/MSG của BE nằm ở [note 21](21-scrum-
 | # | Khác gì | Nguồn | Chỗ BA sửa |
 |---|---|---|---|
 | 1 | Màn 6.4 (phản hồi tham dự) **không tách riêng cho Khách**: câu hỏi nằm đầu trang cuộc họp của Khách, giống trang chi tiết 4.5b của người nội bộ | 121 #1 | UC-29: điểm vào của Khách; Report 3 §III màn 6.4 ghi Khách trả lời trên trang cuộc họp |
-| 2 | Trang Khách **không có chip mức độ mật, hình thức, địa điểm**: `GuestMeetingView` chỉ có id, tên, trạng thái, giờ. Cuộc họp Mật vẫn hiện nút Tải về, bấm thì BE trả 403/MSG159 | 121 #2, 123 #1 | **Đề xuất BE** thêm `sensitivity` (và mode/location nếu cần) vào view Khách — chưa có ticket, hỏi Hải/Lộc. Trong lúc chờ: UC-32c ghi Khách thấy nút Tải về nhưng bị từ chối MSG159 với cuộc họp Mật (BR-188 vẫn đúng) |
-| 3 | Màn kết thúc ghi **"Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi"** + nội dung MSG371, vì BE cố ý không nói lý do (EX-1). Trình duyệt chưa từng có phiên mở link hết hiệu lực thì thấy "Không mở được lời mời". Nội dung/mã chính thức **vẫn chờ chốt** | 121 #3 | UC-04 EX-1: ghi hai màn này. Hỏi PO có cần mã riêng không (FE #215 xác nhận không cần MSG381) |
+| 2 | Trang Khách **không có chip mức độ mật, hình thức, địa điểm**: `GuestMeetingView` chỉ có id, tên, trạng thái, giờ. Nút Tải về với cuộc họp Mật **đã sửa ở PR #222**: `GET /api/guest-access/session` trả `canDownload` (false khi Mật), FE ẩn nút; độ mật vẫn không gửi cho Khách | 121 #2, 123 #1 | **Đề xuất BE** thêm `sensitivity` (và mode/location nếu cần) vào view Khách — chưa có ticket, hỏi Hải/Lộc. UC-32c phần Khách: cuộc họp Mật không có nút Tải về (BR-188 vẫn đúng) |
+| 3 | Màn kết thúc ghi **"Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi"** + nội dung MSG371, vì BE cố ý không nói lý do (EX-1). Trình duyệt chưa từng có phiên mở link hết hiệu lực thì thấy "Không mở được lời mời". Nội dung/mã chính thức **vẫn chờ chốt** | 121 #3 | UC-04 EX-1: ghi hai màn này. Hỏi PO có cần mã riêng không (FE #215 xác nhận không cần mã riêng; MSG381 sau đó cấp cho khoá tên ở #222) |
 | 4 | Dòng "TrustCabinet mời bạn họp" chữ thường cỡ nhỏ, **không viết hoa** như mô tả màn 1.3 (tránh kiểu eyebrow) | 121 #4 | Đặc tả màn 1.3: sửa mô tả |
 | 5 | Có nút **Thoát** cho Khách (`DELETE /api/guest-access/session`, chỉ kết thúc phiên đó); tài liệu chưa nhắc | 121 #5 | UC-04: thêm AF/bước Khách tự kết thúc phiên (khớp điểm 6 ở note 21: đăng xuất chỉ kết thúc phiên đó) |
 | 6 | **`GET /api/meetings/{id}` trả 403 cho Khách**, không phải 404 như mục 8 ticket SCRUM-122. Endpoint chỉ cho người nội bộ; Khách nhận 403 với mọi id, mọi trạng thái, nên không lộ cuộc họp nào tồn tại | 122 | Sửa kỳ vọng trong ticket SCRUM-122 và test case của Tester. Không đổi code. Khớp bảng 403/404 trong `AGENTS.md` (giấu sự tồn tại của dòng dữ liệu, 403 ở đây giống nhau cho mọi id) |
@@ -50,8 +50,8 @@ Ghi nhận thêm (không phải lệch docs): gửi OTP chạy đồng bộ qua 
 
 - [ ] UC-04: AF Khách tự Thoát (điểm 5); EX-1 hai màn kết thúc (điểm 3).
 - [ ] UC-29: Khách trả lời ngay trên trang cuộc họp (điểm 1).
-- [ ] UC-32a/UC-32c: Khách xem mọi tài liệu và tải về (PO 30/10/2026, comment SCRUM-123 10349), không góp ý; cuộc họp Mật bị MSG159
-      (điểm 2). Kiểm tra trùng việc với note 21 §3 dòng UC-32a/32c đã làm.
+- [ ] UC-32a/UC-32c: Khách xem mọi tài liệu và tải về (PO 30/10/2026, comment SCRUM-123 10349), không góp ý; cuộc họp Mật không có nút Tải về
+      (`canDownload`, điểm 2). Kiểm tra trùng việc với note 21 §3 dòng UC-32a/32c đã làm.
 - [ ] Hỏi Hải/Lộc: thêm `sensitivity` vào `GuestMeetingView` (điểm 2); mã/nội dung màn kết thúc (điểm 3).
 - [ ] Sửa kỳ vọng SCRUM-122 mục 8: 403 (điểm 6), báo Tester.
 - [ ] **Đặc tả màn hình** 1.3, form hồ sơ, trang cuộc họp Khách, trình xem tài liệu Khách, màn kết thúc: chụp từ UI thật, cập nhật

@@ -12,10 +12,10 @@ Jira hay đặc tả.
 ## 1. Trạng thái
 
 - Stack #212 → #213 → #215, **cả ba đã merge vào `main`** (01/11/2026). Màn Khách và tài liệu: [note 23](23-pr212-scrum-121-122-123-man-khach.md).
-- Mã mới: **MSG380** (400, Khách chưa xác nhận thông báo ghi âm). Danh mục đã có; mã tiếp theo là **MSG381** (FE không dùng).
+- Mã mới: **MSG380** (400, Khách chưa xác nhận thông báo ghi âm). Danh mục đã có. MSG381 sau đó cấp cho khoá tên tự khai (PR #222, SCRUM-116); mã tiếp theo trên `main` là **MSG384**.
 - Migration `GuestCallParticipants`: `call_participants.user_id` cho phép null, thêm `guest_session_id` (check đúng một trong hai);
   `call_sessions.started_by_id` cho phép null. ERD Markdown đã sửa trong PR; **ERD drawio chưa**.
-- **Mâu thuẫn với PO chốt 02/11:** #213 điểm 8 và #215 ghi "không ghi âm theo micro cho Khách". PO đã chốt **có ghi**, Hải làm ở
+- **Mâu thuẫn với PO chốt 01/11:** #213 điểm 8 và #215 ghi "không ghi âm theo micro cho Khách". PO đã chốt **có ghi**, Hải làm ở
   SCRUM-129 ([note 21 §4.1 D](21-scrum-116-truy-cap-khach-uc04.md)). Đừng ghi "Khách không ghi âm" vào UC; chờ SCRUM-129.
 
 ## 2. Đã làm
@@ -43,11 +43,11 @@ Jira hay đặc tả.
 | 6 | Đăng xuất/hết hạn phiên xử lý bằng job 30 giây (không tức thì); thu hồi lời mời thì ngắt ngay | 59 #6 | UC-28c POST-2 (đã ghi "ends every session"): thêm "Khách đang trong phòng bị ngắt ngay"; hết hạn/đăng xuất ≤30 giây |
 | 7 | **MSG380** (400) mới: Khách chưa xác nhận thông báo ghi âm | 59 #7 | Report 3 §V.2: thêm dòng MSG380 (tiếng Anh theo danh mục) |
 | 8 | Khách chưa có quyền với bản ghi và gỡ băng; FE không ghi âm theo micro cho Khách | 59 #8, 127 | **Không ghi vào UC** — PO đã chốt có ghi (SCRUM-129). Giữ "Khách không xem bản ghi/gỡ băng" |
-| 9 | Số **180 ngày** trong thông báo ghi âm **ghi cứng ở FE** (Khách không đọc được API ghi âm). Đổi `RecordingStorage:RetentionDays` thì BE phải trả thời hạn trong `GET …/call` | 127 #1 | BR thời hạn lưu bản ghi: ghi chú phụ thuộc; ghi vào danh sách rủi ro |
+| 9 | Số **180 ngày** trong thông báo ghi âm từng ghi cứng ở FE. **Đã sửa ở PR #222:** `GET …/call` trả `retentionDays`, màn chờ lấy thời hạn từ đó | 127 #1 | Chỉ ghi nhận |
 | 10 | Màn chờ tự mở bằng **hỏi lại server mỗi 10 giây** và khi quay lại tab (hub không báo bắt đầu cuộc họp cho Khách) | 127 #2 | UC-37 AF Khách chờ phòng mở |
 | 11 | Cuộc họp kết thúc: hiện MSG331 trước, rồi sang màn kết thúc trong tối đa 20 giây | 127 #3 | UC-42 (hoặc UC kết thúc phòng) phần Khách |
 | 12 | **I2/I3 khác I1:** phiên hết hạn hoặc đăng xuất ở tab khác → Khách bị đưa ra (~20 giây), dữ liệu gỡ khỏi màn hình, nhưng lời mời còn hiệu lực nên về màn nhập mã MSG378, xác minh lại thì vào lại được. Thu hồi lời mời → màn kết thúc, không vào lại | 127 #4 | UC-04/UC-37: tách hai nhánh; sửa kỳ vọng I2/I3 trong ticket SCRUM-127 |
-| 13 | Không cần mã mới cho màn kết thúc (MSG381 chưa dùng) | 127 #5 | Chỉ ghi nhận |
+| 13 | Không cần mã mới cho màn kết thúc (MSG381 sau đó cấp cho khoá tên, PR #222) | 127 #5 | Chỉ ghi nhận |
 
 ## 4. Việc BA, theo thứ tự
 
@@ -56,7 +56,7 @@ Jira hay đặc tả.
 - [ ] UC-28c POST-2 và UC-04: thu hồi ngắt khỏi phòng ngay; hết hạn/đăng xuất về màn nhập mã (điểm 6, 12).
 - [ ] Report 3 §V.2: MSG380.
 - [ ] ERD drawio + class diagram phòng họp: `call_participants.guest_session_id`, các cột nullable (điểm 2).
-- [ ] Ghi rủi ro: 180 ngày ghi cứng (điểm 9); bằng chứng thông báo không lưu câu (điểm 5).
+- [ ] Ghi rủi ro: bằng chứng thông báo không lưu câu (điểm 5). Điểm 9 (180 ngày ghi cứng) đã sửa ở #222.
 - [ ] Ghi âm Khách: **chờ SCRUM-129**, rồi mới sửa UC ghi âm (điểm 8).
 - [ ] Đặc tả màn hình: màn chờ của Khách (ô xác nhận ghi âm), nhãn "Khách" trong phòng.
 - [ ] Sync Report 3, Change Log.
