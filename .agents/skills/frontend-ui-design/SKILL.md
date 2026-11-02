@@ -7,7 +7,7 @@ description: How to design and build a TrustCabinet screen so it reads like one 
 
 This is about **UI design**, not about making CSS pretty. A screen is good when a user knows
 where they are, what they can do, what just happened, and what to do next — in every state, not
-only the happy path. Repo conventions (tokens, `Select.tsx`, light only, 40px controls, same
+only the happy path. Repo conventions (tokens, `Select.tsx`, light only, AI-eCabinet sizes, same
 origin) live in [AGENTS.md](../../../AGENTS.md); the Use Case workflow lives in
 [docs/DEVELOPMENT_WORKFLOW.md](../../../docs/DEVELOPMENT_WORKFLOW.md). Read both first; this
 skill does not repeat them.
