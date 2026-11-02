@@ -16,14 +16,17 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v10
+## Bản hiện có — v11
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v10.html](TrustCabinet-wireframe-v10.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v10/](figma-v10/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v10. |
+| HTML | [TrustCabinet-wireframe-v11.html](TrustCabinet-wireframe-v11.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v11/](figma-v11/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v11. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
+
+Bản đen trắng rút gọn (1 sơ đồ luồng, 20 màn chính) nằm ở [lofi/](lofi/README.md), có quy trình riêng
+và không theo các bước dưới đây.
 
 ## 1. Thư mục
 
@@ -34,6 +37,7 @@ docs/wireframe/
     manifest.json                               khai báo plugin cho Figma Desktop
     code.js                                     dữ liệu các màn (LAYOUT) + code dựng màn
   screens/                                      ảnh PNG của phiên bản mới nhất
+  lofi/                                         bản phác thảo đen trắng, tách khỏi quy trình v<N>
   _tools/                                       script sinh plugin và ảnh
     run.mjs                                     mở HTML bằng Chrome headless: trích layout / chụp ảnh
     extract.js                                  chạy trong trang: đọc DOM → cây layout cho Figma
@@ -333,6 +337,8 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 | "Màn sửa" có màn không định đổi | Đã sửa builder, dữ liệu mẫu hoặc CSS dùng chung (mục 5.5). Hoàn lại rồi làm bằng builder hoặc style riêng |
 | Chữ trong Figma lệch, xuống dòng khác HTML | Lúc trích không có mạng nên font không tải được. Có mạng rồi chạy lại bước 3 → 5 |
 | `run.mjs` treo hoặc báo lỗi kết nối | Cổng 9333 bị một Chrome headless cũ chiếm. Tắt nó (`taskkill /IM chrome.exe /F` — tắt luôn Chrome đang mở) rồi chạy lại |
+| "Màn sửa" liệt kê gần như mọi màn, kể cả màn không đụng tới | Máy này đo chữ lệch dưới 1px so với lần trích bản cũ. Trích lại bản cũ ra file tạm, chép đè `out\v<cũ>.json`, chạy `mk_plugin.js`, rồi trả file cũ về nguyên bản |
+| `shots` chụp nhầm số màn trong PowerShell (`4.10` thành `4.1`, `4.5d` bị bỏ) | PowerShell đọc danh sách như số. Đặt danh sách trong dấu ngoặc kép: `"4.5d,4.10"` |
 | Không tìm thấy Chrome | `$env:CHROME = "đường\dẫn\chrome.exe"` (PowerShell) rồi chạy lại |
 | Plugin báo `Lỗi: thiếu dữ liệu màn …` | `code.js` thiếu `root` của một màn. Kiểm tra `out\v<N>.json` có màn đó, rồi chạy lại `mk_plugin.js` |
 | Plugin báo lỗi font | Figma thiếu một kiểu chữ trong danh sách ở mục 9; bật font đó rồi chạy lại |
@@ -348,5 +354,7 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 | v7 | 22/10/2026 | SCRUM-21/22/23: tài liệu cuộc họp theo UC-32a, UC-32c, UC-35 (sửa 22/10/2026), tham khảo AI-eCabinet. Sửa 7.3 (nhóm theo mục / biểu quyết / chung, menu gỡ khỏi mục hoặc cuộc họp), 7.5 (trả lời góp ý, khách mời góp ý); thêm 8.6 (panel Tài liệu trong phòng họp). Vẽ lại phòng họp FE-08 (8.1–8.5) cho khớp bản đã chạy trên server test 22/10/2026; số UC mục 8 sửa theo danh mục UC hiện hành (UC-37–UC-42). 23/10/2026: 7.4, 7.4b bỏ ô chọn mục (gắn mục khi mở từ ghim của mục), ghi giới hạn 10 tệp / 200 MB mỗi lần (BR-319) |
 | v8 | 24/10/2026 | SCRUM-18/20, SCRUM-97, SCRUM-26 (BA Final Review lượt 6) và căn cứ ghi âm Luật 91/2025/QH15 + NĐ 356/2025/NĐ-CP. Sửa 4.2 (thẻ lịch có Tham dự / Không tham dự), 4.3 (mở sẵn Đang diễn ra, Thời điểm bốn lựa chọn), 4.4 (popup, có Thành phần tham dự), 6.1 (nhãn phản hồi, "(Tôi)", nút Đổi vai trò), 6.3 (điểm danh là cột), 6.4 (trả lời một lần), 9.2 (câu đồng ý ghi âm); ghi chú 4.1, 4.5. Thêm 4.3b, 4.4b, 4.5b, 4.5c, 6.1b, 6.1c, 6.3b, 6.4b, 8.7 |
 | v9 | 26/10/2026 | FE-05, FE-07 theo bản đã chạy và UC-23a–UC-23d, UC-33a, SCRUM-107: nghị sự không thời lượng / giờ dự kiến, kéo thả mọi mục, tài liệu của mục chỉ chọn trong cuộc họp, tab Tài liệu bỏ ghim ba lựa chọn, tải từ máy ở 7.4b, "Từ kho của tôi" (7.4) chờ SCRUM-58. Sửa 5.1, 5.2, 5.3, 7.3, 7.4, 7.4b; thêm 5.1b |
+| v10 | 29/10/2026 | BA Final Review FE-08 (SCRUM-41, SCRUM-42): thêm 8.1b chọn thiết bị và 8.2b cửa sổ nổi |
+| v11 | 01/11/2026 | Thống nhất giao diện: sidebar gồm Lịch làm việc, Cuộc họp, Kho tài liệu, Giọng nói của tôi, Quản trị; trang chi tiết 7 tab, thanh trạng thái theo từng bước, cột phải Lịch sử trạng thái; danh sách cuộc họp có ô đếm, cột STT, Thao tác; kho tài liệu mở thư mục trong bảng; nghị sự và biểu quyết dạng thẻ; bản ghi theo mic phòng và từng người; thống nhất tên Đang diễn ra. Thêm 1.4, 1.5, 2.4, 3.1b, 3.1c, 4.4c, 4.4d, 4.4e, 4.5d, 4.10, 4.11, 4.12, 6.2b, 7.2b, 7.2c, 8.8, 8.9, 9.1b, 9.3, 9.4, 9.4b, 9.4c. 02/11/2026: 10.1 vẽ lại theo `features/recordings` (gán tên ở ô chọn người nói, sửa chữ tại chỗ; bỏ khung gán riêng, ô tìm, nút Tạo tóm tắt). 02/11/2026, đối chiếu web sau khi merge main (ADR-0043): thông tin chung lưới hai cột, luôn có chip mức độ, danh sách có thanh lọc ngoài thẻ và cột sắp xếp, form tạo/sửa/dời lịch 2 cột, sidebar có nút thu gọn; 4.4c đổi thành tìm người dự; thêm 4.1e, 4.4f, 4.4g, 9.3b |
 
 Ra bản mới thì thêm một dòng vào bảng này.

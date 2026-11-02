@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Wireframe phác thảo TrustCabinet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&display=swap&subset=vietnamese">
+<style>
+  body { margin: 0; background: #fff; color: #000; font-family: Mali, cursive }
+  .sheet { position: relative; width: 1240px; height: 660px; margin: 24px auto; overflow: hidden; background: #fff }
+  .sheet > div, .sheet > svg { position: absolute }
+  .only .sheet { margin: 0 }
+  h1 { width: 1240px; margin: 24px auto 0; font-size: 26px; font-weight: 600 }
+</style>
+</head>
+<body>
+<h1>TrustCabinet – wireframe phác thảo</h1>
+<div id="root"></div>
+<script src="screens.js"></script>
+<script>
+const COL = { k: '#000', w: '#fff' }
+const OY = 30
+function el(root, n) {
+  if (n.t === 'l') {
+    const x = Math.min(n.x1, n.x2), y = Math.min(n.y1, n.y2), w = Math.abs(n.x2 - n.x1) || 1, h = Math.abs(n.y2 - n.y1) || 1
+    root.insertAdjacentHTML('beforeend', `<svg style="left:${x}px;top:${y + OY}px;overflow:visible" width="${w}" height="${h}"><line x1="${n.x1 - x}" y1="${n.y1 - y}" x2="${n.x2 - x}" y2="${n.y2 - y}" stroke="#000" stroke-width="${n.sw || 1.5}"/></svg>`)
+    return
+  }
+  const e = document.createElement('div')
+  e.style.left = n.x + 'px'; e.style.top = n.y + OY + 'px'
+  if (n.t === 'r') {
+    e.style.width = n.w + 'px'; e.style.height = n.h + 'px'; e.style.boxSizing = 'border-box'; e.style.borderRadius = (n.r || 0) + 'px'
+    if (n.fill === 'dim') { e.style.background = 'rgba(255,255,255,.8)' } else {
+      if (n.fill) e.style.background = COL[n.fill]
+      e.style.border = `${n.sw || 1.5}px ${n.dash ? 'dashed' : 'solid'} ${COL[n.stroke] || '#000'}`
+    }
+  } else {
+    e.textContent = n.s; e.style.fontSize = n.size + 'px'; e.style.fontWeight = n.b ? 600 : 400; e.style.color = COL[n.c] || '#000'; e.style.lineHeight = '1.25'; e.style.whiteSpace = 'nowrap'
+    if (n.w) { e.style.width = n.w + 'px'; e.style.textAlign = n.align === 'c' ? 'center' : 'left' }
+  }
+  root.appendChild(e)
+}
+const only = new URLSearchParams(location.search).get('only')
+if (only) { document.body.className = 'only'; document.querySelector('h1').remove() }
+for (const s of SCREENS.filter((x) => !only || x.id === only)) {
+  const box = document.createElement('div'); box.className = 'sheet'; document.getElementById('root').appendChild(box)
+  const d = makeDraw(); d.text(0, -30, `${s.id}  ${s.name}`, { size: 18, b: 1 }); s.draw(d)
+  d.nodes.forEach((n) => el(box, n))
+  const note = document.createElement('div'); note.style.cssText = `left:${SHEET.screenW + 24}px;top:${OY + 8}px;width:${SHEET.w - SHEET.screenW - 44}px;font-size:14px;line-height:1.4`
+  note.innerHTML = '<b style="font-weight:600">Ghi chú</b>' + s.notes.map((t, i) => `<p style="margin:10px 0"><b style="font-weight:600">${d.marks.has(i + 1) ? i + 1 + '.' : '–'}</b> ${t}</p>`).join('')
+  box.appendChild(note)
+}
+</script>
+</body>
+</html>

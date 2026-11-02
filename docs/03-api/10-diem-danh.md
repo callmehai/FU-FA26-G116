@@ -8,7 +8,7 @@ Quyết định concurrency: [ADR-0025](../05-decisions/0025-version-rieng-cho-d
 
 - Internal dùng JWT hiện có; Guest đi qua `IMeetingGuestIdentityResolver` và `IParticipantGuestAccess` của UC-04. Adapter mặc định từ chối Guest, không phát session giả.
 - GET theo quyền đọc meeting/roster UC-27 trên main: owner, approver và thành phần hiện hành theo MeetingReadPolicy; Guest phải có invitation current, meeting đã công bố và session đã xác minh, chưa hết hạn/revoke. Internal phải active.
-- Mọi người đọc roster được xem invitationResponse theo chính sách SCRUM-20 mới; không còn grants riêng.
+- Mọi người đọc roster được xem invitationResponse theo chính sách SCRUM-20 mới; không còn grants riêng, nên `permissions.canViewInvitationResponses` luôn là `true` và chỉ còn để tương thích.
 - POST chỉ Secretary hiện hành, tài khoản active, Meeting InProgress. Re-authorize ở mỗi lần lưu; token không thay thế phân quyền.
 - API che tài nguyên không được biết bằng 404; người được đọc meeting nhưng không được ghi nhận 403. User inactive nhận 403, chưa xác thực 401.
 - Chỉ ghi Present/Absent cho entry được gửi. Không suy ra attendance từ response hoặc phòng gọi; thiếu attendance không chặn End Meeting.
@@ -102,12 +102,16 @@ Audit `meeting.attendance.recorded`: một dòng/batch thay đổi, object Meeti
 |---|---|
 | 400/MSG148 | Sửa body/entry/token format |
 | 409/MSG149 | Không còn InProgress; tải lại và khóa thao tác |
-| 409/MSG151 | Tải lại, so sánh draft, yêu cầu người dùng quyết định; không auto retry |
+| 409/MSG151 | Tải lại và để người dùng chọn lại nếu vẫn muốn; không giữ lựa chọn chưa lưu, không auto retry |
 | 503/MSG150 | Lỗi lưu hoặc commit chưa xác định; GET lại trước khi thử tiếp |
 | 500/MSG289 | GET lỗi đọc |
 | 400/MSG278 | Query GET sai |
 | 415/MSG34, 413/MSG87 | Sửa content-type/kích thước body |
 | 401, 403, 404 | Theo authentication/quyền tài nguyên; không có code mới |
+
+Thứ tự kiểm tra khi POST: 401 → 403 (tài khoản không active) → 404 (không đọc được meeting) → 403 (không phải Secretary) → 409/MSG149 → lỗi body (400/MSG148, 415/MSG34, 413/MSG87) → 409/MSG151. Vì vậy Secretary gửi body sai lên meeting đã kết thúc nhận 409/MSG149, người không phải Secretary gửi sai Content-Type nhận 403.
+
+Entry không còn hợp lệ (người đã bị xóa khỏi roster, Guest đã bị revoke, hoặc id không tồn tại) cũng trả 409/MSG151, không phải 400 hay 404.
 
 Lỗi trước commit rollback toàn bộ. Mất kết nối lúc commit có thể không xác định được kết quả; MSG150 không hứa rằng chưa lưu. Lỗi publication sau commit được log, response lưu vẫn thành công.
 
