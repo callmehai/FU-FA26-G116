@@ -14,6 +14,10 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`16-truy-cap-khach-uc04.md`](16-truy-cap-khach-uc04.md) — UC-04 / SCRUM-116: link mời, OTP, phiên và token Khách (`/api/guest-access/*`); giá trị OTP và hạn phiên đã chốt; mã `MSG126`, `MSG371`–`MSG378`.
 - [`16-truy-cap-khach-uc04-ket-qua-kiem-thu.md`](16-truy-cap-khach-uc04-ket-qua-kiem-thu.md) — SCRUM-122: kết quả kiểm thử E2E Khách (UC-04 → UC-26 Agenda, thu hồi, hết hạn, cuộc họp kết thúc) bằng email và phiên thật; kèm FE SCRUM-121/SCRUM-123.
 
+- `GET /api/health` — không cần đăng nhập, không có file riêng: `200` với `status: "ok"`, `database: "ok"`;
+  `503` với `status: "unavailable"`, `database: "unreachable"` khi app không tới được PostgreSQL. Workflow
+  deploy dựa vào mã này để quyết định giữ bản mới hay quay lại
+  ([ADR-0047](../05-decisions/0047-server-test-chay-staging-deploy-an-toan.md)).
 - [`00-danh-muc-ma-thong-bao.md`](00-danh-muc-ma-thong-bao.md) — **danh mục mọi mã `MSGnn`**:
   quy tắc đặt mã, mã tiếp theo còn trống, từng mã trả ở endpoint nào với HTTP và câu thông báo gì,
   và bảng đổi mã cũ → mới (kể cả mã trong sequence diagram). Thêm mã mới thì sửa file này trước.

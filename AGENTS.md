@@ -181,6 +181,8 @@ backend/TrustCabinet.Infrastructure --startup-project backend/TrustCabinet.Web -
 Migrations`. Commit the migration together with the updated `ModelSnapshot`. A migration that has
 reached `main` is immutable — correct it with a new one, because teammates have already applied it.
 In Development the app migrates and seeds itself at startup; nothing outside Development ever does.
+The test server runs as `Staging` and migrates as a deploy step, `dotnet TrustCabinet.Web.dll --migrate`,
+after a `pg_dump` backup and before the new version starts ([ADR-0047](docs/05-decisions/0047-server-test-chay-staging-deploy-an-toan.md)).
 
 Enums are stored as strings, entity keys are `Guid.CreateVersion7()`, user rows are
 deactivated rather than deleted, and `MeetingStatusHistory` is append-only evidence — the

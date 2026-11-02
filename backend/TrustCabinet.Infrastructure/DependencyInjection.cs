@@ -41,9 +41,10 @@ public static class DependencyInjection
     /// <summary>
     /// Applies pending migrations and fills an empty database with demo rows.
     ///
-    /// For local development only — the caller checks the environment. A real deployment runs
-    /// `dotnet ef database update` as a deliberate, reviewable step, because a web app that
-    /// migrates its own database on boot will happily do so from several instances at once.
+    /// For local development only — the caller checks the environment — and for rebuilding the shared
+    /// test server from an empty database (<c>--migrate --seed-demo</c>, ADR-0047). A deployment migrates
+    /// with <see cref="MigrateForDeploymentAsync"/> as a deliberate, reviewable step, because a web app
+    /// that migrates its own database on boot will happily do so from several instances at once.
     /// </summary>
     public static async Task MigrateAndSeedDevelopmentAsync(this IServiceProvider services)
     {
@@ -55,6 +56,32 @@ public static class DependencyInjection
         await DevelopmentDataSeeder.SeedAsync(db);
         await AgendaDevelopmentDataSeeder.SeedAsync(db);
         await ParticipantDevelopmentDataSeeder.SeedAsync(db);
+    }
+
+    /// <summary>
+    /// The deliberate migration step of a deployment (ADR-0047, <c>--migrate</c>): applies every pending migration
+    /// and the reference data, and returns the last migration now applied.
+    ///
+    /// With <paramref name="seedDemo"/> it runs <see cref="MigrateAndSeedDevelopmentAsync"/> instead, demo accounts
+    /// with the public password included — only for rebuilding the shared test server from an empty database.
+    /// </summary>
+    public static async Task<string?> MigrateForDeploymentAsync(this IServiceProvider services, bool seedDemo = false)
+    {
+        if (seedDemo)
+        {
+            await services.MigrateAndSeedDevelopmentAsync();
+        }
+        else
+        {
+            await using var migrate = services.CreateAsyncScope();
+            var target = migrate.ServiceProvider.GetRequiredService<TrustCabinetDbContext>();
+            await target.Database.MigrateAsync();
+            await ReferenceDataSeeder.SeedAsync(target);
+        }
+
+        await using var scope = services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<TrustCabinetDbContext>();
+        return (await db.Database.GetAppliedMigrationsAsync()).LastOrDefault();
     }
 
     /// <summary>

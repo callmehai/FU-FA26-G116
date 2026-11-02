@@ -25,7 +25,7 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0012](0012-giao-dien-hanh-chinh-sidebar-doc.md) | Giao diện phong cách hành chính, một sidebar dọc | Đề xuất — phần hình nhãn trạng thái và mức độ thay thế bởi ADR-0028; kích thước nút, ô nhập và bo góc thay thế bởi ADR-0043 |
 | [0013](0013-mot-cuoc-hop-la-mot-buoi-hop.md) | Một cuộc họp là một buổi họp — bỏ Meeting Session | Đã chấp nhận |
 | [0014](0014-bieu-quyet-chi-trong-cuoc-hop.md) | Biểu quyết chỉ diễn ra trong cuộc họp, Chủ toạ ghi kết luận | Đã chấp nhận — phần loại Guest thay thế bởi ADR-0016, gate End Meeting thay thế bởi ADR-0017, chuẩn bị Vote nháp thay thế bởi ADR-0019 |
-| [0015](0015-server-test-tren-lightsail.md) | Server test chung chạy Docker Compose trên một máy Lightsail, ở chế độ Development, tự deploy từ `main` | Đề xuất |
+| [0015](0015-server-test-tren-lightsail.md) | Server test chung chạy Docker Compose trên một máy Lightsail, ở chế độ Development, tự deploy từ `main` | Đề xuất — phần chạy ở Development, tự migrate khi khởi động và không backup thay thế bởi ADR-0047 |
 | [0016](0016-khach-tham-gia-nhu-thanh-vien.md) | Guest xác minh email tham gia như Member; điểm danh theo người được chọn | Đã chấp nhận — PO 13/10/2026; phần giữ BR-122/159 tại mục 6 được thay thế bởi ADR-0017 |
 | [0017](0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md) | End Meeting độc lập với Vote/điểm danh; phục hồi Thư ký theo trạng thái | Đã chấp nhận — PO 13/10/2026 |
 | [0018](0018-tai-lieu-khong-phien-ban-chi-giu-tham-chieu.md) | Tài liệu không có phiên bản — kho cá nhân và cuộc họp chỉ giữ tham chiếu tới file | Đã chấp nhận — PO 13/10/2026; phần khoá gỡ, AgendaItemId và số UC-33b thay thế bởi ADR-0020 |
@@ -56,3 +56,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0043](0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) | Lấy một số thành phần của AI-eCabinet, giữ sidebar dọc và nhãn trạng thái cũ: kích thước control, nút gọi hành động có gợn sóng, trạng thái tô cả dòng, danh sách và hộp thoại tạo cuộc họp 2 cột | Đề xuất — PO 30/10/2026 |
 | [0044](0044-server-kiem-cau-truc-va-dem-trang-pdf.md) | Server kiểm cấu trúc PDF và tự đếm số trang bằng PdfPig, không tin số trang trình duyệt gửi | Đề xuất — SCRUM-107, test E2E 02/11/2026 |
 | [0045](0045-may-tu-gan-ten-khi-giong-khop-ro.md) | Máy tự gán tên người nói khi giọng khớp rõ; giọng thứ hai của cùng một người phải khớp cao hơn | Đề xuất — SCRUM-35, PO 01/11/2026 |
+| [0047](0047-server-test-chay-staging-deploy-an-toan.md) | Server test chạy ở `Staging`; deploy migrate có chủ đích, backup database và tự quay lại khi health check đỏ | Đề xuất |
