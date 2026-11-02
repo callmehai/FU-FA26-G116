@@ -65,6 +65,16 @@ export type SendPart = (part: number, bytes: Uint8Array, final: boolean) => Prom
 /** Thrown by a `SendPart` when the server will never take the part: the take was saved already (MSG362). */
 export class TapeClosed extends Error {}
 
+/**
+ * Thrown by a `SendPart` when the server turned the part itself down (a 4xx other than 408/429): sending it again
+ * would fail again, so the take stops here. What the server took before it can still be saved.
+ */
+export class TapeRefused extends Error {
+  constructor(cause: unknown) {
+    super('The server refused a part of the take.', { cause })
+  }
+}
+
 const SAVE_EVERY_SAMPLES = 5 * SAMPLE_RATE
 const RETRY_MS = [1000, 2000, 5000, 10000, 15000]
 
@@ -78,6 +88,8 @@ interface Options {
   store?: TapeStore
   /** The server refused the take for good: what is left on the device can never be added to it. */
   onClosed?: () => void
+  /** The server refused a part: nothing more goes up, and what is left on the device never will. */
+  onRefused?: (reason: TapeRefused) => void
   nextPart?: number
   pending?: Uint8Array
   wait?: (ms: number) => Promise<void>
@@ -94,6 +106,7 @@ export class RoomTape {
   private sent: number
   private finishing = false
   private closed = false
+  private refused: TapeRefused | null = null
   private running: Promise<void> | null = null
   private again = false
   private sinceSave = 0
@@ -111,7 +124,7 @@ export class RoomTape {
     this.sent = (this.nextPart - 1) * options.partSize
   }
 
-  static resume(saved: SavedTape, options: Pick<Options, 'send' | 'store' | 'onClosed' | 'wait'>) {
+  static resume(saved: SavedTape, options: Pick<Options, 'send' | 'store' | 'onClosed' | 'onRefused' | 'wait'>) {
     return new RoomTape({ ...options, ...saved })
   }
 
@@ -150,6 +163,7 @@ export class RoomTape {
     while (this.running) await this.running
     await this.saving
     await this.o.store?.clear(this.meetingId).catch(() => undefined)
+    if (this.refused) throw this.refused
     if (this.closed) throw new TapeClosed()
   }
 
@@ -191,14 +205,18 @@ export class RoomTape {
       try {
         await this.o.send(this.nextPart, this.take(n), n < size)
       } catch (error) {
-        if (error instanceof TapeClosed) {
+        if (error instanceof TapeClosed || error instanceof TapeRefused) {
           this.closed = true
           this.chunks = []
           this.length = 0
           await this.o.store?.clear(this.meetingId).catch(() => undefined)
-          this.o.onClosed?.()
+          if (error instanceof TapeRefused) {
+            this.refused = error
+            this.o.onRefused?.(error)
+          } else this.o.onClosed?.()
           return
         }
+        // A dropped network or a server error may pass: the part is sent again, waiting longer each time.
         await (this.o.wait ?? ((ms) => new Promise<void>((r) => window.setTimeout(r, ms))))(
           RETRY_MS[Math.min(attempt++, RETRY_MS.length - 1)],
         )

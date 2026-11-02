@@ -1,13 +1,21 @@
 import { completeRoomTake, beginRoomTake, sendRoomPart } from '../../api/recordings'
 import { ApiError } from '../../api/client'
-import { isApiError } from '../../lib/errors'
+import { errorMessage, isApiError } from '../../lib/errors'
 import type { RoomTakeSaved } from '../../types/recording'
 import { levelDb, SAMPLE_RATE } from '../speech/clipCutter'
 import { Resampler } from '../speech/wav'
 // Always a file of our own origin: Vite would inline a file this small as a data: URL, which the test server's CSP
 // (script-src 'self') refuses to run as a worklet.
 import speechTapUrl from '../speech/speechTap.worklet.js?url&no-inline'
-import { BYTES_PER_SECOND, RoomTape, TapeClosed, type SavedTape, type SendPart, type TapeStore } from './roomTape'
+import {
+  BYTES_PER_SECOND,
+  RoomTape,
+  TapeClosed,
+  TapeRefused,
+  type SavedTape,
+  type SendPart,
+  type TapeStore,
+} from './roomTape'
 
 /**
  * ADR-0041 — one laptop as the room's microphone. Everything it hears goes into the meeting's open take; switching it
@@ -72,13 +80,24 @@ async function openMic(onBlock: (samples: Float32Array) => void, onEnded: () => 
 /** The take was saved already (by another Secretary, or by the server after hours of silence): it takes nothing more. */
 const closedTake = (error: unknown) => isApiError(error, 409, 'MSG362')
 
-/** Sends one part; the server refusing the take for good reads as {@link TapeClosed}. */
+/** A failure worth trying again: the network, or a server error that may pass. Any other 4xx never will. */
+const retryable = (error: unknown) =>
+  !(error instanceof ApiError) || error.status >= 500 || error.status === 408 || error.status === 429
+
+/** What the Secretary reads when the server turned a part down: why, and that the mic is off. */
+export const refusedMessage = (reason: TapeRefused) => `${errorMessage(reason.cause)} Mic phòng đã dừng.`
+
+/**
+ * Sends one part; the server refusing the take for good reads as {@link TapeClosed}, and refusing the part itself (a
+ * 400, a 413…) as {@link TapeRefused}, so it is not sent again and again.
+ */
 export function sendPart(recordingId: string): SendPart {
   return async (part, bytes, final) => {
     try {
       await sendRoomPart(recordingId, part, bytes, final)
     } catch (error) {
-      throw closedTake(error) || isApiError(error, 404) ? new TapeClosed() : error
+      if (closedTake(error) || isApiError(error, 404)) throw new TapeClosed()
+      throw retryable(error) ? error : new TapeRefused(error)
     }
   }
 }
@@ -92,17 +111,18 @@ export async function saveTake(recordingId: string): Promise<RoomTakeSaved | nul
       return await completeRoomTake(recordingId)
     } catch (error) {
       if (isApiError(error, 404) || closedTake(error)) return null
-      const retryable =
-        !(error instanceof ApiError) || error.status >= 500 || error.status === 408 || error.status === 429
-      if (!retryable || attempt >= COMPLETE_RETRY_MS.length) throw error
+      if (!retryable(error) || attempt >= COMPLETE_RETRY_MS.length) throw error
       await new Promise<void>((resolve) => window.setTimeout(resolve, COMPLETE_RETRY_MS[attempt]))
     }
   }
 }
 
 export interface RoomMicEvents {
-  /** The mic stopped on its own: the device went away, or the take was saved elsewhere. */
-  onLost: (message: string) => void
+  /**
+   * The mic stopped on its own: the device went away, or the take was saved elsewhere — or, `failed`, the server
+   * turned a part down and the rest of the take could not be kept.
+   */
+  onLost: (message: string, failed?: boolean) => void
   onSaved: (saved: RoomTakeSaved | null) => void
 }
 
@@ -116,6 +136,8 @@ export class RoomMic {
   private rolling: Promise<void> | null = null
   private waiting: Float32Array[] = []
   private closing: Promise<void>[] = []
+  // Stopped before the mic opened (the page was left while the browser asked): it is let go as soon as it opens.
+  private stopped = false
 
   private readonly meetingId: string
   private readonly purpose: () => string
@@ -146,8 +168,9 @@ export class RoomMic {
   async start(consent: boolean, saved?: SavedTape) {
     const taping = saved ? Promise.resolve(this.resume(saved)) : this.fresh(consent)
     taping.catch(() => undefined)
+    let source: MicSource
     try {
-      this.source = await openMic(
+      source = await openMic(
         (samples) => this.take(samples),
         () => this.lost('Micro đã bị ngắt khỏi máy. Lượt ghi đến lúc đó vẫn được lưu.'),
       )
@@ -156,6 +179,13 @@ export class RoomMic {
       if (!saved) void taping.then((tape) => saveTake(tape.recordingId)).catch(() => undefined)
       throw new Error(micError(error))
     }
+    if (this.stopped) {
+      // Nobody is left to switch it off: the mic goes at once, as if it had never opened.
+      source.release()
+      if (!saved) void taping.then((tape) => saveTake(tape.recordingId)).catch(() => undefined)
+      return
+    }
+    this.source = source
     try {
       await this.into(taping)
     } catch (error) {
@@ -165,8 +195,9 @@ export class RoomMic {
     }
   }
 
-  /** Releases the mic, sends the rest and saves the take. */
+  /** Releases the mic, sends the rest and saves the take. Called while the mic is still opening, it never opens. */
   async stop() {
+    this.stopped = true
     this.source?.release()
     this.source = null
     await this.rolling
@@ -175,9 +206,9 @@ export class RoomMic {
     await Promise.all(this.closing)
   }
 
-  private lost(message: string) {
+  private lost(message: string, failed = false) {
     void this.stop().catch(() => undefined)
-    this.events.onLost(message)
+    this.events.onLost(message, failed)
   }
 
   private async fresh(consent: boolean) {
@@ -191,6 +222,7 @@ export class RoomMic {
       send: sendPart(opened.recordingId),
       store: this.store,
       onClosed: () => this.lost('Lượt ghi đã được lưu ở nơi khác. Bật mic để ghi tiếp.'),
+      onRefused: (reason) => this.lost(refusedMessage(reason), true),
     })
   }
 
@@ -199,6 +231,7 @@ export class RoomMic {
       send: sendPart(saved.recordingId),
       store: this.store,
       onClosed: () => this.lost('Lượt ghi dở đã được lưu ở nơi khác. Bật mic để ghi tiếp.'),
+      onRefused: (reason) => this.lost(refusedMessage(reason), true),
     })
   }
 
@@ -208,7 +241,8 @@ export class RoomMic {
     } catch (error) {
       // Saved elsewhere meanwhile: nothing left to save here.
       if (error instanceof TapeClosed) return
-      throw error
+      // A part turned down: what the server took before it is still saved.
+      if (!(error instanceof TapeRefused)) throw error
     }
     this.events.onSaved(await saveTake(tape.recordingId))
   }
