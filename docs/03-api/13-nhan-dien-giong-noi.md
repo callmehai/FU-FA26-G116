@@ -3,8 +3,11 @@
 Bản gỡ băng (SCRUM-31) chia lời nói theo *Người nói 1, 2, 3…*: đó là **tách người nói**
 (*diarization*), chỉ biết hai đoạn là cùng hay khác giọng, không biết là ai. Voice ID trả lời câu
 "ai": mỗi người **tự nguyện** đăng ký giọng mẫu; sau khi gỡ băng, hệ thống so từng giọng trong bản ghi
-với giọng mẫu của **những người có trong cuộc họp và đã đồng ý**, rồi **gợi ý** tên. Chỉ Thư ký quyết
-định tên — hệ thống không tự gán. Quyết định thiết kế: [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md).
+với giọng mẫu của **những người có trong cuộc họp và đã đồng ý**, rồi **gợi ý** tên. Giọng khớp rõ thì
+máy tự điền tên, nhưng chỉ với người đã đồng ý thông báo 1.2 trở lên
+([ADR-0045](../05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md),
+[ADR-0048](../05-decisions/0048-thong-bao-voice-id-1-2-may-tu-dien-ten.md)); Thư ký luôn sửa được tên.
+Quyết định thiết kế: [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md).
 
 ## Dữ liệu sinh trắc học — nghĩa vụ và cách giữ
 
@@ -39,9 +42,9 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 
 ```json
 {
-  "consent": { "grantedAt": "…", "noticeVersion": "1.1", "purpose": "Gợi ý tên người phát biểu …" },
+  "consent": { "grantedAt": "…", "noticeVersion": "1.2", "purpose": "Nhận ra người phát biểu …" },
   "samples": [ { "id": "…", "createdAt": "…", "speechMs": 7200, "playable": true } ],
-  "maxSamples": 5, "noticeVersion": "1.1", "purpose": "Gợi ý tên người phát biểu …",
+  "maxSamples": 5, "noticeVersion": "1.2", "purpose": "Nhận ra người phát biểu …",
   "controller": "Nhóm đồ án SEP490-G116, đơn vị vận hành bản thử nghiệm TrustCabinet"
 }
 ```
@@ -50,7 +53,7 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 thông báo hiện hành mà FE hiện cho người dùng đọc trước khi đồng ý. `consent.noticeVersion` cũ hơn
 thông báo hiện hành thì FE mời đồng ý điều khoản mới. `playable`: bản ghi mẫu được lưu, chủ mẫu nghe lại được.
 
-### `POST /api/me/voice/consent` — `{ "noticeVersion": "1.1" }`
+### `POST /api/me/voice/consent` — `{ "noticeVersion": "1.2" }`
 
 Phải gửi đúng phiên bản thông báo đang hiện (khác → `400 MSG313`, `errors.noticeVersion`), để đồng ý
 luôn gắn với câu chữ người đó đã đọc. Đã đồng ý rồi thì không tạo thêm. Đang đồng ý theo thông báo cũ
@@ -137,7 +140,8 @@ khác nhau giống nhau 0,745, một người bị tách làm hai giống nhau 0
 người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
 `transcript.speaker_assigned` không có người làm, kèm `automatic: true` và điểm. Thư ký đổi hoặc bỏ tên bằng `PUT`
 như thường; sau đó `autoAssigned` là `false`. Người đó rút đồng ý Voice ID thì tên máy gán bị bỏ cùng gợi ý, còn tên
-Thư ký gán thì giữ. Máy không gán Khách.
+Thư ký gán thì giữ. Máy không gán Khách. Máy chỉ tự gán người có đồng ý từ thông báo 1.2 trở lên (ADR-0048):
+người còn ở bản 1.1 hay 1.0 vẫn chỉ được gợi ý, cho tới khi đồng ý điều khoản mới.
 
 Đo trên 12 cuộc họp VIVOS qua phòng họp (`evaluate.py --second-threshold 0 0.65 0.7 0.75 --auto`, 02/11/2026):
 

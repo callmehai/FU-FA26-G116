@@ -13,12 +13,13 @@ interface NavEntry {
   cap?: Capability
 }
 
-/** Day-to-day work, open to everyone signed in. */
+/**
+ * Day-to-day work, open to everyone signed in. What is one's own — the document library, the Voice ID — opens from
+ * the account menu at the sidebar's foot instead, as AI-eCabinet's avatar menu does (`AppShell`).
+ */
 const WORK: NavEntry[] = [
   { to: routes.calendar, label: 'Lịch làm việc', icon: 'calendar' },
   { to: routes.meetings, label: 'Cuộc họp', icon: 'meeting' },
-  { to: routes.documents, label: 'Kho tài liệu', icon: 'folder' },
-  { to: routes.myVoice, label: 'Giọng nói của tôi', icon: 'mic' },
 ]
 
 /** Under "Quản trị". The group disappears when none of its entries is visible. */

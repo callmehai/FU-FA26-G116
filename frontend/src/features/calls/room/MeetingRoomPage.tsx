@@ -25,6 +25,7 @@ import { useAuth } from '../../auth/useAuth'
 import { guestName, useGuest, useMeetingHome } from '../../guest/guestContext'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useMeeting } from '../../meetings/useMeeting'
+import { VoiceShortcut } from '../../voice/VoiceShortcut'
 import { useNotifications } from '../../notifications/notificationsContext'
 import { DevicePicker, MicLevel } from './devices'
 import { RoomView } from './RoomView'
@@ -436,11 +437,13 @@ function PreJoin({
                 tabIndex={0}
                 data-tooltip="Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình."
               >
-                <Icon name="mic" size={16} />
+                <Icon name="warning" size={16} />
                 Cuộc họp được ghi âm để lập biên bản · tự xoá sau {retentionDays} ngày
               </p>
             )
           )}
+          {/* A member about to be recorded can leave a voice sample here; a guest has no Voice ID. */}
+          {!guest && <VoiceShortcut />}
 
           {micError && (
             <div className="alert alert-warning" role="status">

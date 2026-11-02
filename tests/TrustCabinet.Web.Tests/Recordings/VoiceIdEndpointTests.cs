@@ -276,6 +276,27 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
     }
 
     [Fact]
+    public async Task Someone_who_agreed_to_an_older_notice_is_only_suggested_until_they_renew()
+    {
+        var s = await fixture.Seed();
+        await Enrol(s.Member, 0, 1, 0);
+        await using var db = fixture.Db();
+        // Agreed before ADR-0048, to a notice that said the machine only suggests.
+        await db.VoiceConsents.Where(c => c.UserId == s.Member).ExecuteUpdateAsync(u => u.SetProperty(c => c.NoticeVersion, "1.1"));
+        var before = await UploadAndTranscribe(s, new SpeechSpeaker("SPEAKER_00", 20000, [0f, 1f, 0.1f]));
+        var suggested = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == before && x.Label == "SPEAKER_00");
+        Assert.Equal(s.Member, suggested.SuggestedUserId);
+        Assert.Null(suggested.AssignedUserId);
+
+        using var member = fixture.Client(s.Member);
+        await AssertCode(await Consent(member), 200, "MSG305");
+        var after = await UploadAndTranscribe(s, new SpeechSpeaker("SPEAKER_00", 20000, [0f, 1f, 0.1f]));
+        var named = await db.TranscriptSpeakers.SingleAsync(x => x.Transcript.RecordingId == after && x.Label == "SPEAKER_00");
+        Assert.Equal(s.Member, named.AssignedUserId);
+        Assert.Null(named.AssignedById);
+    }
+
+    [Fact]
     public async Task Withdrawing_erases_samples_and_suggestions_but_keeps_what_the_secretary_decided()
     {
         var s = await fixture.Seed();

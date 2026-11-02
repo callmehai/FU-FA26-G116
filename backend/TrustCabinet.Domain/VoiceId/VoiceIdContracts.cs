@@ -96,15 +96,21 @@ public static class VoiceIdRules
     /// <summary>
     /// Bump when the wording below changes: consent is to the words a person actually read. 1.1 (ADR-0042): the sample
     /// recording is kept too, encrypted, for its owner to hear back. A sample's audio is kept only under a consent to
-    /// 1.1 or later; a person who agreed to 1.0 renews to have it kept.
+    /// 1.1 or later; a person who agreed to 1.0 renews to have it kept. 1.2 (ADR-0048): the machine fills in the name
+    /// on a sure match (ADR-0045), only for a person whose consent is to 1.2 or later; for the others it still only
+    /// suggests.
     /// </summary>
-    public const string NoticeVersion = "1.1";
+    public const string NoticeVersion = "1.2";
 
     /// <summary>The first notice under which a sample's recording is kept.</summary>
     public const string AudioNoticeVersion = "1.1";
 
+    /// <summary>The first notice under which the machine names a sure match by itself.</summary>
+    public const string AutoAssignNoticeVersion = "1.2";
+
     public const string Purpose =
-        "Gợi ý tên người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự, để Thư ký lập biên bản.";
+        "Nhận ra người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự (gợi ý tên, tự điền tên khi giọng khớp "
+        + "rõ), để Thư ký lập biên bản.";
 
     public const int MaxSamples = 5;
     public const int MaxSampleBytes = 10 * 1024 * 1024;
