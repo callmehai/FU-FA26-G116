@@ -40,7 +40,9 @@ object stream nén, xref có thể là stream, tệp có thể được ghi nố
    - tiến trình con in `pages=N` và thoát 0, hoặc thoát 2 khi tệp không đọc được. Chết vì tràn stack, hết bộ nhớ hay quá
      giờ đều coi là PDF không hợp lệ (`MSG164`);
    - không khởi động được tiến trình con là lỗi server (500), không phải lỗi tệp.
-   Tăng stack của luồng không phải cách sửa: trong 50 MB có thể nén hàng trăm nghìn tầng, nhiều hơn mọi stack.
+   Tăng stack của luồng không phải cách sửa: trong 50 MB có thể nén hàng trăm nghìn tầng, nhiều hơn mọi stack. Stack của
+   tiến trình con là 1 MB trên Windows và 8 MB trên Linux (server test), nên một cây lồng vừa phải (20.000 tầng) đọc được
+   trên Linux và được nhận như PDF 1 trang; cây sâu hơn làm chết tiến trình con và bị từ chối. Server không chết ở cả hai.
 
 ## Hệ quả
 

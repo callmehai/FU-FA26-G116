@@ -284,11 +284,12 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     [Fact]
     public async Task A_pdf_built_to_overflow_the_parsers_stack_is_refused_and_the_server_keeps_running()
     {
-        // 20,000 nested page nodes, 2 MB: parsed in the server's own process this ended it with a stack overflow,
-        // which no catch can stop. Any signed-in person reaches this path through their library (ADR-0044).
+        // Nested page nodes: parsed in the server's own process, 20,000 of them (2 MB) ended it with a stack overflow,
+        // which no catch can stop, and any signed-in person reaches this path through their library (ADR-0044). The
+        // child's stack is 1 MB on Windows and 8 MB on Linux, so 200,000 (about 20 MB) overflow both.
         var owner = await NewUser(fixture);
         using var client = fixture.Client(owner);
-        var deep = SampleFiles.DeepPageTreePdf(20_000);
+        var deep = SampleFiles.DeepPageTreePdf(200_000);
 
         var refused = await Read(await client.PostAsync("/api/documents/upload", DocumentFixture.Form(("cay-sau.pdf", deep, "1"))));
         Assert.Equal((400, "MSG164"), Pick(refused));
