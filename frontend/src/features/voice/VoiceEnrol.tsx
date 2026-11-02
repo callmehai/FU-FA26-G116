@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { addVoiceSample, grantVoiceConsent } from '../../api/voice'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
@@ -6,7 +6,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { VoiceProfile } from '../../types/voice'
 import { formatDuration } from '../recordings/format'
-import { useRecorder } from '../recordings/useRecorder'
+import { type RecordedTake, useRecorder } from '../recordings/useRecorder'
 
 /**
  * SCRUM-35 — agreeing to Voice ID and recording a sample, shared by "Giọng nói của tôi" and the call lobby's shortcut
@@ -57,12 +57,12 @@ export function ConsentForm({
           nghe lại được bản ghi mẫu.
         </li>
         <li>
-          <strong>Dùng ở đâu:</strong> chỉ so với giọng trong bản ghi các cuộc họp bạn tham dự. Máy chỉ gợi ý, Thư ký
-          quyết định tên.
+          <strong>Dùng ở đâu:</strong> chỉ so với giọng trong bản ghi các cuộc họp bạn tham dự. Máy gợi ý tên người
+          nói, và tự điền tên bạn khi giọng khớp rõ; Thư ký xem và sửa được.
         </li>
         <li>
           <strong>Quyền của bạn:</strong> xem và xoá từng giọng mẫu, rút lại đồng ý bất cứ lúc nào ở trang "Giọng nói
-          của tôi"; rút lại thì giọng mẫu và mọi gợi ý bị xoá ngay.
+          của tôi"; rút lại thì giọng mẫu, mọi gợi ý và tên máy đã điền bị xoá ngay.
         </li>
         <li>
           <strong>Bên kiểm soát dữ liệu:</strong> {profile.controller}
@@ -90,6 +90,10 @@ export function ConsentForm({
   )
 }
 
+/**
+ * Read the passage, stop, hear it back, then keep it or read it again — as AI-eCabinet does. Nothing leaves the browser
+ * until the person keeps the take.
+ */
 export function RecordSampleDialog({
   passage,
   onClose,
@@ -102,17 +106,43 @@ export function RecordSampleDialog({
   onStale: () => Promise<void>
 }) {
   const recorder = useRecorder()
+  const [take, setTake] = useState<{ file: RecordedTake; url: string } | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const elapsed = recorder.state.kind === 'recording' || recorder.state.kind === 'paused' ? recorder.state.elapsedMs : 0
   const { stop } = recorder
 
+  // The take plays from a blob: URL, freed when it is replaced and when the dialog closes.
+  const shown = useRef<string | null>(null)
+  const show = useCallback((file: RecordedTake | null) => {
+    if (shown.current) URL.revokeObjectURL(shown.current)
+    shown.current = file ? URL.createObjectURL(file.blob) : null
+    setTake(file && shown.current ? { file, url: shown.current } : null)
+  }, [])
+  useEffect(
+    () => () => {
+      if (shown.current) URL.revokeObjectURL(shown.current)
+    },
+    [],
+  )
+
   const finish = useCallback(async () => {
-    const take = await stop()
+    const file = await stop()
+    if (file) show(file)
+  }, [stop, show])
+
+  const record = () => {
+    show(null)
+    setError(null)
+    void recorder.start()
+  }
+
+  const save = async () => {
     if (!take) return
     setSaving(true)
+    setError(null)
     try {
-      const result = await addVoiceSample(take.blob, `giong-mau.${take.extension}`)
+      const result = await addVoiceSample(take.file.blob, `giong-mau.${take.file.extension}`)
       await onSaved(result.message)
     } catch (failure) {
       if (isApiError(failure, 409)) void onStale()
@@ -120,7 +150,7 @@ export function RecordSampleDialog({
     } finally {
       setSaving(false)
     }
-  }, [stop, onSaved, onStale])
+  }
 
   // Thirty seconds is plenty for one passage; stop for the person rather than record silence.
   // Re-armed with the time left whenever recording resumes.
@@ -150,22 +180,28 @@ export function RecordSampleDialog({
             onClick={() => void finish()}
           >
             {elapsed >= MIN_SAMPLE_MS && <Icon name="recordStop" size={18} />}
-            {elapsed < MIN_SAMPLE_MS
-              ? `Đọc tiếp… (${Math.ceil((MIN_SAMPLE_MS - elapsed) / 1000)} giây)`
-              : 'Dừng và lưu'}
+            {elapsed < MIN_SAMPLE_MS ? `Đọc tiếp… (${Math.ceil((MIN_SAMPLE_MS - elapsed) / 1000)} giây)` : 'Dừng'}
           </button>
+        ) : take ? (
+          <>
+            <button type="button" className="btn btn-outline" disabled={saving} onClick={record}>
+              <Icon name="undo" size={18} />
+              Ghi lại
+            </button>
+            <button type="button" className="btn btn-primary" disabled={saving} onClick={() => void save()}>
+              <Icon name="check" size={18} />
+              {saving ? 'Đang kiểm tra…' : 'Lưu giọng mẫu'}
+            </button>
+          </>
         ) : (
           <button
             type="button"
             className="btn btn-primary"
-            disabled={saving || recorder.state.kind === 'starting'}
-            onClick={() => {
-              setError(null)
-              void recorder.start()
-            }}
+            disabled={recorder.state.kind === 'starting'}
+            onClick={record}
           >
             <Icon name="mic" size={18} />
-            {saving ? 'Đang kiểm tra…' : error ? 'Ghi lại' : 'Bắt đầu ghi'}
+            Bắt đầu ghi
           </button>
         )
       }
@@ -177,6 +213,29 @@ export function RecordSampleDialog({
           <span className="recorder-dot" aria-hidden="true" />
           Đang ghi {formatDuration(elapsed)}
         </p>
+      )}
+      {take && !active && (
+        <div className="voice-review">
+          <p className="field-hint" role="status">
+            Nghe lại trước khi lưu. Có tạp âm hay đọc vấp thì ghi lại.
+          </p>
+          <audio
+            controls
+            controlsList="nodownload"
+            src={take.url}
+            aria-label="Nghe lại giọng mẫu vừa ghi"
+            onLoadedMetadata={(event) => {
+              // Chrome records WebM without its length, so the player shows none; one seek to the end makes it count.
+              const player = event.currentTarget
+              if (player.duration !== Infinity) return
+              const rewind = () => {
+                player.currentTime = 0
+              }
+              player.addEventListener('timeupdate', rewind, { once: true })
+              player.currentTime = Number.MAX_SAFE_INTEGER
+            }}
+          />
+        </div>
       )}
       {recorder.state.kind === 'error' && (
         <p className="field-error" role="alert">

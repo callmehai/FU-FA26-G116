@@ -3660,6 +3660,9 @@ audio.recording-player { height: 40px; }
 .voice-sample-name { color: var(--ink); font-weight: 500; }
 .voice-actions { justify-content: space-between; }
 .voice-passage { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
+.voice-review { display: grid; gap: 8px; margin: 12px 0 0; }
+.voice-review .field-hint { margin: 0; }
+.voice-review audio { width: 100%; }
 .voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
 @media (max-width: 560px) {
   .voice-actions { flex-direction: column-reverse; align-items: stretch; }

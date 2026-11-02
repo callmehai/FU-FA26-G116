@@ -437,7 +437,7 @@ function PreJoin({
                 tabIndex={0}
                 data-tooltip="Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình."
               >
-                <Icon name="mic" size={16} />
+                <Icon name="warning" size={16} />
                 Cuộc họp được ghi âm để lập biên bản · tự xoá sau {retentionDays} ngày
               </p>
             )

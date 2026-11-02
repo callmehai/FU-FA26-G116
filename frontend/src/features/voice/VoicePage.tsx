@@ -221,8 +221,8 @@ function Enrolled({
           }}
         >
           <p>
-            Toàn bộ {profile.samples.length} giọng mẫu và mọi gợi ý tên từ giọng của bạn bị xoá ngay. Tên Thư ký đã gán
-            trong biên bản cũ giữ nguyên. Bạn có thể bật lại sau.
+            Toàn bộ {profile.samples.length} giọng mẫu, mọi gợi ý và tên máy đã điền từ giọng của bạn bị xoá ngay. Tên
+            Thư ký đã gán giữ nguyên. Bạn có thể bật lại sau.
           </p>
         </ConfirmDialog>
       )}
@@ -261,8 +261,9 @@ function useSamplePlayer() {
 }
 
 /**
- * ADR-0042 — the notice changed (1.1: the sample recording is kept, for its owner to hear back). Someone who agreed to
- * the earlier one keeps their samples; they renew to have the next ones kept as recordings too.
+ * The notice changed since the person agreed: 1.1 keeps the sample recording for its owner to hear back (ADR-0042), 1.2
+ * lets the machine fill in their name on a sure match (ADR-0048). Until they renew, nothing new applies to them: the
+ * next samples are not kept as recordings, and the machine only suggests their name.
  */
 function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (profile: VoiceProfile) => void }) {
   const toast = useToast()
@@ -279,12 +280,14 @@ function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (
       setSaving(false)
     }
   }
+  const agreed = profile.consent!.noticeVersion
+  const changes = [
+    agreed < '1.1' && 'giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại',
+    agreed < '1.2' && 'máy tự điền tên bạn khi giọng khớp rõ, Thư ký vẫn sửa được',
+  ].filter(Boolean)
   return (
     <div className="alert alert-info voice-renew">
-      <p>
-        Điều khoản mới: giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại. Mẫu cũ giữ nguyên, không
-        nghe lại được.
-      </p>
+      <p>Điều khoản mới: {changes.join('; ')}. Chưa đồng ý thì mọi thứ giữ như cũ.</p>
       <button type="button" className="btn btn-outline btn-sm" disabled={saving} onClick={() => void renew()}>
         {saving ? 'Đang lưu…' : 'Đồng ý điều khoản mới'}
       </button>

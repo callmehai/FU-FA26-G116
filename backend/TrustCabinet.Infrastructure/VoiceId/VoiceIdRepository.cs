@@ -21,7 +21,7 @@ public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdReposi
 
     public async Task<IReadOnlyList<VoiceSample>> ListMatchableSamplesAsync(IReadOnlyCollection<Guid> userIds,
         string embeddingModel, CancellationToken ct)
-        => await db.VoiceSamples.AsNoTracking()
+        => await db.VoiceSamples.AsNoTracking().Include(s => s.Consent)
             .Where(s => userIds.Contains(s.UserId) && s.EmbeddingModel == embeddingModel && s.Consent.WithdrawnAt == null
                 && s.User.IsActive)
             .ToListAsync(ct);

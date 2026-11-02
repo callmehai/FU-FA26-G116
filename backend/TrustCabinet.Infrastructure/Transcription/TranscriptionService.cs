@@ -289,7 +289,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             {
                 // Matched before anything is deleted: it locks the consents it reads, and a withdrawal holding one of
                 // them may be waiting on the speaker rows deleted below.
-                var suggestions = await SuggestSpeakersAsync(recording.MeetingId, result, token);
+                var (suggestions, nameable) = await SuggestSpeakersAsync(recording.MeetingId, result, token);
                 await transcripts.DeleteSegmentsAsync(transcriptId, token);
                 transcripts.AddSegments(result.Segments.Where(s => s.Text.Length > 0).Select((s, i) =>
                 {
@@ -303,12 +303,13 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 }));
                 await transcripts.DeleteSpeakersAsync(transcriptId, token);
                 // A sure match names the voice at once (PO 01/11/2026): no assigner marks the machine's name, which
-                // the Secretary may still change, and which goes when that person withdraws Voice ID consent.
+                // the Secretary may still change, and which goes when that person withdraws Voice ID consent. Only
+                // for someone who agreed to that (notice 1.2, ADR-0048); the others are suggested, as they agreed.
                 var sure = voiceOptions.Value.AutoAssignThreshold;
                 var speakers = result.Speakers.Select(sp =>
                 {
                     var guess = suggestions.GetValueOrDefault(sp.Label);
-                    var named = guess is not null && guess.Score >= sure;
+                    var named = guess is not null && guess.Score >= sure && nameable.Contains(guess.UserId);
                     return new TranscriptSpeaker
                     {
                         TranscriptId = transcriptId, Label = sp.Label, SpeechMs = sp.SpeechMs,
@@ -350,21 +351,26 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
 
     /// <summary>
     /// SCRUM-35 — compares each voice with the enrolled samples of the meeting's own people who consented. The voices'
-    /// embeddings are used here and dropped; only the resulting suggestion is stored.
+    /// embeddings are used here and dropped; only the resulting suggestion is stored. Also says who of them agreed to be
+    /// named by the machine.
     /// </summary>
-    private async Task<IReadOnlyDictionary<string, SpeakerMatcher.Suggestion>> SuggestSpeakersAsync(Guid meetingId,
-        SpeechTranscription result, CancellationToken ct)
+    private async Task<(IReadOnlyDictionary<string, SpeakerMatcher.Suggestion> Suggestions, IReadOnlySet<Guid> Nameable)>
+        SuggestSpeakersAsync(Guid meetingId, SpeechTranscription result, CancellationToken ct)
     {
-        if (result.Speakers.Count == 0 || result.EmbeddingModel.Length == 0) return new Dictionary<string, SpeakerMatcher.Suggestion>();
+        var none = (new Dictionary<string, SpeakerMatcher.Suggestion>(), new HashSet<Guid>());
+        if (result.Speakers.Count == 0 || result.EmbeddingModel.Length == 0) return none;
         var meeting = await meetings.FindWorkflowAsync(meetingId, false, ct);
-        if (meeting is null) return new Dictionary<string, SpeakerMatcher.Suggestion>();
+        if (meeting is null) return none;
         var people = Participants(meeting).Select(p => p.UserId).Distinct().ToArray();
         // Held until the result is written: a withdrawal or a deactivation waits for it, then clears what was written
         // here; one that came first has erased the samples before they are read below.
         await voices.LockConsentsAsync(people, ct);
         var candidates = new List<SpeakerMatcher.Candidate>();
+        var nameable = new HashSet<Guid>();
         foreach (var sample in await voices.ListMatchableSamplesAsync(people, result.EmbeddingModel, ct))
         {
+            if (string.CompareOrdinal(sample.Consent.NoticeVersion, VoiceIdRules.AutoAssignNoticeVersion) >= 0)
+                nameable.Add(sample.UserId);
             try
             {
                 candidates.Add(new(sample.UserId, protector.Unprotect(sample.Ciphertext, sample.UserId, sample.Id, sample.EmbeddingModel)));
@@ -376,8 +382,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             }
         }
         var options = voiceOptions.Value;
-        return SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin,
-            options.SameVoiceThreshold, options.SecondVoiceThreshold);
+        return (SpeakerMatcher.Suggest(result.Speakers, candidates, options.SuggestThreshold, options.SuggestMargin,
+            options.SameVoiceThreshold, options.SecondVoiceThreshold), nameable);
     }
 
     private static bool AutoAssigned(TranscriptSpeaker s) => s.AssignedUserId is not null && s.AssignedById is null;

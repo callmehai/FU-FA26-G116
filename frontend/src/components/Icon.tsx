@@ -28,6 +28,7 @@ import {
   ChevronUp,
   ChevronsUpDown,
   CircleAlert,
+  TriangleAlert,
   CircleCheck,
   CircleStop,
   CircleX,
@@ -111,6 +112,8 @@ const ICONS = {
   // Notification kinds (SCRUM-14): what each one is about, at a glance.
   clock: Clock,
   alertCircle: CircleAlert,
+  // A heads-up before acting, such as the call lobby's "this meeting is recorded".
+  warning: TriangleAlert,
   checkCircle: CircleCheck,
   xCircle: CircleX,
   checkCheck: CheckCheck,
