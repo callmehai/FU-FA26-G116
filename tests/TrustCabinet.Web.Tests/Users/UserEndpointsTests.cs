@@ -11,6 +11,7 @@ using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
+using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Web.Tests.Authentication;
 
 namespace TrustCabinet.Web.Tests.Users;
@@ -75,6 +76,10 @@ public class UserEndpointsTests : IDisposable
                 services.AddSingleton<IPasswordResetTokenStore>(ResetTokens);
                 services.RemoveAll<IPasswordResetEmailSender>();
                 services.AddSingleton<IPasswordResetEmailSender>(ResetEmail);
+
+                // Ending Voice ID on deactivation needs PostgreSQL; VoiceIdEndpointTests covers it there.
+                services.RemoveAll<IVoiceIdErasure>();
+                services.AddSingleton<IVoiceIdErasure>(new FakeVoiceIdErasure());
 
                 // The real hasher is deliberately slow and every create test pays for it.
                 services.RemoveAll<IPasswordHasher>();

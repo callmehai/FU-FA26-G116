@@ -32,12 +32,33 @@ public interface IVoiceIdService
     Task<VoiceSampleAudio?> SampleAudioAsync(Guid actorId, Guid sampleId, CancellationToken ct = default);
 }
 
+/// <summary>Why a person's Voice ID ended; written in the audit details.</summary>
+public enum VoiceIdEndReason { Withdrawn, AccountDeactivated }
+
+/// <summary>
+/// Ends a person's Voice ID: erases every sample, clears the machine's suggestions and the names it gave from their
+/// voice (names a Secretary gave stay), closes the consent and audits it. Used when the person withdraws, and when an
+/// administrator deactivates the account — a deactivated person can no longer sign in to withdraw, and their voice
+/// must not stay matchable for as long as the row exists (Luật 91/2025/QH15). Opens no transaction: the caller runs it
+/// inside its own, so it commits or rolls back with the change that caused it.
+/// </summary>
+public interface IVoiceIdErasure
+{
+    /// <returns>False when no consent stood, so there was nothing to end.</returns>
+    Task<bool> EndAsync(Guid userId, Guid actorId, VoiceIdEndReason reason, CancellationToken ct);
+}
+
 public interface IVoiceIdRepository
 {
     Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct);
     Task<IReadOnlyList<VoiceSample>> ListSamplesAsync(Guid userId, CancellationToken ct);
     /// <summary>Samples of these people taken under a consent that still stands, for one embedding model.</summary>
     Task<IReadOnlyList<VoiceSample>> ListMatchableSamplesAsync(IReadOnlyCollection<Guid> userIds, string embeddingModel, CancellationToken ct);
+    /// <summary>
+    /// Share-locks the standing consents of these people until the transaction ends, so a withdrawal (which locks the
+    /// row for update) waits for a transcription matching against them, and the other way round.
+    /// </summary>
+    Task LockConsentsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
     Task<int> DeleteSamplesAsync(Guid userId, CancellationToken ct);
     /// <summary>Clears machine suggestions that point at this person; names a secretary assigned stay.</summary>
     Task<int> ClearSuggestionsAsync(Guid userId, CancellationToken ct);

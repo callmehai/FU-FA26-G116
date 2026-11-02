@@ -4,6 +4,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
+using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Web.Tests.Authentication;
 
@@ -28,6 +29,9 @@ public class UserServiceTests
     private readonly FakePasswordResetEmailSender _resetEmail = new();
     private readonly TrustCabinet.Web.Tests.Access.FakeCapabilitiesChangePublisher _capabilitiesChanged = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
+    private readonly FakeVoiceIdErasure _voiceId;
+
+    public UserServiceTests() => _voiceId = new FakeVoiceIdErasure(_invariant);
 
     private UserService NewService() => new(
         _users,
@@ -38,6 +42,7 @@ public class UserServiceTests
         _resetTokens,
         _resetEmail,
         _capabilitiesChanged,
+        _voiceId,
         NullLogger<UserService>.Instance);
 
     private User GivenUser(
@@ -135,7 +140,7 @@ public class UserServiceTests
         var hasher = new TrustCabinet.Infrastructure.Authentication.PasswordHasher();
         var service = new UserService(
             _users, hasher, _audit, _refreshTokens, _invariant, _resetTokens, _resetEmail,
-            _capabilitiesChanged, NullLogger<UserService>.Instance);
+            _capabilitiesChanged, _voiceId, NullLogger<UserService>.Instance);
 
         await service.CreateAsync(
             new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),
@@ -697,6 +702,32 @@ public class UserServiceTests
         // deactivated in any sense that matters.
         Assert.Empty(_refreshTokens.ActiveTokens);
         Assert.Equal(AuditActions.UserDeactivated, Assert.Single(_audit.Records).Action);
+    }
+
+    [Fact]
+    public async Task Deactivate_ends_the_voice_id_inside_the_same_write_and_reactivate_restores_nothing()
+    {
+        // A deactivated person cannot sign in to withdraw, so their voice would stay matchable for as
+        // long as the row exists (SCRUM-35, Luật 91/2025/QH15).
+        var user = GivenUser(isActive: true);
+
+        await NewService().ChangeStatusAsync(user.Id, isActive: false, _actorId);
+        await NewService().ChangeStatusAsync(user.Id, isActive: true, _actorId);
+
+        var ended = Assert.Single(_voiceId.Ended);
+        Assert.Equal((user.Id, _actorId, VoiceIdEndReason.AccountDeactivated), (ended.UserId, ended.ActorId, ended.Reason));
+        // Under the guard, so it commits or rolls back with the deactivation.
+        Assert.True(ended.InsideGuard);
+    }
+
+    [Fact]
+    public async Task A_refused_deactivation_leaves_the_voice_id_alone()
+    {
+        var admin = GivenUser("Phạm Quản Trị", "quantri@trustcabinet.local", BuiltInRoles.Admin);
+
+        await NewService().ChangeStatusAsync(admin.Id, isActive: false, admin.Id);
+
+        Assert.Empty(_voiceId.Ended);
     }
 
     [Fact]

@@ -211,8 +211,10 @@ nhận dạng giọng nói tự chạy trong mạng nội bộ** (`workers/speec
 rồi lưu từng đoạn kèm thời điểm và nhãn người nói. Âm thanh **không rời khỏi hệ thống**.
 
 Trạng thái: `None` (bản ghi lưu trước khi có SCRUM-31) → `Pending` → `Processing` → `Completed`
-hoặc `Failed` (kèm `errorMessage` viết cho Thư ký đọc). App khởi động lại giữa chừng thì bản đang
-`Processing` quay về `Pending`. Bản ghi bị xoá trong lúc đang chạy thì kết quả bị bỏ, không ghi lại.
+hoặc `Failed` (kèm `errorMessage` viết cho Thư ký đọc). Lỗi không lường trước (worker đứt kết nối giữa chừng,
+trả kết quả không đọc được, database lỗi khi ghi kết quả…) cũng thành `Failed` với câu chung *Không chuyển được bản ghi
+thành chữ do lỗi hệ thống. Hãy chạy lại.*, chi tiết ở log, để Thư ký chạy lại được ngay. Chỉ khi app tắt giữa chừng thì
+bản đang `Processing` giữ nguyên và quay về `Pending` ở lần khởi động sau. Bản ghi bị xoá trong lúc đang chạy thì kết quả bị bỏ, không ghi lại.
 
 Danh sách bản ghi trả thêm `transcriptStatus` cho mỗi dòng.
 

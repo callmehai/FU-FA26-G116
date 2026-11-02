@@ -213,11 +213,35 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
     public Task<int> RequeueInterruptedAsync(CancellationToken ct = default)
         => transcripts.RequeueProcessingAsync(clock.GetUtcNow(), ct);
 
+    /// <summary>
+    /// What the Secretary reads when the run failed for a reason they cannot act on (the worker dropped the
+    /// connection, its answer was unreadable, the database failed while writing): the details are in the log.
+    /// </summary>
+    internal const string UnexpectedFailureMessage = "Không chuyển được bản ghi thành chữ do lỗi hệ thống. Hãy chạy lại.";
+
     public async Task<bool> ProcessNextAsync(CancellationToken ct = default)
     {
         if (await transcripts.ClaimNextAsync(clock.GetUtcNow(), ct) is not { } transcriptId) return false;
+        try
+        {
+            await TranscribeAsync(transcriptId, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // Anything else left the transcript Processing, which the Secretary cannot rerun and only a restart
+            // requeued. Our own shutdown is the one exception that leaves it so: the next start picks it up again.
+            logger.LogError(ex, "Transcription of transcript {TranscriptId} failed unexpectedly", transcriptId);
+            // Whatever the failed write had staged must not be saved with the failure.
+            transcripts.DiscardChanges();
+            await FinishAsync(transcriptId, null, UnexpectedFailureMessage, ct);
+        }
+        return true;
+    }
+
+    private async Task TranscribeAsync(Guid transcriptId, CancellationToken ct)
+    {
         var transcript = await transcripts.FindForProcessingAsync(transcriptId, ct);
-        if (transcript is null) return true;
+        if (transcript is null) return;
         var recording = transcript.Recording;
         SpeechTranscription result;
         try
@@ -231,15 +255,16 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             var message = ex is SpeechEngineException speech ? speech.UserMessage : "Tệp âm thanh không còn trên máy chủ.";
             logger.LogWarning(ex, "Transcription of recording {RecordingId} failed: {Reason}", recording.Id, message);
             await FinishAsync(transcriptId, null, message, ct);
-            return true;
+            return;
         }
         await FinishAsync(transcriptId, result, null, ct);
-        return true;
     }
 
     /// <summary>
     /// Writes the result under the recording's row lock — the same lock erasure takes — so a recording erased while
-    /// the worker was busy never gets its transcript written back afterwards.
+    /// the worker was busy never gets its transcript written back afterwards. The voices are matched in the same
+    /// transaction, under a share lock on the consents they match against, so no suggestion or machine-given name is
+    /// written for someone whose Voice ID ended meanwhile.
     /// </summary>
     private async Task FinishAsync(Guid transcriptId, SpeechTranscription? result, string? error, CancellationToken ct)
     {
@@ -262,6 +287,9 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             }
             else
             {
+                // Matched before anything is deleted: it locks the consents it reads, and a withdrawal holding one of
+                // them may be waiting on the speaker rows deleted below.
+                var suggestions = await SuggestSpeakersAsync(recording.MeetingId, result, token);
                 await transcripts.DeleteSegmentsAsync(transcriptId, token);
                 transcripts.AddSegments(result.Segments.Where(s => s.Text.Length > 0).Select((s, i) =>
                 {
@@ -274,7 +302,6 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     };
                 }));
                 await transcripts.DeleteSpeakersAsync(transcriptId, token);
-                var suggestions = await SuggestSpeakersAsync(recording.MeetingId, result, token);
                 // A sure match names the voice at once (PO 01/11/2026): no assigner marks the machine's name, which
                 // the Secretary may still change, and which goes when that person withdraws Voice ID consent.
                 var sure = voiceOptions.Value.AutoAssignThreshold;
@@ -332,6 +359,9 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         var meeting = await meetings.FindWorkflowAsync(meetingId, false, ct);
         if (meeting is null) return new Dictionary<string, SpeakerMatcher.Suggestion>();
         var people = Participants(meeting).Select(p => p.UserId).Distinct().ToArray();
+        // Held until the result is written: a withdrawal or a deactivation waits for it, then clears what was written
+        // here; one that came first has erased the samples before they are read below.
+        await voices.LockConsentsAsync(people, ct);
         var candidates = new List<SpeakerMatcher.Candidate>();
         foreach (var sample in await voices.ListMatchableSamplesAsync(people, result.EmbeddingModel, ct))
         {
