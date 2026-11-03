@@ -42,7 +42,7 @@ Markdown snapshot của Report 1–7.
 ## Quy trình một lần sửa
 
 1. Sửa DOCX trong `source/`. Không sửa tay Markdown snapshot.
-2. **Kiểm tra DOCX mở được và đúng font:** `python scripts/check_docx.py docs/08-reports/source/<tên>.docx`
+2. **Kiểm tra DOCX mở được, đúng font và đúng cấu trúc:** `python scripts/check_docx.py docs/08-reports/source/<tên>.docx`
    (xem [Kiểm tra DOCX mở được trong Word](#kiểm-tra-docx-mở-được-trong-word)). Với Report 3 chạy
    thêm `--fix-fonts` để đưa mọi font về Times New Roman. Phải ra `OK` trước khi sang bước sau.
 3. Sinh lại snapshot:
@@ -96,10 +96,26 @@ python scripts/check_docx.py                                               # m�
 python scripts/check_docx.py docs/08-reports/source/<tên>.docx             # một file
 ```
 
-Lệnh in `OK` hoặc `FAIL` kèm lý do cho từng file, và trả mã thoát 1 khi có lỗi. Nó bắt các lỗi làm
-Word hiện hộp "Word found unreadable content … Do you want to recover": zip hỏng, XML sai cú pháp,
-`mc:Ignorable` nêu prefix mà thẻ gốc không khai báo, prefix dùng mà không khai báo, bookmark hoặc
-`wp:docPr` trùng id, `w14:paraId` vượt `0x7FFFFFFF`, và relationship trỏ tới mục không có.
+Lệnh in `OK` hoặc `FAIL` kèm lý do cho từng file: dòng bắt đầu bằng `-` là **lỗi** (lệnh trả mã thoát 1),
+dòng bắt đầu bằng `!` là **cảnh báo** (chỉ in ra, không làm lệnh fail). Năm nhóm kiểm tra:
+
+1. **Mở được trong Word:** zip hỏng, XML sai cú pháp, `mc:Ignorable` nêu prefix mà thẻ gốc không khai báo,
+   prefix dùng mà không khai báo, bookmark hoặc `wp:docPr` trùng id, `w14:paraId` vượt `0x7FFFFFFF`,
+   relationship trỏ tới mục không có, và **chữ nằm ngoài `w:r`** (Word bỏ qua, mắt người đọc không thấy).
+2. **Style và dàn bài:** mọi `pStyle` dùng trong `document.xml` phải có trong `styles.xml` (và `styleId`
+   không trùng); heading không được rỗng; heading không nhảy cấp (Heading1 → Heading3 là lỗi).
+3. **Bảng:** mọi dòng cùng số cột với `w:tblGrid` (tính cả `gridSpan`, nên bảng gộp ô vẫn đúng), và dòng
+   đầu (header) không có ô trống. Đây là lỗi hay gặp khi chèn dòng bằng script.
+4. **Report 3 — hình dạng của một đặc tả:** heading `UC-xx` duy nhất, đúng dạng `UC-nn`/`UC-nna`; UC cha
+   (UC-06) phải có UC con nếu có `UC-06a`…; UC không phải placeholder phải đủ 8 dòng chuẩn (Primary
+   Actors, Secondary Actors, Description, Preconditions, Postconditions, Normal Flow, Alternative Flows,
+   Exception Flows); `PRE-n`, `POST-n`, `AF-n`, `EX-n` và các bước Normal Flow đánh số `1..n` liên tục;
+   bảng Business Rules đúng một dòng cho mỗi `BR-n`, tăng dần, đủ 5 cột, có luật và có UC áp dụng; bảng
+   System Messages mỗi cặp (mã, ngữ cảnh) một dòng và **một mã chỉ một nội dung** (MSG01 là ngoại lệ có
+   chủ đích: dùng chung cho `/login` và `/refresh` theo danh mục mã); mọi `BR-n`/`MSG-n`/`UC-n` mà một UC
+   nhắc tới phải có dòng/heading tương ứng — câu ghi "Retired …" thì bỏ qua.
+5. **Cảnh báo (không fail):** còn `TODO`/`TBD`/`FIXME`, đoạn có dấu cách thừa ở đầu/cuối, ảnh thiếu
+   alt text (`wp:docPr descr`).
 
 - **Font của Report 3 phải là Times New Roman.** Với Report 3, lệnh trên còn báo `FAIL` khi có run
   hoặc style dùng font khác (dán từ web hoặc email, style của Word, `asciiTheme`). Sửa bằng
