@@ -149,7 +149,7 @@ Dùng mũi tên liền:
 
 ```text
 MeetingPage->AgendaController: Create Agenda Item
-AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, documentIds)
+AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, presenterId)
 AgendaService->MeetingRepository: Get selected Meeting
 MeetingRepository->Database: Retrieve meeting
 ```
@@ -423,7 +423,7 @@ activate MeetingPage
 MeetingPage->AgendaController: Create Agenda Item
 activate AgendaController
 
-AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, documentIds)
+AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, presenterId)
 activate AgendaService
 
 

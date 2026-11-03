@@ -8,14 +8,13 @@ control ":Notification Service" as NotificationService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Participant Repository" as MeetingParticipantRepository
 participant ":Agenda Item Repository" as AgendaItemRepository
-participant ":Document Repository" as DocumentRepository
 database ":Database" as Database
 
 Secretary->MeetingPage: Update Agenda Item
 activate MeetingPage
 MeetingPage->AgendaController: Update Agenda Item
 activate AgendaController
-AgendaController->AgendaService: updateAgendaItem(meetingId, agendaItemId, secretaryId, agendaInfo, presenterId, documentIds)
+AgendaController->AgendaService: updateAgendaItem(meetingId, agendaItemId, secretaryId, agendaInfo, presenterId)
 activate AgendaService
 
 AgendaService->MeetingRepository: Get selected Meeting and current status
@@ -62,26 +61,15 @@ else Editing permitted
         deactivate MeetingParticipantRepository
 
     end
-    opt Document associations are changed
-        AgendaService->DocumentRepository: Verify selected documents belong to this Meeting
-        activate DocumentRepository
-        DocumentRepository->Database: Verify selected documents belong to this Meeting
-        activate Database
-        Database-->DocumentRepository: Available documents / Invalid selection
-        deactivate Database
-        DocumentRepository-->AgendaService: Available documents / Invalid selection
-        deactivate DocumentRepository
-
-    end
-    AgendaService->AgendaService: Validate Title, Presenter, Description and documents\nin any execution status (BR-66, BR-68, BR-306)
+    AgendaService->AgendaService: Validate Title, Presenter and Description\nin any execution status (BR-66, BR-68, BR-306)
     alt Invalid Item information - EX-1
         AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
         AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
         MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field messages; Item unchanged
     else Changes valid
-        AgendaService->AgendaItemRepository: Save Title, Presenter, Description and document associations together;\nkeep execution status, actual times and position unchanged (BR-68)
+        AgendaService->AgendaItemRepository: Save Title, Presenter and Description together;\nkeep document links, execution status, actual times and position unchanged (BR-68, BR-280)
         activate AgendaItemRepository
-        AgendaItemRepository->Database: Save Title, Presenter, Description and document associations together;\nkeep execution status, actual times and position unchanged (BR-68)
+        AgendaItemRepository->Database: Save Title, Presenter and Description together;\nkeep document links, execution status, actual times and position unchanged (BR-68, BR-280)
         activate Database
         Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
         deactivate Database
