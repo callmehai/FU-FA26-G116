@@ -1,6 +1,6 @@
 # ADR-0015: Server test chung chạy Docker Compose trên một máy Lightsail, ở chế độ Development, tự deploy từ `main`
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Đề xuất — phần chạy ở `Development`, tự migrate khi khởi động và không backup thay thế bởi [ADR-0047](0047-server-test-chay-staging-deploy-an-toan.md)
 - **Ngày:** 2026-10-12
 - **Người quyết định:** Hải Trần Việt, chờ nhóm SEP490-G116 duyệt qua pull request
 

@@ -100,6 +100,8 @@ export function useRecorder(onLeft?: (take: RecordedTake) => void) {
   // Time spent recording, not counting pauses: the length the file will actually have.
   const activeMs = useRef(0)
   const resumedAt = useRef<number | null>(null)
+  // Bumped by discard and unmount: a microphone the browser hands over after either belongs to nobody and is let go.
+  const attempt = useRef(0)
 
   const elapsed = () => activeMs.current + (resumedAt.current === null ? 0 : performance.now() - resumedAt.current)
 
@@ -134,6 +136,7 @@ export function useRecorder(onLeft?: (take: RecordedTake) => void) {
   // far goes to `onLeft` once the recorder has handed over its last second.
   useEffect(
     () => () => {
+      attempt.current++
       const current = recorder.current
       const keep = left.current
       if (current && current.state !== 'inactive' && keep) {
@@ -159,8 +162,15 @@ export function useRecorder(onLeft?: (take: RecordedTake) => void) {
         return
       }
       setState({ kind: 'starting' })
+      const mine = ++attempt.current
       try {
-        input.current = await open()
+        const opened = await open()
+        // Closed while the browser was still asking for the microphone: nobody is left to stop it.
+        if (mine !== attempt.current) {
+          opened.release()
+          return
+        }
+        input.current = opened
         const next = new MediaRecorder(
           input.current.stream,
           mimeType ? { mimeType, audioBitsPerSecond: 64000 } : undefined,
@@ -176,6 +186,7 @@ export function useRecorder(onLeft?: (take: RecordedTake) => void) {
         resumedAt.current = performance.now()
         setState({ kind: 'recording', elapsedMs: 0 })
       } catch (error) {
+        if (mine !== attempt.current) return
         release()
         setState({ kind: 'error', message: micErrorMessage(error) })
       }
@@ -222,6 +233,7 @@ export function useRecorder(onLeft?: (take: RecordedTake) => void) {
 
   /** Throws the take away. */
   const discard = useCallback(() => {
+    attempt.current++
     const current = recorder.current
     if (current && current.state !== 'inactive') {
       current.onstop = null

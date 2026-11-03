@@ -216,14 +216,24 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
       }
     }
 
+    let closed = false
+    const close = () => {
+      if (closed) return
+      closed = true
+      // Whatever was being said when the mic went off is still a sentence.
+      enqueue(cutter.flush())
+      stream?.getTracks().forEach((track) => track.stop())
+      void context?.close()
+    }
+
     async function start() {
-      if (stopped) return
+      if (closed) return
       setState('starting')
       setError(null)
       try {
         // Echo cancellation keeps the call's loudspeaker out; automatic gain stays off, or a quiet owner's mic is
         // lifted to the level of the neighbour it overhears (AI-eCabinet, crosstalk between personal mics).
-        stream = await navigator.mediaDevices.getUserMedia({
+        const opened = await navigator.mediaDevices.getUserMedia({
           audio: {
             ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
             echoCancellation: true,
@@ -232,10 +242,15 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
             channelCount: 1,
           },
         })
-        if (stopped) return
+        // Switched off, left or taken over while the browser asked: close() ran before there was a mic to stop.
+        if (closed) {
+          opened.getTracks().forEach((track) => track.stop())
+          return
+        }
+        stream = opened
         context = new AudioContext()
         await context.audioWorklet.addModule(speechTapUrl)
-        if (stopped) return
+        if (closed) return
         const source = context.createMediaStreamSource(stream)
         const tap = new AudioWorkletNode(context, 'speech-tap')
         const resampler = new Resampler(context.sampleRate, SAMPLE_RATE)
@@ -252,20 +267,12 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
         source.connect(tap)
         setState('listening')
       } catch (failure) {
-        if (stopped) return
+        if (closed) return
+        // A mic that opened but cannot be listened to is let go, not left on behind the error.
+        close()
         setError(micError(failure))
         setState('error')
       }
-    }
-
-    let closed = false
-    const close = () => {
-      if (closed) return
-      closed = true
-      // Whatever was being said when the mic went off is still a sentence.
-      enqueue(cutter.flush())
-      stream?.getTracks().forEach((track) => track.stop())
-      void context?.close()
     }
 
     let release: (() => void) | undefined

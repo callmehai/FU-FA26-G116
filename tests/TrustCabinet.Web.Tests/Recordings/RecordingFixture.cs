@@ -8,11 +8,14 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure;
+using TrustCabinet.Web.Tests.Authentication;
+using TrustCabinet.Web.Tests.Users;
 
 namespace TrustCabinet.Web.Tests.Recordings;
 
@@ -70,6 +73,11 @@ public sealed class RecordingFixture : IAsyncLifetime
                 services.AddSingleton<ISpeechEngine>(fixture.Speech);
                 services.RemoveAll<IVoiceEmbedder>();
                 services.AddSingleton<IVoiceEmbedder>(fixture.Speech);
+                // Deactivating an account ends its sessions; no Redis for that here.
+                services.RemoveAll<IRefreshTokenStore>();
+                services.AddSingleton<IRefreshTokenStore>(new FakeRefreshTokenStore());
+                services.RemoveAll<IPasswordResetTokenStore>();
+                services.AddSingleton<IPasswordResetTokenStore>(new FakePasswordResetTokenStore());
             });
         }
     }
@@ -118,25 +126,54 @@ public sealed class RecordingFixture : IAsyncLifetime
         public override DateTimeOffset GetUtcNow() => Now;
     }
 
-    /// <summary>Injects a database outage into reads of the recordings table, or into any save.</summary>
+    /// <summary>
+    /// Injects a database outage into reads of the recordings table, or into any save; or runs something just after
+    /// the voice samples are read, to change the world in the middle of a transcription's matching.
+    /// </summary>
     internal sealed class FailureInterceptor : DbCommandInterceptor, ISaveChangesInterceptor
     {
         internal bool FailRead;
         internal bool FailClipRead;
         internal bool FailVoiceRead;
         internal bool FailSave;
+        /// <summary>How many of the next saves fail, then saves work again.</summary>
+        internal int FailNextSaves;
+        /// <summary>Runs once, right after a read of the voice samples ran (its snapshot taken), on that read's path.</summary>
+        internal Func<Task>? AfterVoiceSampleRead;
 
         public override ValueTask<InterceptionResult<System.Data.Common.DbDataReader>> ReaderExecutingAsync(
             System.Data.Common.DbCommand command, CommandEventData eventData,
             InterceptionResult<System.Data.Common.DbDataReader> result, CancellationToken cancellationToken = default)
-            => (FailRead && command.CommandText.Contains("FROM recordings", StringComparison.Ordinal))
+        {
+            if ((FailRead && command.CommandText.Contains("FROM recordings", StringComparison.Ordinal))
                 || (FailVoiceRead && command.CommandText.Contains("FROM voice_consents", StringComparison.Ordinal))
-                || (FailClipRead && command.CommandText.Contains("FROM speech_clips", StringComparison.Ordinal))
-                ? throw new Npgsql.NpgsqlException("Injected read failure.") : ValueTask.FromResult(result);
+                || (FailClipRead && command.CommandText.Contains("FROM speech_clips", StringComparison.Ordinal)))
+                throw new Npgsql.NpgsqlException("Injected read failure.");
+            return ValueTask.FromResult(result);
+        }
+
+        public override async ValueTask<System.Data.Common.DbDataReader> ReaderExecutedAsync(System.Data.Common.DbCommand command,
+            CommandExecutedEventData eventData, System.Data.Common.DbDataReader result, CancellationToken cancellationToken = default)
+        {
+            if (AfterVoiceSampleRead is { } after && command.CommandText.Contains("FROM voice_samples", StringComparison.Ordinal))
+            {
+                AfterVoiceSampleRead = null;
+                await after();
+            }
+            return result;
+        }
 
         public ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
             InterceptionResult<int> result, CancellationToken cancellationToken = default)
-            => FailSave ? throw new DbUpdateException("Injected persistence failure.") : ValueTask.FromResult(result);
+        {
+            if (FailSave) throw new DbUpdateException("Injected persistence failure.");
+            if (FailNextSaves > 0)
+            {
+                FailNextSaves--;
+                throw new DbUpdateException("Injected persistence failure.");
+            }
+            return ValueTask.FromResult(result);
+        }
     }
 
     internal sealed record Scenario(Guid MeetingId, Guid Secretary, Guid Chair, Guid Member, Guid Organizer, Guid Outsider)

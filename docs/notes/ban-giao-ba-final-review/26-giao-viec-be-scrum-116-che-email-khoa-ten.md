@@ -1,13 +1,14 @@
 # SCRUM-116 — Việc BE còn lại: che email roster với Khách, khoá tên sau lần khai đầu
 
 **Người ghi:** KhanhPG (BA), 02/11/2026. **Người nhận:** BE làm SCRUM-116 (Lộc / gumarr). **Nguồn yêu cầu:**
-[comment PO trên SCRUM-116](https://sep490g116.atlassian.net/browse/SCRUM-116?focusedCommentId=10394) (Hải, 02/11/2026).
+[comment PO trên SCRUM-116](https://sep490g116.atlassian.net/browse/SCRUM-116?focusedCommentId=10394) (Hải, 01/11/2026).
 Gốc của hai việc này là hai câu hỏi PO ở [note 21 §4.1](21-scrum-116-truy-cap-khach-uc04.md) (điểm A và B).
 
 > **Trạng thái code: ĐÃ LÀM XONG ở PR #222 (`02c7057`, merge vào `main` 02/11/2026).** Cả A (che email) và B (khoá tên) đã có
-> code, test, contract và danh mục mã MSG381. Kết quả: A chọn kiểu `email: null`; B khoá cả `jobTitle`, gửi lại đúng giá trị
+> code, test, contract và danh mục mã MSG381. Kết quả: A chọn kiểu `email: null`, **trừ dòng của chính Khách: Khách vẫn thấy email của mình** (khác A.2.1 và A.4
+> bên dưới); B khoá cả `jobTitle`, gửi lại đúng giá trị
 > cũ vẫn `200`. Giới hạn còn lại: chưa khoá dòng nên hai thiết bị khai khác tên cùng lúc vẫn có thể để bên ghi sau thắng. Phần dưới
-> giữ nguyên làm bản giao việc gốc. Việc còn lại là của BA: sửa Report 3, xem [note 21 §3](21-scrum-116-truy-cap-khach-uc04.md).
+> giữ nguyên làm bản giao việc gốc. Phần BA: Report 3 đã sửa (02/11/2026), xem [note 21 §3](21-scrum-116-truy-cap-khach-uc04.md).
 
 Hai việc độc lập, làm trong một PR hay hai PR đều được. Mỗi việc ghi rõ: PO chốt gì, code hiện làm gì, cần đổi gì, test, tài liệu.
 

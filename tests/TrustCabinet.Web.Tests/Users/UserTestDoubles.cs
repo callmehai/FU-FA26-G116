@@ -4,6 +4,7 @@ using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
+using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Web.Tests.Users;
@@ -372,5 +373,20 @@ internal sealed class FakePasswordResetEmailSender : IPasswordResetEmailSender
 
         Sent.Add((toAddress, fullName, resetToken));
         return true;
+    }
+}
+
+/// <summary>
+/// Records whose Voice ID was ended, and whether that happened inside the guarded write. The erasure
+/// itself is tested against PostgreSQL in <c>VoiceIdEndpointTests</c>.
+/// </summary>
+internal sealed class FakeVoiceIdErasure(FakeAdministratorInvariantGuard? guard = null) : IVoiceIdErasure
+{
+    public List<(Guid UserId, Guid ActorId, VoiceIdEndReason Reason, bool InsideGuard)> Ended { get; } = [];
+
+    public Task<bool> EndAsync(Guid userId, Guid actorId, VoiceIdEndReason reason, CancellationToken ct)
+    {
+        Ended.Add((userId, actorId, reason, guard?.IsInsideWrite ?? false));
+        return Task.FromResult(true);
     }
 }

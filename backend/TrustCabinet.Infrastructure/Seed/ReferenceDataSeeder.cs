@@ -23,7 +23,8 @@ namespace TrustCabinet.Infrastructure.Seed;
 ///
 /// <para>
 /// <b>It is not switched on everywhere.</b> Development runs it through
-/// <c>MigrateAndSeedDevelopmentAsync</c>. Every other environment reaches it only through
+/// <c>MigrateAndSeedDevelopmentAsync</c>, and a deployment's <c>--migrate</c> step through
+/// <c>MigrateForDeploymentAsync</c> (ADR-0047). At startup, every other environment reaches it only through
 /// <c>SeedReferenceDataAsync</c>, behind <c>Database:SeedReferenceDataOnStartup</c>, which
 /// <c>appsettings.json</c> sets to <c>false</c> — so a deployment that wants this net has to ask
 /// for it. Opt-in on purpose: it opens a database connection during startup, and an application

@@ -690,15 +690,15 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG369` | ADR-0043 · Đã hoàn tác | Như `MSG368`. |
 | `MSG370` | ADR-0043 · Đã hoàn tác | Như `MSG368`. |
 | `MSG371` | UC-04 / EX-1 · SCRUM-116 | *The guest invitation is no longer valid.* — `Lời mời không còn hiệu lực. Vui lòng liên hệ Thư ký cuộc họp.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
-| `MSG372` | UC-04 / EX-2 · SCRUM-116 | *Too many incorrect codes. Request a new code.* — `Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
-| `MSG373` | UC-04 · SCRUM-116 | *Wait before requesting another code.* — `Vui lòng chờ trước khi gửi lại mã.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
+| `MSG372` | UC-04 / EX-4 · SCRUM-116 | *Too many incorrect codes. Request a new code.* — `Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
+| `MSG373` | UC-04 / EX-5 · SCRUM-116 | *Wait before requesting another code.* — `Vui lòng chờ trước khi gửi lại mã.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG374` | UC-04 / EX-3 · SCRUM-116 | *Verification could not be completed.* — `Không thể xác minh lúc này. Vui lòng thử lại sau.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
-| `MSG375` | UC-04 · SCRUM-116 | *A verification code was sent to the invited email.* — `Đã gửi mã xác minh tới email được mời.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
+| `MSG375` | UC-04 / AF-2 · SCRUM-116 | *A verification code was sent to the invited email.* — `Đã gửi mã xác minh tới email được mời.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG376` | UC-04 bước 5 · SCRUM-116 | *Display information saved.* — `Đã lưu thông tin hiển thị.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
-| `MSG377` | UC-04 bước 5 · SCRUM-116 | *Invalid display information.* — `Thông tin hiển thị không hợp lệ.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
-| `MSG378` | UC-04 · SCRUM-116 | *The guest session has ended.* — `Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. FE cũng hiện câu này khi token Khách quá hạn (`401` không body). |
+| `MSG377` | UC-04 / EX-7 · SCRUM-116 | *Invalid display information.* — `Thông tin hiển thị không hợp lệ.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
+| `MSG378` | UC-04 / EX-8 · SCRUM-116 | *The guest session has ended.* — `Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. FE cũng hiện câu này khi token Khách quá hạn (`401` không body). |
 | `MSG379` | UC-04 / EX-6 · SCRUM-116 | *Too many codes requested. Try again later or contact the Meeting Secretary.* — `Bạn đã yêu cầu quá số mã cho phép trong 24 giờ. Vui lòng thử lại sau hoặc liên hệ Thư ký cuộc họp.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
-| `MSG381` | UC-04 bước 5 · SCRUM-116 | *The display name was already declared.* — `Tên hiển thị đã được khai cho lời mời này và không thể đổi.` — **Đã triển khai** (PO 01/11/2026), xem HTTP contract phía trên. |
+| `MSG381` | UC-04 / EX-9 · SCRUM-116 | *The display name was already declared.* — `Tên hiển thị đã được khai cho lời mời này và không thể đổi.` — **Đã triển khai** (PO 01/11/2026), xem HTTP contract phía trên. |
 | `MSG380` | UC-37 · SCRUM-59 | *Please confirm that you have read the recording notice before joining.* — `Vui lòng xác nhận đã đọc thông báo ghi âm trước khi vào phòng họp.` — **Đã triển khai SCRUM-59**, xem mục Phòng họp trực tuyến phía trên. |
 | `MSG382` | UC-32c, UC-36 · SCRUM-21 | *The file of this document is no longer in storage and cannot be opened. Please contact the administrator.* — `Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.` — **Đã triển khai** (E2E 02/11/2026), xem mục Xem tài liệu cuộc họp phía trên. |
 | `MSG383` | UC-32c · SCRUM-21 (FE) | *The browser cannot display this file. It may be damaged or in an unsupported format.* — `Trình duyệt không hiển thị được tệp này. Tệp có thể bị hỏng hoặc dùng định dạng chưa hỗ trợ.` — **Đã triển khai** (FE, E2E 02/11/2026). |

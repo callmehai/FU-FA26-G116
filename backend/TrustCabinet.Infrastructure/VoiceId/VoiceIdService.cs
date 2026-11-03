@@ -15,8 +15,8 @@ namespace TrustCabinet.Infrastructure.VoiceId;
 /// someone else's voice. Withdrawal erases every sample and every machine suggestion pointing at the person, in
 /// one transaction, under the same row lock a new sample takes.
 /// </summary>
-public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceEmbedder embedder, IVoiceprintProtector protector,
-    IAuditService audit, TimeProvider clock, IOptions<VoiceIdOptions> options, ILogger<VoiceIdService> logger) : IVoiceIdService
+public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasure erasure, IVoiceEmbedder embedder,
+    IVoiceprintProtector protector, IAuditService audit, TimeProvider clock, IOptions<VoiceIdOptions> options, ILogger<VoiceIdService> logger) : IVoiceIdService
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
@@ -84,20 +84,8 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceEmbedder
     {
         try
         {
-            await repository.InTransactionAsync(async token =>
-            {
-                var consent = await repository.FindActiveConsentAsync(actorId, true, token);
-                if (consent is null) return 0;
-                var now = clock.GetUtcNow();
-                var erased = await repository.DeleteSamplesAsync(actorId, token);
-                var suggestions = await repository.ClearSuggestionsAsync(actorId, token);
-                consent.WithdrawnAt = now;
-                consent.UpdatedAt = now;
-                await audit.RecordAsync(AuditActions.VoiceConsentWithdrawn, AuditActions.VoiceConsentObjectType, consent.Id, actorId,
-                    new { erasedSamples = erased, clearedSuggestions = suggestions }, token);
-                await repository.SaveChangesAsync(token);
-                return 0;
-            }, ct);
+            await repository.InTransactionAsync(
+                token => erasure.EndAsync(actorId, actorId, VoiceIdEndReason.Withdrawn, token), ct);
             return new(Data: await ProfileAsync(actorId, ct));
         }
         catch (Exception ex) when (PersistenceError(ex))

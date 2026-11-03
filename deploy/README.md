@@ -5,10 +5,11 @@ cài gì. Chạy trên **một máy AWS Lightsail** bằng Docker Compose: app, 
 họp trực tuyến), Caddy (tự lấy chứng chỉ HTTPS), và máy chuyển chữ (§10). Mỗi lần merge vào `main` và CI xanh, server **tự cập nhật**. Lý do chọn cách
 này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 
-> **Đây là môi trường test, không phải production.** App chạy ở chế độ `Development`: tự migrate,
-> tự seed tài khoản demo với mật khẩu công khai trong repo, và trả stack trace khi lỗi. Ai có URL
-> cũng đăng nhập được bằng quyền quản trị. **Chỉ nhập dữ liệu giả** — không tải lên tài liệu, ghi âm
-> hay thông tin cá nhân thật (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15).
+> **Đây là môi trường test, không phải production.** App chạy ở chế độ `Staging` (lỗi không trả stack
+> trace, [ADR-0047](../docs/05-decisions/0047-server-test-chay-staging-deploy-an-toan.md)), nhưng database có
+> sẵn tài khoản demo với mật khẩu công khai trong repo: ai có URL cũng đăng nhập được bằng quyền quản trị.
+> **Chỉ nhập dữ liệu giả** — không tải lên tài liệu, ghi âm hay thông tin cá nhân thật (Luật Bảo vệ dữ liệu
+> cá nhân 91/2025/QH15).
 
 ## Dành cho người test
 
@@ -56,8 +57,21 @@ tính năng chưa merge thì chưa có.
 [.github/workflows/deploy.yml](../.github/workflows/deploy.yml) là job cuối của CI trên `main`, chạy
 khi build & test đã xanh (hoặc được bỏ qua vì commit không đụng tới): build image trên runner của
 GitHub, chép sang server qua SSH, đưa code trên server về đúng commit đó rồi khởi động lại container.
-App tự áp dụng migration mới khi khởi động. Không build trên server: tự build trên máy 1 GB mất 15–20 phút
-và đốt hết CPU burst; máy 4 GB vẫn chỉ có 2 vCPU burst.
+Không build trên server: tự build trên máy 1 GB mất 15–20 phút và đốt hết CPU burst; máy 4 GB vẫn chỉ có
+2 vCPU burst.
+
+App không tự migrate khi khởi động. Khi image app đổi, workflow làm theo thứ tự
+([ADR-0047](../docs/05-decisions/0047-server-test-chay-staging-deploy-an-toan.md)):
+
+1. **Backup**: `pg_dump` database vào `~/backups` trên server, giữ 14 bản mới nhất (mục *Backup database*).
+2. **Migrate**: `docker compose run --rm app --migrate` bằng image mới, trong một container chạy một lần. Lỗi thì
+   dừng ở đây, container app vẫn chạy bản cũ.
+3. **Đổi container** sang image mới, rồi **kiểm tra** `/api/health` (có kiểm database) và LiveKit.
+4. Kiểm tra đỏ hoặc migrate lỗi thì **quay lại**: tag `latest` về image trước, code trên server về commit trước,
+   chạy lại. Job vẫn đỏ. Image cũ chỉ bị xoá khi bản mới đã qua kiểm tra.
+
+Quay lại chỉ đổi code, **không hoàn tác migration** đã chạy. Code cũ không chạy được trên schema mới thì khôi phục
+database bằng tay (mục *Khôi phục database*).
 
 Mỗi image chỉ build lại khi code của nó đổi: image app theo `backend/`, `frontend/` và `Dockerfile`,
 máy chuyển chữ theo `workers/speech/`. Commit chỉ sửa docs hay `deploy/` vẫn deploy (server chuyển
@@ -66,12 +80,15 @@ sang commit mới, đổi Caddyfile thì khởi động lại Caddy) nhưng khô
 - Xem đã deploy xong chưa: bấm dấu tích cạnh commit mới nhất trên trang chủ repo — check *CI / Deploy
   server test / Build & deploy* xanh là server đã chạy bản đó. Mục **Deployments** ở cột phải trang
   chủ repo ghi lần deploy gần nhất, kèm link mở server.
-- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**.
+- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**, nhánh `main`.
 - CI đỏ thì không deploy; server giữ bản cũ. Trên pull request, check deploy hiện là *Skipped*.
 
-**Chỉ `main` được deploy.** Database ở đây áp dụng migration tự động: deploy một nhánh có migration
-chưa merge rồi quay về `main` sẽ để lại schema mà `main` không biết, và chỉ sửa được bằng cách xoá
-database.
+**Chỉ `main` được deploy.** Chọn nhánh khác ở *Run workflow* thì workflow đỏ ngay bước đầu: deploy một nhánh
+có migration chưa merge rồi quay về `main` sẽ để lại schema mà `main` không biết.
+
+**Không lùi.** Hai PR merge sát nhau, CI của commit trước có thể xong sau commit sau. Commit cần deploy cũ hơn
+commit server đang chạy thì workflow bỏ qua, vẫn xanh, kèm thông báo *Bỏ qua: server đã chạy …*. Deploy lại
+đúng commit đang chạy thì vẫn làm.
 
 ### Thiết lập một lần
 
@@ -113,18 +130,68 @@ docker compose -f deploy/docker-compose.yml logs caddy | grep -i certificate
 docker compose -f deploy/docker-compose.yml logs livekit | grep -i nodeIP   # IP báo cho trình duyệt
 ```
 
-Ở chế độ Development, app in mọi câu SQL ra log — rối nhưng không phải lỗi; tìm dòng `fail:` hay
-`Exception`. Dòng `Failed executing DbCommand ... __ef_migrations_history` ở lần chạy đầu là bình
-thường: EF Core hỏi bảng lịch sử migration trước khi tạo nó.
+App in mọi câu SQL ra log — rối nhưng không phải lỗi; tìm dòng `fail:`, `crit:` hay `Exception`. Ở bước
+migrate trên database rỗng, dòng `Failed executing DbCommand ... __ef_migrations_history` là bình thường:
+EF Core hỏi bảng lịch sử migration trước khi tạo nó.
+
+### Migrate bằng tay
+
+Workflow tự migrate mỗi lần deploy. Chỉ cần làm tay khi tự build hay tự đổi image trên server:
+
+```bash
+docker compose -f deploy/docker-compose.yml run --rm -T app --migrate   # in "Database is up to date at migration ..."
+docker compose -f deploy/docker-compose.yml up -d
+```
+
+Lệnh thoát với mã khác 0 khi migrate lỗi; khi đó đừng `up -d`.
+
+### Backup database
+
+Mỗi lần deploy có image app đổi, workflow chạy `pg_dump -Fc` vào `~/backups/trustcabinet-<giờ UTC>-<commit>.dump`
+(chỉ user `ubuntu` đọc được) và giữ 14 bản mới nhất. Backup tay, ví dụ trước khi sửa trực tiếp database:
+
+```bash
+cd ~/TrustCabinet && mkdir -p -m 700 ~/backups
+docker compose -f deploy/docker-compose.yml exec -T postgres pg_dump -U trustcabinet -d trustcabinet -Fc \
+  > ~/backups/tay-$(date -u +%Y%m%dT%H%M%SZ).dump
+```
+
+Bản tên `tay-…` không bị workflow xoá. Bản backup nằm cùng máy: mất máy là mất cả backup. Muốn giữ ngoài máy thì
+chép về: `scp ubuntu@<IP tĩnh>:backups/<tên file> .`. Backup chứa dữ liệu của nhóm: xoá cùng máy sau khi bảo vệ.
+
+### Khôi phục database
+
+Dùng khi deploy đỏ, workflow đã quay code về bản trước (*Quay lại bản trước* xanh) nhưng bản đó không chạy được
+trên schema mà migration mới đã đổi. Khôi phục bản backup **ngay trước lần deploy hỏng** (tên có commit của lần
+đó). Mọi thứ ghi vào database sau lúc backup sẽ mất.
+
+```bash
+cd ~/TrustCabinet
+ls -lt ~/backups | head                                  # chọn bản cần khôi phục
+compose="docker compose -f deploy/docker-compose.yml"
+$compose stop app
+$compose exec -T postgres pg_dump -U trustcabinet -d trustcabinet -Fc > ~/backups/tay-truoc-khoi-phuc.dump
+$compose exec -T postgres dropdb -U trustcabinet --force trustcabinet
+$compose exec -T postgres createdb -U trustcabinet trustcabinet
+$compose exec -T postgres pg_restore -U trustcabinet -d trustcabinet --no-owner < ~/backups/<tên file>.dump
+$compose start app
+```
+
+Xoá rồi tạo lại database chứ không `pg_restore --clean`: `--clean` chỉ xoá những gì có trong bản backup, nên bảng
+do migration mới tạo vẫn còn và lần migrate sau sẽ báo bảng đã tồn tại. Khôi phục xong, đừng *Run workflow* lại
+cho tới khi `main` đã có bản sửa: deploy lại cùng commit là chạy lại đúng migration đó. Cách được ưu tiên vẫn là
+sửa tiến: một PR mới với migration sửa lỗi.
 
 ### Xoá sạch dữ liệu, seed lại từ đầu
 
 ```bash
 docker compose -f deploy/docker-compose.yml down -v     # -v xoá luôn database và file ghi âm
+docker compose -f deploy/docker-compose.yml run --rm -T app --migrate --seed-demo
 docker compose -f deploy/docker-compose.yml up -d
 ```
 
-Mọi cuộc họp, người dùng và vai trò tạo thêm đều mất; tài khoản demo được seed lại.
+Mọi cuộc họp, người dùng và vai trò tạo thêm đều mất. `--seed-demo` tạo lại tài khoản demo và cuộc họp mẫu;
+thiếu nó thì database không có tài khoản nào để đăng nhập.
 
 ### Sửa trực tiếp database
 
@@ -228,7 +295,9 @@ SIGNING_KEY=$(openssl rand -hex 32)
 LIVEKIT_API_SECRET=$(openssl rand -hex 32)
 EOF
 chmod 600 deploy/.env
-docker compose -f deploy/docker-compose.yml up -d --build
+docker compose -f deploy/docker-compose.yml build app
+docker compose -f deploy/docker-compose.yml run --rm -T app --migrate --seed-demo
+docker compose -f deploy/docker-compose.yml up -d
 ```
 
 - `SITE_ADDRESS` — tên miền ở bước 3. Đổi về sau thì sửa dòng này rồi `up -d`.
@@ -268,7 +337,7 @@ Mặc định tắt. Server gửi qua Resend, từ `no-reply@<SITE_ADDRESS>`
    `RESEND_ENABLED=true`, và chạy `docker compose -f deploy/docker-compose.yml up -d`.
 
 Email chỉ đến được những người dùng có địa chỉ thật. Thư tới các tài khoản `@trustcabinet.local` được đánh dấu
-`Failed` ngay, không gửi đi (`Email:UndeliverableDomains` trong `appsettings.Development.json`): gửi tới đó chỉ
+`Failed` ngay, không gửi đi (`Email:UndeliverableDomains` trong `appsettings.Staging.json`): gửi tới đó chỉ
 bị dội lại, mà tỉ lệ dội cao thì Resend khoá tài khoản.
 
 Bật lần đầu thì mọi lời mời tích lại từ lúc tắt được tạo thành thư và gửi một lượt. Gói miễn phí cho 100 thư/ngày:
@@ -402,6 +471,8 @@ plan: hết credit là AWS trừ tiền thẻ.
 | Trình duyệt báo chứng chỉ không hợp lệ | `logs caddy`; bản ghi DNS phải trỏ đúng IP tĩnh, `SITE_ADDRESS` phải khớp tên miền |
 | `502 Bad Gateway` | App đang khởi động hoặc chết — `logs app` |
 | Workflow deploy đỏ ở bước SSH | `DEPLOY_HOST` / `DEPLOY_HOST_KEY` sai, hoặc đã đổi IP tĩnh |
+| Workflow deploy đỏ ở bước *Khởi động lại* | Log của bước: `pg_dump` lỗi (đĩa đầy, `postgres` không chạy) hay `--migrate` lỗi (dòng `crit:`). Server đã quay về bản trước; sửa migration trên `main` bằng PR mới. Bản trước không chạy được thì *Khôi phục database* |
+| Workflow deploy đỏ ở bước *Kiểm tra*, `/api/health` trả `503` | App không tới được database: `logs app`, `logs postgres`. Server đã quay về bản trước |
 | Đăng nhập xong bị văng ra ngay | Phải vào bằng `https://`; cookie refresh token chỉ gửi qua HTTPS |
 | Hết ổ đĩa | `docker system prune -f` (không có `-v`, để giữ database) |
 | Vào phòng họp báo mất kết nối, hoặc quay mãi không thấy ai | Firewall Lightsail phải có 7881/TCP và 7882/UDP; `logs livekit \| grep -i nodeIP` phải ra IP tĩnh, không phải 172.x; thử bằng 4G để loại trừ Wi-Fi chặn cổng |

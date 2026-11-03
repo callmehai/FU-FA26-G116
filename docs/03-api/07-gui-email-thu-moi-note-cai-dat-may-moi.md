@@ -70,8 +70,8 @@ dotnet user-secrets set "Email:Smtp:Enabled" "true" --project backend/TrustCabin
 Đặt `Enabled=true` cuối cùng, sau khi các giá trị còn lại đã đầy đủ.
 
 Thư tới tên miền trong `Email:UndeliverableDomains` không được gửi: hàng đợi đánh dấu `Failed` ngay ở lần nhận
-đầu tiên, không thử lại; email đặt lại mật khẩu trả về như gửi lỗi. `appsettings.Development.json` đặt sẵn
-`trustcabinet.local` (tài khoản demo), vì gửi tới đó chỉ khiến thư dội về hộp thư gửi. Code hiện dùng `Security`, không
+đầu tiên, không thử lại; email đặt lại mật khẩu trả về như gửi lỗi. `appsettings.Development.json` và
+`appsettings.Staging.json` (server test) đặt sẵn `trustcabinet.local` (tài khoản demo), vì gửi tới đó chỉ khiến thư dội về hộp thư gửi. Code hiện dùng `Security`, không
 dùng key cũ `UseSsl`. Với nhà cung cấp khác, thay host/port/security theo tài liệu của nhà cung cấp;
 không cần sửa code.
 

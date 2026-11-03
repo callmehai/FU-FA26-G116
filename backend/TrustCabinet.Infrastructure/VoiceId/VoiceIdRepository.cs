@@ -21,10 +21,19 @@ public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdReposi
 
     public async Task<IReadOnlyList<VoiceSample>> ListMatchableSamplesAsync(IReadOnlyCollection<Guid> userIds,
         string embeddingModel, CancellationToken ct)
-        => await db.VoiceSamples.AsNoTracking()
+        => await db.VoiceSamples.AsNoTracking().Include(s => s.Consent)
             .Where(s => userIds.Contains(s.UserId) && s.EmbeddingModel == embeddingModel && s.Consent.WithdrawnAt == null
                 && s.User.IsActive)
             .ToListAsync(ct);
+
+    public async Task LockConsentsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+    {
+        if (userIds.Count == 0) return;
+        Guid[] ids = [.. userIds];
+        // FOR SHARE: transcriptions do not wait on each other, only on a withdrawal's FOR UPDATE of the same row.
+        await db.Database.SqlQuery<Guid>(
+            $"SELECT id AS \"Value\" FROM voice_consents WHERE user_id = ANY({ids}) AND withdrawn_at IS NULL FOR SHARE").ToListAsync(ct);
+    }
 
     public Task<int> DeleteSamplesAsync(Guid userId, CancellationToken ct)
         => db.VoiceSamples.Where(s => s.UserId == userId).ExecuteDeleteAsync(ct);

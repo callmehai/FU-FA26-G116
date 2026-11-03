@@ -32,12 +32,33 @@ public interface IVoiceIdService
     Task<VoiceSampleAudio?> SampleAudioAsync(Guid actorId, Guid sampleId, CancellationToken ct = default);
 }
 
+/// <summary>Why a person's Voice ID ended; written in the audit details.</summary>
+public enum VoiceIdEndReason { Withdrawn, AccountDeactivated }
+
+/// <summary>
+/// Ends a person's Voice ID: erases every sample, clears the machine's suggestions and the names it gave from their
+/// voice (names a Secretary gave stay), closes the consent and audits it. Used when the person withdraws, and when an
+/// administrator deactivates the account — a deactivated person can no longer sign in to withdraw, and their voice
+/// must not stay matchable for as long as the row exists (Luật 91/2025/QH15). Opens no transaction: the caller runs it
+/// inside its own, so it commits or rolls back with the change that caused it.
+/// </summary>
+public interface IVoiceIdErasure
+{
+    /// <returns>False when no consent stood, so there was nothing to end.</returns>
+    Task<bool> EndAsync(Guid userId, Guid actorId, VoiceIdEndReason reason, CancellationToken ct);
+}
+
 public interface IVoiceIdRepository
 {
     Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct);
     Task<IReadOnlyList<VoiceSample>> ListSamplesAsync(Guid userId, CancellationToken ct);
     /// <summary>Samples of these people taken under a consent that still stands, for one embedding model.</summary>
     Task<IReadOnlyList<VoiceSample>> ListMatchableSamplesAsync(IReadOnlyCollection<Guid> userIds, string embeddingModel, CancellationToken ct);
+    /// <summary>
+    /// Share-locks the standing consents of these people until the transaction ends, so a withdrawal (which locks the
+    /// row for update) waits for a transcription matching against them, and the other way round.
+    /// </summary>
+    Task LockConsentsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
     Task<int> DeleteSamplesAsync(Guid userId, CancellationToken ct);
     /// <summary>Clears machine suggestions that point at this person; names a secretary assigned stay.</summary>
     Task<int> ClearSuggestionsAsync(Guid userId, CancellationToken ct);
@@ -75,15 +96,21 @@ public static class VoiceIdRules
     /// <summary>
     /// Bump when the wording below changes: consent is to the words a person actually read. 1.1 (ADR-0042): the sample
     /// recording is kept too, encrypted, for its owner to hear back. A sample's audio is kept only under a consent to
-    /// 1.1 or later; a person who agreed to 1.0 renews to have it kept.
+    /// 1.1 or later; a person who agreed to 1.0 renews to have it kept. 1.2 (ADR-0048): the machine fills in the name
+    /// on a sure match (ADR-0045), only for a person whose consent is to 1.2 or later; for the others it still only
+    /// suggests.
     /// </summary>
-    public const string NoticeVersion = "1.1";
+    public const string NoticeVersion = "1.2";
 
     /// <summary>The first notice under which a sample's recording is kept.</summary>
     public const string AudioNoticeVersion = "1.1";
 
+    /// <summary>The first notice under which the machine names a sure match by itself.</summary>
+    public const string AutoAssignNoticeVersion = "1.2";
+
     public const string Purpose =
-        "Gợi ý tên người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự, để Thư ký lập biên bản.";
+        "Nhận ra người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự (gợi ý tên, tự điền tên khi giọng khớp "
+        + "rõ), để Thư ký lập biên bản.";
 
     public const int MaxSamples = 5;
     public const int MaxSampleBytes = 10 * 1024 * 1024;
@@ -112,6 +139,12 @@ public static class VoiceIdRules
 /// least <c>secondVoice</c> against the person: two people recorded by one room mic can sound as alike as one person
 /// split in two (0.745 against 0.777 on the test server, 31/10/2026), but the stranger scores lower against the sample.
 /// </para>
+/// <para>
+/// A voice left unnamed that sounds nearly the same as a person's first voice (<c>inherit</c>) is that person: the
+/// clustering split them, and the split-off part (singing, a changed tone) scores low against a sample read aloud. On
+/// the test server one person singing came out as four voices at 0.81–0.85 to each other (03/11/2026), none of them
+/// suggested; two different people never came closer than 0.745.
+/// </para>
 /// </summary>
 public static class SpeakerMatcher
 {
@@ -132,7 +165,8 @@ public static class SpeakerMatcher
     }
 
     public static IReadOnlyDictionary<string, Suggestion> Suggest(IReadOnlyList<SpeechSpeaker> speakers,
-        IReadOnlyList<Candidate> candidates, double threshold, double margin, double sameVoice, double secondVoice)
+        IReadOnlyList<Candidate> candidates, double threshold, double margin, double sameVoice, double secondVoice,
+        double inherit)
     {
         var voices = speakers.ToDictionary(s => s.Label, s => s.Embedding);
         // A person's score for a voice is their best sample against it: samples differ by mood, mic and room.
@@ -153,6 +187,13 @@ public static class SpeakerMatcher
                 continue;
             result[label] = new(userId, Math.Round(score, 4));
             first.TryAdd(userId, label);
+        }
+        // Takes the first voice's suggestion, score included: it is the same voice, so it is named as surely.
+        foreach (var label in voices.Keys.Where(l => !result.ContainsKey(l)).ToArray())
+        {
+            if (first.Count == 0) break;
+            var closest = first.Values.MaxBy(lead => Cosine(voices[label], voices[lead]))!;
+            if (Cosine(voices[label], voices[closest]) >= inherit) result[label] = result[closest];
         }
         return result;
     }

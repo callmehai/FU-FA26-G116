@@ -40,6 +40,13 @@ public sealed class VoiceIdOptions
     public double SecondVoiceThreshold { get; set; } = 0.7;
 
     /// <summary>
+    /// How close an unnamed voice must sound to a person's first voice to be named as that person too, whatever it
+    /// scores against the sample: one person split by the clustering. 0.81–0.85 for one person singing on the test
+    /// server (03/11/2026); two different people at most 0.745 there and 0.73 in workers/speech/eval.
+    /// </summary>
+    public double InheritVoiceThreshold { get; set; } = 0.8;
+
+    /// <summary>
     /// Score at which the machine names a voice itself instead of waiting for the Secretary (PO 01/11/2026). The
     /// Secretary can still change or remove the name; the machine never names a guest, who has no enrolled voice.
     /// </summary>

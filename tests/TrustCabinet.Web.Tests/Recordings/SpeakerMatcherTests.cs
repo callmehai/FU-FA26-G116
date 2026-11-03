@@ -10,7 +10,7 @@ public sealed class SpeakerMatcherTests
     private static SpeakerMatcher.Candidate C(Guid user, float[] embedding) => new(user, embedding);
 
     private static IReadOnlyDictionary<string, SpeakerMatcher.Suggestion> Suggest(SpeechSpeaker[] speakers,
-        params SpeakerMatcher.Candidate[] candidates) => SpeakerMatcher.Suggest(speakers, candidates, 0.5, 0.1, 0.7, 0.5);
+        params SpeakerMatcher.Candidate[] candidates) => SpeakerMatcher.Suggest(speakers, candidates, 0.5, 0.1, 0.7, 0.5, 0.8);
 
     [Fact]
     public void Cosine_ignores_length_and_refuses_mismatched_dimensions()
@@ -63,19 +63,39 @@ public sealed class SpeakerMatcherTests
     [Fact]
     public void A_second_voice_that_sounds_alike_but_scores_low_against_the_sample_is_someone_else()
     {
-        // The test server, 31/10/2026: two people at one room mic sounded alike (0.745; 0.91 here, over 0.7), yet only one
-        // matched the enrolled sample well. The weaker (0.645 < 0.7) stays "Người nói N" instead of folding into Lan.
+        // The test server, 31/10/2026: two people at one room mic sounded alike (0.745, over 0.7), yet only one matched
+        // the enrolled sample well. The weaker (0.645 < 0.7) stays "Người nói N" instead of folding into Lan, and is not
+        // close enough (under 0.8) to be taken for her split-off voice either.
         var lan = new float[] { 1f, 0f, 0f };
-        var second = new float[] { 0.645f, 0.6f, 0.474f };
+        var second = new float[] { 0.645f, 0.7416f, -0.1835f };
         var result = SpeakerMatcher.Suggest(
             [new("SPEAKER_00", 1000, [0.9f, 0.3f, 0.316f]), new("SPEAKER_01", 1000, second)],
-            [C(Lan, lan)], 0.6, 0.1, 0.7, 0.7);
-        Assert.True(SpeakerMatcher.Cosine([0.9f, 0.3f, 0.316f], second) >= 0.7);
+            [C(Lan, lan)], 0.6, 0.1, 0.7, 0.7, 0.8);
+        Assert.Equal(0.745, SpeakerMatcher.Cosine([0.9f, 0.3f, 0.316f], second), 0.005);
         Assert.Equal(Lan, result["SPEAKER_00"].UserId);
         Assert.False(result.ContainsKey("SPEAKER_01"));
         // At the old rule (no second bar) the stranger was folded into Lan.
         Assert.Equal(Lan, SpeakerMatcher.Suggest(
-            [new("SPEAKER_00", 1000, [0.9f, 0.3f, 0.316f]), new("SPEAKER_01", 1000, second)], [C(Lan, lan)], 0.6, 0.1, 0.7, 0)["SPEAKER_01"].UserId);
+            [new("SPEAKER_00", 1000, [0.9f, 0.3f, 0.316f]), new("SPEAKER_01", 1000, second)], [C(Lan, lan)], 0.6, 0.1, 0.7, 0, 0.8)["SPEAKER_01"].UserId);
+    }
+
+    [Fact]
+    public void A_voice_nearly_the_same_as_a_named_one_takes_its_name_whatever_it_scores_against_the_sample()
+    {
+        // The test server, 03/11/2026: one person singing came out as four voices at 0.81–0.85 to the main one, and
+        // singing scores low against a sample read aloud, so none was suggested. At 0.83 the voice is that person,
+        // named as surely as the main voice; at 0.75, where two different people have sounded, it stays unnamed.
+        var result = SpeakerMatcher.Suggest(
+            [new("SPEAKER_00", 30000, [0.8f, 0.6f, 0f]), new("SPEAKER_01", 6000, [0.5f, 0.7167f, 0.486f]),
+                new("SPEAKER_02", 3000, [0.3f, 0.85f, 0.433f])],
+            [C(Lan, [1f, 0f, 0f])], 0.6, 0.1, 0.7, 0.7, 0.8);
+        Assert.Equal(0.83, SpeakerMatcher.Cosine([0.8f, 0.6f, 0f], [0.5f, 0.7167f, 0.486f]), 0.005);
+        Assert.Equal(Lan, result["SPEAKER_01"].UserId);
+        Assert.Equal(result["SPEAKER_00"].Score, result["SPEAKER_01"].Score);
+        Assert.False(result.ContainsKey("SPEAKER_02"));
+        // Nobody named, nothing to take after.
+        Assert.Empty(SpeakerMatcher.Suggest([new("SPEAKER_00", 1000, [0.5f, 0.7167f, 0.486f])], [C(Lan, [1f, 0f, 0f])],
+            0.6, 0.1, 0.7, 0.7, 0.8));
     }
 
     [Fact]

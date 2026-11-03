@@ -39,6 +39,10 @@
   --gold-soft: #e3c06a;
   --focus: #2f6feb;
   --focus-ring: #2f6feb66;
+  /* A heads-up sign (the lobby's "this meeting is recorded"): a yellow triangle, outlined dark so it stands out on
+     white. Yellow alone is too faint to read as an icon. */
+  --warning-fill: #fcc419;
+  --warning-ink: #8a5300;
   /* Destructive actions, "Mật", the current-time line. */
   --danger: #b4232a;
   --danger-ink: #8e1b21;
@@ -450,6 +454,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .select-check { display: flex; width: 16px; flex: none; color: var(--brand); }
 /* A state shown as a coloured dot and a word, as AI-eCabinet's attendance picker does. */
 .select-value, .select-placeholder { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.select-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .select-option-label:has(.select-dot) { display: inline-flex; align-items: center; gap: 6px; }
 .select-option-hint { margin-left: 8px; color: var(--muted-ink); font-size: 12px; font-weight: 400; }
 .select-option-hint-accent { padding: 1px 6px; border-radius: 4px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand-wash-line); color: var(--brand); font-weight: 600; }
@@ -705,6 +710,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 .account summary::-webkit-details-marker { display: none; }
 .account summary:hover { background: var(--sidebar-hover); }
+.account summary.active { background: var(--sidebar-active); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%); }
 .account summary:focus-visible { outline: 2px solid #fff; outline-offset: 0; }
 .account-summary { display: flex; flex-direction: column; overflow: hidden; line-height: 1.3; }
 .account-summary-name { overflow: hidden; font-weight: 600; text-overflow: ellipsis; }
@@ -760,6 +766,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 }
 
 .menu-item:hover { background: var(--surface-alt); }
+.menu-item.active { color: var(--brand); font-weight: 600; }
+a.menu-item { text-decoration: none; }
 
 /* ---------- Notifications (features/notifications) ----------
    The bell sits at the foot of the sidebar and carries the unread count; its panel opens beside
@@ -1963,7 +1971,8 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .date-pick-swatch-today { box-shadow: inset 0 0 0 2px var(--gold); }
 .date-pick-swatch-viewed { border-radius: 3px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--edge-blue); }
 .calendar-toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
-.calendar-toolbar-end .select { width: 140px; }
+/* Fits the longest view name, "Tuần làm việc", with its chevron. */
+.calendar-toolbar-end .select { width: 160px; }
 .calendar-note { flex: none; margin-bottom: 16px; }
 .calendar-note a { font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
@@ -2407,11 +2416,15 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
 .roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
 .roster-role { flex: none; width: 152px; }
+/* A phone gives the name what the role does not need: "Thành viên" and its chevron fit in 128px. */
+@media (max-width: 480px) { .roster-role { width: 128px; } }
 .roster-empty { margin: 0; padding: 14px 16px; border: 1px dashed var(--control-line); border-radius: var(--radius); color: var(--muted-ink); font-size: 14px; }
 
-/* Name over email; both cut with an ellipsis rather than pushing the role off the row. */
+/* Name over email. The name is what people read, so it wraps rather than ending in "…" (a touch screen has no
+   tooltip); the email keeps its "…" so a narrow column is not stacked one syllable per line. */
 .person-text { display: flex; flex-direction: column; min-width: 0; }
 .person-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.person-text > .person-name { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
 
 /* "Bạn có tham dự cuộc họp này?" — the two answers, and the answer once given. */
 .rsvp-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
@@ -2436,7 +2449,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   .participants-panel .participant-cell { gap: 6px 8px; padding-left: 48px; }
   .participants-panel .participant-cell > .person { flex-basis: calc(100% + 48px); margin-left: -48px; }
   /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip). */
-  .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
+  .participants-panel .person-name, .participants-panel .person .cell-sub { white-space: normal; overflow-wrap: anywhere; }
 }
 .participants-alert { margin: 12px 16px 0; }
 
@@ -2898,8 +2911,18 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .prejoin-side > .level { margin-top: 8px; }
 .prejoin-presence { margin: 12px 0 0; color: var(--ink-soft); font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: 0.25px; }
 .prejoin-side > .alert { width: 100%; margin-top: 16px; text-align: left; }
-.prejoin-recording { display: flex; align-items: flex-start; justify-content: center; gap: 6px; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
-.prejoin-recording svg { flex: none; margin-top: 2px; color: var(--danger); }
+/* Inline, not flex: a wrapped flex line is one full-width box, which left the icon alone at the screen's edge on a
+   phone. Inline, the icon stays in front of the first word however the line wraps. */
+.prejoin-recording { display: block; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
+.prejoin-recording svg { display: inline-block; margin-right: 6px; color: var(--warning-ink); fill: var(--warning-fill); vertical-align: -3px; }
+/* SCRUM-35 — no voice sample yet: one line and a text button, the why in the tooltip. */
+.prejoin-sample { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; }
+.prejoin-sample svg { flex: none; color: var(--muted-ink); }
+.prejoin-sample-action { min-height: 40px; padding: 0 8px; border: 0; border-radius: var(--radius); background: none; color: var(--brand); font: inherit; font-weight: 600; cursor: pointer; }
+.prejoin-sample-action:hover { background: var(--brand-wash); }
+.prejoin-sample-action:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* A dialog opened from the lobby (the voice sample) reads as any form, not centred like the lobby. */
+.prejoin-side dialog { text-align: start; }
 /* A guest confirms the notice before joining (SCRUM-59): the whole line is the checkbox's label, 40px tall to tap. */
 .prejoin-consent { align-items: center; min-height: 40px; color: var(--ink); text-align: left; cursor: pointer; }
 .prejoin-consent input[type='checkbox'] { flex: none; width: 18px; height: 18px; }
@@ -3646,6 +3669,9 @@ audio.recording-player { height: 40px; }
 .voice-sample-name { color: var(--ink); font-weight: 500; }
 .voice-actions { justify-content: space-between; }
 .voice-passage { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
+.voice-review { display: grid; gap: 8px; margin: 12px 0 0; }
+.voice-review .field-hint { margin: 0; }
+.voice-review audio { width: 100%; }
 .voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
 @media (max-width: 560px) {
   .voice-actions { flex-direction: column-reverse; align-items: stretch; }
@@ -3761,7 +3787,10 @@ audio.recording-player { height: 40px; }
 .tl-head-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; padding-top: 4px; }
 .tl-name { font-size: 13.5px; font-weight: 600; }
 /* The Secretary's picker as the run's heading: it reads as the name, and opens on a click (AI-eCabinet). */
-.tl-name-pick .select-trigger { height: 28px; min-height: 28px; margin-left: -6px; padding: 0 4px 0 6px; border-color: transparent; border-style: solid; background: transparent; color: inherit; font: inherit; }
+/* The 6px pull to the left sits on the wrapper: on the trigger it made the box 6px narrower than the name. */
+.tl-name-pick { display: inline-flex; max-width: calc(100% + 6px); margin-left: -6px; }
+.tl-name-pick .select { max-width: 100%; }
+.tl-name-pick .select-trigger { width: auto; max-width: 100%; height: auto; min-height: 28px; padding: 0 4px 0 6px; border-color: transparent; border-style: solid; background: transparent; color: inherit; font: inherit; }
 .tl-name-pick .select-trigger:hover, .tl-name-pick .select-trigger[aria-expanded="true"] { border-color: var(--control-line); background: var(--surface); }
 .tl-name-pick .select-value, .tl-name-pick .select-placeholder { color: inherit; font-weight: 600; }
 .tl-text.is-editable { margin: -2px -6px; padding: 2px 6px; border-radius: var(--radius); cursor: text; }
@@ -3889,12 +3918,17 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
 
 /* SCRUM-35 — voices of a recording and who they are. Several small cells to a row, so six voices
    take two lines on a desktop instead of six. */
-.speaker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 8px 16px; margin: 0; padding: 8px 12px; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speaker-row { display: flex; min-width: 0; align-items: center; gap: 8px; font-size: 14px; }
+.speaker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 8px 16px; margin: 0; padding: 8px 12px; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
+.speaker-row { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; gap: 4px 8px; font-size: 14px; }
 .speaker-row .select { min-width: 0; }
 /* The picker fits its name rather than the cell, so the time sits right after it. */
 .speaker-row .select-trigger { width: auto; max-width: 100%; }
-.speaker-row .select-value, .speaker-row .select-placeholder { overflow: hidden; }
+.speaker-row .select-value, .speaker-row .select-placeholder { min-width: 0; }
+/* A person's name is never cut (PO 03/11/2026): where it does not fit, the speaking time moves below it, and a name
+   longer than the whole row wraps rather than ending in "…". */
+.speaker-row .select-trigger, .tl-name-pick .select-trigger { height: auto; min-height: 32px; padding-block: 3px; }
+.tl-name-pick .select-trigger { min-height: 28px; padding-block: 2px; }
+.speaker-row .select-text, .tl-name-pick .select-text { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
 .speaker-name { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
 .speaker-same { display: inline-flex; flex: none; color: var(--chip-amber-fg); }
 .speaker-time { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }

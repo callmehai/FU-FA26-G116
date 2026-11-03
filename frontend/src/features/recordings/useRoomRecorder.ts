@@ -3,7 +3,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import type { RoomTakeSaved } from '../../types/recording'
 import { RoomMic, saveTake, sendPart } from './roomMic'
-import { RoomTape, TapeClosed, type SavedTape } from './roomTape'
+import { RoomTape, TapeClosed, TapeRefused, type SavedTape } from './roomTape'
 import { tapeStore } from './tapeStore'
 import { DEFAULT_PURPOSE } from './useRecordingSave'
 
@@ -39,6 +39,9 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
   const [unfinished, setUnfinished] = useState<SavedTape | null>(null)
   const [purpose, setPurpose] = useState(DEFAULT_PURPOSE)
   const mic = useRef<RoomMic | null>(null)
+  // The mic while the browser still asks for it: leaving the page then must stop it too, once it opens.
+  const opening = useRef<RoomMic | null>(null)
+  const gone = useRef(false)
   const release = useRef<(() => void) | null>(null)
   const saving = useRef<Promise<void> | null>(null)
   const purposeRef = useRef(purpose)
@@ -90,27 +93,40 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
           return
         }
       }
+      // The page was left while the last take was saved or the lock was asked for: no mic is opened for nobody.
+      if (gone.current) {
+        release.current?.()
+        return
+      }
       const next = new RoomMic(meetingId, () => purposeRef.current.trim() || DEFAULT_PURPOSE, tapeStore, {
-        onLost: (message) => {
+        onLost: (message, failed) => {
+          // A part turned down is said even when it was the last one, sent after the switch went off.
+          if (failed) setError(message)
           if (mic.current !== next) return
           mic.current = null
           release.current?.()
           setStartedAt(null)
           setPhase('off')
-          setNotice(message)
+          if (!failed) setNotice(message)
           void look()
         },
         onSaved: said,
       })
+      opening.current = next
       try {
         await next.start(consent, saved)
       } catch (failure) {
+        if (opening.current !== next) return
+        opening.current = null
         release.current?.()
         setError(errorMessage(failure))
         setPhase('off')
         changedRef.current()
         return
       }
+      // Left while the browser asked for the mic: the unmount stopped it, so it let the mic go as it opened.
+      if (opening.current !== next) return
+      opening.current = null
       mic.current = next
       setUnfinished(null)
       setStartedAt(Date.now())
@@ -148,8 +164,18 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
     setError(null)
     setPhase('saving')
     try {
-      await RoomTape.resume(saved, { send: sendPart(saved.recordingId), store: tapeStore }).finish()
+      const refused = await RoomTape.resume(saved, { send: sendPart(saved.recordingId), store: tapeStore })
+        .finish()
+        .then(
+          () => null,
+          (failure: unknown) => {
+            if (failure instanceof TapeRefused) return failure
+            throw failure
+          },
+        )
       said(await saveTake(saved.recordingId))
+      // A part turned down: what the server took before it is saved, the rest on the device never will be.
+      if (refused) setError(`${errorMessage(refused.cause)} Phần còn trên máy không gửi được.`)
     } catch (failure) {
       // Saved elsewhere meanwhile (another Secretary, or the server after hours): nothing is left to add.
       setError(
@@ -187,19 +213,21 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
     return () => window.removeEventListener('beforeunload', warn)
   }, [holding])
 
-  // Leaving the page with the mic on saves the take, as switching it off would.
-  useEffect(
-    () => () => {
-      const current = mic.current
+  // Leaving the page with the mic on saves the take, as switching it off would; one still opening never opens.
+  useEffect(() => {
+    gone.current = false
+    return () => {
+      gone.current = true
+      const current = mic.current ?? opening.current
       mic.current = null
+      opening.current = null
       const done = release.current
       void current
         ?.stop()
         .catch(() => undefined)
         .finally(() => done?.())
-    },
-    [],
-  )
+    }
+  }, [])
 
   return {
     phase,

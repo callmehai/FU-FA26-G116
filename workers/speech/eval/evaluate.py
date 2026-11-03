@@ -16,7 +16,9 @@ rule: the voice must also be that far ahead of the person's next best voice in t
 because everyone recorded in one room scores alike against a sample. --second-threshold is the higher bar a
 second voice of an already named person must reach: two people in one room can sound alike (0.745 on the test
 server, 31/10/2026), so how alike two voices sound cannot tell a split from a stranger, but a stranger scores lower
-against the sample. --auto prints, per score band, how often a suggestion was the right person: a name the machine
+against the sample. --inherit gives an unnamed voice the person of the named first voice it is at least that close
+to, whatever it scores against the sample: one person split by the clustering (one singer came out as four voices
+at 0.81–0.85, 03/11/2026). --auto prints, per score band, how often a suggestion was the right person: a name the machine
 gives on its own must come from a band that is never wrong.
 
 Metrics (speech time is the ground-truth turns):
@@ -75,7 +77,8 @@ def cosine(a, b):
     return 0.0 if na == 0 or nb == 0 or len(a) != len(b) else dot / (na * nb)
 
 
-def suggest(voices, samples, roster, threshold, margin, voice_margin=0.0, rule="many", same_voice=0.0, second=0.0):
+def suggest(voices, samples, roster, threshold, margin, voice_margin=0.0, rule="many", same_voice=0.0, second=0.0,
+            inherit=0.0):
     """voices: {label: embedding}; samples: {person: [embedding]} → {label: (person, score)}."""
     scores = {label: sorted(((max(cosine(v, e) for e in samples[p]), p) for p in roster if p in samples), reverse=True)
               for label, v in voices.items()}
@@ -101,6 +104,18 @@ def suggest(voices, samples, roster, threshold, margin, voice_margin=0.0, rule="
             continue
         result[label] = (person, score)
         taken.add(person)
+    # A voice left unnamed that is nearly the same as a person's first voice takes that person: one person the
+    # clustering split (singing, a changed tone), whose split-off part scores low against a sample read aloud.
+    if inherit > 0:
+        leads = {}
+        for label, (person, score) in sorted(result.items(), key=lambda kv: -kv[1][1]):
+            leads.setdefault(person, label)
+        for label in voices:
+            if label in result or not leads:
+                continue
+            closest = max(leads.values(), key=lambda lead: cosine(voices[label], voices[lead]))
+            if cosine(voices[label], voices[closest]) >= inherit:
+                result[label] = result[closest]
     return result
 
 
@@ -134,6 +149,8 @@ def main():
                     help="rule many: a second voice named as a person must be this close to the first one")
     ap.add_argument("--second-threshold", type=float, nargs="+", default=[0.0],
                     help="lowest score for a second voice of a person already named in the recording")
+    ap.add_argument("--inherit", type=float, nargs="+", default=[0.0],
+                    help="an unnamed voice this close to a named person's first voice takes that person (0 = off)")
     ap.add_argument("--auto", action="store_true", help="print suggestion precision per score band")
     ap.add_argument("--rule", choices=["many", "one"], nargs="+", default=["many"],
                     help="many: a person may name several voices (the product); one: at most one voice each")
@@ -157,11 +174,12 @@ def main():
         print(f"  rejected {line}")
 
     bands = {}
-    grid = {(t, m, v, r, sv, st): {"speech": 0.0, "right": 0.0, "wrong": 0.0, "stranger": 0.0, "stranger_named": 0.0,
+    grid = {(t, m, v, r, sv, st, ih): {"speech": 0.0, "right": 0.0, "wrong": 0.0, "stranger": 0.0, "stranger_named": 0.0,
                      "absent_named": 0, "suggested": 0, "correct": 0}
             for t in args.threshold for m in args.margin for v in args.voice_margin for r in args.rule
             for sv in (args.same_voice if r == "many" else [0.0])
-            for st in (args.second_threshold if r == "many" else [0.0])}
+            for st in (args.second_threshold if r == "many" else [0.0])
+            for ih in args.inherit}
     err_words = ref_words = 0
     spk_right = spk_total = audio_s = busy_s = 0.0
     found = []
@@ -197,8 +215,9 @@ def main():
             ref_words += len(ref)
 
         voices = {s["label"]: s["embedding"] for s in result["speakers"]}
-        for (threshold, margin, voice_margin, rule, same_voice, second), tot in grid.items():
-            names = suggest(voices, samples, truth["people"], threshold, margin, voice_margin, rule, same_voice, second)
+        for (threshold, margin, voice_margin, rule, same_voice, second, inherit), tot in grid.items():
+            names = suggest(voices, samples, truth["people"], threshold, margin, voice_margin, rule, same_voice, second,
+                            inherit)
             for seg in segments:
                 length = (seg["endMs"] - seg["startMs"]) / 1000
                 person, named = true_person(seg), names.get(seg["speaker"], (None, 0))[0]
@@ -226,12 +245,12 @@ def main():
     if ref_words:
         print(f"WER {err_words / ref_words:.1%} over {ref_words} words")
     print(f"processing {busy_s:.0f}s for {audio_s:.0f}s of audio (RTF {busy_s / max(audio_s, 1e-9):.3f}; cached runs read 0)")
-    print("\nrule same-voice second threshold margin voice-margin | named right | enrolled named right | named wrong | stranger named |"
+    print("\nrule same-voice second inherit threshold margin voice-margin | named right | enrolled named right | named wrong | stranger named |"
           " absent named | precision")
-    for (threshold, margin, voice_margin, rule, same_voice, second), tot in sorted(grid.items()):
+    for (threshold, margin, voice_margin, rule, same_voice, second, inherit), tot in sorted(grid.items()):
         speech = max(tot["speech"], 1e-9)
         enrolled = max(tot["speech"] - tot["stranger"], 1e-9)
-        print(f"{rule:>4}   {same_voice:.2f}   {second:.2f}   {threshold:.2f}   {margin:.2f}   {voice_margin:.2f}       |   {tot['right'] / speech:6.1%}    |"
+        print(f"{rule:>4}   {same_voice:.2f}   {second:.2f}   {inherit:.2f}   {threshold:.2f}   {margin:.2f}   {voice_margin:.2f}       |   {tot['right'] / speech:6.1%}    |"
               f"        {tot['right'] / enrolled:6.1%}        |   {tot['wrong'] / speech:6.1%}    |"
               f"     {tot['stranger_named'] / max(tot['stranger'], 1e-9):6.1%}     |    {tot['absent_named']:3d}       |"
               f" {tot['correct']}/{tot['suggested']}")

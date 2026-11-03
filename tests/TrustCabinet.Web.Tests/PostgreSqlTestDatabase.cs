@@ -11,6 +11,9 @@ internal sealed class PostgreSqlTestDatabase : IAsyncDisposable
 
     public NpgsqlDataSource DataSource { get; }
 
+    /// <summary>For code that opens its own connections, like the <c>--migrate</c> command.</summary>
+    public string ConnectionString => _connectionString;
+
     public PostgreSqlTestDatabase(string templateConnectionString)
     {
         var settings = new NpgsqlConnectionStringBuilder(templateConnectionString);

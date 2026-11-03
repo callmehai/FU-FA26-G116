@@ -107,6 +107,91 @@ public sealed class TranscriptEndpointTests(RecordingFixture fixture) : IClassFi
         Assert.Equal(1, await db.AuditLog.CountAsync(a => a.ObjectId == id && a.Action == "transcript.rerun"));
     }
 
+    public static TheoryData<string> UnexpectedFailures() => ["http", "timeout", "io", "json"];
+
+    [Theory]
+    [MemberData(nameof(UnexpectedFailures))]
+    public async Task An_unexpected_error_fails_the_transcript_instead_of_leaving_it_processing(string kind)
+    {
+        var s = await fixture.Seed();
+        await ProcessAll();
+        fixture.Speech.Failure = kind switch
+        {
+            "http" => new HttpRequestException("Connection reset by peer"),
+            // HttpClient's own timeout, not our shutdown: the token the worker passed is not cancelled.
+            "timeout" => new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout."),
+            "io" => new IOException("Unexpected end of stream"),
+            _ => new JsonException("'<' is an invalid start of a value."),
+        };
+        var id = await Upload(s);
+        try { await ProcessAll(); }
+        finally { fixture.Speech.Failure = null; }
+
+        using var secretary = fixture.Client(s.Secretary);
+        var failed = await Transcript(secretary, id);
+        Assert.Equal("Failed", failed.GetProperty("status").GetString());
+        var message = failed.GetProperty("errorMessage").GetString()!;
+        Assert.Contains("lỗi hệ thống", message);
+        // Nothing technical reaches the Secretary; it is in the log.
+        Assert.DoesNotContain("Connection", message);
+        Assert.DoesNotContain("stream", message);
+        await AssertCode(await secretary.PostAsync($"/api/recordings/{id}/transcribe", null), 202, "MSG300");
+        await ProcessAll();
+        Assert.Equal("Completed", (await Transcript(secretary, id)).GetProperty("status").GetString());
+    }
+
+    [Fact]
+    public async Task A_failure_to_write_the_result_fails_the_transcript_without_half_of_the_result()
+    {
+        var s = await fixture.Seed();
+        await ProcessAll();
+        fixture.Speech.Failure = null;
+        var id = await Upload(s);
+        fixture.Failures.FailNextSaves = 1;
+        try { await ProcessAll(); }
+        finally { fixture.Failures.FailNextSaves = 0; }
+
+        using var secretary = fixture.Client(s.Secretary);
+        var failed = await Transcript(secretary, id);
+        Assert.Equal("Failed", failed.GetProperty("status").GetString());
+        Assert.Empty(failed.GetProperty("segments").EnumerateArray());
+        Assert.Empty(failed.GetProperty("speakers").EnumerateArray());
+    }
+
+    [Fact]
+    public async Task Our_own_shutdown_leaves_the_transcript_to_be_requeued()
+    {
+        var s = await fixture.Seed();
+        await ProcessAll();
+        var id = await Upload(s);
+        using var stopping = new CancellationTokenSource();
+        fixture.Speech.During = () =>
+        {
+            stopping.Cancel();
+            return Task.CompletedTask;
+        };
+        fixture.Speech.Failure = new TaskCanceledException("Stopping.", null, stopping.Token);
+        try
+        {
+            using var scope = fixture.Host.Services.CreateScope();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => scope.ServiceProvider.GetRequiredService<ITranscriptionService>().ProcessNextAsync(stopping.Token));
+        }
+        finally
+        {
+            fixture.Speech.During = null;
+            fixture.Speech.Failure = null;
+        }
+
+        await using (var db = fixture.Db())
+            Assert.Equal(TranscriptStatus.Processing, (await db.Transcripts.SingleAsync(t => t.RecordingId == id)).Status);
+        using (var scope = fixture.Host.Services.CreateScope())
+            await scope.ServiceProvider.GetRequiredService<ITranscriptionService>().RequeueInterruptedAsync();
+        await ProcessAll();
+        using var secretary = fixture.Client(s.Secretary);
+        Assert.Equal("Completed", (await Transcript(secretary, id)).GetProperty("status").GetString());
+    }
+
     [Fact]
     public async Task A_recording_without_a_transcript_can_be_sent_to_speech_to_text()
     {

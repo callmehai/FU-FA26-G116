@@ -37,8 +37,7 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
     {
         using var response = await SendAsync(
             $"v1/transcribe?diarize={(diarize ? "true" : "false")}&profile={(clip ? "clip" : "room")}", audio, contentType, ct);
-        var body = await response.Content.ReadFromJsonAsync<TranscribeBody>(Json, ct)
-            ?? throw new SpeechEngineException("Máy chủ nhận dạng giọng nói trả kết quả rỗng.");
+        var body = await ReadBodyAsync<TranscribeBody>(response, ct);
         return new(body.DurationMs, body.Language ?? "vi", body.AsrModel ?? "", body.EmbeddingModel ?? "",
             [.. (body.Segments ?? []).Select(s => new SpeechSegment(s.StartMs, s.EndMs, s.Speaker, s.Text ?? "", s.LevelDbfs))],
             [.. (body.Speakers ?? []).Select(s => new SpeechSpeaker(s.Label ?? "", s.SpeechMs, s.Embedding ?? []))]);
@@ -48,8 +47,7 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
     public async Task<SpeechEmbedding> EmbedAsync(Stream audio, string contentType, CancellationToken ct)
     {
         using var response = await SendAsync("v1/embed", audio, contentType, ct, sample: true);
-        var body = await response.Content.ReadFromJsonAsync<EmbedBody>(Json, ct)
-            ?? throw new SpeechEngineException("Máy chủ nhận dạng giọng nói trả kết quả rỗng.");
+        var body = await ReadBodyAsync<EmbedBody>(response, ct);
         return new(body.Embedding ?? [], body.Model ?? "", body.SpeechMs);
     }
 
@@ -88,6 +86,25 @@ public sealed class SpeechWorkerClient(IHttpClientFactory clients, IOptions<Spee
             HttpStatusCode.Unauthorized => "Máy chủ nhận dạng giọng nói từ chối khoá truy cập.",
             _ => $"Máy chủ nhận dạng giọng nói báo lỗi (HTTP {(int)status}).",
         });
+    }
+
+    /// <summary>
+    /// The answer's body, read while it streams in: the connection can still drop, time out or carry something that
+    /// is not the expected JSON. Each is the worker failing, told the caller the same way as one it reported.
+    /// </summary>
+    private static async Task<T> ReadBodyAsync<T>(HttpResponseMessage response, CancellationToken ct) where T : class
+    {
+        T? body;
+        try
+        {
+            body = await response.Content.ReadFromJsonAsync<T>(Json, ct);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or JsonException or NotSupportedException
+            || ex is TaskCanceledException && !ct.IsCancellationRequested)
+        {
+            throw new SpeechEngineException("Máy chủ nhận dạng giọng nói trả kết quả không đọc được.", ex);
+        }
+        return body ?? throw new SpeechEngineException("Máy chủ nhận dạng giọng nói trả kết quả rỗng.");
     }
 
     private static async Task<string?> ReadErrorAsync(HttpResponseMessage response, CancellationToken ct)

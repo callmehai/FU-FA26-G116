@@ -373,7 +373,7 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
   promote hay dọn code.
 - Không làm (Report 1): theo dõi task / action item, ký HSM thật, triển khai air-gapped,
   tích hợp eOffice, nhiều tổ chức / đơn vị ([ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
-- Thư ký thu hồi riêng một phiên của Khách (PO chốt 02/11/2026, SCRUM-116): không làm. Gỡ lời mời là mọi phiên của lời mời
+- Thư ký thu hồi riêng một phiên của Khách (PO chốt 01/11/2026, SCRUM-116): không làm. Gỡ lời mời là mọi phiên của lời mời
   đó hết hiệu lực (UC-28c POST-2); Khách đăng xuất chỉ kết thúc phiên của chính họ (UC-04). Chỉ mở lại khi hội đồng hoặc PO yêu cầu.
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
 

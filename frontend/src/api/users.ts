@@ -20,7 +20,7 @@ export const getUser = (id: string) => api.get<UserAccount>(`/api/users/${id}`)
 /** UC-06a — 201 with MSG07. The account starts active. */
 export const createUser = (body: CreateUserRequest) => api.post<UserMutationResponse>('/api/users', body)
 
-/** UC-06b, second half — MSG10. Changing the role signs that person out everywhere. */
+/** UC-06b, second half — MSG10. A role change applies at once and keeps the session (ADR-0023); a new email signs out. */
 export const updateUser = (id: string, body: UpdateUserRequest) =>
   api.put<UserMutationResponse>(`/api/users/${id}`, body)
 

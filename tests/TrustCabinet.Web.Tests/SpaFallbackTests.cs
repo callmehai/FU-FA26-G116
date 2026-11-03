@@ -42,11 +42,13 @@ public class SpaFallbackTests : IClassFixture<SpaFallbackTests.WithBuiltFrontend
     [Fact]
     public async Task Health_still_answers_with_a_built_frontend()
     {
-        // HealthEndpointTests runs without an index.html; this is the same call with one present.
+        // HealthEndpointTests runs without an index.html; this is the same call with one present. The
+        // placeholder database is unreachable, so the endpoint answers 503 — but still itself, in JSON.
         var response = await _factory.CreateClient().GetAsync("/api/health");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        Assert.DoesNotContain(WithBuiltFrontendFactory.Marker, await response.Content.ReadAsStringAsync());
     }
 
     [Fact]
@@ -56,6 +58,30 @@ public class SpaFallbackTests : IClassFixture<SpaFallbackTests.WithBuiltFrontend
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains(WithBuiltFrontendFactory.Marker, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData("/")]
+    [InlineData("/index.html")]
+    [InlineData("/mgmt/meetings")]
+    public async Task Index_html_is_revalidated_after_every_deploy(string path)
+    {
+        // Without a Cache-Control the browser guessed a lifetime from Last-Modified and kept the previous release's
+        // page, which still pointed at the previous bundles.
+        var response = await _factory.CreateClient().GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.Headers.CacheControl?.NoCache);
+    }
+
+    [Fact]
+    public async Task Hashed_bundles_are_kept_for_a_year()
+    {
+        var response = await _factory.CreateClient().GetAsync("/assets/index-Ab12Cd34.js");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(TimeSpan.FromDays(365), response.Headers.CacheControl?.MaxAge);
+        Assert.Contains("immutable", response.Headers.CacheControl?.ToString());
     }
 
     public sealed class WithBuiltFrontendFactory : TrustCabinetApiFactory
@@ -71,6 +97,8 @@ public class SpaFallbackTests : IClassFixture<SpaFallbackTests.WithBuiltFrontend
             File.WriteAllText(
                 Path.Combine(_webRoot, "index.html"),
                 $"<!doctype html><title>{Marker}</title>");
+            Directory.CreateDirectory(Path.Combine(_webRoot, "assets"));
+            File.WriteAllText(Path.Combine(_webRoot, "assets", "index-Ab12Cd34.js"), "export {}");
             builder.UseWebRoot(_webRoot);
         }
 

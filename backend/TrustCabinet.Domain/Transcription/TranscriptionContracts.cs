@@ -97,6 +97,8 @@ public interface ITranscriptRepository
     void AddSegments(IEnumerable<TranscriptSegment> segments);
     /// <summary>The guests invited to the meeting and not revoked, by the name they gave or were invited by.</summary>
     Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct);
+    /// <summary>Forgets every entity this unit of work tracks, so a write that failed half way is not saved later.</summary>
+    void DiscardChanges();
     Task SaveChangesAsync(CancellationToken ct);
 }
 

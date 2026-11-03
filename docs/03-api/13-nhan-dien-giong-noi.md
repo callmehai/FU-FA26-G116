@@ -3,8 +3,11 @@
 Bản gỡ băng (SCRUM-31) chia lời nói theo *Người nói 1, 2, 3…*: đó là **tách người nói**
 (*diarization*), chỉ biết hai đoạn là cùng hay khác giọng, không biết là ai. Voice ID trả lời câu
 "ai": mỗi người **tự nguyện** đăng ký giọng mẫu; sau khi gỡ băng, hệ thống so từng giọng trong bản ghi
-với giọng mẫu của **những người có trong cuộc họp và đã đồng ý**, rồi **gợi ý** tên. Chỉ Thư ký quyết
-định tên — hệ thống không tự gán. Quyết định thiết kế: [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md).
+với giọng mẫu của **những người có trong cuộc họp và đã đồng ý**, rồi **gợi ý** tên. Giọng khớp rõ thì
+máy tự điền tên, nhưng chỉ với người đã đồng ý thông báo 1.2 trở lên
+([ADR-0045](../05-decisions/0045-may-tu-gan-ten-khi-giong-khop-ro.md),
+[ADR-0048](../05-decisions/0048-thong-bao-voice-id-1-2-may-tu-dien-ten.md)); Thư ký luôn sửa được tên.
+Quyết định thiết kế: [ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md).
 
 ## Dữ liệu sinh trắc học — nghĩa vụ và cách giữ
 
@@ -28,9 +31,10 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 | Thông báo đủ trước khi đồng ý | Màn "Giọng nói của tôi" nêu mục đích, thứ được lưu, phạm vi dùng, quyền của người dùng, **bên kiểm soát dữ liệu** (`controller`, lấy từ cấu hình `VoiceId:Controller`; mỗi đơn vị triển khai đặt tên pháp nhân của mình), và ghi rõ đây là dữ liệu cá nhân nhạy cảm. Ô đồng ý không đánh dấu sẵn |
 | Thu thập tối thiểu | Lưu vector đặc trưng giọng (512 số) và, từ thông báo 1.1, **bản ghi giọng mẫu** để chính người đó nghe lại và giữ mẫu rõ ([ADR-0042](../05-decisions/0042-luu-ban-ghi-giong-mau-de-nghe-lai.md)). Mẫu ghi dưới đồng ý 1.0 không lưu bản ghi. Vector của các giọng trong bản ghi họp chỉ dùng để so một lần rồi bỏ, không lưu |
 | Bảo mật (Luật, Điều 31 khoản 4) | Vector mã hoá AES-256-GCM; dữ liệu kèm (AAD) gắn với người, id mẫu và mô hình — chép sang người khác là không giải mã được. Bản ghi mẫu mã hoá cùng khoá, AAD gắn với người và id mẫu. Chỉ backend giải mã; không endpoint nào trả vector ra ngoài, và bản ghi mẫu chỉ trả cho chính chủ. Mọi lần đọc ghi đều có nhật ký kiểm toán |
-| Rút đồng ý, xoá | `DELETE /api/me/voice/consent`: trong một transaction, xoá **mọi** giọng mẫu, **mọi gợi ý** trỏ tới người đó và **tên máy tự gán** là người đó (ADR-0045); tên Thư ký đã gán giữ nguyên (đó là quyết định của người, không phải dữ liệu sinh trắc) |
+| Rút đồng ý, xoá | `DELETE /api/me/voice/consent`: trong một transaction, xoá **mọi** giọng mẫu, **mọi gợi ý** trỏ tới người đó và **tên máy tự gán** là người đó (ADR-0045); tên Thư ký đã gán giữ nguyên (đó là quyết định của người, không phải dữ liệu sinh trắc). Bản gỡ băng đang chạy dở không ghi lại được gợi ý cho người vừa rút: máy so giọng dưới khoá chia sẻ trên dòng đồng ý, việc rút đồng ý phải chờ nó ghi xong rồi mới xoá ([ADR-0049](../05-decisions/0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md)) |
+| Người bị vô hiệu hoá tài khoản | Không đăng nhập được nên không tự rút được. Vô hiệu hoá (`PUT /api/users/{id}/status`, `isActive: false`) **kết thúc Voice ID như khi rút đồng ý**, trong cùng transaction: xoá giọng mẫu, gợi ý và tên máy tự gán, đóng dòng đồng ý; người làm trong nhật ký là quản trị viên. Kích hoạt lại không khôi phục gì: người đó phải đồng ý và ghi giọng mẫu lại ([ADR-0049](../05-decisions/0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md)). Máy cũng không so giọng với tài khoản đã vô hiệu hoá |
 | Giới hạn phạm vi dùng | Chỉ so với người có trong danh sách thành phần hiện tại của **chính cuộc họp đó**; người ngoài cuộc họp có giọng giống đến đâu cũng không được gợi ý |
-| Bằng chứng | Nhật ký kiểm toán: `voice.consent_granted`, `voice.consent_renewed` (đồng ý thông báo mới, kèm hai phiên bản), `voice.consent_withdrawn` (kèm số mẫu đã xoá), `voice.sample_added`, `voice.sample_deleted`, `transcript.speaker_assigned` (kèm gợi ý của máy và Thư ký có chấp nhận không) |
+| Bằng chứng | Nhật ký kiểm toán: `voice.consent_granted`, `voice.consent_renewed` (đồng ý thông báo mới, kèm hai phiên bản), `voice.consent_withdrawn` (kèm `reason`: `withdrawn` khi chính người đó rút, `accountDeactivated` khi quản trị viên vô hiệu hoá tài khoản; số mẫu đã xoá, số gợi ý đã bỏ), `voice.sample_added`, `voice.sample_deleted`, `transcript.speaker_assigned` (kèm gợi ý của máy và Thư ký có chấp nhận không) |
 
 ## Voice ID của chính mình (`/api/me/voice`)
 
@@ -38,9 +42,9 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 
 ```json
 {
-  "consent": { "grantedAt": "…", "noticeVersion": "1.1", "purpose": "Gợi ý tên người phát biểu …" },
+  "consent": { "grantedAt": "…", "noticeVersion": "1.2", "purpose": "Nhận ra người phát biểu …" },
   "samples": [ { "id": "…", "createdAt": "…", "speechMs": 7200, "playable": true } ],
-  "maxSamples": 5, "noticeVersion": "1.1", "purpose": "Gợi ý tên người phát biểu …",
+  "maxSamples": 5, "noticeVersion": "1.2", "purpose": "Nhận ra người phát biểu …",
   "controller": "Nhóm đồ án SEP490-G116, đơn vị vận hành bản thử nghiệm TrustCabinet"
 }
 ```
@@ -49,7 +53,7 @@ Giọng nói dùng để nhận ra một người là **dữ liệu sinh trắc 
 thông báo hiện hành mà FE hiện cho người dùng đọc trước khi đồng ý. `consent.noticeVersion` cũ hơn
 thông báo hiện hành thì FE mời đồng ý điều khoản mới. `playable`: bản ghi mẫu được lưu, chủ mẫu nghe lại được.
 
-### `POST /api/me/voice/consent` — `{ "noticeVersion": "1.1" }`
+### `POST /api/me/voice/consent` — `{ "noticeVersion": "1.2" }`
 
 Phải gửi đúng phiên bản thông báo đang hiện (khác → `400 MSG313`, `errors.noticeVersion`), để đồng ý
 luôn gắn với câu chữ người đó đã đọc. Đã đồng ý rồi thì không tạo thêm. Đang đồng ý theo thông báo cũ
@@ -132,11 +136,18 @@ ngồi chung một mic phòng có thể giống nhau như một người bị t�
 khác nhau giống nhau 0,745, một người bị tách làm hai giống nhau 0,777. Điểm so với giọng mẫu thì tách được: người lạ
 0,645, người thật 0,771.
 
+Giọng còn chưa có tên mà giống giọng đầu tiên của một người đã nhận ra từ `VoiceId:InheritVoiceThreshold` (0,8)
+trở lên thì nhận luôn người đó, kèm điểm của giọng đầu, bất kể điểm so với giọng mẫu (ADR-0050). Đó là một người bị
+máy tách ra: trên server test ngày 03/11/2026, Hải hát hai lượt, bản chạy lại cả băng tách giọng Hải thành bốn giọng
+giống nhau 0,81–0,85, giọng hát lại khớp kém với giọng mẫu đọc, nên ba giọng phụ không được gợi ý ai. Hai người khác
+nhau chưa từng giống nhau quá 0,745. Giọng đầu được máy tự gán thì các giọng nhận theo cũng được tự gán.
+
 **Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,75) được gán luôn tên
 người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
 `transcript.speaker_assigned` không có người làm, kèm `automatic: true` và điểm. Thư ký đổi hoặc bỏ tên bằng `PUT`
 như thường; sau đó `autoAssigned` là `false`. Người đó rút đồng ý Voice ID thì tên máy gán bị bỏ cùng gợi ý, còn tên
-Thư ký gán thì giữ. Máy không gán Khách.
+Thư ký gán thì giữ. Máy không gán Khách. Máy chỉ tự gán người có đồng ý từ thông báo 1.2 trở lên (ADR-0048):
+người còn ở bản 1.1 hay 1.0 vẫn chỉ được gợi ý, cho tới khi đồng ý điều khoản mới.
 
 Đo trên 12 cuộc họp VIVOS qua phòng họp (`evaluate.py --second-threshold 0 0.65 0.7 0.75 --auto`, 02/11/2026):
 
@@ -171,4 +182,5 @@ không có trong bản ghi: `404`. `200 MSG316` `{ code, message, speaker }`.
 | `SuggestMargin` | `0.1` | |
 | `SameVoiceThreshold` | `0.7` | Giọng thứ hai được gợi ý cùng một người phải giống giọng đầu tới mức này, xem *Một người bị tách làm hai* |
 | `SecondVoiceThreshold` | `0.7` | Điểm tối thiểu so với giọng mẫu của giọng thứ hai trở đi của cùng một người |
+| `InheritVoiceThreshold` | `0.8` | Giọng chưa có tên giống giọng đầu của một người từ mức này thì nhận người đó (ADR-0050) |
 | `AutoAssignThreshold` | `0.75` | Từ điểm này máy tự gán tên, xem *Máy tự gán* |
