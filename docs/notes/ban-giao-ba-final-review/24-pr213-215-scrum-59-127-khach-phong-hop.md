@@ -7,7 +7,10 @@
 [09-phong-hop-truc-tuyen.md](../../03-api/09-phong-hop-truc-tuyen.md) mục **Khách (SCRUM-59)**. Note này gom việc BA, không thay
 Jira hay đặc tả.
 
-> **Tiến độ 02/11/2026: CHƯA LÀM GÌ.** Mới ghi note.
+> **Tiến độ 03/11/2026: ĐÃ SỬA PHẦN UC/MSG** (Report 3 DOCX → snapshot + extract), **ERD drawio thì chưa** (xem §4).
+> Đã làm: UC-37 (PRE cho cả Khách, Khách xác nhận thông báo ghi âm + EX-9 MSG380 + EX-10 hết phiên, `retentionDays`, AF-3 hỏi lại
+> mỗi 10 giây, POST-4 lượt vào/ra theo phiên, EX-1 màn kết thúc ≤20 giây), UC-38 EX-6, UC-41 EX-1, UC-28c POST-2, §V.2 thêm MSG380.
+> Còn lại: ERD drawio, đặc tả màn hình, ghi âm Khách chờ SCRUM-129.
 
 ## 1. Trạng thái
 
@@ -51,12 +54,19 @@ Jira hay đặc tả.
 
 ## 4. Việc BA, theo thứ tự
 
-- [ ] UC-37 (vào phòng): PRE `InProgress` cho cả Khách; bước xác nhận thông báo ghi âm + EX MSG380; AF chờ phòng mở (điểm 1, 5, 10).
-- [ ] UC-38–UC-42: Khách có quyền như Thành viên, không điều phối; Chủ toạ tắt mic Khách được (điểm 3, 11). Rà theo cột UC của BR-181.
-- [ ] UC-28c POST-2 và UC-04: thu hồi ngắt khỏi phòng ngay; hết hạn/đăng xuất về màn nhập mã (điểm 6, 12).
-- [ ] Report 3 §V.2: MSG380.
-- [ ] ERD drawio + class diagram phòng họp: `call_participants.guest_session_id`, các cột nullable (điểm 2).
-- [ ] Ghi rủi ro: bằng chứng thông báo không lưu câu (điểm 5). Điểm 9 (180 ngày ghi cứng) đã sửa ở #222.
+- [x] UC-37 (vào phòng): PRE `InProgress` cho cả Khách; bước xác nhận thông báo ghi âm + EX-9 MSG380 và EX-10 hết phiên; AF-3 hỏi lại
+      mỗi 10 giây cho Khách; POST-4 mỗi phiên Khách một kết nối, ghi IP/thời điểm vào-ra; EX-1 thêm màn kết thúc ≤20 giây (điểm 1, 3, 4, 5, 10, 11).
+- [x] UC-38 EX-6 (hết phiên Khách trong phòng), UC-41 EX-1 (Khách không bao giờ điều phối), UC-28c POST-2 (thu hồi ngắt ngay,
+      hết phiên/đăng xuất ≤30 giây). BR-181 đã có UC-37–UC-42 trong cột UC, không phải sửa (điểm 6, 12).
+- [x] Report 3 §V.2: thêm MSG380 (dòng 380, Inline / Form error, UC-37 / EX-9) (điểm 7).
+- [ ] **ERD drawio — CHƯA LÀM, chặn bởi cách sinh hình:**
+      - `hien-tai/` là snapshot sinh từ database, `docs/13-erd/README.md` ghi rõ **không sửa tay**; máy này không có tool sinh lại.
+      - `muc-tieu/` (bản vẽ tay) đang có `CallParticipant.GuestInvitationId`, còn `02-erd.md` dòng 486/503 lại ghi `GuestSession`;
+        mà `02-erd.md` **chưa định nghĩa thực thể GuestSession** (chỉ có dòng quan hệ 642), nên không có gì để vẽ thêm.
+      - Cần BE/DB chốt: thêm `GuestSession` vào `02-erd.md` rồi vẽ `muc-tieu` + `chen`, hoặc sinh lại `hien-tai` bằng tool snapshot
+        (điểm 2).
+- [ ] Ghi rủi ro (điểm 5): bằng chứng thông báo ghi âm chỉ là cờ trong audit, không lưu câu đã hiện — **đã ghi trong UC-37 bước 5**.
+      Điểm 9 (180 ngày ghi cứng) đã sửa ở #222; UC-37 giờ ghi "the number of days the server returns".
 - [ ] Ghi âm Khách: **chờ SCRUM-129**, rồi mới sửa UC ghi âm (điểm 8).
-- [ ] Đặc tả màn hình: màn chờ của Khách (ô xác nhận ghi âm), nhãn "Khách" trong phòng.
-- [ ] Sync Report 3, Change Log.
+- [ ] Đặc tả màn hình: màn chờ của Khách (ô xác nhận ghi âm), nhãn "Khách" trong phòng — chưa làm.
+- [x] Sync Report 3, Change Log (dòng 03/11/2026 / M / KhanhPG, cùng lượt với note 23, 25).

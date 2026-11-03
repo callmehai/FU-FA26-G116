@@ -4,7 +4,10 @@
 [PR #218](https://github.com/callmehai/FU-FA26-G116/pull/218), danh mục mã (dòng MSG317) và
 [13-nhan-dien-giong-noi.md](../../03-api/13-nhan-dien-giong-noi.md). Note này gom việc BA, không thay Jira hay đặc tả.
 
-> **Tiến độ 02/11/2026: CHƯA LÀM GÌ.** Mới ghi note.
+> **Tiến độ 03/11/2026: ĐÃ SỬA TÀI LIỆU** (Report 3 DOCX → snapshot + extract): UC-46b (gán Khách còn lời mời, `userId`/`guestId`
+> tối đa một, EX-1 MSG317 ba trường hợp), UC-45b (tên Khách tự khai trong file xuất), UC-81a (Khách không có Voice ID, không được
+> gợi ý), §V.2 mở rộng ngữ cảnh MSG317. **Còn lại:** ERD drawio `transcript_speakers.assigned_guest_id` (xem
+> [note 24 §4](24-pr213-215-scrum-59-127-khach-phong-hop.md) — cùng lý do chặn).
 
 ## 1. Trạng thái
 
@@ -27,8 +30,9 @@
 
 ## 3. Việc BA
 
-- [ ] UC-46b: điểm 1, 2, 3.
-- [ ] Report 3 §V.2: dòng MSG317.
-- [ ] ERD drawio: `transcript_speakers.assigned_guest_id`.
-- [ ] Rà UC xuất gỡ băng và UC-81 (điểm 3, 4).
-- [ ] Sync Report 3, Change Log.
+- [x] UC-46b: điểm 1, 2, 3 (gán Khách còn lời mời; MSG317 ba trường hợp; Khách không được gợi ý vì không có giọng mẫu).
+- [x] Report 3 §V.2: dòng MSG317 — ngữ cảnh mở rộng, nội dung giữ nguyên.
+- [ ] ERD drawio: `transcript_speakers.assigned_guest_id` — **chưa làm**, cùng lý do ở note 24 §4 (hình `hien-tai` sinh từ DB,
+      `muc-tieu` chưa có thực thể để nối).
+- [x] Rà UC xuất gỡ băng (UC-45b POST-1: tên Khách tự khai) và UC-81 (UC-81a: Voice ID chỉ của người nội bộ) — điểm 3, 4.
+- [x] Sync Report 3, Change Log (dòng 03/11/2026 / M / KhanhPG, cùng lượt với note 23, 24).
