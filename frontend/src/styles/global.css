@@ -2111,22 +2111,22 @@ a.menu-item { text-decoration: none; }
 .cal-event-go .cal-event-place { display: none; }
 .cal-go {
   position: absolute;
-  right: 6px;
-  left: 6px;
+  right: 10px;
+  left: 10px;
   z-index: 2;
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 26px;
-  padding: 0 9px;
-  border-top: 1px solid rgb(255 255 255 / 22%);
-  background: color-mix(in srgb, var(--live) 78%, #000);
-  color: #fff;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  /* A white button on the green tile, so it reads as the action rather than more of the tile. */
+  background: var(--surface);
+  color: var(--live);
   font-size: 12px;
   font-weight: 700;
 }
-.cal-go-foot { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
-.cal-go:hover { background: color-mix(in srgb, var(--live) 64%, #000); }
+.cal-go:hover { background: var(--live-wash); }
 .cal-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .cal-go .icon { margin-left: auto; animation: nudge 2s ease-in-out infinite; }
 @keyframes nudge {

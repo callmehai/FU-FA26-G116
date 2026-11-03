@@ -41,8 +41,10 @@ const GRID_HEIGHT = HOURS_PER_DAY * HOUR_HEIGHT
 const WORKDAY_START_HOUR = 8
 /** A meeting shorter than this would not fit its own time line. */
 const MIN_EVENT_HEIGHT = 30
-/** The "Vào phòng họp" band across a live tile's foot (global.css: .cal-go); a long tile carries it this far down. */
-const GO_HEIGHT = 26
+/** The "Vào phòng họp" button inside a live tile's foot (global.css: .cal-go), this far above the tile's bottom edge;
+ *  a long tile carries it this far down. */
+const GO_HEIGHT = 24
+const GO_GAP = 4
 const GO_AT = 104
 /** An hour label (2px under its line, 16px tall) and the current-time badge (22px, centred on its line) as boxes. */
 const HOUR_LABEL_TOP = 2
@@ -488,8 +490,8 @@ function GridEvent({
       {/* A sibling, like the "+N": a link cannot sit inside the tile's link. */}
       {goIn && (
         <Link
-          className={`cal-go${height <= GO_AT ? ' cal-go-foot' : ''}`}
-          style={{ top: top + Math.min(height, GO_AT) - GO_HEIGHT - 1 }}
+          className="cal-go"
+          style={{ top: top + Math.min(height, GO_AT) - GO_HEIGHT - GO_GAP }}
           to={routes.meetingRoom(meeting.id)}
         >
           Vào phòng họp
