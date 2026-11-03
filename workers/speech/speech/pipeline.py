@@ -85,6 +85,15 @@ CLIP_MAX_GAIN_DB = 6.0
 # AI-eCabinet's choice; stricter gains little and risks the first syllable. SPEECH_CLIP_VAD_THRESHOLD.
 CLIP_VAD_THRESHOLD = 0.5
 PROFILES = ("room", "clip")
+# On a room recording the levelling lifts a near-silent pause (a breath between two lines, the click
+# where one take joins the next) by up to 30 dB, the VAD at 0.2 takes it for speech, and the recogniser
+# guesses a word for it: a test-server meeting had two "Đây." at -50 and -54 dBFS, with a speaker of
+# their own, between lines at -19 to -32. A piece of the "room" profile is dropped when it reached the
+# mic both this quiet and this far below the recording's median piece. The quiet participants of the
+# calibration meeting were 15–20 dB below the chair, so they stay, and a recording quiet throughout
+# keeps everything.
+SILENT_SEGMENT_DBFS = -45.0
+SILENT_SEGMENT_BELOW_MEDIAN_DB = 25.0
 
 # --- Diarization -------------------------------------------------------------------------------
 # Window and hop over each stretch of speech. On a real room recording 1.5 s windows were too
@@ -290,6 +299,15 @@ def level(samples: np.ndarray, window_s: float = LEVEL_WINDOW_S, target_db: floa
         part = samples[first * frame : (first + block) * frame]
         out[first * frame : first * frame + part.size] = part * np.repeat(gain[first : first + block], frame)[: part.size]
     return np.clip(out, -1.0, 1.0, out=out)
+
+
+def audible(levels: list[float | None]) -> list[bool]:
+    """Which pieces to keep, by their loudness before levelling (SILENT_SEGMENT_DBFS)."""
+    known = [value for value in levels if value is not None]
+    if not known:
+        return [True] * len(levels)
+    cut = min(SILENT_SEGMENT_DBFS, float(np.median(known)) - SILENT_SEGMENT_BELOW_MEDIAN_DB)
+    return [value is None or value >= cut for value in levels]
 
 
 def hard_split(samples: np.ndarray, max_s: float = MAX_CHUNK_S) -> list[tuple[int, np.ndarray]]:
@@ -640,14 +658,30 @@ class Engine:
                 begin = offset / SAMPLE_RATE
                 pieces.append((begin, begin + part.size / SAMPLE_RATE, None, part))
 
+        # As loud as each piece reached the mic, before levelling: what tells a speaker's own mic from a
+        # neighbour's that overheard them (SCRUM-109), and a pause the levelling lifted from real speech.
+        levels = [rms_dbfs(raw[round(start * SAMPLE_RATE) : round(start * SAMPLE_RATE) + part.size])
+                  for start, _, _, part in pieces]
+        if not clip:
+            # Dropped before the recogniser, so a pause never reaches the punctuation of the next line.
+            keep = audible(levels)
+            if not all(keep):
+                log.info("dropped %d near-silent pieces: %s", keep.count(False),
+                         [(round(piece[0] * 1000), round(value, 1))
+                          for piece, value, kept in zip(pieces, levels, keep) if not kept and value is not None])
+                pieces = [piece for piece, kept in zip(pieces, keep) if kept]
+                levels = [value for value, kept in zip(levels, keep) if kept]
+                # A speaker made only of dropped pieces goes with them; the others take their voice from
+                # what is left, so the pause does not colour it.
+                if turns_by_label:
+                    turns_by_label = defaultdict(list)
+                    for _, _, label, part in pieces:
+                        turns_by_label[label].append(part)
+
         texts = self._readable(pieces, self._transcribe_pieces([piece[3] for piece in pieces]))
         segments = []
-        for (start, end, label, part), sentence in zip(pieces, texts):
+        for (start, end, label, part), sentence, loudness in zip(pieces, texts, levels):
             if sentence:
-                first = round(start * SAMPLE_RATE)
-                # As loud as it reached the mic, before levelling: what tells a speaker's own mic from
-                # a neighbour's that overheard them (SCRUM-109).
-                loudness = rms_dbfs(raw[first : first + part.size])
                 segments.append({
                     "startMs": round(start * 1000),
                     "endMs": round(end * 1000),
