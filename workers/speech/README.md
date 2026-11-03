@@ -112,7 +112,7 @@ Không cần xác thực.
 - `levelDbfs` là độ to của đoạn khi đến micro, đo **trước** bước tăng âm. Backend dùng nó để nhận ra câu
   một micro nghe lọt từ micro khác (to ở micro người nói, nhỏ ở micro bên cạnh).
 - Chữ từ model là CHỮ HOA không dấu câu. Worker thêm dấu phẩy, dấu chấm, dấu hỏi và viết hoa đầu câu
-  bằng viBERT-capu (bước 6 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
+  bằng viBERT-capu (bước 7 ở [Cách chạy bên trong](#cách-chạy-bên-trong)). Một đoạn nối tiếp câu của
   đoạn trước thì bắt đầu bằng chữ thường. Tên riêng model chỉ viết hoa được một phần; còn lại thư ký
   sửa tay.
 
@@ -167,14 +167,21 @@ Các bước xử lý một bản ghi:
    - **Gộp lần hai**: mỗi nhóm được tạo một vector giọng tổng thể (tối đa 30 giây âm thanh của
      nhóm). Hai nhóm có cosine từ 0.85 trở lên là cùng một người bị tách đôi, nên được gộp lại,
      rồi các lượt liền nhau của cùng người được nối, để câu không bị cắt giữa chừng.
-5. **Chuyển chữ** từng lượt nói bằng Gipformer. Lượt dài hơn 25 giây được chia thành các phần
+5. **Bỏ chỗ gần như im lặng** (chỉ hồ sơ `room`): đoạn nào khi đến micro (trước bước tăng âm) vừa
+   nhỏ hơn −45 dBFS vừa nhỏ hơn trung vị các đoạn của bản ghi từ 25 dB trở lên thì bị bỏ trước khi
+   chuyển chữ. Chỗ ngắt hơi hay chỗ nối hai lượt ghi được bước 2 nâng lên tới 30 dB, VAD tưởng là
+   lời, và máy chuyển chữ đoán ra một chữ: trên server test có bản ghi ra hai câu "Đây." ở −50 và
+   −54 dBFS, thành riêng một "Người nói", giữa các câu thật ở −19 đến −32 dBFS. Người nói nhỏ trong
+   cuộc họp dùng để hiệu chỉnh chỉ thấp hơn chủ toạ 15–20 dB nên không bị bỏ, còn bản ghi nhỏ đều
+   từ đầu tới cuối thì giữ nguyên. Người nói chỉ gồm các đoạn bị bỏ cũng bị bỏ theo.
+6. **Chuyển chữ** từng lượt nói bằng Gipformer. Lượt dài hơn 25 giây được chia thành các phần
    bằng nhau.
-6. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
+7. **Dấu câu và chữ hoa** bằng viBERT-capu. Model gắn cho mỗi từ một thao tác (giữ nguyên, viết hoa,
    thêm `,` `.` `:` `?`) và đọc lại tối đa ba lần. Các đoạn liền nhau của cùng một người, cách nhau
    không quá 5 giây, được đọc chung thành một đoạn văn, nên chỗ ngắt hơi giữa câu không thành dấu
    chấm. Model chỉ sửa từ tại chỗ, không thêm hay bớt từ, nên mốc giờ của từng đoạn giữ nguyên;
    lỡ số từ đổi thì đoạn đó quay về cách cũ (viết hoa chữ đầu, dấu chấm cuối).
-7. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
+8. **Vector cho mỗi người nói**, để backend so với giọng mẫu.
 
 Không dùng bộ tách người nói có sẵn của sherpa-onnx (pyannote + embedding cửa sổ 10 giây). Đo trên
 cùng máy, bộ đó tốn RTF 0.3–0.5 khi chạy trực tiếp và 1.34 trong Docker. Cách trên chỉ tốn khoảng
