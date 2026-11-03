@@ -72,7 +72,10 @@ const itemBase = (meetingId: string, itemId: string) => `/api/meetings/${meeting
 export const linkToAgendaItem = (meetingId: string, itemId: string, meetingDocumentIds: string[]) =>
   api.post<MeetingDocumentsAdded>(itemBase(meetingId, itemId), { documentIds: meetingDocumentIds })
 
-/** UC-33b AF-2: library documents, added to the meeting and linked in one go. */
+/**
+ * UC-33b AF-2: library documents, added to the meeting and linked in one go; one already in the meeting is linked as it
+ * is. 400 MSG249, 409 MSG243 already linked, 503 MSG166.
+ */
 export const linkFromLibrary = (meetingId: string, itemId: string, documentIds: string[]) =>
   api.post<MeetingDocumentsAdded>(`${itemBase(meetingId, itemId)}/from-library`, { documentIds })
 

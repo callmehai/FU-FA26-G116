@@ -14,7 +14,6 @@ public static class VoteEndpoints
 {
     private const string Msg156DocumentsUnavailable = "MSG156";
     private const string Msg164InvalidFiles = "MSG164";
-    private const string Msg165AlreadyInMeeting = "MSG165";
     private const string Msg166AddFailed = "MSG166";
     private const string Msg170NotInMeeting = "MSG170";
     private const string Msg249LibrarySelectionInvalid = "MSG249";
@@ -287,7 +286,6 @@ public static class VoteEndpoints
                 VoteFailure.FilesTooMany => (400, Msg288SubmissionTooLarge, "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB."),
                 VoteFailure.StorageFull => (409, Msg346StorageFull, MeetingDocumentEndpoints.StorageFullMessage),
                 VoteFailure.LibraryUnavailable => (400, Msg249LibrarySelectionInvalid, "Hãy chọn một hoặc nhiều tài liệu còn trong kho của bạn."),
-                VoteFailure.AlreadyInMeeting => (409, Msg165AlreadyInMeeting, "Một hoặc nhiều tài liệu đã chọn đã có trong cuộc họp."),
                 _ => opening ? (503, Msg221OpenFailed, "Không mở được biểu quyết. Biểu quyết chưa được mở. Vui lòng thử lại.") : operation switch
                 {
                     VoteOperation.AttachDocuments => (503, Msg267AttachFailed, "Không gắn được tài liệu. Chưa có tài liệu nào được gắn. Vui lòng thử lại."),

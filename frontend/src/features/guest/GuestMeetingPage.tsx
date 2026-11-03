@@ -41,9 +41,17 @@ type TabId = (typeof TABS)[number]['id']
 export function GuestMeetingPage() {
   const guest = useGuest()!
   const meeting = guest.session.meeting
-  const [params] = useSearchParams()
-  // `?tab=` is where the document viewer's back link lands.
-  const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'agenda')
+  const [params, setParams] = useSearchParams()
+  // The tab lives in the URL, so the browser's Back from a document returns to the tab it was opened from.
+  const tab: TabId = TABS.find((t) => t.id === params.get('tab'))?.id ?? 'agenda'
+  const setTab = (id: TabId) =>
+    setParams(
+      (p) => {
+        p.set('tab', id)
+        return p
+      },
+      { replace: true },
+    )
   const invitation = useMyInvitation(meeting.id)
   // SCRUM-59: the call room, as for a member; until it opens the page says why, and asks again on its own.
   const call = useGuestCall(meeting.id).call

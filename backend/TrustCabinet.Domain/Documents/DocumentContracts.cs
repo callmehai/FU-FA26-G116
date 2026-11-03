@@ -40,7 +40,7 @@ public enum DocumentUploadFailure
     NotInMeeting,
     /// <summary>The agenda item does not exist in this meeting (BR-278).</summary>
     AgendaItemNotFound,
-    /// <summary>A selected document is already linked to the agenda item (BR-277).</summary>
+    /// <summary>A selected document is already linked to the agenda item (BR-277), or attached to the vote (BR-287).</summary>
     AlreadyLinked,
     /// <summary>The document is not linked to the agenda item.</summary>
     NotLinked,

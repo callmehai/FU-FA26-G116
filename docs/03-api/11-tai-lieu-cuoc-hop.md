@@ -368,7 +368,10 @@ Ba nguồn, ba endpoint, cùng mã thành công `200 MSG238`:
   với quyền (như UC-33a AF-1; đặc tả UC-33b AF-1 bước 2 còn ghi kiểm tệp trước).
 - Luồng chính: mọi tài liệu phải còn trong cuộc họp, không thì `404 MSG170` (cả khi mảng rỗng); tài liệu đã gắn mục này
   → `409 MSG243` (BR-277); liên kết với mục **khác** giữ nguyên. Lỗi lưu `503 MSG244`.
-- AF-2: như UC-33a (`400 MSG249`, `409 MSG165`), rồi thêm vào cuộc họp và gắn mục trong cùng transaction. Lỗi lưu
+- AF-2: như UC-33a (`400 MSG249`), rồi thêm vào cuộc họp và gắn mục trong cùng transaction. Tài liệu kho có tệp **đã
+  có trong cuộc họp** không bị từ chối `MSG165` như ở nhóm chung: tài liệu cuộc họp sẵn có được gắn vào mục, như khi chọn
+  ở luồng chính (không thêm dòng mới, không đổi tên); đã gắn mục này thì `409 MSG243`. `documents` chỉ liệt kê tài liệu
+  mới thêm. Lỗi lưu
   `503 MSG166` (theo sequence).
 - AF-1: như UC-33a AF-1 — giới hạn `MSG288` (PO 27/10/2026 áp cho UC-33b AF-1), kiểm tệp `MSG164`, dòng kho vào thư mục
   `<tên cuộc họp> – dd/mm/yyyy`, cùng thứ tự ghi R2; thêm liên kết mục trong cùng transaction. Lỗi lưu `503 MSG166`.
@@ -543,7 +546,7 @@ mục chỉ đổi liên kết của mục đó. UC-33b/UC-33d (SCRUM-58) có en
   đã gỡ là dòng mới không có góp ý cũ; gỡ: Thành viên `MSG169`, tài liệu của cuộc họp khác `MSG170`, lỗi lưu `MSG171`, đã
   kết thúc `MSG248`; gắn mục giữ liên kết mục khác, gắn lại `MSG243`; mục của cuộc họp khác `MSG242`, có tài liệu đã gỡ /
   mảng rỗng `MSG170` không gắn gì; Thành viên `MSG240`, lỗi lưu `MSG244`, đã kết thúc `MSG247`; từ kho thêm và gắn một
-  lần, `MSG165`, `MSG249`, lỗi lưu `MSG166`; tải từ máy vào mục (thư mục cuộc họp, liên kết), mục không có → `MSG242`
+  lần, tệp đã có trong cuộc họp thì gắn tài liệu sẵn có cho mục khác và `MSG243` cho mục đã gắn, `MSG249`, lỗi lưu `MSG166`; tải từ máy vào mục (thư mục cuộc họp, liên kết), mục không có → `MSG242`
   trước khi đọc body, tệp sai `MSG164`, Thành viên `MSG240`; gỡ khỏi mục từng liên kết rồi về nhóm chung, gỡ lại `MSG246`;
   Thành viên `MSG241`, tài liệu đã gỡ `MSG170`, mục lạ `MSG242`, lỗi lưu `MSG245`, đã kết thúc `MSG247`. Cuộc họp đã
   huỷ: cả 7 thao tác (kể cả `/upload`) → `MSG349`, không gì thay đổi; thêm, tải lên, gắn, từ kho, tải vào mục, gỡ liên

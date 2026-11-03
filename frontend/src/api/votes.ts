@@ -60,7 +60,10 @@ export const recordVoteConclusion = (
 export const attachVoteDocuments = (meetingId: string, voteId: string, meetingDocumentIds: string[]) =>
   api.post<VoteDocumentsAttached>(`${base(meetingId)}/${voteId}/documents`, { meetingDocumentIds })
 
-/** UC-76a AF-2: library documents, added to the meeting and attached in one save. 400 MSG249, 409 MSG165, 503 MSG166. */
+/**
+ * UC-76a AF-2: library documents, added to the meeting and attached in one save; one already in the meeting is attached
+ * as it is. 400 MSG249, 409 MSG266 already attached, 503 MSG166.
+ */
 export const attachVoteFromLibrary = (meetingId: string, voteId: string, documentIds: string[]) =>
   api.post<VoteDocumentsAttached>(`${base(meetingId)}/${voteId}/documents/from-library`, { documentIds })
 
