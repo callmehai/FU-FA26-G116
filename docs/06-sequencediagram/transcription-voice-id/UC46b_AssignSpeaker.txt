@@ -57,7 +57,7 @@ loop For the chosen voice, and each voice suggested as the same person - AF-1 (B
         activate AuditService
         AuditService-->TranscriptionService: Entry saved
         deactivate AuditService
-        TranscriptionService->TranscriptRepository: Save the name on the voice, so every segment of that voice\nshows it; the suggestion itself never names anyone (BR-366)
+        TranscriptionService->TranscriptRepository: Save the name on the voice, so every segment of that voice\nshows it; a name the system filled in by itself stays until the Secretary changes or clears it here (BR-366)
         activate TranscriptRepository
         TranscriptRepository->Database: Update speaker
         activate Database

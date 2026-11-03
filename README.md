@@ -19,9 +19,10 @@ chuyển thành văn bản để làm biên bản.
 | Tài liệu cuộc họp (phiên bản, phân quyền đọc, góp ý), kho tài liệu cá nhân | Đã có |
 | Phòng họp trực tuyến (thoại, video, chia sẻ màn hình) qua LiveKit tự host | Đã có |
 | Ghi âm, chuyển giọng nói tiếng Việt thành chữ, tách người nói | Đã có |
-| Voice ID — gợi ý tên người nói, chỉ khi người đó đồng ý | Đã có |
+| Voice ID — gợi ý tên người nói, tự điền tên khi giọng khớp rõ, chỉ khi người đó đồng ý | Đã có |
 | Thông báo trong ứng dụng (realtime) và email | Đã có |
-| Biểu quyết, biên bản và phê duyệt biên bản, tóm tắt bằng AI | Chưa làm |
+| Biểu quyết: tạo phiên, mở, bỏ phiếu, xem kết quả | Đã có |
+| Biên bản, phê duyệt biên bản và tóm tắt bằng AI | Chưa làm |
 
 Nhận dạng giọng nói chạy trên máy chủ của nhóm, âm thanh không gửi ra dịch vụ AI bên ngoài
 ([ADR-0026](docs/05-decisions/0026-tu-chay-nhan-dang-giong-noi.md)). Giọng nói dùng để nhận dạng
