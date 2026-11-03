@@ -5,9 +5,11 @@ import { App } from './app/App'
 import { ToastProvider } from './components/ToastProvider'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { installPressFeedback } from './lib/pressFeedback'
+import { installStaleBuildReload } from './lib/staleBuild'
 import './styles/global.css'
 
 installPressFeedback()
+installStaleBuildReload()
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Không tìm thấy #root trong index.html')
