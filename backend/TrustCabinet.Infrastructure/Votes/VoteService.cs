@@ -327,7 +327,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
 
     /// <summary>
     /// UC-76a AF-2: the actor's library documents are added to the meeting and attached to the draft in the same save
-    /// (BR-304), with UC-33a's checks (BR-193, BR-209).
+    /// (BR-304), with UC-33a's checks (BR-209); one already in the meeting is attached as it is.
     /// </summary>
     private async Task<VoteOutcome> AttachFromLibraryAsync(Meeting meeting, VoteViewer viewer, VotingSession vote,
         VoteInput input, DateTimeOffset now, CancellationToken ct)

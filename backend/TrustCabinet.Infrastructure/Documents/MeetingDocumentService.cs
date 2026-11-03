@@ -354,10 +354,11 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
     }
 
     /// <summary>
-    /// UC-33a, UC-33b AF-2 and UC-76a AF-2: the actor's own library documents, none of them already in the meeting
-    /// (BR-193, BR-209), become general meeting documents under their current name (BR-276) — linked to
-    /// <paramref name="agendaItemId"/> or attached to <paramref name="voteId"/> when given. No byte is copied
-    /// (ADR-0018).
+    /// UC-33a, UC-33b AF-2 and UC-76a AF-2: the actor's own library documents (BR-209) become general meeting documents
+    /// under their current name (BR-276) — linked to <paramref name="agendaItemId"/> or attached to
+    /// <paramref name="voteId"/> when given. No byte is copied (ADR-0018). A file already in the meeting is refused
+    /// for the general group (BR-193); for an item or a vote its meeting document is linked instead, unless it already
+    /// is (<see cref="DocumentUploadFailure.AlreadyLinked"/>).
     /// </summary>
     internal static async Task<DocumentUploadFailure> AddLibraryDocumentsAsync(TrustCabinetDbContext db, Meeting meeting,
         Guid actorId, IReadOnlyList<Guid> documentIds, DateTimeOffset now, Guid? agendaItemId, Guid? voteId,
