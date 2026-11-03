@@ -6,12 +6,12 @@ yêu cầu trực tiếp. Note này gom việc BA, không thay đặc tả. Code
 
 > **Tiến độ 01/11/2026: CHƯA LÀM GÌ.** Mới ghi note. Không có mục nào dưới đây đã sửa vào Report 3 hay sơ đồ.
 >
-> **Kiểm lại 03/11/2026 sau khi merge `main` (abea1f3): trên `main` chưa ai sửa tài liệu yêu cầu.** Report 3, UC, BR và sequence y
-> nguyên như note này ghi; từng chỗ có bằng chứng ở §6. Chỉ phần **vẽ màn hình** là đã có: wireframe v11 (02/11, commit bcadf40) đã vẽ
-> kẹp giấy, hộp Sửa nội dung không còn danh sách tài liệu, hộp gắn tài liệu đủ 3 nguồn. Thêm nữa, **PR #235 đang mở** (gumarr, 03/11)
-> đã sửa sẵn Report 3 §7.3/§7.4 (tab Tài liệu, hộp thêm tài liệu) và UC-32a AF-1/UC-32c — đừng làm trùng, xem §6. `main` 02/11 cũng
-> mang về hai điều chỉnh vào note này: kẹp giấy dùng chung với biểu quyết (điểm 8) và tài liệu gắn biểu quyết vẫn nằm trong "Tài liệu
-> chung" (điểm 7b).
+> **03/11/2026: ĐÃ SỬA TÀI LIỆU theo các điểm 1, 3, 4, 5, 6, 7b và 8** (Report 3 DOCX, extract 05/06, sequence UC-23a/UC-23b và
+> PNG). **Chỉ còn đặc tả màn hình (điểm 2)** — §5.1/§5.2 và ảnh trong Report 3; §7.3/§7.4 để PR #235. BR-280 giờ ghi theo code
+> (tài liệu gắn biểu quyết vẫn là tài liệu chung), **PO vẫn cần xác nhận** hướng này.
+>
+> **Kiểm lại 03/11/2026 trước khi sửa:** trên `main` chưa ai sửa tài liệu yêu cầu; wireframe v11 (02/11, bcadf40) đã vẽ và PR #235
+> đang mở đã sửa Report 3 §7.3/§7.4 cùng UC-32a AF-1/UC-32c — xem §6.
 
 ## 1. Trạng thái
 
@@ -39,25 +39,29 @@ yêu cầu trực tiếp. Note này gom việc BA, không thay đặc tả. Code
 
 ## 3. Việc BA, theo thứ tự
 
-- [ ] UC-23a, UC-23b: bỏ chọn tài liệu khỏi form (điểm 1), thêm câu giữ liên kết khi sửa (điểm 3).
-- [ ] UC-33b: điểm vào kẹp giấy và 3 nguồn (điểm 2), Chủ toạ được gắn (điểm 4), quy tắc tài liệu chung (điểm 6).
-- [ ] UC-76a: điểm vào kẹp giấy dùng chung (điểm 8).
-- [ ] BR-280: câu "tài liệu chung = chưa gắn vào mục nào" (điểm 6) và câu cho tài liệu của biểu quyết, **sau khi PO chốt** (điểm 7b).
-- [ ] UC-01, UC-02 POST (và UC-03 nếu cùng): trang đích sau đăng nhập là lịch (điểm 5).
-- [ ] Sequence UC-23a, UC-23b: bỏ `documentIds` khỏi tham số hoặc chú thích "do UC-33b" (điểm 1). Xuất lại PNG.
+- [x] UC-23a, UC-23b: bỏ chọn tài liệu khỏi form (điểm 1), thêm câu giữ liên kết khi sửa (điểm 3).
+- [x] UC-33b: điểm vào kẹp giấy và 3 nguồn (điểm 2), Chủ toạ được gắn (điểm 4), quy tắc tài liệu chung (điểm 6).
+- [x] UC-76a: điểm vào kẹp giấy dùng chung (điểm 8).
+- [x] BR-280: câu "tài liệu chung = chưa gắn vào mục nào" (điểm 6) và câu cho tài liệu của biểu quyết (điểm 7b) — **còn chờ PO xác nhận**
+      hướng "vẫn là tài liệu chung"; nếu PO đổi ý thì sửa BR-280 và code.
+- [x] UC-01, UC-02 POST và Normal Flow: trang đích sau đăng nhập là lịch (điểm 5).
+- [x] Sequence UC-23a, UC-23b: bỏ `documentIds` và bỏ lifeline Document Repository (điểm 1); đã xuất lại PNG thường, tab trong file
+      gộp và `drawio-png/`.
+- [x] BR-185, BR-277, BR-278, BR-279: bỏ UC-23a/UC-23b khỏi cột UC liên quan (form không còn đụng liên kết tài liệu).
 - [x] **Wireframe: ĐÃ CÓ** (v11, 02/11, commit bcadf40) — kẹp giấy ở tab Nội dung, hộp Sửa nội dung bỏ phần tài liệu, hộp gắn tài liệu
       3 nguồn có "Trong cuộc họp", tab Tài liệu có nhóm Biểu quyết. Không cần vẽ lại.
 - [x] **Report 3 §7.3, §7.4 và UC-32a AF-1, UC-32c: PR #235 ĐANG MỞ đã sửa** (gumarr, 03/11, chưa merge) — kẹp giấy trên khối mục,
       hộp thêm tài liệu 3 nguồn, nhóm Biểu quyết, câu "general gồm cả tài liệu biểu quyết". Đừng làm lại; khi #235 merge thì chỉ rà.
-- [ ] **CÒN LẠI CỦA ĐIỂM 2 — ĐẶC TẢ MÀN HÌNH TRONG REPORT 3**, chép theo wireframe v11 (phần §7.3/§7.4 đã có ở #235):
+- [ ] **CÒN LẠI — ĐẶC TẢ MÀN HÌNH TRONG REPORT 3** (điểm 2; chép theo wireframe v11, §7.3/§7.4 đã có ở #235):
       - §5.1 tab Nội dung (FE-05): câu "Edit Agenda Item"/"Row action" còn nói sửa "document links"; thêm nút kẹp giấy trên dòng và
         ghi Chủ toạ cũng thấy nút này;
       - §5.2 hộp Sửa/Thêm nội dung: bỏ "checklist of the Meeting's documents" và ô Documents;
       - hộp thêm tài liệu: thêm ba trạng thái chưa ai ghi — "Đang tải…" khi đọc danh sách tài liệu cuộc họp, lỗi kèm "Thử lại",
         "Cuộc họp chưa có tài liệu." khi danh sách rỗng;
       - chụp lại ảnh màn hình từ wireframe v11.
-- [ ] Sync Report 3: `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`.
-- [ ] Change Log Report 3.
+- [x] Sync Report 3: `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
+      (kèm `check_docx.py` ra `OK`, chỉ `word/document.xml` đổi, 80 ảnh và relationship giữ nguyên).
+- [x] Change Log Report 3: dòng 03/11/2026 / M / KhanhPG.
 - [ ] Ghi kết quả vào Jira nếu có ticket; PR này không có ticket nên báo lại trong PR #201 hoặc cho Lộc.
 
 ## 4. Hỏi PO / Hải
@@ -67,6 +71,32 @@ yêu cầu trực tiếp. Note này gom việc BA, không thay đặc tả. Code
 - **Chủ toạ gắn được tài liệu** (điểm 4): có đúng ý PO không, vì Chủ toạ không sửa được mục.
 - **Tài liệu gắn biểu quyết có nằm trong "Tài liệu chung" không** (điểm 7b): code 02/11 đang tính là chung (hiện ở cả hai nhóm) và
   PR #235 đã ghi đúng như vậy vào UC-32a AF-1; AI-eCabinet thì không. Hỏi PO có đồng ý giữ hướng này không trước khi viết vào BR-280.
+  Nội dung chi tiết để gửi PO ở dưới.
+
+### 4.1. Câu hỏi PO về tài liệu gắn biểu quyết (điểm 7b) — chưa chốt
+
+**Câu hỏi:** tài liệu **chỉ gắn vào Biểu quyết** (không gắn mục nghị sự nào) thì có nằm trong nhóm "Tài liệu chung" không?
+
+**Hiện trạng trên `main` (từ 02/11, khi có tài liệu biểu quyết):**
+
+- "Tài liệu chung" = tài liệu **không gắn mục nghị sự nào**, **không xét biểu quyết**: `MeetingDocumentService.ListAsync`
+  dòng 46 (`ItemIds.Count == 0`); khoá bằng test `VoteReadConfirmationTests.cs:213`.
+- Vì vậy tài liệu đó **hiện ở cả hai nhóm**: "Biểu quyết" (kèm Đã đọc/Chưa đọc của chính người xem, chỉ nháp mới ẩn với
+  người không phải Chủ toạ/Thư ký — BR-253) và "Tài liệu chung" (dòng chung không có `readConfirmedAt`, nên không có chip đọc).
+- Tổng số ở đầu tab đếm distinct ("Theo nội dung họp" + "Tài liệu chung"), nên hiện không bị nhân đôi.
+- Tài liệu đã ghi theo hiện trạng này: UC-32a AF-1 và `docs/03-api/11` (trong PR #235 đang mở), BR-280 (đã thêm
+  "even while it is still linked to a Vote", chưa commit).
+
+**AI-eCabinet khác:** chỉ tính là chung khi tài liệu không gắn mục **và** không gắn biểu quyết (PR #201 kiểm trên
+`ecabinet.dev.trustsoft.ai`), nên tài liệu của biểu quyết chỉ hiện một nhóm.
+
+| Lựa chọn | Việc phải làm | Hệ quả |
+|---|---|---|
+| **A. Giữ như code** (đề xuất) | Không sửa code; BR-280 giữ câu "…with no Item links left it is a general Meeting document, even while it is still linked to a Vote." | Người xem thấy cùng một tài liệu ở hai nhóm; nhưng Thành viên/Khách vẫn tìm được tài liệu của **biểu quyết nháp** (nháp chỉ Chủ toạ/Thư ký thấy), đúng BR-275 |
+| **B. Giống AI-eCabinet** | Sửa `ListAsync` trừ tài liệu có link biểu quyết người xem được thấy, test `VoteReadConfirmationTests`, UC-32a AF-1/NF-3, `docs/03-api/11`, BR-280 thành "…with no Item links and no Vote link left…" | Mỗi tài liệu chỉ ở một nhóm; nhưng tài liệu chỉ gắn **biểu quyết nháp** sẽ **không hiện ở nhóm nào** với Thành viên/Khách, và ô đếm "Tài liệu (N)" trong phòng họp bị hụt |
+
+**Đề xuất:** chọn A, vì không phải sửa code và không làm mất tài liệu của người không thấy nháp. Nếu PO chọn B thì mở ticket cho BE
+sửa endpoint danh sách, báo Tester kiểm lại nhóm Biểu quyết / Tài liệu chung, rồi mới sửa BR-280.
 
 ## 5. Việc không phải của BA
 
@@ -75,8 +105,9 @@ yêu cầu trực tiếp. Note này gom việc BA, không thay đặc tả. Code
 
 ## 6. Đã ai sửa chưa — kiểm lại 03/11/2026 (sau merge `main` abea1f3)
 
-Kết luận: **trên `main` chưa ai sửa tài liệu yêu cầu**; wireframe thì đã vẽ (02/11) và **PR #235 đang mở đã sửa trước một phần** (xem
-bảng dưới). Kiểm bằng cách đọc bản sinh ra từ Report 3 và các file sơ đồ trên `main` hôm nay:
+Kết luận: **trước khi sửa (trạng thái `main` sáng 03/11) chưa ai sửa tài liệu yêu cầu**; wireframe thì đã vẽ (02/11) và
+**PR #235 đang mở đã sửa trước một phần** (xem bảng dưới). Chiều 03/11 note 22 đã sửa các chỗ còn trống — bảng này giữ lại làm mốc đối
+chiếu, không phải trạng thái hiện tại. Kiểm bằng cách đọc bản sinh ra từ Report 3 và các file sơ đồ trên `main`:
 
 | Chỗ cần sửa | Trên `main` | Thấy gì / ghi chú |
 |---|---|---|
