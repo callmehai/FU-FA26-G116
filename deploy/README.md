@@ -32,22 +32,29 @@ phần: `chutoa@` (chủ toạ), `thuky@` (thư ký), `thanhvien@` (thành viên
 họp**, cho trình duyệt dùng micro và camera. Muốn thấy nhau thì mỗi người một cửa sổ, đăng nhập bằng
 một tài khoản khác nhau.
 
-- Server có 4 GB RAM nhưng chỉ 2 vCPU chia sẻ, và **chưa đo sức chịu tải** (mục dưới). Tạm thử với
-  **khoảng 5–6 người bật camera**, đừng mời cả lớp vào một lúc. Đang chuyển chữ một bản ghi dài thì
-  phòng họp có thể giật.
+- Server có 4 GB RAM nhưng chỉ 2 vCPU chia sẻ. Số đo ở mục dưới: một cuộc họp tới **25–30 người, dưới 8
+  camera** chạy thoải mái; máy chuyển chữ dùng chung CPU nên là giới hạn chính.
 - Media đi thẳng tới server qua cổng **7882/UDP**, mạng chặn UDP thì qua **7881/TCP**. Wi-Fi công ty
   hay trường học chặn cả hai thì không vào được phòng (vẫn dùng được các màn khác); khi đó dùng 4G
   hoặc mạng nhà. Server test không có TURN qua cổng 443.
 
-### Sức chịu tải: chưa đo
+### Sức chịu tải (đo 03/11/2026)
 
-Con số 5–6 người ở trên là ước lượng. Cần benchmark trên máy 4 GB để trả lời:
+Đo bằng bộ [`tests/load/`](../tests/load/README.md) trên chính server này (Lightsail 2 vCPU, 4 GB). Số liệu đầy đủ
+và cách chạy lại nằm trong README đó.
 
-- Họp trực tuyến: bao nhiêu người cùng **bật camera**, bao nhiêu người **chỉ bật micro**.
-- Ghi âm: bao nhiêu người được **ghi theo micro** cùng lúc, bao nhiêu bản ghi **chuyển chữ** cùng lúc.
-- Bao nhiêu cuộc họp **trực tiếp** và bao nhiêu cuộc họp **trực tuyến** chạy cùng lúc.
+| Hạng mục | Kết quả |
+|---|---|
+| Vào phòng họp (API + hub) | 120 kết nối trong 10 giây: p95 1,5 s, không lỗi |
+| Họp trực tuyến có camera | 25–30 người, dưới 8 camera: thoải mái; 50 người (`max_participants`) chạm trần CPU |
+| Gọi thật từ Việt Nam | RTT ~60 ms, mất gói 0%, video 20 fps qua UDP |
+| Ghi âm theo micro từng người | ~85 câu/phút trên cả server (≈5–6 người nói liên tục cùng lúc); quá mức đó câu phải chờ, trình duyệt tự gửi lại (`503 MSG312`) |
+| Mic phòng (họp trực tiếp) | 5 phút âm thanh gỡ băng trong ~1 phút; các bản ghi xếp hàng từng bản một; mỗi lượt mới chạy lại cả băng |
 
-Đo đến khi CPU hoặc RAM chạm trần, hình hoặc tiếng bắt đầu giật, hoặc trang chậm hẳn.
+- Máy chuyển chữ dùng chung 2 vCPU với LiveKit và giữ tới ~1,7 GB RAM sau khi chạy nhiều. Muốn vài cuộc họp lớn
+  cùng lúc thì cần máy 4 vCPU, hoặc tách máy chuyển chữ ra máy riêng.
+- Chưa đo riêng lúc CPU burst của Lightsail đã cạn, nên số trên là số lúc còn burst. Trước buổi demo nên deploy
+  sớm một ngày để burst hồi lại.
 
 Server chạy đúng code của `main`. Merge PR xong khoảng 10 phút (CI rồi deploy) là bản mới lên server;
 tính năng chưa merge thì chưa có.
