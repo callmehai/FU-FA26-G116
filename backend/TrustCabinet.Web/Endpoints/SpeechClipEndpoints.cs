@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Net.Http.Headers;
+using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Recordings;
 
 namespace TrustCabinet.Web.Endpoints;
@@ -8,6 +9,9 @@ namespace TrustCabinet.Web.Endpoints;
 /// SCRUM-109 — the per-mic transcript: each attendee's browser sends a sentence when they pause, everyone reads the
 /// sentences as they arrive, the Secretary corrects them, the Chair or Secretary takes out what one mic overheard from
 /// another, and picks the capture mode before the meeting starts.
+///
+/// SCRUM-129 (ADR-0051): a guest's token reaches only their own mic — sending, listing, hearing and deleting their own
+/// sentences. Editing, excluding and exporting stay with members, whose filter turns a guest token away (403).
 /// </summary>
 public static class SpeechClipEndpoints
 {
@@ -30,17 +34,25 @@ public static class SpeechClipEndpoints
     private const string Msg354InvalidExclusion = "MSG354";
     private const string Msg355ExportForbidden = "MSG355";
     private const string Msg356SecretMeeting = "MSG356";
+    private const string Msg380RecordingNoticeRequired = "MSG380";
 
     internal sealed record TextBody(string? Text);
     internal sealed record ExclusionBody(bool Excluded, string? Reason);
 
     public static void MapSpeechClipEndpoints(this IEndpointRouteBuilder app)
     {
+        // A guest passes the filter untouched; the service rechecks their session on every call.
+        var own = app.MapGroup("/api/meetings/{meetingId:guid}")
+            .RequireActiveUserOrGuest(Error(500, Msg299ReadFailed, "Không tải được bản gỡ băng."));
+        own.MapGet("/speech-clips", async (Guid meetingId, DateTimeOffset? since, HttpContext context,
+            ISpeechClipService service, CancellationToken ct)
+            => Map(Guest(context) is { } guest ? await service.ListForGuestAsync(guest, meetingId, since, ct)
+                : await service.ListAsync(meetingId, CapabilityGate.GatedUserId(context.User), since, ct)));
+        // PUT with the browser's own id: a retry after a lost response stores the sentence once.
+        own.MapPut("/speech-clips/{clientClipId:guid}", SendClipAsync);
+
         var meeting = app.MapGroup("/api/meetings/{meetingId:guid}")
             .RequireActiveUser(Error(500, Msg299ReadFailed, "Không tải được bản gỡ băng."));
-        meeting.MapGet("/speech-clips", async (Guid meetingId, DateTimeOffset? since, HttpContext context,
-            ISpeechClipService service, CancellationToken ct)
-            => Map(await service.ListAsync(meetingId, CapabilityGate.GatedUserId(context.User), since, ct)));
         meeting.MapGet("/speech-clips.txt", async (Guid meetingId, HttpContext context, ISpeechClipService service,
             CancellationToken ct) =>
         {
@@ -48,15 +60,16 @@ public static class SpeechClipEndpoints
             return result is { Failure: SpeechClipFailure.None, Data: Domain.Transcription.ExportedText file }
                 ? TranscriptEndpoints.TextFile(file) : Map(result);
         });
-        // PUT with the browser's own id: a retry after a lost response stores the sentence once.
-        meeting.MapPut("/speech-clips/{clientClipId:guid}", SendClipAsync);
 
         var clip = app.MapGroup("/api/speech-clips/{clipId:guid}")
             .RequireActiveUser(Error(503, Msg304SaveFailed, "Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại."));
         clip.MapPut("/text", async (Guid clipId, TextBody body, HttpContext context, ISpeechClipService service, CancellationToken ct)
             => Map(await service.EditAsync(clipId, CapabilityGate.GatedUserId(context.User), body.Text, ct), Msg302Saved));
-        clip.MapDelete("", async (Guid clipId, HttpContext context, ISpeechClipService service, CancellationToken ct)
-            => Map(await service.DeleteAsync(clipId, CapabilityGate.GatedUserId(context.User), ct), Msg322ClipDeleted, delete: true));
+        app.MapGroup("/api/speech-clips/{clipId:guid}")
+            .RequireActiveUserOrGuest(Error(503, Msg304SaveFailed, "Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại."))
+            .MapDelete("", async (Guid clipId, HttpContext context, ISpeechClipService service, CancellationToken ct)
+                => Map(Guest(context) is { } guest ? await service.DeleteForGuestAsync(guest, clipId, ct)
+                    : await service.DeleteAsync(clipId, CapabilityGate.GatedUserId(context.User), ct), Msg322ClipDeleted, delete: true));
         clip.MapPut("/exclusion", async (Guid clipId, ExclusionBody body, HttpContext context, ISpeechClipService service,
             CancellationToken ct)
             => MapExclusion(await service.SetExclusionAsync(clipId, CapabilityGate.GatedUserId(context.User), body.Excluded,
@@ -65,9 +78,10 @@ public static class SpeechClipEndpoints
         // ADR-0039 — hearing a sentence again. As for a recording, an <audio> element cannot send a bearer token: the
         // right to listen is checked here and the audio is reached through the signed, expiring link this hands out.
         var listen = app.MapGroup("/api/speech-clips/{clipId:guid}")
-            .RequireActiveUser(Error(500, Msg297RecordingReadFailed, "Không tải được bản ghi."));
+            .RequireActiveUserOrGuest(Error(500, Msg297RecordingReadFailed, "Không tải được bản ghi."));
         listen.MapGet("/playback", async (Guid clipId, HttpContext context, ISpeechClipService service, CancellationToken ct)
-            => await service.PlaybackAsync(clipId, CapabilityGate.GatedUserId(context.User), ct) switch
+            => await (Guest(context) is { } guest ? service.PlaybackForGuestAsync(guest, clipId, ct)
+                : service.PlaybackAsync(clipId, CapabilityGate.GatedUserId(context.User), ct)) switch
             {
                 { Failure: SpeechClipFailure.None, Data: { } link } => Results.Ok(link),
                 { Failure: SpeechClipFailure.ReadFailed } => Error(500, Msg297RecordingReadFailed, "Không tải được bản ghi."),
@@ -93,8 +107,10 @@ public static class SpeechClipEndpoints
     private static async Task<IResult> SendClipAsync(Guid meetingId, Guid clientClipId, string? startedAt, string? durationMs,
         HttpContext context, ISpeechClipService service, CancellationToken ct)
     {
-        var actor = CapabilityGate.GatedUserId(context.User);
-        var allowed = await service.CanCaptureAsync(meetingId, actor, ct);
+        var guest = Guest(context);
+        var actor = guest is null ? CapabilityGate.GatedUserId(context.User) : Guid.Empty;
+        var allowed = guest is null ? await service.CanCaptureAsync(meetingId, actor, ct)
+            : await service.CanGuestCaptureAsync(guest, meetingId, ct);
         if (allowed.Failure != SpeechClipFailure.None) return Map(allowed);
 
         if (!MediaTypeHeaderValue.TryParse(context.Request.ContentType, out var type)
@@ -114,12 +130,17 @@ public static class SpeechClipEndpoints
             buffer.Write(chunk, 0, read);
         }
 
-        var result = await service.AddAsync(meetingId, actor, new SpeechClipUpload(clientClipId, started, duration, media,
-            buffer.ToArray()), ct);
+        var upload = new SpeechClipUpload(clientClipId, started, duration, media, buffer.ToArray());
+        var result = guest is null ? await service.AddAsync(meetingId, actor, upload, ct)
+            : await service.AddForGuestAsync(guest, meetingId, upload, ct);
         // Nothing but silence: the browser drops the sentence, there is no line to show.
         if (result is { Failure: SpeechClipFailure.None, Data: null }) return Results.NoContent();
         return Map(result, Msg318ClipSaved);
     }
+
+    /// <summary>The caller's guest session (UC-04), or null for a signed-in member the filter already checked.</summary>
+    private static MeetingGuestSession? Guest(HttpContext context)
+        => context.RequestServices.GetRequiredService<IMeetingGuestIdentityResolver>().Resolve(context.User);
 
     private static IResult TooLarge()
         => Error(413, Msg321ClipTooLarge, $"Một câu nói tối đa {SpeechClipRules.MaxDurationMs / 1000} giây.");
@@ -140,6 +161,8 @@ public static class SpeechClipEndpoints
                     "Cuộc họp trực tiếp không ghi theo micro từng người, hoặc cuộc họp không còn đang diễn ra."),
                 SpeechClipFailure.Invalid when successCode == Msg318ClipSaved => (400, Msg319InvalidClip, "Câu nói gửi lên không hợp lệ."),
                 SpeechClipFailure.Invalid => (400, Msg303InvalidText, "Nội dung đoạn gỡ băng không hợp lệ."),
+                SpeechClipFailure.NoticeRequired => (400, Msg380RecordingNoticeRequired,
+                    "Vui lòng xác nhận đã đọc thông báo ghi âm trước khi vào phòng họp."),
                 SpeechClipFailure.EngineUnavailable => (503, Msg312EngineUnavailable,
                     "Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau."),
                 SpeechClipFailure.ReadFailed => (500, Msg299ReadFailed, "Không tải được bản gỡ băng."),

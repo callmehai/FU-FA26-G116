@@ -2016,6 +2016,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("exclusion_reason");
 
+                    b.Property<Guid?>("GuestInvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_invitation_id");
+
                     b.Property<Guid>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
@@ -2028,7 +2032,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("segments");
 
-                    b.Property<Guid>("SpeakerId")
+                    b.Property<Guid?>("SpeakerId")
                         .HasColumnType("uuid")
                         .HasColumnName("speaker_id");
 
@@ -2055,6 +2059,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("ExcludedById")
                         .HasDatabaseName("ix_speech_clips_excluded_by_id");
 
+                    b.HasIndex("GuestInvitationId")
+                        .HasDatabaseName("ix_speech_clips_guest_invitation_id");
+
                     b.HasIndex("SpeakerId")
                         .HasDatabaseName("ix_speech_clips_speaker_id");
 
@@ -2064,13 +2071,21 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("MeetingId", "UpdatedAt")
                         .HasDatabaseName("ix_speech_clips_meeting_id_updated_at");
 
+                    b.HasIndex("MeetingId", "GuestInvitationId", "ClientClipId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_speech_clips_meeting_id_guest_invitation_id_client_clip_id")
+                        .HasFilter("guest_invitation_id IS NOT NULL");
+
                     b.HasIndex("MeetingId", "SpeakerId", "ClientClipId")
                         .IsUnique()
-                        .HasDatabaseName("ix_speech_clips_meeting_id_speaker_id_client_clip_id");
+                        .HasDatabaseName("ix_speech_clips_meeting_id_speaker_id_client_clip_id")
+                        .HasFilter("speaker_id IS NOT NULL");
 
                     b.ToTable("speech_clips", null, t =>
                         {
                             t.HasCheckConstraint("ck_speech_clips_duration", "duration_ms > 0");
+
+                            t.HasCheckConstraint("ck_speech_clips_one_speaker", "(speaker_id IS NULL) <> (guest_invitation_id IS NULL)");
                         });
                 });
 
@@ -3564,6 +3579,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_speech_clips_users_excluded_by_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "GuestInvitation")
+                        .WithMany()
+                        .HasForeignKey("GuestInvitationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_speech_clips_meeting_guest_invitations_guest_invitation_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithMany()
                         .HasForeignKey("MeetingId")
@@ -3575,12 +3596,13 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("SpeakerId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_speech_clips_users_speaker_id");
 
                     b.Navigation("EditedBy");
 
                     b.Navigation("ExcludedBy");
+
+                    b.Navigation("GuestInvitation");
 
                     b.Navigation("Meeting");
 

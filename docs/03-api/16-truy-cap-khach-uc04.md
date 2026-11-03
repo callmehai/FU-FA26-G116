@@ -154,8 +154,9 @@ kết nối khi token hết hạn.
 
 Khách dùng token này cho: `GET /api/meetings/{id}/agenda`, các GET của thành phần tham dự
 (`/participant-context`, `/participants`, `/invitation-response`), `PUT /invitation-response` (UC-29),
-`GET /attendance`, hub `/hubs/meetings`, và phòng họp trực tuyến `GET /call`, `POST /call/join` (SCRUM-59,
-[contract](09-phong-hop-truc-tuyen.md#khách-scrum-59)). Tài liệu và biểu quyết của Khách: xem §9. Mọi endpoint khác trả `403` (endpoint cố định) hoặc `404`
+`GET /attendance`, hub `/hubs/meetings`, phòng họp trực tuyến `GET /call`, `POST /call/join` (SCRUM-59,
+[contract](09-phong-hop-truc-tuyen.md#khách-scrum-59)), và micro của chính Khách trong phòng: gửi, đọc, nghe lại và
+xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051)). Tài liệu và biểu quyết của Khách: xem §9. Mọi endpoint khác trả `403` (endpoint cố định) hoặc `404`
 (tài nguyên cụ thể) như người không có quyền.
 
 ## 6. Lưu trữ

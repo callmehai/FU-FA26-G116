@@ -11,6 +11,12 @@
 export interface StoredClip {
   id: string
   meetingId: string
+  /**
+   * Whose mic it came from: `user:{id}` or `guest:{invitationId}` (SCRUM-129). A browser may serve a member and a guest
+   * in turn, and a sentence is only ever sent by its own speaker. Absent on sentences kept before it was stored, which
+   * only a member's page sends.
+   */
+  owner?: string
   startedAt: string
   durationMs: number
   audio: Blob

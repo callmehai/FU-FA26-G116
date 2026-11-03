@@ -25,9 +25,18 @@ public class SpeechClipConfiguration : IEntityTypeConfiguration<SpeechClip>
         builder.Property(c => c.ExclusionReason).HasConversion<string>().HasMaxLength(16);
         builder.Property(c => c.AudioPath).HasMaxLength(500);
         builder.Property(c => c.AudioContentType).HasMaxLength(64);
-        builder.ToTable(t => t.HasCheckConstraint("ck_speech_clips_duration", "duration_ms > 0"));
+        builder.ToTable(t =>
+        {
+            t.HasCheckConstraint("ck_speech_clips_duration", "duration_ms > 0");
+            // SCRUM-129: a sentence is a member's or a guest's, never both, never nobody's.
+            t.HasCheckConstraint("ck_speech_clips_one_speaker", "(speaker_id IS NULL) <> (guest_invitation_id IS NULL)");
+        });
 
-        builder.HasIndex(c => new { c.MeetingId, c.SpeakerId, c.ClientClipId }).IsUnique();
+        // A retry stores the sentence once, per speaker. NULLs never collide, so each index covers one kind of speaker.
+        builder.HasIndex(c => new { c.MeetingId, c.SpeakerId, c.ClientClipId }).IsUnique()
+            .HasFilter("speaker_id IS NOT NULL");
+        builder.HasIndex(c => new { c.MeetingId, c.GuestInvitationId, c.ClientClipId }).IsUnique()
+            .HasFilter("guest_invitation_id IS NOT NULL");
         // The live view reads what changed since its last read; the transcript reads in spoken order.
         builder.HasIndex(c => new { c.MeetingId, c.UpdatedAt });
         builder.HasIndex(c => new { c.MeetingId, c.StartedAt });
@@ -40,6 +49,12 @@ public class SpeechClipConfiguration : IEntityTypeConfiguration<SpeechClip>
         builder.HasOne(c => c.Speaker)
             .WithMany()
             .HasForeignKey(c => c.SpeakerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // An invitation is revoked, never deleted: what the guest said stays until the recordings' retention ends.
+        builder.HasOne(c => c.GuestInvitation)
+            .WithMany()
+            .HasForeignKey(c => c.GuestInvitationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(c => c.EditedBy)

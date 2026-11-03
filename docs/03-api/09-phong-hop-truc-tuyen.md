@@ -36,7 +36,8 @@ Khách gọi `GET …/call` và `POST …/call/join` bằng **token Khách** c�
 Mỗi lần cấp token cho Khách ghi một dòng `audit_log` `call.guest_admitted` (`object_type = GuestSession`,
 `object_id` = phiên, `actor_id` rỗng, `ip_address` của Khách, `details` gồm `meetingId`, `invitationId`, tên tự
 khai, `recordingNoticeAcknowledged: true`) — đây là bằng chứng Khách đã thấy và xác nhận thông báo ghi âm, ghi
-**trước** khi có token. Không ghi được thì không cấp token (`500 MSG118`).
+**trước** khi có token. Không ghi được thì không cấp token (`500 MSG118`). Micro của Khách chỉ được ghi theo câu
+(SCRUM-129) khi phiên đó có dòng này ([contract](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051)).
 
 Khách có quyền trong phòng như thành viên (ADR-0016): micro, camera, chia sẻ màn hình, chat, xem ai đang trong
 phòng. Không tắt mic người khác: `POST …/mute` bằng token Khách trả `403`. Chủ toạ tắt mic Khách như thành viên, bằng

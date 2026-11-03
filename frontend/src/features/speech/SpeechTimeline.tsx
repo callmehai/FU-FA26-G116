@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { deleteSpeechClip, editSpeechClip, getSpeechClipsText, setSpeechClipExclusion } from '../../api/speech'
+import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
@@ -331,6 +332,8 @@ function Paragraph({
           <strong className="tl-name" style={{ color: first.excluded ? undefined : colour.ink }}>
             {first.speakerName}
           </strong>
+          {/* SCRUM-129: a guest's own mic, under the name they gave. */}
+          {first.speakerIsGuest && <Badge tone="outline">Khách</Badge>}
           <time className="tl-time-inline" dateTime={first.startedAt}>
             {wall(first.startedAt)}
           </time>

@@ -149,7 +149,7 @@ export function MeetingRoomPage() {
 
 /**
  * The lobby, the room and what is left after it, for a member or a guest (SCRUM-59). A guest's room is the members'
- * with less: a guest coordinates nothing and their words are not captured per microphone.
+ * with less: a guest coordinates nothing. Their own mic is captured per microphone like a member's (SCRUM-129).
  */
 export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeting; call: CallRoomState }) {
   const [room] = useState(() => new Room(ROOM_OPTIONS))
@@ -219,13 +219,13 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
 
 /**
  * How many days a sentence is kept, when the meeting records what is said in the call; null when it does not.
- * A guest may not read the speech-clip list that tells members, so theirs comes from GET …/call.
+ * A guest's comes from GET …/call: they are always told, before joining, since the room records them either way.
  */
 function useRecordingNotice(meetingId: string, guestDays: number | null) {
   const asGuest = guestDays !== null
   const [days, setDays] = useState<number | null>(guestDays)
   useEffect(() => {
-    // A guest may not read the speech-clip list (403), and is always told: the room is recorded either way.
+    // A guest is always told: the room records their mic either way (SCRUM-129).
     if (asGuest) return
     let cancelled = false
     // Asking for what changed from now on brings the meeting's terms without its sentences.
@@ -419,8 +419,12 @@ function PreJoin({
           </p>
           {/* Law 91/2025, art. 32: the people of a recorded meeting are told before it records them (ADR-0040). */}
           {guest ? (
-            // Someone from outside is told, and confirms, before the room can record them (Law 91/2025, art. 32).
-            <label className="prejoin-recording prejoin-consent">
+            // Someone from outside is told, and confirms, before the room can record them (Law 91/2025, art. 32). The
+            // server records nothing from a guest's mic until this was confirmed (SCRUM-129).
+            <label
+              className="prejoin-recording prejoin-consent"
+              data-tooltip="Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình."
+            >
               <input
                 type="checkbox"
                 checked={acknowledged}
