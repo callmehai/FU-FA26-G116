@@ -7,8 +7,12 @@ yêu cầu trực tiếp. Note này gom việc BA, không thay đặc tả. Code
 > **Tiến độ 01/11/2026: CHƯA LÀM GÌ.** Mới ghi note. Không có mục nào dưới đây đã sửa vào Report 3 hay sơ đồ.
 >
 > **03/11/2026: ĐÃ SỬA TÀI LIỆU theo các điểm 1, 3, 4, 5, 6, 7b và 8** (Report 3 DOCX, extract 05/06, sequence UC-23a/UC-23b và
-> PNG). **Chỉ còn đặc tả màn hình (điểm 2)** — §5.1/§5.2 và ảnh trong Report 3; §7.3/§7.4 để PR #235. BR-280 giờ ghi theo code
-> (tài liệu gắn biểu quyết vẫn là tài liệu chung), **PO vẫn cần xác nhận** hướng này.
+> PNG). **Chỉ còn đặc tả màn hình (điểm 2)** — §5.1/§5.2 và ảnh trong Report 3; §7.3/§7.4 đã có ở PR #235 (đã merge).
+>
+> **03/11/2026 (cuối ngày): PO chốt phương án B và code đã lên `main`** (`45ae5e36`, PR #249): "Tài liệu chung" chỉ gồm tài
+> liệu không gắn mục nghị sự **và** không gắn biểu quyết; tài liệu chỉ gắn biểu quyết nháp thì Thành viên/Khách không thấy
+> (404 MSG156). Vì vậy BR-280 hiện trên `main` (ghi phương án A: "even while it is still linked to a Vote") **phải sửa lại**,
+> cùng BR-275, UC-32a AF-1 và màn 7.3. Làm sau khi PR #251 merge để Report 3 DOCX không tranh nhau.
 >
 > **Kiểm lại 03/11/2026 trước khi sửa:** trên `main` chưa ai sửa tài liệu yêu cầu; wireframe v11 (02/11, bcadf40) đã vẽ và PR #235
 > đang mở đã sửa Report 3 §7.3/§7.4 cùng UC-32a AF-1/UC-32c — xem §6.
