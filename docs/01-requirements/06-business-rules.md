@@ -169,7 +169,7 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-182` | Inviting a Guest into a Confidential or Secret Meeting displays a clear inline warning that the Guest will receive Member participation and Meeting-document access. Invitation creation uses the ordinary invite flow; no extra confirmation or separate sensitivity approval flow is required. Record the inviting Secretary, Meeting sensitivity and invitation time for accountability. | UC-28a | PO 13/10/2026 | Guest participation / Meeting Participant Management |
 | `BR-183` | An uploaded file's content cannot be changed. | UC-32a, UC-32c, UC-33a, UC-33c, UC-34, UC-36, UC-71 | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-184` | Only the current Chair or Secretary may add or remove Meeting documents or their Agenda Item links. | UC-33a, UC-33b, UC-33c, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
-| `BR-185` | Meeting documents and their Agenda Item links cannot be added or removed after the Meeting ends. | UC-23b, UC-33a, UC-33b, UC-33c, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-185` | Meeting documents and their Agenda Item links cannot be added or removed after the Meeting ends. | UC-33a, UC-33b, UC-33c, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
 | `BR-186` | Deleting a personal-library document does not remove the document from Meetings. | UC-33c, UC-71a | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-187` | Only PDF and DOCX documents may be uploaded. | UC-33a, UC-36 | PO 14/10/2026 — atomic rule review | Document Management |
 | `BR-188` | Documents of a Secret Meeting may be read online but not downloaded. | UC-32c | PO 14/10/2026 — atomic rule review | Document Management |
@@ -246,10 +246,10 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-274` | The current Chair or the current Secretary may access Vote draft preparation in an Approved Meeting; this does not grant access to other restricted Meeting records. | UC-52a, UC-52b, UC-53 | PO 14/10/2026 — FE-11 specification / ADR-0019; PO 16/10/2026 — Secretary may prepare Vote drafts | Meeting / Voting Management |
 | `BR-275` | Anyone who can view a Meeting can read its documents. | UC-32a, UC-32c, UC-35 | ADR-0020 / PO 15/10/2026 | Document Management |
 | `BR-276` | A Meeting document keeps the name copied when it was added to the Meeting; later personal-library renaming does not change that name. | UC-33a, UC-71b | ADR-0020 / PO 15/10/2026 | Document Management |
-| `BR-277` | One Meeting document may be linked to multiple Agenda Items. | UC-23b, UC-33b | ADR-0020 / PO 15/10/2026 | Document Management |
-| `BR-278` | A document may be linked only to Agenda Items of the same Meeting. | UC-23a, UC-23b, UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
-| `BR-279` | Pending, InProgress and Done Agenda Items all permit document-link additions and removals until the Meeting ends. | UC-23b, UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
-| `BR-280` | Removing one Agenda Item link keeps the document in the Meeting and preserves its other Item links; with no links left, it is a general Meeting document. | UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-277` | One Meeting document may be linked to multiple Agenda Items. | UC-33b | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-278` | A document may be linked only to Agenda Items of the same Meeting. | UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-279` | Pending, InProgress and Done Agenda Items all permit document-link additions and removals until the Meeting ends. | UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
+| `BR-280` | Removing one Agenda Item link keeps the document in the Meeting and preserves its other Item links; with no Item links left it is a general Meeting document, even while it is still linked to a Vote. | UC-32a, UC-33b, UC-33d | ADR-0020 / PO 15/10/2026 | Document Management |
 | `BR-281` | Removing a document from a Meeting removes it from every Agenda Item of that Meeting. | UC-33c | ADR-0020 / PO 15/10/2026 | Document Management |
 | `BR-282` | Meeting documents and comments are read-only after the Meeting ends. | UC-32a, UC-32c, UC-33a, UC-33b, UC-33c, UC-33d, UC-35 | PO 15/10/2026 — document follow-up | Document Management |
 | `BR-283` | Deleting an Agenda Item removes its document links but keeps the documents in the Meeting. | UC-23c, UC-32a, UC-33b, UC-33d | PO 15/10/2026 — document follow-up | Document Management |

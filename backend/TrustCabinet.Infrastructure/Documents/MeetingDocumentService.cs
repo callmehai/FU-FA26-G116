@@ -358,10 +358,11 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
     }
 
     /// <summary>
-    /// UC-33a, UC-33b AF-2 and UC-76a AF-2: the actor's own library documents, none of them already in the meeting
-    /// (BR-193, BR-209), become general meeting documents under their current name (BR-276) — linked to
-    /// <paramref name="agendaItemId"/> or attached to <paramref name="voteId"/> when given. No byte is copied
-    /// (ADR-0018).
+    /// UC-33a, UC-33b AF-2 and UC-76a AF-2: the actor's own library documents (BR-209) become general meeting documents
+    /// under their current name (BR-276) — linked to <paramref name="agendaItemId"/> or attached to
+    /// <paramref name="voteId"/> when given. No byte is copied (ADR-0018). A file already in the meeting is refused
+    /// for the general group (BR-193); for an item or a vote its meeting document is linked instead, unless it already
+    /// is (<see cref="DocumentUploadFailure.AlreadyLinked"/>).
     /// </summary>
     internal static async Task<DocumentUploadFailure> AddLibraryDocumentsAsync(TrustCabinetDbContext db, Meeting meeting,
         Guid actorId, IReadOnlyList<Guid> documentIds, DateTimeOffset now, Guid? agendaItemId, Guid? voteId,
@@ -372,11 +373,31 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             .Where(d => ids.Contains(d.Id) && d.OwnerId == actorId).ToListAsync(ct);
         if (ids.Length == 0 || library.Count != ids.Length) return DocumentUploadFailure.LibraryUnavailable;
         var files = library.Select(d => d.StoredFileId).ToArray();
-        if (await db.MeetingDocuments.AnyAsync(d => d.MeetingId == meeting.Id && d.RemovedAt == null
-                && files.Contains(d.StoredFileId), ct))
-            return DocumentUploadFailure.AlreadyInMeeting;
+        var inMeeting = await db.MeetingDocuments
+            .Where(d => d.MeetingId == meeting.Id && d.RemovedAt == null && files.Contains(d.StoredFileId))
+            .Select(d => new
+            {
+                d.Id, d.StoredFileId,
+                Linked = d.AgendaItemLinks.Any(l => l.AgendaItemId == agendaItemId)
+                    || d.VoteLinks.Any(l => l.VotingSessionId == voteId),
+            })
+            .ToListAsync(ct);
+        if (inMeeting.Count > 0)
+        {
+            // The general group has nothing more to add for a file already in the meeting (BR-193).
+            if (agendaItemId is null && voteId is null) return DocumentUploadFailure.AlreadyInMeeting;
+            // For an item or a vote, the meeting's own document is linked instead, as if chosen from the meeting.
+            if (inMeeting.Any(d => d.Linked)) return DocumentUploadFailure.AlreadyLinked;
+            foreach (var existing in inMeeting)
+            {
+                if (agendaItemId is { } linkItem)
+                    db.MeetingDocumentAgendaItems.Add(new() { MeetingDocumentId = existing.Id, AgendaItemId = linkItem });
+                if (voteId is { } linkVote)
+                    db.VoteDocuments.Add(new() { VotingSessionId = linkVote, MeetingDocumentId = existing.Id });
+            }
+        }
 
-        foreach (var document in library)
+        foreach (var document in library.Where(d => inMeeting.All(m => m.StoredFileId != d.StoredFileId)))
         {
             // A new row even for a file removed earlier: its old comments do not come back (BR-212, BR-284).
             var meetingDocument = new MeetingDocument { MeetingId = meeting.Id, StoredFileId = document.StoredFileId,

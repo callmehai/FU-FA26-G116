@@ -32,15 +32,29 @@ export function useAnchoredPopover(
 
       panel.style.left = `${left}px`
       if (matchWidth) panel.style.minWidth = `${box.width}px`
-      panel.style.top = upwards ? 'auto' : `${box.bottom + gap}px`
-      panel.style.bottom = upwards ? `${window.innerHeight - box.top + gap}px` : 'auto'
+      const height = panel.offsetHeight
+      if (upwards && box.top >= height + gap * 2) {
+        // Pinned by its bottom edge, so it stays on the field when it grows or shrinks.
+        panel.style.top = 'auto'
+        panel.style.bottom = `${window.innerHeight - box.top + gap}px`
+      } else {
+        // With room on neither side it slides over the field rather than past the screen's edge, where its top
+        // (a calendar's month and weekdays) could not be reached.
+        const top = upwards ? gap : Math.min(box.bottom + gap, window.innerHeight - height - gap)
+        panel.style.top = `${Math.max(gap, top)}px`
+        panel.style.bottom = 'auto'
+      }
     }
 
     place()
     // Capture phase: a scroll inside the dialog body does not bubble to window.
     window.addEventListener('scroll', place, true)
     window.addEventListener('resize', place)
+    // A month of four, five or six weeks changes the calendar's height while it is open.
+    const resized = new ResizeObserver(place)
+    resized.observe(panel)
     return () => {
+      resized.disconnect()
       window.removeEventListener('scroll', place, true)
       window.removeEventListener('resize', place)
       if (panel.matches(':popover-open')) panel.hidePopover()

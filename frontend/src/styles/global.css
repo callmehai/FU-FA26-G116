@@ -1637,7 +1637,9 @@ a.menu-item { text-decoration: none; }
   gap: 2px;
   height: var(--control-height);
   padding: 3px;
-  overflow: hidden;
+  /* clip, not hidden: a hidden overflow is still a scroll box, and focusing the checked radio as a dialog opens
+     scrolled the track by its padding, so the selected block sat off-centre. */
+  overflow: clip;
   border: 1px solid var(--control-line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -1717,8 +1719,13 @@ a.menu-item { text-decoration: none; }
 .dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
 .dialog-lg .dialog-body { flex: 1; min-height: 0; }
 /* The meeting form, AI-eCabinet's two columns: what and when on the left, how on a grey panel. */
-.dialog-xl { width: min(1040px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
-.dialog-xl .dialog-body { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+/* A fixed height, and room kept for the scrollbar: switching Trực tuyến ↔ Kết hợp adds or drops a field, and the
+   dialog used to grow and shrink with it while its scrollbar came and went. */
+.dialog-xl { width: min(1040px, calc(100vw - 32px)); height: min(760px, calc(100dvh - 48px)); max-height: calc(100dvh - 48px); }
+/* The gutter on both edges keeps the form centred; the padding is trimmed by about a scrollbar's width to match. */
+.dialog-xl .dialog-body {
+  display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 16px; scrollbar-gutter: stable both-edges;
+}
 .dialog-xl .meeting-form { flex: 1; }
 .dialog-foot-note { flex: 1; align-self: center; margin: 0; color: var(--muted-ink); font-size: 13px; }
 @media (max-width: 640px) {
@@ -1735,7 +1742,12 @@ a.menu-item { text-decoration: none; }
 .meeting-form-main, .meeting-form-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 /* Both columns run the dialog's height: the grey panel down to the footer, the people list taking
    what the left column has left. */
-.meeting-form-side { padding: 18px; border-radius: var(--radius-lg); background: var(--surface-alt); }
+.meeting-form-side { padding: 12px 16px; border-radius: var(--radius-lg); background: var(--surface-alt); }
+/* Tighter than the main column, so Kết hợp (two place fields) still fits the dialog on a 768px laptop, no scrollbar. */
+.meeting-form-side { gap: 12px; }
+.meeting-form-side .level-choices { gap: 6px; }
+.meeting-form-side .level-choices > legend { margin-bottom: 6px; }
+.meeting-form-side .level-choice { padding: 8px 12px; }
 .meeting-form-main > [data-field='participants'] { flex: 1; }
 .meeting-form-main textarea { min-height: 72px; resize: vertical; }
 
@@ -1964,7 +1976,17 @@ a.menu-item { text-decoration: none; }
 /* In the top layer (popover="manual"), placed under the field by useAnchoredPopover; `inset: auto`
    and `margin: 0` undo the UA popover centring. */
 .date-field-panel { position: fixed; inset: auto; margin: 0; max-width: calc(100vw - 8px); color: var(--ink); }
-.date-field-foot { display: flex; justify-content: flex-end; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-soft); }
+/* A form's date field: a smaller month than the calendar page's, so it fits above or below a field in a dialog. */
+.date-field-panel { width: 312px; padding: 12px; }
+.date-field-panel .date-pick-head .select:first-child { width: 110px; }
+.date-field-panel .date-pick-head .select:nth-child(2) { width: 88px; }
+.date-field-panel .date-pick-head .select-trigger { padding: 0 10px; }
+.date-field-panel .date-pick-grid { row-gap: 2px; }
+.date-field-panel .date-pick-weekday { padding: 4px 0; }
+.date-field-panel .date-pick-day { height: 32px; }
+.date-field-panel .date-pick-num { width: 28px; height: 28px; font-size: 13px; }
+@media (hover: none) { .date-field-panel .date-pick-day { height: 36px; } }
+.date-field-foot { display: flex; justify-content: flex-end; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
 .date-pick-selected .date-pick-num { background: var(--brand); color: #fff; font-weight: 600; }
 .date-pick-day.date-pick-selected:hover .date-pick-num { background: var(--brand-ink); }
 .time-field-menu { max-height: 264px; font-variant-numeric: tabular-nums; }
@@ -2062,8 +2084,9 @@ a.menu-item { text-decoration: none; }
   line-height: 1.35;
 }
 .cal-event:hover { z-index: 2; box-shadow: 0 2px 8px #1a243326; }
-/* Too short for two lines, as on Google Calendar: title then time on one line, the title cut with an ellipsis. */
-.cal-event-short { flex-direction: row; align-items: center; gap: 6px; padding: 0 10px; }
+/* Too short for two lines, as on Google Calendar: title then time on one line, the title cut with an ellipsis.
+   The line sits at the top, so a live tile's "Vào phòng họp" band below never covers it. */
+.cal-event-short { flex-direction: row; align-items: flex-start; gap: 6px; padding: 5px 10px 0; }
 .cal-event-time { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .cal-event-title { display: -webkit-box; overflow: hidden; font-weight: 600; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 /* A cancelled meeting stays where it was planned, grey and struck through, so nobody turns up for it. */
@@ -2088,22 +2111,22 @@ a.menu-item { text-decoration: none; }
 .cal-event-go .cal-event-place { display: none; }
 .cal-go {
   position: absolute;
-  right: 6px;
-  left: 6px;
+  right: 10px;
+  left: 10px;
   z-index: 2;
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 26px;
-  padding: 0 9px;
-  border-top: 1px solid rgb(255 255 255 / 22%);
-  background: color-mix(in srgb, var(--live) 78%, #000);
-  color: #fff;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  /* A white button on the green tile, so it reads as the action rather than more of the tile. */
+  background: var(--surface);
+  color: var(--live);
   font-size: 12px;
   font-weight: 700;
 }
-.cal-go-foot { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
-.cal-go:hover { background: color-mix(in srgb, var(--live) 64%, #000); }
+.cal-go:hover { background: var(--live-wash); }
 .cal-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .cal-go .icon { margin-left: auto; animation: nudge 2s ease-in-out infinite; }
 @keyframes nudge {
@@ -2581,14 +2604,21 @@ a.menu-item { text-decoration: none; }
 .agenda-box .value-empty { margin: 0; font-size: 13px; }
 .agenda-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .agenda-stamp { margin: 8px 0 0; color: var(--label-ink); font-size: 12px; }
-.agenda-doc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
-.agenda-doc-list li { display: flex; min-width: 0; }
+.agenda-doc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+/* One bordered row per document, so whatever sits at its right end (read state, "Gỡ") reads as that document's. */
+.agenda-doc-list li {
+  display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 36px; padding: 3px 4px 3px 8px;
+  border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface);
+}
 /* Each name opens the document viewer: brand-coloured like other links, so it reads as one. */
 .agenda-doc-list a { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: var(--brand); }
 .agenda-doc-list a:hover > span { text-decoration: underline; }
-.agenda-doc-list a > svg { flex: none; color: var(--label-ink); }
+.agenda-doc-list a > svg { flex: none; }
 .agenda-doc-list a > span { min-width: 0; overflow-wrap: anywhere; }
-@media (hover: none) { .agenda-doc-list a { min-height: 40px; } }
+@media (hover: none) {
+  .agenda-doc-list a { min-height: 40px; }
+  .vote-doc-detach { width: 40px; height: 40px; }
+}
 .agenda-conclusion-editor textarea { width: 100%; background: var(--surface); }
 .agenda-conclusion-editor .field-foot { margin-top: 4px; }
 .agenda-conclusion-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
@@ -2649,7 +2679,7 @@ a.menu-item { text-decoration: none; }
 .vote-roles-label { color: var(--label-ink); }
 .vote-times { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: var(--muted-ink); font-variant-numeric: tabular-nums; }
 .vote-times > svg { color: var(--label-ink); }
-.vote-docs li { align-items: center; gap: 8px; }
+.vote-docs li { background: var(--surface-alt); }
 .vote-read { flex: none; margin-left: auto; color: var(--chip-emerald-fg); font-size: 12px; font-weight: 600; }
 .vote-unread { color: var(--chip-amber-fg); }
 .vote-doc-detach { flex: none; margin-left: auto; }

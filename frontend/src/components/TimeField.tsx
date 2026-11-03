@@ -56,6 +56,9 @@ export function TimeField({
   const boxRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  // The pointer moved the highlight: the row is already in view, and scrolling it would put another row under
+  // the pointer, which moves the highlight again — the list ran away on its own.
+  const byPointer = useRef(false)
 
   // The value can change from outside (a reset, the start moving the end): show it.
   const [shownValue, setShownValue] = useState(value)
@@ -75,6 +78,10 @@ export function TimeField({
   // Bring the highlighted row into the middle of the list, as the list first opens and as it moves.
   useLayoutEffect(() => {
     if (!open) return
+    if (byPointer.current) {
+      byPointer.current = false
+      return
+    }
     const row = listRef.current?.children[highlighted] as HTMLElement | undefined
     row?.scrollIntoView({ block: browsing ? 'nearest' : 'center' })
   }, [open, highlighted, browsing])
@@ -196,7 +203,11 @@ export function TimeField({
                 role="option"
                 aria-selected={time === value}
                 className={index === highlighted ? 'select-option select-option-active' : 'select-option'}
-                onMouseEnter={() => setHighlighted(index)}
+                onMouseEnter={() => {
+                  if (index === highlighted) return
+                  byPointer.current = true
+                  setHighlighted(index)
+                }}
                 // Before the input's blur, so the click is not lost to commitText re-rendering the list.
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => commit(time)}

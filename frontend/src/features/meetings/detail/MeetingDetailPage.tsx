@@ -59,6 +59,9 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id']
 
+/** Marks a navigation that only switched the tab (see `setTab`). */
+const TAB_SWITCH = 'tabSwitch'
+
 /** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
 const TAB_BLOCKED_ON: Record<
   Exclude<TabId, 'overview' | 'attendees' | 'agenda' | 'documents' | 'votes' | 'recordings'>,
@@ -124,9 +127,20 @@ function MeetingDetail({
   const { user, can, reloadSession } = useAuth()
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const [params] = useSearchParams()
-  // `?tab=documents` is where the document viewer's back link lands.
-  const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview')
+  const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  // The tab lives in the URL, so the browser's Back from a document returns to the tab it was opened from. The
+  // state goes along: it holds where "‹ Cuộc họp" leads (useBackTarget), and marks the change as a tab switch, which
+  // the re-read below leaves alone.
+  const tab: TabId = TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
+  const setTab = (id: TabId) =>
+    setParams(
+      (p) => {
+        p.set('tab', id)
+        return p
+      },
+      { replace: true, state: { ...(location.state as object | null), [TAB_SWITCH]: true } },
+    )
   // ADR-0040: how the meeting is recorded follows from how it is held. Whoever joins from afar is captured per mic, in
   // the call room; the page only reads that record. A room is recorded by the Secretary, from a card that lives with
   // the page rather than the Bản ghi tab, so that moving between tabs never stops it (AI-eCabinet's floating card).
@@ -229,15 +243,17 @@ function MeetingDetail({
   // Opening a notification about this same meeting navigates to the URL already on screen, which
   // does not remount the page: re-read what the notification says has changed. A different meeting
   // in the URL remounts this component anyway, so leave that one to the new mount.
-  const { key: locationKey } = useLocation()
+  const { key: locationKey } = location
+  const tabSwitch = (location.state as Record<string, unknown> | null)?.[TAB_SWITCH] === true
   const { meetingId } = useParams()
   const shownKey = useRef(locationKey)
   useEffect(() => {
     if (shownKey.current === locationKey || meetingId?.toLowerCase() !== meeting.id.toLowerCase()) return
     shownKey.current = locationKey
+    if (tabSwitch) return
     void reload()
     void reloadHistory()
-  }, [locationKey, meetingId, meeting.id, reload, reloadHistory])
+  }, [locationKey, tabSwitch, meetingId, meeting.id, reload, reloadHistory])
 
   // The history is read separately; it can be the first to learn the meeting is gone.
   const historyFailure = history.failure

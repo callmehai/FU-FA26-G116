@@ -327,7 +327,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
 
     /// <summary>
     /// UC-76a AF-2: the actor's library documents are added to the meeting and attached to the draft in the same save
-    /// (BR-304), with UC-33a's checks (BR-193, BR-209).
+    /// (BR-304), with UC-33a's checks (BR-209); one already in the meeting is attached as it is.
     /// </summary>
     private async Task<VoteOutcome> AttachFromLibraryAsync(Meeting meeting, VoteViewer viewer, VotingSession vote,
         VoteInput input, DateTimeOffset now, CancellationToken ct)
@@ -340,7 +340,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             return new(failure switch
             {
                 DocumentUploadFailure.LibraryUnavailable => VoteFailure.LibraryUnavailable,
-                DocumentUploadFailure.AlreadyInMeeting => VoteFailure.AlreadyInMeeting,
+                DocumentUploadFailure.AlreadyLinked => VoteFailure.DocumentAlreadyAttached,
                 _ => VoteFailure.SaveFailed
             });
         var added = db.ChangeTracker.Entries<MeetingDocument>().Where(e => e.State == EntityState.Added).Select(e => e.Entity)
