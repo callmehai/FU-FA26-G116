@@ -4,8 +4,8 @@
 production 02/11/2026 (163 kiểm tra, 5 lỗi) trên SCRUM-21, 22, 23, 58, 107.
 
 > **Tiến độ 02/11/2026: tài liệu đã sửa theo code trong chính PR #224.** BA chỉ còn rà lại và xác nhận 4 điểm ở §3.
-> PR #224 đã merge vào `main` (02/11/2026, phần code). Phần sửa tài liệu này nằm ở PR tiếp theo, PR đó đã merge nhánh của PR #221 để sửa
-> Report 3 DOCX trên bản của #221, nên **#221 phải merge trước hoặc cùng lúc**.
+> PR #224 đã merge vào `main` (02/11/2026, phần code). Phần sửa tài liệu này nằm ở PR #235, sửa Report 3 DOCX trên bản đã có
+> #221 (#221 đã merge vào `main`).
 
 ## 1. Code đã đổi
 
@@ -16,10 +16,14 @@ production 02/11/2026 (163 kiểm tra, 5 lỗi) trên SCRUM-21, 22, 23, 58, 107.
 - Server kiểm cấu trúc PDF và tự đếm trang bằng PdfPig trong tiến trình con
   ([ADR-0044](../../05-decisions/0044-server-kiem-cau-truc-va-dem-trang-pdf.md)); FE không đếm trang, không gửi `pageCounts`.
 - `MSG382` (410, tệp đã mất khỏi kho) và `MSG383` (FE, trình duyệt không vẽ được tệp), đều không có nút Thử lại.
+- Sửa sau review PR #224 (PR #235, 03/11/2026): chờ quá 30 giây mà hai tiến trình kiểm PDF vẫn bận thì lần tải trả mã "thử
+  lại" sẵn có (`503 MSG166`, kho cá nhân `503 MSG178`), không phải `MSG164`; tiến trình con chết hay quá giờ có ghi log; tab
+  Tài liệu không còn đọc lại danh sách sau mỗi lá phiếu (ADR-0044 §6, API 11).
 
 ## 2. Tài liệu đã sửa trong PR
 
-- Report 3: UC-32a AF-1/AF-3, UC-32c (POST-3, bước 4, EX-5, EX-6), UC-33a AF-1/EX-3, UC-34b EX-4, UC-35 EX-5; màn 7.3, 7.4, 7.5,
+- Report 3: I.3.2 `StoredFile.PageCount` (server đếm), UC-36 EX-1 và BR-215 (PDF cần mở được không mật khẩu, có ít nhất một
+  trang), UC-32a AF-1/AF-3, UC-32c (POST-3, bước 4, EX-5, EX-6), UC-33a AF-1/EX-3, UC-34b EX-4, UC-35 EX-5; màn 7.3, 7.4, 7.5,
   8.6 theo code; §V.2 thêm MSG382, MSG383; Change Log. Extract `05-use-case-specifications.md` sinh lại.
 - Sequence UC-32a, UC-32c, UC-33a AF-1, UC-36, UC-76a: `.txt`, PNG, tab draw.io gộp và `drawio-png/`.
 - `docs/03-api/11`, `14`, `15`, `16`, danh mục mã (MSG380/382/383 ở bảng nguồn UC), ADR-0044, note 23 (dòng "không góp ý").

@@ -5,6 +5,10 @@ namespace TrustCabinet.Web.Tests.Documents;
 
 public sealed class DocumentFileRulesTests
 {
+    /// <summary>The rules with the page counter run in this process: these PDFs are the test's own, not hostile.</summary>
+    private static Task<DocumentUploadOutcome> Validate(IReadOnlyList<DocumentUploadCandidate> candidates)
+        => DocumentFileRules.ValidateAsync(candidates, DocumentFileRules.CountPdfPagesAsync, default);
+
     private static Task<string?> Detect(byte[] bytes) => DocumentFileRules.DetectContentTypeAsync(new MemoryStream(bytes), default);
 
     [Fact]
@@ -86,7 +90,7 @@ public sealed class DocumentFileRulesTests
     public async Task The_name_must_be_pdf_or_docx_and_agree_with_the_bytes(string name, bool pdfBytes)
     {
         var bytes = pdfBytes ? SampleFiles.Pdf() : SampleFiles.Docx();
-        var result = await DocumentFileRules.ValidateAsync([new(name, bytes.Length, () => new MemoryStream(bytes))], default);
+        var result = await Validate([new(name, bytes.Length, () => new MemoryStream(bytes))]);
         Assert.Equal(name == "BAO-CAO.PDF" ? DocumentUploadFailure.None : DocumentUploadFailure.Invalid, result.Failure);
     }
 
@@ -95,28 +99,28 @@ public sealed class DocumentFileRulesTests
     {
         Stream Unread() => throw new InvalidOperationException("Must not be read.");
         var five = Enumerable.Range(0, 5).Select(i => new DocumentUploadCandidate($"{i}.pdf", 41L * 1024 * 1024, Unread)).ToArray();
-        Assert.Equal(DocumentUploadFailure.TooMany, (await DocumentFileRules.ValidateAsync(five, default)).Failure);
+        Assert.Equal(DocumentUploadFailure.TooMany, (await Validate(five)).Failure);
 
         var exactly = Enumerable.Range(0, 4).Select(i => new DocumentUploadCandidate($"{i}.pdf", 50L * 1024 * 1024, () => new MemoryStream(SampleFiles.Pdf()))).ToArray();
-        Assert.NotEqual(DocumentUploadFailure.TooMany, (await DocumentFileRules.ValidateAsync(exactly, default)).Failure);
+        Assert.NotEqual(DocumentUploadFailure.TooMany, (await Validate(exactly)).Failure);
     }
 
     [Fact]
     public async Task Every_bad_file_is_reported_and_the_server_counts_the_pages_of_a_pdf()
     {
-        var bad = await DocumentFileRules.ValidateAsync([
+        var bad = await Validate([
             new("ok.pdf", 10, () => new MemoryStream(SampleFiles.Pdf())),
             new("rong.pdf", 0, () => new MemoryStream()),
             new("anh.pdf", 16, () => new MemoryStream(SampleFiles.Png())),
-        ], default);
+        ]);
         Assert.Equal(DocumentUploadFailure.Invalid, bad.Failure);
         Assert.Equal(["files[1]", "files[2]"], bad.Errors!.Keys.Order());
 
-        var good = await DocumentFileRules.ValidateAsync([
+        var good = await Validate([
             new("a.pdf", 10, () => new MemoryStream(SampleFiles.Pdf("a", pages: 4))),
             new("b.pdf", 10, () => new MemoryStream(SampleFiles.Pdf("b"))),
             new("c.docx", 10, () => new MemoryStream(SampleFiles.Docx())),
-        ], default);
+        ]);
         Assert.Equal([4, 1, null], good.Files!.Select(f => f.PageCount));
     }
 

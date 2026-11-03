@@ -55,8 +55,8 @@ nhận được (người bỏ phiếu của biểu quyết đang Open, cuộc h
 UC-32c thêm EX-5 `MSG382` (tệp đã mất khỏi kho, không thử lại) và EX-6 `MSG383` (trình duyệt không vẽ được tệp).
 UC-33a AF-1, UC-33b AF-1, UC-36 và UC-76a: trình duyệt không gửi `pageCounts` nữa; server kiểm cấu trúc PDF và tự đếm trang trong một
 tiến trình con ([ADR-0044](../../05-decisions/0044-server-kiem-cau-truc-va-dem-trang-pdf.md)). PNG, tab draw.io gộp và
-`drawio-png/` của các UC này đã xuất lại cùng ngày, trừ `drawio-png/uc33b_…` (draw.io CLI quá 180 giây; tab trong file gộp
-đã cập nhật, chỉ đổi một nhãn).
+`drawio-png/` của các UC này đã xuất lại cùng ngày. `drawio-png/uc33b_…` xuất ở `--scale 1` (03/11/2026): tab cao 11.240 px,
+ở `--scale 2` ảnh cao quá giới hạn canvas của draw.io nên ra trắng.
 
 UC-33a AF-1 vẽ ngày 23/10/2026 cho SCRUM-107, chỉ phủ nhánh tải từ máy; boundary là tab Tài liệu, nơi đặt hộp thoại tải lên (khớp `MeetingDocumentsTab` ở class diagram FE-07); luồng chính (chọn từ kho) thuộc SCRUM-58 và sẽ
 thêm vào cùng UC sau. **Cập nhật 27/10/2026 theo code**: kiểm quyền và trạng thái cuộc họp trước (EX-7, EX-1, EX-6), rồi chặn theo

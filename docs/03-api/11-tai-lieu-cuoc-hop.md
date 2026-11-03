@@ -86,7 +86,7 @@ dung vẫn là tài liệu mới (BR-229).
 | 409 | `MSG172` | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc trong lúc đang tải |
 | 409 | `MSG349` | Cuộc họp đã huỷ (BR-299). FE ẩn nút tải lên khi cuộc họp `Cancelled` |
 | 409 | `MSG346` | Bộ nhớ tài liệu của cả hệ thống không đủ chỗ (ADR-0034, mặc định 10 GB). Kiểm dưới khoá chung trước khi đẩy byte lên R2; không tệp nào được thêm |
-| 503 | `MSG166` | Không lưu được (R2 lỗi, DB lỗi, hoặc server chưa cấu hình kho tệp). Không tệp nào được thêm |
+| 503 | `MSG166` | Không lưu được (R2 lỗi, DB lỗi, hoặc server chưa cấu hình kho tệp), hoặc chờ quá 30 giây mà hai tiến trình kiểm PDF vẫn bận (ADR-0044 §6). Không tệp nào được thêm |
 
 `errors` của `MSG164`:
 
@@ -269,7 +269,9 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
   tab Tài liệu.
 - `MSG158`/`MSG160` là lỗi tạm thời: hiện nút thử lại. `MSG382` thì không (tệp đã mất). `MSG156` giữa chừng (tài liệu
   vừa bị gỡ, mất quyền): đóng trình xem và tải lại danh sách.
-- Lắng nghe `documentsChanged`, `agendaChanged`, `voteChanged` và `voteOpened` để làm mới tab Tài liệu và panel trong phòng.
+- Lắng nghe `documentsChanged`, `agendaChanged` và `voteChanged` để làm mới tab Tài liệu và panel trong phòng; với
+  `voteChanged` thì bỏ qua `BallotCast` và `ConclusionRecorded` (lá phiếu và kết luận không đổi nhóm Biểu quyết, mà mỗi
+  lá phiếu phát một event: N người bỏ phiếu là N lần đọc lại). FE gom các event còn lại thành `voteListChanged`.
 
 ### FE đã làm (SCRUM-21, SCRUM-107)
 
@@ -436,9 +438,10 @@ Người tổ chức. Không xem được cuộc họp, tài liệu đã gỡ, h
 Body `{ "body": "…", "pageNumber": 3, "parentCommentId": null }`. Thứ tự kiểm theo sequence:
 
 1. Nội dung cắt khoảng trắng, không trống (`400 MSG200`, BR-246), ≤ 4.000 ký tự (`400 MSG348`).
-2. Dưới khoá chia sẻ (`FOR SHARE`) trên dòng cuộc họp: xem được cuộc họp và tài liệu còn trong cuộc họp (`404 MSG156`),
-   cuộc họp chưa kết thúc (`409 MSG251`) và chưa huỷ (`409 MSG349`), kể cả khi vừa kết thúc/huỷ lúc đang gửi. Các góp ý
-   không phải chờ nhau.
+2. Dưới khoá chia sẻ (`FOR SHARE`) trên dòng cuộc họp, và với Khách cả trên dòng `guest_sessions` của phiên: xem được
+   cuộc họp và tài liệu còn trong cuộc họp (`404 MSG156`), cuộc họp chưa kết thúc (`409 MSG251`; Khách thì `404 MSG156`,
+   BR-181) và chưa huỷ (`409 MSG349`), kể cả khi vừa kết thúc/huỷ hay Khách vừa Thoát lúc đang gửi: góp ý vào trước, hoặc
+   bị từ chối. Các góp ý không phải chờ nhau.
 3. Trả lời (AF-2): `parentCommentId` phải là góp ý của chính tài liệu này (không thì `404 MSG156`); trả lời một câu trả
    lời thì vào luồng của góp ý gốc.
 4. `pageNumber` chỉ giữ với **PDF**, ở góp ý gốc, và trong khoảng `1…pageCount` nếu biết số trang; ngoài ra lưu `null`
