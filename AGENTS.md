@@ -324,6 +324,12 @@ brings the UC Specification, diagrams and business rules in line with the code. 
 - when reviewing, never request changes, or ask BA to update docs, just because the UC
   Specification, diagrams or business rules lag behind the code. Do flag a requirement change that
   is **not** noted in the ticket, and docs the author wrote that contradict themselves.
+- **closing a review means closing the tickets.** Every review note names its Jira tickets in the
+  header, and when the PR that carries the review is on `main` each of those tickets gets one
+  comment (UC/BR/MSG changed, PR + commit, what is left) and a status move. Do not write "đã vào
+  main" from the PR page alone: a stacked PR can merge into its base after the base merged into
+  `main` and never reach it (#238). Rule and status mapping:
+  [§2.2](docs/DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update).
 
 Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-changing-a-requirement-during-implementation).
 

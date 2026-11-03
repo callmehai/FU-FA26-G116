@@ -96,6 +96,35 @@ a field that has to be optional, an extra error branch, an endpoint FE turns out
 This freedom is about the Use Case's own details. Scope boundaries (§8), the security rules in
 [AGENTS.md](../AGENTS.md) and accepted ADRs still hold; changing those needs a team decision.
 
+### 2.2 Closing a review: which tickets to update
+
+A BA review is not finished when the documentation PR merges — it is finished when every Jira ticket
+it covers says so. Write the mapping down **before** the review starts; it is the only thing that
+keeps the tracking honest.
+
+- **Every review note names its tickets in the header** (the `Nguồn` block or a small table), one
+  Jira key per row. A note without that list is incomplete — add it before writing the body.
+- **The note is the ledger**: PR → ticket → what changed in the repository → what the ticket says
+  now → what is left. The index in
+  [docs/notes/ban-giao-ba-final-review/README.md](notes/ban-giao-ba-final-review/README.md) carries
+  the current table; update it in the same commit that changes the state.
+- **Update the ticket when the PR is on `main`** — not when it is opened, not when it is approved:
+  - post one comment per ticket: which UC / BR / MSG changed, the PR and commit, and what is still
+    missing (screen specifications, a follow-up PR);
+  - move it: `BA Final Review` → `In Review` for the Tester, and `Done` for a ticket whose whole
+    deliverable is the documentation;
+  - if only half is merged (code on `main`, documentation not), leave the status and say which half
+    is missing in the comment.
+- **Check that the merge actually reached `main`** before writing "đã vào main":
+  `git log --oneline origin/main` (or open the file on `origin/main`). A stacked PR merged into its
+  base **after** that base was merged into `main` never reaches `main` — that is how PR #238 was
+  lost: it merged into `docs/ba-final-review-khach-…` seven seconds after that branch had been
+  merged as #237. The fix is a new PR from the feature branch straight to `main`; never rewrite
+  history for it, and do not comment "đã vào main" until it is merged.
+- **Never mark `Done` while the content is not on `main`.** The ticket is what the Tester and the
+  reviewer read; `main` is what they run.
+
+
 ---
 
 ## 3. Sprint planning
@@ -131,6 +160,9 @@ After FE integration (Jira `BA Final Review`):
 - Check that specification and diagrams agree with each other and with the code.
 - If a change noted in the ticket is not acceptable as a requirement, reopen it with BE/FE rather
   than documenting around it.
+- When the review PR is merged into `main`, comment the result on **every ticket the note names**
+  and move it — §2.2 has the rule and the status mapping. Documentation is not "done" until the
+  tickets say so.
 
 BA documentation describes **business and system behaviour**, not implementation details. It says
 what happens and under which rules, not which C# class or React component does it.
