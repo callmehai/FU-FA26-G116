@@ -79,11 +79,12 @@ else A transcript was claimed
         activate Protector
         Protector-->TranscriptionService: Voiceprints
         deactivate Protector
-        TranscriptionService->SpeakerMatcher: Suggest who each voice is: the best sample of each person,\nonly when close enough and clearly ahead (BR-366, BR-367)
+        TranscriptionService->SpeakerMatcher: Match who each voice is: the best sample of each person,\nonly when close enough and clearly ahead (BR-366, BR-367, ADR-0045)
         activate SpeakerMatcher
-        SpeakerMatcher-->TranscriptionService: Suggested person per voice
+        SpeakerMatcher-->TranscriptionService: Best person per voice, with its score
         deactivate SpeakerMatcher
-        TranscriptionService->TranscriptRepository: Replace segments and voices with the new ones and their suggestions,\nwithout naming anyone; mark the transcript Completed (BR-360, BR-366)
+        TranscriptionService->TranscriptionService: Fill in the name by itself when the match is clear\nand the person accepted notice 1.2 (BR-362, BR-366)
+        TranscriptionService->TranscriptRepository: Replace segments and voices with the new ones, the names filled\nin and the suggestions; mark the transcript Completed (BR-360, BR-366)
         activate TranscriptRepository
         TranscriptRepository->Database: Replace segments and speakers, update transcript
         activate Database

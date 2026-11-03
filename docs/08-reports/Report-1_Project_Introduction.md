@@ -1,6 +1,6 @@
 # Report 1 – Project Introduction
 
-> **GENERATED — DO NOT EDIT.** Snapshot từ DOCX local. Sửa [`source/Report_1_Project_Introduction.docx`](source/Report_1_Project_Introduction.docx) rồi chạy `python scripts/sync_reports.py --source docs/08-reports/source/Report_1_Project_Introduction.docx --report 1`. Sửa tay file này sẽ mất ở lần sync sau. Chi tiết: [08-reports/README.md](README.md).
+> **GENERATED — DO NOT EDIT.** Snapshot từ DOCX local. Sửa [`source/Report_1_Project_Introduction.docx`](source/Report_1_Project_Introduction.docx) rồi chạy `python scripts/sync_reports.py --source docs/08-reports/source/<tên>.docx --report 1`. Sửa tay file này sẽ mất ở lần sync sau. Chi tiết: [08-reports/README.md](README.md).
 
 CAPSTONE PROJECT REPORT
 
@@ -24,6 +24,7 @@ Table of Contents
 | 08/10/2026 | M, D | KhanhPG | Remove FE-04; consolidate Meeting and former Meeting Session scope in FE-05. Attach Agenda, Vote and Resolution directly to Meeting and align Meeting Minutes. |
 | 09/10/2026 | M, D | KhanhPG | renumber active features FE-01 to FE-15; limit voting to InProgress Meetings and Chair conclusions; remove time-boxed voting, quorum and separate Resolution scope; align supporting interfaces and audio privacy safeguards. Preserve the committed schedule and effort. |
 | 13/10/2026 | M | HaiTV | FE-07: documents are not versioned; library and meetings reference one immutable file; Chair and Secretary add or remove meeting documents; library folders; browser-side preview (ADR-0018). FE-11: the Chair selects eligible voter roles; verified Guests vote; ending the Meeting does not require closing Votes (ADR-0016, ADR-0017). |
+| 03/11/2026 | M, D | KhanhPG | Remove the personal email addresses and mobile numbers of the project stakeholders from the public report; the stakeholder table keeps full name and role only. |
 
 *A - Added M - Modified D - Deleted
 
@@ -56,15 +57,15 @@ The purpose of this project is to develop TrustCabinet, a centralized Internal M
 
 ### 3. Project Stakeholders
 
-| Full Name | Role | Email | Mobile |
-| --- | --- | --- | --- |
-| Nguyen Quang Hung | Supervisor | HungNQ40@fe.edu.vn |  |
-| Dinh Van Toi | Product Owner (TrustSoft) |  |  |
-| Tran Viet Hai | Team Leader, Frontend Lead | kdodjeksdkkd@gmail.com | 0947361416 |
-| Pham Gia Khanh | Business Analyst, UI/UX | phamgiakhanh0709@gmail.com | 0903476776 |
-| Nguyen Quang Huy | Member (Backend, Frontend) | luckyhuy100@gmail.com | 0335245834 |
-| Hoang Duc Loc | Backend Lead, Architecture | ducloc110805@gmail.com | 0946718111 |
-| Nguyen Truong Huy | Test Lead, Quality Assurance | nguyentruonghuy294@gmail.com | 0969483804 |
+| Full Name | Role |
+| --- | --- |
+| Nguyen Quang Hung | Supervisor |
+| Dinh Van Toi | Product Owner (TrustSoft) |
+| Tran Viet Hai | Team Leader, Frontend Lead |
+| Pham Gia Khanh | Business Analyst, UI/UX |
+| Nguyen Quang Huy | Member (Backend, Frontend) |
+| Hoang Duc Loc | Backend Lead, Architecture |
+| Nguyen Truong Huy | Test Lead, Quality Assurance |
 
 ## II. Product Background
 

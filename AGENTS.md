@@ -9,11 +9,16 @@ TrustCabinet — an AI-assisted paperless meeting system with built-in voice/vid
 Capstone project **SEP490-G116**. The business domain is modelled on AI-eCabinet (SmartMeet), but
 this is an independent .NET implementation with a scope trimmed to fit a capstone.
 
-**Status: v0.1.0 — skeleton plus the full data model.** There is a frontend/backend skeleton,
-one `/api/health` endpoint, and a 27-table EF Core model covering every story in the Jira backlog:
-access, meetings, agenda, documents, voting, recordings, transcripts, minutes, notifications,
-audit and calls. There is still **no authentication and no business endpoint** — the tables exist,
-nothing reads or writes them yet. Do not assume domain code exists somewhere — check or ask first.
+**Status: the meeting loop runs end to end; minutes and the AI summary are still placeholders.** Sign-in
+(email + password, Google), user and role administration, scheduling, approval and cancellation, agenda,
+participants and attendance, the personal and meeting document libraries with comments, the online room
+over LiveKit, recording, Vietnamese transcription with speaker attribution, Voice ID and notifications
+all call the real API, and voting is built end to end. Meeting minutes and their signature flow
+(UC-58–UC-65) and the AI summary (UC-47–UC-51) are not implemented yet — check the code before assuming
+a feature exists.
+
+The EF Core model covers the whole backlog: access, meetings, agenda, documents, voting, recordings,
+transcripts, minutes, notifications, audit and calls.
 
 The model is documented in [docs/02-design/02-erd.md](docs/02-design/02-erd.md), which also lists
 what deliberately has no table (task tracking, organisations, org units). Read it before adding
@@ -161,10 +166,13 @@ is declared by code in the project that emits it —
 `<WarningsNotAsErrors>xUnit1012</WarningsNotAsErrors>`, with a comment saying why — rather than by
 removing the flag.
 
-Tests live under `tests/`, one project per backend project, registered in the `.sln`. Today there
-is only `TrustCabinet.Web.Tests` with a `/api/health` smoke test — it exists to prove the app boots
-in memory and CI can run tests at all. Replace it as real endpoints land; do not leave it as the
-only test.
+Tests live under `tests/`, one project per backend project, registered in the `.sln`. Today that is
+`TrustCabinet.Web.Tests`, split by feature: access and capability gate, meetings and workflow, agenda,
+participants and attendance, documents and comments, voting, the online room and guest access,
+recordings and transcription, notifications, email, plus the model invariants
+(`DatabaseModelTests`) and the message-code catalogue. `/api/health` is the only smoke test and it
+is there to prove the app boots in memory and CI can run tests at all — keep it, and cover each new
+endpoint with a test of its own rather than relying on it.
 
 ## Conventions
 
@@ -349,8 +357,9 @@ Details in [docs/DEVELOPMENT_WORKFLOW.md §2.1](docs/DEVELOPMENT_WORKFLOW.md#21-
   (the repo is public) and environment variables in deployment.
 - Sign-in, sign-out and the admin screens (users, role matrix) call the real API. Tokens live in
   `features/auth/session.ts`; a user's capabilities come from the backend, never from a table in
-  the frontend. The meeting list, create, edit and detail screens call the real API as well; on the
-  detail screen every tab but "Thông tin chung" is still a placeholder until its endpoint exists.
+  the frontend. The meeting list, create, edit and detail screens call the real API as well, and so
+  does every detail tab — Thông tin chung, Thành phần tham dự, Nội dung cuộc họp, Tài liệu, Biểu quyết
+  and Bản ghi — each with its own feature folder under `frontend/src/features/`.
 - The notification bell (`features/notifications/`) calls the real API and listens on
   `/hubs/notifications`. Its provider lives in `RequireAuth`, so keep every signed-in route —
   redirects included — under that guard; a route outside it remounts the provider and reconnects.

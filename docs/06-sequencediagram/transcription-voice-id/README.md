@@ -36,8 +36,10 @@ Quy ước riêng của nhóm này:
 - UC-45b và UC-46a mỗi UC phủ cả bản ghi phòng (`:Transcript Controller`) và bản ghi theo micro (`:Speech Clip Controller`),
   vẽ bằng `alt` ở đầu sơ đồ.
 - UC-46b AF-1 (gán cả nhóm "cùng giọng") là một vòng `loop`: màn hình gọi `assignSpeaker` cho từng giọng trong nhóm.
-- Gợi ý người nói chỉ Thư ký thấy (BR-366) và không bao giờ tự gán tên; rút đồng ý xoá mọi giọng mẫu và mọi gợi ý trong một
-  giao dịch, tên Thư ký đã gán giữ nguyên (BR-365). Xoá một giọng mẫu (UC-81e) **không** tính lại hồ sơ giọng: không có hồ sơ
+- Gợi ý người nói chỉ Thư ký thấy (BR-366); giọng khớp rõ — từ ngưỡng tự gán (mặc định 0,75) trở lên và người đó đã
+  đồng ý thông báo 1.2 — thì máy **tự điền tên** và Thư ký vẫn đổi hoặc bỏ được (ADR-0045); máy không bao giờ gán Khách.
+  Rút đồng ý xoá mọi giọng mẫu, mọi gợi ý **và tên máy đã điền** trong một giao dịch, tên Thư ký đã gán giữ nguyên
+  (BR-365). Xoá một giọng mẫu (UC-81e) **không** tính lại hồ sơ giọng: không có hồ sơ
   gộp, mỗi mẫu một đặc trưng, gợi ý lấy mẫu giống nhất.
 - Người dùng không thuộc thành phần hiện tại nhận câu trả lời "không tìm thấy" (không có mã MSG); sơ đồ vẽ nhánh này không
   có số EX. Voice ID chỉ đọc/ghi của chính người gọi: mẫu của người khác trả lời như không tồn tại.

@@ -5,7 +5,9 @@
 (Voice ID 1.2), [PR #227](https://github.com/callmehai/FU-FA26-G116/pull/227) + [ADR-0049](../05-decisions/0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md)
 (vô hiệu hoá tài khoản), [API 13](../../03-api/13-nhan-dien-giong-noi.md). Note này gom việc BA, không thay Jira.
 
-> **Tiến độ 03/11/2026: CHƯA LÀM GÌ.** Mới ghi note. Việc Report 1 là **ưu tiên số 1** (repo công khai).
+> **Tiến độ 03/11/2026: ĐÃ LÀM XONG** cả bốn phần — Report 1 hết thông tin cá nhân, README/AGENTS cập nhật trạng thái,
+> UC-06c + BR-372, Voice ID 1.2 + nghe lại trước khi lưu. Nhánh `docs/ba-final-review-scrum-130-voiceid`, cùng lượt với
+> [note 28](28-pr225-may-tu-gan-ten-nguoi-noi.md). Chi tiết ở §5.
 
 ## 1. Report 1 lộ thông tin cá nhân — ưu tiên
 
@@ -17,7 +19,12 @@
 - Thay bằng gì: email chung của nhóm/dự án nếu PO đồng ý, hoặc bỏ hẳn ô liên hệ; **không** để lại số điện thoại. Ghi lý do vào
   Change Log Report 1.
 - Xoá khỏi **lịch sử git** (filter-repo/BFG) là việc riêng, **Hải quyết sau** theo tin nhắn — BA không tự rewrite lịch sử.
-- [ ] Rà thêm Report 2–7 và `docs/notes/` xem còn cùng loại thông tin không (mới kiểm Report 1).
+  **Chốt 03/11/2026: để nguyên lịch sử.** Đây là email/số điện thoại của chính sáu thành viên, đã nằm trong repo public từ
+  đầu dự án; bản hiện tại đã sạch, còn viết lại lịch sử thì phải force-push main cùng hơn 200 nhánh, mọi người clone lại,
+  các PR đang mở làm lại, và GitHub vẫn có thể giữ object cũ (phải gửi yêu cầu lên Support) — không đáng so với lợi ích.
+- [x] Rà thêm Report 2–4 (DOCX) và toàn bộ `docs/` (trừ ảnh/PDF): không còn email hay số điện thoại thật; các địa chỉ
+      còn lại là dữ liệu giả (`*@trustcabinet.local`, `*@trustsoft.vn`, `*@example.*`, `*@x.vn`). Hai địa chỉ gmail trong
+      `docs/08-reports/test-reports/inventory.json` là dữ liệu mẫu chép từ mã test đăng nhập Google, không phải người thật.
 
 ## 2. README.md và AGENTS.md đang ghi trạng thái cũ
 
@@ -62,17 +69,47 @@ người còn ở bản 1.1/1.0 vẫn chỉ được gợi ý và thấy lời m
 | Screens 8.x (Giọng nói của tôi) | Nếu đặc tả màn hình có hộp ghi mẫu: thêm nút nghe lại + Lưu/Ghi lại, và câu "Dừng chưa gửi" |
 | `docs/03-api/13` | **Đã đúng** (bản 1.2, `playable`, `autoAssigned`, ngưỡng) — chỉ đối chiếu, không sửa |
 
-## 5. Việc BA, theo thứ tự
+## 5. Đã làm (03/11/2026)
 
-- [ ] **Report 1: bỏ 6 email + 5 số điện thoại**, sync report 1, commit DOCX + Markdown (ưu tiên 1).
-- [ ] README + AGENTS: trạng thái thật, scope khớp `scopeData.ts`, **không đụng dòng server test**.
-- [ ] UC-06c + BR (đề xuất BR-372) + UC-81a/81f theo §3.
-- [ ] UC-81b/81c, BR-361/362/366, screen spec 8.x theo §4.
-- [ ] Note 28 (PR #225) làm cùng lượt: BR-365/366/367 và UC-46b liên quan chặt với §3–§4.
-- [ ] Sync Report 3, Change Log; ghi kết quả vào SCRUM-130.
+- **Report 1:** bỏ hẳn **hai cột Email và Mobile** của bảng Project Stakeholders (giữ Full Name + Role, chia lại độ rộng cột
+  cho kín trang), thêm dòng Change Log 03/11/2026 (M, D, KhanhPG) ghi lý do; `scripts/sync_reports.py --report 1` sinh lại
+  Markdown. Kiểm lại: DOCX và Markdown **0 email, 0 số điện thoại**; `check_docx.py` OK.
+- **README.md:** tách dòng 24 thành "Biểu quyết … Đã có" và "Biên bản, phê duyệt biên bản và tóm tắt bằng AI | Chưa làm";
+  dòng Voice ID ghi thêm "tự điền tên khi giọng khớp rõ".
+- **AGENTS.md:** bỏ câu "v0.1.0 … no authentication"; nêu trạng thái thật (vòng họp chạy được đầu-cuối, biểu quyết xong,
+  biên bản/biên bản ký/AI summary còn placeholder UC-47–UC-51), bỏ số bảng cũ "27-table". **Không đụng các dòng server test**
+  (`deploy/`, ADR-0047) như đã dặn.
+- **UC-06c:** Description nêu việc kết thúc Voice ID; thêm **POST-4**; thêm bước **8** (kết thúc Voice ID trong cùng
+  transaction, nhật ký ghi quản trị viên) và đánh số lại 9, 10; BR-365 thêm "và mọi tên do máy điền"; **BR-372 mới** cho
+  ADR-0049 (UC-06c, domain Voice ID); UC-81a/UC-81f thêm câu quản trị viên vô hiệu hoá cũng kết thúc Voice ID.
+- **Voice ID 1.2:** UC-81b Description + NF bước 1 (bản 1.2, mục đích mới, rút là xoá cả tên máy điền) + AF-1 (đồng ý bản mới
+  thì máy được tự điền lại); BR-362 nêu bản 1.2 và điều kiện tự điền; UC-81a AF-1 nói người ở bản cũ chỉ được gợi ý tới khi
+  đồng ý bản mới; UC-81c thêm **nghe lại trước khi lưu** (Dừng chưa gửi, nghe rồi Lưu hoặc Ghi lại) + Description.
+  Không phải sửa screen spec: Report 3 **không có** màn "My voice" (màn hình dừng ở FE-08/FE-10).
+- **Report 3 Change Log:** dòng 03/11/2026 (M, A) ghi cả SCRUM-130 và PR #225; `sync_reports.py --report 3` audit khớp 100%.
+- **`scripts/check_docx.py` kiểm tra rộng hơn** (cùng lượt, theo yêu cầu): ngoài lỗi làm Word hỏi "recover", giờ bắt
+  style không có trong `styles.xml`, heading rỗng/nhảy cấp, bảng lệch số cột hoặc header trống, chữ nằm ngoài `w:r`,
+  và **hình dạng đặc tả của Report 3** — `UC-xx` duy nhất và đúng dạng, UC cha/con, đủ 8 dòng chuẩn, `PRE/POST/AF/EX`
+  và các bước Normal Flow đánh số 1..n, mỗi `BR-n` một dòng tăng dần, mỗi cặp (mã MSG, ngữ cảnh) một dòng và một mã
+  một nội dung, mọi `BR/MSG/UC` được UC nhắc tới phải tồn tại. Cảnh báo: `TODO/TBD`, dấu cách thừa, ảnh thiếu alt text.
+  Nhờ đó tìm và sửa thêm hai lỗi cũ: **UC-05** có khối `AF-2` lặp và 4 bước 5–8 thừa do một lần merge, và yêu cầu bảo
+  mật trỏ tới **UC-92** (không tồn tại) → **UC-13 View Audit Log**. README `08-reports` đã mô tả 5 nhóm kiểm tra.
 
-## 6. Hỏi PO / Hải
+## 6. Việc BA còn lại
 
-- Report 1 thay bằng email nào (email nhóm/dự án) hay bỏ hẳn ô liên hệ? Có cần xoá cả tên trường/đơn vị không?
-- Thông báo 1.2: PO duyệt câu chữ tiếng Việt chưa, hay BA viết lại theo ADR-0048 rồi PO xem?
-- Vô hiệu hoá tài khoản: đặt **BR riêng (BR-372)** hay gộp vào BR-365? (đề xuất BR riêng vì actor khác).
+- [x] Report 1: bỏ 6 email + 5 số điện thoại, sync report 1, DOCX + Markdown trong cùng commit.
+- [x] README + AGENTS: trạng thái thật, **không đụng dòng server test**.
+- [x] UC-06c + **BR-372** + UC-81a/81f theo §3.
+- [x] UC-81b/81c, BR-361/362/366, screen spec 8.x theo §4 (screen spec: không có màn tương ứng).
+- [x] Note 28 (PR #225) làm cùng lượt: BR-365/366/367, UC-45a/45c/46b, sequence.
+- [ ] Ghi kết quả vào SCRUM-130 trên Jira (chưa làm).
+- [ ] Còn lệch nhỏ chưa sửa (ngoài phạm vi note): AGENTS.md còn câu "chỉ có TrustCabinet.Web.Tests với smoke test
+      `/api/health`" và "trên màn chi tiết mọi tab trừ Thông tin chung còn placeholder" — cập nhật khi rảnh.
+
+## 7. Hỏi PO / Hải (đã chốt trong lúc làm)
+
+- **Report 1:** đã bỏ hẳn **hai cột Email và Mobile** (không đưa email nhóm/dự án) — nếu PO muốn có một email chung thì
+  thêm lại một cột, khi đó dùng email của nhóm chứ không dùng email cá nhân. Tên và đơn vị giữ nguyên.
+- **Thông báo 1.2:** BA viết câu chữ theo ADR-0048 trong UC-81b; PO xem lại lời thông báo tiếng Việt trên app là chỗ duy nhất
+  cần duyệt (Report 3 chỉ mô tả, không chép nguyên văn).
+- **Vô hiệu hoá tài khoản:** đã đặt **BR-372 riêng** (actor là quản trị viên, khác BR-365 của người tự rút đồng ý).

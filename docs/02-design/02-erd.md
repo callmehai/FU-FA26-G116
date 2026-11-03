@@ -491,6 +491,14 @@ erDiagram
     }
 ```
 
+Mỗi giọng trong bản gỡ băng là một `TranscriptSpeaker`: máy chỉ **gợi ý** (`SuggestedUserId`, `SuggestionScore`)
+người trên roster đã đồng ý Voice ID có giọng giống nhất; từ 03/11/2026 (ADR-0045) máy **điền tên** vào
+`AssignedUserId` khi điểm khớp đạt ngưỡng tự gán (mặc định 0,75) và người đó đã đồng ý thông báo 1.2
+(BR-362). `AssignedById` rỗng nghĩa là **máy điền**, có người là **Thư ký điền**; Thư ký luôn đổi hoặc bỏ được,
+và cờ `autoAssigned` chỉ có trong phản hồi API, không lưu. Giọng thứ hai của cùng một người gộp vào người
+đó khi khớp giọng mẫu đạt ngưỡng giọng thứ hai (mặc định 0,7), hoặc khi giống giọng đầu tiên đã mang tên
+người đó từ ngưỡng thừa hưởng (mặc định 0,8) — lúc đó nhận cùng tên và cùng điểm (ADR-0050).
+
 ## 8. Phòng họp trực tuyến
 
 Phòng trực tuyến thuộc Meeting và chỉ mở khi Meeting `InProgress` với hình thức Online/Hybrid. CallSession là một lượt mở phòng, không phải một buổi họp; việc vào/ra phòng không làm thay đổi lifecycle cuộc họp.
