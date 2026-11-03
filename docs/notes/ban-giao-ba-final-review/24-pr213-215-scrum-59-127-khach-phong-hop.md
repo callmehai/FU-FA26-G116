@@ -59,12 +59,20 @@ Jira hay đặc tả.
 - [x] UC-38 EX-6 (hết phiên Khách trong phòng), UC-41 EX-1 (Khách không bao giờ điều phối), UC-28c POST-2 (thu hồi ngắt ngay,
       hết phiên/đăng xuất ≤30 giây). BR-181 đã có UC-37–UC-42 trong cột UC, không phải sửa (điểm 6, 12).
 - [x] Report 3 §V.2: thêm MSG380 (dòng 380, Inline / Form error, UC-37 / EX-9) (điểm 7).
-- [ ] **ERD drawio — CHƯA LÀM, chặn bởi cách sinh hình:**
-      - `hien-tai/` là snapshot sinh từ database, `docs/13-erd/README.md` ghi rõ **không sửa tay**; máy này không có tool sinh lại.
-      - `muc-tieu/` (bản vẽ tay) đang có `CallParticipant.GuestInvitationId`, còn `02-erd.md` dòng 486/503 lại ghi `GuestSession`;
-        mà `02-erd.md` **chưa định nghĩa thực thể GuestSession** (chỉ có dòng quan hệ 642), nên không có gì để vẽ thêm.
-      - Cần BE/DB chốt: thêm `GuestSession` vào `02-erd.md` rồi vẽ `muc-tieu` + `chen`, hoặc sinh lại `hien-tai` bằng tool snapshot
-        (điểm 2).
+- [ ] **ERD drawio — CHƯA SỬA ĐƯỢC, đã kiểm kỹ ngày 03/11/2026:**
+      - `hien-tai/` là snapshot **sinh tự động** (mỗi bảng có `data-provenance` trỏ `TrustCabinetDbContextModelSnapshot.cs`), README thư mục
+        ghi **không sửa tay**. Snapshot đang **cũ từ 24/10**: 27 bảng, trong khi model hiện có **41 bảng**; thiếu 15 bảng, gồm đúng những
+        bảng của đợt này (`guest_sessions`, `transcript_speakers`) và cả `meeting_guest_invitations`, `meeting_documents`, `stored_files`…
+        Vì vậy thêm 4 cột của note 24/25 vào file đó cũng không làm nó đúng, mà còn trái quy định.
+      - Đường sinh lại đúng: draw.io skill có `diagramctl.py sync <hien-tai.drawio> <schema.sql> --from sql` (giữ layout cũ, thêm bảng mới),
+        nhưng phải có DDL từ EF: `dotnet ef dbcontext script` — máy này **không có SDK 10.0.401** mà `global.json` ghim (chỉ có 10.0.302)
+        và không cài `dotnet-ef`, nên không sinh được DDL.
+      - `muc-tieu/` (bản vẽ tay, 33 thực thể) và `chen/` là **mô hình mục tiêu**; `02-erd.md` dòng 7 nói rõ `guest_sessions` là chi tiết lưu trữ,
+        **"không thêm thực thể vào mô hình mục tiêu"**. Trong khi đó §8 của cùng file lại vẽ `GuestSession o|--o{ CallParticipant` và
+        `GuestSessionId` mà **không định nghĩa thực thể `GuestSession`** — chính `02-erd.md` đang tự mâu thuẫn, nên không thể tự chọn cách vẽ.
+      - Cần BE chốt một trong hai: **(A)** sinh lại `hien-tai` khi có SDK 10.0.401 (`dotnet ef dbcontext script` → `diagramctl.py sync --from sql`),
+        hoặc **(B)** đưa `GuestSession` thành thực thể của mô hình mục tiêu (sửa `02-erd.md` §8 + `muc-tieu` + `chen`) rồi mới vẽ. Chọn xong
+        BA cập nhật hình trong một lượt riêng (điểm 2).
 - [ ] Ghi rủi ro (điểm 5): bằng chứng thông báo ghi âm chỉ là cờ trong audit, không lưu câu đã hiện — **đã ghi trong UC-37 bước 5**.
       Điểm 9 (180 ngày ghi cứng) đã sửa ở #222; UC-37 giờ ghi "the number of days the server returns".
 - [ ] Ghi âm Khách: **chờ SCRUM-129**, rồi mới sửa UC ghi âm (điểm 8).
