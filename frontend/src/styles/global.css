@@ -2461,11 +2461,13 @@ a.menu-item { text-decoration: none; }
    history at a 1024px window, and in the call room's side panel. Under 520px the role moves under the
    name and the name gives way with an ellipsis, so the row actions stay in view without scrolling. */
 .participants-panel { container-type: inline-size; }
+/* The person takes what the other columns leave, at every width: a long email ends in "…" instead of
+   widening the table and pushing Vai trò, Điểm danh and Thao tác out of the card. */
+.participants-panel td.cell-title { width: 100%; max-width: 0; }
 .role-inline { display: none; }
 @container (max-width: 520px) {
   .participants-panel .col-role { display: none; }
   .participants-panel .role-inline { display: contents; }
-  .participants-panel td.cell-title { width: 100%; max-width: 0; }
   /* As AI-eCabinet's narrow roster: the person takes the first line, and the line under it — the
      attendance, then the chips — starts where the name does (36px avatar + 12px gap), so the chips
      line up from row to row instead of trailing each email. */
