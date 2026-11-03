@@ -26,7 +26,7 @@ type State =
  * rows), when the window regains focus, and every 15 s while the meeting is in progress and the tab
  * is visible — never two reads at once. Nothing is read while `enabled` is false (a meeting that has
  * not started has no attendance to show). `record` saves one person at once, as AI-eCabinet does:
- * picking a value is the save, there is no draft and no Save button.
+ * picking a value is the save, there is no draft and no Save button; the MSG147 toast confirms it.
  */
 export function useAttendance(meetingId: string, enabled = true) {
   const toast = useToast()
@@ -120,6 +120,7 @@ export function useAttendance(meetingId: string, enabled = true) {
             ? { ...s, data: { ...s.data, rows: s.data.rows.map((r) => ({ ...r, ...fresh.get(r.id) })) } }
             : s,
         )
+        toast.show(saved.message)
       } catch (err) {
         // 403 here means "no longer the Secretary" — the meeting itself can still be read.
         if (isApiError(err, 403)) toast.show('Bạn không còn quyền điểm danh cuộc họp này.', 'error')
