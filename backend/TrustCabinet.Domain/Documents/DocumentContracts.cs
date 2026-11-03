@@ -178,6 +178,10 @@ public interface IMeetingDocumentRepository
     Task<IReadOnlyList<MeetingDocumentVoteGroup>> ListVoteGroupsAsync(Guid meetingId, bool includeDrafts, Guid? userId,
         Guid? guestInvitationId, CancellationToken ct);
 
-    /// <summary>Null when the document is not, or no longer, attached to this meeting.</summary>
-    Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct);
+    /// <summary>
+    /// Null when the document is not, or no longer, attached to this meeting, or, without
+    /// <paramref name="includeDrafts"/>, reached only through draft votes (BR-253).
+    /// </summary>
+    Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, bool includeDrafts,
+        CancellationToken ct);
 }

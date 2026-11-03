@@ -157,7 +157,8 @@ tài khoản đang hoạt động, **hoặc token Khách** của UC-04 — xem [
 - `agendaItems`: **mọi** mục nghị sự theo `position`, kể cả mục chưa có tài liệu (để FE đặt nút thêm tài liệu cho
   từng mục ở SCRUM-58). Tài liệu gắn nhiều mục xuất hiện ở từng mục (BR-277). `status`: `Pending` /
   `InProgress` / `Done`.
-- `general`: tài liệu không gắn mục nào (BR-280).
+- `general`: tài liệu không gắn mục nào **và** không gắn biểu quyết nào (BR-280, phương án B theo AI-eCabinet, PO chốt
+  03/11/2026). Tài liệu chỉ gắn biểu quyết chỉ nằm ở `votes`.
 - Trong mỗi nhóm, tài liệu xếp theo thời điểm thêm (cũ trước). Tài liệu đã gỡ không có mặt (BR-211).
 - `currentAgendaItemId`: mục đang `InProgress`, hoặc `null`. Panel trong phòng họp dùng nó để đưa mục đang bàn
   lên đầu (BR-316) — server **không** đổi thứ tự theo nơi gọi.
@@ -166,10 +167,13 @@ tài khoản đang hoạt động, **hoặc token Khách** của UC-04 — xem [
 - `votes` (UC-32a AF-1, thêm 02/11/2026): các biểu quyết **có tài liệu** mà người gọi xem được — `Draft` chỉ Chủ toạ / Thư ký
   hiện tại thấy (BR-253), như `GET …/votes` — xếp theo lúc tạo, mỗi biểu quyết kèm tài liệu còn trong cuộc họp (cũ trước).
   Mỗi tài liệu như một dòng của `general` cộng `readConfirmedAt`: lúc **chính người gọi** (người dùng hoặc Khách) xác nhận
-  đã đọc (UC-74), hoặc `null`. Một xác nhận tính cho mọi biểu quyết gắn cùng tài liệu (BR-291). Tài liệu của biểu quyết vẫn
-  nằm ở `general` nếu không gắn mục nào (BR-280 tính theo mục nghị sự), nên trình xem tìm tài liệu chỉ cần `agendaItems` +
-  `general`. Vì vậy tài liệu của một biểu quyết `Draft` vẫn hiện ở `general` cho Thành viên: chỉ biểu quyết bị ẩn, tài
-  liệu thì ai đọc được cuộc họp cũng đọc được (BR-275).
+  đã đọc (UC-74), hoặc `null`. Một xác nhận tính cho mọi biểu quyết gắn cùng tài liệu (BR-291). Tài liệu của biểu quyết
+  không gắn mục nào **không** nằm ở `general` nữa, nên muốn đếm hay tìm một tài liệu thì FE gộp cả ba nhóm
+  (`everyDocument` trong `useMeetingDocuments.ts`; ô "Tài liệu (N)" của phòng họp cũng đếm như vậy).
+- Tài liệu **chỉ** gắn các biểu quyết `Draft` (không gắn mục nào, không gắn biểu quyết `Open`/`Closed`) thì với Thành viên
+  và Khách là **không có trong cuộc họp**: không ở nhóm nào, không đếm, xem nội dung và đọc/viết góp ý đều `404/MSG156`
+  như tài liệu không tồn tại (BR-253). Chủ toạ / Thư ký vẫn thấy ở nhóm biểu quyết nháp. Biểu quyết được mở thì mọi người
+  đọc được.
 - `canConfirmRead`: người gọi có trong danh sách người bỏ phiếu của biểu quyết, biểu quyết đang `Open` và cuộc họp đang
   `InProgress` — đúng lúc UC-74 nhận xác nhận. FE chỉ hiện "Chưa đọc" khi `canConfirmRead`; "Đã đọc" thì hiện mỗi khi có
   `readConfirmedAt`.
@@ -212,7 +216,7 @@ không ghi. Object đã mất (`MSG382`) cũng không ghi kiểm toán: không c
 | HTTP | Mã | Endpoint | Khi nào |
 |---|---|---|---|
 | 401 / 403 | — | cả hai | Chưa đăng nhập / tài khoản bị khoá (body rỗng). Token Khách không bao giờ nhận `403` body rỗng ở hai endpoint này |
-| 404 | `MSG156` | cả hai | Không xem được cuộc họp, cuộc họp không tồn tại, tài liệu đã gỡ, hoặc ID tài liệu của cuộc họp khác — **cùng một body** |
+| 404 | `MSG156` | cả hai | Không xem được cuộc họp, cuộc họp không tồn tại, tài liệu đã gỡ, ID tài liệu của cuộc họp khác, hoặc tài liệu chỉ gắn biểu quyết nháp mà người gọi không phải Chủ toạ / Thư ký — **cùng một body** |
 | 500 | `MSG157` | danh sách | Lỗi đọc DB; FE không được hiển thị như danh sách rỗng |
 | 403 | `MSG159` | `content?download=true` | Cuộc họp `Secret` |
 | 503 | `MSG158` | `content` | Không đưa được tệp, lỗi tạm thời: kho chưa cấu hình hoặc lỗi, DB lỗi, không ghi được nhật ký kiểm toán |
@@ -315,6 +319,11 @@ khi tải về từ cuộc họp `Secret` (không trả `403` để lộ ID); t�
 chạm kho); lỗi DB lúc tra tài liệu → `MSG158`/`MSG160`;
 object đã mất → `410/MSG382` cả xem lẫn tải, kho chưa cấu hình → `MSG158`, không ghi kiểm toán; lỗi ghi kiểm toán → không gửi tệp;
 tải lên phát `documentsChanged` chỉ cho người đã join cuộc họp đó, tải lên lỗi không phát.
+Phương án B (03/11/2026): tài liệu của biểu quyết chỉ nằm ở nhóm biểu quyết, không ở `general`; tài liệu chỉ gắn biểu
+quyết nháp → Thành viên không thấy, xem nội dung và góp ý `404/MSG156` cùng body với ID lạ, Thư ký xem được, gắn thêm mục
+nghị sự hoặc biểu quyết đã mở/đã đóng thì Thành viên đọc được. `VoteReadConfirmationTests`: `canConfirmRead` true với Khách
+có quyền bỏ phiếu (qua `GuestInvitationId`) và Thành viên, false với Chủ toạ không có trong danh sách bỏ phiếu, và false
+khi cuộc họp đã kết thúc dù biểu quyết vẫn `Open`.
 
 ## SCRUM-58 · Gắn và gỡ tài liệu của cuộc họp
 
@@ -386,7 +395,8 @@ Ba nguồn, ba endpoint, cùng mã thành công `200 MSG238`:
 
 ### `DELETE /api/meetings/{id}/agenda/{itemId}/documents/{meetingDocumentId}` — gỡ khỏi một mục (UC-33d)
 
-Xoá **đúng một** liên kết; tài liệu vẫn ở cuộc họp, giữ liên kết với mục khác, hết liên kết thì về nhóm chung (BR-280).
+Xoá **đúng một** liên kết; tài liệu vẫn ở cuộc họp, giữ liên kết với mục khác, hết liên kết thì về nhóm chung, trừ khi
+một biểu quyết còn gắn nó (BR-280).
 Thứ tự theo sequence: tài liệu còn trong cuộc họp (`404 MSG170`) → mục thuộc cuộc họp (`404 MSG242`) → liên kết tồn tại
 (`404 MSG246`). `200 { "code": "MSG239", "message", "meetingId", "agendaItemId", "meetingDocumentId" }`. Lỗi khác:
 `403 MSG241`, `409 MSG247`, `503 MSG245`.

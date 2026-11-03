@@ -257,7 +257,8 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         await Expect(await guest.PostAsJsonAsync($"{votes}/{vote}/ballots", new { optionId = option }), 409, "MSG252");
 
         var list = await Expect(await guest.GetAsync(Documents(s.MeetingId)), 200);
-        Assert.Equal(document, Assert.Single(list.GetProperty("general").EnumerateArray()).GetProperty("id").GetGuid());
+        // Linked to no agenda item, it is the vote's alone, not general too (BR-280, option B).
+        Assert.Empty(list.GetProperty("general").EnumerateArray());
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Content(s.MeetingId, document))).StatusCode);
         // The vote group (UC-32a AF-1) shows the guest's own confirmation, unread until they tick it (UC-74).
         var group = Assert.Single(list.GetProperty("votes").EnumerateArray());

@@ -28,7 +28,8 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
         try
         {
             var meeting = await FindReadableAsync(meetingId, actor, ct);
-            if (meeting is null || !await IsAttachedAsync(meetingId, meetingDocumentId, ct))
+            if (meeting is null
+                || !await IsAttachedAsync(meetingId, meetingDocumentId, MeetingDocumentService.SeesDrafts(meeting, actor), ct))
                 return new(CommentFailure.NotFound);
 
             var rows = await db.DocumentComments.AsNoTracking().Where(c => c.MeetingDocumentId == meetingDocumentId)
@@ -79,8 +80,9 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
                 if (meeting is null) return new(CommentFailure.NotFound);
                 var document = await db.MeetingDocuments.AsNoTracking()
                     .Where(d => d.Id == meetingDocumentId && d.MeetingId == meetingId && d.RemovedAt == null)
+                    .VisibleTo(MeetingDocumentService.SeesDrafts(meeting, actor))
                     .Select(d => new { d.StoredFile.ContentType, d.StoredFile.PageCount }).SingleOrDefaultAsync(token);
-                // Removed, or of another meeting: the same answer (BR-211).
+                // Removed, of another meeting, or only on a draft vote the actor may not see: the same answer (BR-211, BR-253).
                 if (document is null) return new(CommentFailure.NotFound);
                 if (meeting.Status == MeetingStatus.Ended) return new(CommentFailure.Ended);
                 if (meeting.Status == MeetingStatus.Cancelled) return new(CommentFailure.Cancelled);
@@ -137,6 +139,7 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
         return meeting is not null && actor.UserId is { } userId && MeetingReadPolicy.CanRead(meeting, userId) ? meeting : null;
     }
 
-    private Task<bool> IsAttachedAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct)
-        => db.MeetingDocuments.AnyAsync(d => d.Id == meetingDocumentId && d.MeetingId == meetingId && d.RemovedAt == null, ct);
+    private Task<bool> IsAttachedAsync(Guid meetingId, Guid meetingDocumentId, bool includeDrafts, CancellationToken ct)
+        => db.MeetingDocuments.Where(d => d.Id == meetingDocumentId && d.MeetingId == meetingId && d.RemovedAt == null)
+            .VisibleTo(includeDrafts).AnyAsync(ct);
 }

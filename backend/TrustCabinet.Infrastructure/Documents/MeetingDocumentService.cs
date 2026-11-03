@@ -38,12 +38,14 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
                 Row = new MeetingDocumentRow(d.Id, d.FileName, d.StoredFile.ContentType, d.StoredFile.ByteSize,
                     d.StoredFile.PageCount, d.Comments.Count, new MeetingPerson(d.AddedById, d.AddedBy.FullName), d.AddedAt),
                 ItemIds = d.AgendaItemLinks.Select(l => l.AgendaItemId).ToList(),
+                OnVote = d.VoteLinks.Any(),
             }).ToListAsync(ct);
 
-        // A document linked to several items shows under each (BR-277); one linked to none is general (BR-280).
+        // A document linked to several items shows under each (BR-277). General means linked to no item and no
+        // vote (BR-280, option B as in AI-eCabinet): a vote's own document shows only under its vote.
         var groups = items.Select(i => new MeetingDocumentAgendaGroup(i.Id, i.Position, i.Title, i.Status.ToString(),
             rows.Where(r => r.ItemIds.Contains(i.Id)).Select(r => r.Row).ToList())).ToList();
-        var general = rows.Where(r => r.ItemIds.Count == 0).Select(r => r.Row).ToList();
+        var general = rows.Where(r => r.ItemIds.Count == 0 && !r.OnVote).Select(r => r.Row).ToList();
         var current = items.FirstOrDefault(i => i.Status == AgendaItemStatus.InProgress)?.Id;
         return new(meetingId, current, groups, general, []);
     }
@@ -78,9 +80,11 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
                 g.Key.IsVoter && g.Key.Status == VotingStatus.Open, g.Select(l => l.Row).ToList())).ToList();
     }
 
-    public Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct)
+    public Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, bool includeDrafts,
+        CancellationToken ct)
         => db.MeetingDocuments.AsNoTracking()
             .Where(d => d.Id == meetingDocumentId && d.MeetingId == meetingId && d.RemovedAt == null)
+            .VisibleTo(includeDrafts)
             .Select(d => new AttachedDocumentFile(d.FileName, d.StoredFile.StorageKey, d.StoredFile.ContentType,
                 d.StoredFile.ByteSize))
             .SingleOrDefaultAsync(ct);
@@ -100,7 +104,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             if (await FindReadableAsync(meetingId, reader, ct) is not { } meeting) return new(DocumentReadFailure.NotFound);
             var list = await documents.ListAsync(meetingId, ct);
             // A draft vote and its documents are the Chair's and the Secretary's alone (BR-253).
-            var includeDrafts = reader.UserId is { } userId && ParticipantRules.IsManager(meeting, userId);
+            var includeDrafts = SeesDrafts(meeting, reader);
             var votes = await documents.ListVoteGroupsAsync(meetingId, includeDrafts, reader.UserId,
                 reader.Guest?.InvitationId, ct);
             // UC-74 takes a confirmation only while the meeting is InProgress.
@@ -123,14 +127,15 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         {
             meeting = await FindReadableAsync(meetingId, reader, ct);
             if (meeting is null) return new(DocumentReadFailure.NotFound);
-            file = await documents.FindAttachedFileAsync(meetingId, meetingDocumentId, ct);
+            file = await documents.FindAttachedFileAsync(meetingId, meetingDocumentId, SeesDrafts(meeting, reader), ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
             logger.LogError(ex, "Failed to look up document {DocumentId} of meeting {MeetingId}", meetingDocumentId, meetingId);
             return new(DocumentReadFailure.ReadFailed);
         }
-        // Removed, or never in this meeting: the same answer, so an ID from another meeting reveals nothing (BR-211).
+        // Removed, never in this meeting, or only on a draft vote the reader may not see: the same answer, so an ID
+        // reveals nothing (BR-211, BR-253).
         if (file is null) return new(DocumentReadFailure.NotFound);
         if (download && meeting.Sensitivity == Sensitivity.Secret) return new(DocumentReadFailure.DownloadForbidden);
 
@@ -172,6 +177,10 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
 
         return new(Content: new(content, file.FileName, file.ContentType, file.ByteSize));
     }
+
+    /// <summary>Whether <paramref name="reader"/> sees draft votes and their documents: the Chair and the Secretary (BR-253).</summary>
+    internal static bool SeesDrafts(Meeting meeting, ParticipantActor reader)
+        => reader.UserId is { } userId && ParticipantRules.IsManager(meeting, userId);
 
     /// <summary>
     /// The meeting when <paramref name="reader"/> may read it now: an internal user by <see cref="MeetingReadPolicy"/>,

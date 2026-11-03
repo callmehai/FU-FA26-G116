@@ -214,9 +214,9 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         Assert.All((await VoteGroups(secretary, s)).SelectMany(v => v.GetProperty("documents").EnumerateArray()),
             d => Assert.Equal(JsonValueKind.Null, d.GetProperty("readConfirmedAt").ValueKind));
 
-        // A vote's document no item links stays general too (BR-280); a document removed from the meeting is gone (BR-211).
-        var list = await List(member, s);
-        Assert.Contains(report, list.GetProperty("general").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()));
+        // A vote's document no item links is listed under its vote only (BR-280, option B); a document removed from
+        // the meeting is gone (BR-211).
+        Assert.Empty((await List(member, s)).GetProperty("general").EnumerateArray());
         await Code(await secretary.DeleteAsync($"{s.Url}/documents/{annex}"), 200, "MSG167");
         Assert.Equal([report], Assert.Single(await VoteGroups(member, s)).GetProperty("documents").EnumerateArray()
             .Select(d => d.GetProperty("id").GetGuid()));
@@ -226,5 +226,30 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         var closed = Assert.Single(await VoteGroups(member, s));
         Assert.False(closed.GetProperty("canConfirmRead").GetBoolean());
         Assert.Equal(JsonValueKind.String, closed.GetProperty("documents")[0].GetProperty("readConfirmedAt").ValueKind);
+    }
+
+    [Fact]
+    public async Task Not_read_is_asked_only_of_a_voter_of_an_open_vote_while_the_meeting_is_in_progress()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress); var invitation = await Guest(f, s);
+        using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary); using var member = f.Client(s.Member);
+        using var guest = f.Guest(s.MeetingId, invitation.Id);
+        var document = await Document(s);
+        var vote = await Draft(secretary, s, Body(roles: ["Member", "Guest"]));
+        await Attach(secretary, s, vote, document);
+        await Code(await chair.PostAsync($"{s.Url}/votes/{vote}/open", null), 200, "MSG217");
+
+        // A guest on the voter list is asked through its invitation; the Chair, not on it, is not asked at all.
+        Assert.True(Assert.Single(await VoteGroups(guest, s)).GetProperty("canConfirmRead").GetBoolean());
+        Assert.True(Assert.Single(await VoteGroups(member, s)).GetProperty("canConfirmRead").GetBoolean());
+        Assert.False(Assert.Single(await VoteGroups(chair, s)).GetProperty("canConfirmRead").GetBoolean());
+
+        // UC-74 takes a confirmation only while the meeting is InProgress, even with the vote still Open.
+        await using (var db = f.Db())
+            await db.Meetings.Where(m => m.Id == s.MeetingId)
+                .ExecuteUpdateAsync(u => u.SetProperty(m => m.Status, MeetingStatus.Ended));
+        var ended = Assert.Single(await VoteGroups(member, s));
+        Assert.Equal("Open", ended.GetProperty("status").GetString());
+        Assert.False(ended.GetProperty("canConfirmRead").GetBoolean());
     }
 }
