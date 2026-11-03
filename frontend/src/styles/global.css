@@ -2087,6 +2087,23 @@ a.menu-item { text-decoration: none; }
   line-height: 1.35;
 }
 .cal-event:hover { z-index: 2; box-shadow: 0 2px 8px #1a243326; }
+/* A row of a "+N" list (MoreMeetings), tinted like its tile by the same cal-event-<tone> classes below. */
+.more-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--chip-slate-bg);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
 /* Too short for two lines, as on Google Calendar: title then time on one line, the title cut with an ellipsis.
    The line sits at the top, so a live tile's "Vào phòng họp" band below never covers it. */
 .cal-event-short { flex-direction: row; align-items: flex-start; gap: 6px; padding: 5px 10px 0; }
@@ -2342,6 +2359,42 @@ a.menu-item { text-decoration: none; }
 .overview-skeleton { display: block; width: 60%; height: 18px; }
 .overview-skeleton-label { display: block; width: 144px; height: 16px; margin-bottom: 10px; }
 .overview-skeleton-avatar { display: block; width: 32px; height: 32px; margin: 0 24px; border-radius: 50%; }
+/* The card's content (OverviewContent), alone in the card or beside a "+N" list. */
+.overview-pane { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+/* Back to the "+N" list, shown only where the overview has taken the list's place. */
+.overview-back { display: none; align-items: center; gap: 4px; align-self: flex-start; margin: 10px 14px 0; padding: 4px 6px; border: 0; border-radius: 4px; background: none; color: var(--brand); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.overview-back:hover { background: var(--brand-wash); }
+
+/* The "+N" list (MoreMeetings): 340px of rows beside the "+N"; a picked meeting's overview opens to its right, or in
+   its place below 900px with a way back, as AI-eCabinet's calendar does. */
+.overview.more-popover { width: auto; max-width: calc(100vw - 16px); }
+.more-panel { display: flex; flex: 1; align-items: stretch; min-height: 0; }
+.more-list { display: flex; flex: none; flex-direction: column; width: min(340px, calc(100vw - 16px)); min-height: 0; }
+.more-title { margin: 0; padding: 11px 14px 7px; color: var(--muted-ink); font-size: 12px; font-weight: 700; }
+.more-list ul { display: flex; flex-direction: column; gap: 4px; max-height: min(24rem, 60dvh); margin: 0; padding: 2px 8px 8px; overflow-y: auto; list-style: none; }
+.more-list li { position: relative; }
+.more-row:hover { filter: brightness(.97); }
+.more-row[aria-current='true'] { box-shadow: 0 0 0 2px var(--brand); }
+.more-row-time { display: flex; align-items: center; gap: 6px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.more-row-title { display: -webkit-box; overflow: hidden; font-size: 12.5px; font-weight: 600; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.cal-cancelled .more-row-title { text-decoration: line-through; }
+/* Room at the row's foot for "Vào phòng họp", laid over it as on the tile. */
+.more-row-go { padding-bottom: 34px; }
+.more-go { right: 13px; bottom: 6px; left: auto; }
+.more-overview { display: flex; flex-direction: column; width: min(420px, calc(100vw - 16px)); min-height: 0; border-left: 1px solid var(--line-soft); }
+/* No room to the list's right: the overview opens on its left, and the list stays by the "+N". */
+.more-popover[data-grow='left'] .more-panel { flex-direction: row-reverse; }
+.more-popover[data-grow='left'] .more-overview { border-right: 1px solid var(--line-soft); border-left: 0; }
+@media (max-width: 900px) {
+  .more-panel-picked .more-list { display: none; }
+  .more-overview { border-left: 0; }
+  .more-overview .overview-back { display: inline-flex; }
+}
+@media (max-width: 640px) {
+  .more-list, .more-overview { width: 100%; }
+  .overview-sheet.more-popover { width: 100%; max-width: none; }
+  .more-row { min-height: 40px; }
+}
 @media (max-width: 640px) {
   .overview-row { grid-template-columns: 104px minmax(0, 1fr); }
   .overview-rest { grid-template-columns: 1fr; }

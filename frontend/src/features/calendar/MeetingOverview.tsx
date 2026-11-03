@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { getMeeting } from '../../api/meetings'
 import { listParticipants } from '../../api/participants'
@@ -13,14 +13,12 @@ import type { ParticipantRow } from '../../types/participant'
 import { useAccessLost } from '../auth/useAccessLost'
 import { SensitivityBadge, StatusBadge } from '../meetings/StatusBadge'
 import { RsvpButtons, RsvpChip } from '../participants/Rsvp'
+import { CalendarPopover } from './CalendarPopover'
+import { usePhone } from './usePhone'
 
 /** "+N" takes one slot: 4 on a wide screen (3 people and "+N"), 3 on a phone. */
 const MAX_PEOPLE = 4
 const MAX_PEOPLE_PHONE = 3
-const PHONE = '(max-width: 640px)'
-/** Gap to the tile, and the least room kept to the viewport's edges. */
-const SIDE_OFFSET = 8
-const EDGE = 8
 
 type Loaded = { meeting: Meeting; people: ParticipantRow[] | null }
 
@@ -46,12 +44,33 @@ export function MeetingOverview({
   onClose: () => void
   onAnswered: (response: 'Accepted' | 'Declined') => void
 }) {
+  return (
+    <CalendarPopover anchor={anchor} keyboard={keyboard} label={item.title} onClose={onClose}>
+      <OverviewContent item={item} onClose={onClose} onAnswered={onAnswered} />
+    </CalendarPopover>
+  )
+}
+
+/**
+ * The overview itself, for the popover above or beside a "+N" list (MoreMeetings), which passes `onBack` to return
+ * to the list where the two do not fit side by side.
+ */
+export function OverviewContent({
+  item,
+  onClose,
+  onAnswered,
+  onBack,
+}: {
+  item: MeetingListItem
+  onClose: () => void
+  onAnswered: (response: 'Accepted' | 'Declined') => void
+  onBack?: () => void
+}) {
   const titleId = useId()
   const listId = useId()
   const handleAccessLost = useAccessLost()
   const back = backState('Lịch làm việc', useLocation())
-  const ref = useRef<HTMLElement>(null)
-  const [phone, setPhone] = useState(() => window.matchMedia(PHONE).matches)
+  const phone = usePhone()
   const [state, setState] = useState<
     { kind: 'loading' } | { kind: 'loaded'; data: Loaded } | { kind: 'error'; message: string }
   >({
@@ -59,13 +78,6 @@ export function MeetingOverview({
   })
   const [attempt, setAttempt] = useState(0)
   const [expanded, setExpanded] = useState(false)
-
-  useEffect(() => {
-    const query = window.matchMedia(PHONE)
-    const follow = () => setPhone(query.matches)
-    query.addEventListener('change', follow)
-    return () => query.removeEventListener('change', follow)
-  }, [])
 
   // The meeting for its Chair, link and description; the roster for who attends. A roster the
   // caller may not read just leaves the people out.
@@ -91,56 +103,6 @@ export function MeetingOverview({
     }
   }, [item.id, attempt, handleAccessLost])
 
-  // Beside the tile: to its right when there is room, else to its left, kept inside the viewport.
-  const place = useCallback(() => {
-    const card = ref.current
-    if (!card || phone) return
-    const box = anchor.getBoundingClientRect()
-    const width = card.offsetWidth
-    const height = card.offsetHeight
-    const right = box.right + SIDE_OFFSET
-    const left = right + width + EDGE <= window.innerWidth ? right : Math.max(EDGE, box.left - SIDE_OFFSET - width)
-    const top = Math.min(Math.max(EDGE, box.top), window.innerHeight - height - EDGE)
-    card.style.left = `${left}px`
-    card.style.top = `${Math.max(EDGE, top)}px`
-  }, [anchor, phone])
-
-  useLayoutEffect(() => {
-    place()
-    window.addEventListener('resize', place)
-    window.addEventListener('scroll', place, true)
-    return () => {
-      window.removeEventListener('resize', place)
-      window.removeEventListener('scroll', place, true)
-    }
-  }, [place, state, expanded])
-
-  // Escape, or a press outside both the card and any calendar tile (a tile toggles its own card).
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape' && !document.querySelector('dialog[open]')) onClose()
-    }
-    function onPointer(event: PointerEvent) {
-      const target = event.target as Element
-      if (ref.current?.contains(target) || target.closest('[data-cal-trigger], dialog')) return
-      onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    document.addEventListener('pointerdown', onPointer)
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.removeEventListener('pointerdown', onPointer)
-    }
-  }, [onClose])
-
-  // A keyboard opening moves focus in; closing hands it back to the tile.
-  useEffect(() => {
-    if (keyboard || phone) ref.current?.querySelector<HTMLElement>('[data-overview-heading]')?.focus()
-    return () => {
-      if (keyboard && anchor.isConnected) anchor.focus()
-    }
-  }, [keyboard, phone, anchor])
-
   const data = state.kind === 'loaded' ? state.data : null
   const meeting = data?.meeting
   const people = data?.people ?? []
@@ -150,13 +112,14 @@ export function MeetingOverview({
   const hidden = over ? people.slice(max - 1) : []
   const canRespond = meeting ? meeting.canRespond : item.canRespond
 
-  const card = (
-    <section
-      ref={ref}
-      className={phone ? 'overview overview-sheet' : 'overview'}
-      role="dialog"
-      aria-labelledby={titleId}
-    >
+  return (
+    <section className="overview-pane" aria-labelledby={titleId}>
+      {onBack && (
+        <button type="button" className="overview-back" onClick={onBack}>
+          <Icon name="chevronLeft" size={14} />
+          Quay lại danh sách
+        </button>
+      )}
       <header className="overview-head">
         <h2 id={titleId} tabIndex={-1} data-overview-heading="">
           {item.title}
@@ -296,13 +259,6 @@ export function MeetingOverview({
         )}
       </footer>
     </section>
-  )
-
-  if (!phone) return card
-  return (
-    <div className="overview-scrim" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
-      {card}
-    </div>
   )
 }
 

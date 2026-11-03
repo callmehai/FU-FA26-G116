@@ -14,6 +14,7 @@ import { STATUS_TONE } from '../meetings/statusTone'
 import { CalendarFilter } from './CalendarFilter'
 import { DatePicker } from './DatePicker'
 import { MeetingOverview } from './MeetingOverview'
+import { MoreMeetings } from './MoreMeetings'
 import { NO_FILTER, matchesFilter, readFilter, writeFilter, type CalendarFilterValue } from './filter'
 import { useSchedule, type Schedule, type ScheduleEntry } from './useSchedule'
 import {
@@ -78,13 +79,26 @@ export function CalendarPage() {
   const [params, setParams] = useSearchParams()
   const now = useNow()
   const [attempt, setAttempt] = useState(0)
-  /** The quick look open beside a tile, as AI-eCabinet's calendar opens it. */
-  const [overview, setOverview] = useState<Overview | null>(null)
-  const closeOverview = useCallback(() => setOverview(null), [])
-  // A second click on the same tile closes its card; another tile opens its own.
+  /** The one layer floating over the calendar, as AI-eCabinet's opens it: a tile's quick look, or a "+N" list. */
+  const [layer, setLayer] = useState<Layer | null>(null)
+  const closeLayer = useCallback(() => setLayer(null), [])
+  // A second click on the same tile or "+N" closes its layer; another one opens its own.
   const openOverview = useCallback<OpenOverview>(
     (entry, anchor, keyboard) =>
-      setOverview((current) => (current?.entry.meeting.id === entry.meeting.id ? null : { entry, anchor, keyboard })),
+      setLayer((current) =>
+        current?.kind === 'overview' && current.entry.meeting.id === entry.meeting.id
+          ? null
+          : { kind: 'overview', entry, anchor, keyboard },
+      ),
+    [],
+  )
+  const openMore = useCallback<OpenMore>(
+    (key, entries, anchor, keyboard, day) =>
+      setLayer((current) =>
+        current?.kind === 'more' && current.key === key
+          ? null
+          : { kind: 'more', key, ids: entries.map((e) => e.meeting.id), anchor, keyboard, day },
+      ),
     [],
   )
   const spanParam = params.get('span')
@@ -108,12 +122,16 @@ export function CalendarPage() {
   const visible: Schedule = inView
     ? { kind: 'loaded', entries: inView.filter((e) => matchesFilter(e, filter)) }
     : schedule
+  // A "+N" list keeps ids, so it shows the meetings as the latest read has them; with none left it is not drawn.
+  const moreEntries =
+    layer?.kind === 'more' && visible.kind === 'loaded'
+      ? visible.entries.filter((e) => layer.ids.includes(e.meeting.id))
+      : null
 
   /** `push` keeps the current view in history: Back from a week opened on the month grid returns to it. */
   function go(
     next: { week?: Date; month?: Date; span?: Span; mode?: Mode; filter?: CalendarFilterValue },
     push = false,
-    state?: ListFocus,
   ) {
     const out = new URLSearchParams(params)
     const nextSpan = next.span ?? span
@@ -133,7 +151,7 @@ export function CalendarPage() {
     else out.set('mode', nextMode)
     // Rewritten on every move, so unreadable values in a hand-edited link do not linger.
     writeFilter(out, next.filter ?? filter)
-    setParams(out, { replace: !push, state })
+    setParams(out, { replace: !push })
   }
 
   function changeSpan(next: Span) {
@@ -257,6 +275,7 @@ export function CalendarPage() {
           schedule={visible}
           onOpenWeek={openWeek}
           onOpen={openOverview}
+          onMore={openMore}
         />
       ) : (
         <WeekGrid
@@ -264,36 +283,50 @@ export function CalendarPage() {
           now={now}
           schedule={visible}
           onOpen={openOverview}
-          onOpenDay={(day) => go({ mode: 'list' }, true, { day: toDateInput(day) })}
+          onMore={openMore}
         />
       )}
 
-      {overview && (
+      {layer?.kind === 'overview' && (
         <MeetingOverview
-          key={overview.entry.meeting.id}
-          item={overview.entry.meeting}
-          anchor={overview.anchor}
-          keyboard={overview.keyboard}
-          onClose={closeOverview}
+          key={layer.entry.meeting.id}
+          item={layer.entry.meeting}
+          anchor={layer.anchor}
+          keyboard={layer.keyboard}
+          onClose={closeLayer}
           onAnswered={(response) => {
             setAttempt((n) => n + 1)
             // A declined meeting leaves the calendar, and its card with it.
-            if (response === 'Declined') closeOverview()
+            if (response === 'Declined') closeLayer()
           }}
+        />
+      )}
+      {layer?.kind === 'more' && moreEntries && moreEntries.length > 0 && (
+        <MoreMeetings
+          key={layer.key}
+          entries={moreEntries}
+          title={
+            layer.day
+              ? `${dayLabel(layer.day)} · ${moreEntries.length} cuộc họp`
+              : `${moreEntries.length} cuộc họp khác`
+          }
+          anchor={layer.anchor}
+          keyboard={layer.keyboard}
+          onClose={closeLayer}
+          // A declined meeting leaves the list on the next read.
+          onAnswered={() => setAttempt((n) => n + 1)}
         />
       )}
     </>
   )
 }
 
-interface Overview {
-  entry: ScheduleEntry
-  anchor: HTMLElement
-  keyboard: boolean
-}
+type Layer =
+  | { kind: 'overview'; entry: ScheduleEntry; anchor: HTMLElement; keyboard: boolean }
+  /** `day` when the list is the rest of a month cell's day, which titles it. */
+  | { kind: 'more'; key: string; ids: string[]; anchor: HTMLElement; keyboard: boolean; day?: Date }
 type OpenOverview = (entry: ScheduleEntry, anchor: HTMLElement, keyboard: boolean) => void
-/** Location state of a list opened from a week grid's "+N": the day to scroll to. */
-type ListFocus = { day: string }
+type OpenMore = (key: string, entries: ScheduleEntry[], anchor: HTMLElement, keyboard: boolean, day?: Date) => void
 
 /**
  * A tile is still a link to the meeting, so Ctrl/⌘-click and middle-click open it in a new tab;
@@ -350,13 +383,13 @@ function WeekGrid({
   now,
   schedule,
   onOpen,
-  onOpenDay,
+  onMore,
 }: {
   days: Date[]
   now: Date
   schedule: Schedule
   onOpen: OpenOverview
-  onOpenDay: (day: Date) => void
+  onMore: OpenMore
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
   const nowTop = minutesOfDay(now) * (HOUR_HEIGHT / 60)
@@ -421,7 +454,7 @@ function WeekGrid({
                     entry={entry}
                     hidden={hidden}
                     onOpen={onOpen}
-                    onMore={() => onOpenDay(day)}
+                    onMore={(anchor, keyboard) => onMore(`week-${entry.meeting.id}`, hidden, anchor, keyboard)}
                   />
                 ))}
                 {today && <span className="calendar-now-line" style={{ top: nowTop }} />}
@@ -447,9 +480,9 @@ function GridEvent({
 }: {
   entry: ScheduleEntry
   /** Meetings overlapping this one, behind the "+N" in its top-right corner. */
-  hidden: number
+  hidden: ScheduleEntry[]
   onOpen: OpenOverview
-  onMore: () => void
+  onMore: (anchor: HTMLElement, keyboard: boolean) => void
 }) {
   const top = minutesOfDay(entry.start) * (HOUR_HEIGHT / 60)
   // A meeting running past midnight stops at the bottom of its own day.
@@ -470,7 +503,7 @@ function GridEvent({
         state={back}
         onClick={tileClick(entry, onOpen)}
         data-cal-trigger=""
-        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}${hidden ? ' cal-event-crowded' : ''}${goIn ? ' cal-event-go' : ''}${meeting.status === 'Cancelled' ? ' cal-cancelled' : ''}`}
+        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}${hidden.length ? ' cal-event-crowded' : ''}${goIn ? ' cal-event-go' : ''}${meeting.status === 'Cancelled' ? ' cal-cancelled' : ''}`}
         style={{ top, height }}
         data-tooltip={`${meeting.title}\n${timeRange(entry)}`}
       >
@@ -498,16 +531,17 @@ function GridEvent({
           <Icon name="arrowRight" size={13} />
         </Link>
       )}
-      {hidden > 0 && (
+      {hidden.length > 0 && (
         <button
           type="button"
           className="cal-more"
           style={{ top: top + 4 }}
-          onClick={onMore}
-          aria-label={`${hidden} cuộc họp khác trùng giờ ngày ${formatDay(entry.start)}: xem danh sách`}
-          data-tooltip={`${hidden} cuộc họp khác trùng giờ`}
+          onClick={(event) => onMore(event.currentTarget, event.detail === 0)}
+          data-cal-trigger=""
+          aria-haspopup="dialog"
+          aria-label={`${hidden.length} cuộc họp khác trùng giờ ngày ${formatDay(entry.start)}: xem danh sách`}
         >
-          +{hidden}
+          +{hidden.length}
         </button>
       )}
     </>
@@ -516,7 +550,7 @@ function GridEvent({
 
 /**
  * The month grid (SCRUM-47): seven columns Monday first, one row per week. Each day lists its first
- * meetings by start time; the day number and "+N cuộc họp" open that week on the time grid.
+ * meetings by start time; the day number opens that week on the time grid, "+N cuộc họp" lists the rest.
  */
 function MonthGrid({
   month,
@@ -525,6 +559,7 @@ function MonthGrid({
   schedule,
   onOpenWeek,
   onOpen,
+  onMore,
 }: {
   month: Date
   days: Date[]
@@ -532,6 +567,7 @@ function MonthGrid({
   schedule: Schedule
   onOpenWeek: (day: Date) => void
   onOpen: OpenOverview
+  onMore: OpenMore
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
   // The weeks share the frame's height, five or six alike, so the grid never scrolls; each cell
@@ -599,9 +635,13 @@ function MonthGrid({
                     <button
                       type="button"
                       className="month-more"
-                      onClick={() => onOpenWeek(day)}
-                      aria-label={`${hidden} cuộc họp nữa ngày ${formatDay(day)}: xem tuần`}
-                      data-tooltip={`${hidden} cuộc họp nữa`}
+                      onClick={(event) =>
+                        onMore(`month-${toDateInput(day)}`, dayEntries.slice(shown.length), event.currentTarget,
+                          event.detail === 0, day)
+                      }
+                      data-cal-trigger=""
+                      aria-haspopup="dialog"
+                      aria-label={`${hidden} cuộc họp nữa ngày ${formatDay(day)}: xem danh sách`}
                     >
                       +{hidden}
                       <span className="month-more-word"> cuộc họp</span>
@@ -658,11 +698,6 @@ function DayList({
   onAnswered: () => void
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
-  // Opened from a week grid's "+N": start at that day once its meetings are on screen.
-  const focusDay = (useLocation().state as ListFocus | null)?.day
-  useLayoutEffect(() => {
-    if (focusDay && schedule.kind === 'loaded') document.getElementById(`agenda-${focusDay}`)?.scrollIntoView()
-  }, [focusDay, schedule.kind])
 
   return (
     <div className="agenda" aria-busy={schedule.kind === 'loading'}>
@@ -799,11 +834,11 @@ function Legend() {
  * one drawn before it has ended, and every meeting starting while it runs folds into its "+N".
  */
 function overlapLayout(entries: ScheduleEntry[]) {
-  const events: { entry: ScheduleEntry; hidden: number }[] = []
+  const events: { entry: ScheduleEntry; hidden: ScheduleEntry[] }[] = []
   for (const entry of entries) {
     const last = events[events.length - 1]
-    if (last && entry.start < last.entry.end) last.hidden++
-    else events.push({ entry, hidden: 0 })
+    if (last && entry.start < last.entry.end) last.hidden.push(entry)
+    else events.push({ entry, hidden: [] })
   }
   return events
 }
