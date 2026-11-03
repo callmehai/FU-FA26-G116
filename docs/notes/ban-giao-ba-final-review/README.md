@@ -29,6 +29,7 @@ Mỗi file giữ nguyên phạm vi cần sửa. Khi ticket sang **BA Final Revie
 | 24 | [PR #213, #215 Khách trong phòng họp](24-pr213-215-scrum-59-127-khach-phong-hop.md) | SCRUM-59, 127 (PR #213, #215) | Phòng chỉ mở khi InProgress, xác nhận thông báo ghi âm MSG380, lượt vào/ra theo phiên Khách (ERD), 180 ngày ghi cứng, I2/I3; ghi âm Khách chờ SCRUM-129 |
 | 25 | [PR #218 gán người nói là Khách](25-pr218-gan-nguoi-noi-la-khach.md) | PR #218 (SCRUM-35) | UC-46b chọn Khách còn lời mời, MSG317 thêm 2 trường hợp, Khách không được gợi ý Voice ID; ADR-0044 đã hoàn tác |
 | 26 | [Giao việc BE: che email roster, khoá tên](26-giao-viec-be-scrum-116-che-email-khoa-ten.md) | SCRUM-116 (PO 02/11/2026) | Hai việc code chưa có trên `main`: Khách không thấy email trong roster (kể cả tìm theo email), khoá tên sau lần khai đầu (MSG381); test, tài liệu, FE |
+| 27 | [PR #224 tài liệu sau test E2E](27-pr224-tai-lieu-sau-e2e.md) | SCRUM-21, 22, 23, 58, 107 (PR #224) | Nhóm Biểu quyết, Khách góp ý, server kiểm và đếm trang PDF (ADR-0044), MSG382/383; Report 3, sequence, API **đã sửa theo code** trong PR; còn 4 điểm để BA/PO xác nhận |
 Plan gom cả sáu note. **Thứ tự làm và cách giao cho agent: [plan 05 mục 8](05-plan-sua-uc-br-msg-diagram.md#8-thứ-tự-và-cách-chạy-agent-đọc-mục-này-trước)** —
 làm lần lượt từng lượt, mỗi lượt một session mới.
 

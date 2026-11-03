@@ -63,7 +63,7 @@ Lỗi: `404 MSG175` (thư mục không còn / của người khác), `500 MSG176
 
 ## Tải lên kho — `POST /api/documents/upload?folderId=` (UC-36)
 
-Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files` + `pageCounts`, xem
+Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`; `pageCounts` bị bỏ qua, xem
 [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md#endpoint)). Thứ tự kiểm:
 
 1. Thư mục đích (nếu có) của chính mình — **trước khi đọc body**; không thì `404 MSG179`. Kho tệp chưa cấu hình → `503 MSG178`.

@@ -1,5 +1,6 @@
 import type { LibraryDocument, LibraryFolder, LibraryUploadResponse, LibraryView } from '../types/document'
 import { api } from './client'
+import { filesForm, type Upload, type UploadOptions } from './documents'
 
 /**
  * The personal library (SCRUM-110, SCRUM-111). Contract in docs/03-api/14-kho-tai-lieu-ca-nhan.md.
@@ -22,19 +23,10 @@ export function getLibrary(folderId: string | null, q = '', type: '' | 'pdf' | '
 }
 
 /** UC-36: all files or none; 409 MSG346 when the system's storage is full (ADR-0034), 400 MSG288/MSG164 as for a meeting. */
-export function uploadToLibrary(
-  folderId: string | null,
-  files: { file: File; pageCount: number | null }[],
-  options: { onProgress?: (loaded: number, total: number) => void; signal?: AbortSignal } = {},
-) {
-  const form = new FormData()
-  for (const { file, pageCount } of files) {
-    form.append('files', file)
-    form.append('pageCounts', pageCount === null ? '' : String(pageCount))
-  }
+export function uploadToLibrary(folderId: string | null, files: Upload, options: UploadOptions = {}) {
   return api.upload<LibraryUploadResponse>(
     `/api/documents/upload${folderId ? `?folderId=${encodeURIComponent(folderId)}` : ''}`,
-    form,
+    filesForm(files),
     options,
   )
 }

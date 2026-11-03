@@ -55,7 +55,7 @@ else Draft Vote, Meeting Approved, Published or InProgress (BR-252, BR-288)
         MeetingDocumentRepository-->VoteService: Available / Not in Meeting / Already attached
         deactivate MeetingDocumentRepository
     else Source is Upload from computer - AF-1
-        VoteService->VoteService: Validate every file is PDF or DOCX, at most 50 MB (BR-187, BR-214, BR-215)
+        VoteService->VoteService: Validate every file is PDF or DOCX, at most 50 MB, and every PDF opens\nand has at least one page, as in UC-33a AF-1 (BR-187, BR-214, BR-215, ADR-0044)
         VoteService->FileStorage: Store uploaded files
         activate FileStorage
         FileStorage-->VoteService: Stored files / Storage failed

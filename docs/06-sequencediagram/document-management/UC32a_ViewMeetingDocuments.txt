@@ -17,9 +17,9 @@ activate DocumentController
 DocumentController->DocumentService: getMeetingDocuments(meetingId, actor)
 activate DocumentService
 
-DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting (BR-275)
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting: an internal user,\nor a Guest whose verified session is current while the Meeting is Published or InProgress (BR-181, BR-275)
 activate MeetingAccessPolicy
-MeetingAccessPolicy->Database: Check the actor's current Meeting relationship
+MeetingAccessPolicy->Database: Check the actor's current Meeting relationship or Guest session
 activate Database
 Database-->MeetingAccessPolicy: Access / No access
 deactivate Database
@@ -32,9 +32,9 @@ alt Meeting documents are not accessible - EX-1
     DocumentsTab-->User: MSG156 - Meeting documents are not accessible.
 
 else Actor can view the Meeting
-    DocumentService->MeetingDocumentRepository: Get the current Meeting documents with their Agenda Item links,\npage count, adder, addition time and comment count, together with every Agenda Item\nincluding those that have no document (BR-211, BR-277)
+    DocumentService->MeetingDocumentRepository: Get the current Meeting documents with their Agenda Item links,\npage count, adder, addition time and comment count, together with every Agenda Item\nincluding those that have no document, and the Votes the actor may see that have documents:\nDraft Votes only for the current Chair or Secretary (BR-211, BR-253, BR-277)
     activate MeetingDocumentRepository
-    MeetingDocumentRepository->Database: Retrieve documents not removed from the Meeting,\nand the Meeting agenda with the current Agenda Item
+    MeetingDocumentRepository->Database: Retrieve documents not removed from the Meeting, the Meeting agenda with the current Agenda Item,\nand each visible Vote's documents with the actor's own read confirmation and whether the actor\nis a voter of that Vote
     activate Database
     Database-->MeetingDocumentRepository: Meeting documents and agenda / Load failed
     deactivate Database
@@ -47,10 +47,10 @@ else Actor can view the Meeting
         DocumentsTab-->User: MSG157 - Unable to load the document list. Please try again.
 
     else Documents loaded
-        DocumentService->DocumentService: Group by Agenda Item in agenda order and put documents\nwith no Item link in the general group (BR-277, BR-280)
+        DocumentService->DocumentService: Group by Agenda Item in agenda order and put documents\nwith no Item link in the general group (BR-277, BR-280); a Vote's document with no Item link\nstays general as well. Mark a Vote's documents as still to confirm only for a voter of an Open Vote\nwhile the Meeting is InProgress (UC-74, BR-291)
 
-        DocumentService-->DocumentController: Grouped Meeting documents and the current Agenda Item
-        DocumentController-->DocumentsTab: Grouped Meeting documents and the current Agenda Item
+        DocumentService-->DocumentController: Grouped Meeting documents, Vote groups and the current Agenda Item
+        DocumentController-->DocumentsTab: Grouped Meeting documents, Vote groups and the current Agenda Item
 
         opt Opened from the online meeting room - AF-3
             DocumentsTab->DocumentsTab: Place the current Agenda Item first, keep the server order of the other Items\nand offer reading only (BR-316)
@@ -59,7 +59,7 @@ else Actor can view the Meeting
         alt No documents in the current grouping - AF-2
             DocumentsTab-->User: Show that no documents are available for the current grouping
         else Documents available
-            DocumentsTab-->User: Show documents grouped by Agenda Item (including items without documents) or general group
+            DocumentsTab-->User: Show documents grouped by Agenda Item (including items without documents),\nby Vote with Read / Not read (AF-1), or the general group
         end
 
         DocumentsTab->DocumentsTab: Hide adding and linking once the Meeting has ended (BR-282)

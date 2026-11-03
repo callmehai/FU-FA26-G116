@@ -24,7 +24,7 @@ object stream nén, xref có thể là stream, tệp có thể được ghi nố
 2. Một tệp PDF hợp lệ khi: bắt đầu bằng `%PDF-`, 1 KB cuối có `startxref` và `%%EOF`, PdfPig mở được ở chế độ nghiêm
    (`UseLenientParsing = false`) và có ít nhất một trang. Không đạt → `MSG164`, như mọi tệp sai khác. Tệp cần mật khẩu
    mới mở cũng bị từ chối vì trình xem không mở được.
-3. **`StoredFile.PageCount` là số server đếm.** Part `pageCounts` không còn được đọc; FE cũ vẫn gửi được, không lỗi.
+3. **`StoredFile.PageCount` là số server đếm.** Part `pageCounts` không còn được đọc và FE không gửi nữa; client cũ còn gửi cũng không lỗi.
 4. Kiểm **1 KB cuối trước khi đưa cho PdfPig**: rác sau `%%EOF` buộc bộ đọc dò `startxref` lùi từng byte, đo được 191 giây
    cho tệp 51 MB. Còn tệp có đuôi đúng mà thân là rác (40 MB ngẫu nhiên, hay xref trỏ sai) thì PdfPig báo lỗi trong dưới
    0,5 giây. 1 KB là ngưỡng Acrobat dùng cho `%%EOF`.

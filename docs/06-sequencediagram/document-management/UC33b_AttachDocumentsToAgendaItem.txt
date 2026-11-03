@@ -16,7 +16,7 @@ activate DocumentsTab
 DocumentsTab->DocumentController: Attach the documents to the Agenda Item
 activate DocumentController
 
-DocumentController->DocumentService: attachDocuments(meetingId, agendaItemId, source, documentIds | files and pageCounts, actor)
+DocumentController->DocumentService: attachDocuments(meetingId, agendaItemId, source, documentIds | files, actor)
 activate DocumentService
 
 DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting\nand is its current Chair or Secretary (BR-184)

@@ -55,6 +55,8 @@ export interface DocumentsVote {
   id: string
   title: string
   status: VoteStatus
+  /** On the vote's voter list while it is Open in an InProgress meeting: "Chưa đọc" means something only then. */
+  canConfirmRead: boolean
   documents: VoteMeetingDocument[]
 }
 

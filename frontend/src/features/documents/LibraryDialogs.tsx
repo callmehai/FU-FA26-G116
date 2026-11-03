@@ -237,14 +237,14 @@ export function LibraryUploadDialog({
   const [discarding, setDiscarding] = useState(false)
   const where = placeName(folders, folderId)
   const upload = useFileUpload({
-    toRequest: ({ file, pdf, pages }) => ({
+    toRequest: ({ file, pdf }) => ({
       name: file.name,
       kind: pdf ? 'pdf' : 'docx',
       where,
       href: `${routes.documents}${folderId ? `?folder=${folderId}` : ''}`,
       target: 'library',
       isExpected: (err) => isApiError(err, 404, 'MSG179'),
-      send: async (options) => uploadToLibrary(folderId, [{ file, pageCount: await pages }], options),
+      send: (options) => uploadToLibrary(folderId, [file], options),
     }),
     roomLeft,
     onQueued,

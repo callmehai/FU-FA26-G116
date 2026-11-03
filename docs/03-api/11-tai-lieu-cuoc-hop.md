@@ -98,8 +98,8 @@ Khoá là `files[i]` theo thứ tự part tệp; key `files` dùng cho lỗi c�
 
 ## Note cho FE
 
-- Gửi `FormData`: với mỗi tệp `append('files', file)`. `pageCounts` không còn được đọc (server tự đếm trang); FE còn
-  gửi cũng không sao. Không đặt header `Content-Type` tay — trình duyệt tự thêm boundary.
+- Gửi `FormData`: với mỗi tệp `append('files', file)`. FE không gửi `pageCounts` nữa (server tự đếm trang); client cũ
+  còn gửi cũng không sao. Không đặt header `Content-Type` tay — trình duyệt tự thêm boundary.
 - **Bắt buộc** kiểm giới hạn ở FE trước khi gửi: ≤ 50 MB mỗi tệp, ≤ 10 tệp, ≤ 200 MB tổng, đuôi
   `.pdf`/`.docx`. Body quá lớn bị server từ chối ngay khi trình duyệt còn đang gửi, nên trình duyệt thường chỉ
   thấy lỗi mạng, không đọc được `MSG288`. Vẫn xử lý `MSG164`/`MSG288` từ server: server kiểm theo nội dung, FE
@@ -147,7 +147,7 @@ tài khoản đang hoạt động, **hoặc token Khách** của UC-04 — xem [
   "general": [ { "id": "…", "fileName": "Phụ lục.docx", "pageCount": null, "…": "…" } ],
   "votes": [
     {
-      "id": "…", "title": "Thông qua kế hoạch Q4", "status": "Open",
+      "id": "…", "title": "Thông qua kế hoạch Q4", "status": "Open", "canConfirmRead": true,
       "documents": [ { "id": "…", "fileName": "Tờ trình.pdf", "…": "…", "readConfirmedAt": null } ]
     }
   ]
@@ -168,7 +168,11 @@ tài khoản đang hoạt động, **hoặc token Khách** của UC-04 — xem [
   Mỗi tài liệu như một dòng của `general` cộng `readConfirmedAt`: lúc **chính người gọi** (người dùng hoặc Khách) xác nhận
   đã đọc (UC-74), hoặc `null`. Một xác nhận tính cho mọi biểu quyết gắn cùng tài liệu (BR-291). Tài liệu của biểu quyết vẫn
   nằm ở `general` nếu không gắn mục nào (BR-280 tính theo mục nghị sự), nên trình xem tìm tài liệu chỉ cần `agendaItems` +
-  `general`.
+  `general`. Vì vậy tài liệu của một biểu quyết `Draft` vẫn hiện ở `general` cho Thành viên: chỉ biểu quyết bị ẩn, tài
+  liệu thì ai đọc được cuộc họp cũng đọc được (BR-275).
+- `canConfirmRead`: người gọi có trong danh sách người bỏ phiếu của biểu quyết, biểu quyết đang `Open` và cuộc họp đang
+  `InProgress` — đúng lúc UC-74 nhận xác nhận. FE chỉ hiện "Chưa đọc" khi `canConfirmRead`; "Đã đọc" thì hiện mỗi khi có
+  `readConfirmedAt`.
 
 ### `GET /api/meetings/{meetingId}/documents/{meetingDocumentId}/content[?download=true]` — UC-32c
 
@@ -260,11 +264,12 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
 - Nút Tải về ẩn khi `sensitivity === 'Secret'` (lấy từ `GET /api/meetings/{id}`); server vẫn chặn.
 - Chỉ đọc sau khi kết thúc (BR-282), nút Tải lên chỉ cho Chủ toạ/Thư ký: lấy `status` và `myMeetingRole` từ
   `GET /api/meetings/{id}`, endpoint danh sách không lặp lại.
-- Nhóm **Biểu quyết** (UC-32a AF-1) lấy từ `votes`; tài liệu gắn/gỡ khỏi biểu quyết làm ở tab Biểu quyết (UC-76), không ở
+- Nhóm **Biểu quyết** (UC-32a AF-1) lấy từ `votes`: "Đã đọc" khi có `readConfirmedAt`, "Chưa đọc" khi `canConfirmRead`,
+  không nhãn trong các trường hợp còn lại (không phải người bỏ phiếu, biểu quyết chưa mở hay đã đóng); tài liệu gắn/gỡ khỏi biểu quyết làm ở tab Biểu quyết (UC-76), không ở
   tab Tài liệu.
 - `MSG158`/`MSG160` là lỗi tạm thời: hiện nút thử lại. `MSG382` thì không (tệp đã mất). `MSG156` giữa chừng (tài liệu
   vừa bị gỡ, mất quyền): đóng trình xem và tải lại danh sách.
-- Lắng nghe `documentsChanged` và `agendaChanged` để làm mới tab Tài liệu và panel trong phòng.
+- Lắng nghe `documentsChanged`, `agendaChanged`, `voteChanged` và `voteOpened` để làm mới tab Tài liệu và panel trong phòng.
 
 ### FE đã làm (SCRUM-21, SCRUM-107)
 
@@ -276,7 +281,7 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
   "‹ Tài liệu" đóng tab đó; ngoài phòng thì về `?tab=documents` của cuộc họp.
 - Tải lên đi qua hàng đợi ở trình duyệt ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)): hộp thoại
   chỉ chọn và kiểm tệp, mỗi tệp một request `XMLHttpRequest` (`api.upload`, có tiến độ), chạy lần lượt; khay ở góc theo
-  dõi, tự thử lại khi chắc chưa lưu, rồi chờ "Thử lại". Đếm số trang PDF bằng pdf.js ngay khi chọn tệp.
+  dõi, tự thử lại khi chắc chưa lưu, rồi chờ "Thử lại". FE không đếm trang và không gửi `pageCounts` (server đếm).
 - Kiểm trước khi gửi dùng lại câu của `MSG164` (sai đuôi, rỗng, quá 50 MB) và `MSG288` (quá 10 tệp / 200 MB), không
   cấp mã mới. Hộp thoại ghi "lưu vào … thư mục của cuộc họp này", không ghi tên thư mục: chủ kho có thể đã đổi tên hay
   chuyển nó, và lần tải sau vẫn vào đúng thư mục đó (BR-227).

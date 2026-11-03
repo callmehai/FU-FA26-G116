@@ -19,9 +19,9 @@ activate DocumentController
 DocumentController->DocumentService: getDocumentContent(meetingId, meetingDocumentId, actor, download)
 activate DocumentService
 
-DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting (BR-275)
+DocumentService->MeetingAccessPolicy: Check actor can currently view the Meeting: an internal user,\nor a Guest whose verified session is current while the Meeting is Published or InProgress (BR-181, BR-275)
 activate MeetingAccessPolicy
-MeetingAccessPolicy->Database: Check the actor's current Meeting relationship
+MeetingAccessPolicy->Database: Check the actor's current Meeting relationship or Guest session
 activate Database
 Database-->MeetingAccessPolicy: Access / No access
 deactivate Database
@@ -50,10 +50,15 @@ else Download requested for a Secret Meeting - EX-3
 else Document can be provided
     DocumentService->FileStorage: Read the uploaded file unchanged (BR-183, BR-216)
     activate FileStorage
-    FileStorage-->DocumentService: File content / Read failed
+    FileStorage-->DocumentService: File content / File missing / Read failed
     deactivate FileStorage
 
-    alt File cannot be provided - EX-2 / EX-4
+    alt The stored file no longer exists - EX-5
+        DocumentService-->DocumentController: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
+        DocumentController-->DocumentViewer: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
+        DocumentViewer-->User: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
+
+    else File cannot be provided - EX-2 / EX-4
         DocumentService-->DocumentController: Read failed
         DocumentController-->DocumentViewer: Read failed
 
@@ -93,7 +98,11 @@ else Document can be provided
                 DocumentViewer-->User: Provide the original file (BR-188)
             else Viewing
                 DocumentViewer->DocumentViewer: Render the PDF pages or the DOCX document in the browser,\nread the Meeting sensitivity from the Meeting details and hide Download for a Secret Meeting\n(BR-188, BR-282)
-                DocumentViewer-->User: Show the document with its name and the Meeting sensitivity
+                alt The browser cannot render the file - EX-6
+                    DocumentViewer-->User: MSG383 - The browser cannot display this file.\nIt may be damaged or in an unsupported format.
+                else Rendered
+                    DocumentViewer-->User: Show the document with its name and the Meeting sensitivity
+                end
             end
         end
     end

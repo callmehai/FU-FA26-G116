@@ -12,8 +12,8 @@ export type ReadProgress = 'reading' | 'reached' | 'unreadable'
  * (`?read=1`). It stays locked until the reader reaches the last page (BR-290) — the label says so,
  * since a touch screen shows no tooltip — then records the confirmation once. A file the viewer cannot
  * draw can never be read to its end, and the vote's documents no longer change once it is open (BR-288),
- * so the label says whom to tell instead of leaving the reader at a locked button — the step after the
- * viewer's own "Vui lòng thử lại", so the two read as one instruction. The vote's panel sees
+ * so the label says whom to tell instead of leaving the reader at a locked button. The viewer's MSG383
+ * offers no retry (the file itself is at fault), so the label does not either. The vote's panel sees
  * a confirmation when its window regains focus.
  */
 export function ReadConfirmButton({
@@ -40,7 +40,7 @@ export function ReadConfirmButton({
     return (
       <button type="button" className="btn btn-outline" disabled>
         <Icon name="alertCircle" size={16} />
-        Vẫn lỗi thì báo Thư ký
+        Báo Thư ký về tệp này
       </button>
     )
   }
