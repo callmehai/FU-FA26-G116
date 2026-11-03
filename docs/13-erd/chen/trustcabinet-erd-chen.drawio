@@ -52,7 +52,22 @@
         <mxCell id="MeetingGuestInvitation" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="MeetingGuestInvitation" vertex="1">
           <mxGeometry height="64" width="269" x="326.5" y="840" as="geometry" />
         </mxCell>
-        <mxCell id="MeetingMinutes" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="MeetingMinutes" vertex="1">
+        <mxCell id="GuestSession" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="GuestSession" vertex="1">
+          <mxGeometry height="64" width="220" x="30" y="650" as="geometry" />
+        </mxCell>
+                <mxCell id="TranscriptSpeaker" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="TranscriptSpeaker" vertex="1">
+          <mxGeometry height="64" width="222" x="254.2" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="R53" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Names" vertex="1">
+          <mxGeometry height="64" width="124" x="610" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="e113" edge="1" parent="1" source="Transcript" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e114" edge="1" parent="1" source="TranscriptSpeaker" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+<mxCell id="MeetingMinutes" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="MeetingMinutes" vertex="1">
           <mxGeometry height="64" width="193" x="624.5" y="840" as="geometry" />
         </mxCell>
         <mxCell id="MeetingParticipant" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="MeetingParticipant" vertex="1">
@@ -449,7 +464,7 @@
         <mxCell id="e55" edge="1" parent="1" source="CallParticipant" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R27">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e56" edge="1" parent="1" source="MeetingGuestInvitation" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;" target="R28">
+        <mxCell id="e56" edge="1" parent="1" source="GuestSession" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;" target="R28">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e57" edge="1" parent="1" source="CallParticipant" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R28">

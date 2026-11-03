@@ -9,7 +9,10 @@ Contract: [16-truy-cap-khach-uc04.md](../../03-api/16-truy-cap-khach-uc04.md) §
 [16-truy-cap-khach-uc04-ket-qua-kiem-thu.md](../../03-api/16-truy-cap-khach-uc04-ket-qua-kiem-thu.md). Note này gom việc BA, không thay
 Jira hay đặc tả. Phần UC-04/BR/MSG của BE nằm ở [note 21](21-scrum-116-truy-cap-khach-uc04.md).
 
-> **Tiến độ 02/11/2026: CHƯA LÀM GÌ.** Mới ghi note.
+> **Tiến độ 03/11/2026: ĐÃ SỬA TÀI LIỆU** (Report 3 DOCX → snapshot + extract 05/06 + uc-map):
+> UC-04 (AF-3 Thoát, EX-1 hai màn kết thúc, EX-8 tách nhánh hết phiên / thu hồi), UC-29 (Khách trả lời trên trang cuộc họp),
+> UC-32c (Khách không có nút Tải về khi Mật). **Còn lại:** đặc tả màn hình (điểm 4, 7), kỳ vọng 403 trong ticket SCRUM-122 (điểm 6,
+> việc ngoài repo), và câu hỏi PO về `sensitivity`/màn kết thúc (điểm 2, 3).
 
 ## 1. Trạng thái
 
@@ -48,12 +51,14 @@ Ghi nhận thêm (không phải lệch docs): gửi OTP chạy đồng bộ qua 
 
 ## 4. Việc BA, theo thứ tự
 
-- [ ] UC-04: AF Khách tự Thoát (điểm 5); EX-1 hai màn kết thúc (điểm 3).
-- [ ] UC-29: Khách trả lời ngay trên trang cuộc họp (điểm 1).
-- [ ] UC-32a/UC-32c: Khách xem mọi tài liệu và tải về (PO 30/10/2026, comment SCRUM-123 10349); góp ý được từ PR #224 (UC-35 đã sửa, [note 27](27-pr224-tai-lieu-sau-e2e.md)); cuộc họp Mật không có nút Tải về
-      (`canDownload`, điểm 2). Kiểm tra trùng việc với note 21 §3 dòng UC-32a/32c đã làm.
-- [ ] Hỏi Hải/Lộc: thêm `sensitivity` vào `GuestMeetingView` (điểm 2); mã/nội dung màn kết thúc (điểm 3).
-- [ ] Sửa kỳ vọng SCRUM-122 mục 8: 403 (điểm 6), báo Tester.
+- [x] UC-04: AF Khách tự Thoát (điểm 5); EX-1 hai màn kết thúc (điểm 3); EX-8 tách "hết phiên thì xác minh lại" và "thu hồi thì
+      không vào lại" (điểm 6 của note 24).
+- [x] UC-29: Khách trả lời ngay trên trang cuộc họp, không có màn 6.4 riêng (điểm 1).
+- [x] UC-32a/UC-32c: Khách xem mọi tài liệu và tải về (PO 30/10/2026, comment SCRUM-123 10349), không góp ý; cuộc họp Mật thì
+      **nút Tải về ẩn** (`canDownload`), server vẫn chặn (điểm 2) — UC-32a/32c đã có từ note 21, đợt này chỉ thêm câu nút ẩn ở UC-32c AF-1.
+- [ ] Hỏi Hải/Lộc: thêm `sensitivity` (và mode/location nếu cần) vào `GuestMeetingView` (điểm 2); mã/nội dung màn kết thúc
+      (điểm 3 — FE #215 xác nhận không cần mã riêng, dùng MSG371, đã ghi vào EX-1).
+- [ ] Sửa kỳ vọng SCRUM-122 mục 8: 403 (điểm 6), báo Tester — **việc ngoài repo, chưa làm ở nhánh này**.
 - [ ] **Đặc tả màn hình** 1.3, form hồ sơ, trang cuộc họp Khách, trình xem tài liệu Khách, màn kết thúc: chụp từ UI thật, cập nhật
       wireframe (điểm 4, 7). Đánh dấu xong ô "CHƯA LÀM" ở note 21 khi làm.
-- [ ] Sync Report 3, Change Log.
+- [x] Sync Report 3, Change Log (dòng 03/11/2026 / M / KhanhPG, cùng lượt với note 24, 25).

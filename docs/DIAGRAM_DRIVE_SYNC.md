@@ -39,8 +39,8 @@ Thư mục gốc: [Diagrams](https://drive.google.com/drive/folders/18E52RJTqrrd
 | `uc` | `docs/14-uc-diagram/` | UC diagram | `1YPCo8mUbu8QCS_el_M_SbnSzHfsqWPKf` |
 
 `docs/10-statemachine/` chưa có thư mục tương ứng trên Drive nên chưa nằm trong phạm vi đồng bộ.
-`docs/13-erd/hien-tai/` là snapshot schema đang chạy, sinh lại từ database, không phải nguồn nghiệp
-vụ: nó **không** được đẩy lên Drive và cũng không có thư mục đích. Chi tiết ba bản ERD ở
+`docs/13-erd/` chỉ còn hai bản của mô hình đích (`muc-tieu`, `chen`); ảnh chụp schema đang chạy đã bỏ
+ngày 03/11/2026 nên không còn thư mục nào ngoài phạm vi đồng bộ. Chi tiết ở
 [13-erd/README.md](13-erd/README.md).
 
 ### Tên file lệch giữa local và Drive
@@ -149,7 +149,7 @@ python scripts/push_diagrams.py sequence --prune --confirm
   bản cũ, không do script quản lý nên vẫn để nguyên.
 - `erd`: 4 file — tạo `trustcabinet-erd-muc-tieu.drawio`, update source Chen, và **đổi tên tại chỗ**
   ảnh mục tiêu từ `trustcabinet-erd-muc-tieu .drawio.png` sang `trustcabinet-erd-muc-tieu.drawio.png`
-  (giữ ID/link). Không file nào của `13-erd/hien-tai` được đẩy lên.
+  (giữ ID/link).
 - `context` 2 update, `main-flow` 8 (3 khớp + 5 update), `screen-flow` 2 update, `uc` 8 (6 khớp +
   2 update: `trustcabinet-use-cases.drawio`, `uc-chair.png`).
 
