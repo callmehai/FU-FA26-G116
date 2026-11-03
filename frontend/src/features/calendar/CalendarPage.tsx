@@ -44,6 +44,10 @@ const MIN_EVENT_HEIGHT = 30
 /** The "Vào phòng họp" band across a live tile's foot (global.css: .cal-go); a long tile carries it this far down. */
 const GO_HEIGHT = 26
 const GO_AT = 104
+/** An hour label (2px under its line, 16px tall) and the current-time badge (22px, centred on its line) as boxes. */
+const HOUR_LABEL_TOP = 2
+const HOUR_LABEL_HEIGHT = 16
+const NOW_LABEL_HALF = 11
 
 /** One meeting line on the month grid plus the gap above it (global.css: .month-event, .month-cell). */
 const MONTH_EVENT_ROW = 27
@@ -386,13 +390,16 @@ function WeekGrid({
           ))}
 
           <div className="calendar-hours" style={{ height: GRID_HEIGHT }}>
-            {hours.map((h) => (
-              <span key={h} style={{ top: h * HOUR_HEIGHT + 2 }}>
-                {String(h).padStart(2, '0')}:00
-              </span>
-            ))}
+            {/* An hour label the current-time badge would sit on is left out, as on Google Calendar. */}
+            {hours
+              .filter((h) => !showsToday || !overlapsNowLabel(h * HOUR_HEIGHT + HOUR_LABEL_TOP, nowTop))
+              .map((h) => (
+                <span key={h} style={{ top: h * HOUR_HEIGHT + HOUR_LABEL_TOP }}>
+                  {String(h).padStart(2, '0')}:00
+                </span>
+              ))}
             {showsToday && (
-              <span className="calendar-now-label" style={{ top: nowTop - 11 }}>
+              <span className="calendar-now-label" style={{ top: nowTop - NOW_LABEL_HALF }}>
                 {formatClock(now)}
               </span>
             )}
@@ -424,6 +431,10 @@ function WeekGrid({
       <Legend />
     </div>
   )
+}
+
+function overlapsNowLabel(labelTop: number, nowTop: number) {
+  return labelTop < nowTop + NOW_LABEL_HALF && labelTop + HOUR_LABEL_HEIGHT > nowTop - NOW_LABEL_HALF
 }
 
 function GridEvent({
