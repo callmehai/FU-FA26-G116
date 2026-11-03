@@ -32,6 +32,7 @@ Mỗi file giữ nguyên phạm vi cần sửa. Khi ticket sang **BA Final Revie
 | 27 | [PR #224 tài liệu sau test E2E](27-pr224-tai-lieu-sau-e2e.md) | SCRUM-21, 22, 23, 58, 107 (PR #224) | Nhóm Biểu quyết, Khách góp ý, server kiểm và đếm trang PDF (ADR-0044), MSG382/383; Report 3, sequence, API **đã sửa theo code** (PR #224, #235); chỉ để BA biết, không có việc cần sửa |
 | 28 | [PR #225 máy tự gán tên người nói](28-pr225-may-tu-gan-ten-nguoi-noi.md) | SCRUM-35 (PR #225, ADR-0045) | Tự gán khi khớp ≥ 0,75, giọng thứ hai ≥ 0,7, rút đồng ý xoá tên máy gán; **03/11/2026 đã sửa BR-362/365/366/367, UC-45a/45c/46b, screen 10.1, 02-erd §7 và sequence UC-45c/UC-46b** |
 | 29 | [SCRUM-130 docs review repo](29-scrum-130-docs-review-repo-uc06c-voiceid-1-2.md) | SCRUM-130, SCRUM-35 (PR #226, #227; ADR-0048, ADR-0049) | Report 1 lộ 6 email + 5 số điện thoại (**03/11/2026 đã bỏ hai cột liên hệ**), README/AGENTS trạng thái cũ (**đã sửa**), UC-06c vô hiệu hoá kết thúc Voice ID (+ BR-372), thông báo 1.2 + nghe lại trước khi lưu (**đã sửa**) |
+| 30 | [PR #249 "Tài liệu chung" phương án B](30-pr249-phuong-an-b-tai-lieu-chung.md) | SCRUM-21 (PR #249) | BR-280 định nghĩa lại nhóm Tài liệu chung (không gắn mục **và** không gắn biểu quyết), BR-275 trừ tài liệu chỉ gắn biểu quyết nháp (Thành viên/Khách 404 MSG156); màn 7.3, 8.6 và Change Log — **03/11/2026 đã sửa** |
 Plan gom cả sáu note. **Thứ tự làm và cách giao cho agent: [plan 05 mục 8](05-plan-sua-uc-br-msg-diagram.md#8-thứ-tự-và-cách-chạy-agent-đọc-mục-này-trước)** —
 làm lần lượt từng lượt, mỗi lượt một session mới.
 
@@ -43,13 +44,14 @@ làm lần lượt từng lượt, mỗi lượt một session mới.
 |---|---|---|---|---|
 | [20](20-viec-jira-sau-khi-merge-pr-ghi-am-voice-id.md) | 29, 31, 35, 109, 102, 103, 125, 126 | PR #205 đã merge | **Xong 02/11**: đã comment cả 8; 29/31/35/109 → `In Review`, 102/103/125/126 → `Done` | — |
 | [21](21-scrum-116-truy-cap-khach-uc04.md), [26](26-giao-viec-be-scrum-116-che-email-khoa-ten.md) | 116 (+117–123) | UC-04/BR/MSG + A/B đã merge (#203, #208, #222); #237 merge 03/11 | **116 → `In Review`** (comment 10420); 117, 123 `Done` | Mục D (ghi âm Khách) nay làm được vì SCRUM-129 xong (#245); đặc tả màn 1.3 + trang Khách |
-| [22](22-pr201-gan-tai-lieu-tu-dong-nghi-su.md) | không có ticket (PR #201) | #235, #236 đã merge; **#249 (phương án B) đã lên `main`** | Không có ticket | **Sửa BR-280 + BR-275, UC-32a AF-1, màn 7.3 theo phương án B** (xem dưới) |
+| [22](22-pr201-gan-tai-lieu-tu-dong-nghi-su.md) | không có ticket (PR #201) | #235, #236 đã merge; **#249 (phương án B) đã lên `main`** | Không có ticket | Đã sửa BR-280 + BR-275, màn 7.3 và 8.6 theo phương án B — xem [note 30](30-pr249-phuong-an-b-tai-lieu-chung.md) |
 | [23](23-pr212-scrum-121-122-123-man-khach.md) | 121, 122, 123 | PR #237 đã merge | **121, 122 → `In Review`** (10422, 10423); 123 `Done` + comment 10429 | Sửa mục 8 của SCRUM-122 (403 thay 404) và báo Tester |
 | [24](24-pr213-215-scrum-59-127-khach-phong-hop.md) | 59, 127 | PR #237 đã merge | **59 → `In Review`** (10421), **127 → `In Review`** (10424) | I2/I3 trong mô tả SCRUM-127; đặc tả màn chờ Khách |
 | [25](25-pr218-gan-nguoi-noi-la-khach.md) | 35 (qua PR #218) | PR #237 đã merge | 35 `In Review` | Gộp vào comment SCRUM-35 (10426) của note 28 |
 | [27](27-pr224-tai-lieu-sau-e2e.md) | 21, 22, 23, 58, 107 | #224 + #235 đã merge | Cả năm `In Review`; đã comment 21 (10427), 107 (10428), 23 (10429) | 21 chờ BR-280 phương án B; 22/58 không cần sửa |
 | [28](28-pr225-may-tu-gan-ten-nguoi-noi.md) | 35 | PR #238 → vào `main` bằng **PR #251** (merge `5b75cedb`) | `In Review`, đã trả lời comment 10406 (10426) | Tester kiểm lại lỗi "máy chỉ nhận 1 người nói" |
 | [29](29-scrum-130-docs-review-repo-uc06c-voiceid-1-2.md) | 130 | Như trên (PR #238 → #251) | **`Done`** (comment 10425) | — |
+| [30](30-pr249-phuong-an-b-tai-lieu-chung.md) | 21 (và 22) | Sửa Report 3 trong PR #252 | `In Review` (comment 10427) | Comment kết quả sau khi PR #252 merge; ảnh wireframe 7.3/8.6 |
 
 **#238 merge sai đích — đã cứu xong.** #238 được merge vào nhánh stacked
 `docs/ba-final-review-khach-pr212-213-215-218` **sau khi** nhánh đó đã merge vào `main` (là #237), nên nội dung
@@ -58,10 +60,10 @@ trên `main`. **PR #251** (`docs/ba-final-review-scrum-130-voiceid` → `main`) 
 đã kiểm lại trên `main`: `BR-372` có, Report 1 không còn email/số điện thoại, `AGENTS.md` đúng trạng thái. Hai nhánh
 stacked đã xoá. Quy tắc để không lặp lại: [DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update).
 
-**SCRUM-21 phương án B.** PO chốt và code đã lên `main` (`45ae5e36`, PR #249): "Tài liệu
-chung" chỉ gồm tài liệu **không gắn mục nghị sự và không gắn biểu quyết**; tài liệu chỉ gắn biểu quyết nháp thì
-Thành viên/Khách không thấy (404 MSG156). Report 3 ở `main` vẫn ghi phương án A ở **BR-280** ("even while it is
-still linked to a Vote"), nên phải sửa BR-280, BR-275, UC-32a AF-1 và màn 7.3 — nay làm được ngay vì #251 đã merge.
+**SCRUM-21 phương án B — đã sửa 03/11/2026.** PO chốt và code lên `main` (`45ae5e36`, PR #249): "Tài liệu chung"
+chỉ gồm tài liệu **không gắn mục nghị sự và không gắn biểu quyết**; tài liệu chỉ gắn biểu quyết nháp thì
+Thành viên/Khách không thấy (404 MSG156), Chủ toạ/Thư ký vẫn thấy. Report 3 sửa **BR-280**, **BR-275**, đoạn mở đầu
+màn 7.3, bảng 8.6 và Change Log — chi tiết ở [note 30](30-pr249-phuong-an-b-tai-lieu-chung.md).
 
 - [05 — UC, BR, message, diagram](05-plan-sua-uc-br-msg-diagram.md)
 - [06 — chụp lại và đặc tả màn hình Report 3](06-plan-dac-ta-man-hinh.md)
