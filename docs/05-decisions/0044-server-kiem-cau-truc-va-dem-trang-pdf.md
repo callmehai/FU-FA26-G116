@@ -24,7 +24,7 @@ object stream nén, xref có thể là stream, tệp có thể được ghi nố
 2. Một tệp PDF hợp lệ khi: bắt đầu bằng `%PDF-`, 1 KB cuối có `startxref` và `%%EOF`, PdfPig mở được ở chế độ nghiêm
    (`UseLenientParsing = false`) và có ít nhất một trang. Không đạt → `MSG164`, như mọi tệp sai khác. Tệp cần mật khẩu
    mới mở cũng bị từ chối vì trình xem không mở được.
-3. **`StoredFile.PageCount` là số server đếm.** Part `pageCounts` không còn được đọc; FE cũ vẫn gửi được, không lỗi.
+3. **`StoredFile.PageCount` là số server đếm.** Part `pageCounts` không còn được đọc và FE không gửi nữa; client cũ còn gửi cũng không lỗi.
 4. Kiểm **1 KB cuối trước khi đưa cho PdfPig**: rác sau `%%EOF` buộc bộ đọc dò `startxref` lùi từng byte, đo được 191 giây
    cho tệp 51 MB. Còn tệp có đuôi đúng mà thân là rác (40 MB ngẫu nhiên, hay xref trỏ sai) thì PdfPig báo lỗi trong dưới
    0,5 giây. 1 KB là ngưỡng Acrobat dùng cho `%%EOF`.
@@ -39,7 +39,17 @@ object stream nén, xref có thể là stream, tệp có thể được ghi nố
      trình con;
    - tiến trình con in `pages=N` và thoát 0, hoặc thoát 2 khi tệp không đọc được. Chết vì tràn stack, hết bộ nhớ hay quá
      giờ đều coi là PDF không hợp lệ (`MSG164`);
-   - không khởi động được tiến trình con là lỗi server (500), không phải lỗi tệp.
+   - không khởi động được tiến trình con là lỗi server (500), không phải lỗi tệp;
+   - một lần tải chờ tới lượt kiểm tối đa **30 giây** (hai lượt 15 giây). Quá thời gian đó nghĩa là có người giữ cả hai
+     tiến trình con bận, nên lần tải trả mã "thử lại" của endpoint (`503 MSG166`, kho cá nhân `503 MSG178`) chứ không
+     phải `MSG164`, và không bắt mọi người xếp hàng sau người đó (sửa sau review PR #224);
+   - tiến trình con thoát với mã khác 0 và 2 (chết vì tràn stack, hết bộ nhớ, hay máy không chạy được app) và tiến trình
+     quá giờ đều ghi một dòng `Warning` kèm mã thoát và đầu stderr: nếu không, một lỗi triển khai làm mọi PDF bị từ chối
+     mà log trống;
+   - tiến trình con là chính file chạy của app khi app chạy bằng apphost (`dotnet run`, bản publish), là `dotnet <dll>`
+     khi app chạy bằng `dotnet` (container); chỉ test (testhost) mới cần `dotnet` của SDK;
+   - `DocumentFileRules.ValidateAsync` bắt buộc nhận hàm đếm trang, không có mặc định: endpoint tải lên mới không thể vô
+     tình đếm trang ngay trong tiến trình server.
    Tăng stack của luồng không phải cách sửa: trong 50 MB có thể nén hàng trăm nghìn tầng, nhiều hơn mọi stack. Stack của
    tiến trình con là 1 MB trên Windows và 8 MB trên Linux (server test), nên một cây lồng vừa phải (20.000 tầng) đọc được
    trên Linux và được nhận như PDF 1 trang; cây sâu hơn làm chết tiến trình con và bị từ chối. Server không chết ở cả hai.

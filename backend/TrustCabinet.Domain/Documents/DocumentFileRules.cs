@@ -83,12 +83,12 @@ public static class DocumentFileRules
     /// Checks the submission limits, then every file by its actual bytes (BR-187, BR-214, BR-215,
     /// BR-319), and hashes what passes. Reports every bad file, not just the first. Streams must
     /// be seekable — ASP.NET Core buffers form files to disk, so they are. <paramref name="countPdfPages"/> parses a
-    /// PDF; the web app passes one that runs <see cref="CountPdfPagesAsync"/> in a child process (ADR-0044).
+    /// PDF. It has no default on purpose: the web app must pass one that runs <see cref="CountPdfPagesAsync"/> in a
+    /// child process (ADR-0044), since a hostile PDF parsed in the server's own process can end it.
     /// </summary>
     public static async Task<DocumentUploadOutcome> ValidateAsync(IReadOnlyList<DocumentUploadCandidate> candidates,
-        CancellationToken ct, Func<Stream, CancellationToken, Task<int?>>? countPdfPages = null)
+        Func<Stream, CancellationToken, Task<int?>> countPdfPages, CancellationToken ct)
     {
-        countPdfPages ??= CountPdfPagesAsync;
         if (candidates.Count == 0)
             return new(DocumentUploadFailure.Invalid, Errors: new Dictionary<string, string[]> { ["files"] = ["Chưa chọn tệp nào."] });
         if (candidates.Count > MaxFiles || candidates.Sum(c => c.Length) > MaxTotalBytes)

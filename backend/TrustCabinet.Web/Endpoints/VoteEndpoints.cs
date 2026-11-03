@@ -149,8 +149,13 @@ public static class VoteEndpoints
         {
             var validated = await MeetingDocumentEndpoints.ReadFilesAsync(context, tempFiles, ct);
             if (validated.Failure != DocumentUploadFailure.None)
-                return Map(new VoteOutcome(validated.Failure == DocumentUploadFailure.TooMany ? VoteFailure.FilesTooMany
-                    : VoteFailure.FilesInvalid, Errors: validated.Errors), meetingId, VoteOperation.AttachUpload);
+                return Map(new VoteOutcome(validated.Failure switch
+                {
+                    DocumentUploadFailure.TooMany => VoteFailure.FilesTooMany,
+                    // The PDF check stayed busy (ADR-0044): "try again" (MSG166), not MSG164.
+                    DocumentUploadFailure.StoreFailed => VoteFailure.SaveFailed,
+                    _ => VoteFailure.FilesInvalid,
+                }, Errors: validated.Errors), meetingId, VoteOperation.AttachUpload);
             var outcome = await service.AttachUploadAsync(meetingId, voteId, actor, validated.Files!, ct);
             await PublishDocumentsAsync(outcome, meetingId, documents, logs);
             return Map(outcome, meetingId, VoteOperation.AttachUpload);

@@ -76,8 +76,13 @@ public sealed record MeetingDocumentAgendaGroup(Guid Id, int Position, string Ti
 public sealed record MeetingVoteDocumentRow(Guid Id, string FileName, string ContentType, long ByteSize, int? PageCount,
     int CommentCount, Meetings.MeetingPerson AddedBy, DateTimeOffset AddedAt, DateTimeOffset? ReadConfirmedAt);
 
-/// <summary>A vote the reader may see, in the order votes are created, with its documents still in the meeting.</summary>
-public sealed record MeetingDocumentVoteGroup(Guid Id, string Title, string Status, IReadOnlyList<MeetingVoteDocumentRow> Documents);
+/// <summary>
+/// A vote the reader may see, in the order votes are created, with its documents still in the meeting.
+/// <see cref="CanConfirmRead"/>: the reader is on the vote's voter list and the vote is Open in an InProgress meeting,
+/// the only case in which UC-74 accepts a confirmation, so the only one in which "not read yet" means anything.
+/// </summary>
+public sealed record MeetingDocumentVoteGroup(Guid Id, string Title, string Status, bool CanConfirmRead,
+    IReadOnlyList<MeetingVoteDocumentRow> Documents);
 
 /// <summary>
 /// UC-32a: the current documents grouped by agenda item, plus those linked to no item (BR-280), plus (AF-1) the

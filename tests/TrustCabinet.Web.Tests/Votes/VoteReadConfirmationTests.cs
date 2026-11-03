@@ -200,7 +200,11 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         Assert.Equal([report, annex], group.GetProperty("documents").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()));
         Assert.All(group.GetProperty("documents").EnumerateArray(),
             d => Assert.Equal(JsonValueKind.Null, d.GetProperty("readConfirmedAt").ValueKind));
-        Assert.Equal([opened, draft], (await VoteGroups(secretary, s)).Select(v => v.GetProperty("id").GetGuid()));
+        // "Not read" means something only to a voter of an Open vote (UC-74): never on a draft.
+        Assert.True(group.GetProperty("canConfirmRead").GetBoolean());
+        var forSecretary = await VoteGroups(secretary, s);
+        Assert.Equal([opened, draft], forSecretary.Select(v => v.GetProperty("id").GetGuid()));
+        Assert.False(forSecretary[1].GetProperty("canConfirmRead").GetBoolean());
 
         // Each reader sees their own confirmation, which counts for every vote that links the document (BR-291).
         await Code(await Confirm(member, s, report), 200, "MSG253");
@@ -216,5 +220,11 @@ public sealed class VoteReadConfirmationTests(ParticipantFixture f) : IClassFixt
         await Code(await secretary.DeleteAsync($"{s.Url}/documents/{annex}"), 200, "MSG167");
         Assert.Equal([report], Assert.Single(await VoteGroups(member, s)).GetProperty("documents").EnumerateArray()
             .Select(d => d.GetProperty("id").GetGuid()));
+
+        // A closed vote takes no more confirmations; the one given stays.
+        await Code(await chair.PostAsync($"{s.Url}/votes/{opened}/close", null), 200, "MSG229");
+        var closed = Assert.Single(await VoteGroups(member, s));
+        Assert.False(closed.GetProperty("canConfirmRead").GetBoolean());
+        Assert.Equal(JsonValueKind.String, closed.GetProperty("documents")[0].GetProperty("readConfirmedAt").ValueKind);
     }
 }

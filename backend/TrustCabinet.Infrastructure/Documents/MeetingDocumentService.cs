@@ -59,6 +59,8 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
             .Select(l => new
             {
                 l.VotingSessionId, l.VotingSession.Title, l.VotingSession.Status,
+                IsVoter = l.VotingSession.EligibleVoters.Any(e => (userId != null && e.UserId == userId)
+                    || (guestInvitationId != null && e.GuestInvitationId == guestInvitationId)),
                 Row = new MeetingVoteDocumentRow(l.MeetingDocumentId, l.MeetingDocument.FileName,
                     l.MeetingDocument.StoredFile.ContentType, l.MeetingDocument.StoredFile.ByteSize,
                     l.MeetingDocument.StoredFile.PageCount, l.MeetingDocument.Comments.Count,
@@ -71,9 +73,9 @@ public sealed class MeetingDocumentRepository(TrustCabinetDbContext db) : IMeeti
                         .Select(c => (DateTimeOffset?)c.ConfirmedAt).FirstOrDefault()),
             }).ToListAsync(ct);
         // Ordered above, so grouping keeps the votes' order and each vote's documents oldest first.
-        return links.GroupBy(l => (l.VotingSessionId, l.Title, l.Status))
+        return links.GroupBy(l => (l.VotingSessionId, l.Title, l.Status, l.IsVoter))
             .Select(g => new MeetingDocumentVoteGroup(g.Key.VotingSessionId, g.Key.Title, g.Key.Status.ToString(),
-                g.Select(l => l.Row).ToList())).ToList();
+                g.Key.IsVoter && g.Key.Status == VotingStatus.Open, g.Select(l => l.Row).ToList())).ToList();
     }
 
     public Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct)
@@ -101,6 +103,8 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             var includeDrafts = reader.UserId is { } userId && ParticipantRules.IsManager(meeting, userId);
             var votes = await documents.ListVoteGroupsAsync(meetingId, includeDrafts, reader.UserId,
                 reader.Guest?.InvitationId, ct);
+            // UC-74 takes a confirmation only while the meeting is InProgress.
+            if (meeting.Status != MeetingStatus.InProgress) votes = [.. votes.Select(v => v with { CanConfirmRead = false })];
             return new(List: list with { Votes = votes });
         }
         catch (Exception ex) when (PersistenceError(ex))

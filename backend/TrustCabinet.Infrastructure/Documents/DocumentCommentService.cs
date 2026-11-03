@@ -70,6 +70,10 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
                 // A share lock on the meeting row, so a comment sent as the meeting ends or is cancelled is refused
                 // rather than slipped in after it (BR-282), while comments do not queue behind one another.
                 await db.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM meetings WHERE id = {meetingId} FOR SHARE", token);
+                // Likewise the guest's session row, so a comment sent as the guest signs out lands before it or not at all.
+                if (actor.Guest is { } session)
+                    await db.Database.ExecuteSqlInterpolatedAsync(
+                        $"SELECT 1 FROM guest_sessions WHERE id = {session.SessionId} FOR SHARE", token);
                 // A guest whose meeting just ended has lost it altogether (BR-181), so MSG156 rather than MSG251.
                 var meeting = await FindReadableAsync(meetingId, actor, token);
                 if (meeting is null) return new(CommentFailure.NotFound);

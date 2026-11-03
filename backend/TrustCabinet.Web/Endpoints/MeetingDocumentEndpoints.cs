@@ -310,7 +310,17 @@ public static class MeetingDocumentEndpoints
                 Errors: new Dictionary<string, string[]> { ["files"] = ["Nội dung multipart không hợp lệ."] });
         }
         // Parsed in a child process: a PDF built to overflow the parser's stack must not end the server (ADR-0044).
-        return await DocumentFileRules.ValidateAsync(candidates, ct, PdfPageCounter.CountAsync);
+        var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(PdfPageCounter));
+        try
+        {
+            return await DocumentFileRules.ValidateAsync(candidates,
+                (stream, token) => PdfPageCounter.CountAsync(stream, logger, token), ct);
+        }
+        catch (PdfPageCounter.BusyException)
+        {
+            // Both parsers stayed busy: nothing is wrong with the files, so each endpoint's own "try again" (503).
+            return new(DocumentUploadFailure.StoreFailed);
+        }
     }
 
     internal static void DeleteTempFiles(List<string> tempFiles)

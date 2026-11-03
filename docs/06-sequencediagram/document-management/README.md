@@ -49,13 +49,21 @@ cùng một request; nhánh AF-3 chỉ đổi thứ tự hiển thị. Source, P
 đầu), bỏ nhóm Biểu quyết và kiểm lời mời khách (chưa xây — UC-74, UC-04), máy chủ trả thêm số trang, thời điểm
 thêm và **mọi** mục nghị sự kể cả mục chưa có tài liệu; UC-32c bỏ "dịch vụ trả độ mật" (trình duyệt lấy từ màn
 chi tiết cuộc họp) và thêm nhánh ghi kiểm toán lỗi thì không gửi tệp.
+**Cập nhật 02/11/2026 theo code PR #224 (sau test E2E):** UC-32a có lại nhóm Biểu quyết (AF-1): biểu quyết có tài liệu mà
+người gọi xem được (nháp chỉ Chủ toạ/Thư ký, BR-253), mỗi tài liệu kèm xác nhận đã đọc của chính người gọi và cờ còn xác
+nhận được (người bỏ phiếu của biểu quyết đang Open, cuộc họp InProgress); kiểm quyền ghi rõ cả phiên Khách (BR-181).
+UC-32c thêm EX-5 `MSG382` (tệp đã mất khỏi kho, không thử lại) và EX-6 `MSG383` (trình duyệt không vẽ được tệp).
+UC-33a AF-1, UC-33b AF-1, UC-36 và UC-76a: trình duyệt không gửi `pageCounts` nữa; server kiểm cấu trúc PDF và tự đếm trang trong một
+tiến trình con ([ADR-0044](../../05-decisions/0044-server-kiem-cau-truc-va-dem-trang-pdf.md)). PNG, tab draw.io gộp và
+`drawio-png/` của các UC này đã xuất lại cùng ngày. `drawio-png/uc33b_…` xuất ở `--scale 1` (03/11/2026): tab cao 11.240 px,
+ở `--scale 2` ảnh cao quá giới hạn canvas của draw.io nên ra trắng.
 
 UC-33a AF-1 vẽ ngày 23/10/2026 cho SCRUM-107, chỉ phủ nhánh tải từ máy; boundary là tab Tài liệu, nơi đặt hộp thoại tải lên (khớp `MeetingDocumentsTab` ở class diagram FE-07); luồng chính (chọn từ kho) thuộc SCRUM-58 và sẽ
 thêm vào cùng UC sau. **Cập nhật 27/10/2026 theo code**: kiểm quyền và trạng thái cuộc họp trước (EX-7, EX-1, EX-6), rồi chặn theo
 kích thước khai báo trước khi đọc thân request (EX-8), đọc request rồi kiểm một lượt (đúng một tệp trở lên, ≤ 10 tệp và ≤ 200 MB,
 từng tệp có tên dùng được, đuôi khớp nội dung và ≤ 50 MB — EX-3/EX-8), ghi dòng tệp lưu trữ trước khi đẩy byte,
-đẩy byte lên kho, rồi tìm/tạo thư mục và ghi tài liệu trong **một** transaction có khoá cuộc họp. Trình duyệt gửi kèm số trang của
-từng PDF (`pageCounts`); sau khi lưu xong máy chủ thông báo danh sách tài liệu đã đổi cho người trong cuộc họp qua SignalR (theo §10 README chung, sự kiện SignalR không vẽ vào sequence diagram).
+đẩy byte lên kho, rồi tìm/tạo thư mục và ghi tài liệu trong **một** transaction có khoá cuộc họp. Số trang PDF do server đếm (trước
+02/11/2026 là trình duyệt gửi kèm `pageCounts`); sau khi lưu xong máy chủ thông báo danh sách tài liệu đã đổi cho người trong cuộc họp qua SignalR (theo §10 README chung, sự kiện SignalR không vẽ vào sequence diagram).
 `:File Storage` là kho đối tượng R2 ([ADR-0024](../../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md));
 lỗi ở bước nào thì xoá các tệp đã đẩy để giữ "tất cả hoặc không" (BR-286). Job dọn tệp mồ côi (BR-213) là job nền nên không vẽ
 sequence, theo §10 của [README chung](../README.md).

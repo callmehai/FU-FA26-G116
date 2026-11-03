@@ -118,15 +118,15 @@ export function AddDocumentsDialog({
   }, [])
 
   const upload = useFileUpload({
-    toRequest: ({ file, pdf, pages }) => ({
+    toRequest: ({ file, pdf }) => ({
       name: file.name,
       kind: pdf ? 'pdf' : 'docx',
       where: item ? `${meeting.title} · mục ${item.number}` : vote ? `${meeting.title} · biểu quyết` : meeting.title,
       href: `${routes.meeting(meeting.id)}?tab=${vote ? 'votes' : 'documents'}`,
       target: `meeting:${meeting.id}`,
       isExpected: isStale,
-      send: async (options) => {
-        const files = [{ file, pageCount: await pages }]
+      send: (options) => {
+        const files = [file]
         return item
           ? uploadToAgendaItem(meeting.id, item.id, files, options)
           : vote

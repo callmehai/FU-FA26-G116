@@ -12,10 +12,10 @@ database ":Database" as Database
 Actor->LibraryScreen: Submit the selected files to the library root or a folder
 activate LibraryScreen
 
-LibraryScreen->DocumentController: Upload files with PDF page counts to the selected location
+LibraryScreen->DocumentController: Upload files to the selected location
 activate DocumentController
 
-DocumentController->DocumentService: uploadDocuments(userId, folderId, files, pageCounts)
+DocumentController->DocumentService: uploadDocuments(userId, folderId, files)
 activate DocumentService
 
 DocumentService->DocumentService: Check the actor is an Internal User\nwith a personal library (BR-204, BR-242)
@@ -37,7 +37,7 @@ alt Destination folder is no longer available - EX-2
     LibraryScreen-->Actor: MSG179 - The selected destination folder is not available in your personal library.
 
 else Destination is available
-    DocumentService->DocumentService: Check at most 10 files totalling at most 200 MB (BR-319), at least one file was selected and every file has a usable name,\na .pdf or .docx extension matching its content and at most 50 MB\n(BR-187, BR-214, BR-215)
+    DocumentService->DocumentService: Check at most 10 files totalling at most 200 MB (BR-319), at least one file was selected and every file has a usable name,\na .pdf or .docx extension matching its content and at most 50 MB\nand that every PDF opens without a password and has at least one page; a separate process reads its structure\nand counts its pages, and a crash or a 15-second overrun counts as invalid (ADR-0044)\n(BR-187, BR-214, BR-215)
 
     alt Any file is invalid - EX-1
         DocumentService-->DocumentController: MSG164 - Select valid PDF or DOCX files, each no larger than 50 MB.
@@ -65,7 +65,7 @@ else Destination is available
             LibraryScreen-->Actor: MSG346 - The system's document storage is full. No documents were uploaded. Please contact an administrator.
 
         else Within the system storage limit
-            DocumentService->DocumentRepository: Record one stored-file entry per file, before any byte is stored (ADR-0024)
+            DocumentService->DocumentRepository: Record one stored-file entry per file, with the page count the server found for a PDF,\nbefore any byte is stored (ADR-0024, ADR-0044)
             activate DocumentRepository
             DocumentRepository->Database: Insert the stored-file entries
             activate Database

@@ -48,8 +48,9 @@ export function useMeetingDocuments(meetingId: string) {
     }
   }, [load])
 
-  // A vote opened, closed or given documents changes the Biểu quyết group (UC-32a AF-1).
-  useMeetingEvents(meetingId, () => void load(), ['documentsChanged', 'agendaChanged', 'voteChanged', 'voteOpened'])
+  // A vote opened, closed or given documents changes the Biểu quyết group (UC-32a AF-1); a ballot does not.
+  // Ending the meeting turns every canConfirmRead off, so "Chưa đọc" goes with it.
+  useMeetingEvents(meetingId, () => void load(), ['documentsChanged', 'agendaChanged', 'voteListChanged', 'meetingEnded'])
 
   return { state, reload: load }
 }

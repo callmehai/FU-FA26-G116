@@ -1,7 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { useUploads } from '../uploads/uploadsContext'
 import type { UploadRequest } from '../uploads/uploadStore'
-import { countPdfPages } from './pdf'
 
 // BR-214, BR-319 — the server's DocumentFileRules. Checked here first: a body past the limit is cut
 // off while the browser is still sending, and the browser then sees a network error, not a code.
@@ -14,14 +13,10 @@ const MAX_TOTAL_BYTES = 200 * MB
 export const INVALID_FILES = 'Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.'
 export const OVER_LIMIT = 'Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB.'
 
-export type UploadFiles = { file: File; pageCount: number | null }[]
-
 /** One picked file, for the request that sends it. */
 export interface PickedFile {
   file: File
   pdf: boolean
-  /** Counted by pdf.js as soon as the file is picked; the server only stores it (SCRUM-107). */
-  pages: Promise<number | null>
 }
 
 interface Picked extends PickedFile {
@@ -64,7 +59,7 @@ export function useFileUpload({
       const name = file.name.toLowerCase()
       const pdf = name.endsWith('.pdf')
       if ((!pdf && !name.endsWith('.docx')) || file.size === 0 || file.size > MAX_FILE_BYTES) bad.push(file.name)
-      else ok.push({ key: nextKey.current++, file, pdf, pages: pdf ? countPdfPages(file) : Promise.resolve(null) })
+      else ok.push({ key: nextKey.current++, file, pdf })
     }
     setRejected(bad)
     setPicked((p) => [...p, ...ok])

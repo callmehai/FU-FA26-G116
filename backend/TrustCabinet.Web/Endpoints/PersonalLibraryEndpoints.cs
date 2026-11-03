@@ -132,6 +132,9 @@ public static class PersonalLibraryEndpoints
             var validated = await MeetingDocumentEndpoints.ReadFilesAsync(context, tempFiles, ct);
             if (validated.Failure == DocumentUploadFailure.TooMany)
                 return Json(400, Msg288SubmissionTooLarge, "Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 200 MB.");
+            // The PDF check stayed busy (ADR-0044): the files may be fine, so "try again" rather than MSG164.
+            if (validated.Failure == DocumentUploadFailure.StoreFailed)
+                return Error(LibraryFailure.SaveFailed, Msg178UploadFailed);
             if (validated.Failure != DocumentUploadFailure.None)
                 return Results.Json(new { code = Msg164InvalidFiles, message = "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.",
                     errors = validated.Errors }, statusCode: StatusCodes.Status400BadRequest);

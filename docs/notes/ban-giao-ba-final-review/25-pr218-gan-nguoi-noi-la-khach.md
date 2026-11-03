@@ -11,7 +11,7 @@
 - PR #218 **đã merge vào `main`** (01/11/2026, stack trên #217).
 - **PO 02/11/2026:** mic phòng chuyển chữ giữ đúng như AI-eCabinet và `main` (mỗi lượt mới chuyển chữ lại cả bản ghi phòng). Các commit
   trước trong nhánh (chuyển chữ riêng từng lượt, đoạn mẫu nhận lại người nói, MSG381, lý do xoá — ADR-0044) **đã hoàn tác**; chỉ giữ gán
-  người nói là Khách, như AI-eCabinet (`GuestID`). Đừng đưa nội dung ADR-0044 vào tài liệu.
+  người nói là Khách, như AI-eCabinet (`GuestID`). Đừng đưa nội dung ADR-0044 đó vào tài liệu (nó chưa từng lên `main`; số 0044 trên `main` nay là [ADR kiểm cấu trúc PDF](../../05-decisions/0044-server-kiem-cau-truc-va-dem-trang-pdf.md) của PR #224, không liên quan).
 - Migration `TranscriptSpeakerGuest`: `transcript_speakers.assigned_guest_id` (FK → `meeting_guest_invitations`), check không gán cùng
   lúc người dùng và Khách.
 - Không mã mới; MSG317 mở rộng nghĩa. Danh mục mã và `13-nhan-dien-giong-noi.md` đã ghi sẵn trong PR, lấy từ đó.

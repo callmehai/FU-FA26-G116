@@ -63,7 +63,7 @@ Lỗi: `404 MSG175` (thư mục không còn / của người khác), `500 MSG176
 
 ## Tải lên kho — `POST /api/documents/upload?folderId=` (UC-36)
 
-Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files` + `pageCounts`, xem
+Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`; `pageCounts` bị bỏ qua, xem
 [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md#endpoint)). Thứ tự kiểm:
 
 1. Thư mục đích (nếu có) của chính mình — **trước khi đọc body**; không thì `404 MSG179`. Kho tệp chưa cấu hình → `503 MSG178`.
@@ -73,7 +73,8 @@ Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`
    thêm (ADR-0034).
 4. Đẩy R2 → trong một transaction có khoá chủ kho: kiểm lại thư mục đích, ghi `Document`. Lỗi thì xoá object và đánh dấu
    các dòng `StoredFile` đã dọn, trả lại chỗ ngay.
-   Lỗi ở bước nào thì xoá object đã đẩy trong lần đó (ADR-0024 §4) → `503 MSG178`.
+   Lỗi ở bước nào thì xoá object đã đẩy trong lần đó (ADR-0024 §4) → `503 MSG178`. Chờ quá 30 giây mà chưa tới lượt kiểm
+   PDF (ADR-0044 §6) cũng là `503 MSG178`, không phải `MSG164`: tệp có thể không sai.
 
 `201`:
 

@@ -10,18 +10,3 @@ export async function loadPdfJs() {
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
   return pdfjs
 }
-
-/** The page count the upload sends with a PDF (the server only stores it); null when unreadable. */
-export async function countPdfPages(file: File): Promise<number | null> {
-  try {
-    const pdfjs = await loadPdfJs()
-    const task = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) })
-    try {
-      return (await task.promise).numPages
-    } finally {
-      void task.destroy()
-    }
-  } catch {
-    return null
-  }
-}

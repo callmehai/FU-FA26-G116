@@ -140,7 +140,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | `MSG161` | 201 | Tải lên thành công, kèm `addedCount` và `documents` | Đã thêm tài liệu vào cuộc họp. |
 | `MSG162` | 403 | Xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại | Bạn không còn quyền thêm tài liệu vào cuộc họp này. |
 | `MSG164` | 400 | Không có tệp, không phải multipart, multipart hỏng, hoặc tệp có đuôi khác `.pdf`/`.docx` / nội dung không khớp đuôi / rỗng / quá 50 MB; `errors["files[i]"]` | Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB. |
-| `MSG166` | 503 | R2/DB lỗi hoặc chưa cấu hình kho tệp; đã xoá object của lần tải | Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
+| `MSG166` | 503 | R2/DB lỗi hoặc chưa cấu hình kho tệp, hoặc chờ quá 30 giây mà chưa tới lượt kiểm PDF (ADR-0044 §6); đã xoá object của lần tải | Không thêm được tài liệu. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
 | `MSG172` | 409 | Cuộc họp `Ended`, kể cả khi vừa kết thúc trong lúc tải | Không thể thêm tài liệu sau khi cuộc họp đã kết thúc. |
 | `MSG349` | 409 | Cuộc họp `Cancelled` (BR-299) | Cuộc họp đã huỷ nên không thay đổi được nữa. |
 | `MSG174` | 404 | Không xem được cuộc họp hoặc cuộc họp không tồn tại (cùng body) | Không truy cập được cuộc họp này. |
@@ -173,7 +173,7 @@ cấp thêm sau lượt test E2E 02/11/2026.
 | `MSG175` | 404 | Thư mục hoặc tài liệu không tồn tại, của người khác, hoặc kho của tài khoản còn hoạt động khi Quản trị viên đọc (cùng body) | Mục này không còn trong kho tài liệu của bạn. |
 | `MSG176` | 500 | GET kho lỗi đọc DB | Không tải được kho tài liệu của bạn. Vui lòng thử lại. |
 | `MSG177` | 201 | Tải lên kho thành công, kèm `addedCount` và `documents` | Đã tải tài liệu lên kho của bạn. |
-| `MSG178` | 503 | Tải lên kho: R2/DB lỗi hoặc chưa cấu hình kho tệp; đã xoá object của lần tải | Không tải lên được tệp. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
+| `MSG178` | 503 | Tải lên kho: R2/DB lỗi hoặc chưa cấu hình kho tệp, hoặc chờ quá 30 giây mà chưa tới lượt kiểm PDF (ADR-0044 §6); đã xoá object của lần tải | Không tải lên được tệp. Chưa có tài liệu nào được thêm. Vui lòng thử lại. |
 | `MSG179` | 404 | Thư mục đích (tải lên, tạo thư mục, chuyển) không tồn tại hoặc của người khác | Thư mục đích không còn trong kho tài liệu của bạn. |
 | `MSG180` | 200 | Xoá tài liệu khỏi kho | Đã xoá tài liệu khỏi kho của bạn. |
 | `MSG181` | 503 | Xoá tài liệu lỗi DB | Không xoá được tài liệu. Kho tài liệu của bạn không thay đổi. |
@@ -698,7 +698,10 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG377` | UC-04 / EX-7 · SCRUM-116 | *Invalid display information.* — `Thông tin hiển thị không hợp lệ.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
 | `MSG378` | UC-04 / EX-8 · SCRUM-116 | *The guest session has ended.* — `Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. FE cũng hiện câu này khi token Khách quá hạn (`401` không body). |
 | `MSG379` | UC-04 / EX-6 · SCRUM-116 | *Too many codes requested. Try again later or contact the Meeting Secretary.* — `Bạn đã yêu cầu quá số mã cho phép trong 24 giờ. Vui lòng thử lại sau hoặc liên hệ Thư ký cuộc họp.` — **Đã triển khai SCRUM-116**, xem HTTP contract phía trên. |
+| `MSG380` | UC-37 · SCRUM-59 | *Please confirm that you have read the recording notice before joining.* — `Vui lòng xác nhận đã đọc thông báo ghi âm trước khi vào phòng họp.` — **Đã triển khai SCRUM-59**, xem mục Phòng họp trực tuyến phía trên. |
 | `MSG381` | UC-04 / EX-9 · SCRUM-116 | *The display name was already declared.* — `Tên hiển thị đã được khai cho lời mời này và không thể đổi.` — **Đã triển khai** (PO 01/11/2026), xem HTTP contract phía trên. |
+| `MSG382` | UC-32c, UC-36 · SCRUM-21 | *The file of this document is no longer in storage and cannot be opened. Please contact the administrator.* — `Tệp của tài liệu này không còn trên kho lưu trữ nên không mở được. Hãy báo quản trị viên.` — **Đã triển khai** (E2E 02/11/2026), xem mục Xem tài liệu cuộc họp phía trên. |
+| `MSG383` | UC-32c · SCRUM-21 (FE) | *The browser cannot display this file. It may be damaged or in an unsupported format.* — `Trình duyệt không hiển thị được tệp này. Tệp có thể bị hỏng hoặc dùng định dạng chưa hỗ trợ.` — **Đã triển khai** (FE, E2E 02/11/2026). |
 | `MSG127` | ADR-0013 · View Meeting Sessions (UC-53 cũ, đã bỏ) | *Unable to load meeting sessions. Please try again.* — **Ngừng dùng** theo ADR-0013 (bỏ Meeting Session). Không tái sử dụng mã. |
 | `MSG128` | UC-26 View Meeting Agenda | *Unable to load the meeting agenda. Please try again.* |
 | `MSG139` | UC-22 cũ · Ngừng dùng 13/10/2026 | Không còn gate đóng Vote trước End Meeting; không tái cấp mã. |

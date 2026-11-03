@@ -26,7 +26,7 @@ Jira hay đặc tả. Phần UC-04/BR/MSG của BE nằm ở [note 21](21-scrum-
 - **Form hồ sơ** (UC-04 bước 5): tên hiển thị bắt buộc (mặc định tên được mời), chức vụ; MSG377 theo từng ô.
 - **Trang cuộc họp của Khách:** thanh trên (logo, tên + chức vụ tự khai, "Khách", nút Thoát); tên, trạng thái, giờ; câu hỏi tham dự
   (UC-29); tab Nội dung, Tài liệu, Biểu quyết, Thành phần tham dự. Dòng của chính Khách trong danh sách thành phần có "(Tôi)".
-- **Tài liệu (SCRUM-123):** mọi tài liệu của cuộc họp, xem và tải về; trình xem ở `/guest/{id}/documents/{docId}`; không có Góp ý;
+- **Tài liệu (SCRUM-123):** mọi tài liệu của cuộc họp, xem và tải về; trình xem ở `/guest/{id}/documents/{docId}`; không có Góp ý (từ PR #224, 02/11/2026, Khách góp ý và trả lời được — [note 27](27-pr224-tai-lieu-sau-e2e.md));
   biểu quyết có tài liệu đính kèm: đọc tới cuối → "Xác nhận đã đọc" (UC-74) → bỏ phiếu.
 - **ALT-1:** còn phiên thì mở lại link vào thẳng, không gửi mã mới. Token Khách lưu riêng trong `localStorage` theo lời mời.
 - Kiểm lại phiên mỗi 20 giây, khi focus và sau mọi 404. Hết phiên: gỡ dữ liệu cuộc họp khỏi màn hình. Lời mời còn hiệu lực → về màn
@@ -50,7 +50,7 @@ Ghi nhận thêm (không phải lệch docs): gửi OTP chạy đồng bộ qua 
 
 - [ ] UC-04: AF Khách tự Thoát (điểm 5); EX-1 hai màn kết thúc (điểm 3).
 - [ ] UC-29: Khách trả lời ngay trên trang cuộc họp (điểm 1).
-- [ ] UC-32a/UC-32c: Khách xem mọi tài liệu và tải về (PO 30/10/2026, comment SCRUM-123 10349), không góp ý; cuộc họp Mật không có nút Tải về
+- [ ] UC-32a/UC-32c: Khách xem mọi tài liệu và tải về (PO 30/10/2026, comment SCRUM-123 10349); góp ý được từ PR #224 (UC-35 đã sửa, [note 27](27-pr224-tai-lieu-sau-e2e.md)); cuộc họp Mật không có nút Tải về
       (`canDownload`, điểm 2). Kiểm tra trùng việc với note 21 §3 dòng UC-32a/32c đã làm.
 - [ ] Hỏi Hải/Lộc: thêm `sensitivity` vào `GuestMeetingView` (điểm 2); mã/nội dung màn kết thúc (điểm 3).
 - [ ] Sửa kỳ vọng SCRUM-122 mục 8: 403 (điểm 6), báo Tester.

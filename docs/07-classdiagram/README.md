@@ -182,10 +182,11 @@ desktop, nhúng model ở chunk `zTXt`; chưa mở lại PNG bằng draw.io đ�
 FE-07 cho khớp, giữ nguyên ID, bố cục và các quan hệ khác. Ảnh `feature-07-document-management-class-diagram.drawio.png`
 đã xuất lại từ đúng source này (draw.io desktop, `--scale 2`, 4365×3279, không nhúng diagram) và đã xem lại ảnh.
 
-- `MeetingDocumentsTab`: `switchGrouping(byItem | general)` — nhóm Biểu quyết chưa có (chờ UC-74/SCRUM-96);
-  `uploadDocuments(meetingId, files[], pageCounts[])`.
+- `MeetingDocumentsTab`: `switchGrouping(byItem | byVote | general)` (nhóm Biểu quyết có từ PR #224, 02/11/2026);
+  `uploadDocuments(meetingId, files[])` — từ PR #224 server tự đếm trang PDF, không còn `pageCounts`
+  ([ADR-0044](../05-decisions/0044-server-kiem-cau-truc-va-dem-trang-pdf.md)).
 - `MeetingDocumentController` / `MeetingDocumentService`: bỏ `fromRoom` (máy chủ trả `currentAgendaItemId`, trình duyệt tự
-  đưa mục đang bàn lên đầu); `uploadDocuments(..., files, pageCounts, actor)`; `groupDocuments(documents, agenda)` — bỏ
+  đưa mục đang bàn lên đầu); `uploadDocuments(..., files, actor)`; `groupDocuments(documents, agenda)` — bỏ
   tham số `votes`.
 - Thêm lớp `<<utility>> DocumentFileRules` (`validateFiles`, `detectContentType`, `uploadFolderName`, giới hạn 10 tệp /
   200 MB mỗi lần, 50 MB mỗi tệp — BR-319, BR-187), vẽ cạnh phụ thuộc từ controller và service. Đây là lớp thật trong

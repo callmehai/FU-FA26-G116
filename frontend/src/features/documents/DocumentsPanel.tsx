@@ -350,7 +350,13 @@ function VoteGroup({ vote, row, folded }: { vote: DocumentsVote; row: RowProps; 
       {open && (
         <ul className="documents-rows">
           {vote.documents.map((doc) => (
-            <DocumentRow key={doc.id} doc={doc} row={{ ...row, onRemove: undefined }} read={doc.readConfirmedAt} />
+            <DocumentRow
+              key={doc.id}
+              doc={doc}
+              row={{ ...row, onRemove: undefined }}
+              // "Chưa đọc" only to someone UC-74 would still take a confirmation from.
+              read={doc.readConfirmedAt ?? (vote.canConfirmRead ? null : undefined)}
+            />
           ))}
         </ul>
       )}
@@ -442,7 +448,7 @@ function DocumentRow({
   doc: MeetingDocument
   row: RowProps
   item?: DocumentsAgendaItem
-  /** A vote's document: when the reader confirmed reading it, null while unread. Absent elsewhere. */
+  /** A vote's document: when the reader confirmed reading it, null while they still can. Absent otherwise. */
   read?: string | null
 }) {
   const documentPath = useDocumentPath()

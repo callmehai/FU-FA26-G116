@@ -29,27 +29,20 @@ export const getMeetingDocumentContent = (meetingId: string, meetingDocumentId: 
   api.blob(`${base(meetingId)}/${meetingDocumentId}/content${download ? '?download=true' : ''}`)
 
 /**
- * UC-33a AF-1: all files or none (BR-194). `pageCounts[i]` goes with `files[i]`, empty when unknown.
+ * UC-33a AF-1: all files or none (BR-194). The server counts a PDF's pages itself (ADR-0044).
  * Chair or Secretary of an unended meeting only: 403 MSG162, 409 MSG172, 404 MSG174.
  */
-export function uploadMeetingDocuments(
-  meetingId: string,
-  files: { file: File; pageCount: number | null }[],
-  options: { onProgress?: (loaded: number, total: number) => void; signal?: AbortSignal } = {},
-) {
+export function uploadMeetingDocuments(meetingId: string, files: Upload, options: UploadOptions = {}) {
   return api.upload<DocumentUploadResponse>(`${base(meetingId)}/upload`, filesForm(files), options)
 }
 
-export type Upload = { file: File; pageCount: number | null }[]
+export type Upload = File[]
 export type UploadOptions = { onProgress?: (loaded: number, total: number) => void; signal?: AbortSignal }
 
-/** The multipart body every document upload sends: `files` and their `pageCounts`, in the same order. */
+/** The multipart body every document upload sends: one `files` part per file. */
 export function filesForm(files: Upload) {
   const form = new FormData()
-  for (const { file, pageCount } of files) {
-    form.append('files', file)
-    form.append('pageCounts', pageCount === null ? '' : String(pageCount))
-  }
+  for (const file of files) form.append('files', file)
   return form
 }
 

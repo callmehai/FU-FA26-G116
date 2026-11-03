@@ -17,7 +17,8 @@ import type { VoteChangedEvent } from '../../types/vote'
  * sentence taken back or the capture mode changed, which only a full read shows. The room recordings (ADR-0041) say
  * `recordingsChanged` when a take opens or is saved, a file is kept or erased, or a transcript is done. Votes
  * (SCRUM-28) say `voteChanged` for any change, and `voteOpened` as well when the Chair opens one, so the call room
- * can tell everyone.
+ * can tell everyone. `voteListChanged` is every vote change but a ballot or a conclusion: what a list of the votes and
+ * their documents shows (UC-32a AF-1) does not move with each ballot, and a meeting of N voters sends N of them.
  */
 export type MeetingEvent =
   | 'participantsChanged'
@@ -30,6 +31,7 @@ export type MeetingEvent =
   | 'recordingsChanged'
   | 'voteChanged'
   | 'voteOpened'
+  | 'voteListChanged'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -98,6 +100,7 @@ function open(meetingId: string): Channel {
     seen.add(event.eventId)
     notify('voteChanged')
     if (event.changeType === 'Opened') notify('voteOpened')
+    if (event.changeType !== 'BallotCast' && event.changeType !== 'ConclusionRecorded') notify('voteListChanged')
   })
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {

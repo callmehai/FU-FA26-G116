@@ -296,7 +296,7 @@ test `tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs` và `Vote
 |---|---|---|---|
 | `POST …/votes/{voteId}/documents` | `{ "meetingDocumentIds": [...] }` | 200/MSG265, `documents: []` | 404/MSG170, 409/MSG266, 503/MSG267 |
 | `POST …/votes/{voteId}/documents/from-library` | `{ "documentIds": [...] }` (tài liệu trong kho của người gọi) | 200/MSG265, `documents` = tài liệu cuộc họp vừa thêm; tệp đã có trong cuộc họp thì gắn tài liệu cuộc họp sẵn có, không thêm dòng mới | 400/MSG249, 409/MSG266 (đã gắn biểu quyết này), 503/MSG166 |
-| `POST …/votes/{voteId}/documents/upload` | multipart `files` (+ `pageCounts`), như UC-33a AF-1 | 200/MSG265, `documents` = tài liệu cuộc họp vừa thêm | 400/MSG164, 400/MSG288, 409/MSG346, 503/MSG166 |
+| `POST …/votes/{voteId}/documents/upload` | multipart `files`, như UC-33a AF-1 | 200/MSG265, `documents` = tài liệu cuộc họp vừa thêm | 400/MSG164, 400/MSG288, 409/MSG346, 503/MSG166 |
 | `DELETE …/votes/{voteId}/documents/{meetingDocumentId}` | — | 200/MSG268, kèm `meetingDocumentId` | 404/MSG269, 503/MSG270 |
 
 - Chung cho cả bốn: không thấy cuộc họp / biểu quyết, hoặc nháp mà người gọi không được thấy → `404/MSG205`; không phải
