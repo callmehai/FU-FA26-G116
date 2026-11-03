@@ -8,14 +8,13 @@ control ":Notification Service" as NotificationService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Participant Repository" as MeetingParticipantRepository
 participant ":Agenda Item Repository" as AgendaItemRepository
-participant ":Document Repository" as DocumentRepository
 database ":Database" as Database
 
 Secretary->MeetingPage: Create Agenda Item
 activate MeetingPage
 MeetingPage->AgendaController: Create Agenda Item
 activate AgendaController
-AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, presenterId, documentIds)
+AgendaController->AgendaService: createAgendaItem(meetingId, secretaryId, agendaInfo, presenterId)
 activate AgendaService
 
 AgendaService->MeetingRepository: Get selected Meeting and current status
@@ -53,18 +52,7 @@ else Agenda planning permitted
         deactivate MeetingParticipantRepository
 
     end
-    opt Meeting documents selected
-        AgendaService->DocumentRepository: Verify selected documents belong to this Meeting
-        activate DocumentRepository
-        DocumentRepository->Database: Verify selected documents belong to this Meeting
-        activate Database
-        Database-->DocumentRepository: Available documents / Invalid selection
-        deactivate Database
-        DocumentRepository-->AgendaService: Available documents / Invalid selection
-        deactivate DocumentRepository
-
-    end
-    AgendaService->AgendaService: Validate required Title, optional Presenter and Description,\nand selected documents (BR-66, BR-306)
+    AgendaService->AgendaService: Validate required Title, optional Presenter and Description (BR-66, BR-306)
     alt Invalid Item information - EX-1
         AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field messages; no Item created
         AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field messages; no Item created
@@ -79,9 +67,9 @@ else Agenda planning permitted
         AgendaItemRepository-->AgendaService: Saved positions / Empty Agenda
         deactivate AgendaItemRepository
 
-        AgendaService->AgendaItemRepository: Save new Pending Item and document associations together\nafter the last position; preserve existing positions (BR-67)
+        AgendaService->AgendaItemRepository: Save new Pending Item after the last position;\npreserve existing positions (BR-67)
         activate AgendaItemRepository
-        AgendaItemRepository->Database: Save new Pending Item and document associations together\nafter the last position; preserve existing positions (BR-67)
+        AgendaItemRepository->Database: Save new Pending Item after the last position;\npreserve existing positions (BR-67)
         activate Database
         Database-->AgendaItemRepository: Change saved / Save failed; previous Agenda preserved
         deactivate Database
