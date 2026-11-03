@@ -198,6 +198,24 @@ public sealed class GuestSpeechClipTests(RecordingFixture fixture) : IClassFixtu
     }
 
     [Fact]
+    public async Task Sending_an_excluded_sentence_again_does_not_give_its_words_back()
+    {
+        var s = await fixture.Seed(mode: MeetingMode.Online);
+        var (_, client) = await JoinedGuest(s);
+        var clipId = Guid.NewGuid();
+        var clip = (await Expect(await Send(client, s.MeetingId, clipId), 200, "MSG318")).GetProperty("clip").GetProperty("id").GetGuid();
+        using var chair = fixture.Client(s.Chair);
+        await Expect(await chair.PutAsJsonAsync($"/api/speech-clips/{clip}/exclusion", new { excluded = true, reason = "Leak" }), 200);
+
+        // The retry shortcut answers from the stored row; it must mask it as the guest's list does.
+        var retried = (await Expect(await Send(client, s.MeetingId, clipId), 200, "MSG318")).GetProperty("clip");
+        Assert.Equal(clip, retried.GetProperty("id").GetGuid());
+        Assert.True(retried.GetProperty("excluded").GetBoolean());
+        Assert.Equal("", retried.GetProperty("text").GetString());
+        Assert.False(retried.GetProperty("hasAudio").GetBoolean());
+    }
+
+    [Fact]
     public async Task A_guest_of_another_meeting_or_before_the_meeting_runs_is_refused()
     {
         var running = await fixture.Seed(mode: MeetingMode.Online);

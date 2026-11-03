@@ -12,7 +12,7 @@ using TrustCabinet.Infrastructure;
 namespace TrustCabinet.Infrastructure.Migrations
 {
     [DbContext(typeof(TrustCabinetDbContext))]
-    [Migration("20261103143427_GuestSpeechClips")]
+    [Migration("20261103145348_GuestSpeechClips")]
     partial class GuestSpeechClips
     {
         /// <inheritdoc />
@@ -2081,7 +2081,8 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("MeetingId", "SpeakerId", "ClientClipId")
                         .IsUnique()
-                        .HasDatabaseName("ix_speech_clips_meeting_id_speaker_id_client_clip_id");
+                        .HasDatabaseName("ix_speech_clips_meeting_id_speaker_id_client_clip_id")
+                        .HasFilter("speaker_id IS NOT NULL");
 
                     b.ToTable("speech_clips", null, t =>
                         {

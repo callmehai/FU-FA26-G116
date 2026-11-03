@@ -552,9 +552,12 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         clips = speaker.UserId is { } user ? clips.Where(c => c.SpeakerId == user)
             : clips.Where(c => c.GuestInvitationId == speaker.GuestInvitationId);
         var row = (await RowsAsync(clips, ct)).SingleOrDefault();
-        return row is null ? null : new SpeechClipView(row.Id, row.SpeakerId, row.SpeakerName, row.StartedAt, row.DurationMs,
-            row.Text, row.UpdatedAt, row.EditedAt, row.EditedByName, true, HasAudio: row.HasAudio, Peaks: row.Peaks,
-            SpeakerIsGuest: row.Guest);
+        if (row is null) return null;
+        // A retry answers as the list does for its sender: an excluded sentence keeps its words from them.
+        var excluded = row.ExcludedAt is not null;
+        return new SpeechClipView(row.Id, row.SpeakerId, row.SpeakerName, row.StartedAt, row.DurationMs,
+            excluded ? "" : row.Text, row.UpdatedAt, row.EditedAt, row.EditedByName, true, excluded,
+            HasAudio: row.HasAudio && !excluded, Peaks: excluded ? null : row.Peaks, SpeakerIsGuest: row.Guest);
     }
 
     /// <summary>Who sends a sentence: a member by their user id, or a guest by their invitation (SCRUM-129).</summary>

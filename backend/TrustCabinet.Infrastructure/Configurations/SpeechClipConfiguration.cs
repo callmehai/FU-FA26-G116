@@ -33,7 +33,8 @@ public class SpeechClipConfiguration : IEntityTypeConfiguration<SpeechClip>
         });
 
         // A retry stores the sentence once, per speaker. NULLs never collide, so each index covers one kind of speaker.
-        builder.HasIndex(c => new { c.MeetingId, c.SpeakerId, c.ClientClipId }).IsUnique();
+        builder.HasIndex(c => new { c.MeetingId, c.SpeakerId, c.ClientClipId }).IsUnique()
+            .HasFilter("speaker_id IS NOT NULL");
         builder.HasIndex(c => new { c.MeetingId, c.GuestInvitationId, c.ClientClipId }).IsUnique()
             .HasFilter("guest_invitation_id IS NOT NULL");
         // The live view reads what changed since its last read; the transcript reads in spoken order.
