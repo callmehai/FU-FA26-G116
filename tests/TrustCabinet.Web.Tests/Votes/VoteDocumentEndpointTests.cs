@@ -113,8 +113,16 @@ public sealed class VoteDocumentEndpointTests(DocumentFixture fixture) : IAsyncL
             new { documentIds = new[] { mine } }));
         Assert.Equal((200, "MSG265"), (status, code));
         var fromLibrary = body.GetProperty("documents")[0].GetProperty("id").GetGuid();
-        Assert.Equal((409, "MSG165"), Pick(await Read(await chair.PostAsJsonAsync($"{Documents(s, vote)}/from-library",
+        // Already on this vote, as when chosen from the meeting.
+        Assert.Equal((409, "MSG266"), Pick(await Read(await chair.PostAsJsonAsync($"{Documents(s, vote)}/from-library",
             new { documentIds = new[] { mine } }))));
+        // Already in the meeting: another draft gets the meeting's own document, adding none.
+        var other = await Draft(s, s.Chair);
+        (status, code, body) = await Read(await chair.PostAsJsonAsync($"{Documents(s, other)}/from-library",
+            new { documentIds = new[] { mine } }));
+        Assert.Equal((200, "MSG265"), (status, code));
+        Assert.Equal(0, body.GetProperty("documents").GetArrayLength());
+        Assert.Equal([fromLibrary], Ids(await Detail(s, s.Chair, other)));
         Assert.Equal((400, "MSG249"), Pick(await Read(await chair.PostAsJsonAsync($"{Documents(s, vote)}/from-library",
             new { documentIds = new[] { theirs } }))));
 

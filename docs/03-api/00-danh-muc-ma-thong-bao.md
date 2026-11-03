@@ -209,7 +209,7 @@ lỗi, như UC-32c).
 
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
 |---|---|---|---|
-| `MSG165` | 409 | Tệp của tài liệu đã chọn từ kho đang có trong cuộc họp (UC-33a, UC-33b AF-2) | Một hoặc nhiều tài liệu đã chọn đã có trong cuộc họp. |
+| `MSG165` | 409 | Tệp của tài liệu đã chọn từ kho đang có trong cuộc họp, khi thêm vào nhóm chung (UC-33a). Chọn từ kho cho một mục (UC-33b AF-2) hay một biểu quyết (UC-76a AF-2) thì tài liệu cuộc họp sẵn có được gắn thay, không trả mã này | Một hoặc nhiều tài liệu đã chọn đã có trong cuộc họp. |
 | `MSG167` | 200 | Gỡ tài liệu khỏi cuộc họp | Đã gỡ tài liệu khỏi cuộc họp. |
 | `MSG169` | 403 | Gỡ: xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại | Bạn không còn quyền gỡ tài liệu khỏi cuộc họp này. |
 | `MSG170` | 404 | Tài liệu đã gỡ, của cuộc họp khác, hoặc không chọn tài liệu nào khi gắn (cùng body) | Tài liệu này không còn trong cuộc họp. Hãy tải lại danh sách tài liệu. |
@@ -250,8 +250,8 @@ UC-52a–UC-57 đã có Backend theo [contract biểu quyết](15-bieu-quyet.md)
 (UC-76a, UC-76b), xác nhận đã đọc (UC-74) và chặn bỏ phiếu khi chưa đọc (`MSG252`). `MSG207` (danh sách rỗng) do FE tự
 hiển thị. Dùng lại 415/MSG34 và 413/MSG87 cho content-type và body 64 KiB; 401 authentication, 403 body rỗng khi tài
 khoản đã bị vô hiệu hoá. Gắn tài liệu dùng lại mã của UC-33a cho cùng tình huống: 404/`MSG170` (tài liệu không còn trong
-cuộc họp, hoặc không chọn tài liệu nào), 400/`MSG164`, 400/`MSG288`, 409/`MSG346` (tải từ máy), 400/`MSG249`,
-409/`MSG165` (chọn từ kho), 503/`MSG166` (lưu lỗi khi tài liệu mới được thêm vào cuộc họp); xác nhận đọc dùng lại
+cuộc họp, hoặc không chọn tài liệu nào), 400/`MSG164`, 400/`MSG288`, 409/`MSG346` (tải từ máy), 400/`MSG249`
+(chọn từ kho; tệp đã có trong cuộc họp thì gắn tài liệu cuộc họp sẵn có, đã gắn biểu quyết này thì 409/`MSG266`), 503/`MSG166` (lưu lỗi khi tài liệu mới được thêm vào cuộc họp); xác nhận đọc dùng lại
 404/`MSG156`, và 409/`MSG224`, 409/`MSG225` của UC-55 (chỉ người bỏ phiếu của một biểu quyết Open mới xác nhận được).
 
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
@@ -813,7 +813,7 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG162` | UC-33a / EX-1 · Đã triển khai SCRUM-107 | You no longer have permission to add documents to this Meeting. |
 | `MSG163` | ADR-0020 · Ngừng dùng | Retired: document addition and Agenda Item linking are separate operations under ADR-0020. Do not reuse. |
 | `MSG164` | UC-33a / EX-3 (also no file or an invalid request); UC-36 / EX-1 · Đã triển khai SCRUM-107 | Select valid PDF or DOCX files, each no larger than 50 MB. |
-| `MSG165` | UC-33a / EX-4; UC-33b AF-2 · Đã triển khai SCRUM-112 | One or more selected documents are already attached to the Meeting. |
+| `MSG165` | UC-33a / EX-4 · Đã triển khai SCRUM-112 | One or more selected documents are already attached to the Meeting. |
 | `MSG166` | UC-33a / EX-5 · Đã triển khai SCRUM-107 | Unable to add the documents. No documents were added. Please try again. |
 | `MSG167` | UC-33c / Normal Flow · Đã triển khai SCRUM-112 | Document removed from the Meeting successfully. |
 | `MSG168` | ADR-0020 · Ngừng dùng | Retired: Meeting Minutes no longer lock document removal under ADR-0020. Do not reuse. |

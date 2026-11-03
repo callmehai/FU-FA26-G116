@@ -222,7 +222,9 @@ export function AddDocumentsDialog({
 
         {source === 'computer' && <FileUploadFields upload={upload} roomLeft={roomLeft} />}
 
-        {source === 'library' && (
+        {/* Mounted from the start and only hidden, so the library is read while the user is still on another tab
+            and switching to it shows the folder at once rather than a skeleton that flashes. */}
+        <div hidden={source !== 'library'}>
           <LibraryPicker
             selected={fromLibrary}
             reloadKey={libraryReload}
@@ -234,7 +236,7 @@ export function AddDocumentsDialog({
               })
             }
           />
-        )}
+        </div>
 
         {source === 'meeting' &&
           (meetingDocumentsError ? (

@@ -340,7 +340,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             return new(failure switch
             {
                 DocumentUploadFailure.LibraryUnavailable => VoteFailure.LibraryUnavailable,
-                DocumentUploadFailure.AlreadyInMeeting => VoteFailure.AlreadyInMeeting,
+                DocumentUploadFailure.AlreadyLinked => VoteFailure.DocumentAlreadyAttached,
                 _ => VoteFailure.SaveFailed
             });
         var added = db.ChangeTracker.Entries<MeetingDocument>().Where(e => e.State == EntityState.Added).Select(e => e.Entity)

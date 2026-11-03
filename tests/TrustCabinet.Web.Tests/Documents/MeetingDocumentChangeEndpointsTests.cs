@@ -277,8 +277,21 @@ public sealed class MeetingDocumentChangeEndpointsTests(DocumentFixture fixture)
         var added = body.GetProperty("documents")[0].GetProperty("id").GetGuid();
         var (_, _, list) = await Read(await client.GetAsync(Url(s)));
         Assert.Equal(added, list.GetProperty("agendaItems")[0].GetProperty("documents")[0].GetProperty("id").GetGuid());
-        Assert.Equal((409, "MSG165"), Pick(await Read(await client.PostAsJsonAsync($"{Links(s, item)}/from-library",
+        // Already on this item, as when chosen from the meeting.
+        Assert.Equal((409, "MSG243"), Pick(await Read(await client.PostAsJsonAsync($"{Links(s, item)}/from-library",
             new { documentIds = new[] { library } }))));
+        // Already in the meeting: another item gets the meeting's own document, next to a new one, not a second copy.
+        var other = await AddItem(s.MeetingId);
+        var fresh = await AddDocument(fixture, s.Chair, "Mới.pdf");
+        var (linkStatus, linkCode, linked) = await Read(await client.PostAsJsonAsync($"{Links(s, other)}/from-library",
+            new { documentIds = new[] { library, fresh } }));
+        Assert.Equal((200, "MSG238"), (linkStatus, linkCode));
+        var created = linked.GetProperty("documents").EnumerateArray().Select(d => d.GetProperty("id").GetGuid()).Single();
+        (_, _, list) = await Read(await client.GetAsync(Url(s)));
+        Assert.Equal(new[] { added, created }.Order(), list.GetProperty("agendaItems")[1].GetProperty("documents")
+            .EnumerateArray().Select(d => d.GetProperty("id").GetGuid()).Order());
+        await using (var db = fixture.Db())
+            Assert.Equal(2, await db.MeetingDocuments.CountAsync(d => d.MeetingId == s.MeetingId));
         Assert.Equal((400, "MSG249"), Pick(await Read(await client.PostAsJsonAsync($"{Links(s, item)}/from-library",
             new { documentIds = new[] { Guid.NewGuid() } }))));
         var another = await AddDocument(fixture, s.Chair, "Khác.pdf");

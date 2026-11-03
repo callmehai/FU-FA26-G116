@@ -29,6 +29,7 @@ import type { Meeting } from '../../types/meeting'
 import { useDocumentPath } from '../guest/guestContext'
 import { AddDocumentsDialog, type DocumentSource } from '../documents/AddDocumentsDialog'
 import { AttachMenu } from '../documents/AttachMenu'
+import { FileTypeTag } from '../documents/DocumentTags'
 import { useMeetingDocuments } from '../documents/useMeetingDocuments'
 import { AgendaConclusion } from './AgendaConclusion'
 import { AgendaItemDialog } from './AgendaItemDialog'
@@ -437,10 +438,11 @@ function AgendaRow({
                   {item.documents.map((doc) => (
                     <li key={doc.id}>
                       <Link
-                        to={`${documentPath(meetingId, doc.id)}${room ? '?from=room' : ''}`}
+                        to={`${documentPath(meetingId, doc.id)}?${room ? 'from=room&' : ''}back=agenda`}
                         {...(room && { target: '_blank', rel: 'noopener' })}
                       >
-                        <Icon name="fileText" size={16} />
+                        {/* The item lists names only; the extension says which kind it is. */}
+                        <FileTypeTag pdf={/\.pdf$/i.test(doc.title)} size={20} />
                         <span>{doc.title}</span>
                       </Link>
                     </li>

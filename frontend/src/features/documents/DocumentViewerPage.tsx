@@ -142,7 +142,7 @@ function Viewer({
   return (
     <>
       <header className="viewer-head">
-        <BackToDocuments meetingId={meeting.id} fromVote={reading} />
+        <BackToDocuments meetingId={meeting.id} reading={reading} />
         <FileTypeTag pdf={pdf} />
         <h1 className="viewer-title" data-tooltip={doc.fileName}>
           {doc.fileName}
@@ -261,13 +261,15 @@ function useReachedEnd(stage: RefObject<HTMLElement | null>, active: boolean) {
 
 /**
  * "‹ Tài liệu": the tab the call room opened (`?from=room`, nothing before it) closes, so the room's
- * tab comes back; otherwise back to the meeting's Tài liệu tab — or its Biểu quyết tab when the
- * document was opened to be read for a vote. A browser that refuses to close the tab navigates instead.
+ * tab comes back; otherwise back to the meeting tab it was opened from (`?back=agenda|votes`, Tài liệu without
+ * one) — or its Biểu quyết tab when the document was opened to be read for a vote. A browser that refuses to
+ * close the tab navigates instead.
  */
-function BackToDocuments({ meetingId, fromVote }: { meetingId: string; fromVote: boolean }) {
+function BackToDocuments({ meetingId, reading }: { meetingId: string; reading: boolean }) {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const to = useMeetingPagePath()(meetingId, fromVote ? 'votes' : 'documents')
+  const back = BACK_TABS.find((t) => t.id === params.get('back')) ?? (reading ? BACK_TABS[1] : DOCUMENTS_TAB)
+  const to = useMeetingPagePath()(meetingId, back.id)
   return (
     <Link
       className="back-link viewer-back"
@@ -280,10 +282,17 @@ function BackToDocuments({ meetingId, fromVote }: { meetingId: string; fromVote:
       }}
     >
       <Icon name="chevronLeft" size={16} />
-      {fromVote ? 'Biểu quyết' : 'Tài liệu'}
+      {back.label}
     </Link>
   )
 }
+
+const DOCUMENTS_TAB = { id: 'documents', label: 'Tài liệu' }
+/** The other tabs that list documents and link to the viewer. */
+const BACK_TABS = [
+  { id: 'agenda', label: 'Nội dung' },
+  { id: 'votes', label: 'Biểu quyết' },
+]
 
 /** The file's bytes, read once per open; MSG158 is temporary, so "Thử lại" reads again — MSG382 is not. */
 function useContent(meetingId: string, documentId: string) {

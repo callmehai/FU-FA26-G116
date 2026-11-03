@@ -124,9 +124,17 @@ function MeetingDetail({
   const { user, can, reloadSession } = useAuth()
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const [params] = useSearchParams()
-  // `?tab=documents` is where the document viewer's back link lands.
-  const [tab, setTab] = useState<TabId>(() => TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview')
+  const [params, setParams] = useSearchParams()
+  // The tab lives in the URL, so the browser's Back from a document returns to the tab it was opened from.
+  const tab: TabId = TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
+  const setTab = (id: TabId) =>
+    setParams(
+      (p) => {
+        p.set('tab', id)
+        return p
+      },
+      { replace: true },
+    )
   // ADR-0040: how the meeting is recorded follows from how it is held. Whoever joins from afar is captured per mic, in
   // the call room; the page only reads that record. A room is recorded by the Secretary, from a card that lives with
   // the page rather than the Bản ghi tab, so that moving between tabs never stops it (AI-eCabinet's floating card).

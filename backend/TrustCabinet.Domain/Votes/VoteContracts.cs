@@ -34,8 +34,6 @@ public enum VoteFailure
     StorageFull,
     /// <summary>A selected library document is missing or not the actor's (BR-209).</summary>
     LibraryUnavailable,
-    /// <summary>A selected library document's file is already in the meeting (BR-193).</summary>
-    AlreadyInMeeting,
     /// <summary>UC-74: the meeting, or the document as a vote document, is not available to the caller.</summary>
     DocumentUnavailable,
     /// <summary>UC-74: the reader has not reached the document's last page (BR-290).</summary>

@@ -32,8 +32,11 @@ export function useAnchoredPopover(
 
       panel.style.left = `${left}px`
       if (matchWidth) panel.style.minWidth = `${box.width}px`
-      panel.style.top = upwards ? 'auto' : `${box.bottom + gap}px`
-      panel.style.bottom = upwards ? `${window.innerHeight - box.top + gap}px` : 'auto'
+      // With room on neither side it slides over the field rather than past the screen's edge, where its top
+      // (a calendar's month and weekdays) could not be reached.
+      const top = upwards ? box.top - gap - panel.offsetHeight : box.bottom + gap
+      panel.style.top = `${Math.max(gap, Math.min(top, window.innerHeight - panel.offsetHeight - gap))}px`
+      panel.style.bottom = 'auto'
     }
 
     place()
