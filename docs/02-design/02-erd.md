@@ -6,12 +6,12 @@
 
 **Hiện thực Backend SCRUM-116 / UC-04 (30/10/2026):** hai bảng kỹ thuật `guest_verification_challenges` (mã OTP, chỉ lưu HMAC, số lần sai, thời điểm tiêu thụ) và `guest_sessions` (phiên Khách đã xác minh email, hạn 12 giờ, `revoked_at` khi đăng xuất), cùng khoá ngoại tới `meeting_guest_invitations` và xoá theo lời mời; `meeting_guest_invitations` thêm `self_declared_display_name`, `self_declared_job_title` (BR-180, tách khỏi `invited_name`/`email`). Không tạo `users` hay `meeting_participants` cho Khách. Từ 03/11/2026 `GuestSession` là **thực thể của mô hình đích** (một lời mời có nhiều phiên, mỗi thiết bị một phiên), còn `guest_verification_challenges` vẫn là bảng kỹ thuật không vẽ trong ERD. Chi tiết: [API UC-04 §6](../03-api/16-truy-cap-khach-uc04.md#6-lưu-trữ).
 
-Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **32 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018; `GuestSession` và `TranscriptSpeaker` ngày 03/11/2026), khớp Report 3 §I.3.2 và ERD vẽ ở [13-erd/muc-tieu/](../13-erd/muc-tieu/README.md). Bốn bảng nối (`MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`) không tính vào 32. Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
+Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **35 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018; `GuestSession` và `TranscriptSpeaker` ngày 03/11/2026; `SpeechClip`, `VoiceConsent` và `VoiceSample` ngày 03/11/2026 — `SpeechClip` có từ SCRUM-109 mà tài liệu này bỏ sót, hai bảng Voice ID theo ADR-0027). Bốn bảng nối (`MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`) không tính vào 35. Con số này khớp Report 3 §I.3.2 và các hình ERD ở [13-erd/](../13-erd/README.md), trừ `DocumentReadConfirmation` (bảng nối thứ tư) chưa vẽ vào hình. Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
 **ERD thực thể–quan hệ:** [file drawio chỉnh sửa được](../13-erd/chen/trustcabinet-erd-chen.drawio) và
 [ảnh toàn bộ mô hình](../13-erd/chen/trustcabinet-erd-chen.drawio.png). Một ảnh chứa toàn bộ
-32 thực thể hình chữ nhật và 53 quan hệ hình thoi; action trong hình thoi dùng tiếng Anh.
-Bản dạng bảng ở [13-erd/muc-tieu](../13-erd/muc-tieu/README.md) vẽ 35 bảng: 32 thực thể đó cộng
+35 thực thể hình chữ nhật và 59 quan hệ hình thoi; action trong hình thoi dùng tiếng Anh.
+Bản dạng bảng ở [13-erd/muc-tieu](../13-erd/muc-tieu/README.md) vẽ 38 bảng: 35 thực thể đó cộng
 ba bảng nối `MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`; bảng nối thứ tư
 `DocumentReadConfirmation` chưa vẽ vào hình (xem mục trạng thái triển khai).
 Bội số thể hiện bằng đầu nối crow’s foot, không ghi số trên đường nối. Sơ đồ bỏ thuộc tính
@@ -47,7 +47,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | StoredFile | File bất biến trong kho đối tượng; kho cá nhân và cuộc họp chỉ tham chiếu tới nó | IMPLEMENTED (SCRUM-107) | Thay `DocumentVersion`; có OriginalFileName, PageCount, UploadedAt, PurgedAt (ADR-0018). Byte nằm trên Cloudflare R2 (ADR-0024); job dọn file mồ côi ghi PurgedAt. |
 | Folder | Thư mục trong kho cá nhân, lồng tối đa 5 cấp (như AI-eCabinet) | IMPLEMENTED (SCRUM-107, bảng) | `MeetingId` cho thư mục tự tạo khi tải thẳng vào cuộc họp, duy nhất theo (OwnerId, MeetingId) (ADR-0018). Giới hạn 5 cấp và thao tác thư mục thuộc UC-72 (SCRUM-58). |
 | MeetingDocument | Một dòng tài liệu trong cuộc họp, trỏ tới một StoredFile | IMPLEMENTED (SCRUM-107) | Tham chiếu StoredFile (không chép byte), Document nguồn tuỳ chọn (SetNull), gỡ bằng RemovedAt; unique (MeetingId, StoredFileId) khi RemovedAt null (ADR-0018). |
-| MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, bảng nối, không tính vào 32 thực thể) | IMPLEMENTED (SCRUM-107, bảng) | Theo ADR-0020: thay cột `AgendaItemId` đơn. Adapter Agenda đã hỗ trợ nhiều mục mỗi tài liệu trong SCRUM-98. |
+| MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, bảng nối, không tính vào 35 thực thể) | IMPLEMENTED (SCRUM-107, bảng) | Theo ADR-0020: thay cột `AgendaItemId` đơn. Adapter Agenda đã hỗ trợ nhiều mục mỗi tài liệu trong SCRUM-98. |
 | DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | IMPLEMENTED (SCRUM-107, bảng) | MeetingDocumentId; AuthorId nullable, GuestInvitationId (ADR-0016), check đúng một tác giả. Trả lời một cấp (BR-317) do SCRUM-23 kiểm. |
 | SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED | Giữ. |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
@@ -55,9 +55,9 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | VotingOption | Phương án | IMPLEMENTED | `BallotCount` là tally của mọi phiếu, kể cả phiếu kín (SCRUM-28). |
 | VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Người bỏ phiếu là đúng một trong `VoterId` (User) và `GuestInvitationId` (Guest, ADR-0016); duy nhất theo (session, voter) và (session, guest). |
 | VoteChoice | Ai chọn gì trong phiếu **công khai** | IMPLEMENTED; Guest thêm ở SCRUM-96 | Phiếu kín không ghi dòng nào (SCRUM-28). Đúng một trong `VoterId` và `GuestInvitationId`; không có `CastAt`. Xem “Biểu quyết ẩn danh”. |
-| VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 32 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
-| VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 32 thực thể) | IMPLEMENTED (bảng: migration `VotesBelongToMeetingWithEligibleVotersAndDocuments`; endpoint: SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
-| DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu (bảng nối tài liệu ↔ người đọc, không tính vào 32 thực thể) | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
+| VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 35 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
+| VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 35 thực thể) | IMPLEMENTED (bảng: migration `VotesBelongToMeetingWithEligibleVotersAndDocuments`; endpoint: SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
+| DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu (bảng nối tài liệu ↔ người đọc, không tính vào 35 thực thể) | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
 | Recording | Bản ghi âm do Thư ký upload | NEED MIGRATION / RESTRUCTURE | Thêm `UploadedById`; `Source` chỉ còn `Upload`; giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
 | TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. |
@@ -70,6 +70,9 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting. |
 | CallParticipant | Một lượt kết nối của User hoặc khách | DONE (SCRUM-59) | UserId XOR GuestSessionId (`ck_call_participants_one_member`). Tối đa một lượt đang mở (`left_at IS NULL`) cho mỗi người trong một phiên: unique index `ux_call_participants_open_user_stint` / `ux_call_participants_open_guest_stint`. |
 | GuestSession | Phiên Khách đã xác minh email; hạn 12 giờ, thu hồi khi Khách tự thoát hoặc lời mời bị thu hồi | IMPLEMENTED (SCRUM-116, bảng `guest_sessions`) | `InvitationId` → `MeetingGuestInvitation`; một lời mời có nhiều phiên (mỗi thiết bị một phiên); `ExpiresAt`, `RevokedAt`; xoá theo lời mời. Lượt vào/ra phòng họp trỏ tới phiên qua `CallParticipant.GuestSessionId`. |
+| SpeechClip | Một câu nói thu từ chính micro của người dự họp, kèm âm thanh để nghe lại từng câu | IMPLEMENTED (SCRUM-109, bảng `speech_clips`; Khách từ SCRUM-129) | `MeetingId`; người nói là **đúng một** trong `SpeakerId` (thành viên) và `GuestInvitationId` (Khách — gắn với **lời mời**, không với phiên; ADR-0051), ràng buộc `ck_speech_clips_one_speaker`; `ClientClipId` chống gửi trùng khi mất mạng; `StartedAt`, `DurationMs`, `Text`, `EditedById/EditedAt` (Thư ký sửa chữ), `ExcludedAt/ExcludedById/ExclusionReason` (loại khỏi bản ghi, không xoá), `Segments` (jsonb, số đo tiếng lọt giữa các micro — ADR-0038), `AudioPath`/`AudioContentType`, `Peaks` (dạng sóng). Là dữ liệu cá nhân: xoá cùng hạn với bản ghi (`Recordings:RetentionDays`, ADR-0040). |
+| VoiceConsent | Sự đồng ý Voice ID của một người, tách hẳn khỏi đồng ý ghi âm | IMPLEMENTED (SCRUM-35, bảng `voice_consents`, ADR-0027) | `UserId`, `GrantedAt`, `NoticeVersion` (bản câu thông báo đã đọc), `Purpose`, `WithdrawnAt` (một lần, **không hồi**); rút đồng ý là xoá mọi giọng mẫu và lần đồng ý lại tạo dòng mới. Giọng dùng để nhận người là **dữ liệu cá nhân nhạy cảm** theo Luật 91/2025/QH15. |
+| VoiceSample | Một mẫu giọng đã mã hoá, dùng để gợi ý tên người nói | IMPLEMENTED (SCRUM-35, bảng `voice_samples`, ADR-0027) | `UserId`, `ConsentId`; `Ciphertext` (AES-256-GCM: nonce + ciphertext + tag, gắn người/mẫu/model), `EmbeddingModel` (`eres2net-base-200k@<sha12>`), `SpeechMs`, `AudioCiphertext` + `AudioContentType` (bản ghi gốc, cũng mã hoá, để chủ nhân nghe lại). Không lưu vector giọng ở bất kỳ bảng nào khác — `DatabaseModelTests` chặn. |
 
 `MeetingSession` (bảng `meeting_sessions`) **đã bị bỏ** từ 09/10/2026 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Migration `MeetingOwnsScheduleDropSessions` chép lịch về `meetings` rồi drop bảng; migration cũ trên `main` giữ nguyên.
 
@@ -86,10 +89,10 @@ Các ERD bên dưới mô tả mô hình đích. Bảng trạng thái triển kh
 | Nền tảng và liên lạc | Notification, EmailMessage, AuditLogEntry |
 | Kho tài liệu cá nhân | Folder, Document, StoredFile, MeetingDocument, DocumentComment |
 | Hoạt động trong cuộc họp | SpeakingRequest, MeetingNote, VotingSession, VotingOption, VoteReceipt, VoteChoice |
-| Bản ghi, biên bản và AI sau họp | Recording, Transcript, TranscriptSegment, TranscriptSpeaker, MeetingMinutes, MinutesSignature, MeetingSummary |
+| Bản ghi, biên bản và AI sau họp | Recording, Transcript, TranscriptSegment, TranscriptSpeaker, SpeechClip, VoiceConsent, VoiceSample, MeetingMinutes, MinutesSignature, MeetingSummary |
 | Phòng họp trực tuyến | CallSession, CallParticipant, GuestSession |
 
-Các nhóm trên gồm 32 thực thể; trạng thái triển khai được liệt kê riêng ở trên.
+Các nhóm trên gồm 35 thực thể; trạng thái triển khai được liệt kê riêng ở trên.
 
 ## 1. Truy cập, cuộc họp và thành phần tham dự
 
@@ -404,6 +407,12 @@ erDiagram
     Recording ||--o| Transcript : "transcribing"
     Transcript ||--o{ TranscriptSegment : "containing"
     Transcript ||--o{ TranscriptSpeaker : "naming"
+    Meeting ||--o{ SpeechClip : "recording sentences of"
+    User o|--o{ SpeechClip : "speaking into"
+    MeetingGuestInvitation o|--o{ SpeechClip : "speaking as guest into"
+    User ||--o{ VoiceConsent : "granting"
+    VoiceConsent ||--o{ VoiceSample : "covering"
+    User ||--o{ VoiceSample : "owning"
     Meeting ||--o{ MeetingMinutes : "issuing"
     MeetingMinutes ||--o{ MinutesSignature : "receiving"
     MeetingMinutes ||--o| MeetingMinutes : "superseding"
@@ -456,6 +465,43 @@ erDiagram
         uuid AssignedById FK "nullable"
         timestamptz AssignedAt "nullable"
     }
+    SpeechClip {
+        uuid Id PK
+        uuid MeetingId FK
+        uuid SpeakerId FK "nullable — thành viên nói"
+        uuid GuestInvitationId FK "nullable — Khách nói (ADR-0051)"
+        uuid ClientClipId "chống gửi trùng"
+        timestamptz StartedAt
+        bigint DurationMs
+        string Text "tối đa 8.000"
+        uuid EditedById FK "nullable"
+        timestamptz EditedAt "nullable"
+        string Segments "jsonb; số đo tiếng lọt"
+        timestamptz ExcludedAt "nullable"
+        uuid ExcludedById FK "nullable"
+        string ExclusionReason "Leak|Other; nullable"
+        string AudioPath "nullable"
+        string AudioContentType "nullable"
+        bytea Peaks "nullable; dạng sóng"
+    }
+    VoiceConsent {
+        uuid Id PK
+        uuid UserId FK
+        timestamptz GrantedAt
+        string NoticeVersion
+        string Purpose
+        timestamptz WithdrawnAt "nullable; đặt rồi không hồi"
+    }
+    VoiceSample {
+        uuid Id PK
+        uuid UserId FK
+        uuid ConsentId FK
+        bytea Ciphertext "AES-256-GCM: nonce + ct + tag"
+        string EmbeddingModel "eres2net-base-200k@sha12"
+        bigint SpeechMs
+        bytea AudioCiphertext "nullable; bản ghi gốc, mã hoá"
+        string AudioContentType "nullable"
+    }
     MeetingMinutes {
         uuid Id PK
         uuid MeetingId FK
@@ -498,6 +544,19 @@ người trên roster đã đồng ý Voice ID có giọng giống nhất; từ 
 và cờ `autoAssigned` chỉ có trong phản hồi API, không lưu. Giọng thứ hai của cùng một người gộp vào người
 đó khi khớp giọng mẫu đạt ngưỡng giọng thứ hai (mặc định 0,7), hoặc khi giống giọng đầu tiên đã mang tên
 người đó từ ngưỡng thừa hưởng (mặc định 0,8) — lúc đó nhận cùng tên và cùng điểm (ADR-0050).
+
+`SpeechClip` là **từng câu** một người nói vào chính micro của mình trong cuộc họp trực tuyến/kết hợp, được gỡ
+băng ngay khi họ ngừng nói và giữ kèm âm thanh để nghe lại từng câu (ADR-0039, ADR-0040). Người nói là **chủ
+micro**, không ai gán tay: `SpeakerId` khi là thành viên, `GuestInvitationId` khi là Khách (SCRUM-129,
+ADR-0051) — đúng một trong hai, do `ck_speech_clips_one_speaker` ép. Câu của Khách gắn với **lời mời**, nên
+Khách xác minh lại bằng phiên mới vẫn là cùng người nói, và thu hồi lời mời không xoá câu đã nói. Câu là dữ
+liệu cá nhân: chủ câu tự xoá được khi phiên còn, Chủ toạ/Thư ký loại câu khỏi bản ghi (không xoá) hoặc xoá, và
+`RecordingRetentionWorker` xoá cùng hạn với bản ghi.
+
+`VoiceConsent` và `VoiceSample` là phần Voice ID (ADR-0027): đồng ý là dòng riêng, do chính người đó cấp, ghi
+lại bản câu thông báo và mục đích; mẫu giọng chỉ lưu **đã mã hoá** và chết cùng lần rút đồng ý. Không có bảng
+nào khác được giữ vector giọng — `DatabaseModelTests` chặn, vì giọng dùng để nhận người là dữ liệu cá nhân
+nhạy cảm theo Luật 91/2025/QH15.
 
 ## 8. Phòng họp trực tuyến
 
@@ -661,6 +720,12 @@ erDiagram
 | Recording | 1 → 0..1 | Transcript | Chuyển thành văn bản |
 | Transcript | 1 → 0..* | TranscriptSegment | Chứa |
 | Transcript | 1 → 0..* | TranscriptSpeaker | Mỗi giọng trong bản gỡ băng, gán tên người nói |
+| Meeting | 1 → 0..* | SpeechClip | Ghi từng câu nói theo micro (SCRUM-109) |
+| User | 0..1 → 0..* | SpeechClip | Nói vào micro của mình |
+| MeetingGuestInvitation | 0..1 → 0..* | SpeechClip | Nói vào micro với tư cách Khách (SCRUM-129) |
+| User | 1 → 0..* | VoiceConsent | Đồng ý Voice ID |
+| VoiceConsent | 1 → 0..* | VoiceSample | Mẫu giọng nằm dưới lần đồng ý |
+| User | 1 → 0..* | VoiceSample | Sở hữu mẫu giọng |
 | Meeting | 1 → 0..* | MeetingMinutes | Ban hành |
 | MeetingMinutes | 1 → 0..* | MinutesSignature | Nhận chữ ký |
 | User | 1 → 0..* | MinutesSignature | Ký |
@@ -699,6 +764,8 @@ erDiagram
 18a. Trước khi bỏ phiếu, người đủ điều kiện phải xác nhận đã đọc mọi tài liệu còn gắn Vote (`DocumentReadConfirmation`, BR-289–293). Xác nhận thuộc (người, MeetingDocument), dùng chung mọi Vote cùng tài liệu, không rút và không nối với lựa chọn phiếu kín. Gỡ tài liệu khỏi Meeting khi Vote còn Open thì tài liệu đó không còn tính vào điều kiện đọc (BR-292).
 19. Meeting được kết thúc khi Vote còn Open; Ended ngừng nhận phiếu và Chair có thể đóng/kiểm phiếu cũ sau họp (BR-159/160).
 20. Biên bản bị yêu cầu sửa hoặc sửa sau khi đã có chữ ký: các chữ ký trên phiên bản cũ có `InvalidatedAt`, phiên bản mới cần vòng ký mới; chỉ Secretary niêm phong sau khi đủ chữ ký (BR-166).
+21. Mỗi câu nói thu từ micro (`SpeechClip`) có **đúng một** người nói: `SpeakerId` (thành viên) hoặc `GuestInvitationId` (Khách), do `ck_speech_clips_one_speaker` ép; câu của Khách gắn với **lời mời**, không với phiên (ADR-0051). Câu là dữ liệu cá nhân: chủ câu tự xoá khi phiên còn, Chủ toạ/Thư ký loại khỏi bản ghi hoặc xoá, và hệ thống xoá cùng hạn với bản ghi (ADR-0040).
+22. Voice ID: mỗi `VoiceSample` thuộc đúng một lần đồng ý (`VoiceConsent`) của đúng một người; rút đồng ý xoá mọi mẫu trong cùng transaction và không được hồi; mẫu chỉ lưu **đã mã hoá**, không bảng nào khác giữ vector giọng (ADR-0027).
 
 ## Khác biệt với implementation hiện tại và ghi chú migration
 
@@ -744,7 +811,7 @@ erDiagram
 | Không có bảng cho | Vì sao |
 |---|---|
 | Nhiệm vụ / action item | Ngoài phạm vi. TrustCabinet dừng ở biên bản đã chốt — xem mục "Không làm" trong [README](../../README.md). Không có `tasks`, `assignments`, không có cột hạn hoàn thành ở đâu cả |
-| Vector giọng ở bất kỳ đâu ngoài `voice_samples` | Từ 23/10/2026 Voice ID nằm trong phạm vi ([ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md)): giọng mẫu chỉ lưu **đã mã hoá** trong `voice_samples`, dưới một `voice_consents` rút được. Vector các giọng trong bản ghi họp không lưu; `transcript_speakers` chỉ giữ gợi ý và tên Thư ký gán. Có test tự động chặn vector ở bảng khác. *Bảng mới chưa vẽ vào ERD mục tiêu — BA bổ sung ở BA Final Review* |
+| Vector giọng ở bất kỳ đâu ngoài `voice_samples` | Từ 23/10/2026 Voice ID nằm trong phạm vi ([ADR-0027](../05-decisions/0027-voice-id-co-dong-y.md)): giọng mẫu chỉ lưu **đã mã hoá** trong `voice_samples`, dưới một `voice_consents` rút được. Vector các giọng trong bản ghi họp không lưu; `transcript_speakers` chỉ giữ gợi ý và tên Thư ký gán. Có test tự động chặn vector ở bảng khác. *Hai bảng đã vào mô hình đích (mục 7) từ 03/11/2026.* |
 | Khoá mã hoá, sổ huỷ khoá | Không làm mã hoá phong bì |
 | Tổ chức (`organizations`, `tenants`) | Hệ thống phục vụ **đúng một tổ chức**. Không có bảng tổ chức, không multi-tenant, không vùng lưu trú dữ liệu — xem [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) |
 | Đơn vị / phòng ban (`org_units`) | Cũng theo ADR-0004: không có phân cấp cha–con, không gán người dùng vào đơn vị, không có "đơn vị chủ trì" cuộc họp. Mời họp là mời **từng người**. Có test tự động chặn việc thêm lại cột kiểu này |

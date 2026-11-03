@@ -709,6 +709,69 @@
         <mxCell id="e112" edge="1" parent="1" source="VoteReceipt" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="R52">
           <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2326" y="-40" /><mxPoint x="3320" y="-40" /></Array></mxGeometry>
         </mxCell>
+        <mxCell id="SpeechClip" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="SpeechClip" vertex="1">
+          <mxGeometry height="64" width="220" x="200" y="1300" as="geometry" />
+        </mxCell>
+        <mxCell id="VoiceConsent" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="VoiceConsent" vertex="1">
+          <mxGeometry height="64" width="220" x="200" y="1470" as="geometry" />
+        </mxCell>
+        <mxCell id="VoiceSample" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontStyle=1;fontSize=15;strokeWidth=1.6;" value="VoiceSample" vertex="1">
+          <mxGeometry height="64" width="220" x="200" y="1640" as="geometry" />
+        </mxCell>
+        <mxCell id="R54" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Speaking in" vertex="1">
+          <mxGeometry height="64" width="124" x="500" y="1300" as="geometry" />
+        </mxCell>
+        <mxCell id="R55" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Spoken by" vertex="1">
+          <mxGeometry height="64" width="124" x="800" y="1300" as="geometry" />
+        </mxCell>
+        <mxCell id="R56" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="As guest" vertex="1">
+          <mxGeometry height="64" width="124" x="1100" y="1300" as="geometry" />
+        </mxCell>
+        <mxCell id="R57" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Consents" vertex="1">
+          <mxGeometry height="64" width="124" x="500" y="1470" as="geometry" />
+        </mxCell>
+        <mxCell id="R58" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Enrols" vertex="1">
+          <mxGeometry height="64" width="124" x="500" y="1640" as="geometry" />
+        </mxCell>
+        <mxCell id="R59" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;strokeWidth=1.5;" value="Owns voice" vertex="1">
+          <mxGeometry height="64" width="124" x="800" y="1640" as="geometry" />
+        </mxCell>
+        <mxCell id="e540" edge="1" parent="1" source="Meeting" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;" target="R54">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e541" edge="1" parent="1" source="SpeechClip" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R54">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e542" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;" target="R55">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e543" edge="1" parent="1" source="SpeechClip" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R55">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e544" edge="1" parent="1" source="MeetingGuestInvitation" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToOne;startFill=0;startSize=10;" target="R56">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e545" edge="1" parent="1" source="SpeechClip" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R56">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e546" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;" target="R57">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e547" edge="1" parent="1" source="VoiceConsent" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R57">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e548" edge="1" parent="1" source="VoiceConsent" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;" target="R58">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e549" edge="1" parent="1" source="VoiceSample" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R58">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e550" edge="1" parent="1" source="User" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERmandOne;startFill=0;startSize=10;" target="R59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e551" edge="1" parent="1" source="VoiceSample" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.3;endArrow=none;endFill=0;startArrow=ERzeroToMany;startFill=0;startSize=10;" target="R59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

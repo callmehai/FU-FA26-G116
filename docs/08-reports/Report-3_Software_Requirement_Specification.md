@@ -56,6 +56,7 @@ Table of Contents
 | 03/11/2026 | M, A | KhanhPG | BA Final Review of SCRUM-130 and PR #225 (SCRUM-35): UC-06c ends Voice ID in the same transaction when an account is deactivated (POST-4, new step 8, BR-372, BR-365) and reactivating restores nothing; UC-45a, UC-45c, UC-46b and screen 10.1 now state that the system fills in a speaker's name by itself when the voice matches clearly above the configured threshold, only for a person who accepted notice 1.2, with the second-voice threshold for grouping voices (BR-366, BR-367, BR-362); UC-81a, UC-81b, UC-81c and UC-81f state notice 1.2, listening back to a sample before saving it and the automatic names removed when consent is withdrawn; remove a duplicated AF-2 block and four stray steps an earlier merge left in UC-05, and point the audit-log reference in the security requirements at UC-13 instead of the retired UC-92. |
 | 03/11/2026 | M | KhanhPG | Fixes after the review of PR #238: UC-45a POST-2 keeps only the suggestions to the Secretary, because a name already assigned — including one the system filled in — is part of the transcript everybody who may read it sees; BR-367 states both paths that group a second voice into one person, the second-voice threshold (0.7) and the inherited first voice (0.8, ADR-0050). |
 | 03/11/2026 | M | KhanhPG | Apply PO decision 03/11/2026 on general documents (SCRUM-21, PR #249): BR-280 now defines the general group as documents linked to no Agenda Item and to no Vote, with a Vote's document listed in the Voting group only; BR-275 excepts a document linked only to a Draft Vote: a Member or Guest does not see it, and opening, downloading, reading or commenting on it answers as if it did not exist (MSG156), while the current Chair and Secretary still see it. Screen 7.3 and the in-room documents panel (8.6) follow the same definition, and UC-32a (Main Flow step 3, AF-1 step 2) and UC-32c (EX-1) state it. Source: Jira comments 10416 and 10419. |
+| 03/11/2026 | M | KhanhPG | BA Final Review of SCRUM-129 (PR #245, ADR-0051): a Guest in the online room is recorded from their own microphone, gets the sentences of that microphone back, and may delete them while the session lasts, while another speaker's sentence is answered as if it did not exist; update BR-355 and BR-370, UC-39a AF-2 and UC-80 (description, PRE-1, EX-1). Source: Jira comment 10418. |
 
 *A - Added M - Modified D - Deleted
 
@@ -609,6 +610,86 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | 4 | Name | string |  | No | Folder name; must not be empty and need not be unique. |
 | 5 | MeetingId | uuid | FK | Yes | Meeting this folder was created for when a file was uploaded straight into it (references Meeting); null for folders the user created. |
 | 6 | CreatedAt | timestamptz |  | No | Date and time the folder was created. |
+
+Entity 31: TranscriptSpeaker
+
+One voice of a transcript and the person it belongs to. The machine may suggest a member whose voice sample matches and, from 03/11/2026, fills the name in when the score reaches the auto-assign threshold; the Secretary may change or clear it. A voice belongs to a member or to a Guest with a current invitation. No voice vector is stored.
+
+| No | Field | Data Type | Key | Nullable | Description |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Id | uuid | PK | No | Unique identifier of the voice. |
+| 2 | TranscriptId | uuid | FK | No | Transcript the voice belongs to. |
+| 3 | Label | string | UK | No | Label the transcription gives the voice, e.g. SPEAKER_00. |
+| 4 | SpeechMs | bigint |  | No | Total speech of the voice in the recording, in milliseconds. |
+| 5 | SuggestedUserId | uuid | FK | Yes | Member whose voice sample matched most closely; null when the machine suggests nobody. |
+| 6 | SuggestionScore | double |  | Yes | Match score of the suggestion, from 0 to 1; null when there is no suggestion. |
+| 7 | AssignedUserId | uuid | FK | Yes | Member the voice is assigned to, either by the machine or by the Secretary. |
+| 8 | AssignedGuestId | uuid | FK | Yes | Guest invitation the voice is assigned to; only while that invitation is current. |
+| 9 | AssignedById | uuid | FK | Yes | Secretary who assigned the name; null when the machine filled it in. |
+| 10 | AssignedAt | timestamptz |  | Yes | Time the name was assigned. |
+
+Entity 32: GuestSession
+
+Verified session of an external Guest, giving access to one Meeting without an account. A row is itself the evidence that the invited email was verified; one invitation may open several sessions, one per device.
+
+| No | Field | Data Type | Key | Nullable | Description |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Id | uuid | PK | No | Unique identifier of the session; it is the session identifier carried by the guest token. |
+| 2 | InvitationId | uuid | FK | No | Guest invitation that opened the session. |
+| 3 | ExpiresAt | timestamptz |  | No | Time the session expires; 12 hours after it was opened. |
+| 4 | RevokedAt | timestamptz |  | Yes | Time the session ended early: the Guest signed out, the invitation was revoked or the Meeting ended. |
+
+Entity 33: SpeechClip
+
+One sentence a person said into their own microphone in an online or hybrid Meeting, transcribed as soon as they paused and kept with its audio so the meeting can be heard again sentence by sentence. The speaker is the owner of the microphone: a member of the Meeting or a Guest invited to it, never both. It is personal data and is erased with the Meeting's recordings.
+
+| No | Field | Data Type | Key | Nullable | Description |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Id | uuid | PK | No | Unique identifier of the sentence. |
+| 2 | MeetingId | uuid | FK | No | Meeting the sentence was spoken in. |
+| 3 | SpeakerId | uuid | FK | Yes | Member who owns the microphone; null when a Guest spoke. |
+| 4 | GuestInvitationId | uuid | FK | Yes | Guest invitation that spoke; null when a member spoke. |
+| 5 | ClientClipId | uuid | UK | No | Identifier the browser gave the sentence, so a retry after a lost response stores it once. |
+| 6 | StartedAt | timestamptz |  | No | Time the sentence began, by the speaker's clock, kept inside the Meeting's time. |
+| 7 | DurationMs | bigint |  | No | Length of the sentence in milliseconds; greater than zero. |
+| 8 | Text | string |  | No | Transcribed text of the sentence. |
+| 9 | EditedById | uuid | FK | Yes | Secretary who corrected the machine's text. |
+| 10 | EditedAt | timestamptz |  | Yes | Time the text was last corrected. |
+| 11 | Segments | jsonb |  | Yes | Stretches of speech found in the sentence, with how many words each holds and how loud it reached the microphone; numbers only, never audio or a voice vector. |
+| 12 | ExcludedAt | timestamptz |  | Yes | Time the Chair or the Secretary took the sentence out of the record; null while it counts. |
+| 13 | ExcludedById | uuid | FK | Yes | Chair or Secretary who took the sentence out of the record. |
+| 14 | ExclusionReason | string |  | Yes | Why the sentence was taken out: Leak (another attendee's words, overheard) or Other. |
+| 15 | AudioPath | string |  | Yes | Where the sentence's audio lies in the recordings store. |
+| 16 | AudioContentType | string |  | Yes | Media type of the stored audio. |
+| 17 | Peaks | bytea |  | Yes | One loudness value per 100 ms, to draw the waveform without fetching any audio. |
+
+Entity 34: VoiceConsent
+
+A person's consent to Voice ID: the system may keep voice samples and use them to suggest that person's name for a voice. The consent is separate from consent to being recorded, is given by the person themself, and is kept with the notice they read and the purpose they agreed to. A voice used to recognise someone is sensitive personal data.
+
+| No | Field | Data Type | Key | Nullable | Description |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Id | uuid | PK | No | Unique identifier of the consent. |
+| 2 | UserId | uuid | FK | No | Person who gave the consent. |
+| 3 | GrantedAt | timestamptz |  | No | Time the consent was given. |
+| 4 | NoticeVersion | string |  | No | Which wording of the notice was shown, so a later change of wording does not rewrite what was agreed. |
+| 5 | Purpose | string |  | No | Purpose the person agreed to: suggesting their name for a voice in meetings they attend. |
+| 6 | WithdrawnAt | timestamptz |  | Yes | Time the consent was withdrawn; a withdrawn consent is never revived and every sample of that person is erased. |
+
+Entity 35: VoiceSample
+
+One enrolment sample of a person's voice, kept only encrypted, used to suggest that person's name for a voice in the meetings they attend. The recording itself is kept too, encrypted, so its owner can hear it back. Erased with every other sample when the person withdraws consent.
+
+| No | Field | Data Type | Key | Nullable | Description |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Id | uuid | PK | No | Unique identifier of the sample. |
+| 2 | UserId | uuid | FK | No | Person the voice belongs to. |
+| 3 | ConsentId | uuid | FK | No | Consent the sample falls under. |
+| 4 | Ciphertext | bytea |  | No | Encrypted embedding: nonce, ciphertext and tag, bound to the person, the sample and the model. |
+| 5 | EmbeddingModel | string |  | No | Model that produced the embedding, e.g. eres2net-base-200k@ with the model's checksum; embeddings only compare within one model. |
+| 6 | SpeechMs | bigint |  | No | How much speech the sample held after silence was cut, in milliseconds. |
+| 7 | AudioCiphertext | bytea |  | Yes | The recording as uploaded, encrypted the same way; null for a sample taken before it was kept. |
+| 8 | AudioContentType | string |  | Yes | Media type of the recording, to play it back as it was sent. |
 
 #### 3.3 Data Business Rules
 
@@ -1723,7 +1804,7 @@ Delivery scope: UC-31 attendance is delivered separately from the roster, invita
 | Preconditions | ● PRE-1: The internal user is signed in, or the Guest has verified the invited email and has a valid invitation.<br>● PRE-2: The actor is in the Meeting Lobby or connected to the meeting room of an In Progress Meeting. (UC-37)<br>● PRE-3: The browser reports at least one microphone. |  |  |
 | Postconditions | ● POST-1: The actor's microphone is on or off as chosen, for that actor only.<br>● POST-2: The browser remembers the on/off state for the next visit on that device. (BR-331)<br>● POST-3: No other person's audio, the Meeting lifecycle and attendance are unchanged.<br>● POST-4: While recording applies to the Meeting, a microphone that is on means the actor’s own speech is recorded for the minutes; turning it off stops it. The microphone button is the only switch. (AF-2, UC-80, BR-352) |  |  |
 | Normal Flow | Manage Microphone<br>1. The actor chooses the microphone button in the lobby or in the call controls, or presses Ctrl+D (Cmd+D on a Mac).<br>2. The system turns the actor's microphone on or off and shows the new state on the button and in the actor's video tile; while it is off, everyone in the room sees the microphone marked as off. (UC-40)<br>3. The system remembers the new state for the next visit on this device. (BR-331)<br>4. The microphone follows the choice; no separate message is displayed, because the button and the tile carry the state. |  |  |
-| Alternative Flows | AF-1 – Choose another microphone<br>1. At Step 1, the actor opens the arrow beside the microphone button and chooses another microphone through UC-39d.<br>2. The system switches the live audio to that microphone, keeps the on/off state and remembers the device. (BR-331)<br>3. The flow resumes at Step 2 of the Main Flow.<br>AF-2 – Speech recorded while the microphone is on<br>1. At Step 2, the actor turns the microphone on in an Online or Hybrid Meeting that is In Progress. This does not apply to a Guest, whose own microphone is not recorded; a Guest’s speech reaches the record only through the room recording. (BR-340, BR-352, BR-370)<br>2. While the microphone is on, the system captures the actor’s speech sentence by sentence, converts each sentence into text and keeps it with its time and the actor’s name. Sentences with only silence or background noise are not kept. (BR-352)<br>3. A sentence that repeats a neighbouring person’s speech picked up by the actor’s microphone is marked as overlapping, not hidden. (BR-356)<br>4. A sentence that cannot be delivered right away stays on the actor’s device and is delivered later, up to 7 days after the Meeting ends. (BR-354)<br>5. Saved sentences can be reviewed, listened to and deleted by the actor in My Recorded Speech (UC-80), and are erased automatically 180 days after they are saved. (BR-347, BR-355)<br>6. The flow resumes at Step 3 of the Main Flow. |  |  |
+| Alternative Flows | AF-1 – Choose another microphone<br>1. At Step 1, the actor opens the arrow beside the microphone button and chooses another microphone through UC-39d.<br>2. The system switches the live audio to that microphone, keeps the on/off state and remembers the device. (BR-331)<br>3. The flow resumes at Step 2 of the Main Flow.<br>AF-2 – Speech recorded while the microphone is on<br>1. At Step 2, the actor turns the microphone on in an Online or Hybrid Meeting that is In Progress. In the online room this applies to a Guest with a verified, current invitation as well: the Guest's own microphone is recorded, and the sentence is theirs while the session lasts. A Guest's sentences reach the record only after the Guest has confirmed the recording notice. (BR-340, BR-352, BR-370)<br>2. While the microphone is on, the system captures the actor’s speech sentence by sentence, converts each sentence into text and keeps it with its time and the actor’s name. Sentences with only silence or background noise are not kept. (BR-352)<br>3. A sentence that repeats a neighbouring person’s speech picked up by the actor’s microphone is marked as overlapping, not hidden. (BR-356)<br>4. A sentence that cannot be delivered right away stays on the actor’s device and is delivered later, up to 7 days after the Meeting ends. (BR-354)<br>5. Saved sentences can be reviewed, listened to and deleted by the actor in My Recorded Speech (UC-80), and are erased automatically 180 days after they are saved. (BR-347, BR-355)<br>6. The flow resumes at Step 3 of the Main Flow. |  |  |
 | Exception Flows | EX-1 – The browser blocks the microphone<br>1. At Step 2, the browser has not granted microphone permission.<br>2. The microphone stays off and the actor stays in the room and can still hear everyone. The system displays MSG334 – “The browser is blocking the microphone. Click the lock icon beside the address bar, choose Allow and reload the page. You can still join the room to listen.” (BR-331)<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-2 – No microphone is available<br>1. At Step 1, the browser reports no microphone, or the chosen microphone was disconnected.<br>2. The microphone picker is disabled and says why, and the actor can still join the room to listen. The system displays MSG335 – “No {device} was found on this computer.”<br>3. The use case ends.<br>EX-3 – Another application holds the microphone<br>1. At Step 2, the browser cannot open the microphone because another application is using it.<br>2. The microphone stays off and the actor can still hear everyone. The system displays MSG336 – “The {device} is being used by another application (Zoom, Teams…). Close that application and try again.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-4 – Speech recognition unavailable<br>1. At Step 2 of AF-2, the system cannot convert a sentence into text.<br>2. The sentence stays on the actor’s device and is sent again later; the microphone and the actor’s place in the room are not affected. The system displays MSG312 – “Speech recognition service is currently unavailable. Please try again later.”<br>3. The flow resumes at Step 3 of the Main Flow.<br>EX-5 – The Meeting cannot be recorded now<br>1. At Step 2 of AF-2, the Meeting is held in person, has not started, or ended more than 7 days ago. (BR-340, BR-354)<br>2. The sentence is not accepted and is not kept. The system displays MSG320 – “In-person meetings do not record per-mic speech, or the meeting is no longer running.”<br>3. The use case ends.<br>EX-6 – Sentence audio is not valid<br>1. At Step 2 of AF-2, the audio of the sentence is not a supported audio file, or its start time or length is missing or wrong, or its length is outside 1 millisecond to 60 seconds.<br>2. The sentence is not accepted and is not kept. The system displays MSG319 – “Spoken sentence audio is invalid.”<br>3. The use case ends.<br>EX-7 – Sentence is too long<br>1. At Step 2 of AF-2, the audio of the sentence is larger than 3 MB.<br>2. The sentence is not accepted and is not kept. The system displays MSG321 – “A spoken sentence cannot exceed 60 seconds.”<br>3. The use case ends. |  |  |
 
 ##### 8.3.2 UC-39b – Manage Camera
@@ -1912,12 +1993,12 @@ Delivery scope: UC-31 attendance is delivered separately from the roster, invita
 
 | Primary Actors | Chair, Secretary, Participant | Secondary Actors | None |
 | --- | --- | --- | --- |
-| Description | Allows a person who currently holds a Chair, Secretary or Participant assignment to review the sentences recorded from his or her own microphone, listen to them again and delete a sentence of his or her own. |  |  |
-| Preconditions | ● PRE-1: The actor is signed in as an internal user and currently holds a Chair, Secretary or Participant assignment of the Meeting. A Guest cannot use this function. (BR-355, BR-370) |  |  |
+| Description | Allows a person to review the sentences recorded from his or her own microphone, listen to them again and delete a sentence of his or her own: an internal user while signed in and holding a Chair, Secretary or Participant assignment, or a Guest while the verified invitation session lasts. (BR-355, BR-370) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in as an internal user and currently holds a Chair, Secretary or Participant assignment of the Meeting, or is a Guest with a verified, current invitation to it. A Guest sees and deletes only the sentences of their own microphone. (BR-355, BR-370) |  |  |
 | Postconditions | ● POST-1: A deleted sentence, with its text and its audio, is permanently removed from the Meeting record. (BR-355) |  |  |
 | Normal Flow | Manage My Recorded Speech<br>1. In the online room or on the Recordings tab, the actor opens My Recorded Speech.<br>2. The system lists the actor's sentences: those still waiting on this device to be delivered and those already saved, each with its time and its text. (BR-354)<br>3. The actor selects a sentence to listen to it.<br>4. The actor selects Delete on a sentence and confirms.<br>5. The system permanently removes the text and the audio of the sentence and records the deletion in the audit log. (BR-355)<br>6. The system displays MSG322 – “Spoken sentence deleted.” and refreshes the list. |  |  |
 | Alternative Flows | N/A |  |  |
-| Exception Flows | EX-1 – Sentence belongs to someone else<br>1. At Step 5, the sentence belongs to another speaker and the actor is not the Secretary. (BR-355)<br>2. Nothing is removed. The system displays MSG323 – “Only the speaker or the Secretary may delete this sentence.”<br>3. The use case ends.<br>EX-2 – Sentence cannot be deleted<br>1. At Step 5, the system cannot remove the sentence.<br>2. The sentence stays as it was. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends. |  |  |
+| Exception Flows | EX-1 – Sentence belongs to someone else<br>1. At Step 5, the sentence belongs to another speaker and the actor is not the Secretary. For a Guest, the sentence of any other speaker is answered as if it did not exist (MSG156). (BR-355)<br>2. Nothing is removed. The system displays MSG323 – “Only the speaker or the Secretary may delete this sentence.”<br>3. The use case ends.<br>EX-2 – Sentence cannot be deleted<br>1. At Step 5, the system cannot remove the sentence.<br>2. The sentence stays as it was. The system displays MSG304 – “Unable to save transcript changes. Please try again.”<br>3. The use case ends. |  |  |
 
 ### 10. FE-10 – Transcription, Speaker Identification & Meeting Summary
 
@@ -4537,7 +4618,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-352 | In the online room, a person's microphone switch is the only recording switch: speech is recorded only while that person's microphone is on. | UC-39a | ADR-0040 / SCRUM-109 — single microphone toggle | Meeting Room |
 | BR-353 | Before joining, the lobby tells the person that the Meeting is recorded for the minutes and erased after 180 days. | UC-37, UC-39a | Luật 91/2025/QH15 — prior notice requirement | Meeting Room |
 | BR-354 | A sentence not yet sent stays on the person's device and is accepted up to 7 days after the Meeting ends, if it was spoken during the Meeting. | UC-39a, UC-80 | ADR-0038 / SCRUM-109 — unsent sentences kept on the device | Meeting Recording |
-| BR-355 | A person may withdraw their own sentence, and the Secretary may delete any sentence; deleting removes its text and audio. | UC-80, UC-46d | SCRUM-109 — individual deletion and moderation | Meeting Recording |
+| BR-355 | A person may withdraw their own sentence - a Member while signed in, a Guest while the verified session lasts - and the Secretary may delete any sentence; deleting removes its text and audio. | UC-80, UC-46d | SCRUM-109 — individual deletion and moderation; Guest from SCRUM-129 (ADR-0051) | Meeting Recording |
 | BR-356 | A sentence that repeats a neighbour's speech picked up by another microphone is marked, not hidden. | UC-39a, UC-43a | ADR-0038 / SCRUM-109 — cross-talk indication | Meeting Recording |
 | BR-357 | Only the current Chair or Secretary may exclude a sentence from the record, with a reason, or restore it. An excluded sentence is not deleted; only they can read and play it. | UC-46c | SCRUM-109 / AI-eCabinet — exclusion from minutes | Meeting Recording |
 | BR-358 | Excluded sentences are left out of an exported transcript. | UC-45b | SCRUM-109 — export exclusion | Transcription |
@@ -4552,7 +4633,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-367 | One person may be suggested for several voices. A second voice joins that person when it matches the person's enrolled voice at or above the configured second-voice threshold (0.7 by default); a voice still unnamed after the suggestions joins the person whose first named voice it resembles at or above the inherited-voice threshold (0.8 by default) and takes that name and score. Otherwise the voice stays a speaker of its own. (ADR-0045, ADR-0050) | UC-46b | ADR-0045 / PO 29/10/2026 — second-voice threshold | Transcription |
 | BR-368 | A speaker may be assigned only to a person on the Meeting's current roster. | UC-46b | SCRUM-35 — roster constraint on speaker assignment | Transcription |
 | BR-369 | Meeting audio and voice samples are processed inside the system and never sent to an outside service. | UC-39a, UC-45c, UC-81c | ADR-0026 — on-premises speech processing | Meeting Recording / Voice ID |
-| BR-370 | A Guest's own microphone is not recorded and a Guest cannot open the Meeting's recordings; a Guest's speech reaches the record only through the room recording. | UC-39a, UC-43a | PO 01/11/2026 - a Guest in an online Meeting will be recorded through their microphone (SCRUM-129, not yet built); until then this rule describes the system as built | Meeting Recording |
+| BR-370 | A Guest's own microphone is recorded in the online room like a Member's, and the Guest may read, replay and delete the sentences of that microphone while the verified session lasts; a Guest cannot open the Meeting's room recordings or transcript, and a sentence of another speaker is answered as if it did not exist. (ADR-0051) | UC-39a, UC-43a | PO 01/11/2026 / ADR-0051 - a Guest in an online Meeting is recorded through their own microphone (SCRUM-129) | Meeting Recording |
 | BR-371 | For one Guest invitation, a new verification code can be requested at most once per minute, and at most 20 codes can be sent within any 24 hours. | UC-04 | NEEDS REVIEW PO — set during the SCRUM-116 review on 31/10/2026; not yet confirmed by PO | Guest participation |
 | BR-372 | Deactivating a user account ends that person's Voice ID in the same transaction as the status change: every voice sample, every speaker suggestion and every name the system filled in automatically is deleted, the consent is closed and the audit log names the administrator who did it; reactivating the account restores nothing. | UC-06c | ADR-0049 / SCRUM-35 — deactivation ends Voice ID | Voice ID |
 

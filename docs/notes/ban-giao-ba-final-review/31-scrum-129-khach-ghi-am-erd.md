@@ -4,8 +4,8 @@
 (merged 15:01 03/11/2026), comment Jira `10418` trên [SCRUM-129](https://sep490g116.atlassian.net/browse/SCRUM-129) và
 [ADR-0051](../../05-decisions/0051-khach-ghi-theo-micro-cua-minh.md).
 
-Note này gom việc BA; **chưa sửa tài liệu nào** trong lượt ghi note (yêu cầu 03/11: chỉ ghi chú trước, chưa đụng
-`02-erd.md`, chưa vẽ lại ERD, chưa sửa Report 3).
+Note này gom việc BA. **Ghi note ngày 03/11/2026; sửa tài liệu ngày 04/11/2026** trên nhánh
+`docs/notes-scrum-129-erd` (mục 3–4), trừ dòng comment Jira cuối cùng.
 
 ## 1. Bot báo gì
 
@@ -29,48 +29,49 @@ Note này gom việc BA; **chưa sửa tài liệu nào** trong lượt ghi note
 - `docs/03-api/09-phong-hop-truc-tuyen.md`, `docs/03-api/16-truy-cap-khach-uc04.md` và `docs/05-decisions/README.md` theo
   cùng PR.
 
-## 3. Còn lệch — việc của BA Final Review
+## 3. Đã sửa ngày 04/11/2026 (nhánh `docs/notes-scrum-129-erd`)
 
-### 3.1 `docs/02-design/02-erd.md` thiếu `speech_clips`
+### 3.1 `02-erd.md` — thêm `SpeechClip`, `VoiceConsent`, `VoiceSample`
 
-- Bảng có thật từ SCRUM-109 (`SpeechClip`, cấu hình `SpeechClipConfiguration`), SCRUM-129 thêm
-  `guest_invitation_id` (null được) cùng ràng buộc `ck_speech_clips_one_speaker` buộc đúng một trong `speaker_id` và
-  `guest_invitation_id`.
-- `02-erd.md` chưa có ba chỗ: dòng ở bảng **Trạng thái triển khai** (mục từ dòng 31), entity và quan hệ trong **mermaid
-  nhóm 7** (dòng 399–492), và câu **"đúng 32 thực thể"** ở dòng 9 cùng ảnh `13-erd/muc-tieu` vẫn tính 32.
-- Cùng chỗ đó, `voice_samples` và `voice_consents` (ADR-0027) cũng chưa vẽ — mục "Ranh giới đã chốt" (dòng 747) đang ghi
-  *"Bảng mới chưa vẽ vào ERD mục tiêu — BA bổ sung ở BA Final Review"*.
-- Sửa đúng cách: thêm `SpeechClip` (và hai bảng Voice ID) thành thực thể của mô hình đích, nâng số đếm 32 → 33/34, ghi rõ
-  **hình mục tiêu chưa vẽ** để không ai đọc ảnh thành schema đầy đủ; vẽ lại `13-erd/muc-tieu` và `13-erd/chen` bằng
-  [drawio-skill](../../../.agents/skills/drawio-skill/SKILL.md) khi tới bước đó.
+- `SpeechClip` có thật từ SCRUM-109, SCRUM-129 thêm `guest_invitation_id` cùng ràng buộc
+  `ck_speech_clips_one_speaker`; `02-erd.md` bỏ sót nên cả bảng trạng thái, mermaid nhóm 7 và số đếm đều thiếu.
+- Đã thêm ba dòng vào bảng **Trạng thái triển khai**, ba entity cùng quan hệ vào **mermaid nhóm 7** (kèm đoạn giải
+  thích `SpeechClip` và Voice ID), hai dòng vào **Tổng hợp đầy đủ các quan hệ** và quy tắc 21–22 ở mục ràng buộc.
+- Số đếm: **32 → 35 thực thể**; bỏ câu "Bảng mới chưa vẽ vào ERD mục tiêu — BA bổ sung ở BA Final Review" ở mục Ranh
+  giới.
+- Hình đã vẽ lại: `13-erd/muc-tieu` (38 bảng, có 3 bảng mới ở dải dưới) và `13-erd/chen` (35 thực thể, 59 quan hệ),
+  xuất lại PNG; cập nhật `13-erd/README.md`, `muc-tieu/README.md`, `chen/README.md` theo số mới.
 
 ### 3.2 Report 3
 
-- **UC-80 (9.3) PRE-1** đang ghi *"A Guest cannot use this function. (BR-355, BR-370)"* — trái ADR-0051: Khách đọc, nghe
-  lại và xoá câu của mình khi phiên còn, câu của người khác `404`; hết phiên thì nhờ Thư ký xoá.
-- **BR-370** còn rationale *"PO 01/11/2026 … (SCRUM-129, not yet built); until then this rule describes the system as
-  built"* — đã merge #245, phải viết lại thành hiện thực: Khách ghi theo micro của mình, vẫn không mở bản ghi phòng và
-  bản gỡ băng.
-- **BR-355** (*"A person may withdraw their own sentence…"*) nên nêu đích danh Khách, hoặc thêm câu cho Khách.
-- **UC-46a / UC-46b và màn 10.1**: câu của Khách hiện tên Khách (tự khai, chưa có thì tên được mời), nhãn "Khách",
-  `.txt` ghi "Tên (Khách)"; Khách không nhận `speechChanged`.
-- **§I.3.1/I.3.2 Entity Descriptions** chỉ có **30 entity** (thiếu `TranscriptSpeaker`, `GuestSession`, `SpeechClip`,
-  `VoiceSample`/`VoiceConsent`) — làm cùng đợt với `02-erd.md`, không tách rời.
-- **V.2 `MSG380`** hiện chỉ ghi ngữ cảnh UC-37/EX-9; nếu muốn đặc tả nêu cả câu của Khách thì thêm vào cột ngữ cảnh
-  (vẫn là cùng một tình huống, không phải mã mới).
+- **UC-80** (description, PRE-1, EX-1): Khách có phiên còn hiệu lực cũng dùng được, chỉ thấy và xoá câu của mình;
+  câu của người khác trả MSG156.
+- **BR-355**: nêu đích danh Khách (thành viên khi đã đăng nhập, Khách khi phiên còn).
+- **BR-370**: viết lại theo ADR-0051 — micro của Khách **được ghi**; Khách vẫn không mở bản ghi phòng/bản gỡ băng.
+- **UC-39a AF-2 bước 1**: bỏ câu "không áp dụng cho Khách", thêm điều kiện đã xác nhận thông báo ghi âm.
+- **§I.3.2**: thêm 5 entity còn thiếu — `TranscriptSpeaker`, `GuestSession`, `SpeechClip`, `VoiceConsent`,
+  `VoiceSample` (30 → 35 entity), mỗi entity một bảng field.
+- **§I.3.1**: thay ảnh ERD bằng bản `muc-tieu` mới (38 bảng).
+- **Change Log**: dòng `03/11/2026 / M / KhanhPG`.
 
-### 3.3 Jira
+Kiểm tra: `check_docx.py` OK; `sync_reports.py --report 3` sinh lại snapshot, extract 05/06 và `uc-map.html`.
 
-- Sau khi tài liệu vào `main`, comment kết quả vào SCRUM-129 theo
+### 3.3 Còn lại
+
+- **Màn 10.1** đã nêu Khách trong danh sách chọn người nói, nên không phải sửa; **UC-46a/UC-46b** giữ nguyên (việc
+  gán tên không đổi theo SCRUM-129).
+- **V.2 `MSG380`** vẫn ghi ngữ cảnh UC-37/EX-9; câu của Khách dùng lại đúng mã đó, không thêm mã mới. Nếu PO muốn
+  đặc tả nêu cả trường hợp này thì thêm vào cột ngữ cảnh.
+- **Jira**: sau khi tài liệu vào `main`, comment kết quả vào SCRUM-129 theo
   [DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update); nếu bảng ERD
   được coi là phần của SCRUM-109 thì comment cả SCRUM-109.
 
-## 4. Thứ tự đề xuất khi làm
+## 4. Thứ tự đã làm
 
-1. `02-erd.md`: thêm `SpeechClip` (+ Voice ID) vào bảng trạng thái và mermaid nhóm 7, sửa số đếm, ghi rõ hình chưa vẽ.
-2. Report 3: UC-80, BR-355, BR-370, UC-46a/46b, màn 10.1; rồi §I.3.1/I.3.2 và Change Log.
-3. Vẽ lại ERD mục tiêu (`13-erd/muc-tieu`) và bản `chen`, xuất PNG theo drawio-skill.
-4. Comment Jira.
+1. `02-erd.md`: entity, quan hệ, số đếm, quy tắc. ✔
+2. Report 3: UC-80, BR-355, BR-370, UC-39a AF-2, §I.3.1/I.3.2, Change Log. ✔
+3. Vẽ lại `13-erd/muc-tieu` và `13-erd/chen`, xuất PNG. ✔
+4. Comment Jira. ☐ (chờ PR vào `main`)
 
 ## 5. Câu hỏi còn mở
 
