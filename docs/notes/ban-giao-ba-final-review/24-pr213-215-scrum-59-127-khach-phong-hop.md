@@ -7,8 +7,9 @@
 [09-phong-hop-truc-tuyen.md](../../03-api/09-phong-hop-truc-tuyen.md) mục **Khách (SCRUM-59)**. Note này gom việc BA, không thay
 Jira hay đặc tả.
 
-> **Tiến độ 03/11/2026: ĐÃ SỬA PHẦN UC/MSG** (Report 3 DOCX → snapshot + extract), **ERD drawio thì chưa** (xem §4).
-> Đã làm: UC-37 (PRE cho cả Khách, Khách xác nhận thông báo ghi âm + EX-9 MSG380 + EX-10 hết phiên, `retentionDays`, AF-3 hỏi lại
+> **Tiến độ 03/11/2026: ĐÃ SỬA PHẦN UC/MSG** (Report 3 DOCX → snapshot + extract) **và ERD mục tiêu**
+> (`13-erd/muc-tieu` + `13-erd/chen`: thêm `GuestSession`, `CallParticipant` dùng `GuestSessionId`; thêm `TranscriptSpeaker`)
+> — xem §4.> Đã làm: UC-37 (PRE cho cả Khách, Khách xác nhận thông báo ghi âm + EX-9 MSG380 + EX-10 hết phiên, `retentionDays`, AF-3 hỏi lại
 > mỗi 10 giây, POST-4 lượt vào/ra theo phiên, EX-1 màn kết thúc ≤20 giây), UC-38 EX-6, UC-41 EX-1, UC-28c POST-2, §V.2 thêm MSG380.
 > Còn lại: ERD drawio, đặc tả màn hình, ghi âm Khách chờ SCRUM-129.
 
@@ -59,20 +60,22 @@ Jira hay đặc tả.
 - [x] UC-38 EX-6 (hết phiên Khách trong phòng), UC-41 EX-1 (Khách không bao giờ điều phối), UC-28c POST-2 (thu hồi ngắt ngay,
       hết phiên/đăng xuất ≤30 giây). BR-181 đã có UC-37–UC-42 trong cột UC, không phải sửa (điểm 6, 12).
 - [x] Report 3 §V.2: thêm MSG380 (dòng 380, Inline / Form error, UC-37 / EX-9) (điểm 7).
-- [ ] **ERD drawio — CHƯA SỬA ĐƯỢC, đã kiểm kỹ ngày 03/11/2026:**
-      - `hien-tai/` là snapshot **sinh tự động** (mỗi bảng có `data-provenance` trỏ `TrustCabinetDbContextModelSnapshot.cs`), README thư mục
-        ghi **không sửa tay**. Snapshot đang **cũ từ 24/10**: 27 bảng, trong khi model hiện có **41 bảng**; thiếu 15 bảng, gồm đúng những
-        bảng của đợt này (`guest_sessions`, `transcript_speakers`) và cả `meeting_guest_invitations`, `meeting_documents`, `stored_files`…
-        Vì vậy thêm 4 cột của note 24/25 vào file đó cũng không làm nó đúng, mà còn trái quy định.
-      - Đường sinh lại đúng: draw.io skill có `diagramctl.py sync <hien-tai.drawio> <schema.sql> --from sql` (giữ layout cũ, thêm bảng mới),
-        nhưng phải có DDL từ EF: `dotnet ef dbcontext script` — máy này **không có SDK 10.0.401** mà `global.json` ghim (chỉ có 10.0.302)
-        và không cài `dotnet-ef`, nên không sinh được DDL.
-      - `muc-tieu/` (bản vẽ tay, 33 thực thể) và `chen/` là **mô hình mục tiêu**; `02-erd.md` dòng 7 nói rõ `guest_sessions` là chi tiết lưu trữ,
-        **"không thêm thực thể vào mô hình mục tiêu"**. Trong khi đó §8 của cùng file lại vẽ `GuestSession o|--o{ CallParticipant` và
-        `GuestSessionId` mà **không định nghĩa thực thể `GuestSession`** — chính `02-erd.md` đang tự mâu thuẫn, nên không thể tự chọn cách vẽ.
-      - Cần BE chốt một trong hai: **(A)** sinh lại `hien-tai` khi có SDK 10.0.401 (`dotnet ef dbcontext script` → `diagramctl.py sync --from sql`),
-        hoặc **(B)** đưa `GuestSession` thành thực thể của mô hình mục tiêu (sửa `02-erd.md` §8 + `muc-tieu` + `chen`) rồi mới vẽ. Chọn xong
-        BA cập nhật hình trong một lượt riêng (điểm 2).
+- [x] **ERD mục tiêu — ĐÃ SỬA ngày 03/11/2026** (điểm 2: `muc-tieu` + `chen`, không phải snapshot `hien-tai`):
+      - `muc-tieu`: `CallParticipant` đổi `GuestInvitationId` → **`GuestSessionId`** (uuid?, FK); thêm thực thể
+        **`GuestSession`** (Id, InvitationId, ExpiresAt, RevokedAt?) đặt dưới `CallParticipant`; quan hệ `r28` "guest" chuyển từ
+        `MeetingGuestInvitation` sang `GuestSession` (0..1 → 0..*). `CallSession.StartedById` và `CallParticipant.UserId` đã là `uuid?`.
+      - Thêm luôn **`TranscriptSpeaker`** (việc của note 25, điểm ERD): Id, TranscriptId, Label, SpeechMs, SuggestedUserId,
+        SuggestionScore, AssignedUserId **hoặc** AssignedGuestId, AssignedById, AssignedAt — mô hình đích nay 35 thực thể.
+      - `chen`: thêm hình chữ nhật **`GuestSession`** nối vào hình thoi `Joins as` (R28) thay cho `MeetingGuestInvitation`, và
+        **`TranscriptSpeaker`** + hình thoi `Names` nối với `Transcript` (32 thực thể / 53 quan hệ).
+      - `02-erd.md` đã đồng bộ: §8 có khối `GuestSession`, §7 có khối `TranscriptSpeaker`, bảng trạng thái có 2 dòng mới,
+        30 → 35 thực thể, bỏ câu "không thêm thực thể vào mô hình mục tiêu".
+      - Đã xuất lại 2 ảnh ERD + nhúng ảnh ERD mới vào Report 3 §3.1; `validate.py` báo 0 lỗi, 0 lỗi qua đỉnh; đã mở ảnh kiểm tra.
+      - Cập nhật số đếm ở `13-erd/README.md` và `chen/README.md`.
+      - **`hien-tai` (snapshot schema) đã xoá ngày 03/11/2026** cùng nhánh này: bản sinh tự động, cũ 5 migration; đối chiếu schema
+        dùng migration + `02-erd.md`.
+      - **`02-erd.md` chưa đồng bộ**: dòng 7 vẫn nói `guest_sessions` không thêm thực thể vào mô hình đích, §8 lại vẽ `GuestSession`
+        mà không định nghĩa — BE cần sửa §8 (định nghĩa thực thể, số thực thể 30 → 34) để khớp hình.
 - [ ] Ghi rủi ro (điểm 5): bằng chứng thông báo ghi âm chỉ là cờ trong audit, không lưu câu đã hiện — **đã ghi trong UC-37 bước 5**.
       Điểm 9 (180 ngày ghi cứng) đã sửa ở #222; UC-37 giờ ghi "the number of days the server returns".
 - [ ] Ghi âm Khách: **chờ SCRUM-129**, rồi mới sửa UC ghi âm (điểm 8).

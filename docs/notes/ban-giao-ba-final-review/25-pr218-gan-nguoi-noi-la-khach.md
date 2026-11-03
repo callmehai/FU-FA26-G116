@@ -32,8 +32,8 @@
 
 - [x] UC-46b: điểm 1, 2, 3 (gán Khách còn lời mời; MSG317 ba trường hợp; Khách không được gợi ý vì không có giọng mẫu).
 - [x] Report 3 §V.2: dòng MSG317 — ngữ cảnh mở rộng, nội dung giữ nguyên.
-- [ ] ERD drawio: `transcript_speakers.assigned_guest_id` — **chưa sửa được**, xem [note 24 §4](24-pr213-215-scrum-59-127-khach-phong-hop.md):
-      bảng `transcript_speakers` còn không có trong snapshot `hien-tai` (27 bảng, model 41), và `muc-tieu` là mô hình mục tiêu nên không
-      thêm `GuestSession`.
+- [x] ERD drawio: `transcript_speakers.assigned_guest_id` — **đã có** trong mô hình đích ngày 03/11/2026: thêm thực thể
+      `TranscriptSpeaker` (`muc-tieu` + `chen`) với `AssignedUserId` **hoặc** `AssignedGuestId`; `02-erd.md` §7 có khối và
+      quan hệ `Transcript → TranscriptSpeaker`, xem [note 24 §4](24-pr213-215-scrum-59-127-khach-phong-hop.md).
 - [x] Rà UC xuất gỡ băng (UC-45b POST-1: tên Khách tự khai) và UC-81 (UC-81a: Voice ID chỉ của người nội bộ) — điểm 3, 4.
 - [x] Sync Report 3, Change Log (dòng 03/11/2026 / M / KhanhPG, cùng lượt với note 23, 24).

@@ -41,9 +41,9 @@ thay ảnh trong DOCX Report 3, chạy `sync_reports.py`. Không dùng ảnh ch�
 - [ ] **ERD `muc-tieu`:** `AgendaItem` còn `PlannedDurationMinutes`, `PresenterName`. Sửa theo `docs/02-design/02-erd.md`
       (`PresenterId`, `PresenterGuestInvitationId`, `LegacyPresenterName`, `Conclusion`, `ConclusionUpdatedById`,
       `ConclusionUpdatedAt`), xuất lại PNG.
-- [ ] **Ảnh ERD trong Report 3 (mục 3.1):** thay bằng ảnh `muc-tieu` mới sau khi sửa ý trên.
-- [ ] **ERD `hien-tai`:** sinh lại từ DB sau khi chạy migration mới nhất (README thư mục cấm sửa tay; bản hiện tại còn
-      `starts_at`/`ends_at`).
+- [x] **Ảnh ERD trong Report 3 (mục 3.1):** đã thay bằng ảnh `muc-tieu` mới ngày 03/11/2026 (kèm thêm `GuestSession`).
+- [x] ~~**ERD `hien-tai`:** sinh lại từ DB~~ — thư mục `13-erd/hien-tai` đã bỏ ngày 03/11/2026 (bản sinh tự động, cũ 5 migration,
+      trùng việc với migration + `02-erd.md`).
 - [ ] **Permission Matrix:** kiểm có cần dòng "Huỷ cuộc họp" (Người tổ chức) không.
 - [ ] **`MSG345` trong Report 3:** câu tiếng Anh agent tự viết theo mẫu `MSG84`; đối chiếu với câu trong catalogue.
 - [ ] **Sequence UC-75** (huỷ và tự huỷ): đối chiếu as-built.
