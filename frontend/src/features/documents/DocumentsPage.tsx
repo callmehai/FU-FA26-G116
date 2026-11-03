@@ -13,6 +13,7 @@ import {
 } from '../../api/library'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import { PageHeader } from '../../components/PageHeader'
 import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
@@ -226,16 +227,14 @@ export function DocumentsPage() {
             label="Lọc theo loại tệp"
           />
           {view && (
-            <span
-              className={usedRatio >= 1 ? 'library-quota is-over' : 'library-quota'}
-              data-tooltip="Bộ nhớ tài liệu của cả hệ thống"
-            >
+            <span className={usedRatio >= 1 ? 'library-quota is-over' : 'library-quota'}>
               <span className="library-quota-bar" aria-hidden="true">
                 <i style={{ width: `${Math.min(1, usedRatio) * 100}%` }} />
               </span>
               <span>
                 {formatBytes(view.storageUsedBytes)} / {formatBytes(view.storageLimitBytes)}
               </span>
+              <InfoTip text="Bộ nhớ tài liệu của cả hệ thống" />
             </span>
           )}
         </div>

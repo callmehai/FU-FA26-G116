@@ -4,6 +4,7 @@ import { getRolePermissionMatrix, updateRolePermissions } from '../../api/rolePe
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import { PageHeader } from '../../components/PageHeader'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -307,8 +308,9 @@ export function RolesPage() {
                   </tr>
                   <tr>
                     {columns.map((column) => (
-                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`} data-tooltip={column.description}>
+                      <th key={column.code} className={`matrix-cap${groupStart(column.code)}`}>
                         {column.name}
+                        {column.description && <InfoTip text={column.description} />}
                       </th>
                     ))}
                   </tr>

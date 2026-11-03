@@ -12,6 +12,7 @@ import {
 import { getMeetingCall, joinMeetingCall } from '../../../api/calls'
 import { listSpeechClips } from '../../../api/speech'
 import { Icon } from '../../../components/Icon'
+import { InfoTip } from '../../../components/InfoTip'
 import { NotFound } from '../../../components/NotFound'
 import { BrandMark } from '../../../components/BrandMark'
 import { useToast } from '../../../components/toastContext'
@@ -37,6 +38,10 @@ import {
   noDeviceReason,
   roomMessage,
 } from './roomSupport'
+
+/** What being recorded means for the person about to join, behind the lobby notice's (i). */
+const RECORDING_DETAIL =
+  'Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình.'
 
 type Phase = { kind: 'lobby' } | { kind: 'inRoom' } | { kind: 'left'; reason: DisconnectReason | undefined }
 
@@ -421,10 +426,7 @@ function PreJoin({
           {guest ? (
             // Someone from outside is told, and confirms, before the room can record them (Law 91/2025, art. 32). The
             // server records nothing from a guest's mic until this was confirmed (SCRUM-129).
-            <label
-              className="prejoin-recording prejoin-consent"
-              data-tooltip="Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình."
-            >
+            <label className="prejoin-recording prejoin-consent">
               <input
                 type="checkbox"
                 checked={acknowledged}
@@ -432,17 +434,15 @@ function PreJoin({
               />
               <span>
                 Tôi biết cuộc họp được ghi âm để lập biên bản, tự xoá sau {retentionDays} ngày
+                <InfoTip text={RECORDING_DETAIL} />
               </span>
             </label>
           ) : (
             retentionDays !== null && (
-              <p
-                className="prejoin-recording"
-                tabIndex={0}
-                data-tooltip="Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình."
-              >
+              <p className="prejoin-recording">
                 <Icon name="warning" size={16} />
                 Cuộc họp được ghi âm để lập biên bản · tự xoá sau {retentionDays} ngày
+                <InfoTip text={RECORDING_DETAIL} />
               </p>
             )
           )}

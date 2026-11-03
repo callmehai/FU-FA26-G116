@@ -62,3 +62,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0049](0049-vo-hieu-hoa-tai-khoan-ket-thuc-voice-id.md) | Vô hiệu hoá tài khoản kết thúc Voice ID; máy so giọng dưới khoá trên dòng đồng ý | Đề xuất — SCRUM-35, review 02/11/2026 |
 | [0050](0050-giong-gan-trung-nhan-cung-ten.md) | Giọng chưa có tên giống giọng đầu của một người đã nhận ra từ 0,8 trở lên thì nhận cùng tên, bất kể điểm so với giọng mẫu | Đề xuất — SCRUM-35, PO 03/11/2026 |
 | [0051](0051-khach-ghi-theo-micro-cua-minh.md) | Khách trong phòng họp trực tuyến cũng được ghi theo micro của mình: câu gắn với lời mời, chỉ nhận sau khi Khách xác nhận thông báo ghi âm, Khách chỉ thấy câu của mình | Đề xuất — SCRUM-129, PO 01/11/2026 |
+| [0052](0052-chip-cung-bo-goc-giai-thich-sau-icon-i.md) | Mọi chip cùng bo góc 4px; câu giải thích nằm sau icon (i) (`InfoTip`), không giấu trong tooltip của chữ thường | Đề xuất — PO 03/11/2026 |

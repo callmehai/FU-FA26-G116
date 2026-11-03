@@ -12,6 +12,8 @@
   /* AI-eCabinet's corners: 8px on controls, 10px on cards and menus (ADR-0043). */
   --radius: 8px;
   --radius-lg: 10px;
+  /* Every chip — status, level, badge, role — shares one corner, so a row of them reads as one set (ADR-0052). */
+  --radius-chip: 4px;
 
   --ink: #1a2433;
   --ink-soft: #34404f;
@@ -1321,14 +1323,15 @@ a.menu-item { text-decoration: none; }
    - .badge: a plain soft label (a role, a count);
    - .status: a meeting's lifecycle state — a coloured icon and text with no chip, like a status
      indicator in Cloudscape or Carbon; "Đang diễn ra" is the one solid label;
-   - .level: a sensitivity level — square corners and its own icon; "Thường" is plain text. */
+   - .level: a sensitivity level — its own icon and an edge; "Thường" is plain text.
+   All three share --radius-chip (ADR-0052), so a row of them reads as one set. */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 24px;
   padding: 0 10px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-chip);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -1365,7 +1368,7 @@ a.menu-item { text-decoration: none; }
 .status-emerald { --status-icon: var(--chip-emerald-fg); }
 .status-blue { --status-icon: var(--chip-blue-fg); }
 .status-violet { --status-icon: var(--chip-violet-fg); }
-.status-live { padding: 0 8px; border-radius: var(--radius); background: var(--live); color: #fff; font-size: 12px; font-weight: 600; }
+.status-live { padding: 0 8px; border-radius: var(--radius-chip); background: var(--live); color: #fff; font-size: 12px; font-weight: 600; }
 /* A history row's event ("Gửi duyệt") is a label, not the meeting's state: the text alone, even
    when it led to the live state. */
 .status-plain, .status-plain.status-live { padding: 0; background: none; color: var(--ink); font-size: inherit; font-weight: 600; }
@@ -1376,7 +1379,7 @@ a.menu-item { text-decoration: none; }
   gap: 5px;
   height: 24px;
   padding: 0 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-chip);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -2478,7 +2481,32 @@ a.menu-item { text-decoration: none; }
 }
 .participants-alert { margin: 12px 16px 0; }
 
-.role-chip { display: inline-flex; flex: none; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--radius); font-size: 12px; font-weight: 600; white-space: nowrap; }
+/* The (i) of an explanation (InfoTip, ADR-0052): muted until pointed at, sized to the text it sits in.
+   On a touch screen its hit area grows to 40px without moving the line. */
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted-ink);
+  vertical-align: -3px;
+  cursor: help;
+}
+.info-tip:hover { color: var(--brand); }
+.info-tip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+@media (pointer: coarse) {
+  .info-tip::after { content: ''; position: absolute; inset: -11px; }
+}
+
+.role-chip { display: inline-flex; flex: none; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--radius-chip); font-size: 12px; font-weight: 600; white-space: nowrap; }
 .role-chair { background: var(--role-chair-bg); color: var(--role-chair-fg); }
 .role-secretary { background: var(--role-secretary-bg); color: var(--role-secretary-fg); }
 .role-member { background: var(--surface-alt); color: var(--ink-soft); }
@@ -2856,7 +2884,7 @@ a.menu-item { text-decoration: none; }
 .prejoin-main {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 740px) minmax(280px, 400px);
+  grid-template-columns: minmax(0, 740px) minmax(280px, 440px);
   justify-content: center;
   align-items: center;
   gap: 40px;
@@ -2947,6 +2975,8 @@ a.menu-item { text-decoration: none; }
    phone. Inline, the icon stays in front of the first word however the line wraps. */
 .prejoin-recording { display: block; max-width: 100%; margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; text-wrap: balance; }
 .prejoin-recording svg { display: inline-block; margin-right: 6px; color: var(--warning-ink); fill: var(--warning-fill); vertical-align: -3px; }
+/* Its (i) is not part of the warning: no amber, no gap after. 440px above keeps notice and (i) on one line. */
+.prejoin-recording .info-tip svg { margin-right: 0; color: inherit; fill: none; }
 /* SCRUM-35 — no voice sample yet: one line and a text button, the why in the tooltip. */
 .prejoin-sample { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 20px; }
 .prejoin-sample svg { flex: none; color: var(--muted-ink); }

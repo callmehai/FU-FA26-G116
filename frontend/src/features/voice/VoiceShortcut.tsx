@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getMyVoice } from '../../api/voice'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import { useToast } from '../../components/toastContext'
 import type { VoiceProfile } from '../../types/voice'
 import { PASSAGES } from './passages'
@@ -41,13 +42,10 @@ export function VoiceShortcut() {
 
   return (
     <>
-      <p
-        className="prejoin-sample"
-        tabIndex={0}
-        data-tooltip="Giọng mẫu giúp bản gỡ băng tự nhận ra lời bạn. Đọc một đoạn văn khoảng 20 giây, chỉ bạn nghe lại được; xoá được bất cứ lúc nào."
-      >
+      <p className="prejoin-sample">
         <Icon name="mic" size={16} />
         Chưa có giọng mẫu
+        <InfoTip text="Giọng mẫu giúp bản gỡ băng tự nhận ra lời bạn. Đọc một đoạn văn khoảng 20 giây, chỉ bạn nghe lại được; xoá được bất cứ lúc nào." />
         <button type="button" className="prejoin-sample-action" onClick={() => setStep(profile.consent ? 'record' : 'consent')}>
           Ghi ngay
         </button>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { castBallot, closeVote, deleteVote, detachVoteDocument, openVote, recordVoteConclusion } from '../../api/votes'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { useToast } from '../../components/toastContext'
 import { formatClock, formatDateTime } from '../../lib/format'
@@ -388,15 +389,12 @@ function VoteCard({
         <span className="vote-break" aria-hidden="true" />
         <div className="vote-meta">
           <VoteStatusChip vote={vote} />
-          <span
-            className="vote-fact"
-            tabIndex={0}
-            data-tooltip={
-              vote.isAnonymous ? 'Không lưu ai chọn gì, chỉ có tổng số phiếu' : 'Sau khi đóng, xem được ai chọn gì'
-            }
-          >
+          <span className="vote-fact">
             <Icon name={vote.isAnonymous ? 'lock' : 'globe'} size={14} />
             {vote.isAnonymous ? 'Kín' : 'Công khai'}
+            <InfoTip
+              text={vote.isAnonymous ? 'Không lưu ai chọn gì, chỉ có tổng số phiếu' : 'Sau khi đóng, xem được ai chọn gì'}
+            />
           </span>
           {vote.status !== 'Draft' && (
             <span className="vote-fact vote-turnout-text" tabIndex={0} data-tooltip="Đã bỏ phiếu / người đủ điều kiện">
