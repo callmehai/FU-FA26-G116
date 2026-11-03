@@ -2084,8 +2084,9 @@ a.menu-item { text-decoration: none; }
   line-height: 1.35;
 }
 .cal-event:hover { z-index: 2; box-shadow: 0 2px 8px #1a243326; }
-/* Too short for two lines, as on Google Calendar: title then time on one line, the title cut with an ellipsis. */
-.cal-event-short { flex-direction: row; align-items: center; gap: 6px; padding: 0 10px; }
+/* Too short for two lines, as on Google Calendar: title then time on one line, the title cut with an ellipsis.
+   The line sits at the top, so a live tile's "Vào phòng họp" band below never covers it. */
+.cal-event-short { flex-direction: row; align-items: flex-start; gap: 6px; padding: 5px 10px 0; }
 .cal-event-time { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .cal-event-title { display: -webkit-box; overflow: hidden; font-weight: 600; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 /* A cancelled meeting stays where it was planned, grey and struck through, so nobody turns up for it. */
@@ -2110,22 +2111,22 @@ a.menu-item { text-decoration: none; }
 .cal-event-go .cal-event-place { display: none; }
 .cal-go {
   position: absolute;
-  right: 6px;
-  left: 6px;
+  right: 10px;
+  left: 10px;
   z-index: 2;
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 26px;
-  padding: 0 9px;
-  border-top: 1px solid rgb(255 255 255 / 22%);
-  background: color-mix(in srgb, var(--live) 78%, #000);
-  color: #fff;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  /* A white button on the green tile, so it reads as the action rather than more of the tile. */
+  background: var(--surface);
+  color: var(--live);
   font-size: 12px;
   font-weight: 700;
 }
-.cal-go-foot { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
-.cal-go:hover { background: color-mix(in srgb, var(--live) 64%, #000); }
+.cal-go:hover { background: var(--live-wash); }
 .cal-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .cal-go .icon { margin-left: auto; animation: nudge 2s ease-in-out infinite; }
 @keyframes nudge {
