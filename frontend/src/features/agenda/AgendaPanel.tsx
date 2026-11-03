@@ -30,7 +30,7 @@ import { useDocumentPath } from '../guest/guestContext'
 import { AddDocumentsDialog, type DocumentSource } from '../documents/AddDocumentsDialog'
 import { AttachMenu } from '../documents/AttachMenu'
 import { FileTypeTag } from '../documents/DocumentTags'
-import { useMeetingDocuments } from '../documents/useMeetingDocuments'
+import { everyDocument, useMeetingDocuments } from '../documents/useMeetingDocuments'
 import { AgendaConclusion } from './AgendaConclusion'
 import { AgendaItemDialog } from './AgendaItemDialog'
 import { useAgenda } from './useAgenda'
@@ -480,10 +480,8 @@ function AttachDialog({
 }) {
   const { state, reload } = useMeetingDocuments(meeting.id)
   const data = state.kind === 'loaded' || state.kind === 'error' ? state.data : null
-  // A document linked to several items is listed once; a failed read is never an empty list.
-  const documents = data
-    ? [...new Map([...data.agendaItems.flatMap((i) => i.documents), ...data.general].map((d) => [d.id, d])).values()]
-    : null
+  // Every document once, a vote's own included; a failed read is never an empty list.
+  const documents = data ? everyDocument(data) : null
   const loadError =
     state.kind === 'gone'
       ? 'Bạn không còn xem được tài liệu của cuộc họp này.'

@@ -40,7 +40,7 @@ export interface MeetingDocumentList {
   currentAgendaItemId: string | null
   /** Every agenda item by position, those without documents included. */
   agendaItems: DocumentsAgendaItem[]
-  /** Documents linked to no item (BR-280) — a vote's document too, when no item links it. */
+  /** Documents linked to no item and no vote (BR-280): a vote's own document is listed only under `votes`. */
   general: MeetingDocument[]
   /** UC-32a AF-1: each vote the caller may see (drafts for the Chair and Secretary only) with its documents. */
   votes: DocumentsVote[]

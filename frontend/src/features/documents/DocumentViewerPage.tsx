@@ -19,7 +19,7 @@ import { DocxView, PdfView } from './renderers'
 import { ViewerZoom } from './ViewerZoom'
 import { ZOOMS } from './zoom'
 import { useDocumentDownload } from './useDocumentDownload'
-import { useMeetingDocuments } from './useMeetingDocuments'
+import { everyDocument, useMeetingDocuments } from './useMeetingDocuments'
 
 type Content =
   | { kind: 'loading' }
@@ -67,8 +67,7 @@ export function DocumentViewer({
     return <NotFound />
   }
   const list = documents.state.kind === 'loaded' || documents.state.kind === 'error' ? documents.state.data : null
-  const doc =
-    list && [...list.agendaItems.flatMap((i) => i.documents), ...list.general].find((d) => d.id === documentId)
+  const doc = list && everyDocument(list).find((d) => d.id === documentId)
   // Listed without it: removed from the meeting while open, or never part of it.
   if (list && !doc) return <NotFound />
 

@@ -17,7 +17,7 @@ import { documentFacts, isPdf } from './documentFile'
 import { FileTypeTag, OnlineOnly } from './DocumentTags'
 import { useUploadsSettled } from '../uploads/uploadsContext'
 import { useDocumentDownload } from './useDocumentDownload'
-import { useMeetingDocuments } from './useMeetingDocuments'
+import { everyDocument, useMeetingDocuments } from './useMeetingDocuments'
 import { VoteStatusChip } from '../votes/VotingPanel'
 
 type Group = 'agenda' | 'votes' | 'general'
@@ -68,7 +68,7 @@ export function DocumentsPanel({
   useUploadsSettled(`meeting:${meeting.id}`, (job) => (job.status === 'done' ? void reload() : stale()))
   const guest = useGuest()
   const canDownload = guest ? guest.session.canDownload : full?.sensitivity !== 'Secret'
-  const total = data && distinctCount([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
+  const total = data && everyDocument(data).length
 
   const rowProps = { meetingId: meeting.id, variant, canDownload, busyId, onDownload: download }
   const body = !data ? null : variant === 'room' ? (
@@ -148,7 +148,7 @@ function PageList({
     meeting.status !== 'Cancelled' &&
     (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary')
   // A document linked to several items counts once, as the room panel's total does.
-  const all = distinctDocuments([...data.agendaItems.flatMap((item) => item.documents), ...data.general])
+  const all = everyDocument(data)
   const agendaCount = distinctCount(data.agendaItems.flatMap((item) => item.documents))
   const voteCount = distinctCount(data.votes.flatMap((vote) => vote.documents))
   const managed = canManage
@@ -527,10 +527,6 @@ function DocumentRow({
 /** A document linked to several items counts once. */
 function distinctCount(documents: MeetingDocument[]) {
   return new Set(documents.map((d) => d.id)).size
-}
-
-function distinctDocuments(documents: MeetingDocument[]) {
-  return [...new Map(documents.map((d) => [d.id, d])).values()]
 }
 
 function ListSkeleton() {

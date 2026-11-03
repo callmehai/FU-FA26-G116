@@ -225,6 +225,66 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         Assert.Equal(s.Organizer, downloaded.ActorId);
     }
 
+    /// <summary>A vote of the meeting linking <paramref name="documents"/>, written straight to the database.</summary>
+    private async Task<Guid> AddVote(DocumentFixture.Scenario s, VotingStatus status, params Guid[] documents)
+    {
+        await using var db = fixture.Db();
+        var vote = new VotingSession { MeetingId = s.MeetingId, Title = $"Biểu quyết {status}", CreatedById = s.Secretary,
+            Status = status };
+        foreach (var document in documents) vote.Documents.Add(new() { MeetingDocumentId = document });
+        db.VotingSessions.Add(vote);
+        await db.SaveChangesAsync();
+        return vote.Id;
+    }
+
+    private static string CommentsUrl(DocumentFixture.Scenario s, Guid document)
+        => $"/api/meetings/{s.MeetingId}/documents/{document}/comments";
+
+    [Fact]
+    public async Task A_vote_document_shows_only_under_its_vote_and_one_only_on_a_draft_is_the_managers()
+    {
+        var s = await fixture.Seed();
+        var items = await AddItems(s.MeetingId, AgendaItemStatus.Pending);
+        var general = await AddDocument(s.MeetingId, s.Secretary, "Phụ lục.pdf");
+        var onOpen = await AddDocument(s.MeetingId, s.Secretary, "Tờ trình.pdf", SampleFiles.Pdf());
+        var onDraft = await AddDocument(s.MeetingId, s.Secretary, "Dự thảo.pdf", SampleFiles.Pdf());
+        var onDraftAndItem = await AddDocument(s.MeetingId, s.Secretary, "Báo cáo.pdf", SampleFiles.Pdf(), items: [items[0]]);
+        var open = await AddVote(s, VotingStatus.Open, onOpen);
+        var draft = await AddVote(s, VotingStatus.Draft, onDraft, onDraftAndItem);
+        using var member = fixture.Client(s.Member);
+        using var secretary = fixture.Client(s.Secretary);
+
+        // General means no agenda item and no vote (BR-280, option B): a vote's own document is under the vote only.
+        var forMember = await member.GetFromJsonAsync<JsonElement>(s.ListUrl);
+        Assert.Equal([general], Ids(forMember.GetProperty("general")));
+        Assert.Equal([onDraftAndItem], Ids(forMember.GetProperty("agendaItems")[0].GetProperty("documents")));
+        var vote = Assert.Single(forMember.GetProperty("votes").EnumerateArray());
+        Assert.Equal(open, vote.GetProperty("id").GetGuid());
+        Assert.Equal([onOpen], Ids(vote.GetProperty("documents")));
+        var forSecretary = await secretary.GetFromJsonAsync<JsonElement>(s.ListUrl);
+        Assert.Equal([general], Ids(forSecretary.GetProperty("general")));
+        Assert.Equal([open, draft], forSecretary.GetProperty("votes").EnumerateArray().Select(v => v.GetProperty("id").GetGuid()));
+
+        // Reached only through a draft, the document is not in the meeting for a Member (BR-253), comments included.
+        var hidden = await AssertCode(await member.GetAsync(s.ContentUrl(onDraft)), 404, "MSG156");
+        var unknown = await AssertCode(await member.GetAsync(s.ContentUrl(Guid.NewGuid())), 404, "MSG156");
+        Assert.Equal(unknown.ToString(), hidden.ToString());
+        await AssertCode(await member.GetAsync(CommentsUrl(s, onDraft)), 404, "MSG156");
+        await AssertCode(await member.PostAsJsonAsync(CommentsUrl(s, onDraft), new { body = "Ý kiến" }), 404, "MSG156");
+        // An agenda item or an open vote linking it is enough.
+        Assert.Equal(200, (int)(await member.GetAsync(s.ContentUrl(onDraftAndItem))).StatusCode);
+        Assert.Equal(200, (int)(await member.GetAsync(s.ContentUrl(onOpen))).StatusCode);
+        Assert.Equal(200, (int)(await secretary.GetAsync(s.ContentUrl(onDraft))).StatusCode);
+        Assert.Equal(200, (int)(await secretary.GetAsync(CommentsUrl(s, onDraft))).StatusCode);
+
+        // Past the draft (here closed; one Open vote per meeting, BR-266) everyone reads it.
+        await using (var db = fixture.Db())
+            await db.VotingSessions.Where(v => v.Id == draft)
+                .ExecuteUpdateAsync(u => u.SetProperty(v => v.Status, VotingStatus.Closed));
+        Assert.Equal(200, (int)(await member.GetAsync(s.ContentUrl(onDraft))).StatusCode);
+        Assert.Equal(200, (int)(await member.GetAsync(CommentsUrl(s, onDraft))).StatusCode);
+    }
+
     [Fact]
     public async Task Removed_document_and_a_document_of_another_meeting_are_MSG156()
     {

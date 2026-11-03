@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getMeetingDocuments } from '../../api/documents'
 import { errorMessage, isApiError } from '../../lib/errors'
-import type { MeetingDocumentList } from '../../types/document'
+import type { MeetingDocument, MeetingDocumentList } from '../../types/document'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
 
@@ -53,4 +53,17 @@ export function useMeetingDocuments(meetingId: string) {
   useMeetingEvents(meetingId, () => void load(), ['documentsChanged', 'agendaChanged', 'voteListChanged', 'meetingEnded'])
 
   return { state, reload: load }
+}
+
+/**
+ * Every document of the meeting the caller sees, once each: under agenda items, under votes or general. A vote's own
+ * document is listed only under its vote (BR-280, option B), so counting or looking one up needs all three groups.
+ */
+export function everyDocument(list: MeetingDocumentList): MeetingDocument[] {
+  const all = [
+    ...list.agendaItems.flatMap((item) => item.documents),
+    ...list.votes.flatMap((vote) => vote.documents),
+    ...list.general,
+  ]
+  return [...new Map(all.map((d) => [d.id, d])).values()]
 }
