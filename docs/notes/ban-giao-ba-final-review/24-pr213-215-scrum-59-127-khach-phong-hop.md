@@ -65,11 +65,11 @@ Jira hay đặc tả.
         **`GuestSession`** (Id, InvitationId, ExpiresAt, RevokedAt?) đặt dưới `CallParticipant`; quan hệ `r28` "guest" chuyển từ
         `MeetingGuestInvitation` sang `GuestSession` (0..1 → 0..*). `CallSession.StartedById` và `CallParticipant.UserId` đã là `uuid?`.
       - Thêm luôn **`TranscriptSpeaker`** (việc của note 25, điểm ERD): Id, TranscriptId, Label, SpeechMs, SuggestedUserId,
-        SuggestionScore, AssignedUserId **hoặc** AssignedGuestId, AssignedById, AssignedAt — mô hình đích nay 35 thực thể.
+        SuggestionScore, AssignedUserId **hoặc** AssignedGuestId, AssignedById, AssignedAt — mô hình đích nay 32 thực thể.
       - `chen`: thêm hình chữ nhật **`GuestSession`** nối vào hình thoi `Joins as` (R28) thay cho `MeetingGuestInvitation`, và
         **`TranscriptSpeaker`** + hình thoi `Names` nối với `Transcript` (32 thực thể / 53 quan hệ).
       - `02-erd.md` đã đồng bộ: §8 có khối `GuestSession`, §7 có khối `TranscriptSpeaker`, bảng trạng thái có 2 dòng mới,
-        30 → 35 thực thể, bỏ câu "không thêm thực thể vào mô hình mục tiêu".
+        30 → 32 thực thể (35 bảng kể cả ba bảng nối), bỏ câu "không thêm thực thể vào mô hình mục tiêu".
       - Đã xuất lại 2 ảnh ERD + nhúng ảnh ERD mới vào Report 3 §3.1; `validate.py` báo 0 lỗi, 0 lỗi qua đỉnh; đã mở ảnh kiểm tra.
       - Cập nhật số đếm ở `13-erd/README.md` và `chen/README.md`.
       - **`hien-tai` (snapshot schema) đã xoá ngày 03/11/2026** cùng nhánh này: bản sinh tự động, cũ 5 migration; đối chiếu schema

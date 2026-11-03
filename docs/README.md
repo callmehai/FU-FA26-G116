@@ -28,7 +28,7 @@ BE → FE → BA chốt tài liệu → Tester, Definition of Done. Đọc trư�
 | [10-statemachine/](10-statemachine/) | Sơ đồ trạng thái nghiệp vụ và các trạng thái liên quan |
 | [11-contextdiagram/](11-contextdiagram/) | Context diagram của hệ thống và file ảnh xuất |
 | [12-screenflow/](12-screenflow/) | Sơ đồ luồng chuyển màn hình (Screen Flow) và file ảnh xuất |
-| [13-erd/](13-erd/README.md) | Ba cách trình bày ERD: mục tiêu dạng bảng, Chen và snapshot schema hiện tại |
+| [13-erd/](13-erd/README.md) | Hai cách trình bày ERD mục tiêu: dạng bảng và dạng Chen (snapshot schema sinh tự động đã bỏ 03/11/2026) |
 | [14-uc-diagram/](14-uc-diagram/README.md) | Use Case Diagram theo 7 actor, source draw.io nhiều trang và ảnh xuất |
 | [15-package-diagram/](15-package-diagram/README.md) | Package diagram theo code hiện có: tổng quan, backend, Domain, frontend; source draw.io nhiều trang và ảnh xuất |
 | [16-architecture-diagram/](16-architecture-diagram/README.md) | Sơ đồ kiến trúc phần mềm tổng thể (Report 4, mục I.1), source draw.io và ảnh xuất |

@@ -5,7 +5,7 @@ cùng mô tả **mô hình đích**; sửa bản này thì rà bản kia.
 
 | Thư mục | Nội dung | Dùng ở đâu | Đẩy Drive |
 |---|---|---|---|
-| [muc-tieu/](muc-tieu/README.md) | ERD mục tiêu dạng bảng, 35 thực thể, có thuộc tính | Nguồn chính của [02-erd.md](../02-design/02-erd.md) và Report 3 §I.3.2 | Có |
+| [muc-tieu/](muc-tieu/README.md) | ERD mục tiêu dạng bảng, 32 thực thể (35 bảng, kể cả 3 bảng nối), có thuộc tính | Nguồn chính của [02-erd.md](../02-design/02-erd.md) và Report 3 §I.3.2 | Có |
 | [chen/](chen/README.md) | ERD mục tiêu dạng Chen, không thuộc tính, 32 thực thể / 53 quan hệ | Góc nhìn thực thể–quan hệ | Có |
 
 ## Bản nào là nguồn?
