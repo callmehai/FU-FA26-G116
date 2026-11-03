@@ -37,14 +37,19 @@ một biểu quyết **chỉ hiện ở nhóm Biểu quyết**, không hiện th
 | Ô rationale của 2 luật | `ADR-0020 / PO 15/10/2026` | thêm `PO 03/11/2026 — option B (SCRUM-21)` |
 | Đặc tả màn 7.3 (đoạn mở đầu) | "a Vote's document with no Agenda Item link also appears among the general documents" | Tài liệu của biểu quyết chỉ ở nhóm Biểu quyết; tài liệu chỉ gắn biểu quyết nháp không hiện với Thành viên/Khách (BR-275, BR-280) |
 | Bảng 8.6 (panel tài liệu trong phòng) | "Documents linked to no Agenda Item." | "…and to no Vote; a document of a Vote is listed in the Votes group only." |
+| **UC-32a** (luồng chính bước 3) | "a document with no Agenda Item link appears as a general Meeting document" | Tài liệu chỉ là tài liệu chung khi **không gắn mục và không gắn biểu quyết**; tài liệu gắn biểu quyết chỉ nằm ở nhóm Biểu quyết |
+| **UC-32a** (AF-1 bước 2) | "the general documents, which are all documents with no Agenda Item link, **a Vote's documents included**" | Nhóm chung là tài liệu không gắn mục **và** không gắn biểu quyết, vì tài liệu của biểu quyết chỉ ở nhóm Biểu quyết |
+| **UC-32c** (EX-1) | "the document was removed or the user can no longer view the Meeting" | Thêm trường hợp: tài liệu chỉ gắn biểu quyết nháp và không gắn mục — Thành viên/Khách nhận MSG156 như tài liệu không tồn tại (BR-275) |
 | Change Log | — | dòng `03/11/2026 / M / KhanhPG` |
 
 Đã chạy `check_docx.py` (OK) và `sync_reports.py --report 3` (snapshot, extract 05/06, `uc-map.html`).
 
 ## 4. Còn lại
 
-- [ ] Ảnh wireframe 7.3, 7.4 và 8.6 trong Report 3 vẫn là bản cũ — cập nhật cùng đợt đặc tả màn hình.
-- [ ] UC-32a AF-1 và UC-32c hiện chỉ nói chung "không xem được thì MSG156"; nếu PO muốn đặc tả nêu đích danh trường
-      hợp biểu quyết nháp thì thêm một câu ở UC-32c EX-1.
+- [ ] Ảnh wireframe 7.3, 7.4 và 8.6 trong Report 3 vẫn là bản cũ — cập nhật cùng đợt đặc tả màn hình
+      (chưa làm: đợt này chỉ sửa chữ Report 3, không đụng wireframe hay đặc tả màn).
+- [x] UC-32a và UC-32c đã nêu đúng phương án B (03/11/2026, nhánh `docs/scrum-21-uc32-bieu-quyet-nhap`):
+      UC-32a luồng chính bước 3 và AF-1 bước 2 bỏ câu "a Vote's documents included", UC-32c EX-1 thêm
+      đích danh trường hợp tài liệu chỉ gắn biểu quyết nháp.
 - [ ] Comment kết quả vào SCRUM-21 **sau khi** PR tài liệu merge vào `main` (Điều 2.2 trong
       [DEVELOPMENT_WORKFLOW](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update)).
