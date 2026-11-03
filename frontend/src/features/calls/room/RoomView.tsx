@@ -288,15 +288,14 @@ function RoomLayout({
           <span className="room-count-label">người trong phòng</span>
         </span>
         {restricted && sensitivity && <SensitivityBadge sensitivity={sensitivity} />}
-        {/* SCRUM-109 is for members only: a guest's words are not captured per microphone, and the server refuses them. */}
-        {'actualStartedAt' in meeting && !guest && (
-          <SpeechCapture
-            meeting={meeting}
-            micOn={isMicrophoneEnabled}
-            deviceId={room.getActiveDevice('audioinput')}
-            identity={localParticipant.identity}
-          />
-        )}
+        {/* SCRUM-109, SCRUM-129: a member's and a guest's own mic alike; a guest confirmed the notice to get here. */}
+        <SpeechCapture
+          meeting={meeting}
+          micOn={isMicrophoneEnabled}
+          deviceId={room.getActiveDevice('audioinput')}
+          identity={localParticipant.identity}
+          asGuest={guest !== null}
+        />
       </header>
 
       {reconnecting && (
@@ -519,19 +518,21 @@ function RoomLayout({
 /**
  * SCRUM-109, ADR-0040: what this person says goes into the per-mic record while their call mic is on. The call's mic
  * is the one switch: muted, nobody hears them and nothing is written down. Everyone was told before joining.
- * Its own component so a guest never mounts it: mounting it reads the speech list and sends the sentences an earlier
- * visit left in this browser, which a guest's token may not do.
+ * A guest (SCRUM-129) is captured the same way, after confirming the recording notice to join: the server sends them
+ * only their own sentences, and they have no meeting record to open.
  */
 function SpeechCapture({
   meeting,
   micOn,
   deviceId,
   identity,
+  asGuest,
 }: {
-  meeting: Meeting
+  meeting: Meeting | GuestMeeting
   micOn: boolean
   deviceId: string | undefined
   identity: string
+  asGuest: boolean
 }) {
   const speech = useSpeech(meeting.id, { micOn, deviceId })
   const [myClips, setMyClips] = useState(false)
@@ -570,10 +571,10 @@ function SpeechCapture({
       )}
       {myClips && (
         <MyClips
-          clips={speech.clips.filter((c) => c.speakerId === identity)}
+          clips={asGuest ? speech.clips : speech.clips.filter((c) => c.speakerId === identity)}
           pending={speech.capture.pending}
-          startedAt={meeting.actualStartedAt}
-          recordHref={`${routes.meeting(meeting.id)}?tab=recordings`}
+          startedAt={'actualStartedAt' in meeting ? meeting.actualStartedAt : null}
+          recordHref={asGuest ? undefined : `${routes.meeting(meeting.id)}?tab=recordings`}
           onClose={() => setMyClips(false)}
           onChanged={speech.reload}
         />

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { listSpeechClips } from '../../api/speech'
 import { errorMessage } from '../../lib/errors'
 import type { SpeechClip, SpeechClipList } from '../../types/speech'
+import { useAuth } from '../auth/useAuth'
+import { useGuest } from '../guest/guestContext'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import { useMicCapture, type MicCapture } from './useMicCapture'
 
@@ -9,6 +11,9 @@ import { useMicCapture, type MicCapture } from './useMicCapture'
  * SCRUM-109 — a meeting's per-mic transcript as it grows, and the caller's own mic feeding it. Only the call room feeds
  * it (ADR-0040): there the call's own mic is the one switch, so what someone says is captured while they are heard. The
  * meeting page only reads it, and sends on whatever an earlier visit left on the device.
+ *
+ * On a guest page (SCRUM-129) the list is the guest's own sentences only, as the server sends it, and no hub event
+ * tells the guest one was stored, so it is read again after each.
  */
 export interface Speech {
   meetingId: string
@@ -70,8 +75,12 @@ export function useSpeech(meetingId: string, { micOn, deviceId }: { micOn: boole
   // A meeting starting or ending changes whether anyone may capture: the agenda event carries both.
   useMeetingEvents(meetingId, () => void load(true), ['speechRemoved', 'agendaChanged', 'meetingEnded'])
 
+  const guest = useGuest()
+  const userId = useAuth().user?.id
+  const owner = guest ? `guest:${guest.invitationId.toLowerCase()}` : `user:${userId ?? ''}`
   const capturing = !!list?.canCapture && micOn
-  const capture = useMicCapture(meetingId, capturing, deviceId)
+  const reloadChanged = useCallback(() => void load(false), [load])
+  const capture = useMicCapture(meetingId, capturing, deviceId, owner, guest ? reloadChanged : undefined)
 
   return {
     meetingId,

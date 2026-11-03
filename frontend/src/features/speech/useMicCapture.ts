@@ -3,7 +3,7 @@ import { sendSpeechClip } from '../../api/speech'
 import { ApiError } from '../../api/client'
 import { isApiError } from '../../lib/errors'
 import { ClipCutter, SAMPLE_RATE } from './clipCutter'
-import { clipStore } from './clipStore'
+import { clipStore, type StoredClip } from './clipStore'
 import { encodeWav, Resampler } from './wav'
 // Always a file of our own origin: Vite would inline a file this small as a data: URL, which the test server's CSP
 // (script-src 'self') refuses to run as a worklet.
@@ -11,7 +11,8 @@ import speechTapUrl from './speechTap.worklet.js?url&no-inline'
 
 /**
  * SCRUM-109 — captures the signed-in person's own mic and sends what they say a sentence at a time. Nothing here can
- * capture anyone else: the server takes sentences only from their speaker's session.
+ * capture anyone else: the server takes sentences only from their speaker's session. A guest's mic is captured the
+ * same way, on the guest's session (SCRUM-129).
  *
  * Two things come from AI-eCabinet. A sentence waits on the device (clipStore) until the server has it, so a closed
  * tab or a dropped network loses nothing. And one tab at a time records a person's mic in a meeting (a Web Lock): two
@@ -79,9 +80,23 @@ function micError(error: unknown) {
 const retryable = (error: unknown) =>
   !(error instanceof ApiError) || error.status >= 500 || error.status === 408 || error.status === 429
 
-const lockName = (meetingId: string) => `trustcabinet-mic:${meetingId}`
+const lockName = (meetingId: string, owner: string) => `trustcabinet-mic:${meetingId}:${owner}`
 
-export function useMicCapture(meetingId: string, active: boolean, deviceId?: string): MicCapture {
+/** A sentence kept before owners were stored is a member's: until SCRUM-129 only members recorded. */
+const ownedBy = (clip: StoredClip, owner: string) =>
+  clip.owner === owner || (clip.owner === undefined && !owner.startsWith('guest:'))
+
+/**
+ * `owner` is whose mic this is (`user:{id}` or `guest:{invitationId}`): only their own sentences left on this device
+ * are sent again. `onSaved` runs when the server has stored one, for a page no hub event tells (a guest's).
+ */
+export function useMicCapture(
+  meetingId: string,
+  active: boolean,
+  deviceId: string | undefined,
+  owner: string,
+  onSaved?: () => void,
+): MicCapture {
   const [state, setState] = useState<CaptureState>('off')
   const [error, setError] = useState<string | null>(null)
   const [level, setLevel] = useState(0)
@@ -96,6 +111,10 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
   const timer = useRef<number | undefined>(undefined)
   const pumpRef = useRef<() => void>(() => undefined)
   const countRef = useRef<() => void>(() => undefined)
+  const savedRef = useRef(onSaved)
+  useEffect(() => {
+    savedRef.current = onSaved
+  }, [onSaved])
 
   useEffect(() => {
     const pump = () => {
@@ -110,6 +129,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
           () => {
             setEngineDown(false)
             settle(item)
+            savedRef.current?.()
           },
           (failure: unknown) => {
             if (retryable(failure)) {
@@ -155,7 +175,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
       if (gone) return
       const known = new Set(queue.current.map((q) => q.id))
       for (const clip of stored)
-        if (!known.has(clip.id))
+        if (!known.has(clip.id) && ownedBy(clip, owner))
           queue.current.push({
             id: clip.id,
             meetingId: clip.meetingId,
@@ -174,7 +194,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
       gone = true
       window.clearTimeout(timer.current)
     }
-  }, [meetingId])
+  }, [meetingId, owner])
 
   useEffect(() => {
     if (!active) return
@@ -201,6 +221,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
         void clipStore.put({
           id: item.id,
           meetingId,
+          owner,
           startedAt: item.startedAt.toISOString(),
           durationMs: item.durationMs,
           audio: item.audio,
@@ -280,7 +301,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
     if (!locks) void Promise.resolve().then(start)
     else
       locks
-        .request(lockName(meetingId), claim > 0 ? { steal: true } : { ifAvailable: true }, (lock) => {
+        .request(lockName(meetingId, owner), claim > 0 ? { steal: true } : { ifAvailable: true }, (lock) => {
           if (stopped) return
           if (!lock) {
             setState('elsewhere')
@@ -302,7 +323,7 @@ export function useMicCapture(meetingId: string, active: boolean, deviceId?: str
       close()
       release?.()
     }
-  }, [active, deviceId, meetingId, claim])
+  }, [active, deviceId, meetingId, owner, claim])
 
   return {
     state: active ? state : 'off',

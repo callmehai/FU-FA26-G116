@@ -13,11 +13,18 @@ export interface SpeechClipLeak {
   words: [number, number][]
 }
 
-/** One sentence from an attendee's own mic, as everyone in the meeting reads it. */
+/**
+ * One sentence from an attendee's own mic, as everyone in the meeting reads it. A guest reads only their own
+ * (SCRUM-129).
+ */
 export interface SpeechClip {
   id: string
+  /** The member's user id, or a guest's invitation id when `speakerIsGuest`. */
   speakerId: string
+  /** A guest's is the name they gave, or the one they were invited by. */
   speakerName: string
+  /** Said by a guest of the meeting (SCRUM-129): shown with the "Khách" label. */
+  speakerIsGuest: boolean
   startedAt: string
   durationMs: number
   text: string

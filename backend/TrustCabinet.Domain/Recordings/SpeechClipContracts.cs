@@ -1,5 +1,6 @@
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Domain.Recordings;
@@ -7,7 +8,9 @@ namespace TrustCabinet.Domain.Recordings;
 public enum SpeechClipFailure
 {
     None, NotFound, Inactive, Forbidden, NotCapturing, Invalid, TooLarge, EngineUnavailable, ReadFailed,
-    SaveFailed, ExportForbidden, SecretMeeting
+    SaveFailed, ExportForbidden, SecretMeeting,
+    /// <summary>A guest whose session never confirmed the recording notice on joining the call (SCRUM-129).</summary>
+    NoticeRequired,
 }
 
 public sealed record SpeechClipOutcome(SpeechClipFailure Failure = SpeechClipFailure.None, object? Data = null,
@@ -17,12 +20,13 @@ public sealed record SpeechClipOutcome(SpeechClipFailure Failure = SpeechClipFai
 /// One sentence as everyone in the meeting reads it. An excluded sentence still comes, so the line does not vanish
 /// without a trace, but only the Chair and the Secretary get its words. <c>Leak</c> says it was probably overheard.
 /// <c>HasAudio</c> says the caller may hear it (<see cref="ISpeechClipService.PlaybackAsync"/>); <c>Peaks</c> draws
-/// its waveform, one byte per 100 ms.
+/// its waveform, one byte per 100 ms. <c>SpeakerId</c> is the member's user id, or for a guest (<c>SpeakerIsGuest</c>,
+/// SCRUM-129) their invitation's id; a guest's <c>SpeakerName</c> is the name they gave, or the invited one.
 /// </summary>
 public sealed record SpeechClipView(Guid Id, Guid SpeakerId, string SpeakerName, DateTimeOffset StartedAt, long DurationMs,
     string Text, DateTimeOffset UpdatedAt, DateTimeOffset? EditedAt, string? EditedByName, bool CanDelete,
     bool Excluded = false, string? ExclusionReason = null, string? ExcludedByName = null, SpeechClipLeak? Leak = null,
-    bool HasAudio = false, byte[]? Peaks = null);
+    bool HasAudio = false, byte[]? Peaks = null, bool SpeakerIsGuest = false);
 
 /// <summary>
 /// SpeechClipFold's verdict: the sentence, or the words <c>[from, to)</c> of it, probably are <c>SpeakerName</c>'s,
@@ -70,6 +74,18 @@ public interface ISpeechClipService
     Task<SpeechClipOutcome> PlaybackAsync(Guid clipId, Guid actorId, CancellationToken ct = default);
     /// <summary>The stored audio a verified link points at, or null once the sentence is gone.</summary>
     Task<SpeechClipAudio?> FindAudioAsync(Guid clipId, CancellationToken ct = default);
+
+    // SCRUM-129 — a guest's own mic. A guest never reads the meeting's transcript: only their own sentences, which they
+    // send, hear again and delete through their current session of the meeting they were invited to.
+
+    /// <summary>The guest's own sentences only, and whether their mic may send now.</summary>
+    Task<SpeechClipOutcome> ListForGuestAsync(MeetingGuestSession guest, Guid meetingId, DateTimeOffset? since,
+        CancellationToken ct = default);
+    Task<SpeechClipOutcome> CanGuestCaptureAsync(MeetingGuestSession guest, Guid meetingId, CancellationToken ct = default);
+    Task<SpeechClipOutcome> AddForGuestAsync(MeetingGuestSession guest, Guid meetingId, SpeechClipUpload upload,
+        CancellationToken ct = default);
+    Task<SpeechClipOutcome> DeleteForGuestAsync(MeetingGuestSession guest, Guid clipId, CancellationToken ct = default);
+    Task<SpeechClipOutcome> PlaybackForGuestAsync(MeetingGuestSession guest, Guid clipId, CancellationToken ct = default);
 }
 
 public sealed record SpeechClipAudio(string StoragePath, string ContentType);
@@ -112,6 +128,12 @@ public static class SpeechClipRules
     /// their own mic, so an online meeting and the remote half of a hybrid one are captured a sentence per mic.
     /// </summary>
     public static bool PerMic(MeetingMode mode) => mode is MeetingMode.Online or MeetingMode.Hybrid;
+
+    /// <summary>
+    /// SCRUM-129: a guest's sentences are taken only while the meeting runs. A guest's session ends with the meeting,
+    /// so the late upload a member's browser may still make (<see cref="LateUpload"/>) has no session to come from.
+    /// </summary>
+    public static bool AcceptsGuest(Meeting meeting) => Capturing(meeting);
 
     /// <summary>Mics are on only while the meeting runs, and only when someone joins it from afar.</summary>
     public static bool Capturing(Meeting meeting) => meeting.Status == MeetingStatus.InProgress && PerMic(meeting.Mode);

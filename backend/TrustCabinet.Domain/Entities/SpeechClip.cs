@@ -6,7 +6,8 @@ namespace TrustCabinet.Domain.Entities;
 /// <summary>
 /// One sentence an attendee who joined from afar said into their own microphone, transcribed as soon
 /// as they paused (SCRUM-109; online and hybrid meetings, ADR-0040). The speaker is the owner of the
-/// mic, so nothing has to guess who said it.
+/// mic, so nothing has to guess who said it: a member of the meeting, or a guest invited to it (SCRUM-129,
+/// ADR-0051) — exactly one of the two.
 ///
 /// The sentence's audio is kept beside its words so the meeting can be heard again, sentence by
 /// sentence, as AI-eCabinet does (ADR-0039). It is personal data, captured while the speaker's call
@@ -19,9 +20,20 @@ public class SpeechClip : Entity
     public Guid MeetingId { get; set; }
     public Meeting Meeting { get; set; } = null!;
 
-    /// <summary>Who spoke: always the signed-in owner of the mic that sent it, never chosen by anyone.</summary>
-    public Guid SpeakerId { get; set; }
-    public User Speaker { get; set; } = null!;
+    /// <summary>
+    /// Who spoke, when a member did: always the signed-in owner of the mic that sent it, never chosen by anyone.
+    /// Null when a guest spoke.
+    /// </summary>
+    public Guid? SpeakerId { get; set; }
+    public User? Speaker { get; set; }
+
+    /// <summary>
+    /// Who spoke, when a guest did (SCRUM-129): the invitation whose verified session sent it. A guest has no
+    /// <c>users</c> row, and the sentence stays theirs across the sessions of one invitation, and after it is
+    /// revoked. Null when a member spoke.
+    /// </summary>
+    public Guid? GuestInvitationId { get; set; }
+    public MeetingGuestInvitation? GuestInvitation { get; set; }
 
     /// <summary>
     /// The id the speaker's browser gave the sentence before sending it. A retry after a lost

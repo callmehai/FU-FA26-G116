@@ -25,6 +25,8 @@ public sealed class RecordingFixture : IAsyncLifetime
     internal readonly TestClock Clock = new();
     internal readonly FailureInterceptor Failures = new();
     internal readonly FakeSpeechEngine Speech = new();
+    /// <summary>For a guest's join (SCRUM-129): the call room keeps the recording-notice evidence the guest's mic needs.</summary>
+    internal readonly Calls.FakeLiveKitGateway LiveKit = new();
     internal readonly string StorageRoot = Path.Combine(Path.GetTempPath(), $"tc-recordings-{Guid.NewGuid():N}");
     internal Factory Host = null!;
     internal const string SigningKey = "khoa-ky-chi-dung-trong-test-du-32-ky-tu";
@@ -71,6 +73,8 @@ public sealed class RecordingFixture : IAsyncLifetime
                 services.AddSingleton<TimeProvider>(fixture.Clock);
                 services.RemoveAll<ISpeechEngine>();
                 services.AddSingleton<ISpeechEngine>(fixture.Speech);
+                services.RemoveAll<TrustCabinet.Domain.Calls.ILiveKitGateway>();
+                services.AddSingleton<TrustCabinet.Domain.Calls.ILiveKitGateway>(fixture.LiveKit);
                 services.RemoveAll<IVoiceEmbedder>();
                 services.AddSingleton<IVoiceEmbedder>(fixture.Speech);
                 // Deactivating an account ends its sessions; no Redis for that here.

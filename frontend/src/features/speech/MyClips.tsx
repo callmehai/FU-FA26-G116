@@ -40,6 +40,7 @@ export function MyClips({
 }: {
   clips: SpeechClip[]
   pending: PendingClip[]
+  /** When the meeting started, to time each sentence by it; null times them by the clock. */
   startedAt: string | null
   /** From the call room: the whole record, in a new tab so the call goes on (ADR-0011). */
   recordHref?: string
@@ -50,8 +51,13 @@ export function MyClips({
   const [playing, setPlaying] = useState<string | null>(null)
   const [removing, setRemoving] = useState<SpeechClip | null>(null)
   const audio = useRef<HTMLAudioElement | null>(null)
-  const at = (iso: string | Date) =>
-    meetingClock((typeof iso === 'string' ? Date.parse(iso) : iso.getTime()) - (startedAt ? Date.parse(startedAt) : 0))
+  // A guest does not read when the meeting started (SCRUM-129): their sentences go by the wall clock.
+  const at = (iso: string | Date) => {
+    const ms = typeof iso === 'string' ? Date.parse(iso) : iso.getTime()
+    return startedAt
+      ? meetingClock(ms - Date.parse(startedAt))
+      : new Date(ms).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  }
   const seconds = (ms: number) => `${Math.max(1, Math.round(ms / 1000))} giây`
 
   useEffect(() => () => audio.current?.pause(), [])

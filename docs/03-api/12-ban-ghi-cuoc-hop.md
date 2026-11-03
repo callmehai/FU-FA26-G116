@@ -49,7 +49,8 @@ bản (Chủ toạ, Thư ký) làm được, như AI-eCabinet; cuộc họp Mậ
 kiểm toán (`recording.downloaded`, `transcript.exported`, `speech_clip.exported`), không ghi nội dung.
 
 Người tạo và người duyệt đọc được cuộc họp nhưng không nghe được bản ghi: họ không có mặt trong
-cuộc họp, mà bản ghi là giọng nói của người khác. Khách mời (Guest) chưa có quyền với bản ghi.
+cuộc họp, mà bản ghi là giọng nói của người khác. Khách mời (Guest) không có quyền với bản ghi phòng và bản gỡ
+băng (`403`); Khách chỉ gửi, đọc, nghe và xoá **câu của chính mình** ở micro riêng (SCRUM-129, xem dưới).
 
 Chỉ lưu khi cuộc họp `InProgress` hoặc `Ended` (`409 MSG294`), và có phòng họp: cuộc họp `Online` không có
 bản ghi phòng (`409 MSG358`), lời của nó đã nằm trên mic từng người. Xoá được ở mọi trạng thái.
@@ -300,6 +301,24 @@ Quyền: đọc, nghe, gửi câu và xoá câu của mình là người trong d
 là Thư ký; xoá câu của người khác là Thư ký; loại câu khỏi bản ghi và đưa lại là Chủ tọa hoặc Thư ký. Người
 ngoài danh sách nhận `404`.
 
+### Khách (SCRUM-129, [ADR-0051](../05-decisions/0051-khach-ghi-theo-micro-cua-minh.md))
+
+Khách trong phòng họp trực tuyến cũng được ghi theo micro của mình, bằng **token Khách** của UC-04 trên cùng các
+đường dẫn. Câu gắn với lời mời (`speech_clips.guest_invitation_id`; câu của thành viên có `speaker_id`, ràng buộc
+`ck_speech_clips_one_speaker` buộc đúng một trong hai), tên là tên Khách tự khai, chưa có thì tên được mời.
+
+| Endpoint | Token Khách |
+|---|---|
+| `PUT …/speech-clips/{clientClipId}` | Nhận khi phiên còn hiệu lực, lời mời chưa thu hồi, đúng cuộc họp của token, Khách đã khai tên, cuộc họp `InProgress` và `Online`/`Hybrid`. Phiên chưa từng xác nhận thông báo ghi âm (không có dòng `call.guest_admitted`) → `400 MSG380`; cuộc họp chưa bắt đầu hoặc `InPerson` → `409 MSG320`; mọi trường hợp khác (cuộc họp khác, lời mời thu hồi, đăng xuất, cuộc họp đã kết thúc) → `404`. Không nhận câu gửi muộn sau khi họp |
+| `GET …/speech-clips[?since=…]` | Chỉ câu của lời mời đó. `canCapture` = micro của Khách gửi được lúc này; `canEdit`, `canExclude`, `canExport` luôn `false`; `leak` luôn `null`; `canDelete: true` |
+| `GET /api/speech-clips/{id}/playback` | Chỉ câu của mình, chưa bị loại; còn lại `404` |
+| `DELETE /api/speech-clips/{id}` | Chỉ câu của mình khi phiên còn (`200 MSG322`); câu của người khác `404`. Nhật ký `speech_clip.deleted` có `actor_id` rỗng, `details` gồm `guestInvitationId`, `guestSessionId` |
+| `GET …/speech-clips.txt`, `PUT …/text`, `PUT …/exclusion`, mọi endpoint bản ghi phòng và bản gỡ băng | `403` |
+
+Thành viên đọc câu của Khách như mọi câu, có `speakerIsGuest: true` và `speakerId` là id lời mời; chỉ Thư ký xoá được.
+Tệp `.txt` ghi "Tên (Khách)". Thu hồi lời mời không xoá câu đã nói; hết phiên thì Khách nhờ Thư ký xoá. Câu Khách xoá
+theo cùng hạn `Recordings:RetentionDays`. Khách không nhận sự kiện `speechChanged`.
+
 ### `GET /api/meetings/{meetingId}/speech-clips[?since=…]`
 
 ```json
@@ -311,11 +330,12 @@ ngoài danh sách nhận `404`.
       "durationMs": 2400, "text": "Tôi đồng ý với dự thảo.", "updatedAt": "…", "editedAt": null,
       "editedByName": null, "canDelete": true, "excluded": false, "exclusionReason": null, "excludedByName": null,
       "leak": { "clipId": "…", "speakerId": "…", "speakerName": "Nguyễn Chủ Toạ", "whole": true, "words": [[0, 5]] },
-      "hasAudio": true, "peaks": "AAC0tLQ=" }
+      "hasAudio": true, "peaks": "AAC0tLQ=", "speakerIsGuest": false }
   ]
 }
 ```
 
+- `speakerIsGuest`: câu của Khách (SCRUM-129); khi đó `speakerId` là id lời mời Khách, không phải id người dùng.
 - `leak`: câu (`whole: true`) hoặc các từ `[từ, đến)` của nó có lẽ là lời của `speakerName` lọt sang, từ câu
   `clipId`. Mọi người đều thấy dấu này. `null` khi không lọt, hoặc câu đã bị loại.
 - `excluded`: câu đã bị loại khỏi bản ghi. Chủ tọa và Thư ký vẫn nhận chữ, lý do (`Leak` | `Other`) và
@@ -338,7 +358,7 @@ Thân là âm thanh của **một câu** (`audio/wav`, `audio/webm`, `audio/ogg`
 không gỡ băng lần hai. `startedAt` theo đồng hồ trình duyệt; lệch quá 2 phút hoặc trước giờ họp thì lấy
 giờ server; gửi sau khi họp xong thì câu kết thúc muộn nhất lúc cuộc họp kết thúc. `200 MSG318` kèm
 `clip`, `204` nếu toàn im lặng, `503 MSG312` khi worker chưa sẵn sàng (trình duyệt giữ câu và gửi lại),
-`409 MSG320` khi cuộc họp là `InPerson`, chưa bắt đầu, hoặc đã kết thúc quá 7 ngày.
+`409 MSG320` khi cuộc họp là `InPerson`, chưa bắt đầu, hoặc đã kết thúc quá 7 ngày. Khách: xem mục Khách ở trên.
 
 ### `GET /api/speech-clips/{clipId}/playback`
 
@@ -356,7 +376,8 @@ Thư ký sửa chữ một câu, như sửa đoạn gỡ băng (`MSG302`).
 
 ### `DELETE /api/speech-clips/{clipId}`
 
-Người nói rút lại câu của mình, hoặc Thư ký xoá (`MSG322`). Xoá hẳn cả chữ lẫn âm thanh, ghi nhật ký kiểm toán.
+Người nói (thành viên hoặc Khách) rút lại câu của mình, hoặc Thư ký xoá (`MSG322`), kể cả câu của Khách. Xoá hẳn cả
+chữ lẫn âm thanh, ghi nhật ký kiểm toán.
 
 ### `PUT /api/speech-clips/{clipId}/exclusion` — `{ "excluded": true, "reason": "Leak" | "Other" }`
 
@@ -380,7 +401,6 @@ gửi cho người trong danh sách cuộc họp. Không mang chữ: ai nhận t
 
 - Chữ chạy trong khi mic phòng đang ghi: eCab cũng đã bỏ, chữ có sau mỗi lần tắt mic (ADR-0041).
 - Chế độ "Máy phòng họp" cho họp kết hợp (ADR-0040).
-- Quyền nghe của khách mời (chờ SCRUM-59).
 
 Ghi trộn cả cuộc gọi từ máy Thư ký (SCRUM-44, ADR-0030) đã bỏ theo ADR-0040: họp trực tuyến ghi theo micro từng
 người.
