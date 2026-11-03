@@ -1,6 +1,6 @@
 ---
 name: minimize-text
-description: Cut the words on a TrustCabinet screen down to what people scan for, the way AI-eCabinet does — one line per row, chips and icons instead of sentences, and the secondary facts (who, exact time, IDs, explanations) moved into hover/focus tooltips. Use when building or reviewing any screen, and whenever the user says a screen is "nhiều chữ", "rối", "text tràn lan", "gọn lại", "minimize text", or shows an eCab screenshot next to ours. Pair with frontend-ui-design (what a screen must do) and verify-ui-in-browser (prove it).
+description: Cut the words on a TrustCabinet screen down to what people scan for, the way AI-eCabinet does — one line per row, chips and icons instead of sentences, and the secondary facts (who, exact time, IDs) moved into hover/focus tooltips on the thing they describe, and an explanation behind a visible (i). Use when building or reviewing any screen, and whenever the user says a screen is "nhiều chữ", "rối", "text tràn lan", "gọn lại", "minimize text", or shows an eCab screenshot next to ours. Pair with frontend-ui-design (what a screen must do) and verify-ui-in-browser (prove it).
 ---
 
 # Minimize text
@@ -28,6 +28,7 @@ Write the screen's text down and give each piece one of four places:
 | **Must read** — the reader acts on it or would be hurt by missing it | a rejection reason, a validation error, a consent or deletion notice, "Bạn có tham dự cuộc họp này?" | Stays in view, as short as it can be |
 | **Scan** — what the reader looks for in a list | the event ("Duyệt"), the status, the time, the title | Stays in view as a chip, a badge, a number or one short line |
 | **On demand** — true and sometimes wanted | who did it, who it went to, the exact timestamp of a relative time, the full name behind initials, what an icon button does | A tooltip (`data-tooltip`) on the thing it describes |
+| **Explain** — why, or what it means, for the few who wonder | what "Kín" means for a vote, what being recorded means, whose storage the quota bar counts | An (i) at the end of the line (`InfoTip`), never a tooltip on the line itself |
 | **Redundant** — says again what the screen already shows | a hint that repeats the label, "Danh sách các cuộc họp" under a header that says so, a summary of errors already shown on their rows, a legend for colours that carry their own label | Delete |
 
 When unsure between "scan" and "on demand", ask: would the reader of *this* screen look for it
@@ -60,8 +61,14 @@ in more than one row in ten? If not, it goes behind a hover.
 - Add `data-tooltip="…"` to the element. `components/TooltipLayer.tsx` (mounted once in the app)
   shows it after 400 ms on hover and at once on keyboard focus, in the top layer so tables and
   dialogs never clip it. `\n` makes a new line. Never use the native `title` attribute.
-- The element must be reachable without a mouse: a button or link already is; anything else
-  (`<time>`, a chip, an avatar) gets `tabIndex={0}`.
+- **Only on something that invites pointing:** a button or link, an icon, an avatar, a "…"-cut
+  name, a time, a marker such as "đã sửa". **Never on plain text or a sentence** — nobody hovers a
+  sentence expecting more, so the text is a surprise when it appears (Hải, 03/11/2026: the lobby's
+  "Cuộc họp được ghi âm… · tự xoá sau 180 ngày" turned out to hide a whole explanation). Put that
+  explanation behind `<InfoTip text="…" />` (`components/InfoTip.tsx`) at the end of the line: a
+  visible (i) that shows the text on hover or focus and at once on a tap (ADR-0052).
+- The element must be reachable without a mouse: a button or link already is (InfoTip is a
+  button); anything else (`<time>`, a chip, an avatar) gets `tabIndex={0}`.
 - The tooltip is visual only. Keep the accessible name complete: `aria-label` on an icon button,
   or a `.visually-hidden` span inside the element carrying the same words.
 - **Never** hide must-read content behind a hover: phones have none, and a reader who does not

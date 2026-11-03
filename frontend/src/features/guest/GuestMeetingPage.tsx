@@ -4,6 +4,7 @@ import { endGuestSession } from '../../api/guest'
 import { getMyInvitationResponse } from '../../api/participants'
 import { BrandMark } from '../../components/BrandMark'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatSchedule } from '../../lib/format'
@@ -190,17 +191,14 @@ function GuestBar() {
         <BrandMark size={28} />
         <span className="guest-brand-text">TrustCabinet</span>
       </span>
-      <span
-        className="guest-who"
-        tabIndex={0}
-        data-tooltip={`${session.email} đã xác minh · tên${session.jobTitle ? ' và chức vụ' : ''} do bạn tự khai`}
-      >
+      <span className="guest-who">
         <Icon name="user" size={16} />
         <span className="guest-who-name">
           {name}
           {session.jobTitle && <small>{session.jobTitle}</small>}
         </span>
         <span className="badge badge-slate">Khách</span>
+        <InfoTip text={`${session.email} đã xác minh · tên${session.jobTitle ? ' và chức vụ' : ''} do bạn tự khai`} />
       </span>
       <button
         type="button"

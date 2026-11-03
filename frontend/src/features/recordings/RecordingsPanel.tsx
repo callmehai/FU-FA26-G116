@@ -3,6 +3,7 @@ import { eraseRecording, getRecordingDownload, getRecordingPlayback, listRecordi
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Badge, type BadgeTone } from '../../components/Badge'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate, formatDateTime } from '../../lib/format'
@@ -242,14 +243,11 @@ function OpenTakeRow({ take }: { take: Recording }) {
       </span>
       <div className="recording-main">
         <span className="recording-name">Mic phòng đang ghi</span>
-        <span
-          className="recording-meta"
-          tabIndex={0}
-          data-tooltip="Tắt mic thì lượt này được nối vào bản ghi phòng và chuyển chữ lại cả bản."
-        >
+        <span className="recording-meta">
           <Badge tone="red">Đang ghi</Badge>
           <span>{take.createdByName}</span>
           <span>từ {formatDateTime(take.createdAt)}</span>
+          <InfoTip text="Tắt mic thì lượt này được nối vào bản ghi phòng và chuyển chữ lại cả bản." />
         </span>
       </div>
     </li>

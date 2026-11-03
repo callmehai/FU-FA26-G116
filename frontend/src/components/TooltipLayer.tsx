@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react'
 
+/** Dispatched (bubbling) on an element to show its tooltip now, whatever the pointer does: InfoTip's tap. */
+export const SHOW_TOOLTIP = 'tooltip:show'
+
 /** Long enough that passing the pointer over a toolbar shows nothing, short enough to feel quick. */
 const DELAY_MS = 400
 const GAP = 6
@@ -65,15 +68,26 @@ export function TooltipLayer() {
       hide()
     }
 
+    // An InfoTip pressed (a tap on a touch screen, which has no hover): show its text at once.
+    function onShow(event: Event) {
+      const el = event.target instanceof HTMLElement ? event.target : null
+      if (!el) return
+      hide()
+      target = el
+      show(el)
+    }
+
     document.addEventListener('pointerover', onOver)
     document.addEventListener('pointerout', onOut)
     document.addEventListener('focusin', onOver)
     document.addEventListener('focusout', onOut)
     document.addEventListener('pointerdown', hide)
     document.addEventListener('keydown', hide)
+    document.addEventListener(SHOW_TOOLTIP, onShow)
     window.addEventListener('scroll', hide, true)
     return () => {
       hide()
+      document.removeEventListener(SHOW_TOOLTIP, onShow)
       document.removeEventListener('pointerover', onOver)
       document.removeEventListener('pointerout', onOut)
       document.removeEventListener('focusin', onOver)
