@@ -143,7 +143,8 @@ function MeetingDetail({
   const running = meeting.status === 'InProgress'
   const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online')
   const room = useRoomRecorder(meeting.id, running, roomRecordings.reload)
-  const recordsRoom = meeting.mode === 'InPerson' && running && meeting.myMeetingRole === 'Secretary'
+  // ADR-0040: an in-person or hybrid meeting has a room, recorded by the Secretary here (as the server's HasRoom).
+  const recordsRoom = meeting.mode !== 'Online' && running && meeting.myMeetingRole === 'Secretary'
   // A take, or one this laptop kept from a closed tab, stays on screen until it is saved, even past the meeting's end.
   const showsRecorder =
     recordsRoom ||
