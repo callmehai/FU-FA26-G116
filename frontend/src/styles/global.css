@@ -4450,8 +4450,48 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .minutes-running { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--muted-ink); }
 .minutes-readiness { margin-bottom: 12px; }
 .minutes-readiness p + p { margin-top: 4px; }
-.minutes-outline section + section { margin-top: 16px; }
-.minutes-outline h3 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+/* The Dự thảo's three sections, folded to a heading and a first line (AI-eCabinet's OutlineSections). */
+.outline-sections { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; margin-top: 12px; }
+.outline-section { min-width: 0; }
+.outline-toggle {
+  display: flex; align-items: center; gap: 8px; width: calc(100% + 16px); min-height: 40px; margin: 0 -8px; padding: 0 8px;
+  border: 0; border-radius: var(--radius); background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.outline-toggle:hover { background: var(--surface-alt); }
+.outline-toggle:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.outline-toggle svg { flex: none; color: var(--muted-ink); transform: rotate(-90deg); transition: transform 0.15s; }
+.outline-section.is-open .outline-toggle svg { transform: none; }
+.outline-heading { flex: 0 1 auto; min-width: 0; font-size: 14px; font-weight: 600; }
+.outline-preview { flex: 1; min-width: 0; overflow: hidden; color: var(--muted-ink); font-size: 13px; white-space: nowrap; text-overflow: ellipsis; }
+.outline-flag { flex: none; margin-left: auto; color: var(--danger); font-size: 12px; font-weight: 600; }
+.outline-body { display: grid; gap: 6px; padding: 2px 0 12px 24px; }
+.outline-body textarea { width: 100%; min-height: 38px; overflow: hidden; line-height: 1.6; resize: none; }
+.outline-count { justify-self: end; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+.outline-count.is-over { color: var(--danger); font-weight: 600; }
+.outline-body .minutes-sources { margin: 4px 0 0; }
+/* Pinned to the bottom of the screen while there is something to save: a Save button under long sections is not found. */
+/* The host is the last item of the tab's column and sticks there, so the bar follows the screen anywhere in the tab. */
+.outline-savebar-host { position: sticky; bottom: 16px; z-index: 30; margin-top: -16px; }
+.outline-savebar {
+  display: flex; align-items: flex-end; justify-content: center; height: 0; pointer-events: none; transition: height 0.2s;
+}
+.outline-savebar.is-open { height: 60px; }
+.outline-savebar-inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; max-width: 100%; padding: 8px 8px 8px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow);
+  opacity: 0; transform: translateY(12px); transition: opacity 0.2s, transform 0.2s;
+}
+.outline-savebar.is-open .outline-savebar-inner { opacity: 1; transform: none; pointer-events: auto; }
+.outline-savebar-status { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; }
+.outline-savebar-status.is-over { color: var(--danger); }
+/* No room for a first line beside a heading on a phone; the heading wraps instead of being cut. */
+@media (max-width: 720px) {
+  .outline-preview { display: none; }
+  .outline-toggle { padding-block: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .outline-toggle svg, .outline-savebar, .outline-savebar-inner { transition: none; }
+}
 .minutes-outline-text { line-height: 1.6; overflow-wrap: anywhere; }
 .minutes-outline-text p { margin: 0; white-space: pre-wrap; }
 .minutes-outline-text .minutes-outline-heading { margin-top: 8px; font-weight: 600; }
@@ -4462,8 +4502,7 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums;
 }
 .minutes-meta { margin: 12px 0 0; }
-.minutes-outline-form { display: grid; gap: 12px; }
-.minutes-outline-form textarea, .minutes-editor textarea { width: 100%; line-height: 1.55; resize: vertical; }
+.minutes-editor textarea { width: 100%; line-height: 1.55; resize: vertical; }
 .minutes-form-actions { justify-content: flex-end; }
 .minutes-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .minutes-editor .minutes-form-actions { grid-column: 1 / -1; }

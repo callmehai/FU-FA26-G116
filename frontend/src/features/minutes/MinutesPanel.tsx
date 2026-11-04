@@ -15,19 +15,14 @@ import { Icon } from '../../components/Icon'
 import { InfoTip } from '../../components/InfoTip'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
-import { formatClock, formatDateTime } from '../../lib/format'
+import { formatDateTime } from '../../lib/format'
 import type { Meeting } from '../../types/meeting'
 import type { MinutesState, SummaryReadiness, SummaryState } from '../../types/summary'
 import { saveBlob } from '../documents/documentFile'
 import { MinutesPaper } from './MinutesPaper'
+import { OutlineSections, type OutlineValues } from './OutlineSections'
 
 type Load<T> = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: T }
-
-const SECTIONS = [
-  { key: 'objectives', heading: 'I. Mục tiêu và phạm vi cuộc họp', rows: 4 },
-  { key: 'discussion', heading: 'II. Nội dung thảo luận và đánh giá', rows: 14 },
-  { key: 'conclusions', heading: 'III. Kết luận và phân công thực hiện', rows: 10 },
-] as const
 
 /**
  * The "Biên bản" tab (SCRUM-36, SCRUM-32), laid out as AI-eCabinet's MinutesPanel: the AI's Dự thảo first — asked
@@ -38,6 +33,7 @@ const SECTIONS = [
 export function MinutesPanel({ meeting }: { meeting: Meeting }) {
   const [summary, setSummary] = useState<Load<SummaryState>>({ kind: 'loading' })
   const [minutes, setMinutes] = useState<Load<MinutesState>>({ kind: 'loading' })
+  const [barHost, setBarHost] = useState<HTMLDivElement | null>(null)
 
   const loadSummary = useCallback(async () => {
     try {
@@ -69,13 +65,14 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
 
   return (
     <div className="minutes-tab">
-      <SummaryCard meeting={meeting} state={summary} onChanged={setSummary} onRetry={() => void loadSummary()} />
+      <SummaryCard meeting={meeting} state={summary} barHost={barHost} onChanged={setSummary} onRetry={() => void loadSummary()} />
       <MinutesCard
         meeting={meeting}
         state={minutes}
         onChanged={setMinutes}
         onRetry={() => void loadMinutes()}
       />
+      <div ref={setBarHost} className="outline-savebar-host" />
     </div>
   )
 }
@@ -92,19 +89,20 @@ function AiLabel() {
 function SummaryCard({
   meeting,
   state,
+  barHost,
   onChanged,
   onRetry,
 }: {
   meeting: Meeting
   state: Load<SummaryState>
+  barHost: HTMLElement | null
   onChanged: (state: Load<SummaryState>) => void
   onRetry: () => void
 }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
-  const [editing, setEditing] = useState<Record<(typeof SECTIONS)[number]['key'], string> | null>(null)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [dirty, setDirty] = useState(false)
 
   if (state.kind === 'loading') return <section className="card minutes-card" aria-busy="true"><div className="skeleton minutes-skeleton" /></section>
   if (state.kind === 'error')
@@ -140,20 +138,15 @@ function SummaryCard({
     }
   }
 
-  const save = async () => {
-    if (!editing) return
-    setBusy(true)
-    setErrors({})
+  const save = async (values: OutlineValues) => {
     try {
-      const result = await editSummary(meeting.id, editing)
+      const result = await editSummary(meeting.id, values)
       onChanged({ kind: 'ready', data: result })
-      setEditing(null)
       toast.show(result.message, 'success')
+      return { saved: true, errors: {} }
     } catch (error) {
-      if (isApiError(error, 400, 'MSG389')) setErrors(error.body?.errors ?? {})
       toast.show(errorMessage(error), 'error')
-    } finally {
-      setBusy(false)
+      return { saved: false, errors: isApiError(error, 400, 'MSG389') ? (error.body?.errors ?? {}) : {} }
     }
   }
 
@@ -175,31 +168,26 @@ function SummaryCard({
       <header className="minutes-card-head">
         <h2>Dự thảo nội dung</h2>
         {summary && <SummaryStatusChip state={state.data} />}
-        {canManage && !editing && (
+        {canManage && (
           <div className="row-actions minutes-card-actions">
             {draft && !running && !summary?.reviewedAt && (
-              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => void review()}>
-                <Icon name="checkCircle" size={16} />
-                Duyệt
-              </button>
-            )}
-            {draft && !running && (
               <button
                 type="button"
-                className="btn btn-outline btn-sm"
-                disabled={busy}
-                onClick={() => setEditing({ objectives: draft.objectives, discussion: draft.discussion, conclusions: draft.conclusions })}
+                className="btn btn-primary btn-sm"
+                disabled={busy || dirty}
+                data-tooltip={dirty ? 'Lưu thay đổi trước khi duyệt' : undefined}
+                onClick={() => void review()}
               >
-                <Icon name="pencil" size={16} />
-                Sửa
+                <Icon name="checkCircle" size={16} />
+                Duyệt
               </button>
             )}
             {canAsk && !running && (
               <button
                 type="button"
                 className={draft ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm'}
-                disabled={busy || !aiReady}
-                data-tooltip={aiReady ? undefined : 'Máy AI chưa sẵn sàng'}
+                disabled={busy || dirty || !aiReady}
+                data-tooltip={!aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined}
                 onClick={() => (draft ? setConfirming(true) : void ask().catch(() => undefined))}
               >
                 <Icon name={draft ? 'refresh' : 'sparkles'} size={16} />
@@ -234,67 +222,26 @@ function SummaryCard({
         </p>
       )}
 
-      {draft && !editing && (
+      {draft && (
         <>
           <AiLabel />
-          <div className="minutes-outline">
-            {SECTIONS.map((section) => (
-              <section key={section.key}>
-                <h3>{section.heading}</h3>
-                <OutlineText text={draft[section.key]} />
-              </section>
-            ))}
-          </div>
-          {canManage && draft.sources.some((s) => s.from) && (
-            <p className="minutes-sources">
-              <span className="field-hint">Lấy từ bản ghi:</span>
-              {draft.sources
-                .filter((s) => s.from && s.to)
-                .map((s) => (
-                  <span key={`${s.agendaItemId ?? s.title}`} className="minutes-source" data-tooltip={`${s.lines} câu nói`}>
-                    {s.title} · {formatClock(s.from!)}–{formatClock(s.to!)}
-                  </span>
-                ))}
-            </p>
-          )}
+          <OutlineSections
+            // A new draft is a different text: nobody keeps editing one that is gone.
+            key={summary?.generatedAt ?? ''}
+            draft={draft}
+            editable={canManage && !running}
+            reviewed={!!summary?.reviewedAt}
+            showSources={canManage}
+            barHost={barHost}
+            onSave={save}
+            onDirtyChange={setDirty}
+          />
           <p className="field-hint minutes-meta">
             {summary?.generatedAt && `AI viết lúc ${formatDateTime(summary.generatedAt)}`}
-            {summary?.model && ` · ${summary.model}`}
-            {summary?.editedBy && summary.editedAt && ` · ${summary.editedBy.fullName} sửa lúc ${formatDateTime(summary.editedAt)}`}
+            {summary?.model && ` (${summary.model})`}
+            {summary?.editedBy && summary.editedAt && `, ${summary.editedBy.fullName} sửa lúc ${formatDateTime(summary.editedAt)}`}
           </p>
         </>
-      )}
-
-      {editing && (
-        <form
-          className="minutes-outline-form"
-          onSubmit={(event) => {
-            event.preventDefault()
-            void save()
-          }}
-        >
-          <AiLabel />
-          {SECTIONS.map((section) => (
-            <label key={section.key} className="field">
-              <span className="field-label">{section.heading}</span>
-              <textarea
-                rows={section.rows}
-                value={editing[section.key]}
-                aria-invalid={errors[section.key] ? true : undefined}
-                onChange={(event) => setEditing({ ...editing, [section.key]: event.target.value })}
-              />
-              {errors[section.key] && <span className="field-error">{errors[section.key]}</span>}
-            </label>
-          ))}
-          <div className="row-actions minutes-form-actions">
-            <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setEditing(null)}>
-              Huỷ
-            </button>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={busy}>
-              {busy ? 'Đang lưu…' : 'Lưu'}
-            </button>
-          </div>
-        </form>
       )}
 
       {confirming && (
@@ -305,25 +252,10 @@ function SummaryCard({
           onConfirm={ask}
           onClose={() => setConfirming(false)}
         >
-          <p>AI viết lại từ đầu. Khi xong, dự thảo mới thay dự thảo hiện tại, kể cả phần đã sửa và đã duyệt.</p>
+          AI viết lại từ đầu. Khi xong, dự thảo mới thay dự thảo hiện tại, kể cả phần đã sửa và đã duyệt.
         </ConfirmDialog>
       )}
     </section>
-  )
-}
-
-/** A section's text; its numbered sub-headings ("1. <nội dung>", "1. Kết luận của chủ trì") stand out in bold. */
-function OutlineText({ text }: { text: string }) {
-  return (
-    <div className="minutes-outline-text">
-      {text.split('\n').map((line, i) =>
-        /^\d{1,2}\.\s+\S.{0,150}$/.test(line.trim()) ? (
-          <p key={i} className="minutes-outline-heading">{line}</p>
-        ) : (
-          <p key={i}>{line || '\u00a0'}</p>
-        ),
-      )}
-    </div>
   )
 }
 
@@ -527,7 +459,7 @@ function MinutesCard({
           onConfirm={() => build(true)}
           onClose={() => setConfirming(false)}
         >
-          <p>Bản nháp mới điền lại từ mẫu và dự thảo đã duyệt. Mọi chỗ đã sửa trong bản nháp hiện tại sẽ mất.</p>
+          Bản nháp mới điền lại từ mẫu và dự thảo đã duyệt. Mọi chỗ đã sửa trong bản nháp hiện tại sẽ mất.
         </ConfirmDialog>
       )}
     </section>
