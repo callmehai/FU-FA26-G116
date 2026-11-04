@@ -967,7 +967,7 @@ MSG174 cũng áp dụng UC-77 cho cùng tình huống tài nguyên không truy c
 | Mã | HTTP | Tình huống | Thông báo |
 |---|---|---|---|
 | `MSG271` | 200 | Lưu kết luận | Lưu kết luận mục nghị sự thành công. |
-| `MSG272` | 400 | Kết luận/body không hợp lệ | Thông tin mục nghị sự không hợp lệ. |
+| `MSG272` | 400 | Kết luận/body không hợp lệ | Nhập kết luận tối đa 2.000 ký tự. |
 | `MSG273` | 403 | Thiếu Chair/Secretary | Bạn không có quyền thực hiện thao tác này. |
-| `MSG273` | 409 | Trạng thái hoặc biên bản khóa kết luận | Trạng thái cuộc họp không cho phép thao tác này. |
+| `MSG273` | 409 | Trạng thái hoặc biên bản khóa kết luận | Không thể sửa kết luận của mục nghị sự này nữa. |
 | `MSG274` | 503 | Persistence kết luận thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
