@@ -9,13 +9,15 @@ TrustCabinet — an AI-assisted paperless meeting system with built-in voice/vid
 Capstone project **SEP490-G116**. The business domain is modelled on AI-eCabinet (SmartMeet), but
 this is an independent .NET implementation with a scope trimmed to fit a capstone.
 
-**Status: the meeting loop runs end to end; minutes and the AI summary are still placeholders.** Sign-in
+**Status: the meeting loop runs end to end, up to the draft minutes.** Sign-in
 (email + password, Google), user and role administration, scheduling, approval and cancellation, agenda,
 participants and attendance, the personal and meeting document libraries with comments, the online room
 over LiveKit, recording, Vietnamese transcription with speaker attribution, Voice ID and notifications
-all call the real API, and voting is built end to end. Meeting minutes and their signature flow
-(UC-58–UC-65) and the AI summary (UC-47–UC-51) are not implemented yet — check the code before assuming
-a feature exists.
+all call the real API, and voting is built end to end. The AI draft of the minutes (SCRUM-36, UC-47–UC-50)
+and the draft minutes from the one fixed template (SCRUM-32, UC-58–UC-60) run on a local language model
+([ADR-0054](docs/05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)); sending the minutes for approval,
+issuing and signing them (SCRUM-33, SCRUM-37, UC-61–UC-65) are not implemented yet — check the code before
+assuming a feature exists.
 
 The EF Core model covers the whole backlog: access, meetings, agenda, documents, voting, recordings,
 transcripts, minutes, notifications, audit and calls.

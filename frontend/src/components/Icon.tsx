@@ -92,6 +92,7 @@ import {
   ZoomIn,
   ZoomOut,
   type LucideIcon,
+  Sparkles,
 } from 'lucide-react'
 
 /**
@@ -209,6 +210,8 @@ const ICONS = {
   clipboardCheck: ClipboardCheck,
   // SCRUM-28: votes during the meeting.
   vote: Vote,
+  /** Marks text an AI wrote (SCRUM-36), as AI-eCabinet's AiLabel does. */
+  sparkles: Sparkles,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
