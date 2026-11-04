@@ -63,3 +63,4 @@ ADR đã viết thì **không sửa nội dung**. Đổi ý thì viết ADR mớ
 | [0050](0050-giong-gan-trung-nhan-cung-ten.md) | Giọng chưa có tên giống giọng đầu của một người đã nhận ra từ 0,8 trở lên thì nhận cùng tên, bất kể điểm so với giọng mẫu | Đề xuất — SCRUM-35, PO 03/11/2026 |
 | [0051](0051-khach-ghi-theo-micro-cua-minh.md) | Khách trong phòng họp trực tuyến cũng được ghi theo micro của mình: câu gắn với lời mời, chỉ nhận sau khi Khách xác nhận thông báo ghi âm, Khách chỉ thấy câu của mình | Đề xuất — SCRUM-129, PO 01/11/2026 |
 | [0052](0052-chip-cung-bo-goc-giai-thich-sau-icon-i.md) | Mọi chip cùng bo góc 4px; câu giải thích nằm sau icon (i) (`InfoTip`), không giấu trong tooltip của chữ thường | Đề xuất — PO 03/11/2026 |
+| [0053](0053-nut-tai-khoan-khong-to-sang.md) | Nút tài khoản ở chân sidebar không tô sáng khi đang ở trang cá nhân (thay một phần ADR-0046) | Đề xuất — PO 04/11/2026 |
