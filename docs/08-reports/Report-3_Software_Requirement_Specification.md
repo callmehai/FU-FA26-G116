@@ -57,7 +57,8 @@ Table of Contents
 | 03/11/2026 | M | KhanhPG | Fixes after the review of PR #238: UC-45a POST-2 keeps only the suggestions to the Secretary, because a name already assigned — including one the system filled in — is part of the transcript everybody who may read it sees; BR-367 states both paths that group a second voice into one person, the second-voice threshold (0.7) and the inherited first voice (0.8, ADR-0050). |
 | 03/11/2026 | M | KhanhPG | Apply PO decision 03/11/2026 on general documents (SCRUM-21, PR #249): BR-280 now defines the general group as documents linked to no Agenda Item and to no Vote, with a Vote's document listed in the Voting group only; BR-275 excepts a document linked only to a Draft Vote: a Member or Guest does not see it, and opening, downloading, reading or commenting on it answers as if it did not exist (MSG156), while the current Chair and Secretary still see it. Screen 7.3 and the in-room documents panel (8.6) follow the same definition, and UC-32a (Main Flow step 3, AF-1 step 2) and UC-32c (EX-1) state it. Source: Jira comments 10416 and 10419. |
 | 03/11/2026 | M | KhanhPG | BA Final Review of SCRUM-129 (PR #245, ADR-0051): a Guest in the online room is recorded from their own microphone, gets the sentences of that microphone back, and may delete them while the session lasts, while another speaker's sentence is answered as if it did not exist; update BR-355 and BR-370, UC-39a AF-2 and UC-80 (description, PRE-1, EX-1). Source: Jira comment 10418. |
-| 04/11/2026 | M | HuyNT | Replace the ERD picture in section 3.1 with one drawn from the code: 41 tables, adding DocumentReadConfirmation, MeetingInvitationDispatch and GuestVerificationChallenge, and state which tables section 3.2 does not describe. |
+| 04/11/2026 | M | KhanhPG | Fixes after the review of PR #254: BR-275 and UC-32c EX-1 hide a document linked only to a Draft Vote from everyone except the current Chair and Secretary, not only from a Member or Guest; UC-80 EX-1 answers a Guest 404 with no message for another speaker's sentence; add Entity 31 to Entity 35 (TranscriptSpeaker, GuestSession, SpeechClip, VoiceConsent, VoiceSample) to section 3.2. |
+| 04/11/2026 | M | HuyNT | Replace the ERD picture in section 3.1 with one drawn from the code: 41 tables, adding DocumentReadConfirmation, MeetingInvitationDispatch and GuestVerificationChallenge, and state which tables section 3.2 does not describe; rewrite the text of section 3.1 to match the picture, which no longer shows MeetingParticipantPermission (Entity 7a, not built yet), and rename VotingEligibleVoter to VoteEligibleVoter as in the code. |
 
 *A - Added M - Modified D - Deleted
 
@@ -123,7 +124,7 @@ End condition: The meeting has formal minutes that have completed signing, final
 
 #### 3.1 Entity Relationship Diagram
 
-Conceptual ERD for the independent Meeting model. Vote belongs directly to Meeting; Agenda Item also belongs directly to Meeting. Cardinalities shown are logical business relationships and should be confirmed against the final database design. FE-06 refinement: an internal participant assignment may have zero or more MeetingParticipantPermission grants, each granted by one Secretary account. Both internal participants and Guest invitations carry optional official attendance with the recording Secretary and save time. These are conceptual requirements; they do not assert that runtime schema changes have been implemented. The decisions about Guest display information, additional permissions and voting are requirements; storage changes and their detailed design are deferred. The diagram is drawn from the database model in the code as of 04/11/2026 and shows 41 tables: the 35 entities, the four junction tables MeetingDocumentAgendaItem, VotingEligibleVoter, VoteDocument and DocumentReadConfirmation, and two technical tables, MeetingInvitationDispatch and GuestVerificationChallenge, which support invitation email delivery and Guest email verification and are not described in 3.2.
+The diagram is drawn from the database model in the code as of 04/11/2026 and shows 41 tables: the 35 entities described in 3.2, the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation, and two technical tables, MeetingInvitationDispatch and GuestVerificationChallenge, which support invitation email delivery and Guest email verification and are not described in 3.2. Vote and Agenda Item each belong directly to Meeting. Entity 7a, MeetingParticipantPermission, is an FE-06 requirement whose storage is not built yet, so the diagram does not show it.
 
 #### 3.2 Entity Descriptions
 
@@ -344,7 +345,7 @@ One connection of a user or guest to a call. Leaving and rejoining creates a new
 
 Entity 14: VotingSession
 
-A Vote belongs to one Meeting and is not linked to an Agenda Item. The current Chair prepares Draft Votes in Approved, Published or InProgress; opening and balloting require InProgress. Closing and recording a conclusion may finish in Ended. The fixed eligible-voter list is represented by VotingEligibleVoter; it is not reconstructed from current roles. No time-boxed voting or quorum exists.
+A Vote belongs to one Meeting and is not linked to an Agenda Item. The current Chair prepares Draft Votes in Approved, Published or InProgress; opening and balloting require InProgress. Closing and recording a conclusion may finish in Ended. The fixed eligible-voter list is represented by VoteEligibleVoter; it is not reconstructed from current roles. No time-boxed voting or quorum exists.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -356,12 +357,12 @@ A Vote belongs to one Meeting and is not linked to an Agenda Item. The current C
 | 6 | Status | enum |  | No | State of the vote. Values: Draft, Open, Closed. |
 | 7 | OpenedAt | timestamptz |  | Yes | Date and time voting opened. |
 | 8 | ClosedAt | timestamptz |  | Yes | Date and time voting closed. |
-| 9 | EligibleCount | int |  | No | Number of VotingEligibleVoter entries fixed when opening succeeds. It does not change when roles, attendance or access later change. |
+| 9 | EligibleCount | int |  | No | Number of VoteEligibleVoter entries fixed when opening succeeds. It does not change when roles, attendance or access later change. |
 | 10 | Conclusion | enum |  | Yes | Conclusion recorded by the Chair after the vote closes. Values: Passed, NotPassed, Deferred. Null until concluded. |
 | 11 | ConclusionNote | string |  | Yes | Explanatory note for the conclusion. |
 | 12 | ConcludedById | uuid | FK | Yes | Chair who recorded the conclusion (references User). |
 
-Entity 14a: VotingEligibleVoter
+Entity 14a: VoteEligibleVoter
 
 Fixed eligibility for one person in one Vote, created only when opening succeeds. Exactly one of VoterId and GuestInvitationId is set; each identity appears at most once per Vote. The Guest invitation must belong to the same Meeting. Entries remain unchanged after role changes, removal, expiry or revocation; current access is checked separately before accepting a ballot. This is the target logical relationship for the class diagram, not a claim that migrations already exist.
 

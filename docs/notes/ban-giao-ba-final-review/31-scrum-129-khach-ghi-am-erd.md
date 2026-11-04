@@ -40,7 +40,8 @@ Note này gom việc BA. **Ghi note ngày 03/11/2026; sửa tài liệu ngày 04
 - Số đếm: **32 → 35 thực thể**; bỏ câu "Bảng mới chưa vẽ vào ERD mục tiêu — BA bổ sung ở BA Final Review" ở mục Ranh
   giới.
 - Hình đã vẽ lại: `13-erd/muc-tieu` (41 bảng, vẽ lại theo code bằng `scripts/draw_erd.py` ngày 04/11/2026) và `13-erd/chen` (35 thực thể, 59 quan hệ),
-  xuất lại PNG; cập nhật `13-erd/README.md`, `muc-tieu/README.md`, `chen/README.md` theo số mới.
+  xuất lại PNG; cập nhật `13-erd/README.md`, `muc-tieu/README.md`, `chen/README.md` theo số mới. Ở hình Chen, cụm
+  `SpeechClip` / Voice ID được đặt lại và đi dây vuông góc để không đường nào xuyên qua hình khác (theo review PR #254).
 
 ### 3.2 Report 3
 
@@ -51,9 +52,15 @@ Note này gom việc BA. **Ghi note ngày 03/11/2026; sửa tài liệu ngày 04
 - **UC-39a AF-2 bước 1**: bỏ câu "không áp dụng cho Khách", thêm điều kiện đã xác nhận thông báo ghi âm.
 - **§I.3.2**: thêm 5 entity còn thiếu — `TranscriptSpeaker`, `GuestSession`, `SpeechClip`, `VoiceConsent`,
   `VoiceSample` (30 → 35 entity), mỗi entity một bảng field.
-- **§I.3.1**: thay ảnh ERD bằng bản `muc-tieu` mới (41 bảng vẽ theo code; thêm câu nêu bốn bảng nối và hai bảng kỹ thuật §I.3.2 không mô tả).
+- **§I.3.1**: thay ảnh ERD bằng bản `muc-tieu` mới (41 bảng vẽ theo code) và viết lại đoạn văn cho khớp ảnh: bỏ các câu
+  "Conceptual ERD… should be confirmed…", nêu bốn bảng nối và hai bảng kỹ thuật §I.3.2 không mô tả, và ghi rõ hình không
+  có `MeetingParticipantPermission` (Entity 7a, yêu cầu FE-06 chưa làm).
+- **`VotingEligibleVoter` → `VoteEligibleVoter`** ở cả 4 chỗ (§I.3.1, mô tả Vote, `EligibleCount`, tiêu đề Entity 14a),
+  đúng tên trong code.
 - **BR-275 + UC-32c EX-1** (gộp từ review PR #252, cùng DOCX): tài liệu chỉ gắn biểu quyết nháp bị ẩn với mọi người trừ Chủ toạ/Thư ký hiện tại — kể cả người tổ chức, người duyệt — nên bỏ chữ "a Member or Guest", viết lại thành "anyone except the current Chair and Secretary".
-- **Change Log**: dòng `03/11/2026 / M / KhanhPG`.
+- **Change Log**: ba dòng — `03/11/2026 / M / KhanhPG` (SCRUM-129: UC-80, BR-355, BR-370, UC-39a), `04/11/2026 / M /
+  KhanhPG` (sửa theo review PR #254: BR-275, UC-32c EX-1, UC-80 EX-1, Entity 31–35 ở §I.3.2) và `04/11/2026 / M / HuyNT`
+  (ảnh và đoạn văn §I.3.1, đổi tên `VoteEligibleVoter`).
 
 Kiểm tra: `check_docx.py` OK; `sync_reports.py --report 3` sinh lại snapshot, extract 05/06 và `uc-map.html`.
 
