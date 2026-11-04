@@ -16,6 +16,7 @@ public sealed class SpokenNumbersTests
     [InlineData("ba năm hai tháng", "ba năm 2 tháng")]
     [InlineData("năm mươi người", "50 người")]
     [InlineData("từ tháng tư", "từ tháng 4")]
+    [InlineData("chốt danh sách trực trước ngày hai mươi tháng một.", "chốt danh sách trực trước ngày 20 tháng 1.")]
     public void Numbers_read_aloud_become_digits(string spoken, string written)
         => Assert.Equal(written, SpokenNumbers.Normalise(spoken));
 

@@ -84,9 +84,22 @@ public sealed class SummaryWriterTests
 
         Assert.Contains(model.Prompts, p => p.Contains("(Đây là phần 1/2 của lời thoại.)"));
         Assert.Contains(model.Prompts, p => p.Contains("Gộp các đoạn"));
-        Assert.Equal("1. Nội dung thảo luận\nBản gộp.", draft.Discussion);
-        // No agenda: the model is told to split by issue.
-        Assert.Contains(model.Prompts, p => p.Contains("Cuộc họp không có chương trình"));
+        // No agenda: the model numbers the issues itself, in each piece and in the merge, and no generic heading wraps them.
+        Assert.Equal("Bản gộp.", draft.Discussion);
+        Assert.All(model.Prompts.Where(p => !p.Contains("MỤC TIÊU:")), p => Assert.Contains("đánh số từ 1", p));
         Assert.Equal(30, Assert.Single(draft.Sources).Lines);
+    }
+
+    [Fact]
+    public async Task Without_an_agenda_the_issues_are_the_numbered_items_of_section_two()
+    {
+        var model = new ScriptedModel(p => p.Contains("MỤC TIÊU:") ? "KẾT LUẬN:\nKhông có."
+            : "1. Kế hoạch quý tới:\n- Đề nghị tăng ngân sách 10%.\n\n2. Lịch trực Tết :\nChốt trước ngày 20/1.");
+        var facts = new MeetingFacts("Họp", [], [], [], [new TranscriptLine("c:1", Start, "Người nói 1", "Nội dung.")]);
+
+        var draft = await new SummaryWriter(model).WriteAsync(facts, CancellationToken.None);
+
+        // No generic "1. Nội dung thảo luận" over the issues, and their trailing colons are dropped.
+        Assert.Equal("1. Kế hoạch quý tới\n- Đề nghị tăng ngân sách 10%.\n\n2. Lịch trực Tết\nChốt trước ngày 20/1.", draft.Discussion);
     }
 }

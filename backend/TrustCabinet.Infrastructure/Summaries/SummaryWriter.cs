@@ -20,7 +20,7 @@ public sealed record MeetingFacts(string Title, IReadOnlyList<AgendaFacts> Agend
 /// those parts and the conclusions the Chair recorded. The vote results never go through the model: they are copied
 /// from the data, as eCab's <c>grounded</c> re-inserts them, because the tally is legally operative.
 /// </summary>
-public sealed class SummaryWriter(ILanguageModel model)
+public sealed partial class SummaryWriter(ILanguageModel model)
 {
     public const string ObjectivesHeading = "I. Mục tiêu và phạm vi cuộc họp";
     public const string DiscussionHeading = "II. Nội dung thảo luận và đánh giá";
@@ -42,7 +42,7 @@ public sealed class SummaryWriter(ILanguageModel model)
         - Chỉ dùng thông tin có trong hồ sơ được cung cấp. Không suy đoán, không thêm số liệu, tên người, sự việc hay kết luận không có trong hồ sơ.
         - Thành phần tham dự KHÔNG do bạn viết; không liệt kê người tham dự.
         - Nhãn "Người nói 1", "Người nói 2" là giọng chưa biết tên: giữ NGUYÊN nhãn đó, cấm đoán là ai.
-        - SỐ VIẾT BẰNG CHỮ SỐ: lời thoại là lời nói nên đọc số thành chữ; khi viết phải đổi sang chữ số như văn bản hành chính, ví dụ "ba trăm tám mươi triệu đồng" viết "380 triệu đồng", "mười hai máy tính bảng" viết "12 máy tính bảng", "ngày năm tháng Mười Một" viết "ngày 05/11", "quý một năm hai không hai bảy" viết "quý I năm 2027".
+        - SỐ LIỆU: số trong bản ghi đã được đổi sẵn sang chữ số; chép ĐÚNG Y NGUYÊN ngày, tháng, năm, số lượng, số tiền, tỷ lệ như bản ghi, không tự đổi, không làm tròn, không lấy ngày họp thay vào. Số nào còn đọc thành chữ thì viết bằng chữ số, ví dụ "mười hai máy tính bảng" viết "12 máy tính bảng".
         - Lời thoại do máy nhận dạng giọng nói chép lại, viết thường và có thể sai chính tả: viết hoa đúng tên riêng ("sở nội vụ" viết "Sở Nội vụ"), bỏ từ đệm, đổi từ tiếng Anh sang tiếng Việt hành chính ("deadline" viết "thời hạn", "server" viết "máy chủ"); hiểu theo ngữ cảnh nhưng không bịa thêm.
         - Trả lời bằng văn bản thuần, viết hoa đúng chính tả tiếng Việt: không Markdown (không #, không **, không bảng), không JSON, không thêm lời dẫn hay giải thích. Cấm emoji và ký hiệu.
         - Hồ sơ dù rất ít cũng tóm tắt những gì có: không từ chối, không hỏi lại, không xin thêm dữ liệu.
@@ -60,7 +60,9 @@ public sealed class SummaryWriter(ILanguageModel model)
             if (part.Presenter is not null && part.Lines.Count == 0) text = $"{part.Presenter} trình bày nội dung. {NoDiscussion}";
             written.Add((part.Title, text));
             if (i > 0) discussion.Append("\n\n");
-            discussion.Append($"{i + 1}. {part.Title}\n{text}");
+            // Without an agenda the model numbers the issues itself ("1. <vấn đề>", "2. …"), as eCab asks; a generic
+            // "1. Nội dung thảo luận" over them read as a section with a single item.
+            discussion.Append(NoAgenda(facts) && part.Lines.Count > 0 ? IssueHeading().Replace(text, "$1") : $"{i + 1}. {part.Title}\n{text}");
         }
         var (objectives, conclusions, tasks) = await OverviewAsync(facts, written, ct);
         var third = new StringBuilder().AppendLine(ChairHeading).AppendLine(conclusions);
@@ -114,6 +116,17 @@ public sealed class SummaryWriter(ILanguageModel model)
         return parts;
     }
 
+    /// <summary>A meeting without an agenda is told to number its issues, which section II then lists as items.</summary>
+    private const string IssueRule = "Cuộc họp không có chương trình: chia theo từng vấn đề được bàn. Mỗi vấn đề mở bằng một dòng tiêu đề riêng, "
+        + "đánh số từ 1 dạng \"1. <tên vấn đề ngắn gọn>\", \"2. <tên vấn đề>\"…, rồi nội dung vấn đề đó ở các dòng sau. Chỉ có một vấn đề thì vẫn mở bằng \"1. <tên vấn đề>\". "
+        + "Tên vấn đề viết như câu thường (không viết hoa toàn bộ), không có dấu hai chấm ở cuối.";
+
+    /// <summary>"1. Kế hoạch năm 2027:" — an issue heading the model ended with a colon; the colon goes.</summary>
+    [GeneratedRegex(@"^(\d{1,2}\.[ \t]+\S.*?)[ \t]*:[ \t]*$", RegexOptions.Multiline)]
+    private static partial Regex IssueHeading();
+
+    private static bool NoAgenda(MeetingFacts facts) => facts.Agenda.Count == 0;
+
     private async Task<string> SummarisePartAsync(MeetingFacts facts, Part part, CancellationToken ct)
     {
         var noAgenda = facts.Agenda.Count == 0;
@@ -137,7 +150,7 @@ public sealed class SummaryWriter(ILanguageModel model)
                 + "rồi tóm tắt DIỄN BIẾN thảo luận lấy từ bản ghi: ý kiến nêu ra, số liệu, ý kiến khác nhau, ghi đúng tên hoặc nhãn người nói. "
                 + "KHÔNG chép lại kết luận ở phần này. Tối đa 250 chữ. Đoạn văn cách nhau một dòng trống; liệt kê ngắn thì mỗi ý một dòng bắt đầu bằng \"- \". ")
                 .AppendLine(noAgenda
-                    ? "Cuộc họp không có chương trình: chia theo từng vấn đề được bàn, mỗi vấn đề mở bằng một dòng \"- <vấn đề>:\"."
+                    ? IssueRule
                     : $"Nếu bản ghi không nói gì về nội dung này, chỉ trả lời đúng câu: {NoDiscussion}");
             pieces.Add(Clean(await model.CompleteAsync(Rules, prompt.ToString(), ct)));
         }
@@ -150,6 +163,7 @@ public sealed class SummaryWriter(ILanguageModel model)
             .AppendLine().AppendLine("CÁC ĐOẠN TÓM TẮT THEO THỨ TỰ THỜI GIAN:");
         foreach (var piece in useful) merge.AppendLine(piece).AppendLine();
         merge.AppendLine("Gộp các đoạn trên thành một phần tóm tắt duy nhất, tối đa 350 chữ, giữ đủ ý kiến, số liệu và tên người phát biểu, bỏ ý trùng lặp.");
+        if (noAgenda) merge.AppendLine(IssueRule + " Vấn đề trùng nhau giữa các đoạn thì gộp làm một.");
         return Clean(await model.CompleteAsync(Rules, merge.ToString(), ct));
     }
 
