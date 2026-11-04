@@ -239,7 +239,7 @@ deactivate Page
 Ghi BR ngay tại message nơi rule được kiểm tra hoặc áp dụng.
 
 ```text
-AgendaService->AgendaService: Validate required title, positive planned duration\nand selected documents (BR-66)
+AgendaService->AgendaService: Validate required title\nand selected documents (BR-66)
 ```
 
 hoặc:
@@ -456,14 +456,14 @@ opt Meeting documents are selected
     deactivate DocumentRepository
 end
 
-AgendaService->AgendaService: Validate required title, positive planned duration,\noptional presenter and description, and selected documents (BR-66)
+AgendaService->AgendaService: Validate required title,\noptional presenter and description, and selected documents (BR-66)
 
 alt Invalid Agenda Item information - EX-1
     AgendaService-->AgendaController: MSG66 - Invalid agenda item information.\nApplicable field message(s)
     deactivate AgendaService
     AgendaController-->MeetingPage: MSG66 - Invalid agenda item information.\nApplicable field message(s)
     deactivate AgendaController
-    MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field message(s):\nAgenda item title is required.\nPlanned duration must be greater than 0.\nOne or more selected documents are not available to this meeting.
+    MeetingPage-->Secretary: MSG66 - Invalid agenda item information.\nApplicable field message(s):\nAgenda item title is required.\nOne or more selected documents are not available to this meeting.
 
 else Agenda Item information is valid
     AgendaService->AgendaService: Verify assigned Secretary and Meeting status Draft, WaitingApproval,\nRejected, Approved, Published or InProgress (BR-64, BR-65, BR-68, BR-74)

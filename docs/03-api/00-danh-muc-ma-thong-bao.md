@@ -645,7 +645,7 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG97` | UC-28a | *Invalid meeting participant information.* (Lỗi: *The selected user is not available.*, *This user is already a meeting participant.*, *A valid meeting role is required.*, *The Meeting Organizer may only assign a missing Secretary during preparation.*, *Guest name and email are required.*, *Guest email is invalid.*, *This guest email is already invited to the meeting.*, *This email is already represented by an internal meeting participant.*) |
 | `MSG98` | UC-28a / UC-28b / UC-28c | *The meeting participant list cannot be modified in its current status.* |
 | `MSG99` | UC-28a | *Unable to add the meeting participant. Please try again.* |
-| `MSG100` | UC-28b Manage Meeting Role & Additional Permissions | *Meeting role updated successfully.* |
+| `MSG100` | UC-28b Manage Meeting Role | *Meeting role updated successfully.* |
 | `MSG101` | UC-28b | *A valid meeting role is required.* |
 | `MSG102` | UC-28b, UC-73 / EX-3 | *Unable to update the meeting role. Please try again.* |
 | `MSG103` | UC-28c Remove Meeting Participant | *Meeting participant removed successfully.* |

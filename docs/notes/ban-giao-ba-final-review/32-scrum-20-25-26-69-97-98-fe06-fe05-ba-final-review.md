@@ -103,8 +103,8 @@ Chạy xong nhớ so lại với các tab cũ và đưa file về LF trước kh
 
 ## 6. Việc BA còn lại
 
-- [ ] Mục 1 (FE-06 quyền bổ sung + Organizer): UC-28a/b/c, UC-04 POST-2, UC-29 POST-2, UC-30, UC-32a/c, BR (§1.2),
-  ma trận §I.4.4, ERD + Entity 7a + ảnh ERD, màn §III.6.1, sequence FE-06, README FE-06, inventory + catalogue.
-- [ ] Mục 2 (FE-06 nhánh lỗi): UC-28a/b/c, UC-73 theo bảng 7 dòng trên.
-- [ ] Mục 3 (FE-05): UC-24 EX-1, UC-25 EX-1 (`404` rỗng), các chỗ "thời lượng" còn sót.
+- [x] Mục 1 (FE-06 quyền bổ sung + Organizer): UC-28a/b/c, UC-04 POST-2, UC-29 POST-2, UC-30, UC-32a/c, BR (§1.2),
+  ma trận §I.4.4, ERD + Entity 7a, README FE-06, inventory + catalogue. Còn pending: màn §III.6.1 (đặc tả màn hình, theo yêu cầu không sửa), sequence FE-06 (đã sửa .txt), ảnh ERD.
+- [x] Mục 2 (FE-06 nhánh lỗi): UC-28a/b/c và UC-73 đã cập nhật các nhánh MSG85, MSG109, MSG275, 404 rỗng, MSG259, MSG257/MSG154.
+- [x] Mục 3 (FE-05): UC-24 EX-1, UC-25 EX-1 (`404` rỗng) và các chỗ "thời lượng" còn sót (MSG66, README sequence) đã sửa. Còn pending: màn phòng họp "Current item" (đặc tả màn hình, không sửa theo yêu cầu).
 - [ ] Comment kết quả vào SCRUM-20, 25, 26, 69, 97, 98 sau khi docs vào `main` (theo `DEVELOPMENT_WORKFLOW.md` §2.2).
