@@ -157,8 +157,12 @@ public static class AgendaEndpoints
             var (status, code, message) = result.Failure switch
             {
                 AgendaFailure.Forbidden => (403, denied, "Bạn không có quyền thực hiện thao tác này."),
+                AgendaFailure.Locked when operation == AgendaOperation.RecordConclusion
+                    => (409, denied, "Không thể sửa kết luận của mục nghị sự này nữa."),
                 AgendaFailure.Locked => (409, denied, "Trạng thái cuộc họp không cho phép thao tác này."),
-                AgendaFailure.Invalid => (400, operation == AgendaOperation.RecordConclusion ? Msg272ConclusionInvalid : Msg66Invalid, "Thông tin mục nghị sự không hợp lệ."),
+                AgendaFailure.Invalid when operation == AgendaOperation.RecordConclusion
+                    => (400, Msg272ConclusionInvalid, "Nhập kết luận tối đa 2.000 ký tự."),
+                AgendaFailure.Invalid => (400, Msg66Invalid, "Thông tin mục nghị sự không hợp lệ."),
                 AgendaFailure.UnsupportedMedia => (415, Msg34UnsupportedMedia, "Yêu cầu phải dùng Content-Type application/json."),
                 AgendaFailure.TooLarge => (413, Msg87BodyTooLarge, "Nội dung yêu cầu vượt quá 64 KiB."),
                 AgendaFailure.ReadFailed => (500, Msg128ReadFailed, "Không tải được chương trình nghị sự."),
