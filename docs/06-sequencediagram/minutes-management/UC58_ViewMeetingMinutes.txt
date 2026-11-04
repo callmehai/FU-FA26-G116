@@ -1,0 +1,58 @@
+title UC-58 - View Meeting Minutes
+
+actor "Chair / Secretary" as Actor
+boundary "Minutes Card (Biên bản tab)" as MinutesCard
+control ":Minutes Controller" as MinutesController
+control ":Minutes Service" as MinutesService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Actor->MinutesCard: Open the Biên bản tab
+activate MinutesCard
+MinutesCard->MinutesController: get(meetingId)
+activate MinutesController
+MinutesController->MinutesService: getAsync(meetingId, actorId)
+activate MinutesService
+MinutesService->MeetingRepository: Get the Meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting
+activate Database
+Database-->MeetingRepository: Meeting / Not found
+deactivate Database
+MeetingRepository-->MinutesService: Meeting / Not found
+deactivate MeetingRepository
+
+alt The Meeting is not accessible - EX-2
+    MinutesService-->MinutesController: Not found
+    MinutesController-->MinutesCard: 404
+    MinutesCard-->Actor: The Meeting is not available
+else Actor may read the Meeting
+    MinutesService->Database: Retrieve the latest revision
+    activate Database
+    Database-->MinutesService: Minutes / None
+    deactivate Database
+    MinutesService->MinutesService: Check whether the actor is the current Chair or Secretary (BR-386)
+
+    alt Actor is the current Chair or Secretary and a draft exists
+        MinutesService-->MinutesController: 200 MinutesState with the draft
+        MinutesController-->MinutesCard: 200 MinutesState
+        MinutesCard-->Actor: The paper as it will print, revision number, status, who created it and when, last save
+    else No draft yet - AF-1
+        MinutesService-->MinutesController: 200 MinutesState with no draft
+        MinutesController-->MinutesCard: 200 MinutesState
+        MinutesCard-->Actor: Empty state and, for the Chair and Secretary, the control to build one (UC-59)
+    else Neither the Chair nor the Secretary
+        MinutesService-->MinutesController: 200 MinutesState with no draft
+        MinutesController-->MinutesCard: 200 MinutesState
+        MinutesCard-->Actor: No minutes: a draft is not disclosed, and issued minutes are not part of this release
+    end
+end
+deactivate MinutesService
+
+opt The minutes cannot be read - EX-1
+    MinutesService-->MinutesController: MSG403 - Unable to load the minutes.
+    MinutesController-->MinutesCard: MSG403 - Unable to load the minutes.
+    MinutesCard-->Actor: MSG403 - Unable to load the minutes.
+end
+deactivate MinutesController
+deactivate MinutesCard

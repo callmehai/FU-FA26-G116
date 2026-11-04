@@ -1,0 +1,64 @@
+title UC-48 - View Meeting Summary
+
+actor "Chair / Secretary / Participant" as Actor
+boundary "Draft Card (Biên bản tab)" as DraftCard
+control ":Summary Controller" as SummaryController
+control ":Summary Service" as SummaryService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Actor->DraftCard: Open the Biên bản tab
+activate DraftCard
+DraftCard->SummaryController: get(meetingId)
+activate SummaryController
+SummaryController->SummaryService: getAsync(meetingId, actorId)
+activate SummaryService
+SummaryService->MeetingRepository: Get the Meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting
+activate Database
+Database-->MeetingRepository: Meeting / Not found
+deactivate Database
+MeetingRepository-->SummaryService: Meeting / Not found
+deactivate MeetingRepository
+
+alt The Meeting is not accessible - EX-2
+    SummaryService-->SummaryController: Not found
+    SummaryController-->DraftCard: 404
+    DraftCard-->Actor: The Meeting is not available
+else The actor may read the Meeting
+    SummaryService->Database: Retrieve the draft
+    activate Database
+    Database-->SummaryService: Draft / None
+    deactivate Database
+    SummaryService->SummaryService: Check whether the actor is the current Chair or Secretary (BR-374)
+    alt Actor is the current Chair or Secretary
+        SummaryService-->SummaryController: 200 SummaryState with the draft and readiness
+    else Draft reviewed
+        SummaryService-->SummaryController: 200 SummaryState with the draft, without readiness
+    else Draft not reviewed
+        SummaryService-->SummaryController: 200 SummaryState with no draft (AF-1)
+    end
+end
+deactivate SummaryService
+SummaryController-->DraftCard: 200 SummaryState / 404
+deactivate SummaryController
+
+alt Draft shown
+    DraftCard-->Actor: Label "Nội dung do AI tạo - cần rà soát", sections I-III, model, time, who asked
+    Actor->DraftCard: Read the review state and the source of each part of section II (BR-380)
+    DraftCard-->Actor: Who reviewed and when, who corrected and when, the stretch of the Meeting each part came from
+else No draft yet - AF-1
+    DraftCard-->Actor: Empty state; for the Chair and Secretary, what a draft would be based on (BR-379)
+else The last draft failed - AF-2
+    DraftCard-->Actor: The reason, and the control to ask again (UC-47)
+else Read by another participant - AF-3
+    DraftCard-->Actor: The approved draft, read-only, with no correction or review control
+end
+
+opt The draft cannot be read - EX-1
+    SummaryService-->SummaryController: MSG392 - Unable to load the draft.
+    SummaryController-->DraftCard: MSG392 - Unable to load the draft.
+    DraftCard-->Actor: MSG392 - Unable to load the draft.
+end
+deactivate DraftCard

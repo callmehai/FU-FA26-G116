@@ -1,9 +1,9 @@
-# Sequence Diagram — Gỡ băng và nhận diện người nói (FE-10)
+# Sequence Diagram — Gỡ băng, nhận diện người nói và dự thảo AI (FE-10)
 
 Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho các UC thuộc FE-10
-(UC-45a → UC-45c, UC-46a → UC-46d, UC-81a → UC-81f), đã đối chiếu với code ngày 30/10/2026 và vẽ theo đặc tả **đã sửa** ở
-[plan 19 §12](../../notes/ban-giao-ba-final-review/19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md#12-review-lượt-13-30102026--việc-phải-sửa).
-UC-47 → UC-51 (tóm tắt) chưa có code nên không có sơ đồ.
+(UC-45a → UC-45c, UC-46a → UC-46d, UC-47 → UC-50, UC-81a → UC-81f), đã đối chiếu với code ngày 30/10/2026 và vẽ theo đặc tả **đã sửa** ở
+[plan 19 §12](../../notes/ban-giao-ba-final-review/19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md#12-review-lượt-13-30102026--việc-phải-sửa);
+UC-47 → UC-50 thêm ngày 05/11/2026 theo PR #260. UC-51 (công bố tóm tắt) chưa có code nên không có sơ đồ.
 
 | Use Case | Source |
 |---|---|
@@ -15,6 +15,10 @@ UC-47 → UC-51 (tóm tắt) chưa có code nên không có sơ đồ.
 | UC-46b Assign Speaker | [UC46b_AssignSpeaker.txt](UC46b_AssignSpeaker.txt) |
 | UC-46c Exclude or Restore a Sentence | [UC46c_ExcludeOrRestoreSentence.txt](UC46c_ExcludeOrRestoreSentence.txt) |
 | UC-46d Delete a Sentence | [UC46d_DeleteSentence.txt](UC46d_DeleteSentence.txt) |
+| UC-47 Generate / Regenerate Meeting Summary | [UC47_GenerateMeetingSummary.txt](UC47_GenerateMeetingSummary.txt) |
+| UC-48 View Meeting Summary | [UC48_ViewMeetingSummary.txt](UC48_ViewMeetingSummary.txt) |
+| UC-49 Edit Meeting Summary | [UC49_EditMeetingSummary.txt](UC49_EditMeetingSummary.txt) |
+| UC-50 Approve Meeting Summary | [UC50_ApproveMeetingSummary.txt](UC50_ApproveMeetingSummary.txt) |
 | UC-81a View My Voice ID | [UC81a_ViewMyVoiceId.txt](UC81a_ViewMyVoiceId.txt) |
 | UC-81b Give Voice ID Consent | [UC81b_GiveVoiceIdConsent.txt](UC81b_GiveVoiceIdConsent.txt) |
 | UC-81c Record Voice Sample | [UC81c_RecordVoiceSample.txt](UC81c_RecordVoiceSample.txt) |

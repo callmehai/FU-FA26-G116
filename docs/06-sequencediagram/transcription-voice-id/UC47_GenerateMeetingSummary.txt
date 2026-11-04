@@ -1,0 +1,125 @@
+title UC-47 - Generate / Regenerate Meeting Summary
+
+actor "Chair / Secretary" as Actor
+boundary "Draft Card (Biên bản tab)" as DraftCard
+control ":Summary Controller" as SummaryController
+control ":Summary Service" as SummaryService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Transcript Reader" as TranscriptReader
+participant ":AI Client" as AiClient
+database ":Database" as Database
+participant ":AI Server" as AiServer
+
+Actor->DraftCard: Open the Biên bản tab
+activate DraftCard
+DraftCard->SummaryController: get(meetingId)
+activate SummaryController
+SummaryController->SummaryService: getAsync(meetingId, actorId)
+activate SummaryService
+SummaryService->MeetingRepository: Get the Meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting
+activate Database
+Database-->MeetingRepository: Meeting / Not found
+deactivate Database
+MeetingRepository-->SummaryService: Meeting / Not found
+deactivate MeetingRepository
+SummaryService->SummaryService: Check the actor may read the Meeting, and whether the actor\nis its current Chair or Secretary (BR-374)
+SummaryService-->SummaryController: State: draft (only if reviewed or manager), canManage, aiReady, readiness
+deactivate SummaryService
+SummaryController-->DraftCard: 200 SummaryState
+deactivate SummaryController
+DraftCard-->Actor: Draft, its AI label, review state and what it is based on
+
+Actor->DraftCard: Select Generate summary, or Generate again
+DraftCard->SummaryController: request(meetingId)
+activate SummaryController
+SummaryController->SummaryService: requestAsync(meetingId, actorId)
+activate SummaryService
+SummaryService->SummaryService: Check the actor is the current Chair or Secretary (BR-374),\nthe Meeting is InProgress or Ended (BR-375), the AI server is\nconfigured, and no draft is queued or being written (BR-376)
+
+alt Actor is not the current Chair or Secretary - EX-1
+    SummaryService-->SummaryController: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+    SummaryController-->DraftCard: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+    DraftCard-->Actor: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+else The Meeting has not started or was cancelled - EX-2
+    SummaryService-->SummaryController: MSG386 - A draft can be created only while the meeting is in progress or after it has ended.
+    SummaryController-->DraftCard: MSG386 - A draft can be created only while the meeting is in progress or after it has ended.
+    DraftCard-->Actor: MSG386 - A draft can be created only while the meeting is in progress or after it has ended.
+else The AI server is not configured - EX-4
+    SummaryService-->SummaryController: MSG394 - The AI server is not ready. Contact the system administrator.
+    SummaryController-->DraftCard: MSG394 - The AI server is not ready. Contact the system administrator.
+    DraftCard-->Actor: MSG394 - The AI server is not ready. Contact the system administrator.
+else A draft is already being written - EX-3
+    SummaryService-->SummaryController: MSG387 - The AI is writing the draft, please wait.
+    SummaryController-->DraftCard: MSG387 - The AI is writing the draft, please wait.
+    DraftCard-->Actor: MSG387 - The AI is writing the draft, please wait.
+else Request accepted
+    SummaryService->Database: Set the draft Queued, keep its text, record who asked and when
+    activate Database
+    Database-->SummaryService: Saved
+    deactivate Database
+    SummaryService-->SummaryController: State
+    deactivate SummaryService
+    SummaryController-->DraftCard: 202 MSG384 - The request was sent. The draft appears when the AI has written it.
+    deactivate SummaryController
+    DraftCard-->Actor: MSG384 - The request was sent. The draft appears when the AI has written it.
+end
+
+opt Background worker - SummaryWorker
+    SummaryService->Database: Claim the oldest Queued draft and mark it Running
+    activate Database
+    Database-->SummaryService: Claimed
+    deactivate Database
+    SummaryService->TranscriptReader: Read the transcript, leaving out excluded sentences
+    activate TranscriptReader
+    TranscriptReader-->SummaryService: Lines with speaker and time
+    deactivate TranscriptReader
+    SummaryService->SummaryService: Cut the transcript along the agenda by the times each item was started\nand closed, and turn numbers read aloud into digits (BR-380)
+    loop One call per agenda item - AF-3
+        SummaryService->AiClient: complete(rules, prompt with the lines of this item)
+        activate AiClient
+        AiClient->AiServer: POST chat/completions
+        activate AiServer
+        AiServer-->AiClient: Part of section II
+        deactivate AiServer
+        AiClient-->SummaryService: Part text
+        deactivate AiClient
+    end
+    SummaryService->AiClient: complete(rules, parts and the Chair's recorded conclusions)
+    activate AiClient
+    AiClient->AiServer: POST chat/completions
+    activate AiServer
+    AiServer-->AiClient: Sections I and III
+    deactivate AiServer
+    AiClient-->SummaryService: Sections I and III
+    deactivate AiClient
+    SummaryService->SummaryService: Copy each closed vote from the data, never through the model (BR-378)
+    alt Draft written
+        SummaryService->Database: Store Ready with the text, model and time; clear review and corrections
+        activate Database
+        Database-->SummaryService: Saved
+        deactivate Database
+    else The draft cannot be stored - EX-5
+        SummaryService->Database: Mark Failed with the reason
+        activate Database
+        Database-->SummaryService: Saved
+        deactivate Database
+    else The AI server fails - EX-6
+        SummaryService->Database: Mark Failed with the reason the Secretary can act on
+        activate Database
+        Database-->SummaryService: Saved
+        deactivate Database
+    end
+end
+
+DraftCard->SummaryController: get(meetingId), again every 5 seconds while Queued or Running
+activate SummaryController
+SummaryController->SummaryService: getAsync(meetingId, actorId)
+activate SummaryService
+SummaryService-->SummaryController: 200 SummaryState
+deactivate SummaryService
+SummaryController-->DraftCard: 200 SummaryState
+deactivate SummaryController
+DraftCard-->Actor: The draft with the label "Nội dung do AI tạo - cần rà soát"
+deactivate DraftCard

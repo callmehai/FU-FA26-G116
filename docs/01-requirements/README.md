@@ -27,14 +27,16 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
   79 Use Case (UC-01 → UC-79), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
   ngày 10/10/2026. UC-73 → UC-77 thêm ngày 24/10/2026, UC-39d và UC-78 thêm ngày 25/10/2026, UC-79 thêm ngày 29/10/2026, nối tiếp dải số cũ.
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (bản DOCX
-  25/10/2026): 118 heading UC, 83 bảng đặc tả, phần còn lại là placeholder, có link tới sequence diagram tương ứng.
+  05/11/2026): 141 heading UC, 90 bảng đặc tả, phần còn lại là placeholder, có link tới sequence diagram tương ứng.
   UC-73 → UC-77 (Hand Over Chair, Confirm Document Read, Cancel Meeting, Manage Vote Documents, Record Agenda Item
   Conclusion) đã có đặc tả và sequence diagram (`UC73_HandOverChair` → `UC77_RecordAgendaItemConclusion`);
-  UC-37 → UC-42, UC-39d và UC-78 (phòng họp trực tuyến) đã đặc tả ngày 25/10/2026; UC-79 (đăng ký phát biểu, yêu cầu chưa cài) thêm ngày 29/10/2026.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **279 BR đang dùng**
-  trong dải BR-01 → BR-339 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026, BR-323 → BR-332, BR-336 → BR-339
+  UC-37 → UC-42, UC-39d và UC-78 (phòng họp trực tuyến) đã đặc tả ngày 25/10/2026; UC-79 (đăng ký phát biểu, yêu cầu chưa cài) thêm ngày 29/10/2026;
+  **UC-47–UC-50 (dự thảo AI) và UC-58–UC-60 (bản nháp biên bản) đặc tả ngày 05/11/2026 theo PR #260**; UC-51 và
+  UC-61–UC-65 (công bố tóm tắt, ký biên bản) còn placeholder vì chưa có code.
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **347 BR đang dùng**
+  trong dải BR-01 → BR-394 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026, BR-323 → BR-332, BR-336 → BR-339
   rà soát phòng họp trực tuyến 25/10/2026 và UC-79 29/10/2026 (BR-322 là của main: không nhận thông báo về hành động của mình); đợt BA Final Review 24/10/2026 sửa
-  BR-30/105/106/115/126/172/176/215/295); danh sách BR ngừng dùng ở cuối file.
+  BR-30/105/106/115/126/172/176/215/295; **BR-373 → BR-394 thêm 05/11/2026 cho dự thảo AI và bản nháp biên bản, PR #260**); danh sách BR ngừng dùng ở cuối file.
 - Mã thông báo `MSGnn`: [03-api/00-danh-muc-ma-thong-bao.md](../03-api/00-danh-muc-ma-thong-bao.md) là nguồn chuẩn duy nhất.
 
 Yêu cầu phi chức năng, phạm vi MoSCoW và dữ liệu cá nhân hiện nằm trong Report 1 và Report 3 §IV; chưa tách file riêng.

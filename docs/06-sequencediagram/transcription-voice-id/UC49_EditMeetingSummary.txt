@@ -1,0 +1,76 @@
+title UC-49 - Edit Meeting Summary
+
+actor "Chair / Secretary" as Actor
+boundary "Draft Card (Biên bản tab)" as DraftCard
+control ":Summary Controller" as SummaryController
+control ":Summary Service" as SummaryService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Actor->DraftCard: Select Edit on a finished draft
+activate DraftCard
+DraftCard-->Actor: The three sections in a text box each, with their limits
+
+Actor->DraftCard: Change the text and select Save
+DraftCard->SummaryController: edit(meetingId, objectives, discussion, conclusions)
+activate SummaryController
+SummaryController->SummaryService: editAsync(meetingId, actorId, edit)
+activate SummaryService
+SummaryService->MeetingRepository: Get the Meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting
+activate Database
+Database-->MeetingRepository: Meeting / Not found
+deactivate Database
+MeetingRepository-->SummaryService: Meeting / Not found
+deactivate MeetingRepository
+SummaryService->SummaryService: Check the actor is the current Chair or Secretary (BR-374)
+
+alt Actor is not the current Chair or Secretary - EX-3
+    SummaryService-->SummaryController: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+    SummaryController-->DraftCard: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+    DraftCard-->Actor: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+else Actor may edit
+    SummaryService->Database: Retrieve the draft
+    activate Database
+    Database-->SummaryService: Draft / None
+    deactivate Database
+
+    alt No finished draft - EX-2
+        SummaryService-->SummaryController: MSG390 - There is no draft to correct or review.
+        SummaryController-->DraftCard: MSG390 - There is no draft to correct or review.
+        DraftCard-->Actor: MSG390 - There is no draft to correct or review.
+    else Draft exists
+        SummaryService->SummaryService: Check no section is empty and each is within its limit:\nI 2,000, II 12,000, III 8,000 characters (BR-393)
+
+        alt A section is empty or too long - EX-1
+            SummaryService-->SummaryController: MSG389 - The draft content is invalid.
+            SummaryController-->DraftCard: MSG389 - The draft content is invalid.
+            DraftCard-->Actor: MSG389 - The draft content is invalid.
+        else Sections valid
+            opt The draft had been reviewed - AF-1
+                SummaryService-->SummaryController: The review will be withdrawn
+                SummaryController-->DraftCard: Confirm that saving withdraws the review
+                DraftCard-->Actor: Warning: the other participants stop seeing the draft until it is approved again (BR-377)
+                Actor->DraftCard: Confirm
+            end
+            SummaryService->Database: Save the three sections with who corrected them and when,\nand clear the review (BR-377)
+            activate Database
+            Database-->SummaryService: Saved / Failed
+            deactivate Database
+
+            alt Saved
+                SummaryService-->SummaryController: State
+                SummaryController-->DraftCard: 200 MSG388 - Draft saved.
+                DraftCard-->Actor: MSG388 - Draft saved.
+            else The correction cannot be saved - EX-4
+                SummaryService-->SummaryController: MSG393 - Unable to save the draft. Please try again.
+                SummaryController-->DraftCard: MSG393 - Unable to save the draft. Please try again.
+                DraftCard-->Actor: MSG393 - Unable to save the draft. Please try again.
+            end
+        end
+    end
+end
+deactivate SummaryService
+deactivate SummaryController
+deactivate DraftCard
