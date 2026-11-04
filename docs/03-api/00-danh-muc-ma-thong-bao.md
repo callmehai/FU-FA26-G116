@@ -85,7 +85,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | `MSG64` | 200 | POST current | Bắt đầu mục nghị sự thành công. |
 | `MSG65` | 200 | POST complete | Hoàn thành mục nghị sự thành công. |
 | `MSG66` | 400 | POST/PUT item; errors theo trường hoặc body | Thông tin mục nghị sự không hợp lệ. |
-| `MSG67` | 403 | Planning/options: thiếu Secretary | Bạn không có quyền thực hiện thao tác này. |
+| `MSG67` | 403 | Planning/options: thiếu Chair/Secretary | Bạn không có quyền thực hiện thao tác này. |
 | `MSG67` | 409 | Planning/options: meeting đã khóa | Trạng thái cuộc họp không cho phép thao tác này. |
 | `MSG68` | 503 | Lưu tạo thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
 | `MSG69` | 503 | Lưu sửa thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |

@@ -50,6 +50,74 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
         Assert.Equal(3, options.GetProperty("presenters").GetArrayLength());
     }
 
+    [Theory]
+    [InlineData(MeetingStatus.Draft)]
+    [InlineData(MeetingStatus.WaitingApproval)]
+    [InlineData(MeetingStatus.Rejected)]
+    [InlineData(MeetingStatus.Approved)]
+    [InlineData(MeetingStatus.Published)]
+    [InlineData(MeetingStatus.InProgress)]
+    public async Task Chair_plans_like_the_secretary_in_all_six_states(MeetingStatus status)
+    {
+        var s = await fixture.Seed(status, 2);
+        using var chair = fixture.Client(s.Chair);
+        var snapshot = await chair.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.True(snapshot.GetProperty("permissions").GetProperty("canCreate").GetBoolean());
+        Assert.True(snapshot.GetProperty("permissions").GetProperty("canReorder").GetBoolean());
+        var actions = snapshot.GetProperty("items")[0].GetProperty("actions");
+        Assert.True(actions.GetProperty("canEdit").GetBoolean());
+        Assert.True(actions.GetProperty("canEditPlanningFields").GetBoolean());
+        Assert.True(actions.GetProperty("canDelete").GetBoolean());
+        var options = await chair.GetFromJsonAsync<JsonElement>(s.Url + "/editor-options");
+        Assert.Equal(3, options.GetProperty("presenters").GetArrayLength());
+
+        var created = await AssertCode(await chair.PostAsJsonAsync(s.Url, Input("Chủ toạ thêm", presenter: s.Member)), 201, "MSG60");
+        var added = created.GetProperty("agendaItemId").GetGuid();
+        await AssertCode(await chair.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("Chủ toạ sửa")), 200, "MSG61");
+        snapshot = await chair.GetFromJsonAsync<JsonElement>(s.Url);
+        await AssertCode(await chair.PutAsJsonAsync(s.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(),
+            orderedItemIds = new[] { added, s.Items[1], s.Items[0] } }), 200, "MSG63");
+        await AssertCode(await chair.DeleteAsync(s.Url + $"/{s.Items[1]}"), 200, "MSG62");
+
+        await using var db = fixture.Db();
+        var items = await db.AgendaItems.Where(i => i.MeetingId == s.MeetingId).OrderBy(i => i.Position).ToListAsync();
+        Assert.Equal(new[] { added, s.Items[0] }, items.Select(i => i.Id));
+        Assert.Equal("Chủ toạ sửa", items[1].Title);
+    }
+
+    [Fact]
+    public async Task Chair_planning_locks_once_ended_and_a_member_is_still_refused()
+    {
+        var ended = await fixture.Seed(MeetingStatus.Ended, 2);
+        using var chair = fixture.Client(ended.Chair);
+        var snapshot = await chair.GetFromJsonAsync<JsonElement>(ended.Url);
+        Assert.False(snapshot.GetProperty("permissions").GetProperty("canCreate").GetBoolean());
+        Assert.False(snapshot.GetProperty("items")[0].GetProperty("actions").GetProperty("canEdit").GetBoolean());
+        await AssertCode(await chair.PostAsJsonAsync(ended.Url, Input()), 409, "MSG67");
+        await AssertCode(await chair.GetAsync(ended.Url + "/editor-options"), 409, "MSG67");
+        await AssertCode(await chair.PutAsJsonAsync(ended.Url + $"/{ended.Items[0]}", Input("Sửa")), 409, "MSG67");
+        await AssertCode(await chair.DeleteAsync(ended.Url + $"/{ended.Items[0]}"), 409, "MSG67");
+        await AssertCode(await chair.PutAsJsonAsync(ended.Url + "/order", new { orderVersion = snapshot.GetProperty("orderVersion").GetString(),
+            orderedItemIds = ended.Items.Reverse().ToArray() }), 409, "MSG67");
+
+        var s = await fixture.Seed(count: 2);
+        using var member = fixture.Client(s.Member);
+        var view = await member.GetFromJsonAsync<JsonElement>(s.Url);
+        Assert.False(view.GetProperty("permissions").GetProperty("canCreate").GetBoolean());
+        Assert.False(view.GetProperty("items")[0].GetProperty("actions").GetProperty("canDelete").GetBoolean());
+        await AssertCode(await member.PutAsJsonAsync(s.Url + $"/{s.Items[0]}", Input("Sửa")), 403, "MSG67");
+        await AssertCode(await member.DeleteAsync(s.Url + $"/{s.Items[0]}"), 403, "MSG67");
+        await AssertCode(await member.PutAsJsonAsync(s.Url + "/order", new { orderVersion = view.GetProperty("orderVersion").GetString(),
+            orderedItemIds = s.Items.Reverse().ToArray() }), 403, "MSG67");
+
+        // A Chair who is handed back to Member loses planning at once: the server rechecks the current role.
+        await using var db = fixture.Db();
+        (await db.MeetingParticipants.SingleAsync(p => p.MeetingId == s.MeetingId && p.UserId == s.Chair)).Role = MeetingRole.Member;
+        await db.SaveChangesAsync();
+        using var formerChair = fixture.Client(s.Chair);
+        await AssertCode(await formerChair.PostAsJsonAsync(s.Url, Input()), 403, "MSG67");
+    }
+
     [Fact]
     public async Task Empty_snapshot_errors_visibility_and_current_role_are_authoritative()
     {
@@ -232,7 +300,7 @@ public sealed class AgendaEndpointTests(AgendaFixture fixture) : IClassFixture<A
             var snapshot = await client.GetFromJsonAsync<JsonElement>(s.Url);
             return snapshot.GetProperty("items")[0].GetProperty("actions").GetProperty("canLinkDocuments").GetBoolean();
         }
-        // The Chair links documents (UC-33b) though only the Secretary plans the agenda.
+        // Linking documents (UC-33b) follows the document rules, not the planning states.
         Assert.Equal(open, await CanLink(s.Chair));
         Assert.Equal(open, await CanLink(s.Secretary));
         Assert.False(await CanLink(s.Member));
