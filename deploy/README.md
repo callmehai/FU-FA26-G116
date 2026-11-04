@@ -465,6 +465,36 @@ các chức năng giọng nói báo `MSG312` như chưa bật.
 
 Muốn quay về cách A thì đổi `SPEECH_URL` thành `http://speech:8090` và thêm `COMPOSE_PROFILES=speech`.
 
+### 11. Máy AI viết dự thảo biên bản (tuỳ chọn)
+
+Nút "Tạo dự thảo" ở tab Biên bản cần một máy chạy model ngôn ngữ ([ADR-0054](../docs/05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)).
+Server test 4 GB không chạy nổi model, nên model chạy trên máy của nhóm, server gọi qua Tailscale như cách B ở §10.
+Thiếu máy này thì app vẫn chạy; chỉ nút tạo dự thảo báo "Máy AI chưa sẵn sàng".
+
+1. **Máy chạy AI**: cài Ollama, tải model, cho Ollama nghe trên IP Tailscale. `caffeinate -i` giữ máy không ngủ:
+
+   ```bash
+   brew install ollama && ollama pull qwen2.5:7b-instruct
+   OLLAMA_HOST=$(tailscale ip -4):11434 caffeinate -i ollama serve
+   ```
+
+   Dùng llama.cpp thay Ollama cũng được: `llama-server -m <model>.gguf --host $(tailscale ip -4) --port 8080`, khi đó
+   `AI_URL=http://100.x.y.z:8080/v1`.
+
+2. **Server**: thêm vào `deploy/.env`, rồi khởi động lại app:
+
+   ```bash
+   AI_URL=http://100.x.y.z:11434/v1
+   AI_MODEL=qwen2.5:7b-instruct
+   ```
+
+   ```bash
+   curl -s http://100.x.y.z:11434/v1/models && cd ~/TrustCabinet && docker compose -f deploy/docker-compose.yml up -d app
+   ```
+
+Lời thoại cuộc họp đi từ server sang máy này, nên chỉ dùng máy của nhóm, qua Tailscale. Không trỏ `AI_URL` sang
+dịch vụ AI bên ngoài. Chọn model nào thì chạy bộ đo [`tests/ai/`](../tests/ai/README.md) trước để so.
+
 ## Sau khi bảo vệ xong
 
 Xoá máy `trustcabinet` **và** IP tĩnh trên Lightsail, rồi đóng tài khoản AWS. Tài khoản đang ở Paid

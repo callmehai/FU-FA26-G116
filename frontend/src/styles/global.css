@@ -4432,3 +4432,71 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 @media (hover: none) {
   .upload-tray .icon-button-sm { width: 40px; height: 40px; }
 }
+
+/* ---------- Biên bản tab (SCRUM-36, SCRUM-32): the AI's Dự thảo, then the minutes on paper ---------- */
+.minutes-tab { display: grid; gap: 16px; }
+.minutes-card { min-width: 0; }
+.minutes-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 12px; }
+.minutes-card-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.minutes-card-actions { margin-left: auto; gap: 8px; }
+.minutes-skeleton { height: 120px; }
+/* AI-eCabinet's AiLabel: whatever the AI wrote says so, until and after it is corrected. */
+.ai-label {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 2px 8px;
+  border-radius: var(--radius-chip); background: var(--chip-violet-bg); color: var(--chip-violet-fg);
+  font-size: 12px; font-weight: 600;
+}
+.minutes-empty { margin: 0; }
+.minutes-running { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--muted-ink); }
+.minutes-readiness { margin-bottom: 12px; }
+.minutes-readiness p + p { margin-top: 4px; }
+.minutes-outline section + section { margin-top: 16px; }
+.minutes-outline h3 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+.minutes-outline-text { line-height: 1.6; overflow-wrap: anywhere; }
+.minutes-outline-text p { margin: 0; white-space: pre-wrap; }
+.minutes-outline-text .minutes-outline-heading { margin-top: 8px; font-weight: 600; }
+.minutes-outline-text .minutes-outline-heading:first-child { margin-top: 0; }
+.minutes-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 16px 0 0; }
+.minutes-source {
+  padding: 2px 8px; border: 1px solid var(--line); border-radius: var(--radius-chip);
+  color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums;
+}
+.minutes-meta { margin: 12px 0 0; }
+.minutes-outline-form { display: grid; gap: 12px; }
+.minutes-outline-form textarea, .minutes-editor textarea { width: 100%; line-height: 1.55; resize: vertical; }
+.minutes-form-actions { justify-content: flex-end; }
+.minutes-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.minutes-editor .minutes-form-actions { grid-column: 1 / -1; }
+.minutes-editor-preview { max-height: 75vh; overflow: auto; }
+.minutes-editor-preview .minutes-paper { padding: 32px; box-shadow: none; }
+/* The minutes as the printed page (Decree 30): Times New Roman, justified, the first line indented 12.7 mm. */
+.minutes-paper {
+  max-width: 794px; margin: 0 auto; padding: 56px 60px 56px 84px; border: 1px solid var(--line);
+  background: var(--surface); box-shadow: var(--shadow-sm); color: var(--ink);
+  font-family: 'Times New Roman', Times, serif; font-size: 17px; line-height: 1.5; overflow-wrap: anywhere;
+}
+.minutes-paper p { margin: 0 0 6px; text-align: justify; text-indent: 12.7mm; }
+.minutes-paper .minutes-center { text-align: center; text-indent: 0; margin-bottom: 14px; }
+.minutes-paper .minutes-sub { font-weight: 700; }
+.minutes-paper .minutes-small { margin: 0; font-size: 15px; text-align: left; text-indent: 0; }
+.minutes-title { margin: 20px 0 4px; font-size: 19px; font-weight: 700; text-align: center; }
+.minutes-section { margin: 12px 0 6px; font-size: inherit; font-weight: 700; text-indent: 12.7mm; }
+/* 13 pt in the Word file; one size down on screen so the national motto keeps to one line, as on paper. */
+.minutes-frame { width: 100%; margin: 4px 0 8px; border-collapse: collapse; font-size: 15px; }
+.minutes-frame td { padding: 0 4px; text-align: center; vertical-align: top; }
+.minutes-frame td:first-child { width: 40%; }
+.minutes-frame td:empty::after { content: '\00a0'; }
+@media (max-width: 900px) {
+  .minutes-editor { grid-template-columns: minmax(0, 1fr); }
+  .minutes-editor-preview { display: none; }
+}
+@media (max-width: 720px) {
+  .minutes-card-actions { margin-left: 0; }
+  /* The card is already the page on a phone: a second frame inside it took a third of the width. */
+  .minutes-paper { padding: 8px 0; border: 0; box-shadow: none; font-size: 15px; }
+  .minutes-paper p, .minutes-section { text-indent: 0; }
+  /* Justified text on a 280px column opens gaps wider than the words. */
+  .minutes-paper p { text-align: left; }
+  .minutes-frame { font-size: 12px; }
+  .minutes-frame td { padding: 0 2px; }
+}
