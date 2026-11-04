@@ -102,7 +102,7 @@ người còn ở bản 1.1/1.0 vẫn chỉ được gợi ý và thấy lời m
 - [x] UC-06c + **BR-372** + UC-81a/81f theo §3.
 - [x] UC-81b/81c, BR-361/362/366, screen spec 8.x theo §4 (screen spec: không có màn tương ứng).
 - [x] Note 28 (PR #225) làm cùng lượt: BR-365/366/367, UC-45a/45c/46b, sequence.
-- [ ] Ghi kết quả vào SCRUM-130 trên Jira (chưa làm).
+- [x] Ghi kết quả vào SCRUM-130 trên Jira (đã xong 03/11: `Done` + comment 10425, xem README dòng 54).
 - [ ] Còn lệch nhỏ chưa sửa (ngoài phạm vi note): AGENTS.md còn câu "chỉ có TrustCabinet.Web.Tests với smoke test
       `/api/health`" và "trên màn chi tiết mọi tab trừ Thông tin chung còn placeholder" — cập nhật khi rảnh.
 
