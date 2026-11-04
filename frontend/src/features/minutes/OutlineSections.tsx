@@ -219,7 +219,7 @@ function OutlineSection({
             <textarea
               id={id}
               ref={box}
-              rows={3}
+              rows={1}
               value={value}
               maxLength={Math.max(limit, value.length)}
               spellCheck={false}
