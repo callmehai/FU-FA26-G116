@@ -6,6 +6,9 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Danh sách unit test theo module](NOTE-danh-sach-unit-test.md) — 03/11/2026; 124 case thiết kế theo
+  sáu cột của Report 5.1 (No, Module Name, Method Name, Sheet Name, Description, Pre-Condition) cho
+  22 module đang chạy thật, kèm bảng Source trỏ file test trong `tests/`.
 - [Phòng họp trực tuyến — rà soát FE-08 25/10/2026](NOTE-phong-hop-truc-tuyen-25-10-2026.md) — đặc tả
   UC-37 → UC-42, UC-39d, UC-78, BR-323 → BR-332 và mã FE `MSG328`–`MSG344`, `MSG350` (gộp main 29/10/2026);
   việc còn lại của BE: Guest chưa vào được phòng (chờ SCRUM-25).
