@@ -36,7 +36,7 @@ Note này gom việc BA. **Ghi note ngày 03/11/2026; sửa tài liệu ngày 04
 - `SpeechClip` có thật từ SCRUM-109, SCRUM-129 thêm `guest_invitation_id` cùng ràng buộc
   `ck_speech_clips_one_speaker`; `02-erd.md` bỏ sót nên cả bảng trạng thái, mermaid nhóm 7 và số đếm đều thiếu.
 - Đã thêm ba dòng vào bảng **Trạng thái triển khai**, ba entity cùng quan hệ vào **mermaid nhóm 7** (kèm đoạn giải
-  thích `SpeechClip` và Voice ID), hai dòng vào **Tổng hợp đầy đủ các quan hệ** và quy tắc 21–22 ở mục ràng buộc.
+  thích `SpeechClip` và Voice ID), sáu dòng vào **Tổng hợp đầy đủ các quan hệ** và quy tắc 21–22 ở mục ràng buộc.
 - Số đếm: **32 → 35 thực thể**; bỏ câu "Bảng mới chưa vẽ vào ERD mục tiêu — BA bổ sung ở BA Final Review" ở mục Ranh
   giới.
 - Hình đã vẽ lại: `13-erd/muc-tieu` (38 bảng, có 3 bảng mới ở dải dưới) và `13-erd/chen` (35 thực thể, 59 quan hệ),
@@ -45,13 +45,14 @@ Note này gom việc BA. **Ghi note ngày 03/11/2026; sửa tài liệu ngày 04
 ### 3.2 Report 3
 
 - **UC-80** (description, PRE-1, EX-1): Khách có phiên còn hiệu lực cũng dùng được, chỉ thấy và xoá câu của mình;
-  câu của người khác trả MSG156.
+  câu của người khác trả 404 không mã (như không tồn tại), không hiện MSG323; bước 2 của EX-1 chỉ áp dụng cho người dùng nội bộ.
 - **BR-355**: nêu đích danh Khách (thành viên khi đã đăng nhập, Khách khi phiên còn).
 - **BR-370**: viết lại theo ADR-0051 — micro của Khách **được ghi**; Khách vẫn không mở bản ghi phòng/bản gỡ băng.
 - **UC-39a AF-2 bước 1**: bỏ câu "không áp dụng cho Khách", thêm điều kiện đã xác nhận thông báo ghi âm.
 - **§I.3.2**: thêm 5 entity còn thiếu — `TranscriptSpeaker`, `GuestSession`, `SpeechClip`, `VoiceConsent`,
   `VoiceSample` (30 → 35 entity), mỗi entity một bảng field.
 - **§I.3.1**: thay ảnh ERD bằng bản `muc-tieu` mới (38 bảng).
+- **BR-275 + UC-32c EX-1** (gộp từ review PR #252, cùng DOCX): tài liệu chỉ gắn biểu quyết nháp bị ẩn với mọi người trừ Chủ toạ/Thư ký hiện tại — kể cả người tổ chức, người duyệt — nên bỏ chữ "a Member or Guest", viết lại thành "anyone except the current Chair and Secretary".
 - **Change Log**: dòng `03/11/2026 / M / KhanhPG`.
 
 Kiểm tra: `check_docx.py` OK; `sync_reports.py --report 3` sinh lại snapshot, extract 05/06 và `uc-map.html`.

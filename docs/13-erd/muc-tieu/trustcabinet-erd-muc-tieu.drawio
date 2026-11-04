@@ -1007,8 +1007,7 @@
         <mxCell id="VoiceSample_7" parent="VoiceSample" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:238px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;/td&gt;&lt;td style=&quot;width:96px;padding:0&quot;&gt;AudioContentType&lt;/td&gt;&lt;td style=&quot;width:106px;padding:0;text-align:left;color:#000000&quot;&gt;string?&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
           <mxGeometry height="19" width="250" y="161" as="geometry"/>
         </mxCell>
-        <mxCell id="e_speechclip_meeting" edge="1" parent="1" source="Meeting" target="SpeechClip" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERmandOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="e_speechclip_meeting" edge="1" parent="1" source="Meeting" target="SpeechClip" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERmandOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="600" y="450"/><mxPoint x="600" y="1710"/></Array></mxGeometry>
         </mxCell>
         <mxCell id="e_speechclip_user" edge="1" parent="1" source="User" target="SpeechClip" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERzeroToOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;">
           <mxGeometry relative="1" as="geometry"/>
@@ -1016,8 +1015,7 @@
         <mxCell id="e_speechclip_guest" edge="1" parent="1" source="MeetingGuestInvitation" target="SpeechClip" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERzeroToOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e_voiceconsent_user" edge="1" parent="1" source="User" target="VoiceConsent" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERmandOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="e_voiceconsent_user" edge="1" parent="1" source="User" target="VoiceConsent" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERmandOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1400" y="1200"/><mxPoint x="1400" y="1700"/></Array></mxGeometry>
         </mxCell>
         <mxCell id="e_voicesample_consent" edge="1" parent="1" source="VoiceConsent" target="VoiceSample" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERmandOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;">
           <mxGeometry relative="1" as="geometry"/>
