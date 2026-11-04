@@ -6,14 +6,15 @@
 
 **Hiện thực Backend SCRUM-116 / UC-04 (30/10/2026):** hai bảng kỹ thuật `guest_verification_challenges` (mã OTP, chỉ lưu HMAC, số lần sai, thời điểm tiêu thụ) và `guest_sessions` (phiên Khách đã xác minh email, hạn 12 giờ, `revoked_at` khi đăng xuất), cùng khoá ngoại tới `meeting_guest_invitations` và xoá theo lời mời; `meeting_guest_invitations` thêm `self_declared_display_name`, `self_declared_job_title` (BR-180, tách khỏi `invited_name`/`email`). Không tạo `users` hay `meeting_participants` cho Khách. Từ 03/11/2026 `GuestSession` là **thực thể của mô hình đích** (một lời mời có nhiều phiên, mỗi thiết bị một phiên), còn `guest_verification_challenges` vẫn là bảng kỹ thuật không vẽ trong ERD. Chi tiết: [API UC-04 §6](../03-api/16-truy-cap-khach-uc04.md#6-lưu-trữ).
 
-Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **35 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018; `GuestSession` và `TranscriptSpeaker` ngày 03/11/2026; `SpeechClip`, `VoiceConsent` và `VoiceSample` ngày 03/11/2026 — `SpeechClip` có từ SCRUM-109 mà tài liệu này bỏ sót, hai bảng Voice ID theo ADR-0027). Bốn bảng nối (`MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`) không tính vào 35. Con số này khớp Report 3 §I.3.2 và các hình ERD ở [13-erd/](../13-erd/README.md), trừ `DocumentReadConfirmation` (bảng nối thứ tư) chưa vẽ vào hình. Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
+Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **35 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018; `GuestSession` và `TranscriptSpeaker` ngày 03/11/2026; `SpeechClip`, `VoiceConsent` và `VoiceSample` ngày 03/11/2026 — `SpeechClip` có từ SCRUM-109 mà tài liệu này bỏ sót, hai bảng Voice ID theo ADR-0027). Bốn bảng nối (`MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`) không tính vào 35. Con số này khớp Report 3 §I.3.2 và các hình ERD ở [13-erd/](../13-erd/README.md). Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
 **ERD thực thể–quan hệ:** [file drawio chỉnh sửa được](../13-erd/chen/trustcabinet-erd-chen.drawio) và
 [ảnh toàn bộ mô hình](../13-erd/chen/trustcabinet-erd-chen.drawio.png). Một ảnh chứa toàn bộ
 35 thực thể hình chữ nhật và 59 quan hệ hình thoi; action trong hình thoi dùng tiếng Anh.
-Bản dạng bảng ở [13-erd/muc-tieu](../13-erd/muc-tieu/README.md) vẽ 38 bảng: 35 thực thể đó cộng
-ba bảng nối `MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`; bảng nối thứ tư
-`DocumentReadConfirmation` chưa vẽ vào hình (xem mục trạng thái triển khai).
+Bản dạng bảng ở [13-erd/muc-tieu](../13-erd/muc-tieu/README.md) vẽ lại theo code ngày 04/11/2026
+(sinh từ EF model snapshot bằng `scripts/draw_erd.py`): đủ 41 bảng — 35 thực thể đó, bốn bảng nối
+`MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`, và hai bảng
+kỹ thuật `MeetingInvitationDispatch`, `GuestVerificationChallenge`.
 Bội số thể hiện bằng đầu nối crow’s foot, không ghi số trên đường nối. Sơ đồ bỏ thuộc tính
 để tập trung vào thực thể và quan hệ, bố trí quanh Meeting và User theo DB design hiện có.
 [Bản dạng bảng](../13-erd/muc-tieu/README.md) được giữ để đối chiếu các thuộc tính và thiết kế dữ liệu.

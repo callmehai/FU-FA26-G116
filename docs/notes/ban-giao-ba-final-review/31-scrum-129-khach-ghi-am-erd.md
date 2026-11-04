@@ -39,7 +39,7 @@ Note này gom việc BA. **Ghi note ngày 03/11/2026; sửa tài liệu ngày 04
   thích `SpeechClip` và Voice ID), sáu dòng vào **Tổng hợp đầy đủ các quan hệ** và quy tắc 21–22 ở mục ràng buộc.
 - Số đếm: **32 → 35 thực thể**; bỏ câu "Bảng mới chưa vẽ vào ERD mục tiêu — BA bổ sung ở BA Final Review" ở mục Ranh
   giới.
-- Hình đã vẽ lại: `13-erd/muc-tieu` (38 bảng, có 3 bảng mới ở dải dưới) và `13-erd/chen` (35 thực thể, 59 quan hệ),
+- Hình đã vẽ lại: `13-erd/muc-tieu` (41 bảng, vẽ lại theo code bằng `scripts/draw_erd.py` ngày 04/11/2026) và `13-erd/chen` (35 thực thể, 59 quan hệ),
   xuất lại PNG; cập nhật `13-erd/README.md`, `muc-tieu/README.md`, `chen/README.md` theo số mới.
 
 ### 3.2 Report 3
@@ -51,7 +51,7 @@ Note này gom việc BA. **Ghi note ngày 03/11/2026; sửa tài liệu ngày 04
 - **UC-39a AF-2 bước 1**: bỏ câu "không áp dụng cho Khách", thêm điều kiện đã xác nhận thông báo ghi âm.
 - **§I.3.2**: thêm 5 entity còn thiếu — `TranscriptSpeaker`, `GuestSession`, `SpeechClip`, `VoiceConsent`,
   `VoiceSample` (30 → 35 entity), mỗi entity một bảng field.
-- **§I.3.1**: thay ảnh ERD bằng bản `muc-tieu` mới (38 bảng).
+- **§I.3.1**: thay ảnh ERD bằng bản `muc-tieu` mới (41 bảng vẽ theo code; thêm câu nêu bốn bảng nối và hai bảng kỹ thuật §I.3.2 không mô tả).
 - **BR-275 + UC-32c EX-1** (gộp từ review PR #252, cùng DOCX): tài liệu chỉ gắn biểu quyết nháp bị ẩn với mọi người trừ Chủ toạ/Thư ký hiện tại — kể cả người tổ chức, người duyệt — nên bỏ chữ "a Member or Guest", viết lại thành "anyone except the current Chair and Secretary".
 - **Change Log**: dòng `03/11/2026 / M / KhanhPG`.
 
