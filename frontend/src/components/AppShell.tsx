@@ -88,8 +88,6 @@ export function AppShell() {
   }
 
   const avatar = avatarColors(user.fullName)
-  // On one's own page no sidebar entry lights up, so the account it opened from does.
-  const onPersonalPage = PERSONAL.some((p) => pathname.startsWith(p.to))
 
   return (
     <div className={`shell${collapsed ? ' shell-collapsed' : ''}`}>
@@ -124,7 +122,6 @@ export function AppShell() {
         <div className="sidebar-foot">
           <details className="account" ref={accountMenuRef}>
             <summary
-              className={onPersonalPage ? 'active' : undefined}
               aria-label={`Tài khoản ${user.fullName}`}
               data-tooltip={collapsed ? user.fullName : undefined}
             >
