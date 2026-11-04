@@ -18,7 +18,8 @@ public static class AgendaRules
     public static bool HasRole(Meeting meeting, Guid actor, MeetingRole role) => meeting.Participants
         .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role == role && CurrentParticipant(p));
 
-    /// <summary>The Chair and the Secretary both plan the agenda (BR-65, PO 02/11/2026, as AI-eCabinet's host).</summary>
+    /// <summary>The Chair and the Secretary both plan the agenda (BR-65, PO 02/11/2026, as AI-eCabinet's host).
+    /// Recording a conclusion (UC-77) reuses it because the roles coincide today; split it if they diverge.</summary>
     public static bool IsPlanner(Meeting meeting, Guid actor)
         => HasRole(meeting, actor, MeetingRole.Chair) || HasRole(meeting, actor, MeetingRole.Secretary);
 
