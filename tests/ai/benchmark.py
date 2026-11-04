@@ -166,17 +166,20 @@ def flat(draft: dict) -> str:
 
 def run(base: str, label: str, timeout: int) -> None:
     fixture = json.loads((OUT / "fixture.json").read_text())
-    token = login(base, "thuky")
     results = []
     for case in CASES:
         meeting = fixture[case["key"]]
+        token = login(base, "thuky")
         status, body = api(base, "POST", f"/api/meetings/{meeting}/summary", token)
         if status != 202:
             sys.exit(f"{case['key']}: {status} {body}")
         began = time.monotonic()
         while True:
             time.sleep(3)
-            _, state = api(base, "GET", f"/api/meetings/{meeting}/summary", token)
+            status, state = api(base, "GET", f"/api/meetings/{meeting}/summary", token)
+            if status == 401:  # the access token outlives one draft, not the whole run
+                token = login(base, "thuky")
+                continue
             summary = state["summary"]
             if summary["status"] in ("Ready", "Failed"):
                 break

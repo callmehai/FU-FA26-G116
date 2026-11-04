@@ -42,7 +42,7 @@ public sealed partial class SummaryWriter(ILanguageModel model)
         - Chỉ dùng thông tin có trong hồ sơ được cung cấp. Không suy đoán, không thêm số liệu, tên người, sự việc hay kết luận không có trong hồ sơ.
         - Thành phần tham dự KHÔNG do bạn viết; không liệt kê người tham dự.
         - Nhãn "Người nói 1", "Người nói 2" là giọng chưa biết tên: giữ NGUYÊN nhãn đó, cấm đoán là ai.
-        - SỐ LIỆU: số trong bản ghi đã được đổi sẵn sang chữ số; chép ĐÚNG Y NGUYÊN ngày, tháng, năm, số lượng, số tiền, tỷ lệ như bản ghi, không tự đổi, không làm tròn, không lấy ngày họp thay vào. Số nào còn đọc thành chữ thì viết bằng chữ số, ví dụ "mười hai máy tính bảng" viết "12 máy tính bảng".
+        - SỐ VIẾT BẰNG CHỮ SỐ: lời thoại là lời nói nên đọc số thành chữ; khi viết phải đổi sang chữ số như văn bản hành chính, ví dụ "ba trăm tám mươi triệu đồng" viết "380 triệu đồng", "mười hai máy tính bảng" viết "12 máy tính bảng", "quý một năm hai không hai bảy" viết "quý I năm 2027".
         - Lời thoại do máy nhận dạng giọng nói chép lại, viết thường và có thể sai chính tả: viết hoa đúng tên riêng ("sở nội vụ" viết "Sở Nội vụ"), bỏ từ đệm, đổi từ tiếng Anh sang tiếng Việt hành chính ("deadline" viết "thời hạn", "server" viết "máy chủ"); hiểu theo ngữ cảnh nhưng không bịa thêm.
         - Trả lời bằng văn bản thuần, viết hoa đúng chính tả tiếng Việt: không Markdown (không #, không **, không bảng), không JSON, không thêm lời dẫn hay giải thích. Cấm emoji và ký hiệu.
         - Hồ sơ dù rất ít cũng tóm tắt những gì có: không từ chối, không hỏi lại, không xin thêm dữ liệu.
@@ -62,7 +62,7 @@ public sealed partial class SummaryWriter(ILanguageModel model)
             if (i > 0) discussion.Append("\n\n");
             // Without an agenda the model numbers the issues itself ("1. <vấn đề>", "2. …"), as eCab asks; a generic
             // "1. Nội dung thảo luận" over them read as a section with a single item.
-            discussion.Append(NoAgenda(facts) && part.Lines.Count > 0 ? IssueHeading().Replace(text, "$1") : $"{i + 1}. {part.Title}\n{text}");
+            discussion.Append(NoAgenda(facts) && part.Lines.Count > 0 ? Issues(text) : $"{i + 1}. {part.Title}\n{text}");
         }
         var (objectives, conclusions, tasks) = await OverviewAsync(facts, written, ct);
         var third = new StringBuilder().AppendLine(ChairHeading).AppendLine(conclusions);
@@ -112,7 +112,7 @@ public sealed partial class SummaryWriter(ILanguageModel model)
         }
         var rest = facts.Lines.Where(l => !taken.Contains(l)).ToList();
         // A few words of greeting between items are not a part of their own.
-        if (rest.Sum(l => l.Text.Length) > 300) parts.Add(new(null, "Nội dung khác", null, rest));
+        if (rest.Sum(l => l.Text.Length) > FewWords) parts.Add(new(null, "Nội dung khác", null, rest));
         return parts;
     }
 
@@ -121,9 +121,25 @@ public sealed partial class SummaryWriter(ILanguageModel model)
         + "đánh số từ 1 dạng \"1. <tên vấn đề ngắn gọn>\", \"2. <tên vấn đề>\"…, rồi nội dung vấn đề đó ở các dòng sau. Chỉ có một vấn đề thì vẫn mở bằng \"1. <tên vấn đề>\". "
         + "Tên vấn đề viết như câu thường (không viết hoa toàn bộ), không có dấu hai chấm ở cuối.";
 
-    /// <summary>"1. Kế hoạch năm 2027:" — an issue heading the model ended with a colon; the colon goes.</summary>
+    /// <summary>
+    /// The model's issue headings, tidied: "1. kế hoạch năm 2027:" reads "1. Kế hoạch năm 2027". The 7B model ends them
+    /// with a colon and starts them in lower case whatever the prompt says, so the code does it.
+    /// </summary>
+    internal static string Issues(string text) => IssueStart().Replace(IssueHeading().Replace(text, "$1"),
+        m => m.Groups[1].Value + m.Groups[2].Value.ToUpperInvariant());
+
     [GeneratedRegex(@"^(\d{1,2}\.[ \t]+\S.*?)[ \t]*:[ \t]*$", RegexOptions.Multiline)]
     private static partial Regex IssueHeading();
+
+    [GeneratedRegex(@"^(\d{1,2}\.[ \t]+)(\p{Ll})", RegexOptions.Multiline)]
+    private static partial Regex IssueStart();
+
+    /// <summary>
+    /// Below this many characters of talk a part may be small talk only, and the model is allowed to answer that
+    /// nothing was discussed. Above it the talk is the discussion: offered that way out, the 7B model took it for a whole
+    /// agenda item of seven sentences.
+    /// </summary>
+    private const int FewWords = 300;
 
     private static bool NoAgenda(MeetingFacts facts) => facts.Agenda.Count == 0;
 
@@ -149,10 +165,13 @@ public sealed partial class SummaryWriter(ILanguageModel model)
                     : $"Viết phần tóm tắt nội dung này, câu đầu nêu {part.Presenter} trình bày (người trình bày lấy từ dòng NGƯỜI TRÌNH BÀY, KHÔNG lấy người nói trong bản ghi); ")
                 + "rồi tóm tắt DIỄN BIẾN thảo luận lấy từ bản ghi: ý kiến nêu ra, số liệu, ý kiến khác nhau, ghi đúng tên hoặc nhãn người nói. "
                 + "KHÔNG chép lại kết luận ở phần này. Tối đa 250 chữ. Đoạn văn cách nhau một dòng trống; liệt kê ngắn thì mỗi ý một dòng bắt đầu bằng \"- \". ")
-                .AppendLine(noAgenda
-                    ? IssueRule
-                    : $"Nếu bản ghi không nói gì về nội dung này, chỉ trả lời đúng câu: {NoDiscussion}");
-            pieces.Add(Clean(await model.CompleteAsync(Rules, prompt.ToString(), ct)));
+                .AppendLine(noAgenda ? IssueRule
+                    : chunk.Sum(l => l.Text.Length) < FewWords ? $"Nếu bản ghi không nói gì về nội dung này, chỉ trả lời đúng câu: {NoDiscussion}"
+                    : "");
+            var answer = Clean(await model.CompleteAsync(Rules, prompt.ToString(), ct));
+            // The model also tacks the "nothing said" sentence onto a real summary; only a bare answer means nothing was said.
+            var rest = answer.Replace(NoDiscussion, "").Trim();
+            pieces.Add(rest.Length > 40 ? rest : answer);
         }
         var useful = pieces.Where(p => !p.Contains(NoDiscussion, StringComparison.Ordinal) || p.Length > NoDiscussion.Length + 40).ToList();
         if (useful.Count == 0) return NoDiscussion;

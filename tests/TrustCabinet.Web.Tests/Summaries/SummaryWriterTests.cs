@@ -94,12 +94,40 @@ public sealed class SummaryWriterTests
     public async Task Without_an_agenda_the_issues_are_the_numbered_items_of_section_two()
     {
         var model = new ScriptedModel(p => p.Contains("MỤC TIÊU:") ? "KẾT LUẬN:\nKhông có."
-            : "1. Kế hoạch quý tới:\n- Đề nghị tăng ngân sách 10%.\n\n2. Lịch trực Tết :\nChốt trước ngày 20/1.");
+            : "1. kế hoạch quý tới:\n- Đề nghị tăng ngân sách 10%.\n\n2. Lịch trực Tết :\nChốt trước ngày 20/1.");
         var facts = new MeetingFacts("Họp", [], [], [], [new TranscriptLine("c:1", Start, "Người nói 1", "Nội dung.")]);
 
         var draft = await new SummaryWriter(model).WriteAsync(facts, CancellationToken.None);
 
-        // No generic "1. Nội dung thảo luận" over the issues, and their trailing colons are dropped.
+        // No generic "1. Nội dung thảo luận" over the issues; their trailing colons go and they start with a capital.
         Assert.Equal("1. Kế hoạch quý tới\n- Đề nghị tăng ngân sách 10%.\n\n2. Lịch trực Tết\nChốt trước ngày 20/1.", draft.Discussion);
+    }
+
+    [Fact]
+    public async Task A_part_with_real_talk_is_not_offered_the_nothing_said_answer_and_a_tacked_on_one_is_dropped()
+    {
+        var model = new ScriptedModel(p => p.Contains("MỤC TIÊU:") ? "KẾT LUẬN:\nKhông có."
+            : $"Trần Văn B trình bày dự thảo kế hoạch năm 2027 gồm ba trọng tâm.\n- Kinh phí 4,8 tỷ đồng.\n\n{SummaryWriter.NoDiscussion}");
+        var item = new AgendaFacts(Guid.NewGuid(), "Kế hoạch năm 2027", "Trần Văn B", null, Start, Start.AddMinutes(20));
+        var talk = Enumerable.Range(0, 7).Select(i => new TranscriptLine($"c:{i}", Start.AddMinutes(i + 1), "Người nói 1",
+            "Dự thảo kế hoạch năm 2027 gồm ba trọng tâm, tổng kinh phí dự kiến là 4,8 tỷ đồng.")).ToList();
+
+        var draft = await new SummaryWriter(model).WriteAsync(new MeetingFacts("Họp", [item], [], [], talk), CancellationToken.None);
+
+        Assert.DoesNotContain(SummaryWriter.NoDiscussion, model.Prompts[0]);
+        Assert.Equal("1. Kế hoạch năm 2027\nTrần Văn B trình bày dự thảo kế hoạch năm 2027 gồm ba trọng tâm.\n- Kinh phí 4,8 tỷ đồng.",
+            draft.Discussion);
+    }
+
+    [Fact]
+    public async Task A_few_words_of_talk_may_still_be_answered_as_nothing_said()
+    {
+        var model = new ScriptedModel(p => p.Contains("MỤC TIÊU:") ? "KẾT LUẬN:\nKhông có." : SummaryWriter.NoDiscussion);
+        var item = new AgendaFacts(Guid.NewGuid(), "Mục ngắn", null, null, Start, Start.AddMinutes(5));
+        var draft = await new SummaryWriter(model).WriteAsync(new MeetingFacts("Họp", [item], [], [],
+            [new TranscriptLine("c:1", Start.AddMinutes(1), "Người nói 1", "Xin chào mọi người.")]), CancellationToken.None);
+
+        Assert.Contains(SummaryWriter.NoDiscussion, model.Prompts[0]);
+        Assert.Equal($"1. Mục ngắn\n{SummaryWriter.NoDiscussion}", draft.Discussion);
     }
 }
