@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Unicode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -159,6 +160,9 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
 
         string? content = null;
         var error = "";
+        // The draft is of the record as it stood now, when it is read: a line corrected while the model writes (minutes
+        // on a laptop) is not in it, so the draft must read as behind that correction (readiness.transcriptChangedAt).
+        var readAt = clock.GetUtcNow();
         try
         {
             var facts = await FactsAsync(next.MeetingId, ct);
@@ -186,7 +190,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
                     .SetProperty(x => x.Status, SummaryStatus.Ready)
                     .SetProperty(x => x.Content, content)
                     .SetProperty(x => x.Model, model.Model)
-                    .SetProperty(x => x.GeneratedAt, now)
+                    .SetProperty(x => x.GeneratedAt, readAt)
                     .SetProperty(x => x.ErrorMessage, "")
                     .SetProperty(x => x.ReviewedById, (Guid?)null)
                     .SetProperty(x => x.ReviewedAt, (DateTimeOffset?)null)
@@ -254,6 +258,14 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             await transcripts.MaxAsync(t => (DateTimeOffset?)t.UpdatedAt, ct),
             await transcripts.SelectMany(t => t.Segments).MaxAsync(s => (DateTimeOffset?)s.UpdatedAt, ct),
             await transcripts.SelectMany(t => t.Speakers).MaxAsync(s => (DateTimeOffset?)s.UpdatedAt, ct),
+            // What was erased leaves nothing above to date it, yet a draft written before still holds it: personal data
+            // the meeting no longer keeps. A recording keeps its row and its time of erasure; a sentence leaves only the
+            // audit entry of its deletion.
+            await db.Recordings.Where(r => r.MeetingId == meetingId).MaxAsync(r => r.DeletedAt, ct),
+            await db.Database.SqlQuery<DateTimeOffset?>($"""
+                SELECT max(occurred_at) AS "Value" FROM audit_log
+                WHERE action = {AuditActions.SpeechClipDeleted} AND details->>'MeetingId' = {meetingId.ToString()}
+                """).SingleAsync(ct),
         }.Max();
         return new(clips + segments, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes,
             changed);

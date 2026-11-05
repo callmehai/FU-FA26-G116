@@ -15,7 +15,7 @@ public sealed class VoiceIdErasure(IVoiceIdRepository repository, IAuditService 
         if (consent is null) return false;
         var now = clock.GetUtcNow();
         var erased = await repository.DeleteSamplesAsync(userId, ct);
-        var suggestions = await repository.ClearSuggestionsAsync(userId, ct);
+        var suggestions = await repository.ClearSuggestionsAsync(userId, now, ct);
         consent.WithdrawnAt = now;
         consent.UpdatedAt = now;
         await audit.RecordAsync(AuditActions.VoiceConsentWithdrawn, AuditActions.VoiceConsentObjectType, consent.Id, actorId,

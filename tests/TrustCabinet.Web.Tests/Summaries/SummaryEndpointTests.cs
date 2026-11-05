@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
@@ -113,6 +114,92 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
         }
         var after = (await State(secretary, s)).GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset();
         Assert.Equal(corrected, after);
+    }
+
+    /// <summary>The seeded sentences are stamped with the machine's clock; dates them on the test clock instead.</summary>
+    private async Task Settle(SummaryFixture.Scenario s)
+    {
+        await using var db = f.Db();
+        await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).ExecuteUpdateAsync(u => u.SetProperty(c => c.UpdatedAt, f.Clock.Now));
+    }
+
+    [Fact]
+    public async Task A_line_corrected_while_the_AI_writes_is_not_in_the_draft_so_the_draft_reads_as_behind()
+    {
+        f.Model.Reset();
+        var s = await f.Seed();
+        await Settle(s);
+        using var secretary = f.Client(s.Secretary);
+        await AssertCode(await secretary.PostAsync(s.Summary, null), 202, "MSG384");
+        var read = f.Clock.Now;
+        // The model takes minutes on a laptop; meanwhile the Secretary corrects a sentence it has already read.
+        f.Model.While = async () =>
+        {
+            f.Clock.Now = f.Clock.Now.AddMinutes(2);
+            await using var db = f.Db();
+            await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).Take(1)
+                .ExecuteUpdateAsync(u => u.SetProperty(c => c.UpdatedAt, f.Clock.Now));
+            f.Clock.Now = f.Clock.Now.AddMinutes(2);
+        };
+        await f.ProcessAll();
+
+        var state = await State(secretary, s);
+        var generated = state.GetProperty("summary").GetProperty("generatedAt").GetDateTimeOffset();
+        var changed = state.GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset();
+        // Dated when the record was read, not when the model finished, so the correction is later than the draft.
+        Assert.Equal(read, generated);
+        Assert.Equal(read.AddMinutes(2), changed);
+        Assert.True(changed > generated);
+    }
+
+    private async Task<(DateTimeOffset Generated, DateTimeOffset Changed)> Stamps(HttpClient client, SummaryFixture.Scenario s)
+    {
+        var state = await State(client, s);
+        return (state.GetProperty("summary").GetProperty("generatedAt").GetDateTimeOffset(),
+            state.GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset());
+    }
+
+    [Fact]
+    public async Task Deleting_a_sentence_after_the_draft_makes_the_draft_read_as_behind()
+    {
+        var s = await Drafted();
+        await Settle(s);
+        using var secretary = f.Client(s.Secretary);
+        var (generated, changed) = await Stamps(secretary, s);
+        Assert.True(changed <= generated);
+
+        // The sentence goes outright, leaving only the audit entry of its deletion to date it.
+        Guid clip;
+        await using (var db = f.Db())
+            clip = await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).Select(c => c.Id).FirstAsync();
+        Assert.True((await secretary.DeleteAsync($"/api/speech-clips/{clip}")).IsSuccessStatusCode);
+        (_, changed) = await Stamps(secretary, s);
+        Assert.True(changed > generated);
+    }
+
+    [Fact]
+    public async Task Erasing_a_recording_after_the_draft_makes_the_draft_read_as_behind()
+    {
+        var s = await Drafted();
+        await Settle(s);
+        using var secretary = f.Client(s.Secretary);
+        var (generated, changed) = await Stamps(secretary, s);
+        Assert.True(changed <= generated);
+
+        // Erased with its transcript, a recording keeps its row and the time it was erased.
+        var erased = generated.AddMinutes(3);
+        await using (var db = f.Db())
+        {
+            db.Recordings.Add(new Recording
+            {
+                MeetingId = s.MeetingId, FileName = "da-xoa.wav", StoragePath = "", ContentType = "audio/wav",
+                Status = RecordingStatus.Deleted, DeletedAt = erased, CreatedById = s.Secretary,
+                CreatedAt = generated, UpdatedAt = erased,
+            });
+            await db.SaveChangesAsync();
+        }
+        (_, changed) = await Stamps(secretary, s);
+        Assert.Equal(erased, changed);
     }
 
     [Fact]

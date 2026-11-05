@@ -55,9 +55,12 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
 
 - **Polling:** FE gọi lại `GET` mỗi 5 giây khi `status` là `Queued` hoặc `Running`.
 - **`Failed`:** `errorMessage` ghi lý do bằng lời Thư ký hiểu được, ví dụ máy AI tắt.
-- **`transcriptChangedAt`:** lần cuối lời thoại thay đổi (câu mới, câu được sửa hay bỏ ra, giọng được gán tên), như
-  `transcript_changed_at` của eCab; `null` khi chưa có lời thoại. Muộn hơn `generatedAt` thì FE báo dự thảo chưa có các
-  chỗ sửa đó và mời Tạo lại.
+- **`transcriptChangedAt`:** lần cuối lời thoại thay đổi (câu mới, câu được sửa, bỏ ra hay xoá, giọng được gán tên hay
+  mất tên do người đó rút đồng ý Voice ID, câu chuyển sang giọng khác, bản ghi bị xoá), như `transcript_changed_at` của
+  eCab; `null` khi chưa có lời thoại. Muộn hơn `generatedAt` thì FE báo dự thảo chưa có các chỗ sửa đó và mời Tạo lại.
+  Câu bị xoá hẳn nên được tính theo dòng audit `speech_clip.deleted`; bản ghi bị xoá tính theo `recordings.deleted_at`.
+- **`generatedAt`:** lúc AI đọc lời thoại để viết (lúc job bắt đầu chạy), không phải lúc viết xong. Lời thoại sửa trong lúc
+  AI đang viết vì vậy muộn hơn `generatedAt`, và dự thảo mới ra vẫn báo là chưa có chỗ sửa đó.
 - **`sources`:** khoảng giờ lời thoại của từng phần mục II, để Thư ký đối chiếu với tab Bản ghi.
 - **Kết quả biểu quyết** trong `conclusions` được chép từ dữ liệu phiên biểu quyết, không qua AI.
 - **Lỗi:**

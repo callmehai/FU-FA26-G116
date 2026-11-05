@@ -17,6 +17,10 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
         return await (tracked ? query : query.AsNoTracking()).SingleOrDefaultAsync(ct);
     }
 
+    public Task<Guid?> FindSegmentRecordingAsync(Guid segmentId, CancellationToken ct)
+        => db.TranscriptSegments.AsNoTracking().Where(s => s.Id == segmentId)
+            .Select(s => (Guid?)s.Transcript.RecordingId).SingleOrDefaultAsync(ct);
+
     public Task<TranscriptSegment?> FindSegmentAsync(Guid segmentId, CancellationToken ct)
         => db.TranscriptSegments.Include(s => s.Transcript).ThenInclude(t => t.Recording)
             .SingleOrDefaultAsync(s => s.Id == segmentId, ct);

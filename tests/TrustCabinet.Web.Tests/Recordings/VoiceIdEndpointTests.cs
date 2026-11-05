@@ -315,6 +315,34 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
     }
 
     [Fact]
+    public async Task Two_moves_of_one_line_at_once_run_one_after_the_other_and_each_voice_keeps_its_true_time()
+    {
+        var s = await fixture.Seed();
+        using var secretary = fixture.Client(s.Secretary);
+        using var again = fixture.Client(s.Secretary);
+        var (id, lines) = await Misheard(s, secretary);
+        for (var round = 0; round < 4; round++)
+        {
+            // One move makes the Member a voice, the other takes the line to the Secretary's: whichever runs second
+            // must start from where the first left the line.
+            var moves = await Task.WhenAll(
+                MoveLine(secretary, lines[1], new { userId = s.Member }),
+                MoveLine(again, lines[1], new { label = "SPEAKER_01" }));
+            Assert.All(moves, m => Assert.Equal(HttpStatusCode.OK, m.StatusCode));
+            await using var db = fixture.Db();
+            var voices = await db.TranscriptSpeakers.Where(v => v.Transcript.RecordingId == id).ToDictionaryAsync(v => v.Label);
+            var at = (await db.TranscriptSegments.SingleAsync(x => x.Id == lines[1])).SpeakerLabel;
+            // The line left SPEAKER_00 once, and its 9 s are counted in exactly one voice.
+            Assert.Equal(18000, voices["SPEAKER_00"].SpeechMs);
+            Assert.Equal(27000 + 6000, voices.Values.Sum(v => v.SpeechMs));
+            Assert.Equal(at == "SPEAKER_01" ? 15000 : 6000, voices["SPEAKER_01"].SpeechMs);
+            Assert.Single(voices.Values, v => v.AssignedUserId == s.Member);
+            // Back where it started, for the next round.
+            await AssertCode(await MoveLine(secretary, lines[1], new { label = "SPEAKER_00" }), 200, "MSG407");
+        }
+    }
+
+    [Fact]
     public async Task Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included()
     {
         var s = await fixture.Seed();
@@ -424,13 +452,18 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         Assert.Equal(s.Member, sure.AssignedUserId);
         Assert.Null(sure.AssignedById);
 
-        // The machine's name came from the voice, so it goes when the person withdraws consent.
+        // The machine's name came from the voice, so it goes when the person withdraws consent; the voice reads as
+        // changed then, so a minutes draft that named them by it reads as behind.
         using var member = fixture.Client(s.Member);
-        await AssertCode(await member.DeleteAsync("/api/me/voice/consent"), 200, "MSG306");
+        var withdrawnAt = fixture.Clock.Now.AddMinutes(1);
+        fixture.Clock.Now = withdrawnAt;
+        try { await AssertCode(await member.DeleteAsync("/api/me/voice/consent"), 200, "MSG306"); }
+        finally { fixture.Clock.Now = new(2026, 10, 23, 8, 0, 0, TimeSpan.Zero); }
         await db.Entry(sure).ReloadAsync();
         Assert.Null(sure.AssignedUserId);
         Assert.Null(sure.AssignedAt);
         Assert.Null(sure.SuggestedUserId);
+        Assert.Equal(withdrawnAt, sure.UpdatedAt);
     }
 
     [Fact]

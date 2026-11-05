@@ -182,30 +182,35 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
     {
         try
         {
-            var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, ct);
-            if (recording is null || meeting is null) return new(failure);
-            if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
-            var transcript = await transcripts.FindByRecordingAsync(recordingId, true, ct);
-            var speaker = transcript?.Speakers.SingleOrDefault(s => s.Label == label);
-            if (speaker is null) return new(TranscriptFailure.NotFound);
-            if (userId is not null && guestId is not null) return new(TranscriptFailure.InvalidSpeaker);
-            var person = userId is { } id ? Participants(meeting).FirstOrDefault(p => p.UserId == id) : null;
-            if (userId is not null && person is null) return new(TranscriptFailure.InvalidSpeaker);
-            var guest = guestId is { } g ? (await transcripts.ListGuestsAsync(meeting.Id, ct)).FirstOrDefault(p => p.Id == g) : null;
-            if (guestId is not null && guest is null) return new(TranscriptFailure.InvalidSpeaker);
-            var now = clock.GetUtcNow();
-            speaker.AssignedUserId = userId;
-            speaker.AssignedGuestId = guestId;
-            speaker.AssignedById = actorId;
-            speaker.AssignedAt = now;
-            speaker.UpdatedAt = now;
-            await audit.RecordAsync(AuditActions.TranscriptSpeakerAssigned, AuditActions.TranscriptSpeakerObjectType, speaker.Id,
-                actorId, new { recordingId, label, userId, guestId, suggestedUserId = speaker.SuggestedUserId,
-                    acceptedSuggestion = userId is not null && userId == speaker.SuggestedUserId }, ct);
-            await transcripts.SaveChangesAsync(ct);
-            return new(Data: new TranscriptSpeakerView(speaker.Label, speaker.SpeechMs, speaker.SuggestedUserId,
-                speaker.SuggestedUser?.FullName, speaker.SuggestionScore, userId, person?.User.FullName ?? guest?.FullName,
-                AssignedGuestId: guestId));
+            // Under the recording's lock, as a line moved to a person: naming a voice and giving that person a new voice
+            // at the same moment would otherwise leave two voices with one name.
+            return await meetings.InTransactionAsync(async token =>
+            {
+                var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, token, forUpdate: true);
+                if (recording is null || meeting is null) return new TranscriptOutcome(failure);
+                if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
+                var transcript = await transcripts.FindByRecordingAsync(recordingId, true, token);
+                var speaker = transcript?.Speakers.SingleOrDefault(s => s.Label == label);
+                if (speaker is null) return new(TranscriptFailure.NotFound);
+                if (userId is not null && guestId is not null) return new(TranscriptFailure.InvalidSpeaker);
+                var person = userId is { } id ? Participants(meeting).FirstOrDefault(p => p.UserId == id) : null;
+                if (userId is not null && person is null) return new(TranscriptFailure.InvalidSpeaker);
+                var guest = guestId is { } g ? (await transcripts.ListGuestsAsync(meeting.Id, token)).FirstOrDefault(p => p.Id == g) : null;
+                if (guestId is not null && guest is null) return new(TranscriptFailure.InvalidSpeaker);
+                var now = clock.GetUtcNow();
+                speaker.AssignedUserId = userId;
+                speaker.AssignedGuestId = guestId;
+                speaker.AssignedById = actorId;
+                speaker.AssignedAt = now;
+                speaker.UpdatedAt = now;
+                await audit.RecordAsync(AuditActions.TranscriptSpeakerAssigned, AuditActions.TranscriptSpeakerObjectType, speaker.Id,
+                    actorId, new { recordingId, label, userId, guestId, suggestedUserId = speaker.SuggestedUserId,
+                        acceptedSuggestion = userId is not null && userId == speaker.SuggestedUserId }, token);
+                await transcripts.SaveChangesAsync(token);
+                return new(Data: new TranscriptSpeakerView(speaker.Label, speaker.SpeechMs, speaker.SuggestedUserId,
+                    speaker.SuggestedUser?.FullName, speaker.SuggestionScore, userId, person?.User.FullName ?? guest?.FullName,
+                    AssignedGuestId: guestId));
+            }, ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -219,12 +224,14 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
     {
         try
         {
-            var found = await transcripts.FindSegmentAsync(segmentId, ct);
-            if (found is null) return new(TranscriptFailure.NotFound);
-            var recordingId = found.Transcript.RecordingId;
+            // Only the recording's id before the lock: a line read now and tracked would be handed back unchanged by the
+            // read after it, so a move that waited on another one of the same line would undo the wrong voice's time.
+            if (await transcripts.FindSegmentRecordingAsync(segmentId, ct) is not { } recordingId)
+                return new(TranscriptFailure.NotFound);
             return await meetings.InTransactionAsync(async token =>
             {
-                // The recording's row is locked: two lines moved at once never both take the same free label.
+                // The recording's row is locked: moves on one recording run one after another, each reading what the one
+                // before it wrote, and two of them never take the same free label.
                 var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, token, forUpdate: true);
                 if (recording is null || meeting is null) return new TranscriptOutcome(failure);
                 if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);

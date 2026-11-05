@@ -91,6 +91,8 @@ public interface ITranscriptRepository
 {
     Task<Transcript?> FindByRecordingAsync(Guid recordingId, bool tracked, CancellationToken ct);
     Task<TranscriptSegment?> FindSegmentAsync(Guid segmentId, CancellationToken ct);
+    /// <summary>The recording a segment belongs to, read without tracking anything; null when there is no such segment.</summary>
+    Task<Guid?> FindSegmentRecordingAsync(Guid segmentId, CancellationToken ct);
     /// <summary>Atomically moves one Pending transcript to Processing (FOR UPDATE SKIP LOCKED) and returns its id.</summary>
     Task<Guid?> ClaimNextAsync(DateTimeOffset now, CancellationToken ct);
     Task<int> RequeueProcessingAsync(DateTimeOffset now, CancellationToken ct);

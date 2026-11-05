@@ -61,7 +61,7 @@ public interface IVoiceIdRepository
     Task LockConsentsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
     Task<int> DeleteSamplesAsync(Guid userId, CancellationToken ct);
     /// <summary>Clears machine suggestions that point at this person; names a secretary assigned stay.</summary>
-    Task<int> ClearSuggestionsAsync(Guid userId, CancellationToken ct);
+    Task<int> ClearSuggestionsAsync(Guid userId, DateTimeOffset now, CancellationToken ct);
     void Add(VoiceConsent consent);
     void Add(VoiceSample sample);
     void Remove(VoiceSample sample);
