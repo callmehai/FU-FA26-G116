@@ -1,0 +1,60 @@
+title UC-50 - Approve Meeting Summary
+
+actor "Chair / Secretary" as Actor
+boundary "Draft Card (Biên bản tab)" as DraftCard
+control ":Summary Controller" as SummaryController
+control ":Summary Service" as SummaryService
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Actor->DraftCard: Select Approve on a finished draft
+activate DraftCard
+DraftCard->SummaryController: review(meetingId)
+activate SummaryController
+SummaryController->SummaryService: reviewAsync(meetingId, actorId)
+activate SummaryService
+SummaryService->MeetingRepository: Get the Meeting
+activate MeetingRepository
+MeetingRepository->Database: Retrieve Meeting
+activate Database
+Database-->MeetingRepository: Meeting / Not found
+deactivate Database
+MeetingRepository-->SummaryService: Meeting / Not found
+deactivate MeetingRepository
+SummaryService->SummaryService: Check the actor is the current Chair or Secretary (BR-374)
+
+alt Actor is not the current Chair or Secretary - EX-2
+    SummaryService-->SummaryController: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+    SummaryController-->DraftCard: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+    DraftCard-->Actor: MSG385 - Only the Chair or Secretary may create, edit and review the draft.
+else Actor may review
+    SummaryService->Database: Retrieve the draft
+    activate Database
+    Database-->SummaryService: Draft / None
+    deactivate Database
+
+    alt No finished draft - EX-1
+        SummaryService-->SummaryController: MSG390 - There is no draft to correct or review.
+        SummaryController-->DraftCard: MSG390 - There is no draft to correct or review.
+        DraftCard-->Actor: MSG390 - There is no draft to correct or review.
+    else Draft exists
+        SummaryService->Database: Record the reviewer and the time; leave the text unchanged
+        activate Database
+        Database-->SummaryService: Saved / Failed
+        deactivate Database
+
+        alt Saved - AF-1 when already reviewed
+            SummaryService-->SummaryController: State
+            SummaryController-->DraftCard: 200 MSG391 - Draft approved.
+            DraftCard-->Actor: MSG391 - Draft approved.
+            DraftCard-->Actor: From now on everyone who may read the Meeting reads the draft (BR-382)
+        else The review cannot be saved - EX-3
+            SummaryService-->SummaryController: MSG393 - Unable to save the draft. Please try again.
+            SummaryController-->DraftCard: MSG393 - Unable to save the draft. Please try again.
+            DraftCard-->Actor: MSG393 - Unable to save the draft. Please try again.
+        end
+    end
+end
+deactivate SummaryService
+deactivate SummaryController
+deactivate DraftCard

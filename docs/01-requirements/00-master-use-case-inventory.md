@@ -72,15 +72,16 @@ Bổ sung ngày 30/10/2026 (BA Final Review FE-09/FE-10): tổ chức lại theo
 | **Participant** | Thành viên được mời: phản hồi lời mời, vào phòng họp, xem tài liệu, bình luận, bỏ phiếu, ký biên bản khi được chỉ định |
 | **Guest** | Khách ngoài, không có tài khoản; truy cập đúng một cuộc họp qua lời mời và mã xác minh email (UC-04) |
 | *OAuth Provider* | Actor hệ thống ngoài: xác thực tài khoản Google và trả danh tính đã xác minh (UC-02) |
-| *Google AI Provider* | Actor hệ thống ngoài: dịch vụ AI tạo tóm tắt nháp từ bản gỡ băng đã được Thư ký rà soát (UC-47, chưa làm). Chỉ nhận chữ, không nhận âm thanh |
+| *AI Drafting Service* | Actor hệ thống: máy AI của nhóm chạy trong hệ thống, viết dự thảo 3 mục của cuộc họp từ bản gỡ băng, chương trình và kết quả biểu quyết (UC-47, PR #260). Chỉ nhận chữ, không nhận âm thanh; lời thoại không ra khỏi hệ thống (ADR-0054, BR-381) |
 | *Resend Email* | Actor hệ thống ngoài: gửi email đặt lại mật khẩu, thư mời, email liên quan ký biên bản |
 | *Cloudflare R2* | Actor hệ thống ngoài: kho đối tượng giữ byte tệp tài liệu cá nhân và tài liệu cuộc họp (ADR-0024) |
 
-**Khoá actor (01/11/2026): 7 actor người và 4 actor hệ thống ngoài, không thêm bớt khi chưa có quyết định của PO.**
+**Khoá actor (05/11/2026): 7 actor người và 3 actor hệ thống ngoài, không thêm bớt khi chưa có quyết định của PO.**
 Actor người: System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant, Guest. Actor ngoài:
-OAuth Provider, Google AI Provider, Resend Email, Cloudflare R2. Quy tắc để một bên là actor ngoài: nó là hệ thống
+OAuth Provider, Resend Email, Cloudflare R2. Quy tắc để một bên là actor ngoài: nó là hệ thống
 bên ngoài ranh giới TrustCabinet mà backend gọi ra (hoặc nó gọi vào) trong luồng của một UC. Vì vậy **không phải
-actor**: gỡ băng và Voice ID (worker chạy trong hệ thống, không gửi gì ra ngoài, ADR-0026/0036), LiveKit (hạ tầng
+actor**: gỡ băng, Voice ID và máy AI viết dự thảo (chạy trên máy của nhóm, trong mạng nội bộ, không gọi dịch vụ AI
+bên ngoài, ADR-0026/0036/0054), LiveKit (hạ tầng
 phòng họp), PostgreSQL, Redis và SMTP dự phòng của Resend Email. "Internal user" và "System" không có trong bảng
 actor của Report 3 §4.1; các UC còn ghi hai tên này sẽ được thay bằng danh sách vai trò khi BA rà tiếp.
 
@@ -203,10 +204,10 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 |---|---|---|---|---|
 | UC-45 | Xem bản gỡ băng cuộc họp *(View Meeting Transcript)* — gồm UC-45a Xem bản gỡ băng (đoạn có giờ, tên người nói, vạch phân lượt, chữ do người sửa phân biệt với chữ máy; gợi ý tên chỉ Thư ký thấy), UC-45b Xuất bản gỡ băng .txt (Chủ toạ, Thư ký; cấm khi Mật), UC-45c Gỡ băng bản ghi cuộc họp (Thư ký chạy lại bản đã xong / khi lỗi / hệ thống tự xếp hàng) | User có quyền; Secretary | Đã đặc tả các UC con | `<<extend>>` UC-43a (UC-45c `<<include>>` từ UC-44b, UC-44c) |
 | UC-46 | Chỉnh sửa bản gỡ băng & gán người nói *(Edit Transcript & Speaker Attribution)* — gồm UC-46a Sửa chữ đoạn gỡ băng hoặc câu nói, UC-46b Gán người nói cho giọng (có gợi ý Voice ID, gán cả nhóm), UC-46c Loại hoặc đưa lại câu khỏi bản ghi (lý do Lẫn tiếng/Khác; chỉ Chủ toạ/Thư ký), UC-46d Xoá câu nói khỏi dòng thời gian (Thư ký xoá câu) | Secretary, Chair | Đã đặc tả các UC con | `<<extend>>` UC-43a, UC-45a |
-| UC-47 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* | Secretary; Google AI Provider | Placeholder | `<<extend>>` UC-45a |
-| UC-48 | Xem tóm tắt *(View Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-16 |
-| UC-49 | Chỉnh tóm tắt *(Edit Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-48 |
-| UC-50 | Duyệt tóm tắt *(Approve Meeting Summary)* | Secretary | Placeholder | `<<extend>>` UC-48 |
+| UC-47 | Sinh / sinh lại tóm tắt *(Generate / Regenerate Meeting Summary)* — dự thảo 3 mục I–III, chỉ Chủ tọa/Thư ký; AI chạy tại chỗ, xếp hàng, hỏi lại mỗi 5 giây; kết quả biểu quyết chép từ dữ liệu | Chair, Secretary; AI Drafting Service | Đã đặc tả | `<<extend>>` UC-45a |
+| UC-48 | Xem tóm tắt *(View Meeting Summary)* — người khác chỉ thấy sau khi duyệt | Chair, Secretary (bản chưa duyệt); User có quyền (sau khi duyệt) | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-49 | Chỉnh tóm tắt *(Edit Meeting Summary)* — lưu là mất dấu đã duyệt, phải duyệt lại | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-48 |
+| UC-50 | Duyệt tóm tắt *(Approve Meeting Summary)* — từ đây người dự họp khác đọc được | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-48 |
 | UC-51 | Công bố tóm tắt *(Publish Meeting Summary)* — bước riêng sau khi duyệt | Secretary | Placeholder | `<<extend>>` UC-48 |
 | UC-81 | Quản lý nhận diện giọng nói cá nhân *(Manage My Voice ID)* — gồm UC-81a Xem thông tin giọng nói, UC-81b Xác nhận đồng ý Voice ID (thông báo riêng bản 1.1), UC-81c Thu âm mẫu giọng (tối đa 5 mẫu, 6–60s), UC-81d Nghe lại mẫu giọng (chỉ chính chủ), UC-81e Xoá mẫu giọng, UC-81f Rút đồng ý Voice ID (xoá ngay mọi mẫu và mọi gợi ý) | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Độc lập (UC-81b–f `<<extend>>` UC-81a) |
 
@@ -226,9 +227,9 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-58 | Xem biên bản *(View Meeting Minutes)* | User có quyền | Placeholder | `<<extend>>` UC-16 |
-| UC-59 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — từ tóm tắt đã duyệt, điểm danh, agenda, kết quả và kết luận biểu quyết | Secretary | Placeholder | `<<extend>>` UC-58 |
-| UC-60 | Chỉnh biên bản *(Edit Meeting Minutes)* | Secretary | Placeholder | `<<extend>>` UC-58 |
+| UC-58 | Xem biên bản *(View Meeting Minutes)* — bản nháp chỉ Chủ tọa/Thư ký; biên bản đã ban hành cho người có quyền (SCRUM-33, chưa làm) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-59 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — một mẫu cố định (Mẫu 1.4 NĐ30), điền từ hồ sơ cuộc họp + dự thảo đã duyệt | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
+| UC-60 | Chỉnh biên bản *(Edit Meeting Minutes)* — văn bản thuần có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-61 | Gửi ký biên bản *(Submit Meeting Minutes for Signing)* | Secretary; Email / SMTP | Placeholder | `<<extend>>` UC-58 |
 | UC-62 | Ký biên bản *(Sign Meeting Minutes)* | Người ký được chỉ định | Placeholder | `<<extend>>` UC-58 |
 | UC-63 | Xem trạng thái ký & lịch sử *(View Signature Status & Audit Trail)* | User có quyền | Placeholder | `<<extend>>` UC-58 |
