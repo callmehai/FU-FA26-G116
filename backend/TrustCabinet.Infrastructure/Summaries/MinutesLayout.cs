@@ -29,6 +29,8 @@ internal static partial class MinutesLayout
     /// <summary>The text width of the A4 page between the 30 mm and 15 mm margins: 165 mm.</summary>
     public const int TextWidth = 9355;
     public const int CellPaddingTwips = 108;
+    /// <summary>Word's limit on a table's columns.</summary>
+    public const int MaxColumns = 63;
 
     public static IReadOnlyList<LayoutBlock> Read(string content)
     {
@@ -101,7 +103,11 @@ internal static partial class MinutesLayout
         var style = element.Style;
         if (style.TryGetValue("text-align", out var a)) align = ToAlign(a);
         if (style.TryGetValue("text-indent", out var indent)) first = Millimetres(indent);
-        var left = scope.LeftMm + (style.TryGetValue("margin-left", out var margin) ? Millimetres(margin) : 0);
+        // A left indent never leaves less than a centimetre for the text: in a narrow cell the writer's indent steps would
+        // otherwise push the text past the cell's edge, which the PDF cannot lay out at all.
+        var room = Math.Max(0, scope.Available * 25.4f / 1440 - 10);
+        var left = scope.LeftMm + Math.Min(room, style.TryGetValue("margin-left", out var margin) ? Millimetres(margin) : 0);
+        first = Math.Min(first, Math.Max(0, room - (left - scope.LeftMm)));
         if (style.TryGetValue("margin-top", out var top)) before = Points(top);
         if (style.TryGetValue("margin-bottom", out var bottom)) after = Points(bottom);
         var lineHeight = style.TryGetValue("line-height", out var lh) ? Number(lh) : scope.LineHeight ?? LineHeight;
@@ -113,7 +119,10 @@ internal static partial class MinutesLayout
 
     private static void List(HtmlElement list, Scope scope, List<LayoutBlock> output)
     {
-        var markerAt = scope.LeftMm + (list.Style.TryGetValue("margin-left", out var margin) ? Millimetres(margin) : 0);
+        // Nested lists step right only while a centimetre of text is left beside the marker.
+        var room = Math.Max(0, scope.Available * 25.4f / 1440 - 10 - ListIndent);
+        var markerAt = scope.LeftMm + Math.Min(room, list.Style.TryGetValue("margin-left", out var margin) ? Millimetres(margin) : 0);
+        var step = room - (markerAt - scope.LeftMm) >= ListIndent ? ListIndent : 0;
         var number = list.Attribute("start") is { } start ? int.Parse(start, CultureInfo.InvariantCulture) : 1;
         foreach (var item in list.Elements.Where(e => e.Name == "li"))
         {
@@ -121,10 +130,10 @@ internal static partial class MinutesLayout
             var inner = scope with
             {
                 Compact = true,
-                LeftMm = markerAt + ListIndent,
+                LeftMm = markerAt + step,
                 Align = item.Style.TryGetValue("text-align", out var a) ? ToAlign(a) : scope.Align,
                 LineHeight = item.Style.TryGetValue("line-height", out var lh) ? Number(lh) : scope.LineHeight,
-                Available = scope.Available - Twips(markerAt + ListIndent - scope.LeftMm),
+                Available = Math.Max(567, scope.Available - Twips(markerAt + step - scope.LeftMm)),
                 TopLevel = false,
             };
             var blocks = item.Elements.ToList();
@@ -144,8 +153,9 @@ internal static partial class MinutesLayout
         var rows = table.Elements.Where(e => e.Name is "thead" or "tbody")
             .SelectMany(s => s.Elements.Where(r => r.Name == "tr")).ToList();
 
-        // Place every cell on the grid, skipping the places a row span from above still holds.
-        var taken = new HashSet<(int Row, int Column)>();
+        // Place every cell on the grid, skipping the places a row span from above still holds. Word stops at 63 columns;
+        // cells past that are left out, so a hostile colspan cannot grow the grid (or the memory) without bound.
+        var taken = new Dictionary<(int Row, int Column), (int Row, int Column, int Span, int RowSpan)>();
         var placed = new List<List<(HtmlElement Cell, int Column, int Span, int RowSpan)>>();
         var columns = 0;
         for (var r = 0; r < rows.Count; r++)
@@ -154,24 +164,23 @@ internal static partial class MinutesLayout
             var c = 0;
             foreach (var cell in rows[r].Elements)
             {
-                while (taken.Contains((r, c))) c++;
-                var span = Int(cell.Attribute("colspan"));
+                while (taken.ContainsKey((r, c))) c++;
+                if (c >= MaxColumns) break;
+                var span = Math.Min(Int(cell.Attribute("colspan")), MaxColumns - c);
                 var rowSpan = Math.Min(Int(cell.Attribute("rowspan")), rows.Count - r);
                 for (var rr = r; rr < r + rowSpan; rr++)
-                    for (var cc = c; cc < c + span; cc++) taken.Add((rr, cc));
+                    for (var cc = c; cc < c + span; cc++) taken.TryAdd((rr, cc), (r, c, span, rowSpan));
                 line.Add((cell, c, span, rowSpan));
                 c += span;
             }
             placed.Add(line);
             columns = Math.Max(columns, c);
         }
-        if (taken.Count > 0) columns = Math.Max(columns, taken.Max(t => t.Column) + 1);
+        if (taken.Count > 0) columns = Math.Max(columns, taken.Keys.Max(t => t.Column) + 1);
 
         var widths = Widths(table, placed.FirstOrDefault() ?? [], columns, scope.Available);
         var frame = table.Attribute("data-layout") == "frame";
         var layoutRows = new List<LayoutRow>();
-        var origins = placed.SelectMany((line, r) => line.Select(p => (Row: r, p.Column, p.Span, p.RowSpan)))
-            .ToDictionary(p => (p.Row, p.Column));
         for (var r = 0; r < placed.Count; r++)
         {
             var cells = new List<LayoutCell>();
@@ -184,8 +193,7 @@ internal static partial class MinutesLayout
                     cells.Add(Cell(start.Cell, c, start.Span, start.RowSpan, width));
                     c += start.Span;
                 }
-                else if (origins.Values.FirstOrDefault(o => o.Row < r && o.Row + o.RowSpan > r && o.Column <= c
-                             && o.Column + o.Span > c) is { RowSpan: > 0 } above)
+                else if (taken.TryGetValue((r, c), out var above) && above.Row < r)
                 {
                     // Held by a cell spanning down from a row above: Word needs a continuation cell here.
                     cells.Add(new LayoutCell(above.Column, above.Span, 1, true, "top", []));
@@ -239,8 +247,8 @@ internal static partial class MinutesLayout
         var shares = px.Select(p => p is > 0 ? p.Value : average).ToArray();
         var total = shares.Sum();
         // Each column's share of the width, the last one taking the rounding so the table is exactly as wide as it may be.
-        var widths = shares.Select(share => (int)Math.Round(share * available / total)).ToArray();
-        if (widths.Length > 0) widths[^1] += available - widths.Sum();
+        var widths = shares.Select(share => Math.Max(1, (int)Math.Round(share * available / total))).ToArray();
+        if (widths.Length > 0) widths[^1] = Math.Max(1, widths[^1] + available - widths.Sum());
         return widths;
     }
 

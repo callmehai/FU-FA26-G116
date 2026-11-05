@@ -9,6 +9,9 @@ import { Toolbar } from './editor/Toolbar'
  * sheet, the sheet set the way it prints. It edits the sanitized HTML the page, the Word file and the PDF are drawn
  * from, so what is typed here is what they show.
  */
+/** Text the server counts as text: spaces, no-break spaces and zero-width spaces alone are an empty minutes (MSG402). */
+const hasText = (text: string) => text.replace(/[\s\u200b]/g, '').length > 0
+
 export function MinutesEditor({
   content,
   onChange,
@@ -45,7 +48,7 @@ export function MinutesEditor({
       },
     },
     onCreate: ({ editor: e }) => fitTables(e),
-    onUpdate: ({ editor: e }) => onChange(e.getHTML(), !!e.state.doc.textContent.trim()),
+    onUpdate: ({ editor: e }) => onChange(e.getHTML(), hasText(e.state.doc.textContent)),
   })
 
   return (

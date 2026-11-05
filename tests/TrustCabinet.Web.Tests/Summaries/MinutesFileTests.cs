@@ -203,4 +203,71 @@ public sealed class MinutesFileTests
         Assert.Equal(WordText(lines), WordText(MinutesHtml.FromLines(lines)));
         Assert.Contains("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", WordText(lines));
     }
+
+    /// <summary>Runs on a thread with the stack a Linux thread-pool thread has, where a deep recursion would end the process.</summary>
+    private static T OnSmallStack<T>(Func<T> work)
+    {
+        T result = default!;
+        Exception? failure = null;
+        var thread = new Thread(() =>
+        {
+            try { result = work(); }
+            catch (Exception e) { failure = e; }
+        }, 1536 * 1024);
+        thread.Start();
+        thread.Join();
+        if (failure is not null) throw failure;
+        return result;
+    }
+
+    [Fact]
+    public void Nesting_deeper_than_any_editor_document_is_flagged_and_never_walked()
+    {
+        var lists = string.Concat(Enumerable.Repeat("<ul><li>", 2000)) + "sâu";
+        var marks = string.Concat(Enumerable.Repeat("<u>", 4000)) + "gạch";
+        Assert.True(MinutesHtml.TooDeep(lists));
+        Assert.True(MinutesHtml.TooDeep(marks));
+        Assert.False(MinutesHtml.TooDeep("<table><tbody><tr><td><ul><li><p><strong><em>x</em></strong></p></li></ul></td></tr></tbody></table>"));
+        // Content that somehow got in deeper is read as its text, on every path, without overflowing the stack.
+        Assert.Equal("<p>sâu</p>", OnSmallStack(() => MinutesHtml.Sanitize(lists)));
+        Assert.Equal("<p>gạch</p>", OnSmallStack(() => MinutesHtml.Sanitize(marks)));
+        Assert.NotEmpty(OnSmallStack(() => MinutesPdf.Build(marks)));
+        Assert.NotEmpty(OnSmallStack(() => MinutesDocx.Build(lists)));
+    }
+
+    [Fact]
+    public void A_table_keeps_to_word_s_63_columns_whatever_its_spans_say()
+    {
+        var wide = "<table><tbody><tr>" + string.Concat(Enumerable.Repeat("<td colspan=\"50\"><p>x</p></td>", 200)) + "</tr></tbody></table>";
+        var tall = "<table><tbody>" + string.Concat(Enumerable.Repeat("<tr><td rowspan=\"200\" colspan=\"50\"><p>x</p></td></tr>", 400)) + "</tbody></table>";
+        foreach (var html in new[] { wide, tall })
+        {
+            var grid = Word(html).Descendants(W + "gridCol").ToList();
+            Assert.InRange(grid.Count, 1, MinutesLayout.MaxColumns);
+            Assert.All(grid, col => Assert.True(int.Parse(Val(col, "w")!) > 0));
+            Assert.NotEmpty(MinutesPdf.Build(html));
+        }
+    }
+
+    [Fact]
+    public void An_indent_wider_than_its_cell_still_lays_out_in_the_pdf()
+    {
+        // Six columns (the largest table the grid picker offers) and two indent steps, a deep list and a big letter in a cell.
+        var cells = string.Concat(Enumerable.Repeat("<td><p style=\"margin-left: 25.4mm\">thụt</p></td>", 5))
+            + "<td colwidth=\"40\"><ul><li><ul><li><ul><li><ul><li><p><span style=\"font-size: 24pt\">W</span></p></li></ul></li></ul></li></ul></li></ul></td>";
+        var html = $"<table><tbody><tr>{cells}</tr></tbody></table>";
+        using var pdf = PdfDocument.Open(MinutesPdf.Build(html));
+        Assert.Contains("thụt", string.Concat(pdf.GetPages().SelectMany(p => p.Letters).Select(l => l.Value)));
+    }
+
+    [Fact]
+    public void After_a_line_break_the_pdf_does_not_indent_the_first_line_again()
+    {
+        using var pdf = PdfDocument.Open(MinutesPdf.Build("<p>Dòng đầu<br>Ngắt</p>"));
+        var letters = pdf.GetPages().Single().Letters;
+        var first = letters.First(l => l.Value == "D").StartBaseLine.X;
+        var second = letters.First(l => l.Value == "N").StartBaseLine.X;
+        // The first line starts 12.7 mm (36 pt) in; the line after the break starts at the margin.
+        Assert.InRange(first - second, 30, 42);
+    }
 }

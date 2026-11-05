@@ -113,18 +113,44 @@ public static class MinutesPdf
                     var span = text.Span(Clean(marker));
                     if (p.Bold) span.Bold();
                 });
-                row.RelativeItem().Text(text => Runs(text, p));
+                row.RelativeItem().Text(text => Runs(text, p, p.Runs));
             });
             return;
         }
-        item.PaddingLeft(Math.Max(0, p.LeftMm), Unit.Millimetre).Text(text =>
+        item = item.PaddingLeft(Math.Max(0, p.LeftMm), Unit.Millimetre);
+        if (p.FirstLineMm <= 0 || !p.Runs.Any(r => r.Break))
         {
-            if (p.FirstLineMm > 0) text.ParagraphFirstLineIndentation(p.FirstLineMm, Unit.Millimetre);
-            Runs(text, p);
+            item.Text(text =>
+            {
+                if (p.FirstLineMm > 0) text.ParagraphFirstLineIndentation(p.FirstLineMm, Unit.Millimetre);
+                Runs(text, p, p.Runs);
+            });
+            return;
+        }
+        // QuestPDF indents the first line again after every line break; Word indents only the paragraph's first line.
+        // So the paragraph is drawn as its lines, only the first one indented.
+        var lines = new List<List<LayoutRun>> { new() };
+        foreach (var run in p.Runs)
+        {
+            if (run.Break) lines.Add([]);
+            else lines[^1].Add(run);
+        }
+        item.Column(column =>
+        {
+            for (var i = 0; i < lines.Count; i++)
+            {
+                var line = lines[i];
+                var first = i == 0;
+                column.Item().Text(text =>
+                {
+                    if (first) text.ParagraphFirstLineIndentation(p.FirstLineMm, Unit.Millimetre);
+                    Runs(text, p, line);
+                });
+            }
         });
     }
 
-    private static void Runs(TextDescriptor text, LayoutParagraph p)
+    private static void Runs(TextDescriptor text, LayoutParagraph p, IEnumerable<LayoutRun> runs)
     {
         switch (p.Align)
         {
@@ -134,7 +160,7 @@ public static class MinutesPdf
             default: text.AlignLeft(); break;
         }
         var any = false;
-        foreach (var run in p.Runs)
+        foreach (var run in runs)
         {
             if (run.Break)
             {
@@ -176,14 +202,18 @@ public static class MinutesPdf
                     IContainer box = grid.Cell().Row((uint)r + 1).Column((uint)cell.Column + 1)
                         .ColumnSpan((uint)cell.Span).RowSpan((uint)cell.RowSpan);
                     if (!table.Frame) box = box.Border(0.5f).BorderColor(Colors.Black);
-                    box = box.PaddingHorizontal(MinutesLayout.CellPadding, Unit.Millimetre);
+                    // Word's cell margin, or a fifth of the cell when the column is narrower than its two margins.
+                    var widthMm = table.Columns.Skip(cell.Column).Take(cell.Span).Sum() * 25.4f / 1440;
+                    box = box.PaddingHorizontal(Math.Min(MinutesLayout.CellPadding, widthMm / 5), Unit.Millimetre);
                     box = cell.VerticalAlign switch
                     {
                         "middle" => box.AlignMiddle(),
                         "bottom" => box.AlignBottom(),
                         _ => box.AlignTop(),
                     };
-                    box.Column(column =>
+                    // Shrunk only if it would not fit at all (a 24 pt letter in a column dragged to its minimum width):
+                    // a cell that cannot be laid out would fail the whole PDF.
+                    box.ScaleToFit().Column(column =>
                     {
                         foreach (var block in cell.Blocks) Block(column, block);
                         if (cell.Blocks.Count == 0) column.Item().Text(" ");

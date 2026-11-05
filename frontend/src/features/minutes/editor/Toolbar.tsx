@@ -1,5 +1,5 @@
 import { useEditorState, type Editor } from '@tiptap/react'
-import { useCallback, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { Icon, type IconName } from '../../../components/Icon'
 import { Select } from '../../../components/Select'
 import { useAnchoredPopover, useOutsidePress } from '../../../components/useAnchoredPopover'
@@ -28,6 +28,9 @@ const BLOCKS: { value: Block; label: string }[] = [
 const SIZES = ['10', '11', '12', '13', '14', '16', '18', '20', '24'] as const
 type Size = (typeof SIZES)[number]
 const BODY_SIZE: Size = '13'
+
+/** The space the spacing menu adds before or after a paragraph. */
+const SPACE = '6pt'
 
 const SPACINGS = [
   { value: '1', label: '1,0' },
@@ -62,7 +65,7 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
           : e.isActive('heading', { level: 3 })
             ? 'h3'
             : 'paragraph') as Block,
-      size: (String(e.getAttributes('textStyle').fontSize ?? '').replace(/pt$/, '') || BODY_SIZE) as Size,
+      size: String(e.getAttributes('textStyle').fontSize ?? '').replace(/pt$/, '') || BODY_SIZE,
       color: hex(e.getAttributes('textStyle').color),
       highlight: hex(e.getAttributes('textStyle').backgroundColor),
       bold: e.isActive('bold'),
@@ -73,8 +76,8 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
       sub: e.isActive('subscript'),
       align: (['left', 'center', 'right', 'justify'] as const).find((a) => e.isActive({ textAlign: a })) ?? null,
       lineHeight: blockAttr(e, 'lineHeight'),
-      spaceBefore: !!blockAttr(e, 'marginTop'),
-      spaceAfter: !!blockAttr(e, 'marginBottom'),
+      spaceBefore: blockAttr(e, 'marginTop') === SPACE,
+      spaceAfter: blockAttr(e, 'marginBottom') === SPACE,
       firstLine: firstLineIndented(e),
       bullet: e.isActive('bulletList'),
       ordered: e.isActive('orderedList'),
@@ -105,11 +108,12 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
             <Select<Block> label="Kiểu đoạn" size="sm" value={s.block} options={BLOCKS} onChange={setBlockType} tooltip="Kiểu đoạn" />
           </div>
           <div className="minutes-toolbar-size">
-            <Select<Size>
+            <Select<string>
               label="Cỡ chữ"
               size="sm"
               value={s.size}
-              options={SIZES.map((v) => ({ value: v, label: v }))}
+              // A size set elsewhere (the template's 11 pt lines are in the list; a pasted 10.5 is not) still shows.
+              options={[...new Set([...SIZES, s.size])].sort((a, b) => Number(a) - Number(b)).map((v) => ({ value: v, label: v }))}
               onChange={(v) => (v === BODY_SIZE ? chain().unsetFontSize().run() : chain().setFontSize(`${v}pt`).run())}
               tooltip="Cỡ chữ (pt)"
             />
@@ -184,13 +188,13 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
                     label: 'Cách trên đoạn 6 pt',
                     checked: s.spaceBefore,
                     separated: true,
-                    onSelect: () => setBlock(editor, { marginTop: s.spaceBefore ? null : '6pt' }),
+                    onSelect: () => setBlock(editor, { marginTop: s.spaceBefore ? null : SPACE }),
                   },
                   {
                     key: 'after',
                     label: 'Cách dưới đoạn 6 pt',
                     checked: s.spaceAfter,
-                    onSelect: () => setBlock(editor, { marginBottom: s.spaceAfter ? null : '6pt' }),
+                    onSelect: () => setBlock(editor, { marginBottom: s.spaceAfter ? null : SPACE }),
                   },
                 ]}
               />
@@ -345,6 +349,18 @@ function ToolMenu({
   const close = useCallback(() => setOpen(false), [])
   useAnchoredPopover(open, trigger, panel, { matchWidth: false })
   useOutsidePress(open, root, close)
+  // Opened with the mouse, focus stays in the sheet (the press keeps the selection), so Escape is heard on the page.
+  useEffect(() => {
+    if (!open) return
+    const onEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      event.stopPropagation()
+      setOpen(false)
+    }
+    document.addEventListener('keydown', onEscape, true)
+    return () => document.removeEventListener('keydown', onEscape, true)
+  }, [open])
   const onKey = (event: KeyboardEvent) => {
     if (event.key !== 'Escape') return
     event.preventDefault()
@@ -391,7 +407,7 @@ type ListItem = {
 
 function MenuList({ items, close }: { items: ListItem[]; close: () => void }) {
   return (
-    <div className="tool-list" role="menu">
+    <div className="tool-list" role="menu" onKeyDown={moveInMenu}>
       {items.map((item) => (
         <button
           key={item.key}
@@ -419,6 +435,25 @@ function MenuList({ items, close }: { items: ListItem[]; close: () => void }) {
       ))}
     </div>
   )
+}
+
+/** Arrow keys, Home and End move between a menu's items, as in any menu. */
+function moveInMenu(event: KeyboardEvent<HTMLDivElement>) {
+  const items = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')]
+  const at = items.indexOf(document.activeElement as HTMLButtonElement)
+  const next =
+    event.key === 'ArrowDown'
+      ? (at + 1) % items.length
+      : event.key === 'ArrowUp'
+        ? (at + items.length - 1) % items.length
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? items.length - 1
+            : -1
+  if (next < 0) return
+  event.preventDefault()
+  items[next]?.focus()
 }
 
 function Swatches({

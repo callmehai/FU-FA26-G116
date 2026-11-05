@@ -84,10 +84,48 @@ public static partial class MinutesHtml
     /// <summary>The sanitized tree of any content, HTML or line-marked text; what the Word and PDF files are drawn from.</summary>
     internal static IReadOnlyList<HtmlElement> Read(string content) => Parse(IsHtml(content) ? content : FromLines(content));
 
+    /// <summary>
+    /// How deep elements may nest. The walker below recurses once per level and .NET cannot catch a stack overflow: a few
+    /// kilobytes of nested tags would take the whole process down. Nothing the editor writes comes near it (a list in a
+    /// cell in a table is under ten levels).
+    /// </summary>
+    internal const int MaxDepth = 64;
+
+    /// <summary>True when the HTML nests deeper than <see cref="MaxDepth"/>; counted without recursion.</summary>
+    public static bool TooDeep(string html) => TooDeep(Parser.ParseFragment(html, Parser.ParseDocument(string.Empty).Body!));
+
+    private static bool TooDeep(IEnumerable<INode> nodes)
+    {
+        var stack = new Stack<(INode Node, int Depth)>(nodes.Select(n => (n, 1)));
+        while (stack.Count > 0)
+        {
+            var (node, depth) = stack.Pop();
+            if (depth > MaxDepth) return true;
+            foreach (var child in node.ChildNodes) if (child is IElement) stack.Push((child, depth + 1));
+        }
+        return false;
+    }
+
+    /// <summary>All the text under the nodes, in reading order, gathered without recursion.</summary>
+    private static string FlatText(IEnumerable<INode> nodes)
+    {
+        var text = new StringBuilder();
+        var stack = new Stack<INode>(nodes.Reverse());
+        while (stack.Count > 0)
+        {
+            var node = stack.Pop();
+            if (node is IText t) text.Append(t.Data);
+            else for (var i = node.ChildNodes.Length - 1; i >= 0; i--) stack.Push(node.ChildNodes[i]);
+        }
+        return text.ToString();
+    }
+
     internal static IReadOnlyList<HtmlElement> Parse(string html)
     {
         var context = Parser.ParseDocument(string.Empty).Body!;
         var nodes = Parser.ParseFragment(html, context);
+        // Stored content passed this check when it was saved; anything deeper is cut to its text rather than walked.
+        if (TooDeep(nodes)) nodes = Parser.ParseFragment($"<p>{Encode(FlatText(nodes), attribute: false)}</p>", context);
         var output = new List<HtmlNode>();
         Flow(Expand(nodes), output);
         return output.Cast<HtmlElement>().ToList();

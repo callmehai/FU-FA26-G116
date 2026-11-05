@@ -4589,11 +4589,12 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .minutes-doc h1 { margin: 12pt 0 3pt; font-size: 1.077em; font-weight: 700; text-align: center; }
 .minutes-doc h2 { margin: 6pt 0 3pt; font-size: 1em; font-weight: 700; text-align: justify; text-indent: 12.7mm; }
 .minutes-doc h3 { margin: 0 0 3pt; font-size: 1em; font-weight: 700; text-align: justify; text-indent: 12.7mm; }
-.minutes-doc :is(h1, h2, h3):first-child { margin-top: 0; }
 .minutes-doc :is(td, th, li) p { margin: 0; text-align: left; text-indent: 0; }
-.minutes-doc :is(ul, ol) { margin: 0 0 3pt; padding-left: 6mm; }
+.minutes-doc :is(ul, ol) { margin: 0; padding-left: 6mm; }
+/* An empty paragraph is a blank line on paper (the gap left for a signature): it keeps its height here too. */
+.minutes-doc :is(p, h1, h2, h3):empty::before { content: '\00a0'; }
 .minutes-doc li { padding-left: 0; }
-.minutes-doc table { width: 100%; margin: 3pt 0 6pt; border-collapse: collapse; table-layout: fixed; }
+.minutes-doc table { width: 100%; margin: 0; border-collapse: collapse; table-layout: fixed; }
 .minutes-doc :is(td, th) { position: relative; padding: 0 1.9mm; border: 0.5pt solid #000; vertical-align: top; }
 .minutes-doc th { font-weight: 700; }
 .minutes-doc th p { text-align: center; }

@@ -265,6 +265,8 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         await AssertCode(await Save(secretary, id, new string('a', MinutesLimits.Content + 1), loaded), 400, "MSG402");
         // Within the limit as sent, but escaping makes the stored HTML longer than it.
         await AssertCode(await Save(secretary, id, "<p>" + new string('&', MinutesLimits.Content - 7) + "</p>", loaded), 400, "MSG402");
+        // Nesting no editor document comes near: refused before the sanitizer walks it, which would overflow the stack.
+        await AssertCode(await Save(secretary, id, string.Concat(Enumerable.Repeat("<ul><li>", 2000)) + "sâu", loaded), 400, "MSG402");
         await using var db = f.Db();
         Assert.Equal(minutes.GetProperty("content").GetString(), (await db.MeetingMinutes.SingleAsync(m => m.Id == id)).Content);
     }

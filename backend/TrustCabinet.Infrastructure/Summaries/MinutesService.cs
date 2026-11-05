@@ -86,7 +86,9 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             if (row.Status != MinutesStatus.Draft) return new(MinutesFailure.Locked);
             // Only the allow-list is stored (ADR-0055): whatever else the request carries never reaches a reader. A
             // document of empty paragraphs says nothing, so it is refused like an empty one.
-            var html = content is null || content.Length > MinutesLimits.Content ? null : MinutesHtml.Sanitize(content);
+            // Nesting deeper than any document the editor writes is refused before it is walked (MinutesHtml.MaxDepth).
+            var html = content is null || content.Length > MinutesLimits.Content || MinutesHtml.TooDeep(content)
+                ? null : MinutesHtml.Sanitize(content);
             if (html is null || html.Length > MinutesLimits.Content || !MinutesHtml.HasText(html))
                 return new(MinutesFailure.Invalid, Errors: new Dictionary<string, string[]>
                 {

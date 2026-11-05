@@ -251,20 +251,38 @@ export function millimetres(value: string | null): number {
 
 const mm = (n: number) => `${Math.round(n * 10) / 10}mm`
 
-/** Inside a list Tab-like indenting nests the item; elsewhere it moves the paragraph's left edge one step. */
+/**
+ * Inside a list indenting nests the item; elsewhere each selected paragraph's left edge moves one step from where it
+ * is, as Word does, so paragraphs indented differently keep their difference.
+ */
 export function indent(editor: Editor, step: 1 | -1) {
   if (editor.isActive('listItem')) {
     if (step > 0) editor.chain().focus().sinkListItem('listItem').run()
     else editor.chain().focus().liftListItem('listItem').run()
     return
   }
-  const next = Math.min(150, Math.max(0, millimetres(blockAttr(editor, 'marginLeft')) + step * INDENT_MM))
-  setBlock(editor, { marginLeft: next > 0 ? mm(next) : null })
+  const { state, view } = editor
+  const tr = state.tr
+  for (const range of state.selection.ranges)
+    state.doc.nodesBetween(range.$from.pos, range.$to.pos, (node, pos) => {
+      if (node.type.name !== 'paragraph' && node.type.name !== 'heading') return true
+      const next = Math.min(150, Math.max(0, millimetres((node.attrs.marginLeft as string | null) ?? null) + step * INDENT_MM))
+      tr.setNodeMarkup(pos, undefined, { ...node.attrs, marginLeft: next > 0 ? mm(next) : null })
+      return false
+    })
+  if (tr.docChanged) view.dispatch(tr)
+  editor.commands.focus()
 }
 
 /** In a cell or a list a paragraph starts flush; elsewhere its first line is indented unless told otherwise. */
 function indentedByDefault(editor: Editor) {
-  return !editor.isActive('tableCell') && !editor.isActive('tableHeader') && !editor.isActive('listItem')
+  // The title (h1) is centred and never indented; neither is a paragraph in a cell or a list.
+  return (
+    !editor.isActive('heading', { level: 1 }) &&
+    !editor.isActive('tableCell') &&
+    !editor.isActive('tableHeader') &&
+    !editor.isActive('listItem')
+  )
 }
 
 export function firstLineIndented(editor: Editor): boolean {
@@ -291,14 +309,19 @@ export type TextCase = 'upper' | 'lower' | 'words'
 /** Changes the case of the selected text in place, keeping each piece's marks. */
 export function changeCase(editor: Editor, to: TextCase) {
   const { state, view } = editor
-  const { from, to: end } = state.selection
-  if (from === end) return
+  if (state.selection.empty) return
   const tr = state.tr
   const pieces: { pos: number; node: PmNode; start: number; stop: number }[] = []
-  state.doc.nodesBetween(from, end, (node, pos) => {
-    if (!node.isText) return
-    pieces.push({ pos, node, start: Math.max(from, pos) - pos, stop: Math.min(end, pos + node.nodeSize) - pos })
-  })
+  // Each range of the selection: one for text, one per cell when cells are selected.
+  for (const range of state.selection.ranges) {
+    const from = range.$from.pos
+    const end = range.$to.pos
+    state.doc.nodesBetween(from, end, (node, pos) => {
+      if (!node.isText) return
+      pieces.push({ pos, node, start: Math.max(from, pos) - pos, stop: Math.min(end, pos + node.nodeSize) - pos })
+    })
+  }
+  pieces.sort((a, b) => a.pos - b.pos)
   // Back to front, so the positions of the pieces not yet changed stay where they were.
   for (const { pos, node, start, stop } of pieces.reverse()) {
     const text = node.text!.slice(start, stop)
