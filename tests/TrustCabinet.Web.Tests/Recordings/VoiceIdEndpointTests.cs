@@ -464,6 +464,16 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         Assert.Null(sure.AssignedAt);
         Assert.Null(sure.SuggestedUserId);
         Assert.Equal(withdrawnAt, sure.UpdatedAt);
+
+        // A voice only suggested as someone keeps its stamp when they withdraw: no draft reads a suggestion.
+        var fairStamp = fair.UpdatedAt;
+        using var secretary = fixture.Client(s.Secretary);
+        fixture.Clock.Now = withdrawnAt.AddMinutes(1);
+        try { await AssertCode(await secretary.DeleteAsync("/api/me/voice/consent"), 200, "MSG306"); }
+        finally { fixture.Clock.Now = new(2026, 10, 23, 8, 0, 0, TimeSpan.Zero); }
+        await db.Entry(fair).ReloadAsync();
+        Assert.Null(fair.SuggestedUserId);
+        Assert.Equal(fairStamp, fair.UpdatedAt);
     }
 
     [Fact]

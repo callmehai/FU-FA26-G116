@@ -350,25 +350,22 @@ function ToolMenu({
   useAnchoredPopover(open, trigger, panel, { matchWidth: false })
   useOutsidePress(open, root, close)
   // Opened with the mouse, focus stays in the sheet (the press keeps the selection), so Escape is heard on the page.
+  // Opened from the keyboard and tabbed into, focus is in the panel, which unmounts: it goes back to the button, or a
+  // keyboard user would be left on the page body.
   useEffect(() => {
     if (!open) return
     const onEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key !== 'Escape') return
       event.preventDefault()
       event.stopPropagation()
+      if (root.current?.contains(document.activeElement)) trigger.current?.focus()
       setOpen(false)
     }
     document.addEventListener('keydown', onEscape, true)
     return () => document.removeEventListener('keydown', onEscape, true)
   }, [open])
-  const onKey = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape') return
-    event.preventDefault()
-    setOpen(false)
-    trigger.current?.focus()
-  }
   return (
-    <div ref={root} className="tool-menu" onKeyDown={onKey}>
+    <div ref={root} className="tool-menu">
       <button
         ref={trigger}
         type="button"

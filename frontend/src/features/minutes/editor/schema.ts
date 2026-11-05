@@ -430,10 +430,15 @@ function reveal(editor: Editor) {
 }
 
 export function replaceCurrent(editor: Editor, text: string) {
-  const { matches, current } = findState(editor.state)
+  const { query, matches, current } = findState(editor.state)
   const match = matches[current]
   if (!match) return
-  editor.view.dispatch(editor.state.tr.insertText(text, match.from, match.to))
+  const tr = editor.state.tr.insertText(text, match.from, match.to)
+  // Go on past the inserted text: a replacement that contains the query (ubnd → UBND, Văn A → Ông Văn A) would
+  // otherwise be the current match again, and the next "Thay" would stay put or replace inside its own words.
+  const end = match.from + text.length
+  const next = search(tr.doc, query).findIndex((m) => m.from >= end)
+  editor.view.dispatch(tr.setMeta(findKey, { current: next < 0 ? 0 : next }))
   reveal(editor)
 }
 

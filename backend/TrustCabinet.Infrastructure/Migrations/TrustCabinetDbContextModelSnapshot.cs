@@ -188,6 +188,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("OccurredAt")
                         .HasDatabaseName("ix_audit_log_occurred_at");
 
+                    b.HasIndex("Action", "OccurredAt")
+                        .HasDatabaseName("ix_audit_log_action_occurred_at");
+
                     b.HasIndex("ObjectType", "ObjectId")
                         .HasDatabaseName("ix_audit_log_object_type_object_id");
 

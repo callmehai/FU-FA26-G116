@@ -19,6 +19,9 @@ public class AuditLogEntryConfiguration : IEntityTypeConfiguration<AuditLogEntry
         // The admin screen reads newest first; investigations read everything about one object.
         builder.HasIndex(a => a.OccurredAt);
         builder.HasIndex(a => new { a.ObjectType, a.ObjectId });
+        // Some questions are about one kind of event: when a meeting last lost a sentence (speech_clip.deleted) dates its
+        // minutes draft, polled every few seconds while the AI writes, and must not read the whole log each time.
+        builder.HasIndex(a => new { a.Action, a.OccurredAt });
 
         // Restrict, so a user row can never be removed while it is the actor on recorded evidence.
         builder.HasOne(a => a.Actor)

@@ -319,9 +319,10 @@ function SummaryCard({
           }}
           onGenerate={() => {
             setNaming(false)
+            // A first draft: the POST answers with the whole state, so no refresh races it and overwrites Queued.
+            if (!draft) return void ask().catch(() => undefined)
             onRetry()
-            if (draft) setConfirming(true)
-            else void ask().catch(() => undefined)
+            setConfirming(true)
           }}
         />
       )}
