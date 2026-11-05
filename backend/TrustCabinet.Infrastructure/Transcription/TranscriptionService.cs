@@ -43,17 +43,20 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 : [];
             if (transcript is null)
                 return new(Data: new TranscriptView(recordingId, "None", "", "vi", "", null, recording.DurationMs, canEdit, [], [], people));
+            // A voice is listed while a line is said in it, as AI-eCabinet lists the voices of its lines: one whose every
+            // line the Secretary moved to another voice goes, its name kept should a line move back to that person.
+            var spoken = transcript.Segments.Select(s => s.SpeakerLabel).ToHashSet();
+            var voices = transcript.Speakers.Where(s => spoken.Contains(s.Label)).OrderBy(s => s.Label).ToList();
             // The machine's guess at a voice is a hint for the Secretary who names it, and a guess about someone's
             // biometric identity: nobody else gets it, only the name the Secretary assigned.
             var sameAs = canEdit
-                ? SpeakerMatcher.SameAs([.. transcript.Speakers.Select(s => (s.Label, s.SuggestedUserId, s.SuggestionScore, s.AssignedUserId))])
+                ? SpeakerMatcher.SameAs([.. voices.Select(s => (s.Label, s.SuggestedUserId, s.SuggestionScore, s.AssignedUserId))])
                 : new Dictionary<string, string>();
             return new(Data: new TranscriptView(recordingId, transcript.Status.ToString(), transcript.Provider,
                 transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                 [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
-                    s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName, s.SpeakerUserId,
-                    s.SpeakerGuestId, LineName(s)))],
-                [.. transcript.Speakers.OrderBy(s => s.Label).Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
+                    s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName))],
+                [.. voices.Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                     canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
                     canEdit ? s.SuggestionScore : null, s.AssignedUserId, AssignedName(s), sameAs.GetValueOrDefault(s.Label),
                     s.AssignedGuestId, AutoAssigned(s)))],
@@ -120,7 +123,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             var now = clock.GetUtcNow();
             var text = TranscriptText.Render(meeting.Title, $"bản ghi {recording.FileName}", meeting.ActualStartedAt ?? recording.CreatedAt,
                 now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(TranscriptText.Offset(s.StartMs),
-                    LineName(s) ?? names.GetValueOrDefault(s.SpeakerLabel) ?? SpeakerLabelName(s.SpeakerLabel), s.Text)));
+                    names.GetValueOrDefault(s.SpeakerLabel) ?? SpeakerLabelName(s.SpeakerLabel), s.Text)));
             await audit.RecordAsync(AuditActions.TranscriptExported, AuditActions.RecordingObjectType, recordingId, actorId,
                 new { recording.MeetingId, segments = transcript.Segments.Count }, ct);
             return new(Data: new ExportedText(TranscriptText.FileName(meeting.ActualStartedAt ?? recording.CreatedAt), text));
@@ -131,11 +134,6 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             return new(TranscriptFailure.ReadFailed);
         }
     }
-
-    /// <summary>Who said this one line when the Secretary named it apart from its voice; null otherwise.</summary>
-    private static string? LineName(TranscriptSegment segment)
-        => segment.SpeakerUser?.FullName
-            ?? (segment.SpeakerGuest is { } guest ? guest.SelfDeclaredDisplayName ?? guest.InvitedName : null);
 
     private static string? AssignedName(TranscriptSpeaker speaker)
         => speaker.AssignedUser?.FullName
@@ -216,36 +214,97 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         }
     }
 
-    public async Task<TranscriptOutcome> AssignSegmentSpeakerAsync(Guid segmentId, Guid? userId, Guid? guestId, Guid actorId,
-        CancellationToken ct = default)
+    public async Task<TranscriptOutcome> AssignSegmentSpeakerAsync(Guid segmentId, Guid? userId, Guid? guestId, string? label,
+        Guid actorId, CancellationToken ct = default)
     {
         try
         {
-            var segment = await transcripts.FindSegmentAsync(segmentId, ct);
-            if (segment is null) return new(TranscriptFailure.NotFound);
-            var (recording, meeting, failure) = await ReadableAsync(segment.Transcript.RecordingId, actorId, ct);
-            if (recording is null || meeting is null) return new(failure);
-            if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
-            if (userId is not null && guestId is not null) return new(TranscriptFailure.InvalidSpeaker);
-            var person = userId is { } id ? Participants(meeting).FirstOrDefault(p => p.UserId == id) : null;
-            if (userId is not null && person is null) return new(TranscriptFailure.InvalidSpeaker);
-            var guest = guestId is { } g ? (await transcripts.ListGuestsAsync(meeting.Id, ct)).FirstOrDefault(p => p.Id == g) : null;
-            if (guestId is not null && guest is null) return new(TranscriptFailure.InvalidSpeaker);
-            var now = clock.GetUtcNow();
-            segment.SpeakerUserId = userId;
-            segment.SpeakerGuestId = guestId;
-            segment.UpdatedAt = now;
-            await audit.RecordAsync(AuditActions.TranscriptSegmentSpeakerAssigned, AuditActions.RecordingObjectType, recording.Id,
-                actorId, new { recording.MeetingId, segmentId, segment.Position, segment.SpeakerLabel, userId, guestId }, ct);
-            await transcripts.SaveChangesAsync(ct);
-            return new(Data: new { segmentId, speakerUserId = userId, speakerGuestId = guestId,
-                speakerName = person?.User.FullName ?? guest?.FullName });
+            var found = await transcripts.FindSegmentAsync(segmentId, ct);
+            if (found is null) return new(TranscriptFailure.NotFound);
+            var recordingId = found.Transcript.RecordingId;
+            return await meetings.InTransactionAsync(async token =>
+            {
+                // The recording's row is locked: two lines moved at once never both take the same free label.
+                var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, token, forUpdate: true);
+                if (recording is null || meeting is null) return new TranscriptOutcome(failure);
+                if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
+                label = string.IsNullOrWhiteSpace(label) ? null : label;
+                // A line is said by one voice, user or guest.
+                if (new object?[] { userId, guestId, label }.Count(x => x is not null) != 1) return new(TranscriptFailure.InvalidSpeaker);
+                var transcript = await transcripts.FindByRecordingAsync(recordingId, true, token);
+                var segment = transcript?.Segments.SingleOrDefault(s => s.Id == segmentId);
+                if (transcript is null || segment is null) return new(TranscriptFailure.NotFound);
+                var now = clock.GetUtcNow();
+                TranscriptSpeaker? created = null;
+                string target;
+                if (label is not null)
+                {
+                    // Back to a voice of this recording, e.g. the one a line was wrongly taken from; another
+                    // recording's label is not one, as a voice the voice endpoint does not know.
+                    if (!transcript.Speakers.Any(s => s.Label == label) && !transcript.Segments.Any(s => s.SpeakerLabel == label))
+                        return new(TranscriptFailure.NotFound);
+                    target = label;
+                }
+                else
+                {
+                    var person = userId is { } id ? Participants(meeting).FirstOrDefault(p => p.UserId == id) : null;
+                    if (userId is not null && person is null) return new(TranscriptFailure.InvalidSpeaker);
+                    var guest = guestId is { } g ? (await transcripts.ListGuestsAsync(meeting.Id, token)).FirstOrDefault(p => p.Id == g) : null;
+                    if (guestId is not null && guest is null) return new(TranscriptFailure.InvalidSpeaker);
+                    bool Named(TranscriptSpeaker s) => userId is not null ? s.AssignedUserId == userId : s.AssignedGuestId == guestId;
+                    // The person's voice: the line's own when it is already theirs, else the first one named as them,
+                    // else a new voice carrying their name, as AI-eCabinet does — so they get a card, a colour and a time.
+                    var theirs = transcript.Speakers.FirstOrDefault(s => s.Label == segment.SpeakerLabel && Named(s))
+                        ?? transcript.Speakers.Where(Named).OrderBy(s => s.Label).FirstOrDefault();
+                    if (theirs is null)
+                    {
+                        var free = FreeLabel(transcript);
+                        if (free is null) return new(TranscriptFailure.InvalidSpeaker);
+                        // No embedding and no suggestion: the voice exists because the Secretary said who spoke.
+                        created = new TranscriptSpeaker
+                        {
+                            TranscriptId = transcript.Id, Label = free, AssignedUserId = userId, AssignedGuestId = guestId,
+                            AssignedById = actorId, AssignedAt = now, CreatedAt = now, UpdatedAt = now,
+                        };
+                        // Explicitly added: a new entity hung off a tracked one would be taken for an existing row.
+                        transcripts.AddSpeakers([created]);
+                    }
+                    target = theirs?.Label ?? created!.Label;
+                }
+                var from = segment.SpeakerLabel;
+                // A change that changes nothing writes nothing.
+                if (target == from) return new(Data: new { segmentId, speakerLabel = target, previousLabel = from, newVoice = false });
+                segment.SpeakerLabel = target;
+                segment.UpdatedAt = now;
+                // The line's length moves with it. Not summed again from the lines: the diarizer measured each voice's
+                // speech its own way, and a voice taking a line must never read as having spoken less. Moving the line
+                // back gives each voice its time back.
+                var length = Math.Max(0, segment.EndMs - segment.StartMs);
+                foreach (var voice in transcript.Speakers.Where(s => s.Label == from || s.Label == target).Append(created).Distinct())
+                {
+                    if (voice is null) continue;
+                    voice.SpeechMs = voice.Label == target ? voice.SpeechMs + length : Math.Max(0, voice.SpeechMs - length);
+                    voice.UpdatedAt = now;
+                }
+                await audit.RecordAsync(AuditActions.TranscriptSegmentSpeakerAssigned, AuditActions.RecordingObjectType, recording.Id,
+                    actorId, new { recording.MeetingId, segmentId, segment.Position, previousLabel = from, speakerLabel = target,
+                        userId, guestId, newVoice = created is not null }, token);
+                await transcripts.SaveChangesAsync(token);
+                return new(Data: new { segmentId, speakerLabel = target, previousLabel = from, newVoice = created is not null });
+            }, ct);
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
-            logger.LogError(ex, "Failed to name the speaker of transcript segment {SegmentId}", segmentId);
+            logger.LogError(ex, "Failed to move transcript segment {SegmentId} to another voice", segmentId);
             return new(TranscriptFailure.SaveFailed);
         }
+    }
+
+    /// <summary>The lowest "SPEAKER_NN" no line or voice of the transcript uses; null when all hundred are taken.</summary>
+    private static string? FreeLabel(Transcript transcript)
+    {
+        var taken = transcript.Segments.Select(s => s.SpeakerLabel).Concat(transcript.Speakers.Select(s => s.Label)).ToHashSet();
+        return Enumerable.Range(0, 100).Select(i => $"SPEAKER_{i:00}").FirstOrDefault(l => !taken.Contains(l));
     }
 
     public Task<int> RequeueInterruptedAsync(CancellationToken ct = default)

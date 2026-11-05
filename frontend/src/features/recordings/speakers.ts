@@ -1,4 +1,4 @@
-import type { TranscriptSegment, TranscriptSpeaker } from '../../types/transcript'
+import type { TranscriptSpeaker } from '../../types/transcript'
 
 /** Diarization labels as people read them. A label belongs to one recording only — it is not a person. */
 
@@ -73,6 +73,3 @@ export function voicesOf(speakers: readonly TranscriptSpeaker[]) {
 /** How a voice reads: the name the Secretary gave it, else "Người nói N". */
 export const voiceName = (speaker: Pick<TranscriptSpeaker, 'label' | 'assignedName'>) =>
   speaker.assignedName ?? speakerName(speaker.label)
-
-/** Who said this one line, when the Secretary moved it off its voice: a user or a guest; null when it follows its voice. */
-export const lineOwnerOf = (segment: TranscriptSegment) => segment.speakerUserId ?? segment.speakerGuestId ?? null

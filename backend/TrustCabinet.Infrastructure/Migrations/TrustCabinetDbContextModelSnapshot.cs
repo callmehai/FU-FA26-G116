@@ -2294,19 +2294,11 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("position");
 
-                    b.Property<Guid?>("SpeakerGuestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("speaker_guest_id");
-
                     b.Property<string>("SpeakerLabel")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("speaker_label");
-
-                    b.Property<Guid?>("SpeakerUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("speaker_user_id");
 
                     b.Property<long>("StartMs")
                         .HasColumnType("bigint")
@@ -2332,20 +2324,11 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("EditedById")
                         .HasDatabaseName("ix_transcript_segments_edited_by_id");
 
-                    b.HasIndex("SpeakerGuestId")
-                        .HasDatabaseName("ix_transcript_segments_speaker_guest_id");
-
-                    b.HasIndex("SpeakerUserId")
-                        .HasDatabaseName("ix_transcript_segments_speaker_user_id");
-
                     b.HasIndex("TranscriptId", "Position")
                         .IsUnique()
                         .HasDatabaseName("ix_transcript_segments_transcript_id_position");
 
-                    b.ToTable("transcript_segments", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_transcript_segments_one_speaker", "speaker_user_id IS NULL OR speaker_guest_id IS NULL");
-                        });
+                    b.ToTable("transcript_segments", (string)null);
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.TranscriptSpeaker", b =>
@@ -3709,18 +3692,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_transcript_segments_users_edited_by_id");
 
-                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "SpeakerGuest")
-                        .WithMany()
-                        .HasForeignKey("SpeakerGuestId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_transcript_segments_meeting_guest_invitations_speaker_guest");
-
-                    b.HasOne("TrustCabinet.Domain.Entities.User", "SpeakerUser")
-                        .WithMany()
-                        .HasForeignKey("SpeakerUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_transcript_segments_users_speaker_user_id");
-
                     b.HasOne("TrustCabinet.Domain.Entities.Transcript", "Transcript")
                         .WithMany("Segments")
                         .HasForeignKey("TranscriptId")
@@ -3729,10 +3700,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_transcript_segments_transcripts_transcript_id");
 
                     b.Navigation("EditedBy");
-
-                    b.Navigation("SpeakerGuest");
-
-                    b.Navigation("SpeakerUser");
 
                     b.Navigation("Transcript");
                 });

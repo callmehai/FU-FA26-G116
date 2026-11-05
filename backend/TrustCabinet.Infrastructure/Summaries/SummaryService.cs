@@ -243,7 +243,9 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
         var transcribing = await transcripts.CountAsync(t => t.Status == TranscriptStatus.Pending || t.Status == TranscriptStatus.Processing, ct);
         var failed = await transcripts.CountAsync(t => t.Status == TranscriptStatus.Failed, ct);
         var unnamed = await transcripts.Where(t => t.Status == TranscriptStatus.Completed).SelectMany(t => t.Speakers)
-            .CountAsync(s => s.AssignedUserId == null && s.AssignedGuestId == null, ct);
+            // A voice none of whose lines are left in it (all moved to other voices) has nothing to name.
+            .CountAsync(s => s.AssignedUserId == null && s.AssignedGuestId == null
+                && s.Transcript.Segments.Any(x => x.SpeakerLabel == s.Label), ct);
         var agenda = await db.AgendaItems.Where(a => a.MeetingId == meetingId).Select(a => a.ActualStartedAt).ToListAsync(ct);
         var votes = await db.VotingSessions.CountAsync(v => v.MeetingId == meetingId && v.Status == VotingStatus.Closed, ct);
         var changed = new[]

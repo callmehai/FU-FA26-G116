@@ -173,17 +173,30 @@ họp (`guestId`), không cả hai; cả hai `null` là bỏ gán. Người đư
 phải có lời mời của cuộc họp này chưa bị thu hồi, gửi cả hai cũng vậy (`400 MSG317`). Response có `assignedGuestId`. Không phải Thư ký: `403 MSG295`. Nhãn
 không có trong bản ghi: `404`. `200 MSG316` `{ code, message, speaker }`.
 
-### `PUT /api/transcript-segments/{segmentId}/speaker` — `{ "userId": "…" | null, "guestId": "…" | null }`
+### `PUT /api/transcript-segments/{segmentId}/speaker` — `{ "userId": "…" }`, `{ "guestId": "…" }` hoặc `{ "label": "SPEAKER_NN" }`
 
-Thư ký nói ai nói **riêng một câu**, khi máy tách giọng xếp nhầm câu đó vào giọng của người khác (như "chỉ câu này" của
-AI-eCabinet). Các câu khác của giọng đó giữ tên của giọng. Cả hai `null` trả câu về giọng của nó. Cùng điều kiện với gán
-giọng: người dùng là thành phần hiện tại, Khách có lời mời chưa thu hồi, không gửi cả hai (`400 MSG317`); không phải Thư
-ký `403 MSG295`; câu không tồn tại hay không đọc được `404`. `200 MSG407`
-`{ code, message, segment: { segmentId, speakerUserId, speakerGuestId, speakerName } }`.
+Thư ký nói ai nói **riêng một câu**, khi máy tách giọng xếp nhầm câu đó vào giọng của người khác. Như "chỉ câu này" của
+AI-eCabinet, câu được **chuyển sang một giọng khác** của bản ghi, các câu khác giữ nguyên giọng của mình:
 
-Mỗi câu trong `GET /api/recordings/{id}/transcript` có thêm `speakerUserId`, `speakerGuestId`, `speakerName` (`null`
-khi câu theo tên của giọng). Bản gỡ băng tải về và dự thảo AI đọc tên của câu trước, rồi mới đến tên của giọng. Chạy lại
-chuyển chữ thì các câu được viết lại từ đầu, tên đặt riêng cho từng câu mất theo.
+- `userId` / `guestId`: câu chuyển sang giọng đã được gán tên người đó (giọng của chính câu nếu đã là người đó, không thì
+  giọng có nhãn nhỏ nhất). Chưa có giọng nào mang tên người đó thì tạo một giọng mới với nhãn `SPEAKER_NN` nhỏ nhất chưa
+  dùng, gán sẵn người đó (không có vector, không có gợi ý). Người đó vì thế có thẻ giọng, màu và thời lượng riêng; câu
+  sau của cùng người vào lại giọng ấy, không thêm thẻ.
+- `label`: câu chuyển về một giọng có sẵn của **bản ghi này** (ví dụ giọng câu bị lấy nhầm khỏi). Nhãn không thuộc bản
+  ghi này (của bản ghi khác hay không có): `404`.
+
+Gửi đúng một trong ba trường; gửi nhiều hơn hoặc không gửi gì: `400 MSG317`. Cùng điều kiện với gán giọng: người dùng là
+thành phần hiện tại, Khách có lời mời chưa thu hồi (`400 MSG317`); không phải Thư ký `403 MSG295`; câu không tồn tại hay
+không đọc được `404`. `200 MSG407` `{ code, message, segment: { segmentId, speakerLabel, previousLabel, newVoice } }`.
+Câu đã ở đúng giọng thì không ghi gì.
+
+Độ dài của câu chuyển theo câu: `speechMs` của giọng câu rời đi trừ đi, của giọng câu đến cộng thêm (giọng mới bắt đầu
+bằng độ dài câu đó). Không cộng lại từ các câu, vì máy tách giọng đo thời gian nói theo cách riêng: cộng lại có thể làm
+một giọng vừa nhận thêm câu lại thành nói ít đi. Chuyển câu về chỗ cũ thì mỗi giọng lấy lại đúng thời gian cũ. Một giọng không còn câu nào không còn trong `speakers` (như AI-eCabinet, thẻ giọng lấy từ các câu) và
+không bị đếm là giọng chưa gán tên; tên của nó vẫn giữ, nên chuyển một câu về người đó thì giọng hiện lại. Bản gỡ băng
+tải về và dự thảo AI đọc tên theo giọng của từng câu. Mỗi lần chuyển ghi một dòng audit
+`transcript.segment_speaker_assigned`. Chạy lại chuyển chữ thì các câu và giọng được viết lại từ đầu, các lần chuyển
+câu mất theo.
 
 ## Cấu hình (`VoiceId:*`)
 

@@ -12,7 +12,7 @@ import type { Transcript, TranscriptSegment, TranscriptStatus } from '../../type
 import { saveBlob } from '../documents/documentFile'
 import { formatDuration } from './format'
 import { LineSpeakerPicker, SpeakerList } from './SpeakerList'
-import { lineOwnerOf, speakerName, speakerSlot, speakerSlotOf, voiceName, voicesOf, type Voice } from './speakers'
+import { speakerName, speakerSlotOf, voiceName, voicesOf } from './speakers'
 
 /**
  * SCRUM-31 — the machine transcript of one recording, under its player. Clicking a time jumps the
@@ -187,24 +187,11 @@ export function TranscriptView({
   // Voices named as one person read as one speaker: one colour, one name, one run of lines (AI-eCabinet's voiceOf).
   // Only a name the Secretary assigned replaces "Người nói N".
   const { voices, one } = voicesOf(transcript.speakers)
-  const ownerOfVoice = (voice: Voice | undefined) => (voice ? (voice.speaker.assignedUserId ?? voice.speaker.assignedGuestId) : null)
-  // Who a line reads as: the person the Secretary moved it to (that line only), else its voice. Lines of one person
-  // run together under one name, whichever voice they came from.
+  // A line is said by its voice: moving one line to someone moves it to their voice (AI-eCabinet's "just this line"),
+  // so lines run together, and take their colour and name, by voice.
   const speakerOf = (segment: TranscriptSegment) => {
     const voice = voices.get(one(segment.speakerLabel))
-    const own = lineOwnerOf(segment)
-    if (own) {
-      const theirs = [...voices.values()].find((v) => ownerOfVoice(v) === own)
-      return {
-        key: `p:${own}`,
-        voice,
-        name: segment.speakerName ?? 'Người nói',
-        tone: theirs ? speakerSlotOf(theirs.speaker.label) : speakerSlot(transcript.people.findIndex((p) => p.id === own) + 3),
-      }
-    }
-    const named = ownerOfVoice(voice)
     return {
-      key: named ? `p:${named}` : `v:${one(segment.speakerLabel)}`,
       voice,
       name: voice ? voiceName(voice.speaker) : speakerName(segment.speakerLabel),
       tone: speakerSlotOf(one(segment.speakerLabel)),
@@ -287,7 +274,7 @@ export function TranscriptView({
         <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>
       ) : (
         <ol className="tl-list transcript-list" aria-label="Lời thoại theo thời điểm nói">
-          {runs(transcript.segments, marked, (segment) => speakerOf(segment).key).map((run, i, all) => {
+          {runs(transcript.segments, marked, (segment) => one(segment.speakerLabel)).map((run, i, all) => {
             const who = speakerOf(run[0])
             const tone = who.tone
             // Heard right now: the run's button pauses it.

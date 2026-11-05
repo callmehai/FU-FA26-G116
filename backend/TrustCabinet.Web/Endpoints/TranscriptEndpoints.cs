@@ -22,6 +22,8 @@ public static class TranscriptEndpoints
     internal sealed record SegmentBody(string? Text);
     /// <summary>A user of the meeting or one of its guests, at most one of them; neither clears the name.</summary>
     internal sealed record SpeakerBody(Guid? UserId, Guid? GuestId);
+    /// <summary>Who said one line: a user or a guest of the meeting, or a voice label of the recording — one of them.</summary>
+    internal sealed record LineSpeakerBody(Guid? UserId, Guid? GuestId, string? Label);
 
     public static void MapTranscriptEndpoints(this IEndpointRouteBuilder app)
     {
@@ -43,9 +45,10 @@ public static class TranscriptEndpoints
             .RequireActiveUser(Error(503, Msg304SaveFailed, "Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại."));
         segment.MapPut("", async (Guid segmentId, SegmentBody body, HttpContext context, ITranscriptionService service, CancellationToken ct)
             => Map(await service.EditSegmentAsync(segmentId, CapabilityGate.GatedUserId(context.User), body.Text, ct), Msg302SegmentSaved));
-        // Who said this one line, apart from its voice (as AI-eCabinet's "just this line"); both null hands it back.
-        segment.MapPut("/speaker", async (Guid segmentId, SpeakerBody body, HttpContext context, ITranscriptionService service,
-            CancellationToken ct) => Map(await service.AssignSegmentSpeakerAsync(segmentId, body.UserId, body.GuestId,
+        // Who said this one line (AI-eCabinet's "just this line"): the line moves to that person's voice, a new one if
+        // no voice is named as them, or back to a voice of the recording by its label.
+        segment.MapPut("/speaker", async (Guid segmentId, LineSpeakerBody body, HttpContext context, ITranscriptionService service,
+            CancellationToken ct) => Map(await service.AssignSegmentSpeakerAsync(segmentId, body.UserId, body.GuestId, body.Label,
                 CapabilityGate.GatedUserId(context.User), ct), Msg407LineSpeakerAssigned));
     }
 

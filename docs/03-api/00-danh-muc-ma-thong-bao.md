@@ -549,7 +549,7 @@ lại `MSG295` — cùng tình huống "không phải Thư ký mà quản lý b�
 | `MSG303` | 400 | `PUT /api/transcript-segments/{id}` | Nội dung rỗng hoặc quá 8000 ký tự | `Nội dung đoạn gỡ băng không hợp lệ.` | BE |
 | `MSG304` | 503 | `POST …/transcribe`, `PUT /api/transcript-segments/{id}` | Lỗi database khi lưu | `Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại.` | BE |
 | `MSG316` | 200 | `PUT /api/recordings/{id}/speakers/{label}` | Thư ký gán (hoặc bỏ gán, `userId` và `guestId` cùng `null`) tên thật cho một giọng: người dùng hoặc Khách của cuộc họp — SCRUM-35 | `Đã gán người nói.` | BE |
-| `MSG317` | 400 | `PUT /api/recordings/{id}/speakers/{label}`, `PUT /api/transcript-segments/{id}/speaker` | Người được gán không có trong danh sách thành phần hiện tại của cuộc họp, Khách không có lời mời còn hiệu lực của cuộc họp, hoặc gửi cả `userId` lẫn `guestId` | `Người được gán phải có trong danh sách cuộc họp.` | BE |
+| `MSG317` | 400 | `PUT /api/recordings/{id}/speakers/{label}`, `PUT /api/transcript-segments/{id}/speaker` | Người được gán không có trong danh sách thành phần hiện tại của cuộc họp, Khách không có lời mời còn hiệu lực của cuộc họp, hoặc gửi cả `userId` lẫn `guestId` (đổi người nói một câu: không gửi đúng một trong `userId`, `guestId`, `label`) | `Người được gán phải có trong danh sách cuộc họp.` | BE |
 
 ### Voice ID của chính mình — SCRUM-35 (`/api/me/voice`)
 
@@ -635,7 +635,7 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 | `MSG404` | 503 | `POST …/minutes`, `PUT /api/minutes/{id}` | Lỗi database khi lưu | `Không lưu được biên bản. Vui lòng thử lại.` | BE |
 | `MSG405` | 403 | `GET /api/minutes/{id}/export` | Cuộc họp Mật: biên bản chỉ xem trên màn hình | `Biên bản của cuộc họp Mật không được tải về.` | BE |
 | `MSG406` | 400 | `GET /api/minutes/{id}/export` | `format` không phải `docx` hay `pdf` | `Chỉ tải biên bản dạng Word (docx) hoặc PDF.` | BE |
-| `MSG407` | 200 | `PUT /api/transcript-segments/{id}/speaker` | Thư ký đổi người nói của riêng một câu (hoặc trả câu về giọng của nó, `userId` và `guestId` cùng `null`); các câu khác của giọng giữ nguyên — SCRUM-35 | `Đã đổi người nói của câu này.` | BE |
+| `MSG407` | 200 | `PUT /api/transcript-segments/{id}/speaker` | Thư ký đổi người nói của riêng một câu: câu chuyển sang giọng của người đó (giọng mới nếu chưa có) hoặc về một giọng của bản ghi theo `label`; các câu khác giữ giọng của mình — SCRUM-35 | `Đã đổi người nói của câu này.` | BE |
 
 ### Dành sẵn, chưa có code
 

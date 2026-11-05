@@ -12,10 +12,6 @@ export interface TranscriptSegment {
   speakerLabel: string
   editedAt: string | null
   editedByName: string | null
-  /** Who said this one line, when the Secretary moved it off its voice; null keeps the voice's name. */
-  speakerUserId?: string | null
-  speakerGuestId?: string | null
-  speakerName?: string | null
 }
 
 /** SCRUM-35 — one voice of the recording: the machine's suggestion and the Secretary's decision. */
@@ -74,5 +70,6 @@ export interface SpeakerAssigned extends TranscriptMessage {
 }
 
 export interface LineSpeakerAssigned extends TranscriptMessage {
-  segment: { segmentId: string; speakerUserId: string | null; speakerGuestId: string | null; speakerName: string | null }
+  /** The voice the line is in now; `newVoice` when one was made for a person no voice was named as. */
+  segment: { segmentId: string; speakerLabel: string; previousLabel: string; newVoice: boolean }
 }

@@ -41,13 +41,8 @@ public enum TranscriptFailure
 public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFailure.None, object? Data = null,
     IReadOnlyDictionary<string, string[]>? Errors = null);
 
-/// <summary>
-/// One line. <c>Speaker*</c> is set only when the Secretary said who said this one line apart from its voice; the
-/// line then reads as that person, whatever its voice is named.
-/// </summary>
 public sealed record TranscriptSegmentView(Guid Id, int Position, long StartMs, long EndMs, string Text,
-    string SpeakerLabel, DateTimeOffset? EditedAt, string? EditedByName, Guid? SpeakerUserId = null,
-    Guid? SpeakerGuestId = null, string? SpeakerName = null);
+    string SpeakerLabel, DateTimeOffset? EditedAt, string? EditedByName);
 
 /// <summary>
 /// SCRUM-35 — one voice of the recording. <c>Suggested*</c> is the machine's guess from enrolled voices;
@@ -80,11 +75,12 @@ public interface ITranscriptionService
     Task<TranscriptOutcome> AssignSpeakerAsync(Guid recordingId, string label, Guid? userId, Guid? guestId, Guid actorId,
         CancellationToken ct = default);
     /// <summary>
-    /// The secretary says who said one line (a user or a guest of the meeting) apart from its voice, or hands it back
-    /// to its voice with both null. Every other line of the voice keeps its name.
+    /// The secretary says who said one line, as AI-eCabinet's "just this line": the line moves to the voice already
+    /// named as that user or guest, or to a new voice named so; or, with <paramref name="label"/>, back to a voice of
+    /// the recording. Every other line keeps its voice.
     /// </summary>
-    Task<TranscriptOutcome> AssignSegmentSpeakerAsync(Guid segmentId, Guid? userId, Guid? guestId, Guid actorId,
-        CancellationToken ct = default);
+    Task<TranscriptOutcome> AssignSegmentSpeakerAsync(Guid segmentId, Guid? userId, Guid? guestId, string? label,
+        Guid actorId, CancellationToken ct = default);
     /// <summary>Takes the oldest waiting transcript and runs it; false when there was nothing to do.</summary>
     Task<bool> ProcessNextAsync(CancellationToken ct = default);
     /// <summary>Puts back transcripts a previous process was running when it stopped.</summary>

@@ -4,9 +4,9 @@ import { Icon } from '../../components/Icon'
 import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
-import type { Transcript, TranscriptSegment, TranscriptSpeaker } from '../../types/transcript'
+import type { Transcript, TranscriptPerson, TranscriptSegment, TranscriptSpeaker } from '../../types/transcript'
 import { formatDuration } from './format'
-import { lineOwnerOf, speakerColor, speakerName, voiceName, voicesOf, type Voice } from './speakers'
+import { speakerColor, speakerName, voiceName, voicesOf, type Voice } from './speakers'
 
 /**
  * SCRUM-35 — who each voice is. The machine's guess leads the picker as "Khớp giọng nhất"; only a name replaces
@@ -159,9 +159,11 @@ export function SpeakerPicker({
 const VOICE = 'voice:'
 
 /**
- * Who said ONE line, as AI-eCabinet's LineSpeaker: picking someone changes this line only, and every other line of the
- * voice keeps its name — the voice itself is named from its card above. A line moved off its voice can be handed back.
- * `icon` is the small person button among a line's tools; otherwise the name heading a run is the picker.
+ * Who said ONE line, as AI-eCabinet's LineSpeaker: picking someone moves this line to their voice — a new voice, with
+ * its own card, colour and time, when no voice is named as them — and every other line keeps its voice. The voices no
+ * one is named as yet ("Người nói N") are offered too, to move a line back to the voice it was taken from; a named
+ * voice is reached through its person. The voice itself is named from its card above. `icon` is the small person
+ * button among a line's tools; otherwise the name heading a run is the picker.
  */
 export function LineSpeakerPicker({
   transcript,
@@ -181,15 +183,14 @@ export function LineSpeakerPicker({
 }) {
   const toast = useToast()
   const [saving, setSaving] = useState(false)
-  const own = lineOwnerOf(segment)
-  const voiceOwner = voice ? assignedOf(voice.speaker) : null
+  const owner = voice ? assignedOf(voice.speaker) : null
   const voiceLabel = voice ? voiceName(voice.speaker) : speakerName(segment.speakerLabel)
+  const unnamed = [...voicesOf(transcript.speakers).voices.values()].filter((v) => !assignedOf(v.speaker))
 
-  const assign = async (id: string | null) => {
+  const move = async (to: TranscriptPerson | { label: string }) => {
     setSaving(true)
     try {
-      const who = id ? (transcript.people.find((p) => p.id === id) ?? null) : null
-      toast.show((await assignLineSpeaker(segment.id, who)).message, 'success')
+      toast.show((await assignLineSpeaker(segment.id, to)).message, 'success')
     } catch (error) {
       toast.show(errorMessage(error), 'error')
     } finally {
@@ -198,7 +199,7 @@ export function LineSpeakerPicker({
     }
   }
 
-  const current = own ?? voiceOwner
+  const current = owner ?? (voice ? `${VOICE}${voice.speaker.label}` : null)
   return (
     <Select
       size="sm"
@@ -206,22 +207,27 @@ export function LineSpeakerPicker({
       label={`Người nói câu lúc ${time}`}
       value={current}
       placeholder={voiceLabel}
-      tooltip={icon ? `Đổi người nói của riêng câu này (đang là ${segment.speakerName ?? voiceLabel})` : 'Đổi người nói của riêng câu này'}
+      tooltip={icon ? `Đổi người nói của riêng câu này (đang là ${voiceLabel})` : 'Đổi người nói của riêng câu này'}
       disabled={saving}
       options={[
         ...transcript.people.map((p) => ({
           value: p.id,
           label: p.fullName,
-          hint: p.guest ? 'Khách' : p.id === voiceOwner ? 'Giọng này' : undefined,
+          hint: p.id === owner ? 'Giọng này' : p.guest ? 'Khách' : undefined,
         })),
-        ...(own ? [{ value: `${VOICE}`, label: `Trả về giọng "${voiceLabel}"` }] : []),
+        ...unnamed.map((v) => ({
+          value: `${VOICE}${v.speaker.label}`,
+          label: speakerName(v.speaker.label),
+          dot: speakerColor(v.speaker.label),
+          hint: v === voice ? 'Giọng này' : undefined,
+        })),
       ]}
       onChange={(value) => {
-        if (value === VOICE) return void assign(null)
-        // Picking the voice's own person for a line that follows the voice changes nothing.
-        if (!own && value === voiceOwner) return
-        if (value === own) return
-        void assign(value === voiceOwner ? null : value)
+        // The line's own voice, or its own person: nothing to move.
+        if (value === current) return
+        if (value.startsWith(VOICE)) return void move({ label: value.slice(VOICE.length) })
+        const who = transcript.people.find((p) => p.id === value)
+        if (who) void move(who)
       }}
     />
   )

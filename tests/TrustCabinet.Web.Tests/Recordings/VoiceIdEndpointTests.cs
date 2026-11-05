@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Domain.Users;
 using TrustCabinet.Domain.VoiceId;
@@ -195,50 +196,161 @@ public sealed class VoiceIdEndpointTests(RecordingFixture fixture) : IClassFixtu
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync($"/api/me/voice/samples/{id}/audio")).StatusCode);
     }
 
-    [Fact]
-    public async Task One_line_is_named_apart_from_its_voice_and_every_other_line_keeps_the_voice_s_name()
+    /// <summary>A recording whose diarizer put a line of someone else (the second) under the first voice.</summary>
+    private async Task<(Guid Recording, Guid[] Lines)> Misheard(RecordingFixture.Scenario s, HttpClient secretary)
     {
-        var s = await fixture.Seed();
         await ProcessAll();
-        using var secretary = fixture.Client(s.Secretary);
         var form = new MultipartFormDataContent { { new StringContent("true"), "consentConfirmed" } };
         var file = new ByteArrayContent([.. "RIFF"u8, .. new byte[256]]);
         file.Headers.ContentType = MediaTypeHeaderValue.Parse("audio/wav");
         form.Add(file, "file", "hop.wav");
         var id = (await (await secretary.PostAsync(s.Url, form)).Content.ReadFromJsonAsync<JsonElement>()).GetProperty("recordingId").GetGuid();
         fixture.Speech.Failure = null;
-        // The diarizer put a line of someone else under the first voice.
-        fixture.Speech.Result = new(30000, "vi", "gipformer-1.5-68m-int8@abc123def456", Model,
+        fixture.Speech.Result = new(40000, "vi", "gipformer-1.5-68m-int8@abc123def456", Model,
             [new(0, 9000, "SPEAKER_00", "Câu một."), new(10000, 19000, "SPEAKER_00", "Câu hai, của người khác."),
-                new(20000, 29000, "SPEAKER_00", "Câu ba.")],
-            [new("SPEAKER_00", 27000, [0f, 0f, 1f])]);
+                new(20000, 29000, "SPEAKER_00", "Câu ba."), new(30000, 34000, "SPEAKER_01", "Câu bốn.")],
+            // The diarizer measures speech its own way: the second voice spoke 6 s over a 4 s line.
+            [new("SPEAKER_00", 27000, [0f, 0f, 1f]), new("SPEAKER_01", 6000, [0f, 1f, 0f])]);
         await ProcessAll();
         await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_00", new { userId = s.Chair }), 200, "MSG316");
-        var segments = (await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{id}/transcript")).GetProperty("segments")
+        await AssertCode(await secretary.PutAsJsonAsync($"/api/recordings/{id}/speakers/SPEAKER_01", new { userId = s.Secretary }), 200, "MSG316");
+        var lines = (await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{id}/transcript")).GetProperty("segments")
             .EnumerateArray().Select(x => x.GetProperty("id").GetGuid()).ToArray();
+        return (id, lines);
+    }
 
-        using var member = fixture.Client(s.Member);
-        await AssertCode(await member.PutAsJsonAsync($"/api/transcript-segments/{segments[1]}/speaker", new { userId = s.Member }), 403, "MSG295");
-        await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{segments[1]}/speaker", new { userId = s.Outsider }), 400, "MSG317");
-        var saved = await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{segments[1]}/speaker", new { userId = s.Member }), 200, "MSG407");
-        Assert.Equal("Recording test 2", saved.GetProperty("segment").GetProperty("speakerName").GetString());
+    private static Task<HttpResponseMessage> MoveLine(HttpClient client, Guid line, object body)
+        => client.PutAsJsonAsync($"/api/transcript-segments/{line}/speaker", body);
 
-        var transcript = await secretary.GetFromJsonAsync<JsonElement>($"/api/recordings/{id}/transcript");
-        var lines = transcript.GetProperty("segments").EnumerateArray().ToArray();
-        Assert.Equal(s.Member, lines[1].GetProperty("speakerUserId").GetGuid());
-        Assert.Equal("Recording test 2", lines[1].GetProperty("speakerName").GetString());
-        // Only that line moved: the voice and its other lines still read as the Chair.
-        Assert.All([lines[0], lines[2]], x => Assert.Equal(JsonValueKind.Null, x.GetProperty("speakerUserId").ValueKind));
-        Assert.Equal(s.Chair, transcript.GetProperty("speakers")[0].GetProperty("assignedUserId").GetGuid());
+    private static async Task<(string[] Labels, Dictionary<string, JsonElement> Voices)> Read(HttpClient client, Guid recording)
+    {
+        var transcript = await client.GetFromJsonAsync<JsonElement>($"/api/recordings/{recording}/transcript");
+        return ([.. transcript.GetProperty("segments").EnumerateArray().Select(x => x.GetProperty("speakerLabel").GetString()!)],
+            transcript.GetProperty("speakers").EnumerateArray().ToDictionary(x => x.GetProperty("label").GetString()!));
+    }
+
+    [Fact]
+    public async Task A_line_said_by_someone_no_voice_is_named_as_moves_to_a_new_voice_of_theirs_and_the_next_line_joins_it()
+    {
+        var s = await fixture.Seed();
+        using var secretary = fixture.Client(s.Secretary);
+        var (id, lines) = await Misheard(s, secretary);
+
+        var moved = await AssertCode(await MoveLine(secretary, lines[1], new { userId = s.Member }), 200, "MSG407");
+        Assert.Equal("SPEAKER_02", moved.GetProperty("segment").GetProperty("speakerLabel").GetString());
+        Assert.True(moved.GetProperty("segment").GetProperty("newVoice").GetBoolean());
+        var (labels, voices) = await Read(secretary, id);
+        Assert.Equal(["SPEAKER_00", "SPEAKER_02", "SPEAKER_00", "SPEAKER_01"], labels);
+        // The person gets a voice of their own, with a card and the time of its line; the voice it left loses that time.
+        var theirs = voices["SPEAKER_02"];
+        Assert.Equal(s.Member, theirs.GetProperty("assignedUserId").GetGuid());
+        Assert.Equal("Recording test 2", theirs.GetProperty("assignedName").GetString());
+        Assert.Equal(9000, theirs.GetProperty("speechMs").GetInt64());
+        Assert.Equal(JsonValueKind.Null, theirs.GetProperty("suggestedUserId").ValueKind);
+        Assert.Equal(18000, voices["SPEAKER_00"].GetProperty("speechMs").GetInt64());
+        Assert.Equal(s.Chair, voices["SPEAKER_00"].GetProperty("assignedUserId").GetGuid());
+
+        // The same person's next line joins that voice: no second card.
+        var joined = await AssertCode(await MoveLine(secretary, lines[2], new { userId = s.Member }), 200, "MSG407");
+        Assert.False(joined.GetProperty("segment").GetProperty("newVoice").GetBoolean());
+        (labels, voices) = await Read(secretary, id);
+        Assert.Equal(["SPEAKER_00", "SPEAKER_02", "SPEAKER_02", "SPEAKER_01"], labels);
+        Assert.Equal(3, voices.Count);
+        Assert.Equal(18000, voices["SPEAKER_02"].GetProperty("speechMs").GetInt64());
+        Assert.Equal(9000, voices["SPEAKER_00"].GetProperty("speechMs").GetInt64());
+
         var text = await (await secretary.GetAsync($"/api/recordings/{id}/transcript.txt")).Content.ReadAsStringAsync();
         Assert.Contains("Recording test 2: Câu hai, của người khác.", text);
-        Assert.Contains("Recording test 1: Câu ba.", text);
-
-        // Both null hands the line back to its voice.
-        await AssertCode(await secretary.PutAsJsonAsync($"/api/transcript-segments/{segments[1]}/speaker", new { userId = (Guid?)null }), 200, "MSG407");
+        Assert.Contains("Recording test 1: Câu một.", text);
         await using var db = fixture.Db();
-        Assert.Null((await db.TranscriptSegments.SingleAsync(x => x.Id == segments[1])).SpeakerUserId);
+        var row = await db.TranscriptSpeakers.SingleAsync(v => v.Transcript.RecordingId == id && v.Label == "SPEAKER_02");
+        Assert.Equal(s.Secretary, row.AssignedById);
         Assert.Equal(2, await db.AuditLog.CountAsync(a => a.Action == AuditActions.TranscriptSegmentSpeakerAssigned && a.ObjectId == id));
+    }
+
+    [Fact]
+    public async Task A_line_joins_the_voice_already_named_as_that_person_and_moves_back_to_any_voice_of_the_recording_by_its_label()
+    {
+        var s = await fixture.Seed();
+        using var secretary = fixture.Client(s.Secretary);
+        var (id, lines) = await Misheard(s, secretary);
+
+        // The Secretary's voice is SPEAKER_01: the line joins it, no new voice.
+        var joined = await AssertCode(await MoveLine(secretary, lines[1], new { userId = s.Secretary }), 200, "MSG407");
+        Assert.Equal("SPEAKER_01", joined.GetProperty("segment").GetProperty("speakerLabel").GetString());
+        var (labels, voices) = await Read(secretary, id);
+        Assert.Equal(["SPEAKER_00", "SPEAKER_01", "SPEAKER_00", "SPEAKER_01"], labels);
+        Assert.Equal(2, voices.Count);
+        // The line's 9 s move with it: a voice taking a line never reads as having spoken less.
+        Assert.Equal(15000, voices["SPEAKER_01"].GetProperty("speechMs").GetInt64());
+        Assert.Equal(18000, voices["SPEAKER_00"].GetProperty("speechMs").GetInt64());
+
+        // Back to the voice it was taken from.
+        await AssertCode(await MoveLine(secretary, lines[1], new { label = "SPEAKER_00" }), 200, "MSG407");
+        (labels, voices) = await Read(secretary, id);
+        Assert.Equal(["SPEAKER_00", "SPEAKER_00", "SPEAKER_00", "SPEAKER_01"], labels);
+        // Moved back, each voice has its time back.
+        Assert.Equal(27000, voices["SPEAKER_00"].GetProperty("speechMs").GetInt64());
+        Assert.Equal(6000, voices["SPEAKER_01"].GetProperty("speechMs").GetInt64());
+        // Its own voice again, or its own person: nothing changes and nothing is written.
+        await AssertCode(await MoveLine(secretary, lines[1], new { label = "SPEAKER_00" }), 200, "MSG407");
+        await AssertCode(await MoveLine(secretary, lines[1], new { userId = s.Chair }), 200, "MSG407");
+
+        // A voice left with no line is no longer listed; a line moved back brings it back, name kept.
+        await AssertCode(await MoveLine(secretary, lines[3], new { label = "SPEAKER_00" }), 200, "MSG407");
+        (_, voices) = await Read(secretary, id);
+        Assert.Equal(["SPEAKER_00"], voices.Keys);
+        await AssertCode(await MoveLine(secretary, lines[3], new { userId = s.Secretary }), 200, "MSG407");
+        (labels, voices) = await Read(secretary, id);
+        Assert.Equal("SPEAKER_01", labels[3]);
+        Assert.Equal(s.Secretary, voices["SPEAKER_01"].GetProperty("assignedUserId").GetGuid());
+
+        // A label of another recording, or none of this one, is not a voice of it.
+        var other = await UploadAndTranscribe(s, new SpeechSpeaker("SPEAKER_07", 9000, [1f, 0f, 0f]));
+        Assert.Equal("SPEAKER_07", (await Read(secretary, other)).Labels.Single());
+        Assert.Equal(HttpStatusCode.NotFound, (await MoveLine(secretary, lines[0], new { label = "SPEAKER_07" })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await MoveLine(secretary, Guid.NewGuid(), new { label = "SPEAKER_00" })).StatusCode);
+        await using var db = fixture.Db();
+        Assert.Equal(4, await db.AuditLog.CountAsync(a => a.Action == AuditActions.TranscriptSegmentSpeakerAssigned && a.ObjectId == id));
+    }
+
+    [Fact]
+    public async Task Only_the_secretary_moves_a_line_and_only_to_one_person_of_the_meeting_a_guest_included()
+    {
+        var s = await fixture.Seed();
+        using var secretary = fixture.Client(s.Secretary);
+        var (id, lines) = await Misheard(s, secretary);
+        var guest = new MeetingGuestInvitation
+        {
+            MeetingId = s.MeetingId, InvitedById = s.Secretary, InvitedName = "Khách mời", Email = "khach@ngoai.test",
+            SelfDeclaredDisplayName = "Bà Lan (tự khai)", CreatedAt = fixture.Clock.Now, UpdatedAt = fixture.Clock.Now,
+        };
+        await using (var db = fixture.Db())
+        {
+            db.MeetingGuestInvitations.Add(guest);
+            await db.SaveChangesAsync();
+        }
+
+        using var member = fixture.Client(s.Member);
+        await AssertCode(await MoveLine(member, lines[1], new { userId = s.Member }), 403, "MSG295");
+        using var outsider = fixture.Client(s.Outsider);
+        Assert.Equal(HttpStatusCode.NotFound, (await MoveLine(outsider, lines[1], new { userId = s.Member })).StatusCode);
+        foreach (var body in new object[]
+        {
+            new { userId = s.Outsider }, new { guestId = Guid.NewGuid() }, new { userId = (Guid?)null },
+            new { userId = s.Member, guestId = guest.Id }, new { userId = s.Member, label = "SPEAKER_01" },
+        })
+            await AssertCode(await MoveLine(secretary, lines[1], body), 400, "MSG317");
+
+        var moved = await AssertCode(await MoveLine(secretary, lines[1], new { guestId = guest.Id }), 200, "MSG407");
+        Assert.Equal("SPEAKER_02", moved.GetProperty("segment").GetProperty("speakerLabel").GetString());
+        var (_, voices) = await Read(member, id);
+        Assert.Equal(guest.Id, voices["SPEAKER_02"].GetProperty("assignedGuestId").GetGuid());
+        Assert.Equal("Bà Lan (tự khai)", voices["SPEAKER_02"].GetProperty("assignedName").GetString());
+        var text = await (await secretary.GetAsync($"/api/recordings/{id}/transcript.txt")).Content.ReadAsStringAsync();
+        Assert.Contains("Bà Lan (tự khai): Câu hai, của người khác.", text);
+        await using var check = fixture.Db();
+        Assert.Equal(1, await check.AuditLog.CountAsync(a => a.Action == AuditActions.TranscriptSegmentSpeakerAssigned && a.ObjectId == id));
     }
 
     [Fact]

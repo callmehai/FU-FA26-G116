@@ -450,9 +450,7 @@ erDiagram
         bigint StartMs
         bigint EndMs
         string Text
-        string SpeakerLabel "Người nói 1, 2, 3…"
-        uuid SpeakerUserId FK "người nói riêng câu này, thư ký gán tay"
-        uuid SpeakerGuestId FK "hoặc Khách nói câu này"
+        string SpeakerLabel "Người nói 1, 2, 3…; thư ký chuyển câu sang giọng khác"
         uuid EditedById FK
     }
     TranscriptSpeaker {
