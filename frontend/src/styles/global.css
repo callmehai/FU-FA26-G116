@@ -4622,6 +4622,17 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .minutes-toolbar-tools { flex: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .minutes-toolbar-tools::-webkit-scrollbar { display: none; }
   .minutes-toolbar-group { flex: none; }
+  /* What a thumb reaches for first leads the strip: marks, alignment, lists; history and the style menus follow. */
+  .minutes-toolbar-tools { gap: 2px 10px; }
+  .minutes-toolbar-sep { display: none; }
+  .minutes-toolbar-group[data-group='character'] { order: 1; }
+  .minutes-toolbar-group[data-group='paragraph'] { order: 2; }
+  .minutes-toolbar-group[data-group='lists'] { order: 3; }
+  .minutes-toolbar-group[data-group='colour'] { order: 4; }
+  .minutes-toolbar-group[data-group='history'] { order: 5; }
+  .minutes-toolbar-group[data-group='styles'] { order: 6; }
+  .minutes-toolbar-group[data-group='insert'] { order: 7; }
+  .minutes-toolbar-group[data-group='tools'] { order: 8; }
   .minutes-toolbar .icon-button-sm { width: 40px; height: 40px; }
   .minutes-toolbar .icon-button.tool-menu-trigger { width: auto; }
   .minutes-toolbar-block { width: 140px; }

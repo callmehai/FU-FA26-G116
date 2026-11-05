@@ -96,11 +96,11 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
   return (
     <div className="minutes-toolbar" role="toolbar" aria-label="Định dạng biên bản">
       <div className="minutes-toolbar-tools">
-        <Group>
+        <Group name="history">
           <Tool icon="editUndo" label="Hoàn tác (Ctrl+Z)" disabled={!s.canUndo} onClick={() => chain().undo().run()} />
           <Tool icon="editRedo" label="Làm lại (Ctrl+Y)" disabled={!s.canRedo} onClick={() => chain().redo().run()} />
         </Group>
-        <Group>
+        <Group name="styles">
           <div className="minutes-toolbar-block">
             <Select<Block> label="Kiểu đoạn" size="sm" value={s.block} options={BLOCKS} onChange={setBlockType} tooltip="Kiểu đoạn" />
           </div>
@@ -115,7 +115,7 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
             />
           </div>
         </Group>
-        <Group>
+        <Group name="character">
           <Tool icon="bold" label="Đậm (Ctrl+B)" pressed={s.bold} onClick={() => chain().toggleBold().run()} />
           <Tool icon="italic" label="Nghiêng (Ctrl+I)" pressed={s.italic} onClick={() => chain().toggleItalic().run()} />
           <Tool icon="underline" label="Gạch chân (Ctrl+U)" pressed={s.underline} onClick={() => chain().toggleUnderline().run()} />
@@ -131,7 +131,7 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
             )}
           </ToolMenu>
         </Group>
-        <Group>
+        <Group name="colour">
           <ToolMenu icon="textColor" label="Màu chữ" swatch={s.color ?? '#000000'}>
             {(close) => (
               <Swatches
@@ -163,7 +163,7 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
             )}
           </ToolMenu>
         </Group>
-        <Group>
+        <Group name="paragraph">
           <Tool icon="alignLeft" label="Căn trái (Ctrl+Shift+L)" pressed={s.align === 'left'} onClick={() => chain().setTextAlign('left').run()} />
           <Tool icon="alignCenter" label="Căn giữa (Ctrl+Shift+E)" pressed={s.align === 'center'} onClick={() => chain().setTextAlign('center').run()} />
           <Tool icon="alignRight" label="Căn phải (Ctrl+Shift+R)" pressed={s.align === 'right'} onClick={() => chain().setTextAlign('right').run()} />
@@ -200,11 +200,11 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
           <Tool icon="indent" label="Tăng thụt lề" onClick={() => indent(editor, 1)} />
           <Tool icon="firstLine" label="Thụt dòng đầu 1,27 cm" pressed={s.firstLine} onClick={() => toggleFirstLine(editor)} />
         </Group>
-        <Group>
+        <Group name="lists">
           <Tool icon="bulletList" label="Danh sách dấu chấm (Ctrl+Shift+8)" pressed={s.bullet} onClick={() => chain().toggleBulletList().run()} />
           <Tool icon="orderedList" label="Danh sách số (Ctrl+Shift+7)" pressed={s.ordered} onClick={() => chain().toggleOrderedList().run()} />
         </Group>
-        <Group>
+        <Group name="insert">
           <ToolMenu icon="table" label={s.inTable ? 'Bảng' : 'Chèn bảng'} pressed={s.inTable}>
             {(close) =>
               s.inTable ? (
@@ -263,7 +263,7 @@ export function Toolbar({ editor, onFind, actions }: { editor: Editor; onFind: (
             )}
           </ToolMenu>
         </Group>
-        <Group last>
+        <Group name="tools" last>
           <Tool icon="clearFormat" label="Xoá định dạng" onClick={() => clearFormatting(editor)} />
           <Tool icon="search" label="Tìm và thay thế (Ctrl+F)" onClick={onFind} />
         </Group>
@@ -281,10 +281,10 @@ function hex(value: unknown): string | null {
   return `#${rgb.slice(1, 4).map((n) => Number(n).toString(16).padStart(2, '0')).join('')}`
 }
 
-function Group({ children, last }: { children: ReactNode; last?: boolean }) {
+function Group({ name, children, last }: { name: string; children: ReactNode; last?: boolean }) {
   return (
     <>
-      <div className="minutes-toolbar-group" role="group">
+      <div className="minutes-toolbar-group" role="group" data-group={name}>
         {children}
       </div>
       {!last && <span className="minutes-toolbar-sep" aria-hidden="true" />}
