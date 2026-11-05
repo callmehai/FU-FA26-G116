@@ -47,13 +47,17 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
   "aiReady": true,                 // server đã cấu hình máy AI
   "readiness": {                   // chỉ Chủ tọa, Thư ký; null với người khác
     "sentences": 16, "unnamedVoices": 0, "transcribing": 0, "failedTranscripts": 0,
-    "agendaItems": 2, "agendaItemsTimed": 2, "closedVotes": 1
+    "agendaItems": 2, "agendaItemsTimed": 2, "closedVotes": 1,
+    "transcriptChangedAt": "2026-11-05T03:12:40Z"
   }
 }
 ```
 
 - **Polling:** FE gọi lại `GET` mỗi 5 giây khi `status` là `Queued` hoặc `Running`.
 - **`Failed`:** `errorMessage` ghi lý do bằng lời Thư ký hiểu được, ví dụ máy AI tắt.
+- **`transcriptChangedAt`:** lần cuối lời thoại thay đổi (câu mới, câu được sửa hay bỏ ra, giọng được gán tên), như
+  `transcript_changed_at` của eCab; `null` khi chưa có lời thoại. Muộn hơn `generatedAt` thì FE báo dự thảo chưa có các
+  chỗ sửa đó và mời Tạo lại.
 - **`sources`:** khoảng giờ lời thoại của từng phần mục II, để Thư ký đối chiếu với tab Bản ghi.
 - **Kết quả biểu quyết** trong `conclusions` được chép từ dữ liệu phiên biểu quyết, không qua AI.
 - **Lỗi:**

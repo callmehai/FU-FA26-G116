@@ -246,7 +246,15 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             .CountAsync(s => s.AssignedUserId == null && s.AssignedGuestId == null, ct);
         var agenda = await db.AgendaItems.Where(a => a.MeetingId == meetingId).Select(a => a.ActualStartedAt).ToListAsync(ct);
         var votes = await db.VotingSessions.CountAsync(v => v.MeetingId == meetingId && v.Status == VotingStatus.Closed, ct);
-        return new(clips + segments, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes);
+        var changed = new[]
+        {
+            await db.SpeechClips.Where(c => c.MeetingId == meetingId).MaxAsync(c => (DateTimeOffset?)c.UpdatedAt, ct),
+            await transcripts.MaxAsync(t => (DateTimeOffset?)t.UpdatedAt, ct),
+            await transcripts.SelectMany(t => t.Segments).MaxAsync(s => (DateTimeOffset?)s.UpdatedAt, ct),
+            await transcripts.SelectMany(t => t.Speakers).MaxAsync(s => (DateTimeOffset?)s.UpdatedAt, ct),
+        }.Max();
+        return new(clips + segments, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes,
+            changed);
     }
 
     /// <summary>

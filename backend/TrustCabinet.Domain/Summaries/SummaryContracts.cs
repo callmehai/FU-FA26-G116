@@ -28,8 +28,12 @@ public sealed record SummaryEdit(string? Objectives, string? Discussion, string?
 /// What could make a draft wrong, shown before asking for one (AI-eCabinet's minutes readiness): voices nobody named yet
 /// read as "Người nói N", and recordings still being transcribed or failed are left out.
 /// </summary>
+/// <param name="TranscriptChangedAt">
+/// The latest change to what a draft draws on — a clip or a transcript landing, a line corrected or left out, a voice
+/// named — as AI-eCabinet's <c>transcript_changed_at</c>: a draft made before it is out of date. Null without any.
+/// </param>
 public sealed record SummaryReadiness(int Sentences, int UnnamedVoices, int Transcribing, int FailedTranscripts,
-    int AgendaItems, int AgendaItemsTimed, int ClosedVotes);
+    int AgendaItems, int AgendaItemsTimed, int ClosedVotes, DateTimeOffset? TranscriptChangedAt);
 
 public sealed record SummaryPerson(Guid Id, string FullName);
 

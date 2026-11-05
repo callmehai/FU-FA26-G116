@@ -978,9 +978,7 @@ a.menu-item { text-decoration: none; }
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  /* Its bottom padding, which bars docked to the bottom of the screen pull themselves over. */
-  --content-pad-bottom: 32px;
-  padding: 20px 24px var(--content-pad-bottom);
+  padding: 20px 24px 32px;
 }
 
 .route-fallback { padding: 24px; color: var(--muted-ink); }
@@ -2917,7 +2915,7 @@ a.menu-item { text-decoration: none; }
   .page-header { flex-wrap: wrap; }
   .field-grid, .form-grid, .form-row-3 { grid-template-columns: minmax(0, 1fr); }
   .page-alert { flex-direction: column; align-items: flex-start; }
-  .content { --content-pad-bottom: 20px; padding: 20px 16px var(--content-pad-bottom); }
+  .content { padding: 20px 16px; }
   .search { width: 100%; }
   .tabs { overflow-x: auto; }
 }
@@ -4007,7 +4005,7 @@ audio.recording-player { height: 40px; }
 .mic-notice svg { flex: none; margin-top: 1px; }
 .mic-notice-error { border-color: var(--edge-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
 /* The page scrolls past the card, so the last row of a list is never left under it. */
-body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px) + 16px); }
+body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16px); }
 /* A phone keeps the sidebar's rail on the left: the card stays clear of it. */
 @media (max-width: 560px) {
   .mic-card { width: min(320px, calc(100vw - var(--sidebar-width-collapsed) - 24px)); }
@@ -4436,7 +4434,7 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 }
 
 /* ---------- Biên bản tab (SCRUM-36, SCRUM-32): the AI's Dự thảo, then the minutes on paper ---------- */
-.minutes-tab { display: grid; gap: 16px; }
+.minutes-tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .minutes-card { min-width: 0; }
 .minutes-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 12px; }
 .minutes-card-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
@@ -4452,8 +4450,36 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .minutes-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 12px; }
 .minutes-notice .row-actions { flex-wrap: wrap; gap: 8px; white-space: normal; }
 .minutes-running { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--muted-ink); }
-.minutes-readiness { margin-bottom: 12px; }
-.minutes-readiness p + p { margin-top: 4px; }
+/* What a draft would miss, as AI-eCabinet lists it: amber lines under the card's head, each with its way out. */
+.minutes-readiness { display: grid; gap: 6px; margin-bottom: 12px; }
+.minutes-readiness-line {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0;
+  color: var(--warning-ink); font-size: 13.5px; font-weight: 500;
+}
+.minutes-readiness-line > svg { flex: none; align-self: flex-start; margin-top: 2px; }
+.minutes-readiness-line > span { flex: 0 1 auto; min-width: 0; }
+@media (max-width: 720px) {
+  .minutes-readiness-line { flex-wrap: nowrap; align-items: flex-start; }
+  .minutes-readiness-line { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+  .minutes-readiness-line .btn { grid-column: 2; justify-self: start; }
+}
+.minutes-readiness-line .btn { color: var(--ink); }
+/* The draft is behind the transcript: said in red with the one way out, as eCab does. */
+.minutes-stale {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 12px; padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent); border-radius: var(--radius-lg);
+  background: var(--chip-red-bg); color: var(--danger-ink); font-size: 13.5px; font-weight: 600;
+}
+.minutes-stale p { display: flex; align-items: flex-start; gap: 6px; flex: 1; min-width: 0; margin: 0; }
+.minutes-stale p svg { flex: none; margin-top: 2px; }
+.alert.minutes-stale .btn:not(:disabled) {
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent); background: var(--surface); color: var(--danger-ink);
+}
+.alert.minutes-stale .btn { margin-top: 0; }
+.alert.minutes-stale .btn:disabled { border: 1px solid var(--line); background: var(--surface-alt); color: var(--faint-ink); }
+@media (max-width: 720px) {
+  .minutes-stale .btn, .minutes-readiness-line .btn { height: 40px; }
+}
 /* The Dự thảo's three sections, folded to a heading and a first line (AI-eCabinet's OutlineSections). */
 .outline-sections { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; margin-top: 12px; }
 .outline-section { min-width: 0; }
@@ -4473,45 +4499,36 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .outline-count { justify-self: end; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 .outline-count.is-over { color: var(--danger); font-weight: 600; }
 .outline-body .minutes-sources { margin: 4px 0 0; }
-/* Docked to the bottom of the screen while there is something to save: a Save button under long sections is not found.
-   The host is the last item of the tab's column and sticks there, so the bar follows the screen anywhere in the tab. It
-   spans the column and is opaque, so the text scrolls cleanly behind it instead of showing around a floating pill, and
-   its blue wash sets it apart from the white cards. */
-.outline-savebar-host {
-  position: sticky; bottom: calc(-1 * var(--content-pad-bottom, 0px)); z-index: 30; margin-top: -16px;
+/* Floats at the bottom of the screen, centred on the tab, while there is something to save: a Save button under long
+   sections is not found. The host is the last item of the tab's column and sticks there, so the bar follows the screen
+   anywhere in the tab. As AI-eCabinet's SaveBar: a white card with a deep shadow that lifts it clear of the text it
+   floats over, 38px buttons. */
+.outline-savebar-host { position: sticky; bottom: 16px; z-index: 30; margin-top: -16px; }
+.outline-savebar {
+  display: flex; align-items: flex-end; justify-content: center; height: 0; padding: 0 16px; pointer-events: none;
+  transition: height 0.2s;
 }
-/* Open, it takes the place of the column's bottom padding, so at the end of the tab it still meets the screen's edge. The
-   tab itself reaches down, since a sticky box never leaves its parent. Only beside the side column: stacked, the side
-   cards come after the tab and the bar simply stops above them. */
-@media (min-width: 961px) {
-  .minutes-tab:has(.outline-savebar.is-open) { margin-bottom: calc(-1 * var(--content-pad-bottom, 0px)); }
-}
-.outline-savebar { display: flex; align-items: flex-end; height: 0; pointer-events: none; transition: height 0.2s; }
-.outline-savebar.is-open { height: 68px; }
+.outline-savebar.is-open { height: 56px; }
 .outline-savebar-inner {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; width: 100%; min-height: 60px; padding: 10px 16px;
-  border: 1px solid var(--brand-wash-line); border-bottom: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  background: var(--brand-wash); box-shadow: 0 -8px 24px #1a24331f;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; box-sizing: border-box; max-width: 100%;
+  padding: 8px 8px 8px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: 0 10px 30px #0f1e3c2e;
   opacity: 0; transform: translateY(12px); transition: opacity 0.2s, transform 0.2s;
 }
 .outline-savebar.is-open .outline-savebar-inner { opacity: 1; transform: none; pointer-events: auto; }
-.outline-savebar-inner > svg { flex: none; color: var(--brand); }
-.outline-savebar-status {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; flex: 1; min-width: 0;
-  color: var(--brand-ink); font-size: 14px; font-weight: 600;
-}
+.outline-savebar-status { flex: 1; min-width: 0; color: var(--ink); font-size: 13.5px; font-weight: 500; }
 .outline-savebar-status.is-over { color: var(--danger); }
-.outline-savebar-inner:has(.is-over) > svg { color: var(--danger); }
-.outline-savebar-where { color: var(--muted-ink); font-size: 13px; font-weight: 500; }
-.outline-savebar-inner .btn-outline { background: var(--surface); }
-/* A phone: the status on its own line, the two buttons sharing the next one. While the floating mic button is out the
-   buttons keep clear of its corner, so Lưu is never covered. */
+.outline-savebar-actions { display: flex; gap: 8px; margin-left: auto; }
+.outline-savebar-actions .btn { font-size: 13.5px; font-weight: 600; }
+/* A phone: the status on its own line over the two buttons, which share the width; while the floating mic button is
+   out, the bar floats just above it, so Lưu is never covered. */
 @media (max-width: 720px) {
-  .outline-savebar.is-open { height: 112px; }
-  .outline-savebar-inner { padding: 10px 12px 12px; }
-  .outline-savebar-status { flex-basis: calc(100% - 30px); }
-  .outline-savebar-inner .btn { flex: 1; }
-  body:has(.mic-dock) .outline-savebar-inner .btn-primary { margin-right: 56px; }
+  .outline-savebar { padding: 0; }
+  .outline-savebar.is-open { height: 104px; }
+  .outline-savebar-inner { width: 100%; padding: 10px 12px 12px; }
+  .outline-savebar-status { flex-basis: 100%; }
+  .outline-savebar-actions { flex: 1; }
+  .outline-savebar-actions .btn { flex: 1; }
+  body:has(.mic-dock) .outline-savebar-host { bottom: calc(var(--mic-dock-h, 0px) + 8px); }
 }
 /* No room for a first line beside a heading on a phone; the heading wraps instead of being cut. */
 @media (max-width: 720px) {

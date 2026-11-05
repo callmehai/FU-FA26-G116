@@ -52,8 +52,7 @@ export function OutlineSections({
   const [values, setValues] = useState(initial)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [asking, setAsking] = useState<'save' | 'undo' | null>(null)
-  const changed = SECTIONS.filter((s) => values[s.key] !== saved[s.key])
-  const dirty = changed.length > 0
+  const dirty = SECTIONS.some((s) => values[s.key] !== saved[s.key])
   const over = SECTIONS.filter((s) => values[s.key].length > s.limit)
 
   const change = (key: OutlineKey, text: string) => {
@@ -104,28 +103,28 @@ export function OutlineSections({
             inert={!dirty}
           >
             <section className="outline-savebar-inner" aria-label="Thay đổi dự thảo">
-              <Icon name={over.length ? 'alertCircle' : 'pencil'} size={18} />
               <span role="status" className={over.length ? 'outline-savebar-status is-over' : 'outline-savebar-status'}>
                 {over.length ? `Mục ${numbers(over)} quá dài` : 'Có thay đổi chưa lưu'}
-                {!over.length && dirty && <span className="outline-savebar-where">Mục {numbers(changed)}</span>}
               </span>
-              <button
-                type="button"
-                className="btn btn-outline btn-lg"
-                disabled={saving}
-                onClick={() => setAsking('undo')}
-              >
-                <Icon name="undo" size={16} />
-                Hoàn tác
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-lg"
-                disabled={over.length > 0 || saving}
-                onClick={() => (reviewed ? setAsking('save') : void save())}
-              >
-                {saving ? 'Đang lưu…' : 'Lưu'}
-              </button>
+              <div className="outline-savebar-actions">
+                <button
+                  type="button"
+                  className="btn btn-outline btn-lg"
+                  disabled={saving}
+                  onClick={() => setAsking('undo')}
+                >
+                  <Icon name="undo" size={16} />
+                  Hoàn tác
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-lg"
+                  disabled={over.length > 0 || saving}
+                  onClick={() => (reviewed ? setAsking('save') : void save())}
+                >
+                  {saving ? 'Đang lưu…' : 'Lưu dự thảo'}
+                </button>
+              </div>
             </section>
           </div>,
           barHost,

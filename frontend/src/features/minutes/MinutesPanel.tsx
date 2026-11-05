@@ -34,7 +34,7 @@ type Load<T> = { kind: 'loading' } | { kind: 'error'; message: string } | { kind
  * (Decree 30's Mẫu 1.4) with the Dự thảo as it stands in sections I–III, as eCab composes them. Writing a draft takes
  * minutes on a laptop, so the card polls while it waits.
  */
-export function MinutesPanel({ meeting }: { meeting: Meeting }) {
+export function MinutesPanel({ meeting, onOpenRecordings }: { meeting: Meeting; onOpenRecordings?: () => void }) {
   const [summary, setSummary] = useState<Load<SummaryState>>({ kind: 'loading' })
   const [minutes, setMinutes] = useState<Load<MinutesState>>({ kind: 'loading' })
   const [barHost, setBarHost] = useState<HTMLDivElement | null>(null)
@@ -79,7 +79,14 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
 
   return (
     <div className="minutes-tab">
-      <SummaryCard meeting={meeting} state={summary} barHost={barHost} onChanged={setSummary} onRetry={() => void loadSummary()} />
+      <SummaryCard
+        meeting={meeting}
+        state={summary}
+        barHost={barHost}
+        onChanged={setSummary}
+        onRetry={() => void loadSummary()}
+        onOpenRecordings={onOpenRecordings}
+      />
       <MinutesCard
         meeting={meeting}
         state={minutes}
@@ -107,12 +114,15 @@ function SummaryCard({
   barHost,
   onChanged,
   onRetry,
+  onOpenRecordings,
 }: {
   meeting: Meeting
   state: Load<SummaryState>
   barHost: HTMLElement | null
   onChanged: (state: Load<SummaryState>) => void
   onRetry: () => void
+  /** Where the room's voices are named; the readiness note offers it. */
+  onOpenRecordings?: () => void
 }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
@@ -137,6 +147,11 @@ function SummaryCard({
   const draft = summary?.draft ?? null
   const running = summary?.status === 'Queued' || summary?.status === 'Running'
   const canAsk = canManage && (meeting.status === 'InProgress' || meeting.status === 'Ended')
+  // The Dự thảo is a snapshot of the transcript: a line corrected, left out or named since leaves it behind (eCab).
+  const changedAt = readiness?.transcriptChangedAt
+  const stale =
+    !!draft && !running && !!changedAt && !!summary?.generatedAt && Date.parse(changedAt) > Date.parse(summary.generatedAt)
+  const askBlocked = !aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined
 
   const ask = async () => {
     setBusy(true)
@@ -204,8 +219,8 @@ function SummaryCard({
                 id="summary-ask"
                 type="button"
                 className={draft ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm'}
-                disabled={busy || dirty || !aiReady}
-                data-tooltip={!aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined}
+                disabled={busy || !!askBlocked}
+                data-tooltip={askBlocked}
                 onClick={() => (draft ? setConfirming(true) : void ask().catch(() => undefined))}
               >
                 <Icon name={draft ? 'refresh' : 'sparkles'} size={16} />
@@ -216,7 +231,27 @@ function SummaryCard({
         )}
       </header>
 
-      {canManage && readiness && !draft && !running && <ReadinessNote readiness={readiness} />}
+      {canAsk && stale && (
+        <div className="alert minutes-stale" role="status">
+          <p>
+            <Icon name="history" size={16} />
+            Bản ghi đã được sửa sau khi tạo dự thảo: dự thảo chưa có các chỗ sửa đó.
+          </p>
+          <button
+            type="button"
+            className="btn btn-sm"
+            disabled={busy || !!askBlocked}
+            data-tooltip={askBlocked}
+            onClick={() => setConfirming(true)}
+          >
+            Tạo lại
+          </button>
+        </div>
+      )}
+
+      {canManage && readiness && !running && (
+        <ReadinessNote readiness={readiness} drafted={!!draft} onNameVoices={onOpenRecordings} />
+      )}
 
       {summary?.status === 'Failed' && (
         <div className="alert alert-error" role="alert">
@@ -292,19 +327,46 @@ function SummaryStatusChip({ state }: { state: SummaryState }) {
 }
 
 /** AI-eCabinet's ReadinessNote: what the draft would miss if asked for now. */
-function ReadinessNote({ readiness }: { readiness: SummaryReadiness }) {
+/**
+ * What a draft asked for now would miss. Before the first draft every gap is listed; once there is one, only what the
+ * transcript can still change (voices to name, transcripts pending or failed) — the rest is already in the text.
+ */
+function ReadinessNote({
+  readiness,
+  drafted,
+  onNameVoices,
+}: {
+  readiness: SummaryReadiness
+  drafted: boolean
+  onNameVoices?: () => void
+}) {
   const gaps: string[] = []
-  if (readiness.sentences === 0) gaps.push('Chưa có lời thoại nào: dự thảo chỉ dựa vào chương trình và biểu quyết.')
-  if (readiness.unnamedVoices > 0) gaps.push(`${readiness.unnamedVoices} giọng chưa gán tên sẽ hiện là “Người nói N”.`)
+  if (!drafted && readiness.sentences === 0)
+    gaps.push('Chưa có lời thoại nào: dự thảo chỉ dựa vào chương trình và biểu quyết.')
   if (readiness.transcribing > 0) gaps.push(`${readiness.transcribing} bản ghi đang chuyển chữ, chưa được tính.`)
   if (readiness.failedTranscripts > 0) gaps.push(`${readiness.failedTranscripts} bản ghi chuyển chữ lỗi, không được tính.`)
-  if (readiness.agendaItems > 0 && readiness.agendaItemsTimed < readiness.agendaItems)
+  if (!drafted && readiness.agendaItems > 0 && readiness.agendaItemsTimed < readiness.agendaItems)
     gaps.push('Có nội dung chưa được bắt đầu: lời thoại không chia được theo từng nội dung.')
-  if (gaps.length === 0) return null
+  const unnamed = readiness.unnamedVoices > 0
+  if (gaps.length === 0 && !unnamed) return null
   return (
-    <div className="alert alert-warning minutes-readiness">
+    <div className="minutes-readiness" role="status">
+      {unnamed && (
+        <p className="minutes-readiness-line">
+          <Icon name="warning" size={16} />
+          <span>{readiness.unnamedVoices} giọng chưa gán tên sẽ hiện là “Người nói N” trong dự thảo.</span>
+          {onNameVoices && (
+            <button type="button" className="btn btn-outline btn-sm" onClick={onNameVoices}>
+              Gán tên người nói
+            </button>
+          )}
+        </p>
+      )}
       {gaps.map((gap) => (
-        <p key={gap}>{gap}</p>
+        <p key={gap} className="minutes-readiness-line">
+          <Icon name="warning" size={16} />
+          <span>{gap}</span>
+        </p>
       ))}
     </div>
   )

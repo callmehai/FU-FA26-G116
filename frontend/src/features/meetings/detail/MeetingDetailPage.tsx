@@ -391,7 +391,7 @@ function MeetingDetail({
               <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
             </div>
           ) : (
-            <MinutesPanel meeting={meeting} />
+            <MinutesPanel meeting={meeting} onOpenRecordings={() => setTab('recordings')} />
           )}
         </section>
 

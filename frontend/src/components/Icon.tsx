@@ -1,5 +1,6 @@
 import {
   ArrowDown,
+  History,
   AudioLines,
   FunnelX,
   Highlighter,
@@ -198,6 +199,7 @@ const ICONS = {
   zoomOut: ZoomOut,
   // Sensitivity levels: each one has its own shape, not only its own colour.
   globe: Globe,
+  history: History,
   building: Building2,
   shieldAlert: ShieldAlert,
   // Meeting facts and states.

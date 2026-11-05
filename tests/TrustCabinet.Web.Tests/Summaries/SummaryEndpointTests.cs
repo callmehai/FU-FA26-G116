@@ -96,6 +96,26 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
     }
 
     [Fact]
+    public async Task Readiness_says_when_the_transcript_last_changed_so_a_draft_made_before_reads_as_behind()
+    {
+        var s = await Drafted();
+        using var secretary = f.Client(s.Secretary);
+        var before = (await State(secretary, s)).GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset();
+        DateTimeOffset corrected;
+        await using (var db = f.Db())
+        {
+            var clips = await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).ToListAsync();
+            Assert.Equal(clips.Max(c => c.UpdatedAt), before);
+            // A line corrected after the draft was written.
+            corrected = before.AddMinutes(5);
+            clips[0].UpdatedAt = corrected;
+            await db.SaveChangesAsync();
+        }
+        var after = (await State(secretary, s)).GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset();
+        Assert.Equal(corrected, after);
+    }
+
+    [Fact]
     public async Task Vote_results_are_copied_from_the_data_and_never_pass_through_the_model()
     {
         var s = await Drafted();
