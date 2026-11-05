@@ -18,6 +18,11 @@ public static class AgendaRules
     public static bool HasRole(Meeting meeting, Guid actor, MeetingRole role) => meeting.Participants
         .Any(p => p.MeetingId == meeting.Id && p.UserId == actor && p.Role == role && CurrentParticipant(p));
 
+    /// <summary>The Chair and the Secretary both plan the agenda (BR-65, PO 02/11/2026, as AI-eCabinet's host).
+    /// Recording a conclusion (UC-77) reuses it because the roles coincide today; split it if they diverge.</summary>
+    public static bool IsPlanner(Meeting meeting, Guid actor)
+        => HasRole(meeting, actor, MeetingRole.Chair) || HasRole(meeting, actor, MeetingRole.Secretary);
+
     public static AgendaInput Normalize(AgendaInput input) => input with
     {
         Title = input.Title?.Trim() ?? "",
@@ -47,11 +52,11 @@ public static class AgendaRules
     public static bool CanRecordConclusion(Meeting meeting, Guid actor, AgendaItem item, bool hasMinutes)
         => !hasMinutes && meeting.Status is MeetingStatus.InProgress or MeetingStatus.Ended
             && item.Status is AgendaItemStatus.InProgress or AgendaItemStatus.Done
-            && (HasRole(meeting, actor, MeetingRole.Chair) || HasRole(meeting, actor, MeetingRole.Secretary));
+            && IsPlanner(meeting, actor);
 
     public static AgendaActions Actions(Meeting meeting, Guid actor, AgendaItem item, IReadOnlyList<AgendaItem> items, bool hasMinutes = false)
     {
-        var planning = PlanningAllowed(meeting.Status) && HasRole(meeting, actor, MeetingRole.Secretary);
+        var planning = PlanningAllowed(meeting.Status) && IsPlanner(meeting, actor);
         var chair = meeting.Status == MeetingStatus.InProgress && HasRole(meeting, actor, MeetingRole.Chair);
         var pending = item.Status == AgendaItemStatus.Pending;
         return new(planning, planning, planning && pending,

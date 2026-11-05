@@ -9,16 +9,16 @@ Prefix `/api/meetings/{meetingId}/agenda`. JWT và user active; backend kiểm l
 | Method / suffix | Actor | Điều kiện | Thành công |
 |---|---|---|---|
 | GET | Reader theo MeetingReadPolicy/Guest adapter | Được đọc Meeting | 200 snapshot |
-| GET /editor-options | Secretary | Meeting cho planning | 200 options |
-| POST | Secretary | Meeting cho planning | 201/MSG60 |
-| PUT /{itemId} | Secretary | Meeting cho planning, mọi item status | 200/MSG61 |
-| DELETE /{itemId} | Secretary | Meeting cho planning, item Pending | 200/MSG62 |
-| PUT /order | Secretary | Meeting cho planning, ít nhất 2 item | 200/MSG63 |
+| GET /editor-options | Chair hoặc Secretary | Meeting cho planning | 200 options |
+| POST | Chair hoặc Secretary | Meeting cho planning | 201/MSG60 |
+| PUT /{itemId} | Chair hoặc Secretary | Meeting cho planning, mọi item status | 200/MSG61 |
+| DELETE /{itemId} | Chair hoặc Secretary | Meeting cho planning, item Pending | 200/MSG62 |
+| PUT /order | Chair hoặc Secretary | Meeting cho planning, ít nhất 2 item | 200/MSG63 |
 | POST /{itemId}/current | Chair | Meeting InProgress, item Pending bất kỳ, chưa có current | 200/MSG64 |
 | POST /{itemId}/complete | Chair | Meeting InProgress, item InProgress | 200/MSG65 |
 | PUT /{itemId}/conclusion | Chair hoặc Secretary | Meeting InProgress/Ended, item InProgress/Done, chưa có bất kỳ MeetingMinutes | 200/MSG271 |
 
-Meeting cho planning: Draft, WaitingApproval, Rejected, Approved, Published, InProgress. Ended chỉ cho ghi kết luận khi đủ điều kiện. Không có gate Vote/attendance; hoàn thành item không bắt đầu item tiếp theo hoặc kết thúc Meeting. Kết luận không phải điều kiện complete/end.
+Meeting cho planning: Draft, WaitingApproval, Rejected, Approved, Published, InProgress. Từ 04/11/2026 (SCRUM-25, PO chốt 02/11) Chair hiện hành soạn, sửa, xoá, sắp xếp mục như Secretary, theo AI-eCabinet; bắt đầu/hoàn thành mục vẫn chỉ Chair (BR-69), không thêm mã thông báo. Ended chỉ cho ghi kết luận khi đủ điều kiện. Không có gate Vote/attendance; hoàn thành item không bắt đầu item tiếp theo hoặc kết thúc Meeting. Kết luận không phải điều kiện complete/end.
 
 ## Tạo và sửa
 
@@ -83,7 +83,7 @@ Mỗi mutation khóa Meeting, kiểm lại active/read/role/state, validate rồ
 
 Remove internal/revoke Guest clear assignment presenter và legacy trên mọi item cùng transaction removal/audit; không đổi status/position/actual/conclusion/documents. Agenda mutation không tăng roster revision.
 
-Chỉ gán/đổi presenter ở Published/InProgress mới enqueue sau commit, và không gửi khi người được gán là chính người thao tác (Thư ký tự gán mình): Internal nhận Notification type AgendaPresenterAssigned, target Meeting; Guest nhận EmailMessage qua worker hiện có. Nội dung nêu tên mục, tên cuộc họp và giờ bắt đầu (giờ Việt Nam), vì khách không có cách nào khác biết là cuộc họp nào. Không gửi bù khi publish, bỏ presenter không thông báo. Event ID và recipient tạo dedup key; A→B→A là ba assignment riêng. Notifier dùng scope/DbContext riêng, khóa Meeting và kiểm lại assignment/recipient. Lỗi enqueue/push/SMTP không thay kết quả đã commit; log ID, không log conclusion/token. Enqueue best effort, không cam kết phục hồi event chưa lưu; SMTP tắt thì email Queued chờ worker.
+Chỉ gán/đổi presenter ở Published/InProgress mới enqueue sau commit, và không gửi khi người được gán là chính người thao tác (Chủ toạ hoặc Thư ký tự gán mình): Internal nhận Notification type AgendaPresenterAssigned, target Meeting; Guest nhận EmailMessage qua worker hiện có. Nội dung nêu tên mục, tên cuộc họp và giờ bắt đầu (giờ Việt Nam), vì khách không có cách nào khác biết là cuộc họp nào. Không gửi bù khi publish, bỏ presenter không thông báo. Event ID và recipient tạo dedup key; A→B→A là ba assignment riêng. Notifier dùng scope/DbContext riêng, khóa Meeting và kiểm lại assignment/recipient. Lỗi enqueue/push/SMTP không thay kết quả đã commit; log ID, không log conclusion/token. Enqueue best effort, không cam kết phục hồi event chưa lưu; SMTP tắt thì email Queued chờ worker.
 
 Hub `/hubs/meetings`: JoinMeeting/LeaveMeeting; event `agendaChanged` gồm eventId,meetingId,changeType,agendaItemId?,title?,occurredAt. Types: Created/Updated/Deleted/Reordered/Started/Completed/MeetingEnded/ConclusionUpdated/PresenterCleared. Không chứa conclusion/email. Publisher kiểm lại từng recipient, không broadcast dữ liệu cho cả Meeting. Sau commit mới gửi, yêu cầu hủy sau 2 giây và chờ scoped task kết thúc. FE refetch sau mutation/event; reconnect phải join lại và GET. Không bảo đảm durable realtime.
 

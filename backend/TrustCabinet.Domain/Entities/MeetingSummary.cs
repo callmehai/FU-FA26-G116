@@ -1,4 +1,5 @@
 using TrustCabinet.Domain.Entities.Common;
+using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Domain.Entities;
 
@@ -14,7 +15,27 @@ public class MeetingSummary : Entity
     public Guid MeetingId { get; set; }
     public Meeting Meeting { get; set; } = null!;
 
+    /// <summary>
+    /// The draft as JSON (<c>SummaryDraft</c>): the objectives, one part per agenda item, the conclusions and the vote
+    /// results. Empty until the first run finishes; a rerun replaces it only once it succeeds.
+    /// </summary>
     public string Content { get; set; } = string.Empty;
+
+    public SummaryStatus Status { get; set; } = SummaryStatus.Queued;
+
+    /// <summary>Why the last run failed, in words the Secretary can act on. Empty otherwise.</summary>
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    public Guid RequestedById { get; set; }
+    public User RequestedBy { get; set; } = null!;
+
+    public DateTimeOffset RequestedAt { get; set; }
+
+    /// <summary>Who last changed the text by hand. It stays marked as AI-written all the same.</summary>
+    public Guid? EditedById { get; set; }
+    public User? EditedBy { get; set; }
+
+    public DateTimeOffset? EditedAt { get; set; }
 
     /// <summary>Which model produced it, so a summary can be judged against how it was made.</summary>
     public string Model { get; set; } = string.Empty;

@@ -4432,3 +4432,110 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 @media (hover: none) {
   .upload-tray .icon-button-sm { width: 40px; height: 40px; }
 }
+
+/* ---------- Biên bản tab (SCRUM-36, SCRUM-32): the AI's Dự thảo, then the minutes on paper ---------- */
+.minutes-tab { display: grid; gap: 16px; }
+.minutes-card { min-width: 0; }
+.minutes-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 12px; }
+.minutes-card-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.minutes-card-actions { margin-left: auto; gap: 8px; }
+.minutes-skeleton { height: 120px; }
+/* AI-eCabinet's AiLabel: whatever the AI wrote says so, until and after it is corrected. */
+.ai-label {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 2px 8px;
+  border-radius: var(--radius-chip); background: var(--chip-violet-bg); color: var(--chip-violet-fg);
+  font-size: 12px; font-weight: 600;
+}
+.minutes-empty { margin: 0; }
+.minutes-running { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--muted-ink); }
+.minutes-readiness { margin-bottom: 12px; }
+.minutes-readiness p + p { margin-top: 4px; }
+/* The Dự thảo's three sections, folded to a heading and a first line (AI-eCabinet's OutlineSections). */
+.outline-sections { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; margin-top: 12px; }
+.outline-section { min-width: 0; }
+.outline-toggle {
+  display: flex; align-items: center; gap: 8px; width: calc(100% + 16px); min-height: 40px; margin: 0 -8px; padding: 0 8px;
+  border: 0; border-radius: var(--radius); background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.outline-toggle:hover { background: var(--surface-alt); }
+.outline-toggle:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.outline-toggle svg { flex: none; color: var(--muted-ink); transform: rotate(-90deg); transition: transform 0.15s; }
+.outline-section.is-open .outline-toggle svg { transform: none; }
+.outline-heading { flex: 0 1 auto; min-width: 0; font-size: 14px; font-weight: 600; }
+.outline-preview { flex: 1; min-width: 0; overflow: hidden; color: var(--muted-ink); font-size: 13px; white-space: nowrap; text-overflow: ellipsis; }
+.outline-flag { flex: none; margin-left: auto; color: var(--danger); font-size: 12px; font-weight: 600; }
+.outline-body { display: grid; gap: 6px; padding: 2px 0 12px 24px; }
+.outline-body textarea { width: 100%; min-height: 38px; overflow: hidden; line-height: 1.6; resize: none; }
+.outline-count { justify-self: end; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+.outline-count.is-over { color: var(--danger); font-weight: 600; }
+.outline-body .minutes-sources { margin: 4px 0 0; }
+/* Pinned to the bottom of the screen while there is something to save: a Save button under long sections is not found. */
+/* The host is the last item of the tab's column and sticks there, so the bar follows the screen anywhere in the tab. */
+.outline-savebar-host { position: sticky; bottom: 16px; z-index: 30; margin-top: -16px; }
+.outline-savebar {
+  display: flex; align-items: flex-end; justify-content: center; height: 0; pointer-events: none; transition: height 0.2s;
+}
+.outline-savebar.is-open { height: 60px; }
+.outline-savebar-inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; max-width: 100%; padding: 8px 8px 8px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow);
+  opacity: 0; transform: translateY(12px); transition: opacity 0.2s, transform 0.2s;
+}
+.outline-savebar.is-open .outline-savebar-inner { opacity: 1; transform: none; pointer-events: auto; }
+.outline-savebar-status { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; }
+.outline-savebar-status.is-over { color: var(--danger); }
+/* No room for a first line beside a heading on a phone; the heading wraps instead of being cut. */
+@media (max-width: 720px) {
+  .outline-preview { display: none; }
+  .outline-toggle { padding-block: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .outline-toggle svg, .outline-savebar, .outline-savebar-inner { transition: none; }
+}
+.minutes-outline-text { line-height: 1.6; overflow-wrap: anywhere; }
+.minutes-outline-text p { margin: 0; white-space: pre-wrap; }
+.minutes-outline-text .minutes-outline-heading { margin-top: 8px; font-weight: 600; }
+.minutes-outline-text .minutes-outline-heading:first-child { margin-top: 0; }
+.minutes-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 16px 0 0; }
+.minutes-source {
+  padding: 2px 8px; border: 1px solid var(--line); border-radius: var(--radius-chip);
+  color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums;
+}
+.minutes-meta { margin: 12px 0 0; }
+.minutes-editor textarea { width: 100%; line-height: 1.55; resize: vertical; }
+.minutes-form-actions { justify-content: flex-end; }
+.minutes-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.minutes-editor .minutes-form-actions { grid-column: 1 / -1; }
+.minutes-editor-preview { max-height: 75vh; overflow: auto; }
+.minutes-editor-preview .minutes-paper { padding: 32px; box-shadow: none; }
+/* The minutes as the printed page (Decree 30): Times New Roman, justified, the first line indented 12.7 mm. */
+.minutes-paper {
+  max-width: 794px; margin: 0 auto; padding: 56px 60px 56px 84px; border: 1px solid var(--line);
+  background: var(--surface); box-shadow: var(--shadow-sm); color: var(--ink);
+  font-family: 'Times New Roman', Times, serif; font-size: 17px; line-height: 1.5; overflow-wrap: anywhere;
+}
+.minutes-paper p { margin: 0 0 6px; text-align: justify; text-indent: 12.7mm; }
+.minutes-paper .minutes-center { text-align: center; text-indent: 0; margin-bottom: 14px; }
+.minutes-paper .minutes-sub { font-weight: 700; }
+.minutes-paper .minutes-small { margin: 0; font-size: 15px; text-align: left; text-indent: 0; }
+.minutes-title { margin: 20px 0 4px; font-size: 19px; font-weight: 700; text-align: center; }
+.minutes-section { margin: 12px 0 6px; font-size: inherit; font-weight: 700; text-indent: 12.7mm; }
+/* 13 pt in the Word file; one size down on screen so the national motto keeps to one line, as on paper. */
+.minutes-frame { width: 100%; margin: 4px 0 8px; border-collapse: collapse; font-size: 15px; }
+.minutes-frame td { padding: 0 4px; text-align: center; vertical-align: top; }
+.minutes-frame td:first-child { width: 40%; }
+.minutes-frame td:empty::after { content: '\00a0'; }
+@media (max-width: 900px) {
+  .minutes-editor { grid-template-columns: minmax(0, 1fr); }
+  .minutes-editor-preview { display: none; }
+}
+@media (max-width: 720px) {
+  .minutes-card-actions { margin-left: 0; }
+  /* The card is already the page on a phone: a second frame inside it took a third of the width. */
+  .minutes-paper { padding: 8px 0; border: 0; box-shadow: none; font-size: 15px; }
+  .minutes-paper p, .minutes-section { text-indent: 0; }
+  /* Justified text on a 280px column opens gaps wider than the words. */
+  .minutes-paper p { text-align: left; }
+  .minutes-frame { font-size: 12px; }
+  .minutes-frame td { padding: 0 2px; }
+}
