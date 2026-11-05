@@ -630,7 +630,7 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 | `MSG399` | 409 | `POST …/minutes` | Đã có bản nháp mà không gửi `rebuild: true` | `Cuộc họp đã có bản nháp biên bản.` | BE |
 | `MSG400` | 409 | `POST …/minutes`, `PUT /api/minutes/{id}` | Biên bản đã gửi duyệt hoặc đã ban hành (SCRUM-33) | `Biên bản đã gửi duyệt hoặc đã ban hành, không sửa được nữa.` | BE |
 | `MSG401` | 409 | `PUT /api/minutes/{id}` | `updatedAt` gửi lên khác bản trên server: có người vừa lưu | `Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.` | BE |
-| `MSG402` | 400 | `PUT /api/minutes/{id}` | Nội dung trống (không còn chữ sau khi lọc HTML) hoặc quá 300.000 ký tự | `Nội dung biên bản không hợp lệ.` | BE |
+| `MSG402` | 400 | `PUT /api/minutes/{id}` | Nội dung trống (không còn chữ sau khi lọc HTML), quá 300.000 ký tự, hoặc thẻ lồng sâu quá 64 tầng | `Nội dung biên bản không hợp lệ.` | BE |
 | `MSG403` | 500 | `GET …/minutes`, `GET /api/minutes/{id}/export` | Lỗi database khi đọc hoặc dựng file | `Không tải được biên bản.` | BE |
 | `MSG404` | 503 | `POST …/minutes`, `PUT /api/minutes/{id}` | Lỗi database khi lưu | `Không lưu được biên bản. Vui lòng thử lại.` | BE |
 | `MSG405` | 403 | `GET /api/minutes/{id}/export` | Cuộc họp Mật: biên bản chỉ xem trên màn hình | `Biên bản của cuộc họp Mật không được tải về.` | BE |

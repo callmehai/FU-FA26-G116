@@ -44,6 +44,10 @@ Word, giống AI-eCabinet: eCab dùng TipTap, lưu HTML rồi lọc lại ở se
    ghi rõ trên thẻ luôn thắng mặc định. File Word vẫn tự viết bằng XML, không thêm thư viện.
 5. **Giới hạn nội dung lên 300.000 ký tự** (trước là 100.000): HTML dài hơn văn bản nó chở. Giới hạn áp cho cả HTML gửi
    lên và HTML sau khi lọc; cột `content` đổi theo (migration `MinutesContentHtml`).
+6. **Giới hạn để một request không làm sập server:** HTML lồng sâu quá 64 tầng bị từ chối khi lưu (`MSG402`), vì bộ lọc và
+   bước dàn trang đi đệ quy theo từng tầng và .NET không bắt được lỗi tràn stack; nội dung lỡ sâu hơn chỉ được đọc phần
+   chữ. Bảng giữ tối đa 63 cột (giới hạn của Word), ô vượt quá bị bỏ khi xuất; lề trái của đoạn trong ô hẹp không vượt quá
+   ô, để file PDF luôn dàn trang được.
 
 ## Phương án đã cân nhắc
 
