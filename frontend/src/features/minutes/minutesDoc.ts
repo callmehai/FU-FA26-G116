@@ -31,7 +31,10 @@ export function toDoc(content: string): JSONContent {
   for (const raw of content.replace(/\r/g, '').split('\n')) {
     const line = raw.trimEnd()
     if (line.startsWith('@@')) {
-      const [left, right = ''] = line.slice(2).trim().split('|', 2)
+      // Cut at the first bar only, as the Word file and the PDF do: the rest of the row is the right cell.
+      const row = line.slice(2).trim()
+      const bar = row.indexOf('|')
+      const [left, right] = bar < 0 ? [row, ''] : [row.slice(0, bar), row.slice(bar + 1)]
       rows.push({ type: 'tableRow', content: [cell(left.trim()), cell(right.trim())] })
       continue
     }
@@ -54,8 +57,10 @@ export function toContent(doc: JSONContent): string {
   for (const block of doc.content ?? []) {
     if (block.type === 'table') {
       for (const row of block.content ?? []) {
-        const [left, right] = (row.content ?? []).map((c) => cellText(c).replace(/\|/g, '/'))
-        lines.push(`@@ ${left ? `${left} ` : ''}| ${right ?? ''}`.trimEnd())
+        // The sheet has two columns: a pasted wider row keeps its other cells in the right one rather than losing them.
+        const [left, ...rest] = (row.content ?? []).map((c) => cellText(c).replace(/\|/g, '/'))
+        const right = rest.filter((t) => t).join(' / ')
+        lines.push(`@@ ${left ? `${left} ` : ''}| ${right}`.trimEnd())
       }
       continue
     }
@@ -73,7 +78,16 @@ export function toContent(doc: JSONContent): string {
 
 /** A plain line must not start with a mark it does not mean: typed "# x" in a paragraph stays a paragraph. */
 function lineSafe(text: string): string {
-  return /^(#{1,3} |\^ |~ |@@)/.test(text) ? `​${text}` : text
+  return /^(#{1,3} |\^ |~ |@@)/.test(text) ? `${ZWSP}${text}` : text
+}
+
+/** A zero-width space: invisible on paper, it keeps characters that would read as a mark from reading as one. */
+const ZWSP = '\u200B'
+
+/** Appends a piece so that no marker forms across the seam: `a*` then `**` would otherwise read `***`. */
+function append(out: string, piece: string): string {
+  const last = out.at(-1)
+  return (last === '*' || last === '_') && piece.startsWith(last) ? `${out}${ZWSP}${piece}` : out + piece
 }
 
 function heading(level: 1 | 2 | 3, text: string): JSONContent {
@@ -115,26 +129,26 @@ function inlineText(content: JSONContent[] | undefined): string {
     }
     // Close inner (italic) before outer (bold), open outer before inner, so the toggles nest.
     if (open.italic && (!want.italic || (open.bold && !want.bold))) {
-      out += '__'
+      out = append(out, '__')
       open.italic = false
     }
     if (open.bold && !want.bold) {
-      out += '**'
+      out = append(out, '**')
       open.bold = false
     }
     if (want.bold && !open.bold) {
-      out += '**'
+      out = append(out, '**')
       open.bold = true
     }
     if (want.italic && !open.italic) {
-      out += '__'
+      out = append(out, '__')
       open.italic = true
     }
-    // A marker typed as text would toggle a mark on reading: keep it as text.
-    out += text.replace(/\*\*/g, '*​*').replace(/__/g, '_​_')
+    // Markers typed as text ("Họ tên: ______", "a***b") would toggle marks on reading: part every repeated one.
+    out = append(out, text.replace(/([*_])(?=\1)/g, `$1${ZWSP}`))
   }
-  if (open.italic) out += '__'
-  if (open.bold) out += '**'
+  if (open.italic) out = append(out, '__')
+  if (open.bold) out = append(out, '**')
   return out.replace(/\n/g, ' ')
 }
 

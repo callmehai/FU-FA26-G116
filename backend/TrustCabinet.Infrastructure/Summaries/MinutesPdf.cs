@@ -68,7 +68,10 @@ public static class MinutesPdf
             blocks.Add(column => Table(column, table));
             rows.Clear();
         }
-        foreach (var raw in Clean(content).Split('\n'))
+        // Lines are read from the text as saved, as the Word file reads them; only each run is cleaned for the font. Cleaning
+        // first would drop the zero-width space the editor puts before a typed "# " or between typed "**", and turn them
+        // back into the marks they were kept from being.
+        foreach (var raw in content.Replace("\r", "", StringComparison.Ordinal).Split('\n'))
         {
             var line = raw.TrimEnd();
             if (line.StartsWith("@@", StringComparison.Ordinal))
@@ -137,9 +140,10 @@ public static class MinutesPdf
             var under = text.IndexOf("__", at, StringComparison.Ordinal);
             var next = star < 0 ? under : under < 0 ? star : Math.Min(star, under);
             var end = next < 0 ? text.Length : next;
-            if (end > at)
+            var run = end > at ? Clean(text[at..end]) : "";
+            if (run.Length > 0)
             {
-                var span = block.Span(text[at..end]).FontSize(size);
+                var span = block.Span(run).FontSize(size);
                 if (strong) span.Bold();
                 if (italic) span.Italic();
                 any = true;
@@ -183,14 +187,13 @@ public static class MinutesPdf
     /// The text as the font can draw it: composed (NFC) so a decomposed "ế" is one glyph, tabs and other controls as
     /// spaces, joiners and variation selectors dropped, and anything the font lacks as "?".
     /// </summary>
-    private static string Clean(string content)
+    private static string Clean(string run)
     {
-        var text = content.Replace("\r", "", StringComparison.Ordinal).Normalize(NormalizationForm.FormC);
+        var text = run.Normalize(NormalizationForm.FormC);
         var clean = new StringBuilder(text.Length);
         foreach (var rune in text.EnumerateRunes())
         {
-            if (rune.Value == '\n') clean.Append('\n');
-            else if (Rune.IsControl(rune)) clean.Append(' ');
+            if (Rune.IsControl(rune)) clean.Append(' ');
             else if (Rune.GetUnicodeCategory(rune) is UnicodeCategory.Format || rune.Value is >= 0xFE00 and <= 0xFE0F)
                 continue;
             else if (Covered.Contains(rune.Value)) clean.Append(rune.ToString());

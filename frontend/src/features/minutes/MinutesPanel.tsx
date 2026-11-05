@@ -179,7 +179,7 @@ function SummaryCard({
   }
 
   return (
-    <section className="card minutes-card" aria-label="Dự thảo nội dung">
+    <section id="summary-card" className="card minutes-card" aria-label="Dự thảo nội dung">
       <header className="minutes-card-head">
         <h2>Dự thảo nội dung</h2>
         {summary && <SummaryStatusChip state={state.data} />}
@@ -324,13 +324,18 @@ function draftSource(summary: Load<SummaryState>): DraftSource {
  * Takes the reader to a button of the Dự thảo card, pinging it a few seconds as the page's calls to act do: the draft
  * is read there before it is reviewed, so the minutes card does not review it blind.
  */
-function goTo(id: string) {
+function goTo(id: string): string | null {
   const target = document.getElementById(id)
-  if (!target) return
+  if (!(target instanceof HTMLButtonElement) || target.disabled) {
+    // Nothing to press there now (the AI is not ready, the draft is being edited): show the card and say why.
+    document.getElementById('summary-card')?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    return target?.dataset.tooltip ?? 'Xem thẻ Dự thảo nội dung ở trên.'
+  }
   target.scrollIntoView({ block: 'center', behavior: 'smooth' })
   target.focus({ preventScroll: true })
   target.classList.add('btn-ping')
   window.setTimeout(() => target.classList.remove('btn-ping'), 4000)
+  return null
 }
 
 function MinutesCard({
@@ -349,7 +354,10 @@ function MinutesCard({
   const toast = useToast()
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
-  const [draft, setDraft] = useState<string | null>(null)
+  // The text being edited and the version it was opened on. The card reloads while it is open (the AI draft finishing,
+  // the draft saved), so the save must send the version the editing started from, or it would quietly go over a save
+  // made in between. null base: the save after a conflict, meant to go over the newer one.
+  const [draft, setDraft] = useState<{ text: string; base: string | null } | null>(null)
 
   if (state.kind === 'loading') return <section className="card minutes-card" aria-busy="true"><div className="skeleton minutes-skeleton" /></section>
   if (state.kind === 'error')
@@ -391,17 +399,24 @@ function MinutesCard({
     if (!minutes || draft === null) return
     setBusy(true)
     try {
-      const result = await saveMinutes(minutes.id, draft, minutes.updatedAt)
+      const result = await saveMinutes(minutes.id, draft.text, draft.base ?? minutes.updatedAt)
       onChanged({ kind: 'ready', data: result })
       setDraft(null)
       toast.show(result.message, 'success')
     } catch (error) {
       toast.show(errorMessage(error), 'error')
       // Someone saved in between: keep the text on screen, reload the card so the next save goes over the newer one.
-      if (isApiError(error, 409, 'MSG401')) onRetry()
+      if (isApiError(error, 409, 'MSG401')) {
+        setDraft((d) => d && { ...d, base: null })
+        onRetry()
+      }
     } finally {
       setBusy(false)
     }
+  }
+
+  const notify = (reason: string | null) => {
+    if (reason) toast.show(reason, 'info')
   }
 
   const download = async (format: 'docx' | 'pdf') => {
@@ -441,7 +456,7 @@ function MinutesCard({
               </button>
             )}
             {minutes && canBuild && (
-              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDraft(minutes.content)}>
+              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDraft({ text: minutes.content, base: minutes.updatedAt })}>
                 <Icon name="pencil" size={16} />
                 Sửa
               </button>
@@ -467,7 +482,7 @@ function MinutesCard({
       {canBuild && draft === null && source === 'none' && (
         <div className="alert alert-info minutes-notice" role="status">
           <span>Chưa có dự thảo AI nên mục I–III để trống.</span>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => goTo('summary-ask')}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => notify(goTo('summary-ask'))}>
             <Icon name="sparkles" size={16} />
             Tạo dự thảo
           </button>
@@ -491,7 +506,7 @@ function MinutesCard({
           </span>
           <span className="row-actions">
             {source === 'unreviewed' && (
-              <button type="button" className="btn btn-outline btn-sm" onClick={() => goTo('summary-review')}>
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => notify(goTo('summary-review'))}>
                 <Icon name="checkCircle" size={16} />
                 Duyệt dự thảo
               </button>
@@ -518,14 +533,14 @@ function MinutesCard({
         >
           <Suspense fallback={<div className="skeleton minutes-skeleton" />}>
             <MinutesEditor
-              content={draft}
-              onChange={setDraft}
+              content={draft.text}
+              onChange={(text) => setDraft((d) => d && { ...d, text })}
               actions={
                 <>
                   <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setDraft(null)}>
                     Huỷ
                   </button>
-                  <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !draft.trim()}>
+                  <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !draft.text.trim()}>
                     {busy ? 'Đang lưu…' : 'Lưu'}
                   </button>
                 </>
