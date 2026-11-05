@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { deleteRoomTake } from '../../api/recordings'
 import { editTranscriptSegment, getTranscript, getTranscriptText, retryTranscript } from '../../api/transcripts'
 import { Badge } from '../../components/Badge'
@@ -11,8 +11,8 @@ import type { RecordingTake } from '../../types/recording'
 import type { Transcript, TranscriptSegment, TranscriptStatus } from '../../types/transcript'
 import { saveBlob } from '../documents/documentFile'
 import { formatDuration } from './format'
-import { SpeakerList, SpeakerPicker } from './SpeakerList'
-import { speakerName, speakerSlotOf, voiceName, voicesOf } from './speakers'
+import { LineSpeakerPicker, SpeakerList } from './SpeakerList'
+import { lineOwnerOf, speakerName, speakerSlot, speakerSlotOf, voiceName, voicesOf, type Voice } from './speakers'
 
 /**
  * SCRUM-31 — the machine transcript of one recording, under its player. Clicking a time jumps the
@@ -187,6 +187,29 @@ export function TranscriptView({
   // Voices named as one person read as one speaker: one colour, one name, one run of lines (AI-eCabinet's voiceOf).
   // Only a name the Secretary assigned replaces "Người nói N".
   const { voices, one } = voicesOf(transcript.speakers)
+  const ownerOfVoice = (voice: Voice | undefined) => (voice ? (voice.speaker.assignedUserId ?? voice.speaker.assignedGuestId) : null)
+  // Who a line reads as: the person the Secretary moved it to (that line only), else its voice. Lines of one person
+  // run together under one name, whichever voice they came from.
+  const speakerOf = (segment: TranscriptSegment) => {
+    const voice = voices.get(one(segment.speakerLabel))
+    const own = lineOwnerOf(segment)
+    if (own) {
+      const theirs = [...voices.values()].find((v) => ownerOfVoice(v) === own)
+      return {
+        key: `p:${own}`,
+        voice,
+        name: segment.speakerName ?? 'Người nói',
+        tone: theirs ? speakerSlotOf(theirs.speaker.label) : speakerSlot(transcript.people.findIndex((p) => p.id === own) + 3),
+      }
+    }
+    const named = ownerOfVoice(voice)
+    return {
+      key: named ? `p:${named}` : `v:${one(segment.speakerLabel)}`,
+      voice,
+      name: voice ? voiceName(voice.speaker) : speakerName(segment.speakerLabel),
+      tone: speakerSlotOf(one(segment.speakerLabel)),
+    }
+  }
   const at = (ms: number) => timeLabel(takes, ms)
   const marked = takes && takes.length > 1 ? takes : null
   return (
@@ -264,9 +287,9 @@ export function TranscriptView({
         <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>
       ) : (
         <ol className="tl-list transcript-list" aria-label="Lời thoại theo thời điểm nói">
-          {runs(transcript.segments, marked, one).map((run, i, all) => {
-            const voice = voices.get(one(run[0].speakerLabel))
-            const tone = speakerSlotOf(one(run[0].speakerLabel))
+          {runs(transcript.segments, marked, (segment) => speakerOf(segment).key).map((run, i, all) => {
+            const who = speakerOf(run[0])
+            const tone = who.tone
             // Heard right now: the run's button pauses it.
             const hearing = playing && currentMs >= run[0].startMs && currentMs < run[run.length - 1].endMs
             return (
@@ -286,14 +309,23 @@ export function TranscriptView({
                     <span className="tl-dot" style={{ background: tone.dot }} />
                   </span>
                   <div className="tl-head-row">
-                    {/* The Secretary names a speaker where it speaks, as in AI-eCabinet: the name is its picker. */}
-                    {transcript.canEdit && voice ? (
+                    {/* As in AI-eCabinet, the name heading a run says who said its first line, and changes that line
+                        only; a whole voice is named from its card above. */}
+                    {transcript.canEdit ? (
                       <span className="tl-name" style={{ color: tone.ink }}>
-                        <SpeakerPicker transcript={transcript} voice={voice} onChanged={() => void load()} inline />
+                        <span className="tl-name-pick">
+                          <LineSpeakerPicker
+                            transcript={transcript}
+                            segment={run[0]}
+                            voice={who.voice}
+                            time={at(run[0].startMs)}
+                            onChanged={() => void load()}
+                          />
+                        </span>
                       </span>
                     ) : (
                       <strong className="tl-name" style={{ color: tone.ink }}>
-                        {voice ? voiceName(voice.speaker) : speakerName(run[0].speakerLabel)}
+                        {who.name}
                       </strong>
                     )}
                     <span className="tl-time-inline">{at(run[0].startMs)}</span>
@@ -324,6 +356,18 @@ export function TranscriptView({
                       if (saved) void load()
                     }}
                     onSeek={() => onSeek(segment.startMs)}
+                    lineSpeaker={
+                      transcript.canEdit && i > 0 ? (
+                        <LineSpeakerPicker
+                          transcript={transcript}
+                          segment={segment}
+                          voice={speakerOf(segment).voice}
+                          time={at(segment.startMs)}
+                          onChanged={() => void load()}
+                          icon
+                        />
+                      ) : undefined
+                    }
                   />
                 ))}
               </li>
@@ -339,12 +383,12 @@ export function TranscriptView({
  * Neighbouring segments of one voice read as one run under its name, as in the per-mic record. A run never crosses
  * from one take of the room mic into the next: the mic was off in between.
  */
-function runs(segments: TranscriptSegment[], takes: RecordingTake[] | null, one: (label: string) => string) {
+function runs(segments: TranscriptSegment[], takes: RecordingTake[] | null, keyOf: (segment: TranscriptSegment) => string) {
   const out: TranscriptSegment[][] = []
   for (const segment of segments) {
     const last = out.at(-1)
     const sameTake = !takes || takeAt(takes, last?.[0].startMs ?? 0) === takeAt(takes, segment.startMs)
-    if (last && sameTake && one(last[0].speakerLabel) === one(segment.speakerLabel)) last.push(segment)
+    if (last && sameTake && keyOf(last[0]) === keyOf(segment)) last.push(segment)
     else out.push([segment])
   }
   return out
@@ -384,6 +428,7 @@ function SegmentRow({
   onEdit,
   onDone,
   onSeek,
+  lineSpeaker,
 }: {
   segment: TranscriptSegment
   /** How the segment's moment reads: the meeting's clock for the room mic, the file's offset for an upload. */
@@ -395,6 +440,8 @@ function SegmentRow({
   onEdit: () => void
   onDone: (saved: boolean) => void
   onSeek: () => void
+  /** The person button that changes who said this one line (the Secretary, on a line under its run's name). */
+  lineSpeaker?: ReactNode
 }) {
   const toast = useToast()
   const [draft, setDraft] = useState(segment.text)
@@ -490,6 +537,7 @@ function SegmentRow({
         )}
         {canEdit && !editing && (
           <span className="tl-tools">
+            {lineSpeaker}
             <button
               type="button"
               className="tl-tool"

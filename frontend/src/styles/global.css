@@ -3948,10 +3948,21 @@ audio.recording-player { height: 40px; }
 .tl-tool { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--radius); background: transparent; color: var(--muted-ink); cursor: pointer; }
 .tl-tool:hover { background: var(--brand-wash); color: var(--brand); }
 .tl-tool:disabled { opacity: .5; cursor: default; }
+/* The person button among a line's tools (Select with an icon trigger): the same 28px tool, no field look. */
+.tl-tools .select { flex: none; }
+.select-trigger.select-icon {
+  display: grid; place-items: center; width: 28px; height: 28px; min-height: 0; padding: 0; border: 0;
+  border-radius: var(--radius); background: transparent; color: var(--muted-ink); box-shadow: none;
+}
+.select-trigger.select-icon:hover, .select-trigger.select-icon[aria-expanded="true"] { background: var(--brand-wash); color: var(--brand); }
 @media (hover: none) {
   .tl-tools { opacity: 1; }
   /* A finger-sized target that keeps the line its height: the extra reaches into the space around it. */
   .tl-tool, .tl-play, .tl-time-button { min-width: 40px; height: 40px; margin: -6px 0; }
+  .tl-tools .select-trigger.select-icon { width: 40px; height: 40px; margin: -6px 0; }
+  /* A phone's line is narrow: its two tools stand one above the other, so the words keep the width. */
+  .tl-tools { flex-direction: column; align-items: center; gap: 4px; }
+  .tl-tools .select { width: 40px; }
   .tl-filter { height: 40px; }
 }
 /* Narrow (a phone, the call room's panel): the time column goes, the time moves next to the name. */

@@ -51,7 +51,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             return new(Data: new TranscriptView(recordingId, transcript.Status.ToString(), transcript.Provider,
                 transcript.Language, transcript.ErrorMessage, transcript.CompletedAt, recording.DurationMs, canEdit,
                 [.. transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptSegmentView(s.Id, s.Position,
-                    s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName))],
+                    s.StartMs, s.EndMs, s.Text, s.SpeakerLabel, s.EditedAt, s.EditedBy?.FullName, s.SpeakerUserId,
+                    s.SpeakerGuestId, LineName(s)))],
                 [.. transcript.Speakers.OrderBy(s => s.Label).Select(s => new TranscriptSpeakerView(s.Label, s.SpeechMs,
                     canEdit ? s.SuggestedUserId : null, canEdit ? s.SuggestedUser?.FullName : null,
                     canEdit ? s.SuggestionScore : null, s.AssignedUserId, AssignedName(s), sameAs.GetValueOrDefault(s.Label),
@@ -119,7 +120,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             var now = clock.GetUtcNow();
             var text = TranscriptText.Render(meeting.Title, $"bản ghi {recording.FileName}", meeting.ActualStartedAt ?? recording.CreatedAt,
                 now, transcript.Segments.OrderBy(s => s.Position).Select(s => new TranscriptLine(TranscriptText.Offset(s.StartMs),
-                    names.GetValueOrDefault(s.SpeakerLabel) ?? SpeakerLabelName(s.SpeakerLabel), s.Text)));
+                    LineName(s) ?? names.GetValueOrDefault(s.SpeakerLabel) ?? SpeakerLabelName(s.SpeakerLabel), s.Text)));
             await audit.RecordAsync(AuditActions.TranscriptExported, AuditActions.RecordingObjectType, recordingId, actorId,
                 new { recording.MeetingId, segments = transcript.Segments.Count }, ct);
             return new(Data: new ExportedText(TranscriptText.FileName(meeting.ActualStartedAt ?? recording.CreatedAt), text));
@@ -130,6 +131,11 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             return new(TranscriptFailure.ReadFailed);
         }
     }
+
+    /// <summary>Who said this one line when the Secretary named it apart from its voice; null otherwise.</summary>
+    private static string? LineName(TranscriptSegment segment)
+        => segment.SpeakerUser?.FullName
+            ?? (segment.SpeakerGuest is { } guest ? guest.SelfDeclaredDisplayName ?? guest.InvitedName : null);
 
     private static string? AssignedName(TranscriptSpeaker speaker)
         => speaker.AssignedUser?.FullName
@@ -206,6 +212,38 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         catch (Exception ex) when (PersistenceError(ex))
         {
             logger.LogError(ex, "Failed to name speaker {Label} of {RecordingId}", label, recordingId);
+            return new(TranscriptFailure.SaveFailed);
+        }
+    }
+
+    public async Task<TranscriptOutcome> AssignSegmentSpeakerAsync(Guid segmentId, Guid? userId, Guid? guestId, Guid actorId,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var segment = await transcripts.FindSegmentAsync(segmentId, ct);
+            if (segment is null) return new(TranscriptFailure.NotFound);
+            var (recording, meeting, failure) = await ReadableAsync(segment.Transcript.RecordingId, actorId, ct);
+            if (recording is null || meeting is null) return new(failure);
+            if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
+            if (userId is not null && guestId is not null) return new(TranscriptFailure.InvalidSpeaker);
+            var person = userId is { } id ? Participants(meeting).FirstOrDefault(p => p.UserId == id) : null;
+            if (userId is not null && person is null) return new(TranscriptFailure.InvalidSpeaker);
+            var guest = guestId is { } g ? (await transcripts.ListGuestsAsync(meeting.Id, ct)).FirstOrDefault(p => p.Id == g) : null;
+            if (guestId is not null && guest is null) return new(TranscriptFailure.InvalidSpeaker);
+            var now = clock.GetUtcNow();
+            segment.SpeakerUserId = userId;
+            segment.SpeakerGuestId = guestId;
+            segment.UpdatedAt = now;
+            await audit.RecordAsync(AuditActions.TranscriptSegmentSpeakerAssigned, AuditActions.RecordingObjectType, recording.Id,
+                actorId, new { recording.MeetingId, segmentId, segment.Position, segment.SpeakerLabel, userId, guestId }, ct);
+            await transcripts.SaveChangesAsync(ct);
+            return new(Data: new { segmentId, speakerUserId = userId, speakerGuestId = guestId,
+                speakerName = person?.User.FullName ?? guest?.FullName });
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to name the speaker of transcript segment {SegmentId}", segmentId);
             return new(TranscriptFailure.SaveFailed);
         }
     }

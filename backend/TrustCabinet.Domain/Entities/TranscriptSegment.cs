@@ -31,11 +31,16 @@ public class TranscriptSegment : Entity
     public string SpeakerLabel { get; set; } = string.Empty;
 
     /// <summary>
-    /// The real person, once the secretary has said which label is whom. Assigned by hand, per
-    /// recording; nothing infers it.
+    /// Who said this one line, when the Secretary moved it off its voice: a line the diarizer gave the wrong voice
+    /// (as AI-eCabinet's "just this line"). Null keeps the voice's name (TranscriptSpeaker). Set by hand, never
+    /// inferred; a user or a guest of the meeting, never both.
     /// </summary>
     public Guid? SpeakerUserId { get; set; }
     public User? SpeakerUser { get; set; }
+
+    /// <summary>The guest of the meeting who said this one line; see <see cref="SpeakerUserId"/>.</summary>
+    public Guid? SpeakerGuestId { get; set; }
+    public MeetingGuestInvitation? SpeakerGuest { get; set; }
 
     /// <summary>Set when a human corrected the machine's text, so the two can be told apart.</summary>
     public Guid? EditedById { get; set; }

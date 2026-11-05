@@ -10,6 +10,8 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
     public async Task<Transcript?> FindByRecordingAsync(Guid recordingId, bool tracked, CancellationToken ct)
     {
         var query = db.Transcripts.Include(t => t.Segments).ThenInclude(s => s.EditedBy)
+            .Include(t => t.Segments).ThenInclude(s => s.SpeakerUser)
+            .Include(t => t.Segments).ThenInclude(s => s.SpeakerGuest)
             .Include(t => t.Speakers).ThenInclude(s => s.SuggestedUser)
             .Include(t => t.Speakers).ThenInclude(s => s.AssignedUser)
             .Include(t => t.Speakers).ThenInclude(s => s.AssignedGuest)

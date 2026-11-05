@@ -47,7 +47,12 @@ public sealed class MeetingTranscriptReader(TrustCabinetDbContext db)
             var segments = await db.TranscriptSegments.AsNoTracking()
                 .Where(s => s.TranscriptId == recording.TranscriptId && s.Text != "")
                 .OrderBy(s => s.Position)
-                .Select(s => new { s.Id, s.StartMs, s.Text, s.SpeakerLabel, User = s.SpeakerUser != null ? s.SpeakerUser.FullName : null })
+                .Select(s => new
+                {
+                    s.Id, s.StartMs, s.Text, s.SpeakerLabel,
+                    User = s.SpeakerUser != null ? s.SpeakerUser.FullName
+                        : s.SpeakerGuest != null ? s.SpeakerGuest.SelfDeclaredDisplayName ?? s.SpeakerGuest.InvitedName : null,
+                })
                 .ToListAsync(ct);
             foreach (var segment in segments)
             {

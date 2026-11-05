@@ -173,6 +173,18 @@ họp (`guestId`), không cả hai; cả hai `null` là bỏ gán. Người đư
 phải có lời mời của cuộc họp này chưa bị thu hồi, gửi cả hai cũng vậy (`400 MSG317`). Response có `assignedGuestId`. Không phải Thư ký: `403 MSG295`. Nhãn
 không có trong bản ghi: `404`. `200 MSG316` `{ code, message, speaker }`.
 
+### `PUT /api/transcript-segments/{segmentId}/speaker` — `{ "userId": "…" | null, "guestId": "…" | null }`
+
+Thư ký nói ai nói **riêng một câu**, khi máy tách giọng xếp nhầm câu đó vào giọng của người khác (như "chỉ câu này" của
+AI-eCabinet). Các câu khác của giọng đó giữ tên của giọng. Cả hai `null` trả câu về giọng của nó. Cùng điều kiện với gán
+giọng: người dùng là thành phần hiện tại, Khách có lời mời chưa thu hồi, không gửi cả hai (`400 MSG317`); không phải Thư
+ký `403 MSG295`; câu không tồn tại hay không đọc được `404`. `200 MSG407`
+`{ code, message, segment: { segmentId, speakerUserId, speakerGuestId, speakerName } }`.
+
+Mỗi câu trong `GET /api/recordings/{id}/transcript` có thêm `speakerUserId`, `speakerGuestId`, `speakerName` (`null`
+khi câu theo tên của giọng). Bản gỡ băng tải về và dự thảo AI đọc tên của câu trước, rồi mới đến tên của giọng. Chạy lại
+chuyển chữ thì các câu được viết lại từ đầu, tên đặt riêng cho từng câu mất theo.
+
 ## Cấu hình (`VoiceId:*`)
 
 | Khoá | Mặc định | Ghi chú |

@@ -14,6 +14,7 @@ public static class TranscriptEndpoints
     private const string Msg304SaveFailed = "MSG304";
     private const string Msg316SpeakerAssigned = "MSG316";
     private const string Msg317InvalidSpeaker = "MSG317";
+    private const string Msg407LineSpeakerAssigned = "MSG407";
     private const string Msg355ExportForbidden = "MSG355";
     private const string Msg356SecretMeeting = "MSG356";
     private const string Msg357TranscriptNotReady = "MSG357";
@@ -38,10 +39,14 @@ public static class TranscriptEndpoints
         recording.MapPost("/transcribe", async (Guid recordingId, HttpContext context, ITranscriptionService service, CancellationToken ct)
             => Map(await service.RetryAsync(recordingId, CapabilityGate.GatedUserId(context.User), ct), Msg300Queued));
 
-        app.MapGroup("/api/transcript-segments/{segmentId:guid}")
-            .RequireActiveUser(Error(503, Msg304SaveFailed, "Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại."))
-            .MapPut("", async (Guid segmentId, SegmentBody body, HttpContext context, ITranscriptionService service, CancellationToken ct)
-                => Map(await service.EditSegmentAsync(segmentId, CapabilityGate.GatedUserId(context.User), body.Text, ct), Msg302SegmentSaved));
+        var segment = app.MapGroup("/api/transcript-segments/{segmentId:guid}")
+            .RequireActiveUser(Error(503, Msg304SaveFailed, "Không lưu được thay đổi bản gỡ băng. Vui lòng thử lại."));
+        segment.MapPut("", async (Guid segmentId, SegmentBody body, HttpContext context, ITranscriptionService service, CancellationToken ct)
+            => Map(await service.EditSegmentAsync(segmentId, CapabilityGate.GatedUserId(context.User), body.Text, ct), Msg302SegmentSaved));
+        // Who said this one line, apart from its voice (as AI-eCabinet's "just this line"); both null hands it back.
+        segment.MapPut("/speaker", async (Guid segmentId, SpeakerBody body, HttpContext context, ITranscriptionService service,
+            CancellationToken ct) => Map(await service.AssignSegmentSpeakerAsync(segmentId, body.UserId, body.GuestId,
+                CapabilityGate.GatedUserId(context.User), ct), Msg407LineSpeakerAssigned));
     }
 
     private static IResult Map(TranscriptOutcome result, string? successCode = null)
@@ -72,6 +77,7 @@ public static class TranscriptEndpoints
             Msg300Queued => Results.Json(new { code = Msg300Queued, message = "Đã đưa bản ghi vào hàng chờ chuyển thành chữ." },
                 statusCode: StatusCodes.Status202Accepted),
             Msg316SpeakerAssigned => Results.Ok(new { code = successCode, message = "Đã gán người nói.", speaker = result.Data }),
+            Msg407LineSpeakerAssigned => Results.Ok(new { code = successCode, message = "Đã đổi người nói của câu này.", segment = result.Data }),
             _ => Results.Ok(new { code = successCode, message = "Đã lưu đoạn gỡ băng.", segment = result.Data }),
         };
     }

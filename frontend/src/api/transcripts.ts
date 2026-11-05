@@ -1,4 +1,5 @@
 import type {
+  LineSpeakerAssigned,
   SegmentSaved,
   SpeakerAssigned,
   Transcript,
@@ -28,6 +29,13 @@ export const editTranscriptSegment = (segmentId: string, text: string) =>
 /** Names a voice as a user or a guest of the meeting, or clears its name with `null`. */
 export const assignSpeaker = (recordingId: string, label: string, who: TranscriptPerson | null) =>
   api.put<SpeakerAssigned>(`/api/recordings/${recordingId}/speakers/${encodeURIComponent(label)}`, {
+    userId: who && !who.guest ? who.id : null,
+    guestId: who?.guest ? who.id : null,
+  })
+
+/** Who said one line apart from its voice (as AI-eCabinet's "just this line"), or `null` to hand it back to the voice. */
+export const assignLineSpeaker = (segmentId: string, who: TranscriptPerson | null) =>
+  api.put<LineSpeakerAssigned>(`/api/transcript-segments/${segmentId}/speaker`, {
     userId: who && !who.guest ? who.id : null,
     guestId: who?.guest ? who.id : null,
   })

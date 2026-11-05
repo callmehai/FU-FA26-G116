@@ -118,6 +118,7 @@ public static class AuditActions
 
     /// <summary>A secretary said who a voice in a recording is — or cleared it. The machine's suggestion travels along.</summary>
     public const string TranscriptSpeakerAssigned = "transcript.speaker_assigned";
+    public const string TranscriptSegmentSpeakerAssigned = "transcript.segment_speaker_assigned";
     public const string TranscriptSpeakerObjectType = "TranscriptSpeaker";
 
     /// <summary>SCRUM-109 — the Secretary corrected the machine's text of one per-mic sentence.</summary>
