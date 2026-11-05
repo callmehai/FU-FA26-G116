@@ -90,7 +90,7 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-75` | Rescheduling a Published Meeting requires a planned start time later than the current time. | UC-15 |  |  |
 | `BR-76` | Rescheduling a Published Meeting must notify all current invitees: internal invitees in the application, except whoever rescheduled (BR-322), and each invited Guest by email. Delivery failures do not undo the change. | UC-15 |  |  |
 | `BR-78` | Retired on 04/11/2026 (PO 20/10/2026): additional Meeting permissions per participant were removed. This rule must not be reused. | UC-28a | PO 13/10/2026 — follow-up |  |
-| `BR-79` | Current assigned Secretaries manage the Meeting roster while its status permits; before publication, the current Chair may also manage it. The Meeting Organizer has no separate roster-management authority. WaitingApproval remains read-only. | UC-28a, UC-28b, UC-28c | PO 13/10/2026 — follow-up |  |
+| `BR-79` | Current assigned Secretaries and the current Chair manage the Meeting roster while its status permits. The Meeting Organizer has no separate roster-management authority. WaitingApproval remains read-only. | UC-28a, UC-28b, UC-28c | PO 13/10/2026 — follow-up |  |
 | `BR-80` | Participant management is allowed only while the Meeting is Draft, Rejected, Approved, Published, or InProgress. | UC-28a, UC-28b, UC-28c |  |  |
 | `BR-81` | An internal participant must reference an active internal user account. | UC-28a |  |  |
 | `BR-82` | An internal user may appear at most once as a current participant in the same Meeting. | UC-27, UC-28a |  |  |
