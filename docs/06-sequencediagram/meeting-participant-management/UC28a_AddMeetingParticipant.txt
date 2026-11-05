@@ -22,7 +22,7 @@ Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify actor is a current Secretary, or, before publication, the current Chair.
+ParticipantService->ParticipantService: Verify actor is a current Chair or Secretary, while the Meeting status permits roster changes.
 ParticipantService->ParticipantService: Require Draft, Rejected, Approved, Published or InProgress;\nvalidate every selected active user and uniqueness for additions (BR-80–BR-85, BR-168).
 alt Actor is no longer authorized - EX-2
 ParticipantService-->ParticipantController: Request denied; no participants added

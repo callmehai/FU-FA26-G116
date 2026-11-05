@@ -6,6 +6,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Infrastructure.Agenda;
 using TrustCabinet.Infrastructure.Attendance;
+using TrustCabinet.Infrastructure.Summaries;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
@@ -80,6 +81,8 @@ builder.Services.AddHostedService<MeetingOverdueWorker>();
 // SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.
 builder.Services.AddTrustCabinetTranscription(builder.Configuration);
 builder.Services.AddHostedService<TranscriptionWorker>();
+builder.Services.AddTrustCabinetSummaries(builder.Configuration);
+builder.Services.AddHostedService<SummaryWorker>();
 
 // SCRUM-35: Voice ID — consent, encrypted enrolment samples, speaker suggestions in transcripts.
 builder.Services.AddTrustCabinetVoiceId(builder.Configuration);
@@ -254,6 +257,8 @@ app.MapSpeechClipEndpoints();
 
 // SCRUM-31: transcript of a recording — read, re-run, correct a segment.
 app.MapTranscriptEndpoints();
+app.MapSummaryEndpoints();
+app.MapMinutesEndpoints();
 
 // SCRUM-35: the caller's own Voice ID.
 app.MapVoiceIdEndpoints();

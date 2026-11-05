@@ -46,11 +46,11 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
             if (!await meetings.IsUserActiveAsync(actorId, ct)) return new(AgendaFailure.Inactive);
             var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
             if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(AgendaFailure.NotFound);
-            var secretary = AgendaRules.HasRole(meeting, actorId, MeetingRole.Secretary);
-            var planning = secretary && AgendaRules.PlanningAllowed(meeting.Status);
+            var planner = AgendaRules.IsPlanner(meeting, actorId);
+            var planning = planner && AgendaRules.PlanningAllowed(meeting.Status);
             if (options)
             {
-                if (!secretary) return new(AgendaFailure.Forbidden);
+                if (!planner) return new(AgendaFailure.Forbidden);
                 if (!planning) return new(AgendaFailure.Locked);
                 return new(Data: new AgendaEditorOptions(meeting.Participants
                     .Where(p => p.MeetingId == meeting.Id && p.Role != MeetingRole.Guest && AgendaRules.CurrentParticipant(p))
@@ -129,9 +129,8 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                 if (itemId.HasValue && item is null) return new(AgendaFailure.NotFound);
                 var execution = operation is AgendaOperation.Start or AgendaOperation.Complete;
                 var conclusion = operation == AgendaOperation.RecordConclusion;
-                if (conclusion
-                    ? !AgendaRules.HasRole(meeting, actorId, MeetingRole.Chair) && !AgendaRules.HasRole(meeting, actorId, MeetingRole.Secretary)
-                    : !AgendaRules.HasRole(meeting, actorId, execution ? MeetingRole.Chair : MeetingRole.Secretary))
+                // Starting and completing an item stays the Chair's alone (BR-69); planning and conclusions are both roles'.
+                if (execution ? !AgendaRules.HasRole(meeting, actorId, MeetingRole.Chair) : !AgendaRules.IsPlanner(meeting, actorId))
                     return new(AgendaFailure.Forbidden);
                 if (conclusion
                     ? !AgendaRules.CanRecordConclusion(meeting, actorId, item!, await agenda.HasMinutesAsync(meetingId, token))

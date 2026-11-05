@@ -65,7 +65,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | TranscriptSpeaker | Một giọng trong bản gỡ băng và người được gán tên (SCRUM-35) | IMPLEMENTED (migration `TranscriptSpeakerGuest`) | `TranscriptId`, `Label` (SPEAKER_00…), `SpeechMs`; máy gợi ý `SuggestedUserId` + `SuggestionScore`, và từ 03/11/2026 (ADR-0045) tự **điền** `AssignedUserId` khi điểm khớp đạt ngưỡng tự gán (mặc định 0,75) và người đó đã đồng ý thông báo 1.2; Thư ký gán hoặc đổi sang `AssignedUserId` **hoặc** `AssignedGuestId` (Khách còn lời mời). `AssignedById` rỗng nghĩa là máy điền, có người là Thư ký điền; cờ `autoAssigned` chỉ có trong phản hồi API, không lưu. Không lưu vector giọng. |
 | MeetingMinutes | Phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Trạng thái Draft/PendingSignature/RevisionRequested/Sealed/Superseded; bỏ `ApprovedById`, `RejectionReason`, `IssuedAt`; thêm `RevisionNote`, `SealedById`, `SealedAt`. Không ghi đè bản đã niêm phong. |
 | MinutesSignature | Chữ ký trên phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Thêm `InvalidatedAt` (chữ ký cũ mất hiệu lực khi biên bản bị yêu cầu sửa — BR-166). |
-| MeetingSummary | Tóm tắt AI hiện hành | NEED MIGRATION / RESTRUCTURE | Thêm `Status` Draft/Approved/Published, `ApprovedById`, `ApprovedAt`, `PublishedAt` (duyệt và công bố là hai bước); tối đa một bản hiện hành mỗi Meeting. |
+| MeetingSummary | Dự thảo AI hiện hành của cuộc họp (SCRUM-36, [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)) | IMPLEMENTED (migration `AiMeetingSummaryJob`) | Tối đa một mỗi Meeting. `Content` là JSON 3 mục I–III và khoảng giờ lời thoại của từng phần. `Status` Queued/Running/Ready/Failed là hàng chờ của máy AI (`RequestedById`, `RequestedAt`, `ErrorMessage`). Duyệt = `ReviewedById`/`ReviewedAt`: trước đó chỉ Chủ toạ, Thư ký thấy; sửa (`EditedById`, `EditedAt`) thì bỏ duyệt. Duyệt và công bố gộp làm một bước, khác dự kiến cũ (Draft/Approved/Published). |
 | EmailMessage | Bản ghi gửi email/outbox | IMPLEMENTED | Giữ khóa chống trùng và thông tin thử gửi lại; id thư phía Resend và kết quả giao thư từ webhook ([ADR-0031](../05-decisions/0031-gui-email-qua-resend.md)). |
 | AuditLogEntry | Bằng chứng kiểm toán nghiệp vụ | IMPLEMENTED | Chỉ ghi thêm. |
 | CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting. |
@@ -528,13 +528,17 @@ erDiagram
     MeetingSummary {
         uuid Id PK
         uuid MeetingId FK UK
-        string Content
+        string Content "JSON: objectives, discussion, conclusions, sources"
         string Model
-        string Status "Draft|Approved|Published"
+        string Status "Queued|Running|Ready|Failed"
+        string ErrorMessage
+        uuid RequestedById FK
+        timestamptz RequestedAt
         timestamptz GeneratedAt
-        uuid ApprovedById FK "nullable"
-        timestamptz ApprovedAt "nullable"
-        timestamptz PublishedAt "nullable"
+        uuid ReviewedById FK "nullable"
+        timestamptz ReviewedAt "nullable"
+        uuid EditedById FK "nullable"
+        timestamptz EditedAt "nullable"
     }
 ```
 

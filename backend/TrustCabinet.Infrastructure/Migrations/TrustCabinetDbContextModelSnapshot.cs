@@ -1554,6 +1554,20 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTimeOffset?>("EditedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("edited_at");
+
+                    b.Property<Guid?>("EditedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("edited_by_id");
+
+                    b.Property<string>("ErrorMessage")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("error_message");
+
                     b.Property<DateTimeOffset>("GeneratedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("generated_at");
@@ -1568,6 +1582,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("model");
 
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("requested_at");
+
+                    b.Property<Guid>("RequestedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requested_by_id");
+
                     b.Property<DateTimeOffset?>("ReviewedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("reviewed_at");
@@ -1576,6 +1598,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("reviewed_by_id");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -1583,12 +1611,21 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_meeting_summaries");
 
+                    b.HasIndex("EditedById")
+                        .HasDatabaseName("ix_meeting_summaries_edited_by_id");
+
                     b.HasIndex("MeetingId")
                         .IsUnique()
                         .HasDatabaseName("ix_meeting_summaries_meeting_id");
 
+                    b.HasIndex("RequestedById")
+                        .HasDatabaseName("ix_meeting_summaries_requested_by_id");
+
                     b.HasIndex("ReviewedById")
                         .HasDatabaseName("ix_meeting_summaries_reviewed_by_id");
+
+                    b.HasIndex("Status", "RequestedAt")
+                        .HasDatabaseName("ix_meeting_summaries_status_requested_at");
 
                     b.ToTable("meeting_summaries", (string)null);
                 });
@@ -3440,6 +3477,12 @@ namespace TrustCabinet.Infrastructure.Migrations
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingSummary", b =>
                 {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "EditedBy")
+                        .WithMany()
+                        .HasForeignKey("EditedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meeting_summaries_users_edited_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithOne("Summary")
                         .HasForeignKey("TrustCabinet.Domain.Entities.MeetingSummary", "MeetingId")
@@ -3447,13 +3490,24 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_meeting_summaries_meetings_meeting_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "RequestedBy")
+                        .WithMany()
+                        .HasForeignKey("RequestedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_meeting_summaries_users_requested_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.User", "ReviewedBy")
                         .WithMany()
                         .HasForeignKey("ReviewedById")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_meeting_summaries_users_reviewed_by_id");
 
+                    b.Navigation("EditedBy");
+
                     b.Navigation("Meeting");
+
+                    b.Navigation("RequestedBy");
 
                     b.Navigation("ReviewedBy");
                 });

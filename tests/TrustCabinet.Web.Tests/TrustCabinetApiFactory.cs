@@ -83,6 +83,16 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
             {
                 services.Remove(transcription);
             }
+
+            // And the AI draft queue (SCRUM-36): tests drive ProcessNextAsync themselves, with a fake language model,
+            // rather than race a run every three seconds that would turn Queued into Ready under their assertions.
+            var summaries = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(SummaryWorker));
+            if (summaries is not null)
+            {
+                services.Remove(summaries);
+            }
         });
     }
 }

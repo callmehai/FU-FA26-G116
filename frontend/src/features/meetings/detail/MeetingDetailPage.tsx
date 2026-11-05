@@ -25,6 +25,7 @@ import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RecorderCard } from '../../recordings/RecorderCard'
+import { MinutesPanel } from '../../minutes/MinutesPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
 import { useRoomRecorder } from '../../recordings/useRoomRecorder'
 import { useRoomRecordings } from '../../recordings/useRoomRecordings'
@@ -61,14 +62,6 @@ type TabId = (typeof TABS)[number]['id']
 
 /** Marks a navigation that only switched the tab (see `setTab`). */
 const TAB_SWITCH = 'tabSwitch'
-
-/** What each tab is waiting on, surfaced in the UI so the backlog is visible while building. */
-const TAB_BLOCKED_ON: Record<
-  Exclude<TabId, 'overview' | 'attendees' | 'agenda' | 'documents' | 'votes' | 'recordings'>,
-  string
-> = {
-  minutes: 'GET /api/meetings/{id}/minutes',
-}
 
 /** The hub event that tells an open page the meeting was ended (SCRUM-69). */
 const MEETING_ENDED = ['meetingEnded'] as const
@@ -150,7 +143,8 @@ function MeetingDetail({
   const running = meeting.status === 'InProgress'
   const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online')
   const room = useRoomRecorder(meeting.id, running, roomRecordings.reload)
-  const recordsRoom = meeting.mode === 'InPerson' && running && meeting.myMeetingRole === 'Secretary'
+  // ADR-0040: an in-person or hybrid meeting has a room, recorded by the Secretary here (as the server's HasRoom).
+  const recordsRoom = meeting.mode !== 'Online' && running && meeting.myMeetingRole === 'Secretary'
   // A take, or one this laptop kept from a closed tab, stays on screen until it is saved, even past the meeting's end.
   const showsRecorder =
     recordsRoom ||
@@ -397,12 +391,7 @@ function MeetingDetail({
               <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
             </div>
           ) : (
-            // Seen by everyone on the test server, so it says what the user can expect, not which
-            // endpoint is missing (that stays in TAB_BLOCKED_ON for the developer).
-            <div className="card card-pending tab-pending" data-blocked-on={TAB_BLOCKED_ON[tab]}>
-              <p>Chưa có biên bản.</p>
-              <p>Chức năng lập và duyệt biên bản đang được làm.</p>
-            </div>
+            <MinutesPanel meeting={meeting} />
           )}
         </section>
 
