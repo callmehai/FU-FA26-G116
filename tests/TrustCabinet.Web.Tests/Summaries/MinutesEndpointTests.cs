@@ -31,7 +31,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         using var secretary = f.Client(s.Secretary);
         var before = await State(secretary, s);
         Assert.Equal(JsonValueKind.Null, before.GetProperty("minutes").ValueKind);
-        Assert.False(before.GetProperty("summaryReviewed").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, before.GetProperty("draftChangedAt").ValueKind);
 
         var minutes = await Create(secretary, s);
         var content = minutes.GetProperty("content").GetString()!;
@@ -45,7 +45,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Contains("**Thành phần tham dự:** 03 người có mặt, gồm:", lines);
         Assert.Contains("**Chủ trì (chủ tọa):** Trần Chủ Trì.", lines);
         Assert.Contains("**Thư ký (người ghi biên bản):** Nguyễn Thư Ký.", lines);
-        // No reviewed AI draft: section II lists the agenda, section III the recorded conclusions and the votes.
+        // No AI draft: section II lists the agenda, section III the recorded conclusions and the votes.
         Assert.Contains($"### 1. {SummaryFixture.FirstItemTitle}", lines);
         Assert.Contains("Lê Thành Viên trình bày. ……", lines);
         Assert.Contains($"### 2. {SummaryFixture.SecondItemTitle}", lines);
@@ -53,6 +53,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Contains($"- {SummaryFixture.VoteLine}", lines);
         Assert.Contains("@@ **Nguyễn Thư Ký** | **Trần Chủ Trì**", lines);
         Assert.Equal("Draft", minutes.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, minutes.GetProperty("builtFromDraftAt").ValueKind);
         Assert.Equal(1, minutes.GetProperty("revisionNumber").GetInt32());
         Assert.Equal(s.Secretary, minutes.GetProperty("createdBy").GetProperty("id").GetGuid());
 
@@ -65,26 +66,46 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
     }
 
     [Fact]
-    public async Task A_reviewed_ai_draft_fills_sections_one_to_three()
+    public async Task The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not()
     {
         f.Model.Reset();
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
+        using var member = f.Client(s.Member);
         await AssertCode(await secretary.PostAsync(s.Summary, null), 202, "MSG384");
         await f.ProcessAll();
-        // Written but not reviewed: the minutes do not take it.
-        var unreviewed = (await Create(secretary, s)).GetProperty("content").GetString()!;
-        Assert.DoesNotContain(SummaryFixture.FakeLanguageModel.Objectives, unreviewed);
 
-        await AssertCode(await secretary.PostAsync(s.Summary + "/review", null), 200, "MSG391");
-        var rebuilt = await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = true }), 201, "MSG395");
-        Assert.True(rebuilt.GetProperty("summaryReviewed").GetBoolean());
-        var lines = rebuilt.GetProperty("minutes").GetProperty("content").GetString()!.Split('\n');
+        // Written, not reviewed: the minutes take it as eCab's Compose does. Both stay the Chair's and the Secretary's.
+        var built = await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = false }), 201, "MSG395");
+        var lines = built.GetProperty("minutes").GetProperty("content").GetString()!.Split('\n');
         Assert.Contains(SummaryFixture.FakeLanguageModel.Objectives, lines);
         Assert.Contains($"### 1. {SummaryFixture.FirstItemTitle}", lines);
         Assert.Contains("### 1. Kết luận của chủ trì", lines);
         Assert.Contains("### 2. Nhiệm vụ, sản phẩm và thời hạn", lines);
         Assert.Contains($"- {SummaryFixture.VoteLine}", lines);
+        // The minutes keep the stamp of the draft they were built from: the same as the draft's own, so not stale.
+        var builtFrom = built.GetProperty("minutes").GetProperty("builtFromDraftAt").GetDateTimeOffset();
+        Assert.Equal(built.GetProperty("draftChangedAt").GetDateTimeOffset(), builtFrom);
+        Assert.Equal(JsonValueKind.Null, (await State(member, s)).GetProperty("draftChangedAt").ValueKind);
+
+        // Saved by hand afterwards, the minutes still come from that same draft.
+        f.Clock.Now = f.Clock.Now.AddMinutes(1);
+        var saved = await AssertCode(await Save(secretary, built.GetProperty("minutes").GetProperty("id").GetGuid(), "Bản tay.",
+            built.GetProperty("minutes").GetProperty("updatedAt").GetString()), 200, "MSG396");
+        Assert.Equal(builtFrom, saved.GetProperty("minutes").GetProperty("builtFromDraftAt").GetDateTimeOffset());
+
+        // The draft edited afterwards has moved on: its stamp differs, and the minutes keep the old text until rebuilt.
+        f.Clock.Now = f.Clock.Now.AddMinutes(5);
+        await AssertCode(await secretary.PutAsJsonAsync(s.Summary,
+            new { objectives = "Mục tiêu sửa sau.", discussion = "1. Báo cáo\nĐã sửa.", conclusions = "1. Kết luận của chủ trì\nĐã sửa." }), 200, "MSG388");
+        var stale = await State(secretary, s);
+        Assert.True(stale.GetProperty("draftChangedAt").GetDateTimeOffset() > builtFrom);
+        Assert.Equal(builtFrom, stale.GetProperty("minutes").GetProperty("builtFromDraftAt").GetDateTimeOffset());
+        Assert.DoesNotContain("Mục tiêu sửa sau.", stale.GetProperty("minutes").GetProperty("content").GetString());
+        var rebuilt = await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = true }), 201, "MSG395");
+        Assert.Contains("Mục tiêu sửa sau.", rebuilt.GetProperty("minutes").GetProperty("content").GetString());
+        Assert.Equal(rebuilt.GetProperty("draftChangedAt").GetDateTimeOffset(),
+            rebuilt.GetProperty("minutes").GetProperty("builtFromDraftAt").GetDateTimeOffset());
     }
 
     [Fact]

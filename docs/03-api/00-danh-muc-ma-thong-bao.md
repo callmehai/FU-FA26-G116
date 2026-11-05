@@ -623,7 +623,7 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG395` | 201 | `POST /api/meetings/{id}/minutes` | Tạo (hoặc tạo lại, `rebuild: true`) bản nháp từ mẫu và dự thảo đã duyệt | `Đã tạo bản nháp biên bản.` | BE |
+| `MSG395` | 201 | `POST /api/meetings/{id}/minutes` | Tạo (hoặc tạo lại, `rebuild: true`) bản nháp từ mẫu và dự thảo hiện có | `Đã tạo bản nháp biên bản.` | BE |
 | `MSG396` | 200 | `PUT /api/minutes/{id}` | Lưu bản nháp | `Đã lưu biên bản.` | BE |
 | `MSG397` | 403 | `POST …/minutes`, `PUT /api/minutes/{id}`, `GET /api/minutes/{id}/export` | Không phải Chủ tọa hay Thư ký (với biên bản đã ban hành; bản nháp thì `404`) | `Chỉ Chủ tọa hoặc Thư ký được soạn biên bản.` | BE |
 | `MSG398` | 409 | `POST …/minutes` | Cuộc họp chưa bắt đầu hoặc đã huỷ | `Chỉ soạn biên bản khi cuộc họp đang diễn ra hoặc đã kết thúc.` | BE |

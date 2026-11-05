@@ -75,11 +75,13 @@ export interface MeetingMinutes {
   /** Sent back on save: the server refuses a save made over someone else's newer one (MSG401). */
   updatedAt: string
   createdBy: SummaryPerson | null
+  /** The `draftChangedAt` of the draft the content was built from; null when built without one. */
+  builtFromDraftAt: string | null
 }
 
 export interface MinutesState {
   minutes: MeetingMinutes | null
   canManage: boolean
-  /** Whether the reviewed AI draft will fill sections I–III. */
-  summaryReviewed: boolean
+  /** When the AI draft that fills sections I–III last changed; null without one, and for anyone but Chair and Secretary. */
+  draftChangedAt: string | null
 }

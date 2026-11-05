@@ -1214,6 +1214,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("approved_by_id");
 
+                    b.Property<DateTimeOffset?>("BuiltFromDraftAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("built_from_draft_at");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(100000)

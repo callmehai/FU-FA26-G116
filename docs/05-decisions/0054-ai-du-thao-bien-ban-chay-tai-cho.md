@@ -37,14 +37,18 @@ nổi model nào. Máy mạnh nhất nhóm có 16 GB RAM và 6 GB VRAM, chỉ ch
    nên code đổi số đọc thành chữ số trước khi gửi ("chín mươi phần trăm" → "90%", `SpokenNumbers.cs`): việc nào code
    làm chắc được thì không giao cho model.
 5. **AI chỉ viết nháp.** Dự thảo luôn gắn nhãn "Nội dung do AI tạo — cần rà soát". Trước khi Chủ toạ hoặc Thư ký bấm
-   Duyệt, chỉ hai người này thấy dự thảo. Sửa sau khi duyệt thì phải duyệt lại. Biên bản chỉ lấy dự thảo đã duyệt; chưa
-   duyệt thì mục I–III để trống ("……") cho Thư ký viết.
+   Duyệt, chỉ hai người này thấy dự thảo. Sửa sau khi duyệt thì phải duyệt lại. Biên bản lấy dự thảo hiện có, đã duyệt
+   hay chưa, như `Compose` của eCab: biên bản nháp cũng chỉ hai người này thấy. Thẻ Biên bản báo khi dự thảo chưa duyệt
+   (nút *Duyệt dự thảo*) và khi dự thảo đã đổi sau lần tạo biên bản (nút *Tạo lại*). Chưa có dự thảo thì vẫn tạo được
+   biên bản, mục I–III để trống ("……") cho Thư ký viết: máy AI là laptop, có lúc tắt. (Sửa 05/11/2026: bản đầu bắt duyệt
+   trước, biên bản ra "……" mà không báo vì sao.)
 6. **Mục III giữ dòng "2. Nhiệm vụ, sản phẩm và thời hạn" như mẫu của eCab.** Đó chỉ là chữ trong biên bản. TrustCabinet
    không theo dõi người được giao, hạn hay tiến độ của nhiệm vụ nào (phạm vi trong README không đổi).
 7. **Biên bản là văn bản thuần có vài dấu đầu dòng** (`##`, `###`, `@@ trái | phải`, `**đậm**`…, xem
    `MinutesContracts.cs`), không phải HTML. Trang web và file Word đều đọc từ đó, nên không có gì trong biên bản chạy
-   được trên trình duyệt. File Word được tự viết (vài phần XML trong một file zip), không thêm thư viện. Cuộc họp Mật
-   không được tải biên bản về, như tài liệu và bản gỡ băng.
+   được trên trình duyệt. File Word được tự viết (vài phần XML trong một file zip), không thêm thư viện. Bản PDF do trình
+   duyệt in tờ biên bản trên trang (khổ A4, lề Nghị định 30) rồi lưu: eCab đổi sang PDF trên server, nhưng việc đó cần
+   LibreOffice trong image và RAM của server 4 GB. Cuộc họp Mật không được tải biên bản về, như tài liệu và bản gỡ băng.
 
 ## Hệ quả
 

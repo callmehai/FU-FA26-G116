@@ -509,6 +509,7 @@ erDiagram
         int RevisionNumber UK
         uuid SupersedesId FK
         string Content
+        timestamptz BuiltFromDraftAt "nullable; dự thảo AI dùng lúc tạo (SCRUM-32)"
         string Status "Draft|PendingSignature|RevisionRequested|Sealed|Superseded"
         uuid CreatedById FK
         string RevisionNote "nullable"

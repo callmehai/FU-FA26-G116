@@ -9,7 +9,7 @@ using TrustCabinet.Domain.Summaries;
 namespace TrustCabinet.Infrastructure.Summaries;
 
 /// <summary>
-/// SCRUM-32 — the Secretary's draft of the minutes: built from the meeting's records and its reviewed AI draft, then
+/// SCRUM-32 — the Secretary's draft of the minutes: built from the meeting's records and its AI draft, then
 /// edited and saved as often as needed. Sending it for approval and issuing it are SCRUM-33; until then a draft is the
 /// Chair's and the Secretary's alone.
 /// </summary>
@@ -46,7 +46,8 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             if (current is not null && current.Status != MinutesStatus.Draft) return new(MinutesFailure.Locked);
             if (current is not null && !rebuild) return new(MinutesFailure.Exists);
 
-            var content = MinutesTemplate.Build(await RecordsAsync(meeting, ct), await ReviewedDraftAsync(meetingId, ct), Hanoi);
+            var (draft, draftAt) = await DraftAsync(meetingId, ct);
+            var content = MinutesTemplate.Build(await RecordsAsync(meeting, ct), draft, Hanoi);
             var now = clock.GetUtcNow();
             if (current is null)
             {
@@ -54,6 +55,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
                 db.MeetingMinutes.Add(current);
             }
             current.Content = content;
+            current.BuiltFromDraftAt = draftAt;
             current.UpdatedAt = now;
             await db.SaveChangesAsync(ct);
             return new(Data: await StateAsync(meeting, actorId, ct));
@@ -136,15 +138,24 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             .OrderByDescending(m => m.RevisionNumber)
             .FirstOrDefaultAsync(ct);
         var visible = row is not null && (manages || row.Status == MinutesStatus.Issued);
-        var reviewed = await db.MeetingSummaries.AnyAsync(s => s.MeetingId == meeting.Id && s.ReviewedAt != null, ct);
+        var draftChangedAt = manages ? (await DraftAsync(meeting.Id, ct)).ChangedAt : null;
         return new(visible ? new MinutesView(row!.Id, row.RevisionNumber, row.Status.ToString(), row.Content, row.CreatedAt,
-            row.UpdatedAt, new(row.CreatedBy.Id, row.CreatedBy.FullName)) : null, manages, reviewed);
+            row.UpdatedAt, new(row.CreatedBy.Id, row.CreatedBy.FullName), manages ? row.BuiltFromDraftAt : null) : null,
+            manages, draftChangedAt);
     }
 
-    private async Task<SummaryDraft?> ReviewedDraftAsync(Guid meetingId, CancellationToken ct)
+    /// <summary>
+    /// The Dự thảo as it stands, reviewed or not: eCab's Compose takes the meeting's outline whatever its state. Both are
+    /// the Chair's and the Secretary's alone until they move on (the draft is reviewed, the minutes issued), so nobody
+    /// reads unreviewed AI text through the minutes. A rerun in progress keeps the last finished draft. ChangedAt is when
+    /// it was last written or edited, the stamp the minutes keep to tell when the draft has moved on.
+    /// </summary>
+    private async Task<(SummaryDraft? Draft, DateTimeOffset? ChangedAt)> DraftAsync(Guid meetingId, CancellationToken ct)
     {
-        var row = await db.MeetingSummaries.AsNoTracking().FirstOrDefaultAsync(s => s.MeetingId == meetingId && s.ReviewedAt != null, ct);
-        return row is null ? null : SummaryService.Read(row);
+        var row = await db.MeetingSummaries.AsNoTracking().FirstOrDefaultAsync(s => s.MeetingId == meetingId, ct);
+        var draft = row is null ? null : SummaryService.Read(row);
+        if (row is null || draft is null) return (null, null);
+        return (draft, row.EditedAt is { } edited && edited > row.GeneratedAt ? edited : row.GeneratedAt);
     }
 
     private async Task<MinutesRecords> RecordsAsync(Meeting meeting, CancellationToken ct)

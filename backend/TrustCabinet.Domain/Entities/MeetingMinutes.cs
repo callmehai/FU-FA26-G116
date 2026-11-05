@@ -24,6 +24,12 @@ public class MeetingMinutes : Entity
 
     public string Content { get; set; } = string.Empty;
 
+    /// <summary>
+    /// When the AI draft (<see cref="MeetingSummary"/>) the content was last built from had last changed; null when it
+    /// was built without one. A draft that changed since is newer than these minutes, whatever was saved by hand after.
+    /// </summary>
+    public DateTimeOffset? BuiltFromDraftAt { get; set; }
+
     public MinutesStatus Status { get; set; } = MinutesStatus.Draft;
 
     public Guid CreatedById { get; set; }
