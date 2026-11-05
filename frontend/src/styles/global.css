@@ -4447,6 +4447,8 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   font-size: 12px; font-weight: 600;
 }
 .minutes-empty { margin: 0; }
+.minutes-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 12px; }
+.minutes-notice .row-actions { flex-wrap: wrap; gap: 8px; white-space: normal; }
 .minutes-running { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--muted-ink); }
 .minutes-readiness { margin-bottom: 12px; }
 .minutes-readiness p + p { margin-top: 4px; }
@@ -4529,8 +4531,9 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .minutes-editor { grid-template-columns: minmax(0, 1fr); }
   .minutes-editor-preview { display: none; }
 }
-@media (max-width: 720px) {
-  .minutes-card-actions { margin-left: 0; }
+@media screen and (max-width: 720px) {
+  /* Word, PDF, Tạo lại and Sửa do not fit one 300px row: they wrap rather than run off the card. */
+  .minutes-card-actions { margin-left: 0; flex-wrap: wrap; white-space: normal; }
   /* The card is already the page on a phone: a second frame inside it took a third of the width. */
   .minutes-paper { padding: 8px 0; border: 0; box-shadow: none; font-size: 15px; }
   .minutes-paper p, .minutes-section { text-indent: 0; }
@@ -4538,4 +4541,14 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .minutes-paper p { text-align: left; }
   .minutes-frame { font-size: 12px; }
   .minutes-frame td { padding: 0 2px; }
+}
+/* Tải PDF: the browser prints this copy of the paper alone, on A4 with Decree 30's margins, and saves it as PDF. */
+.minutes-print { display: none; }
+@media print {
+  @page { size: A4; margin: 20mm 15mm 20mm 30mm; }
+  body.printing-minutes { background: var(--surface); }
+  body.printing-minutes > :not(.minutes-print) { display: none !important; }
+  .minutes-print { display: block; }
+  .minutes-print .minutes-paper { max-width: none; margin: 0; padding: 0; border: 0; box-shadow: none; font-size: 13pt; }
+  .minutes-print .minutes-frame { font-size: 12pt; }
 }

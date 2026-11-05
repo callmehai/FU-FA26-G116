@@ -15,14 +15,19 @@ namespace TrustCabinet.Domain.Summaries;
 /// </summary>
 public sealed record MinutesPerson(Guid Id, string FullName);
 
+/// <summary>
+/// <see cref="BuiltFromDraftAt"/>: the <see cref="MinutesState.DraftChangedAt"/> of the draft the content was last built
+/// from, null when built without one. When the two differ, the draft has moved on since and the minutes do not show it.
+/// </summary>
 public sealed record MinutesView(Guid Id, int RevisionNumber, string Status, string Content, DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt, MinutesPerson? CreatedBy);
+    DateTimeOffset UpdatedAt, MinutesPerson? CreatedBy, DateTimeOffset? BuiltFromDraftAt);
 
 /// <summary>
 /// What the caller sees. A draft is the Chair's and the Secretary's until it is issued (SCRUM-33); everyone else gets
-/// null. <see cref="SummaryReviewed"/> says whether the reviewed AI draft can fill sections I–III.
+/// null. <see cref="DraftChangedAt"/> is when the AI draft that fills sections I–III last changed (written or edited),
+/// null when the meeting has none, and for anyone but the Chair and the Secretary.
 /// </summary>
-public sealed record MinutesState(MinutesView? Minutes, bool CanManage, bool SummaryReviewed);
+public sealed record MinutesState(MinutesView? Minutes, bool CanManage, DateTimeOffset? DraftChangedAt);
 
 public enum MinutesFailure
 {

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   createMinutes,
   editSummary,
@@ -27,8 +28,8 @@ type Load<T> = { kind: 'loading' } | { kind: 'error'; message: string } | { kind
 /**
  * The "Biên bản" tab (SCRUM-36, SCRUM-32), laid out as AI-eCabinet's MinutesPanel: the AI's Dự thảo first — asked
  * for, read, corrected and reviewed by the Chair or the Secretary — then the minutes built from the one fixed template
- * (Decree 30's Mẫu 1.4) with the reviewed Dự thảo in sections I–III. Writing a draft takes minutes on a laptop, so the
- * card polls while it waits.
+ * (Decree 30's Mẫu 1.4) with the Dự thảo as it stands in sections I–III, as eCab composes them. Writing a draft takes
+ * minutes on a laptop, so the card polls while it waits.
  */
 export function MinutesPanel({ meeting }: { meeting: Meeting }) {
   const [summary, setSummary] = useState<Load<SummaryState>>({ kind: 'loading' })
@@ -55,6 +56,16 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
     void loadMinutes()
   }, [loadSummary, loadMinutes])
 
+  // The minutes card says when the draft is newer than the minutes: ask again whenever the draft is written or saved.
+  const draftStamp =
+    summary.kind === 'ready' ? `${summary.data.summary?.generatedAt ?? ''}|${summary.data.summary?.editedAt ?? ''}` : null
+  const seenStamp = useRef<string | null>(null)
+  useEffect(() => {
+    if (draftStamp === null) return
+    if (seenStamp.current !== null && seenStamp.current !== draftStamp) void loadMinutes()
+    seenStamp.current = draftStamp
+  }, [draftStamp, loadMinutes])
+
   // Poll while the AI writes, as eCab's pipeline chip does (every 5 s until the job is done).
   const waiting = summary.kind === 'ready' && ['Queued', 'Running'].includes(summary.data.summary?.status ?? '')
   useEffect(() => {
@@ -69,6 +80,7 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
       <MinutesCard
         meeting={meeting}
         state={minutes}
+        source={draftSource(summary)}
         onChanged={setMinutes}
         onRetry={() => void loadMinutes()}
       />
@@ -172,6 +184,7 @@ function SummaryCard({
           <div className="row-actions minutes-card-actions">
             {draft && !running && !summary?.reviewedAt && (
               <button
+                id="summary-review"
                 type="button"
                 className="btn btn-primary btn-sm"
                 disabled={busy || dirty}
@@ -184,6 +197,7 @@ function SummaryCard({
             )}
             {canAsk && !running && (
               <button
+                id="summary-ask"
                 type="button"
                 className={draft ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm'}
                 disabled={busy || dirty || !aiReady}
@@ -292,19 +306,63 @@ function ReadinessNote({ readiness }: { readiness: SummaryReadiness }) {
   )
 }
 
+/** Where sections I–III of the minutes come from: the Dự thảo card above, as it stands. Null while it loads. */
+type DraftSource = 'none' | 'running' | 'unreviewed' | 'reviewed' | null
+
+function draftSource(summary: Load<SummaryState>): DraftSource {
+  if (summary.kind !== 'ready') return null
+  const s = summary.data.summary
+  if (s?.status === 'Queued' || s?.status === 'Running') return 'running'
+  if (!s?.draft) return 'none'
+  return s.reviewedAt ? 'reviewed' : 'unreviewed'
+}
+
+/**
+ * Takes the reader to a button of the Dự thảo card, pinging it a few seconds as the page's calls to act do: the draft
+ * is read there before it is reviewed, so the minutes card does not review it blind.
+ */
+function goTo(id: string) {
+  const target = document.getElementById(id)
+  if (!target) return
+  target.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  target.focus({ preventScroll: true })
+  target.classList.add('btn-ping')
+  window.setTimeout(() => target.classList.remove('btn-ping'), 4000)
+}
+
 function MinutesCard({
   meeting,
   state,
+  source,
   onChanged,
   onRetry,
 }: {
   meeting: Meeting
   state: Load<MinutesState>
+  source: DraftSource
   onChanged: (state: Load<MinutesState>) => void
   onRetry: () => void
 }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
+  const [printing, setPrinting] = useState(false)
+
+  // "Tải PDF": the browser prints a copy of the paper alone, and its print dialog saves it as PDF. The page title becomes
+  // the file name the dialog offers.
+  useEffect(() => {
+    if (!printing) return
+    const title = document.title
+    document.title = `Biên bản - ${meeting.title}`
+    document.body.classList.add('printing-minutes')
+    const done = () => setPrinting(false)
+    window.addEventListener('afterprint', done)
+    window.print()
+    return () => {
+      window.removeEventListener('afterprint', done)
+      document.body.classList.remove('printing-minutes')
+      document.title = title
+    }
+  }, [printing, meeting.title])
   const [confirming, setConfirming] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
 
@@ -322,8 +380,11 @@ function MinutesCard({
       </section>
     )
 
-  const { minutes, canManage, summaryReviewed } = state.data
+  const { minutes, canManage, draftChangedAt } = state.data
   const canBuild = canManage && (meeting.status === 'InProgress' || meeting.status === 'Ended') && (!minutes || minutes.status === 'Draft')
+  // The draft has moved on since the minutes were built (or they were built before there was one).
+  const stale =
+    !!minutes && !!draftChangedAt && (!minutes.builtFromDraftAt || Date.parse(draftChangedAt) !== Date.parse(minutes.builtFromDraftAt))
 
   const build = async (rebuild: boolean) => {
     setBusy(true)
@@ -383,6 +444,12 @@ function MinutesCard({
                 Tải Word
               </button>
             )}
+            {minutes && meeting.sensitivity !== 'Secret' && (
+              <button type="button" className="btn btn-outline btn-sm" disabled={busy || printing} onClick={() => setPrinting(true)}>
+                <Icon name="fileText" size={16} />
+                Tải PDF
+              </button>
+            )}
             {minutes && canBuild && (
               <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setConfirming(true)}>
                 <Icon name="refresh" size={16} />
@@ -408,14 +475,62 @@ function MinutesCard({
       {!minutes && (
         <p className="field-hint minutes-empty">
           {canBuild
-            ? summaryReviewed
-              ? 'Bản nháp điền sẵn thông tin cuộc họp và dự thảo đã duyệt vào mẫu biên bản.'
-              : 'Dự thảo chưa được duyệt: bản nháp chỉ điền thông tin cuộc họp, mục I–III để trống (……) cho thư ký viết.'
+            ? 'Bản nháp điền sẵn thông tin cuộc họp và dự thảo vào mẫu biên bản.'
             : 'Chưa có biên bản.'}
         </p>
       )}
 
+      {canBuild && draft === null && source === 'none' && (
+        <div className="alert alert-info minutes-notice" role="status">
+          <span>Chưa có dự thảo AI nên mục I–III để trống.</span>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => goTo('summary-ask')}>
+            <Icon name="sparkles" size={16} />
+            Tạo dự thảo
+          </button>
+        </div>
+      )}
+      {canBuild && draft === null && source === 'running' && (
+        <div className="alert alert-info minutes-notice" role="status">
+          <span>{minutes ? 'AI đang viết dự thảo. Xong thì bấm Tạo lại để điền mục I–III.' : 'AI đang viết dự thảo. Đợi xong rồi tạo biên bản để có mục I–III.'}</span>
+        </div>
+      )}
+      {canBuild && draft === null && (source === 'unreviewed' || (source === 'reviewed' && stale)) && (
+        <div className={source === 'unreviewed' ? 'alert alert-warning minutes-notice' : 'alert alert-info minutes-notice'} role="status">
+          <span>
+            {!minutes
+              ? 'Dự thảo AI chưa duyệt: biên bản sẽ dùng nội dung chưa rà soát.'
+              : !stale
+                ? 'Biên bản đang dùng dự thảo AI chưa duyệt.'
+                : source === 'unreviewed'
+                  ? 'Biên bản chưa có dự thảo mới nhất, dự thảo cũng chưa duyệt.'
+                  : 'Biên bản chưa có dự thảo mới nhất.'}
+          </span>
+          <span className="row-actions">
+            {source === 'unreviewed' && (
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => goTo('summary-review')}>
+                <Icon name="checkCircle" size={16} />
+                Duyệt dự thảo
+              </button>
+            )}
+            {minutes && stale && (
+              <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setConfirming(true)}>
+                <Icon name="refresh" size={16} />
+                Tạo lại
+              </button>
+            )}
+          </span>
+        </div>
+      )}
+
       {minutes && draft === null && <MinutesPaper content={minutes.content} />}
+      {printing &&
+        minutes &&
+        createPortal(
+          <div className="minutes-print">
+            <MinutesPaper content={minutes.content} />
+          </div>,
+          document.body,
+        )}
 
       {minutes && draft !== null && (
         <form
@@ -459,7 +574,7 @@ function MinutesCard({
           onConfirm={() => build(true)}
           onClose={() => setConfirming(false)}
         >
-          Bản nháp mới điền lại từ mẫu và dự thảo đã duyệt. Mọi chỗ đã sửa trong bản nháp hiện tại sẽ mất.
+          Bản nháp mới điền lại từ mẫu và dự thảo hiện tại. Mọi chỗ đã sửa trong bản nháp biên bản sẽ mất.
         </ConfirmDialog>
       )}
     </section>

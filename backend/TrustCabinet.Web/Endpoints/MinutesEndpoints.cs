@@ -72,9 +72,9 @@ public static class MinutesEndpoints
         return successCode switch
         {
             null => Results.Ok(state),
-            Msg395Created => Results.Json(new { code = Msg395Created, message = "Đã tạo bản nháp biên bản.", state.Minutes, state.CanManage, state.SummaryReviewed },
+            Msg395Created => Results.Json(new { code = Msg395Created, message = "Đã tạo bản nháp biên bản.", state.Minutes, state.CanManage, state.DraftChangedAt },
                 statusCode: StatusCodes.Status201Created),
-            _ => Results.Ok(new { code = successCode, message = "Đã lưu biên bản.", state.Minutes, state.CanManage, state.SummaryReviewed }),
+            _ => Results.Ok(new { code = successCode, message = "Đã lưu biên bản.", state.Minutes, state.CanManage, state.DraftChangedAt }),
         };
     }
 

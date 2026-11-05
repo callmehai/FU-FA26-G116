@@ -3,7 +3,8 @@
 Theo [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md): làm như AI-eCabinet, gồm hai bước.
 
 1. **Dự thảo:** AI viết 3 mục của biên bản. Chủ tọa hoặc Thư ký sửa rồi duyệt.
-2. **Bản nháp biên bản:** điền mẫu Biên bản (Nghị định 30, Mẫu 1.4) từ hồ sơ cuộc họp, cộng với dự thảo đã duyệt.
+2. **Bản nháp biên bản:** điền mẫu Biên bản (Nghị định 30, Mẫu 1.4) từ hồ sơ cuộc họp, cộng với dự thảo hiện có, đã duyệt
+   hay chưa (như `Compose` của eCab).
 
 Mã thông báo: `MSG384`–`MSG405` ([danh mục](00-danh-muc-ma-thong-bao.md)). Kiểu dữ liệu FE:
 [`frontend/src/types/summary.ts`](../../frontend/src/types/summary.ts).
@@ -12,7 +13,7 @@ Mã thông báo: `MSG384`–`MSG405` ([danh mục](00-danh-muc-ma-thong-bao.md))
 
 | Ai | Dự thảo | Bản nháp biên bản |
 |---|---|---|
-| Chủ tọa, Thư ký hiện tại | Xem, tạo, tạo lại, sửa, duyệt | Xem, tạo, tạo lại, sửa, tải Word |
+| Chủ tọa, Thư ký hiện tại | Xem, tạo, tạo lại, sửa, duyệt | Xem, tạo, tạo lại, sửa, tải Word, in PDF |
 | Người khác đọc được cuộc họp | Chỉ xem, và chỉ sau khi đã duyệt (`summary: null` trước đó) | Chỉ xem, và chỉ khi đã ban hành (SCRUM-33, chưa làm) |
 | Không đọc được cuộc họp | `404` | `404` |
 
@@ -66,16 +67,24 @@ Mã thông báo: `MSG384`–`MSG405` ([danh mục](00-danh-muc-ma-thong-bao.md))
 
 | Method | Đường dẫn | Kết quả |
 |---|---|---|
-| `GET` | `/api/meetings/{id}/minutes` | `200` `{ minutes, canManage, summaryReviewed }` |
+| `GET` | `/api/meetings/{id}/minutes` | `200` `{ minutes, canManage, draftChangedAt }` |
 | `POST` | `/api/meetings/{id}/minutes` | `201` `MSG395`. Body `{ rebuild: false }`; đã có bản nháp thì `409` `MSG399`, gửi `rebuild: true` để thay |
 | `PUT` | `/api/minutes/{minutesId}` | `200` `MSG396`. Body `{ content, updatedAt }` |
 | `GET` | `/api/minutes/{minutesId}/export` | `200` file `Biên bản - <tên cuộc họp>.docx` |
 
-- **`minutes`:** `{ id, revisionNumber, status, content, createdAt, updatedAt, createdBy }`, hoặc `null`.
+- **`minutes`:** `{ id, revisionNumber, status, content, createdAt, updatedAt, createdBy, builtFromDraftAt }`, hoặc `null`.
 - **`updatedAt`:** chính là giá trị server trả về lần đọc trước. Nếu đã có người lưu sau lần đó, server trả `409`
   `MSG401`, không ghi đè.
-- **`summaryReviewed`:** cho biết dự thảo đã duyệt chưa. Đã duyệt thì mục I–III được điền từ dự thảo; chưa duyệt thì
-  mục II liệt kê chương trình, mục III ghi kết luận Chủ toạ đã ghi và kết quả biểu quyết, còn lại để "……".
+- **Mục I–III:** lấy từ dự thảo hiện có, kể cả khi chưa duyệt. Biên bản nháp cũng chỉ Chủ tọa và Thư ký xem, nên không
+  ai đọc được chữ AI chưa duyệt qua biên bản. Chưa có dự thảo (ví dụ máy AI tắt) thì mục II liệt kê chương trình, mục III
+  ghi kết luận Chủ toạ đã ghi và kết quả biểu quyết, còn lại để "……".
+- **`draftChangedAt`:** lúc dự thảo được viết hoặc sửa lần cuối; `null` khi chưa có dự thảo, và với mọi người trừ Chủ tọa,
+  Thư ký.
+- **`builtFromDraftAt`:** `draftChangedAt` của dự thảo dùng lúc tạo (hoặc tạo lại) biên bản; `null` khi tạo lúc chưa có
+  dự thảo. Hai giá trị khác nhau nghĩa là dự thảo đã đổi sau đó: màn hình báo và mời bấm *Tạo lại*. Lưu tay biên bản không
+  đổi giá trị này. Chỉ Chủ tọa, Thư ký thấy.
+- **In PDF:** không có endpoint. Nút *Tải PDF* in tờ biên bản trên trang (khổ A4, lề theo Nghị định 30), hộp in của trình
+  duyệt lưu thành PDF. Cuộc họp Mật không có nút này, như *Tải Word*.
 - **Lỗi:**
   - `409` `MSG400` khi biên bản đã gửi duyệt hoặc ban hành.
   - `400` `MSG402` khi nội dung trống hoặc quá 100.000 ký tự.
