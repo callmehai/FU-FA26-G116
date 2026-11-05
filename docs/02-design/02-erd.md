@@ -508,7 +508,7 @@ erDiagram
         uuid MeetingId FK
         int RevisionNumber UK
         uuid SupersedesId FK
-        string Content
+        string Content "HTML đã lọc, tối đa 300000 ký tự (ADR-0055)"
         timestamptz BuiltFromDraftAt "nullable; dự thảo AI dùng lúc tạo (SCRUM-32)"
         string Status "Draft|PendingSignature|RevisionRequested|Sealed|Superseded"
         uuid CreatedById FK

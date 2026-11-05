@@ -1,6 +1,6 @@
 # ADR-0054: Dự thảo và biên bản theo AI-eCabinet, AI chạy tại chỗ qua API chuẩn OpenAI
 
-- **Trạng thái:** Đề xuất — PO (Hải) 04/11/2026
+- **Trạng thái:** Đề xuất — PO (Hải) 04/11/2026; điểm 7 và phần trình soạn ở mục Hệ quả (biên bản là văn bản thuần) thay thế bởi [ADR-0055](0055-bien-ban-luu-html-soan-nhu-word.md)
 - **Ngày:** 2026-11-04
 - **Người quyết định:** Hải (PO)
 - **Liên quan:** SCRUM-36 (tóm tắt AI), SCRUM-32 (sinh biên bản), SCRUM-33 (duyệt, ban hành — chưa làm);

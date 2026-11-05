@@ -1220,8 +1220,8 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(100000)
-                        .HasColumnType("character varying(100000)")
+                        .HasMaxLength(300000)
+                        .HasColumnType("character varying(300000)")
                         .HasColumnName("content");
 
                     b.Property<DateTimeOffset>("CreatedAt")

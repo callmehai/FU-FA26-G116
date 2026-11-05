@@ -4505,67 +4505,131 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 }
 .minutes-meta { margin: 12px 0 0; }
 .minutes-form-actions { justify-content: flex-end; }
-.minutes-editor { display: grid; gap: 12px; }
-/* The Word-like editor (SCRUM-32): a toolbar pinned over the sheet, the sheet set exactly as the paper below prints. */
+.minutes-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+/* The Word-like editor (SCRUM-32, ADR-0055): a ribbon pinned over the sheet, the sheet set exactly as the paper below. */
 .minutes-editor-frame { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
 .minutes-toolbar {
-  position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 2px;
+  /* -20px: the page scroller's top padding (.content), so the ribbon meets the top edge and no text shows above it. */
+  position: sticky; top: -20px; z-index: 2; display: flex; align-items: flex-start; gap: 4px 8px;
   padding: 6px 8px; border-bottom: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; background: var(--surface);
 }
-.minutes-toolbar-sep { width: 1px; height: 20px; margin: 0 6px; background: var(--line); }
-.minutes-toolbar-style { width: 180px; }
+.minutes-toolbar-tools { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 4px 2px; min-width: 0; }
+.minutes-toolbar-group { display: flex; align-items: center; gap: 2px; }
+.minutes-toolbar-sep { flex: none; width: 1px; height: 20px; margin: 0 4px; background: var(--line); }
+.minutes-toolbar-block { width: 150px; }
+.minutes-toolbar-size { width: 68px; }
+.minutes-toolbar-actions { flex: none; gap: 8px; }
 .icon-button.is-pressed { background: var(--brand-wash); color: var(--brand); }
-.minutes-toolbar-tools, .minutes-toolbar-tail { display: flex; align-items: center; gap: 2px; }
-.minutes-toolbar-tail { flex: 1; min-width: 0; }
-.minutes-toolbar-actions { gap: 8px; margin-left: auto; padding-left: 8px; }
+/* A menu button: its glyph, the colour it applies as a bar under it (as Word draws them), and a caret. */
+.tool-menu { position: relative; display: flex; }
+.icon-button.tool-menu-trigger { width: auto; gap: 1px; padding: 0 4px 0 6px; }
+.tool-menu-glyph { position: relative; display: inline-flex; flex-direction: column; align-items: center; }
+.tool-swatch { width: 16px; height: 3px; margin-top: -1px; border-radius: 1px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15); }
+.tool-menu-panel { max-height: none; padding: 6px; }
+.tool-list { display: grid; min-width: 220px; }
+.tool-list-item { width: 100%; gap: 10px; min-height: 34px; border: 0; background: transparent; color: inherit; font: inherit; font-size: 14px; text-align: left; }
+.tool-list-item:is(:hover, :focus-visible):not(:disabled) { outline: none; background: var(--brand-wash); }
+.tool-list-item:disabled { color: var(--faint-ink); cursor: not-allowed; }
+.tool-list-item.is-separated { margin-top: 5px; box-shadow: 0 -5px 0 -4px var(--line); }
+.tool-list-lead { display: inline-flex; width: 16px; justify-content: center; color: var(--muted-ink); }
+.tool-list-check { margin-left: auto; color: var(--brand); }
+.tool-grid { display: grid; grid-template-columns: repeat(5, 32px); gap: 4px; padding: 4px 2px 2px; }
+.tool-symbols { grid-template-columns: repeat(6, 36px); font-family: 'Times New Roman', Times, serif; font-size: 18px; }
+.tool-cell {
+  display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0;
+  border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); font: inherit; cursor: pointer;
+}
+.tool-symbols .tool-cell { height: 36px; }
+.tool-cell:is(:hover, :focus-visible) { outline: none; border-color: var(--line); background: var(--surface-alt); }
+.tool-cell.is-current { border-color: var(--brand); }
+.tool-swatch-chip { width: 20px; height: 20px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15); }
+.tool-swatch-chip.is-none { position: relative; overflow: hidden; background: var(--surface); }
+/* "No colour" is a white chip struck through, as Word draws it. */
+.tool-swatch-chip.is-none::after { content: ''; position: absolute; top: 50%; left: -3px; right: -3px; height: 2px; margin-top: -1px; background: var(--danger); transform: rotate(-45deg); }
+.tool-swatches { display: grid; gap: 2px; }
+.tool-table { display: grid; gap: 6px; padding: 2px; }
+.tool-table-grid { display: grid; gap: 3px; }
+.tool-table-cell { width: 20px; height: 20px; padding: 0; border: 1px solid var(--control-line); border-radius: 2px; background: var(--surface); cursor: pointer; }
+.tool-table-cell.is-lit { border-color: var(--brand); background: var(--brand-wash); }
+.tool-table-size { margin: 0; color: var(--muted-ink); font-size: 13px; text-align: center; }
+/* Find and replace sits under the ribbon, out of the sheet's way. */
+.minutes-find { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 6px 8px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.minutes-find-row { display: flex; align-items: center; gap: 2px; }
+.minutes-find-field { width: 200px; height: 34px; margin-right: 4px; }
+.minutes-find-count { min-width: 72px; color: var(--muted-ink); font-size: 13px; }
+.minutes-doc .find-match { background: var(--chip-amber-bg); }
+.minutes-doc .find-match.is-current { background: var(--warning-fill); }
 /* The sheet on a grey desk, as in Word: the caret shows where one types, so the sheet takes no focus ring. */
 .minutes-editor-canvas { padding: 24px; border-radius: 0 0 var(--radius) var(--radius); background: var(--surface-alt); }
-.minutes-editor-canvas .tiptap { min-height: 480px; border-color: transparent; outline: none; }
-.minutes-editor-doc h1 { margin: 20px 0 4px; font-size: 19px; font-weight: 700; text-align: center; }
-.minutes-editor-doc h2 { margin: 12px 0 6px; font-size: inherit; font-weight: 700; text-indent: 12.7mm; }
-.minutes-editor-doc h3 { margin: 0 0 6px; font-size: inherit; font-weight: 700; text-indent: 12.7mm; }
-.minutes-editor-doc .minutes-frame td p { margin: 0; text-align: center; text-indent: 0; }
-.minutes-editor-doc .minutes-frame td { border: 1px dashed var(--line); }
+.minutes-editor-canvas .tiptap { min-height: 480px; outline: none; }
+.minutes-editor-doc p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; color: var(--faint-ink); pointer-events: none; }
+/* Lines a borderless table hides on paper are dashed while editing, so its cells can be found. */
+.minutes-editor-doc table[data-layout='frame'] :is(td, th) { outline: 1px dashed var(--line); outline-offset: -1px; }
+.minutes-editor-doc .selectedCell { background: var(--brand-wash); }
+.minutes-editor-doc .tableWrapper { overflow-x: auto; }
+.minutes-editor-doc .column-resize-handle { position: absolute; top: 0; right: -2px; bottom: -1px; width: 4px; background: var(--brand); pointer-events: none; }
+.minutes-editor-doc.resize-cursor { cursor: col-resize; }
+.minutes-editor-doc .ProseMirror-selectednode { outline: 2px solid var(--brand); outline-offset: 2px; }
 .menu-button { position: relative; }
 .menu-button-menu { position: absolute; top: calc(100% + 4px); left: 0; min-width: 100%; }
 .menu-button-option { width: 100%; gap: 10px; min-height: 36px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
 .menu-button-option:is(:hover, :focus-visible) { outline: none; background: var(--brand-wash); }
-/* The minutes as the printed page (Decree 30): Times New Roman, justified, the first line indented 12.7 mm. */
+/* The minutes as the printed page (Decree 30/2020): Times New Roman 13 pt, body paragraphs justified with the first
+   line indented 12.7 mm. The Word file and the PDF draw the same defaults (MinutesDocx.cs, MinutesPdf.cs); a style
+   on an element (an alignment, an indent, a size the writer chose) overrides them. */
 .minutes-paper {
-  max-width: 794px; margin: 0 auto; padding: 56px 60px 56px 84px; border: 1px solid var(--line);
-  background: var(--surface); box-shadow: var(--shadow-sm); color: var(--ink);
-  font-family: 'Times New Roman', Times, serif; font-size: 17px; line-height: 1.5; overflow-wrap: anywhere;
+  /* A4 with Decree 30's margins (30 mm left, 15 mm right), so a line breaks where it does on paper; on a narrower
+     desk the margins give way first and the 165 mm of text keeps its width as long as it can. */
+  width: 100%; max-width: 210mm; margin: 0 auto; border: 1px solid var(--line);
+  padding: 20mm max(12px, min(15mm, calc((100% - 165mm) / 3))) 20mm max(12px, min(30mm, calc((100% - 165mm) * 2 / 3)));
+  background: var(--surface); box-shadow: var(--shadow-sm); color: #000;
+  font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.38; overflow-wrap: anywhere;
 }
-.minutes-paper p { margin: 0 0 6px; text-align: justify; text-indent: 12.7mm; }
-.minutes-paper .minutes-center { text-align: center; text-indent: 0; margin-bottom: 14px; }
-.minutes-paper .minutes-sub { font-weight: 700; }
-.minutes-paper .minutes-small { margin: 0; font-size: 15px; text-align: left; text-indent: 0; }
-.minutes-title { margin: 20px 0 4px; font-size: 19px; font-weight: 700; text-align: center; }
-.minutes-section { margin: 12px 0 6px; font-size: inherit; font-weight: 700; text-indent: 12.7mm; }
+.minutes-doc p { margin: 0 0 3pt; text-align: justify; text-indent: 12.7mm; }
+.minutes-doc h1 { margin: 12pt 0 3pt; font-size: 1.077em; font-weight: 700; text-align: center; }
+.minutes-doc h2 { margin: 6pt 0 3pt; font-size: 1em; font-weight: 700; text-align: justify; text-indent: 12.7mm; }
+.minutes-doc h3 { margin: 0 0 3pt; font-size: 1em; font-weight: 700; text-align: justify; text-indent: 12.7mm; }
+.minutes-doc :is(h1, h2, h3):first-child { margin-top: 0; }
+.minutes-doc :is(td, th, li) p { margin: 0; text-align: left; text-indent: 0; }
+.minutes-doc :is(ul, ol) { margin: 0 0 3pt; padding-left: 6mm; }
+.minutes-doc li { padding-left: 0; }
+.minutes-doc table { width: 100%; margin: 3pt 0 6pt; border-collapse: collapse; table-layout: fixed; }
+.minutes-doc :is(td, th) { position: relative; padding: 0 1.9mm; border: 0.5pt solid #000; vertical-align: top; }
+.minutes-doc th { font-weight: 700; }
+.minutes-doc th p { text-align: center; }
+.minutes-doc table[data-layout='frame'] :is(td, th) { border: 0; }
 /* 13 pt in the Word file; one size down on screen so the national motto keeps to one line, as on paper. */
-.minutes-frame { width: 100%; margin: 4px 0 8px; border-collapse: collapse; font-size: 15px; }
-.minutes-frame td { padding: 0 4px; text-align: center; vertical-align: top; }
-.minutes-frame td:first-child { width: 40%; }
-.minutes-frame td:empty::after { content: '\00a0'; }
+.minutes-doc table[data-layout='frame'] { font-size: 15px; }
+.minutes-doc hr { height: 0; margin: 6pt 0; border: 0; border-top: 0.5pt solid #000; }
+/* A page break shows where the next sheet starts; on paper it is no line at all. */
+.minutes-doc hr[data-page-break] { position: relative; margin: 14pt 0; border-top: 1px dashed var(--control-line); overflow: visible; }
+.minutes-doc hr[data-page-break]::after {
+  content: 'Ngắt trang'; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); padding: 0 8px;
+  background: var(--surface); color: var(--muted-ink); font-family: "Be Vietnam Pro", system-ui, sans-serif; font-size: 12px; line-height: 16px;
+}
 @media screen and (max-width: 720px) {
   /* Tải xuống, Tạo lại and Sửa do not fit one 300px row: they wrap rather than run off the card. */
   .minutes-card-actions { margin-left: 0; flex-wrap: wrap; white-space: normal; }
   /* The card is already the page on a phone: a second frame inside it took a third of the width. */
   .minutes-paper { padding: 8px 0; border: 0; box-shadow: none; font-size: 15px; }
-  .minutes-paper p, .minutes-section { text-indent: 0; }
+  .minutes-doc :is(p, h2, h3) { text-indent: 0; }
   /* Justified text on a 280px column opens gaps wider than the words. */
-  .minutes-paper p { text-align: left; }
-  .minutes-frame { font-size: 12px; }
-  .minutes-frame td { padding: 0 2px; }
-  /* On a phone the buttons take one row and the style menu the next, full width; the separators go. */
-  .minutes-toolbar { flex-wrap: wrap; gap: 4px 0; padding: 4px; }
-  .minutes-toolbar-sep { display: none; }
-  .minutes-toolbar-tools, .minutes-toolbar-tail { flex: 1 1 100%; min-width: 0; }
-  .minutes-toolbar-tools { flex-wrap: wrap; }
+  .minutes-doc p { text-align: left; }
+  .minutes-doc table[data-layout='frame'] { font-size: 12px; }
+  .minutes-doc :is(td, th) { padding: 0 2px; }
+  /* On a phone the ribbon is one row that scrolls sideways, as Word's does, with Huỷ / Lưu on the row under it. */
+  .minutes-toolbar { flex-direction: column; align-items: stretch; gap: 4px; padding: 4px; }
+  .minutes-toolbar-tools { flex: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .minutes-toolbar-tools::-webkit-scrollbar { display: none; }
+  .minutes-toolbar-group { flex: none; }
   .minutes-toolbar .icon-button-sm { width: 40px; height: 40px; }
-  .minutes-toolbar-style { flex: 1 1 0; width: auto; min-width: 0; }
+  .minutes-toolbar .icon-button.tool-menu-trigger { width: auto; }
+  .minutes-toolbar-block { width: 140px; }
+  .minutes-toolbar-size { width: 72px; }
+  .minutes-toolbar-actions { justify-content: flex-end; }
+  .minutes-find { padding: 4px; }
+  .minutes-find-row { flex: 1 1 100%; }
+  .minutes-find-field { flex: 1; width: auto; min-width: 0; height: 40px; }
   .minutes-editor-canvas { padding: 8px; }
   .minutes-editor-frame .tiptap { padding: 12px; min-height: 360px; }
-  .minutes-toolbar-actions { flex: none; gap: 4px; padding-left: 4px; }
-  .minutes-editor-doc h2, .minutes-editor-doc h3 { text-indent: 0; }
 }

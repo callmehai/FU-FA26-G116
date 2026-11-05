@@ -357,7 +357,7 @@ function MinutesCard({
   // The text being edited and the version it was opened on. The card reloads while it is open (the AI draft finishing,
   // the draft saved), so the save must send the version the editing started from, or it would quietly go over a save
   // made in between. null base: the save after a conflict, meant to go over the newer one.
-  const [draft, setDraft] = useState<{ text: string; base: string | null } | null>(null)
+  const [draft, setDraft] = useState<{ text: string; base: string | null; hasText: boolean } | null>(null)
 
   if (state.kind === 'loading') return <section className="card minutes-card" aria-busy="true"><div className="skeleton minutes-skeleton" /></section>
   if (state.kind === 'error')
@@ -456,7 +456,7 @@ function MinutesCard({
               </button>
             )}
             {minutes && canBuild && (
-              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDraft({ text: minutes.content, base: minutes.updatedAt })}>
+              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDraft({ text: minutes.content, base: minutes.updatedAt, hasText: true })}>
                 <Icon name="pencil" size={16} />
                 Sửa
               </button>
@@ -534,13 +534,13 @@ function MinutesCard({
           <Suspense fallback={<div className="skeleton minutes-skeleton" />}>
             <MinutesEditor
               content={draft.text}
-              onChange={(text) => setDraft((d) => d && { ...d, text })}
+              onChange={(text, hasText) => setDraft((d) => d && { ...d, text, hasText })}
               actions={
                 <>
                   <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setDraft(null)}>
                     Huỷ
                   </button>
-                  <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !draft.text.trim()}>
+                  <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !draft.hasText}>
                     {busy ? 'Đang lưu…' : 'Lưu'}
                   </button>
                 </>
