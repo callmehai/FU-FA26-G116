@@ -46,9 +46,10 @@ nổi model nào. Máy mạnh nhất nhóm có 16 GB RAM và 6 GB VRAM, chỉ ch
    không theo dõi người được giao, hạn hay tiến độ của nhiệm vụ nào (phạm vi trong README không đổi).
 7. **Biên bản là văn bản thuần có vài dấu đầu dòng** (`##`, `###`, `@@ trái | phải`, `**đậm**`…, xem
    `MinutesContracts.cs`), không phải HTML. Trang web và file Word đều đọc từ đó, nên không có gì trong biên bản chạy
-   được trên trình duyệt. File Word được tự viết (vài phần XML trong một file zip), không thêm thư viện. Bản PDF do trình
-   duyệt in tờ biên bản trên trang (khổ A4, lề Nghị định 30) rồi lưu: eCab đổi sang PDF trên server, nhưng việc đó cần
-   LibreOffice trong image và RAM của server 4 GB. Cuộc họp Mật không được tải biên bản về, như tài liệu và bản gỡ băng.
+   được trên trình duyệt. File Word được tự viết (vài phần XML trong một file zip), không thêm thư viện. Bản PDF dựng
+   trên server bằng QuestPDF từ cùng văn bản có dấu đó (khổ A4, lề Nghị định 30), kèm sẵn font Liberation Serif (SIL OFL,
+   cùng cỡ chữ với Times New Roman, đủ dấu tiếng Việt) vì image không có Times New Roman: eCab đổi file Word sang PDF bằng
+   LibreOffice, nhưng LibreOffice làm image to thêm vài trăm MB và tốn RAM của server 4 GB. Cuộc họp Mật không được tải biên bản về, như tài liệu và bản gỡ băng.
 
 ## Hệ quả
 
@@ -56,7 +57,10 @@ nổi model nào. Máy mạnh nhất nhóm có 16 GB RAM và 6 GB VRAM, chỉ ch
   - eCab gọi model một lần cho cả cuộc họp; TrustCabinet gọi một lần cho mỗi mục nghị sự, cộng một lần cho mục I và III.
   - eCab cho model viết lại cả biên bản theo mẫu, rồi mới điền mẫu khi model viết hỏng; TrustCabinet chỉ điền mẫu, không
     cho model viết lại.
-  - eCab soạn biên bản bằng trình soạn thảo định dạng (TipTap); TrustCabinet soạn văn bản thuần, có xem trước.
+  - Cả hai soạn biên bản bằng trình soạn thảo kiểu Word (TipTap). eCab lưu HTML rồi lọc lại; TrustCabinet lưu văn bản có
+    dấu đầu dòng, trình soạn đổi qua lại (`minutesDoc.ts`), nên thanh công cụ chỉ có những gì file Word và PDF in được: kiểu
+    dòng (tiêu đề, tiêu đề mục, tiêu đề nhỏ, căn giữa, dòng nhỏ), đậm, nghiêng, hàng hai cột. (Sửa 05/11/2026: bản đầu là
+    ô chữ thô kèm xem trước.)
 - Viết dự thảo tốn CPU của máy chạy AI vài phút mỗi lần. Hàng chờ chạy lần lượt từng cuộc họp.
 - `tests/ai/` có 8 cuộc họp mẫu, từ đầy đủ đến thiếu từng phần, để so model trên cùng dữ liệu.
 - Lời thoại và biên bản là dữ liệu cá nhân (Luật 91/2025/QH15). Server gửi lời thoại sang máy chạy AI, nên máy đó phải

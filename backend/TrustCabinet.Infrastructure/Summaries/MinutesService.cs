@@ -110,7 +110,8 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
         }
     }
 
-    public async Task<MinutesOutcome> ExportAsync(Guid minutesId, Guid actorId, CancellationToken ct = default)
+    public async Task<MinutesOutcome> ExportAsync(Guid minutesId, Guid actorId, MinutesExportFormat format,
+        CancellationToken ct = default)
     {
         try
         {
@@ -121,7 +122,11 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             if (!SummaryService.Manages(meeting, actorId)) return new(row.Status == MinutesStatus.Draft ? MinutesFailure.NotFound : MinutesFailure.Forbidden);
             if (meeting.Sensitivity == Sensitivity.Secret) return new(MinutesFailure.SecretMeeting);
             var name = string.Concat($"Biên bản - {meeting.Title}".Split(Path.GetInvalidFileNameChars()));
-            return new(Data: new MinutesFile($"{(name.Length > 120 ? name[..120] : name)}.docx", MinutesDocx.Build(row.Content)));
+            var stem = name.Length > 120 ? name[..120] : name;
+            return new(Data: format == MinutesExportFormat.Pdf
+                ? new MinutesFile($"{stem}.pdf", MinutesPdf.Build(row.Content), "application/pdf")
+                : new MinutesFile($"{stem}.docx", MinutesDocx.Build(row.Content),
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"));
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {

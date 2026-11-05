@@ -93,6 +93,13 @@ import {
   ZoomOut,
   type LucideIcon,
   Sparkles,
+  Bold,
+  Italic,
+  AlignCenter,
+  Undo2,
+  Redo2,
+  BetweenHorizontalEnd,
+  Rows2,
 } from 'lucide-react'
 
 /**
@@ -212,6 +219,14 @@ const ICONS = {
   vote: Vote,
   /** Marks text an AI wrote (SCRUM-36), as AI-eCabinet's AiLabel does. */
   sparkles: Sparkles,
+  // SCRUM-32: the minutes editor's toolbar.
+  bold: Bold,
+  italic: Italic,
+  alignCenter: AlignCenter,
+  editUndo: Undo2,
+  editRedo: Redo2,
+  rowAdd: BetweenHorizontalEnd,
+  rowRemove: Rows2,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

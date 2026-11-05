@@ -61,11 +61,18 @@ public interface IMinutesService
     /// </summary>
     Task<MinutesOutcome> CreateAsync(Guid meetingId, Guid actorId, bool rebuild, CancellationToken ct = default);
     Task<MinutesOutcome> SaveAsync(Guid minutesId, Guid actorId, string? content, DateTimeOffset? loadedAt, CancellationToken ct = default);
-    /// <summary>The draft as a Word file, built from the same marks the page reads.</summary>
-    Task<MinutesOutcome> ExportAsync(Guid minutesId, Guid actorId, CancellationToken ct = default);
+    /// <summary>The draft as a Word or a PDF file, built from the same marks the page reads.</summary>
+    Task<MinutesOutcome> ExportAsync(Guid minutesId, Guid actorId, MinutesExportFormat format, CancellationToken ct = default);
 }
 
-public sealed record MinutesFile(string FileName, byte[] Bytes);
+/// <summary>What <c>GET /api/minutes/{id}/export?format=</c> returns: Word unless PDF is asked for.</summary>
+public enum MinutesExportFormat
+{
+    Docx,
+    Pdf,
+}
+
+public sealed record MinutesFile(string FileName, byte[] Bytes, string ContentType);
 
 public static class MinutesLimits
 {

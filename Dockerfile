@@ -16,6 +16,10 @@ WORKDIR /src
 COPY global.json TrustCabinet.sln ./
 COPY backend/ backend/
 RUN dotnet publish backend/TrustCabinet.Web -c Release -o /app
+# A portable publish carries QuestPDF's native library (the PDF minutes) for every OS, about 85 MB. The image runs on
+# Linux only: keep x64 (the server) and arm64 (a build on an Apple Silicon laptop), drop the rest.
+RUN find /app/runtimes -mindepth 1 -maxdepth 1 -type d ! -name linux-x64 ! -name linux-arm64 -exec rm -rf {} + \
+    && test -f /app/runtimes/linux-x64/native/libQuestPdfSkia.so
 COPY --from=frontend /src/backend/TrustCabinet.Web/wwwroot /app/wwwroot
 
 # 3. Runtime.
