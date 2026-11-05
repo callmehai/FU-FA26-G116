@@ -1,7 +1,7 @@
 import { Extension } from '@tiptap/core'
 import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 import { EditorContent, useEditor, useEditorState, type Editor } from '@tiptap/react'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import StarterKit from '@tiptap/starter-kit'
 import { Icon, type IconName } from '../../components/Icon'
 import { Select } from '../../components/Select'
@@ -22,6 +22,8 @@ export function MinutesEditor({
   /** Huỷ / Lưu, at the toolbar's end: it stays in view however long the minutes are. */
   actions: ReactNode
 }) {
+  /** The text is read into the editor once; what is typed is then the editor's own (its options rebuild per render). */
+  const [initial] = useState(() => toDoc(content))
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -44,7 +46,7 @@ export function MinutesEditor({
       TableHeader,
       TableCell,
     ],
-    content: toDoc(content),
+    content: initial,
     editorProps: { attributes: { class: 'minutes-paper minutes-editor-doc', 'aria-label': 'Nội dung biên bản' } },
     onUpdate: ({ editor: e }) => onChange(toContent(e.getJSON())),
   })

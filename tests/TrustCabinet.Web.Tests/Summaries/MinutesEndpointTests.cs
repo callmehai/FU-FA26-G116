@@ -354,6 +354,17 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.EndsWith("Nghịquyếtsố1??", text);
     }
 
+    [Fact]
+    public void The_pdf_keeps_what_the_editor_kept_from_reading_as_a_mark()
+    {
+        // The editor puts a zero-width space before a typed "# " or "@@" and between typed "**": the PDF must show them
+        // as typed, as the page and the Word file do, not as a title, a table and a bold run.
+        var bytes = MinutesPdf.Build("​# không phải tiêu đề\nA*​*b\n​@@ x | y\n");
+        using var pdf = PdfDocument.Open(bytes);
+        var text = string.Concat(pdf.GetPages().SelectMany(p => p.Letters).Select(l => l.Value).Where(v => !string.IsNullOrWhiteSpace(v)));
+        Assert.Equal("#khôngphảitiêuđềA**b@@x|y", text);
+    }
+
     [Theory]
     [InlineData("xlsx")]
     [InlineData("html")]
