@@ -13,7 +13,7 @@ MeetingPage->ParticipantController: Request View Participant Response Status
 activate ParticipantController
 ParticipantController->ParticipantService: viewInvitationResponses(meeting, user)
 activate ParticipantService
-ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles and additional permissions
+ParticipantService->ParticipantRepository: Read Meeting status, current internal and Guest roster,\nactor relationship, roles
 activate ParticipantRepository
 ParticipantRepository->Database: Retrieve current Meeting and roster information
 activate Database

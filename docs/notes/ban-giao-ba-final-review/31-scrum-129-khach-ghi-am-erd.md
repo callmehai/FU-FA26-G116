@@ -79,7 +79,7 @@ Kiểm tra: `check_docx.py` OK; `sync_reports.py --report 3` sinh lại snapshot
 1. `02-erd.md`: entity, quan hệ, số đếm, quy tắc. ✔
 2. Report 3: UC-80, BR-355, BR-370, UC-39a AF-2, §I.3.1/I.3.2, Change Log. ✔
 3. Vẽ lại `13-erd/muc-tieu` và `13-erd/chen`, xuất PNG. ✔
-4. Comment Jira. ☐ (chờ PR vào `main`)
+4. Comment Jira. ✔ (04/11/2026, sau khi PR #254 vào `main` — `ee7fd299`): SCRUM-129 comment `10433` và chuyển `In Review`; SCRUM-109 comment `10435`.
 
 ## 5. Câu hỏi còn mở
 

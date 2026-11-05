@@ -51,5 +51,5 @@ một biểu quyết **chỉ hiện ở nhóm Biểu quyết**, không hiện th
 - [x] UC-32a và UC-32c đã nêu đúng phương án B (03/11/2026, nhánh `docs/scrum-21-uc32-bieu-quyet-nhap`):
       UC-32a luồng chính bước 3 và AF-1 bước 2 bỏ câu "a Vote's documents included", UC-32c EX-1 thêm
       đích danh trường hợp tài liệu chỉ gắn biểu quyết nháp.
-- [ ] Comment kết quả vào SCRUM-21 **sau khi** PR tài liệu merge vào `main` (Điều 2.2 trong
+- [x] Comment kết quả vào SCRUM-21 **sau khi** PR tài liệu merge vào `main` — đã đăng 04/11/2026, comment `10434`, PR #253 và #254 (Điều 2.2 trong
       [DEVELOPMENT_WORKFLOW](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update)).

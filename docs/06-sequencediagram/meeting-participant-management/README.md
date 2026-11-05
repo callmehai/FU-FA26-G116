@@ -3,8 +3,8 @@
 Các sequence UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 tuân theo [convention chung](../README.md). Cùng nằm trong FE-06 không có nghĩa cùng implementation task. Đặc tả của lần chỉnh sửa này nằm tại
 [Report 3, FE-06](../../08-reports/Report-3_Software_Requirement_Specification.md#6-fe-06--meeting-participant-management).
 
-- Organizer khởi tạo Secretary đầu tiên (BR-78). Secretary được gán có quyền xem meeting trước `Published` (BR-118)
-  và chuẩn bị danh sách, gán Chair và các participant còn lại.
+- Secretary được gán quản lý danh sách (BR-79). Organizer không còn quyền khởi tạo/phục hồi Secretary (BR-78 ngừng dùng).
+  Secretary được gán có quyền xem meeting trước `Published` (BR-118) và chuẩn bị danh sách, gán Chair và các participant còn lại.
 - `Draft`, `Rejected`, `Approved`, `Published`, `InProgress`: được quản lý danh sách theo role (BR-80).
 - `WaitingApproval`: chỉ xem, không thêm participant, đổi role hoặc xóa, kể cả màn hình đã mở trước lúc gửi duyệt.
 - Organizer công bố từ `Approved` khi có đúng một Chair và ít nhất một Secretary hiện hành có tài khoản hoạt động

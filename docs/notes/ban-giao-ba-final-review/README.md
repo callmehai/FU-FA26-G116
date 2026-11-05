@@ -34,6 +34,7 @@ Mỗi file giữ nguyên phạm vi cần sửa. Khi ticket sang **BA Final Revie
 | 29 | [SCRUM-130 docs review repo](29-scrum-130-docs-review-repo-uc06c-voiceid-1-2.md) | SCRUM-130, SCRUM-35 (PR #226, #227; ADR-0048, ADR-0049) | Report 1 lộ 6 email + 5 số điện thoại (**03/11/2026 đã bỏ hai cột liên hệ**), README/AGENTS trạng thái cũ (**đã sửa**), UC-06c vô hiệu hoá kết thúc Voice ID (+ BR-372), thông báo 1.2 + nghe lại trước khi lưu (**đã sửa**) |
 | 30 | [PR #249 "Tài liệu chung" phương án B](30-pr249-phuong-an-b-tai-lieu-chung.md) | SCRUM-21 (PR #249) | BR-280 định nghĩa lại nhóm Tài liệu chung (không gắn mục **và** không gắn biểu quyết), BR-275 trừ tài liệu chỉ gắn biểu quyết nháp (Thành viên/Khách 404 MSG156); màn 7.3, 8.6, UC-32a/UC-32c và Change Log — **03/11/2026 đã sửa** |
 | 31 | [SCRUM-129 Khách ghi âm theo micro, ERD thiếu `speech_clips`](31-scrum-129-khach-ghi-am-erd.md) | SCRUM-129 (PR #245), SCRUM-109, ADR-0051 | 7 điểm lệch ở comment Jira `10418`; **04/11/2026 đã sửa**: `02-erd` thêm `SpeechClip`/`VoiceConsent`/`VoiceSample` (32 → 35 thực thể), vẽ lại ERD mục tiêu (41 bảng, theo code) + Chen (35 thực thể / 59 quan hệ), Report 3 sửa UC-80/BR-355/BR-370/UC-39a AF-2 và thêm 5 entity vào §I.3.2 |
+| 32 | [SCRUM-20, 25, 26, 69, 97, 98 — FE-05/FE-06 BA Final Review](32-scrum-20-25-26-69-97-98-fe06-fe05-ba-final-review.md) | SCRUM-20, 25, 26, 69, 97, 98 (đối chiếu `main` `33260fbd`) | Code đúng Jira đã chốt; tài liệu lệch FE-06 (quyền bổ sung, Organizer, nhánh lỗi) + FE-05 (EX-1, thời lượng) — **chưa sửa, làm sau khi #254 merge hoặc trên nhánh #254** |
 Plan gom cả sáu note. **Thứ tự làm và cách giao cho agent: [plan 05 mục 8](05-plan-sua-uc-br-msg-diagram.md#8-thứ-tự-và-cách-chạy-agent-đọc-mục-này-trước)** —
 làm lần lượt từng lượt, mỗi lượt một session mới.
 
@@ -52,8 +53,8 @@ làm lần lượt từng lượt, mỗi lượt một session mới.
 | [27](27-pr224-tai-lieu-sau-e2e.md) | 21, 22, 23, 58, 107 | #224 + #235 đã merge | Cả năm `In Review`; đã comment 21 (10427), 107 (10428), 23 (10429) | 21 chờ BR-280 phương án B; 22/58 không cần sửa |
 | [28](28-pr225-may-tu-gan-ten-nguoi-noi.md) | 35 | PR #238 → vào `main` bằng **PR #251** (merge `5b75cedb`) | `In Review`, đã trả lời comment 10406 (10426) | Tester kiểm lại lỗi "máy chỉ nhận 1 người nói" |
 | [29](29-scrum-130-docs-review-repo-uc06c-voiceid-1-2.md) | 130 | Như trên (PR #238 → #251) | **`Done`** (comment 10425) | — |
-| [30](30-pr249-phuong-an-b-tai-lieu-chung.md) | 21 (và 22) | Sửa Report 3 trong PR #252; UC-32a/UC-32c ở nhánh `docs/scrum-21-uc32-bieu-quyet-nhap` | `In Review` (comment 10427) | Comment kết quả sau khi PR tài liệu merge; ảnh wireframe 7.3/7.4/8.6 |
-| [31](31-scrum-129-khach-ghi-am-erd.md) | 129 (và 109) | Đã sửa 04/11/2026 (`02-erd`, 2 hình ERD, Report 3) | Chưa đọc — comment `10418` ghi 7 điểm lệch | Comment Jira sau khi PR vào `main`; đọc comment 10418 để bổ sung 4 điểm còn lại |
+| [30](30-pr249-phuong-an-b-tai-lieu-chung.md) | 21 (và 22) | Sửa Report 3 trong PR #252; UC-32a/UC-32c ở nhánh `docs/scrum-21-uc32-bieu-quyet-nhap` | `In Review` (comment 10427; kết quả 04/11/2026 ở comment 10434) | Ảnh wireframe 7.3/7.4/8.6 |
+| [31](31-scrum-129-khach-ghi-am-erd.md) | 129 (và 109) | Đã sửa 04/11/2026 (`02-erd`, 2 hình ERD, Report 3) | `In Review` (04/11/2026, comment 10433; SCRUM-109 comment 10435) | Đọc comment 10418 để bổ sung 4 điểm lệch còn lại; ADR-0051 còn "Đề xuất" |
 
 **#238 merge sai đích — đã cứu xong.** #238 được merge vào nhánh stacked
 `docs/ba-final-review-khach-pr212-213-215-218` **sau khi** nhánh đó đã merge vào `main` (là #237), nên nội dung

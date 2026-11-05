@@ -47,7 +47,7 @@ Bảng dưới ghi **trạng thái trước khi sửa**; kết quả đã sửa 
 - [x] Sequence UC-45c (bước tự gán) và UC-46b (câu "suggestion never names anyone"); xuất lại PNG.
 - [x] `02-erd.md` §7: một đoạn `AssignedById` rỗng = máy gán, `autoAssigned` chỉ là cờ API.
 - [x] Sync Report 3, Change Log.
-- [ ] Ghi kết quả vào Jira SCRUM-35 (chưa làm).
+- [x] Ghi kết quả vào Jira SCRUM-35 (đã xong 03/11: trả lời comment 10406 bằng comment 10426, xem README dòng 53).
 
 ## 4. Đã sửa ở đâu (03/11/2026)
 
