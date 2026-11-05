@@ -4096,6 +4096,17 @@ body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px)
 /* Each card as wide as its name, several to a line, each line filled: a long name gets the width it needs instead of
    wrapping in a narrow column, and only a name wider than the whole line wraps. */
 .speaker-list { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin: 0; padding: 0; list-style: none; }
+/* The voices and the lines, laid out as the per-mic record (.tl-body-split): beside them on a wide card, the cards
+   one under another in a 260px column; above them, side by side, when narrower. 800px here is the per-mic 880px of
+   card less the recording row's indent, so both records split at the same window width. */
+.transcript-body { display: flex; flex-direction: column; gap: 8px; }
+.transcript-speakers .tl-speakers-title { margin-bottom: 6px; }
+@container (min-width: 800px) {
+  .transcript-body.is-split { display: grid; grid-template-columns: minmax(0, 1fr) 260px; align-items: start; gap: 12px; }
+  .transcript-body.is-split .transcript-speakers { order: 2; max-height: 480px; overflow-y: auto; }
+  .transcript-body.is-split .speaker-list { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
+  .transcript-body.is-split .speaker-row { flex: none; min-width: 0; }
+}
 .speaker-row {
   flex: 1 1 auto; min-width: min(100%, 220px); max-width: 100%;
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; min-width: 0; min-height: 42px;

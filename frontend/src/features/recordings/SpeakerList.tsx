@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { assignLineSpeaker, assignSpeaker } from '../../api/transcripts'
 import { Icon } from '../../components/Icon'
 import { Select } from '../../components/Select'
@@ -22,46 +22,56 @@ import { speakerColor, speakerName, voiceName, voicesOf, type Voice } from './sp
 const NOBODY = ''
 const BOTH = 'both:'
 
+/**
+ * The voices as the per-mic record lists its speakers: "Người nói N" over one card each, beside the lines on a wide
+ * card and above them when narrow (TranscriptView lays it out), as AI-eCabinet's RoomTranscript.
+ */
 export function SpeakerList({ transcript, onChanged }: { transcript: Transcript; onChanged: () => void }) {
+  const headingId = useId()
   if (transcript.speakers.length === 0) return null
   const { voices } = voicesOf(transcript.speakers)
   return (
-    <ul className="speaker-list" aria-label="Người nói">
-      {[...voices.values()].map((voice) => {
-        const spoke = formatDuration(voice.speechMs)
-        return (
-          <li key={voice.speaker.label} className="speaker-row">
-            <span className="speaker-who">
-              {transcript.canEdit ? (
-                <SpeakerPicker transcript={transcript} voice={voice} onChanged={onChanged} />
-              ) : (
-                <span className="speaker-name">
+    <aside className="transcript-speakers" aria-labelledby={headingId}>
+      <h3 id={headingId} className="tl-speakers-title">
+        Người nói <span className="tl-pill">{voices.size}</span>
+      </h3>
+      <ul className="speaker-list">
+        {[...voices.values()].map((voice) => {
+          const spoke = formatDuration(voice.speechMs)
+          return (
+            <li key={voice.speaker.label} className="speaker-row">
+              <span className="speaker-who">
+                {transcript.canEdit ? (
+                  <SpeakerPicker transcript={transcript} voice={voice} onChanged={onChanged} />
+                ) : (
+                  <span className="speaker-name">
+                    <span
+                      className="select-dot"
+                      style={{ background: speakerColor(voice.speaker.label) }}
+                      aria-hidden="true"
+                    />
+                    {voiceName(voice.speaker)}
+                  </span>
+                )}
+                {voice.labels.length > 1 && (
                   <span
-                    className="select-dot"
-                    style={{ background: speakerColor(voice.speaker.label) }}
-                    aria-hidden="true"
-                  />
-                  {voiceName(voice.speaker)}
-                </span>
-              )}
-              {voice.labels.length > 1 && (
-                <span
-                  className="speaker-same"
-                  tabIndex={0}
-                  aria-label={`Gộp ${voice.labels.length} giọng`}
-                  data-tooltip={`Gộp ${voice.labels.length} giọng máy nghe là cùng một người`}
-                >
-                  <Icon name="users" size={14} />
-                </span>
-              )}
-            </span>
-            <span className="speaker-time" tabIndex={0} data-tooltip={`Nói tổng cộng ${spoke}`}>
-              {spoke}
-            </span>
-          </li>
-        )
-      })}
-    </ul>
+                    className="speaker-same"
+                    tabIndex={0}
+                    aria-label={`Gộp ${voice.labels.length} giọng`}
+                    data-tooltip={`Gộp ${voice.labels.length} giọng máy nghe là cùng một người`}
+                  >
+                    <Icon name="users" size={14} />
+                  </span>
+                )}
+              </span>
+              <span className="speaker-time" tabIndex={0} data-tooltip={`Nói tổng cộng ${spoke}`}>
+                {spoke}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </aside>
   )
 }
 

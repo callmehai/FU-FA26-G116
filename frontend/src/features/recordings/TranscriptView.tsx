@@ -269,63 +269,65 @@ export function TranscriptView({
           <p className="field-hint">Các lượt khác giữ nguyên chữ đã sửa và tên đã gán.</p>
         </ConfirmDialog>
       )}
-      <SpeakerList transcript={transcript} onChanged={() => void load()} />
-      {transcript.segments.length === 0 ? (
-        <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>
-      ) : (
-        <ol className="tl-list transcript-list" aria-label="Lời thoại theo thời điểm nói">
-          {runs(transcript.segments, marked, (segment) => one(segment.speakerLabel)).map((run, i, all) => {
-            const who = speakerOf(run[0])
-            const tone = who.tone
-            // Heard right now: the run's button pauses it.
-            const hearing = playing && currentMs >= run[0].startMs && currentMs < run[run.length - 1].endMs
-            return (
-              <li key={run[0].id} className="tl-group">
-                {marked && (i === 0 || takeAt(marked, all[i - 1][0].startMs) !== takeAt(marked, run[0].startMs)) && (
-                  <TakeLine
-                    takes={marked}
-                    index={takeAt(marked, run[0].startMs)}
-                    onDelete={
-                      transcript.canEdit && !running ? () => setDropping(takeAt(marked, run[0].startMs) + 1) : undefined
-                    }
-                  />
-                )}
-                <div className="tl-row tl-row-head">
-                  <span className="tl-time">{at(run[0].startMs)}</span>
-                  <span className="tl-rail" aria-hidden="true">
-                    <span className="tl-dot" style={{ background: tone.dot }} />
-                  </span>
-                  <div className="tl-head-row">
-                    {/* As in AI-eCabinet, the name heading a run says who said its first line, and changes that line
-                        only; a whole voice is named from its card above. */}
-                    {transcript.canEdit ? (
-                      <span className="tl-name" style={{ color: tone.ink }}>
-                        <span className="tl-name-pick">
-                          <LineSpeakerPicker
-                            transcript={transcript}
-                            segment={run[0]}
-                            voice={who.voice}
-                            time={at(run[0].startMs)}
-                            onChanged={() => void load()}
-                          />
+      {/* As the per-mic record: the voices beside the lines on a wide card, above them when narrow. */}
+      <div className={transcript.speakers.length > 0 ? 'transcript-body is-split' : 'transcript-body'}>
+        <SpeakerList transcript={transcript} onChanged={() => void load()} />
+        {transcript.segments.length === 0 ? (
+          <p className="field-hint">Không nghe thấy lời nói nào trong bản ghi.</p>
+        ) : (
+          <ol className="tl-list transcript-list" aria-label="Lời thoại theo thời điểm nói">
+            {runs(transcript.segments, marked, (segment) => one(segment.speakerLabel)).map((run, i, all) => {
+              const who = speakerOf(run[0])
+              const tone = who.tone
+              // Heard right now: the run's button pauses it.
+              const hearing = playing && currentMs >= run[0].startMs && currentMs < run[run.length - 1].endMs
+              return (
+                <li key={run[0].id} className="tl-group">
+                  {marked && (i === 0 || takeAt(marked, all[i - 1][0].startMs) !== takeAt(marked, run[0].startMs)) && (
+                    <TakeLine
+                      takes={marked}
+                      index={takeAt(marked, run[0].startMs)}
+                      onDelete={
+                        transcript.canEdit && !running ? () => setDropping(takeAt(marked, run[0].startMs) + 1) : undefined
+                      }
+                    />
+                  )}
+                  <div className="tl-row tl-row-head">
+                    <span className="tl-time">{at(run[0].startMs)}</span>
+                    <span className="tl-rail" aria-hidden="true">
+                      <span className="tl-dot" style={{ background: tone.dot }} />
+                    </span>
+                    <div className="tl-head-row">
+                      {/* As in AI-eCabinet, the name heading a run says who said its first line, and changes that line
+                          only; a whole voice is named from its card above. */}
+                      {transcript.canEdit ? (
+                        <span className="tl-name" style={{ color: tone.ink }}>
+                          <span className="tl-name-pick">
+                            <LineSpeakerPicker
+                              transcript={transcript}
+                              segment={run[0]}
+                              voice={who.voice}
+                              time={at(run[0].startMs)}
+                              onChanged={() => void load()}
+                            />
+                          </span>
                         </span>
-                      </span>
-                    ) : (
-                      <strong className="tl-name" style={{ color: tone.ink }}>
-                        {who.name}
-                      </strong>
-                    )}
-                    <span className="tl-time-inline">{at(run[0].startMs)}</span>
-                    <button
-                      type="button"
-                      className="tl-play"
-                      onClick={() => (hearing && onPause ? onPause() : onSeek(run[0].startMs))}
-                      aria-label={hearing ? 'Tạm dừng' : `Nghe từ ${at(run[0].startMs)}`}
-                      aria-pressed={hearing}
-                      data-tooltip={hearing ? 'Tạm dừng' : 'Nghe lại'}
-                    >
-                      <Icon name={hearing ? 'pause' : 'play'} size={12} />
-                    </button>
+                      ) : (
+                        <strong className="tl-name" style={{ color: tone.ink }}>
+                          {who.name}
+                        </strong>
+                      )}
+                      <span className="tl-time-inline">{at(run[0].startMs)}</span>
+                      <button
+                        type="button"
+                        className="tl-play"
+                        onClick={() => (hearing && onPause ? onPause() : onSeek(run[0].startMs))}
+                        aria-label={hearing ? 'Tạm dừng' : `Nghe từ ${at(run[0].startMs)}`}
+                        aria-pressed={hearing}
+                        data-tooltip={hearing ? 'Tạm dừng' : 'Nghe lại'}
+                      >
+                        <Icon name={hearing ? 'pause' : 'play'} size={12} />
+                      </button>
                   </div>
                 </div>
                 {run.map((segment, i) => (
@@ -362,6 +364,7 @@ export function TranscriptView({
           })}
         </ol>
       )}
+      </div>
     </div>
   )
 }
