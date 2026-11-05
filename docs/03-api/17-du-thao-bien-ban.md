@@ -101,7 +101,7 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
   - `400` `MSG402` khi nội dung trống hoặc quá 300.000 ký tự (tính cả HTML gửi lên lẫn HTML sau khi lọc). Chỉ có đoạn
     trống, `<br>` hay đường kẻ cũng là trống; bảng có chữ thì không.
     Thẻ lồng sâu quá 64 tầng cũng bị từ chối (trình soạn thảo không bao giờ lồng sâu như vậy); bảng tối đa 63 cột như Word,
-    ô vượt quá bị bỏ khi xuất file.
+    ô vượt quá bị bỏ khi xuất file. Trong PDF, bảng lồng quá 3 tầng in phần chữ của các ô nối tiếp nhau, không kẻ lưới.
   - `403` `MSG405` khi tải biên bản của cuộc họp Mật, `400` `MSG406` khi `format` không phải `docx` hay `pdf`.
   - `500` `MSG403` khi lỗi đọc, `503` `MSG404` khi lỗi lưu.
 

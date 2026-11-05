@@ -261,6 +261,52 @@ public sealed class MinutesFileTests
     }
 
     [Fact]
+    public void A_signature_table_at_the_foot_of_a_page_moves_on_in_its_own_size()
+    {
+        // The template ends on a frame table with room to sign. Wherever the text before it ends, the table keeps 13 pt
+        // and moves to the next page when it does not fit; it is never shrunk to fit what is left of the page.
+        const string signatures = "<table data-layout=\"frame\"><tbody><tr>"
+            + "<td><p><strong>THƯ KÝ</strong></p><p></p><p></p><p></p><p>Nguyễn Văn A</p></td>"
+            + "<td><p><strong>CHỦ TOẠ</strong></p><p></p><p></p><p></p><p>Trần Văn B</p></td></tr></tbody></table>";
+        var pages = new HashSet<int>();
+        for (var before = 26; before <= 40; before++)
+        {
+            var html = string.Concat(Enumerable.Repeat("<p>Nội dung cuộc họp.</p>", before)) + signatures;
+            using var pdf = PdfDocument.Open(MinutesPdf.Build(html));
+            pages.Add(pdf.NumberOfPages);
+            var signed = pdf.GetPages().SelectMany(p => p.Letters).Where(l => l.Value is "Ý" or "Ạ").ToList(); // THƯ KÝ, CHỦ TOẠ
+            Assert.Equal(2, signed.Count);
+            Assert.All(signed, l => Assert.Equal(13, Math.Round(l.PointSize)));
+        }
+        // The range crosses the foot of page 1: some runs end on one page, some on two.
+        Assert.Equal([1, 2], pages.Order());
+    }
+
+    [Fact]
+    public void A_cell_longer_than_a_page_flows_on_to_the_next()
+    {
+        var lines = string.Concat(Enumerable.Range(1, 80).Select(i => $"<p>Dòng {i}</p>"));
+        using var pdf = PdfDocument.Open(MinutesPdf.Build($"<table><tbody><tr><td>{lines}</td><td><p>bên</p></td></tr></tbody></table>"));
+        Assert.True(pdf.NumberOfPages >= 2);
+        Assert.All(pdf.GetPages().SelectMany(p => p.Letters).Where(l => l.Value == "D"), l => Assert.Equal(13, Math.Round(l.PointSize)));
+        Assert.Contains("80", pdf.GetPage(pdf.NumberOfPages).GetWords().Select(w => w.Text));
+    }
+
+    [Fact]
+    public void Tables_nested_past_three_levels_print_their_words_without_the_grid_and_quickly()
+    {
+        // Fifteen tables in each other: under the HTML depth limit, a kilobyte of input. Drawn as grids all the way down,
+        // QuestPDF's measuring multiplies at every level and one export would run for hours.
+        var html = "<p>lõi</p>";
+        for (var i = 0; i < 15; i++) html = $"<table><tbody><tr><td>{html}</td><td><p>ô{i}</p></td></tr></tbody></table>";
+        Assert.False(MinutesHtml.TooDeep(html));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var text = PdfText(MinutesPdf.Build(MinutesHtml.Sanitize(html)));
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(10), $"took {clock.Elapsed}");
+        foreach (var word in new[] { "lõi", "ô0", "ô7", "ô14" }) Assert.Contains(word, text);
+    }
+
+    [Fact]
     public void After_a_line_break_the_pdf_does_not_indent_the_first_line_again()
     {
         using var pdf = PdfDocument.Open(MinutesPdf.Build("<p>Dòng đầu<br>Ngắt</p>"));

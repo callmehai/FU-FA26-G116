@@ -340,7 +340,10 @@ export function changeCase(editor: Editor, to: TextCase) {
 // ---- Find and replace -------------------------------------------------------------------------------------------
 
 type Match = { from: number; to: number }
-type FindState = { query: string; matches: Match[]; current: number; decorations: DecorationSet }
+/** `done` is what "Thay" put in during this search: never a match again, or "ubnd → UBND" would find its own words. */
+type FindState = { query: string; matches: Match[]; current: number; done: (Match & { text: string })[]; decorations: DecorationSet }
+type FindMeta = { query?: string; current?: number; replaced?: Match[] }
+const EMPTY: FindState = { query: '', matches: [], current: 0, done: [], decorations: DecorationSet.empty }
 
 export const findKey = new PluginKey<FindState>('minutesFind')
 
@@ -387,15 +390,26 @@ const FindReplace = Extension.create({
       new Plugin<FindState>({
         key: findKey,
         state: {
-          init: () => ({ query: '', matches: [], current: 0, decorations: DecorationSet.empty }),
+          init: () => EMPTY,
           apply(tr, previous, _old, state) {
-            const meta = tr.getMeta(findKey) as Partial<Pick<FindState, 'query' | 'current'>> | undefined
+            const meta = tr.getMeta(findKey) as FindMeta | undefined
             if (!meta && !tr.docChanged) return previous
             const query = meta?.query ?? previous.query
-            const matches = search(state.doc, query)
-            const wanted = meta?.current ?? previous.current
+            // A new search starts afresh; otherwise what was replaced follows the edits made since, and is let go once
+            // its words change (an undo puts the old words back: they are a match again).
+            const done =
+              meta?.query !== undefined
+                ? []
+                : previous.done
+                    .map((d) => ({ from: tr.mapping.map(d.from, 1), to: tr.mapping.map(d.to, -1), text: d.text }))
+                    .filter((d) => d.from < d.to && state.doc.textBetween(d.from, d.to) === d.text)
+            for (const r of meta?.replaced ?? []) done.push({ ...r, text: state.doc.textBetween(r.from, r.to) })
+            const matches = search(state.doc, query).filter((m) => !done.some((d) => m.from >= d.from && m.to <= d.to))
+            // After a replacement, on to the next match past it, round to the first when it was the last.
+            const after = meta?.replaced ? matches.findIndex((m) => m.from >= meta.replaced![0].to) : -1
+            const wanted = meta?.replaced ? Math.max(after, 0) : (meta?.current ?? previous.current)
             const current = matches.length === 0 ? 0 : ((wanted % matches.length) + matches.length) % matches.length
-            return { query, matches, current, decorations: decorate(state.doc, matches, current) }
+            return { query, matches, current, done, decorations: decorate(state.doc, matches, current) }
           },
         },
         props: {
@@ -407,7 +421,7 @@ const FindReplace = Extension.create({
 })
 
 export function findState(state: EditorState): FindState {
-  return findKey.getState(state) ?? { query: '', matches: [], current: 0, decorations: DecorationSet.empty }
+  return findKey.getState(state) ?? EMPTY
 }
 
 export function setQuery(editor: Editor, query: string) {
@@ -430,15 +444,13 @@ function reveal(editor: Editor) {
 }
 
 export function replaceCurrent(editor: Editor, text: string) {
-  const { query, matches, current } = findState(editor.state)
+  const { matches, current } = findState(editor.state)
   const match = matches[current]
   if (!match) return
-  const tr = editor.state.tr.insertText(text, match.from, match.to)
-  // Go on past the inserted text: a replacement that contains the query (ubnd → UBND, Văn A → Ông Văn A) would
-  // otherwise be the current match again, and the next "Thay" would stay put or replace inside its own words.
-  const end = match.from + text.length
-  const next = search(tr.doc, query).findIndex((m) => m.from >= end)
-  editor.view.dispatch(tr.setMeta(findKey, { current: next < 0 ? 0 : next }))
+  // The inserted text is marked done: a replacement that contains the query (ubnd → UBND, Văn A → Ông Văn A) would
+  // otherwise be a match again, and "Thay" would stay put or replace inside its own words, even after going round.
+  const replaced: Match = { from: match.from, to: match.from + text.length }
+  editor.view.dispatch(editor.state.tr.insertText(text, match.from, match.to).setMeta(findKey, { replaced: [replaced] } satisfies FindMeta))
   reveal(editor)
 }
 
@@ -447,6 +459,8 @@ export function replaceAll(editor: Editor, text: string): number {
   if (matches.length === 0) return 0
   const tr = editor.state.tr
   for (const m of [...matches].reverse()) tr.insertText(text, m.from, m.to)
-  editor.view.dispatch(tr)
+  // Each match's place in the new text: it starts where the match did, and ends where the inserted words end.
+  const replaced = matches.map((m) => ({ from: tr.mapping.map(m.from, -1), to: tr.mapping.map(m.to, 1) }))
+  editor.view.dispatch(tr.setMeta(findKey, { replaced } satisfies FindMeta))
   return matches.length
 }

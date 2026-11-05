@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using QuestPDF;
 using QuestPDF.Drawing;
+using QuestPDF.Drawing.Exceptions;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -55,9 +56,27 @@ public static class MinutesPdf
         Covered = covered!;
     }
 
+    /// <summary>Tables nested deeper than this are drawn as their cells' text one after another (see <see cref="Table"/>).</summary>
+    internal const int MaxTableDepth = 3;
+
     public static byte[] Build(string content)
     {
         var blocks = MinutesLayout.Read(content);
+        try
+        {
+            return Build(blocks, shrinkCells: false);
+        }
+        catch (DocumentLayoutException)
+        {
+            // A cell too narrow for what it holds (a 24 pt letter in a column dragged to its minimum width) cannot be laid
+            // out, and would fail the whole file. Then every cell is shrunk to fit its space instead. Only then: a shrunk
+            // cell never flows on to the next page, so a signature table near the foot would come out in 3 pt letters.
+            return Build(blocks, shrinkCells: true);
+        }
+    }
+
+    private static byte[] Build(IReadOnlyList<LayoutBlock> blocks, bool shrinkCells)
+    {
         return Document.Create(document => document.Page(page =>
         {
             page.Size(PageSizes.A4);
@@ -70,13 +89,16 @@ public static class MinutesPdf
                 .LineHeight(MinutesLayout.LineHeight * SingleLine).FontColor(Colors.Black));
             page.Content().Column(column =>
             {
-                foreach (var block in blocks) Block(column, block);
+                foreach (var block in blocks) Block(column, block, new(shrinkCells, 0));
             });
         })).WithMetadata(new DocumentMetadata { Title = "Biên bản", Creator = "TrustCabinet", Producer = "TrustCabinet" })
             .GeneratePdf();
     }
 
-    private static void Block(ColumnDescriptor column, LayoutBlock block)
+    /// <summary>How a block is drawn: whether cells shrink to fit (the fallback above), and how many tables it sits in.</summary>
+    private readonly record struct Drawing(bool ShrinkCells, int TableDepth);
+
+    private static void Block(ColumnDescriptor column, LayoutBlock block, Drawing drawing)
     {
         switch (block)
         {
@@ -90,8 +112,14 @@ public static class MinutesPdf
             case LayoutPageBreak:
                 column.Item().PageBreak();
                 break;
+            case LayoutTable table when drawing.TableDepth >= MaxTableDepth:
+                // Each table level multiplies the measuring QuestPDF does, so a few hundred bytes of nested tables would
+                // keep a request busy for minutes. No minutes nest this deep; the words still print, cell after cell.
+                foreach (var cell in table.Rows.SelectMany(r => r.Cells).Where(c => !c.Continues))
+                    foreach (var inner in cell.Blocks) Block(column, inner, drawing);
+                break;
             case LayoutTable table:
-                Table(column.Item(), table);
+                Table(column.Item(), table, drawing with { TableDepth = drawing.TableDepth + 1 });
                 break;
         }
     }
@@ -188,7 +216,7 @@ public static class MinutesPdf
     /// A table across the width it has, its columns in the Word file's proportions, 0.5 pt black borders on every cell or none for a frame, the
     /// cells padded 1.9 mm left and right as Word's default cell margins.
     /// </summary>
-    private static void Table(IContainer item, LayoutTable table)
+    private static void Table(IContainer item, LayoutTable table, Drawing drawing)
     {
         item.PaddingLeft(table.LeftMm, Unit.Millimetre).Table(grid =>
         {
@@ -211,11 +239,10 @@ public static class MinutesPdf
                         "bottom" => box.AlignBottom(),
                         _ => box.AlignTop(),
                     };
-                    // Shrunk only if it would not fit at all (a 24 pt letter in a column dragged to its minimum width):
-                    // a cell that cannot be laid out would fail the whole PDF.
-                    box.ScaleToFit().Column(column =>
+                    if (drawing.ShrinkCells) box = box.ScaleToFit();
+                    box.Column(column =>
                     {
-                        foreach (var block in cell.Blocks) Block(column, block);
+                        foreach (var block in cell.Blocks) Block(column, block, drawing);
                         if (cell.Blocks.Count == 0) column.Item().Text(" ");
                     });
                 }
