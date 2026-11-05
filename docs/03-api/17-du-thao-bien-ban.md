@@ -26,7 +26,7 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
 |---|---|---|
 | `GET` | `/api/meetings/{id}/summary` | `200` `SummaryState` |
 | `POST` | `/api/meetings/{id}/summary` | `202` `MSG384` + `SummaryState`. Đưa vào hàng chờ; dự thảo cũ vẫn đọc được tới khi bản mới xong |
-| `PUT` | `/api/meetings/{id}/summary` | `200` `MSG388`. Body `{ objectives, discussion, conclusions }`. Bỏ trạng thái đã duyệt |
+| `PUT` | `/api/meetings/{id}/summary` | `200` `MSG388`. Body `{ objectives, discussion, conclusions }`. Bỏ trạng thái đã duyệt. Server bỏ dòng trống trong mỗi mục trước khi lưu (AI viết dự thảo cũng không để dòng trống) |
 | `POST` | `/api/meetings/{id}/summary/review` | `200` `MSG391`. Từ đây người dự họp khác xem được |
 
 ```jsonc

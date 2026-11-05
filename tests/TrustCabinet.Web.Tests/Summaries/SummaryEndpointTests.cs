@@ -313,9 +313,12 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
         await AssertCode(await chair.PostAsync(s.Summary + "/review", null), 200, "MSG391");
         Assert.NotEqual(JsonValueKind.Null, (await State(member, s)).GetProperty("summary").ValueKind);
 
-        var saved = await AssertCode(await chair.PutAsJsonAsync(s.Summary, Edit("  Mục tiêu đã sửa.  ")), 200, "MSG388");
+        var saved = await AssertCode(await chair.PutAsJsonAsync(s.Summary,
+            Edit("  Mục tiêu đã sửa.  ", discussion: "1. Báo cáo tiến độ\n\nĐã sửa.\n\n\n")), 200, "MSG388");
         var summary = saved.GetProperty("summary");
         Assert.Equal("Mục tiêu đã sửa.", summary.GetProperty("draft").GetProperty("objectives").GetString());
+        // Blank lines are gaps in the textarea and nothing in the minutes: they are not kept.
+        Assert.Equal("1. Báo cáo tiến độ\nĐã sửa.", summary.GetProperty("draft").GetProperty("discussion").GetString());
         Assert.Equal(s.Chair, summary.GetProperty("editedBy").GetProperty("id").GetGuid());
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("reviewedAt").ValueKind);
         // The sources of the AI's parts survive a correction.

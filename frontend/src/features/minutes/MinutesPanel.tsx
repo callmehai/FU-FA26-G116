@@ -158,7 +158,8 @@ function SummaryCard({
       const result = await editSummary(meeting.id, values)
       onChanged({ kind: 'ready', data: result })
       toast.show(result.message, 'success')
-      return { saved: true, errors: {} }
+      const stored = result.summary?.draft
+      return { saved: true, errors: {}, values: stored ? { objectives: stored.objectives, discussion: stored.discussion, conclusions: stored.conclusions } : undefined }
     } catch (error) {
       toast.show(errorMessage(error), 'error')
       return { saved: false, errors: isApiError(error, 400, 'MSG389') ? (error.body?.errors ?? {}) : {} }

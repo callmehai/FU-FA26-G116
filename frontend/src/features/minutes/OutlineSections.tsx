@@ -36,8 +36,11 @@ export function OutlineSections({
   showSources: boolean
   /** Where the save bar goes: the end of the tab's column, so it sticks to the bottom of the screen anywhere in the tab. */
   barHost: HTMLElement | null
-  /** Saves; `errors` are the server's per-section messages (MSG389). A failure is already shown as a toast. */
-  onSave: (values: OutlineValues) => Promise<{ saved: boolean; errors: Record<string, string> }>
+  /**
+   * Saves; `errors` are the server's per-section messages (MSG389), `values` the text as the server stored it (it drops
+   * blank lines). A failure is already shown as a toast.
+   */
+  onSave: (values: OutlineValues) => Promise<{ saved: boolean; errors: Record<string, string>; values?: OutlineValues }>
   onDirtyChange: (dirty: boolean) => void
 }) {
   const initial: OutlineValues = {
@@ -49,7 +52,8 @@ export function OutlineSections({
   const [values, setValues] = useState(initial)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [asking, setAsking] = useState<'save' | 'undo' | null>(null)
-  const dirty = SECTIONS.some((s) => values[s.key] !== saved[s.key])
+  const changed = SECTIONS.filter((s) => values[s.key] !== saved[s.key])
+  const dirty = changed.length > 0
   const over = SECTIONS.filter((s) => values[s.key].length > s.limit)
 
   const change = (key: OutlineKey, text: string) => {
@@ -65,7 +69,9 @@ export function OutlineSections({
     setSaving(false)
     setErrors(result.errors)
     if (!result.saved) return
-    setSaved(values)
+    const stored = result.values ?? values
+    setSaved(stored)
+    setValues(stored)
     onDirtyChange(false)
   }
 
@@ -97,15 +103,15 @@ export function OutlineSections({
             aria-hidden={!dirty || undefined}
             inert={!dirty}
           >
-            <div className="outline-savebar-inner">
+            <section className="outline-savebar-inner" aria-label="Thay đổi dự thảo">
+              <Icon name={over.length ? 'alertCircle' : 'pencil'} size={18} />
               <span role="status" className={over.length ? 'outline-savebar-status is-over' : 'outline-savebar-status'}>
-                {over.length
-                  ? `Mục ${over.map((s) => s.heading.split('.')[0]).join(', ')} quá dài`
-                  : 'Dự thảo có thay đổi chưa lưu'}
+                {over.length ? `Mục ${numbers(over)} quá dài` : 'Có thay đổi chưa lưu'}
+                {!over.length && dirty && <span className="outline-savebar-where">Mục {numbers(changed)}</span>}
               </span>
               <button
                 type="button"
-                className="btn btn-outline btn-sm"
+                className="btn btn-outline btn-lg"
                 disabled={saving}
                 onClick={() => setAsking('undo')}
               >
@@ -114,13 +120,13 @@ export function OutlineSections({
               </button>
               <button
                 type="button"
-                className="btn btn-primary btn-sm"
+                className="btn btn-primary btn-lg"
                 disabled={over.length > 0 || saving}
                 onClick={() => (reviewed ? setAsking('save') : void save())}
               >
                 {saving ? 'Đang lưu…' : 'Lưu'}
               </button>
-            </div>
+            </section>
           </div>,
           barHost,
         )}
@@ -156,6 +162,9 @@ export function OutlineSections({
   )
 }
 
+/** "II, III": the Roman numbers that open the headings. */
+const numbers = (sections: { heading: string }[]) => sections.map((s) => s.heading.split('.')[0]).join(', ')
+
 function OutlineSection({
   id,
   heading,
@@ -178,12 +187,25 @@ function OutlineSection({
   // Folded at first: three long sections read as one screen of headings (eCab BR 19/10).
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLTextAreaElement>(null)
-  // The box grows with its text, so a section reads whole and never in a scrolled slot.
+  // The box grows with its text, so a section reads whole and never in a scrolled slot. It is measured again whenever
+  // its width changes: measured while the tab was still settling, the lines wrapped narrower and left empty rows below.
   useLayoutEffect(() => {
     const el = box.current
     if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${el.scrollHeight + 2}px`
+    const fit = () => {
+      el.style.height = 'auto'
+      el.style.height = `${el.scrollHeight + 2}px`
+    }
+    fit()
+    let width = el.clientWidth
+    const observer = new ResizeObserver(() => {
+      if (el.clientWidth === width) return
+      width = el.clientWidth
+      fit()
+    })
+    observer.observe(el)
+    void document.fonts?.ready.then(fit)
+    return () => observer.disconnect()
   }, [value, open])
   const tooLong = value.length > limit
   const showCount = editable && open && value.length >= limit * 0.8

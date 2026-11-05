@@ -99,7 +99,8 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             if (errors.Count > 0) return new(SummaryFailure.Invalid, Errors: errors);
             row.Content = JsonSerializer.Serialize(draft with
             {
-                Objectives = edit.Objectives!.Trim(), Discussion = edit.Discussion!.Trim(), Conclusions = edit.Conclusions!.Trim(),
+                Objectives = SummaryWriter.Tidy(edit.Objectives!), Discussion = SummaryWriter.Tidy(edit.Discussion!),
+                Conclusions = SummaryWriter.Tidy(edit.Conclusions!),
             }, Json);
             var now = clock.GetUtcNow();
             row.EditedById = actorId;
