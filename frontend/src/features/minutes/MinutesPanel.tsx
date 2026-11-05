@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import {
   createMinutes,
   editSummary,
@@ -13,15 +12,19 @@ import {
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
-import { InfoTip } from '../../components/InfoTip'
+import { MenuButton } from '../../components/MenuButton'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import type { Meeting } from '../../types/meeting'
 import type { MinutesState, SummaryReadiness, SummaryState } from '../../types/summary'
+import { FileTypeTag } from '../documents/DocumentTags'
 import { saveBlob } from '../documents/documentFile'
 import { MinutesPaper } from './MinutesPaper'
 import { OutlineSections, type OutlineValues } from './OutlineSections'
+
+// The editor brings TipTap with it: it loads when someone opens the minutes to edit, not with every meeting page.
+const MinutesEditor = lazy(() => import('./MinutesEditor').then((m) => ({ default: m.MinutesEditor })))
 
 type Load<T> = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: T }
 
@@ -345,24 +348,6 @@ function MinutesCard({
 }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
-  const [printing, setPrinting] = useState(false)
-
-  // "Tải PDF": the browser prints a copy of the paper alone, and its print dialog saves it as PDF. The page title becomes
-  // the file name the dialog offers.
-  useEffect(() => {
-    if (!printing) return
-    const title = document.title
-    document.title = `Biên bản - ${meeting.title}`
-    document.body.classList.add('printing-minutes')
-    const done = () => setPrinting(false)
-    window.addEventListener('afterprint', done)
-    window.print()
-    return () => {
-      window.removeEventListener('afterprint', done)
-      document.body.classList.remove('printing-minutes')
-      document.title = title
-    }
-  }, [printing, meeting.title])
   const [confirming, setConfirming] = useState(false)
   const [draft, setDraft] = useState<string | null>(null)
 
@@ -419,11 +404,11 @@ function MinutesCard({
     }
   }
 
-  const download = async () => {
+  const download = async (format: 'docx' | 'pdf') => {
     if (!minutes) return
     setBusy(true)
     try {
-      saveBlob(await exportMinutes(minutes.id), `Biên bản - ${meeting.title}.docx`)
+      saveBlob(await exportMinutes(minutes.id, format), `Biên bản - ${meeting.title}.${format}`)
     } catch (error) {
       toast.show(errorMessage(error), 'error')
     } finally {
@@ -439,16 +424,15 @@ function MinutesCard({
         {canManage && draft === null && (
           <div className="row-actions minutes-card-actions">
             {minutes && meeting.sensitivity !== 'Secret' && (
-              <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => void download()}>
-                <Icon name="download" size={16} />
-                Tải Word
-              </button>
-            )}
-            {minutes && meeting.sensitivity !== 'Secret' && (
-              <button type="button" className="btn btn-outline btn-sm" disabled={busy || printing} onClick={() => setPrinting(true)}>
-                <Icon name="fileText" size={16} />
-                Tải PDF
-              </button>
+              <MenuButton
+                label="Tải xuống"
+                icon="download"
+                disabled={busy}
+                items={[
+                  { key: 'docx', lead: <FileTypeTag pdf={false} size={22} />, label: 'Word', onSelect: () => void download('docx') },
+                  { key: 'pdf', lead: <FileTypeTag pdf size={22} />, label: 'PDF', onSelect: () => void download('pdf') },
+                ]}
+              />
             )}
             {minutes && canBuild && (
               <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setConfirming(true)}>
@@ -523,14 +507,6 @@ function MinutesCard({
       )}
 
       {minutes && draft === null && <MinutesPaper content={minutes.content} />}
-      {printing &&
-        minutes &&
-        createPortal(
-          <div className="minutes-print">
-            <MinutesPaper content={minutes.content} />
-          </div>,
-          document.body,
-        )}
 
       {minutes && draft !== null && (
         <form
@@ -540,24 +516,22 @@ function MinutesCard({
             void save()
           }}
         >
-          <label className="field">
-            <span className="field-label">
-              Nội dung biên bản
-              <InfoTip text="Dấu đầu dòng: ## tiêu đề mục, ### tiêu đề nhỏ, - gạch đầu dòng, **chữ đậm**, __chữ nghiêng__, @@ trái | phải là hai cột (phần đầu và chữ ký). “……” là chỗ cần điền." />
-            </span>
-            <textarea rows={28} value={draft} onChange={(event) => setDraft(event.target.value)} />
-          </label>
-          <div className="minutes-editor-preview" aria-label="Xem trước">
-            <MinutesPaper content={draft} />
-          </div>
-          <div className="row-actions minutes-form-actions">
-            <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setDraft(null)}>
-              Huỷ
-            </button>
-            <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !draft.trim()}>
-              {busy ? 'Đang lưu…' : 'Lưu'}
-            </button>
-          </div>
+          <Suspense fallback={<div className="skeleton minutes-skeleton" />}>
+            <MinutesEditor
+              content={draft}
+              onChange={setDraft}
+              actions={
+                <>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setDraft(null)}>
+                    Huỷ
+                  </button>
+                  <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !draft.trim()}>
+                    {busy ? 'Đang lưu…' : 'Lưu'}
+                  </button>
+                </>
+              }
+            />
+          </Suspense>
         </form>
       )}
 

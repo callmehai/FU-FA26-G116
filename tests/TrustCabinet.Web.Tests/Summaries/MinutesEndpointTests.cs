@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;
 using TrustCabinet.Infrastructure.Summaries;
+using UglyToad.PdfPig;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Summaries;
@@ -152,12 +153,14 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Equal(HttpStatusCode.NotFound,
             (await Save(member, id, "x", minutes.GetProperty("updatedAt").GetString())).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/minutes/{id}/export")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/minutes/{id}/export?format=pdf")).StatusCode);
 
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync(s.Minutes)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.PostAsJsonAsync(s.Minutes, new { rebuild = true })).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound,
             (await Save(outsider, id, "x", minutes.GetProperty("updatedAt").GetString())).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync($"/api/minutes/{id}/export")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync($"/api/minutes/{id}/export?format=pdf")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await secretary.GetAsync($"/api/minutes/{Guid.NewGuid()}/export")).StatusCode);
 
         await using var db = f.Db();
@@ -275,6 +278,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
             Assert.Equal("Issued", (await State(member, s)).GetProperty("minutes").GetProperty("status").GetString());
             await AssertCode(await Save(member, id, "x", minutes.GetProperty("updatedAt").GetString()), 403, "MSG397");
             await AssertCode(await member.GetAsync($"/api/minutes/{id}/export"), 403, "MSG397");
+            await AssertCode(await member.GetAsync($"/api/minutes/{id}/export?format=pdf"), 403, "MSG397");
         }
         await using var check = f.Db();
         Assert.Equal(minutes.GetProperty("content").GetString(), (await check.MeetingMinutes.SingleAsync(m => m.Id == id)).Content);
@@ -291,6 +295,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Equal("application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             response.Content.Headers.ContentType!.MediaType);
         Assert.Equal($"Biên bản - {SummaryFixture.Title}.docx", response.Content.Headers.ContentDisposition!.FileNameStar);
+        Assert.True(response.Headers.CacheControl!.NoStore);
         var bytes = await response.Content.ReadAsByteArrayAsync();
         Assert.Equal("PK"u8.ToArray(), bytes[..2]);
         using var zip = new ZipArchive(new MemoryStream(bytes));
@@ -303,12 +308,74 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
     }
 
     [Fact]
+    public async Task Export_returns_a_pdf_of_the_draft_in_its_own_font()
+    {
+        var s = await f.Seed();
+        using var secretary = f.Client(s.Secretary);
+        var id = (await Create(secretary, s)).GetProperty("id").GetGuid();
+        var response = await secretary.GetAsync($"/api/minutes/{id}/export?format=pdf");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/pdf", response.Content.Headers.ContentType!.MediaType);
+        Assert.Equal($"Biên bản - {SummaryFixture.Title}.pdf", response.Content.Headers.ContentDisposition!.FileNameStar);
+        Assert.True(response.Headers.CacheControl!.NoStore);
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal("%PDF"u8.ToArray(), bytes[..4]);
+
+        using var pdf = PdfDocument.Open(bytes);
+        var page = pdf.GetPage(1);
+        // A4 in points.
+        Assert.Equal(595, Math.Round(page.Width));
+        Assert.Equal(842, Math.Round(page.Height));
+        var text = string.Join(" ", pdf.GetPages().Select(p => string.Join(" ", p.GetWords().Select(w => w.Text))));
+        Assert.Contains("BIÊN BẢN", text);
+        Assert.Contains("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", text);
+        Assert.Contains("Trần Chủ Trì", text);
+        Assert.Contains("Nguyễn Thư Ký", text);
+        Assert.DoesNotContain("**", text);
+        // Every letter comes from the bundled Liberation Serif, never a font the server happens to have.
+        var fonts = pdf.GetPages().SelectMany(p => p.Letters).Select(l => l.FontName ?? "").Distinct().ToList();
+        Assert.NotEmpty(fonts);
+        Assert.All(fonts, name => Assert.Contains("LiberationSerif", name));
+        Assert.Contains(fonts, name => name.EndsWith("LiberationSerif-Bold", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void The_pdf_draws_every_vietnamese_letter_and_survives_characters_its_font_lacks()
+    {
+        const string letters = "aàáảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoòóỏõọôồốổỗộơờớởỡợuùúủũụưừứửữựyỳýỷỹỵđ";
+        // A decomposed "ị" (i + dot below), a tab, an emoji with its variation selector and one without.
+        var content = $"# {letters.ToUpperInvariant()}\n{letters}\n**__{letters}__**\nNgh\u0069\u0323 quyết\tsố 1 \u2705\uFE0F 🙂";
+        var bytes = MinutesPdf.Build(content);
+        using var pdf = PdfDocument.Open(bytes);
+        var text = string.Concat(pdf.GetPages().SelectMany(p => p.Letters).Select(l => l.Value).Where(v => !string.IsNullOrWhiteSpace(v)));
+        Assert.Contains(letters, text);
+        Assert.Contains(letters.ToUpperInvariant(), text);
+        // Composed into one letter, the tab drawn as a space, each emoji as one "?".
+        Assert.EndsWith("Nghịquyếtsố1??", text);
+    }
+
+    [Theory]
+    [InlineData("xlsx")]
+    [InlineData("html")]
+    public async Task An_unknown_export_format_is_refused(string format)
+    {
+        var s = await f.Seed();
+        using var secretary = f.Client(s.Secretary);
+        var id = (await Create(secretary, s)).GetProperty("id").GetGuid();
+        await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export?format={format}"), 400, "MSG406");
+        // Word is the default, and either name may be asked for.
+        foreach (var url in new[] { $"/api/minutes/{id}/export?format=docx", $"/api/minutes/{id}/export?format=PDF" })
+            Assert.Equal(HttpStatusCode.OK, (await secretary.GetAsync(url)).StatusCode);
+    }
+
+    [Fact]
     public async Task A_secret_meeting_minutes_are_not_exported()
     {
         var s = await f.Seed(sensitivity: Sensitivity.Secret);
         using var secretary = f.Client(s.Secretary);
         var id = (await Create(secretary, s)).GetProperty("id").GetGuid();
         await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export"), 403, "MSG405");
+        await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export?format=pdf"), 403, "MSG405");
         // Still read on screen.
         Assert.NotEqual(JsonValueKind.Null, (await State(secretary, s)).GetProperty("minutes").ValueKind);
     }
@@ -326,6 +393,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         {
             await AssertCode(await secretary.GetAsync(s.Minutes), 500, "MSG403");
             await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export"), 500, "MSG403");
+            await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export?format=pdf"), 500, "MSG403");
         }
         finally { f.Failures.FailMinutesRead = false; }
 

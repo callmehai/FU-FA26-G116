@@ -18,6 +18,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.12" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <!-- The minutes as PDF (SCRUM-32), drawn on the server without LibreOffice. Community license: a public, non-commercial
+         student project (MinutesPdf sets it). -->
+    <PackageReference Include="QuestPDF" Version="2026.9.1" />
     <PackageReference Include="StackExchange.Redis" Version="3.3.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
   </ItemGroup>
@@ -27,6 +30,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Liberation Serif 2.1.5 (SIL OFL 1.1, Summaries/Fonts/LICENSE): metric-compatible with Times New Roman and covers
+         Vietnamese. The runtime image has no Times New Roman, so the PDF minutes carry their own font. -->
+    <EmbeddedResource Include="Summaries\Fonts\*.ttf" LogicalName="TrustCabinet.Fonts.%(Filename)%(Extension)" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- GoogleTokenVerifier.IdentityFrom is internal: the rules it holds (email must be verified,
