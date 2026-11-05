@@ -978,7 +978,9 @@ a.menu-item { text-decoration: none; }
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 20px 24px 32px;
+  /* Its bottom padding: a bar stuck to the bottom of the screen subtracts it, since sticky offsets count from inside it. */
+  --content-pad-bottom: 32px;
+  padding: 20px 24px var(--content-pad-bottom);
 }
 
 .route-fallback { padding: 24px; color: var(--muted-ink); }
@@ -2915,7 +2917,7 @@ a.menu-item { text-decoration: none; }
   .page-header { flex-wrap: wrap; }
   .field-grid, .form-grid, .form-row-3 { grid-template-columns: minmax(0, 1fr); }
   .page-alert { flex-direction: column; align-items: flex-start; }
-  .content { padding: 20px 16px; }
+  .content { --content-pad-bottom: 20px; padding: 20px 16px var(--content-pad-bottom); }
   .search { width: 100%; }
   .tabs { overflow-x: auto; }
 }
@@ -4005,7 +4007,7 @@ audio.recording-player { height: 40px; }
 .mic-notice svg { flex: none; margin-top: 1px; }
 .mic-notice-error { border-color: var(--edge-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
 /* The page scrolls past the card, so the last row of a list is never left under it. */
-body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16px); }
+body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px) + 16px); }
 /* A phone keeps the sidebar's rail on the left: the card stays clear of it. */
 @media (max-width: 560px) {
   .mic-card { width: min(320px, calc(100vw - var(--sidebar-width-collapsed) - 24px)); }
@@ -4077,11 +4079,25 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
 
 /* SCRUM-35 — voices of a recording and who they are. Several small cells to a row, so six voices
    take two lines on a desktop instead of six. */
-.speaker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 8px 16px; margin: 0; padding: 8px 12px; list-style: none; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
-.speaker-row { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; gap: 4px 8px; font-size: 14px; }
+/* As AI-eCabinet's voice cards: one bordered card a voice, the name (its picker) on the left and the speaking time
+   pinned to the right of the same line. A name too long for the card wraps inside its own column (PO 03/11/2026: a
+   name is never cut), so the time never drops under it. */
+/* Each card as wide as its name, several to a line, each line filled: a long name gets the width it needs instead of
+   wrapping in a narrow column, and only a name wider than the whole line wraps. */
+.speaker-list { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.speaker-row {
+  flex: 1 1 auto; min-width: min(100%, 220px); max-width: 100%;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; min-width: 0; min-height: 42px;
+  padding: 4px 10px 4px 4px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  font-size: 14px;
+}
+.speaker-who { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .speaker-row .select { min-width: 0; }
-/* The picker fits its name rather than the cell, so the time sits right after it. */
+.speaker-row .speaker-name { padding-left: 6px; }
+/* Borderless inside the card, as eCab's: the card is the box; an unnamed voice keeps its dashed outline. */
 .speaker-row .select-trigger { width: auto; max-width: 100%; }
+.speaker-row .select-trigger:not(.select-empty) { border-color: transparent; background: transparent; box-shadow: none; }
+.speaker-row .select-trigger:not(.select-empty):hover { background: var(--surface-alt); }
 .speaker-row .select-value, .speaker-row .select-placeholder { min-width: 0; }
 /* A person's name is never cut (PO 03/11/2026): where it does not fit, the speaking time moves below it, and a name
    longer than the whole row wraps rather than ending in "…". */
@@ -4538,7 +4554,15 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
    sections is not found. The host is the last item of the tab's column and sticks there, so the bar follows the screen
    anywhere in the tab. As AI-eCabinet's SaveBar: a white card with a deep shadow that lifts it clear of the text it
    floats over, 38px buttons. */
-.outline-savebar-host { position: sticky; bottom: 16px; z-index: 30; margin-top: -16px; }
+/* 16px above the screen's edge, whatever the column's bottom padding (it grows while the mic button is out). */
+.outline-savebar-host {
+  position: sticky; bottom: calc(16px - var(--content-pad-bottom, 0px)); z-index: 30; margin-top: -16px;
+}
+/* At the end of the tab the bar would stop above that padding: the tab reaches down into it while the bar is open.
+   Only beside the side column — stacked, the side cards come after the tab and the bar stops above them. */
+@media (min-width: 961px) {
+  .minutes-tab:has(.outline-savebar.is-open) { margin-bottom: calc(-1 * var(--content-pad-bottom, 0px)); }
+}
 .outline-savebar {
   display: flex; align-items: flex-end; justify-content: center; height: 0; padding: 0 16px; pointer-events: none;
   transition: height 0.2s;
@@ -4563,7 +4587,7 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .outline-savebar-status { flex-basis: 100%; }
   .outline-savebar-actions { flex: 1; }
   .outline-savebar-actions .btn { flex: 1; }
-  body:has(.mic-dock) .outline-savebar-host { bottom: calc(var(--mic-dock-h, 0px) + 8px); }
+  body:has(.mic-dock) .outline-savebar-host { bottom: calc(var(--mic-dock-h, 0px) + 16px - var(--content-pad-bottom, 0px)); }
 }
 /* No room for a first line beside a heading on a phone; the heading wraps instead of being cut. */
 @media (max-width: 720px) {

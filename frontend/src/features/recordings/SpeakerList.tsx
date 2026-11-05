@@ -31,28 +31,30 @@ export function SpeakerList({ transcript, onChanged }: { transcript: Transcript;
         const spoke = formatDuration(voice.speechMs)
         return (
           <li key={voice.speaker.label} className="speaker-row">
-            {transcript.canEdit ? (
-              <SpeakerPicker transcript={transcript} voice={voice} onChanged={onChanged} />
-            ) : (
-              <span className="speaker-name">
+            <span className="speaker-who">
+              {transcript.canEdit ? (
+                <SpeakerPicker transcript={transcript} voice={voice} onChanged={onChanged} />
+              ) : (
+                <span className="speaker-name">
+                  <span
+                    className="select-dot"
+                    style={{ background: speakerColor(voice.speaker.label) }}
+                    aria-hidden="true"
+                  />
+                  {voiceName(voice.speaker)}
+                </span>
+              )}
+              {voice.labels.length > 1 && (
                 <span
-                  className="select-dot"
-                  style={{ background: speakerColor(voice.speaker.label) }}
-                  aria-hidden="true"
-                />
-                {voiceName(voice.speaker)}
-              </span>
-            )}
-            {voice.labels.length > 1 && (
-              <span
-                className="speaker-same"
-                tabIndex={0}
-                aria-label={`Gộp ${voice.labels.length} giọng`}
-                data-tooltip={`Gộp ${voice.labels.length} giọng máy nghe là cùng một người`}
-              >
-                <Icon name="users" size={14} />
-              </span>
-            )}
+                  className="speaker-same"
+                  tabIndex={0}
+                  aria-label={`Gộp ${voice.labels.length} giọng`}
+                  data-tooltip={`Gộp ${voice.labels.length} giọng máy nghe là cùng một người`}
+                >
+                  <Icon name="users" size={14} />
+                </span>
+              )}
+            </span>
             <span className="speaker-time" tabIndex={0} data-tooltip={`Nói tổng cộng ${spoke}`}>
               {spoke}
             </span>
