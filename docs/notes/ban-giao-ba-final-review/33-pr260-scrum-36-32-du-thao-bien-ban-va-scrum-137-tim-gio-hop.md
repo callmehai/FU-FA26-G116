@@ -8,10 +8,9 @@ PR #260 làm hai bước như AI-eCabinet (commit `bba2097f`): **dự thảo AI*
 (SCRUM-32). Có mấy chỗ làm khác ticket, đã ghi trong comment Jira của hai ticket; lúc BA Final Review Khánh nhờ
 cập nhật tài liệu theo code. Note này gom việc BA, không thay Jira hay đặc tả.
 
-> **Ràng buộc nhánh.** PR #260 **chưa merge**. `docs/03-api/17-du-thao-bien-ban.md`, ADR-0054 và hai thực thể
-> `MeetingSummary`/`MeetingMinutes` chỉ có trên nhánh của #260; Report 3 DOCX đang sửa ở PR #259 (note 32), nên
-> nhánh BA của note này là `docs/ba-final-review-pr260-scrum-36-32` (PR #261, stacked trên #259). Sửa DOCX sau khi
-> #259 merge, hoặc sửa luôn trên nhánh stacked — DOCX không merge được (gộp ba chiều theo đoạn).
+> **Ràng buộc nhánh (đã gỡ 05/11/2026).** PR #260 và PR #259/#261 đều đã vào `main`.
+> `docs/03-api/17-du-thao-bien-ban.md`, ADR-0054 và hai thực thể `MeetingSummary`/`MeetingMinutes` đã có trên
+> main; Report 3 DOCX sửa trực tiếp trên nhánh từ main rồi sync như thường lệ.
 
 ## 0. Tóm tắt
 
@@ -114,7 +113,7 @@ cập nhật tài liệu theo code. Note này gom việc BA, không thay Jira ha
 |---|---|
 | `MSG395` | Đã tạo (hoặc tạo lại) bản nháp biên bản |
 | `MSG396` | Đã lưu biên bản |
-| `MSG397` | Không phải Chủ tọa/Thư ký mà soạn biên bản đã ban hành |
+| `MSG397` | Không phải Chủ tọa/Thư ký mà bấm tạo, sửa, xuất biên bản hoặc xem biên bản đã ban hành (xem/sửa bản nháp: 404 rỗng) |
 | `MSG398` | Cuộc họp chưa bắt đầu hoặc đã huỷ |
 | `MSG399` | Đã có bản nháp mà không xin tạo lại |
 | `MSG400` | Biên bản đã gửi duyệt hoặc đã ban hành |
@@ -165,13 +164,12 @@ cập nhật tài liệu theo code. Note này gom việc BA, không thay Jira ha
 - [x] Inventory: actor UC-47–UC-50 (AI Drafting Service thay "Google AI Provider"), trạng thái UC-58–UC-60.
 - [x] Sequence `.txt` UC-47–UC-50 (FE-10) và UC-58–UC-60 (FE-12), xuất PNG bằng `node scripts/export-diagrams.js`.
 - [x] Phụ lục MSG trong Report 3 §V.2 thêm `MSG384`–`MSG405` (English) để `check_docx.py` qua.
-- [ ] Gộp 7 tab mới vào `TrustCabinet_Sequence_Diagrams.drawio` và xuất ảnh `drawio-png/` (máy có draw.io; xem
+- [x] Gộp 7 tab mới vào `TrustCabinet_Sequence_Diagrams.drawio` và xuất ảnh `drawio-png/` (05/11/2026, đợt follow-up review #261; xem
   [note 32 §4](32-scrum-20-25-26-69-97-98-fe06-fe05-ba-final-review.md) về lỗi tab lệch kiểu trên Windows).
-- [ ] Chạy lại `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
+- [x] Chạy lại `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
   sau khi #259 merge (DOCX là nguồn; `05-…`, `06-…` và `Report-3_….md` là bản sinh ra). Lượt 05/11/2026 đã chạy trên
-  nhánh stacked, `sync_requirement_extracts.py --check` báo khớp.
-- [ ] `MSG384`–`MSG405` chỉ có trong danh mục ở nhánh #260; trên nhánh docs hiện tại `sync_reports.py` còn cảnh báo
-  21 mã "chưa có trong 00-danh-muc-ma-thong-bao.md" — hết cảnh báo sau khi #260 vào `main`.
+  nhánh main, `sync_requirement_extracts.py --check` báo khớp.
+- [x] `MSG384`–`MSG405` đã có trong danh mục trên main sau khi #260 vào (04/11/2026); `sync_reports.py` không còn cảnh báo.
 - [ ] Comment kết quả vào **SCRUM-36** và **SCRUM-32** sau khi #260 và nhánh docs vào `main`
   ([DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update)); nêu rõ
   UC-51 và UC-61–UC-65 chưa đặc tả vì chưa có code.
