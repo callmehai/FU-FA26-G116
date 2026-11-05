@@ -307,6 +307,21 @@ public sealed class MinutesFileTests
     }
 
     [Fact]
+    public void Nested_tables_too_narrow_to_lay_out_shrink_once_not_at_every_level()
+    {
+        // Three levels of six columns: the innermost cells are too narrow for their words, so the PDF is drawn again with
+        // its cells shrunk. Shrunk at every level, the measuring multiplies again and a document near the size limit took 46 s.
+        var html = string.Concat(Enumerable.Repeat("<p>Nội dung cuộc họp</p>", 4));
+        for (var i = 0; i < 3; i++) html = "<table><tbody><tr>" + string.Concat(Enumerable.Repeat($"<td>{html}</td>", 6)) + "</tr></tbody></table>";
+        html = string.Concat(Enumerable.Repeat(html, 8));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var text = PdfText(MinutesPdf.Build(MinutesHtml.Sanitize(html)));
+        // About 2 s on a laptop; shrunk at every level, 14 s.
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(12), $"took {clock.Elapsed}");
+        Assert.Contains("Nội", text);
+    }
+
+    [Fact]
     public void After_a_line_break_the_pdf_does_not_indent_the_first_line_again()
     {
         using var pdf = PdfDocument.Open(MinutesPdf.Build("<p>Dòng đầu<br>Ngắt</p>"));

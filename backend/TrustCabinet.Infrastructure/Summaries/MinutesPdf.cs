@@ -239,7 +239,9 @@ public static class MinutesPdf
                         "bottom" => box.AlignBottom(),
                         _ => box.AlignTop(),
                     };
-                    if (drawing.ShrinkCells) box = box.ScaleToFit();
+                    // Only the outermost table's cells: shrinking one shrinks the tables inside it too, and a shrink in a
+                    // shrink multiplies QuestPDF's measuring again (three levels of six columns: 46 s instead of 3 s).
+                    if (drawing.ShrinkCells && drawing.TableDepth == 1) box = box.ScaleToFit();
                     box.Column(column =>
                     {
                         foreach (var block in cell.Blocks) Block(column, block, drawing);
