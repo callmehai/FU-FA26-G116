@@ -4015,6 +4015,41 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
 .dialog-sheet { width: min(520px, 100vw); max-width: none; height: 100dvh; max-height: none; margin: 0 0 0 auto; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: var(--paper); }
 .dialog-sheet .dialog-head { background: var(--surface); }
 .dialog-sheet .dialog-body { flex: 1; min-height: 0; padding: 16px 20px; }
+/* Gán tên người nói (eCab's NameVoicesSheet): one card per unnamed voice — its picker, how much it said, two lines
+   to hear — and a footer that counts what is left. */
+.name-voices { display: grid; gap: 12px; }
+.name-voices-skeleton { height: 220px; border-radius: var(--radius-lg); }
+.name-voices-recording, .name-voices-list { display: grid; gap: 8px; }
+.name-voices-list, .name-voice-lines { margin: 0; padding: 0; list-style: none; }
+.name-voice {
+  display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.name-voice-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.name-voice-head .select { min-width: 0; max-width: 100%; }
+.name-voice-count { flex: none; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+.name-voice-guess { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--brand-ink); font-size: 13px; }
+.name-voice-lines { display: grid; gap: 6px; }
+.name-voice-lines li { display: flex; align-items: flex-start; gap: 8px; }
+.name-voice-play {
+  display: grid; flex: none; place-items: center; width: 24px; height: 24px; margin-top: 1px; padding: 0;
+  border: 1px solid var(--control-line); border-radius: 50%; background: var(--surface); color: var(--brand); cursor: pointer;
+}
+.name-voice-play:hover { background: var(--brand-wash); }
+.name-voice-play:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.name-voice-play.is-on { border-color: var(--brand); background: var(--brand); color: #fff; }
+.name-voice-text {
+  display: -webkit-box; min-width: 0; overflow: hidden; color: var(--ink-soft); font-size: 13.5px;
+  -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+}
+.name-voices-done { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--muted-ink); font-size: 13.5px; }
+.name-voices-foot { display: grid; gap: 8px; width: 100%; }
+.name-voices-left { margin: 0; color: var(--warning-ink); font-size: 13px; }
+.name-voices-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+@media (max-width: 720px), (pointer: coarse) {
+  .name-voice-play { width: 36px; height: 36px; }
+  .name-voices-actions .btn { flex: 1; }
+}
 .my-clips-section + .my-clips-section { margin-top: 20px; }
 .my-clips-section h3 { margin: 0 0 8px; color: var(--ink-soft); font-size: 13px; font-weight: 700; }
 .my-clips-section ul { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }

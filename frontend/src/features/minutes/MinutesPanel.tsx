@@ -21,6 +21,7 @@ import type { MinutesState, SummaryReadiness, SummaryState } from '../../types/s
 import { FileTypeTag } from '../documents/DocumentTags'
 import { saveBlob } from '../documents/documentFile'
 import { MinutesPaper } from './MinutesPaper'
+import { NameVoicesSheet } from './NameVoicesSheet'
 import { OutlineSections, type OutlineValues } from './OutlineSections'
 
 // The editor brings TipTap with it: it loads when someone opens the minutes to edit, not with every meeting page.
@@ -34,7 +35,7 @@ type Load<T> = { kind: 'loading' } | { kind: 'error'; message: string } | { kind
  * (Decree 30's Mẫu 1.4) with the Dự thảo as it stands in sections I–III, as eCab composes them. Writing a draft takes
  * minutes on a laptop, so the card polls while it waits.
  */
-export function MinutesPanel({ meeting, onOpenRecordings }: { meeting: Meeting; onOpenRecordings?: () => void }) {
+export function MinutesPanel({ meeting }: { meeting: Meeting }) {
   const [summary, setSummary] = useState<Load<SummaryState>>({ kind: 'loading' })
   const [minutes, setMinutes] = useState<Load<MinutesState>>({ kind: 'loading' })
   const [barHost, setBarHost] = useState<HTMLDivElement | null>(null)
@@ -85,7 +86,6 @@ export function MinutesPanel({ meeting, onOpenRecordings }: { meeting: Meeting; 
         barHost={barHost}
         onChanged={setSummary}
         onRetry={() => void loadSummary()}
-        onOpenRecordings={onOpenRecordings}
       />
       <MinutesCard
         meeting={meeting}
@@ -114,20 +114,18 @@ function SummaryCard({
   barHost,
   onChanged,
   onRetry,
-  onOpenRecordings,
 }: {
   meeting: Meeting
   state: Load<SummaryState>
   barHost: HTMLElement | null
   onChanged: (state: Load<SummaryState>) => void
   onRetry: () => void
-  /** Where the room's voices are named; the readiness note offers it. */
-  onOpenRecordings?: () => void
 }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const [naming, setNaming] = useState(false)
 
   if (state.kind === 'loading') return <section className="card minutes-card" aria-busy="true"><div className="skeleton minutes-skeleton" /></section>
   if (state.kind === 'error')
@@ -250,7 +248,7 @@ function SummaryCard({
       )}
 
       {canManage && readiness && !running && (
-        <ReadinessNote readiness={readiness} drafted={!!draft} onNameVoices={onOpenRecordings} />
+        <ReadinessNote readiness={readiness} drafted={!!draft} onNameVoices={() => setNaming(true)} />
       )}
 
       {summary?.status === 'Failed' && (
@@ -307,6 +305,25 @@ function SummaryCard({
         >
           AI viết lại từ đầu. Khi xong, dự thảo mới thay dự thảo hiện tại, kể cả phần đã sửa và đã duyệt.
         </ConfirmDialog>
+      )}
+
+      {naming && (
+        <NameVoicesSheet
+          meetingId={meeting.id}
+          drafted={!!draft}
+          canGenerate={!canAsk ? 'Tạo dự thảo khi cuộc họp đã bắt đầu.' : running ? 'AI đang viết dự thảo' : askBlocked}
+          onClose={() => {
+            setNaming(false)
+            // Names given here change the readiness and may leave the draft behind the transcript.
+            onRetry()
+          }}
+          onGenerate={() => {
+            setNaming(false)
+            onRetry()
+            if (draft) setConfirming(true)
+            else void ask().catch(() => undefined)
+          }}
+        />
       )}
     </section>
   )
