@@ -180,7 +180,7 @@ export function AiSettingsPage() {
               <span className={api ? 'field-required' : undefined}>Model</span>
               <input
                 value={model}
-                placeholder="deepseek-v4.1-flash"
+                placeholder="deepseek-v4.1-flash-free"
                 onChange={(e) => {
                   setModel(e.target.value)
                   clear('apiModel')

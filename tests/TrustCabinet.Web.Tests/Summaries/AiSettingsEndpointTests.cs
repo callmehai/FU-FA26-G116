@@ -174,6 +174,11 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
         f.Api.Status = HttpStatusCode.Unauthorized;
         var refused = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", Api(key: null)), 502, "MSG413");
         Assert.Contains("từ chối key", refused.GetProperty("message").GetString());
+
+        // A paid model on an account without credit says so instead of a bare status code.
+        f.Api.Status = HttpStatusCode.PaymentRequired;
+        var unpaid = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", Api(key: null)), 502, "MSG413");
+        Assert.Contains("đòi thanh toán (402)", unpaid.GetProperty("message").GetString());
         f.Api.Reset();
     }
 

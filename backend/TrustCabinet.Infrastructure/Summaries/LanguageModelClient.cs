@@ -104,9 +104,14 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
         using (response)
         {
             if (!response.IsSuccessStatusCode)
-                throw new LanguageModelException((int)response.StatusCode is 401 or 403 && remote
-                    ? $"API AI từ chối key ({(int)response.StatusCode})."
-                    : $"{Machine} trả lỗi {(int)response.StatusCode}.");
+                throw new LanguageModelException(((int)response.StatusCode, remote) switch
+                {
+                    (401 or 403, true) => $"API AI từ chối key ({(int)response.StatusCode}).",
+                    // 402 Payment Required: a paid model on an account without credit — free models usually end in "-free".
+                    (402, true) => "API AI đòi thanh toán (402): model này trả phí hoặc tài khoản hết tiền. Thử model miễn phí (thường có đuôi -free).",
+                    (429, true) => "API AI đang giới hạn số lần gọi (429). Thử lại sau ít phút.",
+                    var (status, _) => $"{Machine} trả lỗi {status}.",
+                });
             ChatResponse? body;
             try
             {

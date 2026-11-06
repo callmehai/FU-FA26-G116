@@ -21,7 +21,7 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
 {
   "mode": "Api",
   "apiBaseUrl": "https://opencode.ai/zen/v1",
-  "apiModel": "deepseek-v4.1-flash",
+  "apiModel": "deepseek-v4.1-flash-free",
   "hasApiKey": true,
   "apiKeyHint": "abcd",
   "localModel": "qwen2.5:7b-instruct",
@@ -52,7 +52,7 @@ Body: `{ mode, apiBaseUrl, apiModel, apiKey }`.
 | `MSG409` | 400 | Dữ liệu sai; `errors` theo trường `mode`, `apiBaseUrl`, `apiModel`, `apiKey` |
 | `MSG410` | 500 | Lỗi database khi đọc |
 | `MSG411` | 503 | Lỗi database khi lưu |
-| `MSG413` | 502 | Gọi thử thất bại; `message` là lý do: `API AI từ chối key (401).`, không kết nối được, API trả lỗi |
+| `MSG413` | 502 | Gọi thử thất bại; `message` là lý do: `API AI từ chối key (401).`, `API AI đòi thanh toán (402)…` (model trả phí, tài khoản hết tiền), `…giới hạn số lần gọi (429)…`, không kết nối được, API trả lỗi khác |
 
 Mỗi lần lưu ghi nhật ký kiểm toán `ai_settings.updated` (chế độ, địa chỉ, model, key `kept`/`replaced`/`removed`), không
 có key.
