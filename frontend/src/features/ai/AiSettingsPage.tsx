@@ -39,7 +39,6 @@ export function AiSettingsPage() {
   const [baseUrl, setBaseUrl] = useState('')
   const [model, setModel] = useState('')
   const [key, setKey] = useState('')
-  const [removeKey, setRemoveKey] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
@@ -51,7 +50,6 @@ export function AiSettingsPage() {
     setBaseUrl(next.apiBaseUrl)
     setModel(next.apiModel)
     setKey('')
-    setRemoveKey(false)
   }, [])
 
   const load = useCallback(async () => {
@@ -71,7 +69,7 @@ export function AiSettingsPage() {
     mode,
     apiBaseUrl: baseUrl,
     apiModel: model,
-    apiKey: removeKey ? '' : key.trim() ? key : null,
+    apiKey: key.trim() ? key : null,
   })
 
   const clear = (field: Field) => setErrors((current) => ({ ...current, [field]: undefined }))
@@ -142,7 +140,6 @@ export function AiSettingsPage() {
               options={MODES}
               onChange={(next) => {
                 setMode(next)
-                setRemoveKey(false)
                 setTest(null)
                 clear('mode')
               }}
@@ -156,23 +153,6 @@ export function AiSettingsPage() {
               {settings.localConfigured ? 'Đã cấu hình' : 'Chưa cấu hình'}
             </Badge>
           </p>
-
-          {!api && settings.hasApiKey && (
-            <p className="ai-settings-local">
-              <span>Key API</span>
-              <strong>{removeKey ? 'Sẽ xoá khi lưu' : `••••${settings.apiKeyHint}`}</strong>
-              <button
-                type="button"
-                className={removeKey ? 'icon-button is-pressed' : 'icon-button'}
-                aria-label={removeKey ? 'Giữ key đã lưu' : 'Xoá key đã lưu'}
-                aria-pressed={removeKey}
-                data-tooltip={removeKey ? 'Giữ key đã lưu' : 'Xoá key đã lưu'}
-                onClick={() => setRemoveKey((v) => !v)}
-              >
-                <Icon name="trash" size={16} />
-              </button>
-            </p>
-          )}
 
           {api && (
             <fieldset className="form-grid ai-settings-api">
@@ -220,7 +200,6 @@ export function AiSettingsPage() {
                     placeholder={settings.hasApiKey ? `Đã lưu ••••${settings.apiKeyHint}` : 'Dán key'}
                     onChange={(e) => {
                       setKey(e.target.value)
-                      setRemoveKey(false)
                       clear('apiKey')
                       setTest(null)
                     }}
