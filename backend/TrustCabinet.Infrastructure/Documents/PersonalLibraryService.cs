@@ -20,7 +20,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
     private static bool PersistenceError(Exception ex) => StoredFileWriter.PersistenceError(ex);
 
     public async Task<LibraryOutcome<LibraryView>> ViewAsync(Guid readerId, Guid ownerId, Guid? folderId,
-        string? search, string? fileType, CancellationToken ct = default)
+        string? search, string? fileType, Guid? meetingId = null, CancellationToken ct = default)
     {
         try
         {
@@ -43,7 +43,8 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(d => EF.Functions.ILike(d.FileName, "%" + EscapeLike(search.Trim()) + "%", "\\"));
             if (ContentTypeOf(fileType) is { } contentType) query = query.Where(d => d.StoredFile.ContentType == contentType);
-            var documents = await Project(query.OrderBy(d => d.FileName).ThenBy(d => d.Id), readerId).ToListAsync(ct);
+            var documents = await Project(query.OrderBy(d => d.FileName).ThenBy(d => d.Id), readerId, meetingId)
+                .ToListAsync(ct);
             return new(Value: new(folderId, folders, documents, await writer.UsedBytesAsync(ct), writer.LimitBytes));
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -269,13 +270,17 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         return (files, hidden);
     }
 
-    private IQueryable<LibraryDocument> Project(IQueryable<Document> query, Guid readerId)
+    private IQueryable<LibraryDocument> Project(IQueryable<Document> query, Guid readerId, Guid? meetingId = null)
     {
         var readable = db.Meetings.Where(MeetingReadPolicy.ForUser(readerId));
         return query.Select(d => new LibraryDocument(d.Id, d.FileName, d.StoredFile.ContentType, d.StoredFile.ByteSize,
             d.StoredFile.PageCount, d.FolderId, d.CreatedAt,
             // "Used in n meetings", counting only meetings the reader may view (BR-251).
-            readable.Count(m => m.Documents.Any(md => md.DocumentId == d.Id && md.RemovedAt == null))));
+            readable.Count(m => m.Documents.Any(md => md.DocumentId == d.Id && md.RemovedAt == null)),
+            // The same file test that answers MSG165 (BR-193), and only for a meeting the reader may view, so the
+            // flag says nothing about a meeting they cannot see.
+            meetingId != null && readable.Any(m => m.Id == meetingId
+                && m.Documents.Any(md => md.StoredFileId == d.StoredFileId && md.RemovedAt == null))));
     }
 
     private async Task<LibraryOutcome<LibraryDocument>> ChangeDocumentAsync(Guid ownerId, Guid documentId, string what,

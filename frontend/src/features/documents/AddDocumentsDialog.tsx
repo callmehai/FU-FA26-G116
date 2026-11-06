@@ -168,6 +168,8 @@ export function AddDocumentsDialog({
         setFromLibrary(new Map())
         setLibraryReload((n) => n + 1)
       }
+      // MSG165: someone added a chosen document meanwhile; re-read so it shows "Đã có trong cuộc họp".
+      if (isApiError(err, 409, 'MSG165')) setLibraryReload((n) => n + 1)
       // MSG165 already in the meeting, MSG243 / MSG266 already on this item or vote, a save error: the choice stays.
       setFailure(errorMessage(err))
     }
@@ -228,6 +230,8 @@ export function AddDocumentsDialog({
           <LibraryPicker
             selected={fromLibrary}
             reloadKey={libraryReload}
+            // The general group only: an item or a vote links a document already in the meeting (UC-33b, UC-76a AF-2).
+            meetingId={target ? undefined : meeting.id}
             onToggle={(doc) =>
               setFromLibrary((all) => {
                 const next = new Map(all)

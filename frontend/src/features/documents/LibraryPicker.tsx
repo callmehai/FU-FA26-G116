@@ -11,16 +11,20 @@ import { childrenOf, LIBRARY_ROOT, trailOf } from './libraryTree'
 /**
  * Choosing documents from one's own library (UC-33a, UC-33b AF-2): one folder at a time, as the library page
  * reads, with a checkbox per document. The choice survives moving between folders. `reloadKey` re-reads the
- * place after the server said a chosen document is gone (MSG249).
+ * place after the server said a chosen document is gone (MSG249) or already in the meeting (MSG165).
+ * `meetingId` locks the documents already in that meeting (SCRUM-124), for the general group, where adding one
+ * again is refused; a locked one still chosen stays untickable, so the user can drop it.
  */
 export function LibraryPicker({
   selected,
   onToggle,
   reloadKey = 0,
+  meetingId,
 }: {
   selected: Map<string, LibraryDocument>
   onToggle: (doc: LibraryDocument) => void
   reloadKey?: number
+  meetingId?: string
 }) {
   const handleAccessLost = useAccessLost()
   const [folderId, setFolderId] = useState<string | null>(null)
@@ -30,7 +34,7 @@ export function LibraryPicker({
 
   useEffect(() => {
     let live = true
-    getLibrary(folderId)
+    getLibrary(folderId, '', '', meetingId)
       .then((data) => {
         if (!live) return
         setError(null)
@@ -45,7 +49,7 @@ export function LibraryPicker({
     return () => {
       live = false
     }
-  }, [folderId, attempt, reloadKey, handleAccessLost])
+  }, [folderId, attempt, reloadKey, meetingId, handleAccessLost])
 
   const trail = view ? trailOf(view.folders, folderId) : []
   const folders = view ? childrenOf(view.folders, folderId) : []
@@ -106,22 +110,34 @@ export function LibraryPicker({
                 </li>
               ))}
               {!loading &&
-                view.documents.map((doc) => (
-                  <li key={doc.id}>
-                    <label className="picker-row">
-                      <input type="checkbox" checked={selected.has(doc.id)} onChange={() => onToggle(doc)} />
-                      <FileTypeTag pdf={isPdf(doc)} />
-                      <span className="picker-name">
-                        <strong>{doc.fileName}</strong>
-                        <small>
-                          {[doc.pageCount && `${doc.pageCount} trang`, formatBytes(doc.byteSize)]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </small>
-                      </span>
-                    </label>
-                  </li>
-                ))}
+                view.documents.map((doc) => {
+                  const locked = meetingId !== undefined && doc.inMeeting && !selected.has(doc.id)
+                  return (
+                    <li key={doc.id}>
+                      <label className="picker-row" aria-disabled={locked || undefined}>
+                        <input
+                          type="checkbox"
+                          checked={selected.has(doc.id)}
+                          disabled={locked}
+                          onChange={() => onToggle(doc)}
+                        />
+                        <FileTypeTag pdf={isPdf(doc)} />
+                        <span className="picker-name">
+                          <strong>{doc.fileName}</strong>
+                          <small>
+                            {[doc.pageCount && `${doc.pageCount} trang`, formatBytes(doc.byteSize)]
+                              .filter(Boolean)
+                              .join(', ')}
+                            {/* On the meta line, not beside the name: a phone row keeps its width for the name. */}
+                            {meetingId !== undefined && doc.inMeeting && (
+                              <span className="picker-chip">Đã có trong cuộc họp</span>
+                            )}
+                          </small>
+                        </span>
+                      </label>
+                    </li>
+                  )
+                })}
               {!loading && folders.length === 0 && view.documents.length === 0 && (
                 <li className="documents-empty">
                   {folderId ? 'Thư mục này chưa có gì.' : 'Kho tài liệu của bạn chưa có gì.'}

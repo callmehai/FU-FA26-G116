@@ -483,6 +483,55 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
+    public async Task In_meeting_marks_files_already_in_a_meeting_the_owner_can_view_and_nothing_else()
+    {
+        var s = await fixture.Seed();
+        var inMeeting = await AddDocument(fixture, s.Secretary, "Đã có.pdf");
+        var removed = await AddDocument(fixture, s.Secretary, "Đã gỡ.pdf");
+        var fresh = await AddDocument(fixture, s.Secretary, "Chưa có.pdf");
+        Guid hidden;
+        await using (var db = fixture.Db())
+        {
+            var files = await db.Documents.Where(d => d.Id == inMeeting || d.Id == removed)
+                .ToDictionaryAsync(d => d.Id, d => d.StoredFileId);
+            var other = new Meeting { Title = "Không xem được", CreatedById = s.Outsider, Status = MeetingStatus.Draft,
+                PlannedStartTime = DocumentFixture.PlannedStart, PlannedEndTime = DocumentFixture.PlannedStart.AddHours(1) };
+            db.Meetings.Add(other);
+            hidden = other.Id;
+            db.MeetingDocuments.AddRange(
+                new MeetingDocument { MeetingId = s.MeetingId, StoredFileId = files[inMeeting], DocumentId = inMeeting,
+                    FileName = "x", AddedById = s.Secretary },
+                new MeetingDocument { MeetingId = s.MeetingId, StoredFileId = files[removed], DocumentId = removed,
+                    FileName = "y", AddedById = s.Secretary, RemovedAt = DateTimeOffset.UtcNow, RemovedById = s.Secretary },
+                // Every file in a meeting the owner cannot view: the flag must not reveal it.
+                new MeetingDocument { MeetingId = hidden, StoredFileId = files[inMeeting], DocumentId = inMeeting,
+                    FileName = "x", AddedById = s.Secretary },
+                new MeetingDocument { MeetingId = hidden, StoredFileId = files[removed], DocumentId = removed,
+                    FileName = "y", AddedById = s.Secretary });
+            await db.SaveChangesAsync();
+        }
+        using var client = fixture.Client(s.Secretary);
+
+        async Task<Dictionary<Guid, bool>> Marks(string query)
+        {
+            var (status, _, view) = await Read(await client.GetAsync("/api/documents" + query));
+            Assert.Equal(200, status);
+            return view.GetProperty("documents").EnumerateArray().Where(d => d.GetProperty("id").GetGuid() is var id
+                    && (id == inMeeting || id == removed || id == fresh))
+                .ToDictionary(d => d.GetProperty("id").GetGuid(), d => d.GetProperty("inMeeting").GetBoolean());
+        }
+
+        var marks = await Marks($"?meetingId={s.MeetingId}");
+        Assert.True(marks[inMeeting]);
+        Assert.False(marks[removed]);
+        Assert.False(marks[fresh]);
+        // No meeting asked about, one the owner cannot view, or one that does not exist: nothing is marked.
+        Assert.All(await Marks(""), m => Assert.False(m.Value));
+        Assert.All(await Marks($"?meetingId={hidden}"), m => Assert.False(m.Value));
+        Assert.All(await Marks($"?meetingId={Guid.NewGuid()}"), m => Assert.False(m.Value));
+    }
+
+    [Fact]
     public async Task Rename_keeps_the_extension_and_leaves_meeting_copies_alone()
     {
         var s = await fixture.Seed();

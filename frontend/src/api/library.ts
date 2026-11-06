@@ -12,10 +12,14 @@ import { filesForm, type Upload, type UploadOptions } from './documents'
 type Saved<K extends string, T> = { code: string; message: string } & Record<K, T>
 type Done = { code: string; message: string }
 
-/** UC-34: every folder, and the documents at `folderId` (root when null). `q` searches that place only. */
-export function getLibrary(folderId: string | null, q = '', type: '' | 'pdf' | 'docx' = '') {
+/**
+ * UC-34: every folder, and the documents at `folderId` (root when null). `q` searches that place only.
+ * `meetingId` sets `inMeeting` on the documents whose file is already in that meeting (SCRUM-124).
+ */
+export function getLibrary(folderId: string | null, q = '', type: '' | 'pdf' | 'docx' = '', meetingId?: string) {
   const params = new URLSearchParams()
   if (folderId) params.set('folderId', folderId)
+  if (meetingId) params.set('meetingId', meetingId)
   if (q) params.set('q', q)
   if (type) params.set('type', type)
   const query = params.toString()
