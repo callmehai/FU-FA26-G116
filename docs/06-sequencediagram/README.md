@@ -550,13 +550,13 @@ deactivate MeetingPage
 | [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08, UC-09 |
 | [role-management/](role-management/README.md) | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
 | [meeting-management/](meeting-management/README.md) | UC-14 → UC-22, UC-75 |
-| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77 |
+| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77, UC-82 (sơ bộ) |
 | [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 |
 | [document-management/](document-management/README.md) | UC-32a, UC-32c, UC-33a (AF-1), UC-35, UC-74 |
 | [voting-management/](voting-management/README.md) | UC-52a → UC-57, UC-76a, UC-76b |
 | [meeting-recording/](meeting-recording/README.md) | UC-43a → UC-43c, UC-44a → UC-44e, UC-80 |
 | [transcription-voice-id/](transcription-voice-id/README.md) | UC-45a → UC-45c (UC-45c có thêm sơ đồ hệ thống xử lý hàng chờ), UC-46a → UC-46d, UC-47 → UC-50 (dự thảo AI), UC-81a → UC-81f |
-| [minutes-management/](minutes-management/README.md) | UC-58, UC-59, UC-60 (bản nháp biên bản) |
+| [minutes-management/](minutes-management/README.md) | UC-58, UC-59, UC-60 (bản nháp biên bản); UC-61, UC-64, UC-65, UC-83 (sơ bộ, duyệt và ban hành) |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
 | [online-meeting-room/](online-meeting-room/README.md) | UC-37, UC-38, UC-39a → UC-39d (UC-39a AF-2 ghi lời theo micro: `UC39a_RecordSpeechWhileMicrophoneOn`), UC-40, UC-41, UC-42, UC-78, UC-79 |
 
