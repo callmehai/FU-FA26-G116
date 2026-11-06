@@ -534,8 +534,10 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
   đã cấp thì không thu hồi được. Muốn đóng hẳn: thêm cột kiểu `security_stamp` / `password_changed_at`
   vào `users`, đưa vào token, và kiểm nó ở refresh cùng `AdminCallerRevalidation`. Chưa làm vì cần
   migration và chạm vào luồng xác thực của mọi endpoint — cùng cửa sổ 15 phút đã chấp nhận ở UC-06c.
-- **Endpoint ẩn danh `/api/auth/password-reset` chưa có rate limit.** Token 256 bit nên dò không có
-  nghĩa; rate limit sẽ làm chung cho cả `/api/auth/*` khi cần.
+- ~~**Endpoint ẩn danh `/api/auth/password-reset` chưa có rate limit.**~~ — **đã làm** (SCRUM-132): chung giới
+  hạn theo IP với `/login` và `/google`, vượt thì `429 MSG406`, xem
+  [01-xac-thuc.md](01-xac-thuc.md#giới-hạn-số-lần-thử). `POST /api/users/{id}/password-reset` (gửi thư) không giới
+  hạn: cần quyền `AdminUsers` và có nhật ký kiểm toán.
 - **Ghi audit và ghi nghiệp vụ nằm ở hai transaction.** `AuditService` tự `SaveChanges` sau khi
   nghiệp vụ đã commit, nên nếu dòng audit ghi hỏng thì thay đổi nghiệp vụ **đã xảy ra rồi** và
   không rollback lại được: kết quả là 500 kèm một thay đổi không có bằng chứng. Trường hợp duy nhất

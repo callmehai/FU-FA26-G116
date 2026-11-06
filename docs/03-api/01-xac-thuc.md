@@ -552,9 +552,8 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
   gỡ / đổi liên kết của một tài khoản đã liên kết — hiện vẫn bằng SQL, chưa có ticket.
 - ~~**RT trả trong response body, FE lưu ở `localStorage`.**~~ — **đã làm**: RT chỉ còn trong cookie
   `HttpOnly`, xem [trên](#refresh-token-nằm-trong-cookie-tc_refresh_token).
-- **Chưa giới hạn số lần thử sai.** Chưa có rate limit cho `/api/auth/login`, nên chưa chặn dò mật
-  khẩu. Nên làm trước khi hệ thống ra khỏi môi trường nội bộ — và phần chống dò email ở trên mất
-  phần lớn giá trị nếu thiếu nó.
+- ~~**Chưa giới hạn số lần thử sai.**~~ — **đã làm** (SCRUM-132), xem
+  [giới hạn số lần thử](#giới-hạn-số-lần-thử).
 - ~~**Chưa phát hiện refresh token bị dùng lại.**~~ — **đã làm**, xem
   [phát hiện RT bị dùng lại](#phát-hiện-rt-bị-dùng-lại).
 - **Timing oracle với hash sai định dạng.** `PasswordHasher.Verify` bắt `FormatException` rồi trả
