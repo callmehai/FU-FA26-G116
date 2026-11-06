@@ -610,7 +610,7 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 | `MSG384` | 202 | `POST /api/meetings/{id}/summary` | Chủ tọa hoặc Thư ký yêu cầu dự thảo (lần đầu hoặc tạo lại); vào hàng chờ của máy AI | `Đã gửi yêu cầu. Dự thảo sẽ tự hiện khi AI viết xong.` | BE |
 | `MSG385` | 403 | `POST …/summary`, `PUT …/summary`, `POST …/summary/review` | Người trong cuộc họp nhưng không phải Chủ tọa hay Thư ký | `Chỉ Chủ tọa hoặc Thư ký được tạo, sửa và duyệt dự thảo.` | BE |
 | `MSG386` | 409 | `POST …/summary` | Cuộc họp chưa bắt đầu hoặc đã huỷ | `Chỉ tạo dự thảo khi cuộc họp đang diễn ra hoặc đã kết thúc.` | BE |
-| `MSG387` | 409 | `POST …/summary` | Dự thảo đang chờ hoặc AI đang viết | `AI đang viết dự thảo, vui lòng chờ.` | BE |
+| `MSG387` | 409 | `POST …/summary`, `PUT …/summary`, `POST …/summary/review` | Dự thảo đang chờ hoặc AI đang viết (tạo lại, sửa hay duyệt đều phải chờ) | `AI đang viết dự thảo, vui lòng chờ.` | BE |
 | `MSG388` | 200 | `PUT …/summary` | Lưu phần sửa 3 mục của dự thảo; dự thảo về trạng thái chưa duyệt | `Đã lưu dự thảo.` | BE |
 | `MSG389` | 400 | `PUT …/summary` | Mục trống hoặc quá dài (I: 2.000, II: 12.000, III: 8.000 ký tự) | `Nội dung dự thảo không hợp lệ.` | BE |
 | `MSG390` | 409 | `PUT …/summary`, `POST …/summary/review` | Chưa có dự thảo nào viết xong | `Chưa có dự thảo để sửa hoặc duyệt.` | BE |

@@ -146,10 +146,12 @@ public sealed class SummaryFixture : IAsyncLifetime
             return result;
         }
 
-        // Saving the minutes is one conditional UPDATE (ExecuteUpdate), which bypasses SaveChanges.
+        // Saving the minutes, editing or reviewing the draft is one conditional UPDATE (ExecuteUpdate), which bypasses
+        // SaveChanges.
         public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(System.Data.Common.DbCommand command,
             CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
-            => FailSave && command.CommandText.StartsWith("UPDATE meeting_minutes", StringComparison.Ordinal)
+            => FailSave && (command.CommandText.StartsWith("UPDATE meeting_minutes", StringComparison.Ordinal)
+                    || command.CommandText.StartsWith("UPDATE meeting_summaries", StringComparison.Ordinal))
                 ? throw new Npgsql.NpgsqlException("Injected persistence failure.")
                 : ValueTask.FromResult(result);
 

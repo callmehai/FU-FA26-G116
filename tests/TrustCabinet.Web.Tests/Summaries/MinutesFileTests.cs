@@ -314,18 +314,25 @@ public sealed class MinutesFileTests
     }
 
     [Fact]
-    public void Nested_tables_too_narrow_to_lay_out_shrink_once_not_at_every_level()
+    public void Nested_tables_too_narrow_to_lay_out_still_print_every_word()
     {
         // Three levels of six columns: the innermost cells are too narrow for their words, so the PDF is drawn again with
-        // its cells shrunk. Shrunk at every level, the measuring multiplies again and a document near the size limit took 46 s.
-        var html = string.Concat(Enumerable.Repeat("<p>Nội dung cuộc họp</p>", 4));
+        // its cells shrunk, the outermost only (shrunk at every level, a document near the size limit took 46 s instead of
+        // 3 s; no time bound here, CI machines differ too much for one).
+        var html = "<p>Nội dung</p>";
         for (var i = 0; i < 3; i++) html = "<table><tbody><tr>" + string.Concat(Enumerable.Repeat($"<td>{html}</td>", 6)) + "</tr></tbody></table>";
-        html = string.Concat(Enumerable.Repeat(html, 8));
-        var clock = System.Diagnostics.Stopwatch.StartNew();
-        var text = PdfText(MinutesPdf.Build(MinutesHtml.Sanitize(html)));
-        // About 2 s on a laptop; shrunk at every level, 14 s.
-        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(12), $"took {clock.Elapsed}");
-        Assert.Contains("Nội", text);
+        var bytes = MinutesPdf.Build(MinutesHtml.Sanitize(html + "<p>Kết thúc</p>"));
+        using var pdf = PdfDocument.Open(bytes);
+        var letters = string.Concat(pdf.GetPages().SelectMany(p => p.Letters).Select(l => l.Value));
+        Assert.Equal(216, CountOf(letters, "Nộidung"));
+        Assert.Contains("Kết thúc", PdfText(bytes));
+    }
+
+    private static int CountOf(string text, string word)
+    {
+        var count = 0;
+        for (var at = text.IndexOf(word, StringComparison.Ordinal); at >= 0; at = text.IndexOf(word, at + word.Length, StringComparison.Ordinal)) count++;
+        return count;
     }
 
     [Fact]

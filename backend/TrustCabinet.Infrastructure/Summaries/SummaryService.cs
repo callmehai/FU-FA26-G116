@@ -96,21 +96,26 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             var row = await db.MeetingSummaries.FirstOrDefaultAsync(s => s.MeetingId == meetingId, ct);
             var draft = row is null ? null : Read(row);
             if (row is null || draft is null) return new(SummaryFailure.NotDrafted);
+            if (row.Status is SummaryStatus.Queued or SummaryStatus.Running) return new(SummaryFailure.Busy);
             var errors = Validate(edit);
             if (errors.Count > 0) return new(SummaryFailure.Invalid, Errors: errors);
-            row.Content = JsonSerializer.Serialize(draft with
+            var content = JsonSerializer.Serialize(draft with
             {
                 Objectives = SummaryWriter.Tidy(edit.Objectives!), Discussion = SummaryWriter.Tidy(edit.Discussion!),
                 Conclusions = SummaryWriter.Tidy(edit.Conclusions!),
             }, Json);
             var now = clock.GetUtcNow();
-            row.EditedById = actorId;
-            row.EditedAt = now;
-            // A changed text has not been vouched for: it goes back to the Chair and the Secretary until reviewed again.
-            row.ReviewedById = null;
-            row.ReviewedAt = null;
-            row.UpdatedAt = now;
-            await db.SaveChangesAsync(ct);
+            // Not while the AI writes it again: its draft would replace this edit unannounced, and minutes built from the
+            // edit would date from after the new draft's reading and never read as behind. Checked in the write itself,
+            // so a request queued since the read above still wins.
+            var saved = await db.MeetingSummaries
+                .Where(s => s.Id == row.Id && s.Status != SummaryStatus.Queued && s.Status != SummaryStatus.Running)
+                .ExecuteUpdateAsync(u => u.SetProperty(x => x.Content, content).SetProperty(x => x.EditedById, actorId)
+                    .SetProperty(x => x.EditedAt, now)
+                    // A changed text has not been vouched for: back to the Chair and the Secretary until reviewed again.
+                    .SetProperty(x => x.ReviewedById, (Guid?)null).SetProperty(x => x.ReviewedAt, (DateTimeOffset?)null)
+                    .SetProperty(x => x.UpdatedAt, now), ct);
+            if (saved == 0) return new(SummaryFailure.Busy);
             return await GetAsync(meetingId, actorId, ct);
         }
         catch (Exception error) when (error is not OperationCanceledException)
@@ -129,11 +134,14 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             if (!Manages(meeting, actorId)) return new(SummaryFailure.Forbidden);
             var row = await db.MeetingSummaries.FirstOrDefaultAsync(s => s.MeetingId == meetingId, ct);
             if (row is null || Read(row) is null) return new(SummaryFailure.NotDrafted);
+            // Nor reviewed while the AI writes it again: the mark would end up on a text nobody has read.
+            if (row.Status is SummaryStatus.Queued or SummaryStatus.Running) return new(SummaryFailure.Busy);
             var now = clock.GetUtcNow();
-            row.ReviewedById = actorId;
-            row.ReviewedAt = now;
-            row.UpdatedAt = now;
-            await db.SaveChangesAsync(ct);
+            var saved = await db.MeetingSummaries
+                .Where(s => s.Id == row.Id && s.Status != SummaryStatus.Queued && s.Status != SummaryStatus.Running)
+                .ExecuteUpdateAsync(u => u.SetProperty(x => x.ReviewedById, actorId).SetProperty(x => x.ReviewedAt, now)
+                    .SetProperty(x => x.UpdatedAt, now), ct);
+            if (saved == 0) return new(SummaryFailure.Busy);
             return await GetAsync(meetingId, actorId, ct);
         }
         catch (Exception error) when (error is not OperationCanceledException)

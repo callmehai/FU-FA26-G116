@@ -65,8 +65,9 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
 - **Kết quả biểu quyết** trong `conclusions` được chép từ dữ liệu phiên biểu quyết, không qua AI.
 - **Lỗi:**
   - `403` `MSG385` khi không phải Chủ tọa hay Thư ký.
-  - `409` `MSG386` khi cuộc họp chưa bắt đầu hoặc đã huỷ, `409` `MSG387` khi AI đang viết, `409` `MSG390` khi chưa có
-    dự thảo nào viết xong.
+  - `409` `MSG386` khi cuộc họp chưa bắt đầu hoặc đã huỷ, `409` `MSG387` khi AI đang viết (cả khi tạo lại,
+    sửa hay duyệt: một bản sửa lúc đó sẽ bị dự thảo mới ghi đè mà không ai biết), `409` `MSG390` khi chưa có dự thảo nào
+    viết xong.
   - `400` `MSG389` khi một mục trống hoặc quá dài, `500` `MSG392` khi lỗi đọc, `503` `MSG393` khi lỗi lưu, `503`
     `MSG394` khi server chưa cấu hình máy AI.
 

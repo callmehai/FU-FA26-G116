@@ -546,6 +546,42 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
     }
 
     [Fact]
+    public async Task While_the_ai_writes_the_draft_again_it_is_neither_edited_nor_reviewed()
+    {
+        // The Chair's tab still shows the old draft when the Secretary asks for a new one. Saved now, the edit would be
+        // replaced by the AI's text unannounced, and minutes built from it would date from after the new draft's reading.
+        var s = await Drafted();
+        using var secretary = f.Client(s.Secretary);
+        using var chair = f.Client(s.Chair);
+        f.Clock.Now = f.Clock.Now.AddMinutes(1);
+        await AssertCode(await secretary.PostAsync(s.Summary, null), 202, "MSG384");
+        await AssertCode(await chair.PutAsJsonAsync(s.Summary, Edit()), 409, "MSG387");
+        await AssertCode(await chair.PostAsync(s.Summary + "/review", null), 409, "MSG387");
+
+        // The same while it runs.
+        HttpResponseMessage? edit = null, review = null;
+        f.Model.While = async () =>
+        {
+            edit = await chair.PutAsJsonAsync(s.Summary, Edit());
+            review = await chair.PostAsync(s.Summary + "/review", null);
+        };
+        await f.ProcessAll();
+        await AssertCode(edit!, 409, "MSG387");
+        await AssertCode(review!, 409, "MSG387");
+
+        await using (var db = f.Db())
+        {
+            var row = await db.MeetingSummaries.SingleAsync(x => x.MeetingId == s.MeetingId);
+            Assert.Equal(SummaryStatus.Ready, row.Status);
+            Assert.Null(row.EditedAt);
+            Assert.Null(row.ReviewedAt);
+        }
+        // Written, it can be corrected and vouched for again.
+        await AssertCode(await chair.PutAsJsonAsync(s.Summary, Edit()), 200, "MSG388");
+        await AssertCode(await chair.PostAsync(s.Summary + "/review", null), 200, "MSG391");
+    }
+
+    [Fact]
     public async Task Database_outages_have_their_codes()
     {
         var s = await Drafted();

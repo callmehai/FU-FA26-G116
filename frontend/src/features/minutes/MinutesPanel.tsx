@@ -175,6 +175,8 @@ function SummaryCard({
       return { saved: true, errors: {}, values: stored ? { objectives: stored.objectives, discussion: stored.discussion, conclusions: stored.conclusions } : undefined }
     } catch (error) {
       toast.show(errorMessage(error), 'error')
+      // The AI started writing it again meanwhile: read the state, which closes the editor and shows it writing.
+      if (isApiError(error, 409, 'MSG387')) onRetry()
       return { saved: false, errors: isApiError(error, 400, 'MSG389') ? (error.body?.errors ?? {}) : {} }
     }
   }
@@ -187,6 +189,7 @@ function SummaryCard({
       toast.show(result.message, 'success')
     } catch (error) {
       toast.show(errorMessage(error), 'error')
+      if (isApiError(error, 409, 'MSG387')) onRetry()
     } finally {
       setBusy(false)
     }
