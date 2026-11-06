@@ -5,6 +5,7 @@ using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
@@ -27,6 +28,12 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             if (!await MayReadAsync(readerId, ownerId, ct)) return new(LibraryFailure.NotFound);
             if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, ct))
                 return new(LibraryFailure.NotFound);
+            // SCRUM-124: only who may add to the meeting (its current Chair or Secretary, BR-184) learns what is in
+            // it. A Member must not, since a document on a draft vote is hidden from them (BR-253).
+            if (meetingId is { } asked && !await db.MeetingParticipants.Where(ParticipantRules.ActiveExpression)
+                    .AnyAsync(p => p.MeetingId == asked && p.UserId == readerId
+                        && (p.Role == MeetingRole.Chair || p.Role == MeetingRole.Secretary), ct))
+                meetingId = null;
             (IQueryable<Guid> Files, HashSet<Guid> Folders)? hidden = readerId == ownerId ? null : await HiddenFromAsync(ownerId, ct);
             if (folderId is { } at && hidden is not null && hidden.Value.Folders.Contains(at)) return new(LibraryFailure.NotFound);
             if (readerId != ownerId)

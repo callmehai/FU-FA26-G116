@@ -483,7 +483,7 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
-    public async Task In_meeting_marks_files_already_in_a_meeting_the_owner_can_view_and_nothing_else()
+    public async Task In_meeting_marks_files_already_in_a_meeting_the_owner_may_add_to_and_nothing_else()
     {
         var s = await fixture.Seed();
         var inMeeting = await AddDocument(fixture, s.Secretary, "Đã có.pdf");
@@ -529,6 +529,23 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
         Assert.All(await Marks(""), m => Assert.False(m.Value));
         Assert.All(await Marks($"?meetingId={hidden}"), m => Assert.False(m.Value));
         Assert.All(await Marks($"?meetingId={Guid.NewGuid()}"), m => Assert.False(m.Value));
+
+        // A Member who views the meeting and owns a file in it still learns nothing: only who may add is told
+        // (a document on a draft vote is hidden from Members, BR-253).
+        var member = await NewUser(fixture);
+        var own = await AddDocument(fixture, member, "Của thành viên.pdf");
+        await using (var db = fixture.Db())
+        {
+            db.MeetingParticipants.Add(new MeetingParticipant { MeetingId = s.MeetingId, UserId = member, Role = MeetingRole.Member });
+            db.MeetingDocuments.Add(new MeetingDocument { MeetingId = s.MeetingId, DocumentId = own, FileName = "z", AddedById = s.Secretary,
+                StoredFileId = await db.Documents.Where(d => d.Id == own).Select(d => d.StoredFileId).SingleAsync() });
+            await db.SaveChangesAsync();
+        }
+        using var memberClient = fixture.Client(member);
+        var (_, _, memberView) = await Read(await memberClient.GetAsync($"/api/documents?meetingId={s.MeetingId}"));
+        var mine = memberView.GetProperty("documents").EnumerateArray().Single(d => d.GetProperty("id").GetGuid() == own);
+        Assert.Equal(1, mine.GetProperty("meetingCount").GetInt32());
+        Assert.False(mine.GetProperty("inMeeting").GetBoolean());
     }
 
     [Fact]

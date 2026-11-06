@@ -57,9 +57,11 @@ hay chuyển đi giữa lúc đang ghi vào.
 - `meetingCount` ("Đang dùng trong n cuộc họp"): số cuộc họp **người xem được** còn đang dùng tài liệu này (BR-251) —
   đếm theo `MeetingDocument.DocumentId`, không tính bản đã gỡ.
 - `inMeeting`: tệp của tài liệu đang có trong cuộc họp `meetingId` (so `StoredFileId`, không tính bản đã gỡ) — đúng phép
-  so khiến `POST /api/meetings/{id}/documents` trả `409 MSG165` (BR-193). Chỉ `true` khi người gọi **xem được** cuộc họp
-  đó; không gửi `meetingId`, cuộc họp không tồn tại hay không xem được đều là `false` ở mọi dòng và vẫn `200`, nên tham
-  số này không cho biết cuộc họp có tồn tại. `StoredFileId` không trả ra ngoài.
+  so khiến `POST /api/meetings/{id}/documents` trả `409 MSG165` (BR-193). Chỉ `true` khi người gọi **được thêm tài liệu**
+  vào cuộc họp đó (Chủ toạ / Thư ký đang hiệu lực, BR-184) — Thành viên thì không, vì tài liệu của biểu quyết nháp bị ẩn
+  với họ (BR-253). Không gửi `meetingId`, cuộc họp không tồn tại, không xem được hay người gọi không phải Chủ toạ / Thư ký
+  đều là `false` ở mọi dòng và vẫn `200`, nên tham số này không cho biết cuộc họp có tồn tại. `StoredFileId` không trả ra
+  ngoài. Kho của tài khoản đã khoá (Quản trị viên) luôn `false`.
 - `storageUsedBytes` / `storageLimitBytes`: bộ nhớ tài liệu của **cả hệ thống** (ADR-0034), không phải của riêng người
   xem. `storageUsedBytes` là mọi `StoredFile` chưa bị dọn (đúng thứ đang nằm trên R2), kể cả tệp đã xoá khỏi kho mà chưa
   qua thời gian chờ của job dọn. `storageLimitBytes` lấy từ `FileStorage:MaxTotalGigabytes` (mặc định 10 GB).
@@ -188,8 +190,8 @@ DB → `MSG190`/`MSG192`/`MSG195`/`MSG198`/`MSG176`; tải lên vào thư mục 
 `storageUsedBytes`); thư mục đích của người khác, ảnh đổi đuôi, 11 tệp; bộ nhớ hệ thống đầy → `MSG346`, không object hay
 dòng `StoredFile` nào còn lại, kể cả khi người khác làm đầy và khi tải vào cuộc họp hoặc vào mục; tải lỗi trả lại chỗ; R2 lỗi ở tệp thứ hai,
 kho chưa cấu hình → `MSG178`; tìm không phân biệt hoa thường, lọc loại, `%`/`_` là ký tự thường, chỉ trong thư mục đang
-mở; `meetingCount` bỏ cuộc họp không xem được và bản đã gỡ; `inMeeting` chỉ đúng với tệp còn trong cuộc họp xem được, sai
-khi không gửi `meetingId`, cuộc họp không xem được hoặc không tồn tại; đổi tên giữ đuôi, bản trong cuộc họp giữ tên cũ; chuyển;
+mở; `meetingCount` bỏ cuộc họp không xem được và bản đã gỡ; `inMeeting` chỉ đúng với tệp còn trong cuộc họp người gọi
+là Thư ký, sai khi không gửi `meetingId`, cuộc họp không xem được, không tồn tại, hoặc người gọi chỉ là Thành viên; đổi tên giữ đuôi, bản trong cuộc họp giữ tên cũ; chuyển;
 xoá khỏi kho rồi khoá chủ kho, thành viên vẫn mở được bản trong cuộc họp; lỗi DB → `MSG184`/`MSG186`/`MSG181`; mở tệp,
 object đã mất → `410/MSG382`, kho chưa cấu hình → `MSG158`; Quản trị viên đọc kho đã khoá (2 dòng kiểm toán), kho còn hoạt động → `MSG175`, người
 thường → `403`; tệp và thư mục (cả thư mục con) của cuộc họp Mật bị ẩn, mở trả `MSG175`, cả khi Quản trị viên là thành

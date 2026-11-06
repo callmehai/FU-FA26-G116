@@ -4262,10 +4262,9 @@ body:has(.mic-dock) .content { padding-bottom: calc(var(--mic-dock-h, 0px) + 16p
   text-align: left;
   cursor: pointer;
 }
-.picker-row:hover { background: var(--surface-alt); }
+.picker-row:not([aria-disabled='true']):hover { background: var(--surface-alt); }
 .picker-row input[type='checkbox'] { flex: none; width: 18px; height: 18px; accent-color: var(--brand); }
 .picker-row[aria-disabled='true'] { cursor: not-allowed; }
-.picker-row[aria-disabled='true']:hover { background: var(--surface); }
 .picker-row[aria-disabled='true'] strong, .picker-row[aria-disabled='true'] .file-icon { opacity: .6; }
 /* SCRUM-124: already in the meeting. */
 .picker-chip { display: inline-block; margin-left: 8px; padding: 0 8px; border-radius: 999px; background: var(--surface-alt); color: var(--muted-ink); font-size: 12px; font-weight: 600; line-height: 18px; white-space: nowrap; }
