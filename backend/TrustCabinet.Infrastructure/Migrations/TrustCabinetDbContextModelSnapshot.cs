@@ -129,6 +129,62 @@ namespace TrustCabinet.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.AiProviderSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ApiBaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("api_base_url");
+
+                    b.Property<byte[]>("ApiKeyCiphertext")
+                        .HasColumnType("bytea")
+                        .HasColumnName("api_key_ciphertext");
+
+                    b.Property<string>("ApiKeyHint")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("api_key_hint");
+
+                    b.Property<string>("ApiModel")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("api_model");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("mode");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_ai_provider_settings");
+
+                    b.HasIndex("UpdatedById")
+                        .HasDatabaseName("ix_ai_provider_settings_updated_by_id");
+
+                    b.ToTable("ai_provider_settings", (string)null);
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.AuditLogEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2946,6 +3002,17 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("Presenter");
 
                     b.Navigation("PresenterGuestInvitation");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.AiProviderSetting", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_ai_provider_settings_users_updated_by_id");
+
+                    b.Navigation("UpdatedBy");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.AuditLogEntry", b =>

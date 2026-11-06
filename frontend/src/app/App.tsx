@@ -21,6 +21,7 @@ const MeetingRoomPage = lazy(() =>
 )
 const UsersPage = lazy(() => import('../features/access/UsersPage').then((m) => ({ default: m.UsersPage })))
 const RolesPage = lazy(() => import('../features/access/RolesPage').then((m) => ({ default: m.RolesPage })))
+const AiSettingsPage = lazy(() => import('../features/ai/AiSettingsPage').then((m) => ({ default: m.AiSettingsPage })))
 const ResetPasswordPage = lazy(() =>
   import('../features/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
 )
@@ -125,6 +126,14 @@ export function App() {
               element={
                 <RequireCapability cap="AdminUsers">
                   <RolesPage />
+                </RequireCapability>
+              }
+            />
+            <Route
+              path={routes.adminAi}
+              element={
+                <RequireCapability cap="AdminUsers">
+                  <AiSettingsPage />
                 </RequireCapability>
               }
             />

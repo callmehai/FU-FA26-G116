@@ -155,7 +155,13 @@ rồi đổi sang HTML lúc tạo.
 | `Ai:ApiKey` | | Tuỳ chọn, gửi kèm dạng `Bearer` |
 | `Ai:TimeoutMinutes` | `15` | Thời gian chờ tối đa cho một lần gọi |
 | `Ai:MaxTokens` | `2048` | Độ dài tối đa của mỗi câu trả lời |
+| `Ai:ApiMaxTokens` | `8192` | Như trên khi viết qua API (ADR-0056): model suy luận như DeepSeek V4.1 tính cả phần suy luận vào đây |
+| `Ai:ApiReasoningEffort` | `none` | Gửi kèm `reasoning_effort` khi viết qua API. `none` tắt phần suy luận của DeepSeek V4.1: đo trên 8 cuộc họp mẫu, nhanh hơn 3–4 lần, chất lượng như cũ, và không còn hết token trước khi trả lời. Để trống thì không gửi (API nào từ chối trường này) |
+| `Ai:ApiParallelism` | `3` | Qua API mỗi mục chương trình đọc cả lời thoại trong một lần (không cắt đoạn 9.000 ký tự như máy local) và viết song song: đây là số mục viết cùng lúc; API trả `429` thì thử lại sau 2 rồi 5 giây (hoặc theo `Retry-After`) |
+| `Ai:EncryptionKey` | | Tuỳ chọn, 32 byte base64: khoá mã hoá key API do quản trị nhập ([ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md)). Để trống thì suy ra từ khoá ký token |
 
-Trên server test, đặt bằng biến môi trường `Ai__BaseUrl`, `Ai__Model`.
+Trên server test, đặt bằng biến môi trường `Ai__BaseUrl`, `Ai__Model`. Các khoá trên là **máy local**; quản trị có thể cho
+cuộc họp Thường dùng một API thay thế trên màn Máy AI ([18-may-ai.md](18-may-ai.md)), cuộc họp Nội bộ, Mật, Tối mật luôn
+dùng máy local.
 
 Bộ đo chất lượng trên 8 cuộc họp mẫu: [`tests/ai/`](../../tests/ai/README.md).

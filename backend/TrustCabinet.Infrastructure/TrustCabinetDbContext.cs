@@ -45,6 +45,7 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<MeetingMinutes> MeetingMinutes => Set<MeetingMinutes>();
     public DbSet<MinutesSignature> MinutesSignatures => Set<MinutesSignature>();
     public DbSet<MeetingSummary> MeetingSummaries => Set<MeetingSummary>();
+    public DbSet<AiProviderSetting> AiProviderSettings => Set<AiProviderSetting>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
     public DbSet<AuditLogEntry> AuditLog => Set<AuditLogEntry>();
