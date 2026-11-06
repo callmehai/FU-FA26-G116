@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
@@ -93,6 +94,112 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
             Assert.Null(row.ReviewedAt);
             Assert.Equal(SummaryFixture.FakeLanguageModel.Objectives, Stored(row.Content).Objectives);
         }
+    }
+
+    [Fact]
+    public async Task Readiness_says_when_the_transcript_last_changed_so_a_draft_made_before_reads_as_behind()
+    {
+        var s = await Drafted();
+        using var secretary = f.Client(s.Secretary);
+        var before = (await State(secretary, s)).GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset();
+        DateTimeOffset corrected;
+        await using (var db = f.Db())
+        {
+            var clips = await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).ToListAsync();
+            Assert.Equal(clips.Max(c => c.UpdatedAt), before);
+            // A line corrected after the draft was written.
+            corrected = before.AddMinutes(5);
+            clips[0].UpdatedAt = corrected;
+            await db.SaveChangesAsync();
+        }
+        var after = (await State(secretary, s)).GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset();
+        Assert.Equal(corrected, after);
+    }
+
+    /// <summary>The seeded sentences are stamped with the machine's clock; dates them on the test clock instead.</summary>
+    private async Task Settle(SummaryFixture.Scenario s)
+    {
+        await using var db = f.Db();
+        await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).ExecuteUpdateAsync(u => u.SetProperty(c => c.UpdatedAt, f.Clock.Now));
+    }
+
+    [Fact]
+    public async Task A_line_corrected_while_the_AI_writes_is_not_in_the_draft_so_the_draft_reads_as_behind()
+    {
+        f.Model.Reset();
+        var s = await f.Seed();
+        await Settle(s);
+        using var secretary = f.Client(s.Secretary);
+        await AssertCode(await secretary.PostAsync(s.Summary, null), 202, "MSG384");
+        var read = f.Clock.Now;
+        // The model takes minutes on a laptop; meanwhile the Secretary corrects a sentence it has already read.
+        f.Model.While = async () =>
+        {
+            f.Clock.Now = f.Clock.Now.AddMinutes(2);
+            await using var db = f.Db();
+            await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).Take(1)
+                .ExecuteUpdateAsync(u => u.SetProperty(c => c.UpdatedAt, f.Clock.Now));
+            f.Clock.Now = f.Clock.Now.AddMinutes(2);
+        };
+        await f.ProcessAll();
+
+        var state = await State(secretary, s);
+        var generated = state.GetProperty("summary").GetProperty("generatedAt").GetDateTimeOffset();
+        var changed = state.GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset();
+        // Dated when the record was read, not when the model finished, so the correction is later than the draft.
+        Assert.Equal(read, generated);
+        Assert.Equal(read.AddMinutes(2), changed);
+        Assert.True(changed > generated);
+    }
+
+    private async Task<(DateTimeOffset Generated, DateTimeOffset Changed)> Stamps(HttpClient client, SummaryFixture.Scenario s)
+    {
+        var state = await State(client, s);
+        return (state.GetProperty("summary").GetProperty("generatedAt").GetDateTimeOffset(),
+            state.GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset());
+    }
+
+    [Fact]
+    public async Task Deleting_a_sentence_after_the_draft_makes_the_draft_read_as_behind()
+    {
+        var s = await Drafted();
+        await Settle(s);
+        using var secretary = f.Client(s.Secretary);
+        var (generated, changed) = await Stamps(secretary, s);
+        Assert.True(changed <= generated);
+
+        // The sentence goes outright, leaving only the audit entry of its deletion to date it.
+        Guid clip;
+        await using (var db = f.Db())
+            clip = await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).Select(c => c.Id).FirstAsync();
+        Assert.True((await secretary.DeleteAsync($"/api/speech-clips/{clip}")).IsSuccessStatusCode);
+        (_, changed) = await Stamps(secretary, s);
+        Assert.True(changed > generated);
+    }
+
+    [Fact]
+    public async Task Erasing_a_recording_after_the_draft_makes_the_draft_read_as_behind()
+    {
+        var s = await Drafted();
+        await Settle(s);
+        using var secretary = f.Client(s.Secretary);
+        var (generated, changed) = await Stamps(secretary, s);
+        Assert.True(changed <= generated);
+
+        // Erased with its transcript, a recording keeps its row and the time it was erased.
+        var erased = generated.AddMinutes(3);
+        await using (var db = f.Db())
+        {
+            db.Recordings.Add(new Recording
+            {
+                MeetingId = s.MeetingId, FileName = "da-xoa.wav", StoragePath = "", ContentType = "audio/wav",
+                Status = RecordingStatus.Deleted, DeletedAt = erased, CreatedById = s.Secretary,
+                CreatedAt = generated, UpdatedAt = erased,
+            });
+            await db.SaveChangesAsync();
+        }
+        (_, changed) = await Stamps(secretary, s);
+        Assert.Equal(erased, changed);
     }
 
     [Fact]
@@ -313,9 +420,12 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
         await AssertCode(await chair.PostAsync(s.Summary + "/review", null), 200, "MSG391");
         Assert.NotEqual(JsonValueKind.Null, (await State(member, s)).GetProperty("summary").ValueKind);
 
-        var saved = await AssertCode(await chair.PutAsJsonAsync(s.Summary, Edit("  Mục tiêu đã sửa.  ")), 200, "MSG388");
+        var saved = await AssertCode(await chair.PutAsJsonAsync(s.Summary,
+            Edit("  Mục tiêu đã sửa.  ", discussion: "1. Báo cáo tiến độ\n\nĐã sửa.\n\n\n")), 200, "MSG388");
         var summary = saved.GetProperty("summary");
         Assert.Equal("Mục tiêu đã sửa.", summary.GetProperty("draft").GetProperty("objectives").GetString());
+        // Blank lines are gaps in the textarea and nothing in the minutes: they are not kept.
+        Assert.Equal("1. Báo cáo tiến độ\nĐã sửa.", summary.GetProperty("draft").GetProperty("discussion").GetString());
         Assert.Equal(s.Chair, summary.GetProperty("editedBy").GetProperty("id").GetGuid());
         Assert.Equal(JsonValueKind.Null, summary.GetProperty("reviewedAt").ValueKind);
         // The sources of the AI's parts survive a correction.
@@ -433,6 +543,42 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Null(row.EditedAt);
         Assert.Equal(f.Clock.Now, row.GeneratedAt);
         f.Model.Reset();
+    }
+
+    [Fact]
+    public async Task While_the_ai_writes_the_draft_again_it_is_neither_edited_nor_reviewed()
+    {
+        // The Chair's tab still shows the old draft when the Secretary asks for a new one. Saved now, the edit would be
+        // replaced by the AI's text unannounced, and minutes built from it would date from after the new draft's reading.
+        var s = await Drafted();
+        using var secretary = f.Client(s.Secretary);
+        using var chair = f.Client(s.Chair);
+        f.Clock.Now = f.Clock.Now.AddMinutes(1);
+        await AssertCode(await secretary.PostAsync(s.Summary, null), 202, "MSG384");
+        await AssertCode(await chair.PutAsJsonAsync(s.Summary, Edit()), 409, "MSG387");
+        await AssertCode(await chair.PostAsync(s.Summary + "/review", null), 409, "MSG387");
+
+        // The same while it runs.
+        HttpResponseMessage? edit = null, review = null;
+        f.Model.While = async () =>
+        {
+            edit = await chair.PutAsJsonAsync(s.Summary, Edit());
+            review = await chair.PostAsync(s.Summary + "/review", null);
+        };
+        await f.ProcessAll();
+        await AssertCode(edit!, 409, "MSG387");
+        await AssertCode(review!, 409, "MSG387");
+
+        await using (var db = f.Db())
+        {
+            var row = await db.MeetingSummaries.SingleAsync(x => x.MeetingId == s.MeetingId);
+            Assert.Equal(SummaryStatus.Ready, row.Status);
+            Assert.Null(row.EditedAt);
+            Assert.Null(row.ReviewedAt);
+        }
+        // Written, it can be corrected and vouched for again.
+        await AssertCode(await chair.PutAsJsonAsync(s.Summary, Edit()), 200, "MSG388");
+        await AssertCode(await chair.PostAsync(s.Summary + "/review", null), 200, "MSG391");
     }
 
     [Fact]

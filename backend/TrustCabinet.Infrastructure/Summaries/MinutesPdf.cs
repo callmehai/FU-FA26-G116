@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using QuestPDF;
 using QuestPDF.Drawing;
+using QuestPDF.Drawing.Exceptions;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -10,10 +11,11 @@ using QuestPDF.Infrastructure;
 namespace TrustCabinet.Infrastructure.Summaries;
 
 /// <summary>
-/// The minutes as a PDF file (SCRUM-32), drawn on the server with QuestPDF from the same marks the page and
-/// <see cref="MinutesDocx"/> read (MinutesContracts.cs), on the same sheet: A4, margins 20/15/20/30 mm (Decree
-/// 30/2020/NĐ-CP), a Times-like serif at 13 pt (the title 14 pt), justified paragraphs with the first line indented
-/// 12.7 mm, the header and the signature blocks as borderless two-column tables split 3740:5615 like the Word file.
+/// The minutes as a PDF file (SCRUM-32), drawn on the server with QuestPDF from the sanitized HTML
+/// (<see cref="MinutesHtml"/>, ADR-0055) as <see cref="MinutesLayout"/> lays it out, the same page as
+/// <see cref="MinutesDocx"/>: A4, margins 20/15/20/30 mm (Decree 30/2020/NĐ-CP), a Times-like serif at 13 pt, justified
+/// paragraphs with the first line indented 12.7 mm, tables across the text width. Older rows of line-marked text are
+/// converted first, and each run is cleaned for the font only after the marks are read.
 /// <para>
 /// The runtime image has no Times New Roman, so the file carries Liberation Serif (SIL OFL 1.1, Fonts/LICENSE), which is
 /// metric-compatible with it and covers Vietnamese. System fonts are off, so a server and a laptop draw the same file and
@@ -24,11 +26,8 @@ namespace TrustCabinet.Infrastructure.Summaries;
 public static class MinutesPdf
 {
     private const string Family = "Liberation Serif";
-    private const float Body = 13;
-    private const float Title = 14;
-    private const float Small = 11;
-    // Word's "multiple 1.2" over the font's own single spacing (about 1.15 em for this font), as the Word file sets.
-    private const float LineHeight = 1.38f;
+    // The font's own single line spacing, about 1.15 em: Word's "multiple 1.2" is 1.2 of that, 1.38 em.
+    private const float SingleLine = 1.15f;
     private static readonly string[] Faces = ["Regular", "Bold", "Italic", "BoldItalic"];
     private static readonly HashSet<int> Covered;
 
@@ -57,44 +56,27 @@ public static class MinutesPdf
         Covered = covered!;
     }
 
+    /// <summary>Tables nested deeper than this are drawn as their cells' text one after another (see <see cref="Table"/>).</summary>
+    internal const int MaxTableDepth = 3;
+
     public static byte[] Build(string content)
     {
-        var blocks = new List<Action<ColumnDescriptor>>();
-        var rows = new List<string>();
-        void Flush()
+        var blocks = MinutesLayout.Read(content);
+        try
         {
-            if (rows.Count == 0) return;
-            var table = rows.ToArray();
-            blocks.Add(column => Table(column, table));
-            rows.Clear();
+            return Build(blocks, shrinkCells: false);
         }
-        // Lines are read from the text as saved, as the Word file reads them; only each run is cleaned for the font. Cleaning
-        // first would drop the zero-width space the editor puts before a typed "# " or between typed "**", and turn them
-        // back into the marks they were kept from being.
-        foreach (var raw in content.Replace("\r", "", StringComparison.Ordinal).Split('\n'))
+        catch (DocumentLayoutException)
         {
-            var line = raw.TrimEnd();
-            if (line.StartsWith("@@", StringComparison.Ordinal))
-            {
-                rows.Add(line[2..].Trim());
-                continue;
-            }
-            Flush();
-            if (line.Length == 0) continue;
-            if (line.StartsWith("# ", StringComparison.Ordinal))
-                blocks.Add(c => Paragraph(c, line[2..], Align.Center, size: Title, bold: true, before: 12));
-            else if (line.StartsWith("^ ", StringComparison.Ordinal))
-                blocks.Add(c => Paragraph(c, line[2..], Align.Center, after: 12));
-            else if (line.StartsWith("### ", StringComparison.Ordinal))
-                blocks.Add(c => Paragraph(c, line[4..], Align.Justify, indent: true, bold: true));
-            else if (line.StartsWith("## ", StringComparison.Ordinal))
-                blocks.Add(c => Paragraph(c, line[3..], Align.Justify, indent: true, bold: true, before: 6));
-            else if (line.StartsWith("~ ", StringComparison.Ordinal))
-                blocks.Add(c => Paragraph(c, line[2..], Align.Left, size: Small, after: 0));
-            else blocks.Add(c => Paragraph(c, line, Align.Justify, indent: true));
+            // A cell too narrow for what it holds (a 24 pt letter in a column dragged to its minimum width) cannot be laid
+            // out, and would fail the whole file. Then every cell is shrunk to fit its space instead. Only then: a shrunk
+            // cell never flows on to the next page, so a signature table near the foot would come out in 3 pt letters.
+            return Build(blocks, shrinkCells: true);
         }
-        Flush();
+    }
 
+    private static byte[] Build(IReadOnlyList<LayoutBlock> blocks, bool shrinkCells)
+    {
         return Document.Create(document => document.Page(page =>
         {
             page.Size(PageSizes.A4);
@@ -103,85 +85,174 @@ public static class MinutesPdf
             page.MarginLeft(30, Unit.Millimetre);
             page.MarginRight(15, Unit.Millimetre);
             page.PageColor(Colors.White);
-            page.DefaultTextStyle(style => style.FontFamily(Family).FontSize(Body).LineHeight(LineHeight).FontColor(Colors.Black));
+            page.DefaultTextStyle(style => style.FontFamily(Family).FontSize(MinutesLayout.BodySize)
+                .LineHeight(MinutesLayout.LineHeight * SingleLine).FontColor(Colors.Black));
             page.Content().Column(column =>
             {
-                foreach (var block in blocks) block(column);
+                foreach (var block in blocks) Block(column, block, new(shrinkCells, 0));
             });
         })).WithMetadata(new DocumentMetadata { Title = "Biên bản", Creator = "TrustCabinet", Producer = "TrustCabinet" })
             .GeneratePdf();
     }
 
-    private enum Align { Left, Center, Justify }
+    /// <summary>How a block is drawn: whether cells shrink to fit (the fallback above), and how many tables it sits in.</summary>
+    private readonly record struct Drawing(bool ShrinkCells, int TableDepth);
 
-    private static void Paragraph(ColumnDescriptor column, string text, Align align, float size = Body, bool bold = false,
-        float before = 0, float after = 3, bool indent = false)
+    private static void Block(ColumnDescriptor column, LayoutBlock block, Drawing drawing)
     {
-        var item = column.Item().PaddingTop(before).PaddingBottom(after);
-        item.Text(block =>
+        switch (block)
         {
-            if (align == Align.Center) block.AlignCenter();
-            else if (align == Align.Justify) block.Justify();
-            else block.AlignLeft();
-            if (indent) block.ParagraphFirstLineIndentation(12.7f, Unit.Millimetre);
-            Runs(block, text, size, bold);
-        });
-    }
-
-    /// <summary>A line's runs, cut at <c>**</c> (bold) and <c>__</c> (italic), as in the Word file.</summary>
-    private static void Runs(TextDescriptor block, string text, float size, bool bold)
-    {
-        bool strong = bold, italic = false;
-        var at = 0;
-        var any = false;
-        while (at < text.Length)
-        {
-            var star = text.IndexOf("**", at, StringComparison.Ordinal);
-            var under = text.IndexOf("__", at, StringComparison.Ordinal);
-            var next = star < 0 ? under : under < 0 ? star : Math.Min(star, under);
-            var end = next < 0 ? text.Length : next;
-            var run = end > at ? Clean(text[at..end]) : "";
-            if (run.Length > 0)
-            {
-                var span = block.Span(run).FontSize(size);
-                if (strong) span.Bold();
-                if (italic) span.Italic();
-                any = true;
-            }
-            if (next < 0) break;
-            if (next == star) strong = !strong;
-            else italic = !italic;
-            at = next + 2;
+            case LayoutParagraph paragraph:
+                Paragraph(column.Item(), paragraph);
+                break;
+            case LayoutRule rule:
+                column.Item().PaddingLeft(rule.LeftMm, Unit.Millimetre).PaddingTop(3).PaddingBottom(6).LineHorizontal(0.5f)
+                    .LineColor(Colors.Black);
+                break;
+            case LayoutPageBreak:
+                column.Item().PageBreak();
+                break;
+            case LayoutTable table when drawing.TableDepth >= MaxTableDepth:
+                // Each table level multiplies the measuring QuestPDF does, so a few hundred bytes of nested tables would
+                // keep a request busy for minutes. No minutes nest this deep; the words still print, cell after cell.
+                foreach (var cell in table.Rows.SelectMany(r => r.Cells).Where(c => !c.Continues))
+                    foreach (var inner in cell.Blocks) Block(column, inner, drawing);
+                break;
+            case LayoutTable table:
+                Table(column.Item(), table, drawing with { TableDepth = drawing.TableDepth + 1 });
+                break;
         }
-        // An empty cell still takes a line, as an empty Word paragraph does: the gap left for a signature.
-        if (!any) block.Span(" ").FontSize(size);
     }
 
     /// <summary>
-    /// Two-column rows as one borderless table, each cell centred, the 40/60 split of the Word file across the whole text
-    /// width (9355 twips = 165 mm), with Word's default 1.9 mm cell margins and the page's small gap above and below.
+    /// A paragraph: its spacing as padding, its left indent as padding, and a list item's marker in a 6 mm column before the
+    /// text, which is how a hanging indent looks. A negative first line (a hanging indent without a marker) is drawn flush.
     /// </summary>
-    private static void Table(ColumnDescriptor column, IReadOnlyList<string> rows)
-        => column.Item().PaddingTop(3).PaddingBottom(6).Table(table =>
+    private static void Paragraph(IContainer item, LayoutParagraph p)
+    {
+        item = item.PaddingTop(p.BeforePt).PaddingBottom(p.AfterPt)
+            .DefaultTextStyle(style => style.FontSize(p.Size).LineHeight(p.LineHeight * SingleLine));
+        if (p.Marker is { } marker)
         {
-            table.ColumnsDefinition(columns =>
+            item.PaddingLeft(Math.Max(0, p.LeftMm - MinutesLayout.ListIndent), Unit.Millimetre).Row(row =>
             {
-                columns.RelativeColumn(3740);
-                columns.RelativeColumn(5615);
-            });
-            foreach (var row in rows)
-            {
-                var halves = row.Split('|', 2);
-                foreach (var half in new[] { halves[0], halves.Length > 1 ? halves[1] : "" })
+                row.ConstantItem(MinutesLayout.ListIndent, Unit.Millimetre).Text(text =>
                 {
-                    table.Cell().PaddingHorizontal(1.9f, Unit.Millimetre).Text(block =>
-                    {
-                        block.AlignCenter();
-                        Runs(block, half.Trim(), Body, bold: false);
-                    });
-                }
+                    var span = text.Span(Clean(marker));
+                    if (p.Bold) span.Bold();
+                });
+                row.RelativeItem().Text(text => Runs(text, p, p.Runs));
+            });
+            return;
+        }
+        item = item.PaddingLeft(Math.Max(0, p.LeftMm), Unit.Millimetre);
+        if (p.FirstLineMm <= 0 || !p.Runs.Any(r => r.Break))
+        {
+            item.Text(text =>
+            {
+                if (p.FirstLineMm > 0) text.ParagraphFirstLineIndentation(p.FirstLineMm, Unit.Millimetre);
+                Runs(text, p, p.Runs);
+            });
+            return;
+        }
+        // QuestPDF indents the first line again after every line break; Word indents only the paragraph's first line.
+        // So the paragraph is drawn as its lines, only the first one indented.
+        var lines = new List<List<LayoutRun>> { new() };
+        foreach (var run in p.Runs)
+        {
+            if (run.Break) lines.Add([]);
+            else lines[^1].Add(run);
+        }
+        item.Column(column =>
+        {
+            for (var i = 0; i < lines.Count; i++)
+            {
+                var line = lines[i];
+                var first = i == 0;
+                column.Item().Text(text =>
+                {
+                    if (first) text.ParagraphFirstLineIndentation(p.FirstLineMm, Unit.Millimetre);
+                    Runs(text, p, line);
+                });
             }
         });
+    }
+
+    private static void Runs(TextDescriptor text, LayoutParagraph p, IEnumerable<LayoutRun> runs)
+    {
+        switch (p.Align)
+        {
+            case Align.Center: text.AlignCenter(); break;
+            case Align.Right: text.AlignRight(); break;
+            case Align.Justify: text.Justify(); break;
+            default: text.AlignLeft(); break;
+        }
+        var any = false;
+        foreach (var run in runs)
+        {
+            if (run.Break)
+            {
+                text.Span("\n").FontSize(run.Size);
+                continue;
+            }
+            var clean = Clean(run.Text);
+            if (clean.Length == 0) continue;
+            var span = text.Span(clean).FontSize(run.Size);
+            if (run.Bold) span.Bold();
+            if (run.Italic) span.Italic();
+            if (run.Underline) span.Underline();
+            if (run.Strike) span.Strikethrough();
+            if (run.Sub) span.Subscript();
+            else if (run.Sup) span.Superscript();
+            if (run.Color is { } color) span.FontColor(Color.FromHex(color));
+            if (run.Background is { } background) span.BackgroundColor(Color.FromHex(background));
+            any = true;
+        }
+        // An empty paragraph still takes a line, as an empty Word paragraph does: the gap left for a signature.
+        if (!any) text.Span(" ").FontSize(p.Size);
+    }
+
+    /// <summary>
+    /// A table across the width it has, its columns in the Word file's proportions, 0.5 pt black borders on every cell or none for a frame, the
+    /// cells padded 1.9 mm left and right as Word's default cell margins.
+    /// </summary>
+    private static void Table(IContainer item, LayoutTable table, Drawing drawing)
+    {
+        item.PaddingLeft(table.LeftMm, Unit.Millimetre).Table(grid =>
+        {
+            grid.ColumnsDefinition(columns =>
+            {
+                foreach (var width in table.Columns) columns.RelativeColumn(width);
+            });
+            for (var r = 0; r < table.Rows.Count; r++)
+                foreach (var cell in table.Rows[r].Cells.Where(c => !c.Continues))
+                {
+                    IContainer box = grid.Cell().Row((uint)r + 1).Column((uint)cell.Column + 1)
+                        .ColumnSpan((uint)cell.Span).RowSpan((uint)cell.RowSpan);
+                    if (!table.Frame) box = box.Border(0.5f).BorderColor(Colors.Black);
+                    // Word's cell margin, or a fifth of the cell when the column is narrower than its two margins.
+                    var widthMm = table.Columns.Skip(cell.Column).Take(cell.Span).Sum() * 25.4f / 1440;
+                    box = box.PaddingHorizontal(Math.Min(MinutesLayout.CellPadding, widthMm / 5), Unit.Millimetre);
+                    box = cell.VerticalAlign switch
+                    {
+                        "middle" => box.AlignMiddle(),
+                        "bottom" => box.AlignBottom(),
+                        _ => box.AlignTop(),
+                    };
+                    // Only the outermost table's cells: shrinking one shrinks the tables inside it too, and a shrink in a
+                    // shrink multiplies QuestPDF's measuring again (three levels of six columns: 46 s instead of 3 s).
+                    if (drawing.ShrinkCells && drawing.TableDepth == 1) box = box.ScaleToFit();
+                    // A frame (the header, the signature blocks) moves to the next page whole, as Word's "cannot split"
+                    // row does: never a title at the foot of one page and the names to sign above on the next.
+                    if (table.Frame) box = box.ShowEntire();
+                    box.Column(column =>
+                    {
+                        foreach (var block in cell.Blocks) Block(column, block, drawing);
+                        if (cell.Blocks.Count == 0) column.Item().Text(" ");
+                    });
+                }
+        });
+    }
 
     /// <summary>
     /// The text as the font can draw it: composed (NFC) so a decomposed "ế" is one glyph, tabs and other controls as

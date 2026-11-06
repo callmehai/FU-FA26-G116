@@ -1,5 +1,5 @@
 import { useCallback, useId, useRef, useState } from 'react'
-import { Icon } from './Icon'
+import { Icon, type IconName } from './Icon'
 import { useAnchoredPopover, useOutsidePress } from './useAnchoredPopover'
 
 export interface SelectOption<T extends string> {
@@ -37,6 +37,7 @@ export function Select<T extends string>({
   disabled = false,
   marker,
   tooltip,
+  icon,
 }: {
   /** Null while nothing is picked yet: the trigger then shows `placeholder` (or `label`), muted. */
   value: T | null
@@ -53,6 +54,8 @@ export function Select<T extends string>({
   marker?: string
   /** Shown on hover or focus of the trigger, for a fact the closed control does not say. */
   tooltip?: string
+  /** A small icon button instead of the field (an action in a row's tools); its name and value stay in aria-label. */
+  icon?: IconName
 }) {
   const generatedId = useId()
   const listId = id ?? generatedId
@@ -121,7 +124,7 @@ export function Select<T extends string>({
       <button
         type="button"
         ref={triggerRef}
-        className={selected ? 'select-trigger' : 'select-trigger select-empty'}
+        className={icon ? 'select-trigger select-icon' : selected ? 'select-trigger' : 'select-trigger select-empty'}
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -134,6 +137,10 @@ export function Select<T extends string>({
         onKeyDown={onKeyDown}
         data-tooltip={open ? undefined : tooltip}
       >
+        {icon ? (
+          <Icon name={icon} size={16} />
+        ) : (
+          <>
         {/* Nothing picked yet: the accessible name stands in, muted so it does not read as a value. */}
         <span className={selected ? 'select-value' : 'select-placeholder'}>
           {(marker ?? selected?.dot) && (
@@ -143,6 +150,8 @@ export function Select<T extends string>({
           <span className="select-text">{selected?.label ?? placeholder ?? label}</span>
         </span>
         <Icon name="chevronDown" size={16} />
+          </>
+        )}
       </button>
 
       {open && (

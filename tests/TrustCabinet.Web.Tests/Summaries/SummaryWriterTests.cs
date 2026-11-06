@@ -38,6 +38,11 @@ public sealed class SummaryWriterTests
         Assert.Equal("Không có ký hiệu.", SummaryWriter.Clean("### Không có ký hiệu."));
     }
 
+    [Fact]
+    public void Tidy_drops_the_blank_lines_a_section_would_show_as_gaps()
+        => Assert.Equal("1. Mục một\nĐoạn một.\n- Ý một\n- Ý hai",
+            SummaryWriter.Tidy("\n1. Mục một\r\nĐoạn một.  \n\n- Ý một\n \t\n- Ý hai\n\n\n"));
+
     private sealed class ScriptedModel(Func<string, string> answer) : ILanguageModel
     {
         internal readonly List<string> Prompts = [];
@@ -64,7 +69,7 @@ public sealed class SummaryWriterTests
         var draft = await new SummaryWriter(model).WriteAsync(facts, CancellationToken.None);
 
         Assert.Equal(2, model.Prompts.Count); // one part, one overview
-        Assert.Equal($"1. Mục có thảo luận\nTóm tắt\nĐoạn.\n\n2. Mục im lặng\nLê Văn A trình bày nội dung. {SummaryWriter.NoDiscussion}",
+        Assert.Equal($"1. Mục có thảo luận\nTóm tắt\nĐoạn.\n2. Mục im lặng\nLê Văn A trình bày nội dung. {SummaryWriter.NoDiscussion}",
             draft.Discussion);
         Assert.Equal("M.", draft.Objectives);
         Assert.Equal(string.Join('\n', SummaryWriter.ChairHeading, "K.", SummaryWriter.BallotsHeading,
@@ -100,7 +105,7 @@ public sealed class SummaryWriterTests
         var draft = await new SummaryWriter(model).WriteAsync(facts, CancellationToken.None);
 
         // No generic "1. Nội dung thảo luận" over the issues; their trailing colons go and they start with a capital.
-        Assert.Equal("1. Kế hoạch quý tới\n- Đề nghị tăng ngân sách 10%.\n\n2. Lịch trực Tết\nChốt trước ngày 20/1.", draft.Discussion);
+        Assert.Equal("1. Kế hoạch quý tới\n- Đề nghị tăng ngân sách 10%.\n2. Lịch trực Tết\nChốt trước ngày 20/1.", draft.Discussion);
     }
 
     [Fact]

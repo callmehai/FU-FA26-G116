@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { assignSpeaker } from '../../api/transcripts'
+import { useId, useState } from 'react'
+import { assignLineSpeaker, assignSpeaker } from '../../api/transcripts'
 import { Icon } from '../../components/Icon'
 import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
-import type { Transcript, TranscriptSpeaker } from '../../types/transcript'
+import type { Transcript, TranscriptPerson, TranscriptSegment, TranscriptSpeaker } from '../../types/transcript'
 import { formatDuration } from './format'
 import { speakerColor, speakerName, voiceName, voicesOf, type Voice } from './speakers'
 
@@ -22,44 +22,56 @@ import { speakerColor, speakerName, voiceName, voicesOf, type Voice } from './sp
 const NOBODY = ''
 const BOTH = 'both:'
 
+/**
+ * The voices as the per-mic record lists its speakers: "Người nói N" over one card each, beside the lines on a wide
+ * card and above them when narrow (TranscriptView lays it out), as AI-eCabinet's RoomTranscript.
+ */
 export function SpeakerList({ transcript, onChanged }: { transcript: Transcript; onChanged: () => void }) {
+  const headingId = useId()
   if (transcript.speakers.length === 0) return null
   const { voices } = voicesOf(transcript.speakers)
   return (
-    <ul className="speaker-list" aria-label="Người nói">
-      {[...voices.values()].map((voice) => {
-        const spoke = formatDuration(voice.speechMs)
-        return (
-          <li key={voice.speaker.label} className="speaker-row">
-            {transcript.canEdit ? (
-              <SpeakerPicker transcript={transcript} voice={voice} onChanged={onChanged} />
-            ) : (
-              <span className="speaker-name">
-                <span
-                  className="select-dot"
-                  style={{ background: speakerColor(voice.speaker.label) }}
-                  aria-hidden="true"
-                />
-                {voiceName(voice.speaker)}
+    <aside className="transcript-speakers" aria-labelledby={headingId}>
+      <h3 id={headingId} className="tl-speakers-title">
+        Người nói <span className="tl-pill">{voices.size}</span>
+      </h3>
+      <ul className="speaker-list">
+        {[...voices.values()].map((voice) => {
+          const spoke = formatDuration(voice.speechMs)
+          return (
+            <li key={voice.speaker.label} className="speaker-row">
+              <span className="speaker-who">
+                {transcript.canEdit ? (
+                  <SpeakerPicker transcript={transcript} voice={voice} onChanged={onChanged} />
+                ) : (
+                  <span className="speaker-name">
+                    <span
+                      className="select-dot"
+                      style={{ background: speakerColor(voice.speaker.label) }}
+                      aria-hidden="true"
+                    />
+                    {voiceName(voice.speaker)}
+                  </span>
+                )}
+                {voice.labels.length > 1 && (
+                  <span
+                    className="speaker-same"
+                    tabIndex={0}
+                    aria-label={`Gộp ${voice.labels.length} giọng`}
+                    data-tooltip={`Gộp ${voice.labels.length} giọng máy nghe là cùng một người`}
+                  >
+                    <Icon name="users" size={14} />
+                  </span>
+                )}
               </span>
-            )}
-            {voice.labels.length > 1 && (
-              <span
-                className="speaker-same"
-                tabIndex={0}
-                aria-label={`Gộp ${voice.labels.length} giọng`}
-                data-tooltip={`Gộp ${voice.labels.length} giọng máy nghe là cùng một người`}
-              >
-                <Icon name="users" size={14} />
+              <span className="speaker-time" tabIndex={0} data-tooltip={`Nói tổng cộng ${spoke}`}>
+                {spoke}
               </span>
-            )}
-            <span className="speaker-time" tabIndex={0} data-tooltip={`Nói tổng cộng ${spoke}`}>
-              {spoke}
-            </span>
-          </li>
-        )
-      })}
-    </ul>
+            </li>
+          )
+        })}
+      </ul>
+    </aside>
   )
 }
 
@@ -152,4 +164,81 @@ export function SpeakerPicker({
     />
   )
   return inline ? <span className="tl-name-pick">{picker}</span> : picker
+}
+
+const VOICE = 'voice:'
+
+/**
+ * Who said ONE line, as AI-eCabinet's LineSpeaker: picking someone moves this line to their voice — a new voice, with
+ * its own card, colour and time, when no voice is named as them — and every other line keeps its voice. The voices no
+ * one is named as yet ("Người nói N") are offered too, to move a line back to the voice it was taken from; a named
+ * voice is reached through its person. The voice itself is named from its card above. `icon` is the small person
+ * button among a line's tools; otherwise the name heading a run is the picker.
+ */
+export function LineSpeakerPicker({
+  transcript,
+  segment,
+  voice,
+  time,
+  onChanged,
+  icon = false,
+}: {
+  transcript: Transcript
+  segment: TranscriptSegment
+  /** The voice the line belongs to, when it has one. */
+  voice: Voice | undefined
+  time: string
+  onChanged: () => void
+  icon?: boolean
+}) {
+  const toast = useToast()
+  const [saving, setSaving] = useState(false)
+  const owner = voice ? assignedOf(voice.speaker) : null
+  const voiceLabel = voice ? voiceName(voice.speaker) : speakerName(segment.speakerLabel)
+  const unnamed = [...voicesOf(transcript.speakers).voices.values()].filter((v) => !assignedOf(v.speaker))
+
+  const move = async (to: TranscriptPerson | { label: string }) => {
+    setSaving(true)
+    try {
+      toast.show((await assignLineSpeaker(segment.id, to)).message, 'success')
+    } catch (error) {
+      toast.show(errorMessage(error), 'error')
+    } finally {
+      setSaving(false)
+      onChanged()
+    }
+  }
+
+  const current = owner ?? (voice ? `${VOICE}${voice.speaker.label}` : null)
+  return (
+    <Select
+      size="sm"
+      icon={icon ? 'user' : undefined}
+      label={`Người nói câu lúc ${time}`}
+      value={current}
+      placeholder={voiceLabel}
+      tooltip={icon ? `Đổi người nói của riêng câu này (đang là ${voiceLabel})` : 'Đổi người nói của riêng câu này'}
+      disabled={saving}
+      options={[
+        ...transcript.people.map((p) => ({
+          value: p.id,
+          label: p.fullName,
+          hint: p.id === owner ? 'Giọng này' : p.guest ? 'Khách' : undefined,
+        })),
+        ...unnamed.map((v) => ({
+          value: `${VOICE}${v.speaker.label}`,
+          label: speakerName(v.speaker.label),
+          dot: speakerColor(v.speaker.label),
+          hint: v === voice ? 'Giọng này' : undefined,
+        })),
+      ]}
+      onChange={(value) => {
+        // The line's own voice, or its own person: nothing to move.
+        if (value === current) return
+        if (value.startsWith(VOICE)) return void move({ label: value.slice(VOICE.length) })
+        const who = transcript.people.find((p) => p.id === value)
+        if (who) void move(who)
+      }}
+    />
+  )
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -47,7 +48,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             if (current is not null && !rebuild) return new(MinutesFailure.Exists);
 
             var (draft, draftAt) = await DraftAsync(meetingId, ct);
-            var content = MinutesTemplate.Build(await RecordsAsync(meeting, ct), draft, Hanoi);
+            var content = MinutesHtml.FromLines(MinutesTemplate.Build(await RecordsAsync(meeting, ct), draft, Hanoi));
             var now = clock.GetUtcNow();
             if (current is null)
             {
@@ -60,8 +61,9 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             await db.SaveChangesAsync(ct);
             return new(Data: await StateAsync(meeting, actorId, ct));
         }
-        catch (DbUpdateException error)
+        catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
+            // Two first builds at once: the unique meeting index lets one through. Any other failure is a failed save.
             logger.LogWarning(error, "Concurrent minutes creation for meeting {MeetingId}", meetingId);
             return new(MinutesFailure.Exists);
         }
@@ -84,7 +86,12 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             // Someone who may not edit learns nothing about a draft they may not read.
             if (!SummaryService.Manages(meeting, actorId)) return new(row.Status == MinutesStatus.Draft ? MinutesFailure.NotFound : MinutesFailure.Forbidden);
             if (row.Status != MinutesStatus.Draft) return new(MinutesFailure.Locked);
-            if (string.IsNullOrWhiteSpace(content) || content.Length > MinutesLimits.Content)
+            // Only the allow-list is stored (ADR-0055): whatever else the request carries never reaches a reader. A
+            // document of empty paragraphs says nothing, so it is refused like an empty one.
+            // Nesting deeper than any document the editor writes is refused before it is walked (MinutesHtml.MaxDepth).
+            var html = content is null || content.Length > MinutesLimits.Content || MinutesHtml.TooDeep(content)
+                ? null : MinutesHtml.Sanitize(content);
+            if (html is null || html.Length > MinutesLimits.Content || !MinutesHtml.HasText(html))
                 return new(MinutesFailure.Invalid, Errors: new Dictionary<string, string[]>
                 {
                     ["content"] = [$"Nhập nội dung biên bản, tối đa {MinutesLimits.Content:N0} ký tự."],
@@ -95,11 +102,10 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             if (loadedAt is null) return new(MinutesFailure.Stale);
             var from = loadedAt.Value.AddMilliseconds(-1);
             var to = loadedAt.Value.AddMilliseconds(1);
-            var text = content.Replace("\r\n", "\n", StringComparison.Ordinal);
             var now = clock.GetUtcNow();
             var saved = await db.MeetingMinutes
                 .Where(m => m.Id == minutesId && m.Status == MinutesStatus.Draft && m.UpdatedAt >= from && m.UpdatedAt <= to)
-                .ExecuteUpdateAsync(m => m.SetProperty(x => x.Content, text).SetProperty(x => x.UpdatedAt, now), ct);
+                .ExecuteUpdateAsync(m => m.SetProperty(x => x.Content, html).SetProperty(x => x.UpdatedAt, now), ct);
             if (saved == 0) return new(MinutesFailure.Stale);
             return new(Data: await StateAsync(meeting, actorId, ct));
         }
@@ -144,7 +150,8 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             .FirstOrDefaultAsync(ct);
         var visible = row is not null && (manages || row.Status == MinutesStatus.Issued);
         var draftChangedAt = manages ? (await DraftAsync(meeting.Id, ct)).ChangedAt : null;
-        return new(visible ? new MinutesView(row!.Id, row.RevisionNumber, row.Status.ToString(), row.Content, row.CreatedAt,
+        return new(visible ? new MinutesView(row!.Id, row.RevisionNumber, row.Status.ToString(),
+            MinutesHtml.Normalize(row.Content), row.CreatedAt,
             row.UpdatedAt, new(row.CreatedBy.Id, row.CreatedBy.FullName), manages ? row.BuiltFromDraftAt : null) : null,
             manages, draftChangedAt);
     }

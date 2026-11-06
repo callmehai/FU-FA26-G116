@@ -59,7 +59,7 @@ public sealed partial class SummaryWriter(ILanguageModel model)
             var text = part.Lines.Count == 0 ? NoDiscussion : await SummarisePartAsync(facts, part, ct);
             if (part.Presenter is not null && part.Lines.Count == 0) text = $"{part.Presenter} trình bày nội dung. {NoDiscussion}";
             written.Add((part.Title, text));
-            if (i > 0) discussion.Append("\n\n");
+            if (i > 0) discussion.Append('\n');
             // Without an agenda the model numbers the issues itself ("1. <vấn đề>", "2. …"), as eCab asks; a generic
             // "1. Nội dung thảo luận" over them read as a section with a single item.
             discussion.Append(NoAgenda(facts) && part.Lines.Count > 0 ? Issues(text) : $"{i + 1}. {part.Title}\n{text}");
@@ -74,7 +74,7 @@ public sealed partial class SummaryWriter(ILanguageModel model)
         third.AppendLine(TasksHeading).Append(tasks);
         var sources = parts.Select(p => new SummarySource(p.AgendaItemId, p.Title,
             p.Lines.Count > 0 ? p.Lines[0].At : null, p.Lines.Count > 0 ? p.Lines[^1].At : null, p.Lines.Count)).ToList();
-        return new(objectives, discussion.ToString(), third.ToString().Trim(), sources);
+        return new(Tidy(objectives), Tidy(discussion.ToString()), Tidy(third.ToString()), sources);
     }
 
     private sealed record Part(Guid? AgendaItemId, string Title, string? Presenter, IReadOnlyList<TranscriptLine> Lines);
@@ -164,7 +164,7 @@ public sealed partial class SummaryWriter(ILanguageModel model)
                     ? "Viết phần tóm tắt nội dung này: "
                     : $"Viết phần tóm tắt nội dung này, câu đầu nêu {part.Presenter} trình bày (người trình bày lấy từ dòng NGƯỜI TRÌNH BÀY, KHÔNG lấy người nói trong bản ghi); ")
                 + "rồi tóm tắt DIỄN BIẾN thảo luận lấy từ bản ghi: ý kiến nêu ra, số liệu, ý kiến khác nhau, ghi đúng tên hoặc nhãn người nói. "
-                + "KHÔNG chép lại kết luận ở phần này. Tối đa 250 chữ. Đoạn văn cách nhau một dòng trống; liệt kê ngắn thì mỗi ý một dòng bắt đầu bằng \"- \". ")
+                + "KHÔNG chép lại kết luận ở phần này. Tối đa 250 chữ. Mỗi đoạn văn viết liền trên một dòng, không để dòng trống; liệt kê ngắn thì mỗi ý một dòng bắt đầu bằng \"- \". ")
                 .AppendLine(noAgenda ? IssueRule
                     : chunk.Sum(l => l.Text.Length) < FewWords ? $"Nếu bản ghi không nói gì về nội dung này, chỉ trả lời đúng câu: {NoDiscussion}"
                     : "");
@@ -231,6 +231,13 @@ public sealed partial class SummaryWriter(ILanguageModel model)
         static string OrNothing(string s) => s.Trim() is { Length: > 0 } t ? t : Nothing;
         return (OrNothing(objectives), OrNothing(conclusions), OrNothing(tasks));
     }
+
+    /// <summary>
+    /// A section as the Secretary reads and edits it: no blank lines, which the model puts between paragraphs and the
+    /// textarea showed as gaps (each line is already its own paragraph in the minutes), and no trailing spaces.
+    /// </summary>
+    public static string Tidy(string text) => string.Join('\n', text.Replace("\r", "", StringComparison.Ordinal).Split('\n')
+        .Select(l => l.TrimEnd()).Where(l => l.Length > 0)).Trim();
 
     /// <summary>Markdown a model writes out of habit, reduced to the plain text the Secretary edits (as eCab does).</summary>
     internal static string Clean(string text)

@@ -47,6 +47,8 @@ export interface SummaryReadiness {
   agendaItems: number
   agendaItemsTimed: number
   closedVotes: number
+  /** The latest change to the transcript the draft draws on (a line landing, corrected or left out, a voice named). */
+  transcriptChangedAt: string | null
 }
 
 export interface SummaryState {

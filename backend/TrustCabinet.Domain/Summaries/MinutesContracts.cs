@@ -1,17 +1,11 @@
 namespace TrustCabinet.Domain.Summaries;
 
 /// <summary>
-/// SCRUM-32 — the draft minutes. The text is plain, with a few marks the page and the Word export read (never HTML, so
-/// nothing in it can run in a browser):
-/// <list type="bullet">
-/// <item><c>@@ left | right</c> — a row of two columns; consecutive rows form one borderless table (the header, the
-/// signature blocks).</item>
-/// <item><c># </c> — the centred title ("BIÊN BẢN"); <c>^ </c> — a centred line.</item>
-/// <item><c>## </c> — a section heading (I, II, III); <c>### </c> — a bold sub-heading.</item>
-/// <item><c>- </c> — a listed line; <c>~ </c> — a small line flush left ("Nơi nhận").</item>
-/// <item>Inside any line, <c>**bold**</c> and <c>__italic__</c>.</item>
-/// </list>
-/// Anything else is a justified paragraph. "……" marks a blank the Secretary fills.
+/// SCRUM-32 — the draft minutes. The content is HTML kept to a fixed allow-list (ADR-0055, MinutesHtml in the
+/// infrastructure): paragraphs, three heading levels, lists, tables, rules and page breaks, bold, italic, underline,
+/// strike-through, sub- and superscript, and a few styles (alignment, indents, spacing, font size, a palette of text and
+/// highlight colours). The server sanitizes every write, so nothing in it can run in a browser; rows written before as
+/// line-marked text are converted to HTML on read. "……" marks a blank the Secretary fills.
 /// </summary>
 public sealed record MinutesPerson(Guid Id, string FullName);
 
@@ -61,7 +55,7 @@ public interface IMinutesService
     /// </summary>
     Task<MinutesOutcome> CreateAsync(Guid meetingId, Guid actorId, bool rebuild, CancellationToken ct = default);
     Task<MinutesOutcome> SaveAsync(Guid minutesId, Guid actorId, string? content, DateTimeOffset? loadedAt, CancellationToken ct = default);
-    /// <summary>The draft as a Word or a PDF file, built from the same marks the page reads.</summary>
+    /// <summary>The draft as a Word or a PDF file, drawn from the same HTML the page shows.</summary>
     Task<MinutesOutcome> ExportAsync(Guid minutesId, Guid actorId, MinutesExportFormat format, CancellationToken ct = default);
 }
 
@@ -76,5 +70,6 @@ public sealed record MinutesFile(string FileName, byte[] Bytes, string ContentTy
 
 public static class MinutesLimits
 {
-    public const int Content = 100_000;
+    /// <summary>Characters of HTML, as sent and as stored: HTML is wordier than the text it carries.</summary>
+    public const int Content = 300_000;
 }

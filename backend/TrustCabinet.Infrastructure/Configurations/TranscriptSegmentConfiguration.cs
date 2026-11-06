@@ -18,11 +18,6 @@ public class TranscriptSegmentConfiguration : IEntityTypeConfiguration<Transcrip
             .HasForeignKey(s => s.TranscriptId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(s => s.SpeakerUser)
-            .WithMany()
-            .HasForeignKey(s => s.SpeakerUserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasOne(s => s.EditedBy)
             .WithMany()
             .HasForeignKey(s => s.EditedById)

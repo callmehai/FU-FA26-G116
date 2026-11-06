@@ -1,4 +1,5 @@
 import type {
+  LineSpeakerAssigned,
   SegmentSaved,
   SpeakerAssigned,
   Transcript,
@@ -31,3 +32,13 @@ export const assignSpeaker = (recordingId: string, label: string, who: Transcrip
     userId: who && !who.guest ? who.id : null,
     guestId: who?.guest ? who.id : null,
   })
+
+/**
+ * Who said one line (AI-eCabinet's "just this line"): it moves to that person's voice — a new one when no voice is
+ * named as them — or, given a label, back to that voice of the recording. Every other line keeps its voice.
+ */
+export const assignLineSpeaker = (segmentId: string, to: TranscriptPerson | { label: string }) =>
+  api.put<LineSpeakerAssigned>(
+    `/api/transcript-segments/${segmentId}/speaker`,
+    'label' in to ? { label: to.label } : to.guest ? { guestId: to.id } : { userId: to.id },
+  )

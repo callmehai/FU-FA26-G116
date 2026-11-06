@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Summaries;
 
 namespace TrustCabinet.Infrastructure.Configurations;
 
@@ -8,7 +9,8 @@ public class MeetingMinutesConfiguration : IEntityTypeConfiguration<MeetingMinut
 {
     public void Configure(EntityTypeBuilder<MeetingMinutes> builder)
     {
-        builder.Property(m => m.Content).HasMaxLength(100000);
+        // Sanitized HTML (ADR-0055), within MinutesLimits.Content.
+        builder.Property(m => m.Content).HasMaxLength(MinutesLimits.Content);
         builder.Property(m => m.RejectionReason).HasMaxLength(2000);
         builder.Property(m => m.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
 

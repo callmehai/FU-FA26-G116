@@ -1,74 +1,41 @@
-import type { ReactNode } from 'react'
+import { useMemo } from 'react'
+import { SINGLE_LINE } from './editor/schema'
 
 /**
- * The minutes as a sheet of paper (SCRUM-32), drawn from the plain text and its line marks (MinutesContracts.cs):
- * `@@ a | b` rows, `#` the title, `^` a centred line, `##` / `###` headings, `- ` a listed line, `~ ` a small line,
- * `**bold**` and `__italic__` inside a line. Everything becomes React text, never HTML, so nothing in the minutes
- * can run in the browser.
+ * The minutes as a sheet of paper (SCRUM-32, ADR-0055). The content is HTML the server has already cut down to the
+ * minutes' allow-list on every write (MinutesHtml.cs): blocks, marks, tables and a few style properties, no script,
+ * no link, no image, no event attribute. That allow-list is what makes setting it as HTML safe here, and the page's
+ * Content-Security-Policy would refuse an inline script even if one got through.
  */
 export function MinutesPaper({ content }: { content: string }) {
-  return <article className="minutes-paper">{blocks(content)}</article>
+  const html = useMemo(() => fitTables(content), [content])
+  return <article className="minutes-paper minutes-doc" dangerouslySetInnerHTML={{ __html: html }} />
 }
 
-function blocks(content: string): ReactNode[] {
-  const out: ReactNode[] = []
-  let rows: string[] = []
-  const flush = () => {
-    if (rows.length === 0) return
-    out.push(
-      <table key={`t${out.length}`} className="minutes-frame">
-        <tbody>
-          {rows.map((row, i) => {
-            // Cut at the first bar only, as the Word file and the PDF do.
-            const bar = row.indexOf('|')
-            const [left, right] = bar < 0 ? [row, ''] : [row.slice(0, bar), row.slice(bar + 1)]
-            return (
-              <tr key={i}>
-                <td>{inline(left.trim())}</td>
-                <td>{inline(right.trim())}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>,
-    )
-    rows = []
+/**
+ * Column widths are stored in pixels of the editor's sheet. As shares of the table they fit any width of page, a
+ * phone's included, the way Word and the PDF spread them over the text width.
+ */
+function fitTables(content: string): string {
+  if (!content.includes('<col') && !content.includes('line-height')) return content
+  const doc = new DOMParser().parseFromString(`<body>${content}</body>`, 'text/html')
+  // `line-height` is Word's "multiple" spacing; one Word line is about 1.15 em of Times New Roman.
+  for (const block of doc.querySelectorAll<HTMLElement>('[style*="line-height"]')) {
+    const value = parseFloat(block.style.lineHeight)
+    if (value > 0) block.style.lineHeight = (value * SINGLE_LINE).toFixed(3)
   }
-  for (const raw of content.replace(/\r/g, '').split('\n')) {
-    const line = raw.trimEnd()
-    if (line.startsWith('@@')) {
-      rows.push(line.slice(2).trim())
-      continue
-    }
-    flush()
-    if (!line) continue
-    const key = `l${out.length}`
-    if (line.startsWith('# ')) out.push(<h2 key={key} className="minutes-title">{inline(line.slice(2))}</h2>)
-    else if (line.startsWith('^ ')) out.push(<p key={key} className="minutes-center">{inline(line.slice(2))}</p>)
-    else if (line.startsWith('### ')) out.push(<p key={key} className="minutes-sub">{inline(line.slice(4))}</p>)
-    else if (line.startsWith('## ')) out.push(<h3 key={key} className="minutes-section">{inline(line.slice(3))}</h3>)
-    else if (line.startsWith('~ ')) out.push(<p key={key} className="minutes-small">{inline(line.slice(2))}</p>)
-    else out.push(<p key={key}>{inline(line)}</p>)
+  for (const table of doc.querySelectorAll('table')) {
+    const cols = [...table.querySelectorAll(':scope > colgroup > col')] as HTMLTableColElement[]
+    const widths = cols.map((col) => parseFloat(col.style.width) || 0)
+    const known = widths.filter((w) => w > 0)
+    const share = known.length ? known.reduce((a, b) => a + b, 0) / known.length : 1
+    const total = widths.reduce((sum, w) => sum + (w || share), 0)
+    cols.forEach((col, i) => {
+      col.removeAttribute('style')
+      col.style.width = `${(((widths[i] || share) / total) * 100).toFixed(2)}%`
+    })
+    table.style.removeProperty('width')
+    table.style.removeProperty('min-width')
   }
-  flush()
-  return out
-}
-
-/** `**bold**` and `__italic__`, toggled as they open and close. */
-function inline(text: string): ReactNode[] {
-  const parts = text.split(/(\*\*|__)/)
-  const out: ReactNode[] = []
-  let bold = false
-  let italic = false
-  parts.forEach((part, i) => {
-    if (part === '**') bold = !bold
-    else if (part === '__') italic = !italic
-    else if (part) {
-      let node: ReactNode = part
-      if (italic) node = <em key={`e${i}`}>{node}</em>
-      if (bold) node = <strong key={`s${i}`}>{node}</strong>
-      out.push(typeof node === 'string' ? <span key={i}>{node}</span> : node)
-    }
-  })
-  return out
+  return doc.body.innerHTML
 }

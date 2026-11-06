@@ -68,3 +68,8 @@ export interface SegmentSaved extends TranscriptMessage {
 export interface SpeakerAssigned extends TranscriptMessage {
   speaker: TranscriptSpeaker
 }
+
+export interface LineSpeakerAssigned extends TranscriptMessage {
+  /** The voice the line is in now; `newVoice` when one was made for a person no voice was named as. */
+  segment: { segmentId: string; speakerLabel: string; previousLabel: string; newVoice: boolean }
+}

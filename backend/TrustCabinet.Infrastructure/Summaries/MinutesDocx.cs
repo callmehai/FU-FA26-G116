@@ -1,18 +1,21 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Security;
 using System.Text;
+using System.Xml;
 
 namespace TrustCabinet.Infrastructure.Summaries;
 
 /// <summary>
 /// The minutes as a Word file (SCRUM-32), written by hand as the three parts a .docx needs, so no library comes in for a
-/// few pages of text. It follows Decree 30/2020/NĐ-CP as eCab's template does: Times New Roman 13 pt (the title 14 pt),
-/// A4, margins 20/15/20/30 mm, the first line of each paragraph indented 12.7 mm, the header and the signature blocks as
-/// borderless two-column tables. It reads the same marks as the page (MinutesContracts.cs).
+/// few pages of text. It draws the sanitized HTML (<see cref="MinutesHtml"/>, ADR-0055) as <see cref="MinutesLayout"/> lays
+/// it out, the same page as <see cref="MinutesPdf"/>: Times New Roman 13 pt, A4, margins 20/15/20/30 mm (Decree
+/// 30/2020/NĐ-CP), lists as paragraphs with a hanging marker, tables with a fixed grid. Older rows of line-marked text are
+/// converted first.
 /// </summary>
 public static class MinutesDocx
 {
-    private const int Body = 26; // half-points: 13 pt
+    private const string Font = """<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>""";
 
     public static byte[] Build(string content)
     {
@@ -41,31 +44,14 @@ public static class MinutesDocx
     private static string Document(string content)
     {
         var body = new StringBuilder();
-        var rows = new List<string>();
-        void Flush()
+        LayoutBlock? previous = null;
+        foreach (var block in MinutesLayout.Read(content))
         {
-            if (rows.Count == 0) return;
-            body.Append(Table(rows));
-            rows.Clear();
+            // Two tables in a row would merge into one in Word: a paragraph keeps them apart, as the editor shows them.
+            if (block is LayoutTable && previous is LayoutTable) body.Append(Empty());
+            Block(body, block);
+            previous = block;
         }
-        foreach (var raw in content.Replace("\r", "", StringComparison.Ordinal).Split('\n'))
-        {
-            var line = raw.TrimEnd();
-            if (line.StartsWith("@@", StringComparison.Ordinal))
-            {
-                rows.Add(line[2..].Trim());
-                continue;
-            }
-            Flush();
-            if (line.Length == 0) continue;
-            if (line.StartsWith("# ", StringComparison.Ordinal)) body.Append(Paragraph(line[2..], "center", size: 28, bold: true, before: 240));
-            else if (line.StartsWith("^ ", StringComparison.Ordinal)) body.Append(Paragraph(line[2..], "center", after: 240));
-            else if (line.StartsWith("### ", StringComparison.Ordinal)) body.Append(Paragraph(line[4..], "both", indent: true, bold: true));
-            else if (line.StartsWith("## ", StringComparison.Ordinal)) body.Append(Paragraph(line[3..], "both", indent: true, bold: true, before: 120));
-            else if (line.StartsWith("~ ", StringComparison.Ordinal)) body.Append(Paragraph(line[2..], "left", size: 22, after: 0));
-            else body.Append(Paragraph(line, "both", indent: true));
-        }
-        Flush();
         return $"""
             <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
             <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -74,48 +60,141 @@ public static class MinutesDocx
             """;
     }
 
-    /// <summary>A line's runs, cut at <c>**</c> (bold) and <c>__</c> (italic).</summary>
-    private static string Runs(string text, int size, bool bold)
+    private static void Block(StringBuilder body, LayoutBlock block)
     {
-        var runs = new StringBuilder();
-        bool strong = bold, italic = false;
-        var at = 0;
-        while (at < text.Length)
+        switch (block)
         {
-            var star = text.IndexOf("**", at, StringComparison.Ordinal);
-            var under = text.IndexOf("__", at, StringComparison.Ordinal);
-            var next = star < 0 ? under : under < 0 ? star : Math.Min(star, under);
-            var end = next < 0 ? text.Length : next;
-            if (end > at) runs.Append(Run(text[at..end], size, strong, italic));
-            if (next < 0) break;
-            if (next == star) strong = !strong;
-            else italic = !italic;
-            at = next + 2;
+            case LayoutParagraph paragraph:
+                body.Append(Paragraph(paragraph));
+                break;
+            case LayoutRule rule:
+                // An empty paragraph whose bottom border is the rule.
+                body.Append($"""<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="4" w:space="1" w:color="000000"/></w:pBdr><w:spacing w:before="0" w:after="120" w:line="240" w:lineRule="auto"/>{Indent(rule.LeftMm, 0)}<w:rPr><w:sz w:val="8"/></w:rPr></w:pPr></w:p>""");
+                break;
+            case LayoutPageBreak:
+                body.Append("""<w:p><w:r><w:br w:type="page"/></w:r></w:p>""");
+                break;
+            case LayoutTable table:
+                body.Append(Table(table));
+                break;
         }
-        return runs.ToString();
     }
 
-    private static string Run(string text, int size, bool bold, bool italic)
-        => $"""<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>{(bold ? "<w:b/>" : "")}{(italic ? "<w:i/>" : "")}<w:sz w:val="{size}"/></w:rPr><w:t xml:space="preserve">{SecurityElement.Escape(text)}</w:t></w:r>""";
+    private static string Paragraph(LayoutParagraph p)
+    {
+        var xml = new StringBuilder("<w:p><w:pPr>");
+        xml.Append(CultureInfo.InvariantCulture,
+            $"""<w:spacing w:before="{Math.Round(p.BeforePt * 20)}" w:after="{Math.Round(p.AfterPt * 20)}" w:line="{Math.Round(p.LineHeight * 240)}" w:lineRule="auto"/>""");
+        xml.Append(p.Marker is null ? Indent(p.LeftMm, p.FirstLineMm) : Hanging(p.LeftMm));
+        xml.Append($"""<w:jc w:val="{Justification(p.Align)}"/>""");
+        xml.Append($"<w:rPr>{Font}{(p.Bold ? "<w:b/>" : "")}{Size(p.Size)}</w:rPr></w:pPr>");
+        if (p.Marker is not null)
+            xml.Append($"<w:r><w:rPr>{Font}{(p.Bold ? "<w:b/>" : "")}{Size(p.Size)}</w:rPr><w:t>{Text(p.Marker)}</w:t><w:tab/></w:r>");
+        foreach (var run in p.Runs) xml.Append(Run(run));
+        return xml.Append("</w:p>").ToString();
+    }
 
-    private static string Paragraph(string text, string align, int size = Body, bool bold = false, int before = 0, int after = 60,
-        bool indent = false)
-        => $"""<w:p><w:pPr><w:spacing w:before="{before}" w:after="{after}" w:line="288" w:lineRule="auto"/><w:jc w:val="{align}"/>{(indent ? "<w:ind w:firstLine=\"720\"/>" : "")}</w:pPr>{Runs(text, size, bold)}</w:p>""";
+    private static string Indent(float leftMm, float firstLineMm)
+    {
+        var left = MinutesLayout.Twips(leftMm);
+        var first = MinutesLayout.Twips(firstLineMm);
+        if (left == 0 && first == 0) return "";
+        var line = first > 0 ? $" w:firstLine=\"{first}\"" : first < 0 ? $" w:hanging=\"{-first}\"" : "";
+        return $"""<w:ind w:left="{left}"{line}/>""";
+    }
+
+    /// <summary>A list item: the text starts at the left indent, the marker hangs before it and a tab reaches the text.</summary>
+    private static string Hanging(float leftMm)
+        => $"""<w:ind w:left="{MinutesLayout.Twips(leftMm)}" w:hanging="{MinutesLayout.Twips(MinutesLayout.ListIndent)}"/>""";
+
+    private static string Run(LayoutRun run)
+    {
+        if (run.Break) return "<w:r><w:br/></w:r>";
+        var props = new StringBuilder(Font);
+        if (run.Bold) props.Append("<w:b/>");
+        if (run.Italic) props.Append("<w:i/>");
+        if (run.Strike) props.Append("<w:strike/>");
+        if (run.Color is { } color) props.Append($"""<w:color w:val="{color[1..].ToUpperInvariant()}"/>""");
+        props.Append(Size(run.Size));
+        if (run.Underline) props.Append("""<w:u w:val="single"/>""");
+        if (run.Background is { } fill) props.Append($"""<w:shd w:val="clear" w:color="auto" w:fill="{fill[1..].ToUpperInvariant()}"/>""");
+        if (run.Sub) props.Append("""<w:vertAlign w:val="subscript"/>""");
+        else if (run.Sup) props.Append("""<w:vertAlign w:val="superscript"/>""");
+        return $"""<w:r><w:rPr>{props}</w:rPr><w:t xml:space="preserve">{Text(run.Text)}</w:t></w:r>""";
+    }
+
+    private static string Size(float points)
+    {
+        var half = (int)Math.Round(points * 2);
+        return $"""<w:sz w:val="{half}"/><w:szCs w:val="{half}"/>""";
+    }
+
+    private static string Justification(Align align) => align switch
+    {
+        Align.Center => "center",
+        Align.Right => "right",
+        Align.Justify => "both",
+        _ => "left",
+    };
 
     /// <summary>
-    /// Two-column rows as one borderless table, each cell centred, as the template's header and signatures. The grid and the
-    /// fixed layout keep the 40/60 split: without them a reader sizes the columns to their text and the two run together.
+    /// A table on a fixed grid, so a reader keeps the widths rather than sizing columns to their text. Borders are 0.5 pt
+    /// black on every cell, none for a frame (the header and the signature blocks); cells keep Word's 1.9 mm margins.
     /// </summary>
-    private static string Table(IReadOnlyList<string> rows)
+    private static string Table(LayoutTable table)
     {
-        string Cell(string text, int width) => $"""<w:tc><w:tcPr><w:tcW w:w="{width}" w:type="dxa"/></w:tcPr>{Paragraph(text.Trim(), "center", after: 0)}</w:tc>""";
-        var table = new StringBuilder("""<w:tbl><w:tblPr><w:tblW w:w="9355" w:type="dxa"/><w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="3740"/><w:gridCol w:w="5615"/></w:tblGrid>""");
-        foreach (var row in rows)
+        var border = table.Frame ? "w:val=\"nil\"" : "w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"000000\"";
+        var borders = string.Concat(new[] { "top", "left", "bottom", "right", "insideH", "insideV" }
+            .Select(side => $"<w:{side} {border}/>"));
+        var xml = new StringBuilder("<w:tbl><w:tblPr>");
+        xml.Append($"""<w:tblW w:w="{table.Columns.Sum()}" w:type="dxa"/>""");
+        if (MinutesLayout.Twips(table.LeftMm) is var indent and > 0) xml.Append($"""<w:tblInd w:w="{indent}" w:type="dxa"/>""");
+        xml.Append($"<w:tblBorders>{borders}</w:tblBorders>")
+            .Append("""<w:tblLayout w:type="fixed"/>""")
+            .Append($"""<w:tblCellMar><w:left w:w="{MinutesLayout.CellPaddingTwips}" w:type="dxa"/><w:right w:w="{MinutesLayout.CellPaddingTwips}" w:type="dxa"/></w:tblCellMar>""")
+            .Append("</w:tblPr><w:tblGrid>");
+        foreach (var width in table.Columns) xml.Append($"""<w:gridCol w:w="{width}"/>""");
+        xml.Append("</w:tblGrid>");
+        foreach (var row in table.Rows)
         {
-            var halves = row.Split('|', 2);
-            table.Append("<w:tr>").Append(Cell(halves[0], 3740)).Append(Cell(halves.Length > 1 ? halves[1] : "", 5615)).Append("</w:tr>");
+            // A frame row (the header, the signature blocks) never splits across pages, as the PDF draws it.
+            xml.Append(table.Frame ? "<w:tr><w:trPr><w:cantSplit/></w:trPr>" : "<w:tr>");
+            foreach (var cell in row.Cells)
+            {
+                var width = table.Columns.Skip(cell.Column).Take(cell.Span).Sum();
+                xml.Append($"""<w:tc><w:tcPr><w:tcW w:w="{width}" w:type="dxa"/>""");
+                if (cell.Span > 1) xml.Append($"""<w:gridSpan w:val="{cell.Span}"/>""");
+                if (cell.Continues) xml.Append("<w:vMerge/>");
+                else if (cell.RowSpan > 1) xml.Append("""<w:vMerge w:val="restart"/>""");
+                xml.Append($"""<w:vAlign w:val="{(cell.VerticalAlign == "middle" ? "center" : cell.VerticalAlign)}"/></w:tcPr>""");
+                var inner = new StringBuilder();
+                foreach (var block in cell.Blocks) Block(inner, block);
+                // A cell must end with a paragraph: empty, or after a table nested in it.
+                if (cell.Blocks.Count == 0 || cell.Blocks[^1] is LayoutTable) inner.Append(Empty());
+                xml.Append(inner).Append("</w:tc>");
+            }
+            xml.Append("</w:tr>");
         }
-        return table.Append("</w:tbl>").ToString();
+        return xml.Append("</w:tbl>").ToString();
+    }
+
+    private static string Empty()
+        => $"""<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="{Math.Round(MinutesLayout.LineHeight * 240)}" w:lineRule="auto"/><w:rPr>{Font}{Size(MinutesLayout.BodySize)}</w:rPr></w:pPr></w:p>""";
+
+    /// <summary>Text as XML: escaped, and without the few characters XML cannot carry at all.</summary>
+    private static string Text(string text)
+    {
+        var kept = new StringBuilder(text.Length);
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (i + 1 < text.Length && XmlConvert.IsXmlSurrogatePair(text[i + 1], text[i]))
+            {
+                kept.Append(text, i, 2);
+                i++;
+            }
+            else if (XmlConvert.IsXmlChar(text[i])) kept.Append(text[i]);
+        }
+        return SecurityElement.Escape(kept.ToString());
     }
 
     private static void Add(ZipArchive zip, string name, string xml)

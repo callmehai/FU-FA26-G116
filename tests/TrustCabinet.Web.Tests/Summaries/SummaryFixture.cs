@@ -86,21 +86,25 @@ public sealed class SummaryFixture : IAsyncLifetime
         internal string OverviewAnswer = $"MỤC TIÊU:\n{Objectives}\nKẾT LUẬN:\n{Conclusion}\nNHIỆM VỤ:\nKhông có.";
         internal string PartAnswer = Part;
         internal readonly ConcurrentQueue<string> Prompts = new();
+        /// <summary>Runs once, on the first prompt: what happens to the meeting while the model is writing.</summary>
+        internal Func<Task>? While;
 
         public bool IsConfigured => Configured;
         public string Model => "fake-llm@test";
 
-        public Task<string> CompleteAsync(string system, string user, CancellationToken ct)
+        public async Task<string> CompleteAsync(string system, string user, CancellationToken ct)
         {
             Prompts.Enqueue(user);
-            if (Failure is { } failure) return Task.FromException<string>(failure);
-            return Task.FromResult(user.Contains("MỤC TIÊU:", StringComparison.Ordinal) ? OverviewAnswer : PartAnswer);
+            if (Interlocked.Exchange(ref While, null) is { } meanwhile) await meanwhile();
+            if (Failure is { } failure) throw failure;
+            return user.Contains("MỤC TIÊU:", StringComparison.Ordinal) ? OverviewAnswer : PartAnswer;
         }
 
         internal void Reset()
         {
             Configured = true;
             Failure = null;
+            While = null;
             OverviewAnswer = $"MỤC TIÊU:\n{Objectives}\nKẾT LUẬN:\n{Conclusion}\nNHIỆM VỤ:\nKhông có.";
             PartAnswer = Part;
             Prompts.Clear();
@@ -142,10 +146,12 @@ public sealed class SummaryFixture : IAsyncLifetime
             return result;
         }
 
-        // Saving the minutes is one conditional UPDATE (ExecuteUpdate), which bypasses SaveChanges.
+        // Saving the minutes, editing or reviewing the draft is one conditional UPDATE (ExecuteUpdate), which bypasses
+        // SaveChanges.
         public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(System.Data.Common.DbCommand command,
             CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
-            => FailSave && command.CommandText.StartsWith("UPDATE meeting_minutes", StringComparison.Ordinal)
+            => FailSave && (command.CommandText.StartsWith("UPDATE meeting_minutes", StringComparison.Ordinal)
+                    || command.CommandText.StartsWith("UPDATE meeting_summaries", StringComparison.Ordinal))
                 ? throw new Npgsql.NpgsqlException("Injected persistence failure.")
                 : ValueTask.FromResult(result);
 

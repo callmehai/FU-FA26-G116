@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Unicode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -95,20 +96,26 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             var row = await db.MeetingSummaries.FirstOrDefaultAsync(s => s.MeetingId == meetingId, ct);
             var draft = row is null ? null : Read(row);
             if (row is null || draft is null) return new(SummaryFailure.NotDrafted);
+            if (row.Status is SummaryStatus.Queued or SummaryStatus.Running) return new(SummaryFailure.Busy);
             var errors = Validate(edit);
             if (errors.Count > 0) return new(SummaryFailure.Invalid, Errors: errors);
-            row.Content = JsonSerializer.Serialize(draft with
+            var content = JsonSerializer.Serialize(draft with
             {
-                Objectives = edit.Objectives!.Trim(), Discussion = edit.Discussion!.Trim(), Conclusions = edit.Conclusions!.Trim(),
+                Objectives = SummaryWriter.Tidy(edit.Objectives!), Discussion = SummaryWriter.Tidy(edit.Discussion!),
+                Conclusions = SummaryWriter.Tidy(edit.Conclusions!),
             }, Json);
             var now = clock.GetUtcNow();
-            row.EditedById = actorId;
-            row.EditedAt = now;
-            // A changed text has not been vouched for: it goes back to the Chair and the Secretary until reviewed again.
-            row.ReviewedById = null;
-            row.ReviewedAt = null;
-            row.UpdatedAt = now;
-            await db.SaveChangesAsync(ct);
+            // Not while the AI writes it again: its draft would replace this edit unannounced, and minutes built from the
+            // edit would date from after the new draft's reading and never read as behind. Checked in the write itself,
+            // so a request queued since the read above still wins.
+            var saved = await db.MeetingSummaries
+                .Where(s => s.Id == row.Id && s.Status != SummaryStatus.Queued && s.Status != SummaryStatus.Running)
+                .ExecuteUpdateAsync(u => u.SetProperty(x => x.Content, content).SetProperty(x => x.EditedById, actorId)
+                    .SetProperty(x => x.EditedAt, now)
+                    // A changed text has not been vouched for: back to the Chair and the Secretary until reviewed again.
+                    .SetProperty(x => x.ReviewedById, (Guid?)null).SetProperty(x => x.ReviewedAt, (DateTimeOffset?)null)
+                    .SetProperty(x => x.UpdatedAt, now), ct);
+            if (saved == 0) return new(SummaryFailure.Busy);
             return await GetAsync(meetingId, actorId, ct);
         }
         catch (Exception error) when (error is not OperationCanceledException)
@@ -127,11 +134,14 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             if (!Manages(meeting, actorId)) return new(SummaryFailure.Forbidden);
             var row = await db.MeetingSummaries.FirstOrDefaultAsync(s => s.MeetingId == meetingId, ct);
             if (row is null || Read(row) is null) return new(SummaryFailure.NotDrafted);
+            // Nor reviewed while the AI writes it again: the mark would end up on a text nobody has read.
+            if (row.Status is SummaryStatus.Queued or SummaryStatus.Running) return new(SummaryFailure.Busy);
             var now = clock.GetUtcNow();
-            row.ReviewedById = actorId;
-            row.ReviewedAt = now;
-            row.UpdatedAt = now;
-            await db.SaveChangesAsync(ct);
+            var saved = await db.MeetingSummaries
+                .Where(s => s.Id == row.Id && s.Status != SummaryStatus.Queued && s.Status != SummaryStatus.Running)
+                .ExecuteUpdateAsync(u => u.SetProperty(x => x.ReviewedById, actorId).SetProperty(x => x.ReviewedAt, now)
+                    .SetProperty(x => x.UpdatedAt, now), ct);
+            if (saved == 0) return new(SummaryFailure.Busy);
             return await GetAsync(meetingId, actorId, ct);
         }
         catch (Exception error) when (error is not OperationCanceledException)
@@ -158,6 +168,9 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
 
         string? content = null;
         var error = "";
+        // The draft is of the record as it stood now, when it is read: a line corrected while the model writes (minutes
+        // on a laptop) is not in it, so the draft must read as behind that correction (readiness.transcriptChangedAt).
+        var readAt = clock.GetUtcNow();
         try
         {
             var facts = await FactsAsync(next.MeetingId, ct);
@@ -185,7 +198,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
                     .SetProperty(x => x.Status, SummaryStatus.Ready)
                     .SetProperty(x => x.Content, content)
                     .SetProperty(x => x.Model, model.Model)
-                    .SetProperty(x => x.GeneratedAt, now)
+                    .SetProperty(x => x.GeneratedAt, readAt)
                     .SetProperty(x => x.ErrorMessage, "")
                     .SetProperty(x => x.ReviewedById, (Guid?)null)
                     .SetProperty(x => x.ReviewedAt, (DateTimeOffset?)null)
@@ -242,10 +255,28 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
         var transcribing = await transcripts.CountAsync(t => t.Status == TranscriptStatus.Pending || t.Status == TranscriptStatus.Processing, ct);
         var failed = await transcripts.CountAsync(t => t.Status == TranscriptStatus.Failed, ct);
         var unnamed = await transcripts.Where(t => t.Status == TranscriptStatus.Completed).SelectMany(t => t.Speakers)
-            .CountAsync(s => s.AssignedUserId == null && s.AssignedGuestId == null, ct);
+            // A voice none of whose lines are left in it (all moved to other voices) has nothing to name.
+            .CountAsync(s => s.AssignedUserId == null && s.AssignedGuestId == null
+                && s.Transcript.Segments.Any(x => x.SpeakerLabel == s.Label), ct);
         var agenda = await db.AgendaItems.Where(a => a.MeetingId == meetingId).Select(a => a.ActualStartedAt).ToListAsync(ct);
         var votes = await db.VotingSessions.CountAsync(v => v.MeetingId == meetingId && v.Status == VotingStatus.Closed, ct);
-        return new(clips + segments, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes);
+        var changed = new[]
+        {
+            await db.SpeechClips.Where(c => c.MeetingId == meetingId).MaxAsync(c => (DateTimeOffset?)c.UpdatedAt, ct),
+            await transcripts.MaxAsync(t => (DateTimeOffset?)t.UpdatedAt, ct),
+            await transcripts.SelectMany(t => t.Segments).MaxAsync(s => (DateTimeOffset?)s.UpdatedAt, ct),
+            await transcripts.SelectMany(t => t.Speakers).MaxAsync(s => (DateTimeOffset?)s.UpdatedAt, ct),
+            // What was erased leaves nothing above to date it, yet a draft written before still holds it: personal data
+            // the meeting no longer keeps. A recording keeps its row and its time of erasure; a sentence leaves only the
+            // audit entry of its deletion.
+            await db.Recordings.Where(r => r.MeetingId == meetingId).MaxAsync(r => r.DeletedAt, ct),
+            await db.Database.SqlQuery<DateTimeOffset?>($"""
+                SELECT max(occurred_at) AS "Value" FROM audit_log
+                WHERE action = {AuditActions.SpeechClipDeleted} AND details->>'MeetingId' = {meetingId.ToString()}
+                """).SingleAsync(ct),
+        }.Max();
+        return new(clips + segments, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes,
+            changed);
     }
 
     /// <summary>

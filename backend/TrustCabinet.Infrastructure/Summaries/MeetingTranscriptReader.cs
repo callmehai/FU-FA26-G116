@@ -47,11 +47,11 @@ public sealed class MeetingTranscriptReader(TrustCabinetDbContext db)
             var segments = await db.TranscriptSegments.AsNoTracking()
                 .Where(s => s.TranscriptId == recording.TranscriptId && s.Text != "")
                 .OrderBy(s => s.Position)
-                .Select(s => new { s.Id, s.StartMs, s.Text, s.SpeakerLabel, User = s.SpeakerUser != null ? s.SpeakerUser.FullName : null })
+                .Select(s => new { s.Id, s.StartMs, s.Text, s.SpeakerLabel })
                 .ToListAsync(ct);
             foreach (var segment in segments)
             {
-                var name = segment.User ?? speakers.GetValueOrDefault(segment.SpeakerLabel) ?? LabelName(segment.SpeakerLabel);
+                var name = speakers.GetValueOrDefault(segment.SpeakerLabel) ?? LabelName(segment.SpeakerLabel);
                 lines.Add(new(TranscriptLine.SegmentRef(segment.Id), WallClock(recording.Takes, recording.CreatedAt, segment.StartMs),
                     name, SpokenNumbers.Normalise(segment.Text.Trim())));
             }

@@ -21,6 +21,7 @@ import type { MinutesState, SummaryReadiness, SummaryState } from '../../types/s
 import { FileTypeTag } from '../documents/DocumentTags'
 import { saveBlob } from '../documents/documentFile'
 import { MinutesPaper } from './MinutesPaper'
+import { NameVoicesSheet } from './NameVoicesSheet'
 import { OutlineSections, type OutlineValues } from './OutlineSections'
 
 // The editor brings TipTap with it: it loads when someone opens the minutes to edit, not with every meeting page.
@@ -79,7 +80,13 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
 
   return (
     <div className="minutes-tab">
-      <SummaryCard meeting={meeting} state={summary} barHost={barHost} onChanged={setSummary} onRetry={() => void loadSummary()} />
+      <SummaryCard
+        meeting={meeting}
+        state={summary}
+        barHost={barHost}
+        onChanged={setSummary}
+        onRetry={() => void loadSummary()}
+      />
       <MinutesCard
         meeting={meeting}
         state={minutes}
@@ -118,6 +125,7 @@ function SummaryCard({
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const [naming, setNaming] = useState(false)
 
   if (state.kind === 'loading') return <section className="card minutes-card" aria-busy="true"><div className="skeleton minutes-skeleton" /></section>
   if (state.kind === 'error')
@@ -137,6 +145,11 @@ function SummaryCard({
   const draft = summary?.draft ?? null
   const running = summary?.status === 'Queued' || summary?.status === 'Running'
   const canAsk = canManage && (meeting.status === 'InProgress' || meeting.status === 'Ended')
+  // The Dự thảo is a snapshot of the transcript: a line corrected, left out or named since leaves it behind (eCab).
+  const changedAt = readiness?.transcriptChangedAt
+  const stale =
+    !!draft && !running && !!changedAt && !!summary?.generatedAt && Date.parse(changedAt) > Date.parse(summary.generatedAt)
+  const askBlocked = !aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined
 
   const ask = async () => {
     setBusy(true)
@@ -158,9 +171,12 @@ function SummaryCard({
       const result = await editSummary(meeting.id, values)
       onChanged({ kind: 'ready', data: result })
       toast.show(result.message, 'success')
-      return { saved: true, errors: {} }
+      const stored = result.summary?.draft
+      return { saved: true, errors: {}, values: stored ? { objectives: stored.objectives, discussion: stored.discussion, conclusions: stored.conclusions } : undefined }
     } catch (error) {
       toast.show(errorMessage(error), 'error')
+      // The AI started writing it again meanwhile: read the state, which closes the editor and shows it writing.
+      if (isApiError(error, 409, 'MSG387')) onRetry()
       return { saved: false, errors: isApiError(error, 400, 'MSG389') ? (error.body?.errors ?? {}) : {} }
     }
   }
@@ -173,6 +189,7 @@ function SummaryCard({
       toast.show(result.message, 'success')
     } catch (error) {
       toast.show(errorMessage(error), 'error')
+      if (isApiError(error, 409, 'MSG387')) onRetry()
     } finally {
       setBusy(false)
     }
@@ -203,8 +220,8 @@ function SummaryCard({
                 id="summary-ask"
                 type="button"
                 className={draft ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm'}
-                disabled={busy || dirty || !aiReady}
-                data-tooltip={!aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined}
+                disabled={busy || !!askBlocked}
+                data-tooltip={askBlocked}
                 onClick={() => (draft ? setConfirming(true) : void ask().catch(() => undefined))}
               >
                 <Icon name={draft ? 'refresh' : 'sparkles'} size={16} />
@@ -215,7 +232,27 @@ function SummaryCard({
         )}
       </header>
 
-      {canManage && readiness && !draft && !running && <ReadinessNote readiness={readiness} />}
+      {canAsk && stale && (
+        <div className="alert minutes-stale" role="status">
+          <p>
+            <Icon name="history" size={16} />
+            Bản ghi đã được sửa sau khi tạo dự thảo: dự thảo chưa có các chỗ sửa đó.
+          </p>
+          <button
+            type="button"
+            className="btn btn-sm"
+            disabled={busy || !!askBlocked}
+            data-tooltip={askBlocked}
+            onClick={() => setConfirming(true)}
+          >
+            Tạo lại
+          </button>
+        </div>
+      )}
+
+      {canManage && readiness && !running && (
+        <ReadinessNote readiness={readiness} drafted={!!draft} onNameVoices={() => setNaming(true)} />
+      )}
 
       {summary?.status === 'Failed' && (
         <div className="alert alert-error" role="alert">
@@ -272,6 +309,27 @@ function SummaryCard({
           AI viết lại từ đầu. Khi xong, dự thảo mới thay dự thảo hiện tại, kể cả phần đã sửa và đã duyệt.
         </ConfirmDialog>
       )}
+
+      {naming && (
+        <NameVoicesSheet
+          meetingId={meeting.id}
+          drafted={!!draft}
+          canGenerate={!canAsk ? 'Tạo dự thảo khi cuộc họp đã bắt đầu.' : running ? 'AI đang viết dự thảo' : askBlocked}
+          onClose={() => {
+            setNaming(false)
+            // Names given here change the readiness and may leave the draft behind the transcript.
+            onRetry()
+          }}
+          onGenerate={() => {
+            setNaming(false)
+            // A first draft: the POST answers with the whole state, so no refresh races it and overwrites Queued. Only
+            // when it fails is the state read again, for the names just given.
+            if (!draft) return void ask().catch(() => onRetry())
+            onRetry()
+            setConfirming(true)
+          }}
+        />
+      )}
     </section>
   )
 }
@@ -291,19 +349,46 @@ function SummaryStatusChip({ state }: { state: SummaryState }) {
 }
 
 /** AI-eCabinet's ReadinessNote: what the draft would miss if asked for now. */
-function ReadinessNote({ readiness }: { readiness: SummaryReadiness }) {
+/**
+ * What a draft asked for now would miss. Before the first draft every gap is listed; once there is one, only what the
+ * transcript can still change (voices to name, transcripts pending or failed) — the rest is already in the text.
+ */
+function ReadinessNote({
+  readiness,
+  drafted,
+  onNameVoices,
+}: {
+  readiness: SummaryReadiness
+  drafted: boolean
+  onNameVoices?: () => void
+}) {
   const gaps: string[] = []
-  if (readiness.sentences === 0) gaps.push('Chưa có lời thoại nào: dự thảo chỉ dựa vào chương trình và biểu quyết.')
-  if (readiness.unnamedVoices > 0) gaps.push(`${readiness.unnamedVoices} giọng chưa gán tên sẽ hiện là “Người nói N”.`)
+  if (!drafted && readiness.sentences === 0)
+    gaps.push('Chưa có lời thoại nào: dự thảo chỉ dựa vào chương trình và biểu quyết.')
   if (readiness.transcribing > 0) gaps.push(`${readiness.transcribing} bản ghi đang chuyển chữ, chưa được tính.`)
   if (readiness.failedTranscripts > 0) gaps.push(`${readiness.failedTranscripts} bản ghi chuyển chữ lỗi, không được tính.`)
-  if (readiness.agendaItems > 0 && readiness.agendaItemsTimed < readiness.agendaItems)
+  if (!drafted && readiness.agendaItems > 0 && readiness.agendaItemsTimed < readiness.agendaItems)
     gaps.push('Có nội dung chưa được bắt đầu: lời thoại không chia được theo từng nội dung.')
-  if (gaps.length === 0) return null
+  const unnamed = readiness.unnamedVoices > 0
+  if (gaps.length === 0 && !unnamed) return null
   return (
-    <div className="alert alert-warning minutes-readiness">
+    <div className="minutes-readiness" role="status">
+      {unnamed && (
+        <p className="minutes-readiness-line">
+          <Icon name="warning" size={16} />
+          <span>{readiness.unnamedVoices} giọng chưa gán tên sẽ hiện là “Người nói N” trong dự thảo.</span>
+          {onNameVoices && (
+            <button type="button" className="btn btn-outline btn-sm" onClick={onNameVoices}>
+              Gán tên người nói
+            </button>
+          )}
+        </p>
+      )}
       {gaps.map((gap) => (
-        <p key={gap}>{gap}</p>
+        <p key={gap} className="minutes-readiness-line">
+          <Icon name="warning" size={16} />
+          <span>{gap}</span>
+        </p>
       ))}
     </div>
   )
@@ -357,7 +442,7 @@ function MinutesCard({
   // The text being edited and the version it was opened on. The card reloads while it is open (the AI draft finishing,
   // the draft saved), so the save must send the version the editing started from, or it would quietly go over a save
   // made in between. null base: the save after a conflict, meant to go over the newer one.
-  const [draft, setDraft] = useState<{ text: string; base: string | null } | null>(null)
+  const [draft, setDraft] = useState<{ text: string; base: string | null; hasText: boolean } | null>(null)
 
   if (state.kind === 'loading') return <section className="card minutes-card" aria-busy="true"><div className="skeleton minutes-skeleton" /></section>
   if (state.kind === 'error')
@@ -456,7 +541,7 @@ function MinutesCard({
               </button>
             )}
             {minutes && canBuild && (
-              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDraft({ text: minutes.content, base: minutes.updatedAt })}>
+              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDraft({ text: minutes.content, base: minutes.updatedAt, hasText: true })}>
                 <Icon name="pencil" size={16} />
                 Sửa
               </button>
@@ -534,13 +619,13 @@ function MinutesCard({
           <Suspense fallback={<div className="skeleton minutes-skeleton" />}>
             <MinutesEditor
               content={draft.text}
-              onChange={(text) => setDraft((d) => d && { ...d, text })}
+              onChange={(text, hasText) => setDraft((d) => d && { ...d, text, hasText })}
               actions={
                 <>
                   <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setDraft(null)}>
                     Huỷ
                   </button>
-                  <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !draft.text.trim()}>
+                  <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !draft.hasText}>
                     {busy ? 'Đang lưu…' : 'Lưu'}
                   </button>
                 </>

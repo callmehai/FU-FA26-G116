@@ -94,8 +94,9 @@ public sealed class MinutesTextTests
         XNamespace w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
         var table = Assert.Single(document.Descendants(w + "tbl"));
         Assert.Equal(2, table.Descendants(w + "tc").Count());
-        // OOXML requires the grid; without it and a fixed layout the header's two columns run together.
-        Assert.Equal(["3740", "5615"], table.Element(w + "tblGrid")!.Elements(w + "gridCol").Select(c => c.Attribute(w + "w")!.Value));
+        // OOXML requires the grid; without it and a fixed layout the header's two columns run together. The line text's
+        // two columns become 250:374 px, which share the whole text width (9355 twips) in that ratio.
+        Assert.Equal(["3748", "5607"], table.Element(w + "tblGrid")!.Elements(w + "gridCol").Select(c => c.Attribute(w + "w")!.Value));
         Assert.Equal("fixed", table.Element(w + "tblPr")!.Element(w + "tblLayout")!.Attribute(w + "type")!.Value);
         var texts = document.Descendants(w + "t").Select(t => t.Value).ToList();
         Assert.Contains("BIÊN BẢN", texts);

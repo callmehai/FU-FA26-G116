@@ -38,11 +38,14 @@ public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdReposi
     public Task<int> DeleteSamplesAsync(Guid userId, CancellationToken ct)
         => db.VoiceSamples.Where(s => s.UserId == userId).ExecuteDeleteAsync(ct);
 
-    public async Task<int> ClearSuggestionsAsync(Guid userId, CancellationToken ct)
+    public async Task<int> ClearSuggestionsAsync(Guid userId, DateTimeOffset now, CancellationToken ct)
     {
         // A name the machine gave from the voice goes with the consent; one a Secretary gave is their decision and stays.
+        // UpdatedAt moves, so a minutes draft that named them by their voice reads as behind (readiness.transcriptChangedAt).
+        // A suggestion alone is not: no draft reads it, so clearing it leaves UpdatedAt and the draft as they were.
         await db.TranscriptSpeakers.Where(s => s.SuggestedUserId == userId && s.AssignedUserId == userId && s.AssignedById == null)
-            .ExecuteUpdateAsync(u => u.SetProperty(s => s.AssignedUserId, (Guid?)null).SetProperty(s => s.AssignedAt, (DateTimeOffset?)null), ct);
+            .ExecuteUpdateAsync(u => u.SetProperty(s => s.AssignedUserId, (Guid?)null).SetProperty(s => s.AssignedAt, (DateTimeOffset?)null)
+                .SetProperty(s => s.UpdatedAt, now), ct);
         return await db.TranscriptSpeakers.Where(s => s.SuggestedUserId == userId)
             .ExecuteUpdateAsync(u => u.SetProperty(s => s.SuggestedUserId, (Guid?)null).SetProperty(s => s.SuggestionScore, (double?)null), ct);
     }
