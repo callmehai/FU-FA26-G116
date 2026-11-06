@@ -125,7 +125,11 @@ function MeetingDetail({
   // The tab lives in the URL, so the browser's Back from a document returns to the tab it was opened from. The
   // state goes along: it holds where "‹ Cuộc họp" leads (useBackTarget), and marks the change as a tab switch, which
   // the re-read below leaves alone.
-  const tab: TabId = TABS.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
+  // The recordings are the participants' (personal data): someone who only organised or approved the meeting is not
+  // on its roster and the server answers 404, so the tab is not offered, and a link straight to it opens the overview.
+  const onRoster = meeting.myMeetingRole !== null
+  const tabs = onRoster ? TABS : TABS.filter((t) => t.id !== 'recordings')
+  const tab: TabId = tabs.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
   const setTab = (id: TabId) =>
     setParams(
       (p) => {
@@ -138,10 +142,10 @@ function MeetingDetail({
   // the call room; the page only reads that record. A room is recorded by the Secretary, from a card that lives with
   // the page rather than the Bản ghi tab, so that moving between tabs never stops it (AI-eCabinet's floating card).
   // ADR-0041: the room mic streams each take as it records, and everyone sees that the room is being recorded.
-  const speech = useSpeech(meeting.id, { micOn: false })
+  const speech = useSpeech(meeting.id, { micOn: false, enabled: onRoster })
   const perMic = meeting.mode !== 'InPerson'
   const running = meeting.status === 'InProgress'
-  const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online')
+  const roomRecordings = useRoomRecordings(meeting.id, meeting.mode !== 'Online' && onRoster)
   const room = useRoomRecorder(meeting.id, running, roomRecordings.reload)
   // ADR-0040: an in-person or hybrid meeting has a room, recorded by the Secretary here (as the server's HasRoom).
   const recordsRoom = meeting.mode !== 'Online' && running && meeting.myMeetingRole === 'Secretary'
@@ -356,7 +360,7 @@ function MeetingDetail({
       )}
 
       <div className="tabs" role="tablist" aria-label="Chi tiết cuộc họp">
-        {TABS.map((t) => (
+        {tabs.map((t) => (
           <button
             key={t.id}
             type="button"
