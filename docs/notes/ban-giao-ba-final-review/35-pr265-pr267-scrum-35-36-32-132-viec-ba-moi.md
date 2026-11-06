@@ -155,3 +155,30 @@ comment (UC/BR/MSG đổi, PR + commit, còn lại gì): **SCRUM-35** (T35-1..3)
 2. Sau SEQ: A-DRAWIO cập nhật tab UC46b, UC47–50, UC59, UC60 (theo `DRAWIO_EDITING_RULES.md`; lưu ý lỗi tab lệch trên Windows ở note 32 §4).
 3. Sau A-DOCX: T34-7 và T35-9 (sync + comment Jira).
 4. SCRUM-132 (T35-8) để sau khi #267 merge.
+
+## 7. Trạng thái thực hiện — nhánh `docs/ba-final-review-note34-35` (06/11/2026)
+
+Đã làm trên nhánh, **chưa commit** (theo quy tắc "không commit nếu chưa được bảo"):
+
+- **T35-1** UC-46b thêm **AF-2 – Change the speaker of one sentence** (MSG407) và **EX-4** (giọng không thuộc bản ghi → 404, không mã); EX-1
+  sửa thành "không nêu đúng một trong user / Guest / giọng".
+- **T35-2** thêm **BR-395**.
+- **T35-3** `UC46b_AssignSpeaker.txt` thêm khối `opt … AF-2` (tìm/tạo giọng `SPEAKER_NN`, chuyển câu, tính lại thời lượng, audit, ẩn giọng
+  hết câu, nhánh MSG317/404/MSG304/MSG407); xuất lại `UC46b_AssignSpeaker.png`, `drawio-png/uc46b_assignspeaker.drawio.png` và tab
+  UC-46b trong file gộp.
+- **T35-4** UC-47 `generatedAt` = lúc AI đọc lời thoại; UC-48 thẻ đỏ + *Tạo lại* (AF-4), nút *Gán tên người nói* (bước 6); UC-49/UC-50 thêm
+  EX "AI đang viết lại" → MSG387; UC-49 bỏ dòng trống; thêm **BR-396**.
+- **T35-5** UC-58 đọc HTML đã lọc; UC-60 trình soạn kiểu Word, 300.000 ký tự / 64 tầng / 63 cột, PDF + Word, không tách khối ký tên,
+  EX-8 `format` sai → MSG406; **BR-385**, **BR-390**, **BR-391**, **BR-394** viết lại. Đã thêm dòng MSG406/407 vào bảng V.2 của Report 3
+  (vì UC dẫn mã; danh mục MSG vẫn là nguồn chuẩn).
+- **T35-6** `UC60_EditMeetingMinutes.txt` thêm bước lọc HTML + trả nội dung đã lọc, nhánh `format = docx | pdf`; xuất lại PNG + tab UC-60.
+- **T34-1..T34-4, T34-6** xong ở [note 34 §6](34-pr263-scrum-32-bien-ban-lay-du-thao-hien-co.md#6-trạng-thái-thực-hiện--nhánh-docsba-final-review-note34-35-06112026);
+  **T34-7** đã sync, comment Jira để sau khi PR docs vào `main`. `sync_reports.py --report 3` và `sync_requirement_extracts.py --check` đều sạch.
+
+**Tạm hoãn / còn lại:**
+
+- **Đặc tả màn hình — tạm không làm (theo yêu cầu 06/11/2026):** không sửa §III 12.1 Minutes Editor (vùng thông báo trên thẻ, nút *Tải PDF*,
+  bảng field) và không thay ảnh wireframe. Việc này gộp vào đợt đặc tả màn hình sau; T34-5 vì thế vẫn mở.
+- **T35-7** sơ đồ lớp FE-12: chưa có ticket, phải hỏi người dùng trước.
+- **T35-8** SCRUM-132: #267 **chưa** vào `main`, xung đột MSG406 chưa chốt — giữ nguyên, chưa sửa UC-01/02/07.
+- **T35-9** comment Jira + đổi trạng thái: chỉ làm khi PR docs đã ở `main`, theo §2.2 của DEVELOPMENT_WORKFLOW.

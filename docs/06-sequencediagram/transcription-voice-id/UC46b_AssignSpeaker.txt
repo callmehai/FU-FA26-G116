@@ -79,4 +79,89 @@ loop For the chosen voice, and each voice suggested as the same person - AF-1 (B
     deactivate TranscriptController
 end
 
+opt Change the speaker of one sentence - AF-2
+    Actor->TranscriptView: Select one sentence and choose its person
+    TranscriptView->TranscriptController: Change the speaker of this sentence
+    activate TranscriptController
+    TranscriptController->TranscriptionService: assignSegmentSpeaker(segmentId, userId | guestId | label, actorId)
+    activate TranscriptionService
+
+    TranscriptionService->TranscriptRepository: Get the sentence with its recording
+    activate TranscriptRepository
+    TranscriptRepository->Database: Retrieve sentence and recording
+    activate Database
+    Database-->TranscriptRepository: Sentence and recording / Not found
+    deactivate Database
+    TranscriptRepository-->TranscriptionService: Sentence and recording / Not found
+    deactivate TranscriptRepository
+
+    TranscriptionService->MeetingRepository: Get the Meeting with its current roster
+    activate MeetingRepository
+    MeetingRepository-->TranscriptionService: Meeting and roster
+    deactivate MeetingRepository
+
+    TranscriptionService->TranscriptRepository: Get the transcript voices
+    activate TranscriptRepository
+    TranscriptRepository-->TranscriptionService: Voices
+    deactivate TranscriptRepository
+
+    TranscriptionService->TranscriptionService: Check the actor is the current Secretary (BR-341), the sentence belongs\nto this recording, and the chosen person or Guest is valid (BR-368)
+
+    alt Actor is not the current Secretary - EX-2
+        TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptController-->TranscriptView: MSG295 - Only the meeting Secretary may manage recordings.
+        TranscriptView-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+    else Person is not on the current roster - EX-1
+        TranscriptionService-->TranscriptController: MSG317 - Assigned person must be on the current meeting roster.
+        TranscriptController-->TranscriptView: MSG317 - Assigned person must be on the current meeting roster.
+        TranscriptView-->Actor: MSG317 - Assigned person must be on the current meeting roster.
+    else The voice is not in this recording - EX-4
+        TranscriptionService-->TranscriptController: Not found
+        TranscriptController-->TranscriptView: No such voice in this recording
+    else Assignment valid
+        opt The chosen person has no voice yet
+            TranscriptionService->TranscriptRepository: Create the voice SPEAKER_NN with the smallest unused number,\nwith its own card, colour and duration (BR-395)
+            activate TranscriptRepository
+            TranscriptRepository->Database: Insert speaker
+            activate Database
+            Database-->TranscriptRepository: Speaker created / Save failed
+            deactivate Database
+            TranscriptRepository-->TranscriptionService: Speaker created / Save failed
+            deactivate TranscriptRepository
+        end
+        TranscriptionService->TranscriptRepository: Move only this sentence to that voice\nand update the durations (BR-395)
+        activate TranscriptRepository
+        TranscriptRepository->Database: Update the sentence and the durations
+        activate Database
+        Database-->TranscriptRepository: Sentence moved / Save failed
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Sentence moved / Save failed
+        deactivate TranscriptRepository
+        TranscriptionService->AuditService: Record the change
+        activate AuditService
+        AuditService-->TranscriptionService: Entry saved
+        deactivate AuditService
+        TranscriptionService->TranscriptRepository: Hide a voice left with no sentence
+        activate TranscriptRepository
+        TranscriptRepository->Database: Update the voice visibility
+        activate Database
+        Database-->TranscriptRepository: Voice hidden
+        deactivate Database
+        TranscriptRepository-->TranscriptionService: Voice hidden
+        deactivate TranscriptRepository
+
+        alt Sentence cannot be moved
+            TranscriptionService-->TranscriptController: MSG304 - Unable to save transcript changes. Please try again.
+            TranscriptController-->TranscriptView: MSG304 - Unable to save transcript changes. Please try again.
+            TranscriptView-->Actor: MSG304 - Unable to save transcript changes. Please try again.
+        else Speaker changed
+            TranscriptionService-->TranscriptController: MSG407 - Đã đổi người nói của câu này.
+            TranscriptController-->TranscriptView: MSG407 - Đã đổi người nói của câu này.
+            TranscriptView-->Actor: MSG407 - Đã đổi người nói của câu này.
+        end
+    end
+    deactivate TranscriptionService
+    deactivate TranscriptController
+end
+
 deactivate TranscriptView
