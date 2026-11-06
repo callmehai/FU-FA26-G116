@@ -62,10 +62,11 @@ Ngoài thẻ báo + Tải PDF ở note 34:
 
 ## 5. Việc BA còn lại
 
-- [ ] UC Spec + sequence "đổi người nói một câu" (SCRUM-35) → tab draw.io + PNG theo `DRAWIO_EDITING_RULES.md`.
-- [ ] UC-47–UC-50: mốc dự thảo cũ, BR "đang viết lại thì không sửa/duyệt" (MSG387).
-- [ ] UC-58–UC-60: các mục §3 và note 34 §2.
-- [ ] Sửa DOCX Report 3 → `sync_reports.py --report 3`; không sửa tay snapshot.
+- [x] UC Spec + sequence "đổi người nói một câu" (SCRUM-35) → tab draw.io + PNG theo `DRAWIO_EDITING_RULES.md`.
+- [x] UC-47–UC-50: mốc dự thảo cũ, BR "đang viết lại thì không sửa/duyệt" (MSG387) — kèm nhánh MSG387 trong
+  sequence UC-49, UC-50.
+- [x] UC-58–UC-60: các mục §3 và note 34 §2.
+- [x] Sửa DOCX Report 3 → `sync_reports.py --report 3`; không sửa tay snapshot.
 - [ ] Comment Jira SCRUM-35, 36, 32 khi PR docs ở `main` (§2.2 của DEVELOPMENT_WORKFLOW).
 - [ ] SCRUM-132: đợi #267 + chốt xung đột MSG406.
 
@@ -158,7 +159,8 @@ comment (UC/BR/MSG đổi, PR + commit, còn lại gì): **SCRUM-35** (T35-1..3)
 
 ## 7. Trạng thái thực hiện — nhánh `docs/ba-final-review-note34-35` (06/11/2026)
 
-Đã làm trên nhánh, **chưa commit** (theo quy tắc "không commit nếu chưa được bảo"):
+Đã commit `479a8400` và mở PR [#275](https://github.com/callmehai/FU-FA26-G116/pull/275) (base `main`).
+Nội dung trong commit đó:
 
 - **T35-1** UC-46b thêm **AF-2 – Change the speaker of one sentence** (MSG407) và **EX-4** (giọng không thuộc bản ghi → 404, không mã); EX-1
   sửa thành "không nêu đúng một trong user / Guest / giọng".
@@ -174,6 +176,14 @@ comment (UC/BR/MSG đổi, PR + commit, còn lại gì): **SCRUM-35** (T35-1..3)
 - **T35-6** `UC60_EditMeetingMinutes.txt` thêm bước lọc HTML + trả nội dung đã lọc, nhánh `format = docx | pdf`; xuất lại PNG + tab UC-60.
 - **T34-1..T34-4, T34-6** xong ở [note 34 §6](34-pr263-scrum-32-bien-ban-lay-du-thao-hien-co.md#6-trạng-thái-thực-hiện--nhánh-docsba-final-review-note34-35-06112026);
   **T34-7** đã sync, comment Jira để sau khi PR docs vào `main`. `sync_reports.py --report 3` và `sync_requirement_extracts.py --check` đều sạch.
+
+**Bổ sung sau khi rà lại note (cùng PR #275):**
+
+- Sequence `UC49_EditMeetingSummary.txt` và `UC50_ApproveMeetingSummary.txt` thêm nhánh *The AI is writing the draft again*
+  (EX-6 của UC-49, EX-5 của UC-50) → `MSG387`, đúng như đặc tả đã sửa ở T35-4; xuất lại PNG và hai tab UC-49/UC-50 trong file
+  draw.io gộp + `drawio-png/` (chỉ hai tab đó đổi, không thêm/bớt tab).
+- Report 3 §II: dòng tóm tắt UC-60 trong bảng danh sách Use Case còn ghi *"Correct the plain text … download it as a Word file"* —
+  đã sửa thành trình soạn kiểu Word + Word/PDF trong DOCX rồi sync lại; `sync_requirement_extracts.py --check` vẫn `UP TO DATE`.
 
 **Tạm hoãn / còn lại:**
 
