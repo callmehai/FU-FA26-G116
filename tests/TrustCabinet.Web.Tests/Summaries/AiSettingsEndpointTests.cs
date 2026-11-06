@@ -159,6 +159,24 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
     }
 
     [Fact]
+    public async Task A_rate_limited_call_is_tried_again_and_the_draft_is_still_written()
+    {
+        using var admin = await AdminWithRole();
+        await AssertCode(await admin.PutAsJsonAsync(Url, Api()), 200, "MSG408");
+        f.Api.RateLimited = 1;
+        var s = await f.Seed();
+        using var secretary = f.Client(s.Secretary);
+        await AssertCode(await secretary.PostAsync(s.Summary, null), 202, "MSG384");
+        await f.ProcessAll();
+        var draft = (await secretary.GetFromJsonAsync<JsonElement>(s.Summary)).GetProperty("summary");
+        Assert.Equal("Ready", draft.GetProperty("status").GetString());
+        // The refused call was sent again as it was; every other call went once.
+        Assert.Equal(1, f.Api.Requests.GroupBy(r => r.Body).Count(g => g.Count() == 2));
+        Assert.All(f.Api.Requests.GroupBy(r => r.Body), g => Assert.InRange(g.Count(), 1, 2));
+        f.Api.Reset();
+    }
+
+    [Fact]
     public async Task A_confidential_meeting_reads_as_not_ready_when_only_the_api_could_write()
     {
         using var admin = await AdminWithRole();

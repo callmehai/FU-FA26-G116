@@ -17,6 +17,10 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
 - Lời gọi API kèm `reasoning_effort` = `Ai:ApiReasoningEffort` (mặc định `none`: tắt suy luận). Bộ đo `tests/ai` với
   DeepSeek V4.1 Flash qua OpenCode Go: bật suy luận 28/33 ý, 350 giây, một cuộc họp hết token; tắt suy luận 33/33 ý
   (trừ một ý do dữ liệu mẫu đã bị gán tên giọng), 103 giây. Máy local qwen2.5 7B: 33/33, 1.082 giây (khoảng 18 phút).
+- Viết qua API có cách gọi riêng (`Ai:ApiWriter`, [17-du-thao-bien-ban.md](17-du-thao-bien-ban.md)); máy local giữ nguyên cách cắt
+  đoạn 9.000 ký tự cho context 8K. Đo 07/11 trên 8 cuộc họp mẫu, thời gian từ lúc bấm tới lúc xong: `parts` 65,9 giây
+  (họp dài 15,4 giây, trước đó 40), `oneshot` 67,1 giây (họp dài 12,5 giây), cùng 33/33 ý. Mặc định `parts`: prompt đã
+  được chỉnh trên máy local, không phụ thuộc vào việc model trả lời đúng khuôn `[PHẦN n]`.
 - Khi API từ chối, `message` kèm lời của nhà cung cấp (`… Nhà cung cấp: Insufficient account funds`, tối đa 200 ký tự).
 
 | Method | Đường dẫn | Kết quả |

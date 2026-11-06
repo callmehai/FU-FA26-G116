@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Unicode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Ai;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
@@ -19,8 +20,19 @@ namespace TrustCabinet.Infrastructure.Summaries;
 /// (SCRUM-32) take the draft as their starting point, and a person is answerable for what they say.
 /// </summary>
 public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository meetings, ILanguageModelProvider models,
-    MeetingTranscriptReader transcript, TimeProvider clock, ILogger<SummaryService> logger) : ISummaryService
+    MeetingTranscriptReader transcript, TimeProvider clock, ILogger<SummaryService> logger,
+    IOptions<LanguageModelOptions> aiOptions) : ISummaryService
 {
+    /// <summary>ADR-0056 — the hosted harness: <c>Ai:ApiWriter</c> "oneshot" or "parts", <c>Ai:ApiParallelism</c> items at once.</summary>
+    private Task<SummaryDraft> WriteThroughApiAsync(ILanguageModel model, MeetingFacts facts, CancellationToken ct)
+    {
+        var writer = new SummaryWriter(model, SummaryWriter.ApiChunkChars);
+        var parallelism = Math.Clamp(aiOptions.Value.ApiParallelism, 1, 8);
+        return string.Equals(aiOptions.Value.ApiWriter, "oneshot", StringComparison.OrdinalIgnoreCase)
+            ? writer.WriteOneShotAsync(facts, parallelism, ct)
+            : writer.WritePartsAsync(facts, parallelism, ct);
+    }
+
     /// <summary>
     /// Vietnamese letters are stored as they are: the default encoder writes each one as a six-character <c>\uXXXX</c>,
     /// which more than doubles the text and overflows the column well inside the documented limits.
@@ -181,7 +193,10 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             // Chosen now, as the job runs: a meeting marked Confidential since it was queued stays on the in-house model.
             var sensitivity = await db.Meetings.Where(m => m.Id == next.MeetingId).Select(m => m.Sensitivity).SingleAsync(ct);
             model = await models.ForAsync(sensitivity, ct);
-            var draft = await new SummaryWriter(model).WriteAsync(facts, ct);
+            // The in-house model keeps its own harness untouched; a hosted API reads whole agenda items, side by side or in one call.
+            var draft = model is OpenAiCompatibleModel { Remote: true }
+                ? await WriteThroughApiAsync(model, facts, ct)
+                : await new SummaryWriter(model).WriteAsync(facts, ct);
             content = JsonSerializer.Serialize(draft, Json);
         }
         catch (LanguageModelException failure)

@@ -135,4 +135,109 @@ public sealed class SummaryWriterTests
         Assert.Contains(SummaryWriter.NoDiscussion, model.Prompts[0]);
         Assert.Equal($"1. Mục ngắn\n{SummaryWriter.NoDiscussion}", draft.Discussion);
     }
+
+    /// <summary>Answers after a short wait and records how many calls were in flight at once.</summary>
+    private sealed class SlowModel(Func<string, string> answer) : ILanguageModel
+    {
+        private int running;
+        internal int MostAtOnce;
+        internal readonly System.Collections.Concurrent.ConcurrentQueue<string> Prompts = new();
+        public bool IsConfigured => true;
+        public string Model => "slow";
+        public async Task<string> CompleteAsync(string system, string user, CancellationToken ct)
+        {
+            Prompts.Enqueue(user);
+            var now = Interlocked.Increment(ref running);
+            InterlockedMax(ref MostAtOnce, now);
+            await Task.Delay(50, ct);
+            Interlocked.Decrement(ref running);
+            return answer(user);
+        }
+
+        private static void InterlockedMax(ref int target, int value)
+        {
+            int seen;
+            while ((seen = Volatile.Read(ref target)) < value && Interlocked.CompareExchange(ref target, value, seen) != seen) { }
+        }
+    }
+
+    private static AgendaFacts Item(int i, string? presenter = null)
+        => new(Guid.NewGuid(), $"Mục {i}", presenter, null, Start.AddMinutes(10 * i), Start.AddMinutes(10 * i + 10));
+
+    private static TranscriptLine Said(int item, int n, string text = "Nội dung thảo luận.")
+        => new($"c:{item}-{n}", Start.AddMinutes(10 * item + 1).AddSeconds(n), "Người nói 1", text);
+
+    [Fact]
+    public async Task Through_an_api_the_items_are_written_side_by_side_in_agenda_order()
+    {
+        var model = new SlowModel(p => p.Contains("MỤC TIÊU:") ? "MỤC TIÊU:\nM.\nKẾT LUẬN:\nK.\nNHIỆM VỤ:\nKhông có."
+            : "Tóm tắt " + System.Text.RegularExpressions.Regex.Match(p, @"NỘI DUNG: (Mục \d)").Groups[1].Value + " đủ dài để là thảo luận thật.");
+        var agenda = Enumerable.Range(0, 5).Select(i => Item(i)).ToList();
+        var facts = new MeetingFacts("Họp", agenda, [], [], [.. Enumerable.Range(0, 5).Select(i => Said(i, 0))]);
+
+        var draft = await new SummaryWriter(model, SummaryWriter.ApiChunkChars).WritePartsAsync(facts, 3, CancellationToken.None);
+
+        Assert.Equal(3, model.MostAtOnce);
+        Assert.Equal(6, model.Prompts.Count); // five items, one overview
+        Assert.Equal(string.Join('\n', Enumerable.Range(0, 5).Select(i => $"{i + 1}. Mục {i}\nTóm tắt Mục {i} đủ dài để là thảo luận thật.")),
+            draft.Discussion);
+    }
+
+    [Fact]
+    public async Task Through_an_api_a_long_item_is_one_call_where_the_in_house_model_needs_pieces()
+    {
+        var model = new ScriptedModel(p => p.Contains("MỤC TIÊU:") ? "KẾT LUẬN:\nKhông có." : "Một đoạn tóm tắt đủ dài cho phần này.");
+        var item = new AgendaFacts(Guid.NewGuid(), "Mục dài", null, null, Start, Start.AddHours(3));
+        var talk = Enumerable.Range(0, 60).Select(i => new TranscriptLine($"c:{i}", Start.AddMinutes(i + 1), "Người nói 1", new string('a', 500))).ToList();
+
+        await new SummaryWriter(model, SummaryWriter.ApiChunkChars).WritePartsAsync(new MeetingFacts("Họp", [item], [], [], talk), 3, CancellationToken.None);
+
+        Assert.Equal(2, model.Prompts.Count); // the whole item, then the overview: no pieces, no merge
+        Assert.DoesNotContain(model.Prompts, p => p.Contains("Gộp các đoạn"));
+    }
+
+    [Fact]
+    public async Task The_one_call_answer_is_cut_back_into_the_agenda_with_votes_copied_from_the_data()
+    {
+        var answer = string.Join('\n', "MỤC TIÊU:", "Rà soát quý 3.", "THẢO LUẬN:", "[PHẦN 1]", "Lê An trình bày báo cáo.",
+            "- Kết luận: câu trong phần thảo luận, không phải nhãn.", "[PHẦN 3] Mục 2", "Thảo luận mục 2.",
+            "KẾT LUẬN:", "- Mục 0: Thống nhất.", "NHIỆM VỤ:", "- Làm tờ trình — Phòng Hành chính — trước 15/11");
+        var model = new ScriptedModel(_ => answer);
+        var agenda = new[] { Item(0, "Lê An"), Item(1, "Trần B"), Item(2) };
+        var facts = new MeetingFacts("Họp", agenda, ["Biểu quyết A: Đồng ý 3 phiếu. Kết luận: Thông qua."], [], [Said(0, 0), Said(2, 0)]);
+
+        var draft = await new SummaryWriter(model, SummaryWriter.ApiChunkChars).WriteOneShotAsync(facts, 3, CancellationToken.None);
+
+        var prompt = Assert.Single(model.Prompts);
+        Assert.Contains("[PHẦN 2] Mục 1 — người trình bày: Trần B\n(không có lời thoại)", prompt);
+        Assert.Equal("Rà soát quý 3.", draft.Objectives);
+        Assert.Equal(string.Join('\n', "1. Mục 0", "Lê An trình bày báo cáo.", "- Kết luận: câu trong phần thảo luận, không phải nhãn.",
+            "2. Mục 1", $"Trần B trình bày nội dung. {SummaryWriter.NoDiscussion}", "3. Mục 2", "Thảo luận mục 2."), draft.Discussion);
+        Assert.Equal(string.Join('\n', SummaryWriter.ChairHeading, "- Mục 0: Thống nhất.", SummaryWriter.BallotsHeading,
+            "- Biểu quyết A: Đồng ý 3 phiếu. Kết luận: Thông qua.", SummaryWriter.TasksHeading,
+            "- Làm tờ trình — Phòng Hành chính — trước 15/11"), draft.Conclusions);
+    }
+
+    [Fact]
+    public async Task Without_an_agenda_the_issues_marked_with_the_same_part_are_all_kept()
+    {
+        var model = new ScriptedModel(_ => "MỤC TIÊU:\nM.\nTHẢO LUẬN:\n[PHẦN 1]\n1. Quý 3\nĐạt 18/20.\n[PHẦN 1]\n2. Kế hoạch 2027\nTổng 4,8 tỷ.\nKẾT LUẬN:\nKhông có.");
+        var draft = await new SummaryWriter(model, SummaryWriter.ApiChunkChars).WriteOneShotAsync(
+            new MeetingFacts("Họp", [], [], [], [Said(0, 0)]), 3, CancellationToken.None);
+
+        Assert.Equal("1. Quý 3\nĐạt 18/20.\n2. Kế hoạch 2027\nTổng 4,8 tỷ.", draft.Discussion);
+    }
+
+    [Fact]
+    public async Task A_one_call_answer_that_loses_an_item_falls_back_to_writing_item_by_item()
+    {
+        var model = new ScriptedModel(p => p.Contains("BẢN GHI LỜI THOẠI THEO TỪNG PHẦN") ? "MỤC TIÊU:\nM.\nTHẢO LUẬN:\n[PHẦN 1]\nChỉ có mục đầu.\nKẾT LUẬN:\nKhông có."
+            : p.Contains("MỤC TIÊU:") ? "MỤC TIÊU:\nM.\nKẾT LUẬN:\nKhông có.\nNHIỆM VỤ:\nKhông có." : "Viết riêng từng mục, đủ dài để là thảo luận.");
+        var facts = new MeetingFacts("Họp", [Item(0), Item(1)], [], [], [Said(0, 0), Said(1, 0)]);
+
+        var draft = await new SummaryWriter(model, SummaryWriter.ApiChunkChars).WriteOneShotAsync(facts, 3, CancellationToken.None);
+
+        Assert.Equal(4, model.Prompts.Count); // the one call, then two items and the overview
+        Assert.Equal("1. Mục 0\nViết riêng từng mục, đủ dài để là thảo luận.\n2. Mục 1\nViết riêng từng mục, đủ dài để là thảo luận.", draft.Discussion);
+    }
 }

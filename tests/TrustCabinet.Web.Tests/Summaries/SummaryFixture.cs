@@ -127,6 +127,8 @@ public sealed class SummaryFixture : IAsyncLifetime
         internal string? ErrorBody;
         /// <summary>Answer like a reasoning model that spent its whole budget thinking: no content, finish_reason "length".</summary>
         internal bool CutOff;
+        /// <summary>How many calls still answer 429 (with Retry-After: 1) before the API answers again.</summary>
+        internal int RateLimited;
 
         internal void Reset()
         {
@@ -134,6 +136,7 @@ public sealed class SummaryFixture : IAsyncLifetime
             Status = System.Net.HttpStatusCode.OK;
             ErrorBody = null;
             CutOff = false;
+            RateLimited = 0;
         }
 
         internal sealed class Handler(FakeApi api) : HttpMessageHandler
@@ -148,6 +151,12 @@ public sealed class SummaryFixture : IAsyncLifetime
                     {
                         Content = new StringContent(api.ErrorBody ?? "", System.Text.Encoding.UTF8, "application/json"),
                     };
+                if (Interlocked.Decrement(ref api.RateLimited) >= 0)
+                {
+                    var limited = new HttpResponseMessage(System.Net.HttpStatusCode.TooManyRequests);
+                    limited.Headers.RetryAfter = new(TimeSpan.FromSeconds(1));
+                    return limited;
+                }
                 if (api.CutOff)
                     return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
                     {

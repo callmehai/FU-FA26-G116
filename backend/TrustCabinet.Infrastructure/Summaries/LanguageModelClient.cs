@@ -49,6 +49,16 @@ public sealed class LanguageModelOptions
     /// </summary>
     public string ApiReasoningEffort { get; set; } = "none";
 
+    /// <summary>
+    /// How a draft is written through an API: "parts" — the in-house prompts, each agenda item's talk in one call and
+    /// <see cref="ApiParallelism"/> items at once; "oneshot" — the whole meeting in one call, as AI-eCabinet does, falling
+    /// back to "parts" when the answer cannot be cut back into the agenda.
+    /// </summary>
+    public string ApiWriter { get; set; } = "parts";
+
+    /// <summary>Agenda items written at the same time through an API. One writes them in turn.</summary>
+    public int ApiParallelism { get; set; } = 3;
+
     public bool IsConfigured => Uri.TryCreate(BaseUrl, UriKind.Absolute, out _) && Model.Length > 0;
 }
 
@@ -90,6 +100,20 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
 
     public string Model => model;
 
+    /// <summary>A hosted API (ADR-0056) rather than the in-house model: the draft then uses the hosted harness.</summary>
+    public bool Remote => remote;
+
+    /// <summary>
+    /// An API's 429 is tried again after these waits (or its Retry-After, up to 20 seconds): parts written side by side
+    /// can trip a shared plan's rate limit for a moment. The in-house model is never retried.
+    /// </summary>
+    private static readonly TimeSpan[] RateLimitWaits = [TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5)];
+
+    private sealed class RateLimited(TimeSpan? retryAfter) : Exception
+    {
+        internal TimeSpan? RetryAfter { get; } = retryAfter;
+    }
+
     /// <summary>
     /// The provider's own words for a refusal (OpenAI shape <c>{"error":{"message":…}}</c>, or <c>{"error":"…"}</c>,
     /// or <c>{"message":…}</c>), so "402" can say whether the account lacks credit or the model is not on the plan.
@@ -123,6 +147,24 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
 
     public async Task<string> CompleteAsync(string system, string user, CancellationToken ct)
     {
+        if (!remote) return await SendAsync(system, user, lastTry: true, ct);
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                return await SendAsync(system, user, lastTry: attempt >= RateLimitWaits.Length, ct);
+            }
+            catch (RateLimited limited)
+            {
+                var wait = limited.RetryAfter is { } after && after > TimeSpan.Zero && after <= TimeSpan.FromSeconds(20)
+                    ? after : RateLimitWaits[attempt];
+                await Task.Delay(wait, ct);
+            }
+        }
+    }
+
+    private async Task<string> SendAsync(string system, string user, bool lastTry, CancellationToken ct)
+    {
         if (!IsConfigured) throw new LanguageModelException($"{Machine} chưa được cấu hình.");
         var client = clients.CreateClient(clientName);
         client.Timeout = TimeSpan.FromMinutes(timeoutMinutes);
@@ -153,6 +195,8 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
         }
         using (response)
         {
+            if (remote && !lastTry && (int)response.StatusCode == 429)
+                throw new RateLimited(response.Headers.RetryAfter?.Delta);
             if (!response.IsSuccessStatusCode)
                 throw new LanguageModelException(((int)response.StatusCode, remote) switch
                 {

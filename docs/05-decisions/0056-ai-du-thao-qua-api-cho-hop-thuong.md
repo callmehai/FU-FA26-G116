@@ -29,6 +29,11 @@ nhân, và cuộc họp Mật, Tối mật còn có thông tin không được �
    Đổi khoá ký thì key cũ không giải mã được: server dùng máy local và quản trị nhập lại key.
 4. **Máy local vẫn cấu hình như cũ** (`Ai:BaseUrl`, `Ai:Model`); màn hình chỉ hiện tên model và đã cấu hình hay chưa.
 5. **Nhật ký kiểm toán** `ai_settings.updated`: chế độ, địa chỉ, model, và key được giữ / thay / xoá.
+6. **Cách gọi API riêng, máy local giữ nguyên.** Máy local vẫn cắt lời thoại thành đoạn 9.000 ký tự cho context 8K của model
+   7B. Qua API (DeepSeek V4.1 Flash đọc được 1 triệu token): tắt phần suy luận (`reasoning_effort: none`), mỗi mục chương
+   trình đọc cả lời thoại trong một lần, tối đa 3 mục viết song song, `429` thì thử lại. Cách gửi cả cuộc họp trong một lần như
+   AI-eCabinet (`Ai:ApiWriter=oneshot`) có sẵn để thử; đo trên 8 cuộc họp mẫu nó không nhanh hơn, nên mặc định vẫn viết theo
+   từng mục với prompt đã chỉnh trên máy local.
 
 ## Phương án đã cân nhắc
 
