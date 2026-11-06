@@ -20,7 +20,8 @@ public sealed record MeetingFacts(string Title, IReadOnlyList<AgendaFacts> Agend
 /// those parts and the conclusions the Chair recorded. The vote results never go through the model: they are copied
 /// from the data, as eCab's <c>grounded</c> re-inserts them, because the tally is legally operative.
 /// </summary>
-public sealed partial class SummaryWriter(ILanguageModel model, int chunkChars = SummaryWriter.LocalChunkChars)
+public sealed partial class SummaryWriter(ILanguageModel model, int chunkChars = SummaryWriter.LocalChunkChars,
+    string? extraRule = null)
 {
     public const string ObjectivesHeading = "I. Mục tiêu và phạm vi cuộc họp";
     public const string DiscussionHeading = "II. Nội dung thảo luận và đánh giá";
@@ -34,6 +35,9 @@ public sealed partial class SummaryWriter(ILanguageModel model, int chunkChars =
     /// <summary>About 4,000 tokens of Vietnamese: room for the rules and the answer in an 8k context.</summary>
     internal const int LocalChunkChars = 9000;
     private static readonly TimeZoneInfo Hanoi = FindHanoi();
+
+    /// <summary>The rules below, plus the hosted harness's own rule when there is one; the in-house path sends the rules alone.</summary>
+    private string SystemPrompt => extraRule is null ? Rules : Rules + "\n" + extraRule.Trim();
 
     // eCab's _IDENTITY_RULE, _DIGITS and _FORMAT_RULES, each written down after a wrong draft on real data.
     private const string Rules = """
@@ -168,7 +172,7 @@ public sealed partial class SummaryWriter(ILanguageModel model, int chunkChars =
                 .AppendLine(noAgenda ? IssueRule
                     : chunk.Sum(l => l.Text.Length) < FewWords ? $"Nếu bản ghi không nói gì về nội dung này, chỉ trả lời đúng câu: {NoDiscussion}"
                     : "");
-            var answer = Clean(await model.CompleteAsync(Rules, prompt.ToString(), ct));
+            var answer = Clean(await model.CompleteAsync(SystemPrompt, prompt.ToString(), ct));
             // The model also tacks the "nothing said" sentence onto a real summary; only a bare answer means nothing was said.
             var rest = answer.Replace(NoDiscussion, "").Trim();
             pieces.Add(rest.Length > 40 ? rest : answer);
@@ -183,7 +187,7 @@ public sealed partial class SummaryWriter(ILanguageModel model, int chunkChars =
         foreach (var piece in useful) merge.AppendLine(piece).AppendLine();
         merge.AppendLine("Gộp các đoạn trên thành một phần tóm tắt duy nhất, tối đa 350 chữ, giữ đủ ý kiến, số liệu và tên người phát biểu, bỏ ý trùng lặp.");
         if (noAgenda) merge.AppendLine(IssueRule + " Vấn đề trùng nhau giữa các đoạn thì gộp làm một.");
-        return Clean(await model.CompleteAsync(Rules, merge.ToString(), ct));
+        return Clean(await model.CompleteAsync(SystemPrompt, merge.ToString(), ct));
     }
 
     private async Task<(string Objectives, string Conclusions, string Tasks)> OverviewAsync(MeetingFacts facts,
@@ -209,7 +213,7 @@ public sealed partial class SummaryWriter(ILanguageModel model, int chunkChars =
             .AppendLine("NHIỆM VỤ:")
             .AppendLine("Mỗi nhiệm vụ được giao trong cuộc họp một dòng \"- <nhiệm vụ> — <người hoặc đơn vị phụ trách> — <hạn>\". Chỉ ghi người hoặc đơn vị mà hồ sơ nói rõ được giao việc đó; người trình bày một nội dung KHÔNG phải là người phụ trách; hồ sơ không nói ai phụ trách thì bỏ phần đó. Hạn chép ĐÚNG như hồ sơ nói, kể cả hạn tương đối (\"trước thứ Tư\"), không tự tính ra ngày khác; không nói hạn thì bỏ phần hạn. Không có nhiệm vụ nào thì ghi: Không có.")
             .AppendLine("KHÔNG viết kết quả biểu quyết: hệ thống tự chép từ dữ liệu.");
-        return ParseOverview(Clean(await model.CompleteAsync(Rules, prompt.ToString(), ct)));
+        return ParseOverview(Clean(await model.CompleteAsync(SystemPrompt, prompt.ToString(), ct)));
     }
 
     /// <summary>

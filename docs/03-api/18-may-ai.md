@@ -21,6 +21,12 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
   thoại trong một lần và viết song song (`Ai:ApiParallelism`); máy local giữ nguyên cách cắt đoạn 9.000 ký tự cho context
   8K. Đo 07/11 trên 8 cuộc họp mẫu, thời gian từ lúc bấm tới lúc xong: 65,9 giây, họp dài 15,4 giây (trước đó 40), 33/33 ý.
   Gửi cả cuộc họp trong một lần như AI-eCabinet cũng đã thử: 67,1 giây, 33/33 ý, không nhanh hơn nên không giữ.
+- Qua API, prompt có thêm một quy tắc riêng (`SummaryWriter.ApiSpellingRule`, máy local không nhận): từ tiếng Anh mà máy
+  nhận dạng giọng nói chép sai theo âm thì viết lại đúng chính tả; tên riêng không chắc thì giữ nguyên. Đo 07/11 trên bản gỡ
+  băng thật của `Test04.mp3` (5 phút, nhiều từ tiếng Anh): "Proction" thành "Production" ở cả 7 chỗ, "rady", "app lốad",
+  "finer" cũng được sửa; "Urity" (UAT), "inqui" (inquiry), "relay" (release), tên riêng "On Ou DINH" (One Housing), "ONE"
+  (OneHub) thì không — model không đủ căn cứ, và tên riêng đúng ra phải sửa ở bước gỡ băng. Bộ 8 cuộc họp mẫu vẫn 33/33 ý,
+  0 lỗi bịa.
 - Khi API từ chối, `message` kèm lời của nhà cung cấp (`… Nhà cung cấp: Insufficient account funds`, tối đa 200 ký tự).
 
 | Method | Đường dẫn | Kết quả |

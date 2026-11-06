@@ -15,6 +15,15 @@ public sealed partial class SummaryWriter
     /// <summary>About 80,000 tokens of Vietnamese: three hours of talk is one call, far inside a hosted model's context.</summary>
     internal const int ApiChunkChars = 200_000;
 
+    /// <summary>
+    /// The hosted model may also restore English words the Vietnamese recogniser spelt by ear ("Proction" for
+    /// "Production"): a model that knows the word can tell. A proper name it cannot be sure of is left as recorded,
+    /// since a wrong company or product name in the minutes is worse than a misheard one.
+    /// </summary>
+    public const string ApiSpellingRule = """
+        - SỬA TỪ BỊ CHÉP SAI (đây là sửa chính tả, KHÔNG phải suy đoán, áp dụng cho MỌI phần, kể cả phần thảo luận): máy nhận dạng giọng nói tiếng Việt chép từ tiếng Anh theo âm nên hay sai chính tả, ví dụ "đét lai" là "deadline", "đi ploi" là "deploy", "bác lóc" là "backlog", "sờ tết ging" là "staging", "lốc in" là "login". Gặp một từ lạ không có nghĩa trong tiếng Việt, nếu đọc lên nghe giống một từ tiếng Anh thông dụng và ngữ cảnh khớp thì viết từ tiếng Anh đúng chính tả đó, không chép lại từ sai. Tên riêng (công ty, sản phẩm, dự án, sàn, người) mà không chắc thì giữ NGUYÊN như bản ghi.
+        """;
+
     public async Task<SummaryDraft> WritePartsAsync(MeetingFacts facts, int parallelism, CancellationToken ct)
     {
         var parts = Split(facts);
