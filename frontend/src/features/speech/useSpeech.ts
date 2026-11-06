@@ -32,7 +32,10 @@ const OVERLAP_MS = 5000
 const byTime = (a: SpeechClip, b: SpeechClip) =>
   a.startedAt === b.startedAt ? a.id.localeCompare(b.id) : a.startedAt < b.startedAt ? -1 : 1
 
-export function useSpeech(meetingId: string, { micOn, deviceId }: { micOn: boolean; deviceId?: string }): Speech {
+export function useSpeech(
+  meetingId: string,
+  { micOn, deviceId, enabled = true }: { micOn: boolean; deviceId?: string; enabled?: boolean },
+): Speech {
   const [list, setList] = useState<SpeechClipList | null>(null)
   const [clips, setClips] = useState<SpeechClip[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +44,8 @@ export function useSpeech(meetingId: string, { micOn, deviceId }: { micOn: boole
 
   const load = useCallback(
     async (full: boolean) => {
+      // Not on the roster: the server would answer 404, and there is nothing to show anyway.
+      if (!enabled) return
       const current = ++generation.current
       const since =
         !full && readAt.current ? new Date(Date.parse(readAt.current) - OVERLAP_MS).toISOString() : undefined
@@ -60,7 +65,7 @@ export function useSpeech(meetingId: string, { micOn, deviceId }: { micOn: boole
         if (current === generation.current) setError(errorMessage(failure))
       }
     },
-    [meetingId],
+    [meetingId, enabled],
   )
 
   useEffect(() => {
