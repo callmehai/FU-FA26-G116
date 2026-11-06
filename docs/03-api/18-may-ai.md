@@ -16,7 +16,7 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
   `Ai:MaxTokens` (2048). Hết giới hạn trước khi trả lời thì dự thảo báo `API AI dùng hết … token khi đang suy luận`.
 - Lời gọi API kèm `reasoning_effort` = `Ai:ApiReasoningEffort` (mặc định `none`: tắt suy luận). Bộ đo `tests/ai` với
   DeepSeek V4.1 Flash qua OpenCode Go: bật suy luận 28/33 ý, 350 giây, một cuộc họp hết token; tắt suy luận 33/33 ý
-  (trừ một ý do dữ liệu mẫu đã bị gán tên giọng), 103 giây. Máy local qwen2.5 7B: 33/33, khoảng 17 phút.
+  (trừ một ý do dữ liệu mẫu đã bị gán tên giọng), 103 giây. Máy local qwen2.5 7B: 33/33, 1.082 giây (khoảng 18 phút).
 - Khi API từ chối, `message` kèm lời của nhà cung cấp (`… Nhà cung cấp: Insufficient account funds`, tối đa 200 ký tự).
 
 | Method | Đường dẫn | Kết quả |
