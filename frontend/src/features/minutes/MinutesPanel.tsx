@@ -255,8 +255,12 @@ function SummaryCard({
       )}
 
       {summary?.status === 'Failed' && (
-        <div className="alert alert-error" role="alert">
-          <p>{summary.errorMessage || 'AI không viết được dự thảo.'}</p>
+        <div className="alert minutes-failed" role="alert">
+          <Icon name="alertCircle" size={16} />
+          <p>
+            {summary.errorMessage || 'AI không viết được dự thảo.'}
+            {draft && <span className="minutes-failed-kept"> Đang giữ bản trước.</span>}
+          </p>
         </div>
       )}
       {running && (

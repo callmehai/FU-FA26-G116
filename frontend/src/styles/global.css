@@ -4556,6 +4556,14 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 @media (max-width: 720px) {
   .minutes-stale .btn, .minutes-readiness-line .btn { height: 40px; }
 }
+/* The last AI run failed: the same red frame as the stale note above it, with an icon; an earlier draft stays below. */
+.minutes-failed {
+  display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent); border-radius: var(--radius-lg);
+  background: var(--chip-red-bg); color: var(--danger-ink); font-size: 13.5px; font-weight: 600;
+}
+.minutes-failed > svg { flex: none; margin-top: 2px; }
+.minutes-failed-kept { color: var(--muted-ink); font-weight: 400; }
 /* The Dự thảo's three sections, folded to a heading and a first line (AI-eCabinet's OutlineSections). */
 .outline-sections { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; margin-top: 12px; }
 .outline-section { min-width: 0; }
