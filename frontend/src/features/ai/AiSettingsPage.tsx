@@ -120,6 +120,11 @@ export function AiSettingsPage() {
     )
 
   const api = mode === 'Api'
+  // What the server uses now, and whether the form differs from it: picking Máy local or API changes nothing until Lưu.
+  const inUse = settings?.mode === 'Api' ? `API · ${settings.apiModel}` : 'Máy local'
+  const dirty =
+    !!settings &&
+    (mode !== settings.mode || baseUrl !== settings.apiBaseUrl || model !== settings.apiModel || key.trim() !== '')
   return (
     <>
       <PageHeader title="Cấu hình AI" description="Máy viết dự thảo biên bản" />
@@ -221,10 +226,16 @@ export function AiSettingsPage() {
           )}
 
           <div className="ai-settings-foot">
-            {settings.updatedAt && (
+            {dirty ? (
+              <small className="ai-settings-dirty" role="status">
+                <Icon name="alertCircle" size={16} />
+                Chưa lưu · đang dùng {inUse}
+              </small>
+            ) : (
               <small className="field-hint">
-                {settings.updatedByName ? `${settings.updatedByName} · ` : ''}
-                {formatDateTime(settings.updatedAt)}
+                Đang dùng <strong>{inUse}</strong>
+                {settings.updatedAt &&
+                  ` · ${settings.updatedByName ? `${settings.updatedByName} · ` : ''}${formatDateTime(settings.updatedAt)}`}
               </small>
             )}
             <div className="form-actions">
@@ -234,7 +245,7 @@ export function AiSettingsPage() {
                   {testing ? 'Đang thử…' : 'Thử kết nối'}
                 </button>
               )}
-              <button type="submit" className="btn btn-primary" disabled={saving || testing}>
+              <button type="submit" className="btn btn-primary" disabled={!dirty || saving || testing}>
                 {saving ? 'Đang lưu…' : 'Lưu'}
               </button>
             </div>

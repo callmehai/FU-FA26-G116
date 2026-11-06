@@ -4797,6 +4797,9 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .ai-settings-foot .form-actions { margin-left: auto; }
 .ai-settings .alert { display: flex; align-items: center; gap: 8px; }
 .alert-success { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
+/* The form differs from what the server uses: said where the Lưu button is, until it is pressed. */
+.ai-settings-dirty { display: inline-flex; align-items: center; gap: 6px; color: var(--warning-ink); font-size: 13px; font-weight: 600; }
+.ai-settings-dirty svg { flex: none; }
 @media (max-width: 720px) {
   .ai-settings .form-grid { grid-template-columns: 1fr; }
   .ai-settings-mode .segmented { width: 100%; }
