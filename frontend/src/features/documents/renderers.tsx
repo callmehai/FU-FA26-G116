@@ -241,6 +241,8 @@ function embeddedFonts(root: HTMLElement): FontFace[] {
     if (!css.includes('@font-face')) return
     const sheet = new CSSStyleSheet()
     sheet.replaceSync(css)
+    // Rebuilt below; left in place, an engine that honours @font-face in a shadow root would skip the name check.
+    style.remove()
     for (const rule of sheet.cssRules) {
       if (!(rule instanceof CSSFontFaceRule)) continue
       const family = unquote(rule.style.getPropertyValue('font-family'))

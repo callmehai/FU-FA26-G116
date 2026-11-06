@@ -442,8 +442,8 @@ email tài khoản demo. Dùng `Microsoft.AspNetCore.RateLimiting` có sẵn, c�
 
 | Giới hạn | Áp cho | Mặc định |
 |---|---|---|
-| Theo IP | `POST /login`, `POST /google`, `POST /password-reset` — **chung một bộ đếm** | 20 lần/phút |
-| Theo email | `POST /login` (email đã `Trim` và bỏ phân biệt hoa thường) | 5 lần/phút |
+| Theo IP (IPv6 gộp theo /64) | `POST /login`, `POST /google`, `POST /password-reset` — **chung một bộ đếm** | 60 lần/phút |
+| Theo email | `POST /login` (email đã `Trim` và bỏ phân biệt hoa thường; dài quá 320 ký tự thì dùng chung một bộ đếm) | 5 lần/phút |
 
 Vượt giới hạn: `429` + `MSG406` (body như các lỗi xác thực khác: `code`, `message`) và header
 `Retry-After` tính bằng giây. FE chỉ cần hiển thị `message`, màn đăng nhập và đặt lại mật khẩu đã
@@ -456,6 +456,11 @@ làm vậy. Hết cửa sổ thì thử lại được bình thường.
 - **IP là `Connection.RemoteIpAddress`.** Trên server test, `ASPNETCORE_FORWARDEDHEADERS_ENABLED`
   lấy IP thật từ `X-Forwarded-For` của Caddy, và app không mở cổng ra ngoài nên không ai gửi thẳng
   header giả được ([deploy/docker-compose.yml](../../deploy/docker-compose.yml)).
+- **60 chứ không phải 20 lần/phút/IP như ticket gợi ý.** Đây là hệ thống của một tổ chức: cả phòng họp
+  thường chung một IP (NAT văn phòng, Wi-Fi hội trường) và đăng nhập cùng lúc khi bắt đầu họp — với 20, người
+  thứ 21 trong phút đó nhận `429`. Chặn dò mật khẩu một tài khoản là việc của giới hạn theo email.
+- **IPv6 tính theo /64.** Một máy IPv6 thường giữ cả dải /64 và tự chọn địa chỉ trong đó, nên tính từng địa chỉ
+  thì đổi địa chỉ là lách được giới hạn.
 - **Đánh đổi:** biết email của ai thì có thể làm người đó không đăng nhập được trong một phút. Chấp
   nhận, vì cửa sổ ngắn và ngược lại là để kẻ dò mật khẩu thử tiếp.
 - **Không có endpoint "quên mật khẩu" ẩn danh.** Thư đặt lại mật khẩu chỉ gửi qua
@@ -466,7 +471,7 @@ làm vậy. Hết cửa sổ thì thử lại được bình thường.
 Cấu hình trong `appsettings.json`, đổi được bằng biến môi trường (`RateLimiting__SignInPerEmail`…):
 
 ```json
-"RateLimiting": { "WindowSeconds": 60, "AuthPerIp": 20, "SignInPerEmail": 5 }
+"RateLimiting": { "WindowSeconds": 60, "AuthPerIp": 60, "SignInPerEmail": 5 }
 ```
 
 `appsettings.Development.json` nâng cả hai lên 1000: bộ test Playwright và `sloplint` đăng nhập

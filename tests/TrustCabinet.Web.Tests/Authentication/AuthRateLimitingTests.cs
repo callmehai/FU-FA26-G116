@@ -1,4 +1,5 @@
 using System.Net;
+using TrustCabinet.Web.Endpoints;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -134,6 +135,29 @@ public class AuthRateLimitingTests
             Assert.NotEqual(HttpStatusCode.TooManyRequests, (await client.PostAsync("/api/auth/logout", null)).StatusCode);
         }
     }
+
+    [Fact]
+    public async Task An_over_long_email_shares_one_bucket_instead_of_becoming_a_key_of_its_own()
+    {
+        using var factory = new Factory(perEmail: 1, perIp: 100);
+        var client = factory.CreateClient();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await PostLogin(client, new string('a', 400) + "@x.local", "x")).StatusCode);
+        // A different over-long value lands in the same bucket, so megabyte "emails" cannot each hold a key.
+        await AssertTooManyAttempts(await PostLogin(client, new string('b', 400) + "@x.local", "x"));
+    }
+
+    [Theory]
+    [InlineData("203.0.113.7", "203.0.113.7")]
+    [InlineData("::ffff:203.0.113.7", "203.0.113.7")]
+    [InlineData("2001:db8:1:2:aaaa:bbbb:cccc:dddd", "2001:db8:1:2::/64")]
+    [InlineData("2001:db8:1:2::1", "2001:db8:1:2::/64")]
+    public void An_ipv6_caller_is_counted_by_its_64(string address, string partition)
+        => Assert.Equal(partition, AuthRateLimiting.IpPartition(IPAddress.Parse(address)));
+
+    [Fact]
+    public void No_remote_address_is_one_partition()
+        => Assert.Equal(string.Empty, AuthRateLimiting.IpPartition(null));
 
     private sealed record AuthErrorBody(string Code, string Message);
 }
