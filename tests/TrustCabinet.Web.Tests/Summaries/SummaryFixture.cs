@@ -125,12 +125,15 @@ public sealed class SummaryFixture : IAsyncLifetime
         internal System.Net.HttpStatusCode Status = System.Net.HttpStatusCode.OK;
         /// <summary>The body of a refusal, when <see cref="Status"/> is not OK.</summary>
         internal string? ErrorBody;
+        /// <summary>Answer like a reasoning model that spent its whole budget thinking: no content, finish_reason "length".</summary>
+        internal bool CutOff;
 
         internal void Reset()
         {
             Requests.Clear();
             Status = System.Net.HttpStatusCode.OK;
             ErrorBody = null;
+            CutOff = false;
         }
 
         internal sealed class Handler(FakeApi api) : HttpMessageHandler
@@ -144,6 +147,15 @@ public sealed class SummaryFixture : IAsyncLifetime
                     return new HttpResponseMessage(api.Status)
                     {
                         Content = new StringContent(api.ErrorBody ?? "", System.Text.Encoding.UTF8, "application/json"),
+                    };
+                if (api.CutOff)
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = System.Net.Http.Json.JsonContent.Create(new { choices = new[] { new
+                        {
+                            message = new { role = "assistant", content = "", reasoning_content = "Suy nghĩ…" },
+                            finish_reason = "length",
+                        } } }),
                     };
                 // The prompt as the model reads it: the body escapes Vietnamese letters.
                 var prompt = body.Length == 0 ? "" : string.Concat(System.Text.Json.JsonDocument.Parse(body).RootElement

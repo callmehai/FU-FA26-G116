@@ -35,6 +35,13 @@ public sealed class LanguageModelOptions
     /// <summary>The longest answer asked for, in tokens.</summary>
     public int MaxTokens { get; set; } = 2048;
 
+    /// <summary>
+    /// The same for an API (ADR-0056). Hosted reasoning models such as DeepSeek V4.1 count their thinking against it, and a
+    /// long meeting's part can use 2,000 thinking tokens before a word of the answer: at the local limit the answer came
+    /// back empty.
+    /// </summary>
+    public int ApiMaxTokens { get; set; } = 8192;
+
     public bool IsConfigured => Uri.TryCreate(BaseUrl, UriKind.Absolute, out _) && Model.Length > 0;
 }
 
@@ -156,8 +163,13 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
             {
                 throw new LanguageModelException($"{Machine} trả về dữ liệu không đọc được.", ex);
             }
-            var content = body?.Choices?.FirstOrDefault()?.Message?.Content;
-            if (string.IsNullOrWhiteSpace(content)) throw new LanguageModelException($"{Machine} không trả lời.");
+            var choice = body?.Choices?.FirstOrDefault();
+            var content = choice?.Message?.Content;
+            if (string.IsNullOrWhiteSpace(content))
+                throw new LanguageModelException(choice?.FinishReason == "length"
+                    // A reasoning model that spent the whole budget thinking: the answer was cut before it began.
+                    ? $"{Machine} dùng hết {maxTokens} token khi đang suy luận, chưa kịp trả lời."
+                    : $"{Machine} không trả lời.");
             return StripThinking(content).Trim();
         }
     }
@@ -172,6 +184,6 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
     private sealed record ChatMessage(string Role, string Content);
     private sealed record ChatRequest(string Model, IReadOnlyList<ChatMessage> Messages, double Temperature,
         [property: JsonPropertyName("max_tokens")] int MaxTokens, bool Stream);
-    private sealed record Choice(ChatMessage? Message);
+    private sealed record Choice(ChatMessage? Message, [property: JsonPropertyName("finish_reason")] string? FinishReason);
     private sealed record ChatResponse(IReadOnlyList<Choice>? Choices);
 }

@@ -4774,7 +4774,7 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .minutes-editor-frame .tiptap { padding: 12px; min-height: 360px; }
 }
 
-/* ADR-0056 — Máy AI: where the drafts of ordinary meetings are written. One card under the page header. */
+/* ADR-0056 — Cấu hình AI: where the drafts of ordinary meetings are written. One card under the page header. */
 .ai-settings { display: flex; flex-direction: column; gap: 18px; max-width: 760px; }
 .ai-settings-mode { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .ai-settings-mode .segmented { width: 260px; }

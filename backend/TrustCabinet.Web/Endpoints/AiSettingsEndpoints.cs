@@ -3,7 +3,7 @@ using TrustCabinet.Domain.Ai;
 namespace TrustCabinet.Web.Endpoints;
 
 /// <summary>
-/// ADR-0056 — the administrator's "Máy AI" screen: which model writes the AI drafts of ordinary meetings, the in-house
+/// ADR-0056 — the administrator's "Cấu hình AI" screen: which model writes the AI drafts of ordinary meetings, the in-house
 /// one (ADR-0054) or an OpenAI-compatible API, and that API's address, model and key. Behind <c>AdminUsers</c>, like the
 /// other screens that administer the system. The key is accepted, never returned.
 /// </summary>
@@ -37,11 +37,11 @@ public static class AiSettingsEndpoints
         {
             var (status, code, message) = result.Failure switch
             {
-                AiSettingsFailure.Invalid => (400, Msg409Invalid, "Cấu hình máy AI không hợp lệ."),
-                AiSettingsFailure.ReadFailed => (500, Msg410ReadFailed, "Không tải được cấu hình máy AI."),
+                AiSettingsFailure.Invalid => (400, Msg409Invalid, "Cấu hình AI không hợp lệ."),
+                AiSettingsFailure.ReadFailed => (500, Msg410ReadFailed, "Không tải được cấu hình AI."),
                 // The API's own words: refused key, unknown model, unreachable address.
                 AiSettingsFailure.TestFailed => (502, Msg413TestFailed, result.Message ?? "Không gọi được API AI."),
-                _ => (503, Msg411SaveFailed, "Không lưu được cấu hình máy AI. Vui lòng thử lại."),
+                _ => (503, Msg411SaveFailed, "Không lưu được cấu hình AI. Vui lòng thử lại."),
             };
             return Results.Json(new { code, message, errors = result.Errors }, statusCode: status);
         }
@@ -49,6 +49,6 @@ public static class AiSettingsEndpoints
             return Results.Ok(new { code = Msg412TestPassed, message = $"Kết nối được {test.Model}.", test.Model, test.ElapsedMs });
         return successCode is null
             ? Results.Ok(result.Data)
-            : Results.Ok(new { code = successCode, message = "Đã lưu cấu hình máy AI.", settings = result.Data });
+            : Results.Ok(new { code = successCode, message = "Đã lưu cấu hình AI.", settings = result.Data });
     }
 }

@@ -1,7 +1,7 @@
 import type { AiSettings, AiSettingsInput, AiSettingsSaved, AiTestResult } from '../types/aiSettings'
 import { api } from './client'
 
-/** ADR-0056 — the administrator's "Máy AI" screen. The backend rechecks AdminUsers on every request. */
+/** ADR-0056 — the administrator's "Cấu hình AI" screen. The backend rechecks AdminUsers on every request. */
 export const getAiSettings = () => api.get<AiSettings>('/api/admin/ai')
 
 export const saveAiSettings = (body: AiSettingsInput) => api.put<AiSettingsSaved>('/api/admin/ai', body)

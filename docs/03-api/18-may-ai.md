@@ -1,4 +1,4 @@
-# Máy AI viết dự thảo — `/api/admin/ai`
+# Cấu hình AI viết dự thảo — `/api/admin/ai`
 
 [ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md). Quản trị chọn máy viết dự thảo AI
 ([17-du-thao-bien-ban.md](17-du-thao-bien-ban.md)): **máy local** cấu hình bằng `Ai:BaseUrl`, `Ai:Model` (ADR-0054), hoặc
@@ -9,9 +9,11 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
 - Mọi endpoint cần capability `AdminUsers` (token và database): chưa đăng nhập `401`, thiếu quyền `403`.
 - Key gửi lên và **không bao giờ trả về**; server lưu mã hoá AES-256-GCM, chỉ trả `hasApiKey` và 4 ký tự cuối.
 - Mỗi lần gọi API gửi `User-Agent: TrustCabinet/1.0` và `x-opencode-session` (một GUID mới). OpenCode Go
-  (`https://opencode.ai/zen/go/v1`, gói trả theo tháng) từ chối lời gọi thiếu header này; OpenCode Zen
+  (`https://opencode.ai/inference/go/v1`, cũng nhận `https://opencode.ai/zen/go/v1`; gói trả theo tháng) từ chối lời gọi thiếu header này; OpenCode Zen
   (`https://opencode.ai/zen/v1`, trả theo số dư) và các API khác bỏ qua nó. Key Go chỉ dùng được với địa chỉ Go, key Zen
   với địa chỉ Zen: gọi nhầm thì Zen báo `402 Insufficient account funds`.
+- Model suy luận (DeepSeek V4.1) tính cả phần suy luận vào `max_tokens`: API được `Ai:ApiMaxTokens` (8192), máy local
+  `Ai:MaxTokens` (2048). Hết giới hạn trước khi trả lời thì dự thảo báo `API AI dùng hết … token khi đang suy luận`.
 - Khi API từ chối, `message` kèm lời của nhà cung cấp (`… Nhà cung cấp: Insufficient account funds`, tối đa 200 ký tự).
 
 | Method | Đường dẫn | Kết quả |
@@ -25,8 +27,8 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
 ```json
 {
   "mode": "Api",
-  "apiBaseUrl": "https://opencode.ai/zen/v1",
-  "apiModel": "deepseek-v4.1-flash-free",
+  "apiBaseUrl": "https://opencode.ai/inference/go/v1",
+  "apiModel": "deepseek-v4.1-flash",
   "hasApiKey": true,
   "apiKeyHint": "abcd",
   "localModel": "qwen2.5:7b-instruct",

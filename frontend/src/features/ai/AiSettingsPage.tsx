@@ -110,7 +110,7 @@ export function AiSettingsPage() {
   if (loadError)
     return (
       <>
-        <PageHeader title="Máy AI" />
+        <PageHeader title="Cấu hình AI" />
         <div className="alert alert-error page-alert" role="alert">
           <p>{loadError}</p>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => void load()}>
@@ -124,7 +124,7 @@ export function AiSettingsPage() {
   const api = mode === 'Api'
   return (
     <>
-      <PageHeader title="Máy AI" description="Máy viết dự thảo biên bản" />
+      <PageHeader title="Cấu hình AI" description="Máy viết dự thảo biên bản" />
       {!settings ? (
         <div className="card card-pending ai-settings" aria-busy="true">
           <p>Đang tải…</p>
@@ -142,6 +142,7 @@ export function AiSettingsPage() {
               options={MODES}
               onChange={(next) => {
                 setMode(next)
+                setRemoveKey(false)
                 setTest(null)
                 clear('mode')
               }}
@@ -156,80 +157,82 @@ export function AiSettingsPage() {
             </Badge>
           </p>
 
-          <fieldset className="form-grid ai-settings-api">
-            <legend className="ai-settings-label">API (chuẩn OpenAI)</legend>
-            <label className="field span-2">
-              <span className={api ? 'field-required' : undefined}>Địa chỉ API</span>
-              <input
-                type="url"
-                inputMode="url"
-                value={baseUrl}
-                placeholder="https://opencode.ai/zen/v1"
-                onChange={(e) => {
-                  setBaseUrl(e.target.value)
-                  clear('apiBaseUrl')
-                  setTest(null)
-                }}
-                aria-invalid={!!errors.apiBaseUrl}
-                autoComplete="off"
-                spellCheck={false}
-              />
-              {errors.apiBaseUrl && <small className="field-error">{errors.apiBaseUrl}</small>}
-            </label>
-            <label className="field">
-              <span className={api ? 'field-required' : undefined}>Model</span>
-              <input
-                value={model}
-                placeholder="deepseek-v4.1-flash-free"
-                onChange={(e) => {
-                  setModel(e.target.value)
-                  clear('apiModel')
-                  setTest(null)
-                }}
-                aria-invalid={!!errors.apiModel}
-                autoComplete="off"
-                spellCheck={false}
-              />
-              {errors.apiModel && <small className="field-error">{errors.apiModel}</small>}
-            </label>
-            <label className="field">
-              <span className={api && !settings.hasApiKey ? 'field-required' : undefined}>Key</span>
-              <span className="ai-settings-key">
+          {!api && settings.hasApiKey && (
+            <p className="ai-settings-local">
+              <span>Key API</span>
+              <strong>{removeKey ? 'Sẽ xoá khi lưu' : `••••${settings.apiKeyHint}`}</strong>
+              <button
+                type="button"
+                className={removeKey ? 'icon-button is-pressed' : 'icon-button'}
+                aria-label={removeKey ? 'Giữ key đã lưu' : 'Xoá key đã lưu'}
+                aria-pressed={removeKey}
+                data-tooltip={removeKey ? 'Giữ key đã lưu' : 'Xoá key đã lưu'}
+                onClick={() => setRemoveKey((v) => !v)}
+              >
+                <Icon name="trash" size={16} />
+              </button>
+            </p>
+          )}
+
+          {api && (
+            <fieldset className="form-grid ai-settings-api">
+              <legend className="ai-settings-label">API (chuẩn OpenAI)</legend>
+              <label className="field span-2">
+                <span className={api ? 'field-required' : undefined}>Địa chỉ API</span>
                 <input
-                  type="password"
-                  value={key}
-                  placeholder={
-                    removeKey ? 'Sẽ xoá khi lưu' : settings.hasApiKey ? `Đã lưu ••••${settings.apiKeyHint}` : 'Dán key'
-                  }
+                  type="url"
+                  inputMode="url"
+                  value={baseUrl}
+                  placeholder="https://opencode.ai/inference/go/v1"
                   onChange={(e) => {
-                    setKey(e.target.value)
-                    setRemoveKey(false)
-                    clear('apiKey')
+                    setBaseUrl(e.target.value)
+                    clear('apiBaseUrl')
                     setTest(null)
                   }}
-                  aria-invalid={!!errors.apiKey}
-                  autoComplete="new-password"
+                  aria-invalid={!!errors.apiBaseUrl}
+                  autoComplete="off"
                   spellCheck={false}
                 />
-                {settings.hasApiKey && !api && (
-                  <button
-                    type="button"
-                    className={removeKey ? 'icon-button is-pressed' : 'icon-button'}
-                    aria-label={removeKey ? 'Giữ key đã lưu' : 'Xoá key đã lưu'}
-                    aria-pressed={removeKey}
-                    data-tooltip={removeKey ? 'Giữ key đã lưu' : 'Xoá key đã lưu'}
-                    onClick={() => {
-                      setRemoveKey((v) => !v)
-                      setKey('')
+                {errors.apiBaseUrl && <small className="field-error">{errors.apiBaseUrl}</small>}
+              </label>
+              <label className="field">
+                <span className={api ? 'field-required' : undefined}>Model</span>
+                <input
+                  value={model}
+                  placeholder="deepseek-v4.1-flash"
+                  onChange={(e) => {
+                    setModel(e.target.value)
+                    clear('apiModel')
+                    setTest(null)
+                  }}
+                  aria-invalid={!!errors.apiModel}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {errors.apiModel && <small className="field-error">{errors.apiModel}</small>}
+              </label>
+              <label className="field">
+                <span className={api && !settings.hasApiKey ? 'field-required' : undefined}>Key</span>
+                <span className="ai-settings-key">
+                  <input
+                    type="password"
+                    value={key}
+                    placeholder={settings.hasApiKey ? `Đã lưu ••••${settings.apiKeyHint}` : 'Dán key'}
+                    onChange={(e) => {
+                      setKey(e.target.value)
+                      setRemoveKey(false)
+                      clear('apiKey')
+                      setTest(null)
                     }}
-                  >
-                    <Icon name="trash" size={16} />
-                  </button>
-                )}
-              </span>
-              {errors.apiKey && <small className="field-error">{errors.apiKey}</small>}
-            </label>
-          </fieldset>
+                    aria-invalid={!!errors.apiKey}
+                    autoComplete="new-password"
+                    spellCheck={false}
+                  />
+                </span>
+                {errors.apiKey && <small className="field-error">{errors.apiKey}</small>}
+              </label>
+            </fieldset>
+          )}
 
           {test && (
             <p className={test.ok ? 'alert alert-success' : 'alert alert-error'} role="status">
@@ -246,10 +249,12 @@ export function AiSettingsPage() {
               </small>
             )}
             <div className="form-actions">
-              <button type="button" className="btn btn-outline" onClick={() => void runTest()} disabled={testing || saving}>
-                <Icon name="broadcast" size={16} />
-                {testing ? 'Đang thử…' : 'Thử kết nối'}
-              </button>
+              {api && (
+                <button type="button" className="btn btn-outline" onClick={() => void runTest()} disabled={testing || saving}>
+                  <Icon name="broadcast" size={16} />
+                  {testing ? 'Đang thử…' : 'Thử kết nối'}
+                </button>
+              )}
               <button type="submit" className="btn btn-primary" disabled={saving || testing}>
                 {saving ? 'Đang lưu…' : 'Lưu'}
               </button>

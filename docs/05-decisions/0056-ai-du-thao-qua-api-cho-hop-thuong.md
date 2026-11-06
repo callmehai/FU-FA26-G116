@@ -18,7 +18,7 @@ nhân, và cuộc họp Mật, Tối mật còn có thông tin không được �
 
 ## Quyết định
 
-1. **Màn "Máy AI" cho quản trị** (`/mgmt/admin/ai`, capability `AdminUsers`): chọn **máy local** (như ADR-0054) hoặc
+1. **Màn "Cấu hình AI" cho quản trị** (`/mgmt/admin/ai`, capability `AdminUsers`): chọn **máy local** (như ADR-0054) hoặc
    **API**; nhập địa chỉ API (bắt buộc https), tên model và key; nút **Thử kết nối** gọi API một lần mà không lưu gì.
 2. **Chỉ cuộc họp Thường (`Sensitivity.Normal`) được gửi ra API.** Cuộc họp Nội bộ, Mật, Tối mật luôn dùng máy local, dù
    quản trị chọn gì. Máy local tắt thì những cuộc họp đó báo máy AI chưa sẵn sàng (`503 MSG394`), không bao giờ chuyển sang

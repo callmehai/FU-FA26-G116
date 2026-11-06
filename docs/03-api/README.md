@@ -13,7 +13,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`08-agenda-contract-tich-hop-guest-uc04.md`](08-agenda-contract-tich-hop-guest-uc04.md) — adapter identity/session, quyền đọc Agenda và hub Guest; phần UC-04 cần triển khai để tích hợp.
 - [`16-truy-cap-khach-uc04.md`](16-truy-cap-khach-uc04.md) — UC-04 / SCRUM-116: link mời, OTP, phiên và token Khách (`/api/guest-access/*`); giá trị OTP và hạn phiên đã chốt; mã `MSG126`, `MSG371`–`MSG378`.
 - [`17-du-thao-bien-ban.md`](17-du-thao-bien-ban.md) — SCRUM-36 / SCRUM-32: dự thảo AI (`/api/meetings/{id}/summary`) và bản nháp biên bản theo mẫu cố định (`/api/meetings/{id}/minutes`, `/api/minutes/{id}`), cấu hình máy AI `Ai:*`; mã `MSG384`–`MSG405`.
-- [`18-may-ai.md`](18-may-ai.md) — ADR-0056: màn Máy AI của quản trị (`/api/admin/ai`), chọn máy local hay API cho dự thảo của cuộc họp Thường; mã `MSG408`–`MSG413`.
+- [`18-may-ai.md`](18-may-ai.md) — ADR-0056: màn Cấu hình AI của quản trị (`/api/admin/ai`), chọn máy local hay API cho dự thảo của cuộc họp Thường; mã `MSG408`–`MSG413`.
 - [`16-truy-cap-khach-uc04-ket-qua-kiem-thu.md`](16-truy-cap-khach-uc04-ket-qua-kiem-thu.md) — SCRUM-122: kết quả kiểm thử E2E Khách (UC-04 → UC-26 Agenda, thu hồi, hết hạn, cuộc họp kết thúc) bằng email và phiên thật; kèm FE SCRUM-121/SCRUM-123.
 
 - `GET /api/health` — không cần đăng nhập, không có file riêng: `200` với `status: "ok"`, `database: "ok"`;

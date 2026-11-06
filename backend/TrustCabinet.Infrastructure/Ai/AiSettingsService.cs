@@ -118,7 +118,7 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
         if (errors.Count > 0) return new(AiSettingsFailure.Invalid, Errors: errors.ToDictionary(e => e.Key, e => e.Value));
 
         var api = new OpenAiCompatibleModel(clients, LanguageModelProvider.ApiHttpClientName, baseUrl, model,
-            string.IsNullOrEmpty(key) ? stored! : key, timeoutMinutes: 1, maxTokens: 256, remote: true);
+            string.IsNullOrEmpty(key) ? stored! : key, timeoutMinutes: 1, maxTokens: 1024, remote: true);
         var watch = Stopwatch.StartNew();
         try
         {
@@ -156,7 +156,7 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
         mode = AiProviderMode.Local;
         if (input.Mode is nameof(AiProviderMode.Local)) mode = AiProviderMode.Local;
         else if (input.Mode is nameof(AiProviderMode.Api)) mode = AiProviderMode.Api;
-        else errors["mode"] = ["Chọn máy AI local hoặc API."];
+        else errors["mode"] = ["Chọn máy local hoặc API."];
 
         baseUrl = (input.ApiBaseUrl ?? "").Trim();
         model = (input.ApiModel ?? "").Trim();

@@ -119,6 +119,8 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
             Assert.Equal("https://api.example.test/zen/v1/chat/completions", r.Url);
             Assert.Equal($"Bearer {Key}", r.Authorization);
             Assert.Contains("\"model\":\"deepseek-v4.1-flash\"", r.Body);
+            // A hosted reasoning model counts its thinking against the budget: the API gets more than the local 2048.
+            Assert.Contains("\"max_tokens\":8192", r.Body);
         });
         var draft = (await secretary.GetFromJsonAsync<JsonElement>(normal.Summary)).GetProperty("summary");
         Assert.Equal("deepseek-v4.1-flash", draft.GetProperty("model").GetString());
@@ -136,6 +138,22 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
             Assert.NotEmpty(f.Model.Prompts);
             Assert.Equal("fake-llm@test", (await keeper.GetFromJsonAsync<JsonElement>(kept.Summary)).GetProperty("summary").GetProperty("model").GetString());
         }
+    }
+
+    [Fact]
+    public async Task An_answer_cut_off_while_the_model_was_still_thinking_says_so()
+    {
+        using var admin = await AdminWithRole();
+        await AssertCode(await admin.PutAsJsonAsync(Url, Api()), 200, "MSG408");
+        f.Api.CutOff = true;
+        var s = await f.Seed();
+        using var secretary = f.Client(s.Secretary);
+        await AssertCode(await secretary.PostAsync(s.Summary, null), 202, "MSG384");
+        await f.ProcessAll();
+        var failed = (await secretary.GetFromJsonAsync<JsonElement>(s.Summary)).GetProperty("summary");
+        Assert.Equal("Failed", failed.GetProperty("status").GetString());
+        Assert.Equal("API AI dùng hết 8192 token khi đang suy luận, chưa kịp trả lời.", failed.GetProperty("errorMessage").GetString());
+        f.Api.Reset();
     }
 
     [Fact]
