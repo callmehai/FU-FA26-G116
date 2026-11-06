@@ -27,4 +27,6 @@ export const createMinutes = (meetingId: string, rebuild: boolean) =>
 export const saveMinutes = (minutesId: string, content: string, updatedAt: string) =>
   api.put<MinutesState & { code: string; message: string }>(`/api/minutes/${minutesId}`, { content, updatedAt })
 
-export const exportMinutes = (minutesId: string) => api.blob(`/api/minutes/${minutesId}/export`)
+/** The minutes as a Word or a PDF file, made on the server from the same text. */
+export const exportMinutes = (minutesId: string, format: 'docx' | 'pdf') =>
+  api.blob(`/api/minutes/${minutesId}/export?format=${format}`)

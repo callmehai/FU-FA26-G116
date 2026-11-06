@@ -15,14 +15,19 @@ namespace TrustCabinet.Domain.Summaries;
 /// </summary>
 public sealed record MinutesPerson(Guid Id, string FullName);
 
+/// <summary>
+/// <see cref="BuiltFromDraftAt"/>: the <see cref="MinutesState.DraftChangedAt"/> of the draft the content was last built
+/// from, null when built without one. When the two differ, the draft has moved on since and the minutes do not show it.
+/// </summary>
 public sealed record MinutesView(Guid Id, int RevisionNumber, string Status, string Content, DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt, MinutesPerson? CreatedBy);
+    DateTimeOffset UpdatedAt, MinutesPerson? CreatedBy, DateTimeOffset? BuiltFromDraftAt);
 
 /// <summary>
 /// What the caller sees. A draft is the Chair's and the Secretary's until it is issued (SCRUM-33); everyone else gets
-/// null. <see cref="SummaryReviewed"/> says whether the reviewed AI draft can fill sections I–III.
+/// null. <see cref="DraftChangedAt"/> is when the AI draft that fills sections I–III last changed (written or edited),
+/// null when the meeting has none, and for anyone but the Chair and the Secretary.
 /// </summary>
-public sealed record MinutesState(MinutesView? Minutes, bool CanManage, bool SummaryReviewed);
+public sealed record MinutesState(MinutesView? Minutes, bool CanManage, DateTimeOffset? DraftChangedAt);
 
 public enum MinutesFailure
 {
@@ -56,11 +61,18 @@ public interface IMinutesService
     /// </summary>
     Task<MinutesOutcome> CreateAsync(Guid meetingId, Guid actorId, bool rebuild, CancellationToken ct = default);
     Task<MinutesOutcome> SaveAsync(Guid minutesId, Guid actorId, string? content, DateTimeOffset? loadedAt, CancellationToken ct = default);
-    /// <summary>The draft as a Word file, built from the same marks the page reads.</summary>
-    Task<MinutesOutcome> ExportAsync(Guid minutesId, Guid actorId, CancellationToken ct = default);
+    /// <summary>The draft as a Word or a PDF file, built from the same marks the page reads.</summary>
+    Task<MinutesOutcome> ExportAsync(Guid minutesId, Guid actorId, MinutesExportFormat format, CancellationToken ct = default);
 }
 
-public sealed record MinutesFile(string FileName, byte[] Bytes);
+/// <summary>What <c>GET /api/minutes/{id}/export?format=</c> returns: Word unless PDF is asked for.</summary>
+public enum MinutesExportFormat
+{
+    Docx,
+    Pdf,
+}
+
+public sealed record MinutesFile(string FileName, byte[] Bytes, string ContentType);
 
 public static class MinutesLimits
 {

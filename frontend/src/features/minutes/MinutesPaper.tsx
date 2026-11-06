@@ -19,7 +19,9 @@ function blocks(content: string): ReactNode[] {
       <table key={`t${out.length}`} className="minutes-frame">
         <tbody>
           {rows.map((row, i) => {
-            const [left, right = ''] = row.split('|', 2)
+            // Cut at the first bar only, as the Word file and the PDF do.
+            const bar = row.indexOf('|')
+            const [left, right] = bar < 0 ? [row, ''] : [row.slice(0, bar), row.slice(bar + 1)]
             return (
               <tr key={i}>
                 <td>{inline(left.trim())}</td>

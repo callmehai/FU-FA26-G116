@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;
 using TrustCabinet.Infrastructure.Summaries;
+using UglyToad.PdfPig;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Summaries;
@@ -31,7 +32,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         using var secretary = f.Client(s.Secretary);
         var before = await State(secretary, s);
         Assert.Equal(JsonValueKind.Null, before.GetProperty("minutes").ValueKind);
-        Assert.False(before.GetProperty("summaryReviewed").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, before.GetProperty("draftChangedAt").ValueKind);
 
         var minutes = await Create(secretary, s);
         var content = minutes.GetProperty("content").GetString()!;
@@ -45,7 +46,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Contains("**Thành phần tham dự:** 03 người có mặt, gồm:", lines);
         Assert.Contains("**Chủ trì (chủ tọa):** Trần Chủ Trì.", lines);
         Assert.Contains("**Thư ký (người ghi biên bản):** Nguyễn Thư Ký.", lines);
-        // No reviewed AI draft: section II lists the agenda, section III the recorded conclusions and the votes.
+        // No AI draft: section II lists the agenda, section III the recorded conclusions and the votes.
         Assert.Contains($"### 1. {SummaryFixture.FirstItemTitle}", lines);
         Assert.Contains("Lê Thành Viên trình bày. ……", lines);
         Assert.Contains($"### 2. {SummaryFixture.SecondItemTitle}", lines);
@@ -53,6 +54,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Contains($"- {SummaryFixture.VoteLine}", lines);
         Assert.Contains("@@ **Nguyễn Thư Ký** | **Trần Chủ Trì**", lines);
         Assert.Equal("Draft", minutes.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, minutes.GetProperty("builtFromDraftAt").ValueKind);
         Assert.Equal(1, minutes.GetProperty("revisionNumber").GetInt32());
         Assert.Equal(s.Secretary, minutes.GetProperty("createdBy").GetProperty("id").GetGuid());
 
@@ -65,26 +67,46 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
     }
 
     [Fact]
-    public async Task A_reviewed_ai_draft_fills_sections_one_to_three()
+    public async Task The_ai_draft_fills_sections_one_to_three_whether_reviewed_or_not()
     {
         f.Model.Reset();
         var s = await f.Seed(MeetingStatus.Ended);
         using var secretary = f.Client(s.Secretary);
+        using var member = f.Client(s.Member);
         await AssertCode(await secretary.PostAsync(s.Summary, null), 202, "MSG384");
         await f.ProcessAll();
-        // Written but not reviewed: the minutes do not take it.
-        var unreviewed = (await Create(secretary, s)).GetProperty("content").GetString()!;
-        Assert.DoesNotContain(SummaryFixture.FakeLanguageModel.Objectives, unreviewed);
 
-        await AssertCode(await secretary.PostAsync(s.Summary + "/review", null), 200, "MSG391");
-        var rebuilt = await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = true }), 201, "MSG395");
-        Assert.True(rebuilt.GetProperty("summaryReviewed").GetBoolean());
-        var lines = rebuilt.GetProperty("minutes").GetProperty("content").GetString()!.Split('\n');
+        // Written, not reviewed: the minutes take it as eCab's Compose does. Both stay the Chair's and the Secretary's.
+        var built = await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = false }), 201, "MSG395");
+        var lines = built.GetProperty("minutes").GetProperty("content").GetString()!.Split('\n');
         Assert.Contains(SummaryFixture.FakeLanguageModel.Objectives, lines);
         Assert.Contains($"### 1. {SummaryFixture.FirstItemTitle}", lines);
         Assert.Contains("### 1. Kết luận của chủ trì", lines);
         Assert.Contains("### 2. Nhiệm vụ, sản phẩm và thời hạn", lines);
         Assert.Contains($"- {SummaryFixture.VoteLine}", lines);
+        // The minutes keep the stamp of the draft they were built from: the same as the draft's own, so not stale.
+        var builtFrom = built.GetProperty("minutes").GetProperty("builtFromDraftAt").GetDateTimeOffset();
+        Assert.Equal(built.GetProperty("draftChangedAt").GetDateTimeOffset(), builtFrom);
+        Assert.Equal(JsonValueKind.Null, (await State(member, s)).GetProperty("draftChangedAt").ValueKind);
+
+        // Saved by hand afterwards, the minutes still come from that same draft.
+        f.Clock.Now = f.Clock.Now.AddMinutes(1);
+        var saved = await AssertCode(await Save(secretary, built.GetProperty("minutes").GetProperty("id").GetGuid(), "Bản tay.",
+            built.GetProperty("minutes").GetProperty("updatedAt").GetString()), 200, "MSG396");
+        Assert.Equal(builtFrom, saved.GetProperty("minutes").GetProperty("builtFromDraftAt").GetDateTimeOffset());
+
+        // The draft edited afterwards has moved on: its stamp differs, and the minutes keep the old text until rebuilt.
+        f.Clock.Now = f.Clock.Now.AddMinutes(5);
+        await AssertCode(await secretary.PutAsJsonAsync(s.Summary,
+            new { objectives = "Mục tiêu sửa sau.", discussion = "1. Báo cáo\nĐã sửa.", conclusions = "1. Kết luận của chủ trì\nĐã sửa." }), 200, "MSG388");
+        var stale = await State(secretary, s);
+        Assert.True(stale.GetProperty("draftChangedAt").GetDateTimeOffset() > builtFrom);
+        Assert.Equal(builtFrom, stale.GetProperty("minutes").GetProperty("builtFromDraftAt").GetDateTimeOffset());
+        Assert.DoesNotContain("Mục tiêu sửa sau.", stale.GetProperty("minutes").GetProperty("content").GetString());
+        var rebuilt = await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = true }), 201, "MSG395");
+        Assert.Contains("Mục tiêu sửa sau.", rebuilt.GetProperty("minutes").GetProperty("content").GetString());
+        Assert.Equal(rebuilt.GetProperty("draftChangedAt").GetDateTimeOffset(),
+            rebuilt.GetProperty("minutes").GetProperty("builtFromDraftAt").GetDateTimeOffset());
     }
 
     [Fact]
@@ -131,12 +153,14 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Equal(HttpStatusCode.NotFound,
             (await Save(member, id, "x", minutes.GetProperty("updatedAt").GetString())).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/minutes/{id}/export")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/minutes/{id}/export?format=pdf")).StatusCode);
 
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync(s.Minutes)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.PostAsJsonAsync(s.Minutes, new { rebuild = true })).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound,
             (await Save(outsider, id, "x", minutes.GetProperty("updatedAt").GetString())).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync($"/api/minutes/{id}/export")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync($"/api/minutes/{id}/export?format=pdf")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await secretary.GetAsync($"/api/minutes/{Guid.NewGuid()}/export")).StatusCode);
 
         await using var db = f.Db();
@@ -254,6 +278,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
             Assert.Equal("Issued", (await State(member, s)).GetProperty("minutes").GetProperty("status").GetString());
             await AssertCode(await Save(member, id, "x", minutes.GetProperty("updatedAt").GetString()), 403, "MSG397");
             await AssertCode(await member.GetAsync($"/api/minutes/{id}/export"), 403, "MSG397");
+            await AssertCode(await member.GetAsync($"/api/minutes/{id}/export?format=pdf"), 403, "MSG397");
         }
         await using var check = f.Db();
         Assert.Equal(minutes.GetProperty("content").GetString(), (await check.MeetingMinutes.SingleAsync(m => m.Id == id)).Content);
@@ -270,6 +295,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Equal("application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             response.Content.Headers.ContentType!.MediaType);
         Assert.Equal($"Biên bản - {SummaryFixture.Title}.docx", response.Content.Headers.ContentDisposition!.FileNameStar);
+        Assert.True(response.Headers.CacheControl!.NoStore);
         var bytes = await response.Content.ReadAsByteArrayAsync();
         Assert.Equal("PK"u8.ToArray(), bytes[..2]);
         using var zip = new ZipArchive(new MemoryStream(bytes));
@@ -282,12 +308,85 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
     }
 
     [Fact]
+    public async Task Export_returns_a_pdf_of_the_draft_in_its_own_font()
+    {
+        var s = await f.Seed();
+        using var secretary = f.Client(s.Secretary);
+        var id = (await Create(secretary, s)).GetProperty("id").GetGuid();
+        var response = await secretary.GetAsync($"/api/minutes/{id}/export?format=pdf");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/pdf", response.Content.Headers.ContentType!.MediaType);
+        Assert.Equal($"Biên bản - {SummaryFixture.Title}.pdf", response.Content.Headers.ContentDisposition!.FileNameStar);
+        Assert.True(response.Headers.CacheControl!.NoStore);
+        var bytes = await response.Content.ReadAsByteArrayAsync();
+        Assert.Equal("%PDF"u8.ToArray(), bytes[..4]);
+
+        using var pdf = PdfDocument.Open(bytes);
+        var page = pdf.GetPage(1);
+        // A4 in points.
+        Assert.Equal(595, Math.Round(page.Width));
+        Assert.Equal(842, Math.Round(page.Height));
+        var text = string.Join(" ", pdf.GetPages().Select(p => string.Join(" ", p.GetWords().Select(w => w.Text))));
+        Assert.Contains("BIÊN BẢN", text);
+        Assert.Contains("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", text);
+        Assert.Contains("Trần Chủ Trì", text);
+        Assert.Contains("Nguyễn Thư Ký", text);
+        Assert.DoesNotContain("**", text);
+        // Every letter comes from the bundled Liberation Serif, never a font the server happens to have.
+        var fonts = pdf.GetPages().SelectMany(p => p.Letters).Select(l => l.FontName ?? "").Distinct().ToList();
+        Assert.NotEmpty(fonts);
+        Assert.All(fonts, name => Assert.Contains("LiberationSerif", name));
+        Assert.Contains(fonts, name => name.EndsWith("LiberationSerif-Bold", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void The_pdf_draws_every_vietnamese_letter_and_survives_characters_its_font_lacks()
+    {
+        const string letters = "aàáảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoòóỏõọôồốổỗộơờớởỡợuùúủũụưừứửữựyỳýỷỹỵđ";
+        // A decomposed "ị" (i + dot below), a tab, an emoji with its variation selector and one without.
+        var content = $"# {letters.ToUpperInvariant()}\n{letters}\n**__{letters}__**\nNgh\u0069\u0323 quyết\tsố 1 \u2705\uFE0F 🙂";
+        var bytes = MinutesPdf.Build(content);
+        using var pdf = PdfDocument.Open(bytes);
+        var text = string.Concat(pdf.GetPages().SelectMany(p => p.Letters).Select(l => l.Value).Where(v => !string.IsNullOrWhiteSpace(v)));
+        Assert.Contains(letters, text);
+        Assert.Contains(letters.ToUpperInvariant(), text);
+        // Composed into one letter, the tab drawn as a space, each emoji as one "?".
+        Assert.EndsWith("Nghịquyếtsố1??", text);
+    }
+
+    [Fact]
+    public void The_pdf_keeps_what_the_editor_kept_from_reading_as_a_mark()
+    {
+        // The editor puts a zero-width space before a typed "# " or "@@" and between typed "**": the PDF must show them
+        // as typed, as the page and the Word file do, not as a title, a table and a bold run.
+        var bytes = MinutesPdf.Build("​# không phải tiêu đề\nA*​*b\n​@@ x | y\n");
+        using var pdf = PdfDocument.Open(bytes);
+        var text = string.Concat(pdf.GetPages().SelectMany(p => p.Letters).Select(l => l.Value).Where(v => !string.IsNullOrWhiteSpace(v)));
+        Assert.Equal("#khôngphảitiêuđềA**b@@x|y", text);
+    }
+
+    [Theory]
+    [InlineData("xlsx")]
+    [InlineData("html")]
+    public async Task An_unknown_export_format_is_refused(string format)
+    {
+        var s = await f.Seed();
+        using var secretary = f.Client(s.Secretary);
+        var id = (await Create(secretary, s)).GetProperty("id").GetGuid();
+        await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export?format={format}"), 400, "MSG406");
+        // Word is the default, and either name may be asked for.
+        foreach (var url in new[] { $"/api/minutes/{id}/export?format=docx", $"/api/minutes/{id}/export?format=PDF" })
+            Assert.Equal(HttpStatusCode.OK, (await secretary.GetAsync(url)).StatusCode);
+    }
+
+    [Fact]
     public async Task A_secret_meeting_minutes_are_not_exported()
     {
         var s = await f.Seed(sensitivity: Sensitivity.Secret);
         using var secretary = f.Client(s.Secretary);
         var id = (await Create(secretary, s)).GetProperty("id").GetGuid();
         await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export"), 403, "MSG405");
+        await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export?format=pdf"), 403, "MSG405");
         // Still read on screen.
         Assert.NotEqual(JsonValueKind.Null, (await State(secretary, s)).GetProperty("minutes").ValueKind);
     }
@@ -305,6 +404,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         {
             await AssertCode(await secretary.GetAsync(s.Minutes), 500, "MSG403");
             await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export"), 500, "MSG403");
+            await AssertCode(await secretary.GetAsync($"/api/minutes/{id}/export?format=pdf"), 500, "MSG403");
         }
         finally { f.Failures.FailMinutesRead = false; }
 

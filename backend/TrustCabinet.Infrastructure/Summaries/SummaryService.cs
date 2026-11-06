@@ -14,7 +14,7 @@ namespace TrustCabinet.Infrastructure.Summaries;
 /// <summary>
 /// SCRUM-36 — the AI draft of a meeting. The current Chair or Secretary asks for it once the meeting has started, reads
 /// and corrects it, and reviews it; only then do the other participants see it. The AI writes nothing else: the minutes
-/// (SCRUM-32) take the reviewed draft as their starting point, and a person is answerable for what they say.
+/// (SCRUM-32) take the draft as their starting point, and a person is answerable for what they say.
 /// </summary>
 public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository meetings, ILanguageModel model,
     MeetingTranscriptReader transcript, TimeProvider clock, ILogger<SummaryService> logger) : ISummaryService

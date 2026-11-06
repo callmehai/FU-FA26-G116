@@ -2,7 +2,7 @@ using TrustCabinet.Domain.Summaries;
 
 namespace TrustCabinet.Web.Endpoints;
 
-/// <summary>SCRUM-32 — the draft minutes (UC-58 to UC-60): read, build from the meeting's records, edit, export to Word.</summary>
+/// <summary>SCRUM-32 — the draft minutes (UC-58 to UC-60): read, build from the meeting's records, edit, export to Word or PDF.</summary>
 public static class MinutesEndpoints
 {
     private const string Msg395Created = "MSG395";
@@ -16,6 +16,7 @@ public static class MinutesEndpoints
     private const string Msg403ReadFailed = "MSG403";
     private const string Msg404SaveFailed = "MSG404";
     private const string Msg405SecretMeeting = "MSG405";
+    private const string Msg406UnknownFormat = "MSG406";
 
     internal sealed record CreateBody(bool Rebuild);
     internal sealed record SaveBody(string? Content, DateTimeOffset? UpdatedAt);
@@ -38,8 +39,18 @@ public static class MinutesEndpoints
                 => Map(await service.SaveAsync(minutesId, CapabilityGate.GatedUserId(context.User), body.Content, body.UpdatedAt, ct),
                     Msg396Saved));
         app.MapGroup("/api/minutes/{minutesId:guid}").RequireActiveUser(read)
-            .MapGet("/export", async (Guid minutesId, HttpContext context, IMinutesService service, CancellationToken ct)
-                => Map(await service.ExportAsync(minutesId, CapabilityGate.GatedUserId(context.User), ct)));
+            .MapGet("/export", async (Guid minutesId, string? format, HttpContext context, IMinutesService service,
+                CancellationToken ct) =>
+            {
+                // Word unless the caller asks for PDF; anything else is a wrong link, refused before the minutes are read.
+                MinutesExportFormat? kind = string.IsNullOrWhiteSpace(format) || format.Equals("docx", StringComparison.OrdinalIgnoreCase)
+                    ? MinutesExportFormat.Docx
+                    : format.Equals("pdf", StringComparison.OrdinalIgnoreCase) ? MinutesExportFormat.Pdf : null;
+                if (kind is null) return Error(400, Msg406UnknownFormat, "Chỉ tải biên bản dạng Word (docx) hoặc PDF.");
+                // Never cached, by the browser or anything between: the minutes hold what was said and decided.
+                context.Response.Headers.CacheControl = "private, no-store";
+                return Map(await service.ExportAsync(minutesId, CapabilityGate.GatedUserId(context.User), kind.Value, ct));
+            });
     }
 
     private static IResult Map(MinutesOutcome result, string? successCode = null)
@@ -65,16 +76,15 @@ public static class MinutesEndpoints
         }
         if (result.Data is MinutesFile file)
         {
-            // Never cached: the minutes hold what was said and decided.
-            return Results.File(file.Bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", file.FileName);
+            return Results.File(file.Bytes, file.ContentType, file.FileName);
         }
         var state = (MinutesState)result.Data!;
         return successCode switch
         {
             null => Results.Ok(state),
-            Msg395Created => Results.Json(new { code = Msg395Created, message = "Đã tạo bản nháp biên bản.", state.Minutes, state.CanManage, state.SummaryReviewed },
+            Msg395Created => Results.Json(new { code = Msg395Created, message = "Đã tạo bản nháp biên bản.", state.Minutes, state.CanManage, state.DraftChangedAt },
                 statusCode: StatusCodes.Status201Created),
-            _ => Results.Ok(new { code = successCode, message = "Đã lưu biên bản.", state.Minutes, state.CanManage, state.SummaryReviewed }),
+            _ => Results.Ok(new { code = successCode, message = "Đã lưu biên bản.", state.Minutes, state.CanManage, state.DraftChangedAt }),
         };
     }
 

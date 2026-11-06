@@ -14,15 +14,15 @@ public sealed record MinutesRecords(string Title, DateTimeOffset StartedAt, Date
 /// The draft minutes (SCRUM-32): AI-eCabinet's one built-in template, "Biên bản cuộc họp"
 /// (modules/minutes/internal/templates/bien-ban-cuoc-hop.html, commit bba2097f) — Decree 30/2020/NĐ-CP's Mẫu 1.4 —
 /// filled the way eCab fills it when its model does not: the facts from the meeting's records, sections I–III from the
-/// reviewed Dự thảo. There is one template, fixed here; TrustCabinet has no template management. Without a reviewed
-/// Dự thảo, section II lists the agenda and section III the Chair's recorded conclusions and the votes, with "……" for the
-/// Secretary to fill. The line marks are those of <see cref="MinutesPerson"/>'s file, MinutesContracts.cs.
+/// meeting's Dự thảo as it stands, reviewed or not, as eCab's Compose takes it. There is one template, fixed here;
+/// TrustCabinet has no template management. Without a Dự thảo (the AI machine was off, say), section II lists the agenda
+/// and section III the Chair's recorded conclusions and the votes, with "……" for the Secretary to fill. The line marks are those of <see cref="MinutesPerson"/>'s file, MinutesContracts.cs.
 /// </summary>
 public static partial class MinutesTemplate
 {
     public const string Blank = "……";
 
-    public static string Build(MinutesRecords records, SummaryDraft? reviewed, TimeZoneInfo zone)
+    public static string Build(MinutesRecords records, SummaryDraft? draft, TimeZoneInfo zone)
     {
         var start = TimeZoneInfo.ConvertTime(records.StartedAt, zone);
         var text = new StringBuilder()
@@ -44,10 +44,10 @@ public static partial class MinutesTemplate
             .AppendLine($"**Thư ký (người ghi biên bản):** {(records.Secretary is null ? Blank : Flat(records.Secretary))}.");
 
         text.AppendLine($"## {SummaryWriter.ObjectivesHeading}")
-            .AppendLine(Body(reviewed?.Objectives));
+            .AppendLine(Body(draft?.Objectives));
 
         text.AppendLine($"## {SummaryWriter.DiscussionHeading}");
-        if (reviewed is not null) text.AppendLine(Body(reviewed.Discussion, ItemTitle()));
+        if (draft is not null) text.AppendLine(Body(draft.Discussion, ItemTitle()));
         else if (records.Agenda.Count == 0) text.AppendLine(Blank);
         else
             for (var i = 0; i < records.Agenda.Count; i++)
@@ -58,7 +58,7 @@ public static partial class MinutesTemplate
             }
 
         text.AppendLine($"## {SummaryWriter.ConclusionsHeading}");
-        if (reviewed is not null) text.AppendLine(Body(reviewed.Conclusions, SubHeading()));
+        if (draft is not null) text.AppendLine(Body(draft.Conclusions, SubHeading()));
         else
         {
             text.AppendLine($"### {SummaryWriter.ChairHeading}");
