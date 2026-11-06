@@ -836,19 +836,46 @@ public sealed partial class ParticipantService(
         var openVote = await db.VotingSessions.SingleOrDefaultAsync(
             v => v.MeetingId == s.Meeting.Id && v.Status == VotingStatus.Open, ct);
         if (openVote is not null && openVote.EligibleRoles.Contains(MeetingRole.Guest))
-        {
-            db.VoteEligibleVoters.Add(new VoteEligibleVoter
-            {
-                VotingSessionId = openVote.Id, GuestInvitationId = guest.Id, CreatedAt = now, UpdatedAt = now
-            });
-            openVote.EligibleCount++;
-            openVote.UpdatedAt = now;
-        }
+            await AdmitGuestToOpenVoteAsync(openVote, guest, now, ct);
         Stage(s.Meeting, null, guest, InvitationEventKind.Invitation, actor, now);
         return new(
             Data: new { createdIds = new[] { guest.Id } },
             Success: ParticipantSuccess.Created
         );
+    }
+
+    /// <summary>
+    /// Puts a Guest invited while <paramref name="vote"/> is Open on its voter list — once per person, not once per
+    /// invitation (SCRUM-133). A Guest removed and invited again under the same email gets a new invitation id, so
+    /// the list is matched by email across this meeting's invitations (only revoked ones can match: the caller has
+    /// already refused an email that is still invited). One who already voted is not added again; one who was on the
+    /// list but had not voted keeps that one place, moved to the new invitation so they can still cast it. Either way
+    /// the eligible count stays as it was.
+    /// </summary>
+    private async Task AdmitGuestToOpenVoteAsync(
+        VotingSession vote,
+        MeetingGuestInvitation guest,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        if (await db.VoteReceipts.AnyAsync(
+                r => r.VotingSessionId == vote.Id && r.GuestInvitation!.Email == guest.Email, ct))
+            return;
+        var earlier = await db.VoteEligibleVoters.FirstOrDefaultAsync(
+            e => e.VotingSessionId == vote.Id && e.GuestInvitation!.Email == guest.Email, ct);
+        if (earlier is not null)
+        {
+            earlier.GuestInvitation = guest;
+            earlier.UpdatedAt = now;
+            return;
+        }
+        db.VoteEligibleVoters.Add(new VoteEligibleVoter
+        {
+            VotingSessionId = vote.Id, GuestInvitationId = guest.Id, CreatedAt = now, UpdatedAt = now
+        });
+        vote.EligibleCount++;
+        vote.UpdatedAt = now;
     }
 
     private Task<Dictionary<Guid, User>> LockCurrentUsersAsync(ParticipantSnapshot s, CancellationToken ct)
