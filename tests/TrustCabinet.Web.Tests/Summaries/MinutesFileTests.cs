@@ -118,6 +118,9 @@ public sealed class MinutesFileTests
         Assert.Equal("single", Val(tables[0].Descendants(W + "tblBorders").Single().Element(W + "insideV")));
         Assert.Equal("4", Val(tables[0].Descendants(W + "tblBorders").Single().Element(W + "top"), "sz"));
         Assert.Equal("nil", Val(tables[1].Descendants(W + "tblBorders").Single().Element(W + "top")));
+        // A frame's rows (the signature blocks) never split across pages; a ruled table's may, as in Word.
+        Assert.NotNull(tables[1].Element(W + "tr")!.Element(W + "trPr")?.Element(W + "cantSplit"));
+        Assert.Empty(tables[0].Descendants(W + "cantSplit"));
         // A header cell is bold and centred.
         var header = Paragraph(document, "A");
         Assert.Equal("center", Val(Props(header).Element(W + "jc")));
@@ -264,10 +267,11 @@ public sealed class MinutesFileTests
     public void A_signature_table_at_the_foot_of_a_page_moves_on_in_its_own_size()
     {
         // The template ends on a frame table with room to sign. Wherever the text before it ends, the table keeps 13 pt
-        // and moves to the next page when it does not fit; it is never shrunk to fit what is left of the page.
+        // and moves to the next page whole when it does not fit: never shrunk to what is left of the page, never a title
+        // at the foot of one page and the name to sign on the next. The two cells differ in height on purpose.
         const string signatures = "<table data-layout=\"frame\"><tbody><tr>"
-            + "<td><p><strong>THƯ KÝ</strong></p><p></p><p></p><p></p><p>Nguyễn Văn A</p></td>"
-            + "<td><p><strong>CHỦ TOẠ</strong></p><p></p><p></p><p></p><p>Trần Văn B</p></td></tr></tbody></table>";
+            + "<td><p><strong>THƯ KÝ</strong></p><p></p><p></p><p>Nguyễn Văn A</p></td>"
+            + "<td><p><strong>CHỦ TOẠ</strong></p><p></p><p></p><p></p><p></p><p>Trần Văn B</p></td></tr></tbody></table>";
         var pages = new HashSet<int>();
         for (var before = 26; before <= 40; before++)
         {
@@ -277,6 +281,9 @@ public sealed class MinutesFileTests
             var signed = pdf.GetPages().SelectMany(p => p.Letters).Where(l => l.Value is "Ý" or "Ạ").ToList(); // THƯ KÝ, CHỦ TOẠ
             Assert.Equal(2, signed.Count);
             Assert.All(signed, l => Assert.Equal(13, Math.Round(l.PointSize)));
+            var block = pdf.GetPages().Where(p => p.GetWords().Any(w => w.Text is "KÝ" or "TOẠ" or "Nguyễn" or "Trần"))
+                .Select(p => p.Number).Distinct();
+            Assert.Single(block);
         }
         // The range crosses the foot of page 1: some runs end on one page, some on two.
         Assert.Equal([1, 2], pages.Order());

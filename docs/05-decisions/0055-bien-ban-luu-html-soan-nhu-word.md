@@ -47,7 +47,8 @@ Word, giống AI-eCabinet: eCab dùng TipTap, lưu HTML rồi lọc lại ở se
 6. **Giới hạn để một request không làm sập server:** HTML lồng sâu quá 64 tầng bị từ chối khi lưu (`MSG402`), vì bộ lọc và
    bước dàn trang đi đệ quy theo từng tầng và .NET không bắt được lỗi tràn stack; nội dung lỡ sâu hơn chỉ được đọc phần
    chữ. Bảng giữ tối đa 63 cột (giới hạn của Word), ô vượt quá bị bỏ khi xuất; lề trái của đoạn trong ô hẹp không vượt quá
-   ô, để file PDF luôn dàn trang được. Ô bảng trong PDF chảy sang trang sau như Word; chỉ khi một ô hẹp tới mức không
+   ô, để file PDF luôn dàn trang được. Hàng của bảng khung (phần đầu, khối ký tên) không bị tách qua hai trang, cả trong
+   Word (`cantSplit`) lẫn PDF. Ô bảng kẻ trong PDF chảy sang trang sau như Word; chỉ khi một ô hẹp tới mức không
    dàn được (chữ 24 pt trong cột kéo hẹp hết cỡ) thì cả file mới dựng lại với ô co cho vừa chỗ. Bảng lồng quá 3 tầng
    in phần chữ của từng ô nối tiếp nhau thay vì kẻ lưới, vì mỗi tầng bảng nhân số lần QuestPDF đo nội dung.
 

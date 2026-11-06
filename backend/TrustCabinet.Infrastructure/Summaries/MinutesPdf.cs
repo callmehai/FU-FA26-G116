@@ -242,6 +242,9 @@ public static class MinutesPdf
                     // Only the outermost table's cells: shrinking one shrinks the tables inside it too, and a shrink in a
                     // shrink multiplies QuestPDF's measuring again (three levels of six columns: 46 s instead of 3 s).
                     if (drawing.ShrinkCells && drawing.TableDepth == 1) box = box.ScaleToFit();
+                    // A frame (the header, the signature blocks) moves to the next page whole, as Word's "cannot split"
+                    // row does: never a title at the foot of one page and the names to sign above on the next.
+                    if (table.Frame) box = box.ShowEntire();
                     box.Column(column =>
                     {
                         foreach (var block in cell.Blocks) Block(column, block, drawing);

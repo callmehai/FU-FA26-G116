@@ -157,7 +157,8 @@ public static class MinutesDocx
         xml.Append("</w:tblGrid>");
         foreach (var row in table.Rows)
         {
-            xml.Append("<w:tr>");
+            // A frame row (the header, the signature blocks) never splits across pages, as the PDF draws it.
+            xml.Append(table.Frame ? "<w:tr><w:trPr><w:cantSplit/></w:trPr>" : "<w:tr>");
             foreach (var cell in row.Cells)
             {
                 var width = table.Columns.Skip(cell.Column).Take(cell.Span).Sum();
