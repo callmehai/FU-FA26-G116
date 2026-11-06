@@ -6,8 +6,10 @@ Run from the repository root:
 then export the image with draw.io (see docs/13-erd/muc-tieu/README.md).
 
 Tables come from backend/TrustCabinet.Infrastructure/Migrations/TrustCabinetDbContextModelSnapshot.cs, column
-order and enum types from backend/TrustCabinet.Domain. Tables sit on a grid; every line runs through the
-channels between grid cells, so no line crosses a table. One line per related table pair. Lines to User are
+order and enum types from backend/TrustCabinet.Domain. Tables sit on a grid. Two related tables in neighbouring
+cells (diagonals included), or two cells apart in a straight vertical/horizontal line, are joined by one straight
+line when it crosses no other table; every other line runs through the channels between grid cells, so no line
+crosses a table. All line ends on one side of a table share one even spread. One line per related table pair. Lines to User are
 drawn for every pair except USER_SKIP, the columns that only record who changed a row (they stay marked FK).
 """
 import glob, html, json, os, random, re, sys, xml.etree.ElementTree as ET
@@ -110,19 +112,19 @@ for c in (ET.parse(OUT).getroot().iter("mxCell") if os.path.exists(OUT) else [])
         old_ids.setdefault((c.get("source"), c.get("target")), c.get("id"))
 
 GRID = [
-    [None, "TranscriptSpeaker", "MeetingNote", None, "AgendaItem", "MeetingDocumentAgendaItem", None, None, "GuestVerificationChallenge", "MeetingGuestInvitation"],
-    ["TranscriptSegment", "Transcript", "SpeakingRequest", "EmailMessage", "MeetingInvitationDispatch", None, None, "DocumentComment", "VoteChoice", None],
-    [None, None, "MeetingSummary", "Meeting", "MeetingParticipant", "StoredFile", "MeetingDocument", "VotingOption", "VotingSession", None],
-    ["MeetingMinutes", "Recording", None, "Notification", "Folder", "Document", "DocumentReadConfirmation", "VoteDocument", "VoteEligibleVoter", None],
-    [None, "CallSession", "MeetingStatusHistory", "AuditLogEntry", "User", "VoiceSample", "VoiceConsent", None, "VoteReceipt", None],
-    ["MinutesSignature", None, None, "CallParticipant", "Role", "RoleCapability", None, None, "SpeechClip", "GuestSession"],
+    [None, None, "TranscriptSegment", "Transcript", "CallSession", "CallParticipant", "TranscriptSpeaker", None, None],
+    ["MeetingSummary", "EmailMessage", "MeetingInvitationDispatch", "Recording", "SpeakingRequest", "GuestSession", None, "GuestVerificationChallenge", None],
+    [None, "MeetingMinutes", "MeetingParticipant", "Meeting", "MeetingNote", "AgendaItem", "MeetingGuestInvitation", "DocumentComment", "MeetingDocumentAgendaItem"],
+    [None, "MinutesSignature", "Notification", "MeetingStatusHistory", None, "SpeechClip", "DocumentReadConfirmation", "MeetingDocument", None],
+    ["VoiceSample", "RoleCapability", "Role", "User", "VoteReceipt", "Folder", "Document", "VoteDocument", "StoredFile"],
+    ["VoiceConsent", None, None, "AuditLogEntry", "VoteEligibleVoter", "VotingSession", None, "VotingOption", "VoteChoice"],
 ]
 pos = {t: (r, c) for r, row in enumerate(GRID) for c, t in enumerate(row) if t}
 assert sorted(pos) == sorted(m), set(m) ^ set(pos)
 NR, NC = len(GRID), len(GRID[0])
 
 ROW_H, HEAD_H = 19, 28
-MARGIN, SP = 26, 9          # channel margin (room for the crow's foot) and track spacing
+MARGIN, SP = 26, 13         # channel margin (room for the crow's foot) and track spacing
 
 
 def tw(s):
@@ -181,7 +183,7 @@ USER_SKIP = {"CallSession", "MeetingDocument", "MeetingGuestInvitation", "Meetin
              "TranscriptSegment", "TranscriptSpeaker", "VoteChoice"}
 pairs = [p for p in pairs.values() if not (p["parent"] == "User" and p["child"] in USER_SKIP)]
 
-def build(grid):
+def _build(grid, straight):
     global GRID, pos, NR, NC, colw, rowh, SIDE, plans, xs, ys, vx, hy, W, H, port, track, ntr, vw, hw
     GRID = grid
     pos = {t: (r, c) for r, row in enumerate(GRID) for c, t in enumerate(row) if t}
@@ -239,24 +241,38 @@ def build(grid):
 
 
     HUBS = {"User", "Meeting", "MeetingGuestInvitation"}
-    PORT_GAP = 22
+    PORT_GAP = 26
     SIDE = set()
     for hub in HUBS:
         hr, hc = pos[hub]
-        cap = {"side": 2 * int((tables[hub]["h"] - HEAD_H) / PORT_GAP), "vert": 2 * int(tables[hub]["w"] / PORT_GAP)}
-        kids = [p["child"] for p in pairs if p["parent"] == hub and p["child"] != hub]
-        adjacent = [k for k in kids if pos[k][0] == hr and abs(pos[k][1] - hc) == 1]
-        same_row = [k for k in kids if pos[k][0] == hr and k not in adjacent]
-        cap["side"] -= len(adjacent) + len(same_row)
-        cap["vert"] -= sum(1 for p in pairs if p["child"] == hub)
-        rest = sorted((k for k in kids if pos[k][0] != hr and pos[k][1] != hc),
-                      key=lambda k: -abs(pos[k][1] - hc))
-        for k in rest:
-            if cap["side"] > 0 and (cap["vert"] <= 0 or abs(pos[k][1] - hc) >= 2 or len(rest) - rest.index(k) > cap["vert"]):
-                SIDE.add((hub, k)); cap["side"] -= 1
+        # room on each of the hub's left and right sides, minus the lines that must end there
+        room = {s: int((tables[hub]["h"] - HEAD_H - 4) / PORT_GAP) for s in "LR"}
+        cap_vert = 2 * int(tables[hub]["w"] / PORT_GAP) - sum(1 for p in pairs if p["child"] == hub)
+        kids = []
+        for k, p in enumerate(pairs):
+            if hub not in (p["parent"], p["child"]) or p["parent"] == p["child"]:
+                continue
+            other = p["child"] if p["parent"] == hub else p["parent"]
+            orow, ocol = pos[other]
+            if orow == hr:
+                room["R" if ocol > hc else "L"] -= 1
+            elif p["parent"] == hub and k not in straight and ocol != hc:
+                kids.append(other)
+        kids.sort(key=lambda k: -abs(pos[k][1] - hc))
+        for i, k in enumerate(kids):
+            s = "R" if pos[k][1] > hc else "L"
+            if room[s] > 0 and (cap_vert <= 0 or abs(pos[k][1] - hc) >= 2 or len(kids) - i > cap_vert):
+                SIDE.add((hub, k)); room[s] -= 1
             else:
-                cap["vert"] -= 1
-    plans = [route_plan(p) for p in pairs]
+                cap_vert -= 1
+    def straight_plan(p):
+        (ra, ca), (rb, cb) = pos[p["parent"]], pos[p["child"]]
+        if ra == rb:
+            sa, sb = ("R", "L") if cb > ca else ("L", "R")
+        else:
+            sa, sb = ("B", "T") if rb > ra else ("T", "B")
+        return [("port", p["parent"], sa), ("straight",), ("port", p["child"], sb)]
+    plans = [straight_plan(p) if k in straight else route_plan(p) for k, p in enumerate(pairs)]
 
 
     def solve(vw, hw):
@@ -277,28 +293,73 @@ def build(grid):
                 return vx[nxt[1]], oy
             return ox + ow / 2, oy + oh / 2
 
+        # a straight line between two tables that overlap along the facing sides is drawn exactly vertical or
+        # horizontal: both ends are pinned to one coordinate inside the overlap
+        span = {}
+        for k, pl in enumerate(plans):
+            if pl[1][0] != "straight":
+                continue
+            (_, a, sa), (_, b, _) = pl[0], pl[-1]
+            A, B = box(a, xs, ys), box(b, xs, ys)
+            if sa in "TB":
+                lo, hi = max(A[0], B[0]) + 14, min(A[0] + A[2], B[0] + B[2]) - 14
+            else:
+                lo, hi = max(A[1], B[1]) + HEAD_H, min(A[1] + A[3], B[1] + B[3]) - 4
+            if lo <= hi:
+                span[k] = (lo, hi)
+
+        def side_range(t, side):
+            x, y, w, h = box(t, xs, ys)
+            return (x, x + w) if side in "TB" else (y + HEAD_H, y + h - 4)
+
+        def key(u, fixed):
+            if u in fixed:
+                return fixed[u]
+            if u[0] in span:
+                return sum(span[u[0]]) / 2
+            return far_coord(*u)[0 if plans[u[0]][u[1]][2] in "TB" else 1]
+
+        # pin each line where an even spread of its two sides would put it, kept inside the overlap
+        even = {}
+        for (t, side), users in side_users.items():
+            lo, hi = side_range(t, side)
+            users.sort(key=lambda u: key(u, {}))
+            for i, u in enumerate(users):
+                even[u] = lo + (hi - lo) * (i + 1) / (len(users) + 1)
+        fixed = {}
+        for k, (lo, hi) in span.items():
+            last = len(plans[k]) - 1
+            fixed[(k, 0)] = fixed[(k, last)] = min(hi, max(lo, (even[(k, 0)] + even[(k, last)]) / 2))
+
+        # ports: every line ending on a side, pinned or not, shares one spread along it, sorted by where the
+        # line goes next; free ports are spaced evenly between the pinned ones so no two ends meet
         port = {}
         for (t, side), users in side_users.items():
             x, y, w, h = box(t, xs, ys)
-            if side in "TB":
-                users.sort(key=lambda u: far_coord(*u)[0])
-                n = len(users)
-                for i, u in enumerate(users):
-                    fx = (i + 1) / (n + 1)
-                    port[u] = (x + w * fx, y if side == "T" else y + h, fx, 0 if side == "T" else 1)
-            else:
-                users.sort(key=lambda u: far_coord(*u)[1])
-                n = len(users)
-                lo, hi = HEAD_H, h - 4
-                for i, u in enumerate(users):
-                    py = y + lo + (hi - lo) * (i + 1) / (n + 1)
-                    port[u] = (x if side == "L" else x + w, py, 0 if side == "L" else 1, (py - y) / h)
+            tb = side in "TB"
+            lo, hi = side_range(t, side)
+            users.sort(key=lambda u: key(u, fixed))
+            coord, prev, run = {}, lo, []
+            for u in users + [None]:
+                if u is not None and u not in fixed:
+                    run.append(u); continue
+                nxt = hi if u is None else fixed[u]
+                for i, f in enumerate(run):
+                    coord[f] = prev + (nxt - prev) * (i + 1) / (len(run) + 1)
+                run = []
+                if u is not None:
+                    coord[u] = prev = fixed[u]
+            for u, c in coord.items():
+                if tb:
+                    port[u] = (c, y if side == "T" else y + h, (c - x) / w, 0 if side == "T" else 1)
+                else:
+                    port[u] = (x if side == "L" else x + w, c, 0 if side == "L" else 1, (c - y) / h)
         # channel segments -> tracks (greedy interval colouring)
         segs = {}
         for k, pl in enumerate(plans):
             p0, p1 = port[(k, 0)], port[(k, len(pl) - 1)]
             for i, st in enumerate(pl[1:-1], 1):
-                if st[0] == "loop":
+                if st[0] in ("loop", "straight"):
                     continue
                 # interval along the channel = span between neighbouring coordinates
                 prev = p0 if i == 1 else None
@@ -393,6 +454,9 @@ def build(grid):
     lines = []
     for k, (p, pl) in enumerate(zip(pairs, plans)):
         p0, p1 = port[(k, 0)], port[(k, len(pl) - 1)]
+        if pl[1][0] == "straight":
+            lines.append((p0, p1, []))
+            continue
         pts = []
         cur = (p0[0], p0[1])
         for i, st in enumerate(pl[1:-1], 1):
@@ -417,6 +481,34 @@ def build(grid):
         lines.append((p0, p1, clean))
     return lines
 
+
+def build(grid):
+    """Lay the grid out. A pair whose tables sit in neighbouring cells (diagonals included) is joined by one
+    straight line, and so is a pair two cells apart when that line is exactly vertical or horizontal; never when
+    the line would cross another table. Every other pair runs through the channels."""
+    pg = {t: (r, c) for r, row in enumerate(grid) for c, t in enumerate(row) if t}
+    straight = {k for k, p in enumerate(pairs) if p["parent"] != p["child"]
+                and max(abs(pg[p["parent"]][0] - pg[p["child"]][0]), abs(pg[p["parent"]][1] - pg[p["child"]][1])) <= 2}
+    while True:
+        lines = _build(grid, straight)
+        blocked = set()
+        for k in straight:
+            (x0, y0, _, _), (x1, y1, _, _), _ = lines[k]
+            a, b = pg[pairs[k]["parent"]], pg[pairs[k]["child"]]
+            if max(abs(a[0] - b[0]), abs(a[1] - b[1])) == 2 and abs(x0 - x1) > 0.5 and abs(y0 - y1) > 0.5:
+                blocked.add(k); continue
+            for t in pos:
+                if t in (pairs[k]["parent"], pairs[k]["child"]):
+                    continue
+                bx, by, bw, bh = xs[pos[t][1]], ys[pos[t][0]], tables[t]["w"], tables[t]["h"]
+                if any(bx - 4 < x0 + (x1 - x0) * s / 40 < bx + bw + 4 and by - 4 < y0 + (y1 - y0) * s / 40 < by + bh + 4
+                       for s in range(41)):
+                    blocked.add(k); break
+        if not blocked:
+            return lines
+        straight -= blocked
+
+
 def segments(lines):
     out = []
     for k, (p0, p1, pts) in enumerate(lines):
@@ -428,12 +520,21 @@ def segments(lines):
 
 def crossings(lines):
     segs = segments(lines)
+    n = sum(abs(a[0] - b[0]) + abs(a[1] - b[1]) for _, a, b in segs) / 1500
     hs = [(k, min(a[0], b[0]), max(a[0], b[0]), a[1]) for k, a, b in segs if abs(a[1] - b[1]) < 0.5]
     vs = [(k, min(a[1], b[1]), max(a[1], b[1]), a[0]) for k, a, b in segs if abs(a[0] - b[0]) < 0.5]
-    n = sum(x2 - x1 for _, x1, x2, _ in hs) / 1500 + sum(y2 - y1 for _, y1, y2, _ in vs) / 1500
     for k1, x1, x2, y in hs:
         for k2, y1, y2, x in vs:
             if k1 != k2 and x1 + 1 < x < x2 - 1 and y1 + 1 < y < y2 - 1:
+                n += 1
+    # straight diagonal lines against every other segment
+    cr = lambda o, a, b: (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    diag = [s for s in segs if abs(s[1][0] - s[2][0]) >= 0.5 and abs(s[1][1] - s[2][1]) >= 0.5]
+    for i, (k1, a, b) in enumerate(diag):
+        for k2, c, d in segs:
+            if k1 == k2 or ((k2, c, d) in diag[:i + 1]):
+                continue
+            if cr(a, b, c) * cr(a, b, d) < -1 and cr(c, d, a) * cr(c, d, b) < -1:
                 n += 1
     return n
 
@@ -474,7 +575,7 @@ TABLE = ("swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=28
          "fontSize=13;swimlaneFillColor=#ffffff;")
 ROW = ("text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;"
        "overflow=hidden;fontSize=11;")
-EDGE = ("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow={end};startArrow={start};endFill=0;startFill=0;"
+EDGE = ("edgeStyle={es};rounded=0;html=1;endArrow={end};startArrow={start};endFill=0;startFill=0;"
         "endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;"
         "exitX={ex:.4f};exitY={ey:.4f};exitDx=0;exitDy=0;entryX={nx:.4f};entryY={ny:.4f};entryDx=0;entryDy=0;")
 out = []
@@ -495,7 +596,7 @@ for t, (r, c) in pos.items():
 
 for k, (p, pl, (p0, p1, clean)) in enumerate(zip(pairs, plans, lines)):
     eid = old_ids.get((p["parent"], p["child"])) or "r_{}_{}".format(p["parent"], p["child"])
-    style = EDGE.format(end="ERzeroToOne" if p["one"] else "ERzeroToMany",
+    style = EDGE.format(es="none" if pl[1][0] == "straight" else "orthogonalEdgeStyle", end="ERzeroToOne" if p["one"] else "ERzeroToMany",
                         start="ERmandOne" if p["required"] else "ERzeroToOne",
                         ex=p0[2], ey=p0[3], nx=p1[2], ny=p1[3])
     pts_xml = "".join('<mxPoint x="{:.1f}" y="{:.1f}"/>'.format(*q) for q in clean)
