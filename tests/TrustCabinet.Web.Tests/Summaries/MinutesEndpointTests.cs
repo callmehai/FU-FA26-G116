@@ -480,7 +480,12 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
 
         f.Clock.Now = f.Clock.Now.AddMinutes(1);
         f.Failures.FailSave = true;
-        try { await AssertCode(await Save(secretary, id, "Không lưu được.", minutes.GetProperty("updatedAt").GetString()), 503, "MSG404"); }
+        try
+        {
+            await AssertCode(await Save(secretary, id, "Không lưu được.", minutes.GetProperty("updatedAt").GetString()), 503, "MSG404");
+            // A failed build is a failed save, not "a draft already exists": only a duplicate first build says that.
+            await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = true }), 503, "MSG404");
+        }
         finally { f.Failures.FailSave = false; }
         await using var db = f.Db();
         Assert.Equal(minutes.GetProperty("content").GetString(), (await db.MeetingMinutes.SingleAsync(m => m.Id == id)).Content);

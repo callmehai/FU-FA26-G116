@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -60,8 +61,9 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             await db.SaveChangesAsync(ct);
             return new(Data: await StateAsync(meeting, actorId, ct));
         }
-        catch (DbUpdateException error)
+        catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
+            // Two first builds at once: the unique meeting index lets one through. Any other failure is a failed save.
             logger.LogWarning(error, "Concurrent minutes creation for meeting {MeetingId}", meetingId);
             return new(MinutesFailure.Exists);
         }

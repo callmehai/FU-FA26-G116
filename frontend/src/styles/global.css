@@ -300,6 +300,7 @@ code {
   .btn-sm { height: 36px; }
   .btn-lg { height: 40px; }
   .btn-icon.btn-sm { width: 36px; }
+  .select-option { min-height: 40px; }
 }
 .is-pressed { animation: press .18s ease-out; }
 

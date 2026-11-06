@@ -354,8 +354,8 @@ Return, activation, `alt` và self-call kiểm quyền không sinh operation; ki
   Xoá một mẫu (UC-81e) không tính lại gì — bản nháp trước ghi "recalculate composite voiceprint" là sai.
 - **Đặc trưng giọng của cuộc họp không lưu:** `SpeechSpeaker.Embedding` chỉ dùng trong `processNext` rồi bỏ; chỉ
   `TranscriptSpeaker.suggestedUserId` và `suggestionScore` được lưu.
-- **`TranscriptSegment.speakerUserId`** có trong entity nhưng code hiện không ghi (tên người nói lấy từ `TranscriptSpeaker.assignedUserId`
-  theo `speakerLabel`). Giữ theo code; BE quyết định bỏ cột hay dùng.
+- **Người nói của một câu** là giọng của câu (`TranscriptSegment.speakerLabel` → `TranscriptSpeaker`); đổi người nói của một câu
+  là chuyển câu sang giọng của người đó. Cột `speakerUserId` chưa từng được ghi đã bỏ (migration `DropTranscriptSegmentSpeakerUser`).
 - **Lớp ngoài feature** (`Meeting`, `User`, `IMeetingRepository`, `IAuditService`, phần FE-09 dùng lại trong FE-10) chỉ vẽ phần được dùng,
   ghi "(used part)".
 - **Hình học:** `validate.py --score` cả hai file: 0 lỗi, 0 cạnh xuyên class, 0 chồng hình; còn 38 (FE-09) và 34 (FE-10) cảnh báo cạnh giao
