@@ -8,6 +8,11 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
   tính theo máy mà cuộc họp đó được dùng.
 - Mọi endpoint cần capability `AdminUsers` (token và database): chưa đăng nhập `401`, thiếu quyền `403`.
 - Key gửi lên và **không bao giờ trả về**; server lưu mã hoá AES-256-GCM, chỉ trả `hasApiKey` và 4 ký tự cuối.
+- Mỗi lần gọi API gửi `User-Agent: TrustCabinet/1.0` và `x-opencode-session` (một GUID mới). OpenCode Go
+  (`https://opencode.ai/zen/go/v1`, gói trả theo tháng) từ chối lời gọi thiếu header này; OpenCode Zen
+  (`https://opencode.ai/zen/v1`, trả theo số dư) và các API khác bỏ qua nó. Key Go chỉ dùng được với địa chỉ Go, key Zen
+  với địa chỉ Zen: gọi nhầm thì Zen báo `402 Insufficient account funds`.
+- Khi API từ chối, `message` kèm lời của nhà cung cấp (`… Nhà cung cấp: Insufficient account funds`, tối đa 200 ký tự).
 
 | Method | Đường dẫn | Kết quả |
 |---|---|---|

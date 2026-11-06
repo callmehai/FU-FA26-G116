@@ -121,13 +121,16 @@ public sealed class SummaryFixture : IAsyncLifetime
     /// </summary>
     internal sealed class FakeApi
     {
-        internal readonly ConcurrentQueue<(string Url, string? Authorization, string Body)> Requests = new();
+        internal readonly ConcurrentQueue<(string Url, string? Authorization, string? Session, string Body)> Requests = new();
         internal System.Net.HttpStatusCode Status = System.Net.HttpStatusCode.OK;
+        /// <summary>The body of a refusal, when <see cref="Status"/> is not OK.</summary>
+        internal string? ErrorBody;
 
         internal void Reset()
         {
             Requests.Clear();
             Status = System.Net.HttpStatusCode.OK;
+            ErrorBody = null;
         }
 
         internal sealed class Handler(FakeApi api) : HttpMessageHandler
@@ -135,8 +138,13 @@ public sealed class SummaryFixture : IAsyncLifetime
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
             {
                 var body = request.Content is null ? "" : await request.Content.ReadAsStringAsync(ct);
-                api.Requests.Enqueue((request.RequestUri!.ToString(), request.Headers.Authorization?.ToString(), body));
-                if (api.Status != System.Net.HttpStatusCode.OK) return new HttpResponseMessage(api.Status);
+                api.Requests.Enqueue((request.RequestUri!.ToString(), request.Headers.Authorization?.ToString(),
+                    request.Headers.TryGetValues("x-opencode-session", out var session) ? session.Single() : null, body));
+                if (api.Status != System.Net.HttpStatusCode.OK)
+                    return new HttpResponseMessage(api.Status)
+                    {
+                        Content = new StringContent(api.ErrorBody ?? "", System.Text.Encoding.UTF8, "application/json"),
+                    };
                 // The prompt as the model reads it: the body escapes Vietnamese letters.
                 var prompt = body.Length == 0 ? "" : string.Concat(System.Text.Json.JsonDocument.Parse(body).RootElement
                     .GetProperty("messages").EnumerateArray().Select(m => m.GetProperty("content").GetString()));

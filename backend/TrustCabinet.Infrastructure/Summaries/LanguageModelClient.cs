@@ -76,6 +76,37 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
 
     public string Model => model;
 
+    /// <summary>
+    /// The provider's own words for a refusal (OpenAI shape <c>{"error":{"message":…}}</c>, or <c>{"error":"…"}</c>,
+    /// or <c>{"message":…}</c>), so "402" can say whether the account lacks credit or the model is not on the plan.
+    /// Cut to 200 characters; an unreadable body adds nothing. The request's key never appears in a response body.
+    /// </summary>
+    private static async Task<string> ReasonAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        try
+        {
+            var text = await response.Content.ReadAsStringAsync(ct);
+            using var doc = JsonDocument.Parse(text);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) return "";
+            JsonElement found = default;
+            if (root.TryGetProperty("error", out var error))
+            {
+                if (error.ValueKind == JsonValueKind.String) found = error;
+                else if (error.ValueKind == JsonValueKind.Object) error.TryGetProperty("message", out found);
+            }
+            else root.TryGetProperty("message", out found);
+            if (found.ValueKind != JsonValueKind.String) return "";
+            var reason = found.GetString()!.Trim();
+            if (reason.Length == 0) return "";
+            return " Nhà cung cấp: " + (reason.Length > 200 ? reason[..200] + "…" : reason);
+        }
+        catch (Exception ex) when (ex is JsonException or HttpRequestException or InvalidOperationException)
+        {
+            return "";
+        }
+    }
+
     public async Task<string> CompleteAsync(string system, string user, CancellationToken ct)
     {
         if (!IsConfigured) throw new LanguageModelException($"{Machine} chưa được cấu hình.");
@@ -90,6 +121,10 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
         };
         if (!string.IsNullOrEmpty(apiKey))
             request.Headers.Authorization = new("Bearer", apiKey);
+        // OpenCode Go routes by a session id ("one per conversation") and asks callers to name themselves; each call
+        // here is its own one-shot conversation. Other OpenAI-compatible servers ignore both headers.
+        request.Headers.UserAgent.ParseAdd("TrustCabinet/1.0");
+        request.Headers.TryAddWithoutValidation("x-opencode-session", Guid.NewGuid().ToString());
         HttpResponseMessage response;
         try
         {
@@ -111,7 +146,7 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
                     (402, true) => "API AI đòi thanh toán (402): model này trả phí hoặc tài khoản hết tiền. Thử model miễn phí (thường có đuôi -free).",
                     (429, true) => "API AI đang giới hạn số lần gọi (429). Thử lại sau ít phút.",
                     var (status, _) => $"{Machine} trả lỗi {status}.",
-                });
+                } + await ReasonAsync(response, ct));
             ChatResponse? body;
             try
             {

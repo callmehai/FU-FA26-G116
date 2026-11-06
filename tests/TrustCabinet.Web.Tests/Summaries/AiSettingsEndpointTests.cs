@@ -161,6 +161,8 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
         var passed = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", Api()), 200, "MSG412");
         Assert.Equal("deepseek-v4.1-flash", passed.GetProperty("model").GetString());
         Assert.Equal($"Bearer {Key}", f.Api.Requests.Single().Authorization);
+        // OpenCode Go refuses a call without a session id (400 "missing x-opencode-session").
+        Assert.True(Guid.TryParse(f.Api.Requests.Single().Session, out _));
         // Nothing was saved by the test.
         await using (var db = f.Db()) Assert.False(await db.AiProviderSettings.AnyAsync());
 
@@ -176,9 +178,17 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
         Assert.Contains("từ chối key", refused.GetProperty("message").GetString());
 
         // A paid model on an account without credit says so instead of a bare status code.
+        // The provider's own reason follows, read from the OpenAI error shape.
         f.Api.Status = HttpStatusCode.PaymentRequired;
+        f.Api.ErrorBody = """{"error":{"message":"Insufficient account funds","type":"billing"}}""";
         var unpaid = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", Api(key: null)), 502, "MSG413");
         Assert.Contains("đòi thanh toán (402)", unpaid.GetProperty("message").GetString());
+        Assert.EndsWith("Nhà cung cấp: Insufficient account funds", unpaid.GetProperty("message").GetString());
+        // A body that is not JSON adds nothing.
+        f.Api.Status = HttpStatusCode.InternalServerError;
+        f.Api.ErrorBody = "<html>Bad gateway</html>";
+        var broken = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", Api(key: null)), 502, "MSG413");
+        Assert.Equal("API AI trả lỗi 500.", broken.GetProperty("message").GetString());
         f.Api.Reset();
     }
 
