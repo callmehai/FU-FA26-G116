@@ -1,7 +1,8 @@
 # PR #263 (SCRUM-32) — biên bản lấy dự thảo hiện có, báo khi chưa duyệt hoặc đã cũ, thêm Tải PDF
 
-**Người ghi:** KhánhPG/BA, 05/11/2026. **Nguồn:** PR #263 (nhánh `fix/minutes-from-current-draft`, đang **mở**, CI xanh,
-chưa vào `main`), tin nhắn Zalo của BE, comment Jira SCRUM-32, `docs/03-api/17-du-thao-bien-ban.md` và ADR-0054 trên nhánh #263.
+**Người ghi:** KhánhPG/BA, 05/11/2026; cập nhật 06/11/2026. **Nguồn:** PR #263 (nhánh `fix/minutes-from-current-draft`;
+**đã vào `main` 06/11/2026**, merge `e856403f`; PR #265 vào sau, merge `911d25bb`, deploy server test; SCRUM-32 đang
+In Review), tin nhắn Zalo của BE, comment Jira SCRUM-32, `docs/03-api/17-du-thao-bien-ban.md` và ADR-0054 trên nhánh #263.
 Note này gom việc BA, không thay Jira hay đặc tả. Nối tiếp [note 33](33-pr260-scrum-36-32-du-thao-bien-ban-va-scrum-137-tim-gio-hop.md).
 
 ## 0. Tóm tắt
@@ -76,7 +77,11 @@ Soát thêm: BR-373–BR-381 và BR-383–BR-394 có câu nào còn nói "dự t
 
 ## 3. Làm được ngay hay phải đợi?
 
-**Kết luận: viết được ngay, nhưng chỉ nên merge PR docs sau khi #263 vào `main`, và chỉ comment Jira sau khi cả hai đã vào `main`.**
+**Cập nhật 06/11/2026: #263 và #265 đã vào `main` — không còn gì phải đợi code, làm hết phần §2 một lượt. Phần còn lại
+của #265 (trình soạn thảo, giới hạn HTML) nằm ở [note 35](35-pr265-pr267-scrum-35-36-32-132-viec-ba-moi.md).**
+Đoạn dưới giữ nguyên làm lịch sử lúc #263 còn mở.
+
+**Kết luận (lúc 05/11): viết được ngay, nhưng chỉ nên merge PR docs sau khi #263 vào `main`, và chỉ comment Jira sau khi cả hai đã vào `main`.**
 
 - **Đợi code xong có cần không?** Không cần chờ "mọi người code thêm": #263 đã đủ BE + FE + API doc + ADR, CI xanh, `MERGEABLE`.
   Việc còn lại của #263 chỉ là review/merge. Quy tắc (BR-382) là PO đã chốt, nên đặc tả không phải đoán.
@@ -93,8 +98,64 @@ Soát thêm: BR-373–BR-381 và BR-383–BR-394 có câu nào còn nói "dự t
 - [ ] BR-382 (Report 3 DOCX §V.1) và rà BR-373–BR-394 tìm câu còn nhắc "dự thảo đã duyệt" cho biên bản.
 - [ ] UC-59 AF-3 (+ AF-4 nếu tách) và bỏ ý "đã duyệt" ở mô tả, tiền/hậu điều kiện.
 - [ ] Sequence `UC59_GenerateMeetingMinutes.txt` → PNG → tab UC59 trong `TrustCabinet_Sequence_Diagrams.drawio`.
-- [ ] Sau khi #263 vào `main`: UC-59/60 thẻ báo + Tải PDF, màn §III 12.1, BR cuộc họp Mật gồm PDF.
+- [ ] #263 đã vào `main`: UC-59/60 thẻ báo + Tải PDF, màn §III 12.1, BR cuộc họp Mật gồm PDF. Lưu ý sau #265: Tải PDF
+  nay đi qua `GET /api/minutes/{id}/export?format=pdf` (`MSG406` khi `format` sai) — kiểm lại §1 "không có endpoint,
+  không có mã MSG riêng" trên `main` trước khi viết UC-60; trình soạn thảo là TipTap (note 35).
 - [ ] Chạy `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`;
   `sync_requirement_extracts.py --check` phải khớp. **Không sửa tay** `05-…`, `06-…`, `Report-3_….md`.
 - [ ] Comment **SCRUM-32** (BR-382 đổi, UC-59/60 đổi gì, PR #263 + commit, còn lại gì) theo
   [DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update) khi #263 và PR docs đều ở `main`.
+
+## 5. Việc chi tiết để giao agent (06/11/2026)
+
+Đối chiếu với `origin/main` ngày 06/11/2026 (#263 + #265 đã vào). **Đính chính §1:** Tải PDF **có endpoint** —
+`GET /api/minutes/{id}/export?format=pdf`, server dựng bằng QuestPDF; `format` sai → `400 MSG406`; họp Mật → `403 MSG405`
+([docs/03-api/17-du-thao-bien-ban.md](../../03-api/17-du-thao-bien-ban.md) dòng 82, 97–98). BR-391 hiện ghi "không có PDF" — sai so với `main`.
+
+**Quy tắc chung mọi agent** (đọc trước khi làm): nhánh mới từ `origin/main` (nhánh hiện tại `docs/ba-final-review-note33-followup`
+đang lệch `main`); tiếng Việt, tên kỹ thuật giữ nguyên; **không sửa tay** `Report-3_….md`, `05-use-case-specifications.md`,
+`06-business-rules.md`, `uc-map.html` (sinh từ DOCX bằng `sync_reports.py`); không commit nếu chưa được bảo. Mã MSG và
+hành vi lấy từ `docs/03-api/17-du-thao-bien-ban.md` và danh mục MSG, không đoán.
+
+**Chia agent để không đụng nhau:**
+
+| Agent | Sở hữu file | Việc |
+|---|---|---|
+| **A-DOCX** (một agent duy nhất) | `docs/08-reports/source/Report_3_Software_Requirement_Specification.docx` | Mọi việc DOCX của note 34 **và** note 35 (git không gộp DOCX — hai agent cùng sửa là mất việc) |
+| **A-SEQ-59** | `minutes-management/UC59_GenerateMeetingMinutes.txt` + PNG | T34-3 |
+| **A-SEQ-60** | `minutes-management/UC60_EditMeetingMinutes.txt` + PNG | T34-4 (+ T35-6 của note 35 cùng file) |
+| **A-DRAWIO** | `docs/06-sequencediagram/TrustCabinet_Sequence_Diagrams.drawio` | Chạy **sau** các agent SEQ: cập nhật tab theo `.txt` mới |
+
+### Danh sách việc
+
+**T34-1 — BR-382 (A-DOCX, §V.1).** Thay bằng: *An AI draft is marked as written by AI. The minutes take the meeting's
+current draft, reviewed or not, because the draft minutes are seen only by the Chair and the Secretary, who also review the
+draft; the minutes card tells them when the draft is unreviewed or has changed since. Without a draft the minutes leave
+sections I–III for the Secretary to write.* Giữ cột UC (UC-47, UC-50, UC-59); nguồn: ADR-0054 + quyết định PO 05/11/2026.
+*Xong khi:* dòng BR-382 trong `06-business-rules.md` (sau sync) đúng chữ trên.
+
+**T34-2 — UC-59 (A-DOCX, §II).**
+- Description: bỏ "using the reviewed AI draft" → "using the meeting's current AI draft, reviewed or not".
+- AF-3 đổi tên thành "No AI draft" (chưa có dự thảo hoặc AI chưa viết xong): mục I–III để "……".
+- Thêm **AF-4 – AI draft not yet reviewed**: biên bản dùng nguyên văn dự thảo; thẻ Biên bản hiện cảnh báo, có lối sang tab Dự thảo để duyệt.
+- Thêm **AF-5 – Draft changed after the minutes were built**: thẻ hiện thông báo kèm nút *Tạo lại* (có xác nhận như AF-2, BR-388).
+- Thông báo trên thẻ không phải mã lỗi — **không thêm MSG**.
+*Xong khi:* `grep -n "reviewed AI draft" 05-use-case-specifications.md` không còn trong UC-59.
+
+**T34-3 — Sequence UC59 (A-SEQ-59).** Trong `.txt`: `Read the reviewed AI draft` → `Read the current AI draft (reviewed or not)`;
+`alt Reviewed AI draft exists` → `alt An AI draft exists`; `else No reviewed AI draft - AF-3` → `else No AI draft - AF-3`. Xuất lại PNG
+(`scripts/txt_to_sequence_drawio_png.py`, xem `docs/06-sequencediagram/README.md`). *Xong khi:* PNG mở ra thấy đoạn chữ mới, không còn chữ "reviewed" ở nhánh đó.
+
+**T34-4 — UC-60 tải PDF + BR về PDF (A-DOCX).**
+- UC-60 AF-1: tách thành "Download Word" và "Download PDF" (`?format=pdf`); cả hai kiểm quyền + họp không Mật; tên file `Biên bản - <tên cuộc họp>.pdf`.
+- Description UC-60: "download the same text as a Word file" → "as a Word or PDF file".
+- **BR-391**: *The minutes are downloaded as a Word file (.docx) or a PDF file; both are built from the same content.* (bỏ câu "A PDF version is not provided").
+- **BR-390**: giữ, thêm ý gồm cả Word và PDF.
+- Thêm vào UC-60 một EX: `format` không hợp lệ → MSG406 – "Chỉ tải biên bản dạng Word (docx) hoặc PDF." (nguồn chữ: danh mục MSG, dòng MSG406). *Lưu ý:* MSG406 đang bị PR #267 đòi cho 429 — xem [note 35 §4](35-pr265-pr267-scrum-35-36-32-132-viec-ba-moi.md).
+*Xong khi:* `grep "PDF version is not provided"` trong `06-business-rules.md` không còn.
+
+**T34-5 — Màn §III 12.1 Minutes Editor (A-DOCX).** Thêm vùng thông báo trên đầu thẻ (3 trạng thái ở T34-2), nút *Tải PDF* cạnh *Tải Word*; cập nhật bảng field. Màn hình chỉ thêm qua wireframe → `screens/*.png` (xem [docs/08-reports/README.md](../../08-reports/README.md)), **không** chụp ảnh app.
+
+**T34-6 — Rà BR (A-DOCX).** `grep -n "reviewed" 06-business-rules.md` trong dải BR-373–BR-394; BR-381, BR-385 chỉnh nếu còn điều kiện "đã duyệt" cho biên bản. (BR-385/394 còn bị #265 đổi — xem T35-5.)
+
+**T34-7 — Đóng việc.** Sau khi A-DOCX xong: `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`; `python scripts/sync_requirement_extracts.py --check` phải khớp. Soát `docs/README` / `uc-map` nếu sync đổi. Comment Jira SCRUM-32 (BR-382, BR-391 đổi; UC-59/60 đổi gì; PR #263 `e856403f`, #265 `911d25bb`; còn lại gì) sau khi PR docs ở `main`.
