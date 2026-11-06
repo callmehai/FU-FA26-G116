@@ -32,8 +32,8 @@ nhân, và cuộc họp Mật, Tối mật còn có thông tin không được �
 6. **Cách gọi API riêng, máy local giữ nguyên.** Máy local vẫn cắt lời thoại thành đoạn 9.000 ký tự cho context 8K của model
    7B. Qua API (DeepSeek V4.1 Flash đọc được 1 triệu token): tắt phần suy luận (`reasoning_effort: none`), mỗi mục chương
    trình đọc cả lời thoại trong một lần, tối đa 3 mục viết song song, `429` thì thử lại. Cách gửi cả cuộc họp trong một lần như
-   AI-eCabinet (`Ai:ApiWriter=oneshot`) có sẵn để thử; đo trên 8 cuộc họp mẫu nó không nhanh hơn, nên mặc định vẫn viết theo
-   từng mục với prompt đã chỉnh trên máy local.
+   AI-eCabinet đã thử và bỏ: đo trên 8 cuộc họp mẫu nó không nhanh hơn (67,1 so với 65,9 giây, cùng 33/33 ý), lại phụ thuộc
+   việc model trả lời đúng khuôn; viết theo từng mục giữ nguyên prompt đã chỉnh trên máy local.
 
 ## Phương án đã cân nhắc
 

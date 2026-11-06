@@ -23,15 +23,10 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
     MeetingTranscriptReader transcript, TimeProvider clock, ILogger<SummaryService> logger,
     IOptions<LanguageModelOptions> aiOptions) : ISummaryService
 {
-    /// <summary>ADR-0056 — the hosted harness: <c>Ai:ApiWriter</c> "oneshot" or "parts", <c>Ai:ApiParallelism</c> items at once.</summary>
+    /// <summary>ADR-0056 — the hosted harness: whole agenda items, <c>Ai:ApiParallelism</c> of them at once.</summary>
     private Task<SummaryDraft> WriteThroughApiAsync(ILanguageModel model, MeetingFacts facts, CancellationToken ct)
-    {
-        var writer = new SummaryWriter(model, SummaryWriter.ApiChunkChars);
-        var parallelism = Math.Clamp(aiOptions.Value.ApiParallelism, 1, 8);
-        return string.Equals(aiOptions.Value.ApiWriter, "oneshot", StringComparison.OrdinalIgnoreCase)
-            ? writer.WriteOneShotAsync(facts, parallelism, ct)
-            : writer.WritePartsAsync(facts, parallelism, ct);
-    }
+        => new SummaryWriter(model, SummaryWriter.ApiChunkChars)
+            .WritePartsAsync(facts, Math.Clamp(aiOptions.Value.ApiParallelism, 1, 8), ct);
 
     /// <summary>
     /// Vietnamese letters are stored as they are: the default encoder writes each one as a six-character <c>\uXXXX</c>,

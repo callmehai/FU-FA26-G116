@@ -49,13 +49,6 @@ public sealed class LanguageModelOptions
     /// </summary>
     public string ApiReasoningEffort { get; set; } = "none";
 
-    /// <summary>
-    /// How a draft is written through an API: "parts" — the in-house prompts, each agenda item's talk in one call and
-    /// <see cref="ApiParallelism"/> items at once; "oneshot" — the whole meeting in one call, as AI-eCabinet does, falling
-    /// back to "parts" when the answer cannot be cut back into the agenda.
-    /// </summary>
-    public string ApiWriter { get; set; } = "parts";
-
     /// <summary>Agenda items written at the same time through an API. One writes them in turn.</summary>
     public int ApiParallelism { get; set; } = 3;
 

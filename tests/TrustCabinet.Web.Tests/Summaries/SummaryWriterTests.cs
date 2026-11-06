@@ -195,49 +195,4 @@ public sealed class SummaryWriterTests
         Assert.Equal(2, model.Prompts.Count); // the whole item, then the overview: no pieces, no merge
         Assert.DoesNotContain(model.Prompts, p => p.Contains("Gộp các đoạn"));
     }
-
-    [Fact]
-    public async Task The_one_call_answer_is_cut_back_into_the_agenda_with_votes_copied_from_the_data()
-    {
-        var answer = string.Join('\n', "MỤC TIÊU:", "Rà soát quý 3.", "THẢO LUẬN:", "[PHẦN 1]", "Lê An trình bày báo cáo.",
-            "- Kết luận: câu trong phần thảo luận, không phải nhãn.", "[PHẦN 3] Mục 2", "Thảo luận mục 2.",
-            "KẾT LUẬN:", "- Mục 0: Thống nhất.", "NHIỆM VỤ:", "- Làm tờ trình — Phòng Hành chính — trước 15/11");
-        var model = new ScriptedModel(_ => answer);
-        var agenda = new[] { Item(0, "Lê An"), Item(1, "Trần B"), Item(2) };
-        var facts = new MeetingFacts("Họp", agenda, ["Biểu quyết A: Đồng ý 3 phiếu. Kết luận: Thông qua."], [], [Said(0, 0), Said(2, 0)]);
-
-        var draft = await new SummaryWriter(model, SummaryWriter.ApiChunkChars).WriteOneShotAsync(facts, 3, CancellationToken.None);
-
-        var prompt = Assert.Single(model.Prompts);
-        Assert.Contains("[PHẦN 2] Mục 1 — người trình bày: Trần B\n(không có lời thoại)", prompt);
-        Assert.Equal("Rà soát quý 3.", draft.Objectives);
-        Assert.Equal(string.Join('\n', "1. Mục 0", "Lê An trình bày báo cáo.", "- Kết luận: câu trong phần thảo luận, không phải nhãn.",
-            "2. Mục 1", $"Trần B trình bày nội dung. {SummaryWriter.NoDiscussion}", "3. Mục 2", "Thảo luận mục 2."), draft.Discussion);
-        Assert.Equal(string.Join('\n', SummaryWriter.ChairHeading, "- Mục 0: Thống nhất.", SummaryWriter.BallotsHeading,
-            "- Biểu quyết A: Đồng ý 3 phiếu. Kết luận: Thông qua.", SummaryWriter.TasksHeading,
-            "- Làm tờ trình — Phòng Hành chính — trước 15/11"), draft.Conclusions);
-    }
-
-    [Fact]
-    public async Task Without_an_agenda_the_issues_marked_with_the_same_part_are_all_kept()
-    {
-        var model = new ScriptedModel(_ => "MỤC TIÊU:\nM.\nTHẢO LUẬN:\n[PHẦN 1]\n1. Quý 3\nĐạt 18/20.\n[PHẦN 1]\n2. Kế hoạch 2027\nTổng 4,8 tỷ.\nKẾT LUẬN:\nKhông có.");
-        var draft = await new SummaryWriter(model, SummaryWriter.ApiChunkChars).WriteOneShotAsync(
-            new MeetingFacts("Họp", [], [], [], [Said(0, 0)]), 3, CancellationToken.None);
-
-        Assert.Equal("1. Quý 3\nĐạt 18/20.\n2. Kế hoạch 2027\nTổng 4,8 tỷ.", draft.Discussion);
-    }
-
-    [Fact]
-    public async Task A_one_call_answer_that_loses_an_item_falls_back_to_writing_item_by_item()
-    {
-        var model = new ScriptedModel(p => p.Contains("BẢN GHI LỜI THOẠI THEO TỪNG PHẦN") ? "MỤC TIÊU:\nM.\nTHẢO LUẬN:\n[PHẦN 1]\nChỉ có mục đầu.\nKẾT LUẬN:\nKhông có."
-            : p.Contains("MỤC TIÊU:") ? "MỤC TIÊU:\nM.\nKẾT LUẬN:\nKhông có.\nNHIỆM VỤ:\nKhông có." : "Viết riêng từng mục, đủ dài để là thảo luận.");
-        var facts = new MeetingFacts("Họp", [Item(0), Item(1)], [], [], [Said(0, 0), Said(1, 0)]);
-
-        var draft = await new SummaryWriter(model, SummaryWriter.ApiChunkChars).WriteOneShotAsync(facts, 3, CancellationToken.None);
-
-        Assert.Equal(4, model.Prompts.Count); // the one call, then two items and the overview
-        Assert.Equal("1. Mục 0\nViết riêng từng mục, đủ dài để là thảo luận.\n2. Mục 1\nViết riêng từng mục, đủ dài để là thảo luận.", draft.Discussion);
-    }
 }
