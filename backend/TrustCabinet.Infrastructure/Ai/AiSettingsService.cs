@@ -118,7 +118,8 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
         if (errors.Count > 0) return new(AiSettingsFailure.Invalid, Errors: errors.ToDictionary(e => e.Key, e => e.Value));
 
         var api = new OpenAiCompatibleModel(clients, LanguageModelProvider.ApiHttpClientName, baseUrl, model,
-            string.IsNullOrEmpty(key) ? stored! : key, timeoutMinutes: 1, maxTokens: 1024, remote: true);
+            string.IsNullOrEmpty(key) ? stored! : key, timeoutMinutes: 1, maxTokens: 1024, remote: true,
+            options.Value.ApiReasoningEffort);
         var watch = Stopwatch.StartNew();
         try
         {

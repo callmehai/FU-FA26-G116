@@ -42,6 +42,13 @@ public sealed class LanguageModelOptions
     /// </summary>
     public int ApiMaxTokens { get; set; } = 8192;
 
+    /// <summary>
+    /// Sent to an API as <c>reasoning_effort</c>. "none" turns DeepSeek V4.1's thinking off: a draft restates what was
+    /// said, and measured on the eight bench meetings the thinking only made each call 2–3 times slower and could use the
+    /// whole token budget before the answer began. Empty sends nothing, for an API that rejects the field.
+    /// </summary>
+    public string ApiReasoningEffort { get; set; } = "none";
+
     public bool IsConfigured => Uri.TryCreate(BaseUrl, UriKind.Absolute, out _) && Model.Length > 0;
 }
 
@@ -70,7 +77,7 @@ public sealed class LanguageModelClient(IHttpClientFactory clients, IOptions<Lan
 /// the hosted ones too, so the team can swap Ollama for llama.cpp, or for an API, by configuration alone.
 /// </summary>
 public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string clientName, string baseUrl, string model,
-    string apiKey, int timeoutMinutes, int maxTokens, bool remote) : ILanguageModel
+    string apiKey, int timeoutMinutes, int maxTokens, bool remote, string? reasoningEffort = null) : ILanguageModel
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -124,7 +131,8 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
         {
             // Temperature 0: a draft restates what was said; it must not invent (AI-eCabinet uses 0 too).
             Content = JsonContent.Create(new ChatRequest(model,
-                [new("system", system), new("user", user)], 0.0, maxTokens, false), options: Json),
+                [new("system", system), new("user", user)], 0.0, maxTokens, false,
+                string.IsNullOrWhiteSpace(reasoningEffort) ? null : reasoningEffort), options: Json),
         };
         if (!string.IsNullOrEmpty(apiKey))
             request.Headers.Authorization = new("Bearer", apiKey);
@@ -183,7 +191,8 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
 
     private sealed record ChatMessage(string Role, string Content);
     private sealed record ChatRequest(string Model, IReadOnlyList<ChatMessage> Messages, double Temperature,
-        [property: JsonPropertyName("max_tokens")] int MaxTokens, bool Stream);
+        [property: JsonPropertyName("max_tokens")] int MaxTokens, bool Stream,
+        [property: JsonPropertyName("reasoning_effort")] string? ReasoningEffort);
     private sealed record Choice(ChatMessage? Message, [property: JsonPropertyName("finish_reason")] string? FinishReason);
     private sealed record ChatResponse(IReadOnlyList<Choice>? Choices);
 }

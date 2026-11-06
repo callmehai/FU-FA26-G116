@@ -36,9 +36,11 @@ public sealed class LanguageModelProvider(TrustCabinetDbContext db, ILanguageMod
             logger.LogWarning(error, "The stored AI API key cannot be decrypted; using the in-house model");
             return local;
         }
-        return Api(setting.ApiBaseUrl, setting.ApiModel, key, options.Value.TimeoutMinutes, options.Value.ApiMaxTokens);
+        return Api(setting.ApiBaseUrl, setting.ApiModel, key, options.Value.TimeoutMinutes, options.Value.ApiMaxTokens,
+            options.Value.ApiReasoningEffort);
     }
 
-    internal OpenAiCompatibleModel Api(string baseUrl, string model, string key, int timeoutMinutes, int maxTokens)
-        => new(clients, ApiHttpClientName, baseUrl, model, key, timeoutMinutes, maxTokens, remote: true);
+    internal OpenAiCompatibleModel Api(string baseUrl, string model, string key, int timeoutMinutes, int maxTokens,
+        string reasoningEffort)
+        => new(clients, ApiHttpClientName, baseUrl, model, key, timeoutMinutes, maxTokens, remote: true, reasoningEffort);
 }

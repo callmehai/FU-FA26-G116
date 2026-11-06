@@ -14,6 +14,9 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
   với địa chỉ Zen: gọi nhầm thì Zen báo `402 Insufficient account funds`.
 - Model suy luận (DeepSeek V4.1) tính cả phần suy luận vào `max_tokens`: API được `Ai:ApiMaxTokens` (8192), máy local
   `Ai:MaxTokens` (2048). Hết giới hạn trước khi trả lời thì dự thảo báo `API AI dùng hết … token khi đang suy luận`.
+- Lời gọi API kèm `reasoning_effort` = `Ai:ApiReasoningEffort` (mặc định `none`: tắt suy luận). Bộ đo `tests/ai` với
+  DeepSeek V4.1 Flash qua OpenCode Go: bật suy luận 28/33 ý, 350 giây, một cuộc họp hết token; tắt suy luận 33/33 ý
+  (trừ một ý do dữ liệu mẫu đã bị gán tên giọng), 103 giây. Máy local qwen2.5 7B: 33/33, khoảng 17 phút.
 - Khi API từ chối, `message` kèm lời của nhà cung cấp (`… Nhà cung cấp: Insufficient account funds`, tối đa 200 ký tự).
 
 | Method | Đường dẫn | Kết quả |

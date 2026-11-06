@@ -121,6 +121,8 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
             Assert.Contains("\"model\":\"deepseek-v4.1-flash\"", r.Body);
             // A hosted reasoning model counts its thinking against the budget: the API gets more than the local 2048.
             Assert.Contains("\"max_tokens\":8192", r.Body);
+            // DeepSeek's thinking is off: twice as slow and no better on a restatement of what was said.
+            Assert.Contains("\"reasoning_effort\":\"none\"", r.Body);
         });
         var draft = (await secretary.GetFromJsonAsync<JsonElement>(normal.Summary)).GetProperty("summary");
         Assert.Equal("deepseek-v4.1-flash", draft.GetProperty("model").GetString());
