@@ -117,6 +117,7 @@ Các nhánh lỗi đều trả `401` kèm mã thông báo trong [danh mục mã]
 |---|---|---|
 | `MSG01` | Email không tồn tại, **hoặc** sai mật khẩu, **hoặc** bỏ trống | `Email hoặc mật khẩu không đúng.` |
 | `MSG02` | Tài khoản đã bị vô hiệu hoá (`users.is_active = false`) | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
+| `MSG406` | **429**, vượt giới hạn số lần thử (SCRUM-132) — xem [Giới hạn số lần thử](#giới-hạn-số-lần-thử) | `Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.` |
 
 > **Nhánh "chưa được cấp quyền truy cập hệ thống" đã bỏ từ `SCRUM-63`, không có mã.** Nó từ chối vai trò
 > không có capability nào trừ `Member`; khi vai trò thành dữ liệu (ADR-0008), vai trò tự tạo không
@@ -432,6 +433,45 @@ vào đã là 256 bit ngẫu nhiên từ CSPRNG, không có gì để brute-forc
 
 Mất dữ liệu Redis chỉ có nghĩa là mọi người phải đăng nhập lại, nên container `redis` trong
 `docker-compose.yml` cố ý **không** có volume.
+
+## Giới hạn số lần thử
+
+SCRUM-132. Không có giới hạn thì `/login` thử mật khẩu được vô hạn — mà repo public, ai cũng biết
+email tài khoản demo. Dùng `Microsoft.AspNetCore.RateLimiting` có sẵn, cửa sổ cố định
+(`Endpoints/AuthRateLimiting.cs`):
+
+| Giới hạn | Áp cho | Mặc định |
+|---|---|---|
+| Theo IP | `POST /login`, `POST /google`, `POST /password-reset` — **chung một bộ đếm** | 20 lần/phút |
+| Theo email | `POST /login` (email đã `Trim` và bỏ phân biệt hoa thường) | 5 lần/phút |
+
+Vượt giới hạn: `429` + `MSG406` (body như các lỗi xác thực khác: `code`, `message`) và header
+`Retry-After` tính bằng giây. FE chỉ cần hiển thị `message`, màn đăng nhập và đặt lại mật khẩu đã
+làm vậy. Hết cửa sổ thì thử lại được bình thường.
+
+- **Đếm cả lần đúng mật khẩu, và đếm trước khi so mật khẩu.** Quá giới hạn thì không so nữa, nên một
+  lần đoán trúng cũng chỉ nhận `429`, không lộ là đã trúng.
+- **Không giới hạn `/refresh`, `/logout`.** Mỗi lần tải trang FE gọi `/refresh`; chặn nó là đẩy
+  người đang dùng ra màn đăng nhập. Refresh token đủ dài để không đoán được.
+- **IP là `Connection.RemoteIpAddress`.** Trên server test, `ASPNETCORE_FORWARDEDHEADERS_ENABLED`
+  lấy IP thật từ `X-Forwarded-For` của Caddy, và app không mở cổng ra ngoài nên không ai gửi thẳng
+  header giả được ([deploy/docker-compose.yml](../../deploy/docker-compose.yml)).
+- **Đánh đổi:** biết email của ai thì có thể làm người đó không đăng nhập được trong một phút. Chấp
+  nhận, vì cửa sổ ngắn và ngược lại là để kẻ dò mật khẩu thử tiếp.
+- **Không có endpoint "quên mật khẩu" ẩn danh.** Thư đặt lại mật khẩu chỉ gửi qua
+  `POST /api/users/{id}/password-reset` (UC-07), cần quyền `AdminUsers` và có nhật ký kiểm toán, nên
+  không ai lạ gửi thư liên tục được. Endpoint ẩn danh duy nhất của luồng này là
+  `POST /api/auth/password-reset` (dùng token trong thư), đã nằm trong giới hạn theo IP.
+
+Cấu hình trong `appsettings.json`, đổi được bằng biến môi trường (`RateLimiting__SignInPerEmail`…):
+
+```json
+"RateLimiting": { "WindowSeconds": 60, "AuthPerIp": 20, "SignInPerEmail": 5 }
+```
+
+`appsettings.Development.json` nâng cả hai lên 1000: bộ test Playwright và `sloplint` đăng nhập
+bằng API ở mỗi test/trang, cùng một tài khoản seed, nên 5 lần/phút sẽ làm chúng hỏng giữa chừng.
+Server test (`Staging`) dùng mặc định.
 
 ## Mật khẩu
 

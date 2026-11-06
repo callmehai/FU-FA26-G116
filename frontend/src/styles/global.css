@@ -4447,9 +4447,9 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .viewer-message { display: grid; place-items: center; padding: 48px 16px; color: var(--muted-ink); }
 .pdf-page { margin: 0 auto 16px; background: var(--surface); box-shadow: var(--shadow-sm); }
 .pdf-page canvas { display: block; }
-.docx-sheet { margin: 0 auto; padding: 40px 48px; background: var(--surface); box-shadow: var(--shadow-sm); color: var(--ink); }
-/* docx-preview draws Word's page box; the sheet is the page here. */
-.docx-sheet section.docx { width: auto !important; min-height: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; }
+/* The file's own CSS is scoped by a shadow root (renderers.tsx); paint containment keeps what it positions
+   (fixed, absolute, z-index) inside the sheet, so a crafted DOCX cannot cover the header with a fake button. */
+.docx-sheet { margin: 0 auto; padding: 40px 48px; background: var(--surface); box-shadow: var(--shadow-sm); color: var(--ink); contain: paint; overflow-x: auto; }
 @media (max-width: 720px) {
   .viewer-meeting { display: none; }
   .viewer-head { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }

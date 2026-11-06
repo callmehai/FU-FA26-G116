@@ -244,7 +244,7 @@ function useReachedEnd(stage: RefObject<HTMLElement | null>, active: boolean) {
     const check = () => {
       const scroller = el.querySelector<HTMLElement>('.viewer-scroll')
       if (scroller?.querySelector('.viewer-message .alert-error')) return setProgress('unreadable')
-      if (!scroller?.querySelector('.pdf-page, .docx-sheet > div > *')) return
+      if (!scroller?.querySelector('.pdf-page, .docx-sheet [data-drawn]')) return
       if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8) setProgress('reached')
     }
     // Scroll does not bubble: listen in the capture phase for the renderer's own scroll box.
