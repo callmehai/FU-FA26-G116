@@ -6,6 +6,10 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Đặc tả sơ bộ SCRUM-30 và SCRUM-33](NOTE-dac-ta-so-bo-scrum-30-33.md) — 06/11/2026; bước BE viết UC cơ bản:
+  UC-82 Ghi chú cuộc họp, UC-61/64/65 gửi duyệt, duyệt và ban hành, trả lại biên bản, UC-83 đính chính; BR-395 → BR-413
+  đề xuất, `MSG406`–`MSG425` dành sẵn, 5 sequence `.txt`, chỗ lệch khỏi ticket (bỏ `MinutesIssued`, không theo dõi nhiệm
+  vụ) và 6 câu hỏi cho PO/BA.
 - [Danh sách unit test theo module](NOTE-danh-sach-unit-test.md) — 03/11/2026; 124 case thiết kế theo
   sáu cột của Report 5.1 (No, Module Name, Method Name, Sheet Name, Description, Pre-Condition) cho
   22 module đang chạy thật, kèm bảng Source trỏ file test trong `tests/`.
