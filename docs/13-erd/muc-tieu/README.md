@@ -27,8 +27,14 @@ cả `DocumentReadConfirmation`, bản trước chưa vẽ), cộng 2 bảng k�
 
 ## Sinh lại
 
-Hình sinh từ code bằng [scripts/draw_erd.py](../../../scripts/draw_erd.py), không kéo tay. Bảng xếp trên lưới
-trong biến `GRID`; mọi đường chạy theo khe giữa các ô lưới nên không đường nào cắt qua bảng. Khi schema đổi:
+Hình sinh từ code bằng [scripts/draw_erd.py](../../../scripts/draw_erd.py), rồi chỉnh tay một số đường nối trong
+draw.io (06/11/2026). Chạy lại script sẽ ghi đè các chỉnh tay đó: sau khi sinh lại, so ảnh với bản cũ và kéo lại
+các đường cần thiết. Bảng xếp trên lưới
+trong biến `GRID`. Hai bảng liên quan nằm ở hai ô kề nhau (kể cả kề chéo) được nối bằng một đường thẳng; hai bảng
+cách nhau hai ô chỉ nối thẳng khi đường đó đứng hoặc ngang hẳn. Hai bảng thẳng hàng thì đường nối đứng/ngang tuyệt
+đối, không xiên. Không đường thẳng nào cắt qua bảng khác; các đường còn lại chạy theo khe giữa các ô lưới. Mọi đầu
+nối trên một cạnh bảng được chia đều, không hai đầu nào trùng chỗ. Lưới hiện tại (06/11/2026) đặt `Meeting`, `MeetingGuestInvitation` và `User` ở giữa, các bảng con
+xếp quanh từng bảng đó. Khi schema đổi:
 
 ```bash
 python scripts/draw_erd.py
