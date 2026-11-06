@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Unicode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Domain.Ai;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -17,7 +18,7 @@ namespace TrustCabinet.Infrastructure.Summaries;
 /// and corrects it, and reviews it; only then do the other participants see it. The AI writes nothing else: the minutes
 /// (SCRUM-32) take the draft as their starting point, and a person is answerable for what they say.
 /// </summary>
-public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository meetings, ILanguageModel model,
+public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository meetings, ILanguageModelProvider models,
     MeetingTranscriptReader transcript, TimeProvider clock, ILogger<SummaryService> logger) : ISummaryService
 {
     /// <summary>
@@ -38,7 +39,9 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             var manages = Manages(meeting, actorId);
             var row = await Query().FirstOrDefaultAsync(s => s.MeetingId == meetingId, ct);
             var visible = row is not null && (manages || row.ReviewedAt is not null);
-            return new(Data: new SummaryState(visible ? View(row!) : null, manages, model.IsConfigured,
+            // Ready for this meeting: an ordinary one may be written by the API, any other only by the in-house model.
+            var ready = (await models.ForAsync(meeting.Sensitivity, ct)).IsConfigured;
+            return new(Data: new SummaryState(visible ? View(row!) : null, manages, ready,
                 manages ? await ReadinessAsync(meetingId, ct) : null));
         }
         catch (Exception error) when (error is not OperationCanceledException)
@@ -56,7 +59,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             if (meeting is null) return new(failure);
             if (!Manages(meeting, actorId)) return new(SummaryFailure.Forbidden);
             if (meeting.Status is not (MeetingStatus.InProgress or MeetingStatus.Ended)) return new(SummaryFailure.WrongMeetingStatus);
-            if (!model.IsConfigured) return new(SummaryFailure.AiUnavailable);
+            if (!(await models.ForAsync(meeting.Sensitivity, ct)).IsConfigured) return new(SummaryFailure.AiUnavailable);
             var row = await db.MeetingSummaries.FirstOrDefaultAsync(s => s.MeetingId == meetingId, ct);
             if (row is { Status: SummaryStatus.Queued or SummaryStatus.Running }) return new(SummaryFailure.Busy);
             var now = clock.GetUtcNow();
@@ -167,6 +170,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
         if (claimed == 0) return true;
 
         string? content = null;
+        ILanguageModel? model = null;
         var error = "";
         // The draft is of the record as it stood now, when it is read: a line corrected while the model writes (minutes
         // on a laptop) is not in it, so the draft must read as behind that correction (readiness.transcriptChangedAt).
@@ -174,6 +178,9 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
         try
         {
             var facts = await FactsAsync(next.MeetingId, ct);
+            // Chosen now, as the job runs: a meeting marked Confidential since it was queued stays on the in-house model.
+            var sensitivity = await db.Meetings.Where(m => m.Id == next.MeetingId).Select(m => m.Sensitivity).SingleAsync(ct);
+            model = await models.ForAsync(sensitivity, ct);
             var draft = await new SummaryWriter(model).WriteAsync(facts, ct);
             content = JsonSerializer.Serialize(draft, Json);
         }
@@ -197,7 +204,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
                 await db.MeetingSummaries.Where(s => s.Id == next.Id).ExecuteUpdateAsync(s => s
                     .SetProperty(x => x.Status, SummaryStatus.Ready)
                     .SetProperty(x => x.Content, content)
-                    .SetProperty(x => x.Model, model.Model)
+                    .SetProperty(x => x.Model, model!.Model)
                     .SetProperty(x => x.GeneratedAt, readAt)
                     .SetProperty(x => x.ErrorMessage, "")
                     .SetProperty(x => x.ReviewedById, (Guid?)null)

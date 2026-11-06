@@ -66,6 +66,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | MeetingMinutes | Phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Trạng thái Draft/PendingSignature/RevisionRequested/Sealed/Superseded; bỏ `ApprovedById`, `RejectionReason`, `IssuedAt`; thêm `RevisionNote`, `SealedById`, `SealedAt`. Không ghi đè bản đã niêm phong. |
 | MinutesSignature | Chữ ký trên phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Thêm `InvalidatedAt` (chữ ký cũ mất hiệu lực khi biên bản bị yêu cầu sửa — BR-166). |
 | MeetingSummary | Dự thảo AI hiện hành của cuộc họp (SCRUM-36, [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)) | IMPLEMENTED (migration `AiMeetingSummaryJob`) | Tối đa một mỗi Meeting. `Content` là JSON 3 mục I–III và khoảng giờ lời thoại của từng phần. `Status` Queued/Running/Ready/Failed là hàng chờ của máy AI (`RequestedById`, `RequestedAt`, `ErrorMessage`). Duyệt = `ReviewedById`/`ReviewedAt`: trước đó chỉ Chủ toạ, Thư ký thấy; sửa (`EditedById`, `EditedAt`) thì bỏ duyệt. Duyệt và công bố gộp làm một bước, khác dự kiến cũ (Draft/Approved/Published). |
+| AiProviderSetting | Máy AI viết dự thảo do quản trị chọn ([ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md)) | IMPLEMENTED (migration `AiProviderSetting`) | Tối đa một dòng (id cố định). `Mode` Local/Api; `ApiBaseUrl`, `ApiModel`; `ApiKeyCiphertext` là key mã hoá AES-256-GCM (không bao giờ trả về), `ApiKeyHint` 4 ký tự cuối; `UpdatedById`. Chỉ cuộc họp Thường dùng API. |
 | EmailMessage | Bản ghi gửi email/outbox | IMPLEMENTED | Giữ khóa chống trùng và thông tin thử gửi lại; id thư phía Resend và kết quả giao thư từ webhook ([ADR-0031](../05-decisions/0031-gui-email-qua-resend.md)). |
 | AuditLogEntry | Bằng chứng kiểm toán nghiệp vụ | IMPLEMENTED | Chỉ ghi thêm. |
 | CallSession | Lượt gọi hoặc phòng trực tuyến | NEED MIGRATION / RESTRUCTURE | StartedById nullable; phòng gắn với Meeting. |
@@ -90,7 +91,7 @@ Các ERD bên dưới mô tả mô hình đích. Bảng trạng thái triển kh
 | Nền tảng và liên lạc | Notification, EmailMessage, AuditLogEntry |
 | Kho tài liệu cá nhân | Folder, Document, StoredFile, MeetingDocument, DocumentComment |
 | Hoạt động trong cuộc họp | SpeakingRequest, MeetingNote, VotingSession, VotingOption, VoteReceipt, VoteChoice |
-| Bản ghi, biên bản và AI sau họp | Recording, Transcript, TranscriptSegment, TranscriptSpeaker, SpeechClip, VoiceConsent, VoiceSample, MeetingMinutes, MinutesSignature, MeetingSummary |
+| Bản ghi, biên bản và AI sau họp | Recording, Transcript, TranscriptSegment, TranscriptSpeaker, SpeechClip, VoiceConsent, VoiceSample, MeetingMinutes, MinutesSignature, MeetingSummary, AiProviderSetting |
 | Phòng họp trực tuyến | CallSession, CallParticipant, GuestSession |
 
 Các nhóm trên gồm 35 thực thể; trạng thái triển khai được liệt kê riêng ở trên.

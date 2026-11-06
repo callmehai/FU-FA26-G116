@@ -26,6 +26,12 @@ public sealed class LanguageModelOptions
     /// <summary>One agenda item of a long meeting on a laptop takes a minute or two; leave room for a slow machine.</summary>
     public int TimeoutMinutes { get; set; } = 15;
 
+    /// <summary>
+    /// Encrypts the API key an administrator stores (ADR-0056): 32 bytes, base64. Empty derives one from the token signing
+    /// key.
+    /// </summary>
+    public string EncryptionKey { get; set; } = "";
+
     /// <summary>The longest answer asked for, in tokens.</summary>
     public int MaxTokens { get; set; } = 2048;
 
@@ -33,36 +39,57 @@ public sealed class LanguageModelOptions
 }
 
 /// <summary>
-/// Calls <c>POST {BaseUrl}/chat/completions</c>, the API every local runtime speaks (as AI-eCabinet's worker does), so
-/// the team can swap Ollama for llama.cpp or another model by configuration alone.
+/// The in-house model (ADR-0054), as the server is configured (<c>Ai:BaseUrl</c>, <c>Ai:Model</c>). The API an administrator
+/// may set up instead (ADR-0056) is the same kind of endpoint, built by <see cref="Ai.LanguageModelProvider"/>.
 /// </summary>
 public sealed class LanguageModelClient(IHttpClientFactory clients, IOptions<LanguageModelOptions> options) : ILanguageModel
 {
     public const string HttpClientName = "ai";
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
 
     public bool IsConfigured => options.Value.IsConfigured;
 
     public string Model => options.Value.Model;
 
-    public async Task<string> CompleteAsync(string system, string user, CancellationToken ct)
+    public Task<string> CompleteAsync(string system, string user, CancellationToken ct)
     {
         var settings = options.Value;
-        if (!settings.IsConfigured) throw new LanguageModelException("Máy AI chưa được cấu hình.");
-        var client = clients.CreateClient(HttpClientName);
-        client.Timeout = TimeSpan.FromMinutes(settings.TimeoutMinutes);
+        return new OpenAiCompatibleModel(clients, HttpClientName, settings.BaseUrl, settings.Model, settings.ApiKey,
+            settings.TimeoutMinutes, settings.MaxTokens, remote: false).CompleteAsync(system, user, ct);
+    }
+}
+
+/// <summary>
+/// Calls <c>POST {BaseUrl}/chat/completions</c>, the API every local runtime speaks (as AI-eCabinet's worker does) and
+/// the hosted ones too, so the team can swap Ollama for llama.cpp, or for an API, by configuration alone.
+/// </summary>
+public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string clientName, string baseUrl, string model,
+    string apiKey, int timeoutMinutes, int maxTokens, bool remote) : ILanguageModel
+{
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
+    private string Machine => remote ? "API AI" : "Máy AI";
+
+    public bool IsConfigured => Uri.TryCreate(baseUrl, UriKind.Absolute, out _) && model.Length > 0;
+
+    public string Model => model;
+
+    public async Task<string> CompleteAsync(string system, string user, CancellationToken ct)
+    {
+        if (!IsConfigured) throw new LanguageModelException($"{Machine} chưa được cấu hình.");
+        var client = clients.CreateClient(clientName);
+        client.Timeout = TimeSpan.FromMinutes(timeoutMinutes);
         using var request = new HttpRequestMessage(HttpMethod.Post,
-            new Uri(new Uri(settings.BaseUrl.TrimEnd('/') + "/"), "chat/completions"))
+            new Uri(new Uri(baseUrl.TrimEnd('/') + "/"), "chat/completions"))
         {
             // Temperature 0: a draft restates what was said; it must not invent (AI-eCabinet uses 0 too).
-            Content = JsonContent.Create(new ChatRequest(settings.Model,
-                [new("system", system), new("user", user)], 0.0, settings.MaxTokens, false), options: Json),
+            Content = JsonContent.Create(new ChatRequest(model,
+                [new("system", system), new("user", user)], 0.0, maxTokens, false), options: Json),
         };
-        if (!string.IsNullOrEmpty(settings.ApiKey))
-            request.Headers.Authorization = new("Bearer", settings.ApiKey);
+        if (!string.IsNullOrEmpty(apiKey))
+            request.Headers.Authorization = new("Bearer", apiKey);
         HttpResponseMessage response;
         try
         {
@@ -70,12 +97,16 @@ public sealed class LanguageModelClient(IHttpClientFactory clients, IOptions<Lan
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
         {
-            throw new LanguageModelException("Không kết nối được máy AI. Máy chạy AI có thể đang tắt.", ex);
+            throw new LanguageModelException(remote
+                ? "Không kết nối được API AI. Kiểm tra địa chỉ API hoặc mạng của server."
+                : "Không kết nối được máy AI. Máy chạy AI có thể đang tắt.", ex);
         }
         using (response)
         {
             if (!response.IsSuccessStatusCode)
-                throw new LanguageModelException($"Máy AI trả lỗi {(int)response.StatusCode}.");
+                throw new LanguageModelException((int)response.StatusCode is 401 or 403 && remote
+                    ? $"API AI từ chối key ({(int)response.StatusCode})."
+                    : $"{Machine} trả lỗi {(int)response.StatusCode}.");
             ChatResponse? body;
             try
             {
@@ -83,10 +114,10 @@ public sealed class LanguageModelClient(IHttpClientFactory clients, IOptions<Lan
             }
             catch (JsonException ex)
             {
-                throw new LanguageModelException("Máy AI trả về dữ liệu không đọc được.", ex);
+                throw new LanguageModelException($"{Machine} trả về dữ liệu không đọc được.", ex);
             }
             var content = body?.Choices?.FirstOrDefault()?.Message?.Content;
-            if (string.IsNullOrWhiteSpace(content)) throw new LanguageModelException("Máy AI không trả lời.");
+            if (string.IsNullOrWhiteSpace(content)) throw new LanguageModelException($"{Machine} không trả lời.");
             return StripThinking(content).Trim();
         }
     }

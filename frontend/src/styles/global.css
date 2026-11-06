@@ -4773,3 +4773,23 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .minutes-editor-canvas { padding: 8px; }
   .minutes-editor-frame .tiptap { padding: 12px; min-height: 360px; }
 }
+
+/* ADR-0056 — Máy AI: where the drafts of ordinary meetings are written. One card under the page header. */
+.ai-settings { display: flex; flex-direction: column; gap: 18px; max-width: 760px; }
+.ai-settings-mode { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.ai-settings-mode .segmented { width: 260px; }
+.ai-settings-label { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.ai-settings-local { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: var(--muted-ink); }
+.ai-settings-local strong { color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+.ai-settings-api { min-width: 0; margin: 0; padding: 0; border: 0; }
+.ai-settings-api legend { margin-bottom: 12px; padding: 0; }
+.ai-settings-key { display: flex; gap: 8px; }
+.ai-settings-key input { flex: 1; min-width: 0; }
+.ai-settings-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.ai-settings-foot .form-actions { margin-left: auto; }
+.ai-settings .alert { display: flex; align-items: center; gap: 8px; }
+.alert-success { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
+@media (max-width: 720px) {
+  .ai-settings .form-grid { grid-template-columns: 1fr; }
+  .ai-settings-mode .segmented { width: 100%; }
+}
