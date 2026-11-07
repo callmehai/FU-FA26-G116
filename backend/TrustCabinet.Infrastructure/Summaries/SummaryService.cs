@@ -185,7 +185,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
         try
         {
             var facts = await FactsAsync(next.MeetingId, ct);
-            // Chosen now, as the job runs: a meeting marked Confidential since it was queued stays on the in-house model.
+            // Chosen now, as the job runs: a meeting marked Internal or Secret since it was queued stays on the in-house model.
             var sensitivity = await db.Meetings.Where(m => m.Id == next.MeetingId).Select(m => m.Sensitivity).SingleAsync(ct);
             model = await models.ForAsync(sensitivity, ct);
             // The in-house model keeps its own harness untouched; a hosted API reads whole agenda items, side by side or in one call.

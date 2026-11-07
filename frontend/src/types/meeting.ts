@@ -51,14 +51,16 @@ export const EDITABLE_STATUSES: readonly MeetingStatus[] = ['Draft', 'Rejected']
  */
 export const RESCHEDULABLE_STATUSES: readonly MeetingStatus[] = ['Published']
 
-/** How sensitive a meeting's contents are. Drives the access banner and document handling. */
-export const SENSITIVITIES = ['Normal', 'Internal', 'Confidential', 'Secret'] as const
+/**
+ * How sensitive a meeting's contents are. Drives the access banner and document handling. Three levels, as in
+ * AI-eCabinet (ADR-0057).
+ */
+export const SENSITIVITIES = ['Normal', 'Internal', 'Secret'] as const
 export type Sensitivity = (typeof SENSITIVITIES)[number]
 
 export const SENSITIVITY_LABEL: Record<Sensitivity, string> = {
   Normal: 'Thường',
   Internal: 'Nội bộ',
-  Confidential: 'Hạn chế',
   Secret: 'Mật',
 }
 

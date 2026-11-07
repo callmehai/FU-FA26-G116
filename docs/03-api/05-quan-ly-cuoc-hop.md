@@ -79,7 +79,7 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 | Tham số | Quy tắc |
 |---|---|
 | `status` | Tên enum PascalCase trong bảy `MeetingStatus` (`Draft` … `Ended`); `MinutesIssued`, `Archived` đã bỏ và trả `400 MSG32` |
-| `sensitivity` | `Normal`, `Internal`, `Confidential` hoặc `Secret` |
+| `sensitivity` | `Normal`, `Internal` hoặc `Secret` (bỏ `Confidential` từ [ADR-0057](../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)) |
 | `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường. `%`, `_`, `\` là ký tự thường, không phải wildcard |
 | `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC. Meeting khớp khi lịch dự kiến của chính nó chồng lấp khoảng lọc (BR-30): `from` dùng `plannedEndTime >= from`, `to` dùng `plannedStartTime <= to` |
 | `page`, `pageSize` | Mặc định `1`, `20`; `page` từ `1` đến `2.147.483.647`, `pageSize` từ `1` đến `100` |
@@ -440,7 +440,7 @@ trong `meeting_status_history`; trigger append-only chỉ được tắt quanh �
 |---|---|
 | `title` | Bắt buộc sau trim; tối đa 300 ký tự |
 | `mode` | Một trong `InPerson`, `Online`, `Hybrid`; mặc định `InPerson` nếu bỏ qua |
-| `sensitivity` | Một trong `Normal`, `Internal`, `Confidential`, `Secret`; mặc định `Normal` nếu bỏ qua |
+| `sensitivity` | Một trong `Normal`, `Internal`, `Secret`; mặc định `Normal` nếu bỏ qua |
 | `plannedStartTime` | Bắt buộc; ISO 8601 có giây và offset; tạo mới và dời lịch phải ở tương lai (BR-162, BR-75) |
 | `plannedEndTime` | Bắt buộc; cùng định dạng; sau `plannedStartTime` (BR-62) |
 | `location` | Tùy chọn; trim; tối đa 300 ký tự |

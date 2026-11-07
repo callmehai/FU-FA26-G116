@@ -98,7 +98,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
 
         if (readerId != ownerId)
         {
-            // As for a Confidential meeting document: no audit row, no content.
+            // As for a Secret meeting document: no audit row, no content.
             try
             {
                 await audit.RecordAsync(AuditActions.PersonalLibraryRead, AuditActions.UserObjectType, ownerId, readerId,
@@ -251,14 +251,14 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         => readerId == ownerId || await db.Users.AnyAsync(u => u.Id == ownerId && !u.IsActive, ct);
 
     /// <summary>
-    /// What an administrator reading someone else's library must not see: the files of any Confidential or Secret
+    /// What an administrator reading someone else's library must not see: the files of any Secret
     /// meeting, attached now or earlier, and that meeting's upload folder — named after it — with its subfolders.
     /// Even when the administrator may view the meeting: there it opens under the meeting's own rules (BR-188 no
     /// download, BR-211 removed, the audit row), and the library must not become a way round them.
     /// </summary>
     private async Task<(IQueryable<Guid> Files, HashSet<Guid> Folders)> HiddenFromAsync(Guid ownerId, CancellationToken ct)
     {
-        var restricted = db.Meetings.Where(m => m.Sensitivity == Sensitivity.Confidential || m.Sensitivity == Sensitivity.Secret)
+        var restricted = db.Meetings.Where(m => m.Sensitivity == Sensitivity.Secret)
             .Select(m => m.Id);
         var files = db.MeetingDocuments.Where(d => restricted.Contains(d.MeetingId)).Select(d => d.StoredFileId);
         var folders = await db.Folders.Where(f => f.OwnerId == ownerId).Select(f => new

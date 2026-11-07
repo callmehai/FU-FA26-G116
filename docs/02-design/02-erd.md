@@ -131,7 +131,7 @@ erDiagram
         uuid Id PK
         string Title
         string Status "Draft|WaitingApproval|Rejected|Approved|Published|InProgress|Ended|Cancelled"
-        string Sensitivity "Normal|Internal|Confidential|Secret"
+        string Sensitivity "Normal|Internal|Secret"
         string Mode "InPerson|Online|Hybrid"
         string Location
         string OnlineLink "nullable, tối đa 1.000 ký tự"

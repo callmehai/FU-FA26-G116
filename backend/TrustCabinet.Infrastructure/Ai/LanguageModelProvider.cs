@@ -12,7 +12,7 @@ namespace TrustCabinet.Infrastructure.Ai;
 /// <summary>
 /// ADR-0056 — the API an administrator chose writes the drafts of ordinary meetings; every other meeting, and every
 /// meeting while the in-house model is chosen, stays on the in-house model (ADR-0054). The transcript of a meeting
-/// marked Internal, Confidential or Secret never leaves the server's own network.
+/// marked Internal or Secret never leaves the server's own network.
 /// </summary>
 public sealed class LanguageModelProvider(TrustCabinetDbContext db, ILanguageModel local, AiKeyProtector protector,
     IHttpClientFactory clients, IOptions<LanguageModelOptions> options, ILogger<LanguageModelProvider> logger)

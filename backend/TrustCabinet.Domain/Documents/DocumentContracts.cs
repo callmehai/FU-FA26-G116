@@ -115,7 +115,7 @@ public interface IMeetingDocumentService
 
     /// <summary>
     /// UC-32c: opens a document still attached to the meeting. Downloading a Secret meeting's
-    /// document is refused (BR-188); a Confidential or Secret one is audited (BR-318).
+    /// document is refused (BR-188); viewing one is audited (BR-318).
     /// </summary>
     Task<MeetingDocumentContentOutcome> OpenContentAsync(Guid meetingId, Guid meetingDocumentId, ParticipantActor reader,
         bool download, CancellationToken ct = default);
