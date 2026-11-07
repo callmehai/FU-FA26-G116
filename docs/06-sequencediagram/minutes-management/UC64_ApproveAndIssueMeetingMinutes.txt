@@ -33,16 +33,16 @@ alt Meeting not accessible, or actor is neither the current Chair nor the curren
     MinutesController-->MinutesCard: 404
     MinutesCard-->Actor: No minutes
 else Actor is the current Secretary, not the Chair - EX-1
-    MinutesService-->MinutesController: MSG419 - Only the Chair may approve or return the minutes.
-    MinutesController-->MinutesCard: 403 MSG419
-    MinutesCard-->Actor: MSG419 - Only the Chair may approve or return the minutes.
+    MinutesService-->MinutesController: MSG427 - Only the Chair may approve or return the minutes.
+    MinutesController-->MinutesCard: 403 MSG427
+    MinutesCard-->Actor: MSG427 - Only the Chair may approve or return the minutes.
 else Actor is the current Chair
     MinutesService->MinutesService: Check the revision is WaitingApproval and it is the copy the actor read (BR-389)
 
     alt Not waiting for approval - EX-2
-        MinutesService-->MinutesController: MSG420 - These minutes are not waiting for approval.
-        MinutesController-->MinutesCard: 409 MSG420
-        MinutesCard-->Actor: MSG420 - These minutes are not waiting for approval.
+        MinutesService-->MinutesController: MSG428 - These minutes are not waiting for approval.
+        MinutesController-->MinutesCard: 409 MSG428
+        MinutesCard-->Actor: MSG428 - These minutes are not waiting for approval.
     else Changed after the actor opened it - EX-3
         MinutesService-->MinutesController: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
         MinutesController-->MinutesCard: 409 MSG401
@@ -64,8 +64,8 @@ else Actor is the current Chair
             NotificationService-->MinutesService: Queued
             deactivate NotificationService
             MinutesService-->MinutesController: State
-            MinutesController-->MinutesCard: 200 MSG418 - Minutes approved and issued.
-            MinutesCard-->Actor: MSG418 - Minutes approved and issued.
+            MinutesController-->MinutesCard: 200 MSG426 - Minutes approved and issued.
+            MinutesCard-->Actor: MSG426 - Minutes approved and issued.
         else The change cannot be saved - EX-4
             MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
             MinutesController-->MinutesCard: 503 MSG404

@@ -33,16 +33,16 @@ alt Meeting not accessible, or actor is neither the current Chair nor the curren
     MinutesController-->MinutesCard: 404
     MinutesCard-->Actor: No minutes
 else Actor is the current Chair, not the Secretary - EX-1
-    MinutesService-->MinutesController: MSG416 - Only the Secretary may submit the minutes for approval.
-    MinutesController-->MinutesCard: 403 MSG416
-    MinutesCard-->Actor: MSG416 - Only the Secretary may submit the minutes for approval.
+    MinutesService-->MinutesController: MSG424 - Only the Secretary may submit the minutes for approval.
+    MinutesController-->MinutesCard: 403 MSG424
+    MinutesCard-->Actor: MSG424 - Only the Secretary may submit the minutes for approval.
 else Actor is the current Secretary
     MinutesService->MinutesService: Check the Meeting has Ended (BR-405), the revision is Draft or returned (BR-407)\nand it is the copy the actor read (BR-389)
 
     alt The Meeting has not ended - EX-2
-        MinutesService-->MinutesController: MSG417 - The minutes can be submitted only after the meeting has ended.
-        MinutesController-->MinutesCard: 409 MSG417
-        MinutesCard-->Actor: MSG417 - The minutes can be submitted only after the meeting has ended.
+        MinutesService-->MinutesController: MSG425 - The minutes can be submitted only after the meeting has ended.
+        MinutesController-->MinutesCard: 409 MSG425
+        MinutesCard-->Actor: MSG425 - The minutes can be submitted only after the meeting has ended.
     else Already submitted or issued - EX-3
         MinutesService-->MinutesController: MSG400 - The minutes have been submitted or issued and can no longer be changed.
         MinutesController-->MinutesCard: 409 MSG400
@@ -63,8 +63,8 @@ else Actor is the current Secretary
             NotificationService-->MinutesService: Queued
             deactivate NotificationService
             MinutesService-->MinutesController: State
-            MinutesController-->MinutesCard: 200 MSG415 - Minutes submitted to the Chair for approval.
-            MinutesCard-->Actor: MSG415 - Minutes submitted to the Chair for approval.
+            MinutesController-->MinutesCard: 200 MSG423 - Minutes submitted to the Chair for approval.
+            MinutesCard-->Actor: MSG423 - Minutes submitted to the Chair for approval.
         else The change cannot be saved - EX-5
             MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
             MinutesController-->MinutesCard: 503 MSG404

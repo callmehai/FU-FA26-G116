@@ -33,20 +33,20 @@ alt Meeting not accessible, or actor is neither the current Chair nor the curren
     MinutesController-->MinutesCard: 404
     MinutesCard-->Actor: No minutes
 else Actor is the current Secretary, not the Chair - EX-1
-    MinutesService-->MinutesController: MSG419 - Only the Chair may approve or return the minutes.
-    MinutesController-->MinutesCard: 403 MSG419
-    MinutesCard-->Actor: MSG419 - Only the Chair may approve or return the minutes.
+    MinutesService-->MinutesController: MSG427 - Only the Chair may approve or return the minutes.
+    MinutesController-->MinutesCard: 403 MSG427
+    MinutesCard-->Actor: MSG427 - Only the Chair may approve or return the minutes.
 else Actor is the current Chair
     MinutesService->MinutesService: Check the revision is WaitingApproval and the reason\nis not empty and within 2,000 characters (BR-407)
 
     alt Not waiting for approval - EX-2
-        MinutesService-->MinutesController: MSG420 - These minutes are not waiting for approval.
-        MinutesController-->MinutesCard: 409 MSG420
-        MinutesCard-->Actor: MSG420 - These minutes are not waiting for approval.
+        MinutesService-->MinutesController: MSG428 - These minutes are not waiting for approval.
+        MinutesController-->MinutesCard: 409 MSG428
+        MinutesCard-->Actor: MSG428 - These minutes are not waiting for approval.
     else The reason is missing or too long - EX-3
-        MinutesService-->MinutesController: MSG422 - Enter a reason for returning the minutes, up to 2,000 characters.
-        MinutesController-->MinutesCard: 400 MSG422
-        MinutesCard-->Actor: MSG422 - Enter a reason for returning the minutes, up to 2,000 characters.
+        MinutesService-->MinutesController: MSG430 - Enter a reason for returning the minutes, up to 2,000 characters.
+        MinutesController-->MinutesCard: 400 MSG430
+        MinutesCard-->Actor: MSG430 - Enter a reason for returning the minutes, up to 2,000 characters.
     else Return valid
         MinutesService->Database: Set Rejected (returned), the reason, who returned it and when (BR-407)
         activate Database
@@ -59,8 +59,8 @@ else Actor is the current Chair
             NotificationService-->MinutesService: Queued
             deactivate NotificationService
             MinutesService-->MinutesController: State
-            MinutesController-->MinutesCard: 200 MSG421 - Minutes returned to the Secretary.
-            MinutesCard-->Actor: MSG421 - Minutes returned to the Secretary.
+            MinutesController-->MinutesCard: 200 MSG429 - Minutes returned to the Secretary.
+            MinutesCard-->Actor: MSG429 - Minutes returned to the Secretary.
         else The change cannot be saved - EX-4
             MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
             MinutesController-->MinutesCard: 503 MSG404

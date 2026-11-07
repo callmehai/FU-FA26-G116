@@ -39,13 +39,13 @@ else Actor is the current Chair or Secretary
     MinutesService->MinutesService: Check the revision is Issued and no later revision is still unissued (BR-410)
 
     alt A correction is already in progress - EX-3
-        MinutesService-->MinutesController: MSG425 - A correction of these minutes is already in progress.
-        MinutesController-->MinutesCard: 409 MSG425
-        MinutesCard-->Actor: MSG425 - A correction of these minutes is already in progress.
+        MinutesService-->MinutesController: MSG433 - A correction of these minutes is already in progress.
+        MinutesController-->MinutesCard: 409 MSG433
+        MinutesCard-->Actor: MSG433 - A correction of these minutes is already in progress.
     else The minutes are not issued - EX-2
-        MinutesService-->MinutesController: MSG424 - Only issued minutes can be corrected.
-        MinutesController-->MinutesCard: 409 MSG424
-        MinutesCard-->Actor: MSG424 - Only issued minutes can be corrected.
+        MinutesService-->MinutesController: MSG432 - Only issued minutes can be corrected.
+        MinutesController-->MinutesCard: 409 MSG432
+        MinutesCard-->Actor: MSG432 - Only issued minutes can be corrected.
     else Correction valid
         MinutesService->Database: Insert a Draft revision: the issued text, revision number + 1,\npointing at the issued revision (BR-409); the issued revision is not changed
         activate Database
@@ -54,8 +54,8 @@ else Actor is the current Chair or Secretary
 
         alt Saved
             MinutesService-->MinutesController: New revision
-            MinutesController-->MinutesCard: 201 MSG423 - Correction draft created.
-            MinutesCard-->Actor: MSG423 - Correction draft created. The new revision opens for editing (UC-60)
+            MinutesController-->MinutesCard: 201 MSG431 - Correction draft created.
+            MinutesCard-->Actor: MSG431 - Correction draft created. The new revision opens for editing (UC-60)
         else The revision cannot be saved - EX-4
             MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
             MinutesController-->MinutesCard: 503 MSG404
