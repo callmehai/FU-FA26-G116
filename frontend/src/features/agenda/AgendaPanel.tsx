@@ -19,6 +19,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useCallback, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { completeAgendaItem, deleteAgendaItem, startAgendaItem } from '../../api/agenda'
+import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
@@ -451,13 +452,12 @@ function AgendaRow({
               {item.documents.length}
             </span>
           ) : (
-            // The page counts documents in plain text, names on hover. No box: the row already carries the state
-            // chip, and a box on every row (even "0") made each line a strip of labels. None, nothing: the slot stays.
+            // The page counts documents as the Tài liệu tab does, with their names on hover.
             <span
               className="agenda-docs-count"
               data-tooltip={item.documents.length ? item.documents.map((d) => d.title).join('\n') : undefined}
             >
-              {item.documents.length > 0 && `${item.documents.length} tài liệu`}
+              <Badge tone="outline">{item.documents.length} tài liệu</Badge>
             </span>
           )}
         </div>
