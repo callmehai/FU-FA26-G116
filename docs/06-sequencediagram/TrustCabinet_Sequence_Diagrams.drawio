@@ -65954,7 +65954,7 @@ deactivate NotificationPanel
             <mxGeometry height="2444" width="2804" x="35" y="675.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="15" parent="14" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Share cannot be changed in its state - EX-1]" vertex="1">
+        <mxCell id="15" parent="14" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Share cannot be changed in its state - EX-2]" vertex="1">
           <mxGeometry height="16" width="2750" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="16" parent="14" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -65982,7 +65982,7 @@ deactivate NotificationPanel
             <mxGeometry height="972" width="2764" x="55" y="1024.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="23" parent="22" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Range is invalid - EX-1]" vertex="1">
+        <mxCell id="23" parent="22" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Range is invalid - EX-3]" vertex="1">
           <mxGeometry height="16" width="2710" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="24" parent="22" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -65996,7 +65996,7 @@ deactivate NotificationPanel
             <mxGeometry height="550" width="2744" x="65" y="1436.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="27" parent="26" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Change cannot be saved - EX-2]" vertex="1">
+        <mxCell id="27" parent="26" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Change cannot be saved - EX-4]" vertex="1">
           <mxGeometry height="16" width="2690" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="28" parent="26" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -66010,7 +66010,7 @@ deactivate NotificationPanel
             <mxGeometry height="972" width="2490" x="329" y="2127.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="31" parent="30" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Range is invalid - EX-1]" vertex="1">
+        <mxCell id="31" parent="30" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Range is invalid - EX-3]" vertex="1">
           <mxGeometry height="16" width="2436" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="32" parent="30" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -66024,7 +66024,7 @@ deactivate NotificationPanel
             <mxGeometry height="550" width="2470" x="339" y="2539.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="35" parent="34" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Change cannot be saved - EX-2]" vertex="1">
+        <mxCell id="35" parent="34" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Change cannot be saved - EX-4]" vertex="1">
           <mxGeometry height="16" width="2416" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="36" parent="34" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -66688,7 +66688,7 @@ deactivate NotificationPanel
             <mxGeometry height="1761" width="2451" x="55" y="675.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="15" parent="14" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Nothing is Pending to withdraw - EX-1]" vertex="1">
+        <mxCell id="15" parent="14" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Nothing is Pending to withdraw - EX-2]" vertex="1">
           <mxGeometry height="16" width="2397" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="16" parent="14" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -66708,7 +66708,7 @@ deactivate NotificationPanel
             <mxGeometry height="550" width="2431" x="65" y="1087.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="21" parent="20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Change cannot be saved - EX-2]" vertex="1">
+        <mxCell id="21" parent="20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[The withdrawal or ending cannot be saved - EX-3]" vertex="1">
           <mxGeometry height="16" width="2377" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="22" parent="20" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -66722,7 +66722,7 @@ deactivate NotificationPanel
             <mxGeometry height="550" width="2431" x="65" y="1876.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="25" parent="24" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Change cannot be saved - EX-2]" vertex="1">
+        <mxCell id="25" parent="24" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[The withdrawal or ending cannot be saved - EX-3]" vertex="1">
           <mxGeometry height="16" width="2377" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="26" parent="24" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">

@@ -30,6 +30,9 @@ Trước đợt này file còn ở baseline 10/10/2026 (70 UC). Đã bổ sung:
 
 - **UC mới:** UC-34b (System Admin); UC-73, UC-74, UC-76, UC-77, UC-78, UC-79, UC-80, UC-81 và UC-75 vào trang
   các actor có trong cột Actor của inventory. UC-81 có mặt trên cả 6 trang actor người nội bộ (kể cả Meeting Approver).
+- **FE-16 (SCRUM-137/SCRUM-142):** *Find Meeting Time* và *Manage Calendar Sharing* trên trang Meeting Organizer;
+  *Manage Calendar Sharing* `<<extend>>` *Find Meeting Time* (ở mức UC gom: UC-84a `<<extend>>` UC-85a).
+  Các UC con 84b/84c/84d/84e là thao tác trong cùng oval chia sẻ, không vẽ oval riêng.
 - **Đổi tên theo FE-09/FE-10:** *View & Play Meeting Audio* → *View & Play Meeting Recordings* (UC-43),
   *Upload Meeting Audio* → *Record Room Audio* (UC-44), *View Speaker-Attributed Transcript* → *View Meeting
   Transcript* (UC-45).

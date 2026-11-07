@@ -34,7 +34,7 @@ alt Actor is not one of the two people - EX-1
     deactivate SharingController
     SharingPage-->Viewer: No such calendar share
 else Actor is one of the two people
-    alt Nothing is Pending to withdraw - EX-1
+    alt Nothing is Pending to withdraw - EX-2
         SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
         deactivate SharingService
         SharingController-->SharingPage: 409 MSG450
@@ -50,7 +50,7 @@ else Actor is one of the two people
         ShareRepository-->SharingService: Closed request / Save failed
         deactivate ShareRepository
 
-        alt Change cannot be saved - EX-2
+        alt The withdrawal or ending cannot be saved - EX-3
             SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
             deactivate SharingService
             SharingController-->SharingPage: 503 MSG447
@@ -81,7 +81,7 @@ else Actor is one of the two people
         ShareRepository-->SharingService: Ended share / Save failed
         deactivate ShareRepository
 
-        alt Change cannot be saved - EX-2
+        alt The withdrawal or ending cannot be saved - EX-3
             SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
             deactivate SharingService
             SharingController-->SharingPage: 503 MSG447

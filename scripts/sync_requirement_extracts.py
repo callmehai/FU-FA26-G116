@@ -216,6 +216,11 @@ def sync_use_cases(check: bool) -> int:
         blocks = parse_spec(lines)
 
     # 3. Add the UCs the report has and the extract lacks, at the end of their Feature.
+    fe_titles = {}
+    for line in report_lines:
+        fe_match = REPORT_FE_HEADING.match(line)
+        if fe_match:
+            fe_titles.setdefault(fe_match.group(1), fe_match.group(2).strip())
     for uc, title, fe in order:
         if uc in {block[2] for block in blocks}:
             continue
@@ -254,8 +259,17 @@ def sync_use_cases(check: bool) -> int:
             del lines[insert_at:end_of_block]
             lines[insert_at:insert_at] = [""] + body + separator
         else:
-            fe_line = next(i for i, line in enumerate(lines) if line.startswith(f"## {fe} —"))
-            lines[fe_line + 1:fe_line + 1] = [""] + body
+            fe_line = next((i for i, line in enumerate(lines) if line.startswith(f"## {fe} —")), None)
+            if fe_line is not None:
+                lines[fe_line + 1:fe_line + 1] = [""] + body
+            else:
+                # A brand-new Feature has no section in the extract yet (first
+                # sync that introduces it): append the section at the end.
+                fe_title = fe_titles.get(fe, fe)
+                end = len(lines)
+                while end > 0 and not lines[end - 1].strip():
+                    end -= 1
+                lines[end:end] = ["", f"## {fe} — {fe_title}", ""] + body
         blocks = parse_spec(lines)
 
     # 4. Rebuild the table of contents from the headings now in the file.

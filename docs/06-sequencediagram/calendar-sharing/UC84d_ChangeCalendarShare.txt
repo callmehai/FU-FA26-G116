@@ -34,7 +34,7 @@ alt Actor is not one of the two people - EX-1
     deactivate SharingController
     SharingPage-->Viewer: No such calendar share
 else Actor is one of the two people
-    alt Share cannot be changed in its state - EX-1
+    alt Share cannot be changed in its state - EX-2
         SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
         deactivate SharingService
         SharingController-->SharingPage: 409 MSG450
@@ -44,7 +44,7 @@ else Actor is one of the two people
         alt Viewer asks for a higher level or a longer range
             SharingService->SharingService: Validate M2 or a longer range (BR414)
 
-            alt Range is invalid - EX-1
+            alt Range is invalid - EX-3
                 SharingService-->SharingController: MSG443 - The date range is invalid.
                 deactivate SharingService
                 SharingController-->SharingPage: 400 MSG443
@@ -60,7 +60,7 @@ else Actor is one of the two people
                 ShareRepository-->SharingService: Pending change / Save failed
                 deactivate ShareRepository
 
-                alt Change cannot be saved - EX-2
+                alt Change cannot be saved - EX-4
                     SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
                     deactivate SharingService
                     SharingController-->SharingPage: 503 MSG447
@@ -85,7 +85,7 @@ else Actor is one of the two people
         else Owner lowers the level or changes the dates - AF-1
             SharingService->SharingService: Validate the lower level or new date range (BR414)
 
-            alt Range is invalid - EX-1
+            alt Range is invalid - EX-3
                 SharingService-->SharingController: MSG443 - The date range is invalid.
                 deactivate SharingService
                 SharingController-->SharingPage: 400 MSG443
@@ -101,7 +101,7 @@ else Actor is one of the two people
                 ShareRepository-->SharingService: Updated share / Save failed
                 deactivate ShareRepository
 
-                alt Change cannot be saved - EX-2
+                alt Change cannot be saved - EX-4
                     SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
                     deactivate SharingService
                     SharingController-->SharingPage: 503 MSG447

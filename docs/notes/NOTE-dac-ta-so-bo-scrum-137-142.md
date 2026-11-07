@@ -161,7 +161,7 @@ Thuộc FE-16. Sequence Diagram:
 | **Postconditions** | ● POST-1: The share holds a pending change, or the new level/range; the other side is notified in both cases. (BR-426)<br>● POST-2: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |
 | **Normal Flow** | Change Calendar Share<br>1. The viewer opens their share and asks for Mốc 2 (raise) or a longer range (extend); only one pending change at a time.<br>2. The system saves the pending change, audits and notifies the owner. MSG454 – “Calendar share change request sent.” The use case ends; the owner's answer is UC-84c. |
 | **Alternative Flows** | AF-1 – The owner lowers the level or changes the dates<br>1. At any time on an Effective share, the owner chooses a lower level or a new date range.<br>2. The system applies it at once, audits and notifies the viewer. MSG442 – “Calendar share updated.” |
-| **Exception Flows** | EX-1 – Change is invalid or not allowed<br>1. The share is not Pending/Effective, a change is already pending, the new range is invalid, or the actor is not one of the two people (strangers are told nothing about the share). (BR-423)<br>2. Nothing changes. The system displays MSG443 (range invalid) or MSG450 (action not allowed in the current state), whichever fits.<br>3. The use case ends.<br>EX-2 – The change cannot be saved<br>1. The system cannot save the change.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends. |
+| **Exception Flows** | EX-1 – The actor is not one of the two people<br>1. At Step 1, the actor is not one of the two people of this share.<br>2. Nothing changes and nothing about the share or account is disclosed.<br>3. The use case ends.<br>EX-2 – Change is not allowed<br>1. The share is not Pending/Effective, or a change is already pending. (BR-423)<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends.<br>EX-3 – The range is invalid<br>1. At Step 1 (or AF-1 Step 1), the new date range is invalid. (BR-414)<br>2. Nothing changes. The system displays MSG443 – “The date range is invalid.”<br>3. The flow resumes where the actor entered the range.<br>EX-4 – The change cannot be saved<br>1. The system cannot save the change.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends. |
 
 #### UC-84e – Withdraw or End Calendar Share (Rút hoặc ngừng chia sẻ)
 
@@ -177,7 +177,7 @@ Thuộc FE-16. Sequence Diagram:
 | **Postconditions** | ● POST-1: The request is closed (a withdrawn new share leaves nothing; a withdrawn change leaves the share as it was), or the share is ended; the other side is notified in every case. (BR-426)<br>● POST-2: A stopped or expired share reveals no busy hours and never comes back; viewing again needs a new share. (BR-424, BR-425)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |
 | **Normal Flow** | Withdraw Calendar Share<br>1. The side that sent the request or the change withdraws it.<br>2. The system closes the request (a withdrawn new share leaves nothing; a withdrawn change leaves the share as it was), audits and notifies the other side. MSG438 – “Calendar share request withdrawn.” |
 | **Alternative Flows** | AF-1 – Either side ends an Effective share (“Ngừng chia sẻ” / “Thôi xem lịch”)<br>1. Either side ends the share.<br>2. The system closes it, audits and notifies the other side. Hours already found are not removed from anyone's screen, but no new lookup uses this share. MSG451 – “Calendar sharing ended.” |
-| **Exception Flows** | EX-1 – Withdrawal or ending is not allowed<br>1. There is nothing Pending to withdraw, the share is not Effective to end, or the actor is not one of the two people (strangers are told nothing about the share). (BR-423)<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends.<br>EX-2 – The change cannot be saved<br>1. The system cannot save the change.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends. |
+| **Exception Flows** | EX-1 – The actor is not one of the two people<br>1. At Step 1, the actor is not one of the two people of this share.<br>2. Nothing changes and nothing about the share or account is disclosed.<br>3. The use case ends.<br>EX-2 – Nothing to withdraw or end<br>1. There is nothing Pending to withdraw, or the share is not Effective to end. (BR-423)<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends.<br>EX-3 – The withdrawal or ending cannot be saved<br>1. The system cannot save the change.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends. |
 
 ### UC-85 – Find Meeting Time (Tìm giờ họp) — SCRUM-137
 
@@ -285,16 +285,16 @@ Thêm mã mới `MSG455`; mã tiếp theo `MSG456`.
 | `MSG441` | 201 | UC-84b Main Flow | *Calendar shared. Waiting for acceptance.* | `Đã chia sẻ lịch. Đang chờ bên nhận đồng ý.` | Đổi số từ `MSG430` |
 | `MSG442` | 200 | UC-84d AF-1, UC-84c AF-1 | *Calendar share updated.* | `Đã cập nhật chia sẻ lịch.` | Đổi số từ `MSG431` |
 | `MSG454` | 201 | UC-84d Main Flow | *Calendar share change request sent.* | `Đã gửi yêu cầu thay đổi chia sẻ.` | Đổi số từ `MSG443` |
-| `MSG443` | 400 | UC-84a EX-3, UC-84b EX-3, UC-84c EX-3, UC-84d EX-1 | *The date range is invalid.* | `Khoảng ngày không đúng.` | Đổi số từ `MSG432`; câu tiếng Anh rút gọn chỉ còn khoảng ngày sai |
+| `MSG443` | 400 | UC-84a EX-3, UC-84b EX-3, UC-84c EX-3, UC-84d EX-3 | *The date range is invalid.* | `Khoảng ngày không đúng.` | Đổi số từ `MSG432`; câu tiếng Anh rút gọn chỉ còn khoảng ngày sai |
 | `MSG455` | 400 | UC-84b EX-1 | *This person cannot receive a calendar share.* | `Người này không nhận được chia sẻ lịch.` | Mã mới |
 | `MSG448` | 403 | UC-84a EX-1, UC-85a EX-2, UC-85b EX-2 | *Only a Meeting Organizer can do this.* | `Bạn cần quyền tạo cuộc họp để thực hiện thao tác này.` | Đổi số từ `MSG437` |
 | `MSG449` | 409 | UC-84a EX-2, UC-84b EX-2 | *There is already a pending or effective share with this person.* | `Đã có chia sẻ chờ hoặc hiệu lực với người này.` | Đổi số từ `MSG438` |
-| `MSG450` | 409 | UC-84d EX-1, UC-84e EX-1, UC-84c EX-2 | *This action is not allowed in the current state of the share.* | `Không thể thực hiện ở trạng thái hiện tại của chia sẻ.` | Đổi số từ `MSG439` |
+| `MSG450` | 409 | UC-84c EX-2, UC-84d EX-2, UC-84e EX-2 | *This action is not allowed in the current state of the share.* | `Không thể thực hiện ở trạng thái hiện tại của chia sẻ.` | Đổi số từ `MSG439` |
 | `MSG444` | 400 | UC-85a EX-1 | *The meeting-time search is invalid. Check the highlighted fields.* | `Thông tin tìm giờ họp không hợp lệ. Kiểm tra các trường được đánh dấu.` | Đổi số từ `MSG433`; nghĩa hẹp giữ lại từ đợt tách trước (mất quyền là `MSG448`) |
 | `MSG445` | 200 | UC-85a AF-1 | *No time slot fits everyone. Showing the slots with the most people free.* | `Không có khung giờ nào hợp với tất cả. Đang hiện các khung nhiều người dự được nhất.` | Đổi số từ `MSG434` |
 | `MSG446` | 409 | UC-85b EX-1 | *This time slot is no longer free. Please choose another slot.* | `Khung giờ này không còn trống. Hãy chọn khung khác.` | Đổi số từ `MSG435` |
 | `MSG453` | 500 | UC-85a EX-3, UC-85b EX-3, UC-85c EX-1 | *Unable to load the calendar sharing data. Please try again.* | `Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.` | Đổi số từ `MSG442` |
-| `MSG447` | 503 | UC-84a EX-5, UC-84b EX-4, UC-84c EX-4, UC-84d EX-2, UC-84e EX-2 | *Unable to save the calendar sharing data. Please try again.* | `Không lưu được dữ liệu chia sẻ lịch. Vui lòng thử lại.` | Đổi số từ `MSG436`; nghĩa hẹp giữ lại từ đợt tách trước (không tải được là `MSG453`) |
+| `MSG447` | 503 | UC-84a EX-5, UC-84b EX-4, UC-84c EX-4, UC-84d EX-4, UC-84e EX-3 | *Unable to save the calendar sharing data. Please try again.* | `Không lưu được dữ liệu chia sẻ lịch. Vui lòng thử lại.` | Đổi số từ `MSG436`; nghĩa hẹp giữ lại từ đợt tách trước (không tải được là `MSG453`) |
 
 Tạo nháp thành công dùng lại `MSG29` của UC-14 (`201 Tạo cuộc họp thành công`), không cấp mã mới.
 Người lạ hỏi tới chia sẻ của người khác không được tiết lộ gì về chia sẻ hay tài khoản đó (bảng 403/404 của AGENTS.md), không có mã.
@@ -344,9 +344,12 @@ không được xem → `404` không body.
 - [ ] BE: contract trong `docs/03-api/`, bảng `calendar_shares` + migration + cập nhật `02-erd.md`, code,
       test; đổi `MSG435`–`MSG455` từ *Dành sẵn* sang *BE* khi có code. Không dùng literal `"MSGnn"` trong code
       (MessageCodeCatalogueTests).
-- [ ] BA Final Review: đưa UC-84/UC-85 gom (UC-84a → UC-84e, UC-85a → UC-85c), BR-414 → BR-430, `MSG435`–`MSG455` vào DOCX Report 3; cập nhật
-      inventory, UC diagram, màn FE-16 (§I.5.1 + §III) sau khi FE có màn chạy thật (quy trình note 06);
-      sửa mô tả SCRUM-137/SCRUM-142 theo D1–D3 (§2) và chốt Q4, Q7, Q8, Q9.
+- [x] BA đưa UC-84/UC-85 gom (UC-84a → UC-84e, UC-85a → UC-85c), BR-414 → BR-430, `MSG435`–`MSG455` vào DOCX Report 3
+      (xong 07/11/2026 trên nhánh này: sync `--report 3` OK, `check_docx.py` OK không thêm cảnh báo,
+      `MessageCodeCatalogueTests` + `SkillMirrorTests` 74/74 pass; UC-82/UC-83, BR-397 → BR-413, `MSG408`–`MSG434`
+      để trống cho SCRUM-30/SCRUM-33; UC-86 → UC-90 không dùng).
+- [ ] BA Final Review (phần còn lại): cập nhật inventory, UC diagram, màn FE-16 (§I.5.1 + §III) sau khi FE có màn
+      chạy thật (quy trình note 06); sửa mô tả SCRUM-137/SCRUM-142 theo D1–D3 (§2) và chốt Q4, Q7, Q8, Q9.
 - [ ] Ticket màn FE-16 tạo riêng (note 36 §6); cập nhật `scopeData`/landing ở PR màn hình, không ở đây.
 - [ ] Comment cần đăng lên Jira sau khi note này merge (xem §2 + D12–D15, không sửa ticket trong task này):
   - SCRUM-142: D12 (khung trùng Mật vẫn cho tạo nháp, kiểm lại theo dữ liệu đã chia sẻ, câu cố định trên màn);

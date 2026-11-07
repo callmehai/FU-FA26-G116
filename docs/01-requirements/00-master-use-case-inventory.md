@@ -256,6 +256,13 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 |---|---|---|---|---|
 | UC-70 | Xem & xuất báo cáo *(View & Export Reports)* — gồm UC-70a Xem, UC-70b Xuất | User có quyền báo cáo | Placeholder | Độc lập (UC-70b `<<extend>>` UC-70a) |
 
+## FE-16 — Lịch làm việc & tìm giờ họp *(Working Calendar & Meeting Time Search)*
+
+| UC | Tên | Actor | Đặc tả | Quan hệ |
+|---|---|---|---|---|
+| UC-84 | Quản lý chia sẻ lịch *(Manage Calendar Sharing)* — gồm UC-84a Yêu cầu xem lịch, UC-84b Tự chia sẻ lịch (luôn Mốc 1), UC-84c Trả lời chia sẻ lịch, UC-84d Thay đổi chia sẻ lịch, UC-84e Rút hoặc ngừng chia sẻ lịch; chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ (BR-414) | Meeting Organizer (bên xem); mọi tài khoản nội bộ đang hoạt động (chủ lịch) | Đã đặc tả các UC con | UC-84a `<<extend>>` UC-85a |
+| UC-85 | Tìm giờ họp *(Find Meeting Time)* — gồm UC-85a Tìm khung giờ (tối đa 10 người ngoài người tìm), UC-85b Tạo nháp từ khung giờ, UC-85c Xem lịch được chia sẻ | Meeting Organizer | Đã đặc tả các UC con | UC-85b `<<extend>>` UC-85a, dùng lại luồng UC-14 |
+
 ---
 
 # 5. Bảng đổi số UC cũ → mới
