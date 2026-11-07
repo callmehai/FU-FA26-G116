@@ -22,7 +22,7 @@ namespace TrustCabinet.Web.Endpoints;
 public static class AuthRateLimiting
 {
     internal const string PerIpPolicy = "auth-per-ip";
-    private const string Msg406TooManyAttempts = "MSG406";
+    private const string Msg414TooManyAttempts = "MSG414";
 
     public static IServiceCollection AddAuthRateLimiting(this IServiceCollection services, IConfiguration configuration)
     {
@@ -71,7 +71,7 @@ public static class AuthRateLimiting
         return $"{new IPAddress(bytes)}/64";
     }
 
-    /// <summary>429 + MSG406, with <c>Retry-After</c> in seconds when the limiter knows it.</summary>
+    /// <summary>429 + MSG414, with <c>Retry-After</c> in seconds when the limiter knows it.</summary>
     internal static IResult TooManyAttempts(RateLimitLease lease)
         => new TooManyAttemptsResult(lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter) ? retryAfter : null);
 
@@ -94,7 +94,7 @@ public static class AuthRateLimiting
             }
 
             return Results.Json(
-                new AuthErrorResponse(Msg406TooManyAttempts, "Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút."),
+                new AuthErrorResponse(Msg414TooManyAttempts, "Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút."),
                 statusCode: StatusCodes.Status429TooManyRequests).ExecuteAsync(http);
         }
     }

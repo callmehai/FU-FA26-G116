@@ -117,7 +117,7 @@ Các nhánh lỗi đều trả `401` kèm mã thông báo trong [danh mục mã]
 |---|---|---|
 | `MSG01` | Email không tồn tại, **hoặc** sai mật khẩu, **hoặc** bỏ trống | `Email hoặc mật khẩu không đúng.` |
 | `MSG02` | Tài khoản đã bị vô hiệu hoá (`users.is_active = false`) | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
-| `MSG406` | **429**, vượt giới hạn số lần thử (SCRUM-132) — xem [Giới hạn số lần thử](#giới-hạn-số-lần-thử) | `Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.` |
+| `MSG414` | **429**, vượt giới hạn số lần thử (SCRUM-132) — xem [Giới hạn số lần thử](#giới-hạn-số-lần-thử) | `Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.` |
 
 > **Nhánh "chưa được cấp quyền truy cập hệ thống" đã bỏ từ `SCRUM-63`, không có mã.** Nó từ chối vai trò
 > không có capability nào trừ `Member`; khi vai trò thành dữ liệu (ADR-0008), vai trò tự tạo không
@@ -445,7 +445,7 @@ email tài khoản demo. Dùng `Microsoft.AspNetCore.RateLimiting` có sẵn, c�
 | Theo IP (IPv6 gộp theo /64) | `POST /login`, `POST /google`, `POST /password-reset` — **chung một bộ đếm** | 60 lần/phút |
 | Theo email | `POST /login` (email đã `Trim` và bỏ phân biệt hoa thường; dài quá 320 ký tự thì dùng chung một bộ đếm) | 5 lần/phút |
 
-Vượt giới hạn: `429` + `MSG406` (body như các lỗi xác thực khác: `code`, `message`) và header
+Vượt giới hạn: `429` + `MSG414` (body như các lỗi xác thực khác: `code`, `message`) và header
 `Retry-After` tính bằng giây. FE chỉ cần hiển thị `message`, màn đăng nhập và đặt lại mật khẩu đã
 làm vậy. Hết cửa sổ thì thử lại được bình thường.
 

@@ -338,7 +338,7 @@ Trạng thái: **BE** = backend trả trong body JSON · **FE** = FE tự hiển
 | `MSG04` | — | `POST /google` | Không xác minh được thông tin Google trả về | *Unable to verify your Google account. Please try again.* | Dành sẵn — verifier chưa tách được khỏi `MSG03` |
 | `MSG05` | 401 | `POST /google` | Google xác thực OK nhưng không có tài khoản nội bộ nào liên kết/tự liên kết được | `Tài khoản Google này chưa được cấp quyền truy cập hệ thống.` | BE |
 | `MSG06` | — | — (FE, sau `POST /logout`) | `/logout` không tới được server, phiên được giữ nguyên | `Không thể đăng xuất. Vui lòng thử lại.` | FE |
-| `MSG406` | 429 | `POST /login`, `POST /google`, `POST /password-reset` | Vượt giới hạn số lần thử: theo IP (chung ba endpoint) hoặc theo email (`/login`), kèm header `Retry-After` (SCRUM-132) | `Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.` | BE |
+| `MSG414` | 429 | `POST /login`, `POST /google`, `POST /password-reset` | Vượt giới hạn số lần thử: theo IP (chung ba endpoint) hoặc theo email (`/login`), kèm header `Retry-After` (SCRUM-132) | `Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.` | BE |
 
 ### Đặt lại mật khẩu qua liên kết — nửa sau của UC-07 (`/api/auth/password-reset`)
 

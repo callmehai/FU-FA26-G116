@@ -284,7 +284,7 @@ Toàn bộ phần giả lập trong [`frontend/src/features/auth/`](../../fronte
 ## 10. Chưa có ở backend, cần thì nói
 
 - ~~**Rate limit cho `/api/auth/login`**~~ — **đã có** (SCRUM-132): `/login`, `/google` và
-  `/password-reset` có thể trả `429` + `MSG406`, kèm header `Retry-After` (giây). FE chỉ cần hiện
+  `/password-reset` có thể trả `429` + `MSG414`, kèm header `Retry-After` (giây). FE chỉ cần hiện
   `message` như các lỗi khác; màn đăng nhập và đặt lại mật khẩu đã làm vậy. Chi tiết ở
   [01-xac-thuc.md](01-xac-thuc.md#giới-hạn-số-lần-thử).
 - **Endpoint trả Google `client_id`** — chưa có.

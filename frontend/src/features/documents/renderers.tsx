@@ -154,9 +154,14 @@ function PdfPage({ page, width, label }: { page: PDFPageProxy; width: number; la
   )
 }
 
-/** docx-preview draws Word's page box; the sheet is the page here. Lives in the shadow root, out of global.css's reach. */
+/**
+ * docx-preview draws Word's page box; the sheet is the page here. A table wider than the sheet scrolls on its own, so
+ * its scrollbar sits under the table rather than at the end of the document. Lives in the shadow root, out of
+ * global.css's reach.
+ */
 const SHEET_STYLE =
-  'section.docx { width: auto !important; min-height: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; }'
+  'section.docx { width: auto !important; min-height: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; }' +
+  ' table { display: block; max-width: 100%; overflow-x: auto; }'
 
 /** A DOCX drawn as one flowing text — no pages, so no page counter (wireframe 7.5b). */
 export function DocxView({ blob, zoom }: { blob: Blob; zoom: number }) {

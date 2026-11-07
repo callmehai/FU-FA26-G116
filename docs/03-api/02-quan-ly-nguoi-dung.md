@@ -535,7 +535,7 @@ vào bằng chứng. Đã đánh dấu `ponytail:` trong code.
   vào `users`, đưa vào token, và kiểm nó ở refresh cùng `AdminCallerRevalidation`. Chưa làm vì cần
   migration và chạm vào luồng xác thực của mọi endpoint — cùng cửa sổ 15 phút đã chấp nhận ở UC-06c.
 - ~~**Endpoint ẩn danh `/api/auth/password-reset` chưa có rate limit.**~~ — **đã làm** (SCRUM-132): chung giới
-  hạn theo IP với `/login` và `/google`, vượt thì `429 MSG406`, xem
+  hạn theo IP với `/login` và `/google`, vượt thì `429 MSG414`, xem
   [01-xac-thuc.md](01-xac-thuc.md#giới-hạn-số-lần-thử). `POST /api/users/{id}/password-reset` (gửi thư) không giới
   hạn: cần quyền `AdminUsers` và có nhật ký kiểm toán.
 - **Ghi audit và ghi nghiệp vụ nằm ở hai transaction.** `AuditService` tự `SaveChanges` sau khi

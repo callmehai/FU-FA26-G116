@@ -62,13 +62,13 @@ public class AuthRateLimitingTests
     {
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<AuthErrorBody>();
-        Assert.Equal("MSG406", body!.Code);
+        Assert.Equal("MSG414", body!.Code);
         Assert.Equal("Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.", body.Message);
         Assert.True(response.Headers.RetryAfter?.Delta > TimeSpan.Zero);
     }
 
     [Fact]
-    public async Task Login_past_the_email_limit_answers_429_MSG406_even_with_the_right_password()
+    public async Task Login_past_the_email_limit_answers_429_MSG414_even_with_the_right_password()
     {
         using var factory = new Factory(perEmail: 3, perIp: 100);
         var client = factory.CreateClient();
