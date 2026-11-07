@@ -1,0 +1,88 @@
+title UC-85b - Create Draft Meeting from Slot
+
+actor "Meeting Organizer" as Finder
+boundary "Find Meeting Time Page" as FindPage
+control ":Meeting Slot Controller" as SlotController
+control ":Meeting Slot Service" as SlotService
+participant ":User Repository" as UserRepository
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Finder->FindPage: Create draft from a slot found in UC-85a
+activate FindPage
+
+FindPage->SlotController: Create draft meeting from the chosen slot
+activate SlotController
+
+SlotController->SlotService: createDraftFromSlot(finderId, slot, invitees)
+activate SlotService
+
+SlotService->UserRepository: Verify finder is active and holds MeetingCreator (BR430)
+activate UserRepository
+UserRepository->Database: Retrieve finder account with capabilities
+activate Database
+Database-->UserRepository: Account / Not found
+deactivate Database
+UserRepository-->SlotService: Verification result
+deactivate UserRepository
+
+alt Finder has no right to create meetings - EX-2
+    SlotService-->SlotController: MSG448 - Only a Meeting Organizer can do this.
+    deactivate SlotService
+    SlotController-->FindPage: 403 MSG448
+    deactivate SlotController
+    FindPage-->Finder: MSG448 - Only a Meeting Organizer can do this.
+else Finder is verified
+    SlotService->MeetingRepository: Get meetings of finder and invitees overlapping the slot
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve overlapping meetings with roles and actual end times
+    activate Database
+    Database-->MeetingRepository: Meetings / Read failed
+    deactivate Database
+    MeetingRepository-->SlotService: Meetings / Read failed
+    deactivate MeetingRepository
+
+    alt Slot cannot be rechecked - EX-3
+        SlotService-->SlotController: MSG453 - Unable to load the calendar sharing data. Please try again.
+        deactivate SlotService
+        SlotController-->FindPage: 500 MSG453
+        deactivate SlotController
+        FindPage-->Finder: MSG453 - Unable to load the calendar sharing data. Please try again.
+    else Slot data is loaded
+        SlotService->SlotService: Recheck the slot against the same shared data as the search,\nnever against undisclosed meetings (BR428)
+
+        alt Slot is no longer free - EX-1
+            SlotService-->SlotController: MSG446 - This time slot is no longer free. Please choose another slot.
+            deactivate SlotService
+            SlotController-->FindPage: 409 MSG446
+            deactivate SlotController
+            FindPage-->Finder: MSG446 - This time slot is no longer free. Please choose another slot.
+        else Slot is still free
+            SlotService->MeetingRepository: Create Draft meeting through UC-14 with the first invitee as Chair,\nthe rest as Member and the finder as Secretary (BR429)
+            activate MeetingRepository
+            MeetingRepository->Database: Insert meeting and roster in Draft
+            activate Database
+            Database-->MeetingRepository: Saved / Save failed
+            deactivate Database
+            MeetingRepository-->SlotService: Draft meeting / Save failed
+            deactivate MeetingRepository
+
+            alt Draft cannot be saved - EX-4
+                SlotService-->SlotController: MSG35 - Không thể tạo cuộc họp. Vui lòng thử lại.
+                deactivate SlotService
+                SlotController-->FindPage: 500 MSG35
+                deactivate SlotController
+                FindPage-->Finder: MSG35 - Không thể tạo cuộc họp. Vui lòng thử lại.
+            else Draft is created
+                SlotService-->SlotController: Draft meeting
+                deactivate SlotService
+                SlotController-->FindPage: 201 MSG29 - Meeting created.
+                deactivate SlotController
+                FindPage-->Finder: MSG29 - Meeting created.\nThe meeting is a Draft and follows the normal approval flow (BR429)
+            end
+        end
+    end
+end
+
+deactivate SlotController
+deactivate FindPage

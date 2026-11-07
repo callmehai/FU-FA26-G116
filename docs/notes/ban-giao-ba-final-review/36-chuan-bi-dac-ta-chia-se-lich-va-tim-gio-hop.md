@@ -115,18 +115,22 @@ Ta đã có tương đương (`MSG405` chặn xuất biên bản Mật), và lu�
 | **D9** | **Chỉ Chủ toạ / Thư ký / Thành viên tính bận** (Q3); không map Lãnh đạo / Tham dự hạn chế của eCab. | Người tạo, người duyệt, Khách không tính bận. |
 | **D10** | **Lập FE-16 "Lịch làm việc & tìm giờ họp"**, gom màn lịch hiện có (`CalendarPage`) về FE này. | Report 3 §I.5.1 + §III: chuyển màn lịch hiện có sang FE-16, thêm màn mới; sửa chỗ trỏ màn lịch cũ. |
 | **D11** | **FE-16 ưu tiên Should-have.** | Khớp nhãn `moscow-should` của SCRUM-142; ghi MoSCoW trong Report 3 và `scopeData.ts`. |
+| **D12** | **Khung trùng họp Mật vẫn cho tạo nháp** (PO, 07/11/2026 — đóng Q5 ở §7). Bước kiểm lại khi Tạo nháp dùng đúng dữ liệu đã chia sẻ như lúc tìm (không tính Secret); không mã lỗi, cảnh báo, thông báo hay audit nào khác đi vì có họp Mật. Màn tìm giờ luôn hiện một câu cố định (cho mọi khung) rằng chỉ tính lịch được chia sẻ, người được mời vẫn có thể bận. Người được mời từ chối qua UC-29 như lời mời thường. | BR-428/BR-429; UC-85b + EX-1; câu cố định trên màn tìm giờ (UC-85a). Lý do: từ chối tạo (dù báo chung) cũng cho phép dò lịch Mật bằng cách thử từng khung. Tạo nháp: người đầu tiên làm Chair, còn lại Member, người tìm làm Secretary; cuộc họp ở Draft, đi luồng duyệt thường; tạo cuộc họp hiện KHÔNG kiểm trùng lịch người dự — giữ nguyên. |
 
-Còn chờ: số UC/BR/MSG thật (sau #271), ticket màn FE-16.
+Còn chờ: ticket màn FE-16; số UC/BR/MSG đã chốt trong [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md)
+(UC-84 gom UC-84a → UC-84e, UC-85 gom UC-85a → UC-85c; số UC-86..UC-90 trả lại, không dùng), BR-414 → BR-430, `MSG435`–`MSG455`, mã tiếp theo `MSG456; dựa trên PR #279 merge trước) — BA giữ hoặc đổi số khi vào Report 3.
 
 ## 5. Khung đặc tả đề xuất
 
+Số hiệu đã chốt trong [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md) (07/11/2026, tách UC Respond + tách mã
+07/11/2026, đổi số tránh PR #279 + tách UC tạo nháp + gộp UC theo mẫu Report 3 07/11/2026) — các gợi ý tạm dưới đây
+chỉ còn giá trị lịch sử, dùng số trong note đặc tả (UC-84/UC-85 gom, BR-414 → BR-430, `MSG435`–`MSG455`,
+mã tiếp theo `MSG456`, dựa trên PR #279 merge trước):
+
 - **UC (đề xuất, số thật sau #271):**
-  - UC-84 *Yêu cầu xem lịch* — Thư ký/người có `MeetingCreator` gửi yêu cầu, chủ lịch chấp nhận (có thể mức thấp hơn) hoặc từ chối.
-  - UC-85 *Chủ lịch tự chia sẻ* — chọn người có `MeetingCreator`, luôn mức thấp nhất; bên nhận đồng ý.
-  - UC-86 *Quản lý chia sẻ đã có* — nâng mức/gia hạn, hạ mức/đổi khoảng ngày, rút, ngừng chia sẻ, thôi xem lịch.
-  - UC-87 *Tìm khung giờ* — nhập tham số, server trả khung, tạo nháp.
-  - UC-88 *Xem lịch được chia sẻ* — lịch tuần nhiều màu.
-  Gộp UC-84/85/86 thành một nếu khi viết thấy quá vụn.
+  - UC-84 *Quản lý chia sẻ lịch* (UC gom) — UC-84a *Yêu cầu xem lịch*, UC-84b *Chủ lịch tự chia sẻ*,
+    UC-84c *Trả lời chia sẻ*, UC-84d *Thay đổi chia sẻ*, UC-84e *Rút/ngừng chia sẻ*.
+  - UC-85 *Tìm giờ họp* (UC gom) — UC-85a *Tìm khung giờ*, UC-85b *Tạo nháp từ khung giờ*, UC-85c *Xem lịch được chia sẻ*.
 - **BR (đề xuất):** khoảng 12–15 quy tắc — mức xem theo `Sensitivity`, ngày ngoài khoảng là chưa biết, một chia sẻ
   mỗi cặp, tạm ngưng khi mất quyền/khoá tài khoản, hết hạn tự đóng, không lộ tên cuộc họp, chỉ báo bận/rảnh,
   giới hạn 10 người / 31 ngày / đệm 0–4 giờ / bước nhảy 5 phút–2 giờ, tạo nháp điền sẵn và kiểm lại trước khi lưu.
@@ -145,9 +149,13 @@ Còn chờ: số UC/BR/MSG thật (sau #271), ticket màn FE-16.
 1. ~~Chốt D1–D6 với PO~~ — xong 07/11/2026 (§4).
 2. ~~Tạo ticket chia sẻ lịch~~ — **SCRUM-142** (07/11/2026), đã ghi SCRUM-137 phụ thuộc nó. Còn: ticket **màn FE-16**;
    cập nhật mục "PO tick" của SCRUM-142 theo D6–D11 (Q1 là đáp án **C — 2 mốc**, không phải A).
-3. Chờ **PR #271 merge**, rồi chốt lại dải `MSG`, số UC, số BR thật (§2).
-4. BE viết UC Specification cơ bản + sequence cho phần đã chốt ([DEVELOPMENT_WORKFLOW §2.1](../../DEVELOPMENT_WORKFLOW.md#21-changing-a-requirement-during-implementation)),
-   ghi mọi chỗ lệch ticket vào Jira.
+3. ~~Chờ **PR #271 merge**, rồi chốt lại dải `MSG`, số UC, số BR thật (§2)~~ — xong 07/11/2026, tách UC Respond +
+   tách UC tạo nháp + tách mã + đổi số tránh PR #279 + gộp UC theo mẫu Report 3, 07/11/2026:
+   UC-84 gom (UC-84a → UC-84e), UC-85 gom (UC-85a → UC-85c), BR-414 → BR-430, `MSG435`–`MSG455` trong [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md)
+   (BA giữ hoặc đổi số khi vào Report 3; số dựa trên PR #279 merge trước — nếu nhánh này merge trước thì #279 dời).
+4. ~~BE viết UC Specification cơ bản + sequence cho phần đã chốt~~ — xong phần sơ bộ 07/11/2026, cập nhật 07/11/2026
+   ([note đặc tả](../NOTE-dac-ta-so-bo-scrum-137-142.md) + 8 sequence UC-84a → UC-84e, UC-85a → UC-85c);
+   ghi mọi chỗ lệch ticket vào Jira (không sửa ticket trong task này).
 5. BA Final Review mới đưa vào Report 3: §II (UC), §V.1 (BR), §V.2 (MSG), §III + §I.5.1 (màn), rồi
    `python scripts/sync_reports.py`.
 6. Sửa ADR-0043 (bỏ "Tìm giờ họp" khỏi câu không-có), viết ADR mới cho chia sẻ lịch nếu BE đụng dữ liệu cá
@@ -159,11 +167,9 @@ Còn chờ: số UC/BR/MSG thật (sau #271), ticket màn FE-16.
 Q1–Q4 và FE-16 đã trả lời 07/11/2026 → D6–D11 ở §4. Q1 chốt hai lần: lần đầu 3 mốc (Thường / +Nội bộ / +Hạn chế),
 sau khi bỏ mức Hạn chế (ADR-0057) còn **2 mốc** — dùng bản sau.
 
-Còn một câu nảy ra từ D7, hỏi khi BE làm SCRUM-137:
-
-5. Họp Mật không hiện kể cả bận, nên Tìm khung giờ có thể đề xuất giờ trùng một cuộc họp Mật của người được mời.
-   Khi "Tạo nháp", server kiểm lại khung với **toàn bộ** lịch (gồm Mật) và chỉ báo chung "khung này không còn trống"
-   mà không nói lý do, hay để người tạo tự phát hiện trùng lịch như hiện nay?
+Q5 đã đóng bằng D12 ở §4 (07/11/2026): khung trùng họp Mật vẫn cho tạo nháp, kiểm lại theo đúng dữ liệu đã chia
+sẻ, không tín hiệu nào khác đi vì có họp Mật; chi tiết ở [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md)
+(BR-428/BR-429, UC-85b).
 
 ## 8. Liên quan
 

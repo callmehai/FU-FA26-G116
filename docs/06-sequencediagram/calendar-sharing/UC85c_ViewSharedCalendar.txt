@@ -1,0 +1,96 @@
+title UC-85c - View Shared Calendar
+
+actor "Meeting Organizer" as Viewer
+boundary "Shared Calendar Page" as CalendarPage
+control ":Shared Calendar Controller" as CalendarController
+control ":Shared Calendar Service" as CalendarService
+participant ":User Repository" as UserRepository
+participant ":Calendar Share Repository" as ShareRepository
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Viewer->CalendarPage: Open shared calendar week
+activate CalendarPage
+
+CalendarPage->CalendarController: View shared calendar week
+activate CalendarController
+
+CalendarController->CalendarService: viewSharedWeek(viewerId, week)
+activate CalendarService
+
+CalendarService->UserRepository: Verify viewer is active and holds MeetingCreator (BR430)
+activate UserRepository
+UserRepository->Database: Retrieve viewer account with capabilities
+activate Database
+Database-->UserRepository: Account / Not found
+deactivate Database
+UserRepository-->CalendarService: Verification result
+deactivate UserRepository
+
+CalendarService->ShareRepository: Get all shares other people granted to the viewer, with status
+activate ShareRepository
+ShareRepository->Database: Retrieve shares with status and range
+activate Database
+Database-->ShareRepository: Shares / Read failed
+deactivate Database
+ShareRepository-->CalendarService: Shares / Read failed
+deactivate ShareRepository
+
+alt Shares cannot be read - EX-1
+    CalendarService-->CalendarController: MSG453 - Unable to load the calendar sharing data. Please try again.
+    deactivate CalendarService
+    CalendarController-->CalendarPage: 500 MSG453
+    deactivate CalendarController
+    CalendarPage-->Viewer: MSG453 - Unable to load the calendar sharing data. Please try again.
+else Shares are loaded
+    alt Nobody has shared yet - AF-1
+        CalendarService-->CalendarController: Empty week
+        deactivate CalendarService
+        CalendarController-->CalendarPage: 200 Empty week
+        deactivate CalendarController
+        CalendarPage-->Viewer: No shared calendars yet. Ask through UC-84a or wait for a direct share through UC-84b.
+    else Shares exist
+        CalendarService->MeetingRepository: Get sharers' meetings in the week at shared levels only (BR414, BR417)
+        activate MeetingRepository
+        MeetingRepository->Database: Retrieve overlapping meetings with roles
+        activate Database
+        Database-->MeetingRepository: Meetings / Read failed
+        deactivate Database
+        MeetingRepository-->CalendarService: Meetings / Read failed
+        deactivate MeetingRepository
+
+        alt Meetings cannot be read - EX-1
+            CalendarService-->CalendarController: MSG453 - Unable to load the calendar sharing data. Please try again.
+            deactivate CalendarService
+            CalendarController-->CalendarPage: 500 MSG453
+            deactivate CalendarController
+            CalendarPage-->Viewer: MSG453 - Unable to load the calendar sharing data. Please try again.
+        else Week is loaded
+            CalendarService->CalendarService: Keep only busy blocks of Effective shares, Monday to Friday, 08:00-17:00.\nStopped and expired shares stay listed with their state label and contribute no hours;\nnever include titles, locations, attendees or levels (BR424, BR425, BR427)
+            CalendarService-->CalendarController: Busy blocks with share states
+            deactivate CalendarService
+            CalendarController-->CalendarPage: 200 Busy blocks by sharer with state labels
+            deactivate CalendarController
+            CalendarPage-->Viewer: Shared week: busy blocks only, one colour per sharer, overlaps side by side (BR427)
+
+            opt A shown person is stopped
+                CalendarPage-->Viewer: State label "Đã dừng" (BR424)
+            end
+
+            opt A shown person is expired
+                CalendarPage-->Viewer: State label "Hết hạn" (BR425)
+            end
+
+            opt Viewer opens a stopped share
+                CalendarPage-->Viewer: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was locked. Ask for a new share (BR424)
+            end
+
+            opt Viewer opens an expired share
+                CalendarPage-->Viewer: MSG440 - This calendar share has expired. Ask for a new share (BR425)
+            end
+        end
+    end
+end
+
+deactivate CalendarController
+deactivate CalendarPage
