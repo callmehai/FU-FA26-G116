@@ -1,0 +1,85 @@
+{
+ "prefix": "ROLE_FT",
+ "module": "Roles",
+ "source": "frontend/src/features/access/RolesPage.tsx",
+ "cases": [
+  {
+   "group": "Vai trò",
+   "d": "Create, rename and delete a custom role.",
+   "steps": [
+    "Open Vai trò and click \"Tạo vai trò\".",
+    "Enter Tên vai trò: Thư ký phó, Mô tả: Hỗ trợ thư ký soạn biên bản., tick MinutesEditor under \"Quyền ban đầu (tuỳ chọn)\" and save.",
+    "Open the role, rename it to Phó thư ký and click \"Lưu thay đổi\".",
+    "Click \"Xoá vai trò\" and confirm."
+   ],
+   "exp": [
+    "Toasts \"Tạo vai trò thành công.\", \"Cập nhật vai trò thành công.\" and \"Xoá vai trò thành công.\" appear in turn.",
+    "The role appears, is renamed and then disappears from the list."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Vai trò",
+   "d": "A role name is required, unique and limited in length; built-in roles cannot be renamed or deleted.",
+   "steps": [
+    "Create a role with an empty name.",
+    "Create a role named \"THƯ KÝ\".",
+    "Try to rename or delete Quản trị viên (marked Mặc định)."
+   ],
+   "exp": [
+    "\"Tên vai trò không được để trống.\" is shown.",
+    "\"Đã có vai trò dùng tên này. Hãy đặt một tên khác.\" is shown.",
+    "For a built-in role: \"Đây là vai trò mặc định của hệ thống, không đổi tên hoặc xoá được. Bạn vẫn sửa được quyền của nó.\"."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Vai trò",
+   "d": "A role still held by accounts cannot be deleted.",
+   "steps": [
+    "Give the custom role Thư ký phó to two accounts.",
+    "Click \"Xoá vai trò\" on it."
+   ],
+   "exp": [
+    "\"Vai trò này vẫn còn 2 tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.\" is shown.",
+    "The role stays."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Ma trận phân quyền",
+   "d": "Change a role's capabilities in the matrix; the change applies at once.",
+   "steps": [
+    "On Vai trò, in the matrix tick MeetingCreator for Thành viên and click Lưu.",
+    "In another browser signed in as thanhvien, reload Cuộc họp."
+   ],
+   "exp": [
+    "The toast \"Cập nhật phân quyền thành công.\" appears.",
+    "thanhvien now sees \"Tạo cuộc họp\" without signing in again."
+   ],
+   "pre": [
+    "Signed in as quantri@trustcabinet.local; thanhvien is signed in elsewhere."
+   ]
+  },
+  {
+   "group": "Ma trận phân quyền",
+   "d": "The matrix refuses to remove the last AdminUsers grant.",
+   "steps": [
+    "Untick AdminUsers for Quản trị viên and click Lưu."
+   ],
+   "exp": [
+    "\"Cấu hình phân quyền không hợp lệ.\" is shown and the tick comes back.",
+    "The administrator keeps access."
+   ],
+   "pre": [
+    "Quản trị viên is the only role with AdminUsers."
+   ]
+  }
+ ]
+}

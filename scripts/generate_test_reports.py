@@ -13,8 +13,10 @@ sys.path.insert(0,str(ROOT/'scripts/test_reports'))
 from manual_cases import scenarios
 from template_workbooks import unit_book,table_book,uat_book
 from template_document import make_document,refresh_cached_toc
+from readable import TESTER
+from fonts import unify as unify_fonts
 FILES={'UNIT':'Report5.1_Unit_Test.xlsx','INTEGRATION':'Report5.2_Integration_Test.xlsx','API':'Report5.2.2_Integration_Test_API_Test.xlsx','SYSTEM':'Report5.3_System_Test.xlsx','UAT':'Report5.4_Acceptance_Test.xlsx'}
-TEMPLATES={**FILES,'API':'FA25_SEP490-G158_Report5.2.2_Integration Test_API Test.xlsx','DOCX':'FA25_SEP490-G158_Report5.0_Test Documentation.docx'}
+TEMPLATES={**FILES,'UNIT':'Report-5.1_Unit Test.xls','API':'FA25_SEP490-G158_Report5.2.2_Integration Test_API Test.xlsx','DOCX':'FA25_SEP490-G158_Report5.0_Test Documentation.docx'}
 
 
 def write_json(path,data):
@@ -30,6 +32,15 @@ def source_digest():
         for p in sorted((ROOT/area).rglob('*')):
             if p.is_file() and p.suffix in {'.cs','.csproj','.ts','.tsx','.json','.css'} and not {'bin','obj','node_modules','wwwroot'}.intersection(p.parts):h.update(p.relative_to(ROOT).as_posix().encode()+b'\0'+p.read_bytes()+b'\0')
     return h.hexdigest()
+
+
+def xlsx_template(path,build):
+    # A legacy .xls template is converted by Excel into the build folder; verify_reports
+    # compares the output styles against this copy.
+    if path.suffix.lower()!='.xls':return path
+    target=build/'templates'/(path.stem+'.xlsx');target.parent.mkdir(parents=True,exist_ok=True)
+    subprocess.run(['C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-File',str(ROOT/'scripts/test_reports/convert_xls.ps1'),'-InputPath',str(path),'-OutputPath',str(target)],cwd=ROOT,check=True)
+    return target
 
 
 def classify(t):
@@ -75,7 +86,7 @@ def attach_results(tests,results,verified,name):
         if not verified:c['actual']='TRX source fingerprint was not verified; result is reference-only.';continue
         outcomes={r['outcome'] for r in rr}
         c['status']='Failed' if outcomes.intersection({'Failed','Error','Timeout'}) else 'Skipped' if outcomes<={'NotExecuted','Skipped'} else 'Passed' if outcomes=={'Passed'} and c['expectedCount']==len(rr) and len({r['displayName'] for r in rr})==len(rr) else 'Partial'
-        c['actual']='; '.join(f'{k}: {v}' for k,v in Counter(r['outcome'] for r in rr).items());c['tester']='xUnit / TRX';c['executedAt']=max(r['executedAt'] for r in rr)
+        c['actual']='; '.join(f'{k}: {v}' for k,v in Counter(r['outcome'] for r in rr).items());c['tester']=TESTER;c['executedAt']=max(r['executedAt'] for r in rr)
 
 
 def main():
@@ -114,18 +125,26 @@ def main():
         if not (ROOT/c['source']).is_file():raise ValueError('Missing source: '+c['source'])
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     meta=dict(project='TrustCabinet',projectCode='SEP490-G116',date=datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')).strftime('%Y-%m-%d'),generatedAt=datetime.now(timezone.utc).isoformat(),commit=commit,sourceDigest=fingerprint,evidenceVerified=verified,testMethods=len(tests),classification=dict(Counter(c['level'] for c in tests)),status=dict(Counter(c['status'] for c in tests)),manualCases=dict(Counter(c['level'] for c in manual)),executions=len(results),templates={name:digest(a.template_dir/name) for name in TEMPLATES.values()})
+    first=('2026-10-23','1.0','Report 5','A','Generate test documents from source')
+    meta['history']=[first,(meta['date'],'1.1','Test cases','M',f'Regenerate: {len(tests)} xUnit methods','Verified TRX' if verified else '')]
+    unit_template=xlsx_template(a.template_dir/TEMPLATES['UNIT'],build)
     books={}
-    books['UNIT']=unit_book(a.template_dir/TEMPLATES['UNIT'],[c for c in tests if c['level']=='UNIT'],meta)
-    books['INTEGRATION']=table_book(a.template_dir/TEMPLATES['INTEGRATION'],[c for c in tests if c['level']=='INTEGRATION']+[c for c in manual if c['level']=='UI'],meta,'INTEGRATION TEST DOCUMENT')
+    books['UNIT']=unit_book(unit_template,[c for c in tests if c['level']=='UNIT'],meta,[first,(meta['date'],'2.0','Report 5.1','M','New template: one sheet per module','Report-5.1_Unit Test.xls')])
+    meta['unitCases']=books['UNIT'].unit_cases
+    # Report 5.2 follows its template: functional tests a person runs through the web interface.
+    # The INTEGRATION xUnit checks (migrations, Redis, EF model) run with dotnet test and stay in inventory.json.
+    books['INTEGRATION']=table_book(a.template_dir/TEMPLATES['INTEGRATION'],[c for c in manual if c['level']=='UI'],meta,'INTEGRATION TEST DOCUMENT')
     books['API']=table_book(a.template_dir/TEMPLATES['API'],[c for c in tests if c['level']=='API'],meta,'API TEST')
     books['SYSTEM']=table_book(a.template_dir/TEMPLATES['SYSTEM'],[c for c in manual if c['level']=='SYS'],meta,'SYSTEM TEST REPORT DOCUMENT',True)
     books['UAT']=uat_book(a.template_dir/TEMPLATES['UAT'],[c for c in manual if c['level']=='UAT'],meta)
     specs=build/'authoring.json';write_json(specs,[book.spec(FILES[k]) for k,book in books.items()]);authored=build/'authored'
     subprocess.run([a.node,str(ROOT/'scripts/test_reports/author_workbooks.mjs'),str(specs),str(authored),str(a.artifact_module)],cwd=ROOT,check=True)
     out.mkdir(parents=True,exist_ok=True)
-    for k,book in books.items():book.save(out/FILES[k],authored/FILES[k])
+    for k,book in books.items():book.save(out/FILES[k],authored/FILES[k]);unify_fonts(out/FILES[k])
     subprocess.run([a.node,str(ROOT/'scripts/test_reports/render_workbooks.mjs'),str(out),str(build/'previews'),str(a.artifact_module)],cwd=ROOT,check=True)
     make_document(a.template_dir/TEMPLATES['DOCX'],out/'Report5.0_Test_Documentation.docx',tests,manual,meta,build)
+    # Before Word renders it, so the page numbers in the table of contents are those of the final font.
+    unify_fonts(out/'Report5.0_Test_Documentation.docx')
     pdf=build/'final-word.pdf'
     subprocess.run(['C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-File',str(ROOT/'scripts/test_reports/render_word.ps1'),'-InputPath',str(out/'Report5.0_Test_Documentation.docx'),'-PdfPath',str(pdf)],cwd=ROOT,check=True)
     meta['tocEntriesRefreshed']=refresh_cached_toc(out/'Report5.0_Test_Documentation.docx',str(pdf)+'.toc.json')

@@ -1,0 +1,117 @@
+{
+ "prefix": "PART_FT",
+ "module": "Participants",
+ "source": "frontend/src/features/participants/ParticipantsPanel.tsx",
+ "cases": [
+  {
+   "group": "Thành phần tham dự",
+   "d": "The Secretary adds internal participants with a role.",
+   "steps": [
+    "Open the meeting, tab \"Thành phần tham dự\".",
+    "Click \"Thêm người dự họp\", search by name or email, select two people, choose Vai trò Thành viên and click \"Thêm\"."
+   ],
+   "exp": [
+    "The toast \"Thêm thành phần tham dự thành công.\" appears.",
+    "Both people are listed with role Thành viên.",
+    "If the meeting is published they receive an invitation."
+   ],
+   "pre": [
+    "A Draft or Published meeting; signed in as its Secretary."
+   ]
+  },
+  {
+   "group": "Thành phần tham dự",
+   "d": "Invite a guest outside the system by email.",
+   "steps": [
+    "Click \"Mời khách ngoài hệ thống (qua email)\".",
+    "Click \"Mời\" with empty fields, then enter Tên khách: Khách, email guest@example.test and click \"Mời\"."
+   ],
+   "exp": [
+    "Empty: \"Nhập tên khách.\" and \"Nhập email hợp lệ.\".",
+    "After inviting, the guest is listed with the tag Khách and receives an email invitation."
+   ],
+   "pre": [
+    "Signed in as the meeting Secretary; SMTP sandbox running."
+   ]
+  },
+  {
+   "group": "Thành phần tham dự",
+   "d": "Change roles and hand over the Chair.",
+   "steps": [
+    "Open a participant's menu, choose \"Đổi vai trò\", pick Thư ký and Lưu.",
+    "As the Chair of a Published meeting, choose \"Giao Chủ tọa\" for a member and confirm."
+   ],
+   "exp": [
+    "\"Cập nhật vai trò cuộc họp thành công.\" appears and the role changes.",
+    "\"Giao vai trò Chủ tọa thành công.\" appears; the member is Chủ tọa and the former Chair is Thành viên."
+   ],
+   "pre": [
+    "A meeting with Chair, Secretary and members."
+   ]
+  },
+  {
+   "group": "Thành phần tham dự",
+   "d": "Remove a participant and revoke a guest; the last Secretary is kept.",
+   "steps": [
+    "Choose \"Gỡ khỏi cuộc họp\" for a member and confirm.",
+    "Choose \"Thu hồi lời mời\" for a guest and confirm.",
+    "Try to remove the only Thư ký."
+   ],
+   "exp": [
+    "\"Gỡ thành phần tham dự thành công.\" appears; the removed member no longer sees the meeting.",
+    "The guest invitation is revoked.",
+    "Removing the last Secretary shows \"Cuộc họp phải giữ Chủ tọa và Thư ký theo quy định. Hãy phân công người thay thế.\"."
+   ],
+   "pre": [
+    "A meeting with one Secretary, a member and a guest."
+   ]
+  },
+  {
+   "group": "Thành phần tham dự",
+   "d": "An invitee answers the invitation.",
+   "steps": [
+    "Sign in as thanhvien and open the published meeting.",
+    "At \"Bạn có tham dự cuộc họp này?\" click \"Tham dự\".",
+    "Change the answer to \"Không tham dự\"."
+   ],
+   "exp": [
+    "\"Đã ghi nhận phản hồi lời mời.\" appears and \"Đã xác nhận tham dự\" is shown.",
+    "The Secretary sees the answer on the roster.",
+    "After declining, the meeting no longer shows in thanhvien's calendar."
+   ],
+   "pre": [
+    "thanhvien is invited to a Published meeting."
+   ]
+  },
+  {
+   "group": "Thành phần tham dự",
+   "d": "Two Secretaries changing the roster at once: the later one is asked to reload.",
+   "steps": [
+    "Open the roster as the Secretary in two tabs.",
+    "Add a person in tab 1.",
+    "Without reloading, add another person in tab 2."
+   ],
+   "exp": [
+    "Tab 2 shows \"Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại.\".",
+    "After reloading, the add succeeds and both people are listed."
+   ],
+   "pre": [
+    "A draft meeting; signed in as its Secretary."
+   ]
+  },
+  {
+   "group": "Thành phần tham dự",
+   "d": "A deactivated participant is marked on the roster.",
+   "steps": [
+    "Deactivate a participant's account on Người dùng & Quyền.",
+    "Open the roster."
+   ],
+   "exp": [
+    "The person shows the tag \"Tài khoản đã khoá\"."
+   ],
+   "pre": [
+    "A meeting with that participant."
+   ]
+  }
+ ]
+}

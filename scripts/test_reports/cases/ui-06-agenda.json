@@ -1,0 +1,121 @@
+{
+ "prefix": "AGD_FT",
+ "module": "Agenda",
+ "source": "frontend/src/features/agenda/AgendaPanel.tsx",
+ "cases": [
+  {
+   "group": "Nội dung cuộc họp",
+   "d": "The Secretary builds the agenda: add, edit, reorder and delete items.",
+   "steps": [
+    "Open tab \"Nội dung cuộc họp\" and click \"Thêm nội dung\".",
+    "Enter Nội dung cần bàn: Dự toán ngân sách năm 2027, choose Người trình bày, click Lưu.",
+    "Add two more items and drag one to a new position (\"Kéo để đổi vị trí\").",
+    "Edit an item (\"Sửa\"), then delete one (\"Xoá nội dung\")."
+   ],
+   "exp": [
+    "Toasts \"Tạo mục nghị sự thành công.\", \"Sắp xếp mục nghị sự thành công.\", \"Cập nhật mục nghị sự thành công.\" and \"Xóa mục nghị sự thành công.\" appear.",
+    "Without a title: \"Vui lòng nhập nội dung cần bàn.\".",
+    "Other participants see the agenda update live."
+   ],
+   "pre": [
+    "A Draft or Published meeting with documents; signed in as its Secretary."
+   ]
+  },
+  {
+   "group": "Nội dung cuộc họp",
+   "d": "The Chair runs the agenda during the meeting and records conclusions.",
+   "steps": [
+    "Start the meeting as the Chair.",
+    "Start the first item, then try to start a second one.",
+    "Complete the first item.",
+    "Click \"Ghi kết luận\", enter a conclusion and click \"Lưu kết luận\"."
+   ],
+   "exp": [
+    "Starting a second item shows \"Đã có mục nghị sự đang diễn ra.\".",
+    "The completed item is marked done with actual times.",
+    "\"Lưu kết luận mục nghị sự thành công.\" appears and the item shows \"Đã kết luận\"."
+   ],
+   "pre": [
+    "A Published meeting with agenda items; chutoa is Chair."
+   ]
+  },
+  {
+   "group": "Nội dung cuộc họp",
+   "d": "An empty agenda guides the Secretary and members only read it.",
+   "steps": [
+    "As the Secretary, open tab \"Nội dung cuộc họp\" of a meeting with no item.",
+    "As thanhvien, open the same tab of the published meeting."
+   ],
+   "exp": [
+    "The Secretary sees \"Chưa có nội dung nào\" with \"Thêm các nội dung cần bàn trong cuộc họp.\" and \"Thêm nội dung\".",
+    "The member sees the items but no add, edit, delete or drag actions."
+   ],
+   "pre": [
+    "A published meeting; thanhvien is invited."
+   ]
+  },
+  {
+   "group": "Nội dung cuộc họp",
+   "d": "Closing the item form with unsaved changes asks first.",
+   "steps": [
+    "Open \"Sửa\" on an item, change the title and close the dialog.",
+    "Choose \"Tiếp tục sửa\", close again and choose \"Bỏ thay đổi\"."
+   ],
+   "exp": [
+    "\"Bỏ thay đổi chưa lưu?\" is asked.",
+    "\"Bỏ thay đổi\" closes without saving; the item keeps its old title."
+   ],
+   "pre": [
+    "Signed in as the meeting Secretary; the agenda has items."
+   ]
+  },
+  {
+   "group": "Nội dung cuộc họp",
+   "d": "The agenda is locked once the meeting has ended.",
+   "steps": [
+    "Open tab \"Nội dung cuộc họp\" of an ended meeting as its Secretary."
+   ],
+   "exp": [
+    "No add, edit, delete or drag action is offered.",
+    "Conclusions can still be read."
+   ],
+   "pre": [
+    "An ended meeting with agenda items."
+   ]
+  },
+  {
+   "group": "Nội dung cuộc họp",
+   "d": "A presenter is notified when assigned to an item of a published meeting.",
+   "steps": [
+    "As the Secretary, edit an item and choose thanhvien as Người trình bày; save.",
+    "As thanhvien, open the notification bell."
+   ],
+   "exp": [
+    "thanhvien receives a notification about presenting the item.",
+    "Assigning yourself as presenter does not notify you."
+   ],
+   "pre": [
+    "A published meeting with thanhvien invited."
+   ]
+  },
+  {
+   "group": "Nội dung cuộc họp",
+   "d": "The Chair or Secretary adds documents to an agenda item from its paperclip.",
+   "steps": [
+    "On an agenda item click the paperclip (\"Thêm tài liệu\").",
+    "Choose \"Chọn từ tài liệu cuộc họp\", tick a document and click \"Gắn 1 tài liệu\".",
+    "Open the paperclip again, choose \"Tải tệp lên từ máy\" and add a PDF; then \"Chọn từ kho của tôi\" and add a library document.",
+    "Sign in as thanhvien and open the agenda."
+   ],
+   "exp": [
+    "The dialog \"Thêm tài liệu cho mục 1\" opens on the chosen source.",
+    "\"Đã gắn tài liệu vào mục nghị sự.\" appears and the documents show under the item.",
+    "An uploaded or library document is also added to the meeting's documents.",
+    "thanhvien sees the documents but no paperclip; after the meeting ends nobody can add documents."
+   ],
+   "pre": [
+    "A Published or InProgress meeting with agenda items and documents; signed in as chutoa or thuky."
+   ]
+  }
+ ]
+}

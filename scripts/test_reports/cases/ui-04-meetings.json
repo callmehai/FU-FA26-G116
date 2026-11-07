@@ -1,0 +1,303 @@
+{
+ "prefix": "MEET_FT",
+ "module": "Meetings",
+ "source": "frontend/src/features/meetings/MeetingsPage.tsx",
+ "cases": [
+  {
+   "group": "Danh sách cuộc họp",
+   "d": "The meeting list shows only meetings the user may see, with search, status filter and paging.",
+   "steps": [
+    "Sign in as thuky and open Cuộc họp.",
+    "Type \"Giao ban\" in \"Tìm theo tên cuộc họp…\".",
+    "Click a status in the summary (\"Lọc nhanh theo trạng thái\"), e.g. Bản nháp.",
+    "Change the page and the rows per page.",
+    "Click \"Xoá bộ lọc\"."
+   ],
+   "exp": [
+    "Rows show the name, status badge, Thời điểm and the sensitivity.",
+    "Search and status narrow the list; with no match \"Không có cuộc họp nào khớp bộ lọc.\".",
+    "Meetings of other organizers that thuky is not part of never appear.",
+    "Clearing returns the full list."
+   ],
+   "pre": [
+    "Several meetings in different statuses exist, some owned by another creator."
+   ]
+  },
+  {
+   "group": "Danh sách cuộc họp",
+   "d": "A member sees an invited meeting only after it is published.",
+   "steps": [
+    "Sign in as thanhvien and open Cuộc họp."
+   ],
+   "exp": [
+    "Only Published (and later) meetings where thanhvien is invited are listed.",
+    "With none, \"Cuộc họp bạn được mời sẽ hiện ở đây sau khi được công bố.\" is shown."
+   ],
+   "pre": [
+    "thanhvien is on the roster of one Draft and one Published meeting."
+   ]
+  },
+  {
+   "group": "Tạo cuộc họp",
+   "d": "Create a Draft meeting with the required information and a roster.",
+   "steps": [
+    "Click \"Tạo cuộc họp\".",
+    "Enter Tên cuộc họp: Giao ban tuần 40, Ngày họp: tomorrow, Bắt đầu 09:00, Kết thúc 10:00, Hình thức: Trực tiếp, Địa điểm: Phòng họp A — Tầng 4, Mức độ mật: Nội bộ.",
+    "In \"Tìm người dự họp\", add chutoa as Chủ tọa and thanhvien as Thành viên.",
+    "Click \"Tạo cuộc họp\" in the dialog."
+   ],
+   "exp": [
+    "The toast \"Tạo cuộc họp thành công.\" appears.",
+    "The meeting detail opens with status Bản nháp and the entered information on Thông tin chung.",
+    "The meeting is in the list."
+   ],
+   "pre": [
+    "Signed in as thuky@trustcabinet.local (MeetingCreator)."
+   ]
+  },
+  {
+   "group": "Tạo cuộc họp",
+   "d": "The meeting form validates the required fields and the schedule.",
+   "steps": [
+    "Open \"Tạo cuộc họp\" and submit it empty.",
+    "Set the end time before the start time.",
+    "Set a start time in the past.",
+    "Correct everything and submit."
+   ],
+   "exp": [
+    "\"Tên cuộc họp không được để trống.\", \"Vui lòng chọn ngày họp.\" and the time errors appear.",
+    "\"Thời gian kết thúc phải sau thời gian bắt đầu.\" and \"Thời gian bắt đầu phải sau thời điểm hiện tại.\" are shown.",
+    "Only the corrected submission creates exactly one meeting."
+   ],
+   "pre": [
+    "Signed in as thuky@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Tạo cuộc họp",
+   "d": "Closing the form with unsaved input asks first.",
+   "steps": [
+    "Open \"Tạo cuộc họp\", type a title and close the dialog.",
+    "Click \"Tiếp tục soạn\", then close again and click \"Bỏ cuộc họp\"."
+   ],
+   "exp": [
+    "\"Bỏ cuộc họp đang soạn?\" is asked.",
+    "\"Tiếp tục soạn\" keeps the input; \"Bỏ cuộc họp\" closes without creating anything."
+   ],
+   "pre": [
+    "Signed in as thuky@trustcabinet.local."
+   ]
+  },
+  {
+   "group": "Chỉnh sửa cuộc họp",
+   "d": "Edit a Draft meeting.",
+   "steps": [
+    "Open the Draft and click \"Chỉnh sửa\".",
+    "Change the title, the time and the location and click \"Lưu thay đổi\".",
+    "Reload the page."
+   ],
+   "exp": [
+    "The toast \"Cập nhật cuộc họp thành công.\" appears.",
+    "Thông tin chung shows the new values after reload."
+   ],
+   "pre": [
+    "thuky owns a Draft meeting."
+   ]
+  },
+  {
+   "group": "Gửi duyệt",
+   "d": "Submit a Draft for approval to a chosen approver.",
+   "steps": [
+    "Open the demo Draft \"SCRUM-19 — Luồng duyệt và công bố (demo)\".",
+    "Click \"Gửi duyệt\".",
+    "In \"Chọn người duyệt\" choose Trần Chủ Toạ and click \"Gửi duyệt\"."
+   ],
+   "exp": [
+    "A toast confirms the submission.",
+    "The status becomes Chờ duyệt; the bar shows \"Đang chờ duyệt\" and the approver.",
+    "Thông tin chung cannot be edited while waiting (\"Trong lúc chờ duyệt, thông tin cuộc họp không sửa được.\").",
+    "chutoa receives a notification."
+   ],
+   "pre": [
+    "Signed in as thuky; chutoa has MeetingApprover."
+   ]
+  },
+  {
+   "group": "Gửi duyệt",
+   "d": "A meeting with missing information cannot be submitted.",
+   "steps": [
+    "Open a Draft without a Chair (or with a blank title)."
+   ],
+   "exp": [
+    "The bar shows \"Hoàn thiện thông tin trước khi gửi duyệt\" with \"Cần hoàn thiện trước khi gửi duyệt:\" and the missing items.",
+    "\"Gửi duyệt\" is not available."
+   ],
+   "pre": [
+    "thuky owns an incomplete Draft."
+   ]
+  },
+  {
+   "group": "Duyệt / Từ chối",
+   "d": "The approver approves a meeting.",
+   "steps": [
+    "Sign in as chutoa and open the meeting (from the notification or the list).",
+    "Click \"Duyệt\" and confirm \"Duyệt cuộc họp\"."
+   ],
+   "exp": [
+    "The toast \"Đã duyệt cuộc họp.\" appears.",
+    "The status becomes Đã duyệt and the bar shows \"Bạn đã duyệt cuộc họp này\".",
+    "thuky is notified."
+   ],
+   "pre": [
+    "A meeting is Chờ duyệt with chutoa as approver."
+   ]
+  },
+  {
+   "group": "Duyệt / Từ chối",
+   "d": "The approver rejects with a reason; the organizer revises and resubmits.",
+   "steps": [
+    "As chutoa, click \"Từ chối\", leave Lý do từ chối empty and confirm.",
+    "Enter \"Cần bổ sung báo cáo tài chính vào nội dung cuộc họp.\" and click \"Từ chối\".",
+    "As thuky, open the meeting, edit it and click \"Gửi duyệt lại\"."
+   ],
+   "exp": [
+    "Empty reason: \"Cần nhập lý do từ chối.\".",
+    "After rejecting: \"Đã từ chối cuộc họp.\"; status Bị từ chối; thuky sees \"Cuộc họp bị từ chối\" with the reason.",
+    "Resubmission goes back to Chờ duyệt; the history keeps the rejection."
+   ],
+   "pre": [
+    "A meeting is Chờ duyệt with chutoa as approver."
+   ]
+  },
+  {
+   "group": "Duyệt / Từ chối",
+   "d": "The organizer withdraws a waiting meeting to Draft.",
+   "steps": [
+    "As thuky, open a Chờ duyệt meeting whose approver lost MeetingApprover.",
+    "Click \"Rút về nháp\"."
+   ],
+   "exp": [
+    "The bar shows \"Người duyệt không còn quyền duyệt\".",
+    "After withdrawing, \"Đã đưa cuộc họp về bản nháp.\" and the status is Bản nháp."
+   ],
+   "pre": [
+    "The assigned approver's role lost MeetingApprover."
+   ]
+  },
+  {
+   "group": "Công bố",
+   "d": "Publish an approved meeting that has a Chair and a Secretary.",
+   "steps": [
+    "As thuky, open the Đã duyệt meeting.",
+    "Click \"Công bố\" and confirm \"Công bố cuộc họp\"."
+   ],
+   "exp": [
+    "The toast \"Đã công bố cuộc họp.\" appears; the status is Đã công bố.",
+    "Every invitee gets an in-app notification and an email invitation (with an .ics file) in the SMTP sandbox.",
+    "The meeting now appears in the invitees' lists and calendars."
+   ],
+   "pre": [
+    "An Đã duyệt meeting with an active Chủ tọa and Thư ký on the roster.",
+    "SMTP sandbox is running."
+   ]
+  },
+  {
+   "group": "Công bố",
+   "d": "Publishing is refused without a Chair and a Secretary.",
+   "steps": [
+    "Remove the Thư ký from an Đã duyệt meeting.",
+    "Click \"Công bố\"."
+   ],
+   "exp": [
+    "\"Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.\" is shown.",
+    "The meeting stays Đã duyệt and no invitation is sent."
+   ],
+   "pre": [
+    "thuky owns an Đã duyệt meeting."
+   ]
+  },
+  {
+   "group": "Dời lịch",
+   "d": "Reschedule a published meeting and notify the invitees.",
+   "steps": [
+    "Open the Đã công bố meeting and click \"Dời lịch\".",
+    "Move it one day later, change the location and click \"Lưu và thông báo\"."
+   ],
+   "exp": [
+    "The toast \"Đã dời lịch cuộc họp. Người được mời sẽ nhận thông báo.\" appears.",
+    "Title and sensitivity are locked (\"Đã công bố, không đổi được.\").",
+    "Invitees receive a notification and an update email; Lịch làm việc shows the new time."
+   ],
+   "pre": [
+    "thuky owns a Published meeting with invitees."
+   ]
+  },
+  {
+   "group": "Huỷ cuộc họp",
+   "d": "Cancel a meeting with a reason.",
+   "steps": [
+    "Open a Published meeting and choose \"Huỷ cuộc họp\".",
+    "Confirm without a reason.",
+    "Enter \"Lãnh đạo đi công tác, sẽ xếp lịch lại sau.\" and confirm."
+   ],
+   "exp": [
+    "Without a reason: \"Cần nhập lý do huỷ cuộc họp.\".",
+    "The dialog warns \"Mọi người được mời sẽ nhận thông báo và email kèm lý do. Không hoàn tác được.\".",
+    "After confirming: \"Đã huỷ cuộc họp.\"; the page shows \"Cuộc họp đã huỷ\" with the reason; invitees are notified."
+   ],
+   "pre": [
+    "thuky owns a Published meeting."
+   ]
+  },
+  {
+   "group": "Bắt đầu / Kết thúc",
+   "d": "The Chair starts and ends the meeting.",
+   "steps": [
+    "As chutoa (Chair), open a Published meeting and click \"Bắt đầu họp\" (confirm \"Vẫn bắt đầu\" if it is early).",
+    "Later click \"Kết thúc họp\" and confirm \"Kết thúc cuộc họp?\"."
+   ],
+   "exp": [
+    "The status becomes Đang diễn ra and \"Vào phòng họp\" appears for invitees.",
+    "After ending, the status is Đã kết thúc and Thời gian thực tế shows the real start and end."
+   ],
+   "pre": [
+    "A Published meeting with chutoa as Chair and an active Secretary."
+   ]
+  },
+  {
+   "group": "Chi tiết cuộc họp",
+   "d": "Meeting detail shows the general information and the history; restricted meetings return 404.",
+   "steps": [
+    "Open a meeting you take part in; read Thông tin chung and the status history (\"Xem thêm\").",
+    "As an outsider, open the URL of that meeting."
+   ],
+   "exp": [
+    "Status, Mức độ, Thời gian, Hình thức, Địa điểm, Chủ tọa, Thư ký and Mô tả are shown.",
+    "The history lists each status change with who and when.",
+    "The outsider sees the not-found page."
+   ],
+   "pre": [
+    "A Published meeting and an unrelated outsider account."
+   ]
+  },
+  {
+   "group": "Tạo cuộc họp",
+   "d": "Pick the date and times with the date and time fields.",
+   "steps": [
+    "Open \"Tạo cuộc họp\".",
+    "In Ngày họp type 15/11/2026, then use \"Chọn ngày trên lịch\" to pick another day.",
+    "In Bắt đầu type 09:00, then open \"Chọn giờ\" and pick 09:30.",
+    "Open the list of Kết thúc.",
+    "Change Hình thức between Trực tiếp, Trực tuyến and Kết hợp."
+   ],
+   "exp": [
+    "Dates read dd/mm/yyyy and times hh:mm on the 24-hour clock, whatever the browser language.",
+    "The end-time list starts after the start time and shows how long the meeting would last.",
+    "Under Hình thức the hint says how it is recorded: \"Ghi âm: Thư ký ghi cả phòng.\", \"Ghi âm: mỗi người ghi micro của mình.\" or \"Ghi âm: mic phòng và micro người trực tuyến.\"."
+   ],
+   "pre": [
+    "Signed in as thuky@trustcabinet.local."
+   ]
+  }
+ ]
+}

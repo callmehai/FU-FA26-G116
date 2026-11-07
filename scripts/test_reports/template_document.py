@@ -10,6 +10,9 @@ from PIL import Image,ImageDraw,ImageFont,ImageChops
 W='http://schemas.openxmlformats.org/wordprocessingml/2006/main'
 R='http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 N={'w':W,'r':R}
+# Drive copies of the generated workbooks, as linked from the previously published Report 5.0.
+LINKS={'unit':'https://docs.google.com/spreadsheets/d/1O3pAqB9MOSZRpEHyOhyqSnpnDTnYjNxM/edit','integration':'https://docs.google.com/spreadsheets/d/1WmoEHNnme6JVTy8Abek6Tu1KgleNgblo/edit','api':'https://docs.google.com/spreadsheets/d/1UycEANnP3cKoKZqw8I4tCO_T0e3LWQxD/edit','system':'https://docs.google.com/spreadsheets/d/1Ftlo1qQodq90dngd9O2pQzRaCa9fw37n/edit','uat':'https://docs.google.com/spreadsheets/d/1kx0NqiMLeYudxb88fHBgURYGO1jiRnLR/edit'}
+DRIVE='https://drive.google.com/drive/u/0/folders/1z90lTcbKSJgFVIvbuRaqRoXp-iaJidZr'
 
 def serialize(root):return E.tostring(root,xml_declaration=True,encoding='UTF-8',standalone=True)
 def text_set(element,text):
@@ -112,11 +115,11 @@ def make_document(reference,destination,tests,manual,meta,build):
         285:'Jira SCRUM is the requirements source; testcase-to-UC mapping remains subject to BA review',
         288:'2.1.1 Component Test',289:'Table 2.1.1 Component Test',290:'2.1.2 API Test',291:'Table 2.1.2 API Test',292:'2.1.3 GUI Test',293:'Table 2.1.3 GUI Test',294:'2.1.4 Regression Test',295:'Table 2.1.4 Regression Test',
         314:'View Unit Test Case at: Report5.1_Unit_Test.xlsx',317:'View Integration Test Case at: Report5.2_Integration_Test.xlsx',
-        318:'View API Test Case at: Report5.2.2_Integration_Test_API_Test.xlsx. Execution evidence: no verified TRX imported for this export.',
+        318:'View API Test Case at: Report5.2.2_Integration_Test_API_Test.xlsx. Execution evidence: '+('verified TRX imported for this export.' if meta['evidenceVerified'] else 'no verified TRX imported for this export.'),
         321:'View System Test Case at: Report5.3_System_Test.xlsx',322:'System execution evidence: pending manual execution; SYS-09 is Blocked by missing UI/workflow prerequisites.',
         325:'View Acceptance Test Case at: Report5.4_Acceptance_Test.xlsx',326:'Representative-user demo recording: not collected.',327:'Customer feedback: not collected. Record actual responses in Customers Feedbacks after a UAT session.',
         331:'Refer: Report5.1_Unit_Test.xlsx. '+str(meta['classification'].get('UNIT',0))+' definitions; results are NotRun without verified evidence. Code coverage has not been measured.',
-        334:'Refer: Report5.2_Integration_Test.xlsx and Report5.2.2_Integration_Test_API_Test.xlsx. '+str(meta['classification'].get('INTEGRATION',0))+' non-HTTP definitions, '+str(meta['classification'].get('API',0))+' API definitions and 20 manual UI scenarios.',
+        334:'Refer: Report5.2_Integration_Test.xlsx and Report5.2.2_Integration_Test_API_Test.xlsx. '+str(meta['manualCases'].get('UI',0))+' functional UI test cases and '+str(meta['classification'].get('API',0))+' API test cases; '+str(meta['classification'].get('INTEGRATION',0))+' automated infrastructure checks run with dotnet test.',
         337:'Refer: Report5.3_System_Test.xlsx. Nine designed workflows: eight NotRun and one Blocked; no completed execution is claimed.',
         341:'Refer: Report5.4_Acceptance_Test.xlsx. Eight proposed acceptance criteria; zero customer responses; stakeholder sign-off is pending.',
     }
@@ -133,8 +136,8 @@ def make_document(reference,destination,tests,manual,meta,build):
         for link in pp[index].findall('.//w:hyperlink',N):link.getparent().remove(link)
     for index,level,filename in [(331,'UNIT','Report5.1_Unit_Test.xlsx'),(337,'SYS','Report5.3_System_Test.xlsx'),(341,'UAT','Report5.4_Acceptance_Test.xlsx')]:
         cases=[c for c in tests+manual if c['level']==level];counts=Counter(c['status'] for c in cases)
-        linked_text(pp[index],'Refer: ',filename,'. '+str(len(cases))+' definitions / scenarios: '+', '.join(f'{k}={v}' for k,v in counts.items())+'. '+('Customer feedback and stakeholder sign-off are pending.' if level=='UAT' else ''))
-    linked_text(pp[334],'Refer: ','Report5.2_Integration_Test.xlsx',f" and Report5.2.2_Integration_Test_API_Test.xlsx. {meta['classification'].get('INTEGRATION',0)} non-HTTP definitions, {meta['classification'].get('API',0)} API definitions and 20 manual UI scenarios.")
+        linked_text(pp[index],'Refer: ',filename,'. '+str(len(cases))+' definitions'+(f" ({meta['unitCases']} test cases)" if level=='UNIT' and meta.get('unitCases') else ' / scenarios')+': '+', '.join(f'{k}={v}' for k,v in counts.items())+'. '+('Customer feedback and stakeholder sign-off are pending.' if level=='UAT' else ''))
+    linked_text(pp[334],'Refer: ','Report5.2_Integration_Test.xlsx',f" and Report5.2.2_Integration_Test_API_Test.xlsx. {meta['manualCases'].get('UI',0)} functional UI test cases and {meta['classification'].get('API',0)} API test cases; {meta['classification'].get('INTEGRATION',0)} automated infrastructure checks run with dotnet test.")
     # Remove the other team's change history; retain all row and cell formatting.
     for row in tables[0].findall('w:tr',N)[1:]:
         for cell in row.findall('w:tc',N):text_set(cell,'')

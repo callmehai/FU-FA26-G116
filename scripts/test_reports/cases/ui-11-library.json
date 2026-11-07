@@ -1,0 +1,74 @@
+{
+ "prefix": "LIB_FT",
+ "module": "Library",
+ "source": "frontend/src/features/documents/DocumentsPage.tsx",
+ "cases": [
+  {
+   "group": "Kho tài liệu",
+   "d": "Create nested folders and upload documents into the personal library.",
+   "steps": [
+    "Open Kho tài liệu and click \"Thư mục mới\"; enter Báo cáo and click \"Tạo thư mục\".",
+    "Open Báo cáo, create Quý 3 inside it.",
+    "Click \"Tải tài liệu lên\" and upload Tờ trình.pdf and Dự thảo.docx."
+   ],
+   "exp": [
+    "\"Đã tạo thư mục.\" appears for each folder.",
+    "\"Đã tải tài liệu lên kho của bạn.\" appears; the files are listed with Tên, Kích thước and Ngày tạo.",
+    "\"Bộ nhớ tài liệu của cả hệ thống\" shows the space used."
+   ],
+   "pre": [
+    "Signed in as any active user; file storage configured."
+   ]
+  },
+  {
+   "group": "Kho tài liệu",
+   "d": "Rename, move, search and delete in the library.",
+   "steps": [
+    "Rename a document (\"Đổi tên\") and a folder.",
+    "Move a document with \"Chuyển đến…\" into another folder.",
+    "Search \"Báo cáo\" in \"Tìm trong thư mục này…\" and filter by file type.",
+    "Delete an empty folder, then try to delete a folder that still has files."
+   ],
+   "exp": [
+    "\"Đã đổi tên thư mục.\" and \"Đã chuyển tài liệu.\" appear.",
+    "Search only covers the open folder.",
+    "The empty folder is deleted; the other shows \"Chỉ xoá được thư mục rỗng.\"."
+   ],
+   "pre": [
+    "The user has folders and documents in the library."
+   ]
+  },
+  {
+   "group": "Kho tài liệu",
+   "d": "Folders nest at most 5 levels and cannot move into themselves.",
+   "steps": [
+    "Create folders 5 levels deep, then try a sixth.",
+    "Try to move a folder into its own subfolder."
+   ],
+   "exp": [
+    "The sixth level is refused: \"Thư mục chỉ lồng tối đa 5 cấp\".",
+    "The move is refused and nothing changes."
+   ],
+   "pre": [
+    "Signed in as any active user."
+   ]
+  },
+  {
+   "group": "Kho tài liệu",
+   "d": "An administrator reads a deactivated person's library, read-only and logged.",
+   "steps": [
+    "As quantri, on Người dùng & Quyền open the menu of a deactivated account and choose \"Xem kho tài liệu\".",
+    "Open a folder and a document.",
+    "Try the same for an active account."
+   ],
+   "exp": [
+    "The library opens with \"Chỉ xem. Mỗi lần mở thư mục hoặc tài liệu đều được ghi vào nhật ký.\".",
+    "Every open is written to the audit log.",
+    "For an active account the action is not offered (\"Chỉ xem được kho của tài khoản đã vô hiệu hoá\")."
+   ],
+   "pre": [
+    "A deactivated account with library content."
+   ]
+  }
+ ]
+}

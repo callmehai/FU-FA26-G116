@@ -1,0 +1,71 @@
+{
+ "prefix": "VOICE_FT",
+ "module": "Voice ID",
+ "source": "frontend/src/features/voice/VoicePage.tsx",
+ "cases": [
+  {
+   "group": "Giọng nói của tôi",
+   "d": "Turn on Voice ID with consent and record voice samples.",
+   "steps": [
+    "Open Giọng nói của tôi and read the notice (Mục đích, Lưu gì, Dùng ở đâu, Quyền của bạn, Bên kiểm soát dữ liệu).",
+    "Tick the consent statement and click \"Đồng ý và bật\".",
+    "Click \"Ghi giọng mẫu\", read the text, click \"Dừng và lưu\"; record a second sample."
+   ],
+   "exp": [
+    "Without ticking, Voice ID cannot be turned on.",
+    "After consent the status is \"Đang bật\".",
+    "Each good sample is listed; a bad one (noise, two voices) is refused with the reason.",
+    "Each new sample can be played back (\"Nghe lại\"); only its owner hears it."
+   ],
+   "pre": [
+    "Microphone allowed; speech worker running."
+   ]
+  },
+  {
+   "group": "Giọng nói của tôi",
+   "d": "Turn Voice ID off and erase the samples.",
+   "steps": [
+    "Click to turn off Voice ID and confirm \"Tắt và xoá\"."
+   ],
+   "exp": [
+    "\"Tắt nhận diện giọng nói?\" is asked first.",
+    "The samples are erased; automatic speaker suggestions for this user stop.",
+    "Names the Secretary already assigned in transcripts stay."
+   ],
+   "pre": [
+    "Voice ID is on with samples."
+   ]
+  },
+  {
+   "group": "Giọng nói của tôi",
+   "d": "Delete one voice sample.",
+   "steps": [
+    "Click \"Xoá giọng mẫu\" on one sample and confirm."
+   ],
+   "exp": [
+    "\"Đã xoá giọng mẫu.\" appears and the sample leaves the list.",
+    "With fewer than 2 samples the page asks to record more."
+   ],
+   "pre": [
+    "Voice ID is on with two samples."
+   ]
+  },
+  {
+   "group": "Giọng nói của tôi",
+   "d": "Someone who agreed to the earlier notice renews to keep new sample recordings.",
+   "steps": [
+    "Open Giọng nói của tôi.",
+    "Read the notice about the new terms and click \"Đồng ý điều khoản mới\".",
+    "Record a new sample and play it back."
+   ],
+   "exp": [
+    "The page explains that from now on the sample recording is kept, encrypted, for the owner to hear; old samples stay but cannot be played.",
+    "After renewing, \"Đã bật nhận diện giọng nói cho tài khoản của bạn.\" appears and the existing samples stay.",
+    "The new sample has \"Nghe lại\"."
+   ],
+   "pre": [
+    "A user who turned Voice ID on under the earlier notice and has samples."
+   ]
+  }
+ ]
+}

@@ -9,10 +9,11 @@ from collections import defaultdict
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 import re
-import textwrap
 import io,posixpath
 from PIL import Image,ImageDraw,ImageFont
 from lxml import etree as E
+from readable import test_date,table_fields,unit_fields,description,endpoint,authored
+from values import case_inputs
 
 S='http://schemas.openxmlformats.org/spreadsheetml/2006/main'
 R='http://schemas.openxmlformats.org/officeDocument/2006/relationships'
@@ -31,6 +32,9 @@ def number(text):
     return n
 
 
+AFTER_HYPERLINKS={'printOptions','pageMargins','pageSetup','headerFooter','rowBreaks','colBreaks','customProperties','cellWatches','ignoredErrors','smartTags','drawing','legacyDrawing','legacyDrawingHF','picture','oleObjects','controls','webPublishItems','tableParts','extLst'}
+
+
 class Sheet:
     def __init__(self, name, root, strings):
         self.name=name;self.root=deepcopy(root);self.values={};self.formulas={};self.caches={};self.notes={}
@@ -47,6 +51,8 @@ class Sheet:
             # References to another project's comments, images or hyperlinks are data.
             # Cover drawings are reattached explicitly, retaining the source logo.
             for e in self.root.findall(tag(kind)):self.root.remove(e)
+        # Printer settings are not carried over, so their relationship would dangle.
+        for e in self.root.findall(tag('pageSetup')):e.attrib.pop('{'+R+'}id',None)
         self.root.attrib.pop('{http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac}dyDescent',None)
 
     def cell(self, addr):
@@ -97,6 +103,24 @@ class Sheet:
             for child in list(c):c.remove(child)
         self.data.append(new)
 
+    def widths(self):
+        found={}
+        for c in self.root.iter(tag('col')):
+            for n in range(int(c.get('min')),min(int(c.get('max')),40)+1):found[col(n)]=float(c.get('width','9'))
+        return found
+
+    def width(self,letter,width):
+        # Single-column <col> entries are widened; a column no entry covers gets its own one.
+        n=number(letter);cols=self.root.find(tag('cols'))
+        for c in self.root.iter(tag('col')):
+            if c.get('min')==c.get('max')==str(n):c.set('width',str(width));c.set('customWidth','1');return
+            if int(c.get('min'))<=n<=int(c.get('max')):return
+        if cols is not None:
+            new=E.Element(tag('col'),min=str(n),max=str(n),width=str(width),customWidth='1')
+            after=[c for c in cols if int(c.get('min'))<n]
+            if after:after[-1].addnext(new)
+            else:cols.insert(0,new)
+
     def height(self,row,height):
         r=self.cell('A'+str(row)).getparent();r.set('ht',str(min(409,height)));r.set('customHeight','1')
 
@@ -107,12 +131,25 @@ class Sheet:
         if ref not in [e.get('ref') for e in ms]:E.SubElement(ms,tag('mergeCell'),ref=ref)
         ms.set('count',str(len(ms)))
 
-    def link(self,addr,sheet):
+    def validate(self,sqref,formula):
+        # dataValidations sits after mergeCells/conditionalFormatting and before hyperlinks.
+        dvs=self.root.find(tag('dataValidations'))
+        if dvs is None:
+            dvs=E.Element(tag('dataValidations'));anchor=next((e for e in self.root if E.QName(e).localname in {'hyperlinks'}|AFTER_HYPERLINKS),None)
+            if anchor is not None:anchor.addprevious(dvs)
+            else:self.root.append(dvs)
+        dv=E.SubElement(dvs,tag('dataValidation'),type='list',allowBlank='1',showErrorMessage='1',sqref=sqref);E.SubElement(dv,tag('formula1')).text=formula
+        dvs.set('count',str(len(dvs)))
+
+    def link(self,addr,sheet,display=None):
         links=self.root.find(tag('hyperlinks'))
         if links is None:
-            links=E.Element(tag('hyperlinks'));anchor=self.root.find(tag('mergeCells'))
-            self.root.insert(list(self.root).index(anchor if anchor is not None else self.data)+1,links)
-        E.SubElement(links,tag('hyperlink'),ref=addr,location="'"+sheet.replace("'","''")+"'!A1")
+            # CT_Worksheet order: hyperlinks follows phoneticPr/conditionalFormatting/dataValidations.
+            links=E.Element(tag('hyperlinks'));anchor=next((e for e in self.root if E.QName(e).localname in AFTER_HYPERLINKS),None)
+            if anchor is not None:anchor.addprevious(links)
+            else:self.root.append(links)
+        # Google Sheets shows a converted internal link as "#gid=..." unless the link carries its text.
+        E.SubElement(links,tag('hyperlink'),ref=addr,location="'"+sheet.replace("'","''")+"'!A1",display=display or sheet)
 
     def finish(self,authored):
         for c in self.data.iter(tag('c')):
@@ -149,10 +186,13 @@ class Template:
         self.workbook=E.fromstring(self.parts['xl/workbook.xml'])
         rels=E.fromstring(self.parts['xl/_rels/workbook.xml.rels'])
         targets={r.get('Id'):r.get('Target').lstrip('/') for r in rels}
-        self.original={}
+        self.original={};self.chart=None
+        names={s.get('name') for s in self.workbook.find(tag('sheets'))}
         # Only these source patterns are reused. Parsing every formatted, empty row
         # in all 112 legacy unit sheets would waste several gigabytes of memory.
-        if 'Unit' in self.path.name:
+        if 'ModuleName1' in names:
+            limits={'Cover':20,'Test Cases':12,'Test Statistics':40,'ModuleName1':24}
+        elif 'Unit' in self.path.name:
             limits={'Guideline':60,'Cover':20,'MethodList':9,'Statistics':130,'login':23}
         elif 'Acceptance' in self.path.name:
             limits={'Cover':20,'Statistics':22,'Customer Feedback Statistics':28,'Customers Feedbacks':6}
@@ -215,14 +255,23 @@ class Template:
                     parts[comment_path]=xml(comments);parts[vml_path]=xml(vml)
                     rp=E.Element('{'+P+'}Relationships',nsmap={None:P});E.SubElement(rp,'{'+P+'}Relationship',Id='notes',Type=R+'/comments',Target=f'../comments{i}.xml');E.SubElement(rp,'{'+P+'}Relationship',Id='noteShapes',Type=R+'/vmlDrawing',Target=f'../drawings/notes{i}.vml');parts[f'xl/worksheets/_rels/sheet{i}.xml.rels']=xml(rp)
                     sheet_root=E.fromstring(parts[f'xl/worksheets/sheet{i}.xml']);E.SubElement(sheet_root,tag('legacyDrawing'),attrib={'{'+R+'}id':'noteShapes'});parts[f'xl/worksheets/sheet{i}.xml']=xml(sheet_root)
-                if s.name=='Cover' or s.name=='Statistics' and 'login' in self.original or s.name=='Customer Feedback Statistics':
+                if s.name=='Cover' or s.name=='Statistics' and 'login' in self.original or s.name=='Customer Feedback Statistics' or s.name=='Test Statistics' and 'ModuleName1' in self.original:
                     op,root=self.original[s.name];drawing=root.find(tag('drawing'))
                     rp=op.rsplit('/',1)[0]+'/_rels/'+op.rsplit('/',1)[1]+'.rels'
                     if drawing is not None and rp in self.parts:
-                        final=E.fromstring(parts[f'xl/worksheets/sheet{i}.xml']);final.append(deepcopy(drawing));parts[f'xl/worksheets/sheet{i}.xml']=xml(final)
+                        # <drawing> precedes <legacyDrawing>, which the notes above may have added.
+                        final=E.fromstring(parts[f'xl/worksheets/sheet{i}.xml']);legacy=final.find(tag('legacyDrawing'))
+                        if legacy is not None:legacy.addprevious(deepcopy(drawing))
+                        else:final.append(deepcopy(drawing))
+                        parts[f'xl/worksheets/sheet{i}.xml']=xml(final)
                         links=E.fromstring(self.parts[rp])
                         for link in list(links):
                             if not link.get('Type','').endswith('/drawing'):links.remove(link)
+                        existing=parts.get(f'xl/worksheets/_rels/sheet{i}.xml.rels')
+                        if existing:
+                            merged=E.fromstring(existing)
+                            for link in links:merged.append(deepcopy(link))
+                            links=merged
                         parts[f'xl/worksheets/_rels/sheet{i}.xml.rels']=xml(links)
                         for key,val in self.parts.items():
                             if key.startswith(('xl/drawings/','xl/media/')):parts[key]=val
@@ -243,9 +292,34 @@ class Template:
                     tree.find('.//c:title//a:t',chartns).text='Test Type (pending review)'
                     for node in tree.findall('.//c:showVal',chartns):node.set('val','0')
                 parts[chart]=xml(tree)
+        if 'ModuleName1' in self.original and self.chart:
+            # Unit template: two pies under the rate rows. Keep each pie's first series and
+            # point it at the Sub total row; the other series reference deleted rows (#REF!).
+            chartns={'c':'http://schemas.openxmlformats.org/drawingml/2006/chart','a':'http://schemas.openxmlformats.org/drawingml/2006/main','xdr':'http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing'}
+            total=self.chart['row'];drawing_path=next((k for k in parts if k.startswith('xl/drawings/drawing') and k.endswith('.xml') and b'/chart' in parts.get('xl/drawings/_rels/'+k.rsplit('/',1)[1]+'.rels',b'')),None)
+            if drawing_path:
+                drawing=E.fromstring(parts[drawing_path])
+                for node in drawing.findall('.//xdr:from/xdr:row',chartns):node.text=str(total+7)
+                for node in drawing.findall('.//xdr:to/xdr:row',chartns):node.text=str(total+22)
+                parts[drawing_path]=xml(drawing)
+            for chart,(cols,values,title) in {'xl/charts/chart1.xml':('$F$%d:$H$%d',self.chart['types'],'Test Type'),'xl/charts/chart2.xml':('$C$%d:$E$%d',self.chart['status'],'Test Result')}.items():
+                if chart not in parts:continue
+                tree=E.fromstring(parts[chart])
+                for plot in tree.findall('.//c:plotArea/*',chartns):
+                    for extra in plot.findall('c:ser',chartns)[1:]:plot.remove(extra)
+                ser=tree.find('.//c:ser',chartns)
+                ser.find('c:cat//c:f',chartns).text="'Test Statistics'!"+cols%(11,11)
+                ref=ser.find('c:val/c:numRef',chartns);ref.find('c:f',chartns).text="'Test Statistics'!"+cols%(total,total)
+                cache=ref.find('c:numCache',chartns)
+                for pt in cache.findall('c:pt',chartns):cache.remove(pt)
+                for k,v in enumerate(values):
+                    pt=E.SubElement(cache,'{'+chartns['c']+'}pt',idx=str(k));E.SubElement(pt,'{'+chartns['c']+'}v').text=str(v)
+                node=tree.find('.//c:title//a:t',chartns)
+                if node is not None:node.text=title
+                parts[chart]=xml(tree)
         if 'Customers Feedbacks' in self.original:
-            font=ImageFont.truetype('C:/Windows/Fonts/arial.ttf',42)
-            bold=ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf',52)
+            font=ImageFont.truetype('C:/Windows/Fonts/times.ttf',42)
+            bold=ImageFont.truetype('C:/Windows/Fonts/timesbd.ttf',52)
             panels=[['Business role','Meeting preparation','Approval workflow'],['Publication and schedule changes','Meeting confidentiality','Password recovery'],['Ease of use','Suggested improvements','Overall satisfaction']]
             for index,questions in enumerate(panels,2):
                 image=Image.new('RGB',(1932,2500),'white');draw=ImageDraw.Draw(image)
@@ -301,82 +375,104 @@ class Template:
             for k,v in parts.items():z.writestr(k,v)
 
 
-def cover(t,title,date):
+def cover(t,title,date,history=None):
     s=t.add('Cover');s.keep(20);s.clear(11)
-    for a,v in {'B2':title,'B4':'TrustCabinet','B5':'SEP490-G116','F4':'TrustCabinet Team','F5':date,'F6':'1.0','A11':date,'B11':'1.0','D11':'A','E11':'Generate English test documentation from TrustCabinet source using the supplied template.'}.items():s.put(a,v)
-    s.put('B6','=B5&"_"&B2&"_"&F6',f'SEP490-G116_{title}_1')
+    history=history or [(date,'1.0','Test documentation','A','Generate English test documentation from TrustCabinet source using the supplied template.')]
+    for a,v in {'B2':title,'B4':'TrustCabinet','B5':'SEP490-G116','F4':'TrustCabinet Team','F5':date,'F6':history[-1][1]}.items():s.put(a,v)
+    for r,row in enumerate(history,11):
+        for a,v in zip('ABCDEF',row):s.put(a+str(r),v)
+    s.put('B6','=B5&"_"&B2&"_v"&F6',f'SEP490-G116_{title}_v{history[-1][1]}')
     return s
 
 
-def pieces(value,width=100,size=5):
-    lines=[x for line in str(value).splitlines() for x in (textwrap.wrap(line,width,replace_whitespace=False) or [''])]
-    return ['\n'.join(lines[i:i+size]) for i in range(0,len(lines),size)] or ['']
+ABNORMAL=re.compile(r'(?i)(^|_)(reject|refuse|invalid|fail|throw|error|den(y|ies|ied)|forbid|unauthori[sz]ed|not_?found|missing|wrong|expired?|conflict|cannot|can_?not|blocked|duplicate|bad|disallow|no_longer|unknown|locked|inactive|deactivated|mismatch|blank|null|empty|outside|revoked|tamper|malformed|unsupported|answers_msg|stale|too_)')
+BOUNDARY=re.compile(r'(?i)(^|_)(boundary|limit|limits|max|maximum|min|minimum|exactly|edge|threshold|length|longest|shortest|at_most|at_least|last|zero|immediately|cap|caps|capped|upper|lower|equal_to)(_|$)')
+def unit_type(c,inputs):
+    """Normal / Abnormal / Boundary, inferred from the test name and data; the tester reviews it."""
+    name=c['method']
+    if BOUNDARY.search(name):return 'Boundary'
+    if ABNORMAL.search(name):return 'Abnormal'
+    if c['kind']=='Theory' and re.search(r'=\s*(null|""|"\s+"|-\d|0\b|int\.MaxValue|int\.MinValue)',inputs):return 'Boundary'
+    return 'Normal'
 
 
-def unit_book(path,cases,meta):
-    t=Template(path);g=t.add('Guideline');g.keep(57)
-    g.put('A4',' - Each method sheet documents one extracted xUnit test definition. All InlineData variants belong to that definition; execution count is tracked separately in inventory.json.')
-    g.put('A6',' - MethodList maps every definition to its source and matrix. No KLOC or code-coverage claim is inferred from the method count.')
-    g.put('A8',' - Statistics counts test definitions. Test coverage means execution rate here, not measured code coverage. N/A/B classifications remain blank until reviewed by the tester.')
-    g.put('A39',' - P = Passed, F = Failed. NotRun means no verified execution evidence. Partial, Skipped and Blocked remain untested for the summary. A Theory passes only with every expected variant verified.')
-    cover(t,'UNIT TEST DOCUMENT',meta['date'])
-    li=t.add('MethodList');li.keep(9);li.clear(9);li.put('C6','.NET 10; xUnit; source fixtures; dedicated PostgreSQL/Redis when required.');li.height(6,42)
-    st=t.add('Statistics');total_pattern=deepcopy(st.data.find(f"{tag('row')}[@r='123']"));rate_patterns={r:deepcopy(st.data.find(f"{tag('row')}[@r='{r}']")) for r in range(125,130)}
-    st.keep(12);st.clear(12);st.put('F4','TrustCabinet Team');st.put('F5','Pending review');st.put('F6',meta['date']);st.put('B7','One row per test definition; P/F require verified TRX. N/A/B pending review; code coverage has not been measured.');st.height(7,45)
-    names=[]
-    for i,c in enumerate(cases,1):
-        name=f'U{i:03}-'+c['method'][:26];names.append(name)
-        s=t.add('login',name);s.keep(23);s.clear(7)
-        s.put('C1',c['module']);s.put('K1',c['method']);s.put('C2','TrustCabinet Team');s.put('K2',c['tester']);s.put('C3',c['id']+' | '+c['title']+'\n'+c['source']+':'+str(c['line']));s.height(3,60);s.height(1,48)
-        s.put('E7','UTCID01');s.put('A8','Condition');s.put('B8','Precondition')
-        s.put('B9',c['precondition']);s.put('E9','O');s.height(9,110)
-        s.put('B10','Fixture and helpers: see the referenced source.');s.put('E10','O');s.height(10,42)
-        s.put('B11','Input data');s.put('B12',c['parameters'] or 'No method parameters');s.put('E12','O');s.height(12,45)
-        inputs='\n'.join(c['data']) or 'Fact: setup data is declared in the test body.'
-        s.put('B13',inputs);s.put('E13','O');s.height(13,min(390,30+17*len(textwrap.wrap(inputs,34))))
-        s.put('B14','Procedure: execute this xUnit definition and all its data variants.');s.put('E14','O');s.height(14,65)
-        s.put('A15','Confirm');s.put('B15','Return / assertions')
-        checks=[]
-        for a in c['assertions']:checks.extend(pieces(a,34,8))
-        if not checks:checks=['Assertions are in source helper methods; inspect the referenced test and fixture.']
-        end=16+len(checks)
-        # Clone the template confirmation row and result block without introducing a new style.
-        rows={r:deepcopy(s.data.find(f"{tag('row')}[@r='{r}']")) for r in (16,20,21,22,23)}
-        for row in list(s.data):
-            if int(row.get('r'))>=16:s.data.remove(row)
-        ms=s.root.find(tag('mergeCells'))
-        if ms is not None:
-            for m in list(ms):
-                if min(map(int,re.findall(r'\d+',m.get('ref'))))>=16:ms.remove(m)
-        for j,text in enumerate(checks,16):
-            r=deepcopy(rows[16]);r.set('r',str(j))
-            for cell in r:cell.set('r',re.sub(r'\d+',str(j),cell.get('r')))
-            s.data.append(r);s.merge(f'B{j}:D{j}');s.put(f'B{j}',text);s.put(f'E{j}','O');s.height(j,20+17*max(1,len(text.splitlines())))
-        labels=['Type(N : Normal, A : Abnormal, B : Boundary)','Passed/Failed','Executed Date','Defect ID']
-        for j,(source,label) in enumerate(zip((20,21,22,23),labels),end):
-            r=deepcopy(rows[source]);r.set('r',str(j))
-            for cell in r:cell.set('r',re.sub(r'\d+',str(j),cell.get('r')))
-            s.data.append(r);s.merge(f'B{j}:D{j}');s.put(f'B{j}',label)
-        s.put(f'A{end}','Result');s.put(f'E{end+1}',{'Passed':'P','Failed':'F'}.get(c['status'],c['status']));s.put(f'E{end+2}',c['executedAt']);s.put(f'E{end+3}',c['defect']);s.height(end,55)
-        for addr,formula,cache in [('A5',f'=COUNTIF(E{end+1}:T{end+1},"P")',int(c['status']=='Passed')),('C5',f'=COUNTIF(E{end+1}:T{end+1},"F")',int(c['status']=='Failed')),('E5','=N5-A5-C5',int(c['status'] not in {'Passed','Failed'})),('K5',f'=COUNTIF(E{end}:T{end},"N")',0),('L5',f'=COUNTIF(E{end}:T{end},"A")',0),('M5',f'=COUNTIF(E{end}:T{end},"B")',0),('N5','=COUNTA(E7:T7)',1)]:s.put(addr,formula,cache)
-        r=i+8;li.row(9,r,75)
-        for a,v in zip('ABCDEF',[i,c['module'],c['method'],name,c['id']+' | '+c['title'],c['precondition']]):li.put(a+str(r),v)
+def wrapped(text,width):
+    return sum(max(1,-(-len(line)//max(1,int(width*0.85)))) for line in str(text).splitlines() or [''])
+
+
+LINE=14.5;BUDGET=26
+def fit(text,width,lines=BUDGET):
+    """Keep a cell within Excel's 409pt row limit, cutting whole lines and saying so."""
+    text=str(text);kept=[]
+    for line in text.splitlines():
+        if wrapped('\n'.join(kept+[line]),width)>lines-1:
+            kept.append('… (continued in the test source)');break
+        kept.append(line)
+    return '\n'.join(kept)
+
+
+def height(cells,minimum=37.5):
+    return max(minimum,min(409,8+LINE*max(wrapped(v,w) for v,w in cells)))
+
+
+UNIT_RESULT={'Passed':'Passed','Failed':'Failed','Skipped':'N/A'}
+def unit_book(path,cases,meta,history):
+    t=Template(path);cv=cover(t,'UNIT TEST DOCUMENT',meta['date'],history)
+    cv.put('B6','=B5&"_UT_v"&F6',f'SEP490-G116_UT_v{history[-1][1]}')
+    modules=defaultdict(list)
+    for c in cases:modules[c['module']].append(c)
+    li=t.add('Test Cases');li.keep(12);li.clear(9)
+    li.put('D3','=Cover!B4','TrustCabinet');li.put('D4','=Cover!B5','SEP490-G116')
+    li.put('D5','1. Runtime: .NET SDK 10.0.401 (global.json), xUnit test project tests/TrustCabinet.Web.Tests\n2. Database: none; unit tests run in process with fakes and stubs\n3. Web browser: not required\n4. Command: dotnet test TrustCabinet.sln');li.height(5,72)
+    st=t.add('Test Statistics')
+    patterns={r:deepcopy(st.data.find(f"{tag('row')}[@r='{r}']")) for r in (16,18,19,20,21,22)}
+    st.keep(12);st.clear(12)
+    st.put('B4','=Cover!B4','TrustCabinet');st.put('B5','=Cover!B5','SEP490-G116');st.put('B6','=B5&"_"&"Test Report"&"_v"&Cover!F6',f"SEP490-G116_Test Report_v{history[-1][1]}")
+    st.put('F4','TrustCabinet Team');st.put('F5','Pending review');st.put('F6',meta['date'])
+    st.put('B7','')
+    totals=dict(status=[0,0,0],types=[0,0,0],cases=0)
+    for i,(module,items) in enumerate(sorted(modules.items()),1):
+        name=re.sub(r'[:*?/\\\[\]]','-',module)[:31]
+        s=t.add('ModuleName1',name);header=deepcopy(s.data.find(f"{tag('row')}[@r='12']"));case=deepcopy(s.data.find(f"{tag('row')}[@r='13']"))
+        s.keep(11);s.clear(12);s.put('B2',module)
+        for letter,size in (('B',30),('C',26),('D',46),('G',11)):s.width(letter,size)
+        w=s.widths()
+        for a,v in zip(('T2','T3','T4','T5'),('Passed','Failed','Pending','N/A')):s.put(a,v)
+        row=12;n=0;counts=dict(Passed=0,Failed=0,Pending=0,Normal=0,Abnormal=0,Boundary=0)
+        for c in sorted(items,key=lambda c:(c['className'],c['line'])):
+            s.row(header,row);s.put(f'A{row}',c['method']);row+=1
+            pre,_,expected=unit_fields(c);result=UNIT_RESULT.get(c['status'],'Pending');pre=fit(pre,w['B']);expected=fit(expected,w['D'])
+            for inputs in case_inputs(c):
+                n+=1;kind=unit_type(c,inputs);counts[kind]+=1;counts[result]=counts.get(result,0)+1;inputs=fit(inputs,w['C'])
+                s.row(case,row,height([(pre,w['B']),(inputs,w['C']),(expected,w['D'])]))
+                # Note stays empty: the method header row above already names the test.
+                for a,v in zip('ABCDEFGHILOP',[f'UTC{n:03}',pre,inputs,expected,kind,result,test_date(c['executedAt']),c['tester'],'Pending','Pending',c['defect'],'']):s.put(a+str(row),v)
+                row+=1
+        last=row-1
+        s.put('B3',f'=COUNTIF(A12:A{last},"UTC*")',n)
+        for r,colname in ((5,'F'),(6,'I'),(7,'L')):
+            for a,label in zip('BCD',('Passed','Failed','Pending')):s.put(f'{a}{r}',f'=COUNTIF(${colname}$12:${colname}${last},{a}$4)',counts[label] if r==5 else (n if label=='Pending' else 0))
+        for a,label in zip('BCD',('Normal','Abnormal','Boundary')):s.put(f'{a}9',f'=COUNTIF($E$12:$E${last},{a}$8)',counts[label])
+        s.validate(f'F12:F{last} I12:I{last} L12:L{last}','$T$2:$T$5');s.validate(f'E12:E{last}','"Normal,Abnormal,Boundary"')
+        status=[counts['Passed'],counts['Failed'],n-counts['Passed']-counts['Failed']];types=[counts['Normal'],counts['Abnormal'],counts['Boundary']]
+        r=i+8;li.row(9,r,20)
+        for a,v in zip('BCDEF',[i,module,name,f"{len(items)} methods, {n} cases",'None (in-process fakes)']):li.put(a+str(r),v)
         li.link('D'+str(r),name)
-        r=i+11;st.row(12,r,30);st.put('A'+str(r),i);st.put('B'+str(r),name)
-        st.link('B'+str(r),name)
-        for a,src,cache in zip('CDEFGHI',['A5','C5','E5','K5','L5','M5','N5'],[int(c['status']=='Passed'),int(c['status']=='Failed'),int(c['status'] not in {'Passed','Failed'}),0,0,0,1]):st.put(a+str(r),f"='{name}'!{src}",cache)
-    r=len(cases)+12;st.row(total_pattern,r,25);st.put('B'+str(r),'Sub total')
-    for a in 'CDEFGHI':st.put(a+str(r),f'=SUM({a}12:{a}{r-1})',sum(st.caches.get(a+str(j),0) for j in range(12,r)))
-    executed=sum(c['status'] in {'Passed','Failed'} for c in cases);passed=sum(c['status']=='Passed' for c in cases)
-    st.row(rate_patterns[125],r+2,25);st.put('B'+str(r+2),'Test coverage');st.put('D'+str(r+2),f'=IFERROR((C{r}+D{r})*100/I{r},0)',executed*100/len(cases) if cases else 0);st.put('E'+str(r+2),'%')
-    st.row(rate_patterns[126],r+3,25);st.put('B'+str(r+3),'Test successful coverage');st.put('D'+str(r+3),f'=IFERROR(C{r}*100/I{r},0)',passed*100/len(cases) if cases else 0);st.put('E'+str(r+3),'%')
-    for offset,label,sourcecol,pattern in [(4,'Normal case','F',127),(5,'Abnormal case','G',128),(6,'Boundary case','H',129)]:
-        st.row(rate_patterns[pattern],r+offset,25);st.put('B'+str(r+offset),label);st.put('D'+str(r+offset),f'=IFERROR({sourcecol}{r}*100/I{r},0)',0);st.put('E'+str(r+offset),'%')
+        r=i+11;st.row(12,r,20);st.put('A'+str(r),i);st.put('B'+str(r),name);st.link('B'+str(r),name)
+        q="'"+name.replace("'","''")+"'!"
+        for a,formula,cache in zip('CDEFGHI',[q+'B5',q+'C5',f'{q}B3-{q}B5-{q}C5',q+'B9',q+'C9',q+'D9',q+'B3'],status+types+[n]):st.put(a+str(r),'='+formula,cache)
+        totals['status']=[x+y for x,y in zip(totals['status'],status)];totals['types']=[x+y for x,y in zip(totals['types'],types)];totals['cases']+=n
+    first=12;sub=len(modules)+first+2;st.row(patterns[16],sub,25);st.put('B'+str(sub),'Sub total')
+    for a,v in zip('CDEFGHI',totals['status']+totals['types']+[totals['cases']]):st.put(a+str(sub),f'=SUM({a}{first}:{a}{sub-1})',v)
+    whole=totals['cases'] or 1
+    for offset,(label,formula,value) in enumerate([('Test coverage',f'(C{sub}+D{sub})*100/I{sub}',(totals['status'][0]+totals['status'][1])*100/whole),('Test successful coverage',f'C{sub}*100/I{sub}',totals['status'][0]*100/whole),('Normal case',f'F{sub}*100/I{sub}',totals['types'][0]*100/whole),('Abnormal case',f'G{sub}*100/I{sub}',totals['types'][1]*100/whole),('Boundary case',f'H{sub}*100/I{sub}',totals['types'][2]*100/whole)]):
+        r=sub+2+offset;st.row(patterns[18+offset],r,20);st.put('B'+str(r),label);st.put('D'+str(r),f'=IFERROR({formula},0)',round(value,2));st.put('E'+str(r),'%')
+    t.chart=dict(row=sub,status=totals['status'],types=totals['types']);t.unit_cases=totals['cases']
     return t
 
 
 def table_book(path,cases,meta,title,system=False):
-    t=Template(path);cover(t,title,meta['date']);li=t.add('Test Cases');li.keep(9);li.clear(9)
+    t=Template(path);cover(t,title,meta['date'],meta.get('history'));li=t.add('Test Cases');li.keep(9);li.clear(9)
     li.put('D3','TrustCabinet');li.put('D4','SEP490-G116');li.put('D5','.NET 10 / xUnit; PostgreSQL / Redis; Chrome / Edge for manual UI workflows.');li.height(5,65)
     st=t.add('Test Statistics')
     subtotal_row=int(re.search(r'\d+',next(a for a,v in st.values.items() if v=='Sub total'))[0]);total_pattern=deepcopy(st.data.find(f"{tag('row')}[@r='{subtotal_row}']"))
@@ -386,40 +482,47 @@ def table_book(path,cases,meta,title,system=False):
     valuecol=re.match('[A-Z]+',next(a for a in st.formulas if int(re.search(r'\d+',a)[0])==rate_rows['Test coverage']))[0]
     percentcol=re.match('[A-Z]+',next(a for a,v in st.values.items() if v=='%' and int(re.search(r'\d+',a)[0])==rate_rows['Test coverage']))[0]
     st.keep(11);st.clear(11)
-    st.put('C3','TrustCabinet');st.put('C4','SEP490-G116');st.put('C5','SEP490-G116_Test_Report_v1');st.put('C6','Round 1. Pending: NotRun/Blocked/Partial. N/A: Skipped.');st.height(6,60)
+    st.put('C3','TrustCabinet');st.put('C4','SEP490-G116');st.put('C5','SEP490-G116_Test_Report_v1');st.put('C6','')
     for addr in ('G5','H5'):
         if addr in st.values:st.put(addr,meta['date'])
     for addr,value in list(st.values.items()):
         if value=='TienTM':st.put(addr,'TrustCabinet Team')
     groups=defaultdict(list)
-    for c in cases:groups[c['module'] if system or c.get('automation')!='Manual' else 'UI '+c['module']].append(c)
+    for c in cases:groups[c['module']].append(c)
     for i,(group,items) in enumerate(sorted(groups.items()),1):
         name=re.sub(r'[:*?/\\\[\]]','-',group)[:31]
         s=t.add('WorkFlow1' if system else 'Authentication',name);s.keep(12);s.clear(11)
-        s.put('B2',items[0]['title'] if system else group);s.put('B3','Source-reviewed '+('end-to-end workflow' if system else 'integration test definitions')+'; record results only after execution.');s.height(3,42)
-        s.put('B4',len(items));s.put('P2','Passed');s.put('P3','Failed');s.put('P4','NotRun');s.put('P5','Skipped')
+        s.put('B2',items[0]['title'] if system else group);s.put('B3','System-level test flow: '+items[0]['title'] if system else f'Functional integration tests for {group.lower()} through the web interface' if items[0].get('authoredText') else f'API tests for the {group.lower()} endpoints');s.height(3,42)
+        s.put('B4',len(items));s.put('P2','Passed');s.put('P3','Failed');s.put('P4','Pending');s.put('P5','Skipped')
         old=s.root.find(tag('mergeCells'))
         if old is not None:
             for m in list(old):
                 if max(map(int,re.findall(r'\d+',m.get('ref'))))>=11:old.remove(m)
-        row=11
-        for c in items:
-            s.row(12,row,24);s.merge(f'A{row}:O{row}');s.put('A'+str(row),c['title'] if system else c['className']);row+=1
-            fields=[c['id'],c['title'],c['steps'],c['expected'],c['precondition'],c['status'],c['executedAt'],c['tester'],'','','','','','',c['source']+':'+str(c['line'])+ ('\n'+c['actual'] if c['actual'] else '')+ ('\nEvidence: '+c['evidence'] if c['evidence'] else '')]
-            parts=[pieces(v,40 if k in [1,2,3,4] else 27,10 if k in [1,2,3,4] else 5) for k,v in enumerate(fields)]
-            for n in range(max(map(len,parts))):
-                s.row(12,row,180)
-                for k,values in enumerate(parts):
-                    value=values[n] if n<len(values) else ''
-                    if n and k in [0,5,6,7,8,9,10,11,12,13]:value=''
-                    s.put(col(k+1)+str(row),value)
-                maxlines=max(len(v[n].splitlines()) for v in parts if n<len(v));s.height(row,max(80,20+18*maxlines));row+=1
+        w=s.widths()
+        # API cases are grouped under the endpoint they call, as in the template; others by test class.
+        # Hand-written cases (readable.authored) keep their own order, group and code; the rest are
+        # grouped under the endpoint they call, as in the template, or by test class.
+        hand=authored()
+        heading=lambda c:hand[c['id']]['group'] if c['id'] in hand else c['group'] if c.get('group') else c['title'] if system else (endpoint(c) if c['level']=='API' else None) or c['className']
+        order=lambda c:(0,hand[c['id']]['order']) if c['id'] in hand else (0,(c['id'],0)) if c.get('authoredText') else (1,(heading(c),c['line']))
+        row=11;previous=None
+        for c in items if system else sorted(items,key=order):
+            if heading(c)!=previous:
+                previous=heading(c);s.row(12,row,24);s.merge(f'A{row}:O{row}');s.put('A'+str(row),previous);row+=1
+            steps,expected,pre=table_fields(c)
+            status=c['status'] if c['status'] in {'Passed','Failed','Skipped'} else 'Pending'
+            ident,text=(hand[c['id']]['code'],hand[c['id']]['description']) if c['id'] in hand else (c['id'],c['title'] if c.get('automation')=='Manual' else description(c))
+            fields=[ident,text,fit(steps,w.get('C',30)),fit(expected,w.get('D',30)),fit(pre,w.get('E',30)),status,test_date(c['executedAt']),c['tester'],'','','','','','','']
+            s.row(12,row,height([(v,w.get(col(k+1),9)) for k,v in enumerate(fields) if k in (1,2,3,4)],60))
+            for k,v in enumerate(fields):s.put(col(k+1)+str(row),v)
+            row+=1
         last=row-1
         for rr,cc in [(6,'F'),(7,'I'),(8,'L')]:
             for addr,formula in [(f'B{rr}',f'=COUNTIF({cc}12:{cc}{last},"Passed")'),(f'C{rr}',f'=COUNTIF({cc}12:{cc}{last},"Failed")'),(f'E{rr}',f'=COUNTIF({cc}12:{cc}{last},"Skipped")'),(f'D{rr}',f'=B4-B{rr}-C{rr}-E{rr}')]:
                 status={'B':'Passed','C':'Failed','E':'Skipped'}.get(addr[0]);cache=sum(c['status']==status for c in items) if status and rr==6 else (len(items)-sum(c['status'] in {'Passed','Failed','Skipped'} for c in items) if rr==6 and addr[0]=='D' else len(items) if addr[0]=='D' else 0);s.put(addr,formula,cache)
-        r=i+8;li.row(9,r,85)
-        for a,v in zip('BCDEF',[i,items[0]['title'] if system else group,name,f'{len(items)} definitions / scenarios',items[0]['precondition'] if system else 'See each case and its source fixture.']):li.put(a+str(r),v)
+        listed=table_fields(items[0])[2] if system else 'See the Pre-conditions of each case.'
+        r=i+8;li.row(9,r,height([(listed,li.widths().get('F',30))],40))
+        for a,v in zip('BCDEF',[i,items[0]['title'] if system else group,name,f'{len(items)} definitions / scenarios',listed]):li.put(a+str(r),v)
         li.link('D'+str(r),name)
         r=i+10;st.row(11,r,45);st.put('B'+str(r),i);st.put('C'+str(r),name)
         st.link('C'+str(r),name)
@@ -433,12 +536,11 @@ def table_book(path,cases,meta,title,system=False):
 
 
 def uat_book(path,cases,meta):
-    t=Template(path);cover(t,'USER ACCEPTANCE TEST REPORT DOCUMENT',meta['date']);s=t.add('Statistics');s.clear(10);s.keep(22)
-    for a,v in {'B3':'TrustCabinet','B4':'SEP490-G116','E3':'TrustCabinet Team','E4':meta['date'],'B5':'SEP490-G116_Test_Report5.4_v1.0','B6':'No customer feedback or acceptance decision has been collected. Criteria below require representative-user execution.'}.items():s.put(a,v)
+    t=Template(path);cover(t,'USER ACCEPTANCE TEST REPORT DOCUMENT',meta['date'],meta.get('history'));s=t.add('Statistics');s.clear(10);s.keep(22)
+    for a,v in {'B3':'TrustCabinet','B4':'SEP490-G116','E3':'TrustCabinet Team','E4':meta['date'],'B5':'SEP490-G116_Test_Report5.4_v1.0','B6':''}.items():s.put(a,v)
     s.height(6,55)
     for i,c in enumerate(cases,10):
-        s.put('A'+str(i),c['id']);s.put('B'+str(i),c['title']);s.put('D'+str(i),c['actual'] or 'No response collected.');s.put('E'+str(i),c['status']);s.height(i,32)
-        s.notes['B'+str(i)]='Preconditions: '+c['precondition']+'\n\nProcedure:\n'+c['steps']+'\n\nExpected result: '+c['expected']+'\n\nSource: '+c['source']+ ('\nTester: '+c['tester']+'\nDate: '+c['executedAt']+'\nEvidence: '+c['evidence'] if c['tester'] else '')
+        s.put('A'+str(i),c['id']);s.put('B'+str(i),c['title']);s.put('D'+str(i),c['actual'] or 'No response collected.');s.put('E'+str(i),c['status'] if c['status'] in {'Passed','Failed'} else 'Pending');s.height(i,32)
     extras=[('Business needs fit','Awaiting representative organizer, approver, participant and administrator feedback.'),('Ease of use','Awaiting customer feedback.'),('Improvements and new features','Awaiting customer feedback; no requests inferred.'),('Overall satisfaction','No ratings collected; an average score cannot be calculated.'),('Acceptance decision','Pending stakeholder review and sign-off.')]
     for i,(title,text) in enumerate(extras,18):s.put('A'+str(i),i-9);s.put('B'+str(i),title);s.put('D'+str(i),text);s.put('E'+str(i),'Pending');s.height(i,40)
     f=t.add('Customer Feedback Statistics');f.keep(28);f.clear(1)

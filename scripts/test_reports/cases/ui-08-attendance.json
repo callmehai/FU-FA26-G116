@@ -1,0 +1,52 @@
+{
+ "prefix": "ATT_FT",
+ "module": "Attendance",
+ "source": "frontend/src/features/attendance/AttendancePanel.tsx",
+ "cases": [
+  {
+   "group": "Điểm danh",
+   "d": "The Secretary records attendance during the meeting.",
+   "steps": [
+    "Start the meeting.",
+    "On the roster, set members to Có mặt or Vắng in the Điểm danh column.",
+    "Try the same on a meeting that has not started."
+   ],
+   "exp": [
+    "\"Lưu điểm danh thành công.\" appears and each row shows who recorded it and when.",
+    "On a meeting not in progress: \"Chỉ được điểm danh khi cuộc họp đang diễn ra.\"."
+   ],
+   "pre": [
+    "A meeting with members; signed in as its Secretary."
+   ]
+  },
+  {
+   "group": "Điểm danh",
+   "d": "Members see attendance but cannot change it.",
+   "steps": [
+    "As thanhvien, open the roster of a meeting in progress."
+   ],
+   "exp": [
+    "The Điểm danh column is visible (Có mặt, Vắng, Chưa điểm danh).",
+    "No control to change attendance is offered."
+   ],
+   "pre": [
+    "A meeting in progress where thanhvien is invited."
+   ]
+  },
+  {
+   "group": "Điểm danh",
+   "d": "Guests are recorded too and the recorder and time are shown.",
+   "steps": [
+    "As the Secretary, set the guest to Có mặt.",
+    "Hover the attendance of the guest."
+   ],
+   "exp": [
+    "The guest row (tag Khách) saves like a member.",
+    "The tooltip shows who recorded it and when, e.g. \"Nguyễn Thư Ký điểm danh lúc 09:05 23/10/2026\"."
+   ],
+   "pre": [
+    "A meeting in progress with a guest invitation."
+   ]
+  }
+ ]
+}

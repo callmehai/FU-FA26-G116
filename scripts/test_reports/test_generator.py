@@ -49,6 +49,6 @@ class EvidenceTests(unittest.TestCase):
     def test_skip_does_not_pass(self):
         c=case();reports.attach_results([c],[result(outcome='NotExecuted')],True,'run.trx');self.assertEqual(c['status'],'Skipped')
     def test_english_manual_designs_are_not_execution_results(self):
-        rows=reports.scenarios();self.assertEqual(len(rows),37);self.assertEqual(sum(r['status']=='Blocked' for r in rows),1);self.assertFalse(any(r['status']=='Passed' for r in rows));self.assertEqual(len({r['id'] for r in rows}),37)
+        rows=reports.scenarios();self.assertEqual(sum(r['level']=='SYS' for r in rows),9);self.assertEqual(sum(r['level']=='UAT' for r in rows),8);self.assertGreater(sum(r['level']=='UI' for r in rows),0);self.assertEqual(sum(r['status']=='Blocked' for r in rows),1);self.assertFalse(any(r['status']=='Passed' for r in rows));self.assertEqual(len({r['id'] for r in rows}),len(rows))
 
 if __name__=='__main__':unittest.main()
