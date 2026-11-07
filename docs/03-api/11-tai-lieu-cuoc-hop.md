@@ -348,7 +348,9 @@ và ở tab Tài liệu.
 
 Body `{ "documentIds": ["<id tài liệu trong kho>", …] }`. Mỗi tài liệu phải **của chính người gọi** và còn trong kho;
 không chọn gì hoặc có tài liệu không hợp lệ → `400 MSG249` (BR-209). Tệp đã có trong cuộc họp (cùng `StoredFile`, chưa
-gỡ) → `409 MSG165` (BR-193). Tất cả hoặc không (BR-286). ID trùng trong mảng được gộp.
+gỡ) → `409 MSG165` (BR-193). Tất cả hoặc không (BR-286). ID trùng trong mảng được gộp. FE biết trước tài liệu nào sẽ bị
+`MSG165` qua `inMeeting` của `GET /api/documents?meetingId=` ([14-kho-tai-lieu-ca-nhan.md](14-kho-tai-lieu-ca-nhan.md),
+SCRUM-124); mã này vẫn là lớp chặn khi người khác vừa thêm.
 
 Mỗi tài liệu thành một `MeetingDocument` **chung** (chưa gắn mục), trỏ cùng `StoredFile` của dòng kho, `DocumentId` là
 dòng kho, `fileName` chép **tên hiện tại** trong kho (BR-197, BR-276). Không chép byte (ADR-0018).

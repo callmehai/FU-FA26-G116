@@ -4338,8 +4338,12 @@ body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px)
   text-align: left;
   cursor: pointer;
 }
-.picker-row:hover { background: var(--surface-alt); }
+.picker-row:not([aria-disabled='true']):hover { background: var(--surface-alt); }
 .picker-row input[type='checkbox'] { flex: none; width: 18px; height: 18px; accent-color: var(--brand); }
+.picker-row[aria-disabled='true'] { cursor: not-allowed; }
+.picker-row[aria-disabled='true'] strong, .picker-row[aria-disabled='true'] .file-icon { opacity: .6; }
+/* SCRUM-124: already in the meeting. */
+.picker-chip { display: inline-block; margin-left: 8px; padding: 0 8px; border-radius: 999px; background: var(--surface-alt); color: var(--muted-ink); font-size: 12px; font-weight: 600; line-height: 18px; white-space: nowrap; }
 .picker-folder > .icon:first-child { flex: none; color: var(--brand); }
 .picker-folder > .icon:last-child { flex: none; color: var(--muted-ink); }
 .picker-name { display: flex; flex: 1; flex-direction: column; min-width: 0; }
