@@ -649,7 +649,7 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
 | `MSG415` | 200 | `PUT …/notes` | Lưu ghi chú (UC-82 Main Flow) | `Đã lưu ghi chú.` | BE |
-| `MSG416` | 403 | `PUT …/notes` | Chủ toạ hiện tại ghi chú (EX-1). Người không phải Chủ toạ/Thư ký nhận `404`, không mã, cả `GET` lẫn `PUT` (EX-8) | `Chỉ Thư ký được ghi chú cuộc họp.` | BE |
+| `MSG416` | 403 | `PUT …/notes` | Người đọc được cuộc họp nhưng không phải Thư ký hiện tại ghi chú: Chủ toạ, hoặc Thư ký vừa bị thay (EX-1). `GET` của người không phải Chủ toạ/Thư ký vẫn là `404`, không mã (EX-8) | `Chỉ Thư ký được ghi chú cuộc họp.` | BE |
 | `MSG417` | 409 | `PUT …/notes` | Cuộc họp chưa bắt đầu, đã huỷ, hoặc đã kết thúc và đã có bản nháp biên bản (EX-2, BR-396) | `Chỉ ghi chú khi cuộc họp đang diễn ra, hoặc sau khi kết thúc mà chưa tạo bản nháp biên bản.` | BE |
 | `MSG418` | 409 | `PUT …/notes` | `updatedAt` gửi lên không khớp ghi chú trên server: đã lưu ở cửa sổ khác, hoặc ghi chú đã có/chưa có (EX-3, BR-399) | `Ghi chú vừa được sửa ở cửa sổ khác. Tải lại để xem bản mới nhất.` | BE |
 | `MSG419` | 400 | `PUT …/notes` | Quá 20.000 ký tự (EX-4, BR-400) | `Ghi chú quá dài, tối đa 20.000 ký tự.` | BE |

@@ -108,10 +108,11 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
         using var outsider = f.Client(s.Outsider);
         await Saved(secretary, s, null, "Ghi chú của Thư ký.");
 
+        // A save by any reader of the meeting who is not its current Secretary is refused (EX-1); it discloses no note.
         await AssertCode(await Put(chair, s, null, "Chủ tọa ghi.", null), 403, "MSG416");
-        // Readers of the meeting who are neither Chair nor Secretary learn nothing about the notes, reading or writing (EX-8).
-        Assert.Equal(HttpStatusCode.NotFound, (await Put(member, s, null, "Thành viên ghi.", null)).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await Put(organizer, s, null, "Người tạo ghi.", null)).StatusCode);
+        await AssertCode(await Put(member, s, null, "Thành viên ghi.", null), 403, "MSG416");
+        await AssertCode(await Put(organizer, s, null, "Người tạo ghi.", null), 403, "MSG416");
+        // Reading: anyone but the Chair and the Secretary is answered as if there were no notes (EX-8).
         Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync(Notes(s))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await organizer.GetAsync(Notes(s))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await outsider.GetAsync(Notes(s))).StatusCode);
@@ -136,12 +137,46 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
             participants.Single(p => p.UserId == s.Member).Role = MeetingRole.Secretary;
             await db.SaveChangesAsync();
         }
-        // Now a member: answered as if the notes did not exist (EX-8).
-        Assert.Equal(HttpStatusCode.NotFound, (await Put(secretary, s, null, "Vẫn cố ghi.", null)).StatusCode);
+        // Replaced while typing: the save is refused with MSG416 (EX-1), and reading the notes is 404 (EX-8).
+        await AssertCode(await Put(secretary, s, null, "Vẫn cố ghi.", null), 403, "MSG416");
+        Assert.Equal(HttpStatusCode.NotFound, (await secretary.GetAsync(Notes(s))).StatusCode);
         using var successor = f.Client(s.Member);
         var state = await successor.GetFromJsonAsync<JsonElement>(Notes(s));
         Assert.Equal(0, state.GetProperty("notes").GetArrayLength());
         Assert.True(state.GetProperty("canWrite").GetBoolean());
+    }
+
+    [Fact]
+    public async Task An_administrator_who_is_not_on_the_meeting_sees_no_notes()
+    {
+        var s = await f.Seed();
+        using var admin = f.Client(s.Outsider, Enum.GetNames<Capability>());
+        Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync(Notes(s))).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await Put(admin, s, null, "x", null)).StatusCode);
+    }
+
+    [Theory]
+    [InlineData(Sensitivity.Normal, false)]
+    [InlineData(Sensitivity.Secret, true)]
+    public async Task The_state_says_whether_the_meeting_is_secret(Sensitivity sensitivity, bool secret)
+    {
+        // BR-403: a Secret meeting's unsent text stays only until the page is closed; the FE needs to know.
+        var s = await f.Seed(sensitivity: sensitivity);
+        using var secretary = f.Client(s.Secretary);
+        Assert.Equal(secret, (await secretary.GetFromJsonAsync<JsonElement>(Notes(s))).GetProperty("secret").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Two_first_saves_at_once_keep_one_note_and_refuse_the_other()
+    {
+        var s = await f.Seed();
+        using var one = f.Client(s.Secretary);
+        using var two = f.Client(s.Secretary);
+        var answers = await Task.WhenAll(Put(one, s, s.FirstItem, "Cửa sổ một.", null), Put(two, s, s.FirstItem, "Cửa sổ hai.", null));
+        Assert.Equal([HttpStatusCode.OK, HttpStatusCode.Conflict], answers.Select(a => a.StatusCode).Order());
+        await AssertCode(answers.Single(a => a.StatusCode == HttpStatusCode.Conflict), 409, "MSG418");
+        await using var db = f.Db();
+        Assert.Equal(1, await db.MeetingNotes.CountAsync(n => n.MeetingId == s.MeetingId));
     }
 
     [Theory]
@@ -342,14 +377,50 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
     }
 
     [Fact]
+    public async Task Deleting_an_item_folds_each_authors_note_even_without_a_meeting_wide_one()
+    {
+        var s = await f.Seed();
+        Guid pending;
+        await using (var db = f.Db())
+        {
+            var item = new AgendaItem { MeetingId = s.MeetingId, Position = 3, Title = "Việc phát sinh" };
+            db.AgendaItems.Add(item);
+            await db.SaveChangesAsync();
+            pending = item.Id;
+            // A note left by an earlier Secretary, now the Chair, beside the current Secretary's.
+            db.MeetingNotes.Add(new MeetingNote { MeetingId = s.MeetingId, AgendaItemId = pending, AuthorId = s.Chair,
+                Body = "Ghi chú của Thư ký trước." });
+            await db.SaveChangesAsync();
+        }
+        using var secretary = f.Client(s.Secretary);
+        await Saved(secretary, s, pending, "Ghi chú của Thư ký hiện tại.");
+
+        await AssertCode(await secretary.DeleteAsync($"/api/meetings/{s.MeetingId}/agenda/{pending}"), 200, "MSG62");
+
+        await using var check = f.Db();
+        var notes = await check.MeetingNotes.Where(n => n.MeetingId == s.MeetingId).ToListAsync();
+        Assert.All(notes, n => Assert.Null(n.AgendaItemId));
+        Assert.Equal("Việc phát sinh:\nGhi chú của Thư ký hiện tại.", notes.Single(n => n.AuthorId == s.Secretary).Body);
+        Assert.Equal("Việc phát sinh:\nGhi chú của Thư ký trước.", notes.Single(n => n.AuthorId == s.Chair).Body);
+    }
+
+    [Fact]
     public void Marks_are_read_only_at_the_start_of_a_line()
     {
         Assert.Equal(("Kết luận", "Đồng ý."), MeetingNoteRules.Marked("  KẾT LUẬN: Đồng ý.")!.Value);
         Assert.Equal(("Nhiệm vụ", ""), MeetingNoteRules.Marked("Nhiệm vụ:")!.Value);
         Assert.Null(MeetingNoteRules.Marked("Đã có kết luận: đồng ý."));
         Assert.Null(MeetingNoteRules.Marked("Nhiệm vụ chưa rõ"));
+        // A space before the colon, and a mark typed with combining accents, still count.
+        Assert.Equal(("Kết luận", "Đồng ý."), MeetingNoteRules.Marked("Kết luận : Đồng ý.")!.Value);
+        Assert.Equal(("Nhiệm vụ", "Báo cáo."),
+            MeetingNoteRules.Marked("Nhiệm vụ: Báo cáo.".Normalize(System.Text.NormalizationForm.FormD))!.Value);
         Assert.Equal(MeetingNoteRules.MaxLength,
             MeetingNoteRules.Fold(new string('a', 15_000), "Mục", new string('b', 10_000)).Length);
         Assert.Equal("Mục:\nNội dung", MeetingNoteRules.Fold("", "Mục", "Nội dung"));
+        // The cut never splits a character written as two UTF-16 units.
+        var cut = MeetingNoteRules.Fold(new string('a', 19_990), "Mục", "😀😀😀😀");
+        Assert.Equal(19_999, cut.Length);
+        Assert.False(char.IsHighSurrogate(cut[^1]));
     }
 }

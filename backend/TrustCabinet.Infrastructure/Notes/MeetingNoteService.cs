@@ -21,7 +21,7 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
     {
         try
         {
-            var (meeting, failure) = await ReadableAsync(meetingId, actorId, ct);
+            var (meeting, failure) = await ReadableAsync(meetingId, actorId, false, ct);
             if (meeting is null) return new(failure);
             // EX-8: a reader who is neither Chair nor Secretary is answered as if there were no notes.
             if (!ParticipantRules.IsManager(meeting, actorId)) return new(NoteFailure.NotFound);
@@ -50,53 +50,13 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
     public async Task<NoteOutcome> SaveAsync(Guid meetingId, Guid actorId, Guid? agendaItemId, string? body,
         DateTimeOffset? loadedAt, CancellationToken ct = default)
     {
-        MeetingNote? saved;
+        NoteOutcome outcome;
         try
         {
-            var (meeting, failure) = await ReadableAsync(meetingId, actorId, ct);
-            if (meeting is null) return new(failure);
-            // EX-8: a reader who is neither Chair nor Secretary is answered as if there were no notes, on a save too.
-            if (!ParticipantRules.IsManager(meeting, actorId)) return new(NoteFailure.NotFound);
-            // In the order of UC-82 step 4: the role, the meeting, the item, the length; the copy last, in the write.
-            if (!Secretaries(meeting).Contains(actorId)) return new(NoteFailure.Forbidden);
-            if (!MeetingNoteRules.AcceptsNotes(meeting.Status, await HasMinutesAsync(meetingId, ct))) return new(NoteFailure.Closed);
-            if (agendaItemId is { } itemId && !await db.AgendaItems.AnyAsync(a => a.Id == itemId && a.MeetingId == meetingId, ct))
-                return new(NoteFailure.ItemGone);
-            var text = (body ?? "").Replace("\r\n", "\n", StringComparison.Ordinal);
-            if (text.Length > MeetingNoteRules.MaxLength) return new(NoteFailure.TooLong);
-
-            var existing = await db.MeetingNotes.AsNoTracking()
-                .Where(n => n.MeetingId == meetingId && n.AgendaItemId == agendaItemId && n.AuthorId == actorId)
-                .Select(n => new { n.Id }).FirstOrDefaultAsync(ct);
-            var now = clock.GetUtcNow();
-            if (existing is null)
-            {
-                // A note the caller has never seen saved. If it read one, that note has gone since: its copy is stale.
-                if (loadedAt is not null) return new(NoteFailure.Stale);
-                db.MeetingNotes.Add(new MeetingNote { MeetingId = meetingId, AgendaItemId = agendaItemId, AuthorId = actorId,
-                    Body = text, CreatedAt = now, UpdatedAt = now });
-                await db.SaveChangesAsync(ct);
-            }
-            else
-            {
-                // BR-399: the check and the write are one UPDATE, so a save from another window that lands in between makes
-                // this one stale rather than overwritten. The 1 ms window absorbs the precision PostgreSQL drops.
-                if (loadedAt is null) return new(NoteFailure.Stale);
-                var from = loadedAt.Value.AddMilliseconds(-1);
-                var to = loadedAt.Value.AddMilliseconds(1);
-                var rows = await db.MeetingNotes
-                    .Where(n => n.Id == existing.Id && n.UpdatedAt >= from && n.UpdatedAt <= to)
-                    .ExecuteUpdateAsync(n => n.SetProperty(x => x.Body, text).SetProperty(x => x.UpdatedAt, now), ct);
-                if (rows == 0) return new(NoteFailure.Stale);
-            }
-            saved = await db.MeetingNotes.AsNoTracking().Include(n => n.Author)
-                .FirstAsync(n => n.MeetingId == meetingId && n.AgendaItemId == agendaItemId && n.AuthorId == actorId, ct);
-        }
-        catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-        {
-            // Another window created the same note first.
-            logger.LogInformation(error, "Concurrent first save of a note in meeting {MeetingId}", meetingId);
-            return new(NoteFailure.Stale);
+            // The meeting row is locked for the whole save, as deleting an agenda item and building the minutes lock it:
+            // a note is saved either before those (and folded or written into the minutes) or after (and refused).
+            outcome = await meetings.InTransactionAsync(token => SaveLockedAsync(meetingId, actorId, agendaItemId, body,
+                loadedAt, token), ct);
         }
         catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
         {
@@ -108,6 +68,7 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
             logger.LogError(error, "Could not save a note in meeting {MeetingId}", meetingId);
             return new(NoteFailure.SaveFailed);
         }
+        if (outcome.Note is not { } saved) return outcome;
 
         try
         {
@@ -118,6 +79,51 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
             // The note is saved; the other window finds out on its next save (MSG418) instead of at once.
             logger.LogWarning(error, "Could not publish the note change in meeting {MeetingId}", meetingId);
         }
+        return outcome;
+    }
+
+    private async Task<NoteOutcome> SaveLockedAsync(Guid meetingId, Guid actorId, Guid? agendaItemId, string? body,
+        DateTimeOffset? loadedAt, CancellationToken ct)
+    {
+        var (meeting, failure) = await ReadableAsync(meetingId, actorId, true, ct);
+        if (meeting is null) return new(failure);
+        // In the order of UC-82 step 4: the role, the meeting, the item, the length; the copy last, in the write.
+        // EX-1: a reader of the meeting who is not its current Secretary — the Chair, or a Secretary replaced while
+        // typing — is told so (MSG416), and the panel keeps the text to copy. Nothing about the notes is disclosed.
+        if (!Secretaries(meeting).Contains(actorId)) return new(NoteFailure.Forbidden);
+        if (!MeetingNoteRules.AcceptsNotes(meeting.Status, await HasMinutesAsync(meetingId, ct))) return new(NoteFailure.Closed);
+        if (agendaItemId is { } itemId && !await db.AgendaItems.AnyAsync(a => a.Id == itemId && a.MeetingId == meetingId, ct))
+            return new(NoteFailure.ItemGone);
+        var text = (body ?? "").Replace("\r\n", "\n", StringComparison.Ordinal);
+        if (text.Length > MeetingNoteRules.MaxLength) return new(NoteFailure.TooLong);
+
+        var existing = await db.MeetingNotes.AsNoTracking()
+            .Where(n => n.MeetingId == meetingId && n.AgendaItemId == agendaItemId && n.AuthorId == actorId)
+            .Select(n => new { n.Id }).FirstOrDefaultAsync(ct);
+        var now = clock.GetUtcNow();
+        if (existing is null)
+        {
+            // A note the caller has never seen saved. If it read one, that note has gone since: its copy is stale.
+            if (loadedAt is not null) return new(NoteFailure.Stale);
+            db.MeetingNotes.Add(new MeetingNote { MeetingId = meetingId, AgendaItemId = agendaItemId, AuthorId = actorId,
+                Body = text, CreatedAt = now, UpdatedAt = now });
+            await db.SaveChangesAsync(ct);
+        }
+        else
+        {
+            // BR-399: a save from another window that landed after this one was read makes it stale, never overwritten.
+            // The 1 ms window absorbs the precision PostgreSQL drops.
+            if (loadedAt is null) return new(NoteFailure.Stale);
+            var from = loadedAt.Value.AddMilliseconds(-1);
+            var to = loadedAt.Value.AddMilliseconds(1);
+            var rows = await db.MeetingNotes
+                .Where(n => n.Id == existing.Id && n.UpdatedAt >= from && n.UpdatedAt <= to)
+                .ExecuteUpdateAsync(n => n.SetProperty(x => x.Body, text).SetProperty(x => x.UpdatedAt, now), ct);
+            if (rows == 0) return new(NoteFailure.Stale);
+        }
+        // Read back under the same lock: no other save of this meeting can land in between.
+        var saved = await db.MeetingNotes.AsNoTracking().Include(n => n.Author)
+            .FirstAsync(n => n.MeetingId == meetingId && n.AgendaItemId == agendaItemId && n.AuthorId == actorId, ct);
         return new(Note: MeetingNoteRules.View(saved));
     }
 
@@ -129,10 +135,11 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
     private Task<bool> HasMinutesAsync(Guid meetingId, CancellationToken ct)
         => db.MeetingMinutes.AnyAsync(m => m.MeetingId == meetingId, ct);
 
-    private async Task<(Meeting? Meeting, NoteFailure Failure)> ReadableAsync(Guid meetingId, Guid actorId, CancellationToken ct)
+    private async Task<(Meeting? Meeting, NoteFailure Failure)> ReadableAsync(Guid meetingId, Guid actorId, bool forUpdate,
+        CancellationToken ct)
     {
         if (!await meetings.IsUserActiveAsync(actorId, ct)) return (null, NoteFailure.Inactive);
-        var meeting = await meetings.FindWorkflowAsync(meetingId, false, ct);
+        var meeting = await meetings.FindWorkflowAsync(meetingId, forUpdate, ct);
         if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return (null, NoteFailure.NotFound);
         return (meeting, NoteFailure.None);
     }

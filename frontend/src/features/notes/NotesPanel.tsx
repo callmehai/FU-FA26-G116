@@ -13,13 +13,14 @@ import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import {
-  forgetNoteDrafts,
   listNoteDrafts,
   readNoteDraft,
   removeNoteDraft,
   settleNoteDrafts,
+  takeNoteDrafts,
   writeNoteDraft,
   type DraftScope,
+  type NoteDraft,
 } from './noteDrafts'
 
 /** The key of the meeting-wide note; an agenda item's note is keyed by the item's id. */
@@ -46,7 +47,8 @@ type Load =
   | { kind: 'loading' }
   | { kind: 'loaded'; data: NotesState; items: AgendaItem[] }
   | { kind: 'error'; message: string }
-  | { kind: 'gone' }
+  /** No longer the Chair's or the Secretary's: what was typed here and never saved is shown once, to copy. */
+  | { kind: 'gone'; unsent: Unsent[]; titles: Map<string, string> }
 
 type Status =
   | { kind: 'idle' }
@@ -84,9 +86,18 @@ export function NotesPanel({ meetingId, variant }: { meetingId: string; variant:
     } catch (err) {
       if (handleAccessLost(err)) return
       if (isApiError(err, 404)) {
-        // No longer the Chair's or the Secretary's (EX-8): nothing of these notes stays on the device (BR-403).
-        forgetNoteDrafts(userId, meetingId)
-        return setLoad({ kind: 'gone' })
+        // No longer the Chair's or the Secretary's (EX-1, EX-8): nothing of these notes stays on the device (BR-403),
+        // but text typed here and never saved stays on the page to copy until it is closed.
+        const taken = takeNoteDrafts(userId, meetingId)
+        return setLoad((s) => {
+          const saved = s.kind === 'loaded' ? s.data.notes : []
+          const unsent = [
+            ...(s.kind === 'gone' ? s.unsent : []),
+            ...taken.filter((d) => d.body !== (saved.find((n) => keyOf(n) === d.noteKey)?.body ?? '')),
+          ]
+          const titles = s.kind === 'loaded' ? titlesOf(s.items) : s.kind === 'gone' ? s.titles : new Map<string, string>()
+          return { kind: 'gone', unsent, titles }
+        })
       }
       setLoad((s) => (s.kind === 'loaded' ? s : { kind: 'error', message: errorMessage(err) }))
     }
@@ -130,7 +141,13 @@ export function NotesPanel({ meetingId, variant }: { meetingId: string; variant:
       </section>
     )
 
-  if (load.kind === 'gone') return wrap(<p className="card-pending">Bạn không xem được ghi chú của cuộc họp này.</p>)
+  if (load.kind === 'gone')
+    return wrap(
+      <>
+        <UnsentDrafts initial={load.unsent} titles={load.titles} />
+        <p className="card-pending">Bạn không xem được ghi chú của cuộc họp này.</p>
+      </>,
+    )
   if (load.kind === 'error')
     return wrap(
       <div className="alert alert-error" role="alert">
@@ -175,41 +192,19 @@ function NoteReader({
   items: AgendaItem[]
   scope: DraftScope
 }) {
-  const titles = new Map(items.map((i) => [i.id, `${i.position}. ${i.title}`]))
-  const titleOf = (key: string) => (key === GENERAL ? 'Chung' : (titles.get(key) ?? 'Mục đã xoá'))
+  const titles = titlesOf(items)
+  const titleOf = (key: string) => titleIn(titles, key)
   const notes = data.notes.filter((n) => n.body.trim() !== '')
   // Text typed here that never reached the server before the meeting stopped taking notes (EX-1, EX-2): shown so it
   // can be copied, then let go.
-  const [unsent, setUnsent] = useState(() =>
+  const [unsent] = useState(() =>
     listNoteDrafts(scope).filter(
       (d) => d.body !== (data.notes.find((n) => keyOf(n) === d.noteKey)?.body ?? ''),
     ),
   )
-  const drop = (noteKey: string) => {
-    removeNoteDraft(scope, noteKey)
-    setUnsent((list) => list.filter((d) => d.noteKey !== noteKey))
-  }
   return (
     <>
-      {unsent.map((d) => (
-        <div key={d.noteKey} className="alert alert-warning notes-conflict" role="alert">
-          <p>Chưa lưu được: {titleOf(d.noteKey)}</p>
-          <p className="notes-text notes-latest">{d.body}</p>
-          <div className="notes-conflict-actions">
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={() => void navigator.clipboard?.writeText(d.body)}
-            >
-              <Icon name="copy" size={16} />
-              Sao chép
-            </button>
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => drop(d.noteKey)}>
-              Bỏ
-            </button>
-          </div>
-        </div>
-      ))}
+      <UnsentDrafts initial={unsent} titles={titles} onDrop={(noteKey) => removeNoteDraft(scope, noteKey)} />
       {notes.length === 0 ? (
         <p className="value-empty notes-empty">Chưa có ghi chú.</p>
       ) : (
@@ -217,6 +212,53 @@ function NoteReader({
       )}
     </>
   )
+}
+
+type Unsent = NoteDraft & { noteKey: string }
+
+const titlesOf = (items: AgendaItem[]) => new Map(items.map((i) => [i.id, `${i.position}. ${i.title}`]))
+const titleIn = (titles: Map<string, string>, key: string) =>
+  key === GENERAL ? 'Chung' : (titles.get(key) ?? 'Mục đã xoá')
+
+/** Text that can no longer be saved where it was typed, shown so it can be copied (EX-1, EX-2, EX-5), then let go. */
+function UnsentDrafts({
+  initial,
+  titles,
+  onDrop,
+}: {
+  initial: Unsent[]
+  titles: Map<string, string>
+  onDrop?: (noteKey: string) => void
+}) {
+  const [dropped, setDropped] = useState<string[]>([])
+  return initial
+    .filter((d) => !dropped.includes(d.noteKey))
+    .map((d) => (
+      <div key={d.noteKey} className="alert alert-warning notes-conflict" role="alert">
+        <p>Chưa lưu được: {titleIn(titles, d.noteKey)}</p>
+        <p className="notes-text notes-latest">{d.body}</p>
+        <div className="notes-conflict-actions">
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => void navigator.clipboard?.writeText(d.body)}
+          >
+            <Icon name="copy" size={16} />
+            Sao chép
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => {
+              onDrop?.(d.noteKey)
+              setDropped((list) => [...list, d.noteKey])
+            }}
+          >
+            Bỏ
+          </button>
+        </div>
+      </div>
+    ))
 }
 
 function NoteList({ notes, titleOf }: { notes: MeetingNote[]; titleOf: (key: string) => string }) {
@@ -256,7 +298,9 @@ function NoteEditor({
   const current = data.currentAgendaItemId ?? GENERAL
   // null follows the item the Chair has in progress (BR-397, UC-24); a pick holds until it is the current one again.
   const [picked, setPicked] = useState<string | null>(null)
-  const key = picked ?? current
+  // A picked item that has since been deleted (EX-5) no longer holds: the note follows the Chair again.
+  const held = picked === GENERAL || items.some((i) => i.id === picked) ? picked : null
+  const key = held ?? current
 
   const [text, setText] = useState('')
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
@@ -267,6 +311,11 @@ function NoteEditor({
   const pending = useRef(false)
   /** `save` itself, for the retries it schedules from inside. */
   const again = useRef(() => {})
+  /** `sendOthers` itself, for `save` to call once a save gets through. */
+  const others = useRef(() => {})
+  /** The note and text a save is sending: its own `notesChanged` can arrive before its answer. */
+  const inflight = useRef<{ key: string; body: string } | null>(null)
+  const othersBusy = useRef(false)
 
   const draft = useCallback(
     (noteKey: string, body: string, base: string | null) => writeNoteDraft(scope, noteKey, { body, base }),
@@ -283,9 +332,12 @@ function NoteEditor({
     const { key: noteKey, base, text: body, saved } = editing.current
     if (!noteKey || body === saved) return
     busy.current = true
+    inflight.current = { key: noteKey, body }
     setStatus({ kind: 'saving' })
     try {
       const { note, message } = await saveNote(meetingId, { agendaItemId: itemOf(noteKey), body, updatedAt: base })
+      // The connection works again: what other notes kept unsent goes too (AF-3).
+      others.current()
       if (editing.current.key !== noteKey) {
         // The Secretary moved to another note meanwhile; what they typed after this save is still kept.
         if (readNoteDraft(scope, noteKey)?.body === body) removeNoteDraft(scope, noteKey)
@@ -301,14 +353,16 @@ function NoteEditor({
         pending.current = true
       }
     } catch (err) {
-      if (handleAccessLost(err) || editing.current.key !== noteKey) return
+      // MSG416 is a 403 that is not lost access: the Secretary was replaced (EX-1), and the panel keeps the text to copy.
+      const replaced = isApiError(err, 403, 'MSG416')
+      if ((!replaced && handleAccessLost(err)) || editing.current.key !== noteKey) return
       if (isApiError(err, 409, 'MSG418')) {
         setStatus({ kind: 'conflict', latest: null })
         void reload()
       } else if (isApiError(err, 404)) {
         // EX-8: no longer Chair or Secretary, or the meeting went; the re-read shows the panel as gone.
         void reload()
-      } else if (isApiError(err, 403, 'MSG416') || isApiError(err, 409, 'MSG417') || isApiError(err, 409, 'MSG420')) {
+      } else if (replaced || isApiError(err, 409, 'MSG417') || isApiError(err, 409, 'MSG420')) {
         setStatus({ kind: 'refused', message: errorMessage(err) })
       } else if (isApiError(err, 400, 'MSG419')) {
         setStatus({ kind: 'failed', message: errorMessage(err) })
@@ -320,6 +374,7 @@ function NoteEditor({
       }
     } finally {
       busy.current = false
+      inflight.current = null
       if (pending.current) {
         pending.current = false
         if (editing.current.text !== editing.current.saved) again.current()
@@ -329,6 +384,46 @@ function NoteEditor({
   useEffect(() => {
     again.current = () => void save()
   }, [save])
+
+  /**
+   * AF-3 for the notes not on screen: text kept unsent for another item (typed before the Chair moved on, or before the
+   * tab was closed) is sent when the panel opens and when the connection returns, so it is in the minutes even if that
+   * note is never opened again. A copy the server has moved past waits to be opened, where both versions are shown;
+   * text for a deleted item is shown below to copy.
+   */
+  const sendOthers = useCallback(async () => {
+    if (othersBusy.current || !navigator.onLine) return
+    othersBusy.current = true
+    let sent = false
+    try {
+      for (const d of listNoteDrafts(scope)) {
+        if (d.noteKey === editing.current.key) continue
+        if (d.noteKey !== GENERAL && !items.some((i) => i.id === d.noteKey)) continue
+        const server = notes.get(d.noteKey)
+        if (d.body === (server?.body ?? '')) {
+          removeNoteDraft(scope, d.noteKey)
+          continue
+        }
+        if (d.base !== (server?.updatedAt ?? null)) continue
+        try {
+          await saveNote(meetingId, { agendaItemId: itemOf(d.noteKey), body: d.body, updatedAt: d.base })
+          if (readNoteDraft(scope, d.noteKey)?.body === d.body) removeNoteDraft(scope, d.noteKey)
+          sent = true
+        } catch (err) {
+          if (isApiError(err, 403, 'MSG416')) return
+          if (handleAccessLost(err) || !(err instanceof ApiError)) return
+          // Refused or out of date: left for when that note is opened.
+        }
+      }
+    } finally {
+      othersBusy.current = false
+      if (sent) void reload()
+    }
+  }, [scope, items, notes, meetingId, handleAccessLost, reload])
+  useEffect(() => {
+    others.current = () => void sendOthers()
+    void Promise.resolve().then(() => others.current())
+  }, [sendOthers])
 
   // Opens the note of `key`: what this browser kept unsent if the server has not moved on, else the server's text.
   useEffect(() => {
@@ -354,7 +449,17 @@ function NoteEditor({
   // A newer copy from another window: taken as is when nothing here is unsaved, else shown as a conflict.
   useEffect(() => {
     const server = notes.get(editing.current.key)
-    const { base, text: body, saved } = editing.current
+    const { key: noteKey, base, text: body, saved } = editing.current
+    // This window's own save, heard on the hub before its answer: the answer settles it.
+    if (server && inflight.current?.key === noteKey && inflight.current.body === server.body) return
+    if (server && server.body === body) {
+      // The server already holds exactly this text (sent from another tab, say): nothing to resolve.
+      if (server.updatedAt !== base) {
+        editing.current = { ...editing.current, base: server.updatedAt, saved: server.body }
+        removeNoteDraft(scope, noteKey)
+      }
+      return
+    }
     if (!server || (base && Date.parse(server.updatedAt) <= Date.parse(base))) {
       if (status.kind === 'conflict' && status.latest === null && server)
         setStatus({ kind: 'conflict', latest: server })
@@ -365,12 +470,13 @@ function NoteEditor({
       setText(server.body)
     } else if (status.kind !== 'conflict' || status.latest?.updatedAt !== server.updatedAt)
       setStatus({ kind: 'conflict', latest: server })
-  }, [notes, status])
+  }, [notes, status, scope])
 
   // Back online, or the tab is being left: send what waits.
   useEffect(() => {
     const flush = () => {
       if (editing.current.text !== editing.current.saved) void save()
+      else others.current()
     }
     const onHidden = () => document.visibilityState === 'hidden' && flush()
     window.addEventListener('online', flush)
@@ -383,7 +489,10 @@ function NoteEditor({
     }
   }, [save])
 
-  const locked = status.kind === 'refused' || status.kind === 'conflict'
+  // Nothing to resolve or send once the server holds exactly the text on screen (the copy above adopted its version).
+  const shown: Status =
+    (status.kind === 'conflict' || status.kind === 'dirty') && notes.get(key)?.body === text ? { kind: 'idle' } : status
+  const locked = shown.kind === 'refused' || shown.kind === 'conflict'
 
   function change(value: string) {
     setText(value)
@@ -414,6 +523,13 @@ function NoteEditor({
     setStatus({ kind: 'dirty' })
     void save()
   }
+
+  // Text kept unsent for an item deleted since (EX-5): its saved text went into the meeting-wide note on the server;
+  // this part never reached it, so it is shown to copy.
+  const titles = titlesOf(items)
+  const orphans = listNoteDrafts(scope).filter(
+    (d) => d.noteKey !== GENERAL && d.noteKey !== key && !items.some((i) => i.id === d.noteKey),
+  )
 
   const options: SelectOption<string>[] = [
     { value: GENERAL, label: 'Chung', hint: notes.get(GENERAL)?.body ? 'Có ghi chú' : undefined },
@@ -448,12 +564,19 @@ function NoteEditor({
         onBlur={() => editing.current.text !== editing.current.saved && !locked && void save()}
       />
 
-      <NoteStatus status={status} length={text.length} onRetry={() => void save()} />
+      <NoteStatus status={shown} length={text.length} onRetry={() => void save()} />
 
-      {status.kind === 'conflict' && (
+      <UnsentDrafts
+        key={orphans.map((d) => d.noteKey).join()}
+        initial={orphans}
+        titles={titles}
+        onDrop={(noteKey) => removeNoteDraft(scope, noteKey)}
+      />
+
+      {shown.kind === 'conflict' && (
         <div className="alert alert-warning notes-conflict" role="alert">
           <p>{STALE}</p>
-          {status.latest?.body ? <p className="notes-text notes-latest">{status.latest.body}</p> : null}
+          {shown.latest?.body ? <p className="notes-text notes-latest">{shown.latest.body}</p> : null}
           <div className="notes-conflict-actions">
             <button type="button" className="btn btn-outline btn-sm" onClick={takeLatest}>
               Dùng bản mới
@@ -464,9 +587,9 @@ function NoteEditor({
           </div>
         </div>
       )}
-      {status.kind === 'refused' && (
+      {shown.kind === 'refused' && (
         <div className="alert alert-error" role="alert">
-          <p>{status.message}</p>
+          <p>{shown.message}</p>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => void reload()}>
             <Icon name="refresh" size={16} />
             Tải lại

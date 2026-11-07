@@ -5,7 +5,7 @@
  * Where it is kept depends on the meeting (BR-403): a Normal meeting's text goes to `localStorage`, so it survives a
  * closed tab; a Secret meeting's only to `sessionStorage`, so it goes with the page and never stays on a shared
  * computer. Every entry goes when the user signs out (`clearNoteDrafts`) and a meeting's when the user may no longer
- * read its notes (`forgetNoteDrafts`). Storage can be unavailable (private mode, quota): the panel then works as before,
+ * read its notes (`takeNoteDrafts`). Storage can be unavailable (private mode, quota): the panel then works as before,
  * only without the safety net.
  */
 
@@ -100,16 +100,25 @@ export function settleNoteDrafts(scope: DraftScope) {
   }
 }
 
-/** The user may no longer read this meeting's notes (EX-8): nothing of them stays on the device (BR-403). */
-export function forgetNoteDrafts(userId: string, meetingId: string) {
+/**
+ * The user may no longer read this meeting's notes (EX-1, EX-8): nothing of them stays on the device (BR-403). What
+ * was kept is handed back once, so the page can still show it to copy until it is closed.
+ */
+export function takeNoteDrafts(userId: string, meetingId: string): (NoteDraft & { noteKey: string })[] {
   const prefix = prefixOf({ userId, meetingId })
+  const taken: (NoteDraft & { noteKey: string })[] = []
   for (const store of [localStorage, sessionStorage]) {
     try {
-      for (const key of keysOf(store, prefix)) store.removeItem(key)
+      for (const key of keysOf(store, prefix)) {
+        const draft = parse(store.getItem(key))
+        if (draft) taken.push({ ...draft, noteKey: key.slice(prefix.length) })
+        store.removeItem(key)
+      }
     } catch {
       // Storage unavailable: nothing was kept.
     }
   }
+  return taken
 }
 
 /** On sign-out: no meeting note stays behind on a shared computer. */

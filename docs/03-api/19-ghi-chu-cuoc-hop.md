@@ -12,7 +12,7 @@ FE: [`NotesPanel`](../../frontend/src/features/notes/NotesPanel.tsx), kiểu [`t
 |---|---|---|
 | Thư ký hiện tại | Có | Có, khi cuộc họp còn nhận ghi chú |
 | Chủ toạ hiện tại | Có, chỉ đọc (`canWrite: false`) | `403` `MSG416` |
-| Người khác đọc được cuộc họp (thành viên, người tạo, người duyệt, Thư ký đã bị thay) | `404`, như thể không có ghi chú (EX-8) | `404` (EX-8) |
+| Người khác đọc được cuộc họp (thành viên, người tạo, người duyệt, Thư ký đã bị thay) | `404`, như thể không có ghi chú (EX-8) | `403` `MSG416` (EX-1) |
 | Không đọc được cuộc họp | `404` | `404` |
 
 - **Thư ký hiện tại:** thành viên đang hoạt động, có vai trò `Secretary`. Nếu đổi Thư ký, người mới bắt đầu với ghi chú
@@ -54,16 +54,22 @@ FE: [`NotesPanel`](../../frontend/src/features/notes/NotesPanel.tsx), kiểu [`t
 
   Hai nơi cùng mở (khung trong phòng họp và tab mới) vì thế không ghi đè nhau (BR-399).
 - **`body`:** văn bản thuần, tối đa 20.000 ký tự, được để trống (BR-400). `\r\n` được lưu thành `\n`.
-- **Dấu đầu dòng (BR-401):** một dòng bắt đầu bằng `Ý kiến:`, `Kết luận:` hoặc `Nhiệm vụ:` (không phân biệt hoa thường)
-  là dòng có đánh dấu. Dấu chỉ là chữ: TrustCabinet không lưu người được giao, hạn hay tiến độ.
+- **Dấu đầu dòng (BR-401):** một dòng bắt đầu bằng `Ý kiến:`, `Kết luận:` hoặc `Nhiệm vụ:` là dòng có đánh dấu: không
+  phân biệt hoa thường, cho phép khoảng trắng trước dấu hai chấm (`Kết luận :`), và so sau khi chuẩn hoá Unicode NFC (bàn
+  phím gõ dấu tổ hợp vẫn khớp). Dấu chỉ là chữ: TrustCabinet không lưu người được giao, hạn hay tiến độ.
 - **Lỗi:**
-  - `403` `MSG416` khi người gọi là Chủ toạ hiện tại (EX-1). Người không phải Chủ toạ hay Thư ký nhận `404` (EX-8).
+  - `403` `MSG416` khi người gọi đọc được cuộc họp nhưng không phải Thư ký hiện tại: Chủ toạ, hoặc Thư ký vừa bị thay
+    trong lúc gõ (EX-1). Câu này không cho biết gì về ghi chú; đọc ghi chú thì người không phải Chủ toạ/Thư ký vẫn nhận
+    `404` (EX-8).
   - Thứ tự kiểm tra theo UC-82 bước 4: vai trò, trạng thái cuộc họp, mục nghị sự, độ dài, rồi bản đang giữ.
   - `409` `MSG417` khi cuộc họp chưa bắt đầu, đã huỷ, hoặc đã kết thúc và đã có bản nháp biên bản.
   - `409` `MSG418` khi bản đang giữ đã cũ.
   - `400` `MSG419` khi quá 20.000 ký tự.
   - `409` `MSG420` khi mục nghị sự không thuộc cuộc họp này hoặc đã bị xoá.
   - `500` `MSG421` khi lỗi đọc, `503` `MSG422` khi lỗi lưu.
+- **Khoá:** mỗi lần lưu khoá dòng cuộc họp (`SELECT … FOR UPDATE`) tới khi xong, như xoá mục nghị sự và tạo bản nháp
+  biên bản. Một ghi chú vì thế lưu trước (rồi được gộp khi xoá mục, hoặc vào biên bản) hoặc sau (rồi bị từ chối
+  `MSG420`/`MSG417`), không chen giữa. Hai lần lưu đầu cùng lúc của một ghi chú: một lần được lưu, lần kia nhận `MSG418`.
 
 ## Sự kiện `notesChanged` trên `/hubs/meetings`
 
@@ -118,15 +124,22 @@ Cách panel chạy:
   - cuộc họp Thường (`secret: false`): trong `localStorage`, nên đóng tab rồi vào lại vẫn còn;
   - cuộc họp Mật (`secret: true`): chỉ trong `sessionStorage`, mất khi đóng trang; nháp cũ trong `localStorage` của
     cuộc họp vừa đổi sang Mật được chuyển sang `sessionStorage`;
-  - `GET` trả `404` (đã rời cuộc họp, hoặc không còn là Chủ toạ/Thư ký): xoá mọi nháp của cuộc họp đó;
+  - `GET` trả `404` (đã rời cuộc họp, hoặc không còn là Chủ toạ/Thư ký): xoá mọi nháp của cuộc họp đó khỏi máy, nhưng
+    chữ chưa lưu vẫn hiện trên trang, kèm Sao chép và Bỏ, tới khi đóng trang (EX-1);
   - đăng xuất: xoá mọi nháp ghi chú; phiên hết hạn thì giữ lại.
-- **Mất mạng:** hiện `MSG423` và gửi lại khi có mạng (sự kiện `online`).
+- **Mất mạng:** hiện `MSG423` và gửi lại khi có mạng (sự kiện `online`). Nháp của các ghi chú khác (gõ trước khi Chủ
+  toạ chuyển mục, hoặc trước khi đóng tab) cũng được gửi khi mở panel, khi có mạng lại và sau mỗi lần lưu thành công,
+  miễn bản trên server chưa đổi; bản đã đổi thì chờ tới lúc mở ghi chú đó để hiện hai bản (AF-3).
 - **Lỗi 5xx:** hiện `message` của server, có nút "Thử lại", và tự thử lại sau 10 giây.
 - **`MSG418`:** giữ chữ đang gõ, hiện bản mới nhất bên cạnh, cho chọn "Dùng bản mới" hoặc "Giữ bản này" (lưu lại trên
   bản mới nhất).
 - **`MSG415`:** không toast (tự lưu liên tục); dòng trạng thái dưới ô nhập hiện câu của server kèm giờ lưu, ví dụ
   "Đã lưu ghi chú. (15:17)" (UC-82 bước 5).
-- **`404` khi lưu (EX-8):** đọc lại; panel báo không xem được ghi chú.
+- **`404` khi lưu:** cuộc họp không còn đọc được; đọc lại, panel báo không xem được ghi chú và hiện chữ chưa lưu để
+  sao chép.
 - **`MSG416`, `MSG417`, `MSG420`:** khoá ô nhập, giữ chữ để sao chép. Khi panel chuyển sang chế độ chỉ đọc, chữ chưa
   lưu được còn trên máy hiện ở đầu panel, kèm nút Sao chép và Bỏ.
+- **Mục đang chọn bị xoá (EX-5):** ô chọn quay về mục Chủ toạ đang bàn. Chữ đã lưu của mục đó nằm trong ghi chú chung
+  (xem trên); chữ chưa lưu hiện dưới ô nhập, kèm Sao chép và Bỏ.
+- **Sự kiện của chính lần lưu** tới trước câu trả lời `PUT`, hoặc server đã có đúng chữ đang hiện: không báo xung đột.
 - **Dấu đầu dòng:** không có nút; Thư ký tự gõ `Kết luận:`, `Nhiệm vụ:` (gợi ý ở placeholder của ô nhập).

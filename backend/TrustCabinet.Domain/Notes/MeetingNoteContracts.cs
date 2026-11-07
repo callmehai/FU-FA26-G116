@@ -1,3 +1,4 @@
+using System.Text;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -25,8 +26,8 @@ public enum NoteFailure
     None,
     NotFound,
     Inactive,
-    /// <summary>The current Chair, who reads the notes but does not write them (BR-395, EX-1). Anyone else who is not the
-    /// Secretary gets <see cref="NotFound"/> (EX-8).</summary>
+    /// <summary>A save by a reader of the meeting who is not its current Secretary: the Chair, or a Secretary replaced
+    /// while typing (BR-395, EX-1). Reading the notes is <see cref="NotFound"/> for anyone but the Chair (EX-8).</summary>
     Forbidden,
     /// <summary>The meeting is not InProgress, or it has Ended and its minutes draft exists (BR-396).</summary>
     Closed,
@@ -81,24 +82,29 @@ public static class MeetingNoteRules
     /// <summary>The mark of a line and the text after it, or null for an unmarked line.</summary>
     public static (string Mark, string Text)? Marked(string line)
     {
-        var trimmed = line.TrimStart();
+        // NFC: a mark typed with combining accents (some Vietnamese keyboards) is the same mark. "Kết luận :" counts too.
+        var trimmed = line.Normalize(NormalizationForm.FormC).TrimStart();
         foreach (var mark in Marks)
-            if (trimmed.StartsWith(mark, StringComparison.OrdinalIgnoreCase)
-                && trimmed.Length > mark.Length && trimmed[mark.Length] == ':')
-                return (mark, trimmed[(mark.Length + 1)..].Trim());
+        {
+            if (!trimmed.StartsWith(mark, StringComparison.OrdinalIgnoreCase)) continue;
+            var rest = trimmed[mark.Length..].TrimStart(' ', '\t');
+            if (rest.StartsWith(':')) return (mark, rest[1..].Trim());
+        }
         return null;
     }
 
     /// <summary>
     /// BR-397: what a deleted agenda item's note becomes, appended to its author's meeting-wide note so the text is not
-    /// lost. Cut to <see cref="MaxLength"/> when the two together would not fit.
+    /// lost. Cut to <see cref="MaxLength"/> when the two together would not fit, never inside a surrogate pair.
     /// </summary>
     public static string Fold(string general, string itemTitle, string itemBody)
     {
         var folded = string.IsNullOrWhiteSpace(general)
             ? $"{itemTitle}:\n{itemBody}"
             : $"{general.TrimEnd()}\n\n{itemTitle}:\n{itemBody}";
-        return folded.Length > MaxLength ? folded[..MaxLength] : folded;
+        if (folded.Length <= MaxLength) return folded;
+        var cut = char.IsHighSurrogate(folded[MaxLength - 1]) ? MaxLength - 1 : MaxLength;
+        return folded[..cut];
     }
 
     public static NoteView View(MeetingNote note) => new(note.AgendaItemId, note.Body, note.UpdatedAt,
