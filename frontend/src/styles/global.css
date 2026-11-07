@@ -4808,3 +4808,27 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .ai-settings .form-grid { grid-template-columns: 1fr; }
   .ai-settings-mode .segmented { width: 100%; }
 }
+
+/* ── Ghi chú của Thư ký (SCRUM-30) — one panel for the meeting tab and the call room (ADR-0011) ── */
+.notes-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.notes-room { overflow-y: auto; }
+.notes-room-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.notes-editor { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.notes-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.notes-toolbar .select { flex: 1 1 220px; min-width: 0; }
+.notes-text-input { min-height: 320px; font-size: 14px; line-height: 1.55; resize: vertical; }
+.notes-room .notes-text-input { min-height: 240px; }
+.notes-status { display: flex; justify-content: space-between; gap: 8px; min-height: 18px; margin: 0; color: var(--muted-ink); font-size: 12.5px; }
+.notes-status .icon { vertical-align: -2px; }
+.notes-status-warn { color: var(--chip-amber-fg); }
+.notes-counter { margin-left: auto; font-variant-numeric: tabular-nums; }
+.notes-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.notes-latest { max-height: 160px; overflow-y: auto; margin: 8px 0 0; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); color: var(--ink); font-size: 13px; }
+.notes-conflict-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.notes-conflict-actions .btn { margin-top: 0; }
+.notes-read { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.notes-read-title { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.notes-empty { margin: 0; }
+.notes-skeleton { display: flex; flex-direction: column; gap: 8px; }
+.notes-skeleton span { height: 34px; border-radius: var(--radius); background: var(--surface-alt); }
+.notes-skeleton span + span { height: 240px; }

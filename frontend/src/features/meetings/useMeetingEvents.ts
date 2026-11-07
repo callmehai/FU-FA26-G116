@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { createHubConnection, retryDelay } from '../../api/hubs'
 import type { AttendanceChangedEvent } from '../../types/attendance'
 import type { DocumentsChangedEvent } from '../../types/document'
+import type { NotesChange } from '../../types/note'
 import type { AgendaChangedEvent } from '../../types/meeting'
 import type { ParticipantsChangedEvent } from '../../types/participant'
 import type { SpeechChangedEvent } from '../../types/speech'
@@ -19,6 +20,7 @@ import type { VoteChangedEvent } from '../../types/vote'
  * (SCRUM-28) say `voteChanged` for any change, and `voteOpened` as well when the Chair opens one, so the call room
  * can tell everyone. `voteListChanged` is every vote change but a ballot or a conclusion: what a list of the votes and
  * their documents shows (UC-32a AF-1) does not move with each ballot, and a meeting of N voters sends N of them.
+ * `notesChanged` (SCRUM-30) reaches only the Chair and the Secretary: a note was saved in another window.
  */
 export type MeetingEvent =
   | 'participantsChanged'
@@ -32,6 +34,7 @@ export type MeetingEvent =
   | 'voteChanged'
   | 'voteOpened'
   | 'voteListChanged'
+  | 'notesChanged'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -44,6 +47,8 @@ interface Channel {
   /** Set while the last listener has left, so a remount in the same tick keeps the connection. */
   closing?: number
 }
+
+type RereadEvent = ParticipantsChangedEvent | AttendanceChangedEvent | DocumentsChangedEvent | NotesChange
 
 /** One `/hubs/meetings` connection per meeting on screen, shared by the page and its panels. */
 const channels = new Map<string, Channel>()
@@ -71,8 +76,8 @@ function open(meetingId: string): Channel {
       () => false,
     )
 
-  for (const name of ['participantsChanged', 'attendanceChanged', 'documentsChanged'] as const) {
-    connection.on(name, (event: ParticipantsChangedEvent | AttendanceChangedEvent | DocumentsChangedEvent) => {
+  for (const name of ['participantsChanged', 'attendanceChanged', 'documentsChanged', 'notesChanged'] as const) {
+    connection.on(name, (event: RereadEvent) => {
       if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(event.eventId)) return
       seen.add(event.eventId)
       notify(name)
