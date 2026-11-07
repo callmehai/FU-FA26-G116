@@ -10,7 +10,8 @@ database ":Database" as Database
 
 Actor->NotesPanel: Type in the note of the current agenda item (BR-397, BR-401)
 activate NotesPanel
-NotesPanel->NotesPanel: Keep the unsent text on this device (BR-403)
+NotesPanel->NotesPanel: Keep the unsent text on this device,
+only until the page is closed for a Secret Meeting (BR-403)
 
 alt The connection is lost - AF-3
     NotesPanel-->Actor: MSG422 - You are offline. The note is kept on this device and will be saved when the connection returns.
