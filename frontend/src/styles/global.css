@@ -2670,8 +2670,15 @@ a.menu-item { text-decoration: none; }
 .agenda-sheet .agenda-body { padding-top: 12px; padding-bottom: 16px; border-top: 1px solid var(--line-soft); }
 .agenda-sheet .agenda-title { padding: 12px 0; }
 .agenda-sheet .agenda-title:hover > span { color: var(--ink); }
-.agenda-docs-count { display: inline-flex; flex: none; }
-.agenda-docs-count .badge { font-variant-numeric: tabular-nums; }
+.agenda-docs-count { display: inline-flex; flex: none; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+/* An opened item on the page: Tài liệu and Kết luận are two columns under small headings, the files plain rows.
+   The grey boxes, with a white box per file inside, stacked three containers inside the card (sloplint S8). The
+   room's narrow panel keeps its boxes: there each item is a card of its own with nothing around it. */
+.agenda-sheet .agenda-boxes { gap: 24px; }
+.agenda-sheet .agenda-box { padding: 0; border-radius: 0; background: none; }
+.agenda-sheet .agenda-box + .agenda-box { padding-left: 24px; border-left: 1px solid var(--line-soft); }
+.agenda-sheet .agenda-doc-list { gap: 0; }
+.agenda-sheet .agenda-doc-list li { min-height: 32px; padding: 0; border: 0; border-radius: 0; background: none; }
 .agenda-break { flex-basis: 100%; height: 0; }
 .agenda-grip {
   display: inline-grid; flex: none; place-items: center; width: 28px; height: 36px; margin-right: -4px;
@@ -2884,6 +2891,8 @@ a.menu-item { text-decoration: none; }
 }
 @container (max-width: 640px) {
   .agenda-boxes { grid-template-columns: minmax(0, 1fr); }
+  .agenda-sheet .agenda-boxes { gap: 12px; }
+  .agenda-sheet .agenda-box + .agenda-box { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--line-soft); }
 }
 /* The room's panel (and a phone, below): the state goes to the card's top right, beside the title, so
    the facts and the actions share one line under it and the paperclip never wraps under the presenter. */
