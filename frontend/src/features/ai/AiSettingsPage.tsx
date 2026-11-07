@@ -137,7 +137,7 @@ export function AiSettingsPage() {
           <div className="ai-settings-mode">
             <span className="ai-settings-label" id="ai-mode-label">
               Viết dự thảo bằng
-              <InfoTip text="Chỉ cuộc họp Thường dùng API. Cuộc họp Nội bộ, Mật, Tối mật luôn dùng máy local: lời thoại của chúng không rời server." />
+              <InfoTip text="Chỉ cuộc họp Thường dùng API. Cuộc họp Nội bộ, Hạn chế, Mật luôn dùng máy local: lời thoại của chúng không rời server." />
             </span>
             <SegmentedControl
               label="Viết dự thảo bằng"
