@@ -1,4 +1,5 @@
 import {
+  NotebookPen,
   ArrowDown,
   History,
   AudioLines,
@@ -286,6 +287,7 @@ const ICONS = {
   replaceAll: ReplaceAll,
   highlight: Highlighter,
   rule: Minus,
+  notes: NotebookPen,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

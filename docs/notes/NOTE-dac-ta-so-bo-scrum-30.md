@@ -32,6 +32,7 @@
 | # | Ticket | Đặc tả này | Lý do |
 |---|---|---|---|
 | D1 | SCRUM-30: "Đánh dấu nhiệm vụ giao cho ai" | Chỉ có nhãn chữ *Nhiệm vụ* ở đầu dòng. Không lưu người được giao, hạn hay tiến độ | README, BR-392: TrustCabinet không theo dõi nhiệm vụ |
+| D2 | SCRUM-30 không nói gì về mục nghị sự bị xoá | Xoá một mục `Pending` có ghi chú thì ghi chú đó được nối vào ghi chú chung của cùng người viết (`<tên mục>:` + nội dung), không mất chữ | Khoá ngoại `SET NULL` đụng unique một ghi chú chung mỗi người viết, làm xoá mục hỏng với `503 MSG70`. Phát hiện lúc làm BE SCRUM-30 |
 
 ## 3. Use Case đề xuất
 
@@ -121,4 +122,9 @@ Chủ toạ/Thư ký hỏi tới ghi chú thì nhận `404`, không có mã.
 - [ ] Xuất PNG cho `UC82_TakeMeetingNotes.txt` (`node scripts/export-diagrams.js …`) và thêm tab vào
       `TrustCabinet_Sequence_Diagrams.drawio` — để lúc BA Final Review nếu đặc tả còn đổi.
 - [ ] BA: đưa UC-82 và BR-395 → BR-403 vào Report 3 DOCX; cập nhật inventory và UC diagram.
-- [ ] BE: contract trong `docs/03-api/`, code, test, đổi `MSG415`–`MSG423` từ *Dành sẵn* sang *BE* khi có code.
+- [ ] Ghi D2 lên SCRUM-30 bằng comment.
+- [x] BE (07/11/2026): `GET`/`PUT /api/meetings/{id}/notes`, sự kiện `notesChanged`, ghi chú vào bản nháp biên bản
+      (BR-402), gộp ghi chú khi xoá mục (D2); contract [19-ghi-chu-cuoc-hop.md](../03-api/19-ghi-chu-cuoc-hop.md);
+      `MSG415`–`MSG422` sang *BE*.
+- [x] FE (07/11/2026): `NotesPanel` ở tab Ghi chú và trong phòng họp; nháp chưa gửi giữ trong `localStorage` (cuộc họp
+      Thường) hoặc `sessionStorage` (cuộc họp Mật), xoá khi lưu xong, khi rời cuộc họp và khi đăng xuất (BR-403); `MSG423`.

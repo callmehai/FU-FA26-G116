@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using TrustCabinet.Domain.Notes;
 using TrustCabinet.Domain.Summaries;
 
 namespace TrustCabinet.Infrastructure.Summaries;
@@ -8,7 +9,10 @@ public sealed record MinutesPersonLine(string Name, string Role, bool Away);
 
 public sealed record MinutesRecords(string Title, DateTimeOffset StartedAt, DateTimeOffset? EndedAt, string Place,
     string? Chair, string? Secretary, IReadOnlyList<MinutesPersonLine> People, IReadOnlyList<AgendaFacts> Agenda,
-    IReadOnlyList<string> Votes);
+    IReadOnlyList<string> Votes, IReadOnlyList<MinutesNote>? Notes = null);
+
+/// <summary>A note of the current Secretary (SCRUM-30): on one agenda item, or on the meeting as a whole when null.</summary>
+public sealed record MinutesNote(Guid? AgendaItemId, string Body);
 
 /// <summary>
 /// The draft minutes (SCRUM-32): AI-eCabinet's one built-in template, "Biên bản cuộc họp"
@@ -16,7 +20,10 @@ public sealed record MinutesRecords(string Title, DateTimeOffset StartedAt, Date
 /// filled the way eCab fills it when its model does not: the facts from the meeting's records, sections I–III from the
 /// meeting's Dự thảo as it stands, reviewed or not, as eCab's Compose takes it. There is one template, fixed here;
 /// TrustCabinet has no template management. Without a Dự thảo (the AI machine was off, say), section II lists the agenda
-/// and section III the Chair's recorded conclusions and the votes, with "……" for the Secretary to fill. The line marks are those of <see cref="MinutesPerson"/>'s file, MinutesContracts.cs.
+/// and section III the Chair's recorded conclusions and the votes, with "……" for the Secretary to fill — or, where the
+/// Secretary took notes during the sitting (SCRUM-30, BR-402), with those notes: each item's under it in section II, the
+/// lines marked "Kết luận:" in section III and those marked "Nhiệm vụ:" under "Nhiệm vụ, sản phẩm và thời hạn". The line
+/// marks are those of <see cref="MinutesPerson"/>'s file, MinutesContracts.cs.
 /// </summary>
 public static partial class MinutesTemplate
 {
@@ -46,16 +53,23 @@ public static partial class MinutesTemplate
         text.AppendLine($"## {SummaryWriter.ObjectivesHeading}")
             .AppendLine(Body(draft?.Objectives));
 
+        var notes = Notes.Read(records);
         text.AppendLine($"## {SummaryWriter.DiscussionHeading}");
         if (draft is not null) text.AppendLine(Body(draft.Discussion, ItemTitle()));
-        else if (records.Agenda.Count == 0) text.AppendLine(Blank);
         else
+        {
+            foreach (var line in notes.Discussion(null)) text.AppendLine(line);
+            if (records.Agenda.Count == 0 && notes.Discussion(null).Count == 0) text.AppendLine(Blank);
             for (var i = 0; i < records.Agenda.Count; i++)
             {
                 var item = records.Agenda[i];
+                var noted = notes.Discussion(item.Id);
                 text.AppendLine($"### {i + 1}. {Flat(item.Title)}");
-                text.AppendLine(item.Presenter is null ? Blank : $"{Flat(item.Presenter)} trình bày. {Blank}");
+                if (item.Presenter is not null) text.AppendLine($"{Flat(item.Presenter)} trình bày.{(noted.Count == 0 ? $" {Blank}" : "")}");
+                else if (noted.Count == 0) text.AppendLine(Blank);
+                foreach (var line in noted) text.AppendLine(line);
             }
+        }
 
         text.AppendLine($"## {SummaryWriter.ConclusionsHeading}");
         if (draft is not null) text.AppendLine(Body(draft.Conclusions, SubHeading()));
@@ -63,14 +77,17 @@ public static partial class MinutesTemplate
         {
             text.AppendLine($"### {SummaryWriter.ChairHeading}");
             var recorded = records.Agenda.Where(a => !string.IsNullOrWhiteSpace(a.Conclusion)).ToList();
-            if (recorded.Count == 0) text.AppendLine(Blank);
+            if (recorded.Count == 0 && notes.Conclusions.Count == 0) text.AppendLine(Blank);
             foreach (var item in recorded) text.AppendLine($"- {Flat(item.Title)}: {Flat(item.Conclusion!)}");
+            foreach (var line in notes.Conclusions) text.AppendLine(line);
             if (records.Votes.Count > 0)
             {
                 text.AppendLine(SummaryWriter.BallotsHeading);
                 foreach (var vote in records.Votes) text.AppendLine($"- {vote}");
             }
-            text.AppendLine($"### {SummaryWriter.TasksHeading}").AppendLine(Blank);
+            text.AppendLine($"### {SummaryWriter.TasksHeading}");
+            if (notes.Tasks.Count == 0) text.AppendLine(Blank);
+            foreach (var line in notes.Tasks) text.AppendLine(line);
         }
 
         var end = records.EndedAt is { } ended ? TimeZoneInfo.ConvertTime(ended, zone) : (DateTimeOffset?)null;
@@ -111,6 +128,55 @@ public static partial class MinutesTemplate
             .Replace("__", "", StringComparison.Ordinal).Trim();
         while (line.Length > 0 && (line[0] is '#' or '^' or '~' or '@')) line = line[1..].TrimStart();
         return line;
+    }
+
+    /// <summary>
+    /// The Secretary's notes sorted for the template (BR-402). Lines marked "Kết luận:" and "Nhiệm vụ:" leave section II
+    /// for section III, prefixed with their item's title; every other line stays with its item. Each line is flattened,
+    /// so nothing typed into a note becomes a heading or a signature block.
+    /// </summary>
+    private sealed class Notes
+    {
+        private readonly Dictionary<Guid, List<string>> _discussion = [];
+        private readonly List<string> _general = [];
+        public List<string> Conclusions { get; } = [];
+        public List<string> Tasks { get; } = [];
+
+        public IReadOnlyList<string> Discussion(Guid? itemId)
+            => itemId is { } id ? _discussion.GetValueOrDefault(id) ?? [] : _general;
+
+        public static Notes Read(MinutesRecords records)
+        {
+            var notes = new Notes();
+            var titles = records.Agenda.ToDictionary(a => a.Id, a => Flat(a.Title));
+            // Meeting-wide note first, then the items in agenda order.
+            var ordered = (records.Notes ?? [])
+                .OrderBy(n => n.AgendaItemId is { } id ? records.Agenda.ToList().FindIndex(a => a.Id == id) + 1 : 0);
+            foreach (var note in ordered)
+            {
+                // A note on an item no longer in the agenda was folded into the meeting-wide one; skip any stray row.
+                if (note.AgendaItemId is { } itemId && !titles.ContainsKey(itemId)) continue;
+                var prefix = note.AgendaItemId is { } id ? $"{titles[id]}: " : "";
+                // Flat trims each line, which also drops a stray CR.
+                foreach (var raw in note.Body.Split('\n'))
+                {
+                    var line = Flat(raw);
+                    if (line.Length == 0) continue;
+                    var marked = MeetingNoteRules.Marked(line);
+                    if (marked is { Mark: MeetingNoteRules.Conclusion, Text: var conclusion } && conclusion.Length > 0)
+                        notes.Conclusions.Add($"- {prefix}{conclusion}");
+                    else if (marked is { Mark: MeetingNoteRules.Task, Text: var task } && task.Length > 0)
+                        notes.Tasks.Add($"- {prefix}{task}");
+                    else if (note.AgendaItemId is { } owner)
+                    {
+                        if (!notes._discussion.TryGetValue(owner, out var lines)) notes._discussion[owner] = lines = [];
+                        lines.Add(line);
+                    }
+                    else notes._general.Add(line);
+                }
+            }
+            return notes;
+        }
     }
 
     /// <summary>A name in the signature row: a "|" would split it into another column.</summary>

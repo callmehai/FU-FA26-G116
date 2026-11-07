@@ -26,6 +26,7 @@ import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RecorderCard } from '../../recordings/RecorderCard'
 import { MinutesPanel } from '../../minutes/MinutesPanel'
+import { NotesPanel } from '../../notes/NotesPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
 import { useRoomRecorder } from '../../recordings/useRoomRecorder'
 import { useRoomRecordings } from '../../recordings/useRoomRecordings'
@@ -52,6 +53,7 @@ const TABS = [
   { id: 'overview', label: 'Thông tin chung' },
   { id: 'attendees', label: 'Thành phần tham dự' },
   { id: 'agenda', label: 'Nội dung cuộc họp' },
+  { id: 'notes', label: 'Ghi chú' },
   { id: 'documents', label: 'Tài liệu' },
   { id: 'votes', label: 'Biểu quyết' },
   { id: 'recordings', label: 'Bản ghi' },
@@ -59,6 +61,14 @@ const TABS = [
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
+
+/**
+ * The Secretary's notes (SCRUM-30) are the Chair's and the Secretary's alone, and exist only once the sitting starts.
+ * Hiding the tab is presentation; the server answers 404 to anyone else (BR-395).
+ */
+const showsNotes = (meeting: { myMeetingRole: string | null; status: string }) =>
+  (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary') &&
+  (meeting.status === 'InProgress' || meeting.status === 'Ended')
 
 /** Marks a navigation that only switched the tab (see `setTab`). */
 const TAB_SWITCH = 'tabSwitch'
@@ -128,7 +138,7 @@ function MeetingDetail({
   // The recordings are the participants' (personal data): someone who only organised or approved the meeting is not
   // on its roster and the server answers 404, so the tab is not offered, and a link straight to it opens the overview.
   const onRoster = meeting.myMeetingRole !== null
-  const tabs = onRoster ? TABS : TABS.filter((t) => t.id !== 'recordings')
+  const tabs = TABS.filter((t) => (t.id !== 'recordings' || onRoster) && (t.id !== 'notes' || showsNotes(meeting)))
   const tab: TabId = tabs.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
   const setTab = (id: TabId) =>
     setParams(
@@ -260,6 +270,7 @@ function MeetingDetail({
     else if (isApiError(historyFailure, 403)) handleAccessLost(historyFailure)
   }, [historyFailure, reload, handleAccessLost])
 
+
   return (
     <>
       <BackLink to={back.to}>{back.label}</BackLink>
@@ -385,6 +396,8 @@ function MeetingDetail({
             <ParticipantsPanel meetingId={meeting.id} sensitivity={meeting.sensitivity} onChanged={() => void reload()} />
           ) : tab === 'agenda' ? (
             <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
+          ) : tab === 'notes' ? (
+            <NotesPanel meetingId={meeting.id} variant="page" />
           ) : tab === 'documents' ? (
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : tab === 'votes' ? (
