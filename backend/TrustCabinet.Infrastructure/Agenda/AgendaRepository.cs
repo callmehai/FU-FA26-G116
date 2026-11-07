@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Notes;
 
 namespace TrustCabinet.Infrastructure.Agenda;
 
@@ -20,7 +21,31 @@ public sealed class AgendaRepository(TrustCabinetDbContext db) : IAgendaReposito
     public Task<bool> HasMinutesAsync(Guid meetingId, CancellationToken ct)
         => db.MeetingMinutes.AnyAsync(m => m.MeetingId == meetingId, ct);
     public void Add(AgendaItem item) => db.AgendaItems.Add(item);
-    public void Remove(AgendaItem item) => db.AgendaItems.Remove(item);
+    public async Task RemoveAsync(AgendaItem item, DateTimeOffset now, CancellationToken ct)
+    {
+        // The FK would set AgendaItemId to null, which collides with the author's meeting-wide note on the unique index
+        // and fails the delete. Fold each note into that one instead.
+        var notes = await db.MeetingNotes.Where(n => n.MeetingId == item.MeetingId
+            && (n.AgendaItemId == item.Id || n.AgendaItemId == null)).ToListAsync(ct);
+        foreach (var note in notes.Where(n => n.AgendaItemId == item.Id).ToList())
+        {
+            if (!string.IsNullOrWhiteSpace(note.Body))
+            {
+                var general = notes.FirstOrDefault(n => n.AgendaItemId == null && n.AuthorId == note.AuthorId);
+                if (general is null)
+                {
+                    general = new MeetingNote { MeetingId = item.MeetingId, AuthorId = note.AuthorId, Body = "",
+                        CreatedAt = note.CreatedAt };
+                    db.MeetingNotes.Add(general);
+                    notes.Add(general);
+                }
+                general.Body = MeetingNoteRules.Fold(general.Body, item.Title, note.Body);
+                general.UpdatedAt = now;
+            }
+            db.MeetingNotes.Remove(note);
+        }
+        db.AgendaItems.Remove(item);
+    }
 }
 
 /// <summary>

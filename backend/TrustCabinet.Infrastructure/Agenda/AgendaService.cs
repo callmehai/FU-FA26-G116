@@ -194,7 +194,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                             assignment = new(Guid.CreateVersion7(), meetingId, item.Id, input.PresenterId, input.PresenterGuestInvitationId, now);
                     }
                 }
-                else if (operation == AgendaOperation.Delete) agenda.Remove(item!);
+                else if (operation == AgendaOperation.Delete) await agenda.RemoveAsync(item!, now, token);
                 else if (operation == AgendaOperation.Reorder)
                 {
                     if (string.IsNullOrWhiteSpace(input.OrderVersion) || input.OrderedItemIds is null
