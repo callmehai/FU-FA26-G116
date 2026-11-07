@@ -200,3 +200,24 @@ Nội dung trong commit đó:
 - **T35-7** sơ đồ lớp FE-12: chưa có ticket, phải hỏi người dùng trước.
 - **T35-8** SCRUM-132: #267 **chưa** vào `main`, xung đột MSG406 chưa chốt — giữ nguyên, chưa sửa UC-01/02/07.
 - **T35-9** comment Jira + đổi trạng thái: chỉ làm khi PR docs đã ở `main`, theo §2.2 của DEVELOPMENT_WORKFLOW.
+- **Màn Cấu hình AI chưa có trong Report 3 (mở, 07/11/2026):** #274/ADR-0056 đã thêm `GET/PUT /api/admin/ai` và
+  `POST /api/admin/ai/test` cùng `MSG408`–`MSG413`, nhưng Report 3 chưa có UC, BR hay đặc tả màn cho màn này.
+  Cần bổ sung UC/BR/màn (và note trong comment Jira **SCRUM-36** khi PR docs vào `main`) — chưa làm trong PR #275.
+
+### Sửa theo review #275 của callmehai (07/11/2026)
+
+- [x] **1. Giới hạn 63 cột:** bỏ "more than 63 columns" khỏi điều kiện lưu/EX-2 của UC-60 và khỏi BR-394; chuyển sang
+  UC-60 Description và BR-391 (chỉ cắt còn 63 cột khi dựng file Word/PDF). `UC60_EditMeetingMinutes.txt` sửa theo.
+- [x] **2. UC-59 AF-5:** biên bản báo cũ khi **dự thảo AI** được tạo lại hoặc sửa sau lúc dựng biên bản, hoặc khi biên bản
+  dựng lúc chưa có dự thảo rồi dự thảo xuất hiện; lời thoại đổi chỉ làm thẻ Dự thảo báo (UC-48 AF-4).
+- [x] **3. BR-381 sau ADR-0056:** họp Thường có thể gửi lời thoại tới dịch vụ AI bên ngoài do quản trị chọn ở màn Cấu hình AI
+  (khoá lưu mã hoá); mọi mức mật khác luôn dùng máy chủ của đội. Sửa BR-381, Secondary Actor UC-47 và Report 3 §I.
+  Việc còn mở (màn Cấu hình AI + `MSG408`–`MSG413` chưa có UC/BR/màn) ghi ở mục trên.
+- [x] **4. Note 33:** #263/#265 đã vào `main` 06/11/2026.
+- [x] **5. `UC46b_AssignSpeaker.txt`:** bỏ bước ghi "Hide a voice left with no sentence → Update the voice visibility";
+  code chỉ bỏ qua giọng không còn câu lúc đọc, không ghi DB.
+- [x] **6. UC-46b:** EX-1 chỉ còn lỗi roster/lời mời (Main Flow được bỏ tên); thêm EX-5 cho AF-2 khi không nêu đúng một
+  đích; AF-2 bước 2 trả câu về được **bất kỳ** giọng nào của bản ghi.
+- [x] **7. UC-59 AF-4:** "the Dự thảo tab" → thẻ "Dự thảo nội dung" trong tab Biên bản.
+- [x] **8. Report 3 §V.2:** MSG406/MSG407 viết tiếng Anh như các dòng khác.
+- [x] DOCX → `sync_reports.py --report 3`; `check_docx.py` OK; PNG UC-60/UC-46b và tab draw.io xuất lại.

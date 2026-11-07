@@ -38,7 +38,7 @@ alt Actor is not the current Chair or Secretary - EX-4
     MinutesCard-->Actor: No draft, or MSG397 - Only the Chair or Secretary may write the minutes.
 else Actor may edit
     MinutesService->MinutesService: Check the revision is still a draft (BR-388), the content is not empty\nand within 300,000 characters (BR-394), and nobody saved since it was read (BR-389)
-    MinutesService->MinutesService: Filter the HTML - allowed tags, tags nested no deeper than 64 levels,\nat most 63 columns in a table (BR-385, BR-394, ADR-0055)
+    MinutesService->MinutesService: Filter the HTML - allowed tags, tags nested no deeper than 64 levels (BR-385, BR-394, ADR-0055)
 
     alt The minutes can no longer be changed - EX-3
         MinutesService-->MinutesController: MSG400 - The minutes have been submitted or issued and can no longer be changed.
@@ -92,7 +92,7 @@ opt Download the minutes as Word or PDF - AF-1, AF-2
         MinutesController-->MinutesCard: MSG405 - The minutes of a Secret meeting cannot be downloaded.
         MinutesCard-->Actor: MSG405 - The minutes of a Secret meeting cannot be downloaded.
     else Not Secret and format is docx - AF-1
-        MinutesService->MinutesDocx: Build the Word file from the same content (BR-391)
+        MinutesService->MinutesDocx: Build the Word file from the same content,\nkeeping the first 63 columns of a wider table (BR-391)
         activate MinutesDocx
         MinutesDocx-->MinutesService: Biên bản - <tên cuộc họp>.docx
         deactivate MinutesDocx
@@ -100,7 +100,7 @@ opt Download the minutes as Word or PDF - AF-1, AF-2
         MinutesController-->MinutesCard: 200 .docx
         MinutesCard-->Actor: The Word file
     else Not Secret and format is pdf - AF-2
-        MinutesService->MinutesPdf: Build the PDF file from the same content (BR-391)
+        MinutesService->MinutesPdf: Build the PDF file from the same content,\nkeeping the first 63 columns of a wider table (BR-391)
         activate MinutesPdf
         MinutesPdf-->MinutesService: Biên bản - <tên cuộc họp>.pdf
         deactivate MinutesPdf

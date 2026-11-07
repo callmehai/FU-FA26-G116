@@ -141,14 +141,6 @@ opt Change the speaker of one sentence - AF-2
         activate AuditService
         AuditService-->TranscriptionService: Entry saved
         deactivate AuditService
-        TranscriptionService->TranscriptRepository: Hide a voice left with no sentence
-        activate TranscriptRepository
-        TranscriptRepository->Database: Update the voice visibility
-        activate Database
-        Database-->TranscriptRepository: Voice hidden
-        deactivate Database
-        TranscriptRepository-->TranscriptionService: Voice hidden
-        deactivate TranscriptRepository
 
         alt Sentence cannot be moved
             TranscriptionService-->TranscriptController: MSG304 - Unable to save transcript changes. Please try again.
