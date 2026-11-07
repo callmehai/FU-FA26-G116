@@ -25,7 +25,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
 {
     /// <summary>ADR-0056 — the hosted harness: whole agenda items, <c>Ai:ApiParallelism</c> of them at once.</summary>
     private Task<SummaryDraft> WriteThroughApiAsync(ILanguageModel model, MeetingFacts facts, CancellationToken ct)
-        => new SummaryWriter(model, SummaryWriter.ApiChunkChars)
+        => new SummaryWriter(model, SummaryWriter.ApiChunkChars, SummaryWriter.ApiSpellingRule)
             .WritePartsAsync(facts, Math.Clamp(aiOptions.Value.ApiParallelism, 1, 8), ct);
 
     /// <summary>

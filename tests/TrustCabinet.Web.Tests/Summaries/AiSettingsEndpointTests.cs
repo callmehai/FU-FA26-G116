@@ -123,6 +123,9 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
             Assert.Contains("\"max_tokens\":8192", r.Body);
             // DeepSeek's thinking is off: twice as slow and no better on a restatement of what was said.
             Assert.Contains("\"reasoning_effort\":\"none\"", r.Body);
+            // Only the hosted model is asked to restore English words the recogniser spelt by ear.
+            Assert.Contains("SỬA TỪ BỊ CHÉP SAI", System.Text.Json.JsonDocument.Parse(r.Body).RootElement
+                .GetProperty("messages")[0].GetProperty("content").GetString());
         });
         var draft = (await secretary.GetFromJsonAsync<JsonElement>(normal.Summary)).GetProperty("summary");
         Assert.Equal("deepseek-v4.1-flash", draft.GetProperty("model").GetString());
@@ -138,6 +141,7 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
             await f.ProcessAll();
             Assert.Empty(f.Api.Requests);
             Assert.NotEmpty(f.Model.Prompts);
+            Assert.All(f.Model.Systems, system => Assert.DoesNotContain("SỬA TỪ BỊ CHÉP SAI", system));
             Assert.Equal("fake-llm@test", (await keeper.GetFromJsonAsync<JsonElement>(kept.Summary)).GetProperty("summary").GetProperty("model").GetString());
         }
     }

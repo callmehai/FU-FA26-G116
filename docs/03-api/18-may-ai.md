@@ -21,6 +21,21 @@ một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ Ope
   thoại trong một lần và viết song song (`Ai:ApiParallelism`); máy local giữ nguyên cách cắt đoạn 9.000 ký tự cho context
   8K. Đo 07/11 trên 8 cuộc họp mẫu, thời gian từ lúc bấm tới lúc xong: 65,9 giây, họp dài 15,4 giây (trước đó 40), 33/33 ý.
   Gửi cả cuộc họp trong một lần như AI-eCabinet cũng đã thử: 67,1 giây, 33/33 ý, không nhanh hơn nên không giữ.
+- Qua API, prompt có thêm một quy tắc riêng (`SummaryWriter.ApiSpellingRule`, máy local không nhận): từ tiếng Anh mà máy
+  nhận dạng giọng nói chép sai thì viết lại đúng chính tả; tên riêng không chắc thì giữ nguyên. Quy tắc nêu hai kiểu chép
+  sai: chép theo âm tiếng Việt ("đét lai") và chép thành chữ trông như tiếng Anh nhưng sai ("Develoment"), và nói rõ từ
+  đọc lên gần trùng một từ thông dụng thì không phải tên riêng. Đo bằng `tests/ai` (case `9-noi-chem-tieng-anh` và bản gỡ
+  băng thật của `Test04.mp3`, giữ ngoài repo), mỗi case 3 lần, ngày 07/11:
+
+  | | Case mẫu (11 từ chép theo âm) | Test04.mp3 (18 từ) |
+  |---|---|---|
+  | Máy local qwen2.5 7B, không có quy tắc | 2/11, các từ khác bị bỏ khỏi dự thảo | 3/18 |
+  | API, quy tắc chỉ nêu kiểu chép theo âm | 10–11/11 | 3–7/18: "Proction" chỉ sửa 1/4 lần |
+  | API, quy tắc hiện hành | 10–11/11 | 7/18 cả 3 lần: Production, ready, upload, final luôn đúng |
+
+  Vẫn không sửa: "UIT" (UAT), "inqui" (inquiry) và tên riêng "On Ou DINH" (One Housing), "ONE" (OneHub), "TNGC" (T&C):
+  model không đủ căn cứ, và tên riêng đúng ra phải sửa ở bước gỡ băng (Whisper large-v3 nghe đúng các từ này). Bộ 8 cuộc
+  họp mẫu vẫn 33/33 ý, 0 lỗi bịa.
 - Khi API từ chối, `message` kèm lời của nhà cung cấp (`… Nhà cung cấp: Insufficient account funds`, tối đa 200 ký tự).
 
 | Method | Đường dẫn | Kết quả |
