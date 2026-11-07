@@ -5,6 +5,9 @@
     python3 tests/ai/benchmark.py run --label qwen2.5-7b     # asks each for a draft, scores it, writes out/<label>.md
     python3 tests/ai/benchmark.py clean                      # cancels the [AI-BENCH] meetings
 
+`--only 9-noi-chem-tieng-anh` limits seed and run to some cases. `--cases <file.json>` adds cases kept outside the repo
+(a real meeting's transcript is personal data and the repo is public), in the same shape as `cases.py`.
+
 The model is whatever the backend's `Ai:BaseUrl` / `Ai:Model` point at: change them, restart, run again with another
 label, and compare the reports. Seeding writes the meeting data straight into the development database (through
 `docker compose exec postgres psql`), so run it against a local stack only. Standard library only.
@@ -16,6 +19,7 @@ import argparse
 import datetime as dt
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import time
@@ -68,14 +72,26 @@ def q(text: str | None) -> str:
     return "null" if text is None else "'" + text.replace("'", "''") + "'"
 
 
-def seed(base: str) -> None:
+def load_cases(extra: str | None, only: str | None) -> list[dict]:
+    cases = list(CASES)
+    if extra:
+        cases += json.loads(pathlib.Path(extra).read_text())
+    if only:
+        keys = only.split(",")
+        cases = [c for c in cases if c["key"] in keys]
+        if not cases:
+            sys.exit(f"no case among {keys}")
+    return cases
+
+
+def seed(base: str, cases: list[dict]) -> None:
     token = login(base, "thuky")
     people = {}
     for who in ("chutoa", "thuky", "thanhvien"):
         _, body = api(base, "GET", f"/api/meetings/participant-options?q={who}@", token)
         people[who] = body["items"][0]["id"]
-    fixture = {}
-    for case in CASES:
+    fixture = json.loads((OUT / "fixture.json").read_text()) if (OUT / "fixture.json").exists() else {}
+    for case in cases:
         start = dt.datetime.now(dt.UTC).replace(microsecond=0) - dt.timedelta(hours=3)
         status, body = api(base, "POST", "/api/meetings", token, {
             "title": f"{PREFIX} {case['title']}",
@@ -164,10 +180,25 @@ def flat(draft: dict) -> str:
     return "\n".join([draft["objectives"], draft["discussion"], draft["conclusions"]])
 
 
-def run(base: str, label: str, timeout: int) -> None:
+def words(case: dict, text: str) -> list[tuple[str, str, str]]:
+    """Each (as recorded, what was said) of a case: fixed, still wrong, or dropped from the draft."""
+    low = text.lower()
+    scored = []
+    for heard, meant, *_ in case.get("words", []):
+        # A whole word: "inqui" must not count inside "inquiry".
+        if re.search(r"(?<!\w)" + re.escape(heard.lower()) + r"(?!\w)", low):
+            scored.append((heard, meant, "wrong"))
+        elif any(alt.lower() in low for alt in meant.split("|")):
+            scored.append((heard, meant, "fixed"))
+        else:
+            scored.append((heard, meant, "dropped"))
+    return scored
+
+
+def run(base: str, label: str, timeout: int, cases: list[dict]) -> None:
     fixture = json.loads((OUT / "fixture.json").read_text())
     results = []
-    for case in CASES:
+    for case in cases:
         meeting = fixture[case["key"]]
         token = login(base, "thuky")
         status, body = api(base, "POST", f"/api/meetings/{meeting}/summary", token)
@@ -194,9 +225,12 @@ def run(base: str, label: str, timeout: int) -> None:
         # "a|b": any of the spellings counts ("18/20|18 trên 20").
         hits = [p for p in case["expect"] if any(alt in text for alt in p.split("|"))]
         slips = [p for p in case["forbid"] if p in text]
+        scored = words(case, text)
         results.append({"case": case, "seconds": seconds, "draft": summary["draft"], "model": summary["model"],
-                        "hits": hits, "slips": slips})
-        print(f"{case['key']}: {len(hits)}/{len(case['expect'])} expected, {len(slips)} forbidden, {seconds}s")
+                        "hits": hits, "slips": slips, "words": scored})
+        fixed = sum(1 for *_, how in scored if how == "fixed")
+        print(f"{case['key']}: {len(hits)}/{len(case['expect'])} expected, {len(slips)} forbidden, "
+              + (f"{fixed}/{len(scored)} words fixed, " if scored else "") + f"{seconds}s")
     write_report(label, results)
 
 
@@ -217,6 +251,14 @@ def write_report(label: str, results: list[dict]) -> None:
         lines.append(f"| {case['title']} | {len(r['hits'])}/{len(case['expect'])}"
                      f"{' (thiếu: ' + ', '.join(missing) + ')' if missing else ''} | "
                      f"{', '.join(r['slips']) or '0'} | {r['seconds']} giây |")
+    marks = {"fixed": "✅ sửa đúng", "wrong": "❌ còn chép sai", "dropped": "➖ không còn trong dự thảo"}
+    for r in results:
+        if not r.get("words"):
+            continue
+        fixed = sum(1 for *_, how in r["words"] if how == "fixed")
+        lines += ["", f"## Từ chép sai — {r['case']['title']}", "",
+                  f"Sửa đúng **{fixed}/{len(r['words'])}**.", "", "| Máy gỡ băng chép | Thật ra nói | Dự thảo |", "|---|---|---|"]
+        lines += [f"| {heard} | {meant.replace('|', ' / ')} | {marks[how]} |" for heard, meant, how in r["words"]]
     for r in results:
         if "draft" not in r:
             continue
@@ -245,11 +287,14 @@ def main() -> None:
     parser.add_argument("--base", default="http://localhost:5225")
     parser.add_argument("--label", default="model")
     parser.add_argument("--timeout", type=int, default=900, help="seconds to wait for one draft")
+    parser.add_argument("--only", help="comma-separated case keys")
+    parser.add_argument("--cases", help="a JSON file of more cases, kept outside the repo")
     args = parser.parse_args()
+    cases = load_cases(args.cases, args.only)
     if args.command == "seed":
-        seed(args.base)
+        seed(args.base, cases)
     elif args.command == "run":
-        run(args.base, args.label, args.timeout)
+        run(args.base, args.label, args.timeout, cases)
     else:
         clean()
 
