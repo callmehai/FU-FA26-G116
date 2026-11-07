@@ -71,7 +71,7 @@ TrustCabinet is a standalone capstone project. It is not a sub-project of, and c
 | Constraints |  |  |
 | 1 | The project must be delivered within the fifteen-week academic schedule, 14/09/2026 to 27/12/2026. The closing milestone cannot be moved, so scope rather than schedule absorbs any overrun. | Schedule |
 | 2 | The project has no budget. Only free, open-source or student-licensed tools, services and infrastructure may be used. | Budget |
-| 3 | The team consists of five part-time student members who carry other courses in parallel. There is no full-time developer and no dedicated designer or DevOps engineer. | Resources |
+| 3 | The team consists of five student members who each commit 40 hours a week to the project (8 h/day, 5 days/week, Section I.4). Each member also carries other courses; these are scheduled outside the committed hours, and any time they take back is absorbed by the 20% buffer of Section I.4. There is no dedicated designer or DevOps engineer. | Resources |
 | 4 | The Product Owner is Dinh Van Toi of TrustSoft. Product requirements, priorities and acceptance criteria are confirmed by the Product Owner, and any change to the product scope requires his approval. The supervisor provides academic guidance and reviews the team’s work, and does not take the Product Owner role or approve product requirements. | External Interfaces |
 | 5 | The core application, relational database, documents and planned LiveKit meeting-room service must support deployment inside TrustSoft. Optional Google sign-in must coexist with email/password sign-in; SMTP is configured for outgoing mail. The speech-processing and summarisation environment remains undecided and may use a self-hosted model service or an external AI/ASR API behind one replaceable internal interface. An external provider may use uploaded audio and transcripts only for the stated processing purpose and must not retain or reuse them. Core self-hosting does not imply that every supporting service runs on-premises. | Technology |
 | 6 | Version 1 operates in Vietnamese only, with no translation and no subtitles (Report 1, LI-04). | Scope |
@@ -81,95 +81,95 @@ TrustCabinet is a standalone capstone project. It is not a sub-project of, and c
 
 ### 3. Cost & Time Estimations
 
-Effort is expressed in eight-hour person-days (pds). The 210 pds committed below are the effective working capacity derived in Section I.4; the 52.5 pds buffer remains unallocated. The total retains 14 pds for initial planning and 28 pds for each of six iterations and the deployment phase. The fifteen active features are FE-01 through FE-15, aligned with the Report 3 SRS baseline of 29/10/2026. Consolidating the Meeting lifecycle and narrowing voting changes work-package content; the committed effort, iteration dates and closing milestone remain unchanged.
+Effort is expressed in eight-hour person-days (pds). The 300 pds committed below are the effective working capacity derived in Section I.4; the 75 pds buffer remains unallocated. The total allocates 20 pds for initial planning and 40 pds for each of six iterations and the deployment phase. The fifteen active features are FE-01 through FE-15, aligned with the Report 3 SRS baseline of 29/10/2026. Consolidating the Meeting lifecycle and narrowing voting changes work-package content; the iteration dates and closing milestone remain unchanged.
 
 | # | Work Package | Effort<br>(pds) | Due Date |
 | --- | --- | --- | --- |
-| 0 | Initial Planning (week 1)<br>14/09/2026 - 20/09/2026 | 14 |  |
-| 0.1 | Report 1: Project Introduction v0.9 | 3 | 20/09/2026 |
-| 0.2 | Technical feasibility study: virtual meeting room and speaker-attributed transcription (proof of concept) | 4 | 20/09/2026 |
-| 0.3 | Overall architecture design, repository and development environment setup | 4 | 20/09/2026 |
-| 0.4 | UI mock-up for the Iteration 1 scope | 3 | 20/09/2026 |
-| 1 | Iteration 1: Identity & Access Foundation - FE-01 to FE-03 (weeks 2-3)<br>21/09/2026 - 04/10/2026 | 28 |  |
-| 1.1 | Report 1: Project Introduction v1.0 | 1 | 27/09/2026 |
-| 1.2 | Report 2: Project Management Plan v1.0 | 3 | 27/09/2026 |
-| 1.3 | Report 3: SRS v0.9 (overall requirements) | 3 | 04/10/2026 |
-| 1.4 | FE-01 Authentication & Account Security | 4 | 04/10/2026 |
-| 1.5 | FE-02 User & Profile Management | 4 | 04/10/2026 |
-| 1.6 | FE-03 Role-Based Access Control - role & permission model | 3 | 04/10/2026 |
-| 1.7 | FE-03 Role-Based Access Control - permission configuration & audit | 5 | 04/10/2026 |
-| 1.8 | Code package & Report 5.1 Unit Test | 3 | 04/10/2026 |
-| 1.9 | Software Package v1.0 (increment 1) | 2 | 04/10/2026 |
-| 2 | Iteration 2: Meeting, Document & Notification Core - FE-04 to FE-07, FE-13 (weeks 4-5)<br>05/10/2026 - 18/10/2026 | 28 |  |
-| 2.1 | Report 2: Project Management Plan v1.1 | 2 | 11/10/2026 |
-| 2.2 | Report 3: SRS v1.0 (detailed requirements for Iterations 1-2) | 3 | 18/10/2026 |
-| 2.3 | Report 4: SDS v1.0 (high level design specifications) | 3 | 18/10/2026 |
-| 2.4 | Report 5.0: Test Documentation (test planning) | 2 | 18/10/2026 |
-| 2.5 | FE-04 to FE-06 Meeting Management, Agenda Management & Meeting Participant Management (including the meeting approval workflow) | 6 | 18/10/2026 |
-| 2.6 | FE-07 Personal Document Library & Meeting Document Management | 3 | 18/10/2026 |
-| 2.7 | FE-13 Email & In-App Notification | 4 | 18/10/2026 |
-| 2.8 | Code package & Report 5.1 Unit Test | 3 | 18/10/2026 |
-| 2.9 | Software Package v2.0 (increment 2) | 2 | 18/10/2026 |
-| 3 | Iteration 3: Meeting Audio & AI Processing - FE-09, FE-10 (weeks 6-7)19/10/2026 - 01/11/2026 | 28 |  |
-| 3.1 | Report 3: SRS v1.1 (detailed requirements for Iteration 3) | 3 | 25/10/2026 |
-| 3.2 | Report 4: SDS v1.1 (detailed design of the audio processing pipeline) | 3 | 25/10/2026 |
-| 3.3 | FE-09 Meeting Audio Upload & Media Library - Secretary post-meeting upload | 5 | 01/11/2026 |
-| 3.4 | FE-10 Speaker-Attributed Transcription & Meeting Summary | 7 | 01/11/2026 |
-| 3.5 | Report 5.2: Integration Test cases and Integration Test report | 3 | 01/11/2026 |
-| 3.6 | Code package & Report 5.1 Unit Test | 3 | 01/11/2026 |
-| 3.7 | Report 2: Project Management Plan v1.2 | 2 | 25/10/2026 |
-| 3.8 | Software Package v3.0 (increment 3) | 2 | 01/11/2026 |
-| 4 | Iteration 4: Online Meeting Room Management - FE-08 (weeks 8-9)02/11/2026 - 15/11/2026 | 28 |  |
-| 4.1 | Report 3: SRS v1.2 (detailed requirements for Iteration 4) | 3 | 08/11/2026 |
-| 4.2 | Report 4: SDS v1.2 (detailed design of the meeting room and media flow) | 3 | 08/11/2026 |
-| 4.3 | FE-08 Online Meeting Room Management | 11 | 15/11/2026 |
-| 4.4 | Report 5.2: Integration Test cases and Integration Test report | 3 | 15/11/2026 |
-| 4.5 | Code package & Report 5.1 Unit Test | 4 | 15/11/2026 |
-| 4.6 | Report 2: Project Management Plan v1.3 | 2 | 08/11/2026 |
-| 4.7 | Software Package v4.0 (increment 4) | 2 | 15/11/2026 |
-| 5 | Iteration 5: Meeting Governance - FE-11, FE-12 (weeks 10-11)16/11/2026 - 29/11/2026 | 28 |  |
-| 5.1 | Report 3: SRS v1.3 (detailed requirements for Iteration 5) | 3 | 22/11/2026 |
-| 5.2 | Report 4: SDS v1.3 | 3 | 22/11/2026 |
-| 5.3 | FE-11 Voting Management - in-meeting voting, tallies and Chair conclusions | 6 | 29/11/2026 |
-| 5.4 | FE-12 Meeting Minutes & Digital Signing - meeting-level generation, signing, revision and sealing | 7 | 29/11/2026 |
-| 5.5 | Report 5.2 and 5.3: Integration Test cases and System Test cases | 4 | 29/11/2026 |
-| 5.6 | Code package & Report 5.1 Unit Test | 4 | 29/11/2026 |
-| 5.7 | Software Package v5.0 (increment 5) | 1 | 29/11/2026 |
-| 6 | Iteration 6: Workspace & Reporting - FE-14, FE-15 (weeks 12-13)30/11/2026 - 13/12/2026 | 28 |  |
-| 6.1 | FE-14 Personal Dashboard & Meeting Workspace | 6 | 13/12/2026 |
-| 6.2 | FE-15 Reporting & Statistics | 6 | 13/12/2026 |
-| 6.3 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 5 | 13/12/2026 |
-| 6.4 | Report 6: Software User Guides (installation guide, user manual) | 5 | 13/12/2026 |
-| 6.5 | Code package & Report 5.1 Unit Test | 3 | 13/12/2026 |
-| 6.6 | Report 2: Project Management Plan v1.4 | 1 | 06/12/2026 |
-| 6.7 | Software Package v6.0 (increment 6 - feature complete) | 2 | 13/12/2026 |
-| 7 | Deployment: Acceptance, Stabilisation & Project Closure (weeks 14-15)<br>14/12/2026 - 27/12/2026 | 28 |  |
-| 7.1 | Report 5.5: Acceptance Test scripts and acceptance test support | 5 | 20/12/2026 |
-| 7.2 | Defect fixing and system stabilisation | 7 | 27/12/2026 |
-| 7.3 | Report 7: Final Project Document | 5 | 27/12/2026 |
-| 7.4 | Presentation file and demo rehearsal | 4 | 27/12/2026 |
-| 7.5 | Final software package (source code, documents, deployment package) | 5 | 27/12/2026 |
-| 7.6 | Report 2: Project Management Plan v1.5 (final update) | 2 | 27/12/2026 |
-|  | TOTAL | 210 |  |
+| 0 | Initial Planning (week 1)<br>14/09/2026 - 20/09/2026 | 20 |  |
+| 0.1 | Report 1: Project Introduction v0.9 | 4 | 20/09/2026 |
+| 0.2 | Technical feasibility study: virtual meeting room and speaker-attributed transcription (proof of concept) | 6 | 20/09/2026 |
+| 0.3 | Overall architecture design, repository and development environment setup | 6 | 20/09/2026 |
+| 0.4 | UI mock-up for the Iteration 1 scope | 4 | 20/09/2026 |
+| 1 | Iteration 1: Identity & Access Foundation - FE-01 to FE-03 (weeks 2-3)<br>21/09/2026 - 04/10/2026 | 40 |  |
+| 1.1 | Report 1: Project Introduction v1.0 | 2 | 27/09/2026 |
+| 1.2 | Report 2: Project Management Plan v1.0 | 4 | 27/09/2026 |
+| 1.3 | Report 3: SRS v0.9 (overall requirements) | 4 | 04/10/2026 |
+| 1.4 | FE-01 Authentication & Account Security | 6 | 04/10/2026 |
+| 1.5 | FE-02 User & Profile Management | 6 | 04/10/2026 |
+| 1.6 | FE-03 Role-Based Access Control - role & permission model | 4 | 04/10/2026 |
+| 1.7 | FE-03 Role-Based Access Control - permission configuration & audit | 7 | 04/10/2026 |
+| 1.8 | Code package & Report 5.1 Unit Test | 4 | 04/10/2026 |
+| 1.9 | Software Package v1.0 (increment 1) | 3 | 04/10/2026 |
+| 2 | Iteration 2: Meeting, Document & Notification Core - FE-04 to FE-07, FE-13 (weeks 4-5)<br>05/10/2026 - 18/10/2026 | 40 |  |
+| 2.1 | Report 2: Project Management Plan v1.1 | 3 | 11/10/2026 |
+| 2.2 | Report 3: SRS v1.0 (detailed requirements for Iterations 1-2) | 4 | 18/10/2026 |
+| 2.3 | Report 4: SDS v1.0 (high level design specifications) | 4 | 18/10/2026 |
+| 2.4 | Report 5.0: Test Documentation (test planning) | 3 | 18/10/2026 |
+| 2.5 | FE-04 to FE-06 Meeting Management, Agenda Management & Meeting Participant Management (including the meeting approval workflow) | 9 | 18/10/2026 |
+| 2.6 | FE-07 Personal Document Library & Meeting Document Management | 4 | 18/10/2026 |
+| 2.7 | FE-13 Email & In-App Notification | 6 | 18/10/2026 |
+| 2.8 | Code package & Report 5.1 Unit Test | 4 | 18/10/2026 |
+| 2.9 | Software Package v2.0 (increment 2) | 3 | 18/10/2026 |
+| 3 | Iteration 3: Meeting Audio & AI Processing - FE-09, FE-10 (weeks 6-7)19/10/2026 - 01/11/2026 | 40 |  |
+| 3.1 | Report 3: SRS v1.1 (detailed requirements for Iteration 3) | 4 | 25/10/2026 |
+| 3.2 | Report 4: SDS v1.1 (detailed design of the audio processing pipeline) | 4 | 25/10/2026 |
+| 3.3 | FE-09 Meeting Audio Upload & Media Library - Secretary post-meeting upload | 7 | 01/11/2026 |
+| 3.4 | FE-10 Speaker-Attributed Transcription & Meeting Summary | 11 | 01/11/2026 |
+| 3.5 | Report 5.2: Integration Test cases and Integration Test report | 4 | 01/11/2026 |
+| 3.6 | Code package & Report 5.1 Unit Test | 4 | 01/11/2026 |
+| 3.7 | Report 2: Project Management Plan v1.2 | 3 | 25/10/2026 |
+| 3.8 | Software Package v3.0 (increment 3) | 3 | 01/11/2026 |
+| 4 | Iteration 4: Online Meeting Room Management - FE-08 (weeks 8-9)02/11/2026 - 15/11/2026 | 40 |  |
+| 4.1 | Report 3: SRS v1.2 (detailed requirements for Iteration 4) | 4 | 08/11/2026 |
+| 4.2 | Report 4: SDS v1.2 (detailed design of the meeting room and media flow) | 4 | 08/11/2026 |
+| 4.3 | FE-08 Online Meeting Room Management | 16 | 15/11/2026 |
+| 4.4 | Report 5.2: Integration Test cases and Integration Test report | 4 | 15/11/2026 |
+| 4.5 | Code package & Report 5.1 Unit Test | 6 | 15/11/2026 |
+| 4.6 | Report 2: Project Management Plan v1.3 | 3 | 08/11/2026 |
+| 4.7 | Software Package v4.0 (increment 4) | 3 | 15/11/2026 |
+| 5 | Iteration 5: Meeting Governance - FE-11, FE-12 (weeks 10-11)16/11/2026 - 29/11/2026 | 40 |  |
+| 5.1 | Report 3: SRS v1.3 (detailed requirements for Iteration 5) | 4 | 22/11/2026 |
+| 5.2 | Report 4: SDS v1.3 | 4 | 22/11/2026 |
+| 5.3 | FE-11 Voting Management - in-meeting voting, tallies and Chair conclusions | 9 | 29/11/2026 |
+| 5.4 | FE-12 Meeting Minutes & Digital Signing - meeting-level generation, signing, revision and sealing | 10 | 29/11/2026 |
+| 5.5 | Report 5.2 and 5.3: Integration Test cases and System Test cases | 5 | 29/11/2026 |
+| 5.6 | Code package & Report 5.1 Unit Test | 5 | 29/11/2026 |
+| 5.7 | Software Package v5.0 (increment 5) | 3 | 29/11/2026 |
+| 6 | Iteration 6: Workspace & Reporting - FE-14, FE-15 (weeks 12-13)30/11/2026 - 13/12/2026 | 40 |  |
+| 6.1 | FE-14 Personal Dashboard & Meeting Workspace | 9 | 13/12/2026 |
+| 6.2 | FE-15 Reporting & Statistics | 9 | 13/12/2026 |
+| 6.3 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 6 | 13/12/2026 |
+| 6.4 | Report 6: Software User Guides (installation guide, user manual) | 6 | 13/12/2026 |
+| 6.5 | Code package & Report 5.1 Unit Test | 4 | 13/12/2026 |
+| 6.6 | Report 2: Project Management Plan v1.4 | 3 | 06/12/2026 |
+| 6.7 | Software Package v6.0 (increment 6 - feature complete) | 3 | 13/12/2026 |
+| 7 | Deployment: Acceptance, Stabilisation & Project Closure (weeks 14-15)<br>14/12/2026 - 27/12/2026 | 40 |  |
+| 7.1 | Report 5.5: Acceptance Test scripts and acceptance test support | 7 | 20/12/2026 |
+| 7.2 | Defect fixing and system stabilisation | 10 | 27/12/2026 |
+| 7.3 | Report 7: Final Project Document | 7 | 27/12/2026 |
+| 7.4 | Presentation file and demo rehearsal | 6 | 27/12/2026 |
+| 7.5 | Final software package (source code, documents, deployment package) | 7 | 27/12/2026 |
+| 7.6 | Report 2: Project Management Plan v1.5 (final update) | 3 | 27/12/2026 |
+|  | TOTAL | 300 |  |
 
 ### 4. Capacity Planning
 
 | Item | Value |
 | --- | --- |
-| Hours per person per week | 28 h (4 h/day x 7 days) |
-| Team total per week | 5 people x 28 h = 140 h/week |
+| Hours per person per week | 40 h (8 h/day x 5 days) |
+| Team total per week | 5 people x 40 h = 200 h/week |
 | Total duration | 15 weeks (14/09/2026 - 27/12/2026) |
-| Gross capacity | 140 h/week x 15 weeks = 2,100 h = 262.5 person-days (8 h/person-day) |
-| Buffer (meetings, reviews, unplanned - 20%) | 420 h = 52.5 person-days |
-| Effective working capacity | 1,680 h = 210 person-days |
+| Gross capacity | 200 h/week x 15 weeks = 3,000 h = 375 person-days (8 h/person-day) |
+| Buffer (meetings, reviews, unplanned - 20%) | 600 h = 75 person-days |
+| Effective working capacity | 2,400 h = 300 person-days |
 
-The buffer of 20% covers the time the team spends in meetings, reviews and retrospectives, the rework that follows a review, and unplanned absence caused by the other courses every member carries in parallel. Because it is excluded before the work packages of Section I.3 are planned, an overrun inside an iteration is absorbed by the buffer rather than pushing unfinished work into the next one.
+The buffer of 20% covers the time the team spends in meetings, reviews and retrospectives, the rework that follows a review, and the committed hours that other courses take back from the project (Constraint 3). Because it is excluded before the work packages of Section I.3 are planned, an overrun inside an iteration is absorbed by the buffer rather than pushing unfinished work into the next one.
 
 ### 5. Project Objectives
 
 | # | Metric | Unit | Planned | Actual | Notes / References |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Effort Usage | Person-day | 210 |  | Effective working capacity from Section I.4; distributed over the work packages of Section I.3 and tracked per member in the Project Tracking workbook, sheet Scope |
+| 1 | Effort Usage | Person-day | 300 |  | Effective working capacity from Section I.4; distributed over the work packages of Section I.3 and tracked per member in the Project Tracking workbook, sheet Scope |
 | 2 | Review Defects | No of defects | 30 |  | Defects found in document and code reviews, before any test is executed. A higher count is a good result: it means defects are being caught at the earliest stage |
 | 3 | Unit Test Defects | No of defects | 40 |  | Written and executed by the developer who owns the module, recorded in Report 5.1 - Unit Test |
 | 4 | Integration Test Defects | No of defects | 30 |  | Found when modules and APIs are combined and exercised together, recorded in Report 5.2 - Integration Test |
@@ -190,7 +190,7 @@ Risks are reviewed in the evaluation phase of every iteration. Probability and i
 | R01 | The online meeting room (FE-08) is the team's first piece of real-time media work. Connection establishment, NAT traversal and multi-party audio and video quality may take substantially longer than estimated, putting the single largest work package of the plan at risk. | High | High | Run a feasibility study in the Initial Planning phase before the estimate is committed, and build on a proven open-source media server rather than on raw peer-to-peer connections. FE-08 is the only major feature of Iteration 4 so that the iteration carries slack for it. If the room is not demonstrable at the Iteration 4 evaluation, fall back to the reduced room agreed by the team in advance and recorded in Report 3: audio, screen sharing and chat, with a capped number of participants. |
 | R02 | Speaker-attributed transcription of Vietnamese meeting audio (FE-10) produces output too inaccurate to summarise, making the meeting summary and the minutes built on it unusable. | Medium | High | Evaluate candidate models during the Initial Planning feasibility study against three to five of the team's own recorded meetings, agree an acceptance threshold within the team before implementation starts and record it in Report 3. Keep the transcript editable so that the Secretary can correct speaker labels before the summary is generated, which keeps the feature usable even at imperfect accuracy. FE-09 and FE-10 are scheduled in Iteration 3 rather than late in the project, so that the evaluation phase of that iteration still leaves time to change approach. |
 | R03 | The environment in which the speech-processing and summarisation model runs was open when this plan was first written. The Product Owner decided on 23/10/2026 (ADR-0026) that it runs in-house in a separate CPU-only worker, so the remaining risk is the capacity of the deployment server, which is a 1 GB instance today and will move to a larger one. | Low | High | Move the deployment server to a 4 GB instance, or run the speech worker on a team machine that the server reaches over a private network connection (see the deployment guide). The application keeps working while the worker is off, and the functions that need it report MSG312. Keep transcription and summarisation behind an internal interface so the worker can change host without changing the rest of the system. Update Section II.6.3 when the host is fixed. |
-| R04 | Fifteen features in fifteen weeks exceeds what five part-time members can build, because every member carries other courses in parallel. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-14 and FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
+| R04 | Fifteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-14 and FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
 | R05 | Workload is distributed unevenly, or a member becomes unavailable at a critical point, leaving a module that only one person understands. | Medium | Medium | Give every work package one accountable owner and make sure at least two members have worked on each module, by pairing on the first task of every new module. Log effort per member in Jira and review it in the weekly supervisor meeting. Reassign tasks in the planning phase of the next iteration when the distribution drifts. |
 
 ## II. Management Approach
