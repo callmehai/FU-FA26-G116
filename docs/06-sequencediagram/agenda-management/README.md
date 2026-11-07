@@ -13,7 +13,8 @@ nào, miễn không có mục khác `InProgress` (BR-70, BR-71) — MSG141 và M
 thành phần tham dự hoặc Guest hiện tại và được báo khi cuộc họp đã công bố (BR-306, BR-307). Chair hoặc Secretary ghi
 kết luận cho mục `InProgress`/`Done` tới khi sinh nháp biên bản (UC-77, BR-309 → BR-311).
 
-**UC-82 Ghi chú cuộc họp** (SCRUM-30, đặc tả sơ bộ 06/11/2026, chưa có code):
+**UC-82 Ghi chú cuộc họp** (SCRUM-30, đặc tả sơ bộ 06/11/2026; BE và FE đã làm theo sequence này 07/11/2026,
+[contract](../../03-api/19-ghi-chu-cuoc-hop.md)):
 [UC82_TakeMeetingNotes.txt](UC82_TakeMeetingNotes.txt). Đặc tả, BR-395 → BR-403 (đề xuất) và mã `MSG415`–`MSG423`
 nằm ở [note đặc tả sơ bộ](../../notes/NOTE-dac-ta-so-bo-scrum-30.md), chưa vào Report 3. Chưa xuất PNG và chưa có tab
 draw.io. Lifeline `:Notes Controller` / `:Notes Service` là tên dự kiến.
