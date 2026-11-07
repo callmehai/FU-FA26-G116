@@ -89,7 +89,7 @@ public static class DevelopmentDataSeeder
             NewMeeting("Phiên họp Hội đồng quản trị quý III", MeetingStatus.WaitingApproval, Sensitivity.Secret,
                 MeetingMode.InPerson, "Phòng họp Hội đồng",
                 "2026-09-24T07:00:00Z", "2026-09-24T10:00:00Z", secretary),
-            NewMeeting("Rà soát kế hoạch chuyển đổi số", MeetingStatus.InProgress, Sensitivity.Confidential,
+            NewMeeting("Rà soát kế hoạch chuyển đổi số", MeetingStatus.InProgress, Sensitivity.Secret,
                 MeetingMode.Online, string.Empty,
                 "2026-09-18T01:30:00Z", "2026-09-18T03:00:00Z", secretary),
             NewMeeting("Lấy ý kiến dự thảo quy chế chi tiêu nội bộ", MeetingStatus.Draft, Sensitivity.Normal,

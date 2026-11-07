@@ -2,7 +2,7 @@
 
 Đã có:
 
-- [`01-vong-doi-cuoc-hop.md`](01-vong-doi-cuoc-hop.md) — 7 trạng thái của cuộc họp và 4 mức mật
+- [`01-vong-doi-cuoc-hop.md`](01-vong-doi-cuoc-hop.md) — 7 trạng thái của cuộc họp và 3 mức mật
 - [`02-erd.md`](02-erd.md) — mô hình dữ liệu, kèm phần lấy gì / bỏ gì so với AI-eCabinet
 - [`03-co-so-du-lieu.md`](03-co-so-du-lieu.md) — cài PostgreSQL, chuỗi kết nối, vòng đời migration
 - [`04-luong-nghiep-vu-chinh.md`](04-luong-nghiep-vu-chinh.md) — 4 luồng nghiệp vụ chính BF-01 → BF-04 (bản PO duyệt 09/10/2026)

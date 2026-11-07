@@ -22,7 +22,7 @@ Guest đã xác minh và còn quyền vào cuộc họp đọc toàn bộ tài l
 
 **Đồng bộ:** UC-32a/b/c, UC-35, BR-181; màn tài liệu/preview/comments; ERD author identity cho Guest. Thay phần loại Guest khỏi quyền đọc ở ADR-0006 bằng ADR-0016.
 
-## 4. Mời vào cuộc họp Mật/Tối mật
+## 4. Mời vào cuộc họp Mật
 
 Form mời hiện cảnh báo Guest sẽ có quyền tham gia và tài liệu như Member. Không thêm checkbox bắt xác nhận hay luồng phê duyệt riêng. Vẫn lưu người mời, thời gian và mức mật. Không bỏ kiểm tra hiệu lực lời mời hoặc các quy tắc xử lý tài liệu/audio.
 

@@ -1388,7 +1388,6 @@ a.menu-item { text-decoration: none; }
 }
 .level-normal { background: var(--chip-slate-bg); color: var(--chip-slate-fg); box-shadow: inset 0 0 0 1px var(--line); }
 .level-internal { background: var(--brand-wash); color: var(--chip-indigo-fg); box-shadow: inset 0 0 0 1px var(--brand-wash-line); }
-.level-confidential { background: var(--chip-amber-bg); color: var(--chip-amber-fg); box-shadow: inset 0 0 0 1px #ecc98a; }
 .level-secret { background: var(--chip-red-bg); color: var(--chip-red-fg); box-shadow: inset 0 0 0 1px var(--edge-red); font-weight: 700; }
 .level-plain { padding: 0; color: inherit; font-size: inherit; font-weight: 400; }
 

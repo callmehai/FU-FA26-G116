@@ -117,10 +117,21 @@ public class MeetingServiceTests
         Assert.Contains("description", result.Errors.Keys);
     }
 
+    [Fact]
+    public async Task The_retired_Han_che_level_is_refused()
+    {
+        // ADR-0057: three levels as in AI-eCabinet; "Confidential" (Hạn chế) is no longer one of them.
+        var result = await NewService().CreateAsync(ValidInput(sensitivity: "Confidential"), _actorId, [new(_actorId, "Chair")]);
+
+        Assert.Equal(MeetingOutcome.InvalidInformation, result.Outcome);
+        Assert.Equal(["sensitivity"], result.Errors!.Keys);
+        Assert.Empty(_repository.Meetings);
+    }
+
     [Theory]
     [InlineData("InPerson", "Normal")]
     [InlineData("Online", "Internal")]
-    [InlineData("Hybrid", "Confidential")]
+    [InlineData("Hybrid", "Normal")]
     [InlineData("InPerson", "Secret")]
     public async Task Create_accepts_each_supported_mode_and_sensitivity(string mode, string sensitivity)
     {

@@ -159,7 +159,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
             "Online",
             "Conference link",
             null,
-            "Confidential",
+            "Secret",
             "Integration test");
 
     private static User NewUser(string fullName, Guid roleId, bool isActive = true) => new()

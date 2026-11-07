@@ -4,7 +4,7 @@
 ([17-du-thao-bien-ban.md](17-du-thao-bien-ban.md)): **máy local** cấu hình bằng `Ai:BaseUrl`, `Ai:Model` (ADR-0054), hoặc
 một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ OpenCode Zen `https://opencode.ai/zen/v1`).
 
-- **Chỉ cuộc họp Thường gửi ra API.** Nội bộ, Hạn chế, Mật luôn dùng máy local; `aiReady` của dự thảo và lỗi `503 MSG394`
+- **Chỉ cuộc họp Thường gửi ra API.** Nội bộ và Mật luôn dùng máy local; `aiReady` của dự thảo và lỗi `503 MSG394`
   tính theo máy mà cuộc họp đó được dùng.
 - Mọi endpoint cần capability `AdminUsers` (token và database): chưa đăng nhập `401`, thiếu quyền `403`.
 - Key gửi lên và **không bao giờ trả về**; server lưu mã hoá AES-256-GCM, chỉ trả `hasApiKey` và 4 ký tự cuối.

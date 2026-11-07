@@ -23,7 +23,7 @@ export const getMeetingDocuments = (meetingId: string) => api.get<MeetingDocumen
 
 /**
  * UC-32c: the original file. `download` is the AF-1 download — 403 MSG159 for a Secret meeting;
- * a view is audited for Confidential/Secret meetings. 503 MSG158 (view) / MSG160 (download): retry.
+ * a view is audited for Secret meetings. 503 MSG158 (view) / MSG160 (download): retry.
  */
 export const getMeetingDocumentContent = (meetingId: string, meetingDocumentId: string, download = false) =>
   api.blob(`${base(meetingId)}/${meetingDocumentId}/content${download ? '?download=true' : ''}`)

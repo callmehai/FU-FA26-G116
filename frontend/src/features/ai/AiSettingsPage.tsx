@@ -28,7 +28,7 @@ const MODES: { value: AiProviderMode; label: string }[] = [
 
 /**
  * ADR-0056 — where the AI drafts of ordinary meetings are written: the in-house model (ADR-0054) or an OpenAI-compatible
- * API. Internal, Confidential and Secret meetings always stay on the in-house model, whatever is chosen here. The key
+ * API. Internal and Secret meetings always stay on the in-house model, whatever is chosen here. The key
  * goes to the server and never comes back: the field stays empty and shows the stored key's last four characters.
  */
 export function AiSettingsPage() {
@@ -137,7 +137,7 @@ export function AiSettingsPage() {
           <div className="ai-settings-mode">
             <span className="ai-settings-label" id="ai-mode-label">
               Viết dự thảo bằng
-              <InfoTip text="Chỉ cuộc họp Thường dùng API. Cuộc họp Nội bộ, Hạn chế, Mật luôn dùng máy local: lời thoại của chúng không rời server." />
+              <InfoTip text="Chỉ cuộc họp Thường dùng API. Cuộc họp Nội bộ và Mật luôn dùng máy local: lời thoại của chúng không rời server." />
             </span>
             <SegmentedControl
               label="Viết dự thảo bằng"

@@ -202,8 +202,9 @@ phân biệt được. Đây là rủi ro đã biết khi không chuyển đổi
 endpoint. PO chấp nhận rủi ro này ngày 2026-10-25 (không chuyển tệp thành ảnh trên server, không đóng dấu tên người
 xem).
 
-**Nhật ký kiểm toán** (BR-318): cuộc họp `Confidential` hoặc `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
-xem / tải thành công — `action` `document.viewed` hoặc `document.downloaded`, `objectType` `MeetingDocument`,
+**Nhật ký kiểm toán** (BR-318): cuộc họp `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
+xem thành công — `action` `document.viewed` (không có `document.downloaded`: tài liệu Mật không tải được, các mức
+khác không ghi nhật ký — [ADR-0057](../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)), `objectType` `MeetingDocument`,
 `objectId` là MeetingDocument ID, `details` có `meetingId`, `fileName`, `sensitivity`; Khách đọc thì `actorId` là `null`
 và `details` có thêm `guestInvitationId`. **Lưu ý cho màn nhật ký (SCRUM-16):** `actorId = null` vốn nghĩa là
 hệ thống tự làm (BR-301); dòng có `details.guestInvitationId` là Khách, phải hiện là Khách (tên mời / email của lời
@@ -321,7 +322,7 @@ không hiện, `currentAgendaItemId`, `pageCount`/`commentCount`/`addedBy`; cu�
 được; người ngoài, cuộc họp không tồn tại, thành viên của cuộc họp `Draft` → cùng `404/MSG156`; lỗi đọc DB →
 `MSG157`; byte trả về khớp, header `attachment` + `filename*`, `no-store`, `nosniff`, `Content-Length`; `Normal`
 không ghi kiểm toán; `Secret` xem được và ghi `document.viewed`, tải về `403/MSG159` (cả Chủ toạ) không ghi gì thêm;
-`Confidential` tải về ghi `document.downloaded`; tài liệu đã gỡ / của cuộc họp khác / không tồn tại → `MSG156`, kể cả
+tài liệu đã gỡ / của cuộc họp khác / không tồn tại → `MSG156`, kể cả
 khi tải về từ cuộc họp `Secret` (không trả `403` để lộ ID); tải về `Secret` khi object thiếu vẫn `MSG159` (chặn trước khi
 chạm kho); lỗi DB lúc tra tài liệu → `MSG158`/`MSG160`;
 object đã mất → `410/MSG382` cả xem lẫn tải, kho chưa cấu hình → `MSG158`, không ghi kiểm toán; lỗi ghi kiểm toán → không gửi tệp;

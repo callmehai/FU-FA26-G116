@@ -340,7 +340,7 @@ function PreJoin({
 
   const camOn = prefs.cam && !previewError
   const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
-  const restricted = sensitivity === 'Secret' || sensitivity === 'Confidential'
+  const restricted = sensitivity === 'Secret'
   const labelOf = (id: string) => devices.find((d) => d.deviceId === id)?.label ?? ''
 
   return (

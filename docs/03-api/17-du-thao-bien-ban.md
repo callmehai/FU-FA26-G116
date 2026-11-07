@@ -161,7 +161,7 @@ rồi đổi sang HTML lúc tạo.
 | `Ai:EncryptionKey` | | Tuỳ chọn, 32 byte base64: khoá mã hoá key API do quản trị nhập ([ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md)). Để trống thì suy ra từ khoá ký token |
 
 Trên server test, đặt bằng biến môi trường `Ai__BaseUrl`, `Ai__Model`. Các khoá trên là **máy local**; quản trị có thể cho
-cuộc họp Thường dùng một API thay thế trên màn Máy AI ([18-may-ai.md](18-may-ai.md)), cuộc họp Nội bộ, Hạn chế, Mật luôn
+cuộc họp Thường dùng một API thay thế trên màn Máy AI ([18-may-ai.md](18-may-ai.md)), cuộc họp Nội bộ và Mật luôn
 dùng máy local.
 
 Bộ đo chất lượng trên 8 cuộc họp mẫu: [`tests/ai/`](../../tests/ai/README.md).
