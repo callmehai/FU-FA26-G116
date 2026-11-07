@@ -22,7 +22,7 @@ Table of Contents
 | 09/10/2026 | M, D | KhanhPG | Renumber active features FE-01 to FE-15; limit voting to InProgress Meetings and Chair conclusions; remove time-boxed voting, quorum and separate Resolution scope; align supporting interfaces and audio privacy safeguards. Preserve the committed schedule and effort. |
 | 13/10/2026 | M | HaiTV | Align iteration plan with ADR-0018 (no document versions; library and meetings reference one immutable file; library folders; browser-side preview) and with ADR-0016/ADR-0017 for voting (the Chair selects eligible voter roles; verified Guests vote; ending the Meeting does not require closing Votes). |
 | 30/10/2026 | M | HuyNQ | Project Management Plan v1.2: Fix review findings - Fifteen features in risk R04, EX defined as Exception as in Report 3, add Cancelled to the Meeting lifecycle, close the [TBD] items (AI model environment per ADR-0026, deployment server per ADR-0015), rewrite the R03 mitigation and lower its probability to Low now that the model host is decided, remove "versioning" from Iteration 2 (ADR-0018), align the Report 3 baseline reference with its 29/10/2026 Change Log, and fix the Table of Contents (add Definition and Acronyms, point I. Project Overview to its own heading). |
-| 06/11/2026 | M | LocHD | Recalculate capacity at 8 h/day x 5 days/week instead of 4 h/day x 7 days: Section I.4 gross capacity 375 person-days, 20% buffer 75, effective capacity 300; rescale the Section I.3 work packages to 20 pds for initial planning and 40 pds for each iteration and the deployment phase; update Effort Usage in Section I.5; remove "part-time" from constraint 3 and risk R04. Iteration dates and the closing milestone are unchanged. |
+| 06/11/2026 | M | LocHD | Project Management Plan v1.3: Recalculate capacity at 8 h/day x 5 days/week instead of 4 h/day x 7 days: Section I.4 gross capacity 375 person-days, 20% buffer 75, effective capacity 300; rescale the Section I.3 work packages to 20 pds for initial planning and 40 pds for each iteration and the deployment phase, with every SRS and SDS version at 4 pds and Software Package v1.0 to v6.0 and Project Management Plan v1.1 to v1.5 at 3 pds each; update Effort Usage in Section I.5; state in constraint 3, risk R04 and Section I.4 that each member commits 40 h/week and the 20% buffer absorbs time taken back by other courses. Iteration dates and the closing milestone are unchanged. |
 
 *A - Added M - Modified D - Deleted
 
@@ -72,7 +72,7 @@ TrustCabinet is a standalone capstone project. It is not a sub-project of, and c
 | Constraints |  |  |
 | 1 | The project must be delivered within the fifteen-week academic schedule, 14/09/2026 to 27/12/2026. The closing milestone cannot be moved, so scope rather than schedule absorbs any overrun. | Schedule |
 | 2 | The project has no budget. Only free, open-source or student-licensed tools, services and infrastructure may be used. | Budget |
-| 3 | The team consists of five student members who each commit full working days to the project (8 h/day, 5 days/week, Section I.4) while carrying other courses in parallel. There is no dedicated designer or DevOps engineer. | Resources |
+| 3 | The team consists of five student members who each commit 40 hours a week to the project (8 h/day, 5 days/week, Section I.4). Each member also carries other courses; these are scheduled outside the committed hours, and any time they take back is absorbed by the 20% buffer of Section I.4. There is no dedicated designer or DevOps engineer. | Resources |
 | 4 | The Product Owner is Dinh Van Toi of TrustSoft. Product requirements, priorities and acceptance criteria are confirmed by the Product Owner, and any change to the product scope requires his approval. The supervisor provides academic guidance and reviews the team’s work, and does not take the Product Owner role or approve product requirements. | External Interfaces |
 | 5 | The core application, relational database, documents and planned LiveKit meeting-room service must support deployment inside TrustSoft. Optional Google sign-in must coexist with email/password sign-in; SMTP is configured for outgoing mail. The speech-processing and summarisation environment remains undecided and may use a self-hosted model service or an external AI/ASR API behind one replaceable internal interface. An external provider may use uploaded audio and transcripts only for the stated processing purpose and must not retain or reuse them. Core self-hosting does not imply that every supporting service runs on-premises. | Technology |
 | 6 | Version 1 operates in Vietnamese only, with no translation and no subtitles (Report 1, LI-04). | Scope |
@@ -82,7 +82,7 @@ TrustCabinet is a standalone capstone project. It is not a sub-project of, and c
 
 ### 3. Cost & Time Estimations
 
-Effort is expressed in eight-hour person-days (pds). The 300 pds committed below are the effective working capacity derived in Section I.4; the 75 pds buffer remains unallocated. The total retains 20 pds for initial planning and 40 pds for each of six iterations and the deployment phase. The fifteen active features are FE-01 through FE-15, aligned with the Report 3 SRS baseline of 29/10/2026. Consolidating the Meeting lifecycle and narrowing voting changes work-package content; the iteration dates and closing milestone remain unchanged.
+Effort is expressed in eight-hour person-days (pds). The 300 pds committed below are the effective working capacity derived in Section I.4; the 75 pds buffer remains unallocated. The total allocates 20 pds for initial planning and 40 pds for each of six iterations and the deployment phase. The fifteen active features are FE-01 through FE-15, aligned with the Report 3 SRS baseline of 29/10/2026. Consolidating the Meeting lifecycle and narrowing voting changes work-package content; the iteration dates and closing milestone remain unchanged.
 
 | # | Work Package | Effort<br>(pds) | Due Date |
 | --- | --- | --- | --- |
@@ -112,10 +112,10 @@ Effort is expressed in eight-hour person-days (pds). The 300 pds committed below
 | 2.8 | Code package & Report 5.1 Unit Test | 4 | 18/10/2026 |
 | 2.9 | Software Package v2.0 (increment 2) | 3 | 18/10/2026 |
 | 3 | Iteration 3: Meeting Audio & AI Processing - FE-09, FE-10 (weeks 6-7)19/10/2026 - 01/11/2026 | 40 |  |
-| 3.1 | Report 3: SRS v1.1 (detailed requirements for Iteration 3) | 5 | 25/10/2026 |
+| 3.1 | Report 3: SRS v1.1 (detailed requirements for Iteration 3) | 4 | 25/10/2026 |
 | 3.2 | Report 4: SDS v1.1 (detailed design of the audio processing pipeline) | 4 | 25/10/2026 |
 | 3.3 | FE-09 Meeting Audio Upload & Media Library - Secretary post-meeting upload | 7 | 01/11/2026 |
-| 3.4 | FE-10 Speaker-Attributed Transcription & Meeting Summary | 10 | 01/11/2026 |
+| 3.4 | FE-10 Speaker-Attributed Transcription & Meeting Summary | 11 | 01/11/2026 |
 | 3.5 | Report 5.2: Integration Test cases and Integration Test report | 4 | 01/11/2026 |
 | 3.6 | Code package & Report 5.1 Unit Test | 4 | 01/11/2026 |
 | 3.7 | Report 2: Project Management Plan v1.2 | 3 | 25/10/2026 |
@@ -133,16 +133,16 @@ Effort is expressed in eight-hour person-days (pds). The 300 pds committed below
 | 5.2 | Report 4: SDS v1.3 | 4 | 22/11/2026 |
 | 5.3 | FE-11 Voting Management - in-meeting voting, tallies and Chair conclusions | 9 | 29/11/2026 |
 | 5.4 | FE-12 Meeting Minutes & Digital Signing - meeting-level generation, signing, revision and sealing | 10 | 29/11/2026 |
-| 5.5 | Report 5.2 and 5.3: Integration Test cases and System Test cases | 6 | 29/11/2026 |
-| 5.6 | Code package & Report 5.1 Unit Test | 6 | 29/11/2026 |
-| 5.7 | Software Package v5.0 (increment 5) | 1 | 29/11/2026 |
+| 5.5 | Report 5.2 and 5.3: Integration Test cases and System Test cases | 5 | 29/11/2026 |
+| 5.6 | Code package & Report 5.1 Unit Test | 5 | 29/11/2026 |
+| 5.7 | Software Package v5.0 (increment 5) | 3 | 29/11/2026 |
 | 6 | Iteration 6: Workspace & Reporting - FE-14, FE-15 (weeks 12-13)30/11/2026 - 13/12/2026 | 40 |  |
 | 6.1 | FE-14 Personal Dashboard & Meeting Workspace | 9 | 13/12/2026 |
 | 6.2 | FE-15 Reporting & Statistics | 9 | 13/12/2026 |
-| 6.3 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 7 | 13/12/2026 |
-| 6.4 | Report 6: Software User Guides (installation guide, user manual) | 7 | 13/12/2026 |
+| 6.3 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 6 | 13/12/2026 |
+| 6.4 | Report 6: Software User Guides (installation guide, user manual) | 6 | 13/12/2026 |
 | 6.5 | Code package & Report 5.1 Unit Test | 4 | 13/12/2026 |
-| 6.6 | Report 2: Project Management Plan v1.4 | 1 | 06/12/2026 |
+| 6.6 | Report 2: Project Management Plan v1.4 | 3 | 06/12/2026 |
 | 6.7 | Software Package v6.0 (increment 6 - feature complete) | 3 | 13/12/2026 |
 | 7 | Deployment: Acceptance, Stabilisation & Project Closure (weeks 14-15)<br>14/12/2026 - 27/12/2026 | 40 |  |
 | 7.1 | Report 5.5: Acceptance Test scripts and acceptance test support | 7 | 20/12/2026 |
@@ -164,7 +164,7 @@ Effort is expressed in eight-hour person-days (pds). The 300 pds committed below
 | Buffer (meetings, reviews, unplanned - 20%) | 600 h = 75 person-days |
 | Effective working capacity | 2,400 h = 300 person-days |
 
-The buffer of 20% covers the time the team spends in meetings, reviews and retrospectives, the rework that follows a review, and unplanned absence caused by the other courses every member carries in parallel. Because it is excluded before the work packages of Section I.3 are planned, an overrun inside an iteration is absorbed by the buffer rather than pushing unfinished work into the next one.
+The buffer of 20% covers the time the team spends in meetings, reviews and retrospectives, the rework that follows a review, and the committed hours that other courses take back from the project (Constraint 3). Because it is excluded before the work packages of Section I.3 are planned, an overrun inside an iteration is absorbed by the buffer rather than pushing unfinished work into the next one.
 
 ### 5. Project Objectives
 
@@ -191,7 +191,7 @@ Risks are reviewed in the evaluation phase of every iteration. Probability and i
 | R01 | The online meeting room (FE-08) is the team's first piece of real-time media work. Connection establishment, NAT traversal and multi-party audio and video quality may take substantially longer than estimated, putting the single largest work package of the plan at risk. | High | High | Run a feasibility study in the Initial Planning phase before the estimate is committed, and build on a proven open-source media server rather than on raw peer-to-peer connections. FE-08 is the only major feature of Iteration 4 so that the iteration carries slack for it. If the room is not demonstrable at the Iteration 4 evaluation, fall back to the reduced room agreed by the team in advance and recorded in Report 3: audio, screen sharing and chat, with a capped number of participants. |
 | R02 | Speaker-attributed transcription of Vietnamese meeting audio (FE-10) produces output too inaccurate to summarise, making the meeting summary and the minutes built on it unusable. | Medium | High | Evaluate candidate models during the Initial Planning feasibility study against three to five of the team's own recorded meetings, agree an acceptance threshold within the team before implementation starts and record it in Report 3. Keep the transcript editable so that the Secretary can correct speaker labels before the summary is generated, which keeps the feature usable even at imperfect accuracy. FE-09 and FE-10 are scheduled in Iteration 3 rather than late in the project, so that the evaluation phase of that iteration still leaves time to change approach. |
 | R03 | The environment in which the speech-processing and summarisation model runs was open when this plan was first written. The Product Owner decided on 23/10/2026 (ADR-0026) that it runs in-house in a separate CPU-only worker, so the remaining risk is the capacity of the deployment server, which is a 1 GB instance today and will move to a larger one. | Low | High | Move the deployment server to a 4 GB instance, or run the speech worker on a team machine that the server reaches over a private network connection (see the deployment guide). The application keeps working while the worker is off, and the functions that need it report MSG312. Keep transcription and summarisation behind an internal interface so the worker can change host without changing the rest of the system. Update Section II.6.3 when the host is fixed. |
-| R04 | Fifteen features in fifteen weeks exceeds what five members can build, because every member carries other courses in parallel. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-14 and FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
+| R04 | Fifteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-14 and FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
 | R05 | Workload is distributed unevenly, or a member becomes unavailable at a critical point, leaving a module that only one person understands. | Medium | Medium | Give every work package one accountable owner and make sure at least two members have worked on each module, by pairing on the first task of every new module. Log effort per member in Jira and review it in the weekly supervisor meeting. Reassign tasks in the planning phase of the next iteration when the distribution drifts. |
 
 ## II. Management Approach
