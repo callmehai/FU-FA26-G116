@@ -183,7 +183,7 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         Assert.Equal("Báo cáo quý 3.pdf", disposition.FileNameStar);
         Assert.Contains("no-store", response.Headers.CacheControl!.ToString());
         Assert.Equal("nosniff", response.Headers.GetValues("X-Content-Type-Options").Single());
-        // Normal meeting: nothing to audit (BR-318 covers Confidential and Secret only).
+        // Normal meeting: nothing to audit (BR-318 covers Secret only).
         Assert.Empty(await Audit(id));
         Assert.Equal(200, (int)(await client.GetAsync(s.ContentUrl(id, download: true))).StatusCode);
         Assert.Empty(await Audit(id));
@@ -208,21 +208,6 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
         using var chair = fixture.Client(s.Chair);
         await AssertCode(await chair.GetAsync(s.ContentUrl(id, download: true)), 403, "MSG159");
         Assert.Single(await Audit(id));
-    }
-
-    [Fact]
-    public async Task Confidential_meeting_download_is_audited()
-    {
-        var s = await fixture.Seed(sensitivity: Sensitivity.Confidential);
-        var bytes = SampleFiles.Pdf("confidential");
-        var id = await AddDocument(s.MeetingId, s.Secretary, "Hạn chế.pdf", bytes);
-        using var client = fixture.Client(s.Organizer);
-
-        Assert.Equal(bytes, await client.GetByteArrayAsync(s.ContentUrl(id, download: true)));
-
-        var downloaded = Assert.Single(await Audit(id));
-        Assert.Equal(AuditActions.DocumentDownloaded, downloaded.Action);
-        Assert.Equal(s.Organizer, downloaded.ActorId);
     }
 
     /// <summary>A vote of the meeting linking <paramref name="documents"/>, written straight to the database.</summary>
@@ -334,13 +319,12 @@ public sealed class MeetingDocumentReadEndpointsTests(DocumentFixture fixture) :
     [Fact]
     public async Task Missing_object_is_gone_for_good_MSG382_while_an_unconfigured_store_is_try_again_and_neither_is_audited()
     {
-        var s = await fixture.Seed(sensitivity: Sensitivity.Confidential);
+        var s = await fixture.Seed(sensitivity: Sensitivity.Secret);
         var id = await AddDocument(s.MeetingId, s.Secretary, "Mất.pdf");
         using var client = fixture.Client(s.Member);
 
         // Trying again cannot bring back an object deleted from the store, so it is not "Vui lòng thử lại".
         await AssertCode(await client.GetAsync(s.ContentUrl(id)), 410, "MSG382");
-        await AssertCode(await client.GetAsync(s.ContentUrl(id, download: true)), 410, "MSG382");
         fixture.Storage.Configured = false;
         await AssertCode(await client.GetAsync(s.ContentUrl(id)), 503, "MSG158");
         Assert.Empty(await Audit(id));

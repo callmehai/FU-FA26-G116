@@ -101,6 +101,8 @@ export interface LibraryDocument {
   createdAt: string
   /** Meetings the reader can see that still use this file (BR-251). */
   meetingCount: number
+  /** The file is already in the meeting passed as `meetingId` (SCRUM-124); false without one. */
+  inMeeting: boolean
 }
 
 /** GET /api/documents: every folder (for the trail and the move dialog), the documents at one place. */

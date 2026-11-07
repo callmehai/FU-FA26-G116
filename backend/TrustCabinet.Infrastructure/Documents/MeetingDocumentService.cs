@@ -152,7 +152,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             return new(ex is FileNotFoundException ? DocumentReadFailure.FileMissing : DocumentReadFailure.ReadFailed);
         }
 
-        if (meeting.Sensitivity is Sensitivity.Confidential or Sensitivity.Secret)
+        if (meeting.Sensitivity == Sensitivity.Secret)
         {
             // Recorded only once the file is actually there to hand over, and before it is: no
             // audit row, no content (BR-318).
@@ -163,7 +163,8 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                     ? new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString(),
                         guestInvitationId = guest.InvitationId }
                     : new { meetingId, fileName = file.FileName, sensitivity = meeting.Sensitivity.ToString() };
-                await audit.RecordAsync(download ? AuditActions.DocumentDownloaded : AuditActions.DocumentViewed,
+                // Only a view reaches here: downloading a Secret meeting's document was refused above (BR-188).
+                await audit.RecordAsync(AuditActions.DocumentViewed,
                     AuditActions.MeetingDocumentObjectType, meetingDocumentId, reader.UserId, details, ct);
             }
             catch (Exception ex)

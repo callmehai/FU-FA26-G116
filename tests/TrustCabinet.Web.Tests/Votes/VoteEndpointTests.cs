@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Web.Tests.Participants;
 using static TrustCabinet.Web.Tests.Attendance.AttendanceEndpointTests;
@@ -383,6 +384,61 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         Assert.Equal(1, (await Detail(chair, s, membersOnly)).GetProperty("eligibleCount").GetInt32());
         await using var db = f.Db();
         Assert.False(await db.VoteEligibleVoters.AnyAsync(e => e.VotingSessionId == membersOnly && e.GuestInvitationId != null));
+    }
+
+    [Fact]
+    public async Task A_guest_removed_and_invited_again_while_the_vote_is_open_still_has_one_ballot()
+    {
+        // SCRUM-133: the five steps of Hải's report, plus the same person before they had voted.
+        var s = await f.Seed(MeetingStatus.InProgress);
+        var voted = await Guest(f, s); var notYet = await Guest(f, s);
+        using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary);
+        var id = await Opened(chair, s);
+        var options = await Options(chair, s, id);
+        Assert.Equal(5, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
+        using (var guest = f.Guest(s.MeetingId, voted.Id))
+            await Code(await Ballot(guest, s, id, options[0]), 200, "MSG227");
+
+        async Task<Guid> Reinvite(MeetingGuestInvitation invitation)
+        {
+            await Code(await Write(secretary, s.Url + $"/guest-invitations/{invitation.Id}", HttpMethod.Delete,
+                etag: await Tag(secretary, s.Url)), 200, "MSG103");
+            // The email column is case-insensitive, so a change of case is still the same person.
+            var created = await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post,
+                new { invitedName = invitation.InvitedName, email = invitation.Email.ToUpperInvariant() },
+                await Tag(secretary, s.Url)), 201, "MSG96");
+            return created.GetProperty("createdIds")[0].GetGuid();
+        }
+
+        // One who already voted gets no second ballot under the new invitation.
+        var votedAgain = await Reinvite(voted);
+        Assert.NotEqual(voted.Id, votedAgain);
+        using (var guest = f.Guest(s.MeetingId, votedAgain))
+        {
+            await Code(await Ballot(guest, s, id, options[1]), 409, "MSG224");
+            Assert.False((await Detail(guest, s, id)).GetProperty("actions").GetProperty("canCast").GetBoolean());
+        }
+        Assert.Equal(5, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
+
+        // One who had not voted keeps their single place and casts it with the new invitation.
+        var notYetAgain = await Reinvite(notYet);
+        using (var guest = f.Guest(s.MeetingId, notYetAgain))
+        {
+            await Code(await Ballot(guest, s, id, options[1]), 200, "MSG227");
+            await Code(await Ballot(guest, s, id, options[2]), 409, "MSG226");
+        }
+        Assert.Equal(5, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
+
+        await using var db = f.Db();
+        var eligible = await db.VoteEligibleVoters.Where(e => e.VotingSessionId == id && e.GuestInvitationId != null)
+            .Select(e => e.GuestInvitationId!.Value).ToArrayAsync();
+        Assert.Equal(new[] { voted.Id, notYetAgain }.Order(), eligible.Order());
+        var receipts = await db.VoteReceipts.Where(r => r.VotingSessionId == id)
+            .Select(r => r.GuestInvitationId).ToArrayAsync();
+        Assert.Equal(new Guid?[] { voted.Id, notYetAgain }.Order(), receipts.Order());
+
+        var result = (await Code(await chair.PostAsync($"{s.Url}/votes/{id}/close", null), 200, "MSG229")).GetProperty("result");
+        Assert.Equal(2, result.GetProperty("ballotCount").GetInt32());
     }
 
     [Fact]

@@ -610,7 +610,7 @@ function VoteDocuments({
               aria-label={`Gỡ khỏi biểu quyết: ${doc.fileName}`}
               data-tooltip="Gỡ khỏi biểu quyết"
             >
-              <Icon name="unlink" size={16} />
+              <Icon name="detach" size={16} />
             </button>
           )}
         </li>

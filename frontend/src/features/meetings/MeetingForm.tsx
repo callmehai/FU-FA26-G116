@@ -91,14 +91,13 @@ const MODE_HINT: Record<MeetingMode, string> = {
 const LOCKED_HINT = 'Đã công bố, không đổi được.'
 /**
  * What a level changes, read from the rules: BR-318 and MeetingDocumentService (documents),
- * PersonalLibraryService (an administrator's view of a library), RecordingContracts.Export.
- * Thường and Nội bộ are handled alike; Nội bộ only labels the meeting.
+ * PersonalLibraryService (an administrator's view of a library), RecordingContracts.Export, MinutesService
+ * (exports), LanguageModelProvider (ADR-0056). Nội bộ differs from Thường only in keeping the AI draft in-house.
  */
 const SENSITIVITY_HINT: Record<Sensitivity, string> = {
   Normal: 'Người dự họp xem và tải tài liệu.',
-  Internal: 'Như Thường, gắn nhãn chỉ dùng nội bộ.',
-  Confidential: 'Mỗi lần xem tài liệu được ghi nhật ký.',
-  Secret: 'Không tải tài liệu, không xuất ghi âm; mỗi lần xem được ghi nhật ký.',
+  Internal: 'Như Thường; dự thảo AI không gửi ra ngoài.',
+  Secret: 'Không tải tài liệu, ghi âm, biên bản; mỗi lần xem được ghi nhật ký.',
 }
 /** AI-eCabinet's quick lengths under the times: one click sets the end from the start. */
 const LENGTHS = [
@@ -686,7 +685,7 @@ export function MeetingForm({
               </label>
             )}
 
-            {/* One row per level with what it changes, so nobody has to guess what "Hạn chế" means. */}
+            {/* One row per level with what it changes, so nobody has to guess what "Nội bộ" changes. */}
             <fieldset className="field level-choices" data-field="sensitivity">
               <legend className="field-required">Mức độ mật</legend>
               {SENSITIVITY_OPTIONS.map((o) => (

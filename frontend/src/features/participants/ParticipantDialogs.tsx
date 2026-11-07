@@ -271,7 +271,7 @@ export function InviteGuestDialog({
       }
     >
       <form id="invite-guest" className="dialog-form" onSubmit={submit} noValidate>
-        {(sensitivity === 'Confidential' || sensitivity === 'Secret') && (
+        {sensitivity === 'Secret' && (
           <p className="alert alert-warning" role="note">
             Cuộc họp {SENSITIVITY_LABEL[sensitivity]}: khách dự họp như Thành viên và đọc được tài liệu cuộc họp.
           </p>

@@ -103,7 +103,7 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
     }
 
     [Fact]
-    public async Task With_the_api_chosen_an_ordinary_meeting_is_written_by_it_and_a_confidential_one_never_leaves()
+    public async Task With_the_api_chosen_an_ordinary_meeting_is_written_by_it_and_an_internal_or_secret_one_never_leaves()
     {
         using var admin = await AdminWithRole();
         await AssertCode(await admin.PutAsJsonAsync(Url, Api()), 200, "MSG408");
@@ -123,12 +123,15 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
             Assert.Contains("\"max_tokens\":8192", r.Body);
             // DeepSeek's thinking is off: twice as slow and no better on a restatement of what was said.
             Assert.Contains("\"reasoning_effort\":\"none\"", r.Body);
+            // Only the hosted model is asked to restore English words the recogniser spelt by ear.
+            Assert.Contains("SỬA TỪ BỊ CHÉP SAI", System.Text.Json.JsonDocument.Parse(r.Body).RootElement
+                .GetProperty("messages")[0].GetProperty("content").GetString());
         });
         var draft = (await secretary.GetFromJsonAsync<JsonElement>(normal.Summary)).GetProperty("summary");
         Assert.Equal("deepseek-v4.1-flash", draft.GetProperty("model").GetString());
         Assert.Equal("Mục tiêu do API viết.", draft.GetProperty("draft").GetProperty("objectives").GetString());
 
-        foreach (var sensitivity in new[] { Sensitivity.Internal, Sensitivity.Confidential, Sensitivity.Secret })
+        foreach (var sensitivity in new[] { Sensitivity.Internal, Sensitivity.Secret })
         {
             f.Api.Reset();
             f.Model.Reset();
@@ -138,6 +141,7 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
             await f.ProcessAll();
             Assert.Empty(f.Api.Requests);
             Assert.NotEmpty(f.Model.Prompts);
+            Assert.All(f.Model.Systems, system => Assert.DoesNotContain("SỬA TỪ BỊ CHÉP SAI", system));
             Assert.Equal("fake-llm@test", (await keeper.GetFromJsonAsync<JsonElement>(kept.Summary)).GetProperty("summary").GetProperty("model").GetString());
         }
     }
@@ -177,13 +181,13 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
     }
 
     [Fact]
-    public async Task A_confidential_meeting_reads_as_not_ready_when_only_the_api_could_write()
+    public async Task An_internal_meeting_reads_as_not_ready_when_only_the_api_could_write()
     {
         using var admin = await AdminWithRole();
         await AssertCode(await admin.PutAsJsonAsync(Url, Api()), 200, "MSG408");
         f.Model.Configured = false;
         var normal = await f.Seed();
-        var secret = await f.Seed(sensitivity: Sensitivity.Confidential);
+        var secret = await f.Seed(sensitivity: Sensitivity.Internal);
         using var a = f.Client(normal.Secretary);
         using var b = f.Client(secret.Secretary);
         Assert.True((await a.GetFromJsonAsync<JsonElement>(normal.Summary)).GetProperty("aiReady").GetBoolean());

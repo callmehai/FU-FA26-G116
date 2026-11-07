@@ -32,7 +32,7 @@ type Content =
 /**
  * UC-32c Preview Meeting Document (SCRUM-21, wireframe 7.5 / 7.5b), full screen. The server sends
  * the original bytes (BR-183, BR-216) and the browser draws them: a PDF page by page with pdf.js, a
- * DOCX as one flowing text with docx-preview. Every open of a Confidential or Secret meeting's
+ * DOCX as one flowing text with docx-preview. Every open of a Secret meeting's
  * document is audited by the server (BR-318).
  *
  * Opened from the call room it lives in its own tab (BR-315), and "‹ Tài liệu" closes that tab.
@@ -244,7 +244,7 @@ function useReachedEnd(stage: RefObject<HTMLElement | null>, active: boolean) {
     const check = () => {
       const scroller = el.querySelector<HTMLElement>('.viewer-scroll')
       if (scroller?.querySelector('.viewer-message .alert-error')) return setProgress('unreadable')
-      if (!scroller?.querySelector('.pdf-page, .docx-sheet > div > *')) return
+      if (!scroller?.querySelector('.pdf-page, .docx-sheet [data-drawn]')) return
       if (scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8) setProgress('reached')
     }
     // Scroll does not bubble: listen in the capture phase for the renderer's own scroll box.

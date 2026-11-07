@@ -107,4 +107,37 @@ CASES = [
         "room": [],
         "expect": ["Bộ Tài chính", "triệu đồng"], "forbid": ["Không có nội dung"],
     },
+    {
+        "key": "9-noi-chem-tieng-anh",
+        "title": "Nói chêm tiếng Anh: máy gỡ băng chép từ tiếng Anh theo âm",
+        "agenda": [], "votes": [], "documents": [], "mic": [],
+        # Written the way the Vietnamese recogniser spells English by ear (as on Test04.mp3), with words other than the
+        # ones the API rule gives as examples, so the bench measures the rule, not the examples.
+        "room": [
+            (0.5, "SPEAKER_00", "Hôm nay mình họp để chốt kế hoạch rì lít app phiên bản hai chấm không trên sàn Mi Ti Hôm."),
+            (1.5, "SPEAKER_01", "Bên em đã chạy xong ba trăm tét kây, còn mười hai lỗi chưa phích bấc, dự kiến xong trước ngày hai mươi tháng mười một."),
+            (3, "SPEAKER_02", "Khách hàng đã gửi phít bách về màn hình đa sờ bọt, muốn thêm biểu đồ doanh thu theo tuần."),
+            (4, "SPEAKER_00", "Thế thì em làm bản đem mô cho khách xem vào thứ sáu, rồi mình rì viu lại cùng nhau."),
+            (5, "SPEAKER_01", "Môi trường u ây ti đang ổn, nhưng sẹc vơ hay bị chậm khi gọi a pi thanh toán."),
+            (6, "SPEAKER_02", "Em đề xuất nâng sẹc vơ lên tám gigabyte RAM, chi phí khoảng hai triệu đồng một tháng."),
+            (7, "SPEAKER_00", "Đồng ý. Ríp pọt kết quả kiểm thử gửi chị trước khi rì lít nhé."),
+            (8, "SPEAKER_01", "Dạ, em sẽ gửi ríp pọt vào thứ năm."),
+        ],
+        "expect": ["300", "12", "20/11|20 tháng 11", "2 triệu", "Mi Ti Hôm"],
+        "forbid": ["ba trăm", "mười hai lỗi", "hai triệu"],
+        # (as recorded, what was said): the draft should carry the second (or a Vietnamese word for it), not the first.
+        "words": [
+            ("rì lít", "release|phát hành"),
+            ("tét kây", "test case|kịch bản kiểm thử|ca kiểm thử"),
+            ("phích bấc", "fix bug|sửa lỗi"),
+            ("phít bách", "feedback|góp ý|phản hồi"),
+            ("đa sờ bọt", "dashboard|bảng điều khiển"),
+            ("đem mô", "demo|bản trình diễn|bản chạy thử"),
+            ("rì viu", "review|rà soát|xem lại"),
+            ("u ây ti", "UAT|nghiệm thu"),
+            ("sẹc vơ", "server|máy chủ"),
+            ("a pi", "API"),
+            ("ríp pọt", "report|báo cáo"),
+        ],
+    },
 ]

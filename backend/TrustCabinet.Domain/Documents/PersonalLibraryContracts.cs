@@ -27,10 +27,11 @@ public sealed record LibraryFolder(Guid Id, string Name, Guid? ParentId, Guid? M
 
 /// <summary>
 /// A library document. <see cref="MeetingCount"/> counts the meetings that still use it, among those the
-/// reader may view (BR-251).
+/// reader may view (BR-251). <see cref="InMeeting"/>: its file is already in the meeting the reader asked about
+/// and may add documents to (SCRUM-124); false when none was asked about.
 /// </summary>
 public sealed record LibraryDocument(Guid Id, string FileName, string ContentType, long ByteSize, int? PageCount,
-    Guid? FolderId, DateTimeOffset CreatedAt, int MeetingCount);
+    Guid? FolderId, DateTimeOffset CreatedAt, int MeetingCount, bool InMeeting = false);
 
 /// <summary>
 /// UC-34: every folder of the library, so the screen can draw the tree and the move dialog, and the documents
@@ -47,10 +48,12 @@ public interface IPersonalLibraryService
     /// <summary>
     /// UC-34. <paramref name="readerId"/> is the owner, or an administrator reading a deactivated owner's library
     /// (PO 27/10/2026), which is audited; anyone else gets <see cref="LibraryFailure.NotFound"/>. The caller has
-    /// already checked the administrator's capability.
+    /// already checked the administrator's capability. <paramref name="meetingId"/> marks the documents whose file
+    /// is already in that meeting (SCRUM-124), only when the reader is its current Chair or Secretary — otherwise none
+    /// are marked.
     /// </summary>
     Task<LibraryOutcome<LibraryView>> ViewAsync(Guid readerId, Guid ownerId, Guid? folderId, string? search,
-        string? fileType, CancellationToken ct = default);
+        string? fileType, Guid? meetingId = null, CancellationToken ct = default);
 
     /// <summary>The same reader rule as <see cref="ViewAsync"/>; an administrator's read is audited.</summary>
     Task<MeetingDocumentContentOutcome> OpenContentAsync(Guid readerId, Guid ownerId, Guid documentId,

@@ -20,7 +20,7 @@ const COLUMN_COUNT = 5
 /**
  * A deactivated person's library, read by an administrator to recover their documents (SCRUM-113, UC-34b): the
  * personal library's table without anything that changes it. Every listing and every file opened is audited by the
- * server, which also leaves out whatever belongs to a Confidential or Secret meeting. An account that is active again,
+ * server, which also leaves out whatever belongs to a Secret meeting. An account that is active again,
  * or gone, answers 404 MSG175: back to the user list.
  */
 export function UserLibraryPage() {

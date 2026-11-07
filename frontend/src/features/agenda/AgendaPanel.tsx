@@ -19,6 +19,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useCallback, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { completeAgendaItem, deleteAgendaItem, startAgendaItem } from '../../api/agenda'
+import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
@@ -108,8 +109,14 @@ export function AgendaPanel({
             Thử lại
           </button>
         </div>
-      ) : (
+      ) : room ? (
         <AgendaSkeleton />
+      ) : (
+        <div className="agenda-panel agenda-panel-page">
+          <div className="card agenda-sheet">
+            <AgendaSkeleton />
+          </div>
+        </div>
       ),
     )
   }
@@ -142,6 +149,16 @@ export function AgendaPanel({
     void reorder(arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id))))
   }
 
+  // On the page every row keeps a slot for what only some rows have (the Chair's Bắt đầu or Xong, the state,
+  // the conclusion chip), so the presenters and counts line up in columns as the Tài liệu tab's do.
+  const sheetClass = [
+    'card agenda-sheet',
+    items.some((i) => i.actions.canSetCurrent || i.actions.canComplete) && 'agenda-sheet-steps',
+    items.some((i) => i.conclusion) && 'agenda-sheet-concluded',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   const list = (
     <ol className="agenda-list">
       {items.map((item, index) => (
@@ -171,17 +188,50 @@ export function AgendaPanel({
     </ol>
   )
 
+  const listed =
+    items.length === 0 ? (
+      <div className="agenda-empty">
+        <Icon name="list" size={24} />
+        <p>Chưa có nội dung nào</p>
+        <small>
+          {data.permissions.canCreate
+            ? 'Thêm các nội dung cần bàn trong cuộc họp.'
+            : 'Các nội dung cần bàn sẽ hiện ở đây khi được lập.'}
+        </small>
+      </div>
+    ) : sortable ? (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={onDragEnd}
+        accessibility={{
+          announcements,
+          screenReaderInstructions: {
+            draggable:
+              'Nhấn phím cách để nhấc nội dung lên, dùng phím mũi tên để di chuyển, phím cách để thả, Esc để huỷ.',
+          },
+        }}
+      >
+        <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+          {list}
+        </SortableContext>
+      </DndContext>
+    ) : (
+      list
+    )
+
   return wrap(
     <section
-      className={room ? 'agenda-panel agenda-panel-room' : 'list-panel agenda-panel'}
+      className={room ? 'agenda-panel agenda-panel-room' : 'agenda-panel agenda-panel-page'}
       aria-label="Nội dung cuộc họp"
     >
-      {/* The tab already says what this is; the bar holds only the Secretary's add button. */}
+      {/* The tab already says what this is; the bar holds only the Secretary's add button, placed as
+          the Tài liệu tab places its own: on the page above one card of folds. */}
       {data.permissions.canCreate && (
-        <div className="toolbar agenda-toolbar">
+        <div className="agenda-toolbar">
           <button
             type="button"
-            className="btn btn-outline btn-sm toolbar-end"
+            className={room ? 'btn btn-outline btn-sm' : 'btn btn-primary'}
             onClick={() => setOpen({ kind: 'edit', item: null })}
           >
             <Icon name="plus" size={16} />
@@ -200,36 +250,7 @@ export function AgendaPanel({
         </div>
       )}
 
-      {items.length === 0 ? (
-        <div className="agenda-empty">
-          <Icon name="list" size={24} />
-          <p>Chưa có nội dung nào</p>
-          <small>
-            {data.permissions.canCreate
-              ? 'Thêm các nội dung cần bàn trong cuộc họp.'
-              : 'Các nội dung cần bàn sẽ hiện ở đây khi được lập.'}
-          </small>
-        </div>
-      ) : sortable ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={onDragEnd}
-          accessibility={{
-            announcements,
-            screenReaderInstructions: {
-              draggable:
-                'Nhấn phím cách để nhấc nội dung lên, dùng phím mũi tên để di chuyển, phím cách để thả, Esc để huỷ.',
-            },
-          }}
-        >
-          <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-            {list}
-          </SortableContext>
-        </DndContext>
-      ) : (
-        list
-      )}
+      {room ? listed : <div className={sheetClass}>{listed}</div>}
 
       {open?.kind === 'edit' && (
         <AgendaItemDialog
@@ -349,9 +370,7 @@ function AgendaRow({
             <Icon name="grip" size={16} />
           </button>
         )}
-        <span className="agenda-number" aria-hidden="true">
-          {number}
-        </span>
+        {/* Numbered in the title, as the Tài liệu tab's folds are: "1. Báo cáo …". */}
         <button
           type="button"
           className="agenda-title"
@@ -360,7 +379,9 @@ function AgendaRow({
           onClick={onToggle}
         >
           <Icon name={expanded ? 'chevronDown' : 'chevronRight'} size={16} />
-          <span>{item.title}</span>
+          <span>
+            {number}. {item.title}
+          </span>
         </button>
 
         {(actions.canSetCurrent || actions.canComplete || onAttach || actions.canEdit || actions.canDelete) && (
@@ -376,6 +397,9 @@ function AgendaRow({
                 <Icon name="check" size={16} />
                 Xong
               </button>
+            )}
+            {!room && !actions.canSetCurrent && !actions.canComplete && (
+              <span className="agenda-step-slot" aria-hidden="true" />
             )}
             {onAttach && <AttachMenu title={item.title} onPick={onAttach} />}
             {actions.canEdit && (
@@ -408,20 +432,34 @@ function AgendaRow({
         <span className="agenda-break" aria-hidden="true" />
         <div className="agenda-meta">
           <Presenter item={item} />
-          <StatusChip item={item} />
-          {item.conclusion && (
-            <span className="status status-violet agenda-concluded" data-tooltip="Đã có kết luận">
-              <Icon name="clipboardCheck" size={14} />
-              <span className="agenda-concluded-text">Đã kết luận</span>
+          <span className="agenda-cell agenda-cell-status">
+            <StatusChip item={item} />
+          </span>
+          <span className="agenda-cell agenda-cell-concluded">
+            {item.conclusion && (
+              <span className="status status-violet agenda-concluded" data-tooltip="Đã có kết luận">
+                <Icon name="clipboardCheck" size={14} />
+                <span className="agenda-concluded-text">Đã kết luận</span>
+              </span>
+            )}
+          </span>
+          {room ? (
+            <span
+              className={item.documents.length ? 'agenda-docs' : 'agenda-docs agenda-docs-none'}
+              data-tooltip={item.documents.length ? item.documents.map((d) => d.title).join('\n') : undefined}
+            >
+              <Icon name="paperclip" size={14} />
+              {item.documents.length}
+            </span>
+          ) : (
+            // The page counts documents as the Tài liệu tab does, with their names on hover.
+            <span
+              className="agenda-docs-count"
+              data-tooltip={item.documents.length ? item.documents.map((d) => d.title).join('\n') : undefined}
+            >
+              <Badge tone="outline">{item.documents.length} tài liệu</Badge>
             </span>
           )}
-          <span
-            className={item.documents.length ? 'agenda-docs' : 'agenda-docs agenda-docs-none'}
-            data-tooltip={item.documents.length ? item.documents.map((d) => d.title).join('\n') : undefined}
-          >
-            <Icon name="paperclip" size={14} />
-            {item.documents.length}
-          </span>
         </div>
       </div>
 

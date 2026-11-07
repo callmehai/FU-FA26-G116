@@ -1,7 +1,7 @@
 # Đo chất lượng dự thảo AI
 
 Bộ script so các model viết dự thảo biên bản (SCRUM-36, [ADR-0054](../../docs/05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md))
-trên cùng 8 cuộc họp mẫu, từ đầy đủ đến thiếu từng phần. Không chạy trong CI; chạy tay khi đổi model hay đổi prompt.
+trên cùng 9 cuộc họp mẫu, từ đầy đủ đến thiếu từng phần, cộng một cuộc họp nói chêm tiếng Anh. Không chạy trong CI; chạy tay khi đổi model hay đổi prompt.
 
 | Cuộc họp mẫu | Kiểm tra gì |
 |---|---|
@@ -13,8 +13,10 @@ trên cùng 8 cuộc họp mẫu, từ đầy đủ đến thiếu từng phần
 | Mic phòng chưa gán tên | Giữ "Người nói N", không đoán tên |
 | Rất ít dữ liệu | Không từ chối, viết hoa tên riêng, đổi ngày sang chữ số |
 | Họp dài | Một mục vượt một lần gọi AI: chia nhỏ rồi gộp |
+| Nói chêm tiếng Anh | Từ tiếng Anh máy gỡ băng chép theo âm ("rì lít", "sẹc vơ") phải được viết lại đúng ("release", "server") |
 
-Mỗi cuộc họp có danh sách **ý cần có** và **lỗi cấm** trong [`cases.py`](cases.py). Báo cáo đếm số ý đúng, số lỗi và
+Mỗi cuộc họp có danh sách **ý cần có** và **lỗi cấm** trong [`cases.py`](cases.py). Case nói chêm tiếng Anh có thêm
+`words`: từng cặp (máy chép, thật ra nói); báo cáo ghi mỗi từ là sửa đúng, còn chép sai, hay không còn trong dự thảo. Báo cáo đếm số ý đúng, số lỗi và
 thời gian, kèm toàn bộ dự thảo để đọc lại.
 
 ## Chạy
@@ -33,6 +35,10 @@ python3 tests/ai/benchmark.py clean                         # huỷ các cuộc 
 
 - **Đổi model:** sửa `Ai:Model` (hoặc `Ai:BaseUrl` sang máy khác, ví dụ `llama-server` của llama.cpp ở
   `http://<máy>:8080/v1`), khởi động lại backend, rồi `run` với `--label` khác. Không cần `seed` lại.
+- **Chạy vài case:** `--only 9-noi-chem-tieng-anh` (cho cả `seed` và `run`).
+- **Case từ cuộc họp thật:** bản gỡ băng thật là dữ liệu cá nhân, repo lại công khai, nên để ngoài repo trong một file JSON
+  cùng dạng với `cases.py` rồi thêm `--cases <file.json>`. Phép đo trên `Test04.mp3` ở [18-may-ai.md](../../docs/03-api/18-may-ai.md)
+  chạy theo cách này.
 - **Lệnh `seed`** ghi thẳng vào database dev qua `docker compose exec postgres psql`, nên chỉ chạy với stack local.
 - **Lệnh `clean`** chuyển các cuộc họp sang "Đã huỷ" chứ không xoá, vì lịch sử trạng thái cuộc họp không cho xoá.
 - **Máy nóng:** model 7B dùng hết CPU khoảng 1–2 phút cho mỗi cuộc họp. Chạy xong thì `ollama stop <model>` để giải

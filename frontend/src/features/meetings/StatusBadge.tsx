@@ -44,7 +44,6 @@ export function StatusBadge({
 const LEVEL: Record<Sensitivity, { className: string; icon: IconName }> = {
   Normal: { className: 'level-normal', icon: 'globe' },
   Internal: { className: 'level-internal', icon: 'building' },
-  Confidential: { className: 'level-confidential', icon: 'shieldAlert' },
   Secret: { className: 'level-secret', icon: 'lock' },
 }
 

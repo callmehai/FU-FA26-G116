@@ -550,7 +550,7 @@ deactivate MeetingPage
 | [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08, UC-09 |
 | [role-management/](role-management/README.md) | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
 | [meeting-management/](meeting-management/README.md) | UC-14 → UC-22, UC-75 |
-| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77 |
+| [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77, UC-82 (sơ bộ) |
 | [meeting-participant-management/](meeting-participant-management/README.md) | UC-27, UC-28a → UC-28c, UC-29, UC-30, UC-31, UC-73 |
 | [document-management/](document-management/README.md) | UC-32a, UC-32c, UC-33a (AF-1), UC-35, UC-74 |
 | [voting-management/](voting-management/README.md) | UC-52a → UC-57, UC-76a, UC-76b |

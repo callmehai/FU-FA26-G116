@@ -505,7 +505,7 @@ function DocumentRow({
             data-tooltip="Gỡ khỏi mục này"
             onClick={() => row.onRemove!(doc, item)}
           >
-            <Icon name="unlink" size={16} />
+            <Icon name="detach" size={16} />
           </button>
         )}
         {!room && row.onRemove && (

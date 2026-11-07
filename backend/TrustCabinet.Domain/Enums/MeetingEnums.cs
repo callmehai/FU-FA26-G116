@@ -58,13 +58,14 @@ public enum MeetingTransitionAction
 
 /// <summary>
 /// How sensitive a meeting's contents are. Independent of <see cref="MeetingStatus"/>: it decides
-/// who may read documents and recordings, not where the meeting is in its lifecycle.
+/// who may read documents and recordings, not where the meeting is in its lifecycle. Three levels, as in
+/// AI-eCabinet (ADR-0057): Internal differs from Normal only in keeping the AI draft in-house; Secret is the one
+/// that locks documents, recordings and minutes down.
 /// </summary>
 public enum Sensitivity
 {
     Normal,
     Internal,
-    Confidential,
     Secret,
 }
 

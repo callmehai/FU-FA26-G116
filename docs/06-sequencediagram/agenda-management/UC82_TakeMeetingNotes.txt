@@ -1,0 +1,85 @@
+title UC-82 - Take Meeting Notes
+
+actor "Secretary" as Actor
+boundary "Notes Panel (Meeting page / online room)" as NotesPanel
+control ":Notes Controller" as NotesController
+control ":Notes Service" as NotesService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Hub" as MeetingHub
+database ":Database" as Database
+
+Actor->NotesPanel: Type in the note of the current agenda item (BR-397, BR-401)
+activate NotesPanel
+NotesPanel->NotesPanel: Keep the unsent text on this device,
+only until the page is closed for a Secret Meeting (BR-403)
+
+alt The connection is lost - AF-3
+    NotesPanel-->Actor: MSG423 - You are offline. The note is kept on this device and will be saved when the connection returns.
+else Online, shortly after typing stops
+    NotesPanel->NotesController: save(meetingId, agendaItemId, body, updatedAt)
+    activate NotesController
+    NotesController->NotesService: saveAsync(meetingId, actorId, agendaItemId, body, updatedAt)
+    activate NotesService
+    NotesService->MeetingRepository: Get the Meeting with its participants and agenda
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve Meeting
+    activate Database
+    Database-->MeetingRepository: Meeting / Not found
+    deactivate Database
+    MeetingRepository-->NotesService: Meeting / Not found
+    deactivate MeetingRepository
+    NotesService->NotesService: Check the actor is the current Secretary (BR-395)
+
+    alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-8
+        NotesService-->NotesController: Not found
+        NotesController-->NotesPanel: 404
+        NotesPanel-->Actor: No notes
+    else Actor is not the current Secretary - EX-1
+        NotesService-->NotesController: MSG416 - Only the Secretary may write meeting notes.
+        NotesController-->NotesPanel: 403 MSG416 - Only the Secretary may write meeting notes.
+        NotesPanel-->Actor: MSG416 - Only the Secretary may write meeting notes.
+    else Actor is the current Secretary
+        NotesService->NotesService: Check the Meeting is InProgress, or Ended with no minutes draft (BR-396),\nthe item belongs to the Meeting and the text is within 20,000 characters (BR-400)
+
+        alt The Meeting no longer accepts notes - EX-2
+            NotesService-->NotesController: MSG417 - Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created.
+            NotesController-->NotesPanel: 409 MSG417
+            NotesPanel-->Actor: MSG417 - Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created.
+        else The agenda item was removed - EX-5
+            NotesService-->NotesController: MSG420 - The selected agenda item is no longer part of this meeting.
+            NotesController-->NotesPanel: 409 MSG420
+            NotesPanel-->Actor: MSG420 - The selected agenda item is no longer part of this meeting.
+        else The note is too long - EX-4
+            NotesService-->NotesController: MSG419 - The note is too long. A note can hold up to 20,000 characters.
+            NotesController-->NotesPanel: 400 MSG419
+            NotesPanel-->Actor: MSG419 - The note is too long. A note can hold up to 20,000 characters.
+        else Save valid
+            NotesService->Database: Insert or update the actor's note of that item,\nonly if it was not saved since it was read (BR-398, BR-399)
+            activate Database
+            Database-->NotesService: Saved / No row (stale)
+            deactivate Database
+
+            alt Saved
+                NotesService->MeetingHub: notesChanged(meetingId, agendaItemId, updatedAt)
+                activate MeetingHub
+                MeetingHub-->NotesPanel: notesChanged to the Chair's and Secretary's other windows
+                deactivate MeetingHub
+                NotesService-->NotesController: Note
+                NotesController-->NotesPanel: 200 MSG415 - Note saved.
+                NotesPanel->NotesPanel: Drop the copy kept on this device
+                NotesPanel-->Actor: MSG415 - Note saved. (saved time)
+            else No row saved - EX-3
+                NotesService-->NotesController: MSG418 - This note was changed in another window. Reload to see the latest version.
+                NotesController-->NotesPanel: 409 MSG418
+                NotesPanel-->Actor: MSG418 - This note was changed in another window. Reload to see the latest version.
+            else The note cannot be saved - EX-7
+                NotesService-->NotesController: MSG422 - Unable to save the note. It is kept on this device and will be sent again.
+                NotesController-->NotesPanel: 503 MSG422
+                NotesPanel-->Actor: MSG422 - Unable to save the note. It is kept on this device and will be sent again.
+            end
+        end
+    end
+    deactivate NotesService
+    deactivate NotesController
+end
+deactivate NotesPanel

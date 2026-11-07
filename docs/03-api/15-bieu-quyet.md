@@ -221,6 +221,10 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
 - **Khách được mời trong lúc phiếu đang Open** (PO 30/10/2026): nếu phiếu có chọn vai trò Khách, lời mời mới được thêm vào
   danh sách người bỏ phiếu và `eligibleCount` tăng 1, cùng transaction với `POST …/guest-invitations`. Đây là ngoại lệ
   duy nhất của BR-190; người nội bộ được thêm sau lúc mở vẫn không vào danh sách (đang hỏi PO, Jira SCRUM-28).
+  Danh sách tính theo **người**, nhận ra bằng email (không phân biệt hoa thường), không theo lời mời (SCRUM-133): Khách bị
+  gỡ rồi được mời lại cùng email nhận lời mời có ID mới, nhưng nếu đã bỏ phiếu thì lời mời mới không được thêm (bỏ phiếu
+  bằng nó nhận `409/MSG224`); nếu đã có tên trong danh sách mà chưa bỏ phiếu thì chỗ đó chuyển sang lời mời mới để vẫn bỏ
+  được đúng một phiếu. Cả hai trường hợp `eligibleCount` giữ nguyên.
 - **Guest chỉ xem biểu quyết khi cuộc họp Published hoặc InProgress**; cuộc họp kết thúc thì Guest nhận `404/MSG205`
   (PO 30/10/2026, cùng luật `GuestAccessRules.MeetingOpen` với mọi đường đọc của Khách). Người nội bộ vẫn xem được sau khi kết thúc.
 - **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.

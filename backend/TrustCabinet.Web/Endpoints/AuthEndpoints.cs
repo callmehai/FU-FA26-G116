@@ -52,14 +52,15 @@ public static class AuthEndpoints
     {
         var auth = app.MapGroup("/api/auth").WithTags("Authentication");
 
-        auth.MapPost("/login", SignInAsync).AllowAnonymous();
-        auth.MapPost("/google", SignInWithGoogleAsync).AllowAnonymous();
+        // SCRUM-132: the anonymous endpoints that check a secret are capped per IP (and /login per email).
+        auth.MapPost("/login", SignInAsync).AllowAnonymous().RequireRateLimiting(AuthRateLimiting.PerIpPolicy);
+        auth.MapPost("/google", SignInWithGoogleAsync).AllowAnonymous().RequireRateLimiting(AuthRateLimiting.PerIpPolicy);
         auth.MapPost("/refresh", RefreshAsync).AllowAnonymous();
         auth.MapPost("/logout", SignOutAsync).AllowAnonymous();
         auth.MapGet("/me", Me).RequireAuthorization();
         // UC-07's link lands here. Anonymous: the token in the body is the proof, and someone who
         // has forgotten their password has no session to send.
-        auth.MapPost("/password-reset", ResetPasswordAsync).AllowAnonymous();
+        auth.MapPost("/password-reset", ResetPasswordAsync).AllowAnonymous().RequireRateLimiting(AuthRateLimiting.PerIpPolicy);
 
         return app;
     }
@@ -68,9 +69,17 @@ public static class AuthEndpoints
         [FromBody] SignInRequest request,
         IAuthenticationService authentication,
         ITokenIssuer tokenIssuer,
+        SignInEmailLimiter emailLimiter,
         HttpResponse response,
         CancellationToken ct)
     {
+        // Counted before the password is checked, so a guess past the limit learns nothing — right or wrong.
+        using var lease = emailLimiter.Acquire(request.Email ?? "");
+        if (!lease.IsAcquired)
+        {
+            return AuthRateLimiting.TooManyAttempts(lease);
+        }
+
         // Blank input is the same answer as wrong input: an empty password must not be
         // distinguishable from an incorrect one.
         var result = await authentication.SignInAsync(request.Email ?? "", request.Password ?? "", ct);

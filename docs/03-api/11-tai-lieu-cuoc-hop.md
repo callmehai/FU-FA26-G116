@@ -202,8 +202,9 @@ phân biệt được. Đây là rủi ro đã biết khi không chuyển đổi
 endpoint. PO chấp nhận rủi ro này ngày 2026-10-25 (không chuyển tệp thành ảnh trên server, không đóng dấu tên người
 xem).
 
-**Nhật ký kiểm toán** (BR-318): cuộc họp `Confidential` hoặc `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
-xem / tải thành công — `action` `document.viewed` hoặc `document.downloaded`, `objectType` `MeetingDocument`,
+**Nhật ký kiểm toán** (BR-318): cuộc họp `Secret` ghi một dòng `AuditLogEntry` cho mỗi lần
+xem thành công — `action` `document.viewed` (không có `document.downloaded`: tài liệu Mật không tải được, các mức
+khác không ghi nhật ký — [ADR-0057](../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)), `objectType` `MeetingDocument`,
 `objectId` là MeetingDocument ID, `details` có `meetingId`, `fileName`, `sensitivity`; Khách đọc thì `actorId` là `null`
 và `details` có thêm `guestInvitationId`. **Lưu ý cho màn nhật ký (SCRUM-16):** `actorId = null` vốn nghĩa là
 hệ thống tự làm (BR-301); dòng có `details.guestInvitationId` là Khách, phải hiện là Khách (tên mời / email của lời
@@ -298,6 +299,13 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
 - DOCX là nội dung người dùng tải lên, được dựng ngay trong origin của mình: trình xem tắt `renderAltChunks` (HTML nhúng
   sẽ thành `iframe` cùng origin) và chỉ giữ link `http:`, `https:`, `mailto:`, `#…` — link `javascript:` bị bỏ `href`,
   link ngoài mở ở tab mới. CSP của server test là lớp chặn thứ hai, không phải lớp duy nhất.
+- CSS docx-preview sinh từ tệp (tên style, tên font) không được lọt ra trang (SCRUM-131): DOCX được vẽ trong một
+  **shadow root**, nên selector của tệp chỉ khớp bên trong khung xem; tờ giấy `.docx-sheet` có `contain: paint`, nên
+  nội dung `position: fixed`, `z-index` hay `:host` của tệp chỉ vẽ trong tờ giấy, không che được header. CSP không
+  chặn được việc này vì `style-src` có `'unsafe-inline'`.
+- Font nhúng: Chrome bỏ qua `@font-face` trong shadow root, nên trình xem đọc lại các rule `@font-face` của tệp, tạo
+  `FontFace` gắn vào `document.fonts` (vẫn là URL `blob:`, nên vẫn cần `font-src blob:`) rồi bỏ thẻ `<style>` gốc.
+  Font trùng tên font của app (`Be Vietnam Pro`…) bị bỏ qua, và font được gỡ khi rời trình xem.
 - Giới hạn đã biết: không nạp `wasm` và font chuẩn của pdf.js (cần thêm `'wasm-unsafe-eval'` vào CSP), nên ảnh JPEG2000
   trong PDF scan có thể không hiện.
 - Nhóm Biểu quyết (02/11/2026): mỗi biểu quyết một khối gập được, nhãn trạng thái như tab Biểu quyết, mỗi tài liệu có
@@ -314,7 +322,7 @@ không hiện, `currentAgendaItemId`, `pageCount`/`commentCount`/`addedBy`; cu�
 được; người ngoài, cuộc họp không tồn tại, thành viên của cuộc họp `Draft` → cùng `404/MSG156`; lỗi đọc DB →
 `MSG157`; byte trả về khớp, header `attachment` + `filename*`, `no-store`, `nosniff`, `Content-Length`; `Normal`
 không ghi kiểm toán; `Secret` xem được và ghi `document.viewed`, tải về `403/MSG159` (cả Chủ toạ) không ghi gì thêm;
-`Confidential` tải về ghi `document.downloaded`; tài liệu đã gỡ / của cuộc họp khác / không tồn tại → `MSG156`, kể cả
+tài liệu đã gỡ / của cuộc họp khác / không tồn tại → `MSG156`, kể cả
 khi tải về từ cuộc họp `Secret` (không trả `403` để lộ ID); tải về `Secret` khi object thiếu vẫn `MSG159` (chặn trước khi
 chạm kho); lỗi DB lúc tra tài liệu → `MSG158`/`MSG160`;
 object đã mất → `410/MSG382` cả xem lẫn tải, kho chưa cấu hình → `MSG158`, không ghi kiểm toán; lỗi ghi kiểm toán → không gửi tệp;
@@ -348,7 +356,9 @@ và ở tab Tài liệu.
 
 Body `{ "documentIds": ["<id tài liệu trong kho>", …] }`. Mỗi tài liệu phải **của chính người gọi** và còn trong kho;
 không chọn gì hoặc có tài liệu không hợp lệ → `400 MSG249` (BR-209). Tệp đã có trong cuộc họp (cùng `StoredFile`, chưa
-gỡ) → `409 MSG165` (BR-193). Tất cả hoặc không (BR-286). ID trùng trong mảng được gộp.
+gỡ) → `409 MSG165` (BR-193). Tất cả hoặc không (BR-286). ID trùng trong mảng được gộp. FE biết trước tài liệu nào sẽ bị
+`MSG165` qua `inMeeting` của `GET /api/documents?meetingId=` ([14-kho-tai-lieu-ca-nhan.md](14-kho-tai-lieu-ca-nhan.md),
+SCRUM-124); mã này vẫn là lớp chặn khi người khác vừa thêm.
 
 Mỗi tài liệu thành một `MeetingDocument` **chung** (chưa gắn mục), trỏ cùng `StoredFile` của dòng kho, `DocumentId` là
 dòng kho, `fileName` chép **tên hiện tại** trong kho (BR-197, BR-276). Không chép byte (ADR-0018).

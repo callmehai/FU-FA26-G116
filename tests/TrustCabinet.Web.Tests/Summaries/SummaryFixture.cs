@@ -90,6 +90,7 @@ public sealed class SummaryFixture : IAsyncLifetime
         internal string OverviewAnswer = $"MỤC TIÊU:\n{Objectives}\nKẾT LUẬN:\n{Conclusion}\nNHIỆM VỤ:\nKhông có.";
         internal string PartAnswer = Part;
         internal readonly ConcurrentQueue<string> Prompts = new();
+        internal readonly ConcurrentQueue<string> Systems = new();
         /// <summary>Runs once, on the first prompt: what happens to the meeting while the model is writing.</summary>
         internal Func<Task>? While;
 
@@ -99,6 +100,7 @@ public sealed class SummaryFixture : IAsyncLifetime
         public async Task<string> CompleteAsync(string system, string user, CancellationToken ct)
         {
             Prompts.Enqueue(user);
+            Systems.Enqueue(system);
             if (Interlocked.Exchange(ref While, null) is { } meanwhile) await meanwhile();
             if (Failure is { } failure) throw failure;
             return user.Contains("MỤC TIÊU:", StringComparison.Ordinal) ? OverviewAnswer : PartAnswer;
@@ -112,6 +114,7 @@ public sealed class SummaryFixture : IAsyncLifetime
             OverviewAnswer = $"MỤC TIÊU:\n{Objectives}\nKẾT LUẬN:\n{Conclusion}\nNHIỆM VỤ:\nKhông có.";
             PartAnswer = Part;
             Prompts.Clear();
+            Systems.Clear();
         }
     }
 

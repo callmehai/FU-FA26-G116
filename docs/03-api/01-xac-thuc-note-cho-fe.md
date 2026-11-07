@@ -283,9 +283,10 @@ Toàn bộ phần giả lập trong [`frontend/src/features/auth/`](../../fronte
 
 ## 10. Chưa có ở backend, cần thì nói
 
-- **Rate limit cho `/api/auth/login`** — chưa có, nên đừng dựa vào backend để chặn thử sai liên
-  tục. FE có thể tự làm mềm (disable nút vài giây sau nhiều lần sai) nhưng đó **không phải** bảo
-  mật, chỉ là UX.
+- ~~**Rate limit cho `/api/auth/login`**~~ — **đã có** (SCRUM-132): `/login`, `/google` và
+  `/password-reset` có thể trả `429` + `MSG414`, kèm header `Retry-After` (giây). FE chỉ cần hiện
+  `message` như các lỗi khác; màn đăng nhập và đặt lại mật khẩu đã làm vậy. Chi tiết ở
+  [01-xac-thuc.md](01-xac-thuc.md#giới-hạn-số-lần-thử).
 - **Endpoint trả Google `client_id`** — chưa có.
 - **Đăng xuất mọi thiết bị** — chưa có.
 - **Đổi mật khẩu / quên mật khẩu** — không thuộc SCRUM-11.

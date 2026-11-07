@@ -51,10 +51,10 @@ public static class PersonalLibraryEndpoints
         // UC-34: every folder plus the documents at one location; AF-1 searches by name or filters by type.
         app.MapGroup("/api/documents").RequireActiveUser(Failed(Msg176LoadFailed))
             .MapGet("", async (HttpContext context, IPersonalLibraryService service, CancellationToken ct,
-                Guid? folderId = null, string? q = null, string? type = null) =>
+                Guid? folderId = null, string? q = null, string? type = null, Guid? meetingId = null) =>
             {
                 var actor = CapabilityGate.GatedUserId(context.User);
-                var outcome = await service.ViewAsync(actor, actor, folderId, q, type, ct);
+                var outcome = await service.ViewAsync(actor, actor, folderId, q, type, meetingId, ct);
                 return outcome.Value is { } view ? Results.Ok(view) : Error(outcome.Failure, Msg176LoadFailed);
             });
         app.MapGroup("/api/documents").RequireActiveUser(Failed(Msg158ViewFailed))
@@ -106,7 +106,7 @@ public static class PersonalLibraryEndpoints
         admin.MapGet("", async (Guid userId, HttpContext context, IPersonalLibraryService service, CancellationToken ct,
             Guid? folderId = null) =>
         {
-            var outcome = await service.ViewAsync(CapabilityGate.GatedUserId(context.User), userId, folderId, null, null, ct);
+            var outcome = await service.ViewAsync(CapabilityGate.GatedUserId(context.User), userId, folderId, null, null, ct: ct);
             return outcome.Value is { } view ? Results.Ok(view) : Error(outcome.Failure, Msg176LoadFailed);
         });
         admin.MapGet("/documents/{documentId:guid}/content", async (Guid userId, Guid documentId, HttpContext context,

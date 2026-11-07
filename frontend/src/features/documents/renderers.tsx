@@ -154,6 +154,15 @@ function PdfPage({ page, width, label }: { page: PDFPageProxy; width: number; la
   )
 }
 
+/**
+ * docx-preview draws Word's page box; the sheet is the page here. A table wider than the sheet scrolls on its own, so
+ * its scrollbar sits under the table rather than at the end of the document. Lives in the shadow root, out of
+ * global.css's reach.
+ */
+const SHEET_STYLE =
+  'section.docx { width: auto !important; min-height: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important; }' +
+  ' table { display: block; max-width: 100%; overflow-x: auto; }'
+
 /** A DOCX drawn as one flowing text — no pages, so no page counter (wireframe 7.5b). */
 export function DocxView({ blob, zoom }: { blob: Blob; zoom: number }) {
   const [ref, fit] = useFitWidth()
@@ -164,6 +173,7 @@ export function DocxView({ blob, zoom }: { blob: Blob; zoom: number }) {
     const el = body.current
     if (!el) return
     let cancelled = false
+    let faces: FontFace[] = []
     void (async () => {
       try {
         const { renderAsync } = await import('docx-preview')
@@ -182,14 +192,24 @@ export function DocxView({ blob, zoom }: { blob: Blob; zoom: number }) {
         })
         if (cancelled) return
         neutralizeLinks(target)
-        el.replaceChildren(target)
+        faces = embeddedFonts(target)
+        faces.forEach((face) => document.fonts.add(face))
+        // The file's <style> tags (inside `target`) apply only inside the shadow root, never to the page:
+        // a style name like `x}body{display:none}` would otherwise restyle the whole app (SCRUM-131).
+        const shadow = el.shadowRoot ?? el.attachShadow({ mode: 'open' })
+        const base = document.createElement('style')
+        base.textContent = SHEET_STYLE
+        shadow.replaceChildren(base, target)
+        el.dataset.drawn = ''
       } catch {
         if (!cancelled) setFailed(true)
       }
     })()
     return () => {
       cancelled = true
-      el.replaceChildren()
+      el.shadowRoot?.replaceChildren()
+      delete el.dataset.drawn
+      faces.forEach((face) => document.fonts.delete(face))
     }
   }, [blob])
 
@@ -206,6 +226,42 @@ export function DocxView({ blob, zoom }: { blob: Blob; zoom: number }) {
       </div>
     </div>
   )
+}
+
+/**
+ * Chrome ignores @font-face inside a shadow root, so a DOCX's embedded fonts join the page's FontFaceSet instead.
+ * Only the @font-face rules are taken, rebuilt as FontFace objects: a crafted font name cannot carry any other CSS
+ * with it. A face named like one of the app's own fonts is dropped, so a file cannot redraw the app's text.
+ */
+function embeddedFonts(root: HTMLElement): FontFace[] {
+  const unquote = (name: string) => name.trim().replace(/^["']|["']$/g, '')
+  const appFonts = new Set(
+    getComputedStyle(document.body)
+      .fontFamily.split(',')
+      .map((f) => unquote(f).toLowerCase()),
+  )
+  const faces: FontFace[] = []
+  root.querySelectorAll('style').forEach((style) => {
+    const css = style.textContent ?? ''
+    if (!css.includes('@font-face')) return
+    const sheet = new CSSStyleSheet()
+    sheet.replaceSync(css)
+    // Rebuilt below; left in place, an engine that honours @font-face in a shadow root would skip the name check.
+    style.remove()
+    for (const rule of sheet.cssRules) {
+      if (!(rule instanceof CSSFontFaceRule)) continue
+      const family = unquote(rule.style.getPropertyValue('font-family'))
+      const src = rule.style.getPropertyValue('src')
+      if (!family || !src || appFonts.has(family.toLowerCase())) continue
+      faces.push(
+        new FontFace(family, src, {
+          weight: rule.style.getPropertyValue('font-weight') || 'normal',
+          style: rule.style.getPropertyValue('font-style') || 'normal',
+        }),
+      )
+    }
+  })
+  return faces
 }
 
 const SAFE_PROTOCOLS = new Set(['http:', 'https:', 'mailto:'])

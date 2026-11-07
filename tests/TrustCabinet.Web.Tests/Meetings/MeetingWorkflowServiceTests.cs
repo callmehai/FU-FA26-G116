@@ -352,7 +352,6 @@ public sealed class MeetingWorkflowServiceTests
     [Theory]
     [InlineData(Sensitivity.Normal)]
     [InlineData(Sensitivity.Internal)]
-    [InlineData(Sensitivity.Confidential)]
     [InlineData(Sensitivity.Secret)]
     public async Task Organizer_cannot_submit_to_self_even_with_both_capabilities(Sensitivity sensitivity)
     {
