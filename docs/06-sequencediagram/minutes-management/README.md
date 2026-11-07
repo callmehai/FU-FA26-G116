@@ -1,8 +1,11 @@
 # Sequence Diagram — Bản nháp biên bản (FE-12)
 
 Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho ba UC của FE-12 đã có code:
-UC-58, UC-59, UC-60. UC-61 → UC-65 (gửi ký, ký, trạng thái ký, hoàn tất, yêu cầu sửa) chưa làm nên
-chưa có sơ đồ.
+UC-58, UC-59, UC-60.
+
+UC-61, UC-64, UC-65 và UC-83 (gửi duyệt, duyệt và ban hành, trả lại, đính chính — SCRUM-33) có source `.txt` theo
+[đặc tả sơ bộ 07/11/2026](../../notes/NOTE-dac-ta-so-bo-scrum-33.md), chưa có code, chưa xuất PNG và chưa có tab
+draw.io. UC-62, UC-63 (ký số mô phỏng, SCRUM-37) chưa có sơ đồ.
 
 Đặc tả: [05-use-case-specifications.md §FE-12](../../01-requirements/05-use-case-specifications.md). Hợp đồng API
 (`docs/03-api/17-du-thao-bien-ban.md`) và ADR-0054 chỉ có trên nhánh PR #260. Note BA:
@@ -13,6 +16,10 @@ chưa có sơ đồ.
 | UC-58 View Meeting Minutes | [UC58_ViewMeetingMinutes.txt](UC58_ViewMeetingMinutes.txt) |
 | UC-59 Generate Meeting Minutes | [UC59_GenerateMeetingMinutes.txt](UC59_GenerateMeetingMinutes.txt) |
 | UC-60 Edit Meeting Minutes (gồm tải Word) | [UC60_EditMeetingMinutes.txt](UC60_EditMeetingMinutes.txt) |
+| UC-61 Submit Meeting Minutes for Approval *(sơ bộ)* | [UC61_SubmitMeetingMinutesForApproval.txt](UC61_SubmitMeetingMinutesForApproval.txt) |
+| UC-64 Approve and Issue Meeting Minutes *(sơ bộ)* | [UC64_ApproveAndIssueMeetingMinutes.txt](UC64_ApproveAndIssueMeetingMinutes.txt) |
+| UC-65 Return Meeting Minutes for Revision *(sơ bộ)* | [UC65_ReturnMeetingMinutesForRevision.txt](UC65_ReturnMeetingMinutesForRevision.txt) |
+| UC-83 Correct Issued Meeting Minutes *(sơ bộ)* | [UC83_CorrectIssuedMeetingMinutes.txt](UC83_CorrectIssuedMeetingMinutes.txt) |
 
 Quy ước riêng của nhóm này:
 
