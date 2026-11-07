@@ -37,6 +37,10 @@ else Actor may review
         SummaryService-->SummaryController: MSG390 - There is no draft to correct or review.
         SummaryController-->DraftCard: MSG390 - There is no draft to correct or review.
         DraftCard-->Actor: MSG390 - There is no draft to correct or review.
+    else The AI is writing the draft again - EX-5
+        SummaryService-->SummaryController: MSG387 - The AI is writing the draft, please wait.
+        SummaryController-->DraftCard: MSG387 - The AI is writing the draft, please wait.
+        DraftCard-->Actor: MSG387 - The AI is writing the draft, please wait.
     else Draft exists
         SummaryService->Database: Record the reviewer and the time; leave the text unchanged
         activate Database

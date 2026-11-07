@@ -40,6 +40,8 @@ Quy ước riêng của nhóm này:
 - UC-45b và UC-46a mỗi UC phủ cả bản ghi phòng (`:Transcript Controller`) và bản ghi theo micro (`:Speech Clip Controller`),
   vẽ bằng `alt` ở đầu sơ đồ.
 - UC-46b AF-1 (gán cả nhóm "cùng giọng") là một vòng `loop`: màn hình gọi `assignSpeaker` cho từng giọng trong nhóm.
+- UC-46b AF-2 (đổi người nói của **một câu**) là `opt` riêng: `assignSegmentSpeaker(segmentId, userId | guestId | label, actorId)`,
+  tìm hoặc tạo giọng `SPEAKER_NN`, chuyển câu, tính lại thời lượng, ẩn giọng hết câu, trả `MSG407` (SCRUM-35, PR #265).
 - Gợi ý người nói chỉ Thư ký thấy (BR-366); giọng khớp rõ — từ ngưỡng tự gán (mặc định 0,75) trở lên và người đó đã
   đồng ý thông báo 1.2 — thì máy **tự điền tên** và Thư ký vẫn đổi hoặc bỏ được (ADR-0045); máy không bao giờ gán Khách.
   Rút đồng ý xoá mọi giọng mẫu, mọi gợi ý **và tên máy đã điền** trong một giao dịch, tên Thư ký đã gán giữ nguyên
