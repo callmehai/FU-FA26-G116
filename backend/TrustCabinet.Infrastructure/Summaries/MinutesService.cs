@@ -205,7 +205,19 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
         return new(meeting.Title, meeting.ActualStartedAt ?? meeting.PlannedStartTime, meeting.ActualEndedAt, place,
             people.FirstOrDefault(p => p.Role == MeetingRole.Chair)?.FullName,
             people.FirstOrDefault(p => p.Role == MeetingRole.Secretary)?.FullName,
-            lines, agenda, await SummaryService.VoteLinesAsync(db, meeting.Id, ct));
+            lines, agenda, await SummaryService.VoteLinesAsync(db, meeting.Id, ct), await SecretaryNotesAsync(meeting, ct));
+    }
+
+    /// <summary>The current Secretary's notes (SCRUM-30, BR-402); the Chair reads them but writes none.</summary>
+    private async Task<IReadOnlyList<MinutesNote>> SecretaryNotesAsync(Meeting meeting, CancellationToken ct)
+    {
+        var secretaries = meeting.Participants
+            .Where(p => p.Role == MeetingRole.Secretary && ParticipantRules.Active(p)).Select(p => p.UserId).ToList();
+        return await db.MeetingNotes.AsNoTracking()
+            .Where(n => n.MeetingId == meeting.Id && secretaries.Contains(n.AuthorId) && n.Body != "")
+            .OrderBy(n => n.CreatedAt)
+            .Select(n => new MinutesNote(n.AgendaItemId, n.Body))
+            .ToListAsync(ct);
     }
 
     private static string RoleName(MeetingRole role) => role switch
