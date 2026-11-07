@@ -20,7 +20,7 @@ public sealed record MeetingFacts(string Title, IReadOnlyList<AgendaFacts> Agend
 /// those parts and the conclusions the Chair recorded. The vote results never go through the model: they are copied
 /// from the data, as eCab's <c>grounded</c> re-inserts them, because the tally is legally operative.
 /// </summary>
-public sealed partial class SummaryWriter(ILanguageModel model)
+public sealed partial class SummaryWriter(ILanguageModel model, int chunkChars = SummaryWriter.LocalChunkChars)
 {
     public const string ObjectivesHeading = "I. Mục tiêu và phạm vi cuộc họp";
     public const string DiscussionHeading = "II. Nội dung thảo luận và đánh giá";
@@ -32,7 +32,7 @@ public sealed partial class SummaryWriter(ILanguageModel model)
     private const string Nothing = "Không có.";
 
     /// <summary>About 4,000 tokens of Vietnamese: room for the rules and the answer in an 8k context.</summary>
-    private const int ChunkChars = 9000;
+    internal const int LocalChunkChars = 9000;
     private static readonly TimeZoneInfo Hanoi = FindHanoi();
 
     // eCab's _IDENTITY_RULE, _DIGITS and _FORMAT_RULES, each written down after a wrong draft on real data.
@@ -250,14 +250,14 @@ public sealed partial class SummaryWriter(ILanguageModel model)
         return string.Join('\n', lines).Trim();
     }
 
-    private static List<List<TranscriptLine>> Chunk(IReadOnlyList<TranscriptLine> lines)
+    private List<List<TranscriptLine>> Chunk(IReadOnlyList<TranscriptLine> lines)
     {
         var chunks = new List<List<TranscriptLine>> { new() };
         var size = 0;
         foreach (var line in lines)
         {
             var length = line.Text.Length + line.Speaker.Length + 12;
-            if (size + length > ChunkChars && chunks[^1].Count > 0)
+            if (size + length > chunkChars && chunks[^1].Count > 0)
             {
                 chunks.Add([]);
                 size = 0;

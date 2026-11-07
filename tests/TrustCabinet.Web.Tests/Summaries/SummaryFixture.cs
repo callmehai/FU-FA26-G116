@@ -28,6 +28,7 @@ public sealed class SummaryFixture : IAsyncLifetime
     internal readonly TestClock Clock = new();
     internal readonly FakeLanguageModel Model = new();
     internal readonly FailureInterceptor Failures = new();
+    internal readonly FakeApi Api = new();
     internal Factory Host = null!;
     private const string SigningKey = "khoa-ky-chi-dung-trong-test-du-32-ky-tu";
 
@@ -68,6 +69,9 @@ public sealed class SummaryFixture : IAsyncLifetime
                 services.AddSingleton<TimeProvider>(fixture.Clock);
                 services.RemoveAll<ILanguageModel>();
                 services.AddSingleton<ILanguageModel>(fixture.Model);
+                // ADR-0056: the API an administrator may choose answers from the test, never from the network.
+                services.AddHttpClient(TrustCabinet.Infrastructure.Ai.LanguageModelProvider.ApiHttpClientName)
+                    .ConfigurePrimaryHttpMessageHandler(() => new FakeApi.Handler(fixture.Api));
             });
         }
     }
@@ -111,6 +115,71 @@ public sealed class SummaryFixture : IAsyncLifetime
         }
     }
 
+    /// <summary>
+    /// Stands in for an OpenAI-compatible API (ADR-0056): every request kept, the answer the test sets (by default a
+    /// chat completion that echoes the overview or a part, like <see cref="FakeLanguageModel"/>).
+    /// </summary>
+    internal sealed class FakeApi
+    {
+        internal readonly ConcurrentQueue<(string Url, string? Authorization, string? Session, string Body)> Requests = new();
+        internal System.Net.HttpStatusCode Status = System.Net.HttpStatusCode.OK;
+        /// <summary>The body of a refusal, when <see cref="Status"/> is not OK.</summary>
+        internal string? ErrorBody;
+        /// <summary>Answer like a reasoning model that spent its whole budget thinking: no content, finish_reason "length".</summary>
+        internal bool CutOff;
+        /// <summary>How many calls still answer 429 (with Retry-After: 1) before the API answers again.</summary>
+        internal int RateLimited;
+
+        internal void Reset()
+        {
+            Requests.Clear();
+            Status = System.Net.HttpStatusCode.OK;
+            ErrorBody = null;
+            CutOff = false;
+            RateLimited = 0;
+        }
+
+        internal sealed class Handler(FakeApi api) : HttpMessageHandler
+        {
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+            {
+                var body = request.Content is null ? "" : await request.Content.ReadAsStringAsync(ct);
+                api.Requests.Enqueue((request.RequestUri!.ToString(), request.Headers.Authorization?.ToString(),
+                    request.Headers.TryGetValues("x-opencode-session", out var session) ? session.Single() : null, body));
+                if (api.Status != System.Net.HttpStatusCode.OK)
+                    return new HttpResponseMessage(api.Status)
+                    {
+                        Content = new StringContent(api.ErrorBody ?? "", System.Text.Encoding.UTF8, "application/json"),
+                    };
+                if (Interlocked.Decrement(ref api.RateLimited) >= 0)
+                {
+                    var limited = new HttpResponseMessage(System.Net.HttpStatusCode.TooManyRequests);
+                    limited.Headers.RetryAfter = new(TimeSpan.FromSeconds(1));
+                    return limited;
+                }
+                if (api.CutOff)
+                    return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = System.Net.Http.Json.JsonContent.Create(new { choices = new[] { new
+                        {
+                            message = new { role = "assistant", content = "", reasoning_content = "Suy nghĩ…" },
+                            finish_reason = "length",
+                        } } }),
+                    };
+                // The prompt as the model reads it: the body escapes Vietnamese letters.
+                var prompt = body.Length == 0 ? "" : string.Concat(System.Text.Json.JsonDocument.Parse(body).RootElement
+                    .GetProperty("messages").EnumerateArray().Select(m => m.GetProperty("content").GetString()));
+                var answer = prompt.Contains("MỤC TIÊU:", StringComparison.Ordinal)
+                    ? $"MỤC TIÊU:\nMục tiêu do API viết.\nKẾT LUẬN:\n{FakeLanguageModel.Conclusion}\nNHIỆM VỤ:\nKhông có."
+                    : "Phần do API viết.";
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = System.Net.Http.Json.JsonContent.Create(new { choices = new[] { new { message = new { role = "assistant", content = answer } } } }),
+                };
+            }
+        }
+    }
+
     internal sealed class TestClock : TimeProvider
     {
         internal DateTimeOffset Now = new(2026, 11, 4, 2, 0, 0, TimeSpan.Zero);
@@ -122,6 +191,7 @@ public sealed class SummaryFixture : IAsyncLifetime
     {
         internal bool FailSummaryRead;
         internal bool FailMinutesRead;
+        internal bool FailAiSettingsRead;
         internal bool FailSave;
         internal Func<Task>? AfterMinutesRead;
 
@@ -130,7 +200,8 @@ public sealed class SummaryFixture : IAsyncLifetime
             InterceptionResult<System.Data.Common.DbDataReader> result, CancellationToken cancellationToken = default)
         {
             if ((FailSummaryRead && command.CommandText.Contains("FROM meeting_summaries", StringComparison.Ordinal))
-                || (FailMinutesRead && command.CommandText.Contains("FROM meeting_minutes", StringComparison.Ordinal)))
+                || (FailMinutesRead && command.CommandText.Contains("FROM meeting_minutes", StringComparison.Ordinal))
+                || (FailAiSettingsRead && command.CommandText.Contains("FROM ai_provider_settings", StringComparison.Ordinal)))
                 throw new Npgsql.NpgsqlException("Injected read failure.");
             return ValueTask.FromResult(result);
         }
@@ -235,12 +306,13 @@ public sealed class SummaryFixture : IAsyncLifetime
         }
     }
 
-    internal HttpClient Client(Guid? actor = null)
+    internal HttpClient Client(Guid? actor = null, params string[] capabilities)
     {
         var client = Host.CreateClient();
         if (actor is { } id) client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
             new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("TrustCabinet", "TrustCabinet",
-                [new Claim("sub", id.ToString())], expires: DateTime.UtcNow.AddMinutes(10),
+                [new Claim("sub", id.ToString()), .. capabilities.Select(c => new Claim("cap", c))],
+                expires: DateTime.UtcNow.AddMinutes(10),
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
                     SecurityAlgorithms.HmacSha256))));
         return client;
