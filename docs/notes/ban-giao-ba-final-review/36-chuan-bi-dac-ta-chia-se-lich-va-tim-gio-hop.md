@@ -24,7 +24,7 @@ không đặc tả trước rồi bắt code chạy theo.
 
 | Loại | Đang thế nào | Đặc tả này lấy gì |
 |---|---|---|
-| **MSG** | `main` báo mã tiếp theo `MSG414`. #271 xin `MSG406`–`MSG425`, **trùng** `MSG406`–`MSG413` đã dùng trên `main` (cấu hình AI, đổi người nói một câu, định dạng tải biên bản) → #271 phải dời thành `MSG414`–`MSG433`. | Theo ghi chú 07/11: chừa **`MSG434`–`MSG439`** cho đặc tả này, mã tiếp theo **`MSG440`**. Bốn UC có thể cần hơn 6 mã — xin thêm từ `MSG440` khi thiếu. Đọc lại danh mục lúc thêm, đừng tin trí nhớ. |
+| **MSG** | `main` báo mã tiếp theo `MSG414`. #271 xin `MSG406`–`MSG425`, **trùng** `MSG406`–`MSG413` đã dùng trên `main` (cấu hình AI, đổi người nói một câu, định dạng tải biên bản) → #271 phải dời thành `MSG414`–`MSG433`. | Theo ghi chú 07/11: chừa **`MSG434`–`MSG439`** cho đặc tả này, mã tiếp theo **`MSG440`**. Năm UC có thể cần hơn 6 mã — xin thêm từ `MSG440` khi thiếu. Đọc lại danh mục lúc thêm, đừng tin trí nhớ. |
 | **UC** | Dừng ở **UC-81**; #271 xin UC-82 (ghi chú thư ký) và UC-83 (đính chính biên bản) | Từ **UC-84** trở đi. |
 | **BR** | Dừng ở **BR-396**; #271 đề xuất BR-395–BR-413 nhưng 395/396 đã dùng, nên #271 cũng phải đánh lại | Số tiếp theo **sau khi** #271 chốt lại. |
 | **Màn (§I.5.1, §III)** | Screen List đánh số theo FE, dừng ở 15.1 | FE mới, số đề xuất **FE-16** (§5), đặt số màn sau khi chốt danh sách màn. |
@@ -90,9 +90,9 @@ Ta đã có tương đương (`MSG405` chặn xuất biên bản Mật), và lu�
 
 | Điều kiện của eCab | Ta làm thế nào |
 |---|---|
-| Người **xin** phải giữ vai trò hệ thống *Điều phối họp* | Người có capability **`MeetingCreator`** (seed: Chủ toạ, Thư ký; hoặc vai trò tự tạo được cấp quyền này). Thành viên thường và Quản trị viên không xin được nếu không có quyền đó. |
-| **Chủ lịch** phải giữ vai trò *Thành viên* | Đề xuất **mọi tài khoản nội bộ đang hoạt động**, không chỉ vai trò `Thành viên`: một tổ chức phẳng (ADR-0004), và Chủ toạ/Thư ký cũng cần người khác xem được giờ của mình. Chờ xác nhận — nếu giữ đúng eCab thì chỉ vai trò `Thành viên` làm chủ lịch. |
-| Không tự xin cho chính mình | Giữ. |
+| Người **xin** phải giữ vai trò hệ thống *Điều phối họp* | Người có capability **`MeetingCreator`** (seed: Chủ toạ, Thư ký; hoặc vai trò tự tạo được cấp quyền này). Thành viên thường và Quản trị viên không xin được nếu không có quyền đó. **Không dùng tên vai trò để gác**: `MeetingOrganizer` trong Report 3 là *người tạo cuộc họp* theo từng cuộc họp, không phải một dòng trong bảng `roles` (bảng chỉ có `Chủ toạ`, `Thư ký`, `Thành viên`, `Quản trị viên`); gác bằng vai trò sẽ phải thêm vai trò thứ năm và kiểm trùng với capability. |
+| **Chủ lịch** phải giữ vai trò *Thành viên* | **Mọi tài khoản nội bộ đang hoạt động**, trừ chính người xin — chốt 07/11/2026, không giới hạn ở vai trò `Thành viên` như eCab (một tổ chức phẳng, Chủ toạ/Thư ký cũng cần người khác xem được giờ của mình). |
+| Không tự xin cho chính mình | Giữ: người xin không nằm trong danh sách chọn chủ lịch. |
 | Khách không có lịch | Giữ: Guest không có tài khoản, không nằm trong danh sách chọn người. |
 | Mỗi cặp người chỉ một chia sẻ đang chờ **hoặc** đang hiệu lực | Giữ, kể cả bản ghi cũ đã kết thúc thì được tạo lại. |
 | Người xin mất vai trò, hoặc một trong hai tài khoản bị khoá → **tạm ngưng** | Giữ, nhưng phát biểu là "người xin mất `MeetingCreator` hoặc tài khoản không còn hoạt động", không phải "mất vai trò". |
@@ -106,8 +106,8 @@ Ta đã có tương đương (`MSG405` chặn xuất biên bản Mật), và lu�
 | **D2** | **SCRUM-137 gồm cả hai tab**: *Tìm khung giờ* và *Lịch được chia sẻ*. | Tab thứ hai có màn riêng, dùng lại dữ liệu chia sẻ của D1. |
 | **D3** | **Màn riêng**, không nhét vào FE-04 (lịch/cuộc họp). | Đề xuất FE mới **FE-16** cho "Lịch làm việc & tìm giờ họp"; số màn mới trong §I.5.1 và §III. |
 | **D4** | **Không làm trợ lý AI.** | Không UC/BR/MSG cho chat; chỉ sửa ADR-0043 ở nửa câu "Tìm giờ họp". |
-| **D5** | **Chỉ xin lịch của người trong hệ thống** — khách không có lịch. | Chi tiết ở §3.5; còn một dòng chờ xác nhận (chủ lịch có bị giới hạn ở vai trò `Thành viên` không). |
-| **D6** | **Có thêm capability mới** cho chia sẻ lịch. | Sửa `Capability`, `ReferenceData` seed, ma trận quyền, `PermissionCatalog` và test — cùng commit với code. |
+| **D5** | **Chỉ xin lịch của người trong hệ thống**: người xin phải có `MeetingCreator`; chủ lịch là **mọi tài khoản nội bộ đang hoạt động, trừ chính người xin**; khách không có lịch. | Chi tiết ở §3.5. Không tạo thêm vai trò `MeetingOrganizer` chỉ để gác — nó là actor theo cuộc họp, không phải dòng trong `roles`. |
+| **D6** | **Chưa cần capability mới** (đề xuất, thay bản chốt sáng 07/11): dùng lại `MeetingCreator` cho cả yêu cầu chia sẻ lẫn tab tìm giờ. | Không phải sửa `Capability`/seed/ma trận quyền. Nếu PO muốn thu hồi riêng quyền xem lịch (không kéo theo quyền tạo họp) thì mới thêm `CalendarShareRequest` — khi đó sửa enum, `ReferenceData`, ma trận quyền, `PermissionCatalog` và test. |
 
 Còn chờ: số UC/BR/MSG thật (sau #271), tên FE mới, các con số giới hạn (§7 Q1, Q2).
 
@@ -151,8 +151,8 @@ Còn chờ: số UC/BR/MSG thật (sau #271), tên FE mới, các con số giớ
 
 1. Mức xem: giữ ba mức như eCab, hay hai mức (bỏ mức *Tất cả* vì ta có mức `Secret`)?
 2. Giữ nguyên các con số của eCab (10 người, 31 ngày, 8 giờ, 0–4 giờ đệm, 5 phút–2 giờ bước nhảy) hay tự đặt?
-3. Chủ lịch có bị giới hạn ở vai trò `Thành viên` như eCab, hay mọi tài khoản nội bộ đều được chia sẻ lịch?
-4. Người dự "hạn chế" của eCab — ta có loại tương đương không, hay chỉ `Chair`/`Secretary`/`Member`/`Guest`?
+3. Người dự "hạn chế" của eCab — ta có loại tương đương không, hay chỉ `Chair`/`Secretary`/`Member`/`Guest`?
+4. Có cần capability riêng cho việc xem lịch người khác không (D6), hay dùng chung `MeetingCreator`?
 
 ## 8. Liên quan
 
