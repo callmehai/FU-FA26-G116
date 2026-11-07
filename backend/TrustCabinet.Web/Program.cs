@@ -157,6 +157,9 @@ builder.Services
 // the role name in business code").
 builder.Services.AddCapabilityPolicies();
 
+// SCRUM-132: per-IP and per-email caps on sign-in and password reset (AuthRateLimiting).
+builder.Services.AddAuthRateLimiting(builder.Configuration);
+
 var app = builder.Build();
 
 // In development the app brings its own database up to date on boot, so nobody has to remember
@@ -215,6 +218,7 @@ app.UseStaticFiles(frontendFiles);
 // see an anonymous caller.
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 // POST /api/auth/login, /refresh, /logout and GET /api/auth/me — UC-01.
 app.MapAuthEndpoints();

@@ -117,6 +117,7 @@ Các nhánh lỗi đều trả `401` kèm mã thông báo trong [danh mục mã]
 |---|---|---|
 | `MSG01` | Email không tồn tại, **hoặc** sai mật khẩu, **hoặc** bỏ trống | `Email hoặc mật khẩu không đúng.` |
 | `MSG02` | Tài khoản đã bị vô hiệu hoá (`users.is_active = false`) | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
+| `MSG414` | **429**, vượt giới hạn số lần thử (SCRUM-132) — xem [Giới hạn số lần thử](#giới-hạn-số-lần-thử) | `Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.` |
 
 > **Nhánh "chưa được cấp quyền truy cập hệ thống" đã bỏ từ `SCRUM-63`, không có mã.** Nó từ chối vai trò
 > không có capability nào trừ `Member`; khi vai trò thành dữ liệu (ADR-0008), vai trò tự tạo không
@@ -433,6 +434,50 @@ vào đã là 256 bit ngẫu nhiên từ CSPRNG, không có gì để brute-forc
 Mất dữ liệu Redis chỉ có nghĩa là mọi người phải đăng nhập lại, nên container `redis` trong
 `docker-compose.yml` cố ý **không** có volume.
 
+## Giới hạn số lần thử
+
+SCRUM-132. Không có giới hạn thì `/login` thử mật khẩu được vô hạn — mà repo public, ai cũng biết
+email tài khoản demo. Dùng `Microsoft.AspNetCore.RateLimiting` có sẵn, cửa sổ cố định
+(`Endpoints/AuthRateLimiting.cs`):
+
+| Giới hạn | Áp cho | Mặc định |
+|---|---|---|
+| Theo IP (IPv6 gộp theo /64) | `POST /login`, `POST /google`, `POST /password-reset` — **chung một bộ đếm** | 60 lần/phút |
+| Theo email | `POST /login` (email đã `Trim` và bỏ phân biệt hoa thường; dài quá 320 ký tự thì dùng chung một bộ đếm) | 5 lần/phút |
+
+Vượt giới hạn: `429` + `MSG414` (body như các lỗi xác thực khác: `code`, `message`) và header
+`Retry-After` tính bằng giây. FE chỉ cần hiển thị `message`, màn đăng nhập và đặt lại mật khẩu đã
+làm vậy. Hết cửa sổ thì thử lại được bình thường.
+
+- **Đếm cả lần đúng mật khẩu, và đếm trước khi so mật khẩu.** Quá giới hạn thì không so nữa, nên một
+  lần đoán trúng cũng chỉ nhận `429`, không lộ là đã trúng.
+- **Không giới hạn `/refresh`, `/logout`.** Mỗi lần tải trang FE gọi `/refresh`; chặn nó là đẩy
+  người đang dùng ra màn đăng nhập. Refresh token đủ dài để không đoán được.
+- **IP là `Connection.RemoteIpAddress`.** Trên server test, `ASPNETCORE_FORWARDEDHEADERS_ENABLED`
+  lấy IP thật từ `X-Forwarded-For` của Caddy, và app không mở cổng ra ngoài nên không ai gửi thẳng
+  header giả được ([deploy/docker-compose.yml](../../deploy/docker-compose.yml)).
+- **60 chứ không phải 20 lần/phút/IP như ticket gợi ý.** Đây là hệ thống của một tổ chức: cả phòng họp
+  thường chung một IP (NAT văn phòng, Wi-Fi hội trường) và đăng nhập cùng lúc khi bắt đầu họp — với 20, người
+  thứ 21 trong phút đó nhận `429`. Chặn dò mật khẩu một tài khoản là việc của giới hạn theo email.
+- **IPv6 tính theo /64.** Một máy IPv6 thường giữ cả dải /64 và tự chọn địa chỉ trong đó, nên tính từng địa chỉ
+  thì đổi địa chỉ là lách được giới hạn.
+- **Đánh đổi:** biết email của ai thì có thể làm người đó không đăng nhập được trong một phút. Chấp
+  nhận, vì cửa sổ ngắn và ngược lại là để kẻ dò mật khẩu thử tiếp.
+- **Không có endpoint "quên mật khẩu" ẩn danh.** Thư đặt lại mật khẩu chỉ gửi qua
+  `POST /api/users/{id}/password-reset` (UC-07), cần quyền `AdminUsers` và có nhật ký kiểm toán, nên
+  không ai lạ gửi thư liên tục được. Endpoint ẩn danh duy nhất của luồng này là
+  `POST /api/auth/password-reset` (dùng token trong thư), đã nằm trong giới hạn theo IP.
+
+Cấu hình trong `appsettings.json`, đổi được bằng biến môi trường (`RateLimiting__SignInPerEmail`…):
+
+```json
+"RateLimiting": { "WindowSeconds": 60, "AuthPerIp": 60, "SignInPerEmail": 5 }
+```
+
+`appsettings.Development.json` nâng cả hai lên 1000: bộ test Playwright và `sloplint` đăng nhập
+bằng API ở mỗi test/trang, cùng một tài khoản seed, nên 5 lần/phút sẽ làm chúng hỏng giữa chừng.
+Server test (`Staging`) dùng mặc định.
+
 ## Mật khẩu
 
 Băm bằng `PasswordHasher<T>` của ASP.NET Core: PBKDF2-HMAC-SHA512, 210 000 vòng, salt 128 bit riêng
@@ -507,9 +552,8 @@ nó chỉ tồn tại trong một database toàn cuộc họp bịa.
   gỡ / đổi liên kết của một tài khoản đã liên kết — hiện vẫn bằng SQL, chưa có ticket.
 - ~~**RT trả trong response body, FE lưu ở `localStorage`.**~~ — **đã làm**: RT chỉ còn trong cookie
   `HttpOnly`, xem [trên](#refresh-token-nằm-trong-cookie-tc_refresh_token).
-- **Chưa giới hạn số lần thử sai.** Chưa có rate limit cho `/api/auth/login`, nên chưa chặn dò mật
-  khẩu. Nên làm trước khi hệ thống ra khỏi môi trường nội bộ — và phần chống dò email ở trên mất
-  phần lớn giá trị nếu thiếu nó.
+- ~~**Chưa giới hạn số lần thử sai.**~~ — **đã làm** (SCRUM-132), xem
+  [giới hạn số lần thử](#giới-hạn-số-lần-thử).
 - ~~**Chưa phát hiện refresh token bị dùng lại.**~~ — **đã làm**, xem
   [phát hiện RT bị dùng lại](#phát-hiện-rt-bị-dùng-lại).
 - **Timing oracle với hash sai định dạng.** `PasswordHasher.Verify` bắt `FormatException` rồi trả
