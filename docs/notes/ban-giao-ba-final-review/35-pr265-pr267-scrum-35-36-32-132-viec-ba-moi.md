@@ -4,6 +4,10 @@
 SCRUM-35 #10454/#10458, SCRUM-36 #10455/#10459, SCRUM-32 #10456, SCRUM-132 #10451, diff PR #267. Nối tiếp
 [note 34](34-pr263-scrum-32-bien-ban-lay-du-thao-hien-co.md). Note này gom việc BA, không thay Jira hay đặc tả.
 
+**Cập nhật 07/11/2026 (Lộc, BE):** xung đột `MSG406` ở §4 đã chốt theo review của leader trên #267. #267 rebase lên `main` và
+đổi sang **`MSG414`**, mã kế tiếp lúc rebase ("Mã tiếp theo" giờ là `MSG415`). `MSG406` giữ nghĩa của #265 (`format` export
+sai). Đã sửa §0, §4, §5, T35-8 cho khớp; comment Jira SCRUM-132 #10451 cũng đã sửa.
+
 ## 0. Tóm tắt
 
 | Ticket | Việc BA | Trạng thái code |
@@ -11,7 +15,7 @@ SCRUM-35 #10454/#10458, SCRUM-36 #10455/#10459, SCRUM-32 #10456, SCRUM-132 #1045
 | SCRUM-35 | UC Spec + sequence luồng **đổi người nói của một câu** | #265 đã vào `main` (`911d25bb`) |
 | SCRUM-36 | UC-47–UC-50: mốc làm dự thảo báo cũ; đang viết lại thì không sửa/duyệt | #265 đã vào `main` |
 | SCRUM-32 | UC-58–UC-60: trình soạn thảo, giới hạn HTML, PDF/Word, MSG399/402/404 | #263 + #265 đã vào `main` |
-| SCRUM-132 | UC-01, UC-02, UC-07, BR, sequence: nhánh 429 | #267 **đang mở**, chưa vào `main` |
+| SCRUM-132 | UC-01, UC-02, UC-07, BR, sequence: nhánh 429 (`MSG414`) | #267 **đang mở**, chưa vào `main`; mã đã chốt 07/11/2026 |
 
 PR docs của BA nên gom SCRUM-35/36/32 một lượt (cùng đã ở `main`). SCRUM-132 đợi #267 merge.
 
@@ -52,12 +56,15 @@ Ngoài thẻ báo + Tải PDF ở note 34:
 ## 4. SCRUM-132 — giới hạn số lần thử (PR #267, đang mở)
 
 - `POST /login`, `/google`, `/password-reset`: vượt giới hạn theo IP (chung ba endpoint) hoặc theo email (`/login`) →
-  `429` + `MSG406`, kèm `Retry-After`. FE chỉ hiện thông báo.
+  `429` + `MSG414`, kèm `Retry-After`. FE chỉ hiện thông báo.
 - Việc BA khi #267 vào `main`: UC-01 (đăng nhập), UC-02 (Google), UC-07 (đặt lại mật khẩu) thêm luồng ngoại lệ; BR
   về khoá/giới hạn; sequence tương ứng thêm nhánh 429.
-- **Xung đột mã MSG406 — báo BE/PO trước khi viết:** trên `main` `MSG406` = `400` `format` export sai (#265);
-  #267 cũng lấy `MSG406` = `429`. Quy tắc dự án: một mã một tình huống, không tái dùng. Một trong hai phải đổi
-  (đề xuất #267 lấy `MSG408`, "Mã tiếp theo" trên `main` đã là `MSG408`). Đợi chốt rồi mới ghi mã vào UC.
+- ~~**Xung đột mã MSG406 — báo BE/PO trước khi viết.**~~ **Đã chốt 07/11/2026:** trên `main` `MSG406` = `400` `format`
+  export sai (#265) và giữ nguyên. Leader chặn #267 ở review vì #267 cũng lấy `MSG406` = `429`, nên #267 đổi sang
+  **`MSG414`**, mã kế tiếp lúc rebase (`MSG408`–`MSG413` đã được cấp cho màn Cấu hình AI). UC ghi `MSG414`.
+- Ngưỡng và các điểm khác ticket (60 lần/phút/IP chung ba endpoint, 5 lần/phút/email cho `/login`, không có endpoint
+  "quên mật khẩu" ẩn danh, `/google` chỉ giới hạn theo IP): xem comment Jira SCRUM-132 #10451 và
+  `docs/03-api/01-xac-thuc.md` mục "Giới hạn số lần thử" của #267.
 - SCRUM-131 (DOCX CSS lọt ra trang) cùng PR là lỗi FE, không có việc BA.
 
 ## 5. Việc BA còn lại
@@ -67,7 +74,7 @@ Ngoài thẻ báo + Tải PDF ở note 34:
 - [ ] UC-58–UC-60: các mục §3 và note 34 §2.
 - [ ] Sửa DOCX Report 3 → `sync_reports.py --report 3`; không sửa tay snapshot.
 - [ ] Comment Jira SCRUM-35, 36, 32 khi PR docs ở `main` (§2.2 của DEVELOPMENT_WORKFLOW).
-- [ ] SCRUM-132: đợi #267 + chốt xung đột MSG406.
+- [ ] SCRUM-132: đợi #267 vào `main` (xung đột mã đã chốt: `MSG414`).
 
 ## 6. Việc chi tiết để giao agent (06/11/2026)
 
@@ -134,14 +141,15 @@ lọc cho trang; nhánh tải: `format = docx | pdf` (T34-4). Xuất lại PNG. 
 **T35-7 — Sơ đồ lớp (không bắt buộc).** BE đã sửa FE-10 và ERD mục tiêu. `docs/07-classdiagram/README.md` ghi FE-12 chưa có sơ đồ
 lớp; muốn có thì cần ticket "Class FE-12" (chưa tồn tại) — **hỏi người dùng trước**, đừng tự vẽ hay tự tạo ticket.
 
-**T35-8 — SCRUM-132 (CHỜ, chưa làm).** Chỉ làm khi #267 đã ở `main` **và** xung đột MSG406 đã chốt (§4). Khi đó:
+**T35-8 — SCRUM-132 (CHỜ, chưa làm).** Chỉ làm khi #267 đã ở `main` (mã đã chốt: `MSG414`, §4). Khi đó:
 (a) UC-01, UC-02, UC-07 (A-DOCX): thêm EX "Too many attempts" — vượt giới hạn theo IP (chung ba endpoint) hoặc theo email (chỉ đăng
-nhập email) → `429` + mã đã chốt + `Retry-After`; hệ thống không thử xác thực; luồng quay về bước nhập. Chữ thông báo lấy từ danh mục.
+nhập email) → `429` + `MSG414` + `Retry-After`; hệ thống không thử xác thực; luồng quay về bước nhập. Chữ thông báo lấy từ danh mục.
 (b) BR mới về giới hạn: ngưỡng và cửa sổ thời gian lấy từ `appsettings.json` và `docs/03-api/01-xac-thuc.md` mục "Giới hạn số lần
 thử" của #267, **không đoán số**.
 (c) Sequence `auth/UC01_SignIn.txt`, `auth/UC02_SignInWithGoogle.txt`, `user-management/UC07_ResetUserPassword.txt`: thêm `alt`
 "Rate limit exceeded" ở đầu luồng (A-SEQ-auth, song song được).
-(d) **Việc của người, không phải agent:** nhắn BE/PO về trùng MSG406 trước khi merge #267.
+(d) ~~**Việc của người, không phải agent:** nhắn BE/PO về trùng MSG406 trước khi merge #267.~~ Đã xong 07/11/2026: leader
+chặn ở review #267, BE đổi sang `MSG414`.
 
 **T35-9 — Đóng việc.** Sau A-DOCX, SEQ và A-DRAWIO: `sync_reports.py --report 3`, `sync_requirement_extracts.py --check`; PNG trong
 `docs/06-sequencediagram/drawio-png/` qua `scripts/sync_sequence_drawio_png.py` nếu repo yêu cầu. Comment Jira, mỗi ticket một
