@@ -13,8 +13,20 @@ CLI / PNG phình to):
 python scripts/txt_to_sequence_drawio_png.py docs/06-sequencediagram/<feature>/UC….txt
 ```
 
-Scale tự chọn ≤ 2 sao cho ảnh không quá khoảng 28 triệu pixel (draw.io CLI 32.6.1 cắt phần dưới ảnh lớn hơn). Thêm `--no-splice` nếu chỉ muốn PNG, không
-ghi vào file draw.io gộp. `--scale 0.5` để ép scale.
+Từ 07/11/2026 script cho draw.io CLI xuất **SVG**, rồi Edge/Chrome headless chụp SVG thành PNG (ép nền trắng,
+chế độ sáng). PNG do draw.io CLI tự vẽ thì mỗi máy hỏng một kiểu với trang lớn: cắt nửa dưới, trắng, treo, hoặc vẽ
+hình thu nhỏ ~2/3 ở góc trên trái (Windows, ảnh từ ~10 triệu pixel). Scale tự chọn ≤ 2 sao cho ảnh không quá 28 triệu
+pixel, như các ảnh cũ. Máy không có Edge/Chrome (hoặc chưa đặt `BROWSER_EXECUTABLE`) thì script quay về PNG của CLI,
+giới hạn 9 triệu pixel — khi đó mở ảnh kiểm tra. Script không còn `taskkill` mọi `draw.io.exe`: cửa sổ draw.io đang mở
+không bị đóng. Thêm `--no-splice` nếu chỉ muốn PNG, không ghi vào file draw.io gộp. `--scale 0.5` để ép scale.
+
+Xuất lại ảnh của một tab có sẵn trong file gộp (không cần `.txt`, không sửa file gộp):
+`python scripts/txt_to_sequence_drawio_png.py --tab uc14_createmeeting --tab uc55_castvote`.
+
+**07/11/2026:** rà cả 116 ảnh, xuất lại 25 ảnh hỏng bằng `--tab`. Có 9 ảnh vẽ thu nhỏ hoặc cắt dưới (uc09, uc18, uc19,
+uc20, uc24, uc28a, uc28c, uc33b, uc74), và 16 ảnh nhúng sơ đồ (`--embed-diagram`) có chunk `zTXt` sai CRC, nên một số
+trình xem không mở được (uc14, uc15, uc17, uc21, uc28b, uc29, uc30, uc31, uc52a, uc52b, uc53–uc57, uc73). Sau đợt này
+không ảnh nào còn nhúng sơ đồ; nguồn là file gộp và `.txt`.
 
 ## Đồng bộ toàn bộ từ file gộp (cũ, chậm hơn)
 
@@ -26,6 +38,9 @@ Cần Draw.io CLI (`DRAWIO_EXECUTABLE` nếu chưa có trong `PATH`). Script nà
 ở scale 2 + `--embed-diagram` — với trang lớn dễ chậm hoặc cắt trắng; ưu tiên script `.txt` ở trên.
 
 ## Xuất ảnh các trang lớn (27/10/2026)
+
+> Ghi chép cũ, trước khi script chụp bằng trình duyệt (07/11/2026). Các cờ `--disable-gpu --disable-software-rasterizer`
+> không còn dùng.
 
 Draw.io CLI 32.6.1 trên máy này chỉ vẽ trọn một trang khi chạy với `--disable-gpu --disable-software-rasterizer`, và cắt
 phần dưới hoặc bên phải nếu ảnh ra quá khoảng 2900 px mỗi chiều (ví dụ scale 2 cho trang rộng 4000 đơn vị). Bốn ảnh sau được
