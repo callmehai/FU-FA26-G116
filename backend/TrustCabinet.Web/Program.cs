@@ -16,6 +16,7 @@ using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Infrastructure.Calls;
 using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Notes;
 using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Infrastructure.Participants;
@@ -54,6 +55,9 @@ builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Votes.IVoteChangePublisher, VoteChangePublisher>();
+// SCRUM-30: the Secretary's running notes; a save tells the Chair's and the Secretary's other windows.
+builder.Services.AddTrustCabinetMeetingNotes();
+builder.Services.AddScoped<TrustCabinet.Domain.Notes.INotesChangePublisher, NotesChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Recordings.ISpeechChangePublisher, SpeechChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Participants.IParticipantsChangePublisher, ParticipantsChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Access.ICapabilitiesChangePublisher, CapabilitiesChangePublisher>();
@@ -264,6 +268,7 @@ app.MapTranscriptEndpoints();
 app.MapSummaryEndpoints();
 app.MapAiSettingsEndpoints();
 app.MapMinutesEndpoints();
+app.MapMeetingNoteEndpoints();
 
 // SCRUM-35: the caller's own Voice ID.
 app.MapVoiceIdEndpoints();
