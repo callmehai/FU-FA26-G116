@@ -2627,25 +2627,72 @@ a.menu-item { text-decoration: none; }
 .choice-desc { color: var(--muted-ink); font-size: 13px; }
 
 /* ---------- Agenda (SCRUM-25, features/agenda) ----------
-   One line per item, as AI-eCabinet: handle, number, title, then presenter, state, conclusion and
+   One line per item, as AI-eCabinet: handle, "1. title", then presenter, state, conclusion and
    documents in fixed columns, then actions. Narrow (a phone, the room's 360px panel) the facts move
-   under the title and the actions to their own line. */
+   under the title and the actions to their own line. On the page it is drawn like the Tài liệu tab:
+   the add button above one white card, each item a fold bar on the header grey, opened in white. */
 .agenda-panel { container-type: inline-size; }
-.agenda-toolbar { flex-wrap: nowrap; }
-.agenda-alert { margin: 12px 16px 0; }
-.agenda-list { list-style: none; margin: 0; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
-.agenda-panel-room .agenda-list { padding: 0; }
-.agenda-panel-room .agenda-toolbar { padding: 0 0 12px; border: 0; }
-.agenda-item { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
-.agenda-item-open { box-shadow: 0 1px 3px rgb(16 24 40 / .08); }
+.agenda-toolbar { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 12px; }
+.agenda-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.agenda-panel-room .agenda-list { gap: 8px; }
+.agenda-panel-room .agenda-toolbar { padding: 0 0 12px; }
+.agenda-panel-room .agenda-alert { margin: 0 0 12px; }
+.agenda-item { position: relative; background: var(--surface); }
+.agenda-panel-room .agenda-item { border: 1px solid var(--line); border-radius: var(--radius); }
+.agenda-panel-room .agenda-item-open { box-shadow: 0 1px 3px rgb(16 24 40 / .08); }
 /* The item under discussion: a live green edge only, as "Đang diễn ra" is the live green elsewhere. Its
-   background stays white like every other item; a green wash behind the white boxes clashed. */
-.agenda-item-current { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
+   background stays like every other item's; a green wash behind the white boxes clashed. */
+/* The item under discussion is told by its "Đang bàn" chip; the room's card also takes the live ring as its border.
+   No coloured side stripe: Hải 07/11/2026, sloplint S3. */
+.agenda-panel-room .agenda-item-current { border-color: var(--live-ring); }
 .agenda-item-dragging { z-index: 2; box-shadow: 0 8px 24px rgb(16 24 40 / .18); }
-/* Where the title starts, so the facts and the opened body line up under it. */
-.agenda-item { --agenda-indent: 46px; }
-.agenda-item:has(.agenda-grip) { --agenda-indent: 80px; }
-.agenda-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px 12px 8px; }
+/* Where the title starts, so the facts and the opened body line up under it: the head's padding, the
+   chevron and its gap (and the handle, when the Secretary may drag). */
+.agenda-item { --agenda-pad: 12px; --agenda-indent: 34px; }
+.agenda-item:has(.agenda-grip) { --agenda-indent: 68px; }
+.agenda-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px var(--agenda-pad) 8px; }
+
+/* The page: one card of folds, as .documents-card. The rules between items and the header grey come
+   from the Tài liệu tab, so the two tabs read as one. */
+.agenda-panel-page { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.agenda-sheet { padding: 0; }
+.agenda-sheet .agenda-item { --agenda-pad: 16px; --agenda-indent: 38px; }
+.agenda-sheet .agenda-item:has(.agenda-grip) { --agenda-indent: 72px; }
+.agenda-sheet .agenda-item + .agenda-item { border-top: 1px solid var(--line); }
+.agenda-sheet .agenda-item:first-child { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.agenda-sheet .agenda-item:last-child { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+.agenda-sheet .agenda-item:only-child { border-radius: var(--radius-lg); }
+.agenda-sheet .agenda-head { min-height: 48px; padding-top: 4px; padding-bottom: 4px; border-radius: inherit; background: var(--surface-head); }
+.agenda-sheet .agenda-item-open .agenda-head { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.agenda-sheet .agenda-item-open:not(:first-child) .agenda-head { border-radius: 0; }
+.agenda-sheet .agenda-head:has(.agenda-title:hover) { background: var(--surface-alt); }
+.agenda-sheet .agenda-body { padding-top: 12px; padding-bottom: 16px; border-top: 1px solid var(--line-soft); }
+.agenda-sheet .agenda-title { padding: 12px 0; }
+.agenda-sheet .agenda-title:hover > span { color: var(--ink); }
+.agenda-docs-count { display: inline-flex; flex: none; }
+.agenda-docs-count .badge { font-variant-numeric: tabular-nums; }
+/* On the page an item reads as a fold of the Tài liệu tab (Hải 07/11/2026): one grey bar per item, opened into white
+   rows across the card — the description, one row per document as in .documents-row, then the conclusion — with no
+   box inside the card. The presenter is a name only: an initials disc where there is no photo added nothing, and
+   "Chưa phân công" is the absence of a fact, so it is not printed. The room's narrow panel keeps its boxes. */
+.agenda-sheet .agenda-presenter .avatar { display: none; }
+.agenda-sheet .agenda-presenter-none { display: none; }
+.agenda-sheet .agenda-body { padding: 0; }
+.agenda-sheet .agenda-note { margin: 0; padding: 12px var(--agenda-pad) 12px var(--agenda-indent); }
+.agenda-sheet .agenda-boxes { display: block; }
+.agenda-sheet .agenda-box { padding: 0; border-radius: 0; background: none; }
+.agenda-sheet .agenda-note + .agenda-boxes, .agenda-sheet .agenda-box + .agenda-box { border-top: 1px solid var(--line-soft); }
+.agenda-sheet .agenda-box:first-child > .agenda-box-head { display: none; }
+.agenda-sheet .agenda-box:first-child > .value-empty { padding: 12px var(--agenda-pad) 12px var(--agenda-indent); }
+.agenda-sheet .agenda-doc-list { gap: 0; font-size: 14px; }
+.agenda-sheet .agenda-doc-list li {
+  min-height: 52px; padding: 0 var(--agenda-pad) 0 var(--agenda-indent);
+  border: 0; border-radius: 0; background: none;
+}
+.agenda-sheet .agenda-doc-list li + li { border-top: 1px solid var(--line-soft); }
+.agenda-sheet .agenda-doc-list a { gap: 10px; color: var(--ink); font-weight: 600; }
+.agenda-sheet .agenda-doc-list a:hover > span { color: var(--brand); }
+.agenda-sheet .agenda-box + .agenda-box { padding: 8px var(--agenda-pad) 16px var(--agenda-indent); }
 .agenda-break { flex-basis: 100%; height: 0; }
 .agenda-grip {
   display: inline-grid; flex: none; place-items: center; width: 28px; height: 36px; margin-right: -4px;
@@ -2654,11 +2701,6 @@ a.menu-item { text-decoration: none; }
 }
 .agenda-grip:hover { background: var(--surface-alt); color: var(--ink); }
 .agenda-item-dragging .agenda-grip { cursor: grabbing; }
-.agenda-number {
-  display: inline-grid; flex: none; place-items: center; width: 24px; height: 24px; border-radius: 50%;
-  background: var(--surface-alt); color: var(--label-ink); font-size: 12px; font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
 .agenda-title {
   display: flex; flex: 1; align-items: flex-start; gap: 6px; min-width: 0; min-height: 40px; padding: 10px 0;
   border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 600; text-align: left;
@@ -2667,19 +2709,22 @@ a.menu-item { text-decoration: none; }
 .agenda-title > svg { flex: none; margin-top: 3px; color: var(--label-ink); }
 .agenda-title > span { min-width: 0; overflow-wrap: anywhere; }
 .agenda-title:hover > span { color: var(--brand); }
-.agenda-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: calc(var(--agenda-indent) - 12px); }
+.agenda-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: calc(var(--agenda-indent) - var(--agenda-pad)); }
 .agenda-presenter { display: inline-flex; align-items: center; gap: 6px; max-width: 240px; min-width: 0; font-size: 13px; }
 .agenda-presenter-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted-ink); }
 .agenda-presenter-none .agenda-presenter-name { color: var(--label-ink); font-style: italic; }
 .avatar-xs { width: 22px; height: 22px; font-size: 10px; }
 .avatar-empty { border: 1px dashed var(--label-ink); background: transparent; }
 .agenda-status, .agenda-concluded { font-size: 13px; }
+/* The state and conclusion sit in cells that only hold a place on the page's one line (below). */
+.agenda-cell { display: contents; }
+.agenda-step-slot { display: none; }
 .agenda-docs { display: inline-flex; align-items: center; gap: 4px; width: 36px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
 .agenda-docs-none { color: var(--faint-ink); }
 .agenda-actions { flex: none; gap: 6px; }
 .icon-button-danger { color: var(--danger); }
 .agenda-action-slot { width: 34px; flex: none; }
-.agenda-body { padding: 4px 12px 12px var(--agenda-indent); }
+.agenda-body { padding: 4px var(--agenda-pad) 12px var(--agenda-indent); }
 .agenda-text.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
 .agenda-boxes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .agenda-box { min-width: 0; padding: 10px 12px 12px; border-radius: var(--radius); background: var(--surface-alt); }
@@ -2851,6 +2896,24 @@ a.menu-item { text-decoration: none; }
   .agenda-meta { flex: none; flex-wrap: nowrap; order: 1; padding-left: 0; }
   .agenda-presenter { width: 180px; }
   .agenda-actions { order: 2; }
+  /* Fixed cells, so the presenters, states and counts form columns down the card. */
+  .agenda-sheet .agenda-cell-status { display: inline-flex; width: 92px; }
+  .agenda-sheet-concluded .agenda-cell-concluded { display: inline-flex; width: 116px; }
+  .agenda-sheet .agenda-docs-count { min-width: 84px; }
+  .agenda-sheet-steps .agenda-actions > .btn { min-width: 100px; justify-content: center; }
+  .agenda-sheet-steps .agenda-step-slot { display: block; flex: none; width: 100px; }
+  /* Kept as an empty slot here, so the presenters still form a column. */
+  .agenda-sheet .agenda-presenter-none { display: inline-flex; visibility: hidden; }
+}
+@container (min-width: 641px) {
+  .agenda-sheet .agenda-head { flex-wrap: nowrap; }
+  .agenda-sheet .agenda-break { display: none; }
+  .agenda-sheet .agenda-meta { flex: none; flex-wrap: nowrap; order: 1; padding-left: 0; }
+  .agenda-sheet .agenda-actions { order: 2; }
+}
+@container (min-width: 641px) and (max-width: 959px) {
+  /* Between a phone and the wide columns the bar is tight: "Đã kết luận" keeps its icon, its words go to the tooltip. */
+  .agenda-sheet .agenda-concluded-text { display: none; }
 }
 @container (max-width: 640px) {
   .agenda-boxes { grid-template-columns: minmax(0, 1fr); }
@@ -2859,22 +2922,20 @@ a.menu-item { text-decoration: none; }
    the facts and the actions share one line under it and the paperclip never wraps under the presenter. */
 @container (max-width: 520px) {
   .agenda-meta { display: contents; }
-  .agenda-meta > * { order: 3; }
+  .agenda-meta > *, .agenda-cell > * { order: 3; }
   .agenda-head { column-gap: 14px; }
-  .agenda-head > :is(.agenda-grip, .agenda-number) { margin-right: -4px; }
-  .agenda-meta > .agenda-status { order: 1; align-self: flex-start; margin-top: 10px; }
+  .agenda-meta .agenda-status { order: 1; align-self: flex-start; margin-top: 10px; }
   .agenda-break { order: 2; }
   .agenda-actions { order: 6; margin-left: auto; }
-  .agenda-panel .agenda-body { padding-left: 12px; }
-  .agenda-toolbar { padding-left: 12px; padding-right: 12px; }
-  .agenda-list { padding-left: 12px; padding-right: 12px; }
-  .agenda-panel .agenda-empty { margin-left: 12px; margin-right: 12px; }
-  .agenda-panel-room .agenda-list { padding: 0; }
-  .agenda-panel-room .agenda-empty { margin: 0; }
+  .agenda-panel .agenda-item { --agenda-pad: 12px; }
+  .agenda-panel .agenda-body { padding-left: var(--agenda-pad); }
+  .agenda-sheet .agenda-item, .agenda-sheet .agenda-item:has(.agenda-grip) { --agenda-indent: 12px; }
+  .agenda-panel .agenda-sheet .agenda-body { padding-left: 0; }
+  .agenda-panel-page .agenda-empty { margin-left: 12px; margin-right: 12px; }
 }
 /* A phone has no room beside the title: the state stays with the facts, the actions wrap under them. */
 @container (max-width: 400px) {
-  .agenda-meta > .agenda-status { order: 3; align-self: center; margin-top: 0; }
+  .agenda-meta .agenda-status { order: 3; align-self: center; margin-top: 0; }
 }
 
 /* ---------- Placeholder screens ----------
