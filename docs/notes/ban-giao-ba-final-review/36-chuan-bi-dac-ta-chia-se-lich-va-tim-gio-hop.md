@@ -2,7 +2,8 @@
 
 **Ngày:** 07/11/2026 · **Nguồn nghiệp vụ:** quét code AI-eCabinet `bba2097f` (30/10/2026) — đọc code, chỉ ghi
 nghiệp vụ. US #352 = chia sẻ lịch + tìm giờ; US #353 = trợ lý AI.
-**Trạng thái:** phạm vi đã chốt ngày 07/11/2026 (§4), **chưa phải đặc tả**.
+**Trạng thái:** phạm vi chốt 07/11/2026 (§4 D1–D6), PO (Hải) trả lời Q1–Q4 và FE-16 cùng ngày (§4 D7–D11);
+**chưa phải đặc tả**. Ticket: SCRUM-137 (tìm giờ họp), **SCRUM-142** (chia sẻ lịch).
 
 Note này trả lời ba câu: viết đặc tả **cái gì**, viết **ở đâu**, và **còn phải chốt gì trước**.
 Đặc tả thật chỉ viết sau khi có code — theo [note 33 §4](33-pr260-scrum-36-32-du-thao-bien-ban-va-scrum-137-tim-gio-hop.md),
@@ -13,9 +14,10 @@ không đặc tả trước rồi bắt code chạy theo.
 | Hạng mục | Trạng thái thật |
 |---|---|
 | **SCRUM-137 Tìm giờ họp** | Jira `To Do`, giao Khánh. Comment `10449` chốt phạm vi **chỉ bận/rảnh**, không lộ tên cuộc họp, người dự hay địa điểm của lịch người khác. Chưa có UC, BR, code, sequence. |
-| **Chia sẻ lịch / uỷ quyền xem lịch** | **Chưa có gì**: không ticket, không UC/BR, không bảng dữ liệu, không endpoint. BR-105 chỉ nói bỏ uỷ quyền *phản hồi lời mời* — khác hẳn việc này. |
+| **Chia sẻ lịch / uỷ quyền xem lịch** | Có ticket **SCRUM-142** (`To Do`, giao Huy, nhãn `moscow-should`). Chưa có UC/BR, bảng dữ liệu, endpoint. BR-105 chỉ nói bỏ uỷ quyền *phản hồi lời mời* — khác hẳn việc này. |
 | **Dữ liệu bận/rảnh** | Không endpoint nào. `GET /api/meetings` chỉ trả cuộc họp người gọi được xem và đã lọc quyền, nên không dùng lại được để xem lịch người khác. |
 | **Màn hình** | Report 3 §I.5.1 Screen List dừng ở **15.1**; không có màn "Tìm giờ họp" hay "Chia sẻ lịch". Report 3 §III cũng chưa có mục cho các màn này. |
+| **Mức mật** | Từ 07/11/2026 chỉ còn **3 mức** `Normal` / `Internal` / `Secret` (Thường / Nội bộ / Mật) — bỏ Hạn chế, họp đang Hạn chế chuyển thành Mật qua migration `SensitivityThreeLevels` ([ADR-0057](../../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)). Phần BR/Report 3 về mức mật do người làm PR đó gửi note riêng. |
 | **Quyền** | `Capability` chỉ có `MeetingCreator`, `MeetingApprover`, `MinutesEditor`, `AdminUsers`. Không có quyền nào về xem lịch người khác. |
 | **Trợ lý AI chat** | ADR-0043 ghi TrustCabinet **không có** "Trợ lý AI, Tìm giờ họp". PO chốt 07/11: **không làm trợ lý AI** (D4); Tìm giờ họp thì làm, nên ADR-0043 chỉ còn lệch đúng nửa câu. |
 | **Biên bản** | Đã đặc tả UC-58–UC-60, BR-383–BR-396, `MSG395`–`MSG406`; PR #271 đang mở thêm UC-61/64/65/82/83. eCab **không có** duyệt, ban hành hay ký biên bản, nên phần này không lấy từ eCab (§3.4). |
@@ -50,8 +52,8 @@ Ba điểm phải định nghĩa lại cho ta, không tê nguyên từ eCab:
 1. **Vai trò.** Ta **có** vai trò hệ thống `Thành viên` (built-in) nhưng **không có** vai trò tên
    *Điều phối họp*: việc tạo/tìm cuộc họp của ta là capability `MeetingCreator`, seed đang cấp cho
    `Chủ toạ` và `Thư ký`. Nên phát biểu bằng capability, đừng bám tên vai trò — xem §3.5.
-2. **Mức xem.** `Sensitivity` của ta là `Normal`, `Internal`, `Confidential`, `Secret` — bốn mức, không ba.
-   Phải nói rõ mức *Tất cả* gồm những mức nào.
+2. **Mức xem.** Ta cũng chỉ còn 3 mức họp (`Normal`, `Internal`, `Secret` — ADR-0057), nhưng PO chốt **không có
+   mốc *Tất cả***: chỉ **2 mốc chia sẻ**, họp Mật không bao giờ chia sẻ, kể cả chỉ hiện bận (D7).
 3. **"Chưa biết".** eCab coi ngày ngoài khoảng chia sẻ là chưa biết. Ta phải quyết nó khác "rảnh" và
    khác "bận" thế nào trên màn hình.
 
@@ -107,9 +109,14 @@ Ta đã có tương đương (`MSG405` chặn xuất biên bản Mật), và lu�
 | **D3** | **Màn riêng**, không nhét vào FE-04 (lịch/cuộc họp). | Đề xuất FE mới **FE-16** cho "Lịch làm việc & tìm giờ họp"; số màn mới trong §I.5.1 và §III. |
 | **D4** | **Không làm trợ lý AI.** | Không UC/BR/MSG cho chat; chỉ sửa ADR-0043 ở nửa câu "Tìm giờ họp". |
 | **D5** | **Chỉ xin lịch của người trong hệ thống**: người xin phải có `MeetingCreator`; chủ lịch là **mọi tài khoản nội bộ đang hoạt động, trừ chính người xin**; khách không có lịch. | Chi tiết ở §3.5. Không tạo thêm vai trò `MeetingOrganizer` chỉ để gác — nó là actor theo cuộc họp, không phải dòng trong `roles`. |
-| **D6** | **Chưa cần capability mới** (đề xuất, thay bản chốt sáng 07/11): dùng lại `MeetingCreator` cho cả yêu cầu chia sẻ lẫn tab tìm giờ. | Không phải sửa `Capability`/seed/ma trận quyền. Nếu PO muốn thu hồi riêng quyền xem lịch (không kéo theo quyền tạo họp) thì mới thêm `CalendarShareRequest` — khi đó sửa enum, `ReferenceData`, ma trận quyền, `PermissionCatalog` và test. |
+| **D6** | **Không thêm capability mới** — PO xác nhận ở Q4: dùng chung `MeetingCreator` cho cả yêu cầu chia sẻ lẫn tab tìm giờ. | Không sửa `Capability`/seed/ma trận quyền/`PermissionCatalog`. |
+| **D7** | **Mức xem: 2 mốc chia sẻ** (Q1, PO sửa lại 07/11 sau khi bỏ mức Hạn chế). **Mốc 1** = họp Thường; **Mốc 2** = Thường + Nội bộ. Họp **Mật không bao giờ chia sẻ**, kể cả chỉ hiện bận. | Enum mức chia sẻ có 2 giá trị; "mức thấp nhất" khi chủ lịch tự chia sẻ = Mốc 1; "nâng mức" chỉ còn Mốc 1 → Mốc 2. Hệ quả cần ghi trong BR: giờ của một cuộc họp Mật hiện là **rảnh** với người xem lịch, nên Tìm khung giờ có thể đề xuất trùng — xem §7. |
+| **D8** | **Giữ nguyên số của eCab** (Q2): tối đa 10 người; thời lượng 15 phút–8 giờ, mặc định 2 giờ; khoảng ngày tối đa 31 ngày; T2–T6 08:00–17:00, nghỉ 12:00–13:00; đệm 0–4 giờ, mặc định 30 phút; bước nhảy 5 phút–2 giờ, mặc định 30 phút. | Thành BR giới hạn + validation `400` ở BE; mặc định ở FE. |
+| **D9** | **Chỉ Chủ toạ / Thư ký / Thành viên tính bận** (Q3); không map Lãnh đạo / Tham dự hạn chế của eCab. | Người tạo, người duyệt, Khách không tính bận. |
+| **D10** | **Lập FE-16 "Lịch làm việc & tìm giờ họp"**, gom màn lịch hiện có (`CalendarPage`) về FE này. | Report 3 §I.5.1 + §III: chuyển màn lịch hiện có sang FE-16, thêm màn mới; sửa chỗ trỏ màn lịch cũ. |
+| **D11** | **FE-16 ưu tiên Should-have.** | Khớp nhãn `moscow-should` của SCRUM-142; ghi MoSCoW trong Report 3 và `scopeData.ts`. |
 
-Còn chờ: số UC/BR/MSG thật (sau #271), tên FE mới, các con số giới hạn (§7 Q1, Q2).
+Còn chờ: số UC/BR/MSG thật (sau #271), ticket màn FE-16.
 
 ## 5. Khung đặc tả đề xuất
 
@@ -136,8 +143,8 @@ Còn chờ: số UC/BR/MSG thật (sau #271), tên FE mới, các con số giớ
 ## 6. Thứ tự làm
 
 1. ~~Chốt D1–D6 với PO~~ — xong 07/11/2026 (§4).
-2. Tạo ticket Jira cho phần **chia sẻ lịch** (hiện chỉ có SCRUM-137) và ticket **màn FE-16**; ghi rõ SCRUM-137
-   phụ thuộc ticket chia sẻ.
+2. ~~Tạo ticket chia sẻ lịch~~ — **SCRUM-142** (07/11/2026), đã ghi SCRUM-137 phụ thuộc nó. Còn: ticket **màn FE-16**;
+   cập nhật mục "PO tick" của SCRUM-142 theo D6–D11 (Q1 là đáp án **C — 2 mốc**, không phải A).
 3. Chờ **PR #271 merge**, rồi chốt lại dải `MSG`, số UC, số BR thật (§2).
 4. BE viết UC Specification cơ bản + sequence cho phần đã chốt ([DEVELOPMENT_WORKFLOW §2.1](../../DEVELOPMENT_WORKFLOW.md#21-changing-a-requirement-during-implementation)),
    ghi mọi chỗ lệch ticket vào Jira.
@@ -149,10 +156,14 @@ Còn chờ: số UC/BR/MSG thật (sau #271), tên FE mới, các con số giớ
 
 ## 7. Câu hỏi cho PO
 
-1. Mức xem: giữ ba mức như eCab, hay hai mức (bỏ mức *Tất cả* vì ta có mức `Secret`)?
-2. Giữ nguyên các con số của eCab (10 người, 31 ngày, 8 giờ, 0–4 giờ đệm, 5 phút–2 giờ bước nhảy) hay tự đặt?
-3. Người dự "hạn chế" của eCab — ta có loại tương đương không, hay chỉ `Chair`/`Secretary`/`Member`/`Guest`?
-4. Có cần capability riêng cho việc xem lịch người khác không (D6), hay dùng chung `MeetingCreator`?
+Q1–Q4 và FE-16 đã trả lời 07/11/2026 → D6–D11 ở §4. Q1 chốt hai lần: lần đầu 3 mốc (Thường / +Nội bộ / +Hạn chế),
+sau khi bỏ mức Hạn chế (ADR-0057) còn **2 mốc** — dùng bản sau.
+
+Còn một câu nảy ra từ D7, hỏi khi BE làm SCRUM-137:
+
+5. Họp Mật không hiện kể cả bận, nên Tìm khung giờ có thể đề xuất giờ trùng một cuộc họp Mật của người được mời.
+   Khi "Tạo nháp", server kiểm lại khung với **toàn bộ** lịch (gồm Mật) và chỉ báo chung "khung này không còn trống"
+   mà không nói lý do, hay để người tạo tự phát hiện trùng lịch như hiện nay?
 
 ## 8. Liên quan
 
