@@ -24,7 +24,8 @@ không thao tác nào gọi LiveKit, và mời phát biểu **không** bật hay
   lúc `POST …/call/join`. Vì vậy FE chỉ bật nút "Giơ tay" sau khi LiveKit báo đã kết nối; vài giây đầu vẫn có thể nhận `MSG458`.
 - Mọi thao tác ghi cần cuộc họp `InProgress` (`409` `MSG117`, EX-1). Khách nhận `404` khi cuộc họp không còn mở cho Khách,
   như ở biểu quyết và chương trình nghị sự.
-- Thao tác trên yêu cầu của người khác mà chỉ chủ yêu cầu được làm (hạ tay, bắt đầu): `404`, như yêu cầu không tồn tại.
+- Thao tác trên yêu cầu của người khác mà chỉ chủ yêu cầu được làm (hạ tay, bắt đầu): `404`, như yêu cầu không tồn tại,
+  ở mọi trạng thái của cuộc họp.
 
 ## Endpoint
 
@@ -70,7 +71,9 @@ Lỗi: `{ "code": "MSGnnn", "message": "…" }` theo bảng mã ở danh mục �
 ## Tự đóng yêu cầu (BR-337)
 
 Server tự đóng yêu cầu đang mở, cùng giao dịch với thay đổi gây ra nó. Lượt đang `Speaking` thành `Finished` có `endedAt`,
-còn lại thành `Cancelled`:
+còn lại thành `Cancelled`. `endedAt` là lúc người đó rời phòng hoặc phòng đóng theo LiveKit, không phải lúc server xử lý
+(lần đối soát có thể trễ tới 30 giây). Khách vào phòng từ nhiều thiết bị (nhiều phiên của cùng lời mời) chỉ mất tay giơ khi
+thiết bị cuối cùng rời phòng:
 
 | Khi | Đóng yêu cầu của |
 |---|---|
@@ -85,7 +88,8 @@ ngay, hoặc bị từ chối vì không còn ở trong phòng (`MSG458`); khôn
 ## Realtime — `/hubs/meetings`
 
 - `speakingChanged` `{ eventId, meetingId, changeType, requestId, occurredAt }` tới mọi người đang đọc được cuộc họp, kể cả
-  Khách. Chỉ để báo "tải lại": FE gọi lại `GET`, quyền được kiểm lại. `changeType` là tên thao tác (`Raise`, `Lower`,
+  Khách. Chỉ để báo "tải lại": FE gọi lại `GET`, quyền được kiểm lại. Thao tác không đổi gì (giơ tay khi tay đã giơ, đổi chỗ
+  ở đầu/cuối hàng đợi) không phát sự kiện. `changeType` là tên thao tác (`Raise`, `Lower`,
   `MoveUp`, `MoveDown`, `Decline`, `Invite`, `Start`, `Finish`) hoặc `Left` khi có người rời phòng hoặc phòng đóng.
 - `speakingInvited` (cùng nội dung) chỉ tới người được mời, để phòng họp báo "Đến lượt bạn — hãy bật micro".
 - Kết thúc cuộc họp không phát `speakingChanged`: FE tải lại khi nhận `agendaChanged` loại `MeetingEnded`. Gỡ người khỏi

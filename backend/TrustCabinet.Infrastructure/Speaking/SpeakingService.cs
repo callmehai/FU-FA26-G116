@@ -84,6 +84,10 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
             {
                 request = await db.SpeakingRequests.SingleOrDefaultAsync(r => r.Id == id && r.MeetingId == meetingId, ct);
                 if (request is null) return new(SpeakingFailure.NotFound);
+                // Someone else's request, for an action only its owner takes: the same answer as one that does not
+                // exist, whatever the meeting's state.
+                if (operation is SpeakingOperation.Lower or SpeakingOperation.Start && !SpeakingRules.IsMine(request, viewer!))
+                    return new(SpeakingFailure.NotFound);
             }
             if (meeting.Status != MeetingStatus.InProgress) return new(SpeakingFailure.NotInProgress);
 
@@ -125,11 +129,13 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
             }
             if (result != SpeakingFailure.None) return new(result);
 
+            // A raise that finds the hand already up, or a move at the end of the queue, changes nothing: no event.
+            var changed = db.ChangeTracker.HasChanges();
             await db.SaveChangesAsync(ct);
             var queue = await QueueAsync(s, viewer!, ct);
             await tx.CommitAsync(ct);
             outcome = new(Data: queue, Created: created);
-            if (operation == SpeakingOperation.Raise && !created) return outcome;
+            if (!changed) return outcome;
             if (operation == SpeakingOperation.Invite) invited = new(request!.UserId, request.GuestInvitationId);
             change = new(Guid.CreateVersion7(), meetingId, operation.ToString(), request!.Id, now);
         }

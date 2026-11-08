@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -151,12 +152,20 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
         // Leaving the room ends the person's raised hand or turn (UC-79 EX-3, BR-337), in the same save.
         if (open.Count > 0 && tx.MeetingId is { } meetingId)
         {
-            var invitations = member.GuestSessionId is { } guest
-                ? await db.GuestSessions.Where(g => g.Id == guest).Select(g => g.InvitationId).ToListAsync(ct)
-                : null;
-            if (member.UserId is not null || invitations is { Count: > 0 })
+            Guid[]? invitations = null;
+            // One invitation may be in the room from several verified sessions (a laptop and a phone): the hand
+            // stays while any of them is still connected.
+            if (member.GuestSessionId is { } guest
+                && await db.GuestSessions.Where(g => g.Id == guest).Select(g => (Guid?)g.InvitationId)
+                    .SingleOrDefaultAsync(ct) is { } invitation
+                && !await db.CallParticipants.AnyAsync(p => p.CallSessionId == sessionId && p.LeftAt == null
+                    && p.GuestSessionId != null && p.GuestSessionId != guest
+                    && p.GuestSession!.InvitationId == invitation, ct))
+                invitations = [invitation];
+            // The turn ends when they left, not when the webhook or the reconciliation got here (BR-339).
+            if (member.UserId is not null || invitations is not null)
                 await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, member.UserId, invitations,
-                    (clock ?? TimeProvider.System).GetUtcNow(), ct);
+                    AgendaExecution.UtcMicroseconds(leftAt), ct);
         }
 
         await db.SaveChangesAsync(ct);
@@ -221,7 +230,8 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
         session.UpdatedAt = DateTimeOffset.UtcNow;
         // Nobody is left in the room, so nobody is waiting to speak or speaking (BR-337).
         if (tx.MeetingId is { } meetingId)
-            await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, null, null, (clock ?? TimeProvider.System).GetUtcNow(), ct);
+            await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, null, null,
+                AgendaExecution.UtcMicroseconds(effectiveEnd), ct);
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
     }

@@ -315,6 +315,55 @@ public sealed class SpeakingEndpointTests(ParticipantFixture f) : IClassFixture<
         Assert.False(await db.SpeakingRequests.AnyAsync(r => r.MeetingId == s.MeetingId));
     }
 
+    [Fact]
+    public async Task A_turn_cut_by_leaving_ends_when_the_person_left_not_when_it_was_noticed()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var member = f.Client(s.Member); using var chair = f.Client(s.Chair);
+        await InRoom(s, CallMember.User(s.Member));
+        var id = Mine(await Json(await member.PostAsync(Queue(s), null), HttpStatusCode.Created));
+        await Json(await chair.PostAsync($"{Queue(s)}/{id}/invite", null), HttpStatusCode.OK);
+        var startedAt = f.Clock.Now;
+        await Json(await member.PostAsync($"{Queue(s)}/{id}/start", null), HttpStatusCode.OK);
+
+        // The reconciliation notices the drop three minutes late; the turn lasted two (BR-339).
+        f.Clock.Now = startedAt.AddMinutes(5);
+        await using (var scope = f.Host.Services.CreateAsyncScope())
+        {
+            var calls = scope.ServiceProvider.GetRequiredService<ICallRepository>();
+            var session = (await calls.FindActiveRoomSessionAsync(s.MeetingId))!;
+            await calls.RecordLeaveAsync(session.Id, CallMember.User(s.Member), startedAt.AddMinutes(2));
+        }
+        await using var db = f.Db();
+        var row = await db.SpeakingRequests.SingleAsync(r => r.Id == id);
+        Assert.Equal((SpeakingRequestStatus.Finished, startedAt.AddMinutes(2)), (row.Status, row.EndedAt));
+    }
+
+    [Fact]
+    public async Task A_move_that_changes_nothing_sends_no_event()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var member = f.Client(s.Member); using var secretary = f.Client(s.Secretary); using var chair = f.Client(s.Chair);
+        await InRoom(s, CallMember.User(s.Member)); await InRoom(s, CallMember.User(s.Secretary));
+        var first = Mine(await Json(await member.PostAsync(Queue(s), null), HttpStatusCode.Created));
+        var second = Mine(await Json(await secretary.PostAsync(Queue(s), null), HttpStatusCode.Created));
+        await using var hub = f.Hub(secretary);
+        var changed = Channel.CreateUnbounded<SpeakingChange>();
+        hub.On<SpeakingChange>("speakingChanged", e => changed.Writer.TryWrite(e));
+        await hub.StartAsync();
+        await hub.InvokeAsync("JoinMeeting", s.MeetingId);
+
+        await Json(await chair.PostAsync($"{Queue(s)}/{first}/move-up", null), HttpStatusCode.OK);
+        await Json(await chair.PostAsync($"{Queue(s)}/{second}/move-down", null), HttpStatusCode.OK);
+        await Json(await member.PostAsync(Queue(s), null), HttpStatusCode.OK);
+        using (var timeout = new CancellationTokenSource(300))
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await changed.Reader.ReadAsync(timeout.Token));
+
+        // A real move still tells everyone.
+        await Json(await chair.PostAsync($"{Queue(s)}/{second}/move-up", null), HttpStatusCode.OK);
+        Assert.Equal("MoveUp", (await Next(changed.Reader)).ChangeType);
+    }
+
     private static async Task<SpeakingChange> Next(ChannelReader<SpeakingChange> events)
         => await events.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10));
 }

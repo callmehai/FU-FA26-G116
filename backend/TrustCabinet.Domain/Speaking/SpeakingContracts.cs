@@ -91,16 +91,18 @@ public static class SpeakingRules
             || (viewer.GuestInvitationId is { } guest && request.GuestInvitationId == guest);
 
     /// <summary>
-    /// Ends a request: a turn that started is Finished, anything else is Cancelled (BR-337). Returns false when the
-    /// request was already closed.
+    /// Ends a request at <paramref name="now"/>: a turn that started is Finished, anything else is Cancelled (BR-337).
+    /// Returns false when the request was already closed.
     /// </summary>
     public static bool Close(SpeakingRequest request, DateTimeOffset now)
     {
         if (!IsOpen(request.Status)) return false;
         request.Status = request.Status == SpeakingRequestStatus.Speaking
             ? SpeakingRequestStatus.Finished : SpeakingRequestStatus.Cancelled;
-        request.EndedAt = now;
-        request.UpdatedAt = now;
+        // A provider time can be a little behind the last step we recorded; never end before it.
+        var last = request.StartedAt ?? request.InvitedAt ?? request.RequestedAt;
+        request.EndedAt = now < last ? last : now;
+        request.UpdatedAt = request.EndedAt.Value;
         return true;
     }
 }
