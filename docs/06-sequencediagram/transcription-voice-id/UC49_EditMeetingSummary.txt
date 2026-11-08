@@ -40,6 +40,10 @@ else Actor may edit
         SummaryService-->SummaryController: MSG390 - There is no draft to correct or review.
         SummaryController-->DraftCard: MSG390 - There is no draft to correct or review.
         DraftCard-->Actor: MSG390 - There is no draft to correct or review.
+    else The AI is writing the draft again - EX-6
+        SummaryService-->SummaryController: MSG387 - The AI is writing the draft, please wait.
+        SummaryController-->DraftCard: MSG387 - The AI is writing the draft, please wait.
+        DraftCard-->Actor: MSG387 - The AI is writing the draft, please wait.
     else Draft exists
         SummaryService->SummaryService: Check no section is empty and each is within its limit:\nI 2,000, II 12,000, III 8,000 characters (BR-393)
 

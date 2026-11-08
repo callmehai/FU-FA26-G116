@@ -7,8 +7,11 @@ Một pipeline, nhanh và ổn định:
   3. Chuẩn hoá style theo tab agenda (UC-23a): participant shape, màu, font,
      tiêu đề UC, message 13px
   4. (tuỳ chọn) ghép model vào TrustCabinet_Sequence_Diagrams.drawio
-  5. Xuất PNG từ file 1 trang — không --embed-diagram, không --page-index trên
-     file gộp (hai cách đó khiến CLI treo / PNG phình to / cắt trắng)
+  5. Xuất SVG từ file 1 trang bằng Draw.io CLI, rồi Edge/Chrome headless chụp SVG
+     thành PNG. Draw.io CLI tự xuất PNG thì mỗi máy hỏng một kiểu với trang lớn:
+     cắt nửa dưới, trắng, treo, hoặc (07/11/2026, Draw.io trên Windows) vẽ hình
+     thu nhỏ ~2/3 ở góc trên trái khi ảnh quá ~9,5 triệu pixel. Không tìm thấy
+     trình duyệt thì mới dùng PNG của CLI, với giới hạn pixel thấp.
 
 Ví dụ:
   python scripts/txt_to_sequence_drawio_png.py \\
@@ -16,6 +19,9 @@ Ví dụ:
 
   python scripts/txt_to_sequence_drawio_png.py --no-splice \\
     docs/06-sequencediagram/document-management/UC33a_*.txt
+
+  # Xuất lại ảnh của tab có sẵn trong file gộp (không cần .txt, không sửa file gộp)
+  python scripts/txt_to_sequence_drawio_png.py --tab uc14_createmeeting --tab uc55_castvote
 """
 
 from __future__ import annotations
@@ -38,10 +44,14 @@ PNG_DIR = ROOT / "docs/06-sequencediagram/drawio-png"
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 PNG_IEND = b"\x00\x00\x00\x00IEND\xaeB`\x82"
-# Draw.io CLI 32.6.1 cắt phần dưới ảnh khi ảnh vượt khoảng 29 triệu pixel (đo 30/10/2026: 5238x5538 trọn,
-# 7481x7910 bị cắt ở ~3970 px). Giới hạn theo diện tích thay vì theo cạnh để trang dài vẫn được scale lớn như tab cũ.
+# Ngân sách diện tích ảnh khi chụp bằng trình duyệt: giữ kích thước/dung lượng như các ảnh đã có (trình duyệt
+# chụp trọn cả 51 triệu pixel, đo 07/11/2026). Theo diện tích thay vì theo cạnh để trang dài vẫn được scale lớn.
 MAX_PNG_PIXELS = 28_000_000.0
+# Draw.io CLI tự xuất PNG: trên máy Windows ngày 07/11/2026 ảnh từ ~10 triệu pixel trở lên bị vẽ thu nhỏ trong
+# khung (9,35M trọn, 10,5M hỏng); máy khác từng cắt ở ~29M. Chỉ dùng khi không có trình duyệt.
+CLI_MAX_PNG_PIXELS = 9_000_000.0
 DEFAULT_SCALE = 2.0
+CLI_TIMEOUT = 180
 
 DECL_RE = re.compile(
     r'^(actor|boundary|control|participant|database)\s+"([^"]+)"\s+as\s+(\w+)\s*$',
@@ -97,15 +107,55 @@ def resolve_drawio() -> Path:
     )
 
 
-def kill_drawio() -> None:
-    if os.name != "nt":
-        return
-    subprocess.run(
-        ["taskkill", "/F", "/IM", "draw.io.exe"],
-        capture_output=True,
-        check=False,
-    )
-    time.sleep(0.8)
+def resolve_browser() -> Path | None:
+    """Edge/Chrome/Chromium để chụp SVG thành PNG; None nếu máy không có."""
+    candidates: list[Path] = []
+    configured = os.environ.get("BROWSER_EXECUTABLE")
+    if configured:
+        candidates.append(Path(configured))
+    if os.name == "nt":
+        for env in ("ProgramFiles(x86)", "ProgramFiles", "LOCALAPPDATA"):
+            base = os.environ.get(env)
+            if base:
+                candidates.append(Path(base) / "Microsoft/Edge/Application/msedge.exe")
+                candidates.append(Path(base) / "Google/Chrome/Application/chrome.exe")
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.resolve()
+    for name in ("msedge", "google-chrome", "chrome", "chromium", "chromium-browser"):
+        found = shutil.which(name)
+        if found:
+            return Path(found).resolve()
+    return None
+
+
+def _kill_tree(proc: subprocess.Popen) -> None:
+    # Chỉ giết đúng cây tiến trình mình mở — không đụng cửa sổ draw.io/Edge người dùng đang mở.
+    if os.name == "nt":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True, check=False)
+    else:
+        proc.kill()
+    proc.wait()
+
+
+def run_tool(command: list[str], what: str, timeout: int = CLI_TIMEOUT) -> str:
+    """Chạy Draw.io/trình duyệt, trả log; lỗi hoặc quá thời gian thì RuntimeError.
+
+    Log ghi ra file tạm chứ không qua pipe: Electron/Chromium để lại tiến trình con giữ pipe,
+    khiến subprocess.run(capture_output=True) chờ mãi dù tiến trình chính đã thoát.
+    """
+    with tempfile.TemporaryFile() as log:
+        proc = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
+        try:
+            code = proc.wait(timeout)
+        except subprocess.TimeoutExpired:
+            _kill_tree(proc)
+            raise RuntimeError(f"{what}: quá {timeout} giây, đã dừng") from None
+        log.seek(0)
+        output = log.read().decode("utf-8", errors="replace").strip()
+    if code != 0:
+        raise RuntimeError(f"{what}: mã thoát {code}. {output[-800:]}")
+    return output
 
 
 def stem_to_page_id(stem: str) -> str:
@@ -366,11 +416,11 @@ def diagram_extent(model: ET.Element) -> tuple[float, float]:
     return max(max_x, 1.0), max(max_y, 1.0)
 
 
-def choose_scale(model: ET.Element, requested: float | None) -> str:
+def choose_scale(model: ET.Element, requested: float | None, max_pixels: float = MAX_PNG_PIXELS) -> str:
     if requested is not None:
         return f"{requested:g}"
     width, height = diagram_extent(model)
-    scale = min(DEFAULT_SCALE, math.sqrt(MAX_PNG_PIXELS / (width * height)))
+    scale = min(DEFAULT_SCALE, math.sqrt(max_pixels / (width * height)))
     # Làm tròn xuống 1 chữ số thập phân để ổn định giữa các lần chạy và không vượt giới hạn.
     scale = max(0.4, math.floor(scale * 10 + 1e-9) / 10)
     return f"{scale:g}"
@@ -390,17 +440,12 @@ def convert_txt(
     out_drawio = work_dir / f"{page_id}.drawio"
     mmd_path.write_text(txt_to_mermaid(raw), encoding="utf-8")
 
-    kill_drawio()
-    result = subprocess.run(
+    run_tool(
         [str(drawio), "-x", "-f", "xml", "-o", str(out_drawio), str(mmd_path)],
-        capture_output=True,
-        text=True,
-        timeout=180,
+        f"Mermaid→draw.io {txt_path.name}",
     )
-    kill_drawio()
-    if result.returncode != 0 or not out_drawio.is_file():
-        detail = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(f"Mermaid→draw.io thất bại {txt_path.name}: {detail}")
+    if not out_drawio.is_file():
+        raise RuntimeError(f"Mermaid→draw.io không ra file: {txt_path.name}")
 
     xml_text = normalize_colors(out_drawio.read_text(encoding="utf-8"))
     root = ET.fromstring(xml_text)
@@ -490,7 +535,6 @@ def _replace_with_retry(src: Path, dest: Path, attempts: int = 8) -> None:
             return
         except OSError as exc:
             last_error = exc
-            kill_drawio()
             time.sleep(0.4 * (attempt + 1))
     try:
         shutil.copyfile(src, dest)
@@ -502,35 +546,102 @@ def _replace_with_retry(src: Path, dest: Path, attempts: int = 8) -> None:
         ) from (last_error or exc)
 
 
-def export_png(drawio: Path, single_drawio: Path, page_id: str, scale: str) -> Path:
+SVG_ROOT_RE = re.compile(r"<svg\b[^>]*>")
+SVG_STYLE_RE = re.compile(r'\sstyle="[^"]*"')
+
+
+def _svg_length(tag: str, name: str) -> float:
+    match = re.search(rf'\s{name}="([\d.]+)(?:px)?"', tag)
+    if not match:
+        raise RuntimeError(f"SVG thiếu {name}")
+    return float(match.group(1))
+
+
+def prepare_svg(svg_path: Path) -> tuple[int, int]:
+    """Ép SVG nền trắng, chỉ chế độ sáng; trả kích thước CSS px để đặt cửa sổ chụp.
+
+    Draw.io ghi `color-scheme: light dark` + nền trong suốt, nên Windows bật dark mode thì
+    trình duyệt vẽ nền đen, chữ trắng.
+    """
+    text = svg_path.read_text(encoding="utf-8")
+    match = SVG_ROOT_RE.search(text)
+    if not match:
+        raise RuntimeError(f"Không đọc được thẻ <svg> trong {svg_path.name}")
+    tag = match.group(0)
+    width = math.ceil(_svg_length(tag, "width"))
+    height = math.ceil(_svg_length(tag, "height"))
+    light = SVG_STYLE_RE.sub("", tag).replace(
+        "<svg", '<svg style="background-color: #ffffff; color-scheme: light;"', 1
+    )
+    svg_path.write_text(text[: match.start()] + light + text[match.end() :], encoding="utf-8")
+    return width, height
+
+
+def png_size(path: Path) -> tuple[int, int]:
+    data = path.read_bytes()[:24]
+    if not data.startswith(PNG_SIGNATURE):
+        raise RuntimeError(f"Không phải PNG: {path.name}")
+    return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+
+
+def screenshot_svg(browser: Path, svg_path: Path, png_path: Path, width: int, height: int, scale: str) -> None:
+    with tempfile.TemporaryDirectory(prefix="seq-browser-") as profile:
+        run_tool(
+            [
+                str(browser),
+                "--headless=new",
+                "--disable-gpu",
+                "--hide-scrollbars",
+                "--no-first-run",
+                "--no-default-browser-check",
+                "--disable-extensions",
+                "--default-background-color=ffffffff",
+                f"--user-data-dir={profile}",
+                f"--window-size={width},{height}",
+                f"--force-device-scale-factor={scale}",
+                f"--screenshot={png_path}",
+                svg_path.as_uri(),
+            ],
+            f"Chụp PNG bằng {browser.name}",
+        )
+    if not png_path.is_file():
+        raise RuntimeError(f"{browser.name} không ghi ra {png_path.name}")
+    actual = png_size(png_path)
+    expected = (round(width * float(scale)), round(height * float(scale)))
+    if any(abs(a - e) > 2 for a, e in zip(actual, expected)):
+        raise RuntimeError(f"PNG {actual[0]}x{actual[1]}, mong đợi khoảng {expected[0]}x{expected[1]}")
+
+
+def export_png(
+    drawio: Path,
+    single_drawio: Path,
+    page_id: str,
+    scale: str,
+    browser: Path | None = None,
+) -> Path:
+    """Xuất ảnh 1 trang. Có trình duyệt: Draw.io → SVG → trình duyệt chụp; không có: PNG của Draw.io CLI."""
     PNG_DIR.mkdir(parents=True, exist_ok=True)
     out = PNG_DIR / f"{page_id}.drawio.png"
     # Temp nằm ngoài PNG_DIR để antivirus/viewer ít giữ khóa khi replace.
     with tempfile.TemporaryDirectory(prefix="seq-png-") as tmp:
         temp = Path(tmp) / out.name
-        # Không --embed-diagram: nhanh, ổn; source nằm ở file gộp / .txt.
-        command = [
-            str(drawio),
-            "--disable-gpu",
-            "--disable-software-rasterizer",
-            "--export",
-            "--format",
-            "png",
-            "--scale",
-            scale,
-            "--output",
-            str(temp),
-            str(single_drawio),
-        ]
-        kill_drawio()
-        result = subprocess.run(command, capture_output=True, text=True, timeout=180)
-        kill_drawio()
-        if result.returncode != 0 or not temp.is_file():
-            detail = (result.stderr or result.stdout or "").strip()
-            raise RuntimeError(f"Xuất PNG thất bại {page_id}: {detail}")
+        if browser is not None:
+            svg = Path(tmp) / f"{page_id}.svg"
+            run_tool([str(drawio), "-x", "-f", "svg", "-o", str(svg), str(single_drawio)], f"Xuất SVG {page_id}")
+            width, height = prepare_svg(svg)
+            screenshot_svg(browser, svg, temp, width, height, scale)
+        else:
+            # Không --embed-diagram: nhanh, ổn; source nằm ở file gộp / .txt.
+            run_tool(
+                [str(drawio), "--export", "--format", "png", "--scale", scale, "--output", str(temp), str(single_drawio)],
+                f"Xuất PNG {page_id}",
+            )
+            if not temp.is_file():
+                raise RuntimeError(f"Xuất PNG thất bại {page_id}: không ra file")
         repair_png(temp)
         _replace_with_retry(temp, out)
     return out
+
 
 def process_one(
     drawio: Path,
@@ -539,16 +650,42 @@ def process_one(
     splice: bool,
     scale: float | None,
     work_dir: Path,
+    browser: Path | None = None,
 ) -> Path:
     page_id = stem_to_page_id(txt_path.stem)
     print(f"→ {txt_path.name}  ({page_id})", flush=True)
     model, single_path, title_text = convert_txt(drawio, txt_path, page_id, work_dir)
-    chosen_scale = choose_scale(model, scale)
+    chosen_scale = choose_scale(model, scale, MAX_PNG_PIXELS if browser else CLI_MAX_PNG_PIXELS)
     if splice:
         splice_into_combined(page_id, model, title_text)
         print(f"  spliced vào {COMBINED.name}", flush=True)
-    out = export_png(drawio, Path(single_path), page_id, chosen_scale)
-    print(f"  PNG scale={chosen_scale} → {out.name} ({out.stat().st_size} bytes)", flush=True)
+    out = export_png(drawio, Path(single_path), page_id, chosen_scale, browser)
+    width, height = png_size(out)
+    print(f"  PNG scale={chosen_scale} {width}x{height} → {out.name} ({out.stat().st_size} bytes)", flush=True)
+    return out
+
+
+def export_tab(drawio: Path, page_id: str, *, scale: float | None, work_dir: Path, browser: Path | None) -> Path:
+    """Xuất lại PNG của một tab có sẵn trong file gộp (tab không có .txt, hoặc ảnh cũ hỏng) — không sửa file gộp."""
+    print(f"→ tab {page_id}", flush=True)
+    root = ET.parse(COMBINED).getroot()
+    diagram = next((d for d in root.findall("diagram") if d.get("id") == page_id), None)
+    if diagram is None:
+        raise RuntimeError(f"Không có tab id={page_id} trong {COMBINED.name}")
+    model = diagram.find("mxGraphModel")
+    if model is None:
+        raise RuntimeError(f"Tab {page_id} đang lưu dạng nén — mở bằng draw.io, tắt Compressed rồi lưu lại")
+    single = work_dir / f"{page_id}.drawio"
+    single.write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<mxfile host="Electron">\n'
+        f'  <diagram id="{page_id}" name="{_xml_escape(diagram.get("name") or page_id)}">\n'
+        f"    {ET.tostring(model, encoding='unicode')}\n  </diagram>\n</mxfile>\n",
+        encoding="utf-8",
+    )
+    chosen_scale = choose_scale(model, scale, MAX_PNG_PIXELS if browser else CLI_MAX_PNG_PIXELS)
+    out = export_png(drawio, single, page_id, chosen_scale, browser)
+    width, height = png_size(out)
+    print(f"  PNG scale={chosen_scale} {width}x{height} → {out.name} ({out.stat().st_size} bytes)", flush=True)
     return out
 
 
@@ -587,7 +724,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "inputs",
-        nargs="+",
+        nargs="*",
         help="File .txt, thư mục, hoặc glob (vd. docs/.../UC33a_*.txt)",
     )
     parser.add_argument(
@@ -601,15 +738,31 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Ép scale PNG (mặc định tự chọn ≤2 để không cắt ảnh)",
     )
+    parser.add_argument(
+        "--tab",
+        action="append",
+        default=[],
+        metavar="PAGE_ID",
+        help="Xuất lại PNG từ tab có sẵn trong file gộp (vd. uc14_createmeeting); lặp lại cho nhiều tab",
+    )
     args = parser.parse_args(argv)
 
     drawio = resolve_drawio()
-    files = expand_inputs(args.inputs)
-    if not files:
-        raise RuntimeError("Không có file .txt nào để xử lý")
+    files = expand_inputs(args.inputs) if args.inputs else []
+    if not files and not args.tab:
+        raise RuntimeError("Không có file .txt hay --tab nào để xử lý")
 
+    browser = resolve_browser()
     print(f"Draw.io: {drawio}", flush=True)
-    print(f"Số file: {len(files)}", flush=True)
+    if browser:
+        print(f"Chụp PNG bằng: {browser}", flush=True)
+    else:
+        print(
+            "Không thấy Edge/Chrome (đặt BROWSER_EXECUTABLE nếu có): dùng PNG của Draw.io CLI, "
+            f"ảnh giới hạn {CLI_MAX_PNG_PIXELS / 1e6:g} triệu pixel — mở ảnh kiểm tra không bị thu nhỏ/cắt.",
+            flush=True,
+        )
+    print(f"Số file: {len(files)}, số tab: {len(args.tab)}", flush=True)
 
     with tempfile.TemporaryDirectory(prefix="seq-txt-") as tmp:
         work = Path(tmp)
@@ -620,7 +773,10 @@ def main(argv: list[str] | None = None) -> int:
                 splice=not args.no_splice,
                 scale=args.scale,
                 work_dir=work,
+                browser=browser,
             )
+        for page_id in args.tab:
+            export_tab(drawio, page_id, scale=args.scale, work_dir=work, browser=browser)
 
     print("xong", flush=True)
     return 0

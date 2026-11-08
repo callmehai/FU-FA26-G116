@@ -8,6 +8,8 @@ import { toDateInput } from '../calendar/dates'
  */
 export const CREATE_PARAM = 'create'
 export const EDIT_PARAM = 'edit'
+/** `?notes=1` opens the Secretary's notes over the meeting's page (SCRUM-30); `?tab=notes` was their old address. */
+export const NOTES_PARAM = 'notes'
 const NO_DAY = '1'
 
 /** Marks a history entry the app pushed, so closing steps Back instead of stacking entries. */

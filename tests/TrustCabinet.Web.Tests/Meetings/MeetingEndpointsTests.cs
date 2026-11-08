@@ -864,7 +864,50 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Empty(_factory.Meetings.StagedPublicationIds);
     }
 
+    // SCRUM-134: MSG46 is only for the organizer who lost MeetingCreator. Anyone else who reads the
+    // meeting is not the actor of Publish and gets MSG85, even holding MeetingCreator themselves.
+    [Theory]
+    [InlineData(MeetingRole.Chair)]
+    [InlineData(MeetingRole.Secretary)]
+    [InlineData(null)]
+    public async Task Publish_by_a_reader_who_is_not_the_organizer_returns_403_MSG85(MeetingRole? role)
+    {
+        var creator = GivenCreator();
+        var actor = GivenMember($"publish-non-organizer-{role?.ToString() ?? "approver"}@trustcabinet.local");
+        var meeting = OwnedMeetingBy(creator, role is null ? actor.Id : Guid.CreateVersion7());
+        meeting.Status = MeetingStatus.Approved;
+        AddPublishRoster(meeting);
+        if (role is { } meetingRole)
+        {
+            meeting.Participants.Add(new MeetingParticipant
+            {
+                Meeting = meeting,
+                MeetingId = meeting.Id,
+                User = actor,
+                UserId = actor.Id,
+                Role = meetingRole,
+                Response = InvitationResponse.Accepted,
+            });
+        }
 
+        _factory.Meetings.Meetings.Add(meeting);
+        _factory.Meetings.UserCapabilities[creator.Id] = [Capability.MeetingCreator];
+        _factory.Meetings.UserCapabilities[actor.Id] = [Capability.MeetingCreator, Capability.MeetingApprover];
+        using var client = _factory.ClientFor(actor);
+
+        var response = await client.PostAsJsonAsync($"/api/meetings/{meeting.Id}/transitions", new
+        {
+            action = "Publish",
+        });
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal("MSG85", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Empty(_factory.Meetings.Notifications);
+        Assert.Empty(_factory.Meetings.StagedPublicationIds);
+    }
 
     [Fact]
     public async Task Publish_returns_MSG137_when_the_required_roster_is_not_ready()
@@ -1492,6 +1535,34 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("status", out _));
         Assert.True(body.RootElement.GetProperty("errors").TryGetProperty("page", out _));
         Assert.Null(_factory.Meetings.LastListQuery);
+    }
+
+    [Fact]
+    public async Task List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo()
+    {
+        var approver = GivenMember("todo-approver@trustcabinet.local");
+        _factory.Meetings.UserCapabilities[approver.Id] = [Capability.MeetingApprover];
+        var creator = GivenCreator();
+        var waiting = OwnedMeetingBy(creator, approverId: approver.Id);
+        waiting.Status = MeetingStatus.WaitingApproval;
+        var approved = OwnedMeetingBy(creator, approverId: approver.Id);
+        approved.Status = MeetingStatus.Approved;
+        _factory.Meetings.Meetings.AddRange([waiting, approved]);
+        using var client = _factory.ClientFor(approver, Capability.MeetingApprover);
+
+        var invalid = await client.GetAsync("/api/meetings?scope=mine");
+        using var invalidBody = await JsonOf(invalid);
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("MSG32", invalidBody.RootElement.GetProperty("code").GetString());
+        Assert.True(invalidBody.RootElement.GetProperty("errors").TryGetProperty("scope", out _));
+        Assert.Null(_factory.Meetings.LastListQuery);
+
+        var todo = await client.GetAsync("/api/meetings?scope=todo");
+        using var todoBody = await JsonOf(todo);
+        Assert.Equal(HttpStatusCode.OK, todo.StatusCode);
+        Assert.Equal(MeetingListScope.Todo, _factory.Meetings.LastListQuery!.Scope);
+        var item = Assert.Single(todoBody.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(waiting.Id, item.GetProperty("id").GetGuid());
     }
 
     [Fact]

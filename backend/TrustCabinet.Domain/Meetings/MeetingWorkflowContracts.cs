@@ -69,6 +69,9 @@ public enum MeetingWorkflowOutcome
     CancellationReasonRequired,
     CancellationReasonTooLong,
     PublicationRosterNotReady,
+    // The organizer still reads the meeting but no longer holds MeetingCreator (403 MSG46).
+    // A caller who is not the organizer gets Forbidden instead (403 MSG85).
+    PublisherLostCapability,
     StatusConflict,
     ReadFailed,
     SaveFailed,

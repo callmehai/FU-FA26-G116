@@ -1,6 +1,6 @@
 # ADR-0043: Lấy một số thành phần của AI-eCabinet, giữ sidebar dọc và nhãn trạng thái cũ
 
-- **Trạng thái:** Đề xuất — PO 30/10/2026
+- **Trạng thái:** Đề xuất — PO 30/10/2026; nửa câu "Tìm giờ họp" (eCab có, TrustCabinet không) thay thế bởi [ADR-0058](0058-chia-se-lich-va-tim-gio-hop.md)
 - **Ngày:** 2026-10-30
 - **Người quyết định:** Hải (PO, FE), Lộc góp ý
 - **Thay:** phần kích thước nút, ô nhập và bo góc của [ADR-0012](0012-giao-dien-hanh-chinh-sidebar-doc.md);

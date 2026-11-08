@@ -1015,17 +1015,20 @@ a.menu-item { text-decoration: none; }
 .page-header-actions { display: flex; flex: none; align-items: center; gap: 8px; }
 .page-loading { margin: 0; padding: 48px 0; color: var(--muted-ink); text-align: center; }
 
-/* ---------- Status summary (features/meetings/StatusSummary.tsx) ----------
-   Four counts that double as a status filter: a label and a number, set as type rather than as
-   KPI tiles (no icon tile, no caption repeating the label, no colour per card). The selected one
-   takes the brand edge and wash, like the active sidebar entry. */
-.summary-cards { display: grid; flex: none; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+/* ---------- Meeting counts (features/meetings/MeetingStats.tsx) ----------
+   AI-eCabinet's four cards above the list: a white card, a small icon by the label, the number and one
+   line under it — in the old summary cards' colours, not eCab's (Hải 08/11: one ink for every number,
+   the chosen card a light brand wash with a brand edge, no solid blue). Sized by the content column
+   (a container): one row of four down to 820px, where the longest line still fits (eCab breaks at
+   992px, which put a 1200px window on two rows), then two columns, tighter under 728px. */
+.stat-cards { flex: none; margin-bottom: 16px; container-type: inline-size; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 
-.summary-card {
+.stat-card {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 12px 16px;
+  min-width: 0;
+  padding: 16px 18px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -1035,14 +1038,43 @@ a.menu-item { text-decoration: none; }
   cursor: pointer;
   transition: border-color .15s, background-color .15s;
 }
-.summary-card:hover { border-color: var(--brand-wash-line); }
-.summary-label { color: var(--muted-ink); font-size: 13px; }
-.summary-count { font-size: 24px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.summary-card .summary-count-missing { color: var(--label-ink); }
-.summary-count-skeleton { width: 40px; height: 24px; margin: 2px 0 3px; }
-.summary-card-selected,
-.summary-card-selected:hover { border-color: var(--brand); background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand); }
-.summary-card-selected .summary-label { color: var(--brand); font-weight: 600; }
+.stat-card:hover { border-color: var(--brand-wash-line); }
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  color: var(--muted-ink);
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.stat-label .icon { flex: none; }
+.stat-value { color: var(--ink); font-size: 30px; font-weight: 700; line-height: 35px; font-variant-numeric: tabular-nums; }
+.stat-sub { overflow: hidden; color: var(--muted-ink); font-size: 12px; line-height: 18px; white-space: nowrap; text-overflow: ellipsis; }
+.stat-live { color: var(--live); font-weight: 600; }
+/* Skeletons hold the number's and the line's height, so nothing moves when the counts arrive. */
+.stat-value-slot { display: flex; align-items: center; height: 35px; }
+.stat-sub-slot { display: flex; align-items: center; height: 18px; }
+.stat-value-skeleton { width: 48px; height: 28px; }
+.stat-sub-skeleton { width: 112px; max-width: 100%; height: 14px; }
+
+.stat-card-pressed,
+.stat-card-pressed:hover { border-color: var(--brand); background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand); }
+.stat-card-pressed .stat-label { color: var(--brand); font-weight: 600; }
+
+@container (max-width: 820px) {
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 728px) {
+  .stat-grid { gap: 10px; }
+  .stat-card { padding: 12px; }
+  .stat-label .icon { width: 14px; height: 14px; }
+  .stat-value { font-size: 26px; }
+  .stat-sub { white-space: normal; }
+}
 
 /* ---------- Toolbar ---------- */
 .toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
@@ -1540,13 +1572,12 @@ a.menu-item { text-decoration: none; }
 }
 .timeline-time:hover { color: var(--ink); }
 .timeline-time:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* A rejection reason is the author's own words: quoted, line breaks kept. */
+/* A rejection or cancellation reason is the author's own words: quoted on a grey wash (no side stripe), line breaks kept. */
 .timeline-reason,
 .workflow-reason {
   margin: 6px 0 0;
   padding: 8px 12px;
-  border-left: 3px solid var(--line);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: var(--radius);
   background: var(--surface-alt);
   color: var(--ink);
   font-size: 13.5px;
@@ -1880,19 +1911,28 @@ a.menu-item { text-decoration: none; }
 }
 .matrix-table th.matrix-group,
 .matrix-table th.matrix-cap { text-align: center; }
-/* Equal capability columns; the role column takes whatever width is left. 136px, not wider: at a
-   1200px window four of them, the actions and the role column must still fit, or the
-   actions column slides out of view behind the card's horizontal scroll. Long names wrap onto a
-   second line, centred, and the fixed height keeps one- and two-line names on the same baseline. */
-.matrix-table th.matrix-cap { width: 136px; height: 52px; line-height: 1.3; white-space: normal; text-wrap: balance; }
+/* The role column has a set width — room for a usual name and its chips on one line — and the capability columns
+   share what is left, so a wide window spreads the checkboxes instead of leaving a white gap after the role names.
+   A name too long for it (up to 64 characters) wraps inside the column rather than widening it, so it cannot squeeze
+   the checkboxes. Long capability names wrap onto a second line, centred; the fixed height keeps one- and two-line
+   names on the same baseline. */
+.matrix-table th.matrix-role,
+.matrix-table td.cell-title { width: 300px; min-width: 300px; }
+/* Equal shares, whatever the length of the name. */
+.matrix-table th.matrix-cap { width: 20%; height: 52px; line-height: 1.3; white-space: normal; text-wrap: balance; }
 /* A rule where each functional group starts, down through the body — and one before the actions. */
 .matrix-table .matrix-group-start,
 .matrix-table .col-action { border-left: 1px solid var(--line); }
-/* Reserve room for Hoàn tác / Lưu, so the columns do not jump when a row becomes dirty. */
-.matrix-table .col-action { width: 176px; text-align: center; }
+/* Reserve room for Hoàn tác / Lưu (about 172px plus the cell's padding), so no column moves when a row becomes
+   dirty and the buttons appear. */
+/* Its heading centred over the centred buttons, like the capability headings over their checkboxes: only the role
+   names read from the left. */
+.matrix-table .col-action,
+.matrix-table th.col-action { width: 200px; min-width: 200px; text-align: center; }
 .matrix-table td { height: 53px; }
-/* The role name and its chip stay on one line, so every row of the matrix is the same height. */
-.matrix-table td.cell-title { white-space: nowrap; }
+/* A long name wraps (even inside a long word); a chip never breaks across lines. */
+.matrix-table td.cell-title { white-space: normal; overflow-wrap: anywhere; }
+.matrix-table td.cell-title .badge { white-space: nowrap; }
 /* The label fills the cell, so the whole cell is the click target, not just the 16px box. */
 .matrix-table td.matrix-cell { position: relative; padding: 0; text-align: center; }
 .matrix-hit { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -1900,7 +1940,6 @@ a.menu-item { text-decoration: none; }
 .matrix-hit:has(input:disabled) { cursor: default; background: none; }
 .matrix-cell-changed { background: var(--chip-amber-bg); }
 .matrix-cell-error { background: var(--chip-red-bg); box-shadow: inset 0 0 0 2px var(--danger); }
-.matrix-row-dirty td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
 .data-table tbody tr.matrix-note-row:hover { background: none; }
 .matrix-note-row td { padding-top: 0; white-space: normal; }
 .data-table tbody tr.matrix-note-row td { border-bottom: 1px solid var(--line); }
@@ -2493,7 +2532,8 @@ a.menu-item { text-decoration: none; }
 .roster-list { display: flex; flex-direction: column; max-height: 13rem; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
 .roster-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
 .roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
-.roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
+/* A person the server refused: the row's own message says why; a light red wash shows which row, without a side stripe. */
+.roster-row-invalid { background: var(--chip-red-bg); }
 .roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
 .roster-role { flex: none; width: 152px; }
 /* A phone gives the name what the role does not need: "Thành viên" and its chevron fit in 128px. */
@@ -2627,25 +2667,72 @@ a.menu-item { text-decoration: none; }
 .choice-desc { color: var(--muted-ink); font-size: 13px; }
 
 /* ---------- Agenda (SCRUM-25, features/agenda) ----------
-   One line per item, as AI-eCabinet: handle, number, title, then presenter, state, conclusion and
+   One line per item, as AI-eCabinet: handle, "1. title", then presenter, state, conclusion and
    documents in fixed columns, then actions. Narrow (a phone, the room's 360px panel) the facts move
-   under the title and the actions to their own line. */
+   under the title and the actions to their own line. On the page it is drawn like the Tài liệu tab:
+   the add button above one white card, each item a fold bar on the header grey, opened in white. */
 .agenda-panel { container-type: inline-size; }
-.agenda-toolbar { flex-wrap: nowrap; }
-.agenda-alert { margin: 12px 16px 0; }
-.agenda-list { list-style: none; margin: 0; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
-.agenda-panel-room .agenda-list { padding: 0; }
-.agenda-panel-room .agenda-toolbar { padding: 0 0 12px; border: 0; }
-.agenda-item { position: relative; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
-.agenda-item-open { box-shadow: 0 1px 3px rgb(16 24 40 / .08); }
+.agenda-toolbar { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 12px; }
+.agenda-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.agenda-panel-room .agenda-list { gap: 8px; }
+.agenda-panel-room .agenda-toolbar { padding: 0 0 12px; }
+.agenda-panel-room .agenda-alert { margin: 0 0 12px; }
+.agenda-item { position: relative; background: var(--surface); }
+.agenda-panel-room .agenda-item { border: 1px solid var(--line); border-radius: var(--radius); }
+.agenda-panel-room .agenda-item-open { box-shadow: 0 1px 3px rgb(16 24 40 / .08); }
 /* The item under discussion: a live green edge only, as "Đang diễn ra" is the live green elsewhere. Its
-   background stays white like every other item; a green wash behind the white boxes clashed. */
-.agenda-item-current { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
+   background stays like every other item's; a green wash behind the white boxes clashed. */
+/* The item under discussion is told by its "Đang bàn" chip; the room's card also takes the live ring as its border.
+   No coloured side stripe: Hải 07/11/2026, sloplint S3. */
+.agenda-panel-room .agenda-item-current { border-color: var(--live-ring); }
 .agenda-item-dragging { z-index: 2; box-shadow: 0 8px 24px rgb(16 24 40 / .18); }
-/* Where the title starts, so the facts and the opened body line up under it. */
-.agenda-item { --agenda-indent: 46px; }
-.agenda-item:has(.agenda-grip) { --agenda-indent: 80px; }
-.agenda-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px 12px 8px; }
+/* Where the title starts, so the facts and the opened body line up under it: the head's padding, the
+   chevron and its gap (and the handle, when the Secretary may drag). */
+.agenda-item { --agenda-pad: 12px; --agenda-indent: 34px; }
+.agenda-item:has(.agenda-grip) { --agenda-indent: 68px; }
+.agenda-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px var(--agenda-pad) 8px; }
+
+/* The page: one card of folds, as .documents-card. The rules between items and the header grey come
+   from the Tài liệu tab, so the two tabs read as one. */
+.agenda-panel-page { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.agenda-sheet { padding: 0; }
+.agenda-sheet .agenda-item { --agenda-pad: 16px; --agenda-indent: 38px; }
+.agenda-sheet .agenda-item:has(.agenda-grip) { --agenda-indent: 72px; }
+.agenda-sheet .agenda-item + .agenda-item { border-top: 1px solid var(--line); }
+.agenda-sheet .agenda-item:first-child { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.agenda-sheet .agenda-item:last-child { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+.agenda-sheet .agenda-item:only-child { border-radius: var(--radius-lg); }
+.agenda-sheet .agenda-head { min-height: 48px; padding-top: 4px; padding-bottom: 4px; border-radius: inherit; background: var(--surface-head); }
+.agenda-sheet .agenda-item-open .agenda-head { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.agenda-sheet .agenda-item-open:not(:first-child) .agenda-head { border-radius: 0; }
+.agenda-sheet .agenda-head:has(.agenda-title:hover) { background: var(--surface-alt); }
+.agenda-sheet .agenda-body { padding-top: 12px; padding-bottom: 16px; border-top: 1px solid var(--line-soft); }
+.agenda-sheet .agenda-title { padding: 12px 0; }
+.agenda-sheet .agenda-title:hover > span { color: var(--ink); }
+.agenda-docs-count { display: inline-flex; flex: none; }
+.agenda-docs-count .badge { font-variant-numeric: tabular-nums; }
+/* On the page an item reads as a fold of the Tài liệu tab (Hải 07/11/2026): one grey bar per item, opened into white
+   rows across the card — the description, one row per document as in .documents-row, then the conclusion — with no
+   box inside the card. The presenter is a name only: an initials disc where there is no photo added nothing, and
+   "Chưa phân công" is the absence of a fact, so it is not printed. The room's narrow panel keeps its boxes. */
+.agenda-sheet .agenda-presenter .avatar { display: none; }
+.agenda-sheet .agenda-presenter-none { display: none; }
+.agenda-sheet .agenda-body { padding: 0; }
+.agenda-sheet .agenda-note { margin: 0; padding: 12px var(--agenda-pad) 12px var(--agenda-indent); }
+.agenda-sheet .agenda-boxes { display: block; }
+.agenda-sheet .agenda-box { padding: 0; border-radius: 0; background: none; }
+.agenda-sheet .agenda-note + .agenda-boxes, .agenda-sheet .agenda-box + .agenda-box { border-top: 1px solid var(--line-soft); }
+.agenda-sheet .agenda-box:first-child > .agenda-box-head { display: none; }
+.agenda-sheet .agenda-box:first-child > .value-empty { padding: 12px var(--agenda-pad) 12px var(--agenda-indent); }
+.agenda-sheet .agenda-doc-list { gap: 0; font-size: 14px; }
+.agenda-sheet .agenda-doc-list li {
+  min-height: 52px; padding: 0 var(--agenda-pad) 0 var(--agenda-indent);
+  border: 0; border-radius: 0; background: none;
+}
+.agenda-sheet .agenda-doc-list li + li { border-top: 1px solid var(--line-soft); }
+.agenda-sheet .agenda-doc-list a { gap: 10px; color: var(--ink); font-weight: 600; }
+.agenda-sheet .agenda-doc-list a:hover > span { color: var(--brand); }
+.agenda-sheet .agenda-box + .agenda-box { padding: 8px var(--agenda-pad) 16px var(--agenda-indent); }
 .agenda-break { flex-basis: 100%; height: 0; }
 .agenda-grip {
   display: inline-grid; flex: none; place-items: center; width: 28px; height: 36px; margin-right: -4px;
@@ -2654,11 +2741,6 @@ a.menu-item { text-decoration: none; }
 }
 .agenda-grip:hover { background: var(--surface-alt); color: var(--ink); }
 .agenda-item-dragging .agenda-grip { cursor: grabbing; }
-.agenda-number {
-  display: inline-grid; flex: none; place-items: center; width: 24px; height: 24px; border-radius: 50%;
-  background: var(--surface-alt); color: var(--label-ink); font-size: 12px; font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
 .agenda-title {
   display: flex; flex: 1; align-items: flex-start; gap: 6px; min-width: 0; min-height: 40px; padding: 10px 0;
   border: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 600; text-align: left;
@@ -2667,19 +2749,22 @@ a.menu-item { text-decoration: none; }
 .agenda-title > svg { flex: none; margin-top: 3px; color: var(--label-ink); }
 .agenda-title > span { min-width: 0; overflow-wrap: anywhere; }
 .agenda-title:hover > span { color: var(--brand); }
-.agenda-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: calc(var(--agenda-indent) - 12px); }
+.agenda-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: calc(var(--agenda-indent) - var(--agenda-pad)); }
 .agenda-presenter { display: inline-flex; align-items: center; gap: 6px; max-width: 240px; min-width: 0; font-size: 13px; }
 .agenda-presenter-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted-ink); }
 .agenda-presenter-none .agenda-presenter-name { color: var(--label-ink); font-style: italic; }
 .avatar-xs { width: 22px; height: 22px; font-size: 10px; }
 .avatar-empty { border: 1px dashed var(--label-ink); background: transparent; }
 .agenda-status, .agenda-concluded { font-size: 13px; }
+/* The state and conclusion sit in cells that only hold a place on the page's one line (below). */
+.agenda-cell { display: contents; }
+.agenda-step-slot { display: none; }
 .agenda-docs { display: inline-flex; align-items: center; gap: 4px; width: 36px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
 .agenda-docs-none { color: var(--faint-ink); }
 .agenda-actions { flex: none; gap: 6px; }
 .icon-button-danger { color: var(--danger); }
 .agenda-action-slot { width: 34px; flex: none; }
-.agenda-body { padding: 4px 12px 12px var(--agenda-indent); }
+.agenda-body { padding: 4px var(--agenda-pad) 12px var(--agenda-indent); }
 .agenda-text.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
 .agenda-boxes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .agenda-box { min-width: 0; padding: 10px 12px 12px; border-radius: var(--radius); background: var(--surface-alt); }
@@ -2731,7 +2816,8 @@ a.menu-item { text-decoration: none; }
 .vote-list { list-style: none; margin: 0; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
 .vote-panel-room .vote-list { padding: 0; }
 .vote-item { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
-.vote-item-open { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
+/* The open vote: a green frame, and its "Đang mở" chip says the rest — no side stripe. */
+.vote-item-open { border-color: var(--live-ring); }
 .vote-item-draft { border-style: dashed; border-color: var(--control-line); }
 .vote-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px 12px 8px; }
 .vote-break { flex-basis: 100%; height: 0; }
@@ -2851,6 +2937,24 @@ a.menu-item { text-decoration: none; }
   .agenda-meta { flex: none; flex-wrap: nowrap; order: 1; padding-left: 0; }
   .agenda-presenter { width: 180px; }
   .agenda-actions { order: 2; }
+  /* Fixed cells, so the presenters, states and counts form columns down the card. */
+  .agenda-sheet .agenda-cell-status { display: inline-flex; width: 92px; }
+  .agenda-sheet-concluded .agenda-cell-concluded { display: inline-flex; width: 116px; }
+  .agenda-sheet .agenda-docs-count { min-width: 84px; }
+  .agenda-sheet-steps .agenda-actions > .btn { min-width: 100px; justify-content: center; }
+  .agenda-sheet-steps .agenda-step-slot { display: block; flex: none; width: 100px; }
+  /* Kept as an empty slot here, so the presenters still form a column. */
+  .agenda-sheet .agenda-presenter-none { display: inline-flex; visibility: hidden; }
+}
+@container (min-width: 641px) {
+  .agenda-sheet .agenda-head { flex-wrap: nowrap; }
+  .agenda-sheet .agenda-break { display: none; }
+  .agenda-sheet .agenda-meta { flex: none; flex-wrap: nowrap; order: 1; padding-left: 0; }
+  .agenda-sheet .agenda-actions { order: 2; }
+}
+@container (min-width: 641px) and (max-width: 959px) {
+  /* Between a phone and the wide columns the bar is tight: "Đã kết luận" keeps its icon, its words go to the tooltip. */
+  .agenda-sheet .agenda-concluded-text { display: none; }
 }
 @container (max-width: 640px) {
   .agenda-boxes { grid-template-columns: minmax(0, 1fr); }
@@ -2859,22 +2963,20 @@ a.menu-item { text-decoration: none; }
    the facts and the actions share one line under it and the paperclip never wraps under the presenter. */
 @container (max-width: 520px) {
   .agenda-meta { display: contents; }
-  .agenda-meta > * { order: 3; }
+  .agenda-meta > *, .agenda-cell > * { order: 3; }
   .agenda-head { column-gap: 14px; }
-  .agenda-head > :is(.agenda-grip, .agenda-number) { margin-right: -4px; }
-  .agenda-meta > .agenda-status { order: 1; align-self: flex-start; margin-top: 10px; }
+  .agenda-meta .agenda-status { order: 1; align-self: flex-start; margin-top: 10px; }
   .agenda-break { order: 2; }
   .agenda-actions { order: 6; margin-left: auto; }
-  .agenda-panel .agenda-body { padding-left: 12px; }
-  .agenda-toolbar { padding-left: 12px; padding-right: 12px; }
-  .agenda-list { padding-left: 12px; padding-right: 12px; }
-  .agenda-panel .agenda-empty { margin-left: 12px; margin-right: 12px; }
-  .agenda-panel-room .agenda-list { padding: 0; }
-  .agenda-panel-room .agenda-empty { margin: 0; }
+  .agenda-panel .agenda-item { --agenda-pad: 12px; }
+  .agenda-panel .agenda-body { padding-left: var(--agenda-pad); }
+  .agenda-sheet .agenda-item, .agenda-sheet .agenda-item:has(.agenda-grip) { --agenda-indent: 12px; }
+  .agenda-panel .agenda-sheet .agenda-body { padding-left: 0; }
+  .agenda-panel-page .agenda-empty { margin-left: 12px; margin-right: 12px; }
 }
 /* A phone has no room beside the title: the state stays with the facts, the actions wrap under them. */
 @container (max-width: 400px) {
-  .agenda-meta > .agenda-status { order: 3; align-self: center; margin-top: 0; }
+  .agenda-meta .agenda-status { order: 3; align-self: center; margin-top: 0; }
 }
 
 /* ---------- Placeholder screens ----------
@@ -2911,9 +3013,6 @@ a.menu-item { text-decoration: none; }
 @media (max-width: 720px) {
   /* AppShell keeps the sidebar collapsed here and drops the toggle. */
   .sidebar-edge-toggle { display: none; }
-  .summary-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .summary-card { padding: 10px 12px; }
-  .summary-count { font-size: 20px; }
   .page-header { flex-wrap: wrap; }
   .field-grid, .form-grid, .form-row-3 { grid-template-columns: minmax(0, 1fr); }
   .page-alert { flex-direction: column; align-items: flex-start; }
@@ -3794,7 +3893,7 @@ audio.recording-player { height: 40px; }
 .voice-sample-text > * { white-space: nowrap; }
 .voice-sample-name { color: var(--ink); font-weight: 500; }
 .voice-actions { justify-content: space-between; }
-.voice-passage { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
+.voice-passage { margin: 8px 0 0; padding: 14px 16px; border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
 .voice-review { display: grid; gap: 8px; margin: 12px 0 0; }
 .voice-review .field-hint { margin: 0; }
 .voice-review audio { width: 100%; }
@@ -4807,3 +4906,33 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .ai-settings .form-grid { grid-template-columns: 1fr; }
   .ai-settings-mode .segmented { width: 100%; }
 }
+
+/* ── Ghi chú của Thư ký (SCRUM-30) — one panel for the meeting tab and the call room (ADR-0011) ── */
+.notes-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.notes-room { overflow-y: auto; }
+.notes-room-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.notes-editor { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.notes-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.notes-toolbar .select { flex: 1 1 220px; min-width: 0; }
+.notes-text-input { min-height: 320px; font-size: 14px; line-height: 1.55; resize: vertical; }
+.notes-room .notes-text-input { min-height: 240px; }
+.notes-status { display: flex; justify-content: space-between; gap: 8px; min-height: 18px; margin: 0; color: var(--muted-ink); font-size: 12.5px; }
+.notes-status .icon { vertical-align: -2px; }
+.notes-status-warn { color: var(--chip-amber-fg); }
+.notes-counter { margin-left: auto; font-variant-numeric: tabular-nums; }
+.notes-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.notes-latest { max-height: 160px; overflow-y: auto; margin: 8px 0 0; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); color: var(--ink); font-size: 13px; }
+.notes-conflict-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.notes-conflict-actions .btn { margin-top: 0; }
+.notes-read { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.notes-read-title { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.notes-empty { margin: 0; }
+.notes-skeleton { display: flex; flex-direction: column; gap: 8px; }
+.notes-skeleton span { height: 34px; border-radius: var(--radius); background: var(--surface-alt); }
+.notes-skeleton span + span { height: 240px; }
+
+/* The column beside the tabs: the status history, then the way into the Secretary's notes (SCRUM-30). */
+.detail-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.notes-entry { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.notes-entry .card-title { margin: 0; }
+.dialog-lg .notes-text-input { min-height: min(420px, 50dvh); }

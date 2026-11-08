@@ -18,12 +18,14 @@ public sealed class VoteChangePublisher(IHubContext<MeetingHub> hub, IMeetingRep
     public async Task PublishAsync(VoteChange change, bool managersOnly, CancellationToken ct)
     {
         var groups = managersOnly
-            ? await ManagerGroupsAsync(change.MeetingId, ct)
+            ? await ManagerGroupsAsync(change.MeetingId, meetings, db, ct)
             : await AgendaChangePublisher.ReaderGroupsAsync(change.MeetingId, meetings, db, guests, ct);
         if (groups.Count > 0) await hub.Clients.Groups(groups).SendAsync("voteChanged", change, ct);
     }
 
-    private async Task<List<string>> ManagerGroupsAsync(Guid meetingId, CancellationToken ct)
+    /// <summary>The joined groups of the meeting's current, active Chair and Secretary.</summary>
+    internal static async Task<List<string>> ManagerGroupsAsync(Guid meetingId, IMeetingRepository meetings,
+        TrustCabinetDbContext db, CancellationToken ct)
     {
         var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
         if (meeting is null) return [];

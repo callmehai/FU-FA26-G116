@@ -1,0 +1,108 @@
+title UC-84e - Withdraw or End Calendar Share
+
+actor "Meeting Organizer" as Viewer
+actor "User" as Owner
+boundary "Calendar Sharing Page" as SharingPage
+control ":Calendar Sharing Controller" as SharingController
+control ":Calendar Sharing Service" as SharingService
+participant ":Calendar Share Repository" as ShareRepository
+participant ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Viewer->SharingPage: Withdraw the pending request
+activate SharingPage
+
+SharingPage->SharingController: Withdraw calendar share request
+activate SharingController
+
+SharingController->SharingService: withdrawShare(shareId, actorId)
+activate SharingService
+
+SharingService->ShareRepository: Get share where the actor is one of the two people (BR-423)
+activate ShareRepository
+ShareRepository->Database: Retrieve share
+activate Database
+Database-->ShareRepository: Share / Not found
+deactivate Database
+ShareRepository-->SharingService: Share / Not found
+deactivate ShareRepository
+
+alt Actor is not one of the two people - EX-1
+    SharingService-->SharingController: Not found, nothing disclosed
+    deactivate SharingService
+    SharingController-->SharingPage: 404 without a body
+    deactivate SharingController
+    SharingPage-->Viewer: No such calendar share
+else Actor is one of the two people
+    alt Nothing is Pending to withdraw - EX-2
+        SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
+        deactivate SharingService
+        SharingController-->SharingPage: 409 MSG450
+        deactivate SharingController
+        SharingPage-->Viewer: MSG450 - This action is not allowed in the current state of the share.
+    else A request is Pending
+        SharingService->ShareRepository: Close the request and audit entry (BR-423, BR-426)
+        activate ShareRepository
+        ShareRepository->Database: Update share and audit record
+        activate Database
+        Database-->ShareRepository: Saved / Save failed
+        deactivate Database
+        ShareRepository-->SharingService: Closed request / Save failed
+        deactivate ShareRepository
+
+        alt The withdrawal or ending cannot be saved - EX-3
+            SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+            deactivate SharingService
+            SharingController-->SharingPage: 503 MSG447
+            deactivate SharingController
+            SharingPage-->Viewer: MSG447 - Unable to save the calendar sharing data. Please try again.
+        else Request is closed
+            SharingService->NotificationService: Notify the other side the request was withdrawn (BR-426)
+            activate NotificationService
+            NotificationService->Database: Record notification
+            activate Database
+            Database-->NotificationService: Notification recorded
+            deactivate Database
+            NotificationService-->SharingService: Other side notified
+            deactivate NotificationService
+            SharingService-->SharingController: Closed request
+            deactivate SharingService
+            SharingController-->SharingPage: 200 MSG438 - Calendar share request withdrawn.
+            deactivate SharingController
+            SharingPage-->Viewer: MSG438 - Calendar share request withdrawn.
+        end
+    else Either side ends an Effective share - AF-1
+        SharingService->ShareRepository: Close the share and audit entry (BR-423, BR-426)
+        activate ShareRepository
+        ShareRepository->Database: Update share and audit record
+        activate Database
+        Database-->ShareRepository: Saved / Save failed
+        deactivate Database
+        ShareRepository-->SharingService: Ended share / Save failed
+        deactivate ShareRepository
+
+        alt The withdrawal or ending cannot be saved - EX-3
+            SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+            deactivate SharingService
+            SharingController-->SharingPage: 503 MSG447
+            deactivate SharingController
+            SharingPage-->Viewer: MSG447 - Unable to save the calendar sharing data. Please try again.
+        else Share is ended
+            SharingService->NotificationService: Notify the other side the sharing ended (BR-426)
+            activate NotificationService
+            NotificationService->Database: Record notification
+            activate Database
+            Database-->NotificationService: Notification recorded
+            deactivate Database
+            NotificationService-->SharingService: Other side notified
+            deactivate NotificationService
+            SharingService-->SharingController: Ended share
+            deactivate SharingService
+            SharingController-->SharingPage: 200 MSG451 - Calendar sharing ended.
+            deactivate SharingController
+            SharingPage-->Viewer: MSG451 - Calendar sharing ended.
+        end
+    end
+end
+
+deactivate SharingPage

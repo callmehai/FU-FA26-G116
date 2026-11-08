@@ -8,6 +8,7 @@ using Npgsql;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -1413,6 +1414,83 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal("Đã công bố rồi huỷ", Assert.Single(page.Items).Title);
         Assert.True(MeetingReadPolicy.CanRead(announced, member.Id));
         Assert.False(MeetingReadPolicy.CanRead(draft, member.Id));
+    }
+
+    [Fact]
+    public async Task Http_todo_scope_lists_only_the_meetings_waiting_on_the_caller()
+    {
+        var approver = NewUser("Todo Approver", _approverRoleId);
+        var otherApprover = NewUser("Todo Other Approver", _approverRoleId);
+        var roleWithoutCapabilities = NewRole("Todo no capability");
+        _db.Roles.Add(roleWithoutCapabilities);
+        var plain = NewUser("Todo Plain", roleWithoutCapabilities.Id);
+        _db.Users.AddRange(approver, otherApprover, plain);
+        var now = DateTimeOffset.UtcNow;
+        // Any date: one long past, one far ahead.
+        var mine = new[]
+        {
+            ListMeeting("Todo chờ duyệt 1", MeetingStatus.WaitingApproval, now.AddDays(-40), approverId: approver.Id),
+            ListMeeting("Todo chờ duyệt 2", MeetingStatus.WaitingApproval, now.AddDays(3), approverId: approver.Id),
+            ListMeeting("Todo chờ duyệt 3", MeetingStatus.WaitingApproval, now.AddDays(90), approverId: approver.Id),
+        };
+        var othersWaiting = ListMeeting("Todo của người khác", MeetingStatus.WaitingApproval, now, approverId: otherApprover.Id);
+        // The approver chairs it, so they can read it, but it is not theirs to approve.
+        othersWaiting.Participants.Add(new MeetingParticipant { UserId = approver.Id, Role = MeetingRole.Chair });
+        var plainWaiting = ListMeeting("Todo người không còn quyền duyệt", MeetingStatus.WaitingApproval, now, approverId: plain.Id);
+        var selfAssigned = ListMeeting("Todo tự giao cho mình", MeetingStatus.WaitingApproval, now, approverId: _creatorId);
+        var approved = ListMeeting("Todo đã duyệt", MeetingStatus.Approved, now, approverId: approver.Id);
+        var published = ListMeeting("Todo đã công bố", MeetingStatus.Published, now, approverId: approver.Id);
+        var draft = ListMeeting("Todo nháp", MeetingStatus.Draft, now);
+        Meeting[] all = [.. mine, othersWaiting, plainWaiting, selfAssigned, approved, published, draft];
+        foreach (var meeting in all)
+        {
+            // The plain user can read every one of them, and may act on none.
+            meeting.Participants.Add(new MeetingParticipant { UserId = plain.Id, Role = MeetingRole.Secretary });
+        }
+
+        _db.Meetings.AddRange(all);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        using var app = new PostgreSqlMeetingApiFactory(_connectionString);
+        var issuer = app.Services.GetRequiredService<ITokenIssuer>();
+        async Task<JsonElement> ListAs(Guid userId, string query, params Capability[] capabilities)
+        {
+            using var client = app.CreateClient();
+            var user = await _db.Users.AsNoTracking().SingleAsync(item => item.Id == userId);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                "Bearer", issuer.CreateAccessToken(user, capabilities));
+            var response = await client.GetAsync($"/api/meetings?{query}");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            return await response.Content.ReadFromJsonAsync<JsonElement>();
+        }
+
+        static Guid[] Ids(JsonElement page)
+            => page.GetProperty("items").EnumerateArray().Select(item => item.GetProperty("id").GetGuid()).ToArray();
+
+        // The approver: the three assigned to them, paged in the query, not the one they only chair.
+        var first = await ListAs(approver.Id, "scope=todo&pageSize=2&sortBy=title&sortDir=asc", Capability.MeetingApprover);
+        var second = await ListAs(approver.Id, "scope=todo&pageSize=2&page=2&sortBy=title&sortDir=asc", Capability.MeetingApprover);
+        Assert.Equal(3, first.GetProperty("totalCount").GetInt64());
+        Assert.Equal(2, first.GetProperty("totalPages").GetInt64());
+        Assert.Equal(mine.Select(m => m.Id).Order(), Ids(first).Concat(Ids(second)).Order());
+        var visibleToApprover = await ListAs(approver.Id, "status=WaitingApproval", Capability.MeetingApprover);
+        Assert.Contains(othersWaiting.Id, Ids(visibleToApprover));
+
+        // The organizer: their own approved meeting to publish; never one assigned to themselves.
+        var organizer = await ListAs(_creatorId, "scope=todo", Capability.MeetingCreator, Capability.MeetingApprover);
+        Assert.Equal([approved.Id], Ids(organizer));
+        Assert.Equal(1, organizer.GetProperty("totalCount").GetInt64());
+        var combined = await ListAs(_creatorId, "scope=todo&status=Draft", Capability.MeetingCreator);
+        Assert.Equal(0, combined.GetProperty("totalCount").GetInt64());
+
+        // Assigned and able to read everything, but their role holds no capability: nothing waits on
+        // them, whatever the token claims.
+        var plainTodo = await ListAs(plain.Id, "scope=todo", Capability.MeetingApprover, Capability.MeetingCreator);
+        Assert.Equal(0, plainTodo.GetProperty("totalCount").GetInt64());
+        Assert.Empty(Ids(plainTodo));
+        var plainAll = await ListAs(plain.Id, "scope=all");
+        Assert.Equal(all.Length, plainAll.GetProperty("totalCount").GetInt64());
     }
 
     [Fact]

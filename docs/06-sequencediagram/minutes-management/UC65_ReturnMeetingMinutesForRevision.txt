@@ -37,12 +37,16 @@ else Actor is the current Secretary, not the Chair - EX-1
     MinutesController-->MinutesCard: 403 MSG428
     MinutesCard-->Actor: MSG428 - Only the Chair may approve or return the minutes.
 else Actor is the current Chair
-    MinutesService->MinutesService: Check the revision is WaitingApproval and the reason\nis not empty and within 2,000 characters (BR-407)
+    MinutesService->MinutesService: Check the revision is WaitingApproval, it is the copy the actor read (BR-389)\nand the reason is not empty and within 2,000 characters (BR-407)
 
     alt Not waiting for approval - EX-2
         MinutesService-->MinutesController: MSG429 - These minutes are not waiting for approval.
         MinutesController-->MinutesCard: 409 MSG429
         MinutesCard-->Actor: MSG429 - These minutes are not waiting for approval.
+    else Changed after the actor opened it - EX-6
+        MinutesService-->MinutesController: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
+        MinutesController-->MinutesCard: 409 MSG401
+        MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else The reason is missing or too long - EX-3
         MinutesService-->MinutesController: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
         MinutesController-->MinutesCard: 400 MSG431

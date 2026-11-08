@@ -170,7 +170,8 @@ cập nhật tài liệu theo code. Note này gom việc BA, không thay Jira ha
   sau khi #259 merge (DOCX là nguồn; `05-…`, `06-…` và `Report-3_….md` là bản sinh ra). Lượt 05/11/2026 đã chạy trên
   nhánh main, `sync_requirement_extracts.py --check` báo khớp.
 - [x] `MSG384`–`MSG405` đã có trong danh mục trên main sau khi #260 vào (04/11/2026); `sync_reports.py` không còn cảnh báo.
-- [ ] Comment kết quả vào **SCRUM-36** và **SCRUM-32** sau khi #260 và nhánh docs vào `main`
+- [x] Comment kết quả vào **SCRUM-36** 06/11/2026 (`10448`: UC-47–UC-50, BR-373–BR-382, MSG384–394, PR #260/`a425155` + #261/#262/#264; UC-51 chưa làm) và chuyển `To Do` → `In Review` cho Tester
   ([DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update)); nêu rõ
   UC-51 và UC-61–UC-65 chưa đặc tả vì chưa có code.
-- [ ] SCRUM-137: chỉ comment xác nhận phạm vi "chỉ bận/rảnh" khi ticket được nhận; chưa viết UC.
+- [ ] Comment kết quả vào **SCRUM-32**: #263 và #265 đã vào `main` ngày 06/11/2026 (README và note đã cập nhật khi merge); docs note 34 đã làm, comment Jira chờ PR #275 vào `main`.
+- [x] SCRUM-137: comment `10449` 06/11/2026 xác nhận phạm vi "chỉ bận/rảnh"; giữ `To Do`, chưa viết UC.

@@ -1,0 +1,105 @@
+title UC-84a - Request Calendar Share
+
+actor "Meeting Organizer" as Requester
+actor "User" as Owner
+boundary "Calendar Sharing Page" as SharingPage
+control ":Calendar Sharing Controller" as SharingController
+control ":Calendar Sharing Service" as SharingService
+participant ":User Repository" as UserRepository
+participant ":Calendar Share Repository" as ShareRepository
+participant ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Requester->SharingPage: Request calendar share (owner, level, date range)
+activate SharingPage
+
+SharingPage->SharingController: Request calendar share
+activate SharingController
+
+SharingController->SharingService: requestShare(requesterId, ownerId, level, startDate, endDate)
+activate SharingService
+
+SharingService->UserRepository: Verify requester is active and holds MeetingCreator (BR-430)\nand owner is an active internal account different from the requester
+activate UserRepository
+UserRepository->Database: Retrieve both accounts with capabilities
+activate Database
+Database-->UserRepository: Accounts / Not found
+deactivate Database
+UserRepository-->SharingService: Verification result
+deactivate UserRepository
+
+alt Requester has no right to create meetings - EX-1
+    SharingService-->SharingController: MSG448 - Only a Meeting Organizer can do this.
+    deactivate SharingService
+    SharingController-->SharingPage: 403 MSG448
+    deactivate SharingController
+    SharingPage-->Requester: MSG448 - Only a Meeting Organizer can do this.
+else Requester is verified
+    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the requester (BR-423)
+    activate ShareRepository
+    ShareRepository->Database: Find shares of the pair
+    activate Database
+    Database-->ShareRepository: Existing shares
+    deactivate Database
+    ShareRepository-->SharingService: No Pending or Effective share / Already shared
+    deactivate ShareRepository
+
+    alt A share already exists - EX-2
+        SharingService-->SharingController: MSG449 - There is already a pending or effective share with this person.
+        deactivate SharingService
+        SharingController-->SharingPage: 409 MSG449
+        deactivate SharingController
+        SharingPage-->Requester: MSG449 - There is already a pending or effective share with this person.
+    else No share exists
+        SharingService->SharingService: Validate level M1 or M2 and date range (BR-414, BR-431)
+
+        alt Range is invalid - EX-3
+            SharingService-->SharingController: MSG443 - The date range is invalid.
+            deactivate SharingService
+            SharingController-->SharingPage: 400 MSG443
+            deactivate SharingController
+            SharingPage-->Requester: MSG443 - The date range is invalid.
+        else Range is valid
+            alt Owner cannot be reached - EX-4
+                SharingService-->SharingController: Not found, nothing disclosed
+                deactivate SharingService
+                SharingController-->SharingPage: Not found, refresh the owner list
+                deactivate SharingController
+                SharingPage-->Requester: That person is no longer listed
+            else Owner is reachable
+                SharingService->ShareRepository: Save Pending share and audit entry (BR-423, BR-426)
+                activate ShareRepository
+                ShareRepository->Database: Insert share and audit record
+                activate Database
+                Database-->ShareRepository: Saved / Save failed
+                deactivate Database
+                ShareRepository-->SharingService: Pending share / Save failed
+                deactivate ShareRepository
+
+                alt Share cannot be saved - EX-5
+                    SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+                    deactivate SharingService
+                    SharingController-->SharingPage: 503 MSG447
+                    deactivate SharingController
+                    SharingPage-->Requester: MSG447 - Unable to save the calendar sharing data. Please try again.
+                else Share is Pending
+                    SharingService->NotificationService: Notify the owner of the share request (BR-426)
+                    activate NotificationService
+                    NotificationService->Database: Record owner notification
+                    activate Database
+                    Database-->NotificationService: Notification recorded
+                    deactivate Database
+                    NotificationService-->SharingService: Owner notified
+                    deactivate NotificationService
+                    SharingService-->SharingController: Pending share
+                    deactivate SharingService
+                    SharingController-->SharingPage: 201 MSG435 - Calendar share request sent.
+                    deactivate SharingController
+                    SharingPage-->Requester: MSG435 - Calendar share request sent.
+                end
+            end
+        end
+    end
+end
+
+deactivate SharingPage

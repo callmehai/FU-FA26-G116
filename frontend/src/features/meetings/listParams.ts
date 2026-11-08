@@ -3,6 +3,7 @@ import {
   MEETING_STATUSES,
   SENSITIVITIES,
   type MeetingListQuery,
+  type MeetingListScope,
   type MeetingSortBy,
   type MeetingTiming,
   type MeetingStatus,
@@ -17,14 +18,19 @@ import {
  * Whatever is in the URL is read defensively: an unknown value is dropped rather than sent, so a
  * hand-edited or outdated link falls back to the default instead of failing with a 400.
  *
- * As in AI-eCabinet, the list opens on what is happening now: no `status` in the URL means
- * "Đang diễn ra", and `status=all` is the explicit "every status".
+ * The list opens on today, the "Họp hôm nay" card: a URL with no `status`, `scope` or `when` means
+ * every status held today, and `when=all` is the explicit "any time". Once a status or the
+ * "Cần xử lý" scope is chosen, no `when` means any time, so those cards' links stay `?status=Draft`
+ * and `?scope=todo`. (AI-eCabinet opens unfiltered; opening on today is ours.) `status=all` from
+ * older links still reads as every status.
  */
 export interface ListState {
   q: string
   status: MeetingStatus | ''
   sensitivity: Sensitivity | ''
   when: When | ''
+  /** `todo` = "Cần xử lý": only the meetings waiting on the caller, whatever the other filters. */
+  scope: MeetingListScope | ''
   page: number
   pageSize: number
   sortBy: MeetingSortBy
@@ -45,7 +51,8 @@ export const WHEN_LABEL: Record<When, string> = {
   past: 'Đã diễn ra',
 }
 
-const ALL_STATUSES = 'all'
+const ANY_TIME = 'all'
+const SCOPES: readonly MeetingListScope[] = ['todo']
 
 export const PAGE_SIZES = [10, 20, 50] as const
 const SORT_COLUMNS: readonly MeetingSortBy[] = ['title', 'plannedStartTime', 'createdAt']
@@ -57,13 +64,19 @@ export function defaultDirection(column: MeetingSortBy): SortDirection {
 
 export const DEFAULT_STATE: ListState = {
   q: '',
-  status: 'InProgress',
+  status: '',
   sensitivity: '',
-  when: '',
+  when: 'today',
+  scope: '',
   page: 1,
   pageSize: 20,
   sortBy: 'plannedStartTime',
   sortDir: 'desc',
+}
+
+/** A plain list is today's; a status or "Cần xử lý" is shown at any time, as its card counts it. */
+function defaultWhen(status: ListState['status'], scope: ListState['scope']): ListState['when'] {
+  return status || scope ? '' : DEFAULT_STATE.when
 }
 
 function oneOf<T extends string>(value: string | null, allowed: readonly T[]): T | undefined {
@@ -74,13 +87,16 @@ export function readListState(params: URLSearchParams): ListState {
   const sortBy = oneOf(params.get('sortBy'), SORT_COLUMNS) ?? DEFAULT_STATE.sortBy
   const page = Number(params.get('page'))
   const pageSize = Number(params.get('pageSize'))
-  const status = params.get('status')
+  const status = oneOf(params.get('status'), MEETING_STATUSES) ?? ''
+  const scope = oneOf(params.get('scope'), SCOPES) ?? ''
+  const when = params.get('when')
 
   return {
     q: params.get('q') ?? '',
-    status: status === ALL_STATUSES ? '' : (oneOf(status, MEETING_STATUSES) ?? DEFAULT_STATE.status),
+    status,
     sensitivity: oneOf(params.get('sensitivity'), SENSITIVITIES) ?? '',
-    when: oneOf(params.get('when'), WHEN_OPTIONS) ?? '',
+    when: when === ANY_TIME ? '' : (oneOf(when, WHEN_OPTIONS) ?? defaultWhen(status, scope)),
+    scope,
     page: Number.isInteger(page) && page >= 1 ? page : 1,
     pageSize: (PAGE_SIZES as readonly number[]).includes(pageSize) ? pageSize : DEFAULT_STATE.pageSize,
     sortBy,
@@ -93,9 +109,10 @@ export function writeListState(state: ListState): URLSearchParams {
   const params = new URLSearchParams()
   const q = state.q.trim()
   if (q) params.set('q', q)
-  if (state.status !== DEFAULT_STATE.status) params.set('status', state.status || ALL_STATUSES)
+  if (state.status) params.set('status', state.status)
   if (state.sensitivity) params.set('sensitivity', state.sensitivity)
-  if (state.when) params.set('when', state.when)
+  if (state.when !== defaultWhen(state.status, state.scope)) params.set('when', state.when || ANY_TIME)
+  if (state.scope) params.set('scope', state.scope)
   if (state.sortBy !== DEFAULT_STATE.sortBy || state.sortDir !== DEFAULT_STATE.sortDir) {
     params.set('sortBy', state.sortBy)
     params.set('sortDir', state.sortDir)
@@ -107,12 +124,12 @@ export function writeListState(state: ListState): URLSearchParams {
 
 /** Whether anything narrows the list — decides between "no meetings yet" and "nothing matches". */
 export function hasFilters(state: ListState) {
-  return Boolean(state.q.trim() || state.status || state.sensitivity || state.when)
+  return Boolean(state.q.trim() || state.status || state.sensitivity || state.when || state.scope)
 }
 
 /** "Bỏ lọc": every meeting, keeping how the user sorts and pages. */
 export function clearedState(state: ListState): ListState {
-  return { ...DEFAULT_STATE, status: '', pageSize: state.pageSize, sortBy: state.sortBy, sortDir: state.sortDir }
+  return { ...DEFAULT_STATE, when: '', pageSize: state.pageSize, sortBy: state.sortBy, sortDir: state.sortDir }
 }
 
 /**
@@ -134,6 +151,7 @@ export function toQuery(state: ListState, now = new Date()): MeetingListQuery {
     from: range ? startOfDay(range.from).toISOString() : undefined,
     to: range ? endOfDay(range.to).toISOString() : undefined,
     timing,
+    scope: state.scope || undefined,
     page: state.page,
     pageSize: state.pageSize,
     sortBy: state.sortBy,
@@ -143,4 +161,46 @@ export function toQuery(state: ListState, now = new Date()): MeetingListQuery {
 
 function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+/**
+ * The four cards above the list, AI-eCabinet's: each one is exactly a set of criteria, so its count is
+ * the list's own `totalCount` under them and a click shows the very rows it counted.
+ */
+export const STAT_CARDS = ['today', 'published', 'todo', 'draft'] as const
+export type StatCard = (typeof STAT_CARDS)[number]
+
+type StatCriteria = Pick<ListState, 'status' | 'when' | 'scope'>
+
+const STAT_CRITERIA: Record<StatCard, StatCriteria> = {
+  today: { status: '', when: 'today', scope: '' },
+  published: { status: 'Published', when: '', scope: '' },
+  todo: { status: '', when: '', scope: 'todo' },
+  draft: { status: 'Draft', when: '', scope: '' },
+}
+
+/** A card's list: its criteria alone — the search and the other filters go, so the list matches the number. */
+export function statState(card: StatCard, state: ListState): ListState {
+  return { ...clearedState(state), ...STAT_CRITERIA[card] }
+}
+
+/** The request behind a card's number: one row, only its total is read. */
+export function statQuery(criteria: StatCriteria | StatCard, now = new Date()): MeetingListQuery {
+  const picked = typeof criteria === 'string' ? STAT_CRITERIA[criteria] : criteria
+  return toQuery({ ...DEFAULT_STATE, ...picked, pageSize: 1 }, now)
+}
+
+/**
+ * Which card the list is showing. "Cần xử lý" is a scope and stays on under other filters, as on
+ * AI-eCabinet; any other card is on only while the list is exactly its criteria.
+ */
+export function activeStat(state: ListState): StatCard | null {
+  if (state.scope === 'todo') return 'todo'
+  if (state.q.trim() || state.sensitivity) return null
+  return (
+    STAT_CARDS.find((card) => {
+      const want = STAT_CRITERIA[card]
+      return want.scope === '' && want.status === state.status && want.when === state.when
+    }) ?? null
+  )
 }

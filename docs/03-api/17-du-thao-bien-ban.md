@@ -86,7 +86,8 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
   `MSG401`, không ghi đè.
 - **Mục I–III:** lấy từ dự thảo hiện có, kể cả khi chưa duyệt. Biên bản nháp cũng chỉ Chủ tọa và Thư ký xem, nên không
   ai đọc được chữ AI chưa duyệt qua biên bản. Chưa có dự thảo (ví dụ máy AI tắt) thì mục II liệt kê chương trình, mục III
-  ghi kết luận Chủ toạ đã ghi và kết quả biểu quyết, còn lại để "……".
+  ghi kết luận Chủ toạ đã ghi và kết quả biểu quyết, cùng ghi chú của Thư ký
+  ([SCRUM-30](19-ghi-chu-cuoc-hop.md#ghi-chú-vào-bản-nháp-biên-bản-br-402)); còn lại để "……".
 - **`draftChangedAt`:** lúc dự thảo được viết hoặc sửa lần cuối; `null` khi chưa có dự thảo, và với mọi người trừ Chủ tọa,
   Thư ký.
 - **`builtFromDraftAt`:** `draftChangedAt` của dự thảo dùng lúc tạo (hoặc tạo lại) biên bản; `null` khi tạo lúc chưa có

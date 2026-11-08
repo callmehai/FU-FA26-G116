@@ -13,7 +13,7 @@ MinutesCard->MinutesController: createCorrection(minutesId)
 activate MinutesController
 MinutesController->MinutesService: createCorrectionAsync(minutesId, actorId)
 activate MinutesService
-MinutesService->Database: Retrieve the revision and the latest revision of the Meeting
+MinutesService->Database: Retrieve the selected revision and any later revision of the same minutes
 activate Database
 Database-->MinutesService: Minutes / None
 deactivate Database
@@ -27,25 +27,25 @@ MeetingRepository-->MinutesService: Meeting / Not found
 deactivate MeetingRepository
 MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386)
 
-alt Meeting not accessible - EX-5
+alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary\nand the selected revision is not Issued or Superseded - EX-5
     MinutesService-->MinutesController: Not found
     MinutesController-->MinutesCard: 404
     MinutesCard-->Actor: No minutes
-else Actor may read the issued minutes but is neither the current Chair nor the current Secretary - EX-1
+else Actor may read the selected revision (Issued or Superseded) but is neither the current Chair nor the current Secretary - EX-1
     MinutesService-->MinutesController: MSG397 - Only the Chair or Secretary may write the minutes.
     MinutesController-->MinutesCard: 403 MSG397
     MinutesCard-->Actor: MSG397 - Only the Chair or Secretary may write the minutes.
 else Actor is the current Chair or Secretary
-    MinutesService->MinutesService: Check the revision is Issued and no later revision is still unissued (BR-410)
+    MinutesService->MinutesService: Check the selected revision is Issued, then that no later revision\nof these minutes is still unissued (BR-410)
 
-    alt A correction is already in progress - EX-3
-        MinutesService-->MinutesController: MSG434 - A correction of these minutes is already in progress.
-        MinutesController-->MinutesCard: 409 MSG434
-        MinutesCard-->Actor: MSG434 - A correction of these minutes is already in progress.
-    else The minutes are not issued - EX-2
+    alt The selected revision is not Issued (Draft, WaitingApproval, Rejected or Superseded) - EX-2
         MinutesService-->MinutesController: MSG433 - Only issued minutes can be corrected.
         MinutesController-->MinutesCard: 409 MSG433
         MinutesCard-->Actor: MSG433 - Only issued minutes can be corrected.
+    else The selected revision is Issued, but a later revision is still unissued - EX-3
+        MinutesService-->MinutesController: MSG434 - A correction of these minutes is already in progress.
+        MinutesController-->MinutesCard: 409 MSG434
+        MinutesCard-->Actor: MSG434 - A correction of these minutes is already in progress.
     else Correction valid
         MinutesService->Database: Insert a Draft revision: the issued text, revision number + 1,\npointing at the issued revision (BR-409); the issued revision is not changed
         activate Database

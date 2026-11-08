@@ -87,6 +87,7 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 | `sortDir` | `asc`, `desc`; mặc định `asc` với title, `desc` với hai cột thời gian |
 | `excludeDeclined` | `true` hoặc `false` (mặc định). `true` bỏ các cuộc họp người gọi đã trả lời **Không tham dự** — lịch làm việc dùng tham số này, giống AI-eCabinet. Màn danh sách cuộc họp không gửi, nên vẫn thấy cuộc họp đã từ chối. Giá trị khác trả `400 MSG32` |
 | `timing` | `upcoming` (giờ bắt đầu dự kiến sau thời điểm server nhận request) hoặc `past` (bắt đầu từ thời điểm đó trở về trước, nên cuộc họp đang diễn ra tính là `past`), như bộ lọc “Thời điểm” của AI-eCabinet. Không gửi thì không lọc. Màn danh sách dùng cho “Chưa diễn ra” / “Đã diễn ra”; “Hôm nay” và “Tuần này” vẫn gửi `from`/`to` theo múi giờ người xem. Giá trị khác trả `400 MSG32` |
+| `scope` | `all` (mặc định) hoặc `todo`, như tham số cùng tên của AI-eCabinet. `todo` (thẻ **Cần xử lý**) chỉ giữ, trong số cuộc họp người gọi được thấy, những cuộc họp **đang chờ chính họ**, ở mọi ngày: `WaitingApproval` có `assignedApproverId` là người gọi và người gọi không phải Organizer, cùng `Approved` do người gọi tổ chức (`createdById`); mỗi nhánh chỉ tính khi tài khoản còn active và vai trò hiện tại (đọc từ DB, không từ token) còn `MeetingApprover` / `MeetingCreator` — đúng những cuộc họp mà `POST /transitions` cho người gọi Duyệt/Từ chối hoặc Công bố. Lọc trong câu truy vấn, trước khi đếm `totalCount` và phân trang; kết hợp AND với các tham số khác. Giá trị khác (kể cả `mine` của eCab) trả `400 MSG32` |
 
 Khi nhiều dòng có cùng giá trị sort, xếp tiếp theo `id asc`. Ví dụ:
 `GET /api/meetings?status=Published&sensitivity=Internal&q=giao&from=2026-10-01T00%3A00%3A00Z&page=2&pageSize=20&sortBy=createdAt&sortDir=desc`.
@@ -530,6 +531,12 @@ stale content.
   nghĩa là bộ lọc mặc định này, còn `status=all` là bỏ lọc trạng thái. Bộ lọc **Thời điểm** chỉ có
   các lựa chọn sẵn như AI-eCabinet: Hôm nay, Tuần này (Thứ Hai–Chủ Nhật) gửi `from`/`to` theo múi
   giờ người xem; Chưa diễn ra, Đã diễn ra gửi `timing`. Không còn ô chọn khoảng ngày.
+- **Bốn thẻ trên danh sách** theo AI-eCabinet, mỗi thẻ là `totalCount` của một request `pageSize=1`
+  (không theo ô tìm kiếm hay bộ lọc đang chọn): **Họp hôm nay** (cửa sổ `from`/`to` của “Hôm nay”;
+  dòng phụ đếm `status=InProgress`, như `timing=live` của eCab), **Đã công bố** (`status=Published`),
+  **Cần xử lý** (`scope=todo`), **Bản nháp** (`status=Draft`, chỉ người có `MeetingCreator`). Bấm thẻ
+  đặt danh sách về đúng bộ lọc của thẻ (xoá ô tìm kiếm và bộ lọc khác); bấm lại thì bỏ. URL giữ
+  `scope=todo` như các tiêu chí khác.
 - FE mở form và nút chỉnh sửa ở cả `Draft` và `Rejected` theo contract PUT. Sửa nội dung ở
   Rejected giữ nguyên trạng thái, assignment và rejection history; gửi duyệt lại trực tiếp bằng
   `SubmitForApproval`. `ReturnToDraft` là tùy chọn.

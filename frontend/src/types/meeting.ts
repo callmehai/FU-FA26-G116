@@ -180,9 +180,16 @@ export interface MeetingListQuery {
   excludeDeclined?: boolean
   /** Planned start after now (`upcoming`) or at/before it (`past`), by the server's clock. */
   timing?: MeetingTiming
+  /**
+   * `todo` keeps only the meetings waiting on the caller, any date: assigned to them for approval,
+   * or their own approved ones to publish (AI-eCabinet's "Cần xử lý"). Left out means every one.
+   */
+  scope?: MeetingListScope
 }
 
 export type MeetingTiming = 'upcoming' | 'past'
+
+export type MeetingListScope = 'todo'
 
 /**
  * Body of POST /api/meetings and PUT /api/meetings/{id}. PUT replaces every field. The approver is

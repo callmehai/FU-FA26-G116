@@ -1,4 +1,5 @@
 import {
+  NotebookPen,
   ArrowDown,
   History,
   AudioLines,
@@ -19,6 +20,7 @@ import {
   ArrowUp,
   Bell,
   Building2,
+  CalendarCheck,
   CalendarDays,
   CalendarX,
   Check,
@@ -46,7 +48,6 @@ import {
   FolderPlus,
   FolderInput,
   Archive,
-  Unlink,
   Reply,
   GripVertical,
   ClipboardCheck,
@@ -59,6 +60,7 @@ import {
   LockOpen,
   LogOut,
   MapPin,
+  Megaphone,
   MessageSquare,
   Mic,
   MicOff,
@@ -137,6 +139,9 @@ import {
  */
 const ICONS = {
   calendar: CalendarDays,
+  // The meeting list's count cards, as AI-eCabinet's: today, published (the invitations are out).
+  calendarCheck: CalendarCheck,
+  megaphone: Megaphone,
   // SCRUM-109: the per-mic transcript, a line of words per sentence.
   captions: Captions,
   users: Users,
@@ -190,7 +195,8 @@ const ICONS = {
   folderPlus: FolderPlus,
   folderInput: FolderInput,
   archive: Archive,
-  unlink: Unlink,
+  // Take a file out of one agenda item or vote, keeping it in the meeting: a plain ✕ (a broken chain read as a glitch).
+  detach: X,
   reply: Reply,
   settings: Settings,
   upload: Upload,
@@ -286,6 +292,7 @@ const ICONS = {
   replaceAll: ReplaceAll,
   highlight: Highlighter,
   rule: Minus,
+  notes: NotebookPen,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
