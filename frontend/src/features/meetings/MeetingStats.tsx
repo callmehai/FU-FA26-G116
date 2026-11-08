@@ -77,7 +77,7 @@ export function MeetingStats({
   const subs: Record<StatCard, ReactNode> = {
     today: todaySub,
     published: 'Đã gửi giấy mời',
-    todo: <span className="stat-wait">Chờ bạn duyệt, công bố</span>,
+    todo: 'Chờ bạn duyệt, công bố',
     draft: 'Chưa gửi duyệt',
   }
 
@@ -97,7 +97,7 @@ export function MeetingStats({
             <button
               key={card}
               type="button"
-              className={`stat-card stat-card-${card}${pressed ? ' stat-card-pressed' : ''}`}
+              className={`stat-card${pressed ? ' stat-card-pressed' : ''}`}
               aria-pressed={pressed}
               onClick={() => onSelect(pressed ? null : card)}
             >
