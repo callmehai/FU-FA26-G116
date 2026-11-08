@@ -258,6 +258,8 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 ## FE-16 — Lịch làm việc & tìm giờ họp *(Working Calendar & Meeting Time Search)*
 
+Quyết định phạm vi: [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md) — chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ, không có trợ lý AI.
+
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
 | UC-84 | Quản lý chia sẻ lịch *(Manage Calendar Sharing)* — gồm UC-84a Yêu cầu xem lịch, UC-84b Tự chia sẻ lịch (luôn Mốc 1), UC-84c Trả lời chia sẻ lịch, UC-84d Thay đổi chia sẻ lịch, UC-84e Rút hoặc ngừng chia sẻ lịch; chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ (BR-414) | Meeting Organizer (bên xem); mọi tài khoản nội bộ đang hoạt động (chủ lịch) | Đã đặc tả các UC con | UC-84a `<<extend>>` UC-85a |

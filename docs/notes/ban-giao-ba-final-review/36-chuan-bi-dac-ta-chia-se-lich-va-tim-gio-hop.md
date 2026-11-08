@@ -19,7 +19,7 @@ không đặc tả trước rồi bắt code chạy theo.
 | **Màn hình** | Report 3 §I.5.1 Screen List dừng ở **15.1**; không có màn "Tìm giờ họp" hay "Chia sẻ lịch". Report 3 §III cũng chưa có mục cho các màn này. |
 | **Mức mật** | Từ 07/11/2026 chỉ còn **3 mức** `Normal` / `Internal` / `Secret` (Thường / Nội bộ / Mật) — bỏ Hạn chế, họp đang Hạn chế chuyển thành Mật qua migration `SensitivityThreeLevels` ([ADR-0057](../../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)). Phần BR/Report 3 về mức mật do người làm PR đó gửi note riêng. |
 | **Quyền** | `Capability` chỉ có `MeetingCreator`, `MeetingApprover`, `MinutesEditor`, `AdminUsers`. Không có quyền nào về xem lịch người khác. |
-| **Trợ lý AI chat** | ADR-0043 ghi TrustCabinet **không có** "Trợ lý AI, Tìm giờ họp". PO chốt 07/11: **không làm trợ lý AI** (D4); Tìm giờ họp thì làm, nên ADR-0043 chỉ còn lệch đúng nửa câu. |
+| **Trợ lý AI chat** | ADR-0043 ghi TrustCabinet **không có** "Trợ lý AI, Tìm giờ họp". PO chốt 07/11: **không làm trợ lý AI** (D4); Tìm giờ họp thì làm, nên ADR-0043 chỉ còn lệch đúng nửa câu — [ADR-0058](../../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md) (PR #284) thay nửa câu đó. |
 | **Biên bản** | Đã đặc tả UC-58–UC-60, BR-383–BR-396, `MSG395`–`MSG406`; PR #271 (đã merge 07/11/2026) thêm UC-61/64/65/82/83. eCab **không có** duyệt, ban hành hay ký biên bản, nên phần này không lấy từ eCab (§3.4). |
 
 ## 2. Số hiệu (đã chốt 07/11/2026)
@@ -161,8 +161,8 @@ mã tiếp theo `MSG456`, dựa trên PR #279 merge trước):
    ghi mọi chỗ lệch ticket vào Jira (không sửa ticket trong task này).
 5. BA Final Review mới đưa vào Report 3: §II (UC), §V.1 (BR), §V.2 (MSG), §III + §I.5.1 (màn), rồi
    `python scripts/sync_reports.py`.
-6. Sửa ADR-0043 (bỏ "Tìm giờ họp" khỏi câu không-có), viết ADR mới cho chia sẻ lịch nếu BE đụng dữ liệu cá
-   nhân người khác; cập nhật `frontend/src/pages/scopeData.ts`.
+6. ~~Sửa ADR-0043 (bỏ "Tìm giờ họp" khỏi câu không-có), viết ADR mới cho chia sẻ lịch~~ — ADR-0058 (PR #284) ghi
+   quyết định và đổi trạng thái ADR-0043; còn cập nhật `frontend/src/pages/scopeData.ts`.
 7. Chụp ảnh và viết đặc tả màn theo note 06, chỉ khi FE đã có màn chạy thật.
 
 ## 7. Câu hỏi cho PO
@@ -181,4 +181,5 @@ sẻ, không tín hiệu nào khác đi vì có họp Mật; chi tiết ở [đ�
 - **PR #271** (`docs/dac-ta-so-bo-scrum-30-33`, đã merge 07/11/2026) — đặc tả sơ bộ SCRUM-30/33, file `docs/notes/NOTE-dac-ta-so-bo-scrum-30-33.md`
   chỉ có trên nhánh đó; là mốc phải chờ để đánh số UC/BR/MSG.
 - [Danh mục mã thông báo](../../03-api/00-danh-muc-ma-thong-bao.md) — đọc lại "Mã tiếp theo" trước khi thêm.
-- [ADR-0043](../../05-decisions/0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) — câu "TrustCabinet không có Tìm giờ họp" đã lệch.
+- [ADR-0043](../../05-decisions/0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) — câu "TrustCabinet không có Tìm giờ họp" đã lệch;
+  [ADR-0058](../../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md) (PR #284) thay nửa câu đó.

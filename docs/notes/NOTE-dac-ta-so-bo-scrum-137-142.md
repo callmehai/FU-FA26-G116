@@ -27,7 +27,8 @@
   và `MSG424`–`MSG434`. Nếu nhánh này merge trước, #279 dời số.
 
 Nguồn nghiệp vụ: [note 36](ban-giao-ba-final-review/36-chuan-bi-dac-ta-chia-se-lich-va-tim-gio-hop.md) (§3 eCab,
-§4 quyết định PO D1–D11); D12–D16 ở mục dưới. Comment Jira `10449` (SCRUM-137: chỉ bận/rảnh), `10460`–`10462` (SCRUM-142).
+§4 quyết định PO D1–D11); D12–D16 ở mục dưới. Quyết định PO 07/11 về FE-16 (chia sẻ lịch, Tìm giờ họp, không có trợ lý AI)
+ghi ở [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md) (PR #284), thay nửa câu "Tìm giờ họp" của ADR-0043. Comment Jira `10449` (SCRUM-137: chỉ bận/rảnh), `10460`–`10462` (SCRUM-142).
 
 ## Quyết định mới sau note 36
 
@@ -256,7 +257,7 @@ Thuộc FE-16 (tab Lịch được chia sẻ). Sequence Diagram:
 
 | BR | Rule Statement | UC | Nguồn |
 |---|---|---|---|
-| `BR-414` | Calendar sharing has exactly two levels: Level 1 covers Normal meetings, Level 2 covers Normal and Internal meetings. A Secret meeting is never shared, not even as busy. | UC-84a, UC-84b, UC-84c, UC-84d, UC-85a, UC-85c | SCRUM-142 / D7, ADR-0057 — 2 mốc theo eCab, họp Mật không bao giờ chia sẻ |
+| `BR-414` | Calendar sharing has exactly two levels: Level 1 covers Normal meetings, Level 2 covers Normal and Internal meetings. A Secret meeting is never shared, not even as busy. Find-a-time may therefore propose a slot that overlaps a Secret meeting; the meeting can still be created and that invitee declines the invitation (BR-428, UC-29). | UC-84a, UC-84b, UC-84c, UC-84d, UC-85a, UC-85c | SCRUM-142 / D7, ADR-0057, ADR-0058 — 2 mốc theo eCab, họp Mật không bao giờ chia sẻ; Tìm giờ có thể đề xuất trùng họp Mật, người đó tự từ chối |
 | `BR-415` | A day outside the share's date range is "unknown": it is neither free nor busy and is never proposed as a slot. | UC-85a, UC-85c | SCRUM-142 / eCab — ngày ngoài khoảng là "chưa biết" |
 | `BR-416` | A person who has not shared with the viewer shows “Not shared” and is counted as neither free nor busy. The finder's own calendar is counted only when the finder ticks “Tính cả tôi”, and then at every level (BR-418, BR-421). | UC-85a | SCRUM-137 / comment 10449 — người chưa chia sẻ khác rảnh; lịch người tìm chỉ tính khi tick |
 | `BR-417` | A meeting above the shared level counts as free for the viewer (for example an Internal meeting at Level 1). | UC-85a, UC-85c | SCRUM-142 / D7 — mức chưa được chia sẻ hiện là rảnh |

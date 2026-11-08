@@ -2,7 +2,7 @@
 
 Các sequence UC-84a → UC-84e, UC-85a → UC-85c tuân theo [convention chung](../README.md). Đặc tả sơ bộ nằm tại
 [NOTE-dac-ta-so-bo-scrum-137-142.md](../../notes/NOTE-dac-ta-so-bo-scrum-137-142.md) (SCRUM-142 chia sẻ lịch,
-SCRUM-137 tìm giờ họp); hai UC cha UC-84/UC-85 là UC gom, đặc tả nằm ở các UC con.
+SCRUM-137 tìm giờ họp), quyết định phạm vi ở [ADR-0058](../../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md); hai UC cha UC-84/UC-85 là UC gom, đặc tả nằm ở các UC con.
 
 - Chỉ hiện giờ bận/rảnh: không tên cuộc họp, địa điểm, người dự hay mức mật (BR-427); bước lọc trong UC-85a/UC-85c
   chỉ giữ "meetings at shared levels", không nhắc gì khác.
