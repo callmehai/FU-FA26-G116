@@ -26,16 +26,19 @@ import {
   PAGE_SIZES,
   WHEN_LABEL,
   WHEN_OPTIONS,
+  activeStat,
   clearedState,
   defaultDirection,
   hasFilters,
   readListState,
+  statState,
   toQuery,
   writeListState,
   type ListState,
+  type StatCard,
 } from './listParams'
 import { SensitivityBadge, StatusBadge } from './StatusBadge'
-import { StatusSummary } from './StatusSummary'
+import { MeetingStats } from './MeetingStats'
 import { useCreateMeetingLink } from './meetingDialogLink'
 
 // An empty value means "no filter", which is why these lists lead with an all-pass entry.
@@ -147,11 +150,20 @@ export function MeetingsPage() {
     setSearchParams(writeListState(clearedState(state)), { replace: true })
   }
 
+  // A card is exactly its criteria: the search and the other filters go, so the list matches the
+  // card's number. A second click leaves it for the whole list, as on AI-eCabinet.
+  function pickStat(card: StatCard | null) {
+    setSearch('')
+    setSearchParams(writeListState(card ? statState(card, state) : clearedState(state)), { replace: true })
+  }
+
   const filtered = hasFilters(state)
   const activeFilters = [state.status, state.sensitivity, state.when].filter(Boolean).length
   const [filtersOpen, setFiltersOpen] = useState(false)
   // The list as it opens: only meetings under way, which most of the time is none.
-  const onlyLive = state.status === 'InProgress' && !state.q.trim() && !state.sensitivity && !state.when
+  const onlyLive = state.status === 'InProgress' && !state.q.trim() && !state.sensitivity && !state.when && !state.scope
+  // "Cần xử lý" on its own: nothing waits on the caller.
+  const onlyTodo = state.scope === 'todo' && !state.q.trim() && !state.status && !state.sensitivity && !state.when
   const data = shown
   const canCreate = can('MeetingCreator')
   const createLink = useCreateMeetingLink()
@@ -185,9 +197,11 @@ export function MeetingsPage() {
       </tr>
     ))
   } else if (data.items.length === 0) {
-    body = onlyLive ? (
+    body = onlyLive || onlyTodo ? (
       <EmptyRow>
-        <p className="empty-title">Hiện không có cuộc họp nào đang diễn ra.</p>
+        <p className="empty-title">
+          {onlyTodo ? 'Không có việc chờ bạn xử lý.' : 'Hiện không có cuộc họp nào đang diễn ra.'}
+        </p>
         <button type="button" className="btn btn-outline btn-sm" onClick={clearFilters}>
           <Icon name="list" size={16} />
           Xem mọi cuộc họp
@@ -293,12 +307,7 @@ export function MeetingsPage() {
         }
       />
 
-      <StatusSummary
-        active={state.status}
-        showDrafts={canCreate}
-        reloadKey={attempt}
-        onSelect={(status) => update({ status })}
-      />
+      <MeetingStats active={activeStat(state)} showDrafts={canCreate} reloadKey={attempt} onSelect={pickStat} />
 
       <div className="list-panel list-page list-fill">
         <div className="toolbar">
