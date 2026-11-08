@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
+import { Dialog } from '../../../components/Dialog'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
 import { useToast } from '../../../components/toastContext'
@@ -37,7 +38,7 @@ import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
 import { EditMeetingDialog } from '../MeetingDialogs'
-import { EDIT_PARAM, useEditMeetingLink } from '../meetingDialogLink'
+import { EDIT_PARAM, NOTES_PARAM, useEditMeetingLink } from '../meetingDialogLink'
 import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
 import { CancelMeetingDialog } from '../workflow/CancelMeetingDialog'
@@ -53,7 +54,6 @@ const TABS = [
   { id: 'overview', label: 'Thông tin chung' },
   { id: 'attendees', label: 'Thành phần tham dự' },
   { id: 'agenda', label: 'Nội dung cuộc họp' },
-  { id: 'notes', label: 'Ghi chú' },
   { id: 'documents', label: 'Tài liệu' },
   { id: 'votes', label: 'Biểu quyết' },
   { id: 'recordings', label: 'Bản ghi' },
@@ -64,7 +64,8 @@ type TabId = (typeof TABS)[number]['id']
 
 /**
  * The Secretary's notes (SCRUM-30) are the Chair's and the Secretary's alone, and exist only once the sitting starts.
- * Hiding the tab is presentation; the server answers 404 to anyone else (BR-395).
+ * Hiding the card is presentation; the server answers 404 to anyone else (BR-395). They are not one of the page's main
+ * sections, so they open in a dialog from a card under the status history rather than from a tab of their own.
  */
 const showsNotes = (meeting: { myMeetingRole: string | null; status: string }) =>
   (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary') &&
@@ -138,12 +139,26 @@ function MeetingDetail({
   // The recordings are the participants' (personal data): someone who only organised or approved the meeting is not
   // on its roster and the server answers 404, so the tab is not offered, and a link straight to it opens the overview.
   const onRoster = meeting.myMeetingRole !== null
-  const tabs = TABS.filter((t) => (t.id !== 'recordings' || onRoster) && (t.id !== 'notes' || showsNotes(meeting)))
+  const tabs = onRoster ? TABS : TABS.filter((t) => t.id !== 'recordings')
   const tab: TabId = tabs.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
   const setTab = (id: TabId) =>
     setParams(
       (p) => {
         p.set('tab', id)
+        return p
+      },
+      { replace: true, state: { ...(location.state as object | null), [TAB_SWITCH]: true } },
+    )
+  const notesShown = showsNotes(meeting)
+  const notesOpen = notesShown && (params.has(NOTES_PARAM) || params.get('tab') === 'notes')
+  const setNotesOpen = (open: boolean) =>
+    setParams(
+      (p) => {
+        if (open) p.set(NOTES_PARAM, '1')
+        else {
+          p.delete(NOTES_PARAM)
+          if (p.get('tab') === 'notes') p.delete('tab')
+        }
         return p
       },
       { replace: true, state: { ...(location.state as object | null), [TAB_SWITCH]: true } },
@@ -270,7 +285,6 @@ function MeetingDetail({
     else if (isApiError(historyFailure, 403)) handleAccessLost(historyFailure)
   }, [historyFailure, reload, handleAccessLost])
 
-
   return (
     <>
       <BackLink to={back.to}>{back.label}</BackLink>
@@ -396,8 +410,6 @@ function MeetingDetail({
             <ParticipantsPanel meetingId={meeting.id} sensitivity={meeting.sensitivity} onChanged={() => void reload()} />
           ) : tab === 'agenda' ? (
             <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
-          ) : tab === 'notes' ? (
-            <NotesPanel meetingId={meeting.id} variant="page" />
           ) : tab === 'documents' ? (
             <DocumentsPanel meeting={meeting} variant="page" onMeetingStale={() => void reload()} />
           ) : tab === 'votes' ? (
@@ -433,13 +445,32 @@ function MeetingDetail({
           />
         )}
 
-        <MeetingHistory
-          history={history}
-          onRetry={() => void history.reload()}
-          onLoadMore={() => void history.loadMore()}
-          nameOf={nameOf}
-        />
+        <div className="detail-side">
+          <MeetingHistory
+            history={history}
+            onRetry={() => void history.reload()}
+            onLoadMore={() => void history.loadMore()}
+            nameOf={nameOf}
+          />
+          {notesShown && (
+            <section className="card notes-entry" aria-labelledby="meeting-notes-title">
+              <h2 className="card-title" id="meeting-notes-title">
+                Ghi chú
+              </h2>
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => setNotesOpen(true)}>
+                <Icon name="notes" size={16} />
+                {meeting.myMeetingRole === 'Secretary' ? 'Mở ghi chú' : 'Xem ghi chú'}
+              </button>
+            </section>
+          )}
+        </div>
       </div>
+
+      {notesOpen && (
+        <Dialog title="Ghi chú" size="lg" onClose={() => setNotesOpen(false)}>
+          <NotesPanel meetingId={meeting.id} variant="dialog" />
+        </Dialog>
+      )}
     </>
   )
 }

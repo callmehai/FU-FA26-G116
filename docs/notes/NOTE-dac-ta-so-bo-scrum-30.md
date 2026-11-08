@@ -126,5 +126,5 @@ Chủ toạ/Thư ký hỏi tới ghi chú thì nhận `404`, không có mã.
 - [x] BE (07/11/2026): `GET`/`PUT /api/meetings/{id}/notes`, sự kiện `notesChanged`, ghi chú vào bản nháp biên bản
       (BR-402), gộp ghi chú khi xoá mục (D2); contract [19-ghi-chu-cuoc-hop.md](../03-api/19-ghi-chu-cuoc-hop.md);
       `MSG415`–`MSG422` sang *BE*.
-- [x] FE (07/11/2026): `NotesPanel` ở tab Ghi chú và trong phòng họp; nháp chưa gửi giữ trong `localStorage` (cuộc họp
+- [x] FE (07/11/2026): `NotesPanel` ở tab Ghi chú và trong phòng họp (08/11/2026: tab đổi thành thẻ dưới Lịch sử trạng thái, bấm mở hộp thoại); nháp chưa gửi giữ trong `localStorage` (cuộc họp
       Thường) hoặc `sessionStorage` (cuộc họp Mật), xoá khi lưu xong, khi rời cuộc họp và khi đăng xuất (BR-403); `MSG423`.

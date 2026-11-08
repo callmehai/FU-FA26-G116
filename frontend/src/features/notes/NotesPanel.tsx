@@ -7,6 +7,7 @@ import { Select, type SelectOption } from '../../components/Select'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatClock, formatDateTime } from '../../lib/format'
 import { routes } from '../../lib/routes'
+import { NOTES_PARAM } from '../meetings/meetingDialogLink'
 import type { AgendaItem } from '../../types/agenda'
 import { noteMaxLength, type MeetingNote, type NotesState } from '../../types/note'
 import { useAccessLost } from '../auth/useAccessLost'
@@ -72,7 +73,7 @@ type Status =
  * each other: a save from an older copy is refused (MSG418) and both versions are shown (BR-399). The Chair reads the
  * notes; the server says who may write (`canWrite`), never a guess from the role.
  */
-export function NotesPanel({ meetingId, variant }: { meetingId: string; variant: 'page' | 'room' }) {
+export function NotesPanel({ meetingId, variant }: { meetingId: string; variant: 'dialog' | 'room' }) {
   const { user } = useAuth()
   const userId = user?.id ?? ''
   const handleAccessLost = useAccessLost()
@@ -124,7 +125,7 @@ export function NotesPanel({ meetingId, variant }: { meetingId: string; variant:
           {/* A wider page to write in, without leaving the call (ADR-0011); the two never overwrite each other. */}
           <a
             className="icon-button icon-button-sm"
-            href={`${routes.meeting(meetingId)}?tab=notes`}
+            href={`${routes.meeting(meetingId)}?${NOTES_PARAM}=1`}
             target="_blank"
             rel="noopener"
             aria-label="Mở ghi chú ở tab mới"
@@ -136,9 +137,8 @@ export function NotesPanel({ meetingId, variant }: { meetingId: string; variant:
         {body}
       </div>
     ) : (
-      <section className="card notes-card" aria-label="Ghi chú">
-        {body}
-      </section>
+      // Inside the meeting page's dialog, which already has the title and the frame: no card in a card.
+      <div className="notes-card">{body}</div>
     )
 
   if (load.kind === 'gone')

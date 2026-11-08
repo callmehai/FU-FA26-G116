@@ -4892,3 +4892,9 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .notes-skeleton { display: flex; flex-direction: column; gap: 8px; }
 .notes-skeleton span { height: 34px; border-radius: var(--radius); background: var(--surface-alt); }
 .notes-skeleton span + span { height: 240px; }
+
+/* The column beside the tabs: the status history, then the way into the Secretary's notes (SCRUM-30). */
+.detail-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.notes-entry { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.notes-entry .card-title { margin: 0; }
+.dialog-lg .notes-text-input { min-height: min(420px, 50dvh); }

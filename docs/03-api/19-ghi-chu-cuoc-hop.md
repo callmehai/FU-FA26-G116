@@ -109,10 +109,12 @@ chưa đọc ghi chú (Q1 trong đặc tả sơ bộ).
 
 Ghi chú là một panel dùng chung ([ADR-0011](../05-decisions/0011-tinh-nang-hop-la-panel-dung-chung.md)), có ở hai nơi:
 
-- **Tab Ghi chú** trên trang chi tiết cuộc họp. Tab chỉ hiện với Chủ toạ và Thư ký khi cuộc họp `InProgress` hoặc
-  `Ended`. Người khác mở `?tab=notes` thì về tab Thông tin chung.
-- **Panel Ghi chú** trong phòng họp trực tuyến. Trên điện thoại panel nằm sau nút ⋯. Nút mở tab mới dẫn tới tab
-  Ghi chú, và hai nơi không ghi đè nhau.
+- **Thẻ Ghi chú** dưới thẻ Lịch sử trạng thái trên trang chi tiết cuộc họp. Ghi chú không phải mục chính nên không có
+  tab riêng (PO 07/11/2026): bấm "Mở ghi chú" (Thư ký) hoặc "Xem ghi chú" (Chủ toạ) thì mở hộp thoại để đọc và sửa.
+  Hộp thoại nằm trên URL `?notes=1`, nên tải lại trang vẫn mở; `?tab=notes` cũ cũng mở hộp thoại. Thẻ chỉ hiện với
+  Chủ toạ và Thư ký khi cuộc họp `InProgress` hoặc `Ended`; người khác mở hai địa chỉ đó thì chỉ thấy trang.
+- **Panel Ghi chú** trong phòng họp trực tuyến. Trên điện thoại panel nằm sau nút ⋯. Nút mở tab mới dẫn tới trang
+  cuộc họp với hộp thoại Ghi chú đang mở, và hai nơi không ghi đè nhau.
 
 Cách panel chạy:
 
