@@ -205,7 +205,7 @@ Sequence Diagram:
 | **Description** | Allows a Meeting Organizer to find slots where everyone invited is free, using only shared calendars. From anyone shown “Chưa được chia sẻ lịch”, the finder may start UC-84a. (BR-414 → BR-422, BR-427, BR-428) |
 | **Preconditions** | ● PRE-1: The actor is signed in as a Meeting Organizer. (BR-430) |
 | **Postconditions** | ● POST-1: The actor sees common slots by day, or — when none fits everyone — the slots with the most people free and who is busy. Attendee names come from the actor's own invite list; no meeting titles, locations, attendee lists or sensitivity levels are shown. (BR-416, BR-427)<br>● POST-2: Days outside a share and people who never shared show “unknown” / “Chưa được chia sẻ lịch”, never free. (BR-415, BR-416) |
-| **Normal Flow** | Find Meeting Time Slots<br>1. The actor opens the Tìm giờ họp page (tab Tìm khung giờ) and enters: invitees (at most 10 people besides the actor; “Tính cả tôi” also counts the actor's own calendar), duration, date range, weekdays, working hours, lunch break, “Cách cuộc họp khác” (buffer) and “Làm tròn giờ bắt đầu” (step); defaults follow BR-421/BR-422. The page always shows one fixed sentence: only shared calendars are counted and invitees may still be busy. (BR-428)<br>2. The system checks the parameters (BR-421, BR-422).<br>3. The system loads the Effective shares between the actor and each invitee and their meetings; it keeps only meetings at shared levels, counts the actor's own meetings only when “Tính cả tôi” is ticked (then at every level), marks busy with the buffer on both sides of every busy period and then rounds start times up to the step, skips past start times and treats out-of-range days as unknown. (BR-414 → BR-420, BR-422)<br>4. The system lists the common slots by day. |
+| **Normal Flow** | Find Meeting Time Slots<br>1. The actor opens the Tìm giờ họp page (tab Tìm khung giờ) and enters: invitees (at most 10 people besides the actor; “Tính cả tôi” also counts the actor's own calendar), duration, date range, weekdays, working hours, lunch break, “Cách cuộc họp khác” (buffer) and “Làm tròn giờ bắt đầu” (step); defaults follow BR-421/BR-422. The page always shows one fixed sentence: only shared calendars are counted and invitees may still be busy. (BR-428)<br>2. The system checks the parameters (BR-421, BR-422).<br>3. The system loads the Effective shares of each invitee's calendar to the actor (BR-423) and those invitees' meetings; it keeps only meetings at shared levels, counts the actor's own meetings only when “Tính cả tôi” is ticked (then at every level), marks busy with the buffer on both sides of every busy period and then rounds start times up to the step, skips past start times and treats out-of-range days as unknown. (BR-414 → BR-420, BR-422)<br>4. The system lists the common slots by day. |
 | **Alternative Flows** | AF-1 – No slot fits everyone<br>1. At Step 4, no slot fits all invitees.<br>2. The system shows the slots with the most people free, with who is busy, per day. MSG445 – “No time slot fits everyone. Showing the slots with the most people free.” |
 | **Exception Flows** | EX-1 – Search parameters are invalid<br>1. At Step 2, the parameters break BR-421/BR-422 (too many people, bad duration, range over 31 days, bad hours/buffer/step).<br>2. Nothing is searched. The system displays MSG444 – “The meeting-time search is invalid. Check the highlighted fields.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-2 – The actor has no right to create meetings<br>1. At Step 2, the actor is no longer a Meeting Organizer.<br>2. Nothing is searched. The system displays MSG448 – “Only a Meeting Organizer can do this.”<br>3. The use case ends.<br>EX-3 – The search cannot be read<br>1. At Step 3, the system cannot read the shares or the meetings.<br>2. Nothing is shown. The system displays MSG453 – “Unable to load the calendar sharing data. Please try again.”<br>3. The use case ends. |
 
@@ -278,32 +278,32 @@ Thuộc FE-16 (tab Lịch được chia sẻ). Sequence Diagram:
 ## 5. Mã thông báo (dành sẵn)
 
 Một mã = một tình huống. Dải số dời lên `MSG435`–`MSG455` vì PR #279 đã nhận `MSG424`–`MSG434`
-(chỉ ở trạng thái Dành sẵn trên nhánh này nên được đổi số — cột “Đổi từ” ghi rõ).
+(các mã chưa lên `main` nên số cũ không còn giá trị, bảng không ghi lại).
 Thêm mã mới `MSG455`; mã tiếp theo `MSG456`.
 
-| Mã | HTTP dự kiến | UC | Thông điệp đặc tả | Câu tiếng Việt cho UI | Đổi từ |
-|---|---|---|---|---|---|
-| `MSG435` | 201 | UC-84a Main Flow | *Calendar share request sent.* | `Đã gửi yêu cầu xem lịch.` | Đổi số từ `MSG424`; nghĩa giữ nguyên |
-| `MSG436` | 200 | UC-84c Normal Flow | *Calendar share accepted.* | `Đã chấp nhận chia sẻ lịch.` | Đổi số từ `MSG425` |
-| `MSG437` | 200 | UC-84c Normal Flow | *Calendar share request declined.* | `Đã từ chối yêu cầu chia sẻ.` | Đổi số từ `MSG426`; nghĩa hẹp giữ lại từ đợt tách trước (từ chối thay đổi là `MSG452`) |
-| `MSG452` | 200 | UC-84c AF-1 | *Calendar share change declined.* | `Đã từ chối thay đổi chia sẻ.` | Đổi số từ `MSG441` |
-| `MSG438` | 200 | UC-84e (Withdraw) | *Calendar share request withdrawn.* | `Đã rút yêu cầu chia sẻ lịch.` | Đổi số từ `MSG427`; nghĩa hẹp giữ lại từ đợt tách trước (ngừng chia sẻ là `MSG451`) |
-| `MSG451` | 200 | UC-84e (End) | *Calendar sharing ended.* | `Đã ngừng chia sẻ lịch.` | Đổi số từ `MSG440` |
-| `MSG439` | — (nhãn/chi tiết) | UC-84 (danh sách), UC-85c Normal Flow | *This calendar share was stopped because the viewer is no longer a Meeting Organizer or an account was locked. Ask for a new share.* | `Chia sẻ lịch đã dừng vì người xem không còn quyền tạo cuộc họp hoặc tài khoản bị khoá. Hãy xin chia sẻ mới.` | Đổi số từ `MSG428` |
-| `MSG440` | — (nhãn/chi tiết) | UC-84 (danh sách), UC-85c Normal Flow | *This calendar share has expired. Ask for a new share.* | `Chia sẻ lịch này đã hết hạn. Hãy xin chia sẻ mới.` | Đổi số từ `MSG429` |
-| `MSG441` | 201 | UC-84b Main Flow | *Calendar shared. Waiting for acceptance.* | `Đã chia sẻ lịch. Đang chờ bên nhận đồng ý.` | Đổi số từ `MSG430` |
-| `MSG442` | 200 | UC-84d AF-1, UC-84c AF-1 | *Calendar share updated.* | `Đã cập nhật chia sẻ lịch.` | Đổi số từ `MSG431` |
-| `MSG454` | 201 | UC-84d Main Flow | *Calendar share change request sent.* | `Đã gửi yêu cầu thay đổi chia sẻ.` | Đổi số từ `MSG443` |
-| `MSG443` | 400 | UC-84a EX-3, UC-84b EX-3, UC-84c EX-3, UC-84d EX-3 | *The date range is invalid.* | `Khoảng ngày không đúng.` | Đổi số từ `MSG432`; câu tiếng Anh rút gọn chỉ còn khoảng ngày sai |
-| `MSG455` | 400 | UC-84b EX-1 | *This person cannot receive a calendar share.* | `Người này không nhận được chia sẻ lịch.` | Mã mới |
-| `MSG448` | 403 | UC-84a EX-1, UC-85a EX-2, UC-85b EX-2 | *Only a Meeting Organizer can do this.* | `Bạn cần quyền tạo cuộc họp để thực hiện thao tác này.` | Đổi số từ `MSG437` |
-| `MSG449` | 409 | UC-84a EX-2, UC-84b EX-2 | *There is already a pending or effective share with this person.* | `Đã có chia sẻ chờ hoặc hiệu lực với người này.` | Đổi số từ `MSG438` |
-| `MSG450` | 409 | UC-84c EX-2, UC-84d EX-2, UC-84e EX-2 | *This action is not allowed in the current state of the share.* | `Không thể thực hiện ở trạng thái hiện tại của chia sẻ.` | Đổi số từ `MSG439` |
-| `MSG444` | 400 | UC-85a EX-1 | *The meeting-time search is invalid. Check the highlighted fields.* | `Thông tin tìm giờ họp không hợp lệ. Kiểm tra các trường được đánh dấu.` | Đổi số từ `MSG433`; nghĩa hẹp giữ lại từ đợt tách trước (mất quyền là `MSG448`) |
-| `MSG445` | 200 | UC-85a AF-1 | *No time slot fits everyone. Showing the slots with the most people free.* | `Không có khung giờ nào hợp với tất cả. Đang hiện các khung nhiều người dự được nhất.` | Đổi số từ `MSG434` |
-| `MSG446` | 409 | UC-85b EX-1 | *This time slot is no longer free. Please choose another slot.* | `Khung giờ này không còn trống. Hãy chọn khung khác.` | Đổi số từ `MSG435` |
-| `MSG453` | 500 | UC-85a EX-3, UC-85b EX-3, UC-85c EX-1 | *Unable to load the calendar sharing data. Please try again.* | `Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.` | Đổi số từ `MSG442` |
-| `MSG447` | 503 | UC-84a EX-5, UC-84b EX-4, UC-84c EX-4, UC-84d EX-4, UC-84e EX-3 | *Unable to save the calendar sharing data. Please try again.* | `Không lưu được dữ liệu chia sẻ lịch. Vui lòng thử lại.` | Đổi số từ `MSG436`; nghĩa hẹp giữ lại từ đợt tách trước (không tải được là `MSG453`) |
+| Mã | HTTP dự kiến | UC | Thông điệp đặc tả | Câu tiếng Việt cho UI |
+|---|---|---|---|---|
+| `MSG435` | 201 | UC-84a Main Flow | *Calendar share request sent.* | `Đã gửi yêu cầu xem lịch.` |
+| `MSG436` | 200 | UC-84c Normal Flow | *Calendar share accepted.* | `Đã chấp nhận chia sẻ lịch.` |
+| `MSG437` | 200 | UC-84c Normal Flow | *Calendar share request declined.* | `Đã từ chối yêu cầu chia sẻ.` |
+| `MSG452` | 200 | UC-84c AF-1 | *Calendar share change declined.* | `Đã từ chối thay đổi chia sẻ.` |
+| `MSG438` | 200 | UC-84e (Withdraw) | *Calendar share request withdrawn.* | `Đã rút yêu cầu chia sẻ lịch.` |
+| `MSG451` | 200 | UC-84e (End) | *Calendar sharing ended.* | `Đã ngừng chia sẻ lịch.` |
+| `MSG439` | — (nhãn/chi tiết) | UC-84 (danh sách), UC-85c Normal Flow | *This calendar share was stopped because the viewer is no longer a Meeting Organizer or an account was locked. Ask for a new share.* | `Chia sẻ lịch đã dừng vì người xem không còn quyền tạo cuộc họp hoặc tài khoản bị khoá. Hãy xin chia sẻ mới.` |
+| `MSG440` | — (nhãn/chi tiết) | UC-84 (danh sách), UC-85c Normal Flow | *This calendar share has expired. Ask for a new share.* | `Chia sẻ lịch này đã hết hạn. Hãy xin chia sẻ mới.` |
+| `MSG441` | 201 | UC-84b Main Flow | *Calendar shared. Waiting for acceptance.* | `Đã chia sẻ lịch. Đang chờ bên nhận đồng ý.` |
+| `MSG442` | 200 | UC-84d AF-1, UC-84c AF-1 | *Calendar share updated.* | `Đã cập nhật chia sẻ lịch.` |
+| `MSG454` | 201 | UC-84d Main Flow | *Calendar share change request sent.* | `Đã gửi yêu cầu thay đổi chia sẻ.` |
+| `MSG443` | 400 | UC-84a EX-3, UC-84b EX-3, UC-84c EX-3, UC-84d EX-3 | *The date range is invalid.* | `Khoảng ngày không đúng.` |
+| `MSG455` | 400 | UC-84b EX-1 | *This person cannot receive a calendar share.* | `Người này không nhận được chia sẻ lịch.` |
+| `MSG448` | 403 | UC-84a EX-1, UC-85a EX-2, UC-85b EX-2 | *Only a Meeting Organizer can do this.* | `Bạn cần quyền tạo cuộc họp để thực hiện thao tác này.` |
+| `MSG449` | 409 | UC-84a EX-2, UC-84b EX-2 | *There is already a pending or effective share with this person.* | `Đã có chia sẻ chờ hoặc hiệu lực với người này.` |
+| `MSG450` | 409 | UC-84c EX-2, UC-84d EX-2, UC-84e EX-2 | *This action is not allowed in the current state of the share.* | `Không thể thực hiện ở trạng thái hiện tại của chia sẻ.` |
+| `MSG444` | 400 | UC-85a EX-1 | *The meeting-time search is invalid. Check the highlighted fields.* | `Thông tin tìm giờ họp không hợp lệ. Kiểm tra các trường được đánh dấu.` |
+| `MSG445` | 200 | UC-85a AF-1 | *No time slot fits everyone. Showing the slots with the most people free.* | `Không có khung giờ nào hợp với tất cả. Đang hiện các khung nhiều người dự được nhất.` |
+| `MSG446` | 409 | UC-85b EX-1 | *This time slot is no longer free. Please choose another slot.* | `Khung giờ này không còn trống. Hãy chọn khung khác.` |
+| `MSG453` | 500 | UC-85a EX-3, UC-85b EX-3, UC-85c EX-1 | *Unable to load the calendar sharing data. Please try again.* | `Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.` |
+| `MSG447` | 503 | UC-84a EX-5, UC-84b EX-4, UC-84c EX-4, UC-84d EX-4, UC-84e EX-3 | *Unable to save the calendar sharing data. Please try again.* | `Không lưu được dữ liệu chia sẻ lịch. Vui lòng thử lại.` |
 
 Tạo nháp thành công dùng lại `MSG29` của UC-14 (`201 Tạo cuộc họp thành công`), không cấp mã mới.
 Người lạ hỏi tới chia sẻ của người khác không được tiết lộ gì về chia sẻ hay tài khoản đó (bảng 403/404 của AGENTS.md), không có mã.

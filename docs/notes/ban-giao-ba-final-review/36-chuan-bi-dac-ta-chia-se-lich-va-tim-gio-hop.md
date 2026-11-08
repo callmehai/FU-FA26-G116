@@ -20,7 +20,7 @@ không đặc tả trước rồi bắt code chạy theo.
 | **Mức mật** | Từ 07/11/2026 chỉ còn **3 mức** `Normal` / `Internal` / `Secret` (Thường / Nội bộ / Mật) — bỏ Hạn chế, họp đang Hạn chế chuyển thành Mật qua migration `SensitivityThreeLevels` ([ADR-0057](../../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)). Phần BR/Report 3 về mức mật do người làm PR đó gửi note riêng. |
 | **Quyền** | `Capability` chỉ có `MeetingCreator`, `MeetingApprover`, `MinutesEditor`, `AdminUsers`. Không có quyền nào về xem lịch người khác. |
 | **Trợ lý AI chat** | ADR-0043 ghi TrustCabinet **không có** "Trợ lý AI, Tìm giờ họp". PO chốt 07/11: **không làm trợ lý AI** (D4); Tìm giờ họp thì làm, nên ADR-0043 chỉ còn lệch đúng nửa câu. |
-| **Biên bản** | Đã đặc tả UC-58–UC-60, BR-383–BR-396, `MSG395`–`MSG406`; PR #271 đang mở thêm UC-61/64/65/82/83. eCab **không có** duyệt, ban hành hay ký biên bản, nên phần này không lấy từ eCab (§3.4). |
+| **Biên bản** | Đã đặc tả UC-58–UC-60, BR-383–BR-396, `MSG395`–`MSG406`; PR #271 (đã merge 07/11/2026) thêm UC-61/64/65/82/83. eCab **không có** duyệt, ban hành hay ký biên bản, nên phần này không lấy từ eCab (§3.4). |
 
 ## 2. Số hiệu (đã chốt 07/11/2026)
 
@@ -154,7 +154,7 @@ mã tiếp theo `MSG456`, dựa trên PR #279 merge trước):
    cập nhật mục "PO tick" của SCRUM-142 theo D6–D11 (Q1 là đáp án **C — 2 mốc**, không phải A).
 3. ~~Chờ **PR #271 merge**, rồi chốt lại dải `MSG`, số UC, số BR thật (§2)~~ — xong 07/11/2026, tách UC Respond +
    tách UC tạo nháp + tách mã + đổi số tránh PR #279 + gộp UC theo mẫu Report 3, 07/11/2026:
-   UC-84 gom (UC-84a → UC-84e), UC-85 gom (UC-85a → UC-85c), BR-414 → BR-430, `MSG435`–`MSG455` trong [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md)
+   UC-84 gom (UC-84a → UC-84e), UC-85 gom (UC-85a → UC-85c), BR-414 → BR-431, `MSG435`–`MSG455` trong [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md)
    (BA giữ hoặc đổi số khi vào Report 3; số dựa trên PR #279 merge trước — nếu nhánh này merge trước thì #279 dời).
 4. ~~BE viết UC Specification cơ bản + sequence cho phần đã chốt~~ — xong phần sơ bộ 07/11/2026, cập nhật 07/11/2026
    ([note đặc tả](../NOTE-dac-ta-so-bo-scrum-137-142.md) + 8 sequence UC-84a → UC-84e, UC-85a → UC-85c);
@@ -178,7 +178,7 @@ sẻ, không tín hiệu nào khác đi vì có họp Mật; chi tiết ở [đ�
 
 - [note 33 §4](33-pr260-scrum-36-32-du-thao-bien-ban-va-scrum-137-tim-gio-hop.md) — SCRUM-137 được tạo thế nào và phạm vi "chỉ bận/rảnh".
 - [note 06](06-plan-dac-ta-man-hinh.md) — quy trình chụp và đặc tả màn hình Report 3.
-- **PR #271** (`docs/dac-ta-so-bo-scrum-30-33`, đang mở) — đặc tả sơ bộ SCRUM-30/33, file `docs/notes/NOTE-dac-ta-so-bo-scrum-30-33.md`
+- **PR #271** (`docs/dac-ta-so-bo-scrum-30-33`, đã merge 07/11/2026) — đặc tả sơ bộ SCRUM-30/33, file `docs/notes/NOTE-dac-ta-so-bo-scrum-30-33.md`
   chỉ có trên nhánh đó; là mốc phải chờ để đánh số UC/BR/MSG.
 - [Danh mục mã thông báo](../../03-api/00-danh-muc-ma-thong-bao.md) — đọc lại "Mã tiếp theo" trước khi thêm.
 - [ADR-0043](../../05-decisions/0043-thanh-phan-theo-ai-ecabinet-giu-sidebar.md) — câu "TrustCabinet không có Tìm giờ họp" đã lệch.

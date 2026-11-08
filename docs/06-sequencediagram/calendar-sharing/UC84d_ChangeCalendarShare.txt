@@ -34,7 +34,7 @@ alt Actor is not one of the two people - EX-1
     deactivate SharingController
     SharingPage-->Viewer: No such calendar share
 else Actor is one of the two people
-    alt Share cannot be changed in its state - EX-2
+    alt Share is not Effective, or the viewer asks while a change is pending - EX-2
         SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
         deactivate SharingService
         SharingController-->SharingPage: 409 MSG450

@@ -43,7 +43,7 @@ else Finder is verified
         deactivate SlotController
         FindPage-->Finder: MSG444 - The meeting-time search is invalid. Check the highlighted fields:\nToo many people. Duration, range, hours, buffer or step is out of range.
     else Search parameters are valid
-        SlotService->ShareRepository: Get Effective shares between finder and invitees (BR-423, BR-424)
+        SlotService->ShareRepository: Get Effective shares of each invitee's calendar to the finder (BR-423, BR-424)
         activate ShareRepository
         ShareRepository->Database: Retrieve shares with status
         activate Database

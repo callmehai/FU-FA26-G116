@@ -66,7 +66,7 @@ else Shares are loaded
             deactivate CalendarController
             CalendarPage-->Viewer: MSG453 - Unable to load the calendar sharing data. Please try again.
         else Week is loaded
-            CalendarService->CalendarService: Keep only busy blocks of Effective shares, Monday to Friday, 08:00-17:00.\nStopped and expired shares stay listed with their state label and contribute no hours;\nnever include titles, locations, attendees or levels (BR-424, BR-425, BR-427)
+            CalendarService->CalendarService: Keep only busy blocks of Effective shares, Monday to Friday, 08:00-17:00:\nonly current Chair, Secretary or Member assignments in busy meeting statuses (BR-419, BR-420).\nStopped and expired shares stay listed with their state label and contribute no hours;\nnever include titles, locations, attendees or levels (BR-424, BR-425, BR-427)
             CalendarService-->CalendarController: Busy blocks with share states
             deactivate CalendarService
             CalendarController-->CalendarPage: 200 Busy blocks by sharer with state labels

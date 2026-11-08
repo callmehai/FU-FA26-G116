@@ -58,27 +58,37 @@ else Finder is verified
             deactivate SlotController
             FindPage-->Finder: MSG446 - This time slot is no longer free. Please choose another slot.
         else Slot is still free
-            SlotService->MeetingRepository: Create Draft meeting through UC-14 with the first invitee as Chair,\nthe rest as Member and the finder as Secretary (BR-429)
-            activate MeetingRepository
-            MeetingRepository->Database: Insert meeting and roster in Draft
-            activate Database
-            Database-->MeetingRepository: Saved / Save failed
-            deactivate Database
-            MeetingRepository-->SlotService: Draft meeting / Save failed
-            deactivate MeetingRepository
+            SlotService->SlotService: Check the meeting values as UC-14 Step 5 does,\nincluding a start time still in the future (BR-24, BR-25, BR-62, BR-162, BR-320)
 
-            alt Draft cannot be saved - EX-4
-                SlotService-->SlotController: MSG35 - Không thể tạo cuộc họp. Vui lòng thử lại.
+            alt Meeting values are invalid - UC-14 EX-1
+                SlotService-->SlotController: MSG31 - Invalid meeting information.
                 deactivate SlotService
-                SlotController-->FindPage: 500 MSG35
+                SlotController-->FindPage: 400 MSG31
                 deactivate SlotController
-                FindPage-->Finder: MSG35 - Không thể tạo cuộc họp. Vui lòng thử lại.
-            else Draft is created
-                SlotService-->SlotController: Draft meeting
-                deactivate SlotService
-                SlotController-->FindPage: 201 MSG29 - Meeting created.
-                deactivate SlotController
-                FindPage-->Finder: MSG29 - Meeting created.\nThe meeting is a Draft and follows the normal approval flow (BR-429)
+                FindPage-->Finder: MSG31 - Invalid meeting information.
+            else Meeting values are valid
+                SlotService->MeetingRepository: Create Draft meeting through UC-14 Step 6 with the first invitee as Chair,\nthe rest as Member and the finder as Secretary (BR-429)
+                activate MeetingRepository
+                MeetingRepository->Database: Insert meeting and roster in Draft
+                activate Database
+                Database-->MeetingRepository: Saved / Save failed
+                deactivate Database
+                MeetingRepository-->SlotService: Draft meeting / Save failed
+                deactivate MeetingRepository
+
+                alt Draft cannot be saved - EX-4
+                    SlotService-->SlotController: MSG35 - Không thể tạo cuộc họp. Vui lòng thử lại.
+                    deactivate SlotService
+                    SlotController-->FindPage: 500 MSG35
+                    deactivate SlotController
+                    FindPage-->Finder: MSG35 - Không thể tạo cuộc họp. Vui lòng thử lại.
+                else Draft is created
+                    SlotService-->SlotController: Draft meeting
+                    deactivate SlotService
+                    SlotController-->FindPage: 201 MSG29 - Meeting created.
+                    deactivate SlotController
+                    FindPage-->Finder: MSG29 - Meeting created.\nThe meeting is a Draft and follows the normal approval flow (BR-429)
+                end
             end
         end
     end
