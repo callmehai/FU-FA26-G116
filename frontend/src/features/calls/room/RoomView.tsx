@@ -50,6 +50,7 @@ import { type Meeting } from '../../../types/meeting'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
+import { NotesPanel } from '../../notes/NotesPanel'
 import { VoteOpenedNotice } from '../../votes/VoteOpenedNotice'
 import { VotingPanel } from '../../votes/VotingPanel'
 import { MyClips } from '../../speech/MyClips'
@@ -66,11 +67,12 @@ import { deviceErrorMessage, roomMessage } from './roomSupport'
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 
-type PanelId = 'people' | 'agenda' | 'attendance' | 'documents' | 'votes' | 'chat'
+type PanelId = 'people' | 'agenda' | 'notes' | 'attendance' | 'documents' | 'votes' | 'chat'
 
 const PANEL_LABEL: Record<PanelId, string> = {
   people: 'Người dự',
   agenda: 'Nội dung họp',
+  notes: 'Ghi chú',
   attendance: 'Điểm danh',
   documents: 'Tài liệu',
   votes: 'Biểu quyết',
@@ -80,6 +82,7 @@ const PANEL_LABEL: Record<PanelId, string> = {
 /** On a phone only "Người dự" and "Chat" fit beside the call controls; these go behind ⋯, as in Meet. */
 const TUCKED_PANELS: { id: PanelId; icon: IconName }[] = [
   { id: 'agenda', icon: 'list' },
+  { id: 'notes', icon: 'notes' },
   { id: 'attendance', icon: 'userCheck' },
   { id: 'documents', icon: 'fileText' },
   { id: 'votes', icon: 'vote' },
@@ -141,7 +144,11 @@ function RoomLayout({
   onLeave: () => Promise<void>
 }) {
   // As in Meet, the stage starts with the whole width; the panels open on demand.
-  const [panel, setPanel] = useState<PanelId | null>(null)
+  const [chosenPanel, setPanel] = useState<PanelId | null>(null)
+  // The Secretary's notes (SCRUM-30) are the Chair's and the Secretary's; the panel closes if the role is taken away.
+  const takesNotes = myRole === 'Chair' || myRole === 'Secretary'
+  const panel = chosenPanel === 'notes' && !takesNotes ? null : chosenPanel
+  const tucked = takesNotes ? TUCKED_PANELS : TUCKED_PANELS.filter((item) => item.id !== 'notes')
   const [confirmingLeave, setConfirmingLeave] = useState(false)
   const [reconnecting, setReconnecting] = useState(false)
   const participants = useParticipants()
@@ -355,6 +362,8 @@ function RoomLayout({
               <ParticipantsPanel meetingId={meeting.id} participants={participants} isChair={myRole === 'Chair'} />
             ) : panel === 'agenda' ? (
               <AgendaPanel meetingId={meeting.id} variant="room" />
+            ) : panel === 'notes' ? (
+              <NotesPanel meetingId={meeting.id} variant="room" />
             ) : panel === 'attendance' ? (
               <AttendancePanel meetingId={meeting.id} />
             ) : panel === 'documents' ? (
@@ -462,7 +471,7 @@ function RoomLayout({
             active={panel === 'people'}
             onClick={() => togglePanel('people')}
           />
-          {TUCKED_PANELS.map((item) => (
+          {tucked.map((item) => (
             <ControlButton
               key={item.id}
               icon={item.icon}
@@ -473,7 +482,7 @@ function RoomLayout({
               onClick={() => togglePanel(item.id)}
             />
           ))}
-          <MorePanels panel={panel} onPick={togglePanel} />
+          <MorePanels panel={panel} panels={tucked} onPick={togglePanel} />
           <ControlButton
             icon="messageSquare"
             label="Chat"
@@ -665,7 +674,15 @@ function PipView({
  * ⋯ on a phone (hidden by CSS on wider screens): a menu of the panels that do not fit on the bar.
  * Lit while one of them is open, like the buttons it stands in for.
  */
-function MorePanels({ panel, onPick }: { panel: PanelId | null; onPick: (id: PanelId) => void }) {
+function MorePanels({
+  panel,
+  panels,
+  onPick,
+}: {
+  panel: PanelId | null
+  panels: { id: PanelId; icon: IconName }[]
+  onPick: (id: PanelId) => void
+}) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   const menuId = useId()
@@ -708,7 +725,7 @@ function MorePanels({ panel, onPick }: { panel: PanelId | null; onPick: (id: Pan
     }
   }, [open])
 
-  const lit = TUCKED_PANELS.some((item) => item.id === panel)
+  const lit = panels.some((item) => item.id === panel)
   return (
     <div className="room-more" ref={root}>
       <button
@@ -724,7 +741,7 @@ function MorePanels({ panel, onPick }: { panel: PanelId | null; onPick: (id: Pan
       </button>
       {open && (
         <div className="room-select-menu room-more-menu" role="menu" id={menuId} aria-label="Thêm">
-          {TUCKED_PANELS.map((item) => (
+          {panels.map((item) => (
             <button
               key={item.id}
               type="button"

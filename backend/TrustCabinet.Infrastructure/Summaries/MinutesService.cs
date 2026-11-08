@@ -38,28 +38,33 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
     {
         try
         {
-            var (meeting, failure) = await ReadableAsync(meetingId, actorId, ct);
-            if (meeting is null) return new(failure);
-            if (!SummaryService.Manages(meeting, actorId)) return new(MinutesFailure.Forbidden);
-            if (meeting.Status is not (MeetingStatus.InProgress or MeetingStatus.Ended)) return new(MinutesFailure.WrongMeetingStatus);
-            var current = await db.MeetingMinutes.Where(m => m.MeetingId == meetingId)
-                .OrderByDescending(m => m.RevisionNumber).FirstOrDefaultAsync(ct);
-            if (current is not null && current.Status != MinutesStatus.Draft) return new(MinutesFailure.Locked);
-            if (current is not null && !rebuild) return new(MinutesFailure.Exists);
-
-            var (draft, draftAt) = await DraftAsync(meetingId, ct);
-            var content = MinutesHtml.FromLines(MinutesTemplate.Build(await RecordsAsync(meeting, ct), draft, Hanoi));
-            var now = clock.GetUtcNow();
-            if (current is null)
+            // The meeting row is locked as a note save locks it (SCRUM-30): a note saved before is in these minutes, one
+            // saved after is refused (BR-396).
+            return await meetings.InTransactionAsync<MinutesOutcome>(async token =>
             {
-                current = new MeetingMinutes { MeetingId = meetingId, CreatedById = actorId, CreatedAt = now };
-                db.MeetingMinutes.Add(current);
-            }
-            current.Content = content;
-            current.BuiltFromDraftAt = draftAt;
-            current.UpdatedAt = now;
-            await db.SaveChangesAsync(ct);
-            return new(Data: await StateAsync(meeting, actorId, ct));
+                var (meeting, failure) = await ReadableAsync(meetingId, actorId, token, forUpdate: true);
+                if (meeting is null) return new(failure);
+                if (!SummaryService.Manages(meeting, actorId)) return new(MinutesFailure.Forbidden);
+                if (meeting.Status is not (MeetingStatus.InProgress or MeetingStatus.Ended)) return new(MinutesFailure.WrongMeetingStatus);
+                var current = await db.MeetingMinutes.Where(m => m.MeetingId == meetingId)
+                    .OrderByDescending(m => m.RevisionNumber).FirstOrDefaultAsync(token);
+                if (current is not null && current.Status != MinutesStatus.Draft) return new(MinutesFailure.Locked);
+                if (current is not null && !rebuild) return new(MinutesFailure.Exists);
+
+                var (draft, draftAt) = await DraftAsync(meetingId, token);
+                var content = MinutesHtml.FromLines(MinutesTemplate.Build(await RecordsAsync(meeting, token), draft, Hanoi));
+                var now = clock.GetUtcNow();
+                if (current is null)
+                {
+                    current = new MeetingMinutes { MeetingId = meetingId, CreatedById = actorId, CreatedAt = now };
+                    db.MeetingMinutes.Add(current);
+                }
+                current.Content = content;
+                current.BuiltFromDraftAt = draftAt;
+                current.UpdatedAt = now;
+                await db.SaveChangesAsync(token);
+                return new(Data: await StateAsync(meeting, actorId, token));
+            }, ct);
         }
         catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
@@ -205,7 +210,19 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
         return new(meeting.Title, meeting.ActualStartedAt ?? meeting.PlannedStartTime, meeting.ActualEndedAt, place,
             people.FirstOrDefault(p => p.Role == MeetingRole.Chair)?.FullName,
             people.FirstOrDefault(p => p.Role == MeetingRole.Secretary)?.FullName,
-            lines, agenda, await SummaryService.VoteLinesAsync(db, meeting.Id, ct));
+            lines, agenda, await SummaryService.VoteLinesAsync(db, meeting.Id, ct), await SecretaryNotesAsync(meeting, ct));
+    }
+
+    /// <summary>The current Secretary's notes (SCRUM-30, BR-402); the Chair reads them but writes none.</summary>
+    private async Task<IReadOnlyList<MinutesNote>> SecretaryNotesAsync(Meeting meeting, CancellationToken ct)
+    {
+        var secretaries = meeting.Participants
+            .Where(p => p.Role == MeetingRole.Secretary && ParticipantRules.Active(p)).Select(p => p.UserId).ToList();
+        return await db.MeetingNotes.AsNoTracking()
+            .Where(n => n.MeetingId == meeting.Id && secretaries.Contains(n.AuthorId) && n.Body != "")
+            .OrderBy(n => n.CreatedAt)
+            .Select(n => new MinutesNote(n.AgendaItemId, n.Body))
+            .ToListAsync(ct);
     }
 
     private static string RoleName(MeetingRole role) => role switch
@@ -216,10 +233,11 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
         _ => "Thành viên",
     };
 
-    private async Task<(Meeting? Meeting, MinutesFailure Failure)> ReadableAsync(Guid meetingId, Guid actorId, CancellationToken ct)
+    private async Task<(Meeting? Meeting, MinutesFailure Failure)> ReadableAsync(Guid meetingId, Guid actorId,
+        CancellationToken ct, bool forUpdate = false)
     {
         if (!await meetings.IsUserActiveAsync(actorId, ct)) return (null, MinutesFailure.Inactive);
-        var meeting = await meetings.FindWorkflowAsync(meetingId, false, ct);
+        var meeting = await meetings.FindWorkflowAsync(meetingId, forUpdate, ct);
         if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return (null, MinutesFailure.NotFound);
         return (meeting, MinutesFailure.None);
     }

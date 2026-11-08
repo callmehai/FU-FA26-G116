@@ -155,20 +155,24 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
     }
 
     [Fact]
-    public async Task Delete_constraint_failure_preserves_notes_and_agenda()
+    public async Task Deleting_an_item_with_notes_keeps_the_one_meeting_wide_note_per_author()
     {
+        // The note FK sets AgendaItemId to null on delete, which used to collide with the author's meeting-wide note on
+        // the unique index and fail the delete (MSG70). SCRUM-30 folds the item's note into the meeting-wide one first.
         var s = await fixture.Seed();
         await using (var db = fixture.Db())
         {
             db.MeetingNotes.AddRange(new MeetingNote { MeetingId = s.MeetingId, AgendaItemId = s.Items[0], AuthorId = s.Secretary },
-                new MeetingNote { MeetingId = s.MeetingId, AuthorId = s.Secretary });
+                new MeetingNote { MeetingId = s.MeetingId, AuthorId = s.Secretary, Body = "Chung" });
             await db.SaveChangesAsync();
         }
         using var client = fixture.Client(s.Secretary);
-        await AssertCode(await client.DeleteAsync(s.Url + $"/{s.Items[0]}"), 503, "MSG70");
+        await AssertCode(await client.DeleteAsync(s.Url + $"/{s.Items[0]}"), 200, "MSG62");
         await using var check = fixture.Db();
-        Assert.Equal(2, await check.MeetingNotes.CountAsync(n => n.MeetingId == s.MeetingId));
-        Assert.True(await check.AgendaItems.AnyAsync(i => i.Id == s.Items[0]));
+        var note = await check.MeetingNotes.SingleAsync(n => n.MeetingId == s.MeetingId);
+        Assert.Null(note.AgendaItemId);
+        Assert.Equal("Chung", note.Body);
+        Assert.False(await check.AgendaItems.AnyAsync(i => i.Id == s.Items[0]));
     }
 
     [Fact]

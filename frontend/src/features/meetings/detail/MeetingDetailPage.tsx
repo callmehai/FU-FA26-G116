@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
+import { Dialog } from '../../../components/Dialog'
 import { Icon } from '../../../components/Icon'
 import { NotFound } from '../../../components/NotFound'
 import { useToast } from '../../../components/toastContext'
@@ -26,6 +27,7 @@ import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { ParticipantsPanel } from '../../participants/ParticipantsPanel'
 import { RecorderCard } from '../../recordings/RecorderCard'
 import { MinutesPanel } from '../../minutes/MinutesPanel'
+import { NotesPanel } from '../../notes/NotesPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
 import { useRoomRecorder } from '../../recordings/useRoomRecorder'
 import { useRoomRecordings } from '../../recordings/useRoomRecordings'
@@ -36,7 +38,7 @@ import { RsvpButtons, RsvpChip } from '../../participants/Rsvp'
 import { SensitivityBadge, StatusBadge } from '../StatusBadge'
 import { useMeeting } from '../useMeeting'
 import { EditMeetingDialog } from '../MeetingDialogs'
-import { EDIT_PARAM, useEditMeetingLink } from '../meetingDialogLink'
+import { EDIT_PARAM, NOTES_PARAM, useEditMeetingLink } from '../meetingDialogLink'
 import { useMeetingEvents } from '../useMeetingEvents'
 import { useMeetingApprovers } from '../useMeetingApprovers'
 import { CancelMeetingDialog } from '../workflow/CancelMeetingDialog'
@@ -59,6 +61,15 @@ const TABS = [
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
+
+/**
+ * The Secretary's notes (SCRUM-30) are the Chair's and the Secretary's alone, and exist only once the sitting starts.
+ * Hiding the card is presentation; the server answers 404 to anyone else (BR-395). They are not one of the page's main
+ * sections, so they open in a dialog from a card under the status history rather than from a tab of their own.
+ */
+const showsNotes = (meeting: { myMeetingRole: string | null; status: string }) =>
+  (meeting.myMeetingRole === 'Chair' || meeting.myMeetingRole === 'Secretary') &&
+  (meeting.status === 'InProgress' || meeting.status === 'Ended')
 
 /** Marks a navigation that only switched the tab (see `setTab`). */
 const TAB_SWITCH = 'tabSwitch'
@@ -134,6 +145,20 @@ function MeetingDetail({
     setParams(
       (p) => {
         p.set('tab', id)
+        return p
+      },
+      { replace: true, state: { ...(location.state as object | null), [TAB_SWITCH]: true } },
+    )
+  const notesShown = showsNotes(meeting)
+  const notesOpen = notesShown && (params.has(NOTES_PARAM) || params.get('tab') === 'notes')
+  const setNotesOpen = (open: boolean) =>
+    setParams(
+      (p) => {
+        if (open) p.set(NOTES_PARAM, '1')
+        else {
+          p.delete(NOTES_PARAM)
+          if (p.get('tab') === 'notes') p.delete('tab')
+        }
         return p
       },
       { replace: true, state: { ...(location.state as object | null), [TAB_SWITCH]: true } },
@@ -420,13 +445,32 @@ function MeetingDetail({
           />
         )}
 
-        <MeetingHistory
-          history={history}
-          onRetry={() => void history.reload()}
-          onLoadMore={() => void history.loadMore()}
-          nameOf={nameOf}
-        />
+        <div className="detail-side">
+          <MeetingHistory
+            history={history}
+            onRetry={() => void history.reload()}
+            onLoadMore={() => void history.loadMore()}
+            nameOf={nameOf}
+          />
+          {notesShown && (
+            <section className="card notes-entry" aria-labelledby="meeting-notes-title">
+              <h2 className="card-title" id="meeting-notes-title">
+                Ghi chú
+              </h2>
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => setNotesOpen(true)}>
+                <Icon name="notes" size={16} />
+                {meeting.myMeetingRole === 'Secretary' ? 'Mở ghi chú' : 'Xem ghi chú'}
+              </button>
+            </section>
+          )}
+        </div>
       </div>
+
+      {notesOpen && (
+        <Dialog title="Ghi chú" size="lg" onClose={() => setNotesOpen(false)}>
+          <NotesPanel meetingId={meeting.id} variant="dialog" />
+        </Dialog>
+      )}
     </>
   )
 }

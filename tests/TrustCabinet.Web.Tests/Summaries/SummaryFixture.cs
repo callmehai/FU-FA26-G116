@@ -4,6 +4,8 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -195,6 +197,7 @@ public sealed class SummaryFixture : IAsyncLifetime
         internal bool FailSummaryRead;
         internal bool FailMinutesRead;
         internal bool FailAiSettingsRead;
+        internal bool FailNotesRead;
         internal bool FailSave;
         internal Func<Task>? AfterMinutesRead;
 
@@ -204,7 +207,8 @@ public sealed class SummaryFixture : IAsyncLifetime
         {
             if ((FailSummaryRead && command.CommandText.Contains("FROM meeting_summaries", StringComparison.Ordinal))
                 || (FailMinutesRead && command.CommandText.Contains("FROM meeting_minutes", StringComparison.Ordinal))
-                || (FailAiSettingsRead && command.CommandText.Contains("FROM ai_provider_settings", StringComparison.Ordinal)))
+                || (FailAiSettingsRead && command.CommandText.Contains("FROM ai_provider_settings", StringComparison.Ordinal))
+                || (FailNotesRead && command.CommandText.Contains("FROM meeting_notes", StringComparison.Ordinal)))
                 throw new Npgsql.NpgsqlException("Injected read failure.");
             return ValueTask.FromResult(result);
         }
@@ -220,12 +224,13 @@ public sealed class SummaryFixture : IAsyncLifetime
             return result;
         }
 
-        // Saving the minutes, editing or reviewing the draft is one conditional UPDATE (ExecuteUpdate), which bypasses
-        // SaveChanges.
+        // Saving the minutes, editing or reviewing the draft, or saving a note seen before is one conditional UPDATE
+        // (ExecuteUpdate), which bypasses SaveChanges.
         public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(System.Data.Common.DbCommand command,
             CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
             => FailSave && (command.CommandText.StartsWith("UPDATE meeting_minutes", StringComparison.Ordinal)
-                    || command.CommandText.StartsWith("UPDATE meeting_summaries", StringComparison.Ordinal))
+                    || command.CommandText.StartsWith("UPDATE meeting_summaries", StringComparison.Ordinal)
+                    || command.CommandText.StartsWith("UPDATE meeting_notes", StringComparison.Ordinal))
                 ? throw new Npgsql.NpgsqlException("Injected persistence failure.")
                 : ValueTask.FromResult(result);
 
@@ -312,12 +317,23 @@ public sealed class SummaryFixture : IAsyncLifetime
     internal HttpClient Client(Guid? actor = null, params string[] capabilities)
     {
         var client = Host.CreateClient();
-        if (actor is { } id) client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
-            new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("TrustCabinet", "TrustCabinet",
-                [new Claim("sub", id.ToString()), .. capabilities.Select(c => new Claim("cap", c))],
-                expires: DateTime.UtcNow.AddMinutes(10),
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
-                    SecurityAlgorithms.HmacSha256))));
+        if (actor is { } id) client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token(id, capabilities));
         return client;
     }
+
+    private static string Token(Guid actor, params string[] capabilities) => new JwtSecurityTokenHandler().WriteToken(
+        new JwtSecurityToken("TrustCabinet", "TrustCabinet",
+            [new Claim("sub", actor.ToString()), .. capabilities.Select(c => new Claim("cap", c))],
+            expires: DateTime.UtcNow.AddMinutes(10),
+            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
+                SecurityAlgorithms.HmacSha256)));
+
+    /// <summary>A connection to /hubs/meetings as <paramref name="actor"/>, for the note events (SCRUM-30).</summary>
+    internal HubConnection Hub(Guid actor) => new HubConnectionBuilder()
+        .WithUrl("http://localhost/hubs/meetings", options =>
+        {
+            options.Transports = HttpTransportType.LongPolling;
+            options.HttpMessageHandlerFactory = _ => Host.Server.CreateHandler();
+            options.AccessTokenProvider = () => Task.FromResult<string?>(Token(actor));
+        }).Build();
 }
