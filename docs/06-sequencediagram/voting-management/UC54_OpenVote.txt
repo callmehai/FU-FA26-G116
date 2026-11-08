@@ -50,7 +50,7 @@ else Current Chair, Meeting InProgress, Draft or new Vote (BR-160, BR-266, BR-28
         VoteController-->MeetingPage: MSG209 - Invalid vote information. Check the highlighted fields.
         MeetingPage-->Actor: MSG209 - Invalid vote information. Check the highlighted fields.
     else Vote information is valid
-        VoteService->ParticipantRepository: Get current holders of the selected roles with valid Meeting access;\na Guest needs a verified invited email and a valid invitation (BR-190, BR-267)
+        VoteService->ParticipantRepository: Get current holders of the selected roles with valid Meeting access;\na Guest needs a valid invitation, email verification is checked when the Guest casts a ballot (BR-190, BR-267)
         activate ParticipantRepository
         ParticipantRepository->Database: Retrieve current role holders with valid Meeting access
         activate Database
@@ -63,7 +63,7 @@ else Current Chair, Meeting InProgress, Draft or new Vote (BR-160, BR-266, BR-28
             VoteController-->MeetingPage: MSG220 - No eligible voters are available for the selected roles. Voting was not opened.
             MeetingPage-->Actor: MSG220 - No eligible voters are available for the selected roles. Voting was not opened.
         else At least one eligible voter
-            VoteService->VoteRepository: Recheck no other Vote is Open; save the Open Vote with opening time, fixed\neligible-voter list and count, and fixed Vote document list as one change\n(new Vote or Draft updated) (BR-190, BR-266, BR-288)
+            VoteService->VoteRepository: Recheck no other Vote is Open; save the Open Vote with opening time and fixed\neligible-voter list and count as one change (new Vote or Draft updated) (BR-190, BR-266)
             activate VoteRepository
             VoteRepository->Database: Insert or update Vote as Open with eligible voters and document list
             activate Database
