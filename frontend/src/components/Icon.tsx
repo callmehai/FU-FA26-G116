@@ -20,6 +20,7 @@ import {
   ArrowUp,
   Bell,
   Building2,
+  CalendarCheck,
   CalendarDays,
   CalendarX,
   Check,
@@ -59,6 +60,7 @@ import {
   LockOpen,
   LogOut,
   MapPin,
+  Megaphone,
   MessageSquare,
   Mic,
   MicOff,
@@ -137,6 +139,9 @@ import {
  */
 const ICONS = {
   calendar: CalendarDays,
+  // The meeting list's count cards, as AI-eCabinet's: today, published (the invitations are out).
+  calendarCheck: CalendarCheck,
+  megaphone: Megaphone,
   // SCRUM-109: the per-mic transcript, a line of words per sentence.
   captions: Captions,
   users: Users,

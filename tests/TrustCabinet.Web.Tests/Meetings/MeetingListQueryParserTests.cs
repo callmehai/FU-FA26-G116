@@ -113,6 +113,22 @@ public sealed class MeetingListQueryParserTests
     }
 
     [Theory]
+    [InlineData("?scope=todo", MeetingListScope.Todo)]
+    [InlineData("?scope=all", MeetingListScope.All)]
+    [InlineData("?scope=", MeetingListScope.All)]
+    [InlineData("", MeetingListScope.All)]
+    public void Scope_reads_all_or_todo(string input, MeetingListScope expected)
+    {
+        var (query, errors) = Parse(input);
+
+        Assert.Empty(errors);
+        Assert.Equal(expected, query!.Scope);
+    }
+
+    [Theory]
+    [InlineData("?scope=mine", "scope")]
+    [InlineData("?scope=Todo", "scope")]
+    [InlineData("?scope=todo&scope=all", "scope")]
     [InlineData("?status=published", "status")]
     [InlineData("?sensitivity=Unknown", "sensitivity")]
     [InlineData("?from=2026-10-01", "from")]

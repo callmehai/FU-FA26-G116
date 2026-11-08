@@ -77,6 +77,15 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         if (query.Sensitivity is { } sensitivity) visible = visible.Where(m => m.Sensitivity == sensitivity);
         if (query.From is { } from) visible = visible.Where(m => m.PlannedEndTime >= from);
         if (query.To is { } to) visible = visible.Where(m => m.PlannedStartTime <= to);
+        if (query.Scope == MeetingListScope.Todo)
+        {
+            bool Holds(Capability capability) => UserCapabilities.TryGetValue(actorId, out var held)
+                && !InactiveUserIds.Contains(actorId) && held.Contains(capability);
+            visible = visible.Where(m =>
+                (m.Status == MeetingStatus.WaitingApproval && m.AssignedApproverId == actorId
+                    && m.CreatedById != actorId && Holds(Capability.MeetingApprover))
+                || (m.Status == MeetingStatus.Approved && m.CreatedById == actorId && Holds(Capability.MeetingCreator)));
+        }
         if (query.Query is { Length: > 0 } search)
         {
             visible = visible.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
