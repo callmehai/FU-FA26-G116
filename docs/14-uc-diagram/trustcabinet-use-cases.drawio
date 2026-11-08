@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <mxfile host="app.diagrams.net" pages="7">
   <diagram id="system-admin" name="System Admin">
     <mxGraphModel grid="0" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1920" pageHeight="1660" math="0" shadow="0">
@@ -243,7 +244,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=12;fontStyle=1;fontSize=16;strokeColor=#555555;fillColor=none;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="TrustCabinet — All Use Cases: Meeting Organizer" vertex="1">
-          <mxGeometry height="1491" width="1133" x="251" y="35" as="geometry" />
+          <mxGeometry height="1645" width="1133" x="251" y="35" as="geometry" />
         </mxCell>
         <mxCell id="uc-1" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign in with Email and Password" vertex="1">
           <mxGeometry height="44" width="170" x="345" y="110" as="geometry" />
@@ -469,7 +470,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="cloudflare-r2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="Cloudflare R2" vertex="1">
-          <mxGeometry height="61" width="31" x="515" y="1560" as="geometry" />
+          <mxGeometry height="61" width="31" x="515" y="1715" as="geometry" />
         </mxCell>
         <mxCell edge="1" id="assoc-cloudflare-r2-94" parent="1" source="cloudflare-r2" style="edgeStyle=none;html=1;strokeColor=#666666;strokeWidth=1;endArrow=none;startArrow=none;" target="uc-94" value="">
           <mxGeometry relative="1" as="geometry">
@@ -478,7 +479,22 @@
             </Array>
           </mxGeometry>
         </mxCell>
-      </root>
+      <mxCell id="uc-find-meeting-time" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Find Meeting Time" vertex="1">
+          <mxGeometry height="44" width="170" x="300" y="1530" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-calendar-sharing" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Manage Calendar Sharing" vertex="1">
+          <mxGeometry height="44" width="170" x="300" y="1610" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-calendar-sharing-find-extend" edge="1" parent="1" source="uc-calendar-sharing" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0.6;exitY=0;exitDx=0;exitDy=0;entryX=0.6;entryY=1;entryDx=0;entryDy=0;" target="uc-find-meeting-time" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-calendar-sharing" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-calendar-sharing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-find-time" edge="1" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-find-meeting-time">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        </root>
     </mxGraphModel>
   </diagram>
   <diagram id="meeting-approver" name="Meeting Approver">

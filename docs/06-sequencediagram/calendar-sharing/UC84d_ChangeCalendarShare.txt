@@ -1,0 +1,130 @@
+title UC-84d - Change Calendar Share
+
+actor "Meeting Organizer" as Viewer
+actor "User" as Owner
+boundary "Calendar Sharing Page" as SharingPage
+control ":Calendar Sharing Controller" as SharingController
+control ":Calendar Sharing Service" as SharingService
+participant ":Calendar Share Repository" as ShareRepository
+participant ":Notification Service" as NotificationService
+database ":Database" as Database
+
+Viewer->SharingPage: Ask for a higher level or a longer range
+activate SharingPage
+
+SharingPage->SharingController: Change calendar share
+activate SharingController
+
+SharingController->SharingService: changeShare(shareId, actorId, level, startDate, endDate)
+activate SharingService
+
+SharingService->ShareRepository: Get share where the actor is one of the two people (BR-423)
+activate ShareRepository
+ShareRepository->Database: Retrieve share
+activate Database
+Database-->ShareRepository: Share / Not found
+deactivate Database
+ShareRepository-->SharingService: Share / Not found
+deactivate ShareRepository
+
+alt Actor is not one of the two people - EX-1
+    SharingService-->SharingController: Not found, nothing disclosed
+    deactivate SharingService
+    SharingController-->SharingPage: 404 without a body
+    deactivate SharingController
+    SharingPage-->Viewer: No such calendar share
+else Actor is one of the two people
+    alt Share is not Effective, or the viewer asks while a change is pending - EX-2
+        SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
+        deactivate SharingService
+        SharingController-->SharingPage: 409 MSG450
+        deactivate SharingController
+        SharingPage-->Viewer: MSG450 - This action is not allowed in the current state of the share.
+    else Share is changeable
+        alt Viewer asks for a higher level or a longer range
+            SharingService->SharingService: Validate M2 or a longer range (BR-414, BR-431)
+
+            alt Range is invalid - EX-3
+                SharingService-->SharingController: MSG443 - The date range is invalid.
+                deactivate SharingService
+                SharingController-->SharingPage: 400 MSG443
+                deactivate SharingController
+                SharingPage-->Viewer: MSG443 - The date range is invalid.
+            else Range is valid
+                SharingService->ShareRepository: Save pending change and audit entry (BR-423, BR-426)
+                activate ShareRepository
+                ShareRepository->Database: Insert pending change and audit record
+                activate Database
+                Database-->ShareRepository: Saved / Save failed
+                deactivate Database
+                ShareRepository-->SharingService: Pending change / Save failed
+                deactivate ShareRepository
+
+                alt Change cannot be saved - EX-4
+                    SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+                    deactivate SharingService
+                    SharingController-->SharingPage: 503 MSG447
+                    deactivate SharingController
+                    SharingPage-->Viewer: MSG447 - Unable to save the calendar sharing data. Please try again.
+                else Change is pending
+                    SharingService->NotificationService: Notify the owner of the change request (BR-426)
+                    activate NotificationService
+                    NotificationService->Database: Record owner notification
+                    activate Database
+                    Database-->NotificationService: Notification recorded
+                    deactivate Database
+                    NotificationService-->SharingService: Owner notified
+                    deactivate NotificationService
+                    SharingService-->SharingController: Pending change
+                    deactivate SharingService
+                    SharingController-->SharingPage: 201 MSG454 - Calendar share change request sent.
+                    deactivate SharingController
+                    SharingPage-->Viewer: MSG454 - Calendar share change request sent.
+                end
+            end
+        else Owner lowers the level or changes the dates - AF-1
+            SharingService->SharingService: Validate the lower level or new date range (BR-414, BR-431)
+
+            alt Range is invalid - EX-3
+                SharingService-->SharingController: MSG443 - The date range is invalid.
+                deactivate SharingService
+                SharingController-->SharingPage: 400 MSG443
+                deactivate SharingController
+                SharingPage-->Owner: MSG443 - The date range is invalid.
+            else Range is valid
+                SharingService->ShareRepository: Apply new level and range and audit entry (BR-414, BR-426)
+                activate ShareRepository
+                ShareRepository->Database: Update share and audit record
+                activate Database
+                Database-->ShareRepository: Saved / Save failed
+                deactivate Database
+                ShareRepository-->SharingService: Updated share / Save failed
+                deactivate ShareRepository
+
+                alt Change cannot be saved - EX-4
+                    SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+                    deactivate SharingService
+                    SharingController-->SharingPage: 503 MSG447
+                    deactivate SharingController
+                    SharingPage-->Owner: MSG447 - Unable to save the calendar sharing data. Please try again.
+                else Change is applied
+                    SharingService->NotificationService: Notify the viewer the share was updated (BR-426)
+                    activate NotificationService
+                    NotificationService->Database: Record viewer notification
+                    activate Database
+                    Database-->NotificationService: Notification recorded
+                    deactivate Database
+                    NotificationService-->SharingService: Viewer notified
+                    deactivate NotificationService
+                    SharingService-->SharingController: Updated share
+                    deactivate SharingService
+                    SharingController-->SharingPage: 200 MSG442 - Calendar share updated.
+                    deactivate SharingController
+                    SharingPage-->Owner: MSG442 - Calendar share updated.
+                end
+            end
+        end
+    end
+end
+
+deactivate SharingPage

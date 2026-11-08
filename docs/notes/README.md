@@ -9,6 +9,12 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 - [Đặc tả sơ bộ SCRUM-30](NOTE-dac-ta-so-bo-scrum-30.md) — 06/11/2026, sửa theo review #271; bước BE viết UC cơ bản:
   UC-82 Ghi chú cuộc họp, BR-395 → BR-403 đề xuất, `MSG415`–`MSG423` dành sẵn, sequence `.txt`, chỗ lệch khỏi ticket
   (không theo dõi nhiệm vụ) và 2 câu hỏi cho PO/BA.
+- [Đặc tả sơ bộ SCRUM-137/SCRUM-142](NOTE-dac-ta-so-bo-scrum-137-142.md) — 07/11/2026 (tách UC Respond + tách mã, đổi số tránh PR #279, tách UC tạo nháp, gộp UC theo mẫu Report 3, 07/11/2026); bước BE viết UC cơ bản:
+  UC-84 gom *Quản lý chia sẻ lịch* (UC-84a xin xem, UC-84b chủ lịch tự chia sẻ, UC-84c trả lời, UC-84d thay đổi,
+  UC-84e rút/ngừng) + UC-85 gom *Tìm giờ họp* (UC-85a tìm giờ, UC-85b tạo nháp từ khung, UC-85c xem lịch),
+  BR-414 → BR-431 đề xuất, `MSG435`–`MSG455` dành sẵn (mã tiếp theo `MSG456`), 8 sequence `.txt`
+  + tab và ảnh, quyết định mới D12 (khung trùng Mật vẫn cho tạo nháp), số dựa trên PR #279 merge trước,
+  comment cần đăng lên Jira (chưa đăng).
 - [Danh sách unit test theo module](NOTE-danh-sach-unit-test.md) — 03/11/2026; 124 case thiết kế theo
   sáu cột của Report 5.1 (No, Module Name, Method Name, Sheet Name, Description, Pre-Condition) cho
   22 module đang chạy thật, kèm bảng Source trỏ file test trong `tests/`.

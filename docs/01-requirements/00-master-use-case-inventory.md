@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 81 Use Case (UC-01 → UC-81).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 16 Feature, UC-01 → UC-81 và UC-84 → UC-85** (FE-16 thêm ngày 07/11/2026; UC-82, UC-83 thuộc SCRUM-30/SCRUM-33). Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 9 UC chi tiết.
@@ -255,6 +255,15 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
 | UC-70 | Xem & xuất báo cáo *(View & Export Reports)* — gồm UC-70a Xem, UC-70b Xuất | User có quyền báo cáo | Placeholder | Độc lập (UC-70b `<<extend>>` UC-70a) |
+
+## FE-16 — Lịch làm việc & tìm giờ họp *(Working Calendar & Meeting Time Search)*
+
+Quyết định phạm vi: [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md) — chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ, không có trợ lý AI.
+
+| UC | Tên | Actor | Đặc tả | Quan hệ |
+|---|---|---|---|---|
+| UC-84 | Quản lý chia sẻ lịch *(Manage Calendar Sharing)* — gồm UC-84a Yêu cầu xem lịch, UC-84b Tự chia sẻ lịch (luôn Mốc 1), UC-84c Trả lời chia sẻ lịch, UC-84d Thay đổi chia sẻ lịch, UC-84e Rút hoặc ngừng chia sẻ lịch; chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ (BR-414) | Meeting Organizer (bên xem); mọi tài khoản nội bộ đang hoạt động (chủ lịch) | Đã đặc tả các UC con | UC-84a `<<extend>>` UC-85a |
+| UC-85 | Tìm giờ họp *(Find Meeting Time)* — gồm UC-85a Tìm khung giờ (tối đa 10 người ngoài người tìm), UC-85b Tạo nháp từ khung giờ, UC-85c Xem lịch được chia sẻ | Meeting Organizer | Đã đặc tả các UC con | UC-85b `<<extend>>` UC-85a, dùng lại luồng UC-14 |
 
 ---
 

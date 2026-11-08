@@ -1,0 +1,91 @@
+title UC-85a - Find Meeting Time Slots
+
+actor "Meeting Organizer" as Finder
+boundary "Find Meeting Time Page" as FindPage
+control ":Meeting Slot Controller" as SlotController
+control ":Meeting Slot Service" as SlotService
+participant ":User Repository" as UserRepository
+participant ":Calendar Share Repository" as ShareRepository
+participant ":Meeting Repository" as MeetingRepository
+database ":Database" as Database
+
+Finder->FindPage: Find meeting time (invitees, duration, dates, hours, buffer, step)
+activate FindPage
+
+FindPage->SlotController: Find meeting time
+activate SlotController
+
+SlotController->SlotService: findSlots(finderId, searchInput)
+activate SlotService
+
+SlotService->UserRepository: Verify finder is active and holds MeetingCreator (BR-430)
+activate UserRepository
+UserRepository->Database: Retrieve finder account with capabilities
+activate Database
+Database-->UserRepository: Account / Not found
+deactivate Database
+UserRepository-->SlotService: Verification result
+deactivate UserRepository
+
+alt Finder has no right to create meetings - EX-2
+    SlotService-->SlotController: MSG448 - Only a Meeting Organizer can do this.
+    deactivate SlotService
+    SlotController-->FindPage: 403 MSG448
+    deactivate SlotController
+    FindPage-->Finder: MSG448 - Only a Meeting Organizer can do this.
+else Finder is verified
+    SlotService->SlotService: Validate at most 10 people besides the finder, 15 minutes to 8 hours,\nrange at most 31 days, weekday hours, buffer 0 to 4 hours, step 5 minutes to 2 hours (BR-421, BR-422)
+
+    alt Search parameters are invalid - EX-1
+        SlotService-->SlotController: MSG444 - The meeting-time search is invalid. Check the highlighted fields.
+        deactivate SlotService
+        SlotController-->FindPage: 400 MSG444
+        deactivate SlotController
+        FindPage-->Finder: MSG444 - The meeting-time search is invalid. Check the highlighted fields:\nToo many people. Duration, range, hours, buffer or step is out of range.
+    else Search parameters are valid
+        SlotService->ShareRepository: Get Effective shares of each invitee's calendar to the finder (BR-423, BR-424)
+        activate ShareRepository
+        ShareRepository->Database: Retrieve shares with status
+        activate Database
+        Database-->ShareRepository: Effective shares (stopped and expired shares excluded)
+        deactivate Database
+        ShareRepository-->SlotService: Effective shares
+        deactivate ShareRepository
+
+        SlotService->MeetingRepository: Get meetings of finder and invitees overlapping the range
+        activate MeetingRepository
+        MeetingRepository->Database: Retrieve overlapping meetings with roles and actual end times
+        activate Database
+        Database-->MeetingRepository: Meetings / Read failed
+        deactivate Database
+        MeetingRepository-->SlotService: Meetings / Read failed
+        deactivate MeetingRepository
+
+        alt Shares or meetings cannot be read - EX-3
+            SlotService-->SlotController: MSG453 - Unable to load the calendar sharing data. Please try again.
+            deactivate SlotService
+            SlotController-->FindPage: 500 MSG453
+            deactivate SlotController
+            FindPage-->Finder: MSG453 - Unable to load the calendar sharing data. Please try again.
+        else Data is loaded
+            SlotService->SlotService: Keep only meetings at shared levels (BR-414, BR-417).\nCount the finder's own meetings only when "Tính cả tôi" is ticked,\nthen at every level (BR-416, BR-418).\nCount only current Chair, Secretary or Member assignments as busy;\ndeclined invitations, creator-only and approver-only never count as busy (BR-419).\nCount Chờ duyệt, approved, published, ongoing and ended meetings until their actual end;\nnever Draft, Rejected or cancelled ones (BR-420).\nMark busy with the gap before and after every busy period,\nthen round start times up to the step; skip past start times, keep out-of-range days unknown (BR-415, BR-422)
+
+            alt No slot fits everyone - AF-1
+                SlotService-->SlotController: Slots with the most people free and who is busy
+                deactivate SlotService
+                SlotController-->FindPage: 200 MSG445 - No time slot fits everyone. Showing the slots with the most people free.
+                deactivate SlotController
+                FindPage-->Finder: MSG445 - No time slot fits everyone. Showing the slots with the most people free.\nUnknown days and people without a share are never counted as free (BR-415, BR-416)
+            else Common slots found
+                SlotService-->SlotController: Common slots by day
+                deactivate SlotService
+                SlotController-->FindPage: 200 Common slots by day
+                deactivate SlotController
+                FindPage-->Finder: Common slots by day.\nOnly shared calendars are counted. Invitees may still be busy (BR-428)
+            end
+        end
+    end
+end
+
+deactivate SlotController
+deactivate FindPage
