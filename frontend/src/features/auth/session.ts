@@ -2,6 +2,7 @@ import * as authApi from '../../api/auth'
 import { ApiError, configureAuth } from '../../api/client'
 import type { SignInResponse } from '../../types/auth'
 import type { CurrentUser } from '../../types/user'
+import { clearNoteDrafts } from '../notes/noteDrafts'
 
 /**
  * Token handling for the signed-in session (SCRUM-11), kept outside React so `api/client.ts` can
@@ -214,6 +215,9 @@ export async function signOut() {
   try {
     await withRefreshLock(async () => {
       await authApi.signOut()
+      // Unsent meeting notes stay on this browser only while someone is signed in (SCRUM-30). An expired session
+      // keeps them: the user did not choose to leave, and signs back in to send them.
+      clearNoteDrafts()
       endSession(false)
     })
     return true

@@ -30,11 +30,11 @@ else Online, shortly after typing stops
     deactivate MeetingRepository
     NotesService->NotesService: Check the actor is the current Secretary (BR-395)
 
-    alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-8
+    alt Meeting not accessible to the actor - EX-8
         NotesService-->NotesController: Not found
         NotesController-->NotesPanel: 404
         NotesPanel-->Actor: No notes
-    else Actor is not the current Secretary - EX-1
+    else Actor can read the Meeting but is not the current Secretary (the Chair, another reader, a replaced Secretary) - EX-1
         NotesService-->NotesController: MSG416 - Only the Secretary may write meeting notes.
         NotesController-->NotesPanel: 403 MSG416 - Only the Secretary may write meeting notes.
         NotesPanel-->Actor: MSG416 - Only the Secretary may write meeting notes.

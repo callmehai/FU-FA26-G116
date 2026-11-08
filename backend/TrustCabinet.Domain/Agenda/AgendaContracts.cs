@@ -67,7 +67,11 @@ public interface IAgendaRepository
     Task<IReadOnlyList<MeetingGuestInvitation>> CurrentGuestsAsync(Guid meetingId, CancellationToken ct);
     Task<bool> HasMinutesAsync(Guid meetingId, CancellationToken ct);
     void Add(AgendaItem item);
-    void Remove(AgendaItem item);
+    /// <summary>
+    /// Removes a Pending item. Notes typed on it (SCRUM-30) are appended to their author's meeting-wide note first, so
+    /// the text survives and the meeting-wide note stays one per author (BR-397, BR-398).
+    /// </summary>
+    Task RemoveAsync(AgendaItem item, DateTimeOffset now, CancellationToken ct);
 }
 
 public interface IAgendaDocumentRepository
