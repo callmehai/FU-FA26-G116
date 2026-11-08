@@ -336,8 +336,9 @@ function NoteEditor({
     setStatus({ kind: 'saving' })
     try {
       const { note, message } = await saveNote(meetingId, { agendaItemId: itemOf(noteKey), body, updatedAt: base })
-      // The connection works again: what other notes kept unsent goes too (AF-3).
-      others.current()
+      // The connection works again: what other notes kept unsent goes too (AF-3). After this save has cleared its own
+      // draft below, so the note just saved is not sent a second time.
+      void Promise.resolve().then(() => others.current())
       if (editing.current.key !== noteKey) {
         // The Secretary moved to another note meanwhile; what they typed after this save is still kept.
         if (readNoteDraft(scope, noteKey)?.body === body) removeNoteDraft(scope, noteKey)
@@ -420,8 +421,14 @@ function NoteEditor({
       if (sent) void reload()
     }
   }, [scope, items, notes, meetingId, handleAccessLost, reload])
+  // Sent once when the panel opens; after that only when a save gets through or the connection returns. Not on every
+  // reload: another window of the same person shares these drafts, and sending its half-typed text from here would
+  // show it a false conflict (MSG418) on its next save.
+  const sentOnOpen = useRef(false)
   useEffect(() => {
     others.current = () => void sendOthers()
+    if (sentOnOpen.current) return
+    sentOnOpen.current = true
     void Promise.resolve().then(() => others.current())
   }, [sendOthers])
 

@@ -90,7 +90,9 @@ Thuộc FE-05, `<<extend>>` UC-26. Sequence Diagram:
 ## 6. API dự kiến (cho BE, chưa phải contract)
 
 Contract chính thức viết vào `docs/03-api/` trong PR code. Mọi endpoint kiểm tra lại quyền ở server. Người không phải
-Chủ toạ/Thư ký hỏi tới ghi chú thì nhận `404`, không có mã.
+Chủ toạ/Thư ký **đọc** ghi chú thì nhận `404`, không có mã. **Lưu** ghi chú khi đọc được cuộc họp mà không phải Thư ký
+hiện tại (Chủ toạ, người đọc khác, Thư ký vừa bị thay) thì nhận `403 MSG416`, để Thư ký bị thay giữa chừng không mất chữ;
+không đọc được cuộc họp thì `404`. Xem bảng quyền ở [19-ghi-chu-cuoc-hop.md](../03-api/19-ghi-chu-cuoc-hop.md).
 
 | Method | Đường dẫn | Ghi chú |
 |---|---|---|
@@ -118,11 +120,11 @@ Chủ toạ/Thư ký hỏi tới ghi chú thì nhận `404`, không có mã.
 
 ## 8. Việc còn lại
 
-- [ ] Ghi D1 lên SCRUM-30 bằng comment (skill `jira-deviation-note`).
+- [x] Ghi D1 lên SCRUM-30 bằng comment (skill `jira-deviation-note`), 08/11/2026.
 - [ ] Xuất PNG cho `UC82_TakeMeetingNotes.txt` (`node scripts/export-diagrams.js …`) và thêm tab vào
       `TrustCabinet_Sequence_Diagrams.drawio` — để lúc BA Final Review nếu đặc tả còn đổi.
 - [ ] BA: đưa UC-82 và BR-395 → BR-403 vào Report 3 DOCX; cập nhật inventory và UC diagram.
-- [ ] Ghi D2 lên SCRUM-30 bằng comment.
+- [x] Ghi D2 lên SCRUM-30 bằng comment, 08/11/2026 (kèm: lưu khi không phải Thư ký trả `403 MSG416` thay vì `404`).
 - [x] BE (07/11/2026): `GET`/`PUT /api/meetings/{id}/notes`, sự kiện `notesChanged`, ghi chú vào bản nháp biên bản
       (BR-402), gộp ghi chú khi xoá mục (D2); contract [19-ghi-chu-cuoc-hop.md](../03-api/19-ghi-chu-cuoc-hop.md);
       `MSG415`–`MSG422` sang *BE*.
