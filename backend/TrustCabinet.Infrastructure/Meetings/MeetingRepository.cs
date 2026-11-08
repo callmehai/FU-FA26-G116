@@ -48,6 +48,25 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
                 : meetings.Where(m => m.PlannedStartTime <= now);
         }
 
+        if (query.Scope == MeetingListScope.Todo)
+        {
+            // Exactly the meetings TransitionAsync would let the caller act on: approve or reject one
+            // assigned to them that they did not organise, or publish their own approved one, each only
+            // while they are active and their role still holds the capability. Any date.
+            meetings = meetings.Where(m =>
+                (m.Status == MeetingStatus.WaitingApproval
+                    && m.AssignedApproverId == actorId
+                    && m.CreatedById != actorId
+                    && db.Users.Any(user => user.Id == actorId && user.IsActive
+                        && db.RoleCapabilities.Any(roleCapability => roleCapability.RoleId == user.RoleId
+                            && roleCapability.Capability == Capability.MeetingApprover)))
+                || (m.Status == MeetingStatus.Approved
+                    && m.CreatedById == actorId
+                    && db.Users.Any(user => user.Id == actorId && user.IsActive
+                        && db.RoleCapabilities.Any(roleCapability => roleCapability.RoleId == user.RoleId
+                            && roleCapability.Capability == Capability.MeetingCreator))));
+        }
+
         if (query.ExcludeDeclined)
         {
             // The Chair is never asked, so an answer left from before they took the chair does not hide the meeting.

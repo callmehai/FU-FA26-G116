@@ -1538,6 +1538,34 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo()
+    {
+        var approver = GivenMember("todo-approver@trustcabinet.local");
+        _factory.Meetings.UserCapabilities[approver.Id] = [Capability.MeetingApprover];
+        var creator = GivenCreator();
+        var waiting = OwnedMeetingBy(creator, approverId: approver.Id);
+        waiting.Status = MeetingStatus.WaitingApproval;
+        var approved = OwnedMeetingBy(creator, approverId: approver.Id);
+        approved.Status = MeetingStatus.Approved;
+        _factory.Meetings.Meetings.AddRange([waiting, approved]);
+        using var client = _factory.ClientFor(approver, Capability.MeetingApprover);
+
+        var invalid = await client.GetAsync("/api/meetings?scope=mine");
+        using var invalidBody = await JsonOf(invalid);
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal("MSG32", invalidBody.RootElement.GetProperty("code").GetString());
+        Assert.True(invalidBody.RootElement.GetProperty("errors").TryGetProperty("scope", out _));
+        Assert.Null(_factory.Meetings.LastListQuery);
+
+        var todo = await client.GetAsync("/api/meetings?scope=todo");
+        using var todoBody = await JsonOf(todo);
+        Assert.Equal(HttpStatusCode.OK, todo.StatusCode);
+        Assert.Equal(MeetingListScope.Todo, _factory.Meetings.LastListQuery!.Scope);
+        var item = Assert.Single(todoBody.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(waiting.Id, item.GetProperty("id").GetGuid());
+    }
+
+    [Fact]
     public async Task List_returns_MSG38_and_500_when_the_database_read_fails()
     {
         _factory.Meetings.NextReadThrows = new Npgsql.NpgsqlException("database unavailable");

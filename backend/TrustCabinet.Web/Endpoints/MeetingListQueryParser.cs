@@ -26,6 +26,7 @@ public static partial class MeetingListQueryParser
         var rawSortDir = Read(values, "sortDir", fieldErrors);
         var rawExcludeDeclined = Read(values, "excludeDeclined", fieldErrors);
         var rawTiming = Read(values, "timing", fieldErrors);
+        var rawScope = Read(values, "scope", fieldErrors);
 
         MeetingStatus? status = null;
         if (rawStatus is not null)
@@ -109,6 +110,13 @@ public static partial class MeetingListQueryParser
             fieldErrors["timing"] = "Tham số timing chỉ nhận upcoming hoặc past.";
         }
 
+        // Todo: the meetings waiting on the caller to approve, reject or publish (AI-eCabinet's "Cần xử lý").
+        var scope = rawScope == "todo" ? MeetingListScope.Todo : MeetingListScope.All;
+        if (rawScope is not (null or "all" or "todo"))
+        {
+            fieldErrors["scope"] = "Tham số scope chỉ nhận all hoặc todo.";
+        }
+
         errors = fieldErrors;
         if (fieldErrors.Count > 0)
         {
@@ -117,7 +125,8 @@ public static partial class MeetingListQueryParser
         }
 
         query = new MeetingListQuery(
-            status, sensitivity, rawSearch?.Trim(), from, to, page, pageSize, sortBy, sortDirection, excludeDeclined, timing);
+            status, sensitivity, rawSearch?.Trim(), from, to, page, pageSize, sortBy, sortDirection, excludeDeclined, timing,
+            Scope: scope);
         return true;
     }
 
