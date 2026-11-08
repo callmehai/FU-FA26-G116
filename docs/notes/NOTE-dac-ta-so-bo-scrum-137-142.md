@@ -58,7 +58,11 @@ kết thúc, ngày kết thúc từ hôm nay trở đi, dài tối đa **365 ng�
 đổi khoảng của chia sẻ Đang hiệu lực được giữ ngày bắt đầu cũ; khoảng chủ lịch rút ngắn khi chấp nhận phải nằm
 trong khoảng được xin. Khác eCab (cho phép "không giới hạn", note 36 §3): BR-425 cần ngày kết thúc để tự hết hạn,
 và giới hạn một năm để một chia sẻ bị quên không mở lịch mãi — giờ bận của một người là dữ liệu cá nhân
-(Luật 91/2025/QH15). Con số 365 chờ PO xác nhận (Q10).
+(Luật 91/2025/QH15). Con số 365 đã chốt 08/11/2026 (Hải, Q10).
+
+**D17 (PO, 08/11/2026 — đóng Q9):** danh sách trạng thái tính bận ở BR-420 đã chốt: Chờ duyệt, Đã duyệt, Đã công bố, Đang họp, Đã kết thúc (đến giờ kết thúc thật) tính bận; Nháp, Bị từ chối, Đã huỷ không tính. Không thay đổi nghiệp vụ so với đề xuất.
+
+**D18 (PO, 08/11/2026 — đóng Q10):** khoảng ngày chia sẻ dài tối đa 365 ngày tính cả hai đầu (BR-431, D16); chia sẻ mới bắt đầu từ hôm nay. Không thay đổi nghiệp vụ so với đề xuất.
 
 ## 1. Hiện trạng code (07/11/2026)
 
@@ -263,7 +267,7 @@ Thuộc FE-16 (tab Lịch được chia sẻ). Sequence Diagram:
 | `BR-417` | A meeting above the shared level counts as free for the viewer (for example an Internal meeting at Level 1). | UC-85a, UC-85c | SCRUM-142 / D7 — mức chưa được chia sẻ hiện là rảnh |
 | `BR-418` | The finder's own meetings count at every level, including Secret. | UC-85a | SCRUM-137 — lịch của chính người tìm tính mọi mức |
 | `BR-419` | Only a current Chair, Secretary or Member assignment counts as busy. A person who only created the meeting or only approves it never counts as busy. A person who declined the invitation never counts as busy. | UC-85a, UC-85c | SCRUM-142 / D9 — chỉ Chủ toạ/Thư ký/Thành viên tính bận; người từ chối và nhờ dự thay (Q9) |
-| `BR-420` | A meeting counts as busy while it is Chờ duyệt, Đã duyệt, Đã công bố, Đang họp or Đã kết thúc (until its actual end time). A meeting in Nháp, Bị từ chối or Đã huỷ never counts as busy. | UC-85a, UC-85c | SCRUM-142 — trạng thái tính bận (chờ PO xác nhận Q9) |
+| `BR-420` | A meeting counts as busy while it is Chờ duyệt, Đã duyệt, Đã công bố, Đang họp or Đã kết thúc (until its actual end time). A meeting in Nháp, Bị từ chối or Đã huỷ never counts as busy. | UC-85a, UC-85c | SCRUM-142 — trạng thái tính bận (đã chốt 08/11/2026, Hải, Q9) |
 | `BR-421` | A search covers at most 10 people besides the finder; the finder may also count their own calendar, which does not take one of the 10 places. Duration is 15 minutes to 8 hours (default 2 hours) and the date range at most 31 days. | UC-85a | SCRUM-137 / D8, D14 — số eCab, 10 người ngoài người tìm |
 | `BR-422` | Slots fall Monday to Friday, 08:00–17:00 excluding the 12:00–13:00 lunch break, and never start in the past. A slot keeps a gap of 0–4 hours (default 30 minutes) both before and after every busy period. Start times are then rounded up to a step of 5 minutes to 2 hours (default 30 minutes): a meeting ending 09:10 with a 30-minute gap and a 30-minute step gives 10:00 as the earliest start. | UC-85a | SCRUM-137 / D8, D15 — giờ làm việc, cách cuộc họp khác (hai phía), làm tròn giờ bắt đầu |
 | `BR-423` | Each ordered pair of a calendar owner and a viewer has at most one Pending (Chờ đồng ý) or Effective (Đang hiệu lực) share, and nobody shares with themselves. The direction counts: while A views B's calendar, B may still ask for or receive a share of A's calendar. | UC-84a, UC-84b, UC-84c, UC-84d | SCRUM-142 / eCab — một chia sẻ Chờ HOẶC Hiệu lực mỗi cặp **có chiều** (chủ lịch → người xem) |
@@ -348,8 +352,8 @@ không được xem → `404` không body.
 | Q4 | Hết hạn tự đóng chạy lúc nào (nửa đêm, múi giờ nào) và có báo cho hai bên trước khi đóng không? | Job nửa đêm múi giờ máy chủ, báo cả hai bên khi đóng (BR-426) |
 | Q7 | Câu cố định trên màn tìm giờ (BR-428) dùng đúng chữ nào? | `Chỉ tính lịch đã được chia sẻ. Người được mời vẫn có thể bận.` — BA chốt chữ cuối |
 | Q8 | Khung nhiều người dự nhất (UC-85a AF-1) được hiện tên ai bận — chỉ tên trong danh sách mời của người tìm, đúng không? | Đúng; không bao giờ hiện tên/địa điểm/người dự của cuộc họp chủ lịch (BR-427) |
-| Q9 | Danh sách trạng thái tính bận ở BR-420 đã đủ chưa: Chờ duyệt / Đã duyệt / Đã công bố / Đang họp / Đã kết thúc tính bận (đến giờ kết thúc thật); Nháp / Bị từ chối / Đã huỷ không tính? | Chờ PO xác nhận |
-| Q10 | Khoảng ngày chia sẻ dài tối đa bao nhiêu (BR-431, D16)? eCab cho phép không giới hạn | 365 ngày tính cả hai đầu; chia sẻ mới bắt đầu từ hôm nay |
+
+Q9 và Q10 đã chốt 08/11/2026 (Hải) — xem D17, D18; không còn câu hỏi mở.
 
 ## 8. Việc còn lại
 
@@ -361,7 +365,7 @@ không được xem → `404` không body.
       `MessageCodeCatalogueTests` + `SkillMirrorTests` 74/74 pass; UC-82/UC-83, BR-397 → BR-413, `MSG408`–`MSG434`
       để trống cho SCRUM-30/SCRUM-33; UC-86 → UC-90 không dùng).
 - [ ] BA Final Review (phần còn lại): cập nhật inventory, UC diagram, màn FE-16 (§I.5.1 + §III) sau khi FE có màn
-      chạy thật (quy trình note 06); sửa mô tả SCRUM-137/SCRUM-142 theo D1–D3 (§2) và chốt Q4, Q7, Q8, Q9.
+      chạy thật (quy trình note 06); sửa mô tả SCRUM-137/SCRUM-142 theo D1–D3 (§2) và chốt Q4, Q7, Q8. Q9/Q10 đã chốt (D17, D18).
 - [ ] Ticket màn FE-16 tạo riêng (note 36 §6); cập nhật `scopeData`/landing ở PR màn hình, không ở đây.
 - [ ] Comment cần đăng lên Jira sau khi note này merge (xem §2 + D12–D16, không sửa ticket trong task này):
   - SCRUM-142: D12 (khung trùng Mật vẫn cho tạo nháp, kiểm lại theo dữ liệu đã chia sẻ, câu cố định trên màn);
@@ -374,4 +378,4 @@ không được xem → `404` không body.
     UC-85 gom (UC-85a tìm giờ, UC-85b tạo nháp `<<extend>>` UC-85a, UC-85c xem lịch),
     BR-414 → BR-422 + BR-427 → BR-430 (phần tìm giờ), `MSG444`–`MSG447` + `MSG453` dành sẵn
     (đổi số từ `MSG433`–`MSG436` + `MSG442`; UC-85b không lưu được dùng lại `MSG35` của UC-14;
-    dừng/hết hạn thành nhãn, không còn 409/410 cho cả tuần; Q9 chờ PO xác nhận trạng thái tính bận).
+    dừng/hết hạn thành nhãn, không còn 409/410 cho cả tuần; Q9 đã chốt trạng thái tính bận (D17).

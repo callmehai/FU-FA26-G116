@@ -78,13 +78,13 @@ Spec UC-79 chỉ dùng hai mã sẵn có: **MSG117** (409, cuộc họp không `
 MSG124 chỉ có nghĩa nếu BE thực sự gọi LiveKit; giơ tay thuần database thì không dùng.
 Các tình huống BE sẽ gặp mà spec chưa gán mã: người gọi không còn trong phòng, mời khi đang có người nắm lượt, thao tác của Chủ toạ do người khác gọi,
 yêu cầu không còn mở. Quy tắc: **một mã một tình huống**, dùng lại mã cũ chỉ khi cùng tình huống; còn lại lấy số kế tiếp ở mục "Mã tiếp theo" của
-[danh mục](../03-api/00-danh-muc-ma-thong-bao.md) (hiện **MSG408** trên `main`; PR #267 có thể đã lấy — kiểm lại), thêm dòng vào bảng **cùng commit**,
+[danh mục](../03-api/00-danh-muc-ma-thong-bao.md) (lấy mã ở mục "Mã tiếp theo" của catalogue — hiện **MSG457**; `MSG435`–`MSG456` đã dành sẵn), thêm dòng vào bảng **cùng commit**,
 khai báo hằng đầu file endpoint, và có test khẳng định mã (`MessageCodeCatalogueTests` bắt thiếu).
 
 ### 3.5 Test và tài liệu
 
 - Test tích hợp trong `tests/TrustCabinet.Web.Tests` (thư mục theo tính năng, cạnh các test phòng họp): giơ tay hai lần chỉ một dòng (BR-337); đúng thứ tự hàng đợi; Thành viên gọi thẳng `invite`/`move`/`decline` bị từ chối (ticket yêu cầu rõ); mời khi đang có người nắm lượt; Chủ toạ cũ sau UC-73; cuộc họp không `InProgress` → MSG117; người không thuộc cuộc họp → 404; Khách giơ tay được; rời phòng huỷ yêu cầu; họp kết thúc huỷ yêu cầu; `StartedAt/EndedAt` được giữ.
-- `docs/03-api/18-dang-ky-phat-bieu.md` (số tiếp theo sau `17-du-thao-bien-ban.md`): endpoint, quyền, body, mã, sự kiện hub. Ghi vào `docs/03-api/README.md` nếu thư mục có mục lục.
+- `docs/03-api/20-dang-ky-phat-bieu.md` (số tiếp theo sau `19-ghi-chu-cuoc-hop.md`): endpoint, quyền, body, mã, sự kiện hub. Ghi vào `docs/03-api/README.md` nếu thư mục có mục lục.
 - Danh mục MSG, ERD: cùng commit với code.
 - Lệch so với ticket/UC khi làm thì **ghi comment Jira SCRUM-27** (skill `jira-deviation-note`) để BA đồng bộ lúc Final Review.
 

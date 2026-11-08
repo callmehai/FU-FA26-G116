@@ -69,8 +69,8 @@ else Document can be provided
         end
 
     else File read
-        opt Meeting is Confidential or Secret
-            DocumentService->AuditLogRepository: Record the view or download with the actor and time,\nbefore any content is sent (BR-318)
+        opt Meeting is Secret
+            DocumentService->AuditLogRepository: Record the view with the actor and time,\nbefore any content is sent (BR-318)
             activate AuditLogRepository
             AuditLogRepository->Database: Insert audit entry
             activate Database

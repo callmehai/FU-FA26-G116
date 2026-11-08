@@ -120,8 +120,8 @@ Không nằm trong ba tin ❌ nhưng cùng loại, làm cùng lượt cho tiện
 
 ## 6. Kế hoạch làm trong một nhánh, một PR (`docs/ba-final-review-note37`)
 
-Phạm vi PR: A và B (trừ đặc tả màn hình) và mục 4 khoản 1–3. **Không** gồm: đặc tả màn hình (hàng "Đặc tả màn hình", "Màn mời Khách",
-"Màn tab Tài liệu" ở B1), refactor BE (C đã xong), và đưa SCRUM-30/33 vào Report 3 (mục 4 khoản 4, PR riêng).
+Phạm vi PR: A và B (gồm cả đặc tả màn hình: chip, bộ lọc, cột, ô tạo cuộc họp, ô chỉ đọc, màn mời Khách, màn tab Tài liệu)
+và mục 4 khoản 1–3. **Không** gồm: refactor BE (C đã xong) và đưa SCRUM-30/33 vào Report 3 (mục 4 khoản 4, PR riêng).
 
 | Bước | Việc | Kết quả kiểm |
 |---|---|---|
