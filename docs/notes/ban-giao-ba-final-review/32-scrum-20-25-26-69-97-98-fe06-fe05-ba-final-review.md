@@ -107,4 +107,10 @@ Chạy xong nhớ so lại với các tab cũ và đưa file về LF trước kh
   ma trận §I.4.4, ERD + Entity 7a, README FE-06, inventory + catalogue. Còn pending: màn §III.6.1 (đặc tả màn hình, theo yêu cầu không sửa), sequence FE-06 (đã sửa .txt và xuất PNG). Ảnh ERD đã thay bằng bản muc-tieu mới.
 - [x] Mục 2 (FE-06 nhánh lỗi): UC-28a/b/c và UC-73 đã cập nhật các nhánh MSG85, MSG109, MSG275, 404 rỗng, MSG259, MSG257/MSG154.
 - [x] Mục 3 (FE-05): UC-24 EX-1, UC-25 EX-1 (`404` rỗng) và các chỗ "thời lượng" còn sót (MSG66, README sequence) đã sửa. Còn pending: màn phòng họp "Current item" (đặc tả màn hình, không sửa theo yêu cầu).
-- [ ] Comment kết quả vào SCRUM-20, 25, 26, 69, 97, 98 sau khi docs vào `main` (theo `DEVELOPMENT_WORKFLOW.md` §2.2).
+- [ ] Comment kết quả vào SCRUM-20, 25, 26, 69, 97, 98 sau khi docs vào `main` (theo `DEVELOPMENT_WORKFLOW.md` §2.2) — **06/11/2026:**
+  - [x] SCRUM-20: xong 05/11, comment `10442` (UC-28a thêm/mời, UC-29/30 theo code); đang `In Review`, không cần thêm.
+  - [x] SCRUM-26: comment `10445` 06/11 (UC-31 chỉ sửa câu chữ quyền bổ sung); đang `In Review`, giữ nguyên.
+  - [x] SCRUM-97: comment `10446` 06/11 (UC-73/UC-28b: BR-79, MSG85/275/109/259/257/154); đang `In Review`, giữ nguyên.
+  - [x] SCRUM-98: comment `10447` 06/11, bổ sung sau `10335` (UC-24/25 EX-1 → 404 rỗng, nốt "thời lượng"); đang `In Review`, giữ nguyên.
+  - [x] SCRUM-69: không cần comment — BA Final Review xong từ 29/10 (`10332`), note 32 không đổi UC-21/22.
+  - [ ] SCRUM-25: **CHƯA (Jira chưa xong)** — ticket đang `Frontend`, BA còn việc mở theo comment `10438` (sửa BR-65/34/74, Actor UC-23a–d, editor-options vào sequence); gộp phần EX-1 (UC-24/25 → 404 rỗng, PR #259) vào đợt đó, chưa ghi "xong".

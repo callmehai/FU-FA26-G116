@@ -673,7 +673,7 @@ hơn (PR #41) thì rebase **trước** khi tạo migration.
 
 ### 5.10 Seeder
 
-Cuộc họp demo `"Rà soát kế hoạch chuyển đổi số"` đã là `InProgress` + `Online` + `Confidential`
+Cuộc họp demo `"Rà soát kế hoạch chuyển đổi số"` đã là `InProgress` + `Online` + `Confidential` (nay là `Secret`, ADR-0057)
 nhưng **chưa có thành phần tham dự** → không ai vào phòng được.
 
 - Trong `SeedAsync` (DB trống): thêm Chair = `chair`, Secretary = `secretary`, Member = `member`

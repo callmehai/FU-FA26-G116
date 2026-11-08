@@ -84,7 +84,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
   (UC-33a AF-1), kiểm loại theo nội dung, tất cả hoặc không, thư mục kho tự tạo, lưu trên R2, job dọn
   file mồ côi; mã `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, `MSG288`; note cho FE.
   SCRUM-21: danh sách tài liệu nhóm theo mục nghị sự (UC-32a), xem / tải về đúng byte gốc, chặn tải về cuộc họp
-  Mật, nhật ký kiểm toán Confidential/Secret (UC-32c), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE.
+  Mật, nhật ký kiểm toán khi xem tài liệu Mật (UC-32c), event `documentsChanged`; mã `MSG156`–`MSG160`; note cho FE.
   SCRUM-58 (SCRUM-112): thêm từ kho (UC-33a), gắn mục nghị sự ba nguồn (UC-33b), gỡ khỏi cuộc họp (UC-33c), gỡ khỏi
   mục (UC-33d). SCRUM-23: góp ý và trả lời một cấp trên tài liệu (UC-35). Cuộc họp đã huỷ chỉ còn đọc (`MSG349`).
   SCRUM-123: Khách có phiên UC-04 đọc danh sách và nội dung (xem, tải về) tài liệu cuộc họp; mọi thao tác ghi vẫn từ chối Khách

@@ -103,7 +103,7 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
     }
 
     [Fact]
-    public async Task With_the_api_chosen_an_ordinary_meeting_is_written_by_it_and_a_confidential_one_never_leaves()
+    public async Task With_the_api_chosen_an_ordinary_meeting_is_written_by_it_and_an_internal_or_secret_one_never_leaves()
     {
         using var admin = await AdminWithRole();
         await AssertCode(await admin.PutAsJsonAsync(Url, Api()), 200, "MSG408");
@@ -131,7 +131,7 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
         Assert.Equal("deepseek-v4.1-flash", draft.GetProperty("model").GetString());
         Assert.Equal("Mục tiêu do API viết.", draft.GetProperty("draft").GetProperty("objectives").GetString());
 
-        foreach (var sensitivity in new[] { Sensitivity.Internal, Sensitivity.Confidential, Sensitivity.Secret })
+        foreach (var sensitivity in new[] { Sensitivity.Internal, Sensitivity.Secret })
         {
             f.Api.Reset();
             f.Model.Reset();
@@ -181,13 +181,13 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
     }
 
     [Fact]
-    public async Task A_confidential_meeting_reads_as_not_ready_when_only_the_api_could_write()
+    public async Task An_internal_meeting_reads_as_not_ready_when_only_the_api_could_write()
     {
         using var admin = await AdminWithRole();
         await AssertCode(await admin.PutAsJsonAsync(Url, Api()), 200, "MSG408");
         f.Model.Configured = false;
         var normal = await f.Seed();
-        var secret = await f.Seed(sensitivity: Sensitivity.Confidential);
+        var secret = await f.Seed(sensitivity: Sensitivity.Internal);
         using var a = f.Client(normal.Secretary);
         using var b = f.Client(secret.Secretary);
         Assert.True((await a.GetFromJsonAsync<JsonElement>(normal.Summary)).GetProperty("aiReady").GetBoolean());

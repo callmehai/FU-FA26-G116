@@ -51,13 +51,13 @@ Khi gửi duyệt theo UC-18, người tổ chức chọn một tài khoản đa
 
 ## Mức độ mật
 
-Độc lập với trạng thái, quyết định ai đọc được tài liệu và bản ghi.
+Độc lập với trạng thái, quyết định ai đọc được tài liệu và bản ghi. 3 mức như AI-eCabinet
+([ADR-0057](../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)).
 
 | Mã | Nhãn | Ghi chú |
 |---|---|---|
 | `Normal` | Thường | Mặc định |
-| `Internal` | Nội bộ | Trong nội bộ tổ chức |
-| `Confidential` | Hạn chế | Chỉ thành phần tham dự |
-| `Secret` | Mật | Hiển thị cảnh báo trên màn chi tiết; cân nhắc chặn tải về |
+| `Internal` | Nội bộ | Như Thường; dự thảo AI luôn ở máy local (ADR-0056) |
+| `Secret` | Mật | Không tải tài liệu, ghi âm, biên bản; mỗi lần xem tài liệu ghi nhật ký; ẩn khỏi kho khi Quản trị xem tài khoản đã khoá; cảnh báo khi mời Khách |
 
 Hiện thực phía frontend: [types/meeting.ts](../../frontend/src/types/meeting.ts).

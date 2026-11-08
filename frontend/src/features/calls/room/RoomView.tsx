@@ -272,7 +272,7 @@ function RoomLayout({
   }
 
   const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
-  const restricted = sensitivity === 'Secret' || sensitivity === 'Confidential'
+  const restricted = sensitivity === 'Secret'
 
   return (
     <div className={`room${panel ? ' room-with-panel' : ''}`}>

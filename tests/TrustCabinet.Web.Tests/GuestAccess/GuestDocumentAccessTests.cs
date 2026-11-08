@@ -60,7 +60,6 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         var linked = await AddDocument(s, "Tờ trình.pdf", s.ItemId);
         var general = await AddDocument(s, "Phụ lục.pdf");
         var removed = await AddDocument(s, "Đã gỡ.pdf", removed: true);
-        await SetMeeting(s, sensitivity: Sensitivity.Confidential);
         var (guest, _) = await f.SignIn(s);
 
         var list = await Expect(await guest.GetAsync(Documents(s.MeetingId)), 200);
@@ -77,22 +76,20 @@ public sealed class GuestDocumentAccessTests(GuestAccessFixture f) : IClassFixtu
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Content(s.MeetingId, general) + "?download=true")).StatusCode);
         await Expect(await guest.GetAsync(Content(s.MeetingId, removed)), 404, "MSG156");
 
-        // BR-318: the guest has no user row, so the audit row names the invitation instead.
+        // A Secret meeting: still viewable, every view audited, never downloadable (BR-318, BR-188).
+        await SetMeeting(s, sensitivity: Sensitivity.Secret);
+        Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Content(s.MeetingId, linked))).StatusCode);
+        await Expect(await guest.GetAsync(Content(s.MeetingId, general) + "?download=true"), 403, "MSG159");
+
+        // The guest has no user row, so the audit row names the invitation instead.
         await using (var db = f.Db())
         {
-            var rows = await db.AuditLog.Where(a => a.ObjectId == linked || a.ObjectId == general)
-                .OrderBy(a => a.Action).ToListAsync();
-            Assert.Equal([AuditActions.DocumentDownloaded, AuditActions.DocumentViewed], rows.Select(r => r.Action));
-            Assert.All(rows, r =>
-            {
-                Assert.Null(r.ActorId);
-                Assert.Equal(s.InvitationId, JsonDocument.Parse(r.Details).RootElement.GetProperty("guestInvitationId").GetGuid());
-            });
+            var row = Assert.Single(await db.AuditLog.Where(a => a.ObjectId == linked || a.ObjectId == general).ToListAsync());
+            Assert.Equal(AuditActions.DocumentViewed, row.Action);
+            Assert.Equal(linked, row.ObjectId);
+            Assert.Null(row.ActorId);
+            Assert.Equal(s.InvitationId, JsonDocument.Parse(row.Details).RootElement.GetProperty("guestInvitationId").GetGuid());
         }
-
-        // BR-188 holds for a guest too.
-        await SetMeeting(s, sensitivity: Sensitivity.Secret);
-        await Expect(await guest.GetAsync(Content(s.MeetingId, general) + "?download=true"), 403, "MSG159");
         Assert.Equal(HttpStatusCode.OK, (await guest.GetAsync(Content(s.MeetingId, general))).StatusCode);
     }
 

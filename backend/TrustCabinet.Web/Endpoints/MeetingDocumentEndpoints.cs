@@ -193,7 +193,7 @@ public static class MeetingDocumentEndpoints
     internal static IResult Stream(HttpContext context, MeetingDocumentContent file)
     {
         context.Response.ContentLength = file.ByteSize;
-        // Confidential content must not linger in a shared browser's or proxy's cache.
+        // A meeting document must not linger in a shared browser's or proxy's cache.
         context.Response.Headers.CacheControl = "private, no-store";
         context.Response.Headers.XContentTypeOptions = "nosniff";
         // Always an attachment, never inline: our origin must not render an uploaded file as a page.

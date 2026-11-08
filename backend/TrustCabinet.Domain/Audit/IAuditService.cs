@@ -146,11 +146,11 @@ public static class AuditActions
 
     public const string MeetingObjectType = "Meeting";
 
-    /// <summary>UC-32c — a document of a Confidential or Secret meeting was opened in the viewer (BR-318).</summary>
+    /// <summary>
+    /// UC-32c — a document of a Secret meeting was opened in the viewer (BR-318). There is no "downloaded" twin: a
+    /// Secret meeting's documents cannot be downloaded (BR-188), and the other levels are not audited (ADR-0057).
+    /// </summary>
     public const string DocumentViewed = "document.viewed";
-
-    /// <summary>UC-32c AF-1 — the same, downloaded. Only a Confidential one gets here: Secret is not downloadable (BR-188).</summary>
-    public const string DocumentDownloaded = "document.downloaded";
 
     /// <summary>
     /// What <c>AuditLogEntry.ObjectType</c> carries for the two above. The <c>ObjectId</c> is the

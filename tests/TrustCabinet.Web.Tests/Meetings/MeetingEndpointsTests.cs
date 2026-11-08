@@ -362,7 +362,6 @@ public sealed class MeetingEndpointsTests : IDisposable
     [Theory]
     [InlineData(Sensitivity.Normal)]
     [InlineData(Sensitivity.Internal)]
-    [InlineData(Sensitivity.Confidential)]
     [InlineData(Sensitivity.Secret)]
     public async Task Submit_to_the_organizer_returns_MSG82_without_writing_any_workflow_rows(Sensitivity sensitivity)
     {

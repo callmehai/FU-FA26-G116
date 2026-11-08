@@ -42,7 +42,7 @@ export const getLibraryContent = (documentId: string, download = false) =>
 /**
  * SCRUM-113 (UC-34b): a deactivated person's library, read by an administrator (`AdminUsers`, 403 otherwise). Every
  * read is audited and refused when it cannot be; an active or unknown account answers 404 MSG175, as does anything of
- * a Confidential or Secret meeting, even one the administrator may view.
+ * a Secret meeting, even one the administrator may view.
  */
 export function getUserLibrary(userId: string, folderId: string | null) {
   return api.get<LibraryView>(

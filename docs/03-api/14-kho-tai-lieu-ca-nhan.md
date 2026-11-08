@@ -151,7 +151,7 @@ không đăng nhập được nên không tự đọc. Đặc tả: UC-34b (BA v
 - Cổng quyền `AdminUsers` như `/api/users` (thiếu quyền → `403` body rỗng).
 - Tài khoản còn hoạt động hoặc không tồn tại → `404 MSG175`, như mục không có trong kho.
 - **Kho không là đường vòng qua quy tắc của cuộc họp.** Tệp từng thuộc (đang gắn hoặc đã gỡ) **bất kỳ** cuộc họp
-  `Confidential` hoặc `Secret` nào thì bị ẩn khỏi danh sách và mở ra trả `404 MSG175` — **kể cả khi Quản trị viên xem
+  `Secret` nào thì bị ẩn khỏi danh sách và mở ra trả `404 MSG175` — **kể cả khi Quản trị viên xem
   được cuộc họp đó**; thư mục tải lên của cuộc họp đó (tên chứa tiêu đề cuộc họp) và các thư mục con của nó cũng bị ẩn.
   Ai xem được cuộc họp thì mở tệp qua cuộc họp, nơi áp đủ luật của nó: Mật không tải xuống (BR-188), bản đã gỡ không còn
   (BR-211), kiểm toán `document.*` kèm mức mật. Nếu không, tệp tải từ máy vào một cuộc họp Mật — vốn tự vào kho của

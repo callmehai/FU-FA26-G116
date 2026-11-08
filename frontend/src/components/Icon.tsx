@@ -47,7 +47,6 @@ import {
   FolderPlus,
   FolderInput,
   Archive,
-  Unlink,
   Reply,
   GripVertical,
   ClipboardCheck,
@@ -191,7 +190,8 @@ const ICONS = {
   folderPlus: FolderPlus,
   folderInput: FolderInput,
   archive: Archive,
-  unlink: Unlink,
+  // Take a file out of one agenda item or vote, keeping it in the meeting: a plain ✕ (a broken chain read as a glitch).
+  detach: X,
   reply: Reply,
   settings: Settings,
   upload: Upload,

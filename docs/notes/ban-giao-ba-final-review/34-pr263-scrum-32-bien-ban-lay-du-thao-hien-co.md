@@ -159,3 +159,21 @@ sections I–III for the Secretary to write.* Giữ cột UC (UC-47, UC-50, UC-5
 **T34-6 — Rà BR (A-DOCX).** `grep -n "reviewed" 06-business-rules.md` trong dải BR-373–BR-394; BR-381, BR-385 chỉnh nếu còn điều kiện "đã duyệt" cho biên bản. (BR-385/394 còn bị #265 đổi — xem T35-5.)
 
 **T34-7 — Đóng việc.** Sau khi A-DOCX xong: `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`; `python scripts/sync_requirement_extracts.py --check` phải khớp. Soát `docs/README` / `uc-map` nếu sync đổi. Comment Jira SCRUM-32 (BR-382, BR-391 đổi; UC-59/60 đổi gì; PR #263 `e856403f`, #265 `911d25bb`; còn lại gì) sau khi PR docs ở `main`.
+
+## 6. Trạng thái thực hiện — nhánh `docs/ba-final-review-note34-35` (06/11/2026)
+
+Đã làm **T34-1, T34-2, T34-3, T34-4, T34-6** và chạy `sync_reports.py --report 3`; `sync_requirement_extracts.py --check`
+trả `UP TO DATE`. Sequence UC59 đã thêm chữ mới trong `.txt`, ảnh `UC59_GenerateMeetingMinutes.png`,
+`drawio-png/uc59_generatemeetingminutes.drawio.png` và tab UC-59.
+
+- **T34-1** BR-382 viết lại (dự thảo hiện có, duyệt hay chưa; thẻ báo khi chưa duyệt / đã đổi), nguồn ADR-0054 + PO 05/11/2026.
+- **T34-2** UC-59: Description, AF-3 "No AI draft", thêm AF-4 "AI draft not yet reviewed", AF-5 "Draft changed after the minutes were built";
+  bước 4 Normal Flow bỏ điều kiện "đã duyệt".
+- **T34-3** `UC59_GenerateMeetingMinutes.txt`: đọc dự thảo hiện tại, `alt An AI draft exists`, `else No AI draft - AF-3`.
+- **T34-4** UC-60: AF-1 tách Word, thêm AF-2 PDF, EX-8 `format` sai → MSG406; BR-391/BR-390/BR-394 viết lại.
+- **T34-6** rà BR-373–BR-394: không còn câu "dự thảo đã duyệt" cho biên bản; BR-385/394 đã đổi ở note 35.
+
+**T34-5 tạm hoãn theo yêu cầu (06/11/2026):** **không làm đặc tả màn hình** §III 12.1 Minutes Editor (vùng thông báo trên thẻ,
+nút *Tải PDF*, bảng field) và không thay ảnh wireframe. T34-5 để mở, làm cùng đợt đặc tả màn hình sau.
+
+**T34-7** chưa comment Jira: PR docs chưa vào `main`; comment và đổi trạng thái theo §2.2 khi merge.

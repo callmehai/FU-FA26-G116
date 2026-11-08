@@ -69,10 +69,11 @@ Ngoài thẻ báo + Tải PDF ở note 34:
 
 ## 5. Việc BA còn lại
 
-- [ ] UC Spec + sequence "đổi người nói một câu" (SCRUM-35) → tab draw.io + PNG theo `DRAWIO_EDITING_RULES.md`.
-- [ ] UC-47–UC-50: mốc dự thảo cũ, BR "đang viết lại thì không sửa/duyệt" (MSG387).
-- [ ] UC-58–UC-60: các mục §3 và note 34 §2.
-- [ ] Sửa DOCX Report 3 → `sync_reports.py --report 3`; không sửa tay snapshot.
+- [x] UC Spec + sequence "đổi người nói một câu" (SCRUM-35) → tab draw.io + PNG theo `DRAWIO_EDITING_RULES.md`.
+- [x] UC-47–UC-50: mốc dự thảo cũ, BR "đang viết lại thì không sửa/duyệt" (MSG387) — kèm nhánh MSG387 trong
+  sequence UC-49, UC-50.
+- [x] UC-58–UC-60: các mục §3 và note 34 §2.
+- [x] Sửa DOCX Report 3 → `sync_reports.py --report 3`; không sửa tay snapshot.
 - [ ] Comment Jira SCRUM-35, 36, 32 khi PR docs ở `main` (§2.2 của DEVELOPMENT_WORKFLOW).
 - [ ] SCRUM-132: đợi #267 vào `main` (xung đột mã đã chốt: `MSG414`).
 
@@ -163,3 +164,60 @@ comment (UC/BR/MSG đổi, PR + commit, còn lại gì): **SCRUM-35** (T35-1..3)
 2. Sau SEQ: A-DRAWIO cập nhật tab UC46b, UC47–50, UC59, UC60 (theo `DRAWIO_EDITING_RULES.md`; lưu ý lỗi tab lệch trên Windows ở note 32 §4).
 3. Sau A-DOCX: T34-7 và T35-9 (sync + comment Jira).
 4. SCRUM-132 (T35-8) để sau khi #267 merge.
+
+## 7. Trạng thái thực hiện — nhánh `docs/ba-final-review-note34-35` (06/11/2026)
+
+Đã commit `479a8400` và mở PR [#275](https://github.com/callmehai/FU-FA26-G116/pull/275) (base `main`).
+Nội dung trong commit đó:
+
+- **T35-1** UC-46b thêm **AF-2 – Change the speaker of one sentence** (MSG407) và **EX-4** (giọng không thuộc bản ghi → 404, không mã); EX-1
+  sửa thành "không nêu đúng một trong user / Guest / giọng".
+- **T35-2** thêm **BR-395**.
+- **T35-3** `UC46b_AssignSpeaker.txt` thêm khối `opt … AF-2` (tìm/tạo giọng `SPEAKER_NN`, chuyển câu, tính lại thời lượng, audit, ẩn giọng
+  hết câu, nhánh MSG317/404/MSG304/MSG407); xuất lại `UC46b_AssignSpeaker.png`, `drawio-png/uc46b_assignspeaker.drawio.png` và tab
+  UC-46b trong file gộp.
+- **T35-4** UC-47 `generatedAt` = lúc AI đọc lời thoại; UC-48 thẻ đỏ + *Tạo lại* (AF-4), nút *Gán tên người nói* (bước 6); UC-49/UC-50 thêm
+  EX "AI đang viết lại" → MSG387; UC-49 bỏ dòng trống; thêm **BR-396**.
+- **T35-5** UC-58 đọc HTML đã lọc; UC-60 trình soạn kiểu Word, 300.000 ký tự / 64 tầng / 63 cột, PDF + Word, không tách khối ký tên,
+  EX-8 `format` sai → MSG406; **BR-385**, **BR-390**, **BR-391**, **BR-394** viết lại. Đã thêm dòng MSG406/407 vào bảng V.2 của Report 3
+  (vì UC dẫn mã; danh mục MSG vẫn là nguồn chuẩn).
+- **T35-6** `UC60_EditMeetingMinutes.txt` thêm bước lọc HTML + trả nội dung đã lọc, nhánh `format = docx | pdf`; xuất lại PNG + tab UC-60.
+- **T34-1..T34-4, T34-6** xong ở [note 34 §6](34-pr263-scrum-32-bien-ban-lay-du-thao-hien-co.md#6-trạng-thái-thực-hiện--nhánh-docsba-final-review-note34-35-06112026);
+  **T34-7** đã sync, comment Jira để sau khi PR docs vào `main`. `sync_reports.py --report 3` và `sync_requirement_extracts.py --check` đều sạch.
+
+**Bổ sung sau khi rà lại note (cùng PR #275):**
+
+- Sequence `UC49_EditMeetingSummary.txt` và `UC50_ApproveMeetingSummary.txt` thêm nhánh *The AI is writing the draft again*
+  (EX-6 của UC-49, EX-5 của UC-50) → `MSG387`, đúng như đặc tả đã sửa ở T35-4; xuất lại PNG và hai tab UC-49/UC-50 trong file
+  draw.io gộp + `drawio-png/` (chỉ hai tab đó đổi, không thêm/bớt tab).
+- Report 3 §II: dòng tóm tắt UC-60 trong bảng danh sách Use Case còn ghi *"Correct the plain text … download it as a Word file"* —
+  đã sửa thành trình soạn kiểu Word + Word/PDF trong DOCX rồi sync lại; `sync_requirement_extracts.py --check` vẫn `UP TO DATE`.
+
+**Tạm hoãn / còn lại:**
+
+- **Đặc tả màn hình — tạm không làm (theo yêu cầu 06/11/2026):** không sửa §III 12.1 Minutes Editor (vùng thông báo trên thẻ, nút *Tải PDF*,
+  bảng field) và không thay ảnh wireframe. Việc này gộp vào đợt đặc tả màn hình sau; T34-5 vì thế vẫn mở.
+- **T35-7** sơ đồ lớp FE-12: chưa có ticket, phải hỏi người dùng trước.
+- **T35-8** SCRUM-132: #267 **chưa** vào `main`, xung đột MSG406 chưa chốt — giữ nguyên, chưa sửa UC-01/02/07.
+- **T35-9** comment Jira + đổi trạng thái: chỉ làm khi PR docs đã ở `main`, theo §2.2 của DEVELOPMENT_WORKFLOW.
+- **Màn Cấu hình AI chưa có trong Report 3 (mở, 07/11/2026):** #274/ADR-0056 đã thêm `GET/PUT /api/admin/ai` và
+  `POST /api/admin/ai/test` cùng `MSG408`–`MSG413`, nhưng Report 3 chưa có UC, BR hay đặc tả màn cho màn này.
+  Cần bổ sung UC/BR/màn (và note trong comment Jira **SCRUM-36** khi PR docs vào `main`) — chưa làm trong PR #275.
+
+### Sửa theo review #275 của callmehai (07/11/2026)
+
+- [x] **1. Giới hạn 63 cột:** bỏ "more than 63 columns" khỏi điều kiện lưu/EX-2 của UC-60 và khỏi BR-394; chuyển sang
+  UC-60 Description và BR-391 (chỉ cắt còn 63 cột khi dựng file Word/PDF). `UC60_EditMeetingMinutes.txt` sửa theo.
+- [x] **2. UC-59 AF-5:** biên bản báo cũ khi **dự thảo AI** được tạo lại hoặc sửa sau lúc dựng biên bản, hoặc khi biên bản
+  dựng lúc chưa có dự thảo rồi dự thảo xuất hiện; lời thoại đổi chỉ làm thẻ Dự thảo báo (UC-48 AF-4).
+- [x] **3. BR-381 sau ADR-0056:** họp Thường có thể gửi lời thoại tới dịch vụ AI bên ngoài do quản trị chọn ở màn Cấu hình AI
+  (khoá lưu mã hoá); mọi mức mật khác luôn dùng máy chủ của đội. Sửa BR-381, Secondary Actor UC-47 và Report 3 §I.
+  Việc còn mở (màn Cấu hình AI + `MSG408`–`MSG413` chưa có UC/BR/màn) ghi ở mục trên.
+- [x] **4. Note 33:** #263/#265 đã vào `main` 06/11/2026.
+- [x] **5. `UC46b_AssignSpeaker.txt`:** bỏ bước ghi "Hide a voice left with no sentence → Update the voice visibility";
+  code chỉ bỏ qua giọng không còn câu lúc đọc, không ghi DB.
+- [x] **6. UC-46b:** EX-1 chỉ còn lỗi roster/lời mời (Main Flow được bỏ tên); thêm EX-5 cho AF-2 khi không nêu đúng một
+  đích; AF-2 bước 2 trả câu về được **bất kỳ** giọng nào của bản ghi.
+- [x] **7. UC-59 AF-4:** "the Dự thảo tab" → thẻ "Dự thảo nội dung" trong tab Biên bản.
+- [x] **8. Report 3 §V.2:** MSG406/MSG407 viết tiếng Anh như các dòng khác.
+- [x] DOCX → `sync_reports.py --report 3`; `check_docx.py` OK; PNG UC-60/UC-46b và tab draw.io xuất lại.

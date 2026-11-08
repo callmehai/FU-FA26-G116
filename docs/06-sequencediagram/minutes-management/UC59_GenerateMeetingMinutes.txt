@@ -50,15 +50,15 @@ else Actor may build
     activate Database
     Database-->MinutesService: Meeting records
     deactivate Database
-    MinutesService->SummaryService: Read the reviewed AI draft
+    MinutesService->SummaryService: Read the current AI draft (reviewed or not)
     activate SummaryService
     SummaryService-->MinutesService: Sections I-III / None
     deactivate SummaryService
     MinutesService->MinutesTemplate: Build the fixed template (Mẫu 1.4 Nghị định 30) (BR-383, BR-384)
     activate MinutesTemplate
-    alt Reviewed AI draft exists
-        MinutesTemplate-->MinutesService: Minutes with sections I-III from the draft
-    else No reviewed AI draft - AF-3
+    alt An AI draft exists
+        MinutesTemplate-->MinutesService: Minutes with sections I-III from the draft, marked reviewed or not
+    else No AI draft - AF-3
         MinutesTemplate-->MinutesService: Minutes with the agenda and the Chair's conclusions, and "......" to fill (BR-382)
     end
     deactivate MinutesTemplate
