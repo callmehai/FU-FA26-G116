@@ -23,7 +23,7 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
 
 ## 1. Cấu trúc tài liệu
 
-- [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể: 15 Feature (FE-01 → FE-15),
+- [00-master-use-case-inventory.md](00-master-use-case-inventory.md) — Danh mục tổng thể: 16 Feature (FE-01 → FE-16),
   79 Use Case (UC-01 → UC-79), actor, quan hệ `<<extend>>`/`<<include>>`, **bảng đổi số UC cũ → mới** sau đợt gom UC
   ngày 10/10/2026. UC-73 → UC-77 thêm ngày 24/10/2026, UC-39d và UC-78 thêm ngày 25/10/2026, UC-79 thêm ngày 29/10/2026, nối tiếp dải số cũ.
 - [05-use-case-specifications.md](05-use-case-specifications.md) — Đặc tả Use Case đồng bộ từ Report 3 §II (bản DOCX

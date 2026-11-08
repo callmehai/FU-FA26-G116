@@ -12,7 +12,7 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 - [Đặc tả sơ bộ SCRUM-137/SCRUM-142](NOTE-dac-ta-so-bo-scrum-137-142.md) — 07/11/2026 (tách UC Respond + tách mã, đổi số tránh PR #279, tách UC tạo nháp, gộp UC theo mẫu Report 3, 07/11/2026); bước BE viết UC cơ bản:
   UC-84 gom *Quản lý chia sẻ lịch* (UC-84a xin xem, UC-84b chủ lịch tự chia sẻ, UC-84c trả lời, UC-84d thay đổi,
   UC-84e rút/ngừng) + UC-85 gom *Tìm giờ họp* (UC-85a tìm giờ, UC-85b tạo nháp từ khung, UC-85c xem lịch),
-  BR-414 → BR-430 đề xuất, `MSG435`–`MSG455` dành sẵn (mã tiếp theo `MSG456`), 8 sequence `.txt`
+  BR-414 → BR-431 đề xuất, `MSG435`–`MSG455` dành sẵn (mã tiếp theo `MSG456`), 8 sequence `.txt`
   + tab và ảnh, quyết định mới D12 (khung trùng Mật vẫn cho tạo nháp), số dựa trên PR #279 merge trước,
   comment cần đăng lên Jira (chưa đăng).
 - [Danh sách unit test theo module](NOTE-danh-sach-unit-test.md) — 03/11/2026; 124 case thiết kế theo

@@ -22,13 +22,16 @@ không đặc tả trước rồi bắt code chạy theo.
 | **Trợ lý AI chat** | ADR-0043 ghi TrustCabinet **không có** "Trợ lý AI, Tìm giờ họp". PO chốt 07/11: **không làm trợ lý AI** (D4); Tìm giờ họp thì làm, nên ADR-0043 chỉ còn lệch đúng nửa câu. |
 | **Biên bản** | Đã đặc tả UC-58–UC-60, BR-383–BR-396, `MSG395`–`MSG406`; PR #271 đang mở thêm UC-61/64/65/82/83. eCab **không có** duyệt, ban hành hay ký biên bản, nên phần này không lấy từ eCab (§3.4). |
 
-## 2. Số hiệu: chờ #271 trước khi đặt
+## 2. Số hiệu (đã chốt 07/11/2026)
+
+Số đã chốt nằm trong [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md); bảng dưới ghi lại các dải số đã có chủ
+trước đó, để thấy vì sao đặc tả này bắt đầu từ các số đó.
 
 | Loại | Đang thế nào | Đặc tả này lấy gì |
 |---|---|---|
-| **MSG** | `main` báo mã tiếp theo `MSG414`. #271 xin `MSG406`–`MSG425`, **trùng** `MSG406`–`MSG413` đã dùng trên `main` (cấu hình AI, đổi người nói một câu, định dạng tải biên bản) → #271 phải dời thành `MSG414`–`MSG433`. | Theo ghi chú 07/11: chừa **`MSG434`–`MSG439`** cho đặc tả này, mã tiếp theo **`MSG440`**. Năm UC có thể cần hơn 6 mã — xin thêm từ `MSG440` khi thiếu. Đọc lại danh mục lúc thêm, đừng tin trí nhớ. |
-| **UC** | Dừng ở **UC-81**; #271 xin UC-82 (ghi chú thư ký) và UC-83 (đính chính biên bản) | Từ **UC-84** trở đi. |
-| **BR** | Dừng ở **BR-396**; #271 đề xuất BR-395–BR-413 nhưng 395/396 đã dùng, nên #271 cũng phải đánh lại | Số tiếp theo **sau khi** #271 chốt lại. |
+| **MSG** | `MSG406`–`MSG414` đã dùng trên `main`; `MSG415`–`MSG423` của ghi chú thư ký (SCRUM-30, UC-82) đã vào `main`; `MSG424`–`MSG434` thuộc PR #279 (SCRUM-33, UC-83). | **`MSG435`–`MSG455`**, mã tiếp theo **`MSG456`**. Đọc lại danh mục lúc thêm, đừng tin trí nhớ. |
+| **UC** | Dừng ở **UC-81**; UC-82 (ghi chú thư ký, SCRUM-30) và UC-83 (PR #279, SCRUM-33) đã có chủ | **UC-84**, **UC-85** (UC gom); UC-86 → UC-90 không dùng. |
+| **BR** | BR-397 → BR-413 thuộc SCRUM-30 và SCRUM-33 (PR #279 giữ BR-404 → BR-413) | **BR-414 → BR-431**. |
 | **Màn (§I.5.1, §III)** | Screen List đánh số theo FE, dừng ở 15.1 | FE mới, số đề xuất **FE-16** (§5), đặt số màn sau khi chốt danh sách màn. |
 
 ## 3. Nghiệp vụ eCab, tóm tắt để viết đặc tả
@@ -118,24 +121,24 @@ Ta đã có tương đương (`MSG405` chặn xuất biên bản Mật), và lu�
 | **D12** | **Khung trùng họp Mật vẫn cho tạo nháp** (PO, 07/11/2026 — đóng Q5 ở §7). Bước kiểm lại khi Tạo nháp dùng đúng dữ liệu đã chia sẻ như lúc tìm (không tính Secret); không mã lỗi, cảnh báo, thông báo hay audit nào khác đi vì có họp Mật. Màn tìm giờ luôn hiện một câu cố định (cho mọi khung) rằng chỉ tính lịch được chia sẻ, người được mời vẫn có thể bận. Người được mời từ chối qua UC-29 như lời mời thường. | BR-428/BR-429; UC-85b + EX-1; câu cố định trên màn tìm giờ (UC-85a). Lý do: từ chối tạo (dù báo chung) cũng cho phép dò lịch Mật bằng cách thử từng khung. Tạo nháp: người đầu tiên làm Chair, còn lại Member, người tìm làm Secretary; cuộc họp ở Draft, đi luồng duyệt thường; tạo cuộc họp hiện KHÔNG kiểm trùng lịch người dự — giữ nguyên. |
 
 Còn chờ: ticket màn FE-16; số UC/BR/MSG đã chốt trong [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md)
-(UC-84 gom UC-84a → UC-84e, UC-85 gom UC-85a → UC-85c; số UC-86..UC-90 trả lại, không dùng), BR-414 → BR-430, `MSG435`–`MSG455`, mã tiếp theo `MSG456; dựa trên PR #279 merge trước) — BA giữ hoặc đổi số khi vào Report 3.
+(UC-84 gom UC-84a → UC-84e, UC-85 gom UC-85a → UC-85c; số UC-86..UC-90 trả lại, không dùng), BR-414 → BR-431, `MSG435`–`MSG455`, mã tiếp theo `MSG456`; dựa trên PR #279 merge trước) — BA giữ hoặc đổi số khi vào Report 3.
 
 ## 5. Khung đặc tả đề xuất
 
 Số hiệu đã chốt trong [đặc tả sơ bộ](../NOTE-dac-ta-so-bo-scrum-137-142.md) (07/11/2026, tách UC Respond + tách mã
 07/11/2026, đổi số tránh PR #279 + tách UC tạo nháp + gộp UC theo mẫu Report 3 07/11/2026) — các gợi ý tạm dưới đây
-chỉ còn giá trị lịch sử, dùng số trong note đặc tả (UC-84/UC-85 gom, BR-414 → BR-430, `MSG435`–`MSG455`,
+chỉ còn giá trị lịch sử, dùng số trong note đặc tả (UC-84/UC-85 gom, BR-414 → BR-431, `MSG435`–`MSG455`,
 mã tiếp theo `MSG456`, dựa trên PR #279 merge trước):
 
-- **UC (đề xuất, số thật sau #271):**
+- **UC (đã chốt):**
   - UC-84 *Quản lý chia sẻ lịch* (UC gom) — UC-84a *Yêu cầu xem lịch*, UC-84b *Chủ lịch tự chia sẻ*,
     UC-84c *Trả lời chia sẻ*, UC-84d *Thay đổi chia sẻ*, UC-84e *Rút/ngừng chia sẻ*.
   - UC-85 *Tìm giờ họp* (UC gom) — UC-85a *Tìm khung giờ*, UC-85b *Tạo nháp từ khung giờ*, UC-85c *Xem lịch được chia sẻ*.
 - **BR (đề xuất):** khoảng 12–15 quy tắc — mức xem theo `Sensitivity`, ngày ngoài khoảng là chưa biết, một chia sẻ
   mỗi cặp, tạm ngưng khi mất quyền/khoá tài khoản, hết hạn tự đóng, không lộ tên cuộc họp, chỉ báo bận/rảnh,
   giới hạn 10 người / 31 ngày / đệm 0–4 giờ / bước nhảy 5 phút–2 giờ, tạo nháp điền sẵn và kiểm lại trước khi lưu.
-- **MSG:** `MSG434`–`MSG439` (6 mã) — đề xuất: gửi yêu cầu, chấp nhận/từ chối, rút/ngừng, tìm xong, không có
-  khung nào, lỗi. Năm UC có thể cần hơn 6 mã; xin thêm từ `MSG440`.
+- **MSG:** gợi ý ban đầu 6 mã (gửi yêu cầu, chấp nhận/từ chối, rút/ngừng, tìm xong, không có khung nào, lỗi); đặc
+  tả chốt 21 mã `MSG435`–`MSG455`, một mã một tình huống.
 - **Màn (đề xuất, FE-16):** 3 màn — *Chia sẻ lịch* (danh sách người tôi chia sẻ / người chia sẻ cho tôi, kèm
   dialog xin chia sẻ và dialog nâng mức), *Tìm giờ họp* (tab Tìm khung giờ), *Lịch được chia sẻ* (tab thứ hai).
   Ảnh chụp sau khi FE có màn, cách làm theo [note 06](06-plan-dac-ta-man-hinh.md).

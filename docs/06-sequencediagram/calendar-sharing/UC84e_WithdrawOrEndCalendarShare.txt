@@ -18,7 +18,7 @@ activate SharingController
 SharingController->SharingService: withdrawShare(shareId, actorId)
 activate SharingService
 
-SharingService->ShareRepository: Get share where the actor is one of the two people (BR423)
+SharingService->ShareRepository: Get share where the actor is one of the two people (BR-423)
 activate ShareRepository
 ShareRepository->Database: Retrieve share
 activate Database
@@ -41,7 +41,7 @@ else Actor is one of the two people
         deactivate SharingController
         SharingPage-->Viewer: MSG450 - This action is not allowed in the current state of the share.
     else A request is Pending
-        SharingService->ShareRepository: Close the request and audit entry (BR423, BR426)
+        SharingService->ShareRepository: Close the request and audit entry (BR-423, BR-426)
         activate ShareRepository
         ShareRepository->Database: Update share and audit record
         activate Database
@@ -57,7 +57,7 @@ else Actor is one of the two people
             deactivate SharingController
             SharingPage-->Viewer: MSG447 - Unable to save the calendar sharing data. Please try again.
         else Request is closed
-            SharingService->NotificationService: Notify the other side the request was withdrawn (BR426)
+            SharingService->NotificationService: Notify the other side the request was withdrawn (BR-426)
             activate NotificationService
             NotificationService->Database: Record notification
             activate Database
@@ -72,7 +72,7 @@ else Actor is one of the two people
             SharingPage-->Viewer: MSG438 - Calendar share request withdrawn.
         end
     else Either side ends an Effective share - AF-1
-        SharingService->ShareRepository: Close the share and audit entry (BR423, BR426)
+        SharingService->ShareRepository: Close the share and audit entry (BR-423, BR-426)
         activate ShareRepository
         ShareRepository->Database: Update share and audit record
         activate Database
@@ -88,7 +88,7 @@ else Actor is one of the two people
             deactivate SharingController
             SharingPage-->Viewer: MSG447 - Unable to save the calendar sharing data. Please try again.
         else Share is ended
-            SharingService->NotificationService: Notify the other side the sharing ended (BR426)
+            SharingService->NotificationService: Notify the other side the sharing ended (BR-426)
             activate NotificationService
             NotificationService->Database: Record notification
             activate Database

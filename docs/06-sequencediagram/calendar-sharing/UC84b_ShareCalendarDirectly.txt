@@ -19,7 +19,7 @@ activate SharingController
 SharingController->SharingService: shareDirectly(ownerId, recipientId, startDate, endDate)
 activate SharingService
 
-SharingService->UserRepository: Verify owner is active and recipient is active,\nholds MeetingCreator and is not the owner (BR414, BR423)
+SharingService->UserRepository: Verify owner is active and recipient is active,\nholds MeetingCreator and is not the owner (BR-414, BR-423)
 activate UserRepository
 UserRepository->Database: Retrieve both accounts with capabilities
 activate Database
@@ -35,7 +35,7 @@ alt Recipient cannot receive a share - EX-1
     deactivate SharingController
     SharingPage-->Owner: MSG455 - This person cannot receive a calendar share.
 else Recipient is verified
-    SharingService->ShareRepository: Check no Pending or Effective share between them (BR423)
+    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the recipient (BR-423)
     activate ShareRepository
     ShareRepository->Database: Find shares of the pair
     activate Database
@@ -51,7 +51,7 @@ else Recipient is verified
         deactivate SharingController
         SharingPage-->Owner: MSG449 - There is already a pending or effective share with this person.
     else No share exists
-        SharingService->SharingService: Validate Level 1 and date range (BR414)
+        SharingService->SharingService: Validate Level 1 and date range (BR-414, BR-431)
 
         alt Range is invalid - EX-3
             SharingService-->SharingController: MSG443 - The date range is invalid.
@@ -60,7 +60,7 @@ else Recipient is verified
             deactivate SharingController
             SharingPage-->Owner: MSG443 - The date range is invalid.
         else Share request is valid
-            SharingService->ShareRepository: Save Pending share at Level 1 and audit entry (BR414, BR426)
+            SharingService->ShareRepository: Save Pending share at Level 1 and audit entry (BR-414, BR-426)
             activate ShareRepository
             ShareRepository->Database: Insert share and audit record
             activate Database
@@ -76,7 +76,7 @@ else Recipient is verified
                 deactivate SharingController
                 SharingPage-->Owner: MSG447 - Unable to save the calendar sharing data. Please try again.
             else Share is Pending
-                SharingService->NotificationService: Notify the recipient of the direct share (BR426)
+                SharingService->NotificationService: Notify the recipient of the direct share (BR-426)
                 activate NotificationService
                 NotificationService->Database: Record recipient notification
                 activate Database

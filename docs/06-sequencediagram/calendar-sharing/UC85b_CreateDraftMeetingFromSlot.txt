@@ -17,7 +17,7 @@ activate SlotController
 SlotController->SlotService: createDraftFromSlot(finderId, slot, invitees)
 activate SlotService
 
-SlotService->UserRepository: Verify finder is active and holds MeetingCreator (BR430)
+SlotService->UserRepository: Verify finder is active and holds MeetingCreator (BR-430)
 activate UserRepository
 UserRepository->Database: Retrieve finder account with capabilities
 activate Database
@@ -49,7 +49,7 @@ else Finder is verified
         deactivate SlotController
         FindPage-->Finder: MSG453 - Unable to load the calendar sharing data. Please try again.
     else Slot data is loaded
-        SlotService->SlotService: Recheck the slot against the same shared data as the search,\nnever against undisclosed meetings (BR428)
+        SlotService->SlotService: Recheck the slot against the same shared data as the search,\nnever against undisclosed meetings (BR-428)
 
         alt Slot is no longer free - EX-1
             SlotService-->SlotController: MSG446 - This time slot is no longer free. Please choose another slot.
@@ -58,7 +58,7 @@ else Finder is verified
             deactivate SlotController
             FindPage-->Finder: MSG446 - This time slot is no longer free. Please choose another slot.
         else Slot is still free
-            SlotService->MeetingRepository: Create Draft meeting through UC-14 with the first invitee as Chair,\nthe rest as Member and the finder as Secretary (BR429)
+            SlotService->MeetingRepository: Create Draft meeting through UC-14 with the first invitee as Chair,\nthe rest as Member and the finder as Secretary (BR-429)
             activate MeetingRepository
             MeetingRepository->Database: Insert meeting and roster in Draft
             activate Database
@@ -78,7 +78,7 @@ else Finder is verified
                 deactivate SlotService
                 SlotController-->FindPage: 201 MSG29 - Meeting created.
                 deactivate SlotController
-                FindPage-->Finder: MSG29 - Meeting created.\nThe meeting is a Draft and follows the normal approval flow (BR429)
+                FindPage-->Finder: MSG29 - Meeting created.\nThe meeting is a Draft and follows the normal approval flow (BR-429)
             end
         end
     end

@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 15 Feature, 81 Use Case (UC-01 → UC-81).** Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 16 Feature, UC-01 → UC-81 và UC-84 → UC-85** (FE-16 thêm ngày 07/11/2026; UC-82, UC-83 thuộc SCRUM-30/SCRUM-33). Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 9 UC chi tiết.
