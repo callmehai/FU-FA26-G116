@@ -160,8 +160,8 @@ export function MeetingsPage() {
   const filtered = hasFilters(state)
   const activeFilters = [state.status, state.sensitivity, state.when].filter(Boolean).length
   const [filtersOpen, setFiltersOpen] = useState(false)
-  // The list as it opens: only meetings under way, which most of the time is none.
-  const onlyLive = state.status === 'InProgress' && !state.q.trim() && !state.sensitivity && !state.when && !state.scope
+  // The list as it opens: today's meetings, which some days is none.
+  const onlyToday = state.when === 'today' && !state.q.trim() && !state.status && !state.sensitivity && !state.scope
   // "Cần xử lý" on its own: nothing waits on the caller.
   const onlyTodo = state.scope === 'todo' && !state.q.trim() && !state.status && !state.sensitivity && !state.when
   const data = shown
@@ -197,10 +197,10 @@ export function MeetingsPage() {
       </tr>
     ))
   } else if (data.items.length === 0) {
-    body = onlyLive || onlyTodo ? (
+    body = onlyToday || onlyTodo ? (
       <EmptyRow>
         <p className="empty-title">
-          {onlyTodo ? 'Không có việc chờ bạn xử lý.' : 'Hiện không có cuộc họp nào đang diễn ra.'}
+          {onlyTodo ? 'Không có việc chờ bạn xử lý.' : 'Hôm nay không có cuộc họp nào.'}
         </p>
         <button type="button" className="btn btn-outline btn-sm" onClick={clearFilters}>
           <Icon name="list" size={16} />

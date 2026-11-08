@@ -1019,7 +1019,8 @@ a.menu-item { text-decoration: none; }
    AI-eCabinet's four cards above the list: a white card, a small icon by the label in the card's
    accent (no tinted tile behind it), the number in that accent and one line under it. The card that
    is the list's filter turns solid brand blue, the app's "selected". Sized by the content column
-   (a container), as eCab's are: two columns under 992px, tighter under 728px. */
+   (a container): one row of four down to 820px, where the longest line still fits (eCab breaks at
+   992px, which put a 1200px window on two rows), then two columns, tighter under 728px. */
 .stat-cards { flex: none; margin-bottom: 16px; container-type: inline-size; }
 .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 
@@ -1082,7 +1083,7 @@ a.menu-item { text-decoration: none; }
 .stat-card-pressed .stat-live { color: var(--gold-soft); }
 .stat-card-pressed .skeleton { background: rgb(255 255 255 / 15%); animation: none; }
 
-@container (max-width: 992px) {
+@container (max-width: 820px) {
   .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @container (max-width: 728px) {
