@@ -36,6 +36,7 @@ UC Specification, Business Rules hoặc ADR đã chốt.
   Luật 91/2025 và NĐ 356/2025, việc còn lại.
 - [Góp ý của hội đồng — lần review 1](NOTE-gop-y-hoi-dong-lan-1.md) — ghi nhận 18/10/2026; xác định người nói,
   chi phí AI, huỷ/quá hạn cuộc họp, người ký và ban hành biên bản, uỷ quyền, nhắc lịch, NĐ 13/2023, chữ ký số. Đã áp dụng một phần vào Report 3 18/10/2026.
+- [Bàn giao FE-08 đăng ký phát biểu (giơ tay, mời phát biểu) cho BE (SCRUM-27)](NOTE-ban-giao-fe08-dang-ky-phat-bieu-cho-be.md) — 06/11/2026; việc BE theo UC-79, chỗ spec chưa khớp code (Khách không có UserId), câu hỏi mở.
 - [Bàn giao FE-11 biểu quyết cho BE (SCRUM-96)](NOTE-ban-giao-fe11-bieu-quyet-cho-be.md) — 28/10/2026;
   thứ tự đọc contract/ERD/sequence/class/SM, việc tách PR code schema, checklist BE và chỗ còn chờ chốt.
 - [Hồ sơ theo dõi và review UC, BR, MSG của FE-11](NOTE-review-fe11-uc-br-msg.md) — bản tiếng Việt dễ đọc của UC-52a/52b, UC-53–57, BR liên quan và MSG205–236; có liên kết đến các danh mục chuẩn để đối chiếu.
