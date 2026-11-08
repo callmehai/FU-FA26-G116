@@ -1879,16 +1879,23 @@ a.menu-item { text-decoration: none; }
 }
 .matrix-table th.matrix-group,
 .matrix-table th.matrix-cap { text-align: center; }
-/* Equal capability columns; the role column takes whatever width is left. 136px, not wider: at a
-   1200px window four of them, the actions and the role column must still fit, or the
-   actions column slides out of view behind the card's horizontal scroll. Long names wrap onto a
-   second line, centred, and the fixed height keeps one- and two-line names on the same baseline. */
-.matrix-table th.matrix-cap { width: 136px; height: 52px; line-height: 1.3; white-space: normal; text-wrap: balance; }
+/* The role column is as wide as its name and chips (`width: 1%` shrinks it to its content), and the capability
+   columns share what is left, so a wide window spreads the checkboxes instead of leaving a white gap after the role
+   names. Long capability names wrap onto a second line, centred; the fixed height keeps one- and two-line names on the
+   same baseline. */
+.matrix-table th.matrix-role,
+.matrix-table td.cell-title { width: 1%; }
+/* Equal shares, whatever the length of the name. */
+.matrix-table th.matrix-cap { width: 20%; height: 52px; line-height: 1.3; white-space: normal; text-wrap: balance; }
 /* A rule where each functional group starts, down through the body — and one before the actions. */
 .matrix-table .matrix-group-start,
 .matrix-table .col-action { border-left: 1px solid var(--line); }
-/* Reserve room for Hoàn tác / Lưu, so the columns do not jump when a row becomes dirty. */
-.matrix-table .col-action { width: 176px; text-align: center; }
+/* Reserve room for Hoàn tác / Lưu (about 172px plus the cell's padding), so no column moves when a row becomes
+   dirty and the buttons appear. */
+/* Its heading centred over the centred buttons, like the capability headings over their checkboxes: only the role
+   names read from the left. */
+.matrix-table .col-action,
+.matrix-table th.col-action { width: 200px; min-width: 200px; text-align: center; }
 .matrix-table td { height: 53px; }
 /* The role name and its chip stay on one line, so every row of the matrix is the same height. */
 .matrix-table td.cell-title { white-space: nowrap; }
