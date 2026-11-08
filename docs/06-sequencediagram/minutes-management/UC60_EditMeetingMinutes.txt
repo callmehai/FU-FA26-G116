@@ -108,9 +108,9 @@ opt Download the minutes as Word or PDF - AF-1, AF-2
         MinutesController-->MinutesCard: 200 .pdf
         MinutesCard-->Actor: The PDF file
     else Unsupported format - EX-8
-        MinutesService-->MinutesController: MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF.
-        MinutesController-->MinutesCard: MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF.
-        MinutesCard-->Actor: MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF.
+        MinutesService-->MinutesController: MSG406 - Download the minutes as a Word (docx) or PDF file only.
+        MinutesController-->MinutesCard: MSG406 - Download the minutes as a Word (docx) or PDF file only.
+        MinutesCard-->Actor: MSG406 - Download the minutes as a Word (docx) or PDF file only.
     end
     deactivate MinutesService
     deactivate MinutesController

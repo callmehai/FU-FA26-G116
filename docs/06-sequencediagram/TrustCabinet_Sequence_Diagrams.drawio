@@ -55412,7 +55412,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG407 - Đã đổi người nói của câu này." mermaidId="e:TranscriptionService-&gt;TranscriptController#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG407 - Đã đổi người nói của câu này." id="131">
+        <UserObject label="MSG407 - The speaker of this sentence has been changed." mermaidId="e:TranscriptionService-&gt;TranscriptController#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG407 - The speaker of this sentence has been changed." id="131">
           <mxCell edge="1" parent="1" source="59" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="60">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -55423,7 +55423,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG407 - Đã đổi người nói của câu này." mermaidId="e:TranscriptController-&gt;TranscriptView#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG407 - Đã đổi người nói của câu này." id="132">
+        <UserObject label="MSG407 - The speaker of this sentence has been changed." mermaidId="e:TranscriptController-&gt;TranscriptView#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG407 - The speaker of this sentence has been changed." id="132">
           <mxCell edge="1" parent="1" source="60" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="61">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -55434,7 +55434,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG407 - Đã đổi người nói của câu này." mermaidId="e:TranscriptView-&gt;Actor#7" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG407 - Đã đổi người nói của câu này." id="133">
+        <UserObject label="MSG407 - The speaker of this sentence has been changed." mermaidId="e:TranscriptView-&gt;Actor#7" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG407 - The speaker of this sentence has been changed." id="133">
           <mxCell edge="1" parent="1" source="61" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -63519,7 +63519,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF." mermaidId="e:MinutesService-&gt;MinutesController#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF." id="109">
+        <UserObject label="MSG406 - Download the minutes as a Word (docx) or PDF file only." mermaidId="e:MinutesService-&gt;MinutesController#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG406 - Download the minutes as a Word (docx) or PDF file only." id="109">
           <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -63530,7 +63530,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF." mermaidId="e:MinutesController-&gt;MinutesCard#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF." id="110">
+        <UserObject label="MSG406 - Download the minutes as a Word (docx) or PDF file only." mermaidId="e:MinutesController-&gt;MinutesCard#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG406 - Download the minutes as a Word (docx) or PDF file only." id="110">
           <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="49">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -63541,7 +63541,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF." mermaidId="e:MinutesCard-&gt;Actor#11" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG406 - Chỉ tải biên bản dạng Word (docx) hoặc PDF." id="111">
+        <UserObject label="MSG406 - Download the minutes as a Word (docx) or PDF file only." mermaidId="e:MinutesCard-&gt;Actor#11" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG406 - Download the minutes as a Word (docx) or PDF file only." id="111">
           <mxCell edge="1" parent="1" source="49" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">

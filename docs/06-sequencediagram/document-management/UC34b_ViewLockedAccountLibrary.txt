@@ -50,7 +50,7 @@ else Account is locked
         UserScreen-->Actor: MSG176 - Unable to load your personal document library. Please try again.
 
     else Audit entry recorded
-        DocumentService->DocumentRepository: Get the folders and documents of the account's library, read-only,\nwithout the files of Confidential or Secret Meetings and that Meeting's upload folder\nand its subfolders (BR-334)
+        DocumentService->DocumentRepository: Get the folders and documents of the account's library, read-only,\nwithout the files of Secret Meetings and that Meeting's upload folder\nand its subfolders (BR-334)
         activate DocumentRepository
         DocumentRepository->Database: Retrieve the folders and documents owned by the account
         activate Database

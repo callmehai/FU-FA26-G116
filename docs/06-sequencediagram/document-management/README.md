@@ -33,7 +33,7 @@ Từ 27/10/2026 mọi UC của FE-07 đều có sequence. Cột "Loại": **as-b
   Sequence vẽ một lần gửi; hàng đợi ở trình duyệt gửi từng tệp một request (ADR-0033, BR-286), không vẽ lại vòng lặp.
 - UC-34b (Quản trị viên đọc kho của tài khoản đã khoá, ADR-0035) vẽ theo code PR #169: kiểm tài khoản đã khoá, ghi nhật ký kiểm toán
   trước khi trả dữ liệu; không ghi được nhật ký thì từ chối (`MSG176` khi tải danh sách, `MSG158` khi mở tệp); ẩn tệp của cuộc họp
-  Confidential/Secret và thư mục tải lên của cuộc họp đó (BR-334, BR-335). Dùng `:Document Controller/Service` và
+  Secret và thư mục tải lên của cuộc họp đó (BR-334, BR-335). Dùng `:Document Controller/Service` và
   `:Document Repository` của kho cá nhân, cùng `:User Repository` và `:Audit Log` ngoài feature; code đặt trong
   `PersonalLibraryEndpoints` / `PersonalLibraryService`.
 - **28/10/2026 (BA Final Review):** giữ khung Controller/Service như agenda (không `Endpoints`, không HTTP/status,

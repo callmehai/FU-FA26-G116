@@ -51,7 +51,7 @@ deactivate Database
 ParticipantRepository-->ParticipantService: Complete save / No changes saved
 deactivate ParticipantRepository
 else One external Guest selected - AF-1
-ParticipantService->ParticipantService: Confidential/Secret form displays inline warning only; no extra confirmation;
+ParticipantService->ParticipantService: Secret form displays inline warning only; no extra confirmation;
 record inviter, sensitivity and time (BR-182)
 ParticipantService->ParticipantRepository: Create one Guest invitation with invited name/email and Pending response and Member participation access;\nno internal account or internal meeting role (BR-84, BR-88, BR-148–BR-156)
 activate ParticipantRepository

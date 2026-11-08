@@ -147,9 +147,9 @@ opt Change the speaker of one sentence - AF-2
             TranscriptController-->TranscriptView: MSG304 - Unable to save transcript changes. Please try again.
             TranscriptView-->Actor: MSG304 - Unable to save transcript changes. Please try again.
         else Speaker changed
-            TranscriptionService-->TranscriptController: MSG407 - Đã đổi người nói của câu này.
-            TranscriptController-->TranscriptView: MSG407 - Đã đổi người nói của câu này.
-            TranscriptView-->Actor: MSG407 - Đã đổi người nói của câu này.
+            TranscriptionService-->TranscriptController: MSG407 - The speaker of this sentence has been changed.
+            TranscriptController-->TranscriptView: MSG407 - The speaker of this sentence has been changed.
+            TranscriptView-->Actor: MSG407 - The speaker of this sentence has been changed.
         end
     end
     deactivate TranscriptionService
