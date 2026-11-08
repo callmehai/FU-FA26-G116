@@ -322,7 +322,7 @@ export function RolesPage() {
                     const current = effective(id)
                     const warn = dirty && !error && dropsLastVisibleAdminCapability(id)
                     return [
-                      <tr key={id} className={dirty ? 'matrix-row-dirty' : undefined}>
+                      <tr key={id}>
                         <td className="cell-title">
                           {name}{' '}
                           {isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
