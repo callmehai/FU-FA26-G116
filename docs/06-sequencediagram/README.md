@@ -556,7 +556,7 @@ deactivate MeetingPage
 | [voting-management/](voting-management/README.md) | UC-52a → UC-57, UC-76a, UC-76b |
 | [meeting-recording/](meeting-recording/README.md) | UC-43a → UC-43c, UC-44a → UC-44e, UC-80 |
 | [transcription-voice-id/](transcription-voice-id/README.md) | UC-45a → UC-45c (UC-45c có thêm sơ đồ hệ thống xử lý hàng chờ), UC-46a → UC-46d, UC-47 → UC-50 (dự thảo AI), UC-81a → UC-81f |
-| [minutes-management/](minutes-management/README.md) | UC-58, UC-59, UC-60 (bản nháp biên bản) |
+| [minutes-management/](minutes-management/README.md) | UC-58, UC-59, UC-60 (bản nháp biên bản); UC-61, UC-64, UC-65, UC-83 (sơ bộ, duyệt và ban hành) |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
 | [online-meeting-room/](online-meeting-room/README.md) | UC-37, UC-38, UC-39a → UC-39d (UC-39a AF-2 ghi lời theo micro: `UC39a_RecordSpeechWhileMicrophoneOn`), UC-40, UC-41, UC-42, UC-78, UC-79 |
 | [calendar-sharing/](calendar-sharing/README.md) | UC-84 (UC-84a → UC-84e), UC-85 (UC-85a → UC-85c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
