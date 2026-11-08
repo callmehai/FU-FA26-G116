@@ -117,3 +117,18 @@ Không nằm trong ba tin ❌ nhưng cùng loại, làm cùng lượt cho tiện
 4. Mỗi lượt: `python scripts/sync_reports.py --source … --report 3`, rồi chạy lại để chắc bản Markdown khớp từng byte; commit tiếng Việt,
    PR tiếng Anh, gửi link vào kênh `pull-request`.
 5. Khi xong từng việc, đổi ❌ thành ✅ ở tin tương ứng trong `note-gửi-ba`.
+
+## 6. Kế hoạch làm trong một nhánh, một PR (`docs/ba-final-review-note37`)
+
+Phạm vi PR: A và B (trừ đặc tả màn hình) và mục 4 khoản 1–3. **Không** gồm: đặc tả màn hình (hàng "Đặc tả màn hình", "Màn mời Khách",
+"Màn tab Tài liệu" ở B1), refactor BE (C đã xong), và đưa SCRUM-30/33 vào Report 3 (mục 4 khoản 4, PR riêng).
+
+| Bước | Việc | Kết quả kiểm |
+|---|---|---|
+| 1 | A: sửa note SCRUM-137/142 (Q9, Q10 → đã chốt, thêm D kế tiếp) | `grep -n "chờ PO" NOTE-dac-ta-so-bo-scrum-137-142.md` không còn dòng Q9/Q10 |
+| 2 | B2: sửa 3 sequence `.txt` + README thư mục; vẽ lại ảnh nếu có; class diagram drawio theo `DRAWIO_EDITING_RULES.md` | `grep -rn "Confidential" docs/06-sequencediagram` rỗng; render drawio, kiểm đồ thị |
+| 3 | A + B1 + mục 4 khoản 1–3: sửa DOCX Report 3 (BR-420/431 nếu có ghi chú chờ, Meeting.Sensitivity, UC-28a, UC-32c, UC-34b, BR-182/318/334, Change Log 08/11/2026) | Mở lại DOCX, đúng từng chỗ |
+| 4 | `python scripts/sync_reports.py --source "docs/08-reports/source/Report_3_Software_Requirement_Specification.docx" --report 3`, chạy lần hai | Lần hai không đổi file; `grep -n "Confidential" Report-3…md` chỉ còn Change Log cũ |
+| 5 | Mục 4 khoản 2–3 ngoài Report 3: note giao BE FE-08 (MSG408, file `03-api/18-…`), câu MSG406/407 tiếng Việt | Đọc lại hai chỗ |
+| 6 | `dotnet test` các test đọc docs (`MessageCodeCatalogueTests`, `SkillMirrorTests` nếu đụng), commit tiếng Việt, mở PR tiếng Anh, gửi link kênh `pull-request` | CI xanh |
+| 7 | Jira: comment SCRUM-137/142, 22, 58, mời Khách; đổi ❌ thành ✅ ở tin tương ứng trong `note-gửi-ba` | Comment có UC/BR đã đổi, PR |
