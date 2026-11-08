@@ -896,6 +896,38 @@ public sealed class MeetingWorkflowServiceTests
         Assert.True(_repository.LastWorkflowForUpdate);
     }
 
+    // SCRUM-134: the organizer who lost MeetingCreator and a reader who is not the organizer
+    // are told apart, so the endpoint answers MSG46 for the first and MSG85 for the second.
+    [Fact]
+    public async Task Publish_by_the_organizer_without_MeetingCreator_returns_PublisherLostCapability()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        _repository.UserCapabilities[_organizerId].Remove(Capability.MeetingCreator);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Publish), _organizerId);
+
+        Assert.Equal(MeetingWorkflowOutcome.PublisherLostCapability, result.Outcome);
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Equal(0, _repository.SaveCount);
+    }
+
+    [Fact]
+    public async Task Publish_by_a_reader_who_is_not_the_organizer_returns_Forbidden()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Approved);
+        Grant(_approverId, Capability.MeetingCreator);
+
+        var result = await NewService().TransitionAsync(meeting.Id,
+            new MeetingTransitionCommand(MeetingTransitionAction.Publish), _approverId);
+
+        Assert.Equal(MeetingWorkflowOutcome.Forbidden, result.Outcome);
+        Assert.Equal(MeetingStatus.Approved, meeting.Status);
+        Assert.Empty(meeting.StatusHistory);
+        Assert.Equal(0, _repository.SaveCount);
+    }
+
     [Theory]
     [InlineData("no-participants")]
     [InlineData("no-chair")]
