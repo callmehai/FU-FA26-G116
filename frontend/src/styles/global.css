@@ -1540,13 +1540,12 @@ a.menu-item { text-decoration: none; }
 }
 .timeline-time:hover { color: var(--ink); }
 .timeline-time:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* A rejection reason is the author's own words: quoted, line breaks kept. */
+/* A rejection or cancellation reason is the author's own words: quoted on a grey wash (no side stripe), line breaks kept. */
 .timeline-reason,
 .workflow-reason {
   margin: 6px 0 0;
   padding: 8px 12px;
-  border-left: 3px solid var(--line);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: var(--radius);
   background: var(--surface-alt);
   color: var(--ink);
   font-size: 13.5px;
@@ -3856,7 +3855,7 @@ audio.recording-player { height: 40px; }
 .voice-sample-text > * { white-space: nowrap; }
 .voice-sample-name { color: var(--ink); font-weight: 500; }
 .voice-actions { justify-content: space-between; }
-.voice-passage { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
+.voice-passage { margin: 8px 0 0; padding: 14px 16px; border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
 .voice-review { display: grid; gap: 8px; margin: 12px 0 0; }
 .voice-review .field-hint { margin: 0; }
 .voice-review audio { width: 100%; }
