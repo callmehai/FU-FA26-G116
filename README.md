@@ -152,6 +152,8 @@ phương án đã loại.
   đã chốt; biên bản vẫn ghi phần phân công như văn bản.
 - **Nhiều tổ chức, phòng ban, cây đơn vị** — hệ thống phục vụ đúng một tổ chức, mời họp là mời từng
   người ([ADR-0004](docs/05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
+- **Trợ lý AI hỏi–đáp** của AI-eCabinet (tìm người, tìm giờ và tạo cuộc họp bằng chat). Tìm giờ họp và chia sẻ
+  lịch thì có, không qua AI ([ADR-0058](docs/05-decisions/0058-chia-se-lich-va-tim-gio-hop.md)).
 - Ký số bằng USB token / HSM thật, triển khai mạng cô lập, tích hợp hệ thống văn bản điều hành bên
   ngoài.
 
