@@ -19,7 +19,7 @@ Số liệu đo trên nhánh `docs/dac-ta-so-bo-scrum-137-142` ngày 08/11/2026:
 | Service gọi thẳng `DbContext` | `VoteService`, `ParticipantService`, `MeetingDocumentService`, `PersonalLibraryService`, `SummaryService`, `MinutesService`, `GuestAccessService`, `AttendanceService`, `MeetingNoteService`, `SpeechClipService`, `DocumentCommentService`, `AiSettingsService` inject `TrustCabinetDbContext` |
 | Service biết chi tiết của Postgres | Kể cả service không inject `DbContext` vẫn `using Npgsql` và `Microsoft.EntityFrameworkCore`, bắt `DbUpdateException`/`PostgresException` theo `SqlState` (`23505`, `23503`), so tên unique index (`"ix_voting_sessions_meeting_id"`) |
 | Domain chứa thứ của Application | Domain có 73 interface (service và repository) và 194 record DTO (`*Contracts.cs`). Interface repository để lộ cơ chế lưu trữ: `SaveChangesAsync`, `InTransactionAsync`, `FindOwnedForUpdateAsync` |
-| Domain phụ thuộc thư viện ngoài | `TrustCabinet.Domain.csproj` reference `PdfPig` (dùng trong `Documents/DocumentFileRules.cs`) |
+| Domain phụ thuộc thư viện ngoài | `TrustCabinet.Domain.csproj` reference `PdfPig` (dùng trong `Documents/DocumentFileRules.cs`) — **đã sửa ở SCRUM-144** (`0eae63bd`): đọc PDF qua `IPdfInspector`, `DomainDependencyTests` chặn package quay lại |
 | Web đi tắt qua Application | `MeetingHub`, `AgendaChangePublisher`, `MeetingDocumentChangePublisher`, `VoteChangePublisher`, `AttendanceChangePublisher`, `NotesChangePublisher`, `SpeechChangePublisher` dùng thẳng `TrustCabinetDbContext`; endpoint inject repository (`IMeetingRepository` 8 chỗ, `IUserAccountRepository`, `IParticipantRepository`) |
 
 Hệ quả:
