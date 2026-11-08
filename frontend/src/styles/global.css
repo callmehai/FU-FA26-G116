@@ -1540,13 +1540,12 @@ a.menu-item { text-decoration: none; }
 }
 .timeline-time:hover { color: var(--ink); }
 .timeline-time:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-/* A rejection reason is the author's own words: quoted, line breaks kept. */
+/* A rejection or cancellation reason is the author's own words: quoted on a grey wash (no side stripe), line breaks kept. */
 .timeline-reason,
 .workflow-reason {
   margin: 6px 0 0;
   padding: 8px 12px;
-  border-left: 3px solid var(--line);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: var(--radius);
   background: var(--surface-alt);
   color: var(--ink);
   font-size: 13.5px;
@@ -1900,7 +1899,6 @@ a.menu-item { text-decoration: none; }
 .matrix-hit:has(input:disabled) { cursor: default; background: none; }
 .matrix-cell-changed { background: var(--chip-amber-bg); }
 .matrix-cell-error { background: var(--chip-red-bg); box-shadow: inset 0 0 0 2px var(--danger); }
-.matrix-row-dirty td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
 .data-table tbody tr.matrix-note-row:hover { background: none; }
 .matrix-note-row td { padding-top: 0; white-space: normal; }
 .data-table tbody tr.matrix-note-row td { border-bottom: 1px solid var(--line); }
@@ -2493,7 +2491,8 @@ a.menu-item { text-decoration: none; }
 .roster-list { display: flex; flex-direction: column; max-height: 13rem; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
 .roster-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
 .roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
-.roster-row-invalid { box-shadow: inset 3px 0 0 var(--danger); }
+/* A person the server refused: the row's own message says why; a light red wash shows which row, without a side stripe. */
+.roster-row-invalid { background: var(--chip-red-bg); }
 .roster-row-main { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
 .roster-role { flex: none; width: 152px; }
 /* A phone gives the name what the role does not need: "Thành viên" and its chevron fit in 128px. */
@@ -2776,7 +2775,8 @@ a.menu-item { text-decoration: none; }
 .vote-list { list-style: none; margin: 0; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
 .vote-panel-room .vote-list { padding: 0; }
 .vote-item { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
-.vote-item-open { border-color: var(--live-ring); box-shadow: inset 3px 0 0 var(--live); }
+/* The open vote: a green frame, and its "Đang mở" chip says the rest — no side stripe. */
+.vote-item-open { border-color: var(--live-ring); }
 .vote-item-draft { border-style: dashed; border-color: var(--control-line); }
 .vote-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 4px 12px 8px; }
 .vote-break { flex-basis: 100%; height: 0; }
@@ -3855,7 +3855,7 @@ audio.recording-player { height: 40px; }
 .voice-sample-text > * { white-space: nowrap; }
 .voice-sample-name { color: var(--ink); font-weight: 500; }
 .voice-actions { justify-content: space-between; }
-.voice-passage { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
+.voice-passage { margin: 8px 0 0; padding: 14px 16px; border-radius: var(--radius); background: var(--brand-wash); color: var(--ink); font-size: 16px; line-height: 1.7; }
 .voice-review { display: grid; gap: 8px; margin: 12px 0 0; }
 .voice-review .field-hint { margin: 0; }
 .voice-review audio { width: 100%; }
