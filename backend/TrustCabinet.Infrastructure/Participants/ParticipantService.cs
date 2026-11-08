@@ -13,6 +13,7 @@ using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Domain.GuestAccess;
+using TrustCabinet.Infrastructure.Speaking;
 
 namespace TrustCabinet.Infrastructure.Participants;
 
@@ -524,6 +525,12 @@ public sealed partial class ParticipantService(
                 }
                 if (affected.Count > 0)
                     agendaChange = new(Guid.CreateVersion7(), meetingId, "PresenterCleared", null, null, now);
+                // Someone no longer in the meeting is not waiting to speak (BR-337). A member who keeps another
+                // assignment keeps the raised hand. Readers refetch the queue on participantsChanged.
+                if (userId is null || !snapshot.Meeting.Participants.Any(p => p.UserId == userId && p.Id != targetId
+                        && ParticipantRules.Current(p)))
+                    await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, userId,
+                        userId is null ? [targetId!.Value] : null, now, ct);
             }
             if (!response)
                 m.ParticipantsRevision = checked(m.ParticipantsRevision + 1);

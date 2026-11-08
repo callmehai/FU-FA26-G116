@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Domain.Speaking;
 using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Infrastructure.Meetings;
@@ -16,6 +17,7 @@ namespace TrustCabinet.Infrastructure.Meetings;
 public sealed class MeetingLifecycleService(
     IMeetingRepository meetings,
     IAgendaMeetingEnd agendaEnd,
+    ISpeakingMeetingEnd speakingEnd,
     IAgendaChangePublisher publisher,
     IVoteMeetingEnd voteEnd,
     IVoteChangePublisher votePublisher,
@@ -67,6 +69,8 @@ public sealed class MeetingLifecycleService(
                 {
                     change = await agendaEnd.PrepareAsync(meetingId, now, token)
                         ?? new AgendaChange(Guid.CreateVersion7(), meetingId, "MeetingEnded", null, null, now);
+                    // Readers refetch the queue on "MeetingEnded", so no speaking event of its own is needed.
+                    await speakingEnd.PrepareAsync(meetingId, now, token);
                     meeting.ActualEndedAt = now;
                     // A draft can only be opened while InProgress (BR-160), so none survives the end (PO 08/11/2026).
                     deletedDrafts = await voteEnd.DeleteDraftsAsync(meetingId, actorId, now, token);

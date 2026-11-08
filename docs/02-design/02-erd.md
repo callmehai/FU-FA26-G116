@@ -50,7 +50,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | MeetingDocument | Một dòng tài liệu trong cuộc họp, trỏ tới một StoredFile | IMPLEMENTED (SCRUM-107) | Tham chiếu StoredFile (không chép byte), Document nguồn tuỳ chọn (SetNull), gỡ bằng RemovedAt; unique (MeetingId, StoredFileId) khi RemovedAt null (ADR-0018). |
 | MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, bảng nối, không tính vào 35 thực thể) | IMPLEMENTED (SCRUM-107, bảng) | Theo ADR-0020: thay cột `AgendaItemId` đơn. Adapter Agenda đã hỗ trợ nhiều mục mỗi tài liệu trong SCRUM-98. |
 | DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | IMPLEMENTED (SCRUM-107, bảng) | MeetingDocumentId; AuthorId nullable, GuestInvitationId (ADR-0016), check đúng một tác giả. Trả lời một cấp (BR-317) do SCRUM-23 kiểm. |
-| SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED | Giữ. |
+| SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED (SCRUM-27, có endpoint) | Người giơ tay là thành viên (`UserId`) hoặc Khách (`GuestInvitationId`), check đúng một trong hai. Mỗi người một yêu cầu đang mở (`Queued`/`Invited`/`Speaking`) và mỗi cuộc họp tối đa một yêu cầu `Invited`/`Speaking`, cả hai do unique index có điều kiện ép (BR-337, BR-338). Giữ `InvitedAt`, `StartedAt`, `EndedAt` cho biên bản (BR-339). |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
 | VotingSession | Một lần biểu quyết trong cuộc họp | IMPLEMENTED (bảng); đổi theo mô hình đích ở SCRUM-96 | Mô hình đích bỏ `Kind`, `OpensAt`, `ClosesAt` và `AgendaItemId` — Vote thuộc Meeting, không gắn mục nghị sự (BR-285, ADR-0014/0019); thêm `OpenedAt`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, BR-257), `Conclusion` Passed/NotPassed/Deferred, `ConclusionNote`, `ConcludedById`, `ConcludedAt` (BR-262). Tối đa một Vote `Open` mỗi Meeting do unique index có điều kiện ép (BR-266). |
 | VotingOption | Phương án | IMPLEMENTED | `BallotCount` là tally của mọi phiếu, kể cả phiếu kín (SCRUM-28). |
@@ -293,6 +293,8 @@ Tài liệu **không có phiên bản** ([ADR-0018](../05-decisions/0018-tai-lie
 ```mermaid
 erDiagram
     Meeting ||--o{ SpeakingRequest : "receiving"
+    User o|--o{ SpeakingRequest : "raising a hand in"
+    MeetingGuestInvitation o|--o{ SpeakingRequest : "raising a hand as guest in"
     Meeting ||--o{ MeetingNote : "recording"
     Meeting ||--o{ VotingSession : "hosting"
     VotingSession ||--o{ VotingOption : "offering"
@@ -307,10 +309,12 @@ erDiagram
         uuid Id PK
         uuid MeetingId FK
         uuid AgendaItemId FK "nullable"
-        uuid UserId FK
+        uuid UserId FK "nullable — Khách thì null"
+        uuid GuestInvitationId FK "nullable — đúng một trong hai"
         timestamptz RequestedAt
         int QueuePosition "chủ toạ đổi được"
         string Status "Queued|Invited|Speaking|Finished|Cancelled"
+        timestamptz InvitedAt
         timestamptz StartedAt
         timestamptz EndedAt
     }
@@ -705,6 +709,8 @@ erDiagram
 | MeetingDocument | 1 → 0..* | DocumentComment | Cung cấp ngữ cảnh cho |
 | DocumentComment | 0..1 → 0..* | DocumentComment | Trả lời |
 | Meeting | 1 → 0..* | SpeakingRequest | Tiếp nhận |
+| User | 0..1 → 0..* | SpeakingRequest | Giơ tay (thành viên) |
+| MeetingGuestInvitation | 0..1 → 0..* | SpeakingRequest | Giơ tay (Khách, SCRUM-27) |
 | Meeting | 1 → 0..* | MeetingNote | Ghi nhận |
 | Meeting | 1 → 0..* | VotingSession | Tổ chức |
 | VotingSession | 1 → 1..* | VotingOption | Đưa ra lựa chọn |

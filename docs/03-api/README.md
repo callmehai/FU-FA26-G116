@@ -15,6 +15,7 @@ FE và BE thống nhất ở đây **trước khi** code, để hai bên chạy 
 - [`17-du-thao-bien-ban.md`](17-du-thao-bien-ban.md) — SCRUM-36 / SCRUM-32: dự thảo AI (`/api/meetings/{id}/summary`) và bản nháp biên bản theo mẫu cố định (`/api/meetings/{id}/minutes`, `/api/minutes/{id}`), cấu hình máy AI `Ai:*`; mã `MSG384`–`MSG405`.
 - [`18-may-ai.md`](18-may-ai.md) — ADR-0056: màn Cấu hình AI của quản trị (`/api/admin/ai`), chọn máy local hay API cho dự thảo của cuộc họp Thường; mã `MSG408`–`MSG413`.
 - [`19-ghi-chu-cuoc-hop.md`](19-ghi-chu-cuoc-hop.md) — SCRUM-30 / UC-82: ghi chú của Thư ký trong lúc họp (`GET`/`PUT /api/meetings/{id}/notes`), sự kiện `notesChanged`, ghi chú đi vào bản nháp biên bản; mã `MSG415`–`MSG423`.
+- [`20-dang-ky-phat-bieu.md`](20-dang-ky-phat-bieu.md) — SCRUM-27 / UC-79: giơ tay trong phòng họp, hàng đợi của Chủ toạ, mời/bắt đầu/kết thúc lượt (`/api/meetings/{id}/speaking-requests`), sự kiện `speakingChanged`/`speakingInvited`; mã `MSG457`–`MSG462`.
 - [`16-truy-cap-khach-uc04-ket-qua-kiem-thu.md`](16-truy-cap-khach-uc04-ket-qua-kiem-thu.md) — SCRUM-122: kết quả kiểm thử E2E Khách (UC-04 → UC-26 Agenda, thu hồi, hết hạn, cuộc họp kết thúc) bằng email và phiên thật; kèm FE SCRUM-121/SCRUM-123.
 
 - `GET /api/health` — không cần đăng nhập, không có file riêng: `200` với `status: "ok"`, `database: "ok"`;

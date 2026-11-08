@@ -2021,6 +2021,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("ended_at");
 
+                    b.Property<Guid?>("GuestInvitationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("guest_invitation_id");
+
+                    b.Property<DateTimeOffset?>("InvitedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("invited_at");
+
                     b.Property<Guid>("MeetingId")
                         .HasColumnType("uuid")
                         .HasColumnName("meeting_id");
@@ -2047,7 +2055,7 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
@@ -2057,13 +2065,36 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasIndex("AgendaItemId")
                         .HasDatabaseName("ix_speaking_requests_agenda_item_id");
 
+                    b.HasIndex("GuestInvitationId")
+                        .HasDatabaseName("ix_speaking_requests_guest_invitation_id");
+
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_speaking_requests_user_id");
 
                     b.HasIndex("MeetingId", "Status", "QueuePosition")
                         .HasDatabaseName("ix_speaking_requests_meeting_id_status_queue_position");
 
-                    b.ToTable("speaking_requests", (string)null);
+                    b.HasIndex(new[] { "MeetingId" }, "ux_speaking_requests_floor")
+                        .IsUnique()
+                        .HasDatabaseName("ux_speaking_requests_floor")
+                        .HasFilter("status IN ('Invited', 'Speaking')");
+
+                    b.HasIndex(new[] { "MeetingId", "GuestInvitationId" }, "ux_speaking_requests_open_guest")
+                        .IsUnique()
+                        .HasDatabaseName("ux_speaking_requests_open_guest")
+                        .HasFilter("guest_invitation_id IS NOT NULL AND status IN ('Queued', 'Invited', 'Speaking')");
+
+                    b.HasIndex(new[] { "MeetingId", "UserId" }, "ux_speaking_requests_open_user")
+                        .IsUnique()
+                        .HasDatabaseName("ux_speaking_requests_open_user")
+                        .HasFilter("user_id IS NOT NULL AND status IN ('Queued', 'Invited', 'Speaking')");
+
+                    b.ToTable("speaking_requests", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_speaking_requests_one_speaker", "(user_id IS NULL) <> (guest_invitation_id IS NULL)");
+
+                            t.HasCheckConstraint("ck_speaking_requests_status", "status IN ('Queued', 'Invited', 'Speaking', 'Finished', 'Cancelled')");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.SpeechClip", b =>
@@ -3665,6 +3696,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_speaking_requests_agenda_items_agenda_item_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.MeetingGuestInvitation", "GuestInvitation")
+                        .WithMany()
+                        .HasForeignKey("GuestInvitationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_speaking_requests_meeting_guest_invitations_guest_invitatio");
+
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithMany("SpeakingRequests")
                         .HasForeignKey("MeetingId")
@@ -3676,10 +3713,11 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_speaking_requests_users_user_id");
 
                     b.Navigation("AgendaItem");
+
+                    b.Navigation("GuestInvitation");
 
                     b.Navigation("Meeting");
 
