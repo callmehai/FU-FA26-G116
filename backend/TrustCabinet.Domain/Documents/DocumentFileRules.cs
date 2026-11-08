@@ -8,7 +8,6 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
-using UglyToad.PdfPig;
 
 namespace TrustCabinet.Domain.Documents;
 
@@ -242,7 +241,7 @@ public static class DocumentFileRules
     /// page tree and inflates streams without a cap, so a hostile file can overflow the stack or exhaust memory: call this
     /// only where that ends nothing but the caller (the web app's child process, or a test).
     /// </summary>
-    public static async Task<int?> CountPdfPagesAsync(Stream stream, CancellationToken ct)
+    public static async Task<int?> CountPdfPagesAsync(Stream stream, IPdfInspector inspector, CancellationToken ct)
     {
         if (!stream.CanSeek) throw new ArgumentException("The file stream must be seekable.", nameof(stream));
         var tail = new byte[(int)Math.Min(stream.Length, PdfTailBytes)];
@@ -253,9 +252,8 @@ public static class DocumentFileRules
         stream.Position = 0;
         try
         {
-            // Strict: a file the lenient parser would patch up is one pdf.js may still refuse to draw.
-            using var pdf = PdfDocument.Open(stream, new ParsingOptions { UseLenientParsing = false, SkipMissingFonts = true });
-            return pdf.NumberOfPages > 0 ? pdf.NumberOfPages : null;
+            var pages = inspector.CountPages(stream);
+            return pages > 0 ? pages : null;
         }
         catch (Exception ex) when (ex is not (OperationCanceledException or OutOfMemoryException))
         {

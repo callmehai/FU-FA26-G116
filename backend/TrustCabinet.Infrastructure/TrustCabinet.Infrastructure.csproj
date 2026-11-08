@@ -20,6 +20,8 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.12" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <!-- Opens an uploaded PDF and counts its pages, in the web app's child process only (ADR-0044, PdfPigInspector). -->
+    <PackageReference Include="PdfPig" Version="0.1.16" />
     <!-- The minutes as PDF (SCRUM-32), drawn on the server without LibreOffice. Community license: a public, non-commercial
          student project (MinutesPdf sets it). -->
     <PackageReference Include="QuestPDF" Version="2026.9.1" />

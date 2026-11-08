@@ -1,5 +1,6 @@
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Infrastructure.Documents;
 
 namespace TrustCabinet.Web.Tests.Documents;
 
@@ -7,7 +8,8 @@ public sealed class DocumentFileRulesTests
 {
     /// <summary>The rules with the page counter run in this process: these PDFs are the test's own, not hostile.</summary>
     private static Task<DocumentUploadOutcome> Validate(IReadOnlyList<DocumentUploadCandidate> candidates)
-        => DocumentFileRules.ValidateAsync(candidates, DocumentFileRules.CountPdfPagesAsync, default);
+        => DocumentFileRules.ValidateAsync(candidates,
+            (stream, ct) => DocumentFileRules.CountPdfPagesAsync(stream, new PdfPigInspector(), ct), default);
 
     private static Task<string?> Detect(byte[] bytes) => DocumentFileRules.DetectContentTypeAsync(new MemoryStream(bytes), default);
 
@@ -124,7 +126,7 @@ public sealed class DocumentFileRulesTests
         Assert.Equal([4, 1, null], good.Files!.Select(f => f.PageCount));
     }
 
-    private static Task<int?> Pages(byte[] bytes) => DocumentFileRules.CountPdfPagesAsync(new MemoryStream(bytes), default);
+    private static Task<int?> Pages(byte[] bytes) => DocumentFileRules.CountPdfPagesAsync(new MemoryStream(bytes), new PdfPigInspector(), default);
 
     [Fact]
     public async Task A_pdf_whose_structure_does_not_read_is_not_a_pdf()
