@@ -472,12 +472,22 @@ public sealed class MeetingService(
                 var isExpectedActor = command.Action is MeetingTransitionAction.Approve or MeetingTransitionAction.Reject
                     ? meeting.AssignedApproverId == actorId
                     : meeting.CreatedById == actorId;
-                if (!transfersOrganizer && (!isExpectedActor
-                    || (command.Action is MeetingTransitionAction.Approve or MeetingTransitionAction.Reject
-                        && meeting.CreatedById == actorId)
-                    || !await meetings.IsActiveUserWithCapabilityAsync(actorId, requiredCapability, token)))
+                if (!transfersOrganizer)
                 {
-                    return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.Forbidden);
+                    if (!isExpectedActor
+                        || (command.Action is MeetingTransitionAction.Approve or MeetingTransitionAction.Reject
+                            && meeting.CreatedById == actorId))
+                    {
+                        return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.Forbidden);
+                    }
+
+                    // The right actor without the capability: Publish answers MSG46 rather than MSG85.
+                    if (!await meetings.IsActiveUserWithCapabilityAsync(actorId, requiredCapability, token))
+                    {
+                        return MeetingWorkflowResult.Failure(command.Action == MeetingTransitionAction.Publish
+                            ? MeetingWorkflowOutcome.PublisherLostCapability
+                            : MeetingWorkflowOutcome.Forbidden);
+                    }
                 }
 
                 // Any status before the start may be cancelled (BR-297), so the source is the current one.

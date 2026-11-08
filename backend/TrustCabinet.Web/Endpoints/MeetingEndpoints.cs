@@ -200,7 +200,8 @@ public static class MeetingEndpoints
                 MeetingResponse.From(result.Meeting!),
                 MeetingHistoryItemResponse.From(result.History!))),
             MeetingWorkflowOutcome.NotFound => Results.NotFound(),
-            MeetingWorkflowOutcome.Forbidden when command.Action == MeetingTransitionAction.Publish => WorkflowError(
+            // Only the organizer who lost MeetingCreator; anyone else who is not the organizer gets MSG85 below.
+            MeetingWorkflowOutcome.PublisherLostCapability => WorkflowError(
                 StatusCodes.Status403Forbidden, Msg46PublishConflict, "Cuộc họp này không còn có thể công bố."),
             MeetingWorkflowOutcome.Forbidden when command.Action is MeetingTransitionAction.Start or MeetingTransitionAction.End
                 => WorkflowError(StatusCodes.Status403Forbidden, TransitionConflictCode(command.Action), LifecycleConflictMessage(command.Action)),
