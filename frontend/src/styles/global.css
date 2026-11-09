@@ -1246,6 +1246,8 @@ a.menu-item { text-decoration: none; }
   .meetings-table td.col-action:has(.btn-live) { flex: 1 1 100%; }
   .meetings-table .btn-live { width: 100%; height: 40px; }
   .meetings-table td.col-action:has(.icon-button) { position: absolute; top: 8px; right: 8px; }
+  /* The first line (state, level, place) stops short of that button. */
+  .meetings-table tr:has(td.col-action .icon-button) td.cell-place { margin-right: 40px; }
   .meetings-table tbody tr:not(.row-skeleton) { position: relative; }
 }
 .empty-title { margin: 0 0 12px; color: var(--ink); font-weight: 600; }
@@ -2071,6 +2073,7 @@ a.menu-item { text-decoration: none; }
   color: var(--label-ink);
 }
 .date-field-box .icon-button:hover:not(:disabled) { color: var(--ink); }
+@media (pointer: coarse) { .date-field-box .icon-button { top: 0; right: 0; width: 40px; height: 40px; } }
 /* In the top layer (popover="manual"), placed under the field by useAnchoredPopover; `inset: auto`
    and `margin: 0` undo the UA popover centring. */
 .date-field-panel { position: fixed; inset: auto; margin: 0; max-width: calc(100vw - 8px); color: var(--ink); }
@@ -2126,6 +2129,7 @@ a.menu-item { text-decoration: none; }
   .view-toggle-icon { display: inline-flex; }
   .view-toggle-label { display: none; }
 }
+@media (pointer: coarse) { .view-toggle button { height: 40px; } }
 
 .calendar {
   display: flex;
@@ -2462,6 +2466,7 @@ a.menu-item { text-decoration: none; }
 .overview-task-title .icon { color: var(--brand); }
 .overview-foot { flex: none; display: flex; justify-content: flex-end; gap: 8px; padding: 11px 14px; border-top: 1px solid var(--line-soft); background: var(--surface-alt); }
 .overview-foot .btn { height: 36px; }
+@media (pointer: coarse) { .overview-foot .btn { height: 40px; } }
 .overview-skeleton { display: block; width: 60%; height: 18px; }
 .overview-skeleton-label { display: block; width: 144px; height: 16px; margin-bottom: 10px; }
 .overview-skeleton-avatar { display: block; width: 32px; height: 32px; margin: 0 24px; border-radius: 50%; }
@@ -2546,6 +2551,7 @@ a.menu-item { text-decoration: none; }
 .agenda-facts span { display: inline-flex; align-items: center; gap: 6px; }
 .agenda-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; }
 .agenda-open { flex: none; height: 38px; padding: 0 12px 0 16px; border-radius: 19px; color: var(--brand); }
+@media (pointer: coarse) { .agenda-open { height: 40px; border-radius: 20px; } }
 .agenda-empty { grid-column: 3; margin: 0; padding: 14px 18px; border: 1px dashed var(--control-line); border-radius: 10px; color: var(--muted-ink); }
 .agenda-card-skeleton { grid-column: 3; flex-direction: column; align-items: stretch; gap: 10px; }
 .agenda-card-skeleton .skeleton:first-child { width: 45%; height: 16px; }
@@ -2637,8 +2643,9 @@ a.menu-item { text-decoration: none; }
   .participants-panel .participant-cell { gap: 6px 8px; padding-left: 48px; }
   .participants-panel .participant-cell > .person { flex-basis: calc(100% + 48px); margin-left: -48px; }
   /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip).
-     An email broken mid-word reads as two addresses, so it stays one line and ends in "…" (SCRUM-151). */
-  .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
+     So does the email, before the "@" and "." Person marks (SCRUM-151), not mid-word; only a part
+     wider than the line still breaks where it must. */
+  .participants-panel .person-name, .participants-panel .person .cell-sub { white-space: normal; overflow-wrap: anywhere; }
 }
 .participants-alert { margin: 12px 16px 0; }
 
@@ -2831,6 +2838,7 @@ a.menu-item { text-decoration: none; }
 .agenda-actions { flex: none; gap: 6px; }
 .icon-button-danger { color: var(--danger); }
 .agenda-action-slot { width: 34px; flex: none; }
+@media (pointer: coarse) { .agenda-action-slot { width: 40px; } }
 .agenda-body { padding: 4px var(--agenda-pad) 12px var(--agenda-indent); }
 .agenda-text.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
 .agenda-boxes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
