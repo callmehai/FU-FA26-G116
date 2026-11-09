@@ -9,6 +9,8 @@ participant ":Calendar Share Repository" as ShareRepository
 participant ":Meeting Repository" as MeetingRepository
 database ":Database" as Database
 
+note right of SlotService: The invitee list reuses GET /api/meetings/participant-options (MeetingCreator, active, id/fullName/email).
+
 Finder->FindPage: Find meeting time (invitees, duration, dates, hours, buffer, step)
 activate FindPage
 
@@ -43,11 +45,11 @@ else Finder is verified
         deactivate SlotController
         FindPage-->Finder: MSG444 - The meeting-time search is invalid. Check the highlighted fields:\nToo many people. Duration, range, hours, buffer or step is out of range.
     else Search parameters are valid
-        SlotService->ShareRepository: Get Effective shares of each invitee's calendar to the finder (BR-423, BR-424)
+        SlotService->ShareRepository: Get Effective shares of each invitee's calendar to the finder (BR-423, BR-424, BR-425)
         activate ShareRepository
-        ShareRepository->Database: Retrieve shares with status
+        ShareRepository->Database: Retrieve shares with status and end date >= today
         activate Database
-        Database-->ShareRepository: Effective shares (stopped and expired shares excluded)
+        Database-->ShareRepository: Effective shares (stopped, expired and past-end-date shares excluded)
         deactivate Database
         ShareRepository-->SlotService: Effective shares
         deactivate ShareRepository

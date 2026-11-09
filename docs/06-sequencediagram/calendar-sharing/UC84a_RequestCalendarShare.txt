@@ -10,8 +10,54 @@ participant ":Calendar Share Repository" as ShareRepository
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
 
-Requester->SharingPage: Request calendar share (owner, level, date range)
+Requester->SharingPage: Open the Chia sẻ lịch page
 activate SharingPage
+
+SharingPage->SharingController: Load share candidates (purpose=request)
+activate SharingController
+SharingController->SharingService: listCandidates(requesterId, purpose=request, q, page)
+activate SharingService
+SharingService->UserRepository: Verify requester is active and holds MeetingCreator (BR-430)
+activate UserRepository
+UserRepository->Database: Retrieve requester account with capabilities
+activate Database
+Database-->UserRepository: Account / Not found
+deactivate Database
+UserRepository-->SharingService: Verification result
+deactivate UserRepository
+
+alt Requester is not a Meeting Organizer - EX
+    SharingService-->SharingController: MSG448 - Only a Meeting Organizer can do this.
+    deactivate SharingService
+    SharingController-->SharingPage: 403 MSG448
+    deactivate SharingController
+    SharingPage-->Requester: MSG448 - Only a Meeting Organizer can do this.
+else Requester is verified
+    SharingService->UserRepository: Get active internal accounts except the requester (server filter, purpose=request)
+    activate UserRepository
+    UserRepository->Database: Retrieve candidates (active, internal, id <> requesterId)
+    activate Database
+    Database-->UserRepository: Candidate list / Read failed
+    deactivate Database
+    UserRepository-->SharingService: Candidate list / Read failed
+    deactivate UserRepository
+
+    alt Candidate list cannot be read - EX
+        SharingService-->SharingController: (new code pending catalogue) - Unable to load the candidate list.
+        deactivate SharingService
+        SharingController-->SharingPage: 500 (new code pending catalogue)
+        deactivate SharingController
+        SharingPage-->Requester: (new code pending catalogue) - Unable to load the candidate list.
+    else Candidate list is loaded
+        SharingService-->SharingController: Candidate list
+        deactivate SharingService
+        SharingController-->SharingPage: Candidate list
+        deactivate SharingController
+        SharingPage-->Requester: Candidate list
+    end
+end
+
+Requester->SharingPage: Request calendar share (owner, level, date range)
 
 SharingPage->SharingController: Request calendar share
 activate SharingController
@@ -66,6 +112,24 @@ else Requester is verified
                 SharingController-->SharingPage: Not found, refresh the owner list
                 deactivate SharingController
                 SharingPage-->Requester: That person is no longer listed
+
+                SharingPage->SharingController: Reload share candidates (purpose=request)
+                activate SharingController
+                SharingController->SharingService: listCandidates(requesterId, purpose=request, q, page)
+                activate SharingService
+                SharingService->UserRepository: Get active internal accounts except the requester (server filter)
+                activate UserRepository
+                UserRepository->Database: Retrieve candidates (active, internal, id <> requesterId)
+                activate Database
+                Database-->UserRepository: Candidates
+                deactivate Database
+                UserRepository-->SharingService: Candidates
+                deactivate UserRepository
+                SharingService-->SharingController: Candidates
+                deactivate SharingService
+                SharingController-->SharingPage: Candidates
+                deactivate SharingController
+                SharingPage-->Requester: Refreshed candidate list
             else Owner is reachable
                 SharingService->ShareRepository: Save Pending share and audit entry (BR-423, BR-426)
                 activate ShareRepository

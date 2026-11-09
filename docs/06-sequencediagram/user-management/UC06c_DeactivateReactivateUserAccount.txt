@@ -6,21 +6,31 @@ control ":User Controller" as UserController
 control ":User Service" as UserService
 participant ":User Repository" as UserRepository
 control ":Session Service" as SessionService
+control ":Voice ID Service" as VoiceIdService
+participant ":Voice ID Repository" as VoiceIdRepository
+participant ":Calendar Share Repository" as ShareRepository
+control ":Notification Service" as NotificationService
 control ":Audit Service" as AuditService
 database ":Database" as Database
 
 Admin->UserPage: Select user account and status action
 activate UserPage
+
 UserPage->UserController: Change user account status
 activate UserController
+
 UserController->UserService: Change user account status
 activate UserService
+
 UserService->UserRepository: Get current account status
 activate UserRepository
 UserRepository->Database: Retrieve user account
 activate Database
 Database-->UserRepository: User account information
 UserRepository-->UserService: Current account status
+deactivate Database
+deactivate UserRepository
+
 alt Status change is not allowed
     UserService-->UserController: Status change not allowed
     UserController-->UserPage: Display reason for rejected status change
@@ -28,40 +38,108 @@ alt Status change is not allowed
 else Status change is allowed
     alt Deactivate Account
         UserService->UserRepository: Set account status to Inactive
+        activate UserRepository
         UserRepository->Database: Update account status
+        activate Database
         Database-->UserRepository: Account status updated
+        deactivate Database
         UserRepository-->UserService: Account deactivated
+        deactivate UserRepository
+
         UserService->SessionService: End active sessions
         activate SessionService
         SessionService-->UserService: Active sessions ended
+        deactivate SessionService
+
+        UserService->VoiceIdService: End Voice ID in the same transaction (BR-372)
+        activate VoiceIdService
+        VoiceIdService->VoiceIdRepository: Delete voice samples, clear speaker suggestions and close consent
+        activate VoiceIdRepository
+        VoiceIdRepository->Database: Delete voice data and close consent
+        activate Database
+        Database-->VoiceIdRepository: Voice ID ended
+        deactivate Database
+        VoiceIdRepository-->VoiceIdService: Voice ID ended
+        deactivate VoiceIdRepository
+        VoiceIdService->AuditService: Record Voice ID end (BR-372)
+        activate AuditService
+        AuditService->Database: Store audit record
+        activate Database
+        Database-->AuditService: Audit record created
+        deactivate Database
+        AuditService-->VoiceIdService: Recorded
+        deactivate AuditService
+        VoiceIdService-->UserService: Voice ID ended
+        deactivate VoiceIdService
+
         UserService->AuditService: Record account deactivation
         activate AuditService
         AuditService->Database: Store audit record
+        activate Database
         Database-->AuditService: Audit record created
+        deactivate Database
         AuditService-->UserService: Deactivation recorded
+        deactivate AuditService
+
+        UserService->ShareRepository: Stop every Pending or Effective share where the account is the owner or the viewer, in the same transaction as the status change (BR-424)
+        activate ShareRepository
+        ShareRepository->Database: Set those shares to Stopped
+        activate Database
+        Database-->ShareRepository: Stopped shares
+        deactivate Database
+        ShareRepository-->UserService: Stopped shares
+        deactivate ShareRepository
+
+        opt At least one share was stopped
+            UserService->AuditService: Record each stopped share (BR-426)
+            activate AuditService
+            AuditService->Database: Store audit records
+            activate Database
+            Database-->AuditService: Audit records created
+            deactivate Database
+            AuditService-->UserService: Stops recorded
+            deactivate AuditService
+
+            UserService->NotificationService: Notify both sides of each stopped share (BR-426)
+            activate NotificationService
+            NotificationService->Database: Record notifications
+            activate Database
+            Database-->NotificationService: Notifications recorded
+            deactivate Database
+            NotificationService-->UserService: Notifications sent
+            deactivate NotificationService
+        end
+
         UserService-->UserController: Account deactivated successfully
         UserController-->UserPage: MSG11 - User account status changed successfully
         UserPage-->Admin: Display Inactive status
-        deactivate AuditService
-        deactivate SessionService
     else Reactivate Account
         UserService->UserRepository: Set account status to Active
+        activate UserRepository
         UserRepository->Database: Update account status
+        activate Database
         Database-->UserRepository: Account status updated
+        deactivate Database
         UserRepository-->UserService: Account reactivated
+        deactivate UserRepository
+
         UserService->AuditService: Record account reactivation
         activate AuditService
         AuditService->Database: Store audit record
+        activate Database
         Database-->AuditService: Audit record created
+        deactivate Database
         AuditService-->UserService: Reactivation recorded
+        deactivate AuditService
+
+        note right of UserService: Reactivating the account does not restart stopped shares (BR-424)
+
         UserService-->UserController: Account reactivated successfully
         UserController-->UserPage: MSG11 - User account status changed successfully
         UserPage-->Admin: Display Active status
-        deactivate AuditService
     end
 end
-deactivate Database
-deactivate UserRepository
+
 deactivate UserService
 deactivate UserController
 deactivate UserPage

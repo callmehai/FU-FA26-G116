@@ -10,8 +10,54 @@ participant ":Calendar Share Repository" as ShareRepository
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
 
-Owner->SharingPage: Share calendar at Level 1 (recipient, date range)
+Owner->SharingPage: Open the Chia sẻ lịch page
 activate SharingPage
+
+SharingPage->SharingController: Load share candidates (purpose=direct)
+activate SharingController
+SharingController->SharingService: listCandidates(ownerId, purpose=direct, q, page)
+activate SharingService
+SharingService->UserRepository: Verify owner is active (BR-430)
+activate UserRepository
+UserRepository->Database: Retrieve owner account
+activate Database
+Database-->UserRepository: Account / Not found
+deactivate Database
+UserRepository-->SharingService: Verification result
+deactivate UserRepository
+
+alt Owner is not active
+    SharingService-->SharingController: Not found, nothing disclosed
+    deactivate SharingService
+    SharingController-->SharingPage: 404
+    deactivate SharingController
+    SharingPage-->Owner: (nothing disclosed)
+else Owner is verified
+    SharingService->UserRepository: Get active internal accounts with MeetingCreator, except the owner (server filter, purpose=direct)
+    activate UserRepository
+    UserRepository->Database: Retrieve candidates (active, internal, has MeetingCreator, id <> ownerId)
+    activate Database
+    Database-->UserRepository: Candidate list / Read failed
+    deactivate Database
+    UserRepository-->SharingService: Candidate list / Read failed
+    deactivate UserRepository
+
+    alt Candidate list cannot be read - EX
+        SharingService-->SharingController: (new code pending catalogue) - Unable to load the candidate list.
+        deactivate SharingService
+        SharingController-->SharingPage: 500 (new code pending catalogue)
+        deactivate SharingController
+        SharingPage-->Owner: (new code pending catalogue) - Unable to load the candidate list.
+    else Candidate list is loaded
+        SharingService-->SharingController: Candidate list
+        deactivate SharingService
+        SharingController-->SharingPage: Candidate list
+        deactivate SharingController
+        SharingPage-->Owner: Candidate list
+    end
+end
+
+Owner->SharingPage: Share calendar at Level 1 (recipient, date range)
 
 SharingPage->SharingController: Share calendar directly
 activate SharingController

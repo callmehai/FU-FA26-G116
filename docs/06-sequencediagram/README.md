@@ -36,6 +36,11 @@ Không biến Sequence Diagram thành mô tả toàn bộ thao tác UI trước 
 
 Thông thường, mỗi Sequence Diagram chỉ có **một mũi tên Actor → Boundary ở đầu luồng**. Ngoại lệ UC-04 có nhiều tương tác Guest → Boundary theo Normal Flow.
 
+Ngoại lệ có chủ đích: `calendar-sharing/SYS_ExpireCalendarShares.txt` dùng actor `System` (theo tiền lệ
+`transcription-voice-id/UC45c_ProcessTranscriptionQueue.txt`), không có Boundary, không có người dùng, vì job hết hạn
+ghi audit và báo hai bên (BR-425, BR-426). Đây là tác nhân hệ thống, không phải UC, không đánh số UC mới. Chi tiết
+trong README của `calendar-sharing/`.
+
 Ví dụ:
 
 ```text

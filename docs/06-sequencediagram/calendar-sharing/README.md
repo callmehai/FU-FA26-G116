@@ -11,6 +11,25 @@ SCRUM-137 tìm giờ họp), quyết định phạm vi ở [ADR-0058](../../05-d
   UC-85b `<<extend>>` UC-85a (từ một khung đã tìm mới tạo nháp).
 - Số hiệu dựa trên PR #279 merge trước (UC-83, BR-404 → BR-413, `MSG424`–`MSG434`); nếu nhánh này merge
   trước thì #279 dời số. Số UC-86..UC-90 trả lại, không dùng.
+- Danh sách sequence (10): UC-84a → UC-84e, `UC84_ViewCalendarShares`, UC-85a → UC-85c, và
+  `SYS_ExpireCalendarShares` (tác nhân hệ thống, không phải UC).
+
+| Use Case / Tác nhân | Source |
+|---|---|
+| UC-84 View Calendar Shares | [UC84_ViewCalendarShares.txt](UC84_ViewCalendarShares.txt) |
+| UC-84a Request Calendar Share | [UC84a_RequestCalendarShare.txt](UC84a_RequestCalendarShare.txt) |
+| UC-84b Share Calendar Directly | [UC84b_ShareCalendarDirectly.txt](UC84b_ShareCalendarDirectly.txt) |
+| UC-84c Respond to Calendar Share | [UC84c_RespondToCalendarShare.txt](UC84c_RespondToCalendarShare.txt) |
+| UC-84d Change Calendar Share | [UC84d_ChangeCalendarShare.txt](UC84d_ChangeCalendarShare.txt) |
+| UC-84e Withdraw or End Calendar Share | [UC84e_WithdrawOrEndCalendarShare.txt](UC84e_WithdrawOrEndCalendarShare.txt) |
+| UC-85a Find Meeting Time Slots | [UC85a_FindMeetingTimeSlots.txt](UC85a_FindMeetingTimeSlots.txt) |
+| UC-85b Create Draft Meeting from Slot | [UC85b_CreateDraftMeetingFromSlot.txt](UC85b_CreateDraftMeetingFromSlot.txt) |
+| UC-85c View Shared Calendar | [UC85c_ViewSharedCalendar.txt](UC85c_ViewSharedCalendar.txt) |
+| System - Expire Calendar Shares | [SYS_ExpireCalendarShares.txt](SYS_ExpireCalendarShares.txt) |
+
+Ngoại lệ actor hệ thống: `SYS_ExpireCalendarShares.txt` dùng actor `System` (theo tiền lệ `UC45c_ProcessTranscriptionQueue.txt`),
+không có Boundary, không có người dùng, vì job hết hạn ghi audit và báo hai bên (BR-425, BR-426). Đây là tác nhân hệ thống,
+không phải UC, không đánh số UC mới. Chi tiết convention xem [README cha](../README.md) §2.1.
 
 ## Xuất ảnh
 

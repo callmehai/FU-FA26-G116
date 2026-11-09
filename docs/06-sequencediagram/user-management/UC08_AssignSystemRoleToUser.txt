@@ -6,6 +6,8 @@ control ":User Controller" as UserController
 control ":User Service" as UserService
 participant ":User Repository" as UserRepository
 participant ":Role Repository" as RoleRepository
+participant ":Calendar Share Repository" as ShareRepository
+control ":Notification Service" as NotificationService
 participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
@@ -83,6 +85,40 @@ else Selected role is available
         deactivate AuditLogRepository
 
         UserService->UserService: Notify the user that their access changed so their sessions\napply the new role's permissions without signing in again (BR-314)
+
+        opt The new role no longer grants the meeting-creation right (MeetingCreator)
+            UserService->ShareRepository: Stop every Pending or Effective share the user is viewing (BR-424)
+            activate ShareRepository
+            ShareRepository->Database: Set those shares to Stopped
+            activate Database
+            Database-->ShareRepository: Stopped shares
+            deactivate Database
+            ShareRepository-->UserService: Stopped shares
+            deactivate ShareRepository
+
+            opt At least one share was stopped
+                UserService->AuditLogRepository: Record each stopped share (BR-426)
+                activate AuditLogRepository
+                AuditLogRepository->Database: Insert audit records
+                activate Database
+                Database-->AuditLogRepository: Audit records saved
+                deactivate Database
+                AuditLogRepository-->UserService: Stops recorded
+                deactivate AuditLogRepository
+
+                UserService->NotificationService: Notify both sides of each stopped share (BR-426)
+                activate NotificationService
+                NotificationService->Database: Record notifications
+                activate Database
+                Database-->NotificationService: Notifications recorded
+                deactivate Database
+                NotificationService-->UserService: Notifications sent
+                deactivate NotificationService
+            end
+        end
+
+        note right of UserService: Regaining the meeting-creation right does not restart stopped shares (BR-424)
+
         UserService-->UserController: User role updated successfully
         deactivate UserService
         UserController-->UserPage: MSG10 - User account updated successfully

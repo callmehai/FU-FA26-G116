@@ -329,6 +329,7 @@ không được xem → `404` không body.
 | `POST` | `/api/calendar/shares/{id}/withdraw` | UC-84e: bên gửi rút yêu cầu/thay đổi đang chờ. `200 MSG438`; sai trạng thái → `409 MSG450` |
 | `POST` | `/api/calendar/shares/{id}/end` | UC-84e AF-1: một trong hai bên ngừng chia sẻ. `200 MSG451`; sai trạng thái → `409 MSG450` |
 | `GET` | `/api/calendar/shares` | UC-84: hai danh sách: tôi chia sẻ cho ai / ai chia sẻ cho tôi (kèm trạng thái Pending — Chờ đồng ý / Effective — Đang hiệu lực / Stopped — Đã dừng / Expired — Hết hạn / Closed; nhãn Stopped/Expired là `MSG439`/`MSG440`). `200`, không mã |
+| `GET` | `/api/calendar/share-candidates?purpose=request\|direct&q=&page=&pageSize=` | UC-84a/UC-84b: danh sách người để chọn. `purpose=request` (UC-84a): cần `MeetingCreator`, trả tài khoản nội bộ active trừ chính mình. `purpose=direct` (UC-84b): chỉ cần đăng nhập, trả tài khoản active trừ chính mình **và có `MeetingCreator`**. Mỗi dòng chỉ `id`, `fullName` (cân nhắc bỏ `email`, BR-427). Có thể kèm cờ `hasOpenShare` để FE làm mờ người đã có chia sẻ Pending/Effective cùng chiều (BR-423), server vẫn kiểm lại khi gửi. Đọc lỗi → **mã mới lấy từ catalogue lúc làm** (không tự đặt số trong note). |
 | `GET` | `/api/calendar/shared-week` | UC-85c: query `{ userIds, week }`. `200`: khối bận ở mốc được chia sẻ, không tên cuộc họp; người dừng/hết hạn hiện nhãn trạng thái (`MSG439`/`MSG440` khi bấm vào người đó), giờ bị loại khỏi tuần. Không đọc được → `500 MSG453` |
 | `POST` | `/api/calendar/slots` | UC-85a: body `{ userIds, includeMe, durationMinutes, fromDate, toDate, weekdays, workStart, workEnd, lunchStart, lunchEnd, bufferMinutes, stepMinutes }`. `200` khung chung theo ngày, hoặc `200 MSG445` kèm khung nhiều người dự nhất. Tham số sai → `400 MSG444`; mất quyền → `403 MSG448`; không đọc được → `500 MSG453` |
 | `POST` | `/api/meetings` (dùng lại UC-14) | UC-85b: tạo nháp từ khung giờ, body điền sẵn giờ + danh sách. `201 MSG29`; kiểm lại khung theo đúng dữ liệu đã chia sẻ, không còn hợp → `409 MSG446`; không đọc được → `500 MSG453`; không lưu được → `500 MSG35` |
@@ -350,6 +351,11 @@ không được xem → `404` không body.
 | # | Câu hỏi | Đề xuất trong note |
 |---|---|---|
 | Q4 | Hết hạn tự đóng chạy lúc nào (nửa đêm, múi giờ nào) và có báo cho hai bên trước khi đóng không? | Job nửa đêm múi giờ máy chủ, báo cả hai bên khi đóng (BR-426) |
+| Q-A | BR-424 "either account is locked" nghĩa là vô hiệu hoá (UC-06c) hay cả khoá 15 phút do sai mật khẩu? | **Chỉ vô hiệu hoá.** Nếu tính cả khoá do sai mật khẩu thì ai cũng có thể cố tình gõ sai 5 lần để dừng vĩnh viễn chia sẻ của người khác, và phải thêm bước dừng vào luồng đăng nhập. Sửa chữ "locked" → "deactivated" ở BR-424, `MSG439` (`tài khoản bị khoá` → `tài khoản bị vô hiệu hoá`), UC-84a EX-4, đặc tả sơ bộ dòng 44 và 336. (chờ PO) |
+| Q-B | Pending đã qua ngày kết thúc, và thay đổi đang chờ (UC-84d) đã quá hạn, thì job xử lý ra sao? | Pending quá hạn → đóng (Expired) và báo bên gửi; thay đổi đang chờ quá hạn → tự rút, chia sẻ giữ nguyên. Ghi vào BR-425. (chờ PO) |
+| Q-C | Dừng (BR-424) có áp dụng cả cho chia sẻ Pending không? | Có (khớp UC-84c bước 2). Ghi rõ "Pending or Effective" vào BR-424. (chờ PO) |
+| Q-D | Danh sách chia sẻ có thành UC con riêng không? | Không, để dưới UC-84 gom (§6). (chờ PO) |
+| Q-E | Người đã mất `MeetingCreator` có còn xem được danh sách "ai chia sẻ cho tôi" (chỉ xem, thấy chia sẻ đã bị dừng) không? | Có, chỉ xem; không gửi hay dùng được. Sequence UC-84 đã vẽ theo cách này. (chờ PO) |
 | Q7 | Câu cố định trên màn tìm giờ (BR-428) dùng đúng chữ nào? | `Chỉ tính lịch đã được chia sẻ. Người được mời vẫn có thể bận.` — BA chốt chữ cuối |
 | Q8 | Khung nhiều người dự nhất (UC-85a AF-1) được hiện tên ai bận — chỉ tên trong danh sách mời của người tìm, đúng không? | Đúng; không bao giờ hiện tên/địa điểm/người dự của cuộc họp chủ lịch (BR-427) |
 
