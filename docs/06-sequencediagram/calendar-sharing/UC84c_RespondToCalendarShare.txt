@@ -4,6 +4,7 @@ actor "User" as AskedSide
 boundary "Calendar Sharing Page" as SharingPage
 control ":Calendar Sharing Controller" as SharingController
 control ":Calendar Sharing Service" as SharingService
+participant ":User Repository" as UserRepository
 participant ":Calendar Share Repository" as ShareRepository
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
@@ -17,7 +18,7 @@ activate SharingController
 SharingController->SharingService: answerShare(shareId, askedSideId, decision, level, startDate, endDate)
 activate SharingService
 
-SharingService->ShareRepository: Get Pending share where the actor is the asked side (BR-423)
+SharingService->ShareRepository: Get Pending share where the actor is the asked side, end date on or after today (BR-423, BR-425)
 activate ShareRepository
 ShareRepository->Database: Retrieve share
 activate Database
@@ -33,52 +34,73 @@ alt Actor is not the asked side - EX-1
     deactivate SharingController
     SharingPage-->AskedSide: No such share request
 else Actor is the asked side
-    alt Share is no longer Pending, including one already Stopped (BR-424) - EX-2
+    alt Share is no longer Pending, including one already Stopped (BR-424) or past its end date (BR-425) - EX-2
         SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
         deactivate SharingService
         SharingController-->SharingPage: 409 MSG450
         deactivate SharingController
         SharingPage-->AskedSide: MSG450 - This action is not allowed in the current state of the share.
     else Share is Pending
+        opt Sender is deactivated
+            SharingPage-->AskedSide: Tài khoản người gửi đã bị vô hiệu hoá (only Decline is offered)
+        end
+
         alt Asked side accepts, possibly at a lower level or shorter range
-            SharingService->SharingService: Validate the chosen level and date range (BR-414, BR-431)
+            SharingService->UserRepository: Check whether the sender is still an active account (BR-424)
+            activate UserRepository
+            UserRepository->Database: Retrieve sender account status
+            activate Database
+            Database-->UserRepository: Sender status / Not found
+            deactivate Database
+            UserRepository-->SharingService: Sender active / Sender deactivated
+            deactivate UserRepository
 
-            alt Range is invalid - EX-3
-                SharingService-->SharingController: MSG443 - The date range is invalid.
+            alt Sender is deactivated - EX-5
+                SharingService-->SharingController: MSG468 - The sender's account has been deactivated. You cannot accept this share.
                 deactivate SharingService
-                SharingController-->SharingPage: 400 MSG443
+                SharingController-->SharingPage: 409 MSG468
                 deactivate SharingController
-                SharingPage-->AskedSide: MSG443 - The date range is invalid.
-            else Range is valid
-                SharingService->ShareRepository: Mark share Effective with chosen level and range and audit entry (BR-414, BR-426)
-                activate ShareRepository
-                ShareRepository->Database: Update share and audit record
-                activate Database
-                Database-->ShareRepository: Saved / Save failed
-                deactivate Database
-                ShareRepository-->SharingService: Effective share / Save failed
-                deactivate ShareRepository
+                SharingPage-->AskedSide: MSG468 - The sender's account has been deactivated. You cannot accept this share.
+            else Sender is active
+                SharingService->SharingService: Validate the chosen level and date range (BR-414, BR-431)
 
-                alt Answer cannot be saved - EX-4
-                    SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+                alt Range is invalid - EX-3
+                    SharingService-->SharingController: MSG443 - The date range is invalid.
                     deactivate SharingService
-                    SharingController-->SharingPage: 503 MSG447
+                    SharingController-->SharingPage: 400 MSG443
                     deactivate SharingController
-                    SharingPage-->AskedSide: MSG447 - Unable to save the calendar sharing data. Please try again.
-                else Share is Effective
-                    SharingService->NotificationService: Notify the sender the share is effective (BR-426)
-                    activate NotificationService
-                    NotificationService->Database: Record sender notification
+                    SharingPage-->AskedSide: MSG443 - The date range is invalid.
+                else Range is valid
+                    SharingService->ShareRepository: Mark share Effective with chosen level and range and audit entry (BR-414, BR-426)
+                    activate ShareRepository
+                    ShareRepository->Database: Update share and audit record
                     activate Database
-                    Database-->NotificationService: Notification recorded
+                    Database-->ShareRepository: Saved / Save failed
                     deactivate Database
-                    NotificationService-->SharingService: Sender notified
-                    deactivate NotificationService
-                    SharingService-->SharingController: Effective share
-                    deactivate SharingService
-                    SharingController-->SharingPage: 200 MSG436 - Calendar share accepted.
-                    deactivate SharingController
-                    SharingPage-->AskedSide: MSG436 - Calendar share accepted.
+                    ShareRepository-->SharingService: Effective share / Save failed
+                    deactivate ShareRepository
+
+                    alt Answer cannot be saved - EX-4
+                        SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+                        deactivate SharingService
+                        SharingController-->SharingPage: 503 MSG447
+                        deactivate SharingController
+                        SharingPage-->AskedSide: MSG447 - Unable to save the calendar sharing data. Please try again.
+                    else Share is Effective
+                        SharingService->NotificationService: Notify the sender the share is effective (BR-426)
+                        activate NotificationService
+                        NotificationService->Database: Record sender notification
+                        activate Database
+                        Database-->NotificationService: Notification recorded
+                        deactivate Database
+                        NotificationService-->SharingService: Sender notified
+                        deactivate NotificationService
+                        SharingService-->SharingController: Effective share
+                        deactivate SharingService
+                        SharingController-->SharingPage: 200 MSG436 - Calendar share accepted.
+                        deactivate SharingController
+                        SharingPage-->AskedSide: MSG436 - Calendar share accepted.
+                    end
                 end
             end
         else Asked side declines
