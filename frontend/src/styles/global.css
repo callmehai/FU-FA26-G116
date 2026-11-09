@@ -1223,6 +1223,22 @@ a.menu-item { text-decoration: none; }
 /* The previous page stays readable but visibly stale while the next one loads. */
 .data-table-stale tbody { opacity: .55; transition: opacity .15s; }
 
+/* A long meeting title ends in "…" after two lines, the full title in its tooltip (SCRUM-148). */
+.meetings-table .cell-title a { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+/* Wide enough: fixed columns, so the Time column does not move between pages with the length of
+   their titles. The title takes what the others leave; the action fits "Vào phòng họp". Narrower,
+   fixed widths would squeeze the title, so the table keeps its automatic layout there. */
+@media (min-width: 1100px) {
+  .meetings-table { table-layout: fixed; }
+  .meetings-table th.cell-index { width: 48px; }
+  .meetings-table th:nth-child(3) { width: 172px; }
+  .meetings-table th.cell-place { width: 104px; }
+  .meetings-table th:nth-child(5) { width: 132px; }
+  .meetings-table th:nth-child(6) { width: 96px; }
+  .meetings-table th.col-action { width: 156px; }
+  .meetings-table td.cell-place { min-width: 0; }
+}
+
 /* Meetings on a phone, as AI-eCabinet lays them out: the panel grows with its rows and the page
    scrolls; each meeting is a card — its state and level, the title, the place, the time, and the
    gold "Vào phòng họp" across the card while it runs. */
@@ -1390,6 +1406,7 @@ a.menu-item { text-decoration: none; }
 .pagination-page-current:hover:not(:disabled) { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand); }
 .pagination-page:disabled { cursor: default; }
 .pagination-gap { min-width: 24px; color: var(--muted-ink); text-align: center; }
+.pagination-gap-phone { display: none; }
 @media (pointer: coarse) {
   .pagination-page, .pagination-step { min-width: 40px; height: 40px; }
   .pagination-size .select-trigger { height: 40px; }
@@ -1399,6 +1416,7 @@ a.menu-item { text-decoration: none; }
 @media (max-width: 480px) {
   .pagination-controls { margin-left: 0; }
   .pagination-page-near { display: none; }
+  .pagination-gap-phone { display: inline-block; }
 }
 .row-actions { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
 .chip-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }

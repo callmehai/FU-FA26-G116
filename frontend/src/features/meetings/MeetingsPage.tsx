@@ -76,6 +76,18 @@ type Load =
  * after it has dropped every meeting the caller may not see, so nothing here filters rows itself.
  * The criteria live in the URL (see listParams.ts).
  */
+/** Which empty state a list with these criteria shows. */
+function emptyKind(s: ListState) {
+  const rest = !s.q.trim() && !s.status && !s.sensitivity
+  return {
+    filtered: hasFilters(s),
+    // The list as it opens: today's meetings, which some days is none.
+    onlyToday: s.when === 'today' && rest && !s.scope,
+    // "Cần xử lý" on its own: nothing waits on the caller.
+    onlyTodo: s.scope === 'todo' && rest && !s.when,
+  }
+}
+
 export function MeetingsPage() {
   const { can } = useAuth()
   const navigate = useNavigate()
@@ -88,8 +100,12 @@ export function MeetingsPage() {
   const queryKey = writeListState(state).toString()
 
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
-  /** The last good page, kept on screen while the next one loads so the table does not flash empty. */
-  const [shown, setShown] = useState<MeetingListResponse | null>(null)
+  /**
+   * The last good page, kept on screen while the next one loads so the table does not flash empty, with
+   * the criteria that produced it: its empty state speaks of those, not of the URL already moved on
+   * (SCRUM-148 — clearing a filter over an empty page flashed "Chưa có cuộc họp nào.").
+   */
+  const [shown, setShown] = useState<{ data: MeetingListResponse; key: string } | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [attempt, setAttempt] = useState(0)
 
@@ -120,7 +136,7 @@ export function MeetingsPage() {
           setSearchParams(writeListState({ ...readListState(params), page: data.totalPages }), { replace: true })
           return
         }
-        setShown(data)
+        setShown({ data, key: queryKey })
         setLoad({ kind: 'loaded', data })
       } catch (err) {
         if (cancelled || handleAccessLost(err)) return
@@ -157,14 +173,12 @@ export function MeetingsPage() {
     setSearchParams(writeListState(card ? statState(card, state) : clearedState(state)), { replace: true })
   }
 
-  const filtered = hasFilters(state)
   const activeFilters = [state.status, state.sensitivity, state.when].filter(Boolean).length
   const [filtersOpen, setFiltersOpen] = useState(false)
-  // The list as it opens: today's meetings, which some days is none.
-  const onlyToday = state.when === 'today' && !state.q.trim() && !state.status && !state.sensitivity && !state.scope
-  // "Cần xử lý" on its own: nothing waits on the caller.
-  const onlyTodo = state.scope === 'todo' && !state.q.trim() && !state.status && !state.sensitivity && !state.when
-  const data = shown
+  // The toolbar's "×" follows the URL; the empty state follows the page on screen.
+  const showClear = hasFilters(state) && !emptyKind(state).onlyToday
+  const data = shown?.data ?? null
+  const { filtered, onlyToday, onlyTodo } = emptyKind(shown ? readListState(new URLSearchParams(shown.key)) : state)
   const canCreate = can('MeetingCreator')
   const createLink = useCreateMeetingLink()
 
@@ -241,7 +255,8 @@ export function MeetingsPage() {
       >
         <td className="cell-index">{offset + index + 1}</td>
         <td className="cell-title">
-          <Link to={routes.meeting(m.id)} state={back} onClick={(e) => e.stopPropagation()}>
+          {/* Two lines at most (CSS), so the full title is in the tooltip. */}
+          <Link to={routes.meeting(m.id)} state={back} onClick={(e) => e.stopPropagation()} data-tooltip={m.title}>
             {m.title}
           </Link>
           {m.mode !== 'Online' && m.location && (
@@ -356,7 +371,7 @@ export function MeetingsPage() {
             />
 
             {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
-            {filtered && (
+            {showClear && (
               <button
                 type="button"
                 className="icon-button"
