@@ -9,9 +9,9 @@ participant ":Meeting Document Repository" as MeetingDocumentRepository
 participant ":Document Read Confirmation Repository" as ReadConfirmationRepository
 database ":Database" as Database
 
-User->DocumentViewer: Tick "I have read this document"
+User->DocumentViewer: Click "Xác nhận đã đọc"
 activate DocumentViewer
-DocumentViewer->DocumentViewer: Check the last page of the document was reached in this viewer (BR-290)
+DocumentViewer->DocumentViewer: Enable "Xác nhận đã đọc" only after the last page was reached (BR-290)
 alt Last page not reached - EX-1
     DocumentViewer-->User: MSG254 - Scroll to the last page of the document before confirming that you have read it.
 else Last page reached
@@ -40,6 +40,23 @@ else Last page reached
         DocumentController-->DocumentViewer: MSG156 - Meeting documents are not accessible.
         DocumentViewer-->User: MSG156 - Meeting documents are not accessible.
     else Vote document accessible
+        ReadService->ReadConfirmationRepository: Check the actor is on the eligible-voter list of an Open Vote linked to this document (BR-190)
+        activate ReadConfirmationRepository
+        ReadConfirmationRepository->Database: Check eligible voter and Open Vote
+        activate Database
+        Database-->ReadConfirmationRepository: Eligible / Not eligible
+        deactivate Database
+        ReadConfirmationRepository-->ReadService: Eligible / Not eligible
+        deactivate ReadConfirmationRepository
+        alt Actor not an eligible voter of an Open Vote - EX-3
+            ReadService-->DocumentController: MSG224 - You are not eligible to cast a ballot in this vote.
+            DocumentController-->DocumentViewer: MSG224 - You are not eligible to cast a ballot in this vote.
+            DocumentViewer-->User: MSG224 - You are not eligible to cast a ballot in this vote.
+        else No Open Vote remains - EX-4
+            ReadService-->DocumentController: MSG225 - This vote is no longer accepting ballots.
+            DocumentController-->DocumentViewer: MSG225 - This vote is no longer accepting ballots.
+            DocumentViewer-->User: MSG225 - This vote is no longer accepting ballots.
+        else Eligible voter of an Open Vote
         ReadService->ReadConfirmationRepository: Get existing confirmation for actor and document
         activate ReadConfirmationRepository
         ReadConfirmationRepository->Database: Get existing confirmation for actor and document
@@ -49,11 +66,11 @@ else Last page reached
         ReadConfirmationRepository-->ReadService: Confirmation and time / None
         deactivate ReadConfirmationRepository
         alt Document already confirmed - AF-1
-            ReadService-->DocumentController: Already read at confirmation time (BR-291)
+            ReadService-->DocumentController: MSG253 - Document read confirmed. (alreadyConfirmed: true) (BR-291)
             DocumentController-->DocumentViewer: Already read at confirmation time
             DocumentViewer-->User: Show document as read with its confirmation time
         else Not yet confirmed
-            ReadService->ReadService: Recheck last page reached (BR-290)
+            ReadService->ReadService: Recheck lastPageReached is true (BR-290)
             alt Last page not reached - EX-1
                 ReadService-->DocumentController: MSG254 - Scroll to the last page of the document before confirming that you have read it.
                 DocumentController-->DocumentViewer: MSG254 - Scroll to the last page of the document before confirming that you have read it.
@@ -77,6 +94,7 @@ else Last page reached
                     DocumentViewer-->User: MSG253 - Document read confirmed.
                 end
             end
+        end
         end
     end
     deactivate ReadService

@@ -55,7 +55,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | VotingSession | Một lần biểu quyết trong cuộc họp | IMPLEMENTED (bảng); đổi theo mô hình đích ở SCRUM-96 | Mô hình đích bỏ `Kind`, `OpensAt`, `ClosesAt` và `AgendaItemId` — Vote thuộc Meeting, không gắn mục nghị sự (BR-285, ADR-0014/0019); thêm `OpenedAt`, `EligibleRoles` (Chủ toạ chọn vai trò được bỏ phiếu, BR-257), `Conclusion` Passed/NotPassed/Deferred, `ConclusionNote`, `ConcludedById`, `ConcludedAt` (BR-262). Tối đa một Vote `Open` mỗi Meeting do unique index có điều kiện ép (BR-266). |
 | VotingOption | Phương án | IMPLEMENTED | `BallotCount` là tally của mọi phiếu, kể cả phiếu kín (SCRUM-28). |
 | VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Người bỏ phiếu là đúng một trong `VoterId` (User) và `GuestInvitationId` (Guest, ADR-0016); duy nhất theo (session, voter) và (session, guest). |
-| VoteChoice | Ai chọn gì trong phiếu **công khai** | IMPLEMENTED; Guest thêm ở SCRUM-96 | Phiếu kín không ghi dòng nào (SCRUM-28). Đúng một trong `VoterId` và `GuestInvitationId`; không có `CastAt`. Xem “Biểu quyết ẩn danh”. |
+| VoteChoice | Ai chọn gì trong phiếu **công khai** | IMPLEMENTED; Guest thêm ở SCRUM-96 | Phiếu kín không ghi dòng nào (SCRUM-28, migration `SecretBallotsCountedOnOptions`). Đúng một trong `VoterId` và `GuestInvitationId`; không có `CastAt`. Xem “Biểu quyết ẩn danh”. |
 | VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 35 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
 | VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 35 thực thể) | IMPLEMENTED (bảng: migration `VotesBelongToMeetingWithEligibleVotersAndDocuments`; endpoint: SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
 | DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu (bảng nối tài liệu ↔ người đọc, không tính vào 35 thực thể) | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
@@ -358,7 +358,7 @@ erDiagram
         uuid VotingSessionId FK
         uuid VoterId FK "nullable; đúng một trong VoterId và GuestInvitationId"
         uuid GuestInvitationId FK "nullable; Guest"
-        timestamptz CastAt
+        timestamptz CastAt "thời điểm bỏ phiếu, chỉ ở receipt"
     }
     VoteChoice {
         uuid Id PK
@@ -382,7 +382,7 @@ erDiagram
 ### Biểu quyết ẩn danh — đọc kỹ chỗ này
 
 **`VoteReceipt`** ghi ai đã bỏ phiếu. Phiếu kín **không ghi lựa chọn ở đâu cả**, chỉ tăng bộ đếm của phương án
-(SCRUM-28, review PR #200):
+(SCRUM-28, review PR #200, migration `SecretBallotsCountedOnOptions`):
 
 - `VoteReceipt` có unique index `(VotingSessionId, VoterId)` và `(VotingSessionId, GuestInvitationId)` → một người một phiếu, kể cả Guest, do database ép,
   không phải do một câu `if` mà hai request đồng thời có thể cùng vượt qua.

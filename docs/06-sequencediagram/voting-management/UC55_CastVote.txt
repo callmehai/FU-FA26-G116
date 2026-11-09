@@ -83,7 +83,7 @@ else Actor may vote (BR-165, BR-258, BR-268, BR-269)
         VoteController-->MeetingPage: MSG223 - The selected option is not available for this vote.
         MeetingPage-->Actor: MSG223 - The selected option is not available for this vote.
     else Option is valid
-        VoteService->VoteReceiptRepository: Save VoteReceipt marking the actor as voted, one per actor per Vote,\nas part of the same change as the VoteChoice (BR-258)
+        VoteService->VoteReceiptRepository: Save VoteReceipt marking the actor as voted, one per actor per Vote (BR-258)
         activate VoteReceiptRepository
         VoteReceiptRepository->Database: Insert VoteReceipt
         activate Database
@@ -101,14 +101,7 @@ else Actor may vote (BR-165, BR-258, BR-268, BR-269)
             VoteChoiceRepository-->VoteService: Choice saved / Save failed
             deactivate VoteChoiceRepository
         else Secret Vote
-            VoteService->VoteChoiceRepository: Save VoteChoice with the selected option only: no voter and no link to the\nVoteReceipt (BR-259)
-            activate VoteChoiceRepository
-            VoteChoiceRepository->Database: Insert VoteChoice without voter
-            activate Database
-            Database-->VoteChoiceRepository: Choice saved / Save failed
-            deactivate Database
-            VoteChoiceRepository-->VoteService: Choice saved / Save failed
-            deactivate VoteChoiceRepository
+            VoteService->VoteService: Do not record a VoteChoice; only the option counter increases, so the ballot stays anonymous (BR-259)
         end
         alt Ballot cannot be recorded - EX-6
             VoteService-->VoteController: MSG228 - Unable to record your ballot. No ballot was recorded. Please try again.

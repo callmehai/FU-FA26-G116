@@ -72,9 +72,9 @@ else Draft Vote, Meeting Approved, Published or InProgress (BR-252, BR-288)
     end
 
     alt Selection invalid
-        VoteService-->VoteController: MSG170 / MSG266 / MSG164 / MSG249 / MSG165 per failed check
-        VoteController-->MeetingPage: MSG170 / MSG266 / MSG164 / MSG249 / MSG165 per failed check
-        MeetingPage-->Actor: MSG170 / MSG266 / MSG164 / MSG249 / MSG165 per failed check
+        VoteService-->VoteController: MSG170 / MSG266 / MSG164 / MSG288 / MSG346 / MSG249 / MSG165 per failed check
+        VoteController-->MeetingPage: MSG170 / MSG266 / MSG164 / MSG288 / MSG346 / MSG249 / MSG165 per failed check
+        MeetingPage-->Actor: MSG170 / MSG266 / MSG164 / MSG288 / MSG346 / MSG249 / MSG165 per failed check
     else Selection valid
         VoteService->VoteRepository: Recheck Vote is Draft; add new documents to the Meeting (and uploads to the\nuploader's library) and attach all to the Vote as one change (BR-194, BR-286, BR-304)
         activate VoteRepository
