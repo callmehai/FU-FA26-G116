@@ -66,11 +66,12 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
     }
   }, [meeting.id, selected])
 
+  // Load after the effect returns, as the notes panel does, so the state is never set synchronously inside it.
   useEffect(() => {
-    void loadSummary()
+    void Promise.resolve().then(loadSummary)
   }, [loadSummary])
   useEffect(() => {
-    void loadMinutes()
+    void Promise.resolve().then(loadMinutes)
   }, [loadMinutes])
 
   // The minutes card says when the draft is newer than the minutes: ask again whenever the draft is written or saved.
