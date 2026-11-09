@@ -151,7 +151,9 @@ public sealed partial class MeetingLifecycleTests(MeetingLifecycleFixture fixtur
         }
         fixture.Queries.Clear();
         await Expect(await Act(s, "End"), 200, "MSG111");
-        Assert.DoesNotContain(fixture.Queries, q => q.Contains("voting_", StringComparison.Ordinal) || q.Contains("vote_", StringComparison.Ordinal));
+        // End only looks for drafts to delete (PO 08/11/2026); with none, it writes nothing to any vote table.
+        Assert.DoesNotContain(fixture.Queries, q => (q.Contains("voting_", StringComparison.Ordinal) || q.Contains("vote_", StringComparison.Ordinal))
+            && (q.Contains("UPDATE ", StringComparison.Ordinal) || q.Contains("DELETE ", StringComparison.Ordinal) || q.Contains("INSERT ", StringComparison.Ordinal)));
         await using var check = fixture.Db();
         Assert.Equal(before, await PreservedSnapshot(check, s.MeetingId, s.Items[0]));
         Assert.Equal(VotingStatus.Open, (await check.VotingSessions.FindAsync(voteId))!.Status);

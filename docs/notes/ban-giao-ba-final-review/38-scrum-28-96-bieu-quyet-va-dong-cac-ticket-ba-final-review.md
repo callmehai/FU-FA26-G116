@@ -43,8 +43,8 @@ Nguồn: comment Jira 10339, 10340 (Huy BE), 10354 (Huy FE), 10347 (Lộc). Cont
 | 28-1 | UC-52a, UC-52b — Primary Actors | Có "System Admin" | Bỏ System Admin, hoặc ghi "chỉ khi có quan hệ" (BR-29) |
 | 28-2 | UC-56 POST-1 | "closing time and tally are recorded" | "the tally is available from the recorded ballots" (tally không lưu thành cột) |
 | 28-3 | UC-54 bước 5 (Khách) | "Guest must have verified the invited email" | Khách không cần xác minh lúc mở phiếu; được bỏ phiếu bất cứ lúc nào phiếu còn Open, miễn lời mời còn hiệu lực và lúc bỏ phiếu có phiên Khách xác minh (PO 30/10) |
-| 28-4 | BR-190 | "fixed when the Vote opens" | Thêm ngoại lệ: Khách được mời **sau** lúc mở phiếu vẫn vào danh sách, `eligibleCount` tăng |
-| 28-5 | UC mời Khách (UC-04 / UC-28a) và sequence | Chưa có nhánh | Thêm nhánh "lời mời Khách được tạo khi có phiếu Open chọn vai trò Khách" |
+| 28-4 | BR-190 | "fixed when the Vote opens" | Giữ nguyên, ghi rõ "cho mọi người, kể cả Khách": mở rồi thì không ai mới vào danh sách (PO 08/11/2026, bỏ ngoại lệ Khách của PO 30/10). Khách đã có tên lúc mở, bị gỡ rồi mời lại cùng email, giữ chỗ cũ nếu chưa bỏ phiếu (SCRUM-133) — không phải người mới |
+| 28-5 | UC mời Khách (UC-04 / UC-28a) và sequence | Chưa có nhánh | Không thêm nhánh "vào danh sách phiếu đang Open" nữa (ngoại lệ đã bỏ, 28-4). Chỉ ghi: Khách mời lại cùng email trong lúc phiếu Open thì chỗ cũ chuyển sang lời mời mới (SCRUM-133) |
 | 28-6 | UC-53 AF-3, UC-54 EX-2 | Chưa nói rõ | Thành viên gửi `openImmediately` nhận MSG213, Thư ký nhận MSG218 (EX-2 đi trước AF-3) |
 | 28-7 | Sequence UC-55, bước "Save VoteChoice … Secret Vote" | Chưa phản ánh | Phiếu kín: **không ghi `VoteChoice`** (đã đổi theo review Lộc, ERD dòng 58); Id ngẫu nhiên, không `CastAt` |
 | 28-8 | ERD `02-erd.md` | Dòng 58 nói "phiếu kín không ghi dòng nào", nhưng dòng 361 còn cột `CastAt`, dòng 390 còn mô tả ghép bằng `CastAt` | Làm ba chỗ khớp nhau; xác nhận bằng migration `VoteChoicesWithoutCastTime` |
@@ -52,11 +52,15 @@ Nguồn: comment Jira 10339, 10340 (Huy BE), 10354 (Huy FE), 10347 (Lộc). Cont
 | 28-10 | FE: thông báo nổi trong phòng họp | Ticket: "Chủ toạ mở biểu quyết … Bỏ phiếu" | Hiện cho mọi người chưa bỏ phiếu; người không có trong danh sách thấy nút "Xem"; ảnh hưởng màn 8.5 / 14.2 |
 | 28-11 | FE: kết luận UC-57 | Wireframe 11.4 chọn sẵn "Thông qua" | Không chọn sẵn (BR-263); sửa wireframe 11.4 |
 | 28-12 | FE: hộp thoại khi mở và đóng phiếu, phiếu công khai đã đóng | Chưa ghi | Màn 11.1 / 11.2; mục thu gọn "Phiếu từng người (x/y)" (BR-273) |
+| 28-13 | BR-189, UC-22 (Kết thúc cuộc họp) POST và sequence UC-22, state machine SM-08 Voting | Chưa có | Nháp chưa mở bị hệ thống xoá khi cuộc họp `Ended`, cùng transaction với End; mỗi nháp một dòng audit `vote.draft_deleted_on_meeting_end` (actor là hệ thống, `details` có Chủ toạ kết thúc, nội dung nháp). Open/Closed không bao giờ xoá (PO 08/11/2026). SM-08: thêm chuyển Draft → (xoá) khi Meeting End. Contract: `15-bieu-quyet.md` §7 |
+
+**PO đã trả lời 08/11/2026 (BE đã sửa code theo):**
+
+- Người được thêm **sau** lúc mở phiếu (comment 10350): không ai vào danh sách, kể cả Khách. UC-55 EX-3 "không được thêm" giữ nguyên và áp dụng cho Khách; xem 28-4, 28-5.
+- Nháp còn lại khi cuộc họp `Ended` (Lộc mục 4): hệ thống tự xoá, có ghi nhật ký. Xem 28-13.
 
 **Chờ PO, chưa làm:**
 
-- Người nội bộ được thêm **sau** lúc mở phiếu (comment 10350): giữ như cũ hay đối xử giống Khách. UC-55 EX-3 đang ghi "không được thêm". Không sửa UC-55 EX-3 và BR-190 cho vế này cho đến khi PO trả lời.
-- Nháp còn lại khi cuộc họp `Ended` (Lộc mục 4): cho xoá nháp hay ẩn nháp. BR-189 cần chốt.
 - Khách chưa từng xác minh có tính vào `eligibleCount` không (Lộc mục 2). Comment 10339 của Huy đã trả lời theo hướng "tính", ghi lại cho khớp 28-3.
 
 **Giữ lại cho ticket biên bản:** "Kết quả kiểm phiếu và kết luận đưa vào biên bản" chưa làm ở SCRUM-28 (Lộc mục 5). Ghi vào ticket biên bản để không mất khi SCRUM-28 `Done`.
@@ -100,8 +104,8 @@ Nguồn: comment Jira 10341, 10351 (Huy BE), 10355 (Huy FE), 10348 (Lộc).
 
 - [ ] §1: comment và chuyển trạng thái SCRUM-41, 44, 108.
 - [ ] §1: đối chiếu `pipWindow.ts` với UC-78.
-- [ ] §2: 28-1 → 28-12.
+- [ ] §2: 28-1 → 28-13.
 - [ ] §3: 96-1 → 96-15.
 - [ ] §4: catalogue, class diagram, sequence, wireframe.
 - [ ] §5: sync Report 3, PR docs, comment Jira.
-- [ ] Hỏi PO: người nội bộ thêm sau khi mở phiếu; nháp khi `Ended`.
+- [x] Hỏi PO: người thêm sau khi mở phiếu; nháp khi `Ended` (PO trả lời 08/11/2026).

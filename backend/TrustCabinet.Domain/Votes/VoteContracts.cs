@@ -104,6 +104,17 @@ public interface IVoteChangePublisher
     Task PublishAsync(VoteChange change, bool managersOnly, CancellationToken ct);
 }
 
+/// <summary>
+/// What ending a meeting does to its votes (PO 08/11/2026, SCRUM-28): a draft that was never opened can no longer be,
+/// so the system deletes it and records one audit row per draft. Open and Closed votes are evidence and are kept
+/// (BR-189). The caller owns the meeting lock, the transaction, SaveChanges and publishing the returned changes.
+/// </summary>
+public interface IVoteMeetingEnd
+{
+    Task<IReadOnlyList<VoteChange>> DeleteDraftsAsync(Guid meetingId, Guid endedById, DateTimeOffset endedAt,
+        CancellationToken ct = default);
+}
+
 public interface IVoteService
 {
     Task<VoteOutcome> ListAsync(Guid meetingId, ParticipantActor actor, CancellationToken ct = default);
