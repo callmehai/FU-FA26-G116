@@ -17,7 +17,7 @@ export interface SelectOption<T extends string> {
 
 /** Lower case without Vietnamese marks, so "loc" finds "Lộc" (đ becomes d). */
 const fold = (text: string) =>
-  text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase()
+  text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/đ/g, 'd')
 
 /**
  * Dropdown built from a button and a listbox instead of a native `<select>`.
@@ -97,6 +97,11 @@ export function Select<T extends string>({
     if (open && searchable) searchRef.current?.focus()
   }, [open, searchable])
 
+  // A long list scrolls: keep the highlighted row in sight as the arrows move it.
+  useEffect(() => {
+    if (open) document.getElementById(`${listId}-${highlighted}`)?.scrollIntoView({ block: 'nearest' })
+  }, [open, highlighted, listId])
+
   function openAt(index: number) {
     setQuery('')
     setHighlighted(index)
@@ -105,13 +110,16 @@ export function Select<T extends string>({
 
   function commit(index: number) {
     const option = shown[index]
-    if (option) onChange(option.value)
+    // Nothing matched: Enter keeps the menu open for another search.
+    if (!option) return
+    onChange(option.value)
     setOpen(false)
     triggerRef.current?.focus()
   }
 
   function onKeyDown(event: React.KeyboardEvent) {
-    const currentIndex = Math.max(0, shown.findIndex((o) => o.value === value))
+    // Opening clears the search, so the picked row is found in the whole list.
+    const currentIndex = Math.max(0, options.findIndex((o) => o.value === value))
 
     switch (event.key) {
       case 'ArrowDown':
@@ -137,7 +145,8 @@ export function Select<T extends string>({
       case 'Escape':
         if (open) {
           event.preventDefault()
-          // Escape belongs to this menu, not to a dialog around it.
+          // Escape belongs to this menu: preventDefault keeps a <dialog> around it from closing, and
+          // stopPropagation keeps document-level key handlers out of it.
           event.stopPropagation()
           setOpen(false)
           triggerRef.current?.focus()
@@ -228,7 +237,7 @@ export function Select<T extends string>({
               }}
               onKeyDown={onKeyDown}
               placeholder={searchPlaceholder}
-              aria-label={`Tìm trong ${label.toLowerCase()}`}
+              aria-label={searchPlaceholder}
               aria-controls={listId}
               aria-activedescendant={shown[highlighted] ? `${listId}-${highlighted}` : undefined}
             />

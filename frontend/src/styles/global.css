@@ -465,8 +465,10 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .select-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; }
 /* A second line under an option: the email that tells two people of one name apart (SCRUM-150). */
 .select-option-sub { display: block; overflow: hidden; color: var(--muted-ink); font-size: 12.5px; font-weight: 400; text-overflow: ellipsis; }
-/* A long list's menu: a search box on top, only the options scroll under it. */
-.select-menu-search { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+/* A long list's menu: a search box on top, only the options scroll under it. Its height stays put
+   while the matches shrink, so the box under the caret never moves as a name is typed; it holds
+   the box and about seven people before the list scrolls. */
+.select-menu-search { display: flex; flex-direction: column; gap: 4px; height: min(400px, calc(100dvh - 16px)); max-height: none; overflow: hidden; }
 .search.select-search { width: 100%; flex: none; }
 .select-list { min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
 .select-none { padding: 10px 8px; color: var(--muted-ink); font-size: 14px; }
