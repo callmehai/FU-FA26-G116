@@ -305,7 +305,7 @@ export function ParticipantsPanel({
                         <span className="role-inline">
                           <RoleBadge role={row.role} />
                         </span>
-                        {row.isActive === false && <Badge tone="slate">Tài khoản đã khoá</Badge>}
+                        {row.isActive === false && <Badge tone="slate">Đã vô hiệu hoá</Badge>}
                         {row.role !== 'Chair' && <RsvpChip response={row.response} />}
                       </span>
                     </span>

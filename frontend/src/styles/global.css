@@ -294,13 +294,14 @@ code {
 
 @keyframes press { 40% { transform: scale(.95); } }
 
-/* A finger needs 40px: fields and buttons grow on a touch screen. */
+/* A finger needs 40px: fields and buttons grow on a touch screen — the small ones too (SCRUM-151).
+   Page buttons, a dialog's close and the quick-choice chips grow beside their own rules, further down. */
 @media (pointer: coarse) {
   :root { --control-height: 40px; --button-height: 40px; }
-  .btn-sm { height: 36px; }
-  .btn-lg { height: 40px; }
-  .btn-icon.btn-sm { width: 36px; }
+  .btn-sm, .btn-lg { height: 40px; }
+  .btn-icon.btn-sm { width: 40px; }
   .select-option { min-height: 40px; }
+  .icon-button-sm { width: 40px; height: 40px; }
 }
 .is-pressed { animation: press .18s ease-out; }
 
@@ -1109,6 +1110,11 @@ a.menu-item { text-decoration: none; }
   .toolbar-filters { display: none; }
   .toolbar-filters-open { display: flex; flex: 1 1 100%; flex-wrap: wrap; gap: 8px; }
 }
+/* A phone: the toggle keeps its icon and count, so the search beside it has room for its hint (SCRUM-151). */
+@media (max-width: 480px) {
+  .filters-toggle { padding: 0 12px; }
+  .filters-toggle-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 
 /* A checkbox filter on the toolbar ("Hiện cả người đã rời"). */
 .toolbar-check { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); white-space: nowrap; cursor: pointer; }
@@ -1270,9 +1276,6 @@ a.menu-item { text-decoration: none; }
   .users-table .cell-sub { overflow-wrap: anywhere; }
   .users-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 6px; font-size: 13px; }
 }
-@media (pointer: coarse) {
-  .users-table .icon-button-sm { width: 40px; height: 40px; }
-}
 
 /* System audit log (SCRUM-16, screen 3.3). */
 .audit-range-error { flex: 1 1 100%; margin: -4px 0 0; }
@@ -1385,6 +1388,10 @@ a.menu-item { text-decoration: none; }
 .pagination-page-current:hover:not(:disabled) { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand); }
 .pagination-page:disabled { cursor: default; }
 .pagination-gap { min-width: 24px; color: var(--muted-ink); text-align: center; }
+@media (pointer: coarse) {
+  .pagination-page, .pagination-step { min-width: 40px; height: 40px; }
+  .pagination-size .select-trigger { height: 40px; }
+}
 /* On a phone the page buttons get their own line, with only the first, current and last page —
    "‹ 1 … 10 … 33 ›" — so they never run past the panel or break onto a second line. */
 @media (max-width: 480px) {
@@ -1467,6 +1474,11 @@ a.menu-item { text-decoration: none; }
 
 /* ---------- Tabs ---------- */
 .tabs { display: flex; flex: none; gap: 4px; margin-bottom: 16px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+/* Narrow: the row scrolls sideways, so its right edge fades to say there is more (SCRUM-151). The end
+   padding is as wide as the fade, so the last tab, once scrolled to, is not under it. */
+@media (max-width: 900px) {
+  .tabs { padding-right: 32px; mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+}
 
 .tab {
   display: flex;
@@ -1788,6 +1800,7 @@ a.menu-item { text-decoration: none; }
 .dialog-head h2 { font-size: 18px; font-weight: 600; line-height: 28px; }
 .dialog-desc { margin: 4px 0 0; color: var(--muted-ink); font-size: 14px; }
 .dialog-close { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; color: var(--muted-ink); }
+@media (pointer: coarse) { .dialog-close { top: 10px; right: 10px; width: 40px; height: 40px; } }
 .dialog-body { padding: 20px 24px; overflow-y: auto; }
 .dialog-text { margin: 0; color: var(--ink-soft); }
 .dialog-error { margin-top: 12px; }
@@ -1878,7 +1891,7 @@ a.menu-item { text-decoration: none; }
 .chip-toggle:hover:not(:disabled, [aria-pressed='true']) { background: var(--surface-alt); }
 .chip-toggle[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
 .chip-toggle:disabled { opacity: .5; cursor: not-allowed; }
-@media (pointer: coarse) { .chip-toggle { height: 36px; } }
+@media (pointer: coarse) { .chip-toggle { height: 40px; } }
 @media (max-width: 760px) {
   .meeting-form-cols { grid-template-columns: minmax(0, 1fr); }
   .meeting-form-main > [data-field='participants'] { flex: none; }
@@ -2623,8 +2636,9 @@ a.menu-item { text-decoration: none; }
      line up from row to row instead of trailing each email. */
   .participants-panel .participant-cell { gap: 6px 8px; padding-left: 48px; }
   .participants-panel .participant-cell > .person { flex-basis: calc(100% + 48px); margin-left: -48px; }
-  /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip). */
-  .participants-panel .person-name, .participants-panel .person .cell-sub { white-space: normal; overflow-wrap: anywhere; }
+  /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip).
+     An email broken mid-word reads as two addresses, so it stays one line and ends in "…" (SCRUM-151). */
+  .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
 }
 .participants-alert { margin: 12px 16px 0; }
 
@@ -4364,10 +4378,6 @@ body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px)
 .documents-empty { margin: 0; padding: 16px; color: var(--muted-ink); }
 .documents-empty-nested { padding: 12px 16px 12px 40px; border-top: 1px solid var(--line-soft); }
 .documents-skeleton { width: 100%; height: 40px; margin: 8px 16px; }
-/* Touch: the small icon buttons of the list, the library table, the upload rows and the viewer's zoom reach 40px. */
-@media (pointer: coarse) {
-  .documents-row .icon-button-sm, .library-table .icon-button-sm, .upload-row .icon-button-sm, .viewer-zoom .icon-button-sm { width: 40px; height: 40px; }
-}
 
 /* In the room: sections instead of a card; each file is a bordered line. */
 .room-panel-body .documents-section { display: flex; flex-direction: column; gap: 8px; }

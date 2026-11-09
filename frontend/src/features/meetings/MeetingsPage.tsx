@@ -317,7 +317,7 @@ export function MeetingsPage() {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo tên cuộc họp…"
+              placeholder="Tìm cuộc họp…"
               aria-label="Tìm theo tên cuộc họp"
             />
           </label>
@@ -331,7 +331,7 @@ export function MeetingsPage() {
             onClick={() => setFiltersOpen((o) => !o)}
           >
             <Icon name="filter" size={16} />
-            Bộ lọc
+            <span className="filters-toggle-label">Bộ lọc</span>
             {activeFilters > 0 && <span className="filters-count">{activeFilters}</span>}
           </button>
           <div id="meeting-filters" className={filtersOpen ? 'toolbar-filters toolbar-filters-open' : 'toolbar-filters'}>

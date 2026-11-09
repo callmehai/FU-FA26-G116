@@ -559,7 +559,7 @@ function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: s
       : []),
   ]
   const who: FactRow[] = [
-    { label: 'Chủ tọa', value: meeting.chair?.fullName ?? empty() },
+    { label: 'Chủ toạ', value: meeting.chair?.fullName ?? empty() },
     {
       label: 'Thư ký',
       value: meeting.secretaries.length > 0 ? meeting.secretaries.map((s) => s.fullName).join(', ') : empty(),

@@ -17,7 +17,11 @@ export function Person({ name, email, self = false }: { name: string; email: str
           {name}
           {self && <span className="person-self">(Tôi)</span>}
         </span>
-        {email && <span className="cell-sub">{email}</span>}
+        {email && (
+          <span className="cell-sub" data-tooltip={email}>
+            {email}
+          </span>
+        )}
       </span>
     </span>
   )

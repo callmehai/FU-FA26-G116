@@ -326,7 +326,7 @@ export function ChangeRoleDialog({
   meetingId: string
   revision: string
   row: ParticipantRow & { role: MeetingRole }
-  /** Offer "Chủ tọa": the caller may move the chair now, and this person may take it. */
+  /** Offer "Chủ toạ": the caller may move the chair now, and this person may take it. */
   chairOption: boolean
   /** The caller is the Chair of a published meeting, handing the role over themselves. */
   handOver: boolean
@@ -342,7 +342,7 @@ export function ChangeRoleDialog({
   const promote = role === 'Chair'
 
   // Replacing the Chair through PUT needs the current Chair's assignment, which may sit on another page.
-  // Read it as the dialog opens, so the "Chủ tọa" row can name who steps down before anyone picks it.
+  // Read it as the dialog opens, so the "Chủ toạ" row can name who steps down before anyone picks it.
   useEffect(() => {
     if (!chairOption || handOver || chair !== undefined) return
     let cancelled = false
@@ -405,14 +405,14 @@ export function ChangeRoleDialog({
             disabled={pending || role === row.role || (promote && !handOver && !chair)}
           >
             <Icon name="check" size={16} />
-            {pending ? 'Đang lưu…' : promote ? 'Giao Chủ tọa' : 'Lưu'}
+            {pending ? 'Đang lưu…' : promote ? 'Giao Chủ toạ' : 'Lưu'}
           </button>
         </>
       }
     >
       <div className="dialog-form">
         <Person name={row.displayName} email={row.email} />
-        {/* Who steps down sits in the "Chủ tọa" line itself, so choosing it changes no height. */}
+        {/* Who steps down sits in the "Chủ toạ" line itself, so choosing it changes no height. */}
         <RolePicker
           value={role}
           roles={roles}
@@ -420,8 +420,8 @@ export function ChangeRoleDialog({
           notes={{
             Chair:
               chair === null
-                ? 'Không tìm thấy Chủ tọa hiện tại. Hãy tải lại trang.'
-                : `${ROLE_DESCRIPTION.Chair} ${handOver ? 'Bạn' : (chair?.displayName ?? 'Chủ tọa hiện tại')} sẽ thành Thành viên.`,
+                ? 'Không tìm thấy Chủ toạ hiện tại. Hãy tải lại trang.'
+                : `${ROLE_DESCRIPTION.Chair} ${handOver ? 'Bạn' : (chair?.displayName ?? 'Chủ toạ hiện tại')} sẽ thành Thành viên.`,
           }}
         />
         {error && (
