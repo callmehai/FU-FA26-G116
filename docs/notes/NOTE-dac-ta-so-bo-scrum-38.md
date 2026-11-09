@@ -159,6 +159,6 @@ tới là `401` như mọi endpoint `RequireAuthorization()`, không có mã.
       cho đúng 6 actor nên không sửa.
 - [ ] BA: sửa chú thích ¹⁸ của Permission Matrix khi PO chốt Q1.
 - [ ] BA: sửa đặc tả màn 15.1 (§III) theo D3 — bỏ "Export PDF", chọn theo tháng — khi FE có màn chạy thật.
-- [ ] BE: `GET /api/reports/meetings`, `GET /api/reports/meetings/export`, audit `ReportExported`; contract ở `docs/03-api/`;
-      `MSG463`–`MSG465` sang *BE*.
+- [x] BE: `GET /api/reports/meetings`, `GET /api/reports/meetings/export`, audit `report.exported`; contract ở
+      [`20-bao-cao-thong-ke.md`](../03-api/20-bao-cao-thong-ke.md); `MSG463`–`MSG465` sang *BE* (09/11/2026).
 - [ ] FE: trang Báo cáo, chọn khoảng tháng, nút Xuất Excel; `MSG466`.
