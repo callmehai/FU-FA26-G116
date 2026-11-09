@@ -21,6 +21,7 @@ using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Infrastructure.Participants;
 using TrustCabinet.Infrastructure.Recordings;
+using TrustCabinet.Infrastructure.Reports;
 using TrustCabinet.Infrastructure.Transcription;
 using TrustCabinet.Infrastructure.VoiceId;
 using TrustCabinet.Infrastructure.Votes;
@@ -48,6 +49,8 @@ builder.Services.AddTrustCabinetAgenda();
 builder.Services.AddTrustCabinetParticipants();
 builder.Services.AddTrustCabinetAttendance();
 builder.Services.AddTrustCabinetVotes();
+// SCRUM-38: the meeting report and its Excel export.
+builder.Services.AddTrustCabinetReports();
 // SCRUM-116: UC-04 guest access; replaces the fail-closed guest adapters registered above.
 builder.Services.AddTrustCabinetGuestAccess(builder.Configuration);
 builder.Services.AddSingleton<IMeetingGuestIdentityResolver, GuestTokenIdentityResolver>();
@@ -269,6 +272,9 @@ app.MapSummaryEndpoints();
 app.MapAiSettingsEndpoints();
 app.MapMinutesEndpoints();
 app.MapMeetingNoteEndpoints();
+
+// SCRUM-38: meeting report (UC-70a) and its Excel export (UC-70b).
+app.MapReportEndpoints();
 
 // SCRUM-35: the caller's own Voice ID.
 app.MapVoiceIdEndpoints();
