@@ -1947,11 +1947,29 @@ _UC gom — đặc tả nằm ở các UC con UC-70a, UC-70b… bên dưới._
 
 #### UC-70a – View Reports & Statistics
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | N/A |
+| **Description** | Allows a signed-in internal user to see aggregate figures about the meetings they may read over a chosen period — meetings per month, by status and by sensitivity, the average attendance rate and the average time from the end of a meeting to the issue of its minutes — so that meeting activity can be followed without opening each meeting. (BR-432, BR-437) |
+| **Preconditions** | ● PRE-1: The actor is signed in with an internal account. (BR-432) |
+| **Postconditions** | ● POST-1: The actor sees the figures of the chosen period, computed only from the Meetings the actor may read. (BR-432)<br>● POST-2: No meeting title, participant or content is shown. (BR-437)<br>● POST-3: Nothing in the system is changed. |
+| **Normal Flow** | View Reports & Statistics<br>1. The actor opens the Báo cáo [Reports] page.<br>2. The system selects the 12 months ending with the current month. (BR-433)<br>3. The system checks the period, then counts the Meetings the actor may read whose planned start falls within it. (BR-432, BR-433, BR-434)<br>4. The system shows the number of Meetings per month, by status and by sensitivity; the average attendance rate with the number of Meetings it is based on (BR-435); and the average time from the end of a Meeting to the issue of its minutes, with the number of Meetings it is based on. (BR-436) |
+| **Alternative Flows** | AF-1 – Choose another period<br>1. At Step 2 or after Step 4, the actor chooses a start month and an end month.<br>2. The flow resumes at Step 3 of the Main Flow with that period.<br>AF-2 – No Meeting in the period<br>1. At Step 3, the actor may read no Meeting whose planned start falls within the period.<br>2. The system shows zero counts and no averages, and displays MSG466 – “There are no meetings you can view in this period.”<br>3. The use case ends.<br>AF-3 – An average has no data<br>1. At Step 4, no Ended Meeting in the period had attendance taken, or none has issued minutes.<br>2. The system shows that average as having no data instead of a number. (BR-435, BR-436)<br>3. The use case ends. |
+| **Exception Flows** | EX-1 – The period is not valid<br>1. At Step 3, the start month is after the end month, or the period is longer than 24 months. (BR-433)<br>2. No figure is computed. The system displays MSG463 – “The report period is invalid. Choose up to 24 months, with the start month not after the end month.”<br>3. The flow resumes at Step 1 of AF-1.<br>EX-2 – The report cannot be loaded<br>1. At Step 3, the system cannot read the data.<br>2. No figure is shown. The system displays MSG464 – “Unable to load the report. Please try again.”<br>3. The use case ends. |
 
 #### UC-70b – Export Report
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant |
+| **Secondary Actors** | N/A |
+| **Description** | Allows the actor to download the figures of UC-70a for the chosen period as an Excel file, to keep them or to work on them outside the system. (BR-438) |
+| **Preconditions** | ● PRE-1: The actor is signed in with an internal account. (BR-432)<br>● PRE-2: The actor is on the Báo cáo page with a period chosen. (UC-70a) |
+| **Postconditions** | ● POST-1: The actor receives an Excel file holding the same figures as the page for that period, computed at the time of export. (BR-438)<br>● POST-2: The file holds no meeting title, participant or content. (BR-437)<br>● POST-3: The export is recorded with the actor, the period and the time. (BR-438) |
+| **Normal Flow** | Export Report<br>1. The actor selects Xuất Excel [Export to Excel].<br>2. The system checks the period and computes the figures again from the Meetings the actor may read. (BR-432, BR-433)<br>3. The system builds the Excel file and records the export. (BR-438)<br>4. The browser saves the file. |
+| **Alternative Flows** | AF-1 – No Meeting in the period<br>1. At Step 2, the actor may read no Meeting in the period.<br>2. The file is still built, with zero counts and no averages.<br>3. The flow resumes at Step 3 of the Main Flow. |
+| **Exception Flows** | EX-1 – The period is not valid<br>1. At Step 2, the period is not valid. (BR-433)<br>2. No file is built. The system displays MSG463 – “The report period is invalid. Choose up to 24 months, with the start month not after the end month.”<br>3. The use case ends.<br>EX-2 – The file cannot be built<br>1. At Step 2 or Step 3, the system cannot read the data, build the file or record the export.<br>2. No file is downloaded and no export is recorded. The system displays MSG465 – “Unable to export the report. Please try again.”<br>3. The use case ends. |
 
 ## FE-16 — Working Calendar & Meeting Time Search
 

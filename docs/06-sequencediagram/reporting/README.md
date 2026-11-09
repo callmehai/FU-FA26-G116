@@ -1,8 +1,10 @@
-# Báo cáo và thống kê — FE-15 (sơ bộ, chưa có code)
+# Báo cáo và thống kê — FE-15 (đã vào Report 3, chưa có code trên `main`)
 
-Các sequence UC-70a, UC-70b tuân theo [convention chung](../README.md). Đặc tả sơ bộ, BR-432 → BR-438 (đề xuất) và
-mã `MSG463`–`MSG466` nằm ở [NOTE-dac-ta-so-bo-scrum-38.md](../../notes/NOTE-dac-ta-so-bo-scrum-38.md) (SCRUM-38), chưa
-vào Report 3. UC-70 là UC gom, đặc tả nằm ở các UC con.
+Các sequence UC-70a, UC-70b tuân theo [convention chung](../README.md). Đặc tả UC-70a, UC-70b, BR-432 → BR-438 và
+mã `MSG463`–`MSG466` đã vào Report 3 ngày 09/11/2026 (bản trích ở
+[05-use-case-specifications.md](../../01-requirements/05-use-case-specifications.md)); lý do và chỗ lệch khỏi ticket ở
+[NOTE-dac-ta-so-bo-scrum-38.md](../../notes/NOTE-dac-ta-so-bo-scrum-38.md) (SCRUM-38). UC-70 là UC gom, đặc tả nằm ở
+các UC con.
 
 | UC | Source | Ảnh |
 |---|---|---|
