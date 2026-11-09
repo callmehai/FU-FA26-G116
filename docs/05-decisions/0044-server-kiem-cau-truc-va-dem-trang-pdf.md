@@ -57,7 +57,8 @@ object stream nén, xref có thể là stream, tệp có thể được ghi nố
 ## Hệ quả
 
 - Tệp như trên bị chặn từ lúc tải lên, không còn lọt vào cuộc họp rồi mới hỏng ở trình xem. Số trang hiển thị đúng với tệp.
-- Domain có thêm một dependency đọc dữ liệu không tin cậy; tiến trình con là ranh giới của nó. Mỗi tệp PDF tốn thêm một
+- Có thêm một dependency đọc dữ liệu không tin cậy; tiến trình con là ranh giới của nó. Từ SCRUM-144 PdfPig nằm ở
+  Infrastructure (`PdfPigInspector`, sau interface `IPdfInspector` của Domain), Domain không còn `PackageReference` nào. Mỗi tệp PDF tốn thêm một
   lần khởi động tiến trình .NET (khoảng 0,3–0,5 giây, gấp nhiều lần thời gian đọc một tệp họp thường). Với hàng đợi tải
   từng tệp (ADR-0033) thì người dùng không thấy khác.
 - Đã thử trên 226 PDF thật từ nhiều phần mềm (Word, Foxit, sách 516 trang…): đếm đúng; chỉ tệp cần mật khẩu mở bị từ chối.

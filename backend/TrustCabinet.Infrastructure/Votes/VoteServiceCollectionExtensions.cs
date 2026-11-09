@@ -9,6 +9,7 @@ public static class VoteServiceCollectionExtensions
     {
         services.AddScoped<VoteRepository>();
         services.AddScoped<IVoteService, VoteService>();
+        services.AddScoped<IVoteMeetingEnd, VoteMeetingEnd>();
         return services;
     }
 }

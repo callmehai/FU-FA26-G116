@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -16,6 +17,8 @@ public sealed class MeetingLifecycleService(
     IMeetingRepository meetings,
     IAgendaMeetingEnd agendaEnd,
     IAgendaChangePublisher publisher,
+    IVoteMeetingEnd voteEnd,
+    IVoteChangePublisher votePublisher,
     INotificationService notifications,
     ICallRoomService rooms,
     TimeProvider clock,
@@ -30,6 +33,7 @@ public sealed class MeetingLifecycleService(
 
         var starting = command.Action == MeetingTransitionAction.Start;
         AgendaChange? change = null;
+        IReadOnlyList<VoteChange> deletedDrafts = [];
         Guid[] recipients = [];
         var closeRoom = false;
         MeetingWorkflowResult result;
@@ -64,6 +68,8 @@ public sealed class MeetingLifecycleService(
                     change = await agendaEnd.PrepareAsync(meetingId, now, token)
                         ?? new AgendaChange(Guid.CreateVersion7(), meetingId, "MeetingEnded", null, null, now);
                     meeting.ActualEndedAt = now;
+                    // A draft can only be opened while InProgress (BR-160), so none survives the end (PO 08/11/2026).
+                    deletedDrafts = await voteEnd.DeleteDraftsAsync(meetingId, actorId, now, token);
                     closeRoom = meeting.Mode is MeetingMode.Online or MeetingMode.Hybrid;
                 }
 
@@ -106,6 +112,10 @@ public sealed class MeetingLifecycleService(
         {
             await AfterCommitAsync("agenda event", meetingId, record.Id, EffectBudget,
                 token => publisher.PublishAsync(change!, token));
+            // Drafts were seen by the Chair and Secretary only (BR-253), so only they are told.
+            foreach (var deleted in deletedDrafts)
+                await AfterCommitAsync("vote draft deletion", meetingId, record.Id, EffectBudget,
+                    token => votePublisher.PublishAsync(deleted, managersOnly: true, token));
             if (closeRoom)
                 await AfterCommitAsync("room closure", meetingId, record.Id, EffectBudget,
                     token => rooms.CloseMeetingRoomAsync(meetingId, token));

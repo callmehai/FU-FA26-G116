@@ -22,6 +22,8 @@ export type NotificationType =
   | 'VotingOpened'
   | 'MinutesWaitingApproval'
   | 'MinutesIssued'
+  /** SCRUM-33: the Chair sent the minutes back to the Secretary with a reason. */
+  | 'MinutesReturned'
   | 'DocumentAdded'
   /** SCRUM-20: the caller's role in a meeting changed, or they were removed from it. */
   | 'MeetingRoleChanged'

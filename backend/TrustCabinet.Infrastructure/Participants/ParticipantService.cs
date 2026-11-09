@@ -830,13 +830,13 @@ public sealed partial class ParticipantService(
         };
         guest.InitialInvitationDeliveryKey = $"guest:{guest.Id}:invited";
         db.MeetingGuestInvitations.Add(guest);
-        // PO 30/10/2026 (SCRUM-28): a Guest invited while a vote that admits Guests is Open may still vote, unlike
-        // anyone else, whose list was fixed at opening (BR-190). The meeting lock held here serializes with opening
-        // and closing, so the vote cannot change state under this write.
+        // The voter list was fixed when the vote opened, for Guests as for everyone (BR-190; PO 08/11/2026 withdrew the
+        // Guest exception of 30/10/2026): a new invitation never joins it. The meeting lock held here serializes with
+        // opening and closing, so the vote cannot change state under this write.
         var openVote = await db.VotingSessions.SingleOrDefaultAsync(
             v => v.MeetingId == s.Meeting.Id && v.Status == VotingStatus.Open, ct);
-        if (openVote is not null && openVote.EligibleRoles.Contains(MeetingRole.Guest))
-            await AdmitGuestToOpenVoteAsync(openVote, guest, now, ct);
+        if (openVote is not null)
+            await KeepOpenVotePlaceAsync(openVote, guest, now, ct);
         Stage(s.Meeting, null, guest, InvitationEventKind.Invitation, actor, now);
         return new(
             Data: new { createdIds = new[] { guest.Id } },
@@ -845,14 +845,13 @@ public sealed partial class ParticipantService(
     }
 
     /// <summary>
-    /// Puts a Guest invited while <paramref name="vote"/> is Open on its voter list — once per person, not once per
-    /// invitation (SCRUM-133). A Guest removed and invited again under the same email gets a new invitation id, so
-    /// the list is matched by email across this meeting's invitations (only revoked ones can match: the caller has
-    /// already refused an email that is still invited). One who already voted is not added again; one who was on the
-    /// list but had not voted keeps that one place, moved to the new invitation so they can still cast it. Either way
-    /// the eligible count stays as it was.
+    /// The one change an invitation makes to an Open vote's list: a Guest who was on it when the vote opened, then was
+    /// removed and invited again under the same email, keeps that place under the new invitation id (SCRUM-133). The
+    /// list is matched by email across this meeting's invitations (only revoked ones can match: the caller has already
+    /// refused an email that is still invited). One who already voted keeps nothing to move. Nobody is added and the
+    /// eligible count never changes (BR-190).
     /// </summary>
-    private async Task AdmitGuestToOpenVoteAsync(
+    private async Task KeepOpenVotePlaceAsync(
         VotingSession vote,
         MeetingGuestInvitation guest,
         DateTimeOffset now,
@@ -864,18 +863,9 @@ public sealed partial class ParticipantService(
             return;
         var earlier = await db.VoteEligibleVoters.FirstOrDefaultAsync(
             e => e.VotingSessionId == vote.Id && e.GuestInvitation!.Email == guest.Email, ct);
-        if (earlier is not null)
-        {
-            earlier.GuestInvitation = guest;
-            earlier.UpdatedAt = now;
-            return;
-        }
-        db.VoteEligibleVoters.Add(new VoteEligibleVoter
-        {
-            VotingSessionId = vote.Id, GuestInvitationId = guest.Id, CreatedAt = now, UpdatedAt = now
-        });
-        vote.EligibleCount++;
-        vote.UpdatedAt = now;
+        if (earlier is null) return;
+        earlier.GuestInvitation = guest;
+        earlier.UpdatedAt = now;
     }
 
     private Task<Dictionary<Guid, User>> LockCurrentUsersAsync(ParticipantSnapshot s, CancellationToken ct)

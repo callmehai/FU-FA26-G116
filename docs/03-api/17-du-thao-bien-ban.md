@@ -1,4 +1,4 @@
-# Dự thảo AI và bản nháp biên bản — SCRUM-36, SCRUM-32
+# Dự thảo AI, bản nháp và ban hành biên bản — SCRUM-36, SCRUM-32, SCRUM-33
 
 Theo [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md): làm như AI-eCabinet, gồm hai bước.
 
@@ -6,19 +6,21 @@ Theo [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md): làm 
 2. **Bản nháp biên bản:** điền mẫu Biên bản (Nghị định 30, Mẫu 1.4) từ hồ sơ cuộc họp, cộng với dự thảo hiện có, đã duyệt
    hay chưa (như `Compose` của eCab).
 
-Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md)). Kiểu dữ liệu FE:
+Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duyệt và ban hành ([danh mục](00-danh-muc-ma-thong-bao.md)). Kiểu dữ liệu FE:
 [`frontend/src/types/summary.ts`](../../frontend/src/types/summary.ts).
 
 ## Quyền
 
 | Ai | Dự thảo | Bản nháp biên bản |
 |---|---|---|
-| Chủ toạ, Thư ký hiện tại | Xem, tạo, tạo lại, sửa, duyệt | Xem, tạo, tạo lại, sửa, tải Word, tải PDF |
-| Người khác đọc được cuộc họp | Chỉ xem, và chỉ sau khi đã duyệt (`summary: null` trước đó) | Chỉ xem, và chỉ khi đã ban hành (SCRUM-33, chưa làm) |
+| Chủ toạ, Thư ký hiện tại | Xem, tạo, tạo lại, sửa, duyệt | Xem mọi bản, tạo, tạo lại, sửa, tải Word, tải PDF; Thư ký gửi duyệt, Chủ toạ duyệt hoặc trả lại, cả hai tạo bản đính chính |
+| Người khác đọc được cuộc họp (trừ Khách) | Chỉ xem, và chỉ sau khi đã duyệt (`summary: null` trước đó) | Xem và tải Word, tải PDF bản đã ban hành và bản đã thay thế (PO 08/11/2026). Không thấy bản nháp, chờ duyệt, bị trả lại hay bản đính chính đang soạn |
 | Không đọc được cuộc họp | `404` | `404` |
 
 - Tạo dự thảo và tạo biên bản chỉ được làm khi cuộc họp đang diễn ra hoặc đã kết thúc (`MSG386`, `MSG398`).
 - Server kiểm tra lại quyền ở mọi request.
+- Biên bản của cuộc họp Mật không ai tải được, kể cả Chủ toạ, Thư ký (`MSG405`).
+- Khách không bao giờ thấy biên bản (PO 07/11/2026): Khách không phải người tham dự mà chính sách đọc cuộc họp tính.
 
 ## Dự thảo — `/api/meetings/{id}/summary`
 
@@ -75,13 +77,23 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
 
 | Method | Đường dẫn | Kết quả |
 |---|---|---|
-| `GET` | `/api/meetings/{id}/minutes` | `200` `{ minutes, canManage, draftChangedAt }` |
-| `POST` | `/api/meetings/{id}/minutes` | `201` `MSG395`. Body `{ rebuild: false }`; đã có bản nháp thì `409` `MSG399`, gửi `rebuild: true` để thay |
+| `GET` | `/api/meetings/{id}/minutes` | `200` `{ minutes, canManage, draftChangedAt, history, canSubmit, canApprove }` |
+| `POST` | `/api/meetings/{id}/minutes` | `201` `MSG395`. Body `{ rebuild: false }`; đã có bản nháp thì `409` `MSG399`, gửi `rebuild: true` để thay. Bản mới nhất là bản đính chính thì `rebuild: true` trả `409` `MSG456` |
+| `GET` | `/api/minutes/{minutesId}` | `200` cùng dạng `GET …/minutes`, `minutes` là đúng bản `minutesId`: để mở một bản trong `history` |
 | `PUT` | `/api/minutes/{minutesId}` | `200` `MSG396`. Body `{ content, updatedAt }`; `content` là HTML, server lọc rồi lưu và trả lại bản đã lọc |
 | `GET` | `/api/minutes/{minutesId}/export` | `200` file `Biên bản - <tên cuộc họp>.docx` |
 | `GET` | `/api/minutes/{minutesId}/export?format=pdf` | `200` file `Biên bản - <tên cuộc họp>.pdf` (`application/pdf`) |
 
-- **`minutes`:** `{ id, revisionNumber, status, content, createdAt, updatedAt, createdBy, builtFromDraftAt }`, hoặc `null`.
+- **`minutes`:** `{ id, revisionNumber, status, content, createdAt, updatedAt, createdBy, builtFromDraftAt, supersedesId,
+  submittedBy, submittedAt, approvedBy, approvedAt, issuedAt, returnedBy, returnedAt, rejectionReason }`, hoặc `null`.
+  Chủ toạ, Thư ký nhận bản mới nhất, trạng thái nào cũng vậy. Người đọc khác nhận bản `Issued` mới nhất, hoặc `null` khi
+  chưa có bản nào ban hành; với họ `submittedBy`, `submittedAt`, `returnedBy`, `returnedAt`, `rejectionReason` luôn là
+  `null`. `status` là `Draft`, `WaitingApproval`, `Rejected` (bị trả lại), `Issued` hoặc `Superseded`.
+- **`history`:** `[{ id, revisionNumber, status, issuedAt }]`, mới nhất trước. Server lọc: Chủ toạ, Thư ký nhận mọi bản,
+  người đọc khác chỉ nhận dòng `Issued` và `Superseded`, nên không biết có bản đính chính đang soạn hay chờ duyệt.
+  `GET /api/minutes/{id}` của một bản họ không được thấy trả `404`, không có mã.
+- **`canSubmit`, `canApprove`:** người gọi đang là Thư ký (gửi duyệt) hay Chủ toạ (duyệt, trả lại) của cuộc họp, để màn
+  hình hiện đúng nút. Người kiêm cả hai nhận cả hai `true`. Trạng thái biên bản và cuộc họp vẫn do server kiểm khi bấm.
 - **`updatedAt`:** chính là giá trị server trả về lần đọc trước. Nếu đã có người lưu sau lần đó, server trả `409`
   `MSG401`, không ghi đè.
 - **Mục I–III:** lấy từ dự thảo hiện có, kể cả khi chưa duyệt. Biên bản nháp cũng chỉ Chủ toạ và Thư ký xem, nên không
@@ -99,7 +111,9 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
   Serif kèm trong ứng dụng). Không có `format` hoặc `format=docx` là file Word; giá trị khác trả `400` `MSG406`. Quyền,
   cuộc họp Mật và lỗi như file Word; cả hai không được cache.
 - **Lỗi:**
-  - `409` `MSG400` khi biên bản đã gửi duyệt hoặc ban hành.
+  - `409` `MSG400` khi biên bản đã gửi duyệt hoặc ban hành. Bản bị trả lại (`Rejected`) vẫn sửa và tạo lại được.
+  - `403` `MSG397` khi người đọc được bản đã ban hành gửi `POST …/minutes` hay `PUT`; bản nháp, chờ duyệt thì `404`.
+    Tải về bản đã ban hành không bị chặn bằng mã này nữa.
   - `400` `MSG402` khi nội dung trống hoặc quá 300.000 ký tự (tính cả HTML gửi lên lẫn HTML sau khi lọc). Chỉ có đoạn
     trống, `<br>` hay đường kẻ cũng là trống; bảng có chữ thì không.
     Thẻ lồng sâu quá 64 tầng cũng bị từ chối (trình soạn thảo không bao giờ lồng sâu như vậy); bảng tối đa 63 cột như Word,
@@ -146,6 +160,40 @@ Biên bản lưu trước 05/11/2026 là văn bản có dấu đầu dòng (`# `
 rồi đổi sang HTML lúc tạo.
 
 "……" là chỗ Thư ký cần điền.
+
+## Duyệt và ban hành — SCRUM-33
+
+Theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-33.md): một người duyệt, duyệt là ban hành luôn, không tách bước ký.
+Cuộc họp giữ `Ended` suốt luồng này. Ký số là việc của SCRUM-37.
+
+| Method | Đường dẫn | Ai | Kết quả |
+|---|---|---|---|
+| `POST` | `/api/minutes/{minutesId}/submit` | Thư ký hiện tại | `200` `MSG424`. Body `{ updatedAt }`. `Draft` hoặc `Rejected` → `WaitingApproval`; Chủ toạ nhận thông báo `MinutesWaitingApproval` |
+| `POST` | `/api/minutes/{minutesId}/approve` | Chủ toạ hiện tại | `200` `MSG427`. Body `{ updatedAt }`. `WaitingApproval` → `Issued`; bản nó đính chính → `Superseded`. Mọi người đọc được cuộc họp (trừ Chủ toạ vừa duyệt) nhận thông báo `MinutesIssued` |
+| `POST` | `/api/minutes/{minutesId}/reject` | Chủ toạ hiện tại | `200` `MSG430`. Body `{ reason, updatedAt }`. `WaitingApproval` → `Rejected`; Thư ký nhận thông báo `MinutesReturned` |
+| `POST` | `/api/minutes/{minutesId}/corrections` | Chủ toạ, Thư ký hiện tại | `201` `MSG432`. `minutesId` là bản `Issued` được chọn. Tạo bản `Draft` mới: nội dung của bản đó, `revisionNumber + 1`, `supersedesId` trỏ về bản đó. Không ai nhận thông báo tới khi bản mới ban hành |
+
+Cả bốn trả cùng dạng với `POST …/minutes`: `{ code, message, minutes, canManage, draftChangedAt, history, canSubmit, canApprove }`.
+
+- **Thứ tự kiểm tra** theo sequence diagram: không đọc được cuộc họp, hoặc không phải Chủ toạ hay Thư ký → `404` không
+  mã; người giữ vai còn lại → `403` (`MSG425` khi Chủ toạ gửi duyệt, `MSG428` khi Thư ký duyệt hay trả lại); rồi tới
+  trạng thái, bản cũ (`updatedAt`) và lý do.
+- **`updatedAt`:** như khi lưu. Gửi duyệt, duyệt, trả lại đều đặt lại `updatedAt`, nên người đang mở bản cũ nhận `409`
+  `MSG401`. Đính chính không cần `updatedAt`: bản đã ban hành không bao giờ đổi.
+- **Lý do trả lại:** server bỏ khoảng trắng hai đầu; trống hoặc quá 2.000 ký tự → `400` `MSG431`. Chỉ Chủ toạ, Thư ký
+  đọc được lý do (`rejectionReason`).
+- **Đồng thời:** mỗi thao tác khoá dòng cuộc họp và dòng biên bản, nên hai người bấm cùng lúc thì lần lượt; một lần lưu
+  chen giữa lúc gửi duyệt thấy biên bản đã khoá. Trạng thái và thông báo lưu cùng một lần: lưu lỗi (`503` `MSG404`) thì
+  không đổi gì và không ai nhận thông báo.
+- **Thông báo** trỏ tới cuộc họp (`targetType: "Meeting"`), như các thông báo cuộc họp khác. Chỉ trong ứng dụng, không
+  gửi email.
+- **Lỗi:**
+  - `403` `MSG425` khi Chủ toạ gửi duyệt; `409` `MSG426` khi cuộc họp chưa kết thúc; `409` `MSG400` khi bản đã gửi
+    duyệt hoặc đã ban hành.
+  - `403` `MSG428` khi Thư ký duyệt hay trả lại; `409` `MSG429` khi bản không chờ duyệt; `400` `MSG431` khi lý do sai.
+  - `403` `MSG397` khi người đọc được bản đã ban hành xin đính chính; `409` `MSG433` khi bản được chọn không phải bản
+    `Issued` (kể cả bản `Superseded`); `409` `MSG434` khi bản đó đã có bản đính chính chưa ban hành.
+  - `409` `MSG401` khi `updatedAt` cũ, `503` `MSG404` khi lỗi lưu.
 
 ## Cấu hình máy AI
 

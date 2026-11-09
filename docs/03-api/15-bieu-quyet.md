@@ -32,7 +32,7 @@ Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-15
 | Thao tác | Actor | Meeting | Vote |
 |---|---|---|---|
 | GET danh sách / chi tiết | Ai đọc được Meeting; Draft chỉ Chair/Secretary hiện hành (BR-253) | Approved+ cho chuẩn bị; mọi trạng thái có quyền xem Meeting cho Open/Closed | — |
-| Tạo / sửa / xoá nháp; gắn / gỡ tài liệu | Chair **hoặc** Secretary hiện hành | Approved, Published, InProgress | Draft |
+| Tạo / sửa / xoá nháp; gắn / gỡ tài liệu | Chair **hoặc** Secretary hiện hành | Approved, Published, InProgress (khi `End`, hệ thống xoá nháp còn lại — §7) | Draft |
 | Mở phiếu | Chỉ Chair hiện hành | InProgress | Draft; không có Vote Open khác |
 | Bỏ phiếu | Người trong `VoteEligibleVoter` + còn quyền Meeting | InProgress | Open |
 | Đóng phiếu | Chỉ Chair hiện hành | InProgress hoặc Ended | Open |
@@ -218,13 +218,22 @@ Code: `backend/TrustCabinet.Web/Endpoints/VoteEndpoints.cs`, `backend/TrustCabin
 - **Guest đủ điều kiện** = lời mời chưa thu hồi lúc mở phiếu. "Email đã xác minh" là việc của UC-04, chưa có ở Backend;
   khi bỏ phiếu, Guest vẫn phải có phiên đã xác minh còn hiệu lực (adapter `IParticipantGuestAccess`). Xác minh sau lúc mở
   phiếu vẫn bỏ phiếu được (PO 30/10/2026).
-- **Khách được mời trong lúc phiếu đang Open** (PO 30/10/2026): nếu phiếu có chọn vai trò Khách, lời mời mới được thêm vào
-  danh sách người bỏ phiếu và `eligibleCount` tăng 1, cùng transaction với `POST …/guest-invitations`. Đây là ngoại lệ
-  duy nhất của BR-190; người nội bộ được thêm sau lúc mở vẫn không vào danh sách (đang hỏi PO, Jira SCRUM-28).
-  Danh sách tính theo **người**, nhận ra bằng email (không phân biệt hoa thường), không theo lời mời (SCRUM-133): Khách bị
-  gỡ rồi được mời lại cùng email nhận lời mời có ID mới, nhưng nếu đã bỏ phiếu thì lời mời mới không được thêm (bỏ phiếu
-  bằng nó nhận `409/MSG224`); nếu đã có tên trong danh sách mà chưa bỏ phiếu thì chỗ đó chuyển sang lời mời mới để vẫn bỏ
-  được đúng một phiếu. Cả hai trường hợp `eligibleCount` giữ nguyên.
+- **Danh sách chốt lúc mở cho mọi người, kể cả Khách** (PO 08/11/2026, Jira SCRUM-28; thay quyết định PO 30/10/2026):
+  mở phiếu rồi thì không ai mới vào danh sách nữa. Khách được mời trong lúc phiếu Open, cũng như người nội bộ được thêm
+  sau lúc mở, không bỏ phiếu được ở phiếu đó (`409/MSG224`, `actions.canCast: false`), `eligibleCount` không đổi; họ có
+  tên ở phiếu mở sau. Ngoại lệ "Khách mời sau vẫn vào danh sách" trước đây đã bỏ.
+  Danh sách tính theo **người**, nhận ra bằng email (không phân biệt hoa thường), không theo lời mời (SCRUM-133): Khách đã
+  có tên lúc mở, bị gỡ rồi được mời lại cùng email, nhận lời mời có ID mới. Nếu chưa bỏ phiếu thì chỗ của họ chuyển sang
+  lời mời mới để vẫn bỏ được đúng một phiếu (đây không phải người mới); nếu đã bỏ phiếu thì lời mời mới không có chỗ
+  (`409/MSG224`). Cả hai trường hợp `eligibleCount` giữ nguyên.
+- **Nháp chưa mở bị xoá khi cuộc họp kết thúc** (PO 08/11/2026, Jira SCRUM-28): mở phiếu cần cuộc họp InProgress
+  (BR-160), nên nháp còn lại lúc `End` không dùng được nữa. Cùng transaction với `POST /api/meetings/{id}/transitions`
+  `End`, hệ thống xoá mọi Vote `Draft` của cuộc họp (kèm phương án và liên kết tài liệu, như xoá nháp tay; tài liệu cuộc
+  họp vẫn giữ) và ghi **một dòng `audit_log` cho mỗi nháp**: `action = vote.draft_deleted_on_meeting_end`,
+  `objectType = VotingSession`, `objectId` = id nháp, `actorId = null` (hệ thống làm), `details` gồm `meetingId`,
+  `endedById` (Chủ toạ kết thúc họp), `title`, `description`, `isAnonymous`, `eligibleRoles`, `options`,
+  `meetingDocumentIds`, `createdById`, `createdAt`. Vote Open và Closed không đổi (BR-189). Kết thúc lỗi thì nháp còn
+  nguyên và không có dòng nhật ký nào. Sau commit, mỗi nháp phát một `voteChanged` `DraftDeleted` cho Chair/Secretary.
 - **Guest chỉ xem biểu quyết khi cuộc họp Published hoặc InProgress**; cuộc họp kết thúc thì Guest nhận `404/MSG205`
   (PO 30/10/2026, cùng luật `GuestAccessRules.MeetingOpen` với mọi đường đọc của Khách). Người nội bộ vẫn xem được sau khi kết thúc.
 - **Người dùng đủ điều kiện** = phân công hiện hành, tài khoản còn hoạt động, giữ vai trò đã chọn và đọc được cuộc họp.
@@ -260,7 +269,7 @@ Sự kiện `voteChanged` `{ eventId, meetingId, voteId, changeType, title, occu
 `DraftCreated | DraftUpdated | DraftDeleted | Opened | BallotCast | Closed | ConclusionRecorded`.
 
 - Ba sự kiện `Draft*` chỉ gửi Chair/Secretary hiện hành (BR-253); còn lại gửi mọi người đang đọc được cuộc họp, kể cả
-  Guest.
+  Guest. `DraftDeleted` cũng phát khi cuộc họp kết thúc và hệ thống xoá nháp còn lại, mỗi nháp một sự kiện.
 - `title` chỉ có ở `Opened`, cho thông báo nổi "Chủ toạ mở biểu quyết: {nội dung}". `BallotCast` không có gì về người
   bỏ phiếu.
 - Thao tác bị từ chối hoặc lỗi không phát gì.

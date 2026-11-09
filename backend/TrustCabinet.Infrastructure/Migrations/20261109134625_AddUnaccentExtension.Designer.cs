@@ -1309,6 +1309,14 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("rejection_reason");
 
+                    b.Property<DateTimeOffset?>("ReturnedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("returned_at");
+
+                    b.Property<Guid?>("ReturnedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("returned_by_id");
+
                     b.Property<int>("RevisionNumber")
                         .HasColumnType("integer")
                         .HasColumnName("revision_number");
@@ -1322,6 +1330,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("SubmittedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("submitted_at");
+
+                    b.Property<Guid?>("SubmittedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submitted_by_id");
 
                     b.Property<Guid?>("SupersedesId")
                         .HasColumnType("uuid")
@@ -1339,6 +1351,12 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_meeting_minutes_created_by_id");
+
+                    b.HasIndex("ReturnedById")
+                        .HasDatabaseName("ix_meeting_minutes_returned_by_id");
+
+                    b.HasIndex("SubmittedById")
+                        .HasDatabaseName("ix_meeting_minutes_submitted_by_id");
 
                     b.HasIndex("SupersedesId")
                         .HasDatabaseName("ix_meeting_minutes_supersedes_id");
@@ -3415,6 +3433,18 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_meeting_minutes_meetings_meeting_id");
 
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "ReturnedBy")
+                        .WithMany()
+                        .HasForeignKey("ReturnedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meeting_minutes_users_returned_by_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "SubmittedBy")
+                        .WithMany()
+                        .HasForeignKey("SubmittedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_meeting_minutes_users_submitted_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.MeetingMinutes", "Supersedes")
                         .WithMany()
                         .HasForeignKey("SupersedesId")
@@ -3426,6 +3456,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Meeting");
+
+                    b.Navigation("ReturnedBy");
+
+                    b.Navigation("SubmittedBy");
 
                     b.Navigation("Supersedes");
                 });

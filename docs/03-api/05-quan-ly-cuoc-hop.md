@@ -617,13 +617,14 @@ Giới hạn 64 KiB, Content-Type application/json. Request End là xác nhận 
 
 - Start: active current Chair, Published → InProgress; đúng một active current Chair và ít nhất một active current Secretary. Không yêu cầu Accepted/Present, giờ dự kiến, agenda hoặc LiveKit.
 - End: active current Chair, InProgress → Ended; không gate Secretary, Vote Open, attendance hay Pending agenda. Current agenda thành Done trong cùng transaction; Pending/Done khác giữ nguyên.
+- End xoá mọi Vote `Draft` còn lại của cuộc họp trong cùng transaction, mỗi nháp một dòng audit `vote.draft_deleted_on_meeting_end` (PO 08/11/2026, SCRUM-28); Vote Open/Closed giữ nguyên. Chi tiết ở [contract Biểu quyết §7](15-bieu-quyet.md#7-đã-triển-khai--scrum-28).
 - Thành công: `MeetingTransitionResponse { code, message, meeting, history }`; Start `200/MSG110`, End `200/MSG111`. Server ghi actualStartedAt/actualEndedAt UTC microsecond và một history Start/End; End giữ actualStartedAt.
 - Không đăng nhập: 401; inactive: 403 theo gate; lookup gate lỗi: 503/MSG131.
 - Không tồn tại/không được đọc: 404 body rỗng. Đọc được nhưng không phải Chair: 403/MSG112 (Start), MSG114 (End). Sai trạng thái/readiness: 409 cùng mã. Gọi lặp cũng 409, không lặp side effect.
 - Persistence thất bại trước commit: 503/MSG115 (Start), MSG116 (End); timestamp agenda không hợp lệ cũng MSG116 và rollback. JSON/action sai 400/MSG80, Content-Type sai 415/MSG34, body quá lớn 413/MSG87.
 
 Meeting, current agenda và history được ghi dưới khóa Meeting trong một transaction ReadCommitted.
-Notification Start, agendaChanged/MeetingEnded và đóng LiveKit chạy sau commit với budget độc lập request.
+Notification Start, agendaChanged/MeetingEnded, `voteChanged`/`DraftDeleted` cho từng nháp đã xoá và đóng LiveKit chạy sau commit với budget độc lập request.
 Lỗi side effect không đổi kết quả thành công; notification creation best effort, room được janitor đối soát.
 Không có lifecycle event Start mới. Xem [bàn giao FE/Tester](10-scrum69-ban-giao.md).
 

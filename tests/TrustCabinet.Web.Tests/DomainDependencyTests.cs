@@ -20,9 +20,11 @@ public sealed class DomainDependencyTests
     [Fact]
     public void The_domain_assembly_references_only_the_framework()
     {
+        // Judged by where the assembly loads from, not its name: a NuGet package may be called System.* too.
+        var runtime = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
         var outside = typeof(Meeting).Assembly.GetReferencedAssemblies()
-            .Select(a => a.Name!)
-            .Where(name => !name.StartsWith("System", StringComparison.Ordinal) && name is not ("netstandard" or "mscorlib"));
+            .Where(a => Path.GetDirectoryName(System.Reflection.Assembly.Load(a).Location) != runtime)
+            .Select(a => a.Name);
         Assert.Empty(outside);
     }
 

@@ -19,6 +19,8 @@ public enum NotificationType
     MeetingParticipantRemoved,
     AgendaPresenterAssigned,
     MeetingStarted,
+    /// <summary>The Chair sent the minutes back to the Secretary with a reason (SCRUM-33, UC-65).</summary>
+    MinutesReturned,
 }
 
 /// <summary>Delivery state of a queued email (SCRUM-15).</summary>

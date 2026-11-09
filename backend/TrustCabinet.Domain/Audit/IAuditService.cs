@@ -147,6 +147,16 @@ public static class AuditActions
     public const string MeetingObjectType = "Meeting";
 
     /// <summary>
+    /// SCRUM-28 — the meeting ended with a vote still a draft, so the system deleted it (PO 08/11/2026). No actor: the
+    /// system did it; the Chair who ended the meeting, the meeting and what the draft said travel in the details,
+    /// because the row they describe is gone by the time anyone reads this one.
+    /// </summary>
+    public const string VoteDraftDeletedOnMeetingEnd = "vote.draft_deleted_on_meeting_end";
+
+    /// <summary>What <c>AuditLogEntry.ObjectType</c> carries for the action above; the <c>ObjectId</c> is the vote's id.</summary>
+    public const string VoteObjectType = "VotingSession";
+
+    /// <summary>
     /// UC-32c — a document of a Secret meeting was opened in the viewer (BR-318). There is no "downloaded" twin: a
     /// Secret meeting's documents cannot be downloaded (BR-188), and the other levels are not audited (ADR-0057).
     /// </summary>
