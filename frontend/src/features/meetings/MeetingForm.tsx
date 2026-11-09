@@ -88,7 +88,6 @@ const MODE_HINT: Record<MeetingMode, string> = {
   Online: 'Ghi âm: mỗi người ghi micro của mình.',
   Hybrid: 'Ghi âm: mic phòng và micro người trực tuyến.',
 }
-const LOCKED_HINT = 'Đã công bố, không đổi được.'
 /**
  * What a level changes, read from the rules: BR-318 and MeetingDocumentService (documents),
  * PersonalLibraryService (an administrator's view of a library), RecordingContracts.Export, MinutesService
@@ -156,6 +155,23 @@ const startOf = (values: Values) => (values.date && values.start ? fromDateTimeI
 const endOf = (values: Values) =>
   values.date && values.end ? fromDateTimeInput(`${addDays(values.date, values.endDays)}T${values.end}`) : null
 
+/** BR-301: a meeting not started 24 hours after its planned start is cancelled by the system. */
+const OVERDUE_MS = 24 * 3_600_000
+/** MSG154, shown by the form itself: saving an edit that changes nothing. */
+const NO_CHANGES = 'Không có thay đổi cần lưu.'
+
+/**
+ * A Draft or Rejected meeting may be saved with a start already past (it is not announced yet), but
+ * once the start is 24 hours past the system cancels it within minutes (BR-301, SCRUM-149): warn
+ * while the start is past, refuse past 24 hours. Create and reschedule refuse any past start already.
+ */
+function pastStart(values: Values): 'past' | 'overdue' | null {
+  const start = startOf(values)
+  if (!start) return null
+  const ago = Date.now() - new Date(start).getTime()
+  return ago > OVERDUE_MS ? 'overdue' : ago > 0 ? 'past' : null
+}
+
 /** BR-62: checked as soon as both times are known rather than only on submit. */
 function endError(values: Values): string | undefined {
   const start = startOf(values)
@@ -179,6 +195,8 @@ function validate(values: Values, needsFutureStart: boolean): FieldErrors {
   const start = startOf(values)
   if (needsFutureStart && start && new Date(start).getTime() <= Date.now()) {
     errors.plannedStartTime = 'Thời gian bắt đầu phải sau thời điểm hiện tại.'
+  } else if (!needsFutureStart && pastStart(values) === 'overdue') {
+    errors.plannedStartTime = 'Giờ bắt đầu đã qua hơn 24 giờ nên cuộc họp sẽ bị tự huỷ. Chọn giờ khác.'
   }
   if (values.mode !== 'InPerson' && values.onlineLink.trim().length > ONLINE_LINK_MAX) {
     errors.onlineLink = 'Link họp trực tuyến không được vượt quá 1.000 ký tự.'
@@ -286,6 +304,7 @@ export function MeetingForm({
   const [values, setValues] = useState(initial)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
+  const [formNotice, setFormNotice] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   /**
@@ -318,6 +337,7 @@ export function MeetingForm({
   function setMany(patch: Partial<Values>) {
     const next = { ...values, ...patch }
     setValues(next)
+    setFormNotice(null)
     setFieldErrors((errors) => {
       const rest: FieldErrors = { ...errors }
       for (const key of Object.keys(patch) as (keyof Values)[]) {
@@ -350,11 +370,19 @@ export function MeetingForm({
   function focusFirstError(errors: FieldErrors) {
     const first = FIELD_ORDER.find((field) => errors[field])
     if (!first) return
-    formRef.current?.querySelector<HTMLElement>(`[data-field="${first}"] :is(input, textarea, button)`)?.focus()
+    const field = formRef.current?.querySelector<HTMLElement>(`[data-field="${first}"]`)
+    field?.querySelector<HTMLElement>(':is(input, textarea, button)')?.focus()
+    // Focus brings the field into view, not its message under it, which the pinned footer could cover.
+    field?.querySelector('.field-error')?.scrollIntoView({ block: 'nearest' })
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    // The server answers an unchanged edit with a success and does nothing; say so instead (SCRUM-149).
+    if (meeting && !dirty) {
+      setFormNotice(NO_CHANGES)
+      return
+    }
     const errors = validate(values, needsFutureStart)
     const rosterProblem = meeting ? undefined : rosterError(roster)
     if (rosterProblem) errors.participants = rosterProblem
@@ -439,8 +467,8 @@ export function MeetingForm({
       <form id={FORM_ID} ref={formRef} className="meeting-form" onSubmit={handleSubmit} noValidate>
         {reschedule && (
           <p className="alert alert-info">
-            Cuộc họp đã công bố: chỉ dời được thời gian, địa điểm và link họp. Lưu xong, mọi người được mời sẽ nhận thông
-            báo lịch mới.
+            Cuộc họp đã công bố: chỉ dời được thời gian, địa điểm và link họp; các mục khác không đổi được. Lưu xong, mọi
+            người được mời sẽ nhận thông báo lịch mới.
           </p>
         )}
         {notice}
@@ -463,7 +491,7 @@ export function MeetingForm({
                 aria-invalid={!!fieldErrors.title}
                 disabled={reschedule}
               />
-              {errorOf('title', reschedule ? LOCKED_HINT : undefined)}
+              {errorOf('title')}
             </label>
 
             <label className="field" data-field="description">
@@ -481,8 +509,6 @@ export function MeetingForm({
                 <span className="field-foot">
                   {fieldErrors.description ? (
                     <small className="field-error">{fieldErrors.description}</small>
-                  ) : reschedule ? (
-                    <small className="field-hint">{LOCKED_HINT}</small>
                   ) : (
                     <span />
                   )}
@@ -598,7 +624,7 @@ export function MeetingForm({
                     type="button"
                     className="chip-toggle"
                     aria-pressed={!multiDay && lengthOf(values) === length.minutes}
-                    disabled={!values.start || reschedule}
+                    disabled={!values.start}
                     onClick={() => {
                       setMany({ end: addMinutes(values.start, length.minutes), endDays: 0 })
                       setMultiDay(false)
@@ -611,14 +637,19 @@ export function MeetingForm({
                   type="button"
                   className="chip-toggle"
                   aria-pressed={multiDay}
-                  disabled={reschedule}
                   onClick={toggleMultiDay}
                 >
                   Nhiều ngày
                 </button>
                 {multiDay && duration && <span className="form-length-note">{duration}</span>}
               </div>
-              {errorOf('date') ?? errorOf('plannedStartTime')}
+              {errorOf('date') ??
+                errorOf(
+                  'plannedStartTime',
+                  !needsFutureStart && pastStart(values) === 'past'
+                    ? 'Giờ bắt đầu đã qua. Quá 24 giờ mà chưa họp, cuộc họp sẽ bị tự huỷ.'
+                    : undefined,
+                )}
               {errorOf('plannedEndTime')}
             </fieldset>
 
@@ -652,7 +683,7 @@ export function MeetingForm({
                 label="Hình thức họp"
                 disabled={reschedule}
               />
-              {errorOf('mode', reschedule ? LOCKED_HINT : MODE_HINT[values.mode])}
+              {errorOf('mode', MODE_HINT[values.mode])}
             </div>
 
             {/* The place and the link follow the mode: in person needs a room, online a link, hybrid both. */}
@@ -704,7 +735,7 @@ export function MeetingForm({
                   </span>
                 </label>
               ))}
-              {errorOf('sensitivity', reschedule ? LOCKED_HINT : undefined)}
+              {errorOf('sensitivity')}
             </fieldset>
           </div>
         </div>
@@ -712,6 +743,11 @@ export function MeetingForm({
         {formError && (
           <p className="alert alert-error" role="alert">
             {formError}
+          </p>
+        )}
+        {formNotice && (
+          <p className="alert alert-info" role="status">
+            {formNotice}
           </p>
         )}
       </form>

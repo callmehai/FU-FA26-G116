@@ -16,7 +16,11 @@ const ROLE_OPTIONS = MEETING_ROLES.map((value) => ({ value, label: MEETING_ROLE_
 /**
  * Who attends a new meeting, and in what role (SCRUM-20). Search active accounts, pick, then set
  * each one's role. There is exactly one Chair: making someone Chair hands the previous one
- * "Thành viên", as AI-eCabinet does. The organizer is not added on their own — they need not attend.
+ * "Thành viên", as AI-eCabinet does, and a line under the list says so (SCRUM-149). The organizer is not
+ * added on their own — they need not attend.
+ *
+ * The field's error sits right under the search box a failed submit focuses, so it is in view with it
+ * rather than under the list, where the dialog's pinned footer could cover it (SCRUM-149).
  *
  * As in AI-eCabinet, many are added from one search: the matches stay open with whoever is in
  * ticked (a second press takes them out), and the picked list keeps its height, scrolling to whoever
@@ -45,6 +49,8 @@ export function RosterField({
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(0)
+  /** "X chuyển thành Thành viên.", after making someone else Chair; gone with the next change. */
+  const [demoted, setDemoted] = useState<string | null>(null)
   const [result, setResult] = useState<
     | { kind: 'idle' }
     | { kind: 'loading' }
@@ -114,6 +120,7 @@ export function RosterField({
 
   /** In, or out again if already in; the matches stay open for the next pick. */
   function toggle(option: ParticipantOption) {
+    setDemoted(null)
     onChange(
       picked.has(option.id)
         ? value.filter((p) => p.userId !== option.id)
@@ -122,6 +129,8 @@ export function RosterField({
   }
 
   function setRole(userId: string, role: MeetingRole) {
+    const previous = role === 'Chair' ? value.find((p) => p.role === 'Chair' && p.userId !== userId) : undefined
+    setDemoted(previous ? `${previous.userId === me ? 'Bạn' : previous.fullName} chuyển thành Thành viên.` : null)
     onChange(
       value.map((p) =>
         p.userId === userId ? { ...p, role } : role === 'Chair' && p.role === 'Chair' ? { ...p, role: 'Member' } : p,
@@ -218,6 +227,7 @@ export function RosterField({
           </ul>
         )}
       </div>
+      {error && <small className="field-error">{error}</small>}
 
       {value.length > 0 ? (
         <ul ref={pickedRef} className="roster-list" aria-label="Người đã chọn">
@@ -244,7 +254,10 @@ export function RosterField({
                 className="icon-button"
                 aria-label={`Bỏ ${p.fullName}`}
                 data-tooltip="Bỏ khỏi danh sách"
-                onClick={() => onChange(value.filter((x) => x.userId !== p.userId))}
+                onClick={() => {
+                  setDemoted(null)
+                  onChange(value.filter((x) => x.userId !== p.userId))
+                }}
               >
                 <Icon name="x" size={16} />
               </button>
@@ -254,8 +267,11 @@ export function RosterField({
       ) : (
         <p className="roster-empty">Chưa chọn ai.</p>
       )}
-
-      {error && <small className="field-error">{error}</small>}
+      {demoted && (
+        <small className="field-hint" role="status">
+          {demoted}
+        </small>
+      )}
     </div>
   )
 }

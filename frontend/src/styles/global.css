@@ -2638,6 +2638,19 @@ a.menu-item { text-decoration: none; }
 
 /* The picked list keeps its height and scrolls (AI-eCabinet), about four people, so the dialog itself does not scroll. */
 .roster-list { display: flex; flex-direction: column; max-height: 13rem; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
+/* One scrollbar, never two nested (SCRUM-149). Wide and tall: the form fits the dialog and the picked
+   list takes the left column's remaining height, scrolling on its own. One column or a short window: the
+   dialog body scrolls, so the list grows instead. */
+@media (min-width: 761px) and (min-height: 761px) {
+  .dialog-xl .meeting-form { min-height: 0; }
+  .dialog-xl .meeting-form-cols { grid-template-rows: minmax(0, 1fr); min-height: 0; }
+  .dialog-xl .meeting-form-main { min-height: 0; }
+  .dialog-xl .meeting-form-main > [data-field='participants'] { min-height: 0; }
+  .dialog-xl .roster-list { flex: 1 1 0; min-height: 7rem; max-height: none; }
+}
+@media (max-width: 760px), (max-height: 760px) {
+  .roster-list { max-height: none; overflow: visible; }
+}
 .roster-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
 .roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
 /* A person the server refused: the row's own message says why; a light red wash shows which row, without a side stripe. */
