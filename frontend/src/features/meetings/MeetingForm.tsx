@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useBeforeUnload } from 'react-router-dom'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { DateField } from '../../components/DateField'
@@ -156,7 +156,9 @@ const endOf = (values: Values) =>
   values.date && values.end ? fromDateTimeInput(`${addDays(values.date, values.endDays)}T${values.end}`) : null
 
 /** BR-301: a meeting not started 24 hours after its planned start is cancelled by the system. */
+// ponytail: mirrors the server's default Meetings:AutoCancelAfterHours (24); read it from an endpoint if it is ever changed.
 const OVERDUE_MS = 24 * 3_600_000
+const OVERDUE_MESSAGE = 'Giờ bắt đầu đã qua hơn 24 giờ nên cuộc họp sẽ bị tự huỷ. Chọn giờ khác.'
 /** MSG154, shown by the form itself: saving an edit that changes nothing. */
 const NO_CHANGES = 'Không có thay đổi cần lưu.'
 
@@ -196,7 +198,7 @@ function validate(values: Values, needsFutureStart: boolean): FieldErrors {
   if (needsFutureStart && start && new Date(start).getTime() <= Date.now()) {
     errors.plannedStartTime = 'Thời gian bắt đầu phải sau thời điểm hiện tại.'
   } else if (!needsFutureStart && pastStart(values) === 'overdue') {
-    errors.plannedStartTime = 'Giờ bắt đầu đã qua hơn 24 giờ nên cuộc họp sẽ bị tự huỷ. Chọn giờ khác.'
+    errors.plannedStartTime = OVERDUE_MESSAGE
   }
   if (values.mode !== 'InPerson' && values.onlineLink.trim().length > ONLINE_LINK_MAX) {
     errors.onlineLink = 'Link họp trực tuyến không được vượt quá 1.000 ký tự.'
@@ -319,8 +321,16 @@ export function MeetingForm({
   const [rosterRowErrors, setRosterRowErrors] = useState<Record<string, string>>({})
   const formRef = useRef<HTMLFormElement>(null)
   const submitted = useRef(false)
+  const messageRef = useRef<HTMLParagraphElement>(null)
 
   const dirty = !sameValues(values, initial) || JSON.stringify(roster) !== JSON.stringify(initialRoster)
+  // What a save would send, as the server compares it: a trailing space alone changes nothing.
+  const unchanged = !!meeting && JSON.stringify(toRequest(values)) === JSON.stringify(toRequest(initial))
+
+  // The form's own message sits at its end, which may be below the fold: bring it into view.
+  useEffect(() => {
+    if (formError || formNotice) messageRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [formError, formNotice])
 
   // Closing the tab or reloading with unsaved input asks first. In-app links are not covered: the
   // app uses <BrowserRouter>, and route blocking needs a data router.
@@ -345,6 +355,8 @@ export function MeetingForm({
           key === 'start' ? 'plannedStartTime' : key === 'end' || key === 'endDays' ? 'plannedEndTime' : key
         delete rest[field]
       }
+      // A start judged in the past is as much about the day as the time: a new day clears that message too.
+      if ('date' in patch) delete rest.plannedStartTime
       // The end is judged against the start, so changing a day or either time re-checks it.
       if (['date', 'start', 'end', 'endDays'].some((key) => key in patch)) {
         delete rest.plannedEndTime
@@ -379,7 +391,7 @@ export function MeetingForm({
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     // The server answers an unchanged edit with a success and does nothing; say so instead (SCRUM-149).
-    if (meeting && !dirty) {
+    if (unchanged) {
       setFormNotice(NO_CHANGES)
       return
     }
@@ -646,9 +658,13 @@ export function MeetingForm({
               {errorOf('date') ??
                 errorOf(
                   'plannedStartTime',
-                  !needsFutureStart && pastStart(values) === 'past'
-                    ? 'Giờ bắt đầu đã qua. Quá 24 giờ mà chưa họp, cuộc họp sẽ bị tự huỷ.'
-                    : undefined,
+                  needsFutureStart
+                    ? undefined
+                    : pastStart(values) === 'past'
+                      ? 'Giờ bắt đầu đã qua. Quá 24 giờ mà chưa họp, cuộc họp sẽ bị tự huỷ.'
+                      : pastStart(values) === 'overdue'
+                        ? OVERDUE_MESSAGE
+                        : undefined,
                 )}
               {errorOf('plannedEndTime')}
             </fieldset>
@@ -741,12 +757,12 @@ export function MeetingForm({
         </div>
 
         {formError && (
-          <p className="alert alert-error" role="alert">
+          <p ref={messageRef} className="alert alert-error" role="alert">
             {formError}
           </p>
         )}
         {formNotice && (
-          <p className="alert alert-info" role="status">
+          <p ref={messageRef} className="alert alert-info" role="status">
             {formNotice}
           </p>
         )}

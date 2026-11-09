@@ -23,8 +23,9 @@ const ROLE_OPTIONS = MEETING_ROLES.map((value) => ({ value, label: MEETING_ROLE_
  * rather than under the list, where the dialog's pinned footer could cover it (SCRUM-149).
  *
  * As in AI-eCabinet, many are added from one search: the matches stay open with whoever is in
- * ticked (a second press takes them out), and the picked list keeps its height, scrolling to whoever
- * was just added — only the list scrolls, never the dialog under the pointer.
+ * ticked (a second press takes them out). The picked list grows under the menu and nothing scrolls
+ * while picking, so the matches stay under the pointer; the dialog body is the only thing that scrolls
+ * (SCRUM-149 — a list scrolling inside the scrolling body hid its first row and its error).
  */
 export function RosterField({
   value,
@@ -44,8 +45,6 @@ export function RosterField({
   const listId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLUListElement>(null)
-  const pickedRef = useRef<HTMLUListElement>(null)
-  const count = useRef(value.length)
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(0)
@@ -108,12 +107,6 @@ export function RosterField({
     }
   }, [open])
 
-  // The picked list scrolls to whoever was just added; removing someone leaves it where it is.
-  useEffect(() => {
-    const list = pickedRef.current
-    if (list && value.length > count.current) list.scrollTop = list.scrollHeight
-    count.current = value.length
-  }, [value.length])
 
   const picked = new Set(value.map((p) => p.userId))
   const matches = result.kind === 'loaded' ? result.items : []
@@ -230,7 +223,7 @@ export function RosterField({
       {error && <small className="field-error">{error}</small>}
 
       {value.length > 0 ? (
-        <ul ref={pickedRef} className="roster-list" aria-label="Người đã chọn">
+        <ul className="roster-list" aria-label="Người đã chọn">
           {value.map((p) => (
             <li
               key={p.userId}
