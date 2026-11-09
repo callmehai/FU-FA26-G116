@@ -182,4 +182,12 @@ public static class AuditActions
     public const string CallGuestAdmitted = "call.guest_admitted";
 
     public const string GuestSessionObjectType = "GuestSession";
+
+    /// <summary>
+    /// SCRUM-38, UC-70b — a user exported the meeting report to Excel (BR-438). No object id: the report is not a row.
+    /// The details carry the period; viewing the report on screen is not recorded.
+    /// </summary>
+    public const string ReportExported = "report.exported";
+
+    public const string ReportObjectType = "Report";
 }
