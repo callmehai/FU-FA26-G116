@@ -102,7 +102,7 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
                 case SpeakingOperation.Lower:
                     result = await OwnerAsync(meetingId, actor, viewer!, request!, [SpeakingRequestStatus.Queued,
                         SpeakingRequestStatus.Invited], ct);
-                    if (result == SpeakingFailure.None) SpeakingRules.Close(request!, now);
+                    if (result == SpeakingFailure.None) SpeakingRules.Close(request!, now, now);
                     break;
                 case SpeakingOperation.Start:
                     result = await OwnerAsync(meetingId, actor, viewer!, request!, [SpeakingRequestStatus.Invited], ct);
@@ -121,7 +121,7 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
                         : !SpeakingRules.IsMine(request!, viewer!) ? SpeakingFailure.NotChair
                         : await OwnerAsync(meetingId, actor, viewer!, request!,
                             [SpeakingRequestStatus.Invited, SpeakingRequestStatus.Speaking], ct);
-                    if (result == SpeakingFailure.None) SpeakingRules.Close(request!, now);
+                    if (result == SpeakingFailure.None) SpeakingRules.Close(request!, now, now);
                     break;
                 default:
                     result = await ChairAsync(meeting, viewer!, request!, operation, now, ct);
@@ -192,7 +192,8 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
     private async Task<SpeakingFailure> OwnerAsync(Guid meetingId, ParticipantActor actor, SpeakingViewer viewer,
         SpeakingRequest request, SpeakingRequestStatus[] from, CancellationToken ct)
     {
-        if (!SpeakingRules.IsMine(request, viewer)) return SpeakingFailure.NotOwner;
+        // Callers send someone else's request to NotFound or NotChair first; kept so this check never relies on them.
+        if (!SpeakingRules.IsMine(request, viewer)) return SpeakingFailure.NotFound;
         if (!from.Contains(request.Status)) return SpeakingFailure.NotOpen;
         return await InRoomAsync(meetingId, actor, ct) ? SpeakingFailure.None : SpeakingFailure.NotInRoom;
     }
@@ -210,7 +211,7 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
             case SpeakingOperation.Decline:
                 if (request.Status is not (SpeakingRequestStatus.Queued or SpeakingRequestStatus.Invited))
                     return SpeakingFailure.NotOpen;
-                SpeakingRules.Close(request, now);
+                SpeakingRules.Close(request, now, now);
                 return SpeakingFailure.None;
             case SpeakingOperation.Invite:
                 if (request.Status != SpeakingRequestStatus.Queued) return SpeakingFailure.NotOpen;
@@ -304,15 +305,18 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
 public static class SpeakingRequestCleanup
 {
     /// <param name="userId">Only this member's requests; with <paramref name="guestInvitationIds"/> null, everyone's.</param>
+    /// <param name="endedAt">When the person left or the meeting ended.</param>
+    /// <param name="now">When the rows are written.</param>
+    /// <returns>How many requests were closed, so a caller tells the panels only when something changed.</returns>
     public static async Task<int> CloseOpenAsync(TrustCabinetDbContext db, Guid meetingId, Guid? userId,
-        IReadOnlyCollection<Guid>? guestInvitationIds, DateTimeOffset now, CancellationToken ct)
+        IReadOnlyCollection<Guid>? guestInvitationIds, DateTimeOffset endedAt, DateTimeOffset now, CancellationToken ct)
     {
         var query = db.SpeakingRequests.Where(r => r.MeetingId == meetingId && SpeakingRules.OpenStatuses.Contains(r.Status));
         if (userId is not null || guestInvitationIds is not null)
             query = query.Where(r => (userId != null && r.UserId == userId)
                 || (guestInvitationIds != null && r.GuestInvitationId != null && guestInvitationIds.Contains(r.GuestInvitationId.Value)));
         var open = await query.ToListAsync(ct);
-        return open.Count(r => SpeakingRules.Close(r, now));
+        return open.Count(r => SpeakingRules.Close(r, endedAt, now));
     }
 }
 
@@ -322,7 +326,7 @@ public sealed class SpeakingMeetingEnd(TrustCabinetDbContext db) : ISpeakingMeet
     {
         if (db.Database.CurrentTransaction is null)
             throw new InvalidOperationException("Closing speaking requests requires the caller's meeting transaction and lock.");
-        await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, null, null, endedAt, ct);
+        await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, null, null, endedAt, endedAt, ct);
     }
 }
 

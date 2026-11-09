@@ -60,7 +60,7 @@ public static class SpeakingEndpoints
             case SpeakingFailure.None:
                 return result.Created ? Results.Json(result.Data, statusCode: 201) : Results.Ok(result.Data);
             // Not readable, or not in this meeting: the same answer as a meeting that does not exist.
-            case SpeakingFailure.NotFound or SpeakingFailure.NotOwner:
+            case SpeakingFailure.NotFound:
                 return Results.NotFound();
             case SpeakingFailure.Inactive:
                 return Results.Forbid();

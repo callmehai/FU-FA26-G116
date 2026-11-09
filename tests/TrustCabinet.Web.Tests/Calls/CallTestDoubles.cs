@@ -109,17 +109,17 @@ internal sealed class FakeCallRepository : ICallRepository
 
     private static CallMember Of(CallParticipant stint) => new(stint.UserId, stint.GuestSessionId);
 
-    public Task RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default)
+    public Task<int> RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default)
     {
         foreach (var stint in Stints.Where(p => p.CallSessionId == sessionId && Of(p) == member && p.LeftAt == null))
         {
             stint.LeftAt = leftAt;
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(0);
     }
 
-    public Task EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default)
+    public Task<int> EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default)
     {
         var session = Sessions.Single(s => s.Id == sessionId);
         session.Status = CallStatus.Ended;
@@ -129,7 +129,7 @@ internal sealed class FakeCallRepository : ICallRepository
             stint.LeftAt = endedAt;
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(0);
     }
 
     public Task<IReadOnlyList<ActiveRoomSession>> ListActiveRoomSessionsAsync(CancellationToken ct = default)

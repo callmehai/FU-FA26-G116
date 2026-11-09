@@ -20,8 +20,6 @@ public enum SpeakingFailure
     NotInRoom,
     /// <summary>A Chair action by someone who is not the current Chair (UC-79 EX-4, BR-338).</summary>
     NotChair,
-    /// <summary>The request is someone else's, for an action only its owner takes.</summary>
-    NotOwner,
     /// <summary>Someone already holds the floor (BR-338).</summary>
     FloorTaken,
     /// <summary>The request is not in a state this action applies to.</summary>
@@ -91,18 +89,19 @@ public static class SpeakingRules
             || (viewer.GuestInvitationId is { } guest && request.GuestInvitationId == guest);
 
     /// <summary>
-    /// Ends a request at <paramref name="now"/>: a turn that started is Finished, anything else is Cancelled (BR-337).
+    /// Ends a request at <paramref name="endedAt"/>: a turn that started is Finished, anything else is Cancelled
+    /// (BR-337). <paramref name="now"/> is when the row is written, which may be later than when the person left.
     /// Returns false when the request was already closed.
     /// </summary>
-    public static bool Close(SpeakingRequest request, DateTimeOffset now)
+    public static bool Close(SpeakingRequest request, DateTimeOffset endedAt, DateTimeOffset now)
     {
         if (!IsOpen(request.Status)) return false;
         request.Status = request.Status == SpeakingRequestStatus.Speaking
             ? SpeakingRequestStatus.Finished : SpeakingRequestStatus.Cancelled;
         // A provider time can be a little behind the last step we recorded; never end before it.
         var last = request.StartedAt ?? request.InvitedAt ?? request.RequestedAt;
-        request.EndedAt = now < last ? last : now;
-        request.UpdatedAt = request.EndedAt.Value;
+        request.EndedAt = endedAt < last ? last : endedAt;
+        request.UpdatedAt = now;
         return true;
     }
 }

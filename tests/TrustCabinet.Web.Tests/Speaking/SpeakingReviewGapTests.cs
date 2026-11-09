@@ -193,6 +193,29 @@ public sealed class SpeakingReviewGapTests(ParticipantFixture f) : IClassFixture
     }
 
     [Fact]
+    public async Task Leaving_without_a_raised_hand_sends_no_speaking_event()
+    {
+        var s = await f.Seed(MeetingStatus.InProgress);
+        using var chair = f.Client(s.Chair); using var member = f.Client(s.Member);
+        await InRoom(s, CallMember.User(s.Member)); await InRoom(s, CallMember.User(s.Secretary));
+        await using var chairHub = f.Hub(chair);
+        var changed = Channel.CreateUnbounded<SpeakingChange>();
+        chairHub.On<SpeakingChange>("speakingChanged", e => changed.Writer.TryWrite(e));
+        await chairHub.StartAsync();
+        await chairHub.InvokeAsync("JoinMeeting", s.MeetingId);
+
+        await Webhook(s, "participant_left", s.Secretary.ToString("D"));
+        using (var timeout = new CancellationTokenSource(300))
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await changed.Reader.ReadAsync(timeout.Token));
+
+        // Someone with a raised hand leaving still tells the panels.
+        await Json(await member.PostAsync(Queue(s), null), HttpStatusCode.Created);
+        await changed.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10));
+        await Webhook(s, "participant_left", s.Member.ToString("D"));
+        Assert.Equal("Left", (await changed.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10))).ChangeType);
+    }
+
+    [Fact]
     public async Task The_chair_finishes_a_turn_from_outside_the_room_and_the_speaker_cannot()
     {
         var s = await f.Seed(MeetingStatus.InProgress);

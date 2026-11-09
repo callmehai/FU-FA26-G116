@@ -82,6 +82,10 @@ thiết bị cuối cùng rời phòng:
 | Phòng đóng (`room_finished`, hoặc phiên phòng kết thúc) | mọi người |
 | Người đó bị gỡ khỏi cuộc họp (không còn vai trò nào) hoặc lời mời Khách bị thu hồi | người đó |
 
+**FE cần biết:** danh tính LiveKit của thành viên chính là user id, nên một thành viên tải lại trang hoặc vào thêm từ thiết bị
+khác thì LiveKit đá kết nối cũ, và `participant_left` của kết nối cũ hạ tay hoặc kết thúc lượt của họ, dù họ vào lại ngay.
+Sau khi vào lại phòng, người đó giơ tay lại. Khách không bị, vì mỗi lần xác minh là một phiên riêng (xem trên).
+
 Rời phòng và đóng phòng khoá dòng cuộc họp trước, như giơ tay: một lần giơ tay trùng lúc với lúc rời phòng hoặc bị đóng lại
 ngay, hoặc bị từ chối vì không còn ở trong phòng (`MSG458`); không để lại tay giơ treo.
 
@@ -90,7 +94,7 @@ ngay, hoặc bị từ chối vì không còn ở trong phòng (`MSG458`); khôn
 - `speakingChanged` `{ eventId, meetingId, changeType, requestId, occurredAt }` tới mọi người đang đọc được cuộc họp, kể cả
   Khách. Chỉ để báo "tải lại": FE gọi lại `GET`, quyền được kiểm lại. Thao tác không đổi gì (giơ tay khi tay đã giơ, đổi chỗ
   ở đầu/cuối hàng đợi) không phát sự kiện. `changeType` là tên thao tác (`Raise`, `Lower`,
-  `MoveUp`, `MoveDown`, `Decline`, `Invite`, `Start`, `Finish`) hoặc `Left` khi có người rời phòng hoặc phòng đóng.
+  `MoveUp`, `MoveDown`, `Decline`, `Invite`, `Start`, `Finish`) hoặc `Left` khi người rời phòng hoặc phòng đóng làm hạ ít nhất một tay (không phát nếu không có tay nào bị hạ).
 - `speakingInvited` (cùng nội dung) chỉ tới người được mời, để phòng họp báo "Đến lượt bạn — hãy bật micro".
 - Kết thúc cuộc họp không phát `speakingChanged`: FE tải lại khi nhận `agendaChanged` loại `MeetingEnded`. Gỡ người khỏi
   cuộc họp đi kèm `participantsChanged`.

@@ -530,7 +530,7 @@ public sealed partial class ParticipantService(
                 if (userId is null || !snapshot.Meeting.Participants.Any(p => p.UserId == userId && p.Id != targetId
                         && ParticipantRules.Current(p)))
                     await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, userId,
-                        userId is null ? [targetId!.Value] : null, now, ct);
+                        userId is null ? [targetId!.Value] : null, now, now, ct);
             }
             if (!response)
                 m.ParticipantsRevision = checked(m.ParticipantsRevision + 1);

@@ -20,6 +20,8 @@ namespace TrustCabinet.Infrastructure.Calls;
 /// </summary>
 public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock = null) : ICallRepository
 {
+    private DateTimeOffset Now => AgendaExecution.UtcMicroseconds((clock ?? TimeProvider.System).GetUtcNow());
+
     public const string ActiveRoomIndex = "ux_call_sessions_active_meeting_room";
     public const string OpenUserStintIndex = "ux_call_participants_open_user_stint";
     public const string OpenGuestStintIndex = "ux_call_participants_open_guest_stint";
@@ -139,8 +141,9 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
         }
     }
 
-    public async Task RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default)
+    public async Task<int> RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default)
     {
+        var closedHands = 0;
         await using var tx = await LockMeetingOfSessionAsync(sessionId, ct);
         var open = await OpenStints(sessionId, member).ToListAsync(ct);
         foreach (var stint in open)
@@ -164,12 +167,13 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
                 invitations = [invitation];
             // The turn ends when they left, not when the webhook or the reconciliation got here (BR-339).
             if (member.UserId is not null || invitations is not null)
-                await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, member.UserId, invitations,
-                    AgendaExecution.UtcMicroseconds(leftAt), ct);
+                closedHands = await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, member.UserId, invitations,
+                    AgendaExecution.UtcMicroseconds(leftAt), Now, ct);
         }
 
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        return closedHands;
     }
 
     /// <summary>
@@ -201,13 +205,13 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
             ? db.CallParticipants.Where(p => p.CallSessionId == sessionId && p.GuestSessionId == guest && p.LeftAt == null)
             : db.CallParticipants.Where(p => p.CallSessionId == sessionId && p.UserId == member.UserId && p.LeftAt == null);
 
-    public async Task EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default)
+    public async Task<int> EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default)
     {
         await using var tx = await LockMeetingOfSessionAsync(sessionId, ct);
         var session = await db.CallSessions.SingleOrDefaultAsync(s => s.Id == sessionId, ct);
         if (session is null || session.Status == CallStatus.Ended)
         {
-            return;
+            return 0;
         }
 
         var participants = await db.CallParticipants.Where(p => p.CallSessionId == sessionId).ToListAsync(ct);
@@ -229,11 +233,13 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
         session.EndedAt = effectiveEnd;
         session.UpdatedAt = DateTimeOffset.UtcNow;
         // Nobody is left in the room, so nobody is waiting to speak or speaking (BR-337).
-        if (tx.MeetingId is { } meetingId)
-            await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, null, null,
-                AgendaExecution.UtcMicroseconds(effectiveEnd), ct);
+        var closedHands = tx.MeetingId is { } meetingId
+            ? await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, null, null,
+                AgendaExecution.UtcMicroseconds(effectiveEnd), Now, ct)
+            : 0;
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
+        return closedHands;
     }
 
     public async Task<IReadOnlyList<ActiveRoomSession>> ListActiveRoomSessionsAsync(CancellationToken ct = default)

@@ -337,6 +337,8 @@ public sealed class SpeakingEndpointTests(ParticipantFixture f) : IClassFixture<
         await using var db = f.Db();
         var row = await db.SpeakingRequests.SingleAsync(r => r.Id == id);
         Assert.Equal((SpeakingRequestStatus.Finished, startedAt.AddMinutes(2)), (row.Status, row.EndedAt));
+        // The row was written when the drop was noticed, not back-dated to when they left.
+        Assert.Equal(startedAt.AddMinutes(5), row.UpdatedAt);
     }
 
     [Fact]
