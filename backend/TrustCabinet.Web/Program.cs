@@ -21,6 +21,7 @@ using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Infrastructure.Participants;
 using TrustCabinet.Infrastructure.Recordings;
+using TrustCabinet.Infrastructure.Speaking;
 using TrustCabinet.Infrastructure.Transcription;
 using TrustCabinet.Infrastructure.VoiceId;
 using TrustCabinet.Infrastructure.Votes;
@@ -55,6 +56,9 @@ builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Domain.Votes.IVoteChangePublisher, VoteChangePublisher>();
+// SCRUM-27: raised hands and the Chair's queue of speakers (UC-79).
+builder.Services.AddTrustCabinetSpeaking();
+builder.Services.AddScoped<TrustCabinet.Domain.Speaking.ISpeakingChangePublisher, SpeakingChangePublisher>();
 // SCRUM-30: the Secretary's running notes; a save tells the Chair's and the Secretary's other windows.
 builder.Services.AddTrustCabinetMeetingNotes();
 builder.Services.AddScoped<TrustCabinet.Domain.Notes.INotesChangePublisher, NotesChangePublisher>();
@@ -243,6 +247,8 @@ app.MapParticipantEndpoints();
 app.MapAttendanceEndpoints();
 // SCRUM-28: votes during the meeting — drafts, open, ballots, close, conclusion.
 app.MapVoteEndpoints();
+// SCRUM-27: Register to Speak — raise/lower a hand, the Chair invites, turns are kept for the minutes.
+app.MapSpeakingEndpoints();
 // SCRUM-116: UC-04 — invitation link, one-time code, guest session.
 app.MapGuestAccessEndpoints();
 app.MapMeetingDocumentEndpoints();
