@@ -87,7 +87,7 @@ else Selected role is available
         UserService->UserService: Notify the user that their access changed so their sessions\napply the new role's permissions without signing in again (BR-314)
 
         opt The new role no longer grants the meeting-creation right (MeetingCreator)
-            UserService->ShareRepository: Stop every Pending or Effective share the user is viewing (BR-424)
+            UserService->ShareRepository: Stop every Effective share the user is viewing (BR-424)
             activate ShareRepository
             ShareRepository->Database: Set those shares to Stopped
             activate Database
@@ -117,7 +117,7 @@ else Selected role is available
             end
         end
 
-        note right of UserService: Regaining the meeting-creation right does not restart stopped shares (BR-424)
+        note right of UserService: Regaining the meeting-creation right does not restart stopped shares (BR-424).\nLosing the right hides the Chia sẻ lịch screen; the user no longer sees the lists (UC-84f, BR-430).
 
         UserService-->UserController: User role updated successfully
         deactivate UserService

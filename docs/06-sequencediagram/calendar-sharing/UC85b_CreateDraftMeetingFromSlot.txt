@@ -49,7 +49,7 @@ else Finder is verified
         deactivate SlotController
         FindPage-->Finder: MSG453 - Unable to load the calendar sharing data. Please try again.
     else Slot data is loaded
-        SlotService->SlotService: Recheck the slot against the same shared data as the search,\nnever against undisclosed meetings (BR-428)
+        SlotService->SlotService: Recheck the slot against the same shared data as the search, end date on or after today,\nnever against undisclosed meetings (BR-425, BR-428)
 
         alt Slot is no longer free - EX-1
             SlotService-->SlotController: MSG446 - This time slot is no longer free. Please choose another slot.

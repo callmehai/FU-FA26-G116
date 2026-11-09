@@ -52,7 +52,7 @@ else Valid permission configuration
             RoleRepository-->RoleService: Role holders
             deactivate RoleRepository
 
-            RoleService->ShareRepository: Stop every Pending or Effective share those accounts are viewing (BR-424)
+            RoleService->ShareRepository: Stop every Effective share those accounts are viewing (BR-424)
             activate ShareRepository
             ShareRepository->Database: Set those shares to Stopped
             activate Database
@@ -82,7 +82,7 @@ else Valid permission configuration
             end
         end
 
-        note right of RoleService: Regaining the meeting-creation right does not restart stopped shares (BR-424)
+        note right of RoleService: Regaining the meeting-creation right does not restart stopped shares (BR-424).\nLosing the right hides the Chia sẻ lịch screen; the user no longer sees the lists (UC-84f, BR-430).
 
         RoleService-->RoleController: Role permissions updated successfully
         RoleController-->RolePage: MSG16 - Role permissions updated successfully

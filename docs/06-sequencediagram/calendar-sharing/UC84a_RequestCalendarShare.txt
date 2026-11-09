@@ -81,7 +81,7 @@ alt Requester has no right to create meetings - EX-1
     deactivate SharingController
     SharingPage-->Requester: MSG448 - Only a Meeting Organizer can do this.
 else Requester is verified
-    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the requester (BR-423)
+    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the requester with end date on or after today (BR-423, BR-425)
     activate ShareRepository
     ShareRepository->Database: Find shares of the pair
     activate Database

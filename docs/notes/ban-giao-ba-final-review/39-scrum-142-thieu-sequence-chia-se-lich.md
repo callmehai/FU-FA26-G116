@@ -1,6 +1,6 @@
 # 39 — SCRUM-142: sequence còn thiếu cho chia sẻ lịch
 
-**Ngày:** 08/11/2026 · **Ticket:** SCRUM-142 (chia sẻ lịch), liên quan SCRUM-137 · **Trạng thái:** đã làm S1–S6 và xuất ảnh/validate; còn chờ PO (Q-A→Q-E, Q4), Report 3 và comment Jira
+**Ngày:** 08/11/2026 · **Ticket:** SCRUM-142 (chia sẻ lịch), liên quan SCRUM-137 · **Trạng thái:** đã làm S1–S6 và xuất ảnh/validate; PO đã chốt Q-A→Q-E 09/11/2026 (Q4 không còn), đã sửa theo trong PR #295; còn Report 3 DOCX và comment Jira
 
 Nguồn: góp ý review gửi qua nhóm, BE đối chiếu lại với repo (nhánh `docs/ba-final-review-note37`, `47fb138e`).
 Phần SCRUM-142 mới là đặc tả sơ bộ, **chưa có code**, nên sửa tài liệu lúc này là rẻ nhất.
@@ -38,7 +38,7 @@ File: [UC06c_DeactivateReactivateUserAccount.txt](../../06-sequencediagram/user-
 Khối gợi ý:
 
 ```text
-        UserService->ShareRepository: Stop every Pending or Effective share where the account\nis the owner or the viewer (BR-424)
+        UserService->ShareRepository: Stop every Effective share where the account\nis the owner or the viewer (BR-424)
         activate ShareRepository
         ShareRepository->Database: Set those shares to Stopped
         Database-->ShareRepository: Stopped shares
@@ -58,9 +58,8 @@ Khối gợi ý:
 Cần ghi rõ trong diagram: dừng chia sẻ nằm **cùng giao dịch** với đổi trạng thái tài khoản (giống Voice ID ở bước 8),
 nếu không thì sẽ có lúc tài khoản đã Inactive mà chia sẻ vẫn Effective. Nếu BE muốn tách giao dịch thì phải ghi vào ticket.
 
-**Pending cũng dừng?** BR-424 chỉ nói "a share stops". Đặc tả UC-84c bước 2 viết "a share whose viewer lost the Meeting
-Organizer right was already stopped ... and is no longer Pending", tức là Pending cũng chuyển sang Stopped. Khối trên làm
-theo cách hiểu đó; xem Q-C ở §7.
+**Pending cũng dừng?** Ban đầu khối trên làm theo cách hiểu Pending cũng dừng (khớp UC-84c bước 2 cũ); PO 09/11/2026 Q-C đã chốt
+ngược lại: chỉ **Effective** dừng, Pending giữ lại (xem UC-84c EX-5/`MSG468`). Khối trên đã sửa thành Effective.
 
 ## 3. Việc S2 — UC-08: thêm bước dừng chia sẻ
 
@@ -70,9 +69,9 @@ File: [UC08_AssignSystemRoleToUser.txt](../../06-sequencediagram/user-management
 - Chèn trong nhánh `else Assignment is permitted`, **sau** dòng 85 (`Notify the user that their access changed ... BR-314`)
   và **trước** `UserService-->UserController` (dòng 87), đúng thứ tự bước 9 → 10 của Report 3.
 - Bọc trong `opt The new role no longer grants the meeting-creation right (MeetingCreator)`. Bên trong:
-  dừng các chia sẻ mà user này **là bên xem** (chỉ bên xem, không phải chủ lịch: chủ lịch không cần quyền tạo họp, BR-430),
+  dừng các chia sẻ **Đang hiệu lực** mà user này **là bên xem** (chỉ bên xem, không phải chủ lịch: chủ lịch không cần quyền tạo họp, BR-430),
   ghi audit cho từng chia sẻ, báo hai bên.
-- Thêm `note`: có lại quyền thì chia sẻ không chạy lại (BR-424).
+- Thêm `note`: có lại quyền thì chia sẻ không chạy lại (BR-424); mất quyền thì ẩn màn Chia sẻ lịch (PO Q-E).
 
 ## 4. Việc S3 — UC-11: thêm bước dừng chia sẻ, sửa tiêu đề
 
@@ -83,10 +82,13 @@ File: [UC11_ConfigureRolePermissions.txt](../../06-sequencediagram/role-manageme
 - Chèn trong nhánh `else Permission configuration saved`, sau dòng 41 (`Notify users currently holding the role ... BR-313`),
   trước dòng 42. Bọc trong `opt The change removes the meeting-creation right from the role`. Bên trong: tìm mọi
   tài khoản đang giữ vai trò này **và không còn quyền tạo họp từ vai trò khác** (nếu một người có nhiều vai trò; nếu
-  mỗi người chỉ có một vai trò thì bỏ vế này đi), dừng các chia sẻ họ đang xem, audit, báo hai bên.
+  mỗi người chỉ có một vai trò thì bỏ vế này đi), dừng các chia sẻ **Đang hiệu lực** họ đang xem, audit, báo hai bên; mất quyền thì ẩn màn Chia sẻ lịch (PO Q-E).
 - Xem lại `deactivate Database`: hiện `Database` được activate ở dòng 26 bên trong khối lưu. Khối mới phải nằm trước `deactivate Database` (dòng 47).
 
 ## 5. Việc S4 — sequence job hết hạn (tác nhân hệ thống)
+
+> **Đã bỏ theo PO 09/11/2026 (Q-B):** không có job chạy đêm, file `SYS_ExpireCalendarShares.txt/.png`, tab drawio và ảnh `drawio-png/` đã xoá trong PR #295.
+> Hết hạn chỉ là điều kiện loại ra lúc đọc (BR-425), không thêm trạng thái `Expired`. Phần đề xuất dưới đây giữ lại để đối chiếu lịch sử, không còn hiệu lực.
 
 **Không phải UC**, không có màn hình, không đánh số UC mới. Đề xuất:
 
@@ -129,19 +131,17 @@ Report 3: BR-425 đã có. Không thêm UC; chỉ cập nhật cột UC của BR
 
 ## 6. Việc S5 — danh sách chia sẻ `GET /api/calendar/shares`
 
-Đề xuất file mới `calendar-sharing/UC84_ViewCalendarShares.txt` (gắn UC-84 gom, vì đây là màn vào chung của UC-84a → 84e).
+Đã làm file `calendar-sharing/UC84f_ViewCalendarShares.txt` (đổi từ `UC84_ViewCalendarShares.txt` theo PO 09/11/2026 Q-D).
 
-- Actor: `User` (mọi tài khoản nội bộ đều là chủ lịch được, BR-430). Bên xem cần thêm `MeetingCreator`.
+- Actor: `User` có `MeetingCreator` (mất quyền thì ẩn màn, PO 09/11/2026 Q-E). Đã sửa: không còn xem chỉ-đọc.
 - Boundary: `Calendar Sharing Page` (màn *Chia sẻ lịch*).
 - Luồng: mở trang → lấy **hai danh sách** (tôi chia sẻ cho ai / ai chia sẻ cho tôi) → **server chỉ trả chia sẻ mà
   actor là một trong hai bên** (BR-423, AGENTS: list endpoint lọc ở server) → hiện trạng thái Chờ đồng ý / Đang hiệu lực /
-  Đã dừng (`MSG439`) / Hết hạn (`MSG440`) / đã đóng.
-- Nhánh: danh sách rỗng; đọc lỗi → `MSG453` (giống UC-85c EX-1); phía "ai chia sẻ cho tôi" luôn được tải, kể cả khi người xem đã mất `MeetingCreator`, để họ thấy chia sẻ đã bị dừng (`MSG439`) mà không gửi hay dùng được (sửa lúc review 09/11/2026; chờ PO Q-E).
-- Chia sẻ quá ngày kết thúc mà job chưa chạy: hiện là Hết hạn (cùng quy tắc với §5).
+  Đã dừng (`MSG439`) / đã đóng. Chia sẻ quá ngày kết thúc bị loại lúc đọc (BR-425), không hiện `Expired` (`MSG440` ngừng dùng).
+- Nhánh: danh sách rỗng; đọc lỗi → `MSG453` (giống UC-85c EX-1); mất `MeetingCreator` → `403 MSG448` (EX-2, ẩn màn).
 
-Hỏi BA (Q-D): có cần thêm UC con *UC-84f View Calendar Shares* vào Report 3 không, hay để sequence này đứng dưới UC gom.
-Đề xuất: **không thêm UC**, giống các UC gom khác của Report 3 (UC-06, UC-12). Chỉ ghi thêm vào bước 1 của UC-84a/84b/84c
-rằng trang hiện hai danh sách.
+Q-D đã chốt 09/11/2026: danh sách chia sẻ **tách thành UC con** UC-84f dưới UC-84 (giống UC-32a dưới UC-32).
+File đổi tên thành `UC84f_ViewCalendarShares.txt`, tiêu đề `UC-84f - View Calendar Shares`.
 
 ## 7. Việc S6 — danh sách người để chọn
 
@@ -185,6 +185,18 @@ Khi làm code: endpoint mới phải vào `docs/03-api/`, `frontend/src/types`, 
 | Q-E | Người đã mất `MeetingCreator` có còn xem được danh sách "ai chia sẻ cho tôi" (chỉ xem, thấy chia sẻ đã bị dừng) không? | Có, chỉ xem; không gửi hay dùng được. Sequence UC-84 đã vẽ theo cách này. |
 | Q4 *(còn mở ở đặc tả sơ bộ)* | Giờ chạy job, múi giờ | Nửa đêm múi giờ máy chủ (`Asia/Ho_Chi_Minh`); chốt trước khi vẽ S4. |
 
+**PO đã chốt 09/11/2026 (Hải, kênh `note-gửi-ba`; thay các đề xuất ở bảng trên):**
+
+| # | Quyết định | Khác với đề xuất |
+|---|---|---|
+| Q-A | Chỉ tính tài khoản **bị vô hiệu hoá**. Khoá tạm do gõ sai mật khẩu không tính. | Giống. Sửa "locked" → "deactivated" ở BR-424, MSG439, UC-84a EX-4. |
+| Q-B | Hết ngày kết thúc thì chia sẻ **tự hết**; lời mời hoặc yêu cầu sửa còn treo cũng hết theo. **Không có job chạy đêm, không báo, không thêm trạng thái** (không `Expired`). | **Khác.** Bỏ job và sequence `SYS_ExpireCalendarShares`; bỏ BR-425/BR-426 phần hết hạn tự đóng; hết hạn chỉ là điều kiện loại ra lúc đọc. Q4 (giờ chạy job) không còn. |
+| Q-C | Tài khoản bị vô hiệu hoá thì chia sẻ đang có **dừng luôn**. Lời mời còn chờ thì **giữ**; người nhận thấy "Tài khoản người gửi đã bị vô hiệu hoá" và chỉ bấm được **Từ chối**; server cũng chặn **Chấp nhận**. | **Khác.** BR-424 không dừng Pending; thêm chữ trên màn và chặn Chấp nhận ở UC-84c (EX mới, cần mã MSG mới). |
+| Q-D | Danh sách chia sẻ **tách thành UC con** dưới UC-84, giống UC-32a dưới UC-32. | **Khác.** Thêm UC con (vd. UC-84f View Calendar Shares) vào Report 3. |
+| Q-E | Mất quyền tạo cuộc họp thì **ẩn luôn màn Chia sẻ lịch**. | **Khác.** Không còn xem chỉ-đọc; sequence UC-84 và nhánh UC-08/UC-11 phải sửa. |
+
+Đã làm trong PR #295 (09/11/2026): sửa sequence (bỏ tab `System - Expire Calendar Shares`, sửa UC-84f, UC-08, UC-11, UC-84c với EX-5/`MSG468`, UC-85a/85c), BR-424/425/426, MSG439 (deactivated) và `MSG468` mới; `MSG440` ngừng dùng. Còn lại: DOCX Report 3 và `sync_reports.py` (không sửa trong PR này trừ khi reviewer đòi).
+
 ## 9. Sau khi sửa
 
 1. Xuất ảnh và ghép tab, từ thư mục gốc repo:
@@ -197,13 +209,13 @@ Khi làm code: endpoint mới phải vào `docs/03-api/`, `frontend/src/types`, 
    ```
    Mở từng ảnh, kiểm tra không bị cắt, rồi chạy validate của drawio-skill trên `TrustCabinet_Sequence_Diagrams.drawio`.
    Tab UC-11 đổi tiêu đề nên phải kiểm tra không sinh ra tab trùng.
-2. Cập nhật README: [calendar-sharing/README.md](../../06-sequencediagram/calendar-sharing/README.md) (8 → 10 sequence,
-   ngoại lệ actor hệ thống), `user-management/README.md`, `role-management/README.md` nếu có liệt kê nội dung.
-3. Đặc tả sơ bộ: thêm endpoint `share-candidates` vào §6, đổi trạng thái câu hỏi ở §7, thêm Q-A → Q-D.
-4. Report 3 (chỉ khi PO đã trả lời Q-A/Q-B/Q-C): sửa DOCX trong `docs/08-reports/source/`, rồi chạy
+2. Cập nhật README: [calendar-sharing/README.md](../../06-sequencediagram/calendar-sharing/README.md) (9 sequence: UC-84a → UC-84f, UC-85a → UC-85c),
+   `user-management/README.md`, `role-management/README.md` nếu có liệt kê nội dung. Tab bỏ: `System - Expire Calendar Shares` và `UC-84 - View Calendar Shares` (đổi thành `UC-84f`).
+3. Đặc tả sơ bộ: thêm endpoint `share-candidates` vào §6, đổi trạng thái câu hỏi ở §7, thêm Q-A → Q-E, Q4 không còn; thêm UC-84f và `MSG468`.
+4. Report 3 (PO đã trả lời Q-A → Q-E 09/11/2026): sửa DOCX trong `docs/08-reports/source/` (BR-424/425/426, MSG439, MSG468, UC-84f), rồi chạy
    `python scripts/sync_reports.py --source docs/08-reports/source/<file>.docx --report 3`. **Không sửa file `.md` sinh ra.**
-   Giữ ngôn ngữ nghiệp vụ, không ghi tên endpoint.
-5. Comment lên SCRUM-142: liệt kê S1–S6, câu hỏi Q-A → Q-D, PR + commit.
+   Giữ ngôn ngữ nghiệp vụ, không ghi tên endpoint. Việc này **chưa làm trong PR #295** (trừ khi reviewer đòi) — xem §8.
+5. Comment lên SCRUM-142: liệt kê S1–S6, quyết định PO Q-A → Q-E 09/11/2026, PR + commit.
 6. Thêm dòng 39 vào [README.md](README.md) của thư mục này.
 
 **Pending: đặc tả màn hình.** Note này chỉ sửa sequence và đặc tả sơ bộ. Màn FE-16 (*Chia sẻ lịch*, danh sách
@@ -213,15 +225,15 @@ wireframe. Để sau, khi FE có màn, theo việc còn mở ở đặc tả sơ
 
 ## 10. Checklist
 
-- [x] S1 UC-06c: khối dừng chia sẻ trong nhánh vô hiệu hoá, note ở nhánh mở lại
-- [x] S2 UC-08: `opt` mất `MeetingCreator`, chỉ bên xem
-- [x] S3 UC-11: sửa tiêu đề UC-10 → UC-11, `opt` vai trò mất quyền tạo họp
-- [x] S4 `SYS_ExpireCalendarShares.txt` + UC85a/UC85c loại `end_date < today` lúc đọc
-- [x] S5 `UC84_ViewCalendarShares.txt`
+- [x] S1 UC-06c: khối dừng chia sẻ trong nhánh vô hiệu hoá, note ở nhánh mở lại; nay chỉ dừng **Effective**, Pending giữ lại (Q-C)
+- [x] S2 UC-08: `opt` mất `MeetingCreator`, chỉ bên xem; nay chỉ dừng **Effective**, mất quyền ẩn màn (Q-C, Q-E)
+- [x] S3 UC-11: sửa tiêu đề UC-10 → UC-11, `opt` vai trò mất quyền tạo họp; nay chỉ dừng **Effective**, mất quyền ẩn màn (Q-C, Q-E)
+- [x] S4 (đã bỏ theo PO Q-B 09/11): xoá `SYS_ExpireCalendarShares.txt/.png`, tab `System - Expire Calendar Shares`, ảnh `drawio-png/sys_expirecalendarshares.drawio.png`; UC85a/UC85c giữ loại `end_date < today` lúc đọc, không job, không `Expired`
+- [x] S5 `UC84f_ViewCalendarShares.txt` (đổi từ `UC84_ViewCalendarShares.txt` theo Q-D); mất `MeetingCreator` → `403 MSG448`, ẩn màn (Q-E)
 - [x] S6 endpoint `share-candidates` trong §6 + bước tải danh sách ở UC84a/UC84b; UC85a ghi dùng `participant-options`
-- [ ] PO trả lời Q-A → Q-E, Q4
-- [x] Xuất ảnh, ghép tab, validate drawio
+- [x] PO trả lời Q-A → Q-E (09/11/2026); Q4 không còn vì bỏ job. Đã sửa theo câu trả lời trong PR #295 (sequence, BR-424/425/426, MSG439 deactivated, UC-84c EX-5/`MSG468`, `MSG440` ngừng dùng), xem khối "PO đã chốt 09/11/2026"
+- [x] Xuất ảnh, ghép tab, validate drawio (chỉ tab có `.txt` đổi thật; tab khác giữ nguyên từ main)
 - [x] README + đặc tả sơ bộ
-- [ ] Report 3 DOCX (chỉ khi PO trả lời Q-A→Q-C) + sync_reports.py
+- [ ] Report 3 DOCX (Q-A → Q-E: BR-424/425/426, MSG439, MSG468, UC-84f) + sync_reports.py — **chưa sửa trong PR này trừ khi reviewer đòi**
 - [ ] Comment SCRUM-142
 - [ ] *(pending, chờ FE có màn)* Đặc tả màn hình FE-16 trong Report 3 (§I.5.1 + §III) và wireframe

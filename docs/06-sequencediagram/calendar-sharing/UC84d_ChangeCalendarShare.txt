@@ -18,7 +18,7 @@ activate SharingController
 SharingController->SharingService: changeShare(shareId, actorId, level, startDate, endDate)
 activate SharingService
 
-SharingService->ShareRepository: Get share where the actor is one of the two people (BR-423)
+SharingService->ShareRepository: Get share where the actor is one of the two people, with end date on or after today (BR-423, BR-425)
 activate ShareRepository
 ShareRepository->Database: Retrieve share
 activate Database
@@ -34,7 +34,7 @@ alt Actor is not one of the two people - EX-1
     deactivate SharingController
     SharingPage-->Viewer: No such calendar share
 else Actor is one of the two people
-    alt Share is not Effective, or the viewer asks while a change is pending - EX-2
+    alt Share is not Effective, past its end date, or the viewer asks while a change is pending - EX-2
         SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
         deactivate SharingService
         SharingController-->SharingPage: 409 MSG450

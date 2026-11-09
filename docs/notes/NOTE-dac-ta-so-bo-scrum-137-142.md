@@ -19,7 +19,7 @@
 - Số BR-414 → BR-430 là số đề xuất (BR-414 → BR-429 nối tiếp BR-413 của PR #279, thêm BR-430 mới).
   BA giữ hoặc đổi số khi đưa vào Report 3.
 - Số UC mới UC-84/UC-85 gom theo mẫu Report 3 (UC-06, UC-12, UC-28): UC-84 *Manage Calendar Sharing*
-  (UC-84a xin xem, UC-84b chủ lịch tự chia sẻ, UC-84c trả lời, UC-84d thay đổi, UC-84e rút/ngừng) và
+  (UC-84a xin xem, UC-84b chủ lịch tự chia sẻ, UC-84c trả lời, UC-84d thay đổi, UC-84e rút/ngừng, UC-84f xem danh sách) và
   UC-85 *Find Meeting Time* (UC-85a tìm giờ, UC-85b tạo nháp từ khung, UC-85c xem lịch), nối tiếp UC-83
   của PR #279. Số UC-86..UC-90 trả lại, không dùng. Không liên quan tới UC-83 → UC-87 **cũ** ở bảng đổi
   số ngày 10/10/2026 (đã đổi thành UC-64 → UC-69), giống cách UC-78 → UC-81 đã làm.
@@ -40,10 +40,13 @@ qua UC-29 như lời mời thường. Lý do: từ chối tạo — dù báo b�
 thử từng khung. Tạo nháp: người đầu tiên làm Chair, còn lại Member, người tìm làm Secretary; cuộc họp ở Draft,
 đi luồng duyệt bình thường; tạo cuộc họp hiện **không** kiểm trùng lịch người dự — giữ nguyên.
 
-**D13 (PO, 07/11/2026 — đóng Q3):** không có trạng thái "tạm ngưng". Khi bên xem không còn là Meeting Organizer,
-hoặc một trong hai tài khoản bị khoá, chia sẻ **dừng hẳn** (Stopped) ngay lúc đó, báo cả hai bên. Có lại quyền
-hay mở khoá **không** làm chia sẻ tự chạy lại: muốn xem lại phải gửi yêu cầu chia sẻ mới (UC-84a/UC-84b). Lý do:
+**D13 (PO, 07/11/2026 — đóng Q3, bổ sung theo PO 09/11/2026):** không có trạng thái "tạm ngưng". Khi bên xem không còn là Meeting Organizer,
+hoặc một trong hai tài khoản bị **vô hiệu hoá**, chia sẻ **Đang hiệu lực** **dừng hẳn** (Stopped) ngay lúc đó, báo cả hai bên. Có lại quyền
+hay kích hoạt lại tài khoản **không** làm chia sẻ tự chạy lại: muốn xem lại phải gửi yêu cầu chia sẻ mới (UC-84a/UC-84b). Lý do:
 chủ lịch đồng ý cho một người đang giữ vai trò tạo họp; quyền mất rồi có lại là một lần đồng ý mới.
+Khoá tạm 15 phút do sai mật khẩu **không** dừng chia sẻ (Q-A 09/11). Lời mời **Chờ đồng ý** không dừng theo (Q-C 09/11):
+giữ lại, người nhận thấy "Tài khoản người gửi đã bị vô hiệu hoá" và chỉ Từ chối được; server chặn Chấp nhận
+(UC-84c EX-5, `MSG468`). Mất `MeetingCreator` thì ẩn luôn màn Chia sẻ lịch (Q-E 09/11).
 
 **D14 (BA, 07/11/2026 — đóng Q5):** tối đa **10 người ngoài người tìm**. Ô "Tính cả tôi" thêm lịch của chính
 người tìm, không chiếm chỗ trong 10 người.
@@ -56,7 +59,7 @@ khung sớm nhất 10:00 (không phải 09:40). Tên tham số theo eCab: **"Cá
 **D16 (BA, 08/11/2026 — review PR #282):** khoảng ngày chia sẻ hợp lệ (BR-431): ngày bắt đầu không sau ngày
 kết thúc, ngày kết thúc từ hôm nay trở đi, dài tối đa **365 ngày** tính cả hai đầu. Chia sẻ mới bắt đầu từ hôm nay;
 đổi khoảng của chia sẻ Đang hiệu lực được giữ ngày bắt đầu cũ; khoảng chủ lịch rút ngắn khi chấp nhận phải nằm
-trong khoảng được xin. Khác eCab (cho phép "không giới hạn", note 36 §3): BR-425 cần ngày kết thúc để tự hết hạn,
+trong khoảng được xin. Khác eCab (cho phép "không giới hạn", note 36 §3): BR-425 cần ngày kết thúc để hết hạn tính lúc đọc (PO 09/11/2026),
 và giới hạn một năm để một chia sẻ bị quên không mở lịch mãi — giờ bận của một người là dữ liệu cá nhân
 (Luật 91/2025/QH15). Con số 365 đã chốt 08/11/2026 (Hải, Q10).
 
@@ -107,7 +110,7 @@ Số UC-86..UC-90 trả lại, không dùng. Bảng đổi từ số cũ (07/11/
 
 Thuộc FE-16.
 
-_UC gom — đặc tả nằm ở các UC con UC-84a, UC-84b… bên dưới._
+_UC gom — đặc tả nằm ở các UC con UC-84a, UC-84b, UC-84c, UC-84d, UC-84e, UC-84f bên dưới (UC-84f xem danh sách chia sẻ, tách theo PO 09/11/2026 giống UC-32a dưới UC-32)._
 
 #### UC-84a – Request Calendar Share (Yêu cầu xem lịch)
 
@@ -123,7 +126,7 @@ Sequence Diagram: [UC84a_RequestCalendarShare.txt](../06-sequencediagram/calenda
 | **Postconditions** | ● POST-1: A Pending share exists and the owner is notified. (BR-423, BR-426)<br>● POST-2: No meeting content of the owner is disclosed either way. (BR-427)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |
 | **Normal Flow** | Request Calendar Share<br>1. The actor opens the Chia sẻ lịch page (or starts from someone shown “Chưa được chia sẻ lịch” on the UC-85a page) and chooses the owner (the list excludes the actor), a level (Mốc 1 or Mốc 2) and a date range.<br>2. The system checks that the actor is still a Meeting Organizer (else EX-1), that the owner is an active internal account different from the actor (else EX-4), that no Pending or Effective share of the owner's calendar to the actor exists (else EX-2) and that the range is valid (else EX-3). (BR-414, BR-423, BR-430, BR-431)<br>3. The system saves the Pending share, audits and notifies the owner. MSG435 – “Calendar share request sent.” The use case ends; the answer is UC-84c. |
 | **Alternative Flows** | N/A — the owner's answer (accept, possibly at a lower level or a shorter range, or decline) is UC-84c. |
-| **Exception Flows** | EX-1 – The actor has no right to create meetings<br>1. At Step 2, the actor is no longer a Meeting Organizer. (BR-430)<br>2. Nothing is saved. The system displays MSG448 – “Only a Meeting Organizer can do this.”<br>3. The use case ends.<br>EX-2 – A share already exists<br>1. At Step 2, a Pending or Effective share of the owner's calendar to the actor already exists. (BR-423)<br>2. Nothing is saved. The system displays MSG449 – “There is already a pending or effective share with this person.”<br>3. The use case ends.<br>EX-3 – The range is invalid<br>1. At Step 2, the date range is invalid. (BR-431)<br>2. Nothing is saved. The system displays MSG443 – “The date range is invalid.”<br>3. The use case ends.<br>EX-4 – The owner cannot be reached<br>1. At Step 2, the chosen owner is no longer an active internal account (unknown user or locked account).<br>2. Nothing is saved and nothing about any account is disclosed; the system refreshes the list and that person is no longer listed.<br>3. The use case ends.<br>EX-5 – The share cannot be saved<br>1. At Step 3, the system cannot save the share.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends.<br>EX-6 – The candidate list cannot be read<br>1. At Step 1, the system cannot read the people to pick from.<br>2. Nothing is shown. The system displays MSG467 – “Unable to load the candidate list.”<br>3. The use case ends. |
+| **Exception Flows** | EX-1 – The actor has no right to create meetings<br>1. At Step 2, the actor is no longer a Meeting Organizer. (BR-430)<br>2. Nothing is saved. The system displays MSG448 – “Only a Meeting Organizer can do this.”<br>3. The use case ends.<br>EX-2 – A share already exists<br>1. At Step 2, a Pending or Effective share of the owner's calendar to the actor already exists. (BR-423)<br>2. Nothing is saved. The system displays MSG449 – “There is already a pending or effective share with this person.”<br>3. The use case ends.<br>EX-3 – The range is invalid<br>1. At Step 2, the date range is invalid. (BR-431)<br>2. Nothing is saved. The system displays MSG443 – “The date range is invalid.”<br>3. The use case ends.<br>EX-4 – The owner cannot be reached<br>1. At Step 2, the chosen owner is no longer an active internal account (unknown user or deactivated account).<br>2. Nothing is saved and nothing about any account is disclosed; the system refreshes the list and that person is no longer listed.<br>3. The use case ends.<br>EX-5 – The share cannot be saved<br>1. At Step 3, the system cannot save the share.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends.<br>EX-6 – The candidate list cannot be read<br>1. At Step 1, the system cannot read the people to pick from.<br>2. Nothing is shown. The system displays MSG467 – “Unable to load the candidate list.”<br>3. The use case ends. |
 
 #### UC-84b – Share Calendar Directly (Chủ lịch tự chia sẻ)
 
@@ -153,11 +156,11 @@ Sequence Diagram:
 | **Primary Actors** | User — bên được hỏi (chủ lịch, với yêu cầu UC-84a hoặc thay đổi UC-84d; Meeting Organizer bên nhận, với chia sẻ UC-84b) |
 | **Secondary Actors** | Bên gửi (nhận thông báo về câu trả lời) |
 | **Description** | Allows the asked person to accept or decline a calendar share request, a direct share or a pending change. Accepting a UC-84a request may lower the level or shorten the range. (BR-414, BR-423, BR-426) |
-| **Preconditions** | ● PRE-1: The actor is the asked side of a Pending (Chờ đồng ý) share or pending change.<br>● PRE-2: The share or change is still Pending. (BR-423) |
+| **Preconditions** | ● PRE-1: The actor is the asked side of a Pending (Chờ đồng ý) share or pending change.<br>● PRE-2: The share or change is still Pending with end date on or after today. (BR-423, BR-425) |
 | **Postconditions** | ● POST-1: The share is Effective (Đang hiệu lực) with the chosen level/range, or closed, or kept as it was for a declined change; the sender is notified in every case. (BR-426)<br>● POST-2: No meeting content of the owner is disclosed either way. (BR-427)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |
-| **Normal Flow** | Respond to Calendar Share<br>1. The actor opens the notification (or the Chia sẻ lịch page) and sees the Pending request: who sent it, the level and the date range.<br>2. The system checks that the actor is the asked side (else EX-1), that the share is still Pending (else EX-2). A share whose viewer lost the Meeting Organizer right was already stopped at that moment and is no longer Pending (BR-424). (BR-423)<br>3. On accept the system marks the share Effective — for a UC-84a request the owner may choose a lower level or a shorter range (BR-414) — audits and notifies the sender. MSG436 – “Calendar share accepted.”<br>4. On decline the system closes the share, audits and notifies the sender. MSG437 – “Calendar share request declined.” |
+| **Normal Flow** | Respond to Calendar Share<br>1. The actor opens the notification (or the Chia sẻ lịch page) and sees the Pending request: who sent it, the level and the date range.<br>2. The system checks that the actor is the asked side (else EX-1), that the share is still Pending with end date on or after today (else EX-2). An Effective share whose viewer lost the Meeting Organizer right or whose either account was deactivated has already stopped (BR-424); a Pending share stays Pending — when the sender is deactivated the page shows “Tài khoản người gửi đã bị vô hiệu hoá”, only Decline is offered, and Accept is blocked (else EX-5). (BR-423, BR-424, BR-425)<br>3. On accept the system marks the share Effective — for a UC-84a request the owner may choose a lower level or a shorter range (BR-414) — audits and notifies the sender. MSG436 – “Calendar share accepted.”<br>4. On decline the system closes the share, audits and notifies the sender. MSG437 – “Calendar share request declined.” |
 | **Alternative Flows** | AF-1 – Answer a pending change (UC-84d)<br>1. At Step 3, the pending item is a change (raise to Mốc 2 or extend the range) instead of a new share.<br>2. On approval the system applies the new level/range, audits and notifies the viewer. MSG442 – “Calendar share updated.”<br>3. On decline everything stays as it was, both sides are notified. MSG452 – “Calendar share change declined.” |
-| **Exception Flows** | EX-1 – The actor is not the asked side<br>1. At Step 2, the actor is not the asked side of this share.<br>2. Nothing changes and nothing about the share or account is disclosed.<br>3. The use case ends.<br>EX-2 – Nothing to answer<br>1. At Step 2, the share or change is no longer Pending. (BR-423)<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends.<br>EX-3 – The range is invalid<br>1. At Step 3, the owner shortens the range to an invalid range. (BR-431)<br>2. Nothing changes. The system displays MSG443 – “The date range is invalid.”<br>3. The flow resumes at Step 3.<br>EX-4 – The answer cannot be saved<br>1. At Step 3 or AF-1 Step 2, the system cannot save the share.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends. |
+| **Exception Flows** | EX-1 – The actor is not the asked side<br>1. At Step 2, the actor is not the asked side of this share.<br>2. Nothing changes and nothing about the share or account is disclosed.<br>3. The use case ends.<br>EX-2 – Nothing to answer<br>1. At Step 2, the share or change is no longer Pending, or its end date has passed. (BR-423, BR-425)<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends.<br>EX-3 – The range is invalid<br>1. At Step 3, the owner shortens the range to an invalid range. (BR-431)<br>2. Nothing changes. The system displays MSG443 – “The date range is invalid.”<br>3. The flow resumes at Step 3.<br>EX-4 – The answer cannot be saved<br>1. At Step 3 or AF-1 Step 2, the system cannot save the share.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends.<br>EX-5 – The sender is deactivated<br>1. At Step 3, the actor tries to accept but the sender's account has been deactivated. (BR-424)<br>2. Nothing changes. The system displays MSG468 – “The sender's account has been deactivated. You cannot accept this share.” The recipient can only decline (Step 4).<br>3. The use case ends. |
 
 #### UC-84d – Change Calendar Share (Thay đổi chia sẻ)
 
@@ -168,7 +171,7 @@ Thuộc FE-16. Sequence Diagram:
 |---|---|
 | **Primary Actors** | Meeting Organizer (bên xem) và User — chủ lịch (tuỳ thao tác bên nào làm) |
 | **Secondary Actors** | Bên còn lại của chia sẻ (nhận thông báo; trả lời thay đổi đang chờ trong UC-84c) |
-| **Description** | Allows the viewer to ask for a higher level or a longer range (answered in UC-84c); the owner lowers the level or changes the dates at once. A stopped or expired share shows its state and reveals no hours. (BR-423, BR-424, BR-425, BR-426) |
+| **Description** | Allows the viewer to ask for a higher level or a longer range (answered in UC-84c); the owner lowers the level or changes the dates at once. A stopped share shows its state and reveals no hours; a share past its end date is not counted at read time (BR-425). (BR-423, BR-424, BR-425, BR-426) |
 | **Preconditions** | ● PRE-1: Both sides are signed in as the two people of the share when they act. (BR-430)<br>● PRE-2: The share is Effective (Đang hiệu lực); a Pending (Chờ đồng ý) share is withdrawn in UC-84e and asked for again instead. (BR-423) |
 | **Postconditions** | ● POST-1: The share holds a pending change, or the new level/range; the other side is notified in both cases. (BR-426)<br>● POST-2: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |
 | **Normal Flow** | Change Calendar Share<br>1. The viewer opens their share and asks for Mốc 2 (raise) or a longer range (extend); only one pending change at a time.<br>2. The system saves the pending change, audits and notifies the owner. MSG454 – “Calendar share change request sent.” The use case ends; the owner's answer is UC-84c. |
@@ -184,12 +187,28 @@ Thuộc FE-16. Sequence Diagram:
 |---|---|
 | **Primary Actors** | Meeting Organizer (bên xem) và User — chủ lịch (tuỳ thao tác bên nào làm) |
 | **Secondary Actors** | Bên còn lại của chia sẻ (nhận thông báo) |
-| **Description** | Allows the sender to withdraw a Pending share or a pending change; either side ends an Effective share. A stopped or expired share stays listed with its state and reveals no hours. (BR-423, BR-424, BR-425, BR-426) |
+| **Description** | Allows the sender to withdraw a Pending share or a pending change; either side ends an Effective share. A stopped share stays listed with its state and reveals no hours; a share past its end date is not counted at read time (BR-425). (BR-423, BR-424, BR-425, BR-426) |
 | **Preconditions** | ● PRE-1: Both sides are signed in as the two people of the share when they act. (BR-430)<br>● PRE-2: Withdrawing needs a Pending (Chờ đồng ý) share or change; ending needs an Effective (Đang hiệu lực) share. (BR-423) |
-| **Postconditions** | ● POST-1: The request is closed (a withdrawn new share leaves nothing; a withdrawn change leaves the share as it was), or the share is ended; the other side is notified in every case. (BR-426)<br>● POST-2: A stopped or expired share reveals no busy hours and never comes back; viewing again needs a new share. (BR-424, BR-425)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |
+| **Postconditions** | ● POST-1: The request is closed (a withdrawn new share leaves nothing; a withdrawn change leaves the share as it was), or the share is ended; the other side is notified in every case. (BR-426)<br>● POST-2: A stopped share reveals no busy hours and never comes back; a share past its end date is not counted at read time; viewing again needs a new share. (BR-424, BR-425)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |
 | **Normal Flow** | Withdraw Calendar Share<br>1. The side that sent the request or the change withdraws it.<br>2. The system closes the request (a withdrawn new share leaves nothing; a withdrawn change leaves the share as it was), audits and notifies the other side. MSG438 – “Calendar share request withdrawn.” |
 | **Alternative Flows** | AF-1 – Either side ends an Effective share (“Ngừng chia sẻ” / “Thôi xem lịch”)<br>1. Either side ends the share.<br>2. The system closes it, audits and notifies the other side. Hours already found are not removed from anyone's screen, but no new lookup uses this share. MSG451 – “Calendar sharing ended.” |
 | **Exception Flows** | EX-1 – The actor is not one of the two people<br>1. At Step 1, the actor is not one of the two people of this share.<br>2. Nothing changes and nothing about the share or account is disclosed.<br>3. The use case ends.<br>EX-2 – Nothing to withdraw or end<br>1. At Step 1 (or AF-1 Step 1), there is nothing Pending to withdraw, or the share is not Effective to end. (BR-423)<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends.<br>EX-3 – The withdrawal or ending cannot be saved<br>1. At Step 2 (or AF-1 Step 2), the system cannot save the change.<br>2. Everything stays as it was and nobody is notified. The system displays MSG447 – “Unable to save the calendar sharing data. Please try again.”<br>3. The use case ends. |
+
+#### UC-84f – View Calendar Shares (Xem danh sách chia sẻ)
+
+Thuộc FE-16. Sequence Diagram:
+[UC84f_ViewCalendarShares.txt](../06-sequencediagram/calendar-sharing/UC84f_ViewCalendarShares.txt)
+
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | Meeting Organizer |
+| **Secondary Actors** | N/A |
+| **Description** | Allows a Meeting Organizer to view the two lists of calendar shares (shares they share to, and shares shared with them) with their states. Losing MeetingCreator hides the screen (BR-430). (BR-423, BR-424, BR-425) |
+| **Preconditions** | ● PRE-1: The actor is signed in as a Meeting Organizer. (BR-430) |
+| **Postconditions** | ● POST-1: The actor sees only shares where they are one side, with states Pending (Chờ đồng ý), Effective (Đang hiệu lực), Stopped (Đã dừng) or Closed; shares past their end date are excluded at read time (BR-425). (BR-423, BR-425)<br>● POST-2: No meeting content of the owner is disclosed either way. (BR-427)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |
+| **Normal Flow** | View Calendar Shares<br>1. The actor opens the Chia sẻ lịch page.<br>2. The system loads the two lists (shares where the actor is the owner, and shares where the actor is the viewer), excluding shares past their end date. (BR-423, BR-425)<br>3. The system shows the lists with state labels. A stopped share's detail shows MSG439. |
+| **Alternative Flows** | AF-1 – No share in either list<br>1. At Step 2, neither list has a share.<br>2. The system shows an empty state. The flow ends successfully. |
+| **Exception Flows** | EX-1 – The shares cannot be read<br>1. At Step 2, the system cannot read the shares.<br>2. Nothing is shown. The system displays MSG453 – “Unable to load the calendar sharing data. Please try again.”<br>3. The use case ends.<br>EX-2 – The actor has no right to create meetings<br>1. At Step 2, the actor is no longer a Meeting Organizer. (BR-430)<br>2. Nothing is shown. The system displays MSG448 – “Only a Meeting Organizer can do this.”<br>3. The use case ends. |
 
 ### UC-85 – Find Meeting Time (Tìm giờ họp) — SCRUM-137
 
@@ -240,10 +259,10 @@ Thuộc FE-16 (tab Lịch được chia sẻ). Sequence Diagram:
 |---|---|
 | **Primary Actors** | Meeting Organizer |
 | **Secondary Actors** | User — những người đã chia sẻ lịch với actor (mỗi người một màu) |
-| **Description** | Allows a Meeting Organizer to see a weekly calendar of busy hours from people who shared with them. Overlapping hours sit side by side; no meeting titles are ever shown. People whose share stopped or expired stay listed with their state label and contribute no hours. (BR-414, BR-415, BR-417, BR-424, BR-425, BR-427) |
+| **Description** | Allows a Meeting Organizer to see a weekly calendar of busy hours from people who shared with them. Overlapping hours sit side by side; no meeting titles are ever shown. People whose share stopped stay listed with their state label and contribute no hours; shares past their end date are excluded at read time (BR-425). (BR-414, BR-415, BR-417, BR-424, BR-425, BR-427) |
 | **Preconditions** | ● PRE-1: The actor is signed in as a Meeting Organizer. (BR-430) |
-| **Postconditions** | ● POST-1: The actor sees only busy blocks of Effective (Đang hiệu lực) shares at shared levels, one colour per sharer; nothing else. (BR-427)<br>● POST-2: Stopped (Đã dừng) and expired (Hết hạn) shares stay listed with their state label and reveal no hours; they never come back. (BR-424, BR-425) |
-| **Normal Flow** | View Shared Calendar<br>1. The actor opens the Tìm giờ họp page (tab Lịch được chia sẻ) and chooses a week.<br>2. The system loads the actor's shares (any status) and the sharers' meetings at shared levels only, Monday to Friday, 08:00–17:00. (BR-414, BR-417)<br>3. The system shows the week: busy blocks only, one colour per sharer, overlaps side by side, no titles, locations, attendees or levels. People whose share stopped or expired appear with their state label (“Đã dừng” / “Hết hạn”) and contribute no hours. Opening such a person shows MSG439 / MSG440 as the detail message. (BR-424, BR-425, BR-427) |
+| **Postconditions** | ● POST-1: The actor sees only busy blocks of Effective (Đang hiệu lực) shares at shared levels, one colour per sharer; nothing else. (BR-427)<br>● POST-2: Stopped (Đã dừng) shares stay listed with their state label and reveal no hours; they never come back. Shares past their end date are excluded at read time and reveal no hours. (BR-424, BR-425) |
+| **Normal Flow** | View Shared Calendar<br>1. The actor opens the Tìm giờ họp page (tab Lịch được chia sẻ) and chooses a week.<br>2. The system loads the actor's shares (any status, end date on or after today) and the sharers' meetings at shared levels only, Monday to Friday, 08:00–17:00. (BR-414, BR-417, BR-425)<br>3. The system shows the week: busy blocks only, one colour per sharer, overlaps side by side, no titles, locations, attendees or levels. People whose share stopped appear with their state label (“Đã dừng”) and contribute no hours; shares past their end date are excluded at read time (BR-425) and contribute no hours. Opening such a person shows MSG439 as the detail message. (BR-424, BR-425, BR-427) |
 | **Alternative Flows** | AF-1 – Nobody has shared yet<br>1. At Step 2, the actor has no share in any status.<br>2. The system shows an empty week pointing to UC-84a (ask) and UC-84b (receive). The flow ends successfully. |
 | **Exception Flows** | EX-1 – The week cannot be loaded<br>1. At Step 2, the system cannot read the shares or the meetings.<br>2. Nothing is shown. The system displays MSG453 – “Unable to load the calendar sharing data. Please try again.”<br>3. The use case ends. |
 
@@ -253,8 +272,8 @@ Thuộc FE-16 (tab Lịch được chia sẻ). Sequence Diagram:
 |---|---|
 | UC-14 Create Meeting | AF mới: tạo nháp từ khung giờ tìm được (UC-85b) — điền sẵn giờ và danh sách; kiểm lại khung theo dữ liệu chia sẻ (BR-428) thay vì kiểm trùng lịch (không kiểm — BR-429) |
 | UC-29 Respond to Meeting Invitation | Người được mời từ chối cuộc họp tạo từ khung tìm được như lời mời thường (D12); không có gì khác đi |
-| UC-06c (vô hiệu hoá tài khoản) | Vô hiệu hoá một trong hai bên của chia sẻ thì dừng các chia sẻ liên quan ngay lúc đó (BR-424), ghi audit và báo hai bên (BR-426) |
-| UC-08 (gán vai trò), UC-11 (cấu hình quyền vai trò) | Thao tác làm bên xem mất quyền tạo cuộc họp thì dừng các chia sẻ bên đó đang xem ngay lúc đó (BR-424), ghi audit và báo hai bên (BR-426); có lại quyền không làm chia sẻ tự chạy lại |
+| UC-06c (vô hiệu hoá tài khoản) | Vô hiệu hoá một trong hai bên của chia sẻ thì dừng các chia sẻ **Đang hiệu lực** liên quan ngay lúc đó (BR-424), ghi audit và báo hai bên (BR-426); lời mời **Chờ đồng ý** giữ lại, chỉ Từ chối được, server chặn Chấp nhận (UC-84c EX-5, `MSG468`) |
+| UC-08 (gán vai trò), UC-11 (cấu hình quyền vai trò) | Thao tác làm bên xem mất quyền tạo cuộc họp thì dừng các chia sẻ **Đang hiệu lực** bên đó đang xem ngay lúc đó (BR-424), ghi audit và báo hai bên (BR-426); có lại quyền không làm chia sẻ tự chạy lại; mất quyền thì ẩn luôn màn Chia sẻ lịch (UC-84f) |
 | UC-12c (xoá vai trò) | Chỉ thêm POST-4: xoá vai trò không làm chia sẻ đã dừng chạy lại. Vai trò chỉ xoá được khi không tài khoản nào giữ, nên bản thân việc xoá không dừng chia sẻ nào; gỡ quyền tạo cuộc họp khỏi một người nằm ở UC-08 |
 
 ## 4. Business Rules đề xuất
@@ -270,21 +289,21 @@ Thuộc FE-16 (tab Lịch được chia sẻ). Sequence Diagram:
 | `BR-420` | A meeting counts as busy while it is Chờ duyệt, Đã duyệt, Đã công bố, Đang họp or Đã kết thúc (until its actual end time). A meeting in Nháp, Bị từ chối or Đã huỷ never counts as busy. | UC-85a, UC-85c | SCRUM-142 — trạng thái tính bận (đã chốt 08/11/2026, Hải, Q9) |
 | `BR-421` | A search covers at most 10 people besides the finder; the finder may also count their own calendar, which does not take one of the 10 places. Duration is 15 minutes to 8 hours (default 2 hours) and the date range at most 31 days. | UC-85a | SCRUM-137 / D8, D14 — số eCab, 10 người ngoài người tìm |
 | `BR-422` | Slots fall Monday to Friday, 08:00–17:00 excluding the 12:00–13:00 lunch break, and never start in the past. A slot keeps a gap of 0–4 hours (default 30 minutes) both before and after every busy period. Start times are then rounded up to a step of 5 minutes to 2 hours (default 30 minutes): a meeting ending 09:10 with a 30-minute gap and a 30-minute step gives 10:00 as the earliest start. | UC-85a | SCRUM-137 / D8, D15 — giờ làm việc, cách cuộc họp khác (hai phía), làm tròn giờ bắt đầu |
-| `BR-423` | Each ordered pair of a calendar owner and a viewer has at most one Pending (Chờ đồng ý) or Effective (Đang hiệu lực) share, and nobody shares with themselves. The direction counts: while A views B's calendar, B may still ask for or receive a share of A's calendar. | UC-84a, UC-84b, UC-84c, UC-84d | SCRUM-142 / eCab — một chia sẻ Chờ HOẶC Hiệu lực mỗi cặp **có chiều** (chủ lịch → người xem) |
-| `BR-424` | A share stops for good (Stopped — Đã dừng) as soon as the viewer is no longer a Meeting Organizer or either account is locked. It stays listed as stopped and reveals no hours. Becoming a Meeting Organizer again or unlocking the account does not restart it; viewing again needs a new share. | UC-84c, UC-85c | SCRUM-142 / D13 — PO chọn dừng hẳn, khác eCab (eCab tạm ngưng rồi tự chạy lại) |
-| `BR-425` | A share closes itself after its end date (Expired — Hết hạn). Viewing the hours again needs a new share. | UC-85c | SCRUM-142 / eCab — hết hạn tự đóng |
-| `BR-426` | Every share step — request, accept, decline, change, withdraw, end, stop and expiry — is audited and notifies the other side; a stop or an expiry notifies both sides. | UC-84a, UC-84b, UC-84c, UC-84d, UC-84e | SCRUM-142 / eCab — mọi bước ghi audit + thông báo bên kia |
+| `BR-423` | Each ordered pair of a calendar owner and a viewer has at most one Pending (Chờ đồng ý) or Effective (Đang hiệu lực) share, and nobody shares with themselves. The direction counts: while A views B's calendar, B may still ask for or receive a share of A's calendar. | UC-84a, UC-84b, UC-84c, UC-84d, UC-84e, UC-84f | SCRUM-142 / eCab — một chia sẻ Chờ HOẶC Hiệu lực mỗi cặp **có chiều** (chủ lịch → người xem) |
+| `BR-424` | An Effective share stops for good (Stopped — Đã dừng) as soon as the viewer is no longer a Meeting Organizer or either account is deactivated. Only Effective shares stop; a Pending share stays Pending. It stays listed as stopped and reveals no hours. Becoming a Meeting Organizer again or reactivating the account does not restart it; viewing again needs a new share. A temporary lock after wrong passwords (15 minutes) does not stop anything. A Pending share whose sender is deactivated stays for the recipient to decline; the recipient sees the deactivation message and cannot accept it (UC-84c EX-5, `MSG468`). While the viewer has no Meeting Organizer right the Chia sẻ lịch screen is hidden (UC-84f, BR-430). | UC-06c, UC-08, UC-11, UC-84c, UC-84f, UC-85c | SCRUM-142 / D13, PO 09/11/2026 Q-A, Q-C, Q-E — PO chọn dừng hẳn Effective, khác eCab (eCab tạm ngưng rồi tự chạy lại); chỉ vô hiệu hoá, không tính khoá tạm |
+| `BR-425` | A share past its end date stops counting at read time. When a Pending or Effective share or a pending change is read after its end date has passed, it is not counted as Pending or Effective and reveals no hours; a pending invitation or change is no longer answerable. No status is stored, no job runs and no one is notified. Viewing again needs a new share. | UC-84a, UC-84b, UC-84c, UC-84d, UC-84e, UC-84f, UC-85a, UC-85b, UC-85c | SCRUM-142, PO 09/11/2026 Q-B — hết hạn tính lúc đọc, không job, không trạng thái Expired |
+| `BR-426` | Every share step — request, accept, decline, change, withdraw, end and stop — is audited and notifies the other side; a stop notifies both sides. A share that stops counting past its end date is not audited and notifies no one. | UC-84a, UC-84b, UC-84c, UC-84d, UC-84e | SCRUM-142 / eCab, PO 09/11/2026 Q-B — mọi bước ghi audit + thông báo bên kia, hết hạn không báo |
 | `BR-427` | Shared views and search results show only busy, free, unknown or not-shared. They never show a meeting title, location, attendee list or sensitivity level. Whose hours are busy may be shown only from the finder's own invite list. | UC-84a → UC-85c | SCRUM-137 / comment 10449 — chỉ bận/rảnh |
 | `BR-428` | A slot that overlaps an undisclosed Secret meeting still allows a draft. The recheck before saving uses the same shared data as the search and produces no distinct error, warning, notification or audit because a Secret meeting overlaps. The find page always shows one fixed sentence that only shared calendars are counted and invitees may still be busy. | UC-85a, UC-85b | SCRUM-137 / D12 — khung trùng Mật vẫn cho tạo nháp (câu cố định thuộc UC-85a) |
 | `BR-429` | A meeting created from a slot starts in Draft: the first listed invitee becomes Chair, the rest become Member and the finder becomes Secretary. It follows the normal approval flow. Creating a meeting does not check attendee conflicts. | UC-85b | SCRUM-137 / D12 — vai trò mặc định, luồng duyệt thường, không kiểm trùng |
-| `BR-430` | Only a Meeting Organizer may request a share, receive a direct share, view shared calendars, find slots or create a draft from a slot; any active internal account may own a calendar and share it. | UC-84a → UC-85c (PRE) | SCRUM-142 / D5, D6 — ai được xin/nhận/xem/tìm, ai là chủ lịch |
+| `BR-430` | Only a Meeting Organizer may request a share, receive a direct share, view the share lists, view shared calendars, find slots or create a draft from a slot; any active internal account may own a calendar and share it. Losing `MeetingCreator` hides the Chia sẻ lịch screen (no read-only view). | UC-84a → UC-84f, UC-85a → UC-85c (PRE) | SCRUM-142 / D5, D6, PO 09/11/2026 Q-E — ai được xin/nhận/xem/tìm, ai là chủ lịch; mất quyền thì ẩn màn |
 | `BR-431` | A share's date range is valid when the start date is not after the end date, the end date is today or later, and the range covers at most 365 days counting both ends. A new share (UC-84a, UC-84b) starts today or later; a changed range of an Effective share (UC-84d) may keep its original start date. A range the owner shortens when accepting (UC-84c) must lie within the requested range. | UC-84a, UC-84b, UC-84c, UC-84d | SCRUM-142 / D16 (BA) — khoảng ngày chia sẻ hợp lệ |
 
 ## 5. Mã thông báo (dành sẵn)
 
 Một mã = một tình huống. Dải số dời lên `MSG435`–`MSG455` vì PR #279 đã nhận `MSG424`–`MSG434`
 (các mã chưa lên `main` nên số cũ không còn giá trị, bảng không ghi lại).
-Thêm mã mới `MSG455` và `MSG467`; mã tiếp theo `MSG468` (theo
+Thêm mã mới `MSG455`, `MSG467` và `MSG468`; mã tiếp theo `MSG469` (theo
 [catalogue](../03-api/00-danh-muc-ma-thong-bao.md), sau `MSG463`–`MSG466` của SCRUM-38 và `MSG457`–`MSG462` của SCRUM-27).
 
 | Mã | HTTP dự kiến | UC | Thông điệp đặc tả | Câu tiếng Việt cho UI |
@@ -295,22 +314,23 @@ Thêm mã mới `MSG455` và `MSG467`; mã tiếp theo `MSG468` (theo
 | `MSG452` | 200 | UC-84c AF-1 | *Calendar share change declined.* | `Đã từ chối thay đổi chia sẻ.` |
 | `MSG438` | 200 | UC-84e (Withdraw) | *Calendar share request withdrawn.* | `Đã rút yêu cầu chia sẻ lịch.` |
 | `MSG451` | 200 | UC-84e (End) | *Calendar sharing ended.* | `Đã ngừng chia sẻ lịch.` |
-| `MSG439` | — (nhãn/chi tiết) | UC-84 (danh sách), UC-85c Normal Flow | *This calendar share was stopped because the viewer is no longer a Meeting Organizer or an account was locked. Ask for a new share.* | `Chia sẻ lịch đã dừng vì người xem không còn quyền tạo cuộc họp hoặc tài khoản bị khoá. Hãy xin chia sẻ mới.` |
-| `MSG440` | — (nhãn/chi tiết) | UC-84 (danh sách), UC-85c Normal Flow | *This calendar share has expired. Ask for a new share.* | `Chia sẻ lịch này đã hết hạn. Hãy xin chia sẻ mới.` |
+| `MSG439` | — (nhãn/chi tiết) | UC-84f (danh sách), UC-85c Normal Flow | *This calendar share was stopped because the viewer is no longer a Meeting Organizer or an account was deactivated. Ask for a new share.* | `Chia sẻ lịch đã dừng vì người xem không còn quyền tạo cuộc họp hoặc tài khoản bị vô hiệu hoá. Hãy xin chia sẻ mới.` |
+| `MSG440` | — (nhãn/chi tiết) | UC-84f (danh sách), UC-85c Normal Flow — Ngừng dùng 09/11/2026 | *This calendar share has expired. Ask for a new share.* | `Chia sẻ lịch này đã hết hạn. Hãy xin chia sẻ mới.` |
 | `MSG441` | 201 | UC-84b Main Flow | *Calendar shared. Waiting for acceptance.* | `Đã chia sẻ lịch. Đang chờ bên nhận đồng ý.` |
 | `MSG442` | 200 | UC-84d AF-1, UC-84c AF-1 | *Calendar share updated.* | `Đã cập nhật chia sẻ lịch.` |
 | `MSG454` | 201 | UC-84d Main Flow | *Calendar share change request sent.* | `Đã gửi yêu cầu thay đổi chia sẻ.` |
 | `MSG443` | 400 | UC-84a EX-3, UC-84b EX-3, UC-84c EX-3, UC-84d EX-3 | *The date range is invalid.* | `Khoảng ngày không đúng.` |
 | `MSG455` | 400 | UC-84b EX-1 | *This person cannot receive a calendar share.* | `Người này không nhận được chia sẻ lịch.` |
-| `MSG448` | 403 | UC-84a EX-1, UC-85a EX-2, UC-85b EX-2 | *Only a Meeting Organizer can do this.* | `Bạn cần quyền tạo cuộc họp để thực hiện thao tác này.` |
+| `MSG448` | 403 | UC-84a EX-1, UC-84f EX-2, UC-85a EX-2, UC-85b EX-2 | *Only a Meeting Organizer can do this.* | `Bạn cần quyền tạo cuộc họp để thực hiện thao tác này.` |
 | `MSG449` | 409 | UC-84a EX-2, UC-84b EX-2 | *There is already a pending or effective share with this person.* | `Đã có chia sẻ chờ hoặc hiệu lực với người này.` |
 | `MSG450` | 409 | UC-84c EX-2, UC-84d EX-2, UC-84e EX-2 | *This action is not allowed in the current state of the share.* | `Không thể thực hiện ở trạng thái hiện tại của chia sẻ.` |
 | `MSG444` | 400 | UC-85a EX-1 | *The meeting-time search is invalid. Check the highlighted fields.* | `Thông tin tìm giờ họp không hợp lệ. Kiểm tra các trường được đánh dấu.` |
 | `MSG445` | 200 | UC-85a AF-1 | *No time slot fits everyone. Showing the slots with the most people free.* | `Không có khung giờ nào hợp với tất cả. Đang hiện các khung nhiều người dự được nhất.` |
 | `MSG446` | 409 | UC-85b EX-1 | *This time slot is no longer free. Please choose another slot.* | `Khung giờ này không còn trống. Hãy chọn khung khác.` |
-| `MSG453` | 500 | UC-84 EX-1, UC-85a EX-3, UC-85b EX-3, UC-85c EX-1 | *Unable to load the calendar sharing data. Please try again.* | `Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.` |
+| `MSG453` | 500 | UC-84f EX-1, UC-85a EX-3, UC-85b EX-3, UC-85c EX-1 | *Unable to load the calendar sharing data. Please try again.* | `Không tải được dữ liệu chia sẻ lịch. Vui lòng thử lại.` |
 | `MSG447` | 503 | UC-84a EX-5, UC-84b EX-4, UC-84c EX-4, UC-84d EX-4, UC-84e EX-3 | *Unable to save the calendar sharing data. Please try again.* | `Không lưu được dữ liệu chia sẻ lịch. Vui lòng thử lại.` |
 | `MSG467` | 500 | UC-84a EX-6, UC-84b EX-6 | *Unable to load the candidate list.* | `Không tải được danh sách người.` |
+| `MSG468` | 409 | UC-84c EX-5 | *The sender's account has been deactivated. You cannot accept this share.* | `Tài khoản người gửi đã bị vô hiệu hoá nên không chấp nhận được.` |
 
 Tạo nháp thành công dùng lại `MSG29` của UC-14 (`201 Tạo cuộc họp thành công`), không cấp mã mới.
 Người lạ hỏi tới chia sẻ của người khác không được tiết lộ gì về chia sẻ hay tài khoản đó (bảng 403/404 của AGENTS.md), không có mã.
@@ -324,40 +344,53 @@ không được xem → `404` không body.
 | Method | Đường dẫn | Ghi chú |
 |---|---|---|
 | `POST` | `/api/calendar/shares` | UC-84a: body `{ ownerId, level, startDate, endDate }`. `201 MSG435`; mất quyền → `403 MSG448`; trùng chia sẻ → `409 MSG449`; khoảng sai → `400 MSG443`; chủ lịch không tồn tại → `404` không body |
-| `POST` | `/api/calendar/shares/{id}/accept` | UC-84c: bên được hỏi chấp nhận, body tuỳ chọn `{ level, startDate, endDate }` khi chủ lịch chấp nhận thấp hơn (chỉ yêu cầu UC-84a). `200 MSG436` (yêu cầu/chia sẻ mới hiệu lực) hoặc `200 MSG442` (duyệt thay đổi của UC-84d) |
+| `POST` | `/api/calendar/shares/{id}/accept` | UC-84c: bên được hỏi chấp nhận, body tuỳ chọn `{ level, startDate, endDate }` khi chủ lịch chấp nhận thấp hơn (chỉ yêu cầu UC-84a). `200 MSG436` (yêu cầu/chia sẻ mới hiệu lực) hoặc `200 MSG442` (duyệt thay đổi của UC-84d); người gửi bị vô hiệu hoá → `409 MSG468` (EX-5); sai trạng thái/quá ngày kết thúc → `409 MSG450`; người lạ gọi → `404` không body |
 | `POST` | `/api/calendar/shares/{id}/decline` | UC-84c: từ chối yêu cầu/chia sẻ (`200 MSG437`) hoặc từ chối thay đổi (`200 MSG452`); người lạ gọi → `404` không body |
 | `POST` | `/api/calendar/shares/direct` | UC-84b: chủ lịch tự chia sẻ, body `{ viewerId, startDate, endDate }` (luôn Mốc 1). `201 MSG441`; bên nhận không nhận được chia sẻ → `400 MSG455`; trùng/khoảng sai → `MSG449`/`MSG443` |
 | `PATCH` | `/api/calendar/shares/{id}` | UC-84d AF-1: chủ lịch hạ mốc/đổi khoảng ngày. `200 MSG442`; sai trạng thái → `409 MSG450`; khoảng sai → `400 MSG443` |
 | `POST` | `/api/calendar/shares/{id}/withdraw` | UC-84e: bên gửi rút yêu cầu/thay đổi đang chờ. `200 MSG438`; sai trạng thái → `409 MSG450` |
 | `POST` | `/api/calendar/shares/{id}/end` | UC-84e AF-1: một trong hai bên ngừng chia sẻ. `200 MSG451`; sai trạng thái → `409 MSG450` |
-| `GET` | `/api/calendar/shares` | UC-84: hai danh sách: tôi chia sẻ cho ai / ai chia sẻ cho tôi (kèm trạng thái Pending — Chờ đồng ý / Effective — Đang hiệu lực / Stopped — Đã dừng / Expired — Hết hạn / Closed; nhãn Stopped/Expired là `MSG439`/`MSG440`). `200`, không mã |
+| `GET` | `/api/calendar/shares` | UC-84f: hai danh sách: tôi chia sẻ cho ai / ai chia sẻ cho tôi (kèm trạng thái Pending — Chờ đồng ý / Effective — Đang hiệu lực / Stopped — Đã dừng / Closed; nhãn Stopped là `MSG439`). Cần `MeetingCreator`, mất quyền → `403 MSG448` (ẩn màn). Chia sẻ quá ngày kết thúc bị loại lúc đọc (BR-425), không hiện `Expired`. `200`, không mã; đọc lỗi → `500 MSG453` (EX-1) |
 | `GET` | `/api/calendar/share-candidates?purpose=request\|direct&q=&page=&pageSize=` | UC-84a/UC-84b: danh sách người để chọn. `purpose=request` (UC-84a): cần `MeetingCreator`, trả tài khoản nội bộ active trừ chính mình. `purpose=direct` (UC-84b): chỉ cần đăng nhập, trả tài khoản active trừ chính mình **và có `MeetingCreator`**. Mỗi dòng chỉ `id`, `fullName` (cân nhắc bỏ `email`, BR-427). Có thể kèm cờ `hasOpenShare` để FE làm mờ người đã có chia sẻ Pending/Effective cùng chiều (BR-423), server vẫn kiểm lại khi gửi. Đọc lỗi → `500 MSG467` (UC-84a EX-6, UC-84b EX-6). |
-| `GET` | `/api/calendar/shared-week` | UC-85c: query `{ userIds, week }`. `200`: khối bận ở mốc được chia sẻ, không tên cuộc họp; người dừng/hết hạn hiện nhãn trạng thái (`MSG439`/`MSG440` khi bấm vào người đó), giờ bị loại khỏi tuần. Không đọc được → `500 MSG453` |
+| `GET` | `/api/calendar/shared-week` | UC-85c: query `{ userIds, week }`. `200`: khối bận ở mốc được chia sẻ, không tên cuộc họp; người dừng hiện nhãn trạng thái (`MSG439` khi bấm vào người đó), giờ bị loại khỏi tuần; chia sẻ quá ngày kết thúc bị loại lúc đọc (BR-425). Không đọc được → `500 MSG453` |
 | `POST` | `/api/calendar/slots` | UC-85a: body `{ userIds, includeMe, durationMinutes, fromDate, toDate, weekdays, workStart, workEnd, lunchStart, lunchEnd, bufferMinutes, stepMinutes }`. `200` khung chung theo ngày, hoặc `200 MSG445` kèm khung nhiều người dự nhất. Tham số sai → `400 MSG444`; mất quyền → `403 MSG448`; không đọc được → `500 MSG453` |
 | `POST` | `/api/meetings` (dùng lại UC-14) | UC-85b: tạo nháp từ khung giờ, body điền sẵn giờ + danh sách. `201 MSG29`; kiểm lại khung theo đúng dữ liệu đã chia sẻ, không còn hợp → `409 MSG446`; không đọc được → `500 MSG453`; không lưu được → `500 MSG35` |
 
-- Hết hạn tự đóng bằng job nền (mốc nửa đêm, múi giờ máy chủ — chốt ở §7 Q4). Dừng (D13) là trạng thái **lưu
+- Quá ngày kết thúc thì chia sẻ **tự hết**, tính lúc đọc: lời mời hoặc yêu cầu sửa còn treo cũng hết theo;
+  không báo, không thêm trạng thái (không `Expired`). Dừng (D13) là trạng thái **lưu
   lại**, không suy ra lúc đọc: chuyển sang `Stopped` ngay trong thao tác gỡ vai trò làm mất `MeetingCreator` và
-  thao tác khoá tài khoản, kèm audit + thông báo hai bên; không có đường nào đưa `Stopped` về `Effective`.
+  thao tác vô hiệu hoá tài khoản, kèm audit + thông báo hai bên; không có đường nào đưa `Stopped` về `Effective`.
 - Thông báo hai chiều dùng hạ tầng `Notification` sẵn có (`TargetType`/`TargetId` + `DeduplicationKey`);
   audit dùng `AuditLogEntry` append-only. Nội dung chi tiết do BE đặt khi viết contract.
 - Dữ liệu: đề xuất một bảng chia sẻ mới (tên và cột do BE đặt khi làm, không sửa ERD trong note này) —
   gợi ý: `calendar_shares(id, owner_user_id, viewer_user_id, level [L1/L2], start_date, end_date,
-  status [Pending/Effective/Declined/Withdrawn/Ended/Stopped/Expired], requested_by, decided_by,
+  status [Pending/Effective/Declined/Withdrawn/Ended/Stopped], requested_by, decided_by,
   decided_at, created_at, updated_at)`, unique một chia sẻ Pending/Effective mỗi cặp **có chiều** `(owner_user_id, viewer_user_id)` (BR-423):
   A xem lịch B không chặn B xin xem lịch A; dòng
-  Stopped/Expired không chặn yêu cầu mới. BE cập nhật [02-erd](../02-design/02-erd.md) cùng migration trong PR code.
+  Stopped không chặn yêu cầu mới (chia sẻ quá ngày kết thúc cũng không chặn vì loại lúc đọc, BR-425). BE cập nhật [02-erd](../02-design/02-erd.md) cùng migration trong PR code.
 
 ## 7. Câu hỏi cần PO / BA chốt
 
 | # | Câu hỏi | Đề xuất trong note |
 |---|---|---|
-| Q4 | Hết hạn tự đóng chạy lúc nào (nửa đêm, múi giờ nào) và có báo cho hai bên trước khi đóng không? | Job nửa đêm múi giờ máy chủ, báo cả hai bên khi đóng (BR-426) |
-| Q-A | BR-424 "either account is locked" nghĩa là vô hiệu hoá (UC-06c) hay cả khoá 15 phút do sai mật khẩu? | **Chỉ vô hiệu hoá.** Nếu tính cả khoá do sai mật khẩu thì ai cũng có thể cố tình gõ sai 5 lần để dừng vĩnh viễn chia sẻ của người khác, và phải thêm bước dừng vào luồng đăng nhập. Sửa chữ "locked" → "deactivated" ở BR-424, `MSG439` (`tài khoản bị khoá` → `tài khoản bị vô hiệu hoá`), UC-84a EX-4, đặc tả sơ bộ dòng 44 và 336. (chờ PO) |
-| Q-B | Pending đã qua ngày kết thúc, và thay đổi đang chờ (UC-84d) đã quá hạn, thì job xử lý ra sao? | Pending quá hạn → đóng (Expired) và báo bên gửi; thay đổi đang chờ quá hạn → tự rút, chia sẻ giữ nguyên. Ghi vào BR-425. (chờ PO) |
-| Q-C | Dừng (BR-424) có áp dụng cả cho chia sẻ Pending không? | Có (khớp UC-84c bước 2). Ghi rõ "Pending or Effective" vào BR-424. (chờ PO) |
-| Q-D | Danh sách chia sẻ có thành UC con riêng không? | Không, để dưới UC-84 gom (§6). (chờ PO) |
-| Q-E | Người đã mất `MeetingCreator` có còn xem được danh sách "ai chia sẻ cho tôi" (chỉ xem, thấy chia sẻ đã bị dừng) không? | Có, chỉ xem; không gửi hay dùng được. Sequence UC-84 đã vẽ theo cách này. (chờ PO) |
+| Q4 | Hết hạn tự đóng chạy lúc nào (nửa đêm, múi giờ nào) và có báo cho hai bên trước khi đóng không? | Job nửa đêm múi giờ máy chủ, báo cả hai bên khi đóng (BR-426) | *(không còn: PO bỏ job, 09/11)*
+| Q-A | BR-424 "either account is locked" nghĩa là vô hiệu hoá (UC-06c) hay cả khoá 15 phút do sai mật khẩu? | **Chỉ vô hiệu hoá.** Nếu tính cả khoá do sai mật khẩu thì ai cũng có thể cố tình gõ sai 5 lần để dừng vĩnh viễn chia sẻ của người khác, và phải thêm bước dừng vào luồng đăng nhập. Sửa chữ "locked" → "deactivated" ở BR-424, `MSG439` (`tài khoản bị khoá` → `tài khoản bị vô hiệu hoá`), UC-84a EX-4, đặc tả sơ bộ dòng 44 và 336. (PO đã trả lời 09/11, xem bên dưới) |
+| Q-B | Pending đã qua ngày kết thúc, và thay đổi đang chờ (UC-84d) đã quá hạn, thì job xử lý ra sao? | Pending quá hạn → đóng (Expired) và báo bên gửi; thay đổi đang chờ quá hạn → tự rút, chia sẻ giữ nguyên. Ghi vào BR-425. (PO đã trả lời 09/11, xem bên dưới) |
+| Q-C | Dừng (BR-424) có áp dụng cả cho chia sẻ Pending không? | Có (khớp UC-84c bước 2). Ghi rõ "Pending or Effective" vào BR-424. (PO đã trả lời 09/11, xem bên dưới) |
+| Q-D | Danh sách chia sẻ có thành UC con riêng không? | Không, để dưới UC-84 gom (§6). (PO đã trả lời 09/11, xem bên dưới) |
+| Q-E | Người đã mất `MeetingCreator` có còn xem được danh sách "ai chia sẻ cho tôi" (chỉ xem, thấy chia sẻ đã bị dừng) không? | Có, chỉ xem; không gửi hay dùng được. Sequence UC-84 đã vẽ theo cách này. (PO đã trả lời 09/11, xem bên dưới) |
+
+**PO đã chốt 09/11/2026 (Hải, kênh `note-gửi-ba`; thay các đề xuất ở bảng trên):**
+
+| # | Quyết định | Khác với đề xuất |
+|---|---|---|
+| Q-A | Chỉ tính tài khoản **bị vô hiệu hoá**. Khoá tạm do gõ sai mật khẩu không tính. | Giống. Sửa "locked" → "deactivated" ở BR-424, MSG439, UC-84a EX-4. |
+| Q-B | Hết ngày kết thúc thì chia sẻ **tự hết**; lời mời hoặc yêu cầu sửa còn treo cũng hết theo. **Không có job chạy đêm, không báo, không thêm trạng thái** (không `Expired`). | **Khác.** Bỏ job và sequence `SYS_ExpireCalendarShares`; bỏ BR-425/BR-426 phần hết hạn tự đóng; hết hạn chỉ là điều kiện loại ra lúc đọc. Q4 (giờ chạy job) không còn. |
+| Q-C | Tài khoản bị vô hiệu hoá thì chia sẻ đang có **dừng luôn**. Lời mời còn chờ thì **giữ**; người nhận thấy "Tài khoản người gửi đã bị vô hiệu hoá" và chỉ bấm được **Từ chối**; server cũng chặn **Chấp nhận**. | **Khác.** BR-424 không dừng Pending; thêm chữ trên màn và chặn Chấp nhận ở UC-84c (EX mới, cần mã MSG mới). |
+| Q-D | Danh sách chia sẻ **tách thành UC con** dưới UC-84, giống UC-32a dưới UC-32. | **Khác.** Thêm UC con (vd. UC-84f View Calendar Shares) vào Report 3. |
+| Q-E | Mất quyền tạo cuộc họp thì **ẩn luôn màn Chia sẻ lịch**. | **Khác.** Không còn xem chỉ-đọc; sequence UC-84 và nhánh UC-08/UC-11 phải sửa. |
+
+Việc theo sau đã làm trong PR #295 (09/11/2026): đã sửa sequence (bỏ tab `System - Expire Calendar Shares`, sửa UC-84f, UC-08, UC-11, UC-84c, UC-85a/85c), BR-424/425/426, MSG439 và MSG468 mới. Còn lại: DOCX Report 3 và `sync_reports.py` (không sửa trong PR này trừ khi reviewer đòi).
 | Q7 | Câu cố định trên màn tìm giờ (BR-428) dùng đúng chữ nào? | `Chỉ tính lịch đã được chia sẻ. Người được mời vẫn có thể bận.` — BA chốt chữ cuối |
 | Q8 | Khung nhiều người dự nhất (UC-85a AF-1) được hiện tên ai bận — chỉ tên trong danh sách mời của người tìm, đúng không? | Đúng; không bao giờ hiện tên/địa điểm/người dự của cuộc họp chủ lịch (BR-427) |
 
@@ -373,15 +406,16 @@ Q9 và Q10 đã chốt 08/11/2026 (Hải) — xem D17, D18; không còn câu h�
       `MessageCodeCatalogueTests` + `SkillMirrorTests` 74/74 pass; UC-82/UC-83, BR-397 → BR-413, `MSG408`–`MSG434`
       để trống cho SCRUM-30/SCRUM-33; UC-86 → UC-90 không dùng).
 - [ ] BA Final Review (phần còn lại): cập nhật inventory, UC diagram, màn FE-16 (§I.5.1 + §III) sau khi FE có màn
-      chạy thật (quy trình note 06); sửa mô tả SCRUM-137/SCRUM-142 theo D1–D3 (§2) và chốt Q4, Q7, Q8. Q9/Q10 đã chốt (D17, D18).
+      chạy thật (quy trình note 06); sửa mô tả SCRUM-137/SCRUM-142 theo D1–D3 (§2) và chốt Q7, Q8. Q4 và Q-A → Q-E đã chốt 09/11/2026 (Hải, xem §7); Q9/Q10 đã chốt (D17, D18).
+- [ ] BA Final Review theo PO 09/11/2026 (Q-A → Q-E): đưa UC-84f View Calendar Shares, BR-424/425/426 và `MSG468` vào DOCX Report 3, rồi chạy `sync_reports.py --report 3` (không sửa `.md` sinh ra bằng tay). `MSG440` ngừng dùng (hết hạn tính lúc đọc).
 - [ ] Ticket màn FE-16 tạo riêng (note 36 §6); cập nhật `scopeData`/landing ở PR màn hình, không ở đây.
 - [ ] Comment cần đăng lên Jira sau khi note này merge (xem §2 + D12–D16, không sửa ticket trong task này):
   - SCRUM-142: D12 (khung trùng Mật vẫn cho tạo nháp, kiểm lại theo dữ liệu đã chia sẻ, câu cố định trên màn);
     D2 (mô tả còn để 3 phương án mức xem); D3 (diễn đạt "Meeting Organizer" trong mô tả); UC-84 gom
-    (UC-84a xin xem, UC-84b chủ lịch tự chia sẻ, UC-84c trả lời, UC-84d thay đổi, UC-84e rút/ngừng),
-    BR-414 → BR-427 + BR-430, BR-431 (phần chia sẻ), `MSG435`–`MSG443` + `MSG448`–`MSG452` + `MSG454`–`MSG455` dành sẵn
-    (đổi số từ `MSG424`–`MSG443` vì PR #279; mã mới `MSG455` cho bên nhận không nhận được chia sẻ;
-    UC-84c EX-1 tách người lạ (không tiết lộ gì) khỏi sai trạng thái; UC-84c không tự dừng chia sẻ: bên xem mất quyền thì chia sẻ đã dừng ngay lúc đó, BR-424/D13; `MSG439` chỉ cho danh sách và UC-85c).
+    (UC-84a xin xem, UC-84b chủ lịch tự chia sẻ, UC-84c trả lời, UC-84d thay đổi, UC-84e rút/ngừng, UC-84f xem danh sách),
+    BR-414 → BR-427 + BR-430, BR-431 (phần chia sẻ), `MSG435`–`MSG443` + `MSG448`–`MSG452` + `MSG454`–`MSG455` + `MSG468` dành sẵn
+    (đổi số từ `MSG424`–`MSG443` vì PR #279; mã mới `MSG455` cho bên nhận không nhận được chia sẻ; `MSG468` chặn Chấp nhận khi người gửi bị vô hiệu hoá (PO 09/11);
+    UC-84c EX-1 tách người lạ (không tiết lộ gì) khỏi sai trạng thái; UC-84c không tự dừng chia sẻ: bên xem mất quyền thì chia sẻ Đang hiệu lực đã dừng ngay lúc đó, BR-424/D13; `MSG439` chỉ cho danh sách UC-84f và UC-85c; `MSG440` ngừng dùng — hết hạn tính lúc đọc).
   - SCRUM-137: D12 (như trên) + D1 (mô tả còn dòng "không có ủy quyền xem lịch" và "tab Lịch bận chung để sau");
     UC-85 gom (UC-85a tìm giờ, UC-85b tạo nháp `<<extend>>` UC-85a, UC-85c xem lịch),
     BR-414 → BR-422 + BR-427 → BR-430 (phần tìm giờ), `MSG444`–`MSG447` + `MSG453` dành sẵn

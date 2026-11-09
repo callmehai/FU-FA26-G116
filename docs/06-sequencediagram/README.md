@@ -36,16 +36,14 @@ Không biến Sequence Diagram thành mô tả toàn bộ thao tác UI trước 
 
 Thông thường, mỗi Sequence Diagram chỉ có **một mũi tên Actor → Boundary ở đầu luồng**. Ngoại lệ UC-04 có nhiều tương tác Guest → Boundary theo Normal Flow.
 
-Ngoại lệ có chủ đích: `calendar-sharing/SYS_ExpireCalendarShares.txt` dùng actor `System` (theo tiền lệ
-`transcription-voice-id/UC45c_ProcessTranscriptionQueue.txt`), không có Boundary, không có người dùng, vì job hết hạn
-ghi audit và báo hai bên (BR-425, BR-426). Đây là tác nhân hệ thống, không phải UC, không đánh số UC mới. Chi tiết
-trong README của `calendar-sharing/`.
+Job `SYS_ExpireCalendarShares` đã bỏ theo PO 09/11/2026: hết hạn tính lúc đọc, không job chạy đêm, không trạng thái Expired
+(xem README của `calendar-sharing/`).
 
 Ngoại lệ có chủ đích: `calendar-sharing/UC84a_RequestCalendarShare.txt` và
 `UC84b_ShareCalendarDirectly.txt` có hai tương tác Actor → Boundary (mở trang và tải danh sách người, rồi gửi
 yêu cầu/chia sẻ), như UC-04, vì thao tác chọn người phải tải danh sách người để chọn đã lọc ở server (BR-430,
 `MSG448`, `MSG467`) trước nút gửi; đó là điều kiện nghiệp vụ của UC-84a/UC-84b, không phải bước mở trang thuần UI.
-UC-84 chỉ xem hai danh sách, không tải danh sách người, nên phần này không dồn sang đó. Chi tiết trong README của
+UC-84f chỉ xem hai danh sách, không tải danh sách người, nên phần này không dồn sang đó. Chi tiết trong README của
 `calendar-sharing/`.
 
 Ví dụ:
@@ -571,7 +569,7 @@ deactivate MeetingPage
 | [minutes-management/](minutes-management/README.md) | UC-58, UC-59, UC-60 (bản nháp biên bản); UC-61, UC-64, UC-65, UC-83 (sơ bộ, duyệt và ban hành) |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
 | [online-meeting-room/](online-meeting-room/README.md) | UC-37, UC-38, UC-39a → UC-39d (UC-39a AF-2 ghi lời theo micro: `UC39a_RecordSpeechWhileMicrophoneOn`), UC-40, UC-41, UC-42, UC-78, UC-79 |
-| [calendar-sharing/](calendar-sharing/README.md) | UC-84 (UC-84a → UC-84e), UC-85 (UC-85a → UC-85c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
+| [calendar-sharing/](calendar-sharing/README.md) | UC-84 (UC-84a → UC-84f), UC-85 (UC-85a → UC-85c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
 | [reporting/](reporting/README.md) | UC-70a, UC-70b (sơ bộ, SCRUM-38) |
 
 Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).

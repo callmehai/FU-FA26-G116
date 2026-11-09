@@ -81,7 +81,7 @@ else Status change is allowed
         AuditService-->UserService: Deactivation recorded
         deactivate AuditService
 
-        UserService->ShareRepository: Stop every Pending or Effective share where the account is the owner or the viewer, in the same transaction as the status change (BR-424)
+        UserService->ShareRepository: Stop every Effective share where the account is the owner or the viewer, in the same transaction as the status change (BR-424)
         activate ShareRepository
         ShareRepository->Database: Set those shares to Stopped
         activate Database
@@ -109,6 +109,8 @@ else Status change is allowed
             NotificationService-->UserService: Notifications sent
             deactivate NotificationService
         end
+
+        note right of UserService: Pending invitations are kept. The recipient sees "Tài khoản người gửi đã bị vô hiệu hoá"\nand can only decline; the server blocks Accept (UC-84c EX-5, MSG468). (BR-424)
 
         UserService-->UserController: Account deactivated successfully
         UserController-->UserPage: MSG11 - User account status changed successfully

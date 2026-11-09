@@ -81,7 +81,7 @@ alt Recipient cannot receive a share - EX-1
     deactivate SharingController
     SharingPage-->Owner: MSG455 - This person cannot receive a calendar share.
 else Recipient is verified
-    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the recipient (BR-423)
+    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the recipient with end date on or after today (BR-423, BR-425)
     activate ShareRepository
     ShareRepository->Database: Find shares of the pair
     activate Database
