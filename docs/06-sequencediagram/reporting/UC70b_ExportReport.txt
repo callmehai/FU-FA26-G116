@@ -1,0 +1,61 @@
+title UC-70b - Export Report
+
+actor "Internal User" as Actor
+boundary "Reports Page" as ReportsPage
+control ":Report Controller" as ReportController
+control ":Report Service" as ReportService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Audit Service" as AuditService
+database ":Database" as Database
+
+Actor->ReportsPage: Export to Excel for the chosen period
+activate ReportsPage
+ReportsPage->ReportController: Export meeting statistics for the period
+activate ReportController
+ReportController->ReportService: exportMeetingStatistics(actorId, fromMonth, toMonth)
+activate ReportService
+ReportService->ReportService: Check the start month is not after the end month\nand the period covers at most 24 months (BR-433)
+
+alt The period is not valid - EX-1
+    ReportService-->ReportController: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
+    ReportController-->ReportsPage: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
+    ReportsPage-->Actor: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
+else The period is valid
+    ReportService->MeetingRepository: Count the readable Meetings in the period and get their attendance\nand first minutes issue (BR-432, BR-434, BR-435, BR-436)
+    activate MeetingRepository
+    MeetingRepository->Database: Retrieve counts, attendance marks and issue times of readable Meetings
+    activate Database
+    Database-->MeetingRepository: Figures / Read failure
+    deactivate Database
+    MeetingRepository-->ReportService: Figures / Read failure
+    deactivate MeetingRepository
+
+    alt The data cannot be read - EX-2
+        ReportService-->ReportController: MSG465 - Unable to export the report. Please try again.
+        ReportController-->ReportsPage: MSG465 - Unable to export the report. Please try again.
+        ReportsPage-->Actor: MSG465 - Unable to export the report. Please try again.
+    else Figures read, zero counts when no Meeting is readable - AF-1
+        ReportService->ReportService: Build the Excel file with the same figures as the page,\nno meeting title, participant or content (BR-437, BR-438)
+        ReportService->AuditService: Record the export with the actor and the period (BR-438)
+        activate AuditService
+        AuditService->Database: Insert audit entry
+        activate Database
+        Database-->AuditService: Saved / Write failure
+        deactivate Database
+        AuditService-->ReportService: Recorded / Write failure
+        deactivate AuditService
+
+        alt The export cannot be recorded - EX-2
+            ReportService-->ReportController: MSG465 - Unable to export the report. Please try again.
+            ReportController-->ReportsPage: MSG465 - Unable to export the report. Please try again.
+            ReportsPage-->Actor: MSG465 - Unable to export the report. Please try again.
+        else Recorded
+            ReportService-->ReportController: Excel file
+            ReportController-->ReportsPage: Excel file
+            ReportsPage-->Actor: Save the Excel file
+        end
+    end
+end
+deactivate ReportService
+deactivate ReportController
+deactivate ReportsPage

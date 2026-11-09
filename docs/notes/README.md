@@ -22,6 +22,9 @@ UC Specification, Business Rules hoặc ADR đã chốt.
   BR-414 → BR-431 đề xuất, `MSG435`–`MSG455` dành sẵn (mã tiếp theo `MSG456`), 8 sequence `.txt`
   + tab và ảnh, quyết định mới D12 (khung trùng Mật vẫn cho tạo nháp), số dựa trên PR #279 merge trước,
   comment cần đăng lên Jira (chưa đăng).
+- [Đặc tả sơ bộ SCRUM-38](NOTE-dac-ta-so-bo-scrum-38.md) — 09/11/2026; bước BE viết UC cơ bản: UC-70a Xem báo cáo,
+  UC-70b Xuất Excel (đang là Placeholder), BR-432 → BR-438 đề xuất, `MSG463`–`MSG466` dành sẵn, 2 sequence `.txt`,
+  chỗ lệch khỏi ticket và Report 3 (mọi người dùng nội bộ xem được, Quản trị không thấy toàn hệ thống, bỏ PDF) và 3 câu hỏi cho PO/BA.
 - [Danh sách unit test theo module](NOTE-danh-sach-unit-test.md) — 03/11/2026; 124 case thiết kế theo
   sáu cột của Report 5.1 (No, Module Name, Method Name, Sheet Name, Description, Pre-Condition) cho
   22 module đang chạy thật, kèm bảng Source trỏ file test trong `tests/`.
