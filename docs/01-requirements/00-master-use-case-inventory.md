@@ -254,7 +254,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-70 | Xem & xuất báo cáo *(View & Export Reports)* — gồm UC-70a Xem, UC-70b Xuất | User có quyền báo cáo | Placeholder | Độc lập (UC-70b `<<extend>>` UC-70a) |
+| UC-70 | Xem & xuất báo cáo *(View & Export Reports)* — gồm UC-70a Xem, UC-70b Xuất Excel; chỉ đếm cuộc họp người xem đọc được, Quản trị cũng vậy (BR-432) | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con (SCRUM-38, 09/11/2026) | Độc lập (UC-70b `<<extend>>` UC-70a) |
 
 ## FE-16 — Lịch làm việc & tìm giờ họp *(Working Calendar & Meeting Time Search)*
 
