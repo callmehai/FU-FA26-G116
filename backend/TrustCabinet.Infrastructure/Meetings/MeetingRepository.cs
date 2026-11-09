@@ -167,7 +167,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
                     capability.RoleId == user.RoleId
                     && capability.Capability == Capability.MeetingApprover))
             .OrderBy(user => user.FullName)
-            .Select(user => new MeetingApproverOption(user.Id, user.FullName))
+            .Select(user => new MeetingApproverOption(user.Id, user.FullName, user.Email))
             .ToListAsync(ct);
 
     public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default)

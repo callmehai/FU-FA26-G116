@@ -143,7 +143,7 @@ thành công/thất bại trong diagram hiện tại.
 ### GET `/api/meetings/approvers`
 
 Trả danh sách tài khoản đang hoạt động có capability `MeetingApprover`, loại người đang gọi API,
-chỉ gồm `id` và `fullName`; endpoint phục vụ bước chọn người duyệt của UC-18 và kế thừa gate
+chỉ gồm `id`, `fullName` và `email` (email phân biệt hai người trùng tên trong ô chọn, SCRUM-150); endpoint phục vụ bước chọn người duyệt của UC-18 và kế thừa gate
 `MeetingCreator`. Danh sách sắp xếp theo tên. Nếu hệ thống không đọc được danh sách do lỗi database
 hoặc timeout, trả `503 Service Unavailable` với `{ "code": "MSG130", "message":
 "Không thể tải danh sách người duyệt. Vui lòng thử lại." }`.
