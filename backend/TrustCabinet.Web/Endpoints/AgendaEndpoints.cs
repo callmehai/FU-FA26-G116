@@ -166,7 +166,7 @@ public static class AgendaEndpoints
                 AgendaFailure.UnsupportedMedia => (415, Msg34UnsupportedMedia, "Yêu cầu phải dùng Content-Type application/json."),
                 AgendaFailure.TooLarge => (413, Msg87BodyTooLarge, "Nội dung yêu cầu vượt quá 64 KiB."),
                 AgendaFailure.ReadFailed => (500, Msg128ReadFailed, "Không tải được chương trình nghị sự."),
-                AgendaFailure.DeleteLocked => (409, Msg142DeleteLocked, "Chỉ được xóa mục nghị sự chưa bắt đầu."),
+                AgendaFailure.DeleteLocked => (409, Msg142DeleteLocked, "Chỉ được xoá mục nghị sự chưa bắt đầu."),
                 AgendaFailure.InvalidOrder => (400, Msg143OrderConflict, "Danh sách sắp xếp phải chứa đúng mỗi mục nghị sự một lần."),
                 AgendaFailure.StaleOrder => (409, Msg143OrderConflict, "Chương trình nghị sự đã thay đổi. Vui lòng tải lại."),
                 AgendaFailure.AlreadyCurrent => (409, Msg72AlreadyCurrent, "Đã có mục nghị sự đang diễn ra."),
@@ -183,7 +183,7 @@ public static class AgendaEndpoints
         {
             AgendaOperation.Create => (Msg60Created, "Tạo mục nghị sự thành công."),
             AgendaOperation.Update => (Msg61Updated, "Cập nhật mục nghị sự thành công."),
-            AgendaOperation.Delete => (Msg62Deleted, "Xóa mục nghị sự thành công."),
+            AgendaOperation.Delete => (Msg62Deleted, "Xoá mục nghị sự thành công."),
             AgendaOperation.Reorder => (Msg63Reordered, "Sắp xếp mục nghị sự thành công."),
             AgendaOperation.Start => (Msg64Started, "Bắt đầu mục nghị sự thành công."),
             AgendaOperation.RecordConclusion => (Msg271ConclusionSaved, "Lưu kết luận mục nghị sự thành công."),

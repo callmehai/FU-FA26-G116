@@ -311,8 +311,10 @@ Ai từng làm SQL Server rất dễ vấp:
 - **So sánh chuỗi phân biệt hoa thường.** Khác SQL Server. Cột `users.email` dùng kiểu `citext` nên
   so sánh không phân biệt hoa thường — cột nào khác cần điều đó thì phải khai báo rõ, đừng cho là
   mặc định.
-- **`LIKE` cũng phân biệt hoa thường** — tìm kiếm cho người dùng phải dùng `ILIKE`. Việc này sẽ
-  đụng ngay ở `SCRUM-18` (tìm kiếm danh sách cuộc họp).
+- **`LIKE` cũng phân biệt hoa thường** — tìm kiếm cho người dùng phải dùng `ILIKE`. Tìm cuộc họp
+  (`SCRUM-18`) còn bỏ qua dấu: `strpos(lower(unaccent(title)), lower(unaccent(q))) > 0` (extension
+  `unaccent`, SCRUM-148). Đừng ghép `unaccent` với `LIKE`: nó biến `％ ＿ ＼` toàn độ rộng thành
+  `% _ \`, tức wildcard, sau khi đã escape.
 
 ## Cấu trúc project
 

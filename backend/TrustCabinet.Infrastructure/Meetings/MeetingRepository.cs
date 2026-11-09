@@ -76,12 +76,11 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 
         if (query.Query is { Length: > 0 } search)
         {
-            var pattern = $"%{search.Replace("\\", "\\\\", StringComparison.Ordinal)
-                .Replace("%", "\\%", StringComparison.Ordinal)
-                .Replace("_", "\\_", StringComparison.Ordinal)}%";
-            // Accent-insensitive (SCRUM-148): people type "e2e loc" for "E2E Lộc"; unaccent also folds đ to d.
-            meetings = meetings.Where(m => EF.Functions.ILike(
-                EF.Functions.Unaccent(m.Title), EF.Functions.Unaccent(pattern), "\\"));
+            // Accent- and case-insensitive (SCRUM-148): "e2e loc" finds "E2E Lộc", and unaccent folds đ to d.
+            // A substring test (strpos), not LIKE: unaccent maps full-width ％ ＿ ＼ to % _ \, which would
+            // turn back into wildcards after any escaping done before it.
+            meetings = meetings.Where(m => EF.Functions.Unaccent(m.Title).ToLower()
+                .Contains(EF.Functions.Unaccent(search).ToLower()));
         }
 
         var totalCount = await meetings.LongCountAsync(ct);

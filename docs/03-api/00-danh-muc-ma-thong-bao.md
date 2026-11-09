@@ -80,7 +80,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 |---|---|---|---|
 | `MSG60` | 201 | POST agenda | Tạo mục nghị sự thành công. |
 | `MSG61` | 200 | PUT item | Cập nhật mục nghị sự thành công. |
-| `MSG62` | 200 | DELETE item | Xóa mục nghị sự thành công. |
+| `MSG62` | 200 | DELETE item | Xoá mục nghị sự thành công. |
 | `MSG63` | 200 | PUT order | Sắp xếp mục nghị sự thành công. |
 | `MSG64` | 200 | POST current | Bắt đầu mục nghị sự thành công. |
 | `MSG65` | 200 | POST complete | Hoàn thành mục nghị sự thành công. |
@@ -99,7 +99,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | `MSG75` | 503 | Lưu start thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
 | `MSG76` | 503 | Lưu complete thất bại hoặc actual time không hợp lệ | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
 | `MSG128` | 500 | GET agenda/options thất bại | Không tải được chương trình nghị sự. |
-| `MSG142` | 409 | Xóa item đã bắt đầu | Chỉ được xóa mục nghị sự chưa bắt đầu. |
+| `MSG142` | 409 | Xóa item đã bắt đầu | Chỉ được xoá mục nghị sự chưa bắt đầu. |
 | `MSG143` | 400 | Reorder: body hoặc tập ID toàn bộ mục không hợp lệ | Danh sách sắp xếp phải chứa đúng mỗi mục nghị sự một lần. |
 | `MSG143` | 409 | Reorder: orderVersion cũ | Chương trình nghị sự đã thay đổi. Vui lòng tải lại. |
 | `MSG34` | 415 | Agenda POST/PUT có body không phải JSON | Yêu cầu phải dùng Content-Type application/json. |
@@ -763,7 +763,7 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG139` | UC-22 cũ · Ngừng dùng 13/10/2026 | Không còn gate đóng Vote trước End Meeting; không tái cấp mã. |
 | `MSG140` | UC-18 Submit Meeting for Approval · EX-5 — Dành sẵn | *No eligible meeting approver is available. Please contact the administrator.* — `Chưa có người duyệt đủ điều kiện. Vui lòng liên hệ quản trị viên.` |
 | `MSG141` | Ngừng dùng từ SCRUM-98 | Quy tắc cũ đã bỏ theo PO; không tái cấp mã. |
-| `MSG142` | UC-23c / EX-2 · Đã triển khai SCRUM-25 | *Only Pending agenda items can be deleted.* — Chỉ được xóa mục nghị sự chưa bắt đầu. |
+| `MSG142` | UC-23c / EX-2 · Đã triển khai SCRUM-25 | *Only Pending agenda items can be deleted.* — Chỉ được xoá mục nghị sự chưa bắt đầu. |
 | `MSG143` | UC-23d / EX-2 · Đã triển khai SCRUM-25 | *The agenda order is invalid or out of date. Refresh the agenda and try again.* — Thứ tự chương trình nghị sự không hợp lệ hoặc đã cũ. Vui lòng tải lại và thử lại. Câu chữ đổi 18/10/2026 (PO 16/10/2026: sắp xếp mục ở mọi trạng thái); cùng tình huống, giữ mã. |
 | `MSG144` | Ngừng dùng từ SCRUM-98 | Quy tắc cũ đã bỏ theo PO; không tái cấp mã. |
 | `MSG415` | UC-82 Take Meeting Notes · Main Flow · Đã triển khai SCRUM-30 | *Note saved.* — Đã lưu ghi chú. |
