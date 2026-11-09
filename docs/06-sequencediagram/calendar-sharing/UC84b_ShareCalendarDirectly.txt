@@ -26,7 +26,7 @@ deactivate Database
 UserRepository-->SharingService: Verification result
 deactivate UserRepository
 
-alt Owner is not active
+alt Owner is not active - EX-5
     SharingService-->SharingController: Not found, nothing disclosed
     deactivate SharingService
     SharingController-->SharingPage: 404
@@ -42,12 +42,12 @@ else Owner is verified
     UserRepository-->SharingService: Candidate list / Read failed
     deactivate UserRepository
 
-    alt Candidate list cannot be read - EX
-        SharingService-->SharingController: (new code pending catalogue) - Unable to load the candidate list.
+    alt Candidate list cannot be read - EX-6
+        SharingService-->SharingController: MSG467 - Unable to load the candidate list.
         deactivate SharingService
-        SharingController-->SharingPage: 500 (new code pending catalogue)
+        SharingController-->SharingPage: 500 MSG467
         deactivate SharingController
-        SharingPage-->Owner: (new code pending catalogue) - Unable to load the candidate list.
+        SharingPage-->Owner: MSG467 - Unable to load the candidate list.
     else Candidate list is loaded
         SharingService-->SharingController: Candidate list
         deactivate SharingService

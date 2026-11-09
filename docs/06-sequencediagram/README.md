@@ -41,6 +41,13 @@ Ngoại lệ có chủ đích: `calendar-sharing/SYS_ExpireCalendarShares.txt` d
 ghi audit và báo hai bên (BR-425, BR-426). Đây là tác nhân hệ thống, không phải UC, không đánh số UC mới. Chi tiết
 trong README của `calendar-sharing/`.
 
+Ngoại lệ có chủ đích: `calendar-sharing/UC84a_RequestCalendarShare.txt` và
+`UC84b_ShareCalendarDirectly.txt` có hai tương tác Actor → Boundary (mở trang và tải danh sách người, rồi gửi
+yêu cầu/chia sẻ), như UC-04, vì thao tác chọn người phải tải danh sách người để chọn đã lọc ở server (BR-430,
+`MSG448`, `MSG467`) trước nút gửi; đó là điều kiện nghiệp vụ của UC-84a/UC-84b, không phải bước mở trang thuần UI.
+UC-84 chỉ xem hai danh sách, không tải danh sách người, nên phần này không dồn sang đó. Chi tiết trong README của
+`calendar-sharing/`.
+
 Ví dụ:
 
 ```text

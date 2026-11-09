@@ -64237,7 +64237,7 @@ deactivate NotificationPanel
             <mxGeometry height="788" width="2963" x="55" y="447.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Requester is not a Meeting Organizer - EX]" vertex="1">
+        <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Requester is not a Meeting Organizer - EX-1]" vertex="1">
           <mxGeometry height="16" width="2909" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="13" parent="11" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -64251,7 +64251,7 @@ deactivate NotificationPanel
             <mxGeometry height="366" width="1519" x="65" y="859.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="16" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Candidate list cannot be read - EX]" vertex="1">
+        <mxCell id="16" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Candidate list cannot be read - EX-6]" vertex="1">
           <mxGeometry height="16" width="1465" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="17" parent="15" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -64484,7 +64484,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="(new code pending catalogue) - Unable to load the candidate list." mermaidId="e:SharingService-&gt;SharingController#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="(new code pending catalogue) - Unable to load the candidate list." id="74">
+        <UserObject label="MSG467 - Unable to load the candidate list." mermaidId="e:SharingService-&gt;SharingController#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG467 - Unable to load the candidate list." id="74">
           <mxCell edge="1" parent="1" source="6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="5">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -64495,7 +64495,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="500 (new code pending catalogue)" mermaidId="e:SharingController-&gt;SharingPage#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="500 (new code pending catalogue)" id="75">
+        <UserObject label="500 MSG467" mermaidId="e:SharingController-&gt;SharingPage#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="500 MSG467" id="75">
           <mxCell edge="1" parent="1" source="5" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="59">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -64506,7 +64506,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="(new code pending catalogue) - Unable to load the candidate list." mermaidId="e:SharingPage-&gt;Requester#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="(new code pending catalogue) - Unable to load the candidate list." id="76">
+        <UserObject label="MSG467 - Unable to load the candidate list." mermaidId="e:SharingPage-&gt;Requester#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG467 - Unable to load the candidate list." id="76">
           <mxCell edge="1" parent="1" source="59" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -65181,7 +65181,7 @@ deactivate NotificationPanel
             <mxGeometry height="788" width="3191" x="55" y="447.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Owner is not active]" vertex="1">
+        <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Owner is not active - EX-5]" vertex="1">
           <mxGeometry height="16" width="3137" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="13" parent="11" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -65195,7 +65195,7 @@ deactivate NotificationPanel
             <mxGeometry height="366" width="1609" x="65" y="859.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="16" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Candidate list cannot be read - EX]" vertex="1">
+        <mxCell id="16" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Candidate list cannot be read - EX-6]" vertex="1">
           <mxGeometry height="16" width="1555" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="17" parent="15" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -65414,7 +65414,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="(new code pending catalogue) - Unable to load the candidate list." mermaidId="e:SharingService-&gt;SharingController#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="(new code pending catalogue) - Unable to load the candidate list." id="66">
+        <UserObject label="MSG467 - Unable to load the candidate list." mermaidId="e:SharingService-&gt;SharingController#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG467 - Unable to load the candidate list." id="66">
           <mxCell edge="1" parent="1" source="6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="5">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -65425,7 +65425,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="500 (new code pending catalogue)" mermaidId="e:SharingController-&gt;SharingPage#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="500 (new code pending catalogue)" id="67">
+        <UserObject label="500 MSG467" mermaidId="e:SharingController-&gt;SharingPage#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="500 MSG467" id="67">
           <mxCell edge="1" parent="1" source="5" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="51">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -65436,7 +65436,7 @@ deactivate NotificationPanel
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="(new code pending catalogue) - Unable to load the candidate list." mermaidId="e:SharingPage-&gt;Owner#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="(new code pending catalogue) - Unable to load the candidate list." id="68">
+        <UserObject label="MSG467 - Unable to load the candidate list." mermaidId="e:SharingPage-&gt;Owner#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG467 - Unable to load the candidate list." id="68">
           <mxCell edge="1" parent="1" source="51" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">

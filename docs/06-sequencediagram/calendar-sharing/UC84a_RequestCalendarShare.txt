@@ -26,7 +26,7 @@ deactivate Database
 UserRepository-->SharingService: Verification result
 deactivate UserRepository
 
-alt Requester is not a Meeting Organizer - EX
+alt Requester is not a Meeting Organizer - EX-1
     SharingService-->SharingController: MSG448 - Only a Meeting Organizer can do this.
     deactivate SharingService
     SharingController-->SharingPage: 403 MSG448
@@ -42,12 +42,12 @@ else Requester is verified
     UserRepository-->SharingService: Candidate list / Read failed
     deactivate UserRepository
 
-    alt Candidate list cannot be read - EX
-        SharingService-->SharingController: (new code pending catalogue) - Unable to load the candidate list.
+    alt Candidate list cannot be read - EX-6
+        SharingService-->SharingController: MSG467 - Unable to load the candidate list.
         deactivate SharingService
-        SharingController-->SharingPage: 500 (new code pending catalogue)
+        SharingController-->SharingPage: 500 MSG467
         deactivate SharingController
-        SharingPage-->Requester: (new code pending catalogue) - Unable to load the candidate list.
+        SharingPage-->Requester: MSG467 - Unable to load the candidate list.
     else Candidate list is loaded
         SharingService-->SharingController: Candidate list
         deactivate SharingService

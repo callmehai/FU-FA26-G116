@@ -31,6 +31,10 @@ Ngoại lệ actor hệ thống: `SYS_ExpireCalendarShares.txt` dùng actor `Sys
 không có Boundary, không có người dùng, vì job hết hạn ghi audit và báo hai bên (BR-425, BR-426). Đây là tác nhân hệ thống,
 không phải UC, không đánh số UC mới. Chi tiết convention xem [README cha](../README.md) §2.1.
 
+Ngoại lệ hai tương tác Actor → Boundary: UC-84a/UC-84b tải danh sách người để chọn (endpoint `share-candidates`, lọc ở
+server, BR-430, `MSG448`/`MSG467`) trước nút gửi, nên có hai tương tác như UC-04; UC-84 chỉ xem hai danh sách, không có
+danh sách người, nên phần tải này không dồn sang đó. Chi tiết xem [README cha](../README.md) §2.1.
+
 ## Xuất ảnh
 
 Từ thư mục gốc repository:
