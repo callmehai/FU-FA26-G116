@@ -47,7 +47,7 @@ Nguồn: comment Jira 10339, 10340 (Huy BE), 10354 (Huy FE), 10347 (Lộc). Cont
 | 28-3 | UC-54 bước 5 (Khách) | "Guest must have verified the invited email" | Khách không cần xác minh **lúc mở phiếu**: mọi lời mời chưa thu hồi vào danh sách lúc mở; lúc bỏ phiếu phải có phiên Khách xác minh và lời mời còn hiệu lực. **Bỏ** vế "Khách được mời sau lúc mở phiếu vẫn bỏ phiếu" (PO 08/11 đảo quyết định 30/10) |
 | 28-4 | BR-190 | "fixed when the Vote opens" | **Giữ nguyên câu hiện có**, không thêm ngoại lệ. Có thể thêm một câu: "Applies to every role including Guest; no one added after the Vote opens may vote on it" (PO 08/11) |
 | 28-5 | UC mời Khách (UC-04 / UC-28a) và sequence | Chưa có nhánh | **Không làm nữa** (PO 08/11: Khách mời sau lúc mở phiếu không vào danh sách). Nếu agent đã thêm nhánh này thì gỡ |
-| 28-13 | UC-22 (End Meeting), BR-189, sequence kết thúc cuộc họp | BR-189: nháp chỉ xoá khi cuộc họp Approved / Published / InProgress | Khi cuộc họp sang `Ended`, nháp biểu quyết chưa mở **tự bị xoá**, có ghi nhật ký (PO 08/11). Thêm vào POST của UC-22 và BR-189 (câu mới); tìm UC ghi nhật ký để dùng đúng tên sự kiện, không tự đặt |
+| 28-13 | UC-22 (End Meeting), BR-189, sequence kết thúc cuộc họp | BR-189: nháp chỉ xoá khi cuộc họp Approved / Published / InProgress | Khi cuộc họp sang `Ended`, nháp biểu quyết chưa mở **tự bị xoá**, có ghi nhật ký, **mỗi nháp một dòng** (PO 08/11; code theo PR #296). Thêm vào POST của UC-22 và BR-189 (câu mới) |
 | 28-6 | UC-53 AF-3, UC-54 EX-2 | Chưa nói rõ | Thành viên gửi `openImmediately` nhận MSG213, Thư ký nhận MSG218 (EX-2 đi trước AF-3) |
 | 28-7 | Sequence UC-55, bước "Save VoteChoice … Secret Vote" | Chưa phản ánh | Phiếu kín: **không ghi `VoteChoice`** (đã đổi theo review Lộc, ERD dòng 58); Id ngẫu nhiên, không `CastAt` |
 | 28-8 | ERD `02-erd.md` | Dòng 58 nói "phiếu kín không ghi dòng nào", nhưng dòng 361 còn cột `CastAt`, dòng 390 còn mô tả ghép bằng `CastAt` | Làm ba chỗ khớp nhau; xác nhận bằng migration `VoteChoicesWithoutCastTime` |
@@ -119,4 +119,4 @@ Nguồn: comment Jira 10341, 10351 (Huy BE), 10355 (Huy FE), 10348 (Lộc).
 - [x] §5: sync Report 3 (chạy 2 lần, lần hai không đổi file), PR docs. Comment Jira sau khi PR vào `main`.
 - [x] Hỏi PO: đã chốt 08/11/2026 (danh sách chốt lúc mở cho mọi vai trò kể cả Khách; nháp tự xoá khi `Ended`, có nhật ký).
 - [x] §2: 28-13 (UC-22, BR-189, sequence kết thúc cuộc họp).
-- [ ] Huy: gỡ nhánh thêm Khách sau khi mở phiếu; tự xoá nháp khi `Ended` kèm nhật ký (code, `03-api/15-bieu-quyet.md`, test).
+- [x] Huy: gỡ nhánh thêm Khách sau khi mở phiếu; tự xoá nháp khi `Ended` kèm nhật ký, mỗi nháp một dòng (code, `03-api/15-bieu-quyet.md`, test) — đã vào `main` ở PR #296.
