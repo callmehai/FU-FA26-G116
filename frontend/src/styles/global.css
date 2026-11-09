@@ -1226,17 +1226,31 @@ a.menu-item { text-decoration: none; }
 /* A long meeting title ends in "…" after two lines, the full title in its tooltip (SCRUM-148). */
 .meetings-table .cell-title a { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 /* Wide enough: fixed columns, so the Time column does not move between pages with the length of
-   their titles. The title takes what the others leave; the action fits "Vào phòng họp". Narrower,
-   fixed widths would squeeze the title, so the table keeps its automatic layout there. */
+   their titles (SCRUM-148). The title takes what the others leave. From 1280px the action fits
+   "Vào phòng họp"; below, down to 1100px (a 1200px window less the 256px sidebar), the columns are
+   tighter and the live button keeps its icon, its name and its tooltip, so the title keeps room.
+   Narrower still, the table keeps its automatic layout. */
 @media (min-width: 1100px) {
   .meetings-table { table-layout: fixed; }
-  .meetings-table th.cell-index { width: 48px; }
-  .meetings-table th:nth-child(3) { width: 172px; }
-  .meetings-table th.cell-place { width: 104px; }
-  .meetings-table th:nth-child(5) { width: 132px; }
-  .meetings-table th:nth-child(6) { width: 96px; }
-  .meetings-table th.col-action { width: 156px; }
+  .meetings-table th.cell-index { width: 44px; }
+  .meetings-table th.cell-schedule { width: 164px; }
+  .meetings-table th.cell-place { width: 96px; }
+  .meetings-table th.cell-status { width: 124px; }
+  .meetings-table th.cell-level { width: 88px; }
+  .meetings-table th.col-action { width: 96px; }
   .meetings-table td.cell-place { min-width: 0; }
+}
+@media (min-width: 1100px) and (max-width: 1279px) {
+  .meetings-table .btn-live-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .meetings-table .btn-live { width: 40px; padding: 0; justify-content: center; }
+}
+@media (min-width: 1280px) {
+  .meetings-table th.cell-index { width: 48px; }
+  .meetings-table th.cell-schedule { width: 172px; }
+  .meetings-table th.cell-place { width: 104px; }
+  .meetings-table th.cell-status { width: 132px; }
+  .meetings-table th.cell-level { width: 96px; }
+  .meetings-table th.col-action { width: 156px; }
 }
 
 /* Meetings on a phone, as AI-eCabinet lays them out: the panel grows with its rows and the page

@@ -71,11 +71,12 @@ type Load =
   | { kind: 'loaded'; data: MeetingListResponse }
   | { kind: 'error'; message: string; invalidQuery: boolean }
 
-/**
- * UC-17 View Meeting List (SCRUM-18). Search, filters, sorting and paging are all done by the server
- * after it has dropped every meeting the caller may not see, so nothing here filters rows itself.
- * The criteria live in the URL (see listParams.ts).
- */
+/** Sets the title's tooltip just before it would show: only when the two-line clamp cut the title. */
+function tipIfClamped(link: HTMLElement, title: string) {
+  if (link.scrollHeight > link.clientHeight + 1) link.dataset.tooltip = title
+  else delete link.dataset.tooltip
+}
+
 /** Which empty state a list with these criteria shows. */
 function emptyKind(s: ListState) {
   const rest = !s.q.trim() && !s.status && !s.sensitivity
@@ -88,6 +89,11 @@ function emptyKind(s: ListState) {
   }
 }
 
+/**
+ * UC-17 View Meeting List (SCRUM-18). Search, filters, sorting and paging are all done by the server
+ * after it has dropped every meeting the caller may not see, so nothing here filters rows itself.
+ * The criteria live in the URL (see listParams.ts).
+ */
 export function MeetingsPage() {
   const { can } = useAuth()
   const navigate = useNavigate()
@@ -255,8 +261,14 @@ export function MeetingsPage() {
       >
         <td className="cell-index">{offset + index + 1}</td>
         <td className="cell-title">
-          {/* Two lines at most (CSS), so the full title is in the tooltip. */}
-          <Link to={routes.meeting(m.id)} state={back} onClick={(e) => e.stopPropagation()} data-tooltip={m.title}>
+          {/* Two lines at most (CSS); a title cut short shows in full as a tooltip, one that fits does not. */}
+          <Link
+            to={routes.meeting(m.id)}
+            state={back}
+            onClick={(e) => e.stopPropagation()}
+            onPointerEnter={(e) => tipIfClamped(e.currentTarget, m.title)}
+            onFocus={(e) => tipIfClamped(e.currentTarget, m.title)}
+          >
             {m.title}
           </Link>
           {m.mode !== 'Online' && m.location && (
@@ -287,9 +299,14 @@ export function MeetingsPage() {
           {m.status === 'InProgress' && m.mode !== 'InPerson' ? (
             // The call to act now: green like the "Đang diễn ra" state, and it pings. The room
             // answers 404 to someone who is not invited.
-            <Link className="btn btn-live btn-sm btn-ping" to={routes.meetingRoom(m.id)} onClick={(e) => e.stopPropagation()}>
+            <Link
+              className="btn btn-live btn-sm btn-ping"
+              to={routes.meetingRoom(m.id)}
+              onClick={(e) => e.stopPropagation()}
+              data-tooltip="Vào phòng họp"
+            >
               <Icon name="video" size={16} />
-              Vào phòng họp
+              <span className="btn-live-label">Vào phòng họp</span>
             </Link>
           ) : (
             <Link
@@ -394,12 +411,12 @@ export function MeetingsPage() {
                 <SortHeader column="title" state={state} onSort={sortBy}>
                   Tên cuộc họp
                 </SortHeader>
-                <SortHeader column="plannedStartTime" state={state} onSort={sortBy}>
+                <SortHeader column="plannedStartTime" state={state} onSort={sortBy} className="cell-schedule">
                   Thời gian diễn ra
                 </SortHeader>
                 <th className="cell-place">Hình thức</th>
-                <th>Trạng thái</th>
-                <th>Mức độ</th>
+                <th className="cell-status">Trạng thái</th>
+                <th className="cell-level">Mức độ</th>
                 <th className="col-action">Thao tác</th>
               </tr>
             </thead>
@@ -443,9 +460,11 @@ function SortHeader({
   column,
   state,
   onSort,
+  className,
   children,
 }: {
   column: MeetingSortBy
+  className?: string
   state: ListState
   onSort: (column: MeetingSortBy) => void
   children: ReactNode
@@ -453,7 +472,7 @@ function SortHeader({
   const active = state.sortBy === column
   const direction = active ? state.sortDir : null
   return (
-    <th aria-sort={direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'}>
+    <th className={className} aria-sort={direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'}>
       <button
         type="button"
         className={active ? 'sort-button sort-button-active' : 'sort-button'}
