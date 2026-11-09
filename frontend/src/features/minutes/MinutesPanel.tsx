@@ -1,28 +1,34 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import {
+  approveMinutes,
+  correctMinutes,
   createMinutes,
   editSummary,
   exportMinutes,
   getMinutes,
+  getMinutesRevision,
   getSummary,
   requestSummary,
   reviewSummary,
   saveMinutes,
+  submitMinutes,
 } from '../../api/summary'
-import { Badge } from '../../components/Badge'
+import { Badge, type BadgeTone } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { MenuButton } from '../../components/MenuButton'
+import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import type { Meeting } from '../../types/meeting'
-import type { MinutesState, SummaryReadiness, SummaryState } from '../../types/summary'
+import type { MeetingMinutes, MinutesState, SummaryReadiness, SummaryState } from '../../types/summary'
 import { FileTypeTag } from '../documents/DocumentTags'
 import { saveBlob } from '../documents/documentFile'
 import { MinutesPaper } from './MinutesPaper'
 import { NameVoicesSheet } from './NameVoicesSheet'
 import { OutlineSections, type OutlineValues } from './OutlineSections'
+import { ReturnMinutesDialog } from './ReturnMinutesDialog'
 
 // The editor brings TipTap with it: it loads when someone opens the minutes to edit, not with every meeting page.
 const MinutesEditor = lazy(() => import('./MinutesEditor').then((m) => ({ default: m.MinutesEditor })))
@@ -39,6 +45,9 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
   const [summary, setSummary] = useState<Load<SummaryState>>({ kind: 'loading' })
   const [minutes, setMinutes] = useState<Load<MinutesState>>({ kind: 'loading' })
   const [barHost, setBarHost] = useState<HTMLDivElement | null>(null)
+  // A revision opened from the history (UC-58); null is the one the server picks: the latest for the Chair and the
+  // Secretary, the latest issued for everyone else.
+  const [selected, setSelected] = useState<string | null>(null)
 
   const loadSummary = useCallback(async () => {
     try {
@@ -49,16 +58,20 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
   }, [meeting.id])
   const loadMinutes = useCallback(async () => {
     try {
-      setMinutes({ kind: 'ready', data: await getMinutes(meeting.id) })
+      setMinutes({ kind: 'ready', data: selected ? await getMinutesRevision(selected) : await getMinutes(meeting.id) })
     } catch (error) {
+      // The revision opened is no longer one this reader may see: go back to the one the server picks.
+      if (selected && isApiError(error, 404)) return setSelected(null)
       setMinutes({ kind: 'error', message: errorMessage(error) })
     }
-  }, [meeting.id])
+  }, [meeting.id, selected])
 
   useEffect(() => {
     void loadSummary()
+  }, [loadSummary])
+  useEffect(() => {
     void loadMinutes()
-  }, [loadSummary, loadMinutes])
+  }, [loadMinutes])
 
   // The minutes card says when the draft is newer than the minutes: ask again whenever the draft is written or saved.
   const draftStamp =
@@ -91,7 +104,12 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
         meeting={meeting}
         state={minutes}
         source={draftSource(summary)}
-        onChanged={setMinutes}
+        onChanged={(next) => {
+          // Every change answers with the state the server picks, so the card leaves an opened revision with it.
+          setSelected(null)
+          setMinutes(next)
+        }}
+        onSelect={setSelected}
         onRetry={() => void loadMinutes()}
       />
       <div ref={setBarHost} className="outline-savebar-host" />
@@ -427,22 +445,52 @@ function goTo(id: string): string | null {
   return null
 }
 
+/** How each state of the minutes reads on the card (SCRUM-33). */
+const MINUTES_STATUS: Record<MeetingMinutes['status'], { label: string; tone: BadgeTone }> = {
+  Draft: { label: 'Bản nháp', tone: 'slate' },
+  WaitingApproval: { label: 'Chờ duyệt', tone: 'violet' },
+  Rejected: { label: 'Bị trả lại', tone: 'amber' },
+  Issued: { label: 'Đã ban hành', tone: 'emerald' },
+  Superseded: { label: 'Đã thay thế', tone: 'slate' },
+}
+
+/** The first minutes are the original; each correction after them is numbered from 1. */
+const revisionName = (revisionNumber: number) => (revisionNumber === 1 ? 'Bản gốc' : `Đính chính ${revisionNumber - 1}`)
+
+/** Who moved the revision to the state it is in, and when; the save time while it is still being written. */
+function minutesMeta(m: MeetingMinutes): string {
+  if ((m.status === 'Issued' || m.status === 'Superseded') && m.issuedAt)
+    return `${m.approvedBy ? `${m.approvedBy.fullName} duyệt, ban hành` : 'Ban hành'} lúc ${formatDateTime(m.issuedAt)}`
+  if (m.status === 'WaitingApproval' && m.submittedAt)
+    return `${m.submittedBy ? `${m.submittedBy.fullName} gửi duyệt` : 'Gửi duyệt'} lúc ${formatDateTime(m.submittedAt)}`
+  return `Lưu lần cuối ${formatDateTime(m.updatedAt)}`
+}
+
+type MinutesDialog = 'rebuild' | 'submit' | 'approve' | 'return' | 'correct'
+
+/**
+ * The minutes (SCRUM-32) and their approval (SCRUM-33): the Secretary sends the draft to the Chair once the meeting has
+ * ended, the Chair issues it or returns it with a reason, and issued text is corrected only by a new revision. Which of
+ * the two officers the caller is comes from the server (`canSubmit`, `canApprove`); the states decide the rest.
+ */
 function MinutesCard({
   meeting,
   state,
   source,
   onChanged,
+  onSelect,
   onRetry,
 }: {
   meeting: Meeting
   state: Load<MinutesState>
   source: DraftSource
   onChanged: (state: Load<MinutesState>) => void
+  onSelect: (minutesId: string | null) => void
   onRetry: () => void
 }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
-  const [confirming, setConfirming] = useState(false)
+  const [dialog, setDialog] = useState<MinutesDialog | null>(null)
   // The text being edited and the version it was opened on. The card reloads while it is open (the AI draft finishing,
   // the draft saved), so the save must send the version the editing started from, or it would quietly go over a save
   // made in between. null base: the save after a conflict, meant to go over the newer one.
@@ -462,8 +510,17 @@ function MinutesCard({
       </section>
     )
 
-  const { minutes, canManage, draftChangedAt } = state.data
-  const canBuild = canManage && (meeting.status === 'InProgress' || meeting.status === 'Ended') && (!minutes || minutes.status === 'Draft')
+  const { minutes, canManage, draftChangedAt, history, canSubmit, canApprove } = state.data
+  // The revision on screen is the newest the caller may see; an older one opened from the history is only read.
+  const latest = !minutes || history.length === 0 || history[0].id === minutes.id
+  const meetingOpen = meeting.status === 'InProgress' || meeting.status === 'Ended'
+  // A draft, or one the Chair returned, is written again (BR-407); a correction is too, but never rebuilt (BR-413).
+  const editable = !!minutes && latest && canManage && meetingOpen && (minutes.status === 'Draft' || minutes.status === 'Rejected')
+  const canBuild = canManage && meetingOpen && (!minutes || (editable && !minutes.supersedesId))
+  const waiting = !!minutes && latest && minutes.status === 'WaitingApproval'
+  const issued = !!minutes && latest && minutes.status === 'Issued'
+  // Issued text, and what it replaced, downloads for every reader; a draft only for the two officers (BR-412).
+  const canDownload = !!minutes && meeting.sensitivity !== 'Secret'
   // The draft has moved on since the minutes were built (or they were built before there was one).
   const stale =
     !!minutes && !!draftChangedAt && (!minutes.builtFromDraftAt || Date.parse(draftChangedAt) !== Date.parse(minutes.builtFromDraftAt))
@@ -504,6 +561,23 @@ function MinutesCard({
     }
   }
 
+  /**
+   * A step of the approval. Someone acting on the minutes meanwhile (409), or the minutes gone from the caller (404),
+   * closes the dialog with the reason and shows the minutes as they are now; any other failure stays in the dialog.
+   */
+  const act = async (call: () => Promise<MinutesState & { message: string }>) => {
+    try {
+      const result = await call()
+      onChanged({ kind: 'ready', data: result })
+      setDraft(null)
+      toast.show(result.message, 'success')
+    } catch (error) {
+      if (!isApiError(error, 409) && !isApiError(error, 404)) throw error
+      toast.show(errorMessage(error), 'error')
+      onRetry()
+    }
+  }
+
   const notify = (reason: string | null) => {
     if (reason) toast.show(reason, 'info')
   }
@@ -520,14 +594,25 @@ function MinutesCard({
     }
   }
 
+  const status = minutes ? MINUTES_STATUS[minutes.status] : null
+
   return (
     <section className="card minutes-card" aria-label="Biên bản">
       <header className="minutes-card-head">
         <h2>Biên bản</h2>
-        {minutes && <Badge tone={minutes.status === 'Issued' ? 'emerald' : 'slate'}>{minutes.status === 'Issued' ? 'Đã ban hành' : 'Bản nháp'}</Badge>}
-        {canManage && draft === null && (
+        {status && <Badge tone={status.tone}>{status.label}</Badge>}
+        {draft === null && (
           <div className="row-actions minutes-card-actions">
-            {minutes && meeting.sensitivity !== 'Secret' && (
+            {minutes && history.length > 1 && (
+              <Select
+                size="sm"
+                label="Phiên bản biên bản"
+                value={minutes.id}
+                options={history.map((r) => ({ value: r.id, label: revisionName(r.revisionNumber), hint: MINUTES_STATUS[r.status].label }))}
+                onChange={(id) => onSelect(id === history[0].id ? null : id)}
+              />
+            )}
+            {canDownload && (
               <MenuButton
                 label="Tải xuống"
                 icon="download"
@@ -539,15 +624,44 @@ function MinutesCard({
               />
             )}
             {minutes && canBuild && (
-              <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setConfirming(true)}>
+              <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setDialog('rebuild')}>
                 <Icon name="refresh" size={16} />
                 Tạo lại
               </button>
             )}
-            {minutes && canBuild && (
-              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDraft({ text: minutes.content, base: minutes.updatedAt, hasText: true })}>
+            {minutes && editable && (
+              <button
+                type="button"
+                className={canSubmit ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm'}
+                disabled={busy}
+                onClick={() => setDraft({ text: minutes.content, base: minutes.updatedAt, hasText: true })}
+              >
                 <Icon name="pencil" size={16} />
                 Sửa
+              </button>
+            )}
+            {editable && canSubmit && (
+              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDialog('submit')}>
+                <Icon name="send" size={16} />
+                Gửi duyệt
+              </button>
+            )}
+            {waiting && canApprove && (
+              <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setDialog('return')}>
+                <Icon name="reply" size={16} />
+                Trả lại
+              </button>
+            )}
+            {waiting && canApprove && (
+              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => setDialog('approve')}>
+                <Icon name="checkCircle" size={16} />
+                Duyệt và ban hành
+              </button>
+            )}
+            {issued && canManage && (
+              <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setDialog('correct')}>
+                <Icon name="pencil" size={16} />
+                Tạo bản đính chính
               </button>
             )}
             {!minutes && canBuild && (
@@ -564,8 +678,30 @@ function MinutesCard({
         <p className="field-hint minutes-empty">
           {canBuild
             ? 'Bản nháp điền sẵn thông tin cuộc họp và dự thảo vào mẫu biên bản.'
-            : 'Chưa có biên bản.'}
+            : canManage
+              ? 'Chưa có biên bản.'
+              : 'Chưa có biên bản ban hành.'}
         </p>
+      )}
+
+      {minutes && !latest && (
+        <div className="alert alert-info minutes-notice" role="status">
+          <span>
+            Đang xem {revisionName(minutes.revisionNumber).toLowerCase()}, {MINUTES_STATUS[minutes.status].label.toLowerCase()}.
+          </span>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => onSelect(null)}>
+            Xem bản mới nhất
+          </button>
+        </div>
+      )}
+
+      {minutes && latest && canManage && minutes.status === 'Rejected' && minutes.rejectionReason && (
+        <div className="alert alert-warning minutes-notice minutes-returned" role="status">
+          <p>
+            <strong>{minutes.returnedBy ? `${minutes.returnedBy.fullName} trả lại` : 'Chủ toạ trả lại'}:</strong>{' '}
+            {minutes.rejectionReason}
+          </p>
+        </div>
       )}
 
       {canBuild && draft === null && source === 'none' && (
@@ -601,7 +737,7 @@ function MinutesCard({
               </button>
             )}
             {minutes && stale && (
-              <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setConfirming(true)}>
+              <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => setDialog('rebuild')}>
                 <Icon name="refresh" size={16} />
                 Tạo lại
               </button>
@@ -639,20 +775,76 @@ function MinutesCard({
         </form>
       )}
 
-      {minutes && (
-        <p className="field-hint minutes-meta">Lưu lần cuối {formatDateTime(minutes.updatedAt)}</p>
-      )}
+      {minutes && <p className="field-hint minutes-meta">{minutesMeta(minutes)}</p>}
 
-      {confirming && (
+      {dialog === 'rebuild' && (
         <ConfirmDialog
           title="Tạo lại bản nháp biên bản?"
           confirmLabel="Tạo lại"
           pendingLabel="Đang tạo…"
           tone="danger"
           onConfirm={() => build(true)}
-          onClose={() => setConfirming(false)}
+          onClose={() => setDialog(null)}
         >
           Bản nháp mới điền lại từ mẫu và dự thảo hiện tại. Mọi chỗ đã sửa trong bản nháp biên bản sẽ mất.
+        </ConfirmDialog>
+      )}
+
+      {dialog === 'submit' && minutes && (
+        <ConfirmDialog
+          title="Gửi biên bản cho Chủ toạ duyệt?"
+          confirmLabel="Gửi duyệt"
+          pendingLabel="Đang gửi…"
+          blocker={meeting.status !== 'Ended' ? 'Chỉ gửi duyệt biên bản sau khi cuộc họp kết thúc.' : undefined}
+          onConfirm={() => act(() => submitMinutes(minutes.id, minutes.updatedAt))}
+          onClose={() => setDialog(null)}
+        >
+          {/* UC-61 AF-1: the screen warns about the blanks the template left, the server does not block them. */}
+          {minutes.content.includes('……') && <strong>Biên bản còn chỗ “……” chưa điền. </strong>}
+          Sau khi gửi, biên bản khoá lại cho tới khi Chủ toạ duyệt hoặc trả lại.
+        </ConfirmDialog>
+      )}
+
+      {dialog === 'approve' && minutes && (
+        <ConfirmDialog
+          title="Duyệt và ban hành biên bản?"
+          confirmLabel="Duyệt và ban hành"
+          pendingLabel="Đang ban hành…"
+          onConfirm={() => act(() => approveMinutes(minutes.id, minutes.updatedAt))}
+          onClose={() => setDialog(null)}
+        >
+          Biên bản được khoá và gửi tới mọi người dự họp. Muốn sửa sau đó phải tạo bản đính chính.
+        </ConfirmDialog>
+      )}
+
+      {dialog === 'return' && minutes && (
+        <ReturnMinutesDialog
+          minutesId={minutes.id}
+          updatedAt={minutes.updatedAt}
+          onDone={(result) => {
+            setDialog(null)
+            onChanged({ kind: 'ready', data: result })
+            toast.show(result.message, 'success')
+          }}
+          onConflict={(message) => {
+            setDialog(null)
+            toast.show(message, 'error')
+            onRetry()
+          }}
+          onClose={() => setDialog(null)}
+        />
+      )}
+
+      {dialog === 'correct' && minutes && (
+        <ConfirmDialog
+          title="Tạo bản đính chính?"
+          confirmLabel="Tạo bản đính chính"
+          pendingLabel="Đang tạo…"
+          onConfirm={() => act(() => correctMinutes(minutes.id))}
+          onClose={() => setDialog(null)}
+        >
+          Bản mới chép nội dung đang ban hành để sửa, rồi gửi duyệt như bản đầu. Mọi người vẫn đọc bản đang ban hành cho tới
+          khi bản đính chính được duyệt.
         </ConfirmDialog>
       )}
     </section>

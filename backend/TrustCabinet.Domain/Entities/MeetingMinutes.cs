@@ -35,6 +35,10 @@ public class MeetingMinutes : Entity
     public Guid CreatedById { get; set; }
     public User CreatedBy { get; set; } = null!;
 
+    /// <summary>The Secretary who last sent this revision to the Chair (UC-61).</summary>
+    public Guid? SubmittedById { get; set; }
+    public User? SubmittedBy { get; set; }
+
     public DateTimeOffset? SubmittedAt { get; set; }
 
     public Guid? ApprovedById { get; set; }
@@ -45,8 +49,14 @@ public class MeetingMinutes : Entity
     /// <summary>Why it was sent back, shown to the secretary so they know what to fix.</summary>
     public string RejectionReason { get; set; } = string.Empty;
 
+    /// <summary>The Chair who last returned this revision, and when (UC-65).</summary>
+    public Guid? ReturnedById { get; set; }
+    public User? ReturnedBy { get; set; }
+
+    public DateTimeOffset? ReturnedAt { get; set; }
+
     /// <summary>
-    /// When it was issued. Once set, the application treats <see cref="Content"/> as read-only.
+    /// When it was issued. The content is locked by <see cref="Status"/>: only a Draft or a Rejected revision is edited.
     /// </summary>
     public DateTimeOffset? IssuedAt { get; set; }
 
