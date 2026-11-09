@@ -120,6 +120,11 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         Assert.Equal(0.6, attendance.GetProperty("averageRate").GetDouble());
         Assert.Equal(1, attendance.GetProperty("meetings").GetInt32());
         Assert.Equal(1, attendance.GetProperty("meetingsWithoutAttendance").GetInt32());
+        // Both Ended meetings ran 09:00–11:00 (PO 09/11/2026, Q2); the Published one has no actual times.
+        var duration = report.GetProperty("duration");
+        Assert.Equal(120, duration.GetProperty("averageMinutes").GetDouble());
+        Assert.Equal(2, duration.GetProperty("meetings").GetInt32());
+        Assert.Equal(0, duration.GetProperty("meetingsWithoutTimes").GetInt32());
         var turnaround = report.GetProperty("minutesTurnaround");
         Assert.Equal(10, turnaround.GetProperty("averageHours").GetDouble());
         Assert.Equal(1, turnaround.GetProperty("meetings").GetInt32());
@@ -151,6 +156,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         Assert.All(report.GetProperty("byStatus").EnumerateArray(), s => Assert.Equal(0, s.GetProperty("count").GetInt32()));
         Assert.Equal(JsonValueKind.Null, report.GetProperty("attendance").GetProperty("averageRate").ValueKind);
         Assert.Equal(0, report.GetProperty("attendance").GetProperty("meetings").GetInt32());
+        Assert.Equal(JsonValueKind.Null, report.GetProperty("duration").GetProperty("averageMinutes").ValueKind);
         Assert.Equal(JsonValueKind.Null, report.GetProperty("minutesTurnaround").GetProperty("averageHours").ValueKind);
     }
 
@@ -238,6 +244,7 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         Assert.Contains(rows, r => r is ["Nháp", "1"]);
         Assert.Contains(rows, r => r is ["Mật", "1"]);
         Assert.Contains(rows, r => r is ["Tỷ lệ tham dự trung bình", "Chưa có dữ liệu", "0", "0"]);
+        Assert.Contains(rows, r => r is ["Thời lượng họp trung bình (phút)", "Chưa có dữ liệu", "0", "0"]);
         // BR-437: no title in the file.
         Assert.DoesNotContain("Tiêu đề không được lộ", sheet.ToString());
 

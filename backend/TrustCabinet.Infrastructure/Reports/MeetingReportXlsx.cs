@@ -9,7 +9,7 @@ namespace TrustCabinet.Infrastructure.Reports;
 /// <summary>
 /// UC-70b — the meeting report as an Excel file, written by hand as the parts a .xlsx needs (as <c>MinutesDocx</c> does
 /// for Word), so no library comes in for one sheet. One sheet: the period and the time of export at the top, then the
-/// tables by month, by status and by sensitivity, then the two averages (BR-438). Text is written inline, so there is no
+/// tables by month, by status and by sensitivity, then the three averages (BR-438). Text is written inline, so there is no
 /// shared-strings part; numbers stay numbers so the file can be worked on.
 /// </summary>
 public static class MeetingReportXlsx
@@ -121,6 +121,9 @@ public static class MeetingReportXlsx
         rows.Add(["Tỷ lệ tham dự trung bình",
             report.Attendance.AverageRate is { } rate ? new Cell(rate, Percent) : NoData,
             report.Attendance.Meetings, report.Attendance.MeetingsWithoutAttendance]);
+        rows.Add(["Thời lượng họp trung bình (phút)",
+            report.Duration.AverageMinutes is { } minutes ? new Cell(minutes, Decimal) : NoData,
+            report.Duration.Meetings, report.Duration.MeetingsWithoutTimes]);
         rows.Add(["Thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản (giờ)",
             report.MinutesTurnaround.AverageHours is { } hours ? new Cell(hours, Decimal) : NoData,
             report.MinutesTurnaround.Meetings, report.MinutesTurnaround.MeetingsWithoutIssuedMinutes]);

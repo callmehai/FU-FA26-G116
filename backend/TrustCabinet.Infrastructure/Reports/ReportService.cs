@@ -69,7 +69,7 @@ public sealed class ReportService(TrustCabinetDbContext db, IAuditService audit,
             .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Status, g.Key.Sensitivity, Count = g.Count() })
             .ToListAsync(ct);
 
-        // BR-435, BR-436: per Ended meeting, the numbers its two averages need — nothing that names the meeting.
+        // BR-435, BR-436 and the duration (PO 09/11/2026, Q2): per Ended meeting, the numbers its averages need — nothing that names the meeting.
         var ended = await readable
             .Where(m => m.Status == MeetingStatus.Ended)
             .Select(m => new
@@ -84,6 +84,7 @@ public sealed class ReportService(TrustCabinetDbContext db, IAuditService audit,
                     && g.Attendance == AttendanceStatus.Present),
                 GuestMarked = db.MeetingGuestInvitations.Count(g => g.MeetingId == m.Id && g.RevokedAt == null
                     && (g.Attendance == AttendanceStatus.Present || g.Attendance == AttendanceStatus.Absent)),
+                m.ActualStartedAt,
                 m.ActualEndedAt,
                 // The first issue: a correction issued later does not restart the clock.
                 FirstIssuedAt = m.Minutes.Where(x => x.IssuedAt != null).Min(x => x.IssuedAt),
@@ -93,6 +94,10 @@ public sealed class ReportService(TrustCabinetDbContext db, IAuditService audit,
         var rates = ended
             .Where(m => m.InternalMarked + m.GuestMarked > 0 && m.InternalInvitees + m.GuestInvitees > 0)
             .Select(m => (double)(m.InternalPresent + m.GuestPresent) / (m.InternalInvitees + m.GuestInvitees))
+            .ToArray();
+        var minutes = ended
+            .Where(m => m.ActualStartedAt is not null && m.ActualEndedAt is not null)
+            .Select(m => (m.ActualEndedAt!.Value - m.ActualStartedAt!.Value).TotalMinutes)
             .ToArray();
         var hours = ended
             .Where(m => m.ActualEndedAt is not null && m.FirstIssuedAt is not null)
@@ -109,6 +114,8 @@ public sealed class ReportService(TrustCabinetDbContext db, IAuditService audit,
                 groups.Where(g => g.Sensitivity == s).Sum(g => g.Count))).ToArray(),
             new AttendanceFigure(rates.Length == 0 ? null : Math.Round(rates.Average(), 4), rates.Length,
                 ended.Count - rates.Length),
+            new DurationFigure(minutes.Length == 0 ? null : Math.Round(minutes.Average(), 1), minutes.Length,
+                ended.Count - minutes.Length),
             new TurnaroundFigure(hours.Length == 0 ? null : Math.Round(hours.Average(), 2), hours.Length,
                 ended.Count - hours.Length));
     }

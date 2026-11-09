@@ -69,6 +69,11 @@ public sealed record SensitivityCount(string Sensitivity, int Count);
 /// </summary>
 public sealed record AttendanceFigure(double? AverageRate, int Meetings, int MeetingsWithoutAttendance);
 
+/// <summary>
+/// PO 09/11/2026 (Q2). Minutes from the actual start to the actual end of an Ended meeting; null when none has both.
+/// </summary>
+public sealed record DurationFigure(double? AverageMinutes, int Meetings, int MeetingsWithoutTimes);
+
 /// <summary>BR-436. Hours from the actual end to the first issue of the minutes; null when none is issued yet.</summary>
 public sealed record TurnaroundFigure(double? AverageHours, int Meetings, int MeetingsWithoutIssuedMinutes);
 
@@ -78,7 +83,7 @@ public sealed record TurnaroundFigure(double? AverageHours, int Meetings, int Me
 /// </summary>
 public sealed record MeetingReport(string From, string To, DateTimeOffset GeneratedAt, int Total,
     IReadOnlyList<MonthCount> ByMonth, IReadOnlyList<StatusCount> ByStatus, IReadOnlyList<SensitivityCount> BySensitivity,
-    AttendanceFigure Attendance, TurnaroundFigure MinutesTurnaround);
+    AttendanceFigure Attendance, DurationFigure Duration, TurnaroundFigure MinutesTurnaround);
 
 public sealed record ReportFile(string FileName, byte[] Bytes, string ContentType);
 
