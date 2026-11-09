@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { respondToInvitation } from '../../api/participants'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -9,8 +10,9 @@ import { useGuest } from '../guest/guestContext'
 
 /**
  * "Bạn có tham dự cuộc họp này?", as AI-eCabinet asks it: two buttons, shown only while the server
- * says the caller may answer (`canRespond`). The answer is final and changes no access; declining
- * only takes the meeting off the caller's calendar (a guest has none). So there is no confirmation step.
+ * says the caller may answer (`canRespond`). The answer is final (MSG285) and changes no access. Declining
+ * also takes the meeting off the caller's calendar (a guest has none), so it asks first (SCRUM-147);
+ * accepting, the common answer, goes out at once.
  *
  * `onAnswered` runs after every outcome that changed what the server holds — an answer recorded,
  * or a refusal saying the question no longer applies — so the caller re-reads the meeting.
@@ -28,6 +30,7 @@ export function RsvpButtons({
   const handleAccessLost = useAccessLost()
   const guest = useGuest() !== null
   const [pending, setPending] = useState<'Accepted' | 'Declined' | null>(null)
+  const [confirmDecline, setConfirmDecline] = useState(false)
 
   async function send(response: 'Accepted' | 'Declined') {
     setPending(response)
@@ -64,11 +67,26 @@ export function RsvpButtons({
         type="button"
         className="btn btn-outline btn-sm"
         disabled={pending !== null}
-        onClick={() => send('Declined')}
+        onClick={() => setConfirmDecline(true)}
       >
         <Icon name="x" size={16} />
         {pending === 'Declined' ? 'Đang gửi…' : 'Không tham dự'}
       </button>
+      {confirmDecline && (
+        <ConfirmDialog
+          title="Không tham dự cuộc họp?"
+          confirmLabel="Không tham dự"
+          cancelLabel="Quay lại"
+          pendingLabel="Đang gửi…"
+          // send() reports its own outcome as a toast, so the dialog just closes after it.
+          onConfirm={() => send('Declined')}
+          onClose={() => setConfirmDecline(false)}
+        >
+          {guest
+            ? 'Bạn chỉ trả lời được một lần, sau đó không đổi được.'
+            : 'Bạn chỉ trả lời được một lần, sau đó không đổi được. Cuộc họp sẽ không còn hiện trên lịch của bạn.'}
+        </ConfirmDialog>
+      )}
     </div>
   )
 }

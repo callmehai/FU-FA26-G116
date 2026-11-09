@@ -8,10 +8,12 @@ import {
   listParticipants,
 } from '../../api/participants'
 import { ApiError } from '../../api/client'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
 import { errorMessage } from '../../lib/errors'
 import { SENSITIVITY_LABEL, type Sensitivity } from '../../types/meeting'
+import { useAuth } from '../auth/useAuth'
 import {
   MEETING_ROLE_LABEL,
   type MeetingRole,
@@ -232,6 +234,7 @@ export function InviteGuestDialog({
   const [email, setEmail] = useState('')
   const [errors, setErrors] = useState<{ invitedName?: string; email?: string; form?: string }>({})
   const [pending, setPending] = useState(false)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -252,7 +255,12 @@ export function InviteGuestDialog({
     }
   }
 
-  const close = () => !pending && onClose()
+  // What was typed is not thrown away without asking, as the meeting form does (SCRUM-147).
+  const close = () => {
+    if (pending) return
+    if (name.trim() || email.trim()) setConfirmDiscard(true)
+    else onClose()
+  }
 
   return (
     <Dialog
@@ -303,6 +311,19 @@ export function InviteGuestDialog({
           </p>
         )}
       </form>
+      {confirmDiscard && (
+        <ConfirmDialog
+          title="Bỏ lời mời đang soạn?"
+          tone="danger"
+          confirmLabel="Bỏ lời mời"
+          cancelLabel="Tiếp tục sửa"
+          pendingLabel="Đang đóng…"
+          onConfirm={async () => onClose()}
+          onClose={() => setConfirmDiscard(false)}
+        >
+          Tên và email bạn vừa nhập sẽ không được lưu.
+        </ConfirmDialog>
+      )}
     </Dialog>
   )
 }
@@ -333,10 +354,12 @@ export function ChangeRoleDialog({
   onClose: () => void
   onDone: (outcome: DialogOutcome) => void
 }) {
+  const { user } = useAuth()
   const [role, setRole] = useState<MeetingRole>(row.role)
   const [chair, setChair] = useState<ParticipantRow | null | undefined>(undefined)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmChair, setConfirmChair] = useState(false)
 
   const roles = chairOption ? (['Chair', 'Secretary', 'Member'] as const) : (['Secretary', 'Member'] as const)
   const promote = role === 'Chair'
@@ -388,6 +411,8 @@ export function ChangeRoleDialog({
   }
 
   const close = () => !pending && onClose()
+  // The outgoing Chair cannot take the role back themselves, so moving it asks once more (SCRUM-147).
+  const selfSteppingDown = handOver || (chair?.userId != null && chair.userId === user?.id)
 
   return (
     <Dialog
@@ -401,7 +426,7 @@ export function ChangeRoleDialog({
           <button
             type="button"
             className="btn btn-primary"
-            onClick={submit}
+            onClick={() => (promote ? setConfirmChair(true) : void submit())}
             disabled={pending || role === row.role || (promote && !handOver && !chair)}
           >
             <Icon name="check" size={16} />
@@ -430,6 +455,20 @@ export function ChangeRoleDialog({
           </p>
         )}
       </div>
+      {confirmChair && (
+        <ConfirmDialog
+          title={`Giao Chủ toạ cho ${row.displayName}?`}
+          confirmLabel="Giao Chủ toạ"
+          pendingLabel="Đang lưu…"
+          // submit() keeps its own errors in the dialog underneath, which stays open on a failure.
+          onConfirm={submit}
+          onClose={() => setConfirmChair(false)}
+        >
+          {selfSteppingDown
+            ? 'Bạn sẽ thành Thành viên và không còn điều hành cuộc họp.'
+            : `${chair?.displayName ?? 'Chủ toạ hiện tại'} sẽ thành Thành viên và không còn điều hành cuộc họp.`}
+        </ConfirmDialog>
+      )}
     </Dialog>
   )
 }

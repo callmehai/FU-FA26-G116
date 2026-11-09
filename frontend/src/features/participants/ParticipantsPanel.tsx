@@ -7,7 +7,7 @@ import { Pagination } from '../../components/Pagination'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { useSearchBox } from '../../lib/useSearchBox'
-import type { Sensitivity } from '../../types/meeting'
+import type { MeetingStatus, Sensitivity } from '../../types/meeting'
 import {
   MEETING_ROLE_LABEL,
   type MeetingRole,
@@ -56,13 +56,19 @@ type RowOpen = { kind: 'role'; row: ParticipantRow & { role: MeetingRole } } | {
  * A panel (ADR-0011): it loads its own data and listens on `/hubs/meetings` itself, so a change
  * made by anyone — including an invitee's answer — re-reads it. `onChanged` lets the page re-read
  * what it shows too (the Chair and Secretaries in "Thông tin chung").
+ *
+ * The hub says nothing when the meeting's status moves (only its end), but the page re-reads the meeting
+ * then, so `meetingStatus` re-reads the panel too: what the caller may do here follows the status (SCRUM-147).
  */
 export function ParticipantsPanel({
   meetingId,
+  meetingStatus,
   sensitivity,
   onChanged,
 }: {
   meetingId: string
+  /** The status the page shows; a change re-reads what the caller may do. */
+  meetingStatus?: MeetingStatus
   /** Only the meeting page passes it: inviting a guest warns when the meeting is restricted or secret. */
   sensitivity?: Sensitivity
   onChanged?: () => void
@@ -88,6 +94,7 @@ export function ParticipantsPanel({
   const attendance = useAttendance(meetingId, showAttendance)
 
   const load = useCallback(async () => {
+    void meetingStatus // a dependency only: a new status re-reads the context
     const current = ++generation.current
     setState((s) => (s.kind === 'loaded' ? { ...s, stale: true } : s))
     try {
@@ -108,7 +115,7 @@ export function ParticipantsPanel({
         data: s.kind === 'loaded' || s.kind === 'error' ? s.data : null,
       }))
     }
-  }, [meetingId, query, page, pageSize, handleAccessLost])
+  }, [meetingId, meetingStatus, query, page, pageSize, handleAccessLost])
 
   useEffect(() => {
     void Promise.resolve().then(load)
@@ -390,7 +397,9 @@ export function ParticipantsPanel({
         >
           {open.row.kind === 'Guest'
             ? `${open.row.displayName} không còn vào được cuộc họp bằng lời mời đã nhận.`
-            : `${open.row.displayName} không còn xem được cuộc họp này. Nếu cuộc họp đã công bố, họ nhận thông báo đã được gỡ.`}
+            : open.row.userId !== null && open.row.userId === user?.id
+              ? 'Bạn sẽ không còn xem được cuộc họp này.'
+              : `${open.row.displayName} không còn xem được cuộc họp này. Nếu cuộc họp đã công bố, họ nhận thông báo đã được gỡ.`}
         </ConfirmDialog>
       )}
     </section>
