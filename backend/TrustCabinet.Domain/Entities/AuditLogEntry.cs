@@ -12,7 +12,10 @@ namespace TrustCabinet.Domain.Entities;
 /// </summary>
 public class AuditLogEntry : Entity
 {
-    /// <summary>Null only for an action with no signed-in actor, such as a failed sign-in attempt.</summary>
+    /// <summary>
+    /// Null only for an action with no signed-in actor, such as a failed sign-in attempt, or one the system did on its
+    /// own, such as deleting a meeting's unopened vote drafts when it ends.
+    /// </summary>
     public Guid? ActorId { get; set; }
     public User? Actor { get; set; }
 

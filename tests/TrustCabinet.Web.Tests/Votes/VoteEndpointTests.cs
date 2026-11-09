@@ -360,7 +360,7 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
     }
 
     [Fact]
-    public async Task A_guest_invited_while_the_vote_is_open_may_still_vote()
+    public async Task A_guest_invited_while_the_vote_is_open_is_not_on_its_list()
     {
         var s = await f.Seed(MeetingStatus.InProgress);
         using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary);
@@ -368,28 +368,29 @@ public sealed class VoteEndpointTests(ParticipantFixture f) : IClassFixture<Part
         var options = await Options(chair, s, id);
         Assert.Equal(3, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
 
-        // PO 30/10/2026: unlike internal participants, a Guest invited after opening joins the list.
+        // PO 08/11/2026: the list is fixed at opening for Guests too (BR-190); the 30/10 exception is withdrawn.
         var created = await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post,
             new { invitedName = "Khách đến muộn", email = $"{Guid.NewGuid():N}@guests.test" }, await Tag(secretary, s.Url)), 201, "MSG96");
         var invitation = created.GetProperty("createdIds")[0].GetGuid();
-        Assert.Equal(4, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
+        Assert.Equal(3, (await Detail(chair, s, id)).GetProperty("eligibleCount").GetInt32());
         using var guest = f.Guest(s.MeetingId, invitation);
-        await Code(await Ballot(guest, s, id, options[1]), 200, "MSG227");
+        await Code(await Ballot(guest, s, id, options[1]), 409, "MSG224");
+        Assert.False((await Detail(guest, s, id)).GetProperty("actions").GetProperty("canCast").GetBoolean());
 
-        // A vote that does not admit Guests is left as it was.
+        // The next vote opened after the invitation does include them.
         await Code(await chair.PostAsync($"{s.Url}/votes/{id}/close", null), 200, "MSG229");
-        var membersOnly = await Opened(chair, s, Body("Chỉ thành viên", roles: ["Member"]));
-        await Code(await Write(secretary, s.Url + "/guest-invitations", HttpMethod.Post,
-            new { invitedName = "Khách khác", email = $"{Guid.NewGuid():N}@guests.test" }, await Tag(secretary, s.Url)), 201, "MSG96");
-        Assert.Equal(1, (await Detail(chair, s, membersOnly)).GetProperty("eligibleCount").GetInt32());
+        var next = await Opened(chair, s, Body("Biểu quyết sau"));
+        Assert.Equal(4, (await Detail(chair, s, next)).GetProperty("eligibleCount").GetInt32());
+        await Code(await Ballot(guest, s, next, (await Options(chair, s, next))[0]), 200, "MSG227");
         await using var db = f.Db();
-        Assert.False(await db.VoteEligibleVoters.AnyAsync(e => e.VotingSessionId == membersOnly && e.GuestInvitationId != null));
+        Assert.False(await db.VoteEligibleVoters.AnyAsync(e => e.VotingSessionId == id && e.GuestInvitationId != null));
     }
 
     [Fact]
     public async Task A_guest_removed_and_invited_again_while_the_vote_is_open_still_has_one_ballot()
     {
-        // SCRUM-133: the five steps of Hải's report, plus the same person before they had voted.
+        // SCRUM-133: the five steps of Hải's report, plus the same person before they had voted. Both were on the list
+        // when it was fixed at opening, so this is not a new voter (BR-190).
         var s = await f.Seed(MeetingStatus.InProgress);
         var voted = await Guest(f, s); var notYet = await Guest(f, s);
         using var chair = f.Client(s.Chair); using var secretary = f.Client(s.Secretary);
