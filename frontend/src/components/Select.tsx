@@ -1,4 +1,4 @@
-import { useCallback, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Icon, type IconName } from './Icon'
 import { useAnchoredPopover, useOutsidePress } from './useAnchoredPopover'
 
@@ -11,7 +11,13 @@ export interface SelectOption<T extends string> {
   hint?: string
   /** Shows the hint as a brand-tinted tag rather than muted text, for the one option the machine points at. */
   hintAccent?: boolean
+  /** A second, muted line — an email that tells two people of the same name apart. Searched too. */
+  sub?: string
 }
+
+/** Lower case without Vietnamese marks, so "loc" finds "Lộc" (đ becomes d). */
+const fold = (text: string) =>
+  text.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase()
 
 /**
  * Dropdown built from a button and a listbox instead of a native `<select>`.
@@ -25,6 +31,9 @@ export interface SelectOption<T extends string> {
  *
  * The menu opens in the browser's top layer (Popover API), positioned against the trigger and
  * flipped upwards when there is no room below — see `useAnchoredPopover` for why.
+ *
+ * `searchable` puts a search box at the top of the menu for a long list of people (SCRUM-150): it takes
+ * the focus, matches the label and `sub` without regard to case or marks, and drives the same keys.
  */
 export function Select<T extends string>({
   value,
@@ -38,6 +47,8 @@ export function Select<T extends string>({
   marker,
   tooltip,
   icon,
+  searchable = false,
+  searchPlaceholder = 'Tìm…',
 }: {
   /** Null while nothing is picked yet: the trigger then shows `placeholder` (or `label`), muted. */
   value: T | null
@@ -56,37 +67,51 @@ export function Select<T extends string>({
   tooltip?: string
   /** A small icon button instead of the field (an action in a row's tools); its name and value stay in aria-label. */
   icon?: IconName
+  /** A search box at the top of the menu, for a list too long to scroll through. */
+  searchable?: boolean
+  searchPlaceholder?: string
 }) {
   const generatedId = useId()
   const listId = id ?? generatedId
 
   const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
   const [highlighted, setHighlighted] = useState(() => Math.max(0, options.findIndex((o) => o.value === value)))
 
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
-  const menuRef = useRef<HTMLUListElement>(null)
+  const menuRef = useRef<HTMLElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
 
   const selected = options.find((o) => o.value === value)
+  // What the menu lists: everything, or what the search matches.
+  const needle = fold(query.trim())
+  const shown = needle ? options.filter((o) => fold(`${o.label} ${o.sub ?? ''}`).includes(needle)) : options
 
   const close = useCallback(() => setOpen(false), [])
   useOutsidePress(open, rootRef, close)
   useAnchoredPopover(open, triggerRef, menuRef)
 
+  // The search box takes the focus as the menu opens; the trigger gets it back on close (commit, Escape).
+  useEffect(() => {
+    if (open && searchable) searchRef.current?.focus()
+  }, [open, searchable])
+
   function openAt(index: number) {
+    setQuery('')
     setHighlighted(index)
     setOpen(true)
   }
 
   function commit(index: number) {
-    const option = options[index]
+    const option = shown[index]
     if (option) onChange(option.value)
     setOpen(false)
     triggerRef.current?.focus()
   }
 
   function onKeyDown(event: React.KeyboardEvent) {
-    const currentIndex = Math.max(0, options.findIndex((o) => o.value === value))
+    const currentIndex = Math.max(0, shown.findIndex((o) => o.value === value))
 
     switch (event.key) {
       case 'ArrowDown':
@@ -97,12 +122,14 @@ export function Select<T extends string>({
           openAt(currentIndex)
         } else {
           // Clamp rather than wrap: reaching an end and staying there is easier to track by feel.
-          setHighlighted((i) => Math.min(options.length - 1, Math.max(0, i + step)))
+          setHighlighted((i) => Math.min(shown.length - 1, Math.max(0, i + step)))
         }
         break
       }
       case 'Enter':
       case ' ':
+        // A space in the search box is part of the name being typed.
+        if (event.key === ' ' && event.target === searchRef.current) break
         event.preventDefault()
         if (open) commit(highlighted)
         else openAt(currentIndex)
@@ -110,13 +137,46 @@ export function Select<T extends string>({
       case 'Escape':
         if (open) {
           event.preventDefault()
+          // Escape belongs to this menu, not to a dialog around it.
+          event.stopPropagation()
           setOpen(false)
+          triggerRef.current?.focus()
         }
         break
       case 'Tab':
         setOpen(false)
         break
     }
+  }
+
+  function renderOption(option: SelectOption<T>, index: number) {
+    return (
+      <li
+        key={option.value}
+        id={`${listId}-${index}`}
+        role="option"
+        aria-selected={option.value === value}
+        className={index === highlighted ? 'select-option select-option-active' : 'select-option'}
+        onMouseEnter={() => setHighlighted(index)}
+        // Keeps the focus in the search box until the click lands.
+        onMouseDown={(e) => searchable && e.preventDefault()}
+        onClick={() => commit(index)}
+      >
+        {/* Label first, so it lines up with the value in the trigger; the check sits at the
+            end of the row, where it marks one row without indenting all the others. */}
+        <span className="select-option-label">
+          {option.dot && <span className="select-dot" style={{ background: option.dot }} aria-hidden="true" />}
+          {option.label}
+          {option.hint && (
+            <span className={option.hintAccent ? 'select-option-hint select-option-hint-accent' : 'select-option-hint'}>
+              {option.hint}
+            </span>
+          )}
+          {option.sub && <span className="select-option-sub">{option.sub}</span>}
+        </span>
+        <span className="select-check">{option.value === value && <Icon name="check" size={16} />}</span>
+      </li>
+    )
   }
 
   return (
@@ -154,33 +214,46 @@ export function Select<T extends string>({
         )}
       </button>
 
-      {open && (
-        <ul ref={menuRef} className="select-menu" role="listbox" id={listId} aria-label={label} popover="manual">
-          {options.map((option, index) => (
-            <li
-              key={option.value}
-              id={`${listId}-${index}`}
-              role="option"
-              aria-selected={option.value === value}
-              className={index === highlighted ? 'select-option select-option-active' : 'select-option'}
-              onMouseEnter={() => setHighlighted(index)}
-              onClick={() => commit(index)}
-            >
-              {/* Label first, so it lines up with the value in the trigger; the check sits at the
-                  end of the row, where it marks one row without indenting all the others. */}
-              <span className="select-option-label">
-                {option.dot && <span className="select-dot" style={{ background: option.dot }} aria-hidden="true" />}
-                {option.label}
-                {option.hint && (
-                  <span className={option.hintAccent ? 'select-option-hint select-option-hint-accent' : 'select-option-hint'}>
-                    {option.hint}
-                  </span>
-                )}
-              </span>
-              <span className="select-check">{option.value === value && <Icon name="check" size={16} />}</span>
-            </li>
-          ))}
-        </ul>
+      {open && searchable ? (
+        <div ref={(el) => void (menuRef.current = el)} className="select-menu select-menu-search" popover="manual">
+          <label className="search select-search">
+            <Icon name="search" size={16} />
+            <input
+              ref={searchRef}
+              type="search"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value)
+                setHighlighted(0)
+              }}
+              onKeyDown={onKeyDown}
+              placeholder={searchPlaceholder}
+              aria-label={`Tìm trong ${label.toLowerCase()}`}
+              aria-controls={listId}
+              aria-activedescendant={shown[highlighted] ? `${listId}-${highlighted}` : undefined}
+            />
+          </label>
+          <ul className="select-list" role="listbox" id={listId} aria-label={label}>
+            {shown.length === 0 ? (
+              <li className="select-none">Không có kết quả khớp.</li>
+            ) : (
+              shown.map((option, index) => renderOption(option, index))
+            )}
+          </ul>
+        </div>
+      ) : (
+        open && (
+          <ul
+            ref={(el) => void (menuRef.current = el)}
+            className="select-menu"
+            role="listbox"
+            id={listId}
+            aria-label={label}
+            popover="manual"
+          >
+            {shown.map((option, index) => renderOption(option, index))}
+          </ul>
+        )
       )}
     </div>
   )

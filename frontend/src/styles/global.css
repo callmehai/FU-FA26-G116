@@ -463,6 +463,13 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .select-option-hint { margin-left: 8px; color: var(--muted-ink); font-size: 12px; font-weight: 400; }
 .select-option-hint-accent { padding: 1px 6px; border-radius: 4px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand-wash-line); color: var(--brand); font-weight: 600; }
 .select-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; }
+/* A second line under an option: the email that tells two people of one name apart (SCRUM-150). */
+.select-option-sub { display: block; overflow: hidden; color: var(--muted-ink); font-size: 12.5px; font-weight: 400; text-overflow: ellipsis; }
+/* A long list's menu: a search box on top, only the options scroll under it. */
+.select-menu-search { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.search.select-search { width: 100%; flex: none; }
+.select-list { min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.select-none { padding: 10px 8px; color: var(--muted-ink); font-size: 14px; }
 .select-trigger:disabled { cursor: progress; opacity: .7; }
 /* The table-row size: 32px, so a row stays one line of text tall. Touch keeps the 40px target. */
 .select-sm .select-trigger { min-width: 0; height: 32px; padding: 0 8px 0 10px; font-size: 13px; font-weight: 600; }
