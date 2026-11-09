@@ -1,8 +1,11 @@
 # 16 · Kiến trúc phần mềm
 
 Sơ đồ kiến trúc tổng thể của TrustCabinet (Report 4, mục I.1 Software Architecture), vẽ theo **code
-và cấu hình triển khai hiện có** (28/10/2026), không phải thiết kế mục tiêu. Nguồn của từng thành
-phần:
+và cấu hình triển khai hiện có** (09/11/2026), không phải thiết kế mục tiêu. Application Tier là ba
+project `Web` → `Infrastructure` → `Domain`: service nghiệp vụ nằm trong Infrastructure cạnh EF Core,
+và hub, publisher ở Web đọc thẳng `TrustCabinetDbContext`. Chưa có tầng Application riêng; lý do và
+kế hoạch tách ở [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
+Nguồn của từng thành phần:
 
 - tầng client: `frontend/src` và `frontend/package.json`;
 - tầng ứng dụng: `backend/TrustCabinet.Web/Program.cs` (xác thực JWT, endpoint, hub, worker), các
@@ -27,9 +30,7 @@ phần:
 
 ## Những gì cố ý không vẽ
 
-- Phụ thuộc chi tiết giữa các package — xem [15-package-diagram](../15-package-diagram/README.md).
-- `NotificationWorker` gửi thẳng vào `NotificationHub`; trên hình gộp vào mũi tên Workers → Service
-  Layer và Change Publishers → Hubs.
+- Phụ thuộc giữa từng package và class — xem [15-package-diagram](../15-package-diagram/README.md).
 - Google Fonts mà trình duyệt tải về, và GitHub Actions/Lightsail của phần deploy.
 
 ## Sửa và xuất lại

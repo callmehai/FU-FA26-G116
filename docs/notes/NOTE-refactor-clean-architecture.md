@@ -1,8 +1,9 @@
 # Refactor backend sang Clean Architecture
 
 - **Ngày:** 08/11/2026
-- **Trạng thái:** đề xuất, chờ nhóm BE chốt. Khi chốt thì viết ADR-0059 (số tiếp theo sau ADR-0058 trên `main`)
-  và tạo ticket Jira cho từng giai đoạn.
+- **Trạng thái:** đã chốt thời điểm ở [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md)
+  (09/11/2026): giữ ba project đến buổi báo cáo giảng viên 13/11/2026, bắt đầu giai đoạn 0 ngay sau đó.
+  Tạo ticket Jira cho từng giai đoạn khi bắt đầu.
 - **Phạm vi:** chỉ `backend/` và `tests/`. Không đổi endpoint, response, mã `MSGnn`, schema hay migration.
   FE không bị ảnh hưởng.
 

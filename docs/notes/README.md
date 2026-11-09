@@ -6,7 +6,7 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
-- [Refactor backend sang Clean Architecture](NOTE-refactor-clean-architecture.md) — 08/11/2026, đề xuất chờ nhóm BE chốt;
+- [Refactor backend sang Clean Architecture](NOTE-refactor-clean-architecture.md) — 08/11/2026, thời điểm chốt ở ADR-0059 (tách sau buổi báo cáo giảng viên 13/11/2026);
   hiện trạng (use case nằm trong Infrastructure, dính EF/Npgsql), kiến trúc đích Domain / Application / Infrastructure / Web,
   port `IUnitOfWork` và exception lưu trữ, `ArchitectureTests`, lộ trình 5 giai đoạn theo module, rủi ro, 3 câu hỏi cần chốt.
 - [Đặc tả sơ bộ SCRUM-30](NOTE-dac-ta-so-bo-scrum-30.md) — 06/11/2026, sửa theo review #271; bước BE viết UC cơ bản:

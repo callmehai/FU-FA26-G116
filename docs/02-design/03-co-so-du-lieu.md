@@ -323,7 +323,8 @@ Ai từng làm SQL Server rất dễ vấp:
 | `TrustCabinet.Web` | API. Tham chiếu Infrastructure, gọi `AddTrustCabinetDatabase()` |
 
 Domain tách khỏi EF để quy tắc nghiệp vụ về sau không bị buộc vào một ORM cụ thể. Nếu lớp nghiệp vụ
-lớn thêm thì tách tiếp `TrustCabinet.Application` như README đã dự tính.
+lớn thêm thì tách tiếp `TrustCabinet.Application` như README đã dự tính. Thời điểm và lộ trình tách:
+[ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
 
 ## Migration Agenda SCRUM-98
 

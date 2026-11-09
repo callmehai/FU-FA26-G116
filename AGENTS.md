@@ -263,8 +263,11 @@ select's popup to the operating system, which ignores the page stylesheet and lo
 mode.
 
 **`Program.cs` will outgrow itself.** As the domain grows, split endpoints into extension methods
-(`MapMeetingEndpoints()`, …), and if needed split out `TrustCabinet.Domain` / `.Application` /
-`.Infrastructure` as the README anticipates — remember to add new projects to the `.sln`.
+(`MapMeetingEndpoints()`, …). The backend stays at three projects — use cases live in
+`TrustCabinet.Infrastructure` — until `TrustCabinet.Application` is split out right after the supervisor
+review, module by module, per [ADR-0059](docs/05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
+Until then add no package to Domain and no new `TrustCabinetDbContext` reader in Web; remember to add new
+projects to the `.sln`.
 
 ## Documentation
 
