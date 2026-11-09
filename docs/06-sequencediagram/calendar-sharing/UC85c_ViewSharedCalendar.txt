@@ -27,9 +27,9 @@ deactivate Database
 UserRepository-->CalendarService: Verification result
 deactivate UserRepository
 
-CalendarService->ShareRepository: Get all shares other people granted to the viewer, with status
+CalendarService->ShareRepository: Get all shares other people granted to the viewer, with status and end date on or after today (BR-425)
 activate ShareRepository
-ShareRepository->Database: Retrieve shares with status and range
+ShareRepository->Database: Retrieve shares with status, range and end date >= today
 activate Database
 Database-->ShareRepository: Shares / Read failed
 deactivate Database
@@ -66,7 +66,7 @@ else Shares are loaded
             deactivate CalendarController
             CalendarPage-->Viewer: MSG453 - Unable to load the calendar sharing data. Please try again.
         else Week is loaded
-            CalendarService->CalendarService: Keep only busy blocks of Effective shares, Monday to Friday, 08:00-17:00:\nonly current Chair, Secretary or Member assignments in busy meeting statuses (BR-419, BR-420).\nStopped and expired shares stay listed with their state label and contribute no hours;\nnever include titles, locations, attendees or levels (BR-424, BR-425, BR-427)
+            CalendarService->CalendarService: Keep only busy blocks of Effective shares, Monday to Friday, 08:00-17:00:\nonly current Chair, Secretary or Member assignments in busy meeting statuses (BR-419, BR-420).\nShares whose end date is before today are excluded at read time (BR-425).\nStopped shares stay listed with their state label and contribute no hours;\nnever include titles, locations, attendees or levels (BR-424, BR-427)
             CalendarService-->CalendarController: Busy blocks with share states
             deactivate CalendarService
             CalendarController-->CalendarPage: 200 Busy blocks by sharer with state labels
@@ -77,16 +77,8 @@ else Shares are loaded
                 CalendarPage-->Viewer: State label "Đã dừng" (BR-424)
             end
 
-            opt A shown person is expired
-                CalendarPage-->Viewer: State label "Hết hạn" (BR-425)
-            end
-
             opt Viewer opens a stopped share
-                CalendarPage-->Viewer: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was locked. Ask for a new share (BR-424)
-            end
-
-            opt Viewer opens an expired share
-                CalendarPage-->Viewer: MSG440 - This calendar share has expired. Ask for a new share (BR-425)
+                CalendarPage-->Viewer: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was deactivated. Ask for a new share (BR-424)
             end
         end
     end

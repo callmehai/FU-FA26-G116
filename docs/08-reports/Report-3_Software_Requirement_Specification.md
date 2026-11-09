@@ -65,6 +65,7 @@ Table of Contents
 | 08/11/2026 | M | HuyNQ | Point FE-16, UC-84, UC-85 and BR-414 to BR-430 to ADR-0058 (PO decision 07/11/2026: calendar sharing and find-a-time, no AI assistant), which replaces the find-a-time half-sentence of ADR-0043; BR-414 states that find-a-time may propose a slot overlapping a Secret meeting and the invitee declines it. |
 | 08/11/2026 | M | KhánhPG | Sensitivity now has three levels (ADR-0057): Meeting.Sensitivity is Normal, Internal or Secret; the Confidential level is removed from UC-28a AF-1, UC-32c, UC-34b, BR-182, BR-318 and BR-334, with the sequence and class diagrams and the screen specifications; the 365-day share limit and the busy-status list are confirmed by the PO. |
 | 08/11/2026 | M | KhánhPG | BA Final Review SCRUM-28, 96: UC-52a/b bỏ System Admin; UC-56 POST-1 tally từ ballots; UC-54 bước 5 Khách không cần xác minh lúc mở; UC-74 thêm EX-3/EX-4, alreadyConfirmed; UC-76a EX-4 thêm MSG166; UC-22 POST-4 nháp tự xoá khi Ended kèm audit; BR-189, BR-290, BR-292 cập nhật; ERD, sequence, class diagram đồng bộ (SCRUM-28, 96). |
+| 09/11/2026 | A | HuyNT | SCRUM-38: specify UC-70a View Reports & Statistics and UC-70b Export Report (replacing the placeholders); add BR-432 to BR-438 and MSG463 to MSG466 (reserved), as settled in the SCRUM-38 specification. |
 
 *A - Added M - Modified D - Deleted
 
@@ -2430,11 +2431,25 @@ Placeholder only – detailed Use Case Specification will be added later.
 
 ##### 15.1.1 UC-70a – View Reports & Statistics
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | N/A |
+| --- | --- | --- | --- |
+| Description | Allows a signed-in internal user to see aggregate figures about the meetings they may read over a chosen period — meetings per month, by status and by sensitivity, the average attendance rate and the average time from the end of a meeting to the issue of its minutes — so that meeting activity can be followed without opening each meeting. (BR-432, BR-437) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in with an internal account. (BR-432) |  |  |
+| Postconditions | ● POST-1: The actor sees the figures of the chosen period, computed only from the Meetings the actor may read. (BR-432)<br>● POST-2: No meeting title, participant or content is shown. (BR-437)<br>● POST-3: Nothing in the system is changed. |  |  |
+| Normal Flow | View Reports & Statistics<br>1. The actor opens the Báo cáo [Reports] page.<br>2. The system selects the 12 months ending with the current month. (BR-433)<br>3. The system checks the period, then counts the Meetings the actor may read whose planned start falls within it. (BR-432, BR-433, BR-434)<br>4. The system shows the number of Meetings per month, by status and by sensitivity; the average attendance rate with the number of Meetings it is based on (BR-435); and the average time from the end of a Meeting to the issue of its minutes, with the number of Meetings it is based on. (BR-436) |  |  |
+| Alternative Flows | AF-1 – Choose another period<br>1. At Step 2 or after Step 4, the actor chooses a start month and an end month.<br>2. The flow resumes at Step 3 of the Main Flow with that period.<br>AF-2 – No Meeting in the period<br>1. At Step 3, the actor may read no Meeting whose planned start falls within the period.<br>2. The system shows zero counts and no averages, and displays MSG466 – “There are no meetings you can view in this period.”<br>3. The use case ends.<br>AF-3 – An average has no data<br>1. At Step 4, no Ended Meeting in the period had attendance taken, or none has issued minutes.<br>2. The system shows that average as having no data instead of a number. (BR-435, BR-436)<br>3. The use case ends. |  |  |
+| Exception Flows | EX-1 – The period is not valid<br>1. At Step 3, the start month is after the end month, or the period is longer than 24 months. (BR-433)<br>2. No figure is computed. The system displays MSG463 – “The report period is invalid. Choose up to 24 months, with the start month not after the end month.”<br>3. The flow resumes at Step 1 of AF-1.<br>EX-2 – The report cannot be loaded<br>1. At Step 3, the system cannot read the data.<br>2. No figure is shown. The system displays MSG464 – “Unable to load the report. Please try again.”<br>3. The use case ends. |  |  |
 
 ##### 15.1.2 UC-70b – Export Report
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Primary Actors | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Secondary Actors | N/A |
+| --- | --- | --- | --- |
+| Description | Allows the actor to download the figures of UC-70a for the chosen period as an Excel file, to keep them or to work on them outside the system. (BR-438) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in with an internal account. (BR-432)<br>● PRE-2: The actor is on the Báo cáo page with a period chosen. (UC-70a) |  |  |
+| Postconditions | ● POST-1: The actor receives an Excel file holding the same figures as the page for that period, computed at the time of export. (BR-438)<br>● POST-2: The file holds no meeting title, participant or content. (BR-437)<br>● POST-3: The export is recorded with the actor, the period and the time. (BR-438) |  |  |
+| Normal Flow | Export Report<br>1. The actor selects Xuất Excel [Export to Excel].<br>2. The system checks the period and computes the figures again from the Meetings the actor may read. (BR-432, BR-433)<br>3. The system builds the Excel file and records the export. (BR-438)<br>4. The browser saves the file. |  |  |
+| Alternative Flows | AF-1 – No Meeting in the period<br>1. At Step 2, the actor may read no Meeting in the period.<br>2. The file is still built, with zero counts and no averages.<br>3. The flow resumes at Step 3 of the Main Flow. |  |  |
+| Exception Flows | EX-1 – The period is not valid<br>1. At Step 2, the period is not valid. (BR-433)<br>2. No file is built. The system displays MSG463 – “The report period is invalid. Choose up to 24 months, with the start month not after the end month.”<br>3. The use case ends.<br>EX-2 – The file cannot be built<br>1. At Step 2 or Step 3, the system cannot read the data, build the file or record the export.<br>2. No file is downloaded and no export is recorded. The system displays MSG465 – “Unable to export the report. Please try again.”<br>3. The use case ends. |  |  |
 
 ### 16. FE-16 – Working Calendar & Meeting Time Search
 
@@ -4827,6 +4842,13 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-429 | A meeting created from a slot starts in Draft: the first listed invitee becomes Chair, the rest become Member and the finder becomes Secretary. It follows the normal approval flow. Creating a meeting does not check attendee conflicts. | UC-85b, UC-14 | SCRUM-137 / ADR-0058 — a meeting from a slot starts in Draft with default roles | Calendar Sharing |
 | BR-430 | Only a Meeting Organizer may request a share, receive a direct share, view shared calendars, find slots or create a draft from a slot; any active internal account may own a calendar and share it. | UC-84a, UC-84b, UC-84c, UC-84d, UC-84e, UC-85a, UC-85b, UC-85c | SCRUM-142 / ADR-0058 — who may share, view and find | Calendar Sharing |
 | BR-431 | A share’s date range is valid when the start date is not after the end date, the end date is today or later, and the range covers at most 365 days counting both ends. A new share (UC-84a, UC-84b) starts today or later; a changed range of an Effective share (UC-84d) may keep its original start date. A range the owner shortens when accepting (UC-84c) must lie within the requested range. | UC-84a, UC-84b, UC-84c, UC-84d | SCRUM-142 — a valid share date range | Calendar Sharing |
+| BR-432 | Every signed-in internal user may view and export the meeting report; a Guest may not. The figures count only the Meetings the user may read under the Meeting list rules — for a System Admin as for anyone else. | UC-70a, UC-70b | SCRUM-38 — "chỉ tính trên các cuộc họp người xem có quyền truy cập"; D1, D2 |  |
+| BR-433 | A report period is a whole number of calendar months, in Vietnam time. The start month must not be after the end month, and the period covers at most 24 months. By default it is the 12 months ending with the current month. | UC-70a, UC-70b | SCRUM-38 — số cuộc họp theo tháng |  |
+| BR-434 | A Meeting belongs to the month of its planned start. It is counted under its current status and its sensitivity; Cancelled Meetings are counted too. | UC-70a, UC-70b | SCRUM-38 — theo tháng, theo trạng thái, theo mức mật |  |
+| BR-435 | The attendance rate of an Ended Meeting is the number of invitees marked present divided by its current internal participants and its Guests whose invitation was not revoked. A Meeting where nobody was marked present or absent is left out. The average attendance rate is the mean of those rates. | UC-70a, UC-70b | SCRUM-38 — tỷ lệ tham dự trung bình |  |
+| BR-436 | The minutes turnaround of an Ended Meeting is the time from its actual end to the first issue of its minutes; corrections issued later do not count. A Meeting whose minutes are not issued yet is left out. The average turnaround is the mean of those times. | UC-70a, UC-70b | SCRUM-38 — thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản |  |
+| BR-437 | The report shows only counts, rates and averages. It never shows the title, participants or content of a Meeting, on the page or in the exported file. | UC-70a, UC-70b | Cuộc họp Mật — số liệu tổng hợp không được thành đường vòng để đọc cuộc họp |  |
+| BR-438 | An exported report is an Excel file holding exactly the figures of UC-70a for the same period, computed at the time of export. Every export is recorded in the audit log with the user, the period and the time. | UC-70b | SCRUM-38 — xuất Excel; tệp mang số liệu ra khỏi hệ thống |  |
 
 ### 2. System Messages
 
@@ -5254,6 +5276,10 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 453 | MSG453 | Page | UC-85a / EX-3, UC-85b / EX-3, UC-85c / EX-1 | Unable to load the calendar sharing data. Please try again. |
 | 454 | MSG454 | Toast | UC-84d / Main Flow | Calendar share change request sent. |
 | 455 | MSG455 | Form error | UC-84b / EX-1 | This person cannot receive a calendar share. |
+| 463 | MSG463 | Dành sẵn, chưa triển khai | UC-70a / EX-1, UC-70b / EX-1 | The report period is invalid. Choose up to 24 months, with the start month not after the end month. |
+| 464 | MSG464 | Dành sẵn, chưa triển khai | UC-70a / EX-2 | Unable to load the report. Please try again. |
+| 465 | MSG465 | Dành sẵn, chưa triển khai | UC-70b / EX-2 | Unable to export the report. Please try again. |
+| 466 | MSG466 | Dành sẵn, chưa triển khai | UC-70a / AF-2 | There are no meetings you can view in this period. |
 
 ### 3. Other Requirements
 

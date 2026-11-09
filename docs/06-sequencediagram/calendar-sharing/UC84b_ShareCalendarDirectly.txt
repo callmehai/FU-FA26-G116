@@ -10,8 +10,54 @@ participant ":Calendar Share Repository" as ShareRepository
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
 
-Owner->SharingPage: Share calendar at Level 1 (recipient, date range)
+Owner->SharingPage: Open the Chia sẻ lịch page
 activate SharingPage
+
+SharingPage->SharingController: Load share candidates (purpose=direct)
+activate SharingController
+SharingController->SharingService: listCandidates(ownerId, purpose=direct, q, page)
+activate SharingService
+SharingService->UserRepository: Verify owner is active (BR-430)
+activate UserRepository
+UserRepository->Database: Retrieve owner account
+activate Database
+Database-->UserRepository: Account / Not found
+deactivate Database
+UserRepository-->SharingService: Verification result
+deactivate UserRepository
+
+alt Owner is not active - EX-5
+    SharingService-->SharingController: Not found, nothing disclosed
+    deactivate SharingService
+    SharingController-->SharingPage: 404
+    deactivate SharingController
+    SharingPage-->Owner: (nothing disclosed)
+else Owner is verified
+    SharingService->UserRepository: Get active internal accounts with MeetingCreator, except the owner (server filter, purpose=direct)
+    activate UserRepository
+    UserRepository->Database: Retrieve candidates (active, internal, has MeetingCreator, id <> ownerId)
+    activate Database
+    Database-->UserRepository: Candidate list / Read failed
+    deactivate Database
+    UserRepository-->SharingService: Candidate list / Read failed
+    deactivate UserRepository
+
+    alt Candidate list cannot be read - EX-6
+        SharingService-->SharingController: MSG467 - Unable to load the candidate list.
+        deactivate SharingService
+        SharingController-->SharingPage: 500 MSG467
+        deactivate SharingController
+        SharingPage-->Owner: MSG467 - Unable to load the candidate list.
+    else Candidate list is loaded
+        SharingService-->SharingController: Candidate list
+        deactivate SharingService
+        SharingController-->SharingPage: Candidate list
+        deactivate SharingController
+        SharingPage-->Owner: Candidate list
+    end
+end
+
+Owner->SharingPage: Share calendar at Level 1 (recipient, date range)
 
 SharingPage->SharingController: Share calendar directly
 activate SharingController
@@ -35,7 +81,7 @@ alt Recipient cannot receive a share - EX-1
     deactivate SharingController
     SharingPage-->Owner: MSG455 - This person cannot receive a calendar share.
 else Recipient is verified
-    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the recipient (BR-423)
+    SharingService->ShareRepository: Check no Pending or Effective share of the owner's calendar to the recipient with end date on or after today (BR-423, BR-425)
     activate ShareRepository
     ShareRepository->Database: Find shares of the pair
     activate Database

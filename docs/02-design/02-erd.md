@@ -63,7 +63,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
 | TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. |
 | TranscriptSpeaker | Một giọng trong bản gỡ băng và người được gán tên (SCRUM-35) | IMPLEMENTED (migration `TranscriptSpeakerGuest`) | `TranscriptId`, `Label` (SPEAKER_00…), `SpeechMs`; máy gợi ý `SuggestedUserId` + `SuggestionScore`, và từ 03/11/2026 (ADR-0045) tự **điền** `AssignedUserId` khi điểm khớp đạt ngưỡng tự gán (mặc định 0,75) và người đó đã đồng ý thông báo 1.2; Thư ký gán hoặc đổi sang `AssignedUserId` **hoặc** `AssignedGuestId` (Khách còn lời mời). `AssignedById` rỗng nghĩa là máy điền, có người là Thư ký điền; cờ `autoAssigned` chỉ có trong phản hồi API, không lưu. Không lưu vector giọng. |
-| MeetingMinutes | Phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Trạng thái Draft/PendingSignature/RevisionRequested/Sealed/Superseded; bỏ `ApprovedById`, `RejectionReason`, `IssuedAt`; thêm `RevisionNote`, `SealedById`, `SealedAt`. Không ghi đè bản đã niêm phong. |
+| MeetingMinutes | Phiên bản biên bản | IMPLEMENTED (migration `MinutesApproval`) | Trạng thái `Draft`/`WaitingApproval`/`Rejected`/`Issued`/`Superseded` theo luồng SCRUM-33 đã chốt: Thư ký gửi duyệt, Chủ tọa duyệt là ban hành, trả lại kèm lý do (`RejectionReason`, tối đa 2.000 ký tự); `SubmittedById`, `ReturnedById`, `ReturnedAt` ghi ai gửi, ai trả lại. Không ghi đè bản đã ban hành: đính chính là revision mới trỏ `SupersedesId` về bản cũ, bản cũ thành `Superseded` khi bản mới ban hành. Ký số để cho SCRUM-37. |
 | MinutesSignature | Chữ ký trên phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Thêm `InvalidatedAt` (chữ ký cũ mất hiệu lực khi biên bản bị yêu cầu sửa — BR-166). |
 | MeetingSummary | Dự thảo AI hiện hành của cuộc họp (SCRUM-36, [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)) | IMPLEMENTED (migration `AiMeetingSummaryJob`) | Tối đa một mỗi Meeting. `Content` là JSON 3 mục I–III và khoảng giờ lời thoại của từng phần. `Status` Queued/Running/Ready/Failed là hàng chờ của máy AI (`RequestedById`, `RequestedAt`, `ErrorMessage`). Duyệt = `ReviewedById`/`ReviewedAt`: trước đó chỉ Chủ toạ, Thư ký thấy; sửa (`EditedById`, `EditedAt`) thì bỏ duyệt. Duyệt và công bố gộp làm một bước, khác dự kiến cũ (Draft/Approved/Published). |
 | AiProviderSetting | Máy AI viết dự thảo do quản trị chọn ([ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md)) | IMPLEMENTED (migration `AiProviderSetting`) | Tối đa một dòng (id cố định). `Mode` Local/Api; `ApiBaseUrl`, `ApiModel`; `ApiKeyCiphertext` là key mã hoá AES-256-GCM (không bao giờ trả về), `ApiKeyHint` 4 ký tự cuối; `UpdatedById`. Chỉ cuộc họp Thường dùng API. |
@@ -514,11 +514,16 @@ erDiagram
         uuid SupersedesId FK
         string Content "HTML đã lọc, tối đa 300000 ký tự (ADR-0055)"
         timestamptz BuiltFromDraftAt "nullable; dự thảo AI dùng lúc tạo (SCRUM-32)"
-        string Status "Draft|PendingSignature|RevisionRequested|Sealed|Superseded"
+        string Status "Draft|WaitingApproval|Rejected|Issued|Superseded"
         uuid CreatedById FK
-        string RevisionNote "nullable"
-        uuid SealedById FK "nullable"
-        timestamptz SealedAt "đặt rồi là khoá"
+        uuid SubmittedById FK "nullable; Thư ký gửi duyệt (SCRUM-33)"
+        timestamptz SubmittedAt "nullable"
+        uuid ApprovedById FK "nullable; Chủ tọa duyệt là ban hành"
+        timestamptz ApprovedAt "nullable"
+        timestamptz IssuedAt "nullable"
+        string RejectionReason "lý do trả lại, tối đa 2000 ký tự"
+        uuid ReturnedById FK "nullable"
+        timestamptz ReturnedAt "nullable"
     }
     MinutesSignature {
         uuid Id PK

@@ -1,6 +1,6 @@
 # Đặc tả sơ bộ SCRUM-38 (báo cáo và thống kê)
 
-**Ngày:** 2026-11-09 · **Người viết:** BE (Huy Nguyễn Trường) · **Trạng thái:** sơ bộ, đủ để BE làm theo
+**Ngày:** 2026-11-09 · **Người viết:** BE (Huy Nguyễn Trường) · **Trạng thái:** đã chốt, đã đưa vào Report 3 ngày 09/11/2026
 
 | Jira | Tên | Trạng thái lúc viết |
 |---|---|---|
@@ -10,6 +10,11 @@
 [DEVELOPMENT_WORKFLOW.md §2](../DEVELOPMENT_WORKFLOW.md). Note này chưa phải Report 3: UC, BR ở đây là
 **đề xuất**. BA đưa vào DOCX ở `08-reports/source/` lúc BA Final Review, rồi sinh lại
 `05-use-case-specifications.md` và `06-business-rules.md`. Không chép tay sang hai file đó.
+
+**09/11/2026 — đã chốt và đưa vào Report 3 DOCX** nguyên văn §3–§5 dưới đây, giữ nguyên số: UC-70a, UC-70b thay hai
+placeholder; BR-432 → BR-438 (cột *Rationale* lấy từ cột *Nguồn*); `MSG463`–`MSG466` ở §V.2, loại *Dành sẵn, chưa triển
+khai*. Chưa sửa: chú thích ¹⁸ của Permission Matrix (vẫn ghi Quản trị thấy toàn hệ thống, ngược BR-432 — chờ Q1) và đặc tả
+màn 15.1 ở §III (vẫn ghi chọn ngày và "Export PDF", D3 — BA sửa khi FE có màn chạy thật).
 
 - Không thêm số UC mới: SCRUM-38 là **UC-70a** và **UC-70b**, đang là *Placeholder* trong Report 3 (FE-15).
 - Số BR-432 → BR-438 là số đề xuất, nối tiếp BR-431 (cao nhất trên mọi nhánh lúc viết). BA giữ hoặc đổi số khi đưa
@@ -149,7 +154,11 @@ tới là `401` như mọi endpoint `RequireAuthorization()`, không có mã.
 - [ ] Ghi D1 → D4 lên SCRUM-38 bằng comment (skill `jira-deviation-note`).
 - [x] Xuất PNG cho hai sequence `.txt` và thêm tab vào `TrustCabinet_Sequence_Diagrams.drawio` (09/11/2026). Xuất lại
       lúc BA Final Review nếu đặc tả còn đổi.
-- [ ] BA: đưa UC-70a, UC-70b và BR-432 → BR-438 vào Report 3 DOCX (sửa chú thích ¹⁸ theo Q1); cập nhật inventory.
+- [x] BA: đưa UC-70a, UC-70b, BR-432 → BR-438 và `MSG463`–`MSG466` vào Report 3 DOCX, cập nhật inventory (09/11/2026;
+      `check_docx.py` OK, `sync_requirement_extracts.py --check` UP TO DATE). UC diagram đã có "View & Export Reports"
+      cho đúng 6 actor nên không sửa.
+- [ ] BA: sửa chú thích ¹⁸ của Permission Matrix khi PO chốt Q1.
+- [ ] BA: sửa đặc tả màn 15.1 (§III) theo D3 — bỏ "Export PDF", chọn theo tháng — khi FE có màn chạy thật.
 - [ ] BE: `GET /api/reports/meetings`, `GET /api/reports/meetings/export`, audit `ReportExported`; contract ở `docs/03-api/`;
       `MSG463`–`MSG465` sang *BE*.
 - [ ] FE: trang Báo cáo, chọn khoảng tháng, nút Xuất Excel; `MSG466`.
