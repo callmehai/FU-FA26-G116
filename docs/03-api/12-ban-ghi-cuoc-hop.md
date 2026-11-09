@@ -290,7 +290,7 @@ Tên người nói là chủ micro.
   ±2 giây, phủ ≥ 60 % quãng đó, chứa ≥ 50 % số từ (≤ 3 từ lạ), và to hơn ≥ 6 dB. Đo trên cuộc họp tổng hợp
   từ VIVOS: từ trùng 114 % → 36 %, không quãng nào của chủ micro bị đánh dấu nhầm. Hai bản to gần bằng nhau
   (hai laptop cách đều người nói) thì không đoán được bản nào là thật nên không đánh dấu. Câu đã sửa tay
-  không được so. Chủ tọa hoặc Thư ký quyết định **loại câu khỏi bản ghi**.
+  không được so. Chủ toạ hoặc Thư ký quyết định **loại câu khỏi bản ghi**.
 - Trình duyệt giữ câu chưa gửi được trong IndexedDB (mất mạng, đóng tab, máy chuyển chữ tắt) và gửi tiếp
   khi người đó mở lại cuộc họp. Backend nhận câu như thế **đến 7 ngày sau khi cuộc họp kết thúc**
   (`SpeechClipRules.LateUpload`), miễn là câu được nói trong giờ họp.
@@ -298,7 +298,7 @@ Tên người nói là chủ micro.
   Xoá một câu thì xoá luôn âm thanh của nó.
 
 Quyền: đọc, nghe, gửi câu và xoá câu của mình là người trong danh sách cuộc họp (như nghe bản ghi); sửa chữ
-là Thư ký; xoá câu của người khác là Thư ký; loại câu khỏi bản ghi và đưa lại là Chủ tọa hoặc Thư ký. Người
+là Thư ký; xoá câu của người khác là Thư ký; loại câu khỏi bản ghi và đưa lại là Chủ toạ hoặc Thư ký. Người
 ngoài danh sách nhận `404`.
 
 ### Khách (SCRUM-129, [ADR-0051](../05-decisions/0051-khach-ghi-theo-micro-cua-minh.md))
@@ -338,10 +338,10 @@ theo cùng hạn `Recordings:RetentionDays`. Khách không nhận sự kiện `s
 - `speakerIsGuest`: câu của Khách (SCRUM-129); khi đó `speakerId` là id lời mời Khách, không phải id người dùng.
 - `leak`: câu (`whole: true`) hoặc các từ `[từ, đến)` của nó có lẽ là lời của `speakerName` lọt sang, từ câu
   `clipId`. Mọi người đều thấy dấu này. `null` khi không lọt, hoặc câu đã bị loại.
-- `excluded`: câu đã bị loại khỏi bản ghi. Chủ tọa và Thư ký vẫn nhận chữ, lý do (`Leak` | `Other`) và
+- `excluded`: câu đã bị loại khỏi bản ghi. Chủ toạ và Thư ký vẫn nhận chữ, lý do (`Leak` | `Other`) và
   người loại; người khác nhận `text: ""` để biết ở đó từng có một câu.
 - `hasAudio`: người gọi nghe được câu này (`GET /api/speech-clips/{id}/playback`). `false` với câu lưu trước
-  ADR-0039, câu mà ổ đĩa không ghi được âm thanh, và câu đã bị loại khi người gọi không phải Chủ tọa hay Thư ký.
+  ADR-0039, câu mà ổ đĩa không ghi được âm thanh, và câu đã bị loại khi người gọi không phải Chủ toạ hay Thư ký.
 - `peaks`: dạng sóng, base64, mỗi 100 ms một byte 0–255 (thang căn bậc hai của biên độ đỉnh). `null` khi âm thanh
   không phải WAV PCM 16-bit, hoặc như `hasAudio`.
 
@@ -364,7 +364,7 @@ giờ server; gửi sau khi họp xong thì câu kết thúc muộn nhất lúc 
 
 Link nghe một câu, như `GET /api/recordings/{id}/playback`: `200 { "url": "/api/speech-clips/{id}/audio?expires=…&signature=…",
 "expiresAt": "…" }`. `404` khi không có câu, người gọi không đọc được cuộc họp, câu không có âm thanh, hoặc câu đã bị
-loại mà người gọi không phải Chủ tọa hay Thư ký. `500 MSG297` khi lỗi database.
+loại mà người gọi không phải Chủ toạ hay Thư ký. `500 MSG297` khi lỗi database.
 
 `GET /api/speech-clips/{clipId}/audio?expires=…&signature=…` không cần token. Nó phát âm thanh đúng định dạng trình
 duyệt đã gửi, hỗ trợ `Range` và `Cache-Control: private, no-store`. Link sai, hết hạn hoặc câu đã xoá đều trả `404`.
@@ -381,7 +381,7 @@ chữ lẫn âm thanh, ghi nhật ký kiểm toán.
 
 ### `PUT /api/speech-clips/{clipId}/exclusion` — `{ "excluded": true, "reason": "Leak" | "Other" }`
 
-Chủ tọa hoặc Thư ký loại câu khỏi bản ghi (`200 MSG351`), hoặc đưa lại với `{ "excluded": false }`
+Chủ toạ hoặc Thư ký loại câu khỏi bản ghi (`200 MSG351`), hoặc đưa lại với `{ "excluded": false }`
 (`200 MSG352`). Không xoá gì: câu vẫn nằm đó, chỉ ra khỏi bản ghi. Bấm lại khi câu đã ở trạng thái đó thì
 không đổi và không ghi nhật ký. Người khác nhận `403 MSG353`; `reason` sai `400 MSG354`. Ghi nhật ký kiểm
 toán `speech_clip.excluded` / `speech_clip.restored` kèm lý do.

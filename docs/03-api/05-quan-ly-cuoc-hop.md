@@ -80,7 +80,7 @@ lần. Tất cả bộ lọc được kết hợp bằng AND (BR-30/BR-31).
 |---|---|
 | `status` | Tên enum PascalCase trong bảy `MeetingStatus` (`Draft` … `Ended`); `MinutesIssued`, `Archived` đã bỏ và trả `400 MSG32` |
 | `sensitivity` | `Normal`, `Internal` hoặc `Secret` (bỏ `Confidential` từ [ADR-0057](../05-decisions/0057-ba-muc-mat-nhu-ai-ecabinet.md)) |
-| `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường. `%`, `_`, `\` là ký tự thường, không phải wildcard |
+| `q` | Trim; tìm chuỗi con của `title` không phân biệt hoa/thường và không phân biệt dấu (`unaccent`, SCRUM-148: `e2e loc` khớp `E2E Lộc`, `đ` khớp `d`). `%`, `_`, `\` là ký tự thường, không phải wildcard |
 | `from`, `to` | ISO 8601 có `Z` hoặc offset; giây tùy chọn, ví dụ `2026-10-01T09:00+07:00`; chuẩn hóa UTC. Meeting khớp khi lịch dự kiến của chính nó chồng lấp khoảng lọc (BR-30): `from` dùng `plannedEndTime >= from`, `to` dùng `plannedStartTime <= to` |
 | `page`, `pageSize` | Mặc định `1`, `20`; `page` từ `1` đến `2.147.483.647`, `pageSize` từ `1` đến `100` |
 | `sortBy` | `title`, `plannedStartTime`, `createdAt`; mặc định `plannedStartTime` |
@@ -187,8 +187,8 @@ Trả `200 OK` và object meeting phẳng, không bọc envelope: `plannedStartT
 
 Chi tiết, response tạo/sửa họp và mỗi dòng của `GET /api/meetings` còn có câu trả lời lời mời của chính người gọi (SCRUM-20, theo AI-eCabinet):
 
-- `myResponse: "Accepted" | "Declined" | null` — `null` khi chưa trả lời (coi như tham dự), khi người gọi không có trong thành phần, và luôn `null` với Chủ tọa (Chủ tọa không được hỏi).
-- `canRespond: boolean` — `true` khi nên hỏi "Bạn có tham dự cuộc họp này?": người gọi là thành phần nội bộ hiện tại, tài khoản đang hoạt động, không phải Chủ tọa, cuộc họp `Published`/`InProgress` và chưa trả lời. FE hiện hai nút trả lời theo cờ này; endpoint trả lời vẫn tự kiểm tra lại.
+- `myResponse: "Accepted" | "Declined" | null` — `null` khi chưa trả lời (coi như tham dự), khi người gọi không có trong thành phần, và luôn `null` với Chủ toạ (Chủ toạ không được hỏi).
+- `canRespond: boolean` — `true` khi nên hỏi "Bạn có tham dự cuộc họp này?": người gọi là thành phần nội bộ hiện tại, tài khoản đang hoạt động, không phải Chủ toạ, cuộc họp `Published`/`InProgress` và chưa trả lời. FE hiện hai nút trả lời theo cờ này; endpoint trả lời vẫn tự kiểm tra lại.
 
 ### PUT `/api/meetings/{id}`
 
@@ -334,7 +334,7 @@ Development seeder bổ sung một meeting `Draft` có sẵn agenda và ba parti
 - ID: `0199ac54-d000-7000-8000-000000000019`.
 - Tiêu đề: `SCRUM-19 — Luồng duyệt và công bố (demo)`.
 - Organizer: `thuky@trustcabinet.local`; approver có thể chọn `chutoa@trustcabinet.local` từ GET approvers.
-- Participant: thư ký, chủ tọa và `thanhvien@trustcabinet.local`.
+- Participant: thư ký, chủ toạ và `thanhvien@trustcabinet.local`.
 - Tài khoản demo dùng mật khẩu Development đã ghi ở `DevelopmentDataSeeder.DemoPassword`.
 
 Đăng nhập Organizer, gọi readiness (ban đầu `ready: true`), submit với ID approver, đăng nhập approver
@@ -639,7 +639,7 @@ Quyết định: [ADR-0032](../05-decisions/0032-huy-cuoc-hop-va-tu-huy-khi-qua-
 - Thành công `200/MSG261`, `MeetingTransitionResponse`; `meeting.status = "Cancelled"`, `meeting.cancellation` có
   `cancelledAt`, `cancelledById`, `cancelledByName`, `reason`; `history.action = "Cancel"`, `history.cancellationReason`.
 - Thiếu/rỗng lý do `400/MSG262`; quá 1.000 ký tự `400/MSG345`; đã bắt đầu/kết thúc/đã huỷ `409/MSG263`; đọc được nhưng không
-  phải Organizer `403/MSG263`; không lưu được `503/MSG264`; không đọc được `404`.
+  phải Organizer `403/MSG85` (trước SCRUM-150 là `403/MSG263`, câu nói về trạng thái chứ không về quyền); không lưu được `503/MSG264`; không đọc được `404`.
 - Huỷ từ `Published`: trong cùng transaction, mỗi người tham dự đang hoạt động và mỗi Guest chưa thu hồi có một dispatch
   `Cancelled`; người tham dự nội bộ (trừ người huỷ) có thông báo `MeetingCancelled`. Email gửi sau đó, chỉ cho người đã nhận
   thư mời, kèm lý do và `.ics` `METHOD:CANCEL` cùng UID để lịch tự gỡ sự kiện. Lời mời chưa gửi của cuộc họp đã huỷ bị bỏ.

@@ -63,7 +63,7 @@ public static class TranscriptEndpoints
                 TranscriptFailure.Forbidden => (403, Msg295NotSecretary, "Chỉ Thư ký cuộc họp được quản lý bản ghi."),
                 TranscriptFailure.NotRetryable => (409, Msg301NotRetryable,
                     "Bản ghi đang chờ hoặc đang được chuyển thành chữ, chưa chạy lại được."),
-                TranscriptFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ tọa hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
+                TranscriptFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ toạ hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
                 TranscriptFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
                 TranscriptFailure.NotReady => (409, Msg357TranscriptNotReady, "Bản gỡ băng chưa xong nên chưa tải về được."),
                 TranscriptFailure.Invalid => (400, Msg303InvalidText, "Nội dung đoạn gỡ băng không hợp lệ."),

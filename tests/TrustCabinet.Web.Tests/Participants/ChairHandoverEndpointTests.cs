@@ -85,6 +85,8 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
         var notification = Assert.Single(await db.Notifications.Where(n => n.MeetingId == s.MeetingId).ToArrayAsync());
         Assert.Equal(NotificationType.MeetingRoleChanged, notification.Type);
         Assert.Equal(s.Member, notification.UserId);
+        // It says what the role now is, not only that it changed (SCRUM-147).
+        Assert.EndsWith(": bạn đã được giao làm Chủ toạ.", notification.Body);
         var dispatch = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync();
         Assert.Equal(2, dispatch.Length);
         Assert.All(dispatch, d => Assert.Equal(InvitationEventKind.RoleChanged, d.EventKind));

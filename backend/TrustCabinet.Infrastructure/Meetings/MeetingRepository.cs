@@ -79,7 +79,9 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             var pattern = $"%{search.Replace("\\", "\\\\", StringComparison.Ordinal)
                 .Replace("%", "\\%", StringComparison.Ordinal)
                 .Replace("_", "\\_", StringComparison.Ordinal)}%";
-            meetings = meetings.Where(m => EF.Functions.ILike(m.Title, pattern, "\\"));
+            // Accent-insensitive (SCRUM-148): people type "e2e loc" for "E2E Lộc"; unaccent also folds đ to d.
+            meetings = meetings.Where(m => EF.Functions.ILike(
+                EF.Functions.Unaccent(m.Title), EF.Functions.Unaccent(pattern), "\\"));
         }
 
         var totalCount = await meetings.LongCountAsync(ct);

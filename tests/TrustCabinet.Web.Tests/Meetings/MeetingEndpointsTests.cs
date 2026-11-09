@@ -697,7 +697,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG263()
+    public async Task Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85()
     {
         var creator = GivenCreator();
         var approver = GivenMember("cancel-approver@trustcabinet.local");
@@ -710,7 +710,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             JsonSerializer.Serialize(new { action = "Cancel", reason = "Không phải của tôi" }));
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        Assert.Equal("MSG263", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG85", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
     }
 
@@ -926,7 +926,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal("MSG137", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(
-            "Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.",
+            "Cuộc họp cần có đúng một Chủ toạ đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.",
             body.RootElement.GetProperty("message").GetString());
         Assert.Equal(MeetingStatus.Approved, meeting.Status);
         Assert.Empty(meeting.StatusHistory);

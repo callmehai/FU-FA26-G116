@@ -2,7 +2,7 @@
 
 Theo [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md): làm như AI-eCabinet, gồm hai bước.
 
-1. **Dự thảo:** AI viết 3 mục của biên bản. Chủ tọa hoặc Thư ký sửa rồi duyệt.
+1. **Dự thảo:** AI viết 3 mục của biên bản. Chủ toạ hoặc Thư ký sửa rồi duyệt.
 2. **Bản nháp biên bản:** điền mẫu Biên bản (Nghị định 30, Mẫu 1.4) từ hồ sơ cuộc họp, cộng với dự thảo hiện có, đã duyệt
    hay chưa (như `Compose` của eCab).
 
@@ -13,7 +13,7 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
 
 | Ai | Dự thảo | Bản nháp biên bản |
 |---|---|---|
-| Chủ tọa, Thư ký hiện tại | Xem, tạo, tạo lại, sửa, duyệt | Xem, tạo, tạo lại, sửa, tải Word, tải PDF |
+| Chủ toạ, Thư ký hiện tại | Xem, tạo, tạo lại, sửa, duyệt | Xem, tạo, tạo lại, sửa, tải Word, tải PDF |
 | Người khác đọc được cuộc họp | Chỉ xem, và chỉ sau khi đã duyệt (`summary: null` trước đó) | Chỉ xem, và chỉ khi đã ban hành (SCRUM-33, chưa làm) |
 | Không đọc được cuộc họp | `404` | `404` |
 
@@ -45,7 +45,7 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
   },
   "canManage": true,
   "aiReady": true,                 // server đã cấu hình máy AI
-  "readiness": {                   // chỉ Chủ tọa, Thư ký; null với người khác
+  "readiness": {                   // chỉ Chủ toạ, Thư ký; null với người khác
     "sentences": 16, "unnamedVoices": 0, "transcribing": 0, "failedTranscripts": 0,
     "agendaItems": 2, "agendaItemsTimed": 2, "closedVotes": 1,
     "transcriptChangedAt": "2026-11-05T03:12:40Z"
@@ -64,7 +64,7 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
 - **`sources`:** khoảng giờ lời thoại của từng phần mục II, để Thư ký đối chiếu với tab Bản ghi.
 - **Kết quả biểu quyết** trong `conclusions` được chép từ dữ liệu phiên biểu quyết, không qua AI.
 - **Lỗi:**
-  - `403` `MSG385` khi không phải Chủ tọa hay Thư ký.
+  - `403` `MSG385` khi không phải Chủ toạ hay Thư ký.
   - `409` `MSG386` khi cuộc họp chưa bắt đầu hoặc đã huỷ, `409` `MSG387` khi AI đang viết (cả khi tạo lại,
     sửa hay duyệt: một bản sửa lúc đó sẽ bị dự thảo mới ghi đè mà không ai biết), `409` `MSG390` khi chưa có dự thảo nào
     viết xong.
@@ -84,15 +84,15 @@ Mã thông báo: `MSG384`–`MSG406` ([danh mục](00-danh-muc-ma-thong-bao.md))
 - **`minutes`:** `{ id, revisionNumber, status, content, createdAt, updatedAt, createdBy, builtFromDraftAt }`, hoặc `null`.
 - **`updatedAt`:** chính là giá trị server trả về lần đọc trước. Nếu đã có người lưu sau lần đó, server trả `409`
   `MSG401`, không ghi đè.
-- **Mục I–III:** lấy từ dự thảo hiện có, kể cả khi chưa duyệt. Biên bản nháp cũng chỉ Chủ tọa và Thư ký xem, nên không
+- **Mục I–III:** lấy từ dự thảo hiện có, kể cả khi chưa duyệt. Biên bản nháp cũng chỉ Chủ toạ và Thư ký xem, nên không
   ai đọc được chữ AI chưa duyệt qua biên bản. Chưa có dự thảo (ví dụ máy AI tắt) thì mục II liệt kê chương trình, mục III
   ghi kết luận Chủ toạ đã ghi và kết quả biểu quyết, cùng ghi chú của Thư ký
   ([SCRUM-30](19-ghi-chu-cuoc-hop.md#ghi-chú-vào-bản-nháp-biên-bản-br-402)); còn lại để "……".
-- **`draftChangedAt`:** lúc dự thảo được viết hoặc sửa lần cuối; `null` khi chưa có dự thảo, và với mọi người trừ Chủ tọa,
+- **`draftChangedAt`:** lúc dự thảo được viết hoặc sửa lần cuối; `null` khi chưa có dự thảo, và với mọi người trừ Chủ toạ,
   Thư ký.
 - **`builtFromDraftAt`:** `draftChangedAt` của dự thảo dùng lúc tạo (hoặc tạo lại) biên bản; `null` khi tạo lúc chưa có
   dự thảo. Hai giá trị khác nhau nghĩa là dự thảo đã đổi sau đó: màn hình báo và mời bấm *Tạo lại*. Lưu tay biên bản không
-  đổi giá trị này. Chỉ Chủ tọa, Thư ký thấy.
+  đổi giá trị này. Chỉ Chủ toạ, Thư ký thấy.
 - **`content`:** luôn là HTML đã lọc (xem [Định dạng `content`](#định-dạng-content)), kể cả biên bản lưu trước 05/11/2026
   dưới dạng văn bản có dấu: server đổi sang HTML khi đọc và khi tải về.
 - **Tải PDF:** `?format=pdf`, server dựng PDF bằng QuestPDF từ cùng `content` (khổ A4, lề theo Nghị định 30, font Liberation
