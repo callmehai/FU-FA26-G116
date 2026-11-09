@@ -94,7 +94,6 @@ export function ParticipantsPanel({
   const attendance = useAttendance(meetingId, showAttendance)
 
   const load = useCallback(async () => {
-    void meetingStatus // a dependency only: a new status re-reads the context
     const current = ++generation.current
     setState((s) => (s.kind === 'loaded' ? { ...s, stale: true } : s))
     try {
@@ -115,7 +114,7 @@ export function ParticipantsPanel({
         data: s.kind === 'loaded' || s.kind === 'error' ? s.data : null,
       }))
     }
-  }, [meetingId, meetingStatus, query, page, pageSize, handleAccessLost])
+  }, [meetingId, query, page, pageSize, handleAccessLost])
 
   useEffect(() => {
     void Promise.resolve().then(load)
@@ -123,7 +122,8 @@ export function ParticipantsPanel({
     return () => {
       loads.current++
     }
-  }, [load])
+    // A new status re-reads the context too: what the caller may do follows it.
+  }, [load, meetingStatus])
 
   useMeetingEvents(meetingId, () => void load())
 

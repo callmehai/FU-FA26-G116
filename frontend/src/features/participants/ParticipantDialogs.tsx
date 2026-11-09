@@ -446,7 +446,7 @@ export function ChangeRoleDialog({
             Chair:
               chair === null
                 ? 'Không tìm thấy Chủ toạ hiện tại. Hãy tải lại trang.'
-                : `${ROLE_DESCRIPTION.Chair} ${handOver ? 'Bạn' : (chair?.displayName ?? 'Chủ toạ hiện tại')} sẽ thành Thành viên.`,
+                : `${ROLE_DESCRIPTION.Chair} ${selfSteppingDown ? 'Bạn' : (chair?.displayName ?? 'Chủ toạ hiện tại')} sẽ thành Thành viên.`,
           }}
         />
         {error && (
