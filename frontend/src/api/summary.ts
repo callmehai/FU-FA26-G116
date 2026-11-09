@@ -27,6 +27,26 @@ export const createMinutes = (meetingId: string, rebuild: boolean) =>
 export const saveMinutes = (minutesId: string, content: string, updatedAt: string) =>
   api.put<MinutesState & { code: string; message: string }>(`/api/minutes/${minutesId}`, { content, updatedAt })
 
+/** One revision with the same state around it, to open a superseded one from the history (UC-58). */
+export const getMinutesRevision = (minutesId: string) => api.get<MinutesState>(`/api/minutes/${minutesId}`)
+
+type MinutesResult = MinutesState & { code: string; message: string }
+
+/** SCRUM-33 — UC-61: the Secretary sends a draft or a returned revision to the Chair. */
+export const submitMinutes = (minutesId: string, updatedAt: string) =>
+  api.post<MinutesResult>(`/api/minutes/${minutesId}/submit`, { updatedAt })
+
+/** UC-64: the Chair approves, which issues the minutes at once. */
+export const approveMinutes = (minutesId: string, updatedAt: string) =>
+  api.post<MinutesResult>(`/api/minutes/${minutesId}/approve`, { updatedAt })
+
+/** UC-65: the Chair sends them back to the Secretary with a reason (at most 2,000 characters). */
+export const returnMinutes = (minutesId: string, reason: string, updatedAt: string) =>
+  api.post<MinutesResult>(`/api/minutes/${minutesId}/reject`, { reason, updatedAt })
+
+/** UC-83: a new draft revision that starts from the issued text. */
+export const correctMinutes = (minutesId: string) => api.post<MinutesResult>(`/api/minutes/${minutesId}/corrections`)
+
 /** The minutes as a Word or a PDF file, made on the server from the same text. */
 export const exportMinutes = (minutesId: string, format: 'docx' | 'pdf') =>
   api.blob(`/api/minutes/${minutesId}/export?format=${format}`)

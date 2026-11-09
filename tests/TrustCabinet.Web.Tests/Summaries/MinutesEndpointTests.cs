@@ -344,11 +344,18 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         await AssertCode(await secretary.PostAsJsonAsync(s.Minutes, new { rebuild = false }), 409, "MSG400");
         if (status == MinutesStatus.Issued)
         {
-            // Issued minutes are everyone's to read, but only the Chair and the Secretary write or export them.
+            // Issued minutes are everyone's to read and download (PO 08/11/2026), but only the Chair and the Secretary
+            // write them.
             Assert.Equal("Issued", (await State(member, s)).GetProperty("minutes").GetProperty("status").GetString());
             await AssertCode(await Save(member, id, "x", minutes.GetProperty("updatedAt").GetString()), 403, "MSG397");
-            await AssertCode(await member.GetAsync($"/api/minutes/{id}/export"), 403, "MSG397");
-            await AssertCode(await member.GetAsync($"/api/minutes/{id}/export?format=pdf"), 403, "MSG397");
+            Assert.Equal(HttpStatusCode.OK, (await member.GetAsync($"/api/minutes/{id}/export")).StatusCode);
+            Assert.Equal(HttpStatusCode.OK, (await member.GetAsync($"/api/minutes/{id}/export?format=pdf")).StatusCode);
+        }
+        else
+        {
+            // Waiting for approval is still the two officers' alone: nothing to save, nothing to download.
+            Assert.Equal(HttpStatusCode.NotFound, (await Save(member, id, "x", minutes.GetProperty("updatedAt").GetString())).StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, (await member.GetAsync($"/api/minutes/{id}/export")).StatusCode);
         }
         await using var check = f.Db();
         Assert.Equal(minutes.GetProperty("content").GetString(), (await check.MeetingMinutes.SingleAsync(m => m.Id == id)).Content);

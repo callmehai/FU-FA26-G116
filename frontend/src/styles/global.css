@@ -4627,6 +4627,8 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .minutes-empty { margin: 0; }
 .minutes-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 12px; }
 .minutes-notice .row-actions { flex-wrap: wrap; gap: 8px; white-space: normal; }
+/* The Chair's reason for returning the minutes (SCRUM-33): free text, so its line breaks are kept. */
+.minutes-returned p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .minutes-running { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--muted-ink); }
 /* What a draft would miss, as AI-eCabinet lists it: amber lines under the card's head, each with its way out. */
 .minutes-readiness { display: grid; gap: 6px; margin-bottom: 12px; }

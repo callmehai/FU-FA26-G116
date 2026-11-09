@@ -38,5 +38,15 @@ public class MeetingMinutesConfiguration : IEntityTypeConfiguration<MeetingMinut
             .WithMany()
             .HasForeignKey(m => m.ApprovedById)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(m => m.SubmittedBy)
+            .WithMany()
+            .HasForeignKey(m => m.SubmittedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(m => m.ReturnedBy)
+            .WithMany()
+            .HasForeignKey(m => m.ReturnedById)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

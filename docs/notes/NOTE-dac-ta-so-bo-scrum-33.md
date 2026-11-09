@@ -1,6 +1,6 @@
 # Đặc tả sơ bộ SCRUM-33 (duyệt, ban hành biên bản)
 
-**Ngày:** 2026-11-07 · **Người viết:** BE (Huy Nguyễn Trường) · **Trạng thái:** sơ bộ, luồng đã chốt, đủ để BE làm theo; sửa theo review PR #279 ngày 08/11/2026
+**Ngày:** 2026-11-07 · **Người viết:** BE (Huy Nguyễn Trường) · **Trạng thái:** sơ bộ, luồng đã chốt, đủ để BE làm theo; sửa theo review PR #279 ngày 08/11/2026; PO chốt Q7 ngày 08/11/2026 và đã có code (SCRUM-33 BE)
 
 | Jira | Tên | Trạng thái lúc viết |
 |---|---|---|
@@ -126,7 +126,7 @@ UC mới, `<<extend>>` UC-58. Sequence Diagram:
 
 | UC | Thay đổi |
 |---|---|
-| UC-58 View Meeting Minutes | Thêm actor "người đọc được cuộc họp" (BR-412). AF mới: người không phải Chủ toạ/Thư ký thấy bản **đã ban hành** mới nhất, không thấy bản nháp, bản chờ duyệt hay bản đính chính đang soạn. AF mới: xem lịch sử các bản đã ban hành (bản bị đính chính hiện nhãn *Đã thay thế*) và mở đọc nội dung một bản trong đó (`GET /api/minutes/{id}`, §6). Bước 4 hiện thêm người gửi duyệt, người duyệt và thời điểm, lý do trả lại. Người ngoài hỏi tới biên bản chưa ban hành vẫn nhận `404`. Tải Word/PDF **giữ như contract SCRUM-32**: chỉ Chủ toạ/Thư ký tải được, người đọc khác nhận `403` `MSG397` và chỉ xem trên màn hình; cuộc họp Mật không ai tải được (`MSG405`). Mở tải cho người đọc là câu hỏi Q7 (BR-412) |
+| UC-58 View Meeting Minutes | Thêm actor "người đọc được cuộc họp" (BR-412). AF mới: người không phải Chủ toạ/Thư ký thấy bản **đã ban hành** mới nhất, không thấy bản nháp, bản chờ duyệt hay bản đính chính đang soạn. AF mới: xem lịch sử các bản đã ban hành (bản bị đính chính hiện nhãn *Đã thay thế*) và mở đọc nội dung một bản trong đó (`GET /api/minutes/{id}`, §6). Bước 4 hiện thêm người gửi duyệt, người duyệt và thời điểm, lý do trả lại. Người ngoài hỏi tới biên bản chưa ban hành vẫn nhận `404`. Tải Word/PDF (**PO chốt Q7 ngày 08/11/2026**): bản đã ban hành và bản đã thay thế thì mọi người đọc được cuộc họp đều tải được, trừ Khách và cuộc họp Mật (`MSG405`); bản nháp, chờ duyệt, bị trả lại vẫn chỉ Chủ toạ/Thư ký tải, người khác nhận `404` (BR-412). `MSG397` không còn dùng cho tải về |
 | UC-59 Generate Meeting Minutes | Tạo lại không áp dụng cho bản đính chính (BR-413): `POST /api/meetings/{id}/minutes` với `rebuild: true` khi bản mới nhất là bản đính chính (`SupersedesId` khác null) trả `409` `MSG456`, không đổi gì. Bước 2 thêm điều kiện bản mới nhất là nháp **hoặc đã bị trả lại**. EX mới: *The latest revision is a correction* → `MSG456` |
 | UC-60 Edit Meeting Minutes | PRE-2 thêm "hoặc đã bị Chủ toạ trả lại" (BR-407) và áp dụng cho bản đính chính |
 | BR-386, BR-388 | BR-388 đổi "submitted for signing" thành "submitted for approval", và nói rõ bản bị trả lại sửa được lại. BR-386 giữ nguyên |
@@ -143,7 +143,7 @@ UC mới, `<<extend>>` UC-58. Sequence Diagram:
 | `BR-409` | Issued minutes are never changed. A correction is a new revision that starts from the issued text, is numbered after it and follows the same submission and approval; once the correction is issued, the earlier revision is superseded and stays readable. | UC-64, UC-83 | SCRUM-33 — "sửa sau ban hành phải tạo bản đính chính mới, giữ nguyên bản cũ" |
 | `BR-410` | The minutes of a Meeting have at most one revision that is not yet issued. | UC-83 | SCRUM-33 — one draft per meeting (BR-388), one correction at a time |
 | `BR-411` | Submitting the minutes notifies the current Chair; returning them notifies the current Secretary; issuing them notifies everyone who may read the issued minutes. | UC-61, UC-64, UC-65 | SCRUM-33 — "thành phần tham dự nhận thông báo" |
-| `BR-412` | Issued minutes, and the revisions they superseded, can be read on the screen by everyone who may read the Meeting, except Guests. Only the current Chair and the current Secretary may download them, and nobody may download the minutes of a Secret Meeting (BR-390). | UC-58, UC-64 | SCRUM-33 / BR-390 — PO chốt Q2 ngày 07/11/2026: Khách không bao giờ thấy biên bản; tải về giữ như SCRUM-32 (Q7) |
+| `BR-412` | Issued minutes, and the revisions they superseded, can be read and downloaded as a Word or PDF file by everyone who may read the Meeting, except Guests; nobody may download the minutes of a Secret Meeting (BR-390). A draft, a revision waiting for approval or a returned one is read and downloaded by the current Chair and the current Secretary only. | UC-58, UC-64 | SCRUM-33 / BR-390 — PO chốt Q2 ngày 07/11/2026 (Khách không bao giờ thấy biên bản) và Q7 ngày 08/11/2026 (người đọc tải được bản đã ban hành) |
 | `BR-413` | A correction cannot be rebuilt from the template; it starts from the issued text and is corrected by hand. | UC-59, UC-83 | SCRUM-33 — the record behind the issued text has been sealed (BR-310) |
 
 ## 5. Mã thông báo (dành sẵn)
@@ -165,7 +165,7 @@ UC mới, `<<extend>>` UC-58. Sequence Diagram:
 
 `MSG456` không liền dải vì `MSG435`–`MSG455` đã thuộc SCRUM-137/142 (PR #282) trước khi review thêm mã này.
 
-Dùng lại, cùng tình huống: `MSG397` (không phải Chủ toạ/Thư ký, UC-83; người đọc tải bản đã ban hành, UC-58),
+Dùng lại, cùng tình huống: `MSG397` (không phải Chủ toạ/Thư ký, UC-83),
 `MSG400` (gửi duyệt khi đã gửi hoặc đã ban hành), `MSG401` (thao tác trên bản đã cũ: UC-61, UC-64, UC-65), `MSG403` (lỗi đọc), `MSG404` (lỗi lưu), `MSG405` (tải biên bản của cuộc họp
 Mật).
 
@@ -200,14 +200,19 @@ Chủ toạ/Thư ký hỏi tới bản nháp, bản chờ duyệt hay bản đí
 | Q4 | FE-12 đổi nghĩa UC-61, UC-64, UC-65 như mục 2 D4, hay giữ chúng cho luồng ký và cấp số mới cho duyệt? Còn hướng gộp UC-60 + UC-61 và thêm UC ban hành trong [NOTE-uc-chua-dac-ta-cho-sua.md](NOTE-uc-chua-dac-ta-cho-sua.md) | **Chốt 07/11/2026: đổi nghĩa.** Cả năm UC là placeholder; UC-62, UC-63 để dành cho ký số mô phỏng SCRUM-37 (Could) |
 | Q5 | Thư ký có được rút lại biên bản đã gửi duyệt khi Chủ toạ chưa xử lý không? | Không làm trong SCRUM-33 |
 | Q6 | Thông báo ban hành có gửi email không? | Chỉ trong ứng dụng, như các thông báo cuộc họp khác. Email là việc riêng nếu PO cần |
-| Q7 | Người đọc được cuộc họp (không phải Chủ toạ/Thư ký) có được tải Word/PDF bản đã ban hành không? | Không trong SCRUM-33: giữ như contract SCRUM-32 (`17-du-thao-bien-ban.md`: người khác "Chỉ xem"; `MSG397`), chỉ xem trên màn hình. Nếu PO muốn mở thì đổi `MSG397`, `MinutesService.ExportAsync` và BR-412 trong cùng PR |
+| Q7 | Người đọc được cuộc họp (không phải Chủ toạ/Thư ký) có được tải Word/PDF bản đã ban hành không? | **Chốt 08/11/2026 (PO): có.** Bản đã ban hành thì mọi người đọc được cuộc họp đều tải được Word/PDF, trừ Khách và cuộc họp Mật; bản nháp, chờ duyệt vẫn chỉ Chủ toạ, Thư ký tải. Code: `MinutesService.ExportAsync`; bản đã thay thế tải được như bản đã ban hành vì người đọc vẫn đọc được nó (BR-409) |
 
 ## 8. Việc còn lại
 
 - [x] Ghi D1, D3, D4 lên SCRUM-33 bằng comment (skill `jira-deviation-note`).
-- [ ] Sửa comment SCRUM-33: Q2 đã chốt (Khách không thấy biên bản), thêm Q7 (người đọc không tải về), `MSG456`.
+- [ ] Sửa comment SCRUM-33: Q2 đã chốt (Khách không thấy biên bản), Q7 đã chốt (người đọc tải được bản đã ban hành), `MSG456`.
 - [ ] Xuất PNG cho 4 sequence `.txt` (`node scripts/export-diagrams.js docs/06-sequencediagram/minutes-management`) và
       thêm tab vào `TrustCabinet_Sequence_Diagrams.drawio` — để lúc BA Final Review nếu đặc tả còn đổi.
 - [ ] BA: đưa UC-83, nội dung UC-61/64/65 và BR-404 → BR-413 vào Report 3 DOCX; cập nhật inventory và UC diagram.
-- [ ] BE: contract trong `docs/03-api/`, code, test, đổi `MSG424`–`MSG434` và `MSG456` từ *Dành sẵn* sang *BE* khi có
-      code.
+- [x] BE: contract trong [`17-du-thao-bien-ban.md`](../03-api/17-du-thao-bien-ban.md#duyệt-và-ban-hành--scrum-33), code,
+      test, `MSG424`–`MSG434` và `MSG456` sang *BE* trong danh mục (nhánh `feat/scrum-33-duyet-ban-hanh-bien-ban`). Người gửi
+      duyệt, người trả lại lưu bằng cột (`SubmittedById`, `ReturnedById`, `ReturnedAt`, migration `MinutesApproval`).
+- [x] FE: tab Biên bản (`MinutesPanel.tsx`, `ReturnMinutesDialog.tsx`) có nút Gửi duyệt, Duyệt và ban hành, Trả lại (ô lý do),
+      Tạo bản đính chính, chọn phiên bản để xem lại bản cũ, cảnh báo "……" (UC-61 AF-1); thông báo `MinutesReturned` có icon
+      riêng. Màn hình biết người gọi là Thư ký hay Chủ toạ qua `canSubmit`, `canApprove` trong `MinutesState` (thêm lúc làm FE).
+- [ ] Thông báo về biên bản mở trang cuộc họp chứ chưa mở thẳng tab Biên bản (cần loại target mới ở BE).
