@@ -2617,6 +2617,9 @@ a.menu-item { text-decoration: none; }
 .person-text { display: flex; flex-direction: column; min-width: 0; }
 .person-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .person-text > .person-name { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+/* Person marks where an email may wrap; Chrome breaks at a <wbr> even under nowrap, so the marks count
+   only where the email is allowed to wrap (the narrow roster). */
+.person-text wbr { display: none; }
 
 /* "Bạn có tham dự cuộc họp này?" — the two answers, and the answer once given. */
 .rsvp-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
@@ -2646,6 +2649,7 @@ a.menu-item { text-decoration: none; }
      So does the email, before the "@" and "." Person marks (SCRUM-151), not mid-word; only a part
      wider than the line still breaks where it must. */
   .participants-panel .person-name, .participants-panel .person .cell-sub { white-space: normal; overflow-wrap: anywhere; }
+  .participants-panel .person .cell-sub wbr { display: inline; }
 }
 .participants-alert { margin: 12px 16px 0; }
 
