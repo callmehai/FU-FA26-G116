@@ -2,7 +2,7 @@
 
 Theo [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md): làm như AI-eCabinet, gồm hai bước.
 
-1. **Dự thảo:** AI viết 3 mục của biên bản. Chủ tọa hoặc Thư ký sửa rồi duyệt.
+1. **Dự thảo:** AI viết 3 mục của biên bản. Chủ toạ hoặc Thư ký sửa rồi duyệt.
 2. **Bản nháp biên bản:** điền mẫu Biên bản (Nghị định 30, Mẫu 1.4) từ hồ sơ cuộc họp, cộng với dự thảo hiện có, đã duyệt
    hay chưa (như `Compose` của eCab).
 
@@ -13,13 +13,13 @@ Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duy�
 
 | Ai | Dự thảo | Bản nháp biên bản |
 |---|---|---|
-| Chủ tọa, Thư ký hiện tại | Xem, tạo, tạo lại, sửa, duyệt | Xem mọi bản, tạo, tạo lại, sửa, tải Word, tải PDF; Thư ký gửi duyệt, Chủ tọa duyệt hoặc trả lại, cả hai tạo bản đính chính |
+| Chủ toạ, Thư ký hiện tại | Xem, tạo, tạo lại, sửa, duyệt | Xem mọi bản, tạo, tạo lại, sửa, tải Word, tải PDF; Thư ký gửi duyệt, Chủ toạ duyệt hoặc trả lại, cả hai tạo bản đính chính |
 | Người khác đọc được cuộc họp (trừ Khách) | Chỉ xem, và chỉ sau khi đã duyệt (`summary: null` trước đó) | Xem và tải Word, tải PDF bản đã ban hành và bản đã thay thế (PO 08/11/2026). Không thấy bản nháp, chờ duyệt, bị trả lại hay bản đính chính đang soạn |
 | Không đọc được cuộc họp | `404` | `404` |
 
 - Tạo dự thảo và tạo biên bản chỉ được làm khi cuộc họp đang diễn ra hoặc đã kết thúc (`MSG386`, `MSG398`).
 - Server kiểm tra lại quyền ở mọi request.
-- Biên bản của cuộc họp Mật không ai tải được, kể cả Chủ tọa, Thư ký (`MSG405`).
+- Biên bản của cuộc họp Mật không ai tải được, kể cả Chủ toạ, Thư ký (`MSG405`).
 - Khách không bao giờ thấy biên bản (PO 07/11/2026): Khách không phải người tham dự mà chính sách đọc cuộc họp tính.
 
 ## Dự thảo — `/api/meetings/{id}/summary`
@@ -47,7 +47,7 @@ Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duy�
   },
   "canManage": true,
   "aiReady": true,                 // server đã cấu hình máy AI
-  "readiness": {                   // chỉ Chủ tọa, Thư ký; null với người khác
+  "readiness": {                   // chỉ Chủ toạ, Thư ký; null với người khác
     "sentences": 16, "unnamedVoices": 0, "transcribing": 0, "failedTranscripts": 0,
     "agendaItems": 2, "agendaItemsTimed": 2, "closedVotes": 1,
     "transcriptChangedAt": "2026-11-05T03:12:40Z"
@@ -66,7 +66,7 @@ Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duy�
 - **`sources`:** khoảng giờ lời thoại của từng phần mục II, để Thư ký đối chiếu với tab Bản ghi.
 - **Kết quả biểu quyết** trong `conclusions` được chép từ dữ liệu phiên biểu quyết, không qua AI.
 - **Lỗi:**
-  - `403` `MSG385` khi không phải Chủ tọa hay Thư ký.
+  - `403` `MSG385` khi không phải Chủ toạ hay Thư ký.
   - `409` `MSG386` khi cuộc họp chưa bắt đầu hoặc đã huỷ, `409` `MSG387` khi AI đang viết (cả khi tạo lại,
     sửa hay duyệt: một bản sửa lúc đó sẽ bị dự thảo mới ghi đè mà không ai biết), `409` `MSG390` khi chưa có dự thảo nào
     viết xong.
@@ -86,25 +86,25 @@ Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duy�
 
 - **`minutes`:** `{ id, revisionNumber, status, content, createdAt, updatedAt, createdBy, builtFromDraftAt, supersedesId,
   submittedBy, submittedAt, approvedBy, approvedAt, issuedAt, returnedBy, returnedAt, rejectionReason }`, hoặc `null`.
-  Chủ tọa, Thư ký nhận bản mới nhất, trạng thái nào cũng vậy. Người đọc khác nhận bản `Issued` mới nhất, hoặc `null` khi
+  Chủ toạ, Thư ký nhận bản mới nhất, trạng thái nào cũng vậy. Người đọc khác nhận bản `Issued` mới nhất, hoặc `null` khi
   chưa có bản nào ban hành; với họ `submittedBy`, `submittedAt`, `returnedBy`, `returnedAt`, `rejectionReason` luôn là
   `null`. `status` là `Draft`, `WaitingApproval`, `Rejected` (bị trả lại), `Issued` hoặc `Superseded`.
-- **`history`:** `[{ id, revisionNumber, status, issuedAt }]`, mới nhất trước. Server lọc: Chủ tọa, Thư ký nhận mọi bản,
+- **`history`:** `[{ id, revisionNumber, status, issuedAt }]`, mới nhất trước. Server lọc: Chủ toạ, Thư ký nhận mọi bản,
   người đọc khác chỉ nhận dòng `Issued` và `Superseded`, nên không biết có bản đính chính đang soạn hay chờ duyệt.
   `GET /api/minutes/{id}` của một bản họ không được thấy trả `404`, không có mã.
-- **`canSubmit`, `canApprove`:** người gọi đang là Thư ký (gửi duyệt) hay Chủ tọa (duyệt, trả lại) của cuộc họp, để màn
+- **`canSubmit`, `canApprove`:** người gọi đang là Thư ký (gửi duyệt) hay Chủ toạ (duyệt, trả lại) của cuộc họp, để màn
   hình hiện đúng nút. Người kiêm cả hai nhận cả hai `true`. Trạng thái biên bản và cuộc họp vẫn do server kiểm khi bấm.
 - **`updatedAt`:** chính là giá trị server trả về lần đọc trước. Nếu đã có người lưu sau lần đó, server trả `409`
   `MSG401`, không ghi đè.
-- **Mục I–III:** lấy từ dự thảo hiện có, kể cả khi chưa duyệt. Biên bản nháp cũng chỉ Chủ tọa và Thư ký xem, nên không
+- **Mục I–III:** lấy từ dự thảo hiện có, kể cả khi chưa duyệt. Biên bản nháp cũng chỉ Chủ toạ và Thư ký xem, nên không
   ai đọc được chữ AI chưa duyệt qua biên bản. Chưa có dự thảo (ví dụ máy AI tắt) thì mục II liệt kê chương trình, mục III
   ghi kết luận Chủ toạ đã ghi và kết quả biểu quyết, cùng ghi chú của Thư ký
   ([SCRUM-30](19-ghi-chu-cuoc-hop.md#ghi-chú-vào-bản-nháp-biên-bản-br-402)); còn lại để "……".
-- **`draftChangedAt`:** lúc dự thảo được viết hoặc sửa lần cuối; `null` khi chưa có dự thảo, và với mọi người trừ Chủ tọa,
+- **`draftChangedAt`:** lúc dự thảo được viết hoặc sửa lần cuối; `null` khi chưa có dự thảo, và với mọi người trừ Chủ toạ,
   Thư ký.
 - **`builtFromDraftAt`:** `draftChangedAt` của dự thảo dùng lúc tạo (hoặc tạo lại) biên bản; `null` khi tạo lúc chưa có
   dự thảo. Hai giá trị khác nhau nghĩa là dự thảo đã đổi sau đó: màn hình báo và mời bấm *Tạo lại*. Lưu tay biên bản không
-  đổi giá trị này. Chỉ Chủ tọa, Thư ký thấy.
+  đổi giá trị này. Chỉ Chủ toạ, Thư ký thấy.
 - **`content`:** luôn là HTML đã lọc (xem [Định dạng `content`](#định-dạng-content)), kể cả biên bản lưu trước 05/11/2026
   dưới dạng văn bản có dấu: server đổi sang HTML khi đọc và khi tải về.
 - **Tải PDF:** `?format=pdf`, server dựng PDF bằng QuestPDF từ cùng `content` (khổ A4, lề theo Nghị định 30, font Liberation
@@ -168,19 +168,19 @@ Cuộc họp giữ `Ended` suốt luồng này. Ký số là việc của SCRUM-
 
 | Method | Đường dẫn | Ai | Kết quả |
 |---|---|---|---|
-| `POST` | `/api/minutes/{minutesId}/submit` | Thư ký hiện tại | `200` `MSG424`. Body `{ updatedAt }`. `Draft` hoặc `Rejected` → `WaitingApproval`; Chủ tọa nhận thông báo `MinutesWaitingApproval` |
-| `POST` | `/api/minutes/{minutesId}/approve` | Chủ tọa hiện tại | `200` `MSG427`. Body `{ updatedAt }`. `WaitingApproval` → `Issued`; bản nó đính chính → `Superseded`. Mọi người đọc được cuộc họp (trừ Chủ tọa vừa duyệt) nhận thông báo `MinutesIssued` |
-| `POST` | `/api/minutes/{minutesId}/reject` | Chủ tọa hiện tại | `200` `MSG430`. Body `{ reason, updatedAt }`. `WaitingApproval` → `Rejected`; Thư ký nhận thông báo `MinutesReturned` |
-| `POST` | `/api/minutes/{minutesId}/corrections` | Chủ tọa, Thư ký hiện tại | `201` `MSG432`. `minutesId` là bản `Issued` được chọn. Tạo bản `Draft` mới: nội dung của bản đó, `revisionNumber + 1`, `supersedesId` trỏ về bản đó. Không ai nhận thông báo tới khi bản mới ban hành |
+| `POST` | `/api/minutes/{minutesId}/submit` | Thư ký hiện tại | `200` `MSG424`. Body `{ updatedAt }`. `Draft` hoặc `Rejected` → `WaitingApproval`; Chủ toạ nhận thông báo `MinutesWaitingApproval` |
+| `POST` | `/api/minutes/{minutesId}/approve` | Chủ toạ hiện tại | `200` `MSG427`. Body `{ updatedAt }`. `WaitingApproval` → `Issued`; bản nó đính chính → `Superseded`. Mọi người đọc được cuộc họp (trừ Chủ toạ vừa duyệt) nhận thông báo `MinutesIssued` |
+| `POST` | `/api/minutes/{minutesId}/reject` | Chủ toạ hiện tại | `200` `MSG430`. Body `{ reason, updatedAt }`. `WaitingApproval` → `Rejected`; Thư ký nhận thông báo `MinutesReturned` |
+| `POST` | `/api/minutes/{minutesId}/corrections` | Chủ toạ, Thư ký hiện tại | `201` `MSG432`. `minutesId` là bản `Issued` được chọn. Tạo bản `Draft` mới: nội dung của bản đó, `revisionNumber + 1`, `supersedesId` trỏ về bản đó. Không ai nhận thông báo tới khi bản mới ban hành |
 
 Cả bốn trả cùng dạng với `POST …/minutes`: `{ code, message, minutes, canManage, draftChangedAt, history, canSubmit, canApprove }`.
 
-- **Thứ tự kiểm tra** theo sequence diagram: không đọc được cuộc họp, hoặc không phải Chủ tọa hay Thư ký → `404` không
-  mã; người giữ vai còn lại → `403` (`MSG425` khi Chủ tọa gửi duyệt, `MSG428` khi Thư ký duyệt hay trả lại); rồi tới
+- **Thứ tự kiểm tra** theo sequence diagram: không đọc được cuộc họp, hoặc không phải Chủ toạ hay Thư ký → `404` không
+  mã; người giữ vai còn lại → `403` (`MSG425` khi Chủ toạ gửi duyệt, `MSG428` khi Thư ký duyệt hay trả lại); rồi tới
   trạng thái, bản cũ (`updatedAt`) và lý do.
 - **`updatedAt`:** như khi lưu. Gửi duyệt, duyệt, trả lại đều đặt lại `updatedAt`, nên người đang mở bản cũ nhận `409`
   `MSG401`. Đính chính không cần `updatedAt`: bản đã ban hành không bao giờ đổi.
-- **Lý do trả lại:** server bỏ khoảng trắng hai đầu; trống hoặc quá 2.000 ký tự → `400` `MSG431`. Chỉ Chủ tọa, Thư ký
+- **Lý do trả lại:** server bỏ khoảng trắng hai đầu; trống hoặc quá 2.000 ký tự → `400` `MSG431`. Chỉ Chủ toạ, Thư ký
   đọc được lý do (`rejectionReason`).
 - **Đồng thời:** mỗi thao tác khoá dòng cuộc họp và dòng biên bản, nên hai người bấm cùng lúc thì lần lượt; một lần lưu
   chen giữa lúc gửi duyệt thấy biên bản đã khoá. Trạng thái và thông báo lưu cùng một lần: lưu lỗi (`503` `MSG404`) thì
@@ -188,7 +188,7 @@ Cả bốn trả cùng dạng với `POST …/minutes`: `{ code, message, minute
 - **Thông báo** trỏ tới cuộc họp (`targetType: "Meeting"`), như các thông báo cuộc họp khác. Chỉ trong ứng dụng, không
   gửi email.
 - **Lỗi:**
-  - `403` `MSG425` khi Chủ tọa gửi duyệt; `409` `MSG426` khi cuộc họp chưa kết thúc; `409` `MSG400` khi bản đã gửi
+  - `403` `MSG425` khi Chủ toạ gửi duyệt; `409` `MSG426` khi cuộc họp chưa kết thúc; `409` `MSG400` khi bản đã gửi
     duyệt hoặc đã ban hành.
   - `403` `MSG428` khi Thư ký duyệt hay trả lại; `409` `MSG429` khi bản không chờ duyệt; `400` `MSG431` khi lý do sai.
   - `403` `MSG397` khi người đọc được bản đã ban hành xin đính chính; `409` `MSG433` khi bản được chọn không phải bản

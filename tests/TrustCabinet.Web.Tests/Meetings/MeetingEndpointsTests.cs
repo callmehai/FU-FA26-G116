@@ -697,7 +697,7 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG263()
+    public async Task Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85()
     {
         var creator = GivenCreator();
         var approver = GivenMember("cancel-approver@trustcabinet.local");
@@ -710,7 +710,7 @@ public sealed class MeetingEndpointsTests : IDisposable
             JsonSerializer.Serialize(new { action = "Cancel", reason = "Không phải của tôi" }));
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        Assert.Equal("MSG263", body.RootElement.GetProperty("code").GetString());
+        Assert.Equal("MSG85", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(MeetingStatus.WaitingApproval, meeting.Status);
     }
 
@@ -926,7 +926,7 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         Assert.Equal("MSG137", body.RootElement.GetProperty("code").GetString());
         Assert.Equal(
-            "Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.",
+            "Cuộc họp cần có đúng một Chủ toạ đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.",
             body.RootElement.GetProperty("message").GetString());
         Assert.Equal(MeetingStatus.Approved, meeting.Status);
         Assert.Empty(meeting.StatusHistory);
@@ -1750,8 +1750,8 @@ public sealed class MeetingEndpointsTests : IDisposable
     public async Task Get_approvers_excludes_the_caller_and_preserves_other_options(bool includeOtherApprover)
     {
         var creator = GivenCreator();
-        var other = new MeetingApproverOption(Guid.CreateVersion7(), "An Nguyễn");
-        _factory.Meetings.EligibleApprovers.Add(new MeetingApproverOption(creator.Id, creator.FullName));
+        var other = new MeetingApproverOption(Guid.CreateVersion7(), "An Nguyễn", "an@trustcabinet.local");
+        _factory.Meetings.EligibleApprovers.Add(new MeetingApproverOption(creator.Id, creator.FullName, creator.Email));
         if (includeOtherApprover)
             _factory.Meetings.EligibleApprovers.Add(other);
         using var client = _factory.ClientFor(creator, Capability.MeetingCreator, Capability.MeetingApprover);
@@ -1771,8 +1771,8 @@ public sealed class MeetingEndpointsTests : IDisposable
     [Fact]
     public async Task Get_approvers_returns_the_repository_options()
     {
-        var first = new MeetingApproverOption(Guid.CreateVersion7(), "An Nguyễn");
-        var second = new MeetingApproverOption(Guid.CreateVersion7(), "Bình Trần");
+        var first = new MeetingApproverOption(Guid.CreateVersion7(), "An Nguyễn", "an@trustcabinet.local");
+        var second = new MeetingApproverOption(Guid.CreateVersion7(), "Bình Trần", "binh@trustcabinet.local");
         _factory.Meetings.EligibleApprovers.AddRange([first, second]);
         using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
 
@@ -1784,6 +1784,8 @@ public sealed class MeetingEndpointsTests : IDisposable
         Assert.Equal(2, options.Length);
         Assert.Equal(first.Id, options[0].GetProperty("id").GetGuid());
         Assert.Equal(first.FullName, options[0].GetProperty("fullName").GetString());
+        // SCRUM-150: the email tells two approvers of one name apart.
+        Assert.Equal(first.Email, options[0].GetProperty("email").GetString());
         Assert.Equal(second.Id, options[1].GetProperty("id").GetGuid());
     }
 

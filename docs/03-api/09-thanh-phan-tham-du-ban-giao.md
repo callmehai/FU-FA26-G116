@@ -1,13 +1,13 @@
 # SCRUM-20 / SCRUM-97 — bàn giao Frontend và test thủ công
 
-Baseline PO 20/10/2026; tài liệu do AI hỗ trợ cập nhật ngày 21/10/2026. Backend bao gồm UC-73 bàn giao Chủ tọa trong PR #92. FE do Hải triển khai; UC/BR/sequence được BA chốt tại Final Review.
+Baseline PO 20/10/2026; tài liệu do AI hỗ trợ cập nhật ngày 21/10/2026. Backend bao gồm UC-73 bàn giao Chủ toạ trong PR #92. FE do Hải triển khai; UC/BR/sequence được BA chốt tại Final Review.
 
 ## Contract FE cần đổi
 
 1. Form tạo họp lấy user từ `GET /api/meetings/participant-options?q=&page=1&pageSize=20` bằng quyền `MeetingCreator` (không gọi `/api/users`). Response items chỉ gồm id/fullName/email, có total/page/pageSize/roles, không có revision/ETag. Form tạo họp gửi `participants:[{userId,role}]`, 1..100 current internal active, đúng một Chair. Người tạo không bắt buộc tham dự; không bắt buộc Secretary khi tạo. Thiếu/không hợp lệ: 400/MSG277, `errors` là dictionary string theo key participants hoặc participants[i].userId/.role. PUT meeting không nhận participants.
 2. Chi tiết/create trả `chair:{userId,fullName}|null`, `secretaries:[]`, `myMeetingRole`. Dùng để hiện vai trò và trạng thái sẵn sàng; không thay authorization server.
 3. Context có `myRole` và đúng ba flags `canManageParticipants,canReplaceChair,canRespond`. Bỏ recovery UI và mọi checkbox quyền bổ sung.
-4. Roster gồm response/respondedAt cho nhãn cạnh tên; **không còn `totals`** (21/10/2026, theo AI-eCabinet); bỏ gọi invitation-responses. Trả lời lời mời theo [§4.1 contract](09-thanh-phan-tham-du.md#41-trả-lời-lời-mời--theo-ai-ecabinet-po-hải-21102026): một lần, Chủ tọa không trả lời, FE dùng `myResponse`/`canRespond` của dữ liệu cuộc họp. Options bỏ mode/permissionCatalog, roles luôn Chair/Secretary/Member.
+4. Roster gồm response/respondedAt cho nhãn cạnh tên; **không còn `totals`** (21/10/2026, theo AI-eCabinet); bỏ gọi invitation-responses. Trả lời lời mời theo [§4.1 contract](09-thanh-phan-tham-du.md#41-trả-lời-lời-mời--theo-ai-ecabinet-po-hải-21102026): một lần, Chủ toạ không trả lời, FE dùng `myResponse`/`canRespond` của dữ liệu cuộc họp. Options bỏ mode/permissionCatalog, roles luôn Chair/Secretary/Member.
 5. UC-73 mới dùng GET candidates và một POST chair-handover theo hướng dẫn bên dưới. PUT assignments có batch demote/promote và confirmation vẫn tương thích: Published/InProgress chỉ Chair bàn giao hoặc Secretary thay Chair inactive; recipient không phải Secretary và phải active/current. Thành công Chair bàn giao: MSG257; Secretary thay Chair inactive: MSG100.
 6. Giữ ETag/If-Match và revision dạng string. 409/MSG275 phải tải lại và để người dùng xác nhận lại. MSG276 query/header sai. Không dùng MSG252/253 (SCRUM-96).
 7. Sau save hoặc `participantsChanged`, reload context/roster/detail. Event có thể cùng revision khi chỉ thay response; không bỏ event chỉ vì revision không tăng. Dedupe eventId. Người bị gỡ nhận invalidation và reload404 thì rời màn chi tiết. Không báo “đã gửi email” chỉ từ save thành công.
@@ -16,8 +16,8 @@ Baseline PO 20/10/2026; tài liệu do AI hỗ trợ cập nhật ngày 21/10/20
 
 ## FE đã tích hợp (21/10/2026)
 
-- Form tạo họp có mục **Thành phần tham dự** bắt buộc: tìm qua participant-options, chọn vai trò từng người, đúng một Chủ tọa (chọn Chủ tọa khác thì người cũ thành Thành viên). MSG277 hiện dưới đúng dòng người bị lỗi.
-- Tab **Thành phần tham dự** ở màn chi tiết: tìm kiếm, phân trang; Chủ tọa/Thư ký thêm người, mời khách, đổi vai trò, giao Chủ tọa (một request kèm confirmation), gỡ/thu hồi. MSG275/MSG98/403/404 đóng hộp thoại, báo lý do và tải lại.
+- Form tạo họp có mục **Thành phần tham dự** bắt buộc: tìm qua participant-options, chọn vai trò từng người, đúng một Chủ toạ (chọn Chủ toạ khác thì người cũ thành Thành viên). MSG277 hiện dưới đúng dòng người bị lỗi.
+- Tab **Thành phần tham dự** ở màn chi tiết: tìm kiếm, phân trang; Chủ toạ/Thư ký thêm người, mời khách, đổi vai trò, giao Chủ toạ (một request kèm confirmation), gỡ/thu hồi. MSG275/MSG98/403/404 đóng hộp thoại, báo lý do và tải lại.
 - Thanh "Bạn có tham dự cuộc họp này?" ở đầu màn chi tiết và trên thẻ lịch dạng danh sách; lịch gửi `excludeDeclined=true`.
 - `/hubs/meetings` dùng chung một kết nối cho mỗi cuộc họp đang mở: `participantsChanged` (dedupe theo eventId) và mỗi lần nối lại đều tải lại roster, context và chi tiết cuộc họp.
 
@@ -39,7 +39,7 @@ Seed `[SCRUM20-DEV]` có 7 trạng thái, ID prefix `20000000-0000-7000-8000-`, 
 | 8 | Deactivate Chair qua quản lý users, Secretary thay bằng Member active | 200/MSG100; Secretary cuối vẫn được giữ |
 | 9 | Chair gỡ/hạ Secretary cuối ở Published/InProgress | 409/MSG109; có Secretary khác thì được |
 | 10 | Member/Organizer không role/current approver đọc roster và thử sửa | GET200; mutation403/MSG85 |
-| 11 | Accept/Decline bằng người được mời; gửi câu khác lần hai; Chủ tọa trả lời; search không khớp và paging roster | MSG105; lần hai MSG285; Chủ tọa MSG286; attendance không đổi; lịch người từ chối không còn cuộc họp |
+| 11 | Accept/Decline bằng người được mời; gửi câu khác lần hai; Chủ toạ trả lời; search không khớp và paging roster | MSG105; lần hai MSG285; Chủ toạ MSG286; attendance không đổi; lịch người từ chối không còn cuộc họp |
 | 12 | Hai tab cùng ETag sửa roster | Một thành công; request cũ409/MSG275 |
 | 13 | Hai kết nối hub, gỡ một participant | Cả người quản lý và người bị gỡ nhận participantsChanged; người bị gỡ reload404 |
 | 14 | Mời/revoke Guest, mời lại | ID mới, lịch sử cũ giữ; Guest không được cấp internal role |
@@ -93,12 +93,12 @@ Collection Postman có folder `UC-73 — smoke tuần tự` (DB riêng), dùng t
 
 ## FE đã tích hợp UC-73 (23/10/2026)
 
-- **Một chỗ duy nhất để đổi Chủ tọa**: nút bút chì "Đổi vai trò" trên dòng của người sẽ làm Chủ tọa, chọn "Chủ tọa", bấm **Giao Chủ tọa**. Không có nút riêng trên thanh công cụ, để mọi trạng thái cuộc họp và mọi người bấm đều đi cùng một đường.
-- Chọn vai trò (hộp thoại Đổi vai trò và Thêm thành phần) là danh sách radio dọc như AI-eCabinet, dưới mỗi vai trò một dòng nói vai trò đó làm được gì. Dòng của "Chủ tọa" nói luôn ai sẽ thành Thành viên ("Bạn sẽ thành Thành viên." hoặc tên Chủ tọa hiện tại), nên chọn không làm hộp thoại đổi chiều cao.
-- Lựa chọn "Chủ tọa" chỉ hiện khi `permissions.canReplaceChair` và người trên dòng nhận được: tài khoản còn hoạt động, và từ Published chỉ Thành viên (không phải Thư ký). Lựa chọn và request được chốt lúc mở hộp thoại; panel tải lại phía sau không đổi chúng, server kiểm lại.
-- FE tự chọn API: Chủ tọa của cuộc họp Published/InProgress gọi POST chair-handover (§8); trước Published, và Thư ký thay Chủ tọa đã khoá tài khoản, gọi PUT assignments kèm `chairReplacement`. Người dùng không thấy khác biệt.
+- **Một chỗ duy nhất để đổi Chủ toạ**: nút bút chì "Đổi vai trò" trên dòng của người sẽ làm Chủ toạ, chọn "Chủ toạ", bấm **Giao Chủ toạ**. Không có nút riêng trên thanh công cụ, để mọi trạng thái cuộc họp và mọi người bấm đều đi cùng một đường.
+- Chọn vai trò (hộp thoại Đổi vai trò và Thêm thành phần) là danh sách radio dọc như AI-eCabinet, dưới mỗi vai trò một dòng nói vai trò đó làm được gì. Dòng của "Chủ toạ" nói luôn ai sẽ thành Thành viên ("Bạn sẽ thành Thành viên." hoặc tên Chủ toạ hiện tại), nên chọn không làm hộp thoại đổi chiều cao.
+- Lựa chọn "Chủ toạ" chỉ hiện khi `permissions.canReplaceChair` và người trên dòng nhận được: tài khoản còn hoạt động, và từ Published chỉ Thành viên (không phải Thư ký). Lựa chọn và request được chốt lúc mở hộp thoại; panel tải lại phía sau không đổi chúng, server kiểm lại.
+- FE tự chọn API: Chủ toạ của cuộc họp Published/InProgress gọi POST chair-handover (§8); trước Published, và Thư ký thay Chủ toạ đã khoá tài khoản, gọi PUT assignments kèm `chairReplacement`. Người dùng không thấy khác biệt.
 - MSG259: báo trong hộp thoại. MSG260, MSG275, 403, 404: đóng hộp thoại, báo lý do, tải lại tab. MSG102: báo trong hộp thoại, bấm lại được.
-- **Không dùng** GET chair-handover-candidates, nên MSG258 không hiện trên UI: không ai nhận được thì không dòng nào có lựa chọn "Chủ tọa". Khác Normal Flow bước 1–2 của UC-73 ("chọn Hand over Chair, hệ thống hiện danh sách"); quy tắc nghiệp vụ không đổi. Đã ghi vào Jira SCRUM-97 cho BA Final Review.
+- **Không dùng** GET chair-handover-candidates, nên MSG258 không hiện trên UI: không ai nhận được thì không dòng nào có lựa chọn "Chủ toạ". Khác Normal Flow bước 1–2 của UC-73 ("chọn Hand over Chair, hệ thống hiện danh sách"); quy tắc nghiệp vụ không đổi. Đã ghi vào Jira SCRUM-97 cho BA Final Review.
 - Bảng thành phần đổi bố cục theo độ rộng của chính nó (container query, dưới 520px): vai trò thành chip dưới tên, tên xuống dòng thay vì cắt, nút sửa/gỡ luôn trong khung. Trước đây trên điện thoại và ở cửa sổ 1024px (bảng nằm cạnh Lịch sử trạng thái) cột Vai trò và nút thao tác bị đẩy ra ngoài, phải cuộn ngang.
 - Nút bút chì "Đổi vai trò" và nút "Bỏ khỏi danh sách" ở form tạo cuộc họp dùng tooltip chung của app (`data-tooltip`), không dùng tooltip mặc định của trình duyệt.
 
@@ -108,15 +108,15 @@ Chốt theo các tình huống hay gặp trong cuộc họp nội bộ, không t
 
 | Tình huống | Mức độ | Cách làm trên hệ thống |
 |---|---|---|
-| Chọn nhầm Chủ tọa/Thư ký khi soạn, trước khi công bố | Hay gặp | Đổi vai trò tự do (PUT assignments) |
+| Chọn nhầm Chủ toạ/Thư ký khi soạn, trước khi công bố | Hay gặp | Đổi vai trò tự do (PUT assignments) |
 | Thêm người phút chót, có người không dự được | Hay gặp | Thêm, gỡ, hoặc người đó báo vắng |
-| Lãnh đạo bận, giao cấp phó chủ trì thay (đã công bố) | Hay gặp | Chủ tọa giao cho một Thành viên; Chủ tọa cũ thành Thành viên (UC-73) |
+| Lãnh đạo bận, giao cấp phó chủ trì thay (đã công bố) | Hay gặp | Chủ toạ giao cho một Thành viên; Chủ toạ cũ thành Thành viên (UC-73) |
 | Đổi người làm thư ký | Hay gặp | Cho người mới làm Thư ký, rồi đổi người cũ về Thành viên (hai thao tác, cuộc họp luôn còn Thư ký) |
-| Chủ tọa phải rời giữa buổi | Thỉnh thoảng | Như giao cho cấp phó, làm khi InProgress |
+| Chủ toạ phải rời giữa buổi | Thỉnh thoảng | Như giao cho cấp phó, làm khi InProgress |
 | Thêm Thư ký phụ ghi biên bản | Thỉnh thoảng | Đổi vai trò một Thành viên thành Thư ký |
-| Tài khoản Chủ tọa bị khoá trước giờ họp | Hiếm | Thư ký thay Chủ tọa (baseline 20/10) |
-| Chủ tọa và Thư ký đổi vai trò cho nhau | Gần như không có | **Không hỗ trợ.** Dòng Thư ký không có lựa chọn "Chủ tọa" từ khi công bố (BR-295) |
+| Tài khoản Chủ toạ bị khoá trước giờ họp | Hiếm | Thư ký thay Chủ toạ (baseline 20/10) |
+| Chủ toạ và Thư ký đổi vai trò cho nhau | Gần như không có | **Không hỗ trợ.** Dòng Thư ký không có lựa chọn "Chủ toạ" từ khi công bố (BR-295) |
 
-- Từ khi công bố chỉ Chủ tọa tự giao vai trò; Thư ký chỉ giao khi tài khoản Chủ tọa bị khoá. Giữ như vậy để Thư ký không tự ý đổi Chủ tọa; AI-eCabinet còn chặt hơn (chỉ Chủ trì được đổi vai trò).
-- AI-eCabinet (commit `b331c60e`) không có luồng giao riêng: chỉ Chủ trì đổi vai trò từng người, cuộc họp cần ít nhất một Chủ trì nên đổi chéo phải qua hai bước, có lúc hai Chủ trì. TrustCabinet giữ đúng một Chủ tọa và luôn có Thư ký từ khi công bố, nên không theo cách hai bước đó.
+- Từ khi công bố chỉ Chủ toạ tự giao vai trò; Thư ký chỉ giao khi tài khoản Chủ toạ bị khoá. Giữ như vậy để Thư ký không tự ý đổi Chủ toạ; AI-eCabinet còn chặt hơn (chỉ Chủ trì được đổi vai trò).
+- AI-eCabinet (commit `b331c60e`) không có luồng giao riêng: chỉ Chủ trì đổi vai trò từng người, cuộc họp cần ít nhất một Chủ trì nên đổi chéo phải qua hai bước, có lúc hai Chủ trì. TrustCabinet giữ đúng một Chủ toạ và luôn có Thư ký từ khi công bố, nên không theo cách hai bước đó.
 - Thư mời khách (POST guest-invitations) chưa gửi được dù bật SMTP: link xác minh cho khách (`IGuestInvitationLinkProvider`) vẫn là bản tạm, thuộc SCRUM-59. Lời mời được giữ và thử lại, tự gửi khi phần link xong.

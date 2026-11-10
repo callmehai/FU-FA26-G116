@@ -276,6 +276,7 @@ app.MapSpeechClipEndpoints();
 app.MapTranscriptEndpoints();
 app.MapSummaryEndpoints();
 app.MapAiSettingsEndpoints();
+app.MapAuditLogEndpoints();
 app.MapMinutesEndpoints();
 app.MapMeetingNoteEndpoints();
 

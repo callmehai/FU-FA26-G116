@@ -129,7 +129,7 @@ public sealed class AttendanceService(TrustCabinetDbContext db, AttendanceReposi
                     guestTargets[e.Id].AttendanceRecordedById, guestTargets[e.Id].AttendanceRecordedAt, recorders)).ToArray();
             if (evidence.Count > 0)
             {
-                db.AuditLog.Add(new AuditLogEntry { ActorId = actorId, Action = "meeting.attendance.recorded", ObjectType = "Meeting",
+                db.AuditLog.Add(new AuditLogEntry { ActorId = actorId, Action = AuditActions.MeetingAttendanceRecorded, ObjectType = AuditActions.MeetingObjectType,
                     ObjectId = meetingId, IpAddress = caller.IpAddress, Details = JsonSerializer.Serialize(new { entries = evidence }),
                     OccurredAt = now, CreatedAt = now, UpdatedAt = now });
                 await db.SaveChangesAsync(ct);

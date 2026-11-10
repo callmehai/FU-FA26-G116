@@ -109,7 +109,7 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
         await Saved(secretary, s, null, "Ghi chú của Thư ký.");
 
         // A save by any reader of the meeting who is not its current Secretary is refused (EX-1); it discloses no note.
-        await AssertCode(await Put(chair, s, null, "Chủ tọa ghi.", null), 403, "MSG416");
+        await AssertCode(await Put(chair, s, null, "Chủ toạ ghi.", null), 403, "MSG416");
         await AssertCode(await Put(member, s, null, "Thành viên ghi.", null), 403, "MSG416");
         await AssertCode(await Put(organizer, s, null, "Người tạo ghi.", null), 403, "MSG416");
         // Reading: anyone but the Chair and the Secretary is answered as if there were no notes (EX-8).
@@ -296,7 +296,7 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
         await using (var db = f.Db())
         {
             db.MeetingNotes.Add(new MeetingNote { MeetingId = s.MeetingId, AgendaItemId = s.FirstItem, AuthorId = s.Chair,
-                Body = "Ghi chú riêng của Chủ tọa." });
+                Body = "Ghi chú riêng của Chủ toạ." });
             await db.SaveChangesAsync();
         }
 
@@ -324,7 +324,7 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
         Assert.InRange(At($"{SummaryFixture.FirstItemTitle}: Thống nhất báo cáo."), conclusions, tasks);
         Assert.InRange(At($"{SummaryFixture.FirstItemTitle}: Giao Văn phòng tổng hợp."), conclusions, tasks);
         Assert.True(At($"{SummaryFixture.FirstItemTitle}: Báo cáo trước ngày 15/11.") > tasks);
-        Assert.DoesNotContain("Ghi chú riêng của Chủ tọa.", content);
+        Assert.DoesNotContain("Ghi chú riêng của Chủ toạ.", content);
         Assert.DoesNotContain("kết luận:", content);
     }
 

@@ -216,7 +216,7 @@
       }
     },
     {
-      "name": "Giao Chủ tọa — token Chair từ Published, hoặc Secretary khi Chair inactive",
+      "name": "Giao Chủ toạ — token Chair từ Published, hoặc Secretary khi Chair inactive",
       "request": {
         "method": "PUT",
         "header": [

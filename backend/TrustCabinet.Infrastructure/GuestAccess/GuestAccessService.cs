@@ -1,10 +1,12 @@
 using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -142,6 +144,13 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
                 ExpiresAt = now.AddHours(limits.SessionLifetimeHours),
             };
             db.GuestSessions.Add(session);
+            // BR-444 — no actor (a Guest has no account); the invitation goes under the key the audit log reads Guests by.
+            db.AuditLog.Add(new AuditLogEntry
+            {
+                Action = AuditActions.GuestVerified, ObjectType = AuditActions.GuestSessionObjectType, ObjectId = session.Id,
+                OccurredAt = now, CreatedAt = now, UpdatedAt = now,
+                Details = JsonSerializer.Serialize(new { meetingId = invitation.MeetingId, guestInvitationId = invitationId }),
+            });
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
             var identity = new MeetingGuestSession(invitation.MeetingId, invitationId, session.Id);

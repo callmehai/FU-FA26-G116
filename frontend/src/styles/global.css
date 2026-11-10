@@ -986,9 +986,12 @@ a.menu-item { text-decoration: none; }
 
 .route-fallback { padding: 24px; color: var(--muted-ink); }
 
-/* A single "back to the list" link above a record's header. */
+/* A single "back to the list" link above a record's header. It sits in the column-flex .content, so it
+   must not shrink: otherwise a tab whose content overflows squeezes its 32px down to the text height and
+   pulls the header up by 12px (seen on the Thành phần tham dự tab). */
 .back-link {
   display: inline-flex;
+  flex: none;
   align-self: flex-start;
   align-items: center;
   gap: 4px;
@@ -1269,6 +1272,45 @@ a.menu-item { text-decoration: none; }
 }
 @media (pointer: coarse) {
   .users-table .icon-button-sm { width: 40px; height: 40px; }
+}
+
+/* System audit log (SCRUM-16, screen 3.3). */
+.audit-range-error { flex: 1 1 100%; margin: -4px 0 0; }
+.audit-time { font-variant-numeric: tabular-nums; }
+.audit-ip { font-variant-numeric: tabular-nums; }
+.audit-none { color: var(--muted-ink); font-style: italic; }
+.avatar.audit-system { background: var(--surface-alt); color: var(--muted-ink); box-shadow: inset 0 0 0 1px var(--line); }
+/* A failed sign-in is a warning: the row carries a faint red wash, its chip the red tone. */
+.data-table tbody tr.row-alert { background: color-mix(in srgb, var(--danger) 5%, var(--surface)); }
+.data-table tbody tr.row-alert:hover { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); }
+.audit-facts { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.audit-facts > div { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 12px; }
+.audit-facts dt { color: var(--muted-ink); overflow-wrap: anywhere; }
+.audit-facts dd { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 0; overflow-wrap: anywhere; }
+.audit-code { color: var(--muted-ink); font-size: 12px; overflow-wrap: anywhere; }
+.audit-details-title { margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid var(--line-soft); font-size: 14px; }
+.audit-value { white-space: pre-wrap; }
+.audit-json { width: 100%; margin: 0; padding: 8px 10px; overflow-x: auto; border-radius: var(--radius); background: var(--surface); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 720px) {
+  /* Without min-width: 0 the panel takes the two date inputs' natural width and runs off the screen. */
+  .audit-toolbar .toolbar-filters-open { min-width: 0; }
+  .audit-toolbar .date-range { flex: 1 1 100%; }
+  .audit-toolbar .toolbar-filters .select { flex: 1 1 140px; min-width: 0; }
+  /* Each entry becomes a card: event and time, then who, then on what. The IP is in the sheet. */
+  .audit-table thead, .audit-table td.audit-ip, .audit-table .row-skeleton td:not(:first-child) { display: none; }
+  .audit-table tbody tr:not(.row-skeleton) { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 12px 16px; border-bottom: 1px solid #e9ecf1; }
+  .audit-table tbody tr:not(.row-skeleton) td { padding: 0; border: none; }
+  /* Only the first line shares its row with the eye button. */
+  .audit-table td.audit-event { order: 1; max-width: calc(100% - 48px); white-space: normal; }
+  .audit-table td.audit-time { order: 2; color: var(--muted-ink); font-size: 13px; }
+  .audit-table td.audit-actor { flex: 1 1 100%; order: 3; }
+  .audit-table td.audit-object { flex: 1 1 100%; order: 4; white-space: normal; color: var(--muted-ink); font-size: 13px; }
+  .audit-table td.audit-object .cell-sub { display: inline; margin-left: 6px; }
+  .audit-table td.col-action { position: absolute; top: 8px; right: 8px; }
+  .audit-table .person-name, .audit-table .cell-sub { overflow-wrap: anywhere; }
+}
+@media (pointer: coarse) {
+  .audit-table .icon-button-sm { width: 40px; height: 40px; }
 }
 
 /* Sortable header: the whole label is the button; the arrow is faint until the column is active. */
@@ -2029,6 +2071,17 @@ a.menu-item { text-decoration: none; }
 .date-field-panel .date-pick-day { height: 32px; }
 .date-field-panel .date-pick-num { width: 28px; height: 28px; font-size: 13px; }
 @media (hover: none) { .date-field-panel .date-pick-day { height: 36px; } }
+/* A period on one calendar (DateRangeField): two day boxes, the one being picked outlined, one panel under both. */
+.date-range { position: relative; min-width: 0; }
+.date-range-box { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.date-range-dash { color: var(--muted-ink); }
+.date-range .date-field-box { width: 146px; }
+.date-range-active input { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+@media (max-width: 720px) {
+  .date-range .date-field-box { flex: 1 1 0; width: auto; min-width: 0; }
+  /* Two dates share a 390px line: room for "dd/mm/yyyy" beside the calendar button. */
+  .date-range .date-field-box input { padding-right: 34px; padding-left: 10px; }
+}
 .date-field-foot { display: flex; justify-content: flex-end; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
 .date-pick-selected .date-pick-num { background: var(--brand); color: #fff; font-weight: 600; }
 .date-pick-day.date-pick-selected:hover .date-pick-num { background: var(--brand-ink); }

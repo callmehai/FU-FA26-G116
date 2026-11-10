@@ -772,7 +772,7 @@ erDiagram
 10. MeetingDocument tham chiếu một StoredFile bất biến; mỗi StoredFile có tối đa một MeetingDocument đang hiệu lực (`RemovedAt` null) trong mỗi Meeting. Một tài liệu gắn được nhiều mục nghị sự của cùng Meeting qua MeetingDocumentAgendaItem (BR-277, BR-278). Không thêm, gỡ hay đổi liên kết được khi Meeting đã kết thúc (BR-185, ADR-0020).
 11. VoteReceipt duy nhất theo (VotingSessionId, VoterId). Phiếu kín không ghi VoteChoice, chỉ tăng VotingOption.BallotCount; VoteChoice (phiếu công khai) luôn ghi người chọn.
 12. Mỗi Recording có tối đa một Transcript; mỗi Meeting có tối đa một MeetingSummary hiện hành.
-13. MeetingStatusHistory và AuditLogEntry là bằng chứng chỉ ghi thêm.
+13. MeetingStatusHistory và AuditLogEntry là bằng chứng chỉ ghi thêm; `TrustCabinetDbContext` từ chối sửa hoặc xoá dòng của cả hai (SCRUM-16, BR-440). Mỗi dòng MeetingStatusHistory mới kèm một dòng AuditLogEntry `meeting.<thao tác>` trong cùng lần lưu (BR-445).
 14. Phòng trực tuyến thuộc Meeting và chỉ mở khi Meeting `InProgress` với hình thức Online/Hybrid. Vào/rời phòng và điều khiển media không làm đổi vòng đời meeting; mỗi Meeting có tối đa một CallSession MeetingRoom đang Active.
 15. Mỗi CallParticipant tham chiếu đúng một identity: User nội bộ hoặc MeetingGuestInvitation bên ngoài. Mỗi lần kết nối lại tạo một row mới cho lượt kết nối đó.
 16. Hệ thống không tự ghi âm; Thư ký upload audio sau khi Meeting `Ended`. Trước khi lưu audio phải có consent và lưu mục đích, thời hạn lưu giữ cùng bằng chứng xóa. Guest phải được hiển thị thông báo ghi âm trước khi vào; lưu bằng chứng đã thông báo và thực hiện nghĩa vụ xóa dữ liệu của Guest.

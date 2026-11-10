@@ -293,14 +293,7 @@ public sealed class MeetingInvitationDispatchProcessor(
             {
                 body +=
                     $"\nBắt đầu: {TimeZoneInfo.ConvertTime(payload.StartsAt, zone):dd/MM/yyyy HH:mm zzz}\nKết thúc: {TimeZoneInfo.ConvertTime(payload.EndsAt, zone):dd/MM/yyyy HH:mm zzz}\n";
-                var role = payload.Role switch
-                {
-                    "Chair" => "Chủ tọa",
-                    "Secretary" => "Thư ký",
-                    "Member" => "Thành viên",
-                    _ => "Khách",
-                };
-                body += $"Vai trò: {role}\n";
+                body += $"Vai trò: {MeetingInvitationEvents.RoleLabel(payload.Role)}\n";
                 // Guests must verify email before learning room-entry links.
                 if (dispatch.GuestInvitationId is null)
                     body += $"Địa điểm: {payload.Place}\n";
