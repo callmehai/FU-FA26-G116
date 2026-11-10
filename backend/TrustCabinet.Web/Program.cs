@@ -286,6 +286,7 @@ app.MapMeetingNoteEndpoints();
 
 // SCRUM-142: calendar sharing and the shared week.
 app.MapCalendarSharingEndpoints();
+app.MapMeetingSlotEndpoints();
 // SCRUM-38: meeting report (UC-70a) and its Excel export (UC-70b).
 app.MapReportEndpoints();
 
