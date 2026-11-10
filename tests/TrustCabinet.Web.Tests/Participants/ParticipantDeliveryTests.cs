@@ -70,7 +70,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         var emails = await db.EmailMessages.Where(e => e.MeetingId == s.MeetingId).ToArrayAsync();
         Assert.Equal(2, emails.Length);
         Assert.Equal(dispatches.Select(d => d.DeduplicationKey).Order(), emails.Select(e => e.DeduplicationKey).Order());
-        Assert.Contains(emails, e => e.Body.Contains("Chủ tọa", StringComparison.Ordinal));
+        Assert.Contains(emails, e => e.Body.Contains("Chủ toạ", StringComparison.Ordinal));
         Assert.Contains(emails, e => e.Body.Contains("Thành viên", StringComparison.Ordinal));
     }
 

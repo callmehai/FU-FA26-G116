@@ -11,6 +11,10 @@ database ":Database" as Database
 Organizer->MeetingPage: Submit updated meeting information or reschedule
 activate MeetingPage
 
+opt Draft or Rejected start passed less than 24 hours ago - AF-3
+    MeetingPage-->Organizer: Warn that the system cancels a Meeting not started 24 hours\nafter its planned start (BR-301); submitting is still allowed
+end
+
 alt Nothing has changed - AF-2
     MeetingPage-->Organizer: MSG154 - No changes to save. (nothing is sent)
 else Draft or Rejected start is more than 24 hours ago - EX-4

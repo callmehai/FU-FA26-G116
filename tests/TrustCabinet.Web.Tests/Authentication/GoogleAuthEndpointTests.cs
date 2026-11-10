@@ -161,7 +161,7 @@ public class GoogleAuthEndpointTests : IDisposable
         var response = await PostGoogle();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(AuditActions.UserGoogleLinked, Assert.Single(_factory.Audit.Records).Action);
+        Assert.Equal([AuditActions.UserGoogleLinked, AuditActions.SignedIn], _factory.Audit.Records.Select(r => r.Action));
     }
 
     [Fact]

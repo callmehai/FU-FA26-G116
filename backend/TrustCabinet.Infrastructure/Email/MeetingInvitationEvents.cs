@@ -61,9 +61,13 @@ public static class MeetingInvitationEvents
                     _ => NotificationType.MeetingParticipantRemoved
                 },
                 Title = Title(kind),
-                Body = kind == InvitationEventKind.Cancelled
-                    ? Limit($"Cuộc họp “{meeting.Title}” đã bị huỷ. Lý do: {reason}", 2000)
-                    : $"Cuộc họp “{meeting.Title}”: {Title(kind).ToLowerInvariant()}.",
+                Body = kind switch
+                {
+                    InvitationEventKind.Cancelled => Limit($"Cuộc họp “{meeting.Title}” đã bị huỷ. Lý do: {reason}", 2000),
+                    // Say the new role, not just that it changed (SCRUM-147).
+                    InvitationEventKind.RoleChanged => $"Cuộc họp “{meeting.Title}”: bạn đã được giao làm {RoleLabel(p.Role.ToString())}.",
+                    _ => $"Cuộc họp “{meeting.Title}”: {Title(kind).ToLowerInvariant()}.",
+                },
                 TargetType = removed ? null : "Meeting",
                 TargetId = removed ? null : meeting.Id,
                 CreatedAt = now,
@@ -78,6 +82,15 @@ public static class MeetingInvitationEvents
         InvitationEventKind.Rescheduled => "Cuộc họp đã dời lịch",
         InvitationEventKind.Cancelled => "Cuộc họp đã bị huỷ",
         _ => "Lời mời tham dự đã được thu hồi"
+    };
+
+    /// <summary>A meeting role as people read it; no role is a guest.</summary>
+    public static string RoleLabel(string? role) => role switch
+    {
+        "Chair" => "Chủ toạ",
+        "Secretary" => "Thư ký",
+        "Member" => "Thành viên",
+        _ => "Khách",
     };
 
     /// <summary>

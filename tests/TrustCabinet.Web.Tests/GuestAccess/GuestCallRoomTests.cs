@@ -46,7 +46,7 @@ public sealed class GuestCallRoomTests(GuestAccessFixture f) : IClassFixture<Gue
 
         await Expect(await guest.PostAsync(Call(s.MeetingId) + "/join", null), 400, "MSG380");
         await using (var db = f.Db())
-            Assert.False(await db.AuditLog.AnyAsync(a => a.ObjectId == session));
+            Assert.False(await db.AuditLog.AnyAsync(a => a.ObjectId == session && a.Action == AuditActions.CallGuestAdmitted));
 
         var ticket = await Expect(await guest.PostAsJsonAsync(Call(s.MeetingId) + "/join", Confirmed), 200);
         Assert.Equal(CallMember.Guest(session).Identity, ticket.GetProperty("identity").GetString());
@@ -54,7 +54,8 @@ public sealed class GuestCallRoomTests(GuestAccessFixture f) : IClassFixture<Gue
         Assert.Equal("Khách tự khai", f.LiveKit.LastTicket!.Value.Name);
 
         await using var check = f.Db();
-        var admitted = await check.AuditLog.SingleAsync(a => a.ObjectId == session);
+        // The session's other row is its verification (BR-444).
+        var admitted = await check.AuditLog.SingleAsync(a => a.ObjectId == session && a.Action != AuditActions.GuestVerified);
         Assert.Equal((AuditActions.CallGuestAdmitted, AuditActions.GuestSessionObjectType, (Guid?)null),
             (admitted.Action, admitted.ObjectType, admitted.ActorId));
         // The row's IpAddress is the caller's remote address (AuditService); TestServer has none to give.

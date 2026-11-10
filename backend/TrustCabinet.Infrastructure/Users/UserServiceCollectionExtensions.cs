@@ -21,6 +21,7 @@ public static class UserServiceCollectionExtensions
         services.AddScoped<IUserAccountRepository, UserAccountRepository>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IAuditLogQueryService, AuditLogQueryService>();
 
         // The lock that keeps user writes and role-matrix writes from each removing the last
         // administrator at the same time. Registered here and in AddTrustCabinetRolePermissions,

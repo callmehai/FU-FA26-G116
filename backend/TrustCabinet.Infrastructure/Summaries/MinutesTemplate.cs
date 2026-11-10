@@ -47,7 +47,7 @@ public static partial class MinutesTemplate
         if (here.Count == 0) text.AppendLine($"- {Blank}.");
         for (var i = 0; i < here.Count; i++)
             text.AppendLine($"- {Flat(here[i].Name)}, {here[i].Role}{(i == here.Count - 1 ? "." : ";")}");
-        text.AppendLine($"**Chủ trì (chủ tọa):** {(records.Chair is null ? Blank : Flat(records.Chair))}.")
+        text.AppendLine($"**Chủ trì (chủ toạ):** {(records.Chair is null ? Blank : Flat(records.Chair))}.")
             .AppendLine($"**Thư ký (người ghi biên bản):** {(records.Secretary is null ? Blank : Flat(records.Secretary))}.");
 
         text.AppendLine($"## {SummaryWriter.ObjectivesHeading}")

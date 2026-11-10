@@ -49,7 +49,7 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.Contains($"<p><strong>Thời gian bắt đầu:</strong> {start:HH} giờ {start:mm} phút, ngày {start.Day:00}/{start.Month:00}/{start.Year}.</p>", content);
         Assert.Contains("<p><strong>Địa điểm:</strong> Phòng họp số 1.</p>", content);
         Assert.Contains("<p><strong>Thành phần tham dự:</strong> 03 người có mặt, gồm:</p>", content);
-        Assert.Contains("<p><strong>Chủ trì (chủ tọa):</strong> Trần Chủ Trì.</p>", content);
+        Assert.Contains("<p><strong>Chủ trì (chủ toạ):</strong> Trần Chủ Trì.</p>", content);
         Assert.Contains("<p><strong>Thư ký (người ghi biên bản):</strong> Nguyễn Thư Ký.</p>", content);
         // No AI draft: section II lists the agenda, section III the recorded conclusions and the votes.
         Assert.Contains(Html($"### 1. {SummaryFixture.FirstItemTitle}"), content);

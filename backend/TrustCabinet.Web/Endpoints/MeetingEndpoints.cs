@@ -205,9 +205,8 @@ public static class MeetingEndpoints
                 StatusCodes.Status403Forbidden, Msg46PublishConflict, "Cuộc họp này không còn có thể công bố."),
             MeetingWorkflowOutcome.Forbidden when command.Action is MeetingTransitionAction.Start or MeetingTransitionAction.End
                 => WorkflowError(StatusCodes.Status403Forbidden, TransitionConflictCode(command.Action), LifecycleConflictMessage(command.Action)),
-            // UC-75 EX-2 covers both: no longer the organizer, or no longer before the start.
-            MeetingWorkflowOutcome.Forbidden when command.Action == MeetingTransitionAction.Cancel => WorkflowError(
-                StatusCodes.Status403Forbidden, Msg263CancelConflict, CancelConflictMessage),
+            // Cancel by someone who is not the organizer lands here too (SCRUM-150): MSG263 speaks of the meeting's
+            // status, which is not why they are refused.
             MeetingWorkflowOutcome.Forbidden => WorkflowError(
                 StatusCodes.Status403Forbidden, Msg85ActionForbidden, "Bạn không có quyền thực hiện thao tác này."),
             MeetingWorkflowOutcome.InvalidRequest => WorkflowError(
@@ -229,7 +228,7 @@ public static class MeetingEndpoints
             MeetingWorkflowOutcome.PublicationRosterNotReady => WorkflowError(
                 StatusCodes.Status409Conflict,
                 Msg137PublishRosterNotReady,
-                "Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố."),
+                "Cuộc họp cần có đúng một Chủ toạ đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố."),
             MeetingWorkflowOutcome.StatusConflict => WorkflowError(
                 StatusCodes.Status409Conflict,
                 TransitionConflictCode(command.Action),

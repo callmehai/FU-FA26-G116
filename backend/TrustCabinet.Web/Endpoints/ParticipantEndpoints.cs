@@ -334,17 +334,17 @@ public static class ParticipantEndpoints
                 ParticipantFailure.ChairHandoverDenied => (
                     409,
                     Msg256ChairHandoverDenied,
-                    "Chỉ Chủ tọa được giao vai trò Chủ tọa khi tài khoản hiện tại còn hoạt động."
+                    "Chỉ Chủ toạ được giao vai trò Chủ toạ khi tài khoản hiện tại còn hoạt động."
                 ),
                 ParticipantFailure.CannotHandOverChair => (
                     409,
                     Msg260CannotHandOverChair,
-                    "Bạn không còn quyền giao vai trò Chủ tọa cho cuộc họp này."
+                    "Bạn không còn quyền giao vai trò Chủ toạ cho cuộc họp này."
                 ),
                 ParticipantFailure.InvalidChairRecipient => (
                     400,
                     Msg259InvalidChairRecipient,
-                    "Người nhận vai trò Chủ tọa phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký."
+                    "Người nhận vai trò Chủ toạ phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký."
                 ),
                 ParticipantFailure.ReadFailed => (
                     500,
@@ -364,7 +364,7 @@ public static class ParticipantEndpoints
                 ParticipantFailure.RequiredRoles => (
                     409,
                     Msg109RequiredRoles,
-                    "Cuộc họp phải giữ Chủ tọa và Thư ký theo quy định. Hãy phân công người thay thế."
+                    "Cuộc họp phải giữ Chủ toạ và Thư ký theo quy định. Hãy phân công người thay thế."
                 ),
                 ParticipantFailure.Stale => (
                     409,
@@ -389,7 +389,7 @@ public static class ParticipantEndpoints
                 ParticipantFailure.ChairCannotRespond => (
                     409,
                     Msg286ChairCannotRespond,
-                    "Chủ tọa điều hành cuộc họp nên không cần xác nhận tham dự."
+                    "Chủ toạ điều hành cuộc họp nên không cần xác nhận tham dự."
                 ),
                 ParticipantFailure.UnsupportedMedia => (
                     415,
@@ -442,7 +442,7 @@ public static class ParticipantEndpoints
                 candidates.Page, candidates.PageSize, candidates.Revision,
                 code = candidates.EligibleTotal == 0 ? Msg258NoChairCandidates : null,
                 message = candidates.EligibleTotal == 0
-                    ? "Không có thành viên đủ điều kiện nhận vai trò Chủ tọa. Hãy thêm thành viên nội bộ trước."
+                    ? "Không có thành viên đủ điều kiện nhận vai trò Chủ toạ. Hãy thêm thành viên nội bộ trước."
                     : null,
             });
         if (
@@ -458,7 +458,7 @@ public static class ParticipantEndpoints
             ParticipantSuccess.Created => (Msg96Added, "Thêm thành phần tham dự thành công."),
             ParticipantSuccess.ChairHandedOver => (
                 Msg257ChairHandedOver,
-                "Giao vai trò Chủ tọa thành công."
+                "Giao vai trò Chủ toạ thành công."
             ),
             ParticipantSuccess.RoleChanged => (
                 Msg100RoleChanged,

@@ -22,6 +22,7 @@ const MeetingRoomPage = lazy(() =>
 const UsersPage = lazy(() => import('../features/access/UsersPage').then((m) => ({ default: m.UsersPage })))
 const RolesPage = lazy(() => import('../features/access/RolesPage').then((m) => ({ default: m.RolesPage })))
 const AiSettingsPage = lazy(() => import('../features/ai/AiSettingsPage').then((m) => ({ default: m.AiSettingsPage })))
+const AuditLogPage = lazy(() => import('../features/audit/AuditLogPage').then((m) => ({ default: m.AuditLogPage })))
 const ResetPasswordPage = lazy(() =>
   import('../features/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
 )
@@ -49,6 +50,7 @@ const GuestDocumentPage = lazy(() =>
   import('../features/guest/GuestMeetingPage').then((m) => ({ default: m.GuestDocumentPage })),
 )
 const VoicePage = lazy(() => import('../features/voice/VoicePage').then((m) => ({ default: m.VoicePage })))
+const ReportsPage = lazy(() => import('../features/reports/ReportsPage').then((m) => ({ default: m.ReportsPage })))
 
 /**
  * Route map: a public login and password reset, then every screen behind a session gate, inside
@@ -99,6 +101,7 @@ export function App() {
             <Route path={routes.calendar} element={<CalendarPage />} />
             <Route path={routes.documents} element={<DocumentsPage />} />
             <Route path={routes.myVoice} element={<VoicePage />} />
+            <Route path={routes.reports} element={<ReportsPage />} />
             <Route path={routes.meetings} element={<MeetingsPage />} />
             {/* Create and edit are dialogs now (`?create=`, `?edit=`); old links land on them. */}
             <Route path={routes.meetingNew} element={<Navigate to={`${routes.meetings}?create=1`} replace />} />
@@ -134,6 +137,14 @@ export function App() {
               element={
                 <RequireCapability cap="AdminUsers">
                   <AiSettingsPage />
+                </RequireCapability>
+              }
+            />
+            <Route
+              path={routes.adminAuditLog}
+              element={
+                <RequireCapability cap="AdminUsers">
+                  <AuditLogPage />
                 </RequireCapability>
               }
             />

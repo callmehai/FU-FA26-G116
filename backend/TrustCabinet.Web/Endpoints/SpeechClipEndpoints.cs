@@ -155,7 +155,7 @@ public static class SpeechClipEndpoints
             {
                 SpeechClipFailure.Forbidden when delete => (403, Msg323DeleteForbidden, "Chỉ người nói hoặc Thư ký được xoá câu này."),
                 SpeechClipFailure.Forbidden => (403, Msg295NotSecretary, "Chỉ Thư ký cuộc họp được quản lý bản ghi."),
-                SpeechClipFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ tọa hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
+                SpeechClipFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ toạ hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
                 SpeechClipFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
                 SpeechClipFailure.NotCapturing => (409, Msg320NotCapturing,
                     "Cuộc họp trực tiếp không ghi theo micro từng người, hoặc cuộc họp không còn đang diễn ra."),
@@ -183,7 +183,7 @@ public static class SpeechClipEndpoints
     {
         { Failure: SpeechClipFailure.None, Data: true } => Results.Ok(new { code = Msg351ClipExcluded, message = "Đã loại câu khỏi bản ghi." }),
         { Failure: SpeechClipFailure.None } => Results.Ok(new { code = Msg352ClipRestored, message = "Đã đưa câu trở lại bản ghi." }),
-        { Failure: SpeechClipFailure.Forbidden } => Error(403, Msg353ExcludeForbidden, "Chỉ Chủ tọa hoặc Thư ký được loại câu khỏi bản ghi."),
+        { Failure: SpeechClipFailure.Forbidden } => Error(403, Msg353ExcludeForbidden, "Chỉ Chủ toạ hoặc Thư ký được loại câu khỏi bản ghi."),
         { Failure: SpeechClipFailure.Invalid } => Results.Json(new { code = Msg354InvalidExclusion,
             message = "Lý do loại câu không hợp lệ.", errors = result.Errors }, statusCode: 400),
         _ => Map(result),

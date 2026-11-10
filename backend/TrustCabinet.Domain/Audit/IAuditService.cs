@@ -1,3 +1,6 @@
+using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
+
 namespace TrustCabinet.Domain.Audit;
 
 /// <summary>
@@ -182,4 +185,63 @@ public static class AuditActions
     public const string CallGuestAdmitted = "call.guest_admitted";
 
     public const string GuestSessionObjectType = "GuestSession";
+
+    /// <summary>
+    /// BR-444 — a password or Google sign-in succeeded. The actor and the object are the account; the details carry the
+    /// method, never the password or a token.
+    /// </summary>
+    public const string SignedIn = "auth.signed_in";
+
+    /// <summary>
+    /// BR-444 — a sign-in to an existing account was refused: wrong password, or the account is deactivated. The actor
+    /// is the account the attempt was made in the name of, so filtering by that account shows its failed attempts too;
+    /// whoever typed the password is not known. An email matching no account is not recorded — it may be a password
+    /// typed into the wrong box.
+    /// </summary>
+    public const string SignInFailed = "auth.sign_in_failed";
+
+    /// <summary>BR-444 — a Guest typed the right one-time code (UC-04). No actor; the invitation is in the details.</summary>
+    public const string GuestVerified = "guest.verified";
+
+    /// <summary>BR-446 — the Chair approved minutes, which issues them (BR-408); a correction is issued the same way.</summary>
+    public const string MinutesIssued = "minutes.issued";
+
+    public const string MinutesObjectType = "MeetingMinutes";
+
+    /// <summary>The Secretary saved attendance (UC-38); every changed entry, before and after, is in the details.</summary>
+    public const string MeetingAttendanceRecorded = "meeting.attendance.recorded";
+
+    /// <summary>
+    /// A participant change, followed by the <c>ParticipantOperation</c> name as written since SCRUM-123
+    /// ("meeting.participants.AddGuest"). Kept PascalCase: rows already stored carry it.
+    /// </summary>
+    public static string MeetingParticipants(ParticipantOperation operation) => "meeting.participants." + operation;
+
+    /// <summary>
+    /// BR-445 — the code of the audit row written with each <c>MeetingStatusHistory</c> row, one per lifecycle action.
+    /// </summary>
+    public static string MeetingHistory(MeetingHistoryAction action) => action switch
+    {
+        MeetingHistoryAction.Create => "meeting.created",
+        MeetingHistoryAction.SubmitForApproval => "meeting.submitted_for_approval",
+        MeetingHistoryAction.Approve => "meeting.approved",
+        MeetingHistoryAction.Reject => "meeting.rejected",
+        MeetingHistoryAction.ReturnToDraft => "meeting.returned_to_draft",
+        MeetingHistoryAction.Publish => "meeting.published",
+        MeetingHistoryAction.TransferOrganizer => "meeting.organizer_transferred",
+        MeetingHistoryAction.Reschedule => "meeting.rescheduled",
+        MeetingHistoryAction.Start => "meeting.started",
+        MeetingHistoryAction.End => "meeting.ended",
+        MeetingHistoryAction.Cancel => "meeting.cancelled",
+        MeetingHistoryAction.AutoCancel => "meeting.auto_cancelled",
+        _ => "meeting.status_changed",
+    };
+
+    /// <summary>
+    /// SCRUM-38, UC-70b — a user exported the meeting report to Excel (BR-438). No object id: the report is not a row.
+    /// The details carry the period; viewing the report on screen is not recorded.
+    /// </summary>
+    public const string ReportExported = "report.exported";
+
+    public const string ReportObjectType = "Report";
 }

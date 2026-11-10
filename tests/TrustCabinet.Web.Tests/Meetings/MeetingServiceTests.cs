@@ -528,8 +528,8 @@ public class MeetingServiceTests
     {
         var expected = new[]
         {
-            new MeetingApproverOption(Guid.CreateVersion7(), "An Nguyễn"),
-            new MeetingApproverOption(Guid.CreateVersion7(), "Bình Trần"),
+            new MeetingApproverOption(Guid.CreateVersion7(), "An Nguyễn", "an@trustcabinet.local"),
+            new MeetingApproverOption(Guid.CreateVersion7(), "Bình Trần", "binh@trustcabinet.local"),
         };
         _repository.EligibleApprovers.AddRange(expected);
 
