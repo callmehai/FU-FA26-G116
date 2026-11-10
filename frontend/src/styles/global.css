@@ -1272,8 +1272,6 @@ a.menu-item { text-decoration: none; }
 }
 
 /* System audit log (SCRUM-16, screen 3.3). */
-.audit-range { display: flex; align-items: center; gap: 6px; color: var(--muted-ink); }
-.audit-day { width: 146px; min-width: 0; }
 .audit-range-error { flex: 1 1 100%; margin: -4px 0 0; }
 .audit-time { font-variant-numeric: tabular-nums; }
 .audit-ip { font-variant-numeric: tabular-nums; }
@@ -1292,11 +1290,8 @@ a.menu-item { text-decoration: none; }
 .audit-json { width: 100%; margin: 0; padding: 8px 10px; overflow-x: auto; border-radius: var(--radius); background: var(--surface); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 720px) {
   /* Without min-width: 0 the panel takes the two date inputs' natural width and runs off the screen. */
-  .audit-toolbar .toolbar-filters-open, .audit-range { min-width: 0; }
-  .audit-range { flex: 1 1 100%; }
-  .audit-day { flex: 1 1 0; width: auto; }
-  /* Two dates share a 390px line: room for "dd/mm/yyyy" beside the calendar button. */
-  .audit-day .date-field-box input { padding-right: 34px; padding-left: 10px; }
+  .audit-toolbar .toolbar-filters-open { min-width: 0; }
+  .audit-toolbar .date-range { flex: 1 1 100%; }
   .audit-toolbar .toolbar-filters .select { flex: 1 1 140px; min-width: 0; }
   /* Each entry becomes a card: event and time, then who, then on what. The IP is in the sheet. */
   .audit-table thead, .audit-table td.audit-ip, .audit-table .row-skeleton td:not(:first-child) { display: none; }
@@ -2073,6 +2068,18 @@ a.menu-item { text-decoration: none; }
 .date-field-panel .date-pick-day { height: 32px; }
 .date-field-panel .date-pick-num { width: 28px; height: 28px; font-size: 13px; }
 @media (hover: none) { .date-field-panel .date-pick-day { height: 36px; } }
+/* A period on one calendar (DateRangeField): two day boxes, the one being picked outlined, one panel under both. */
+.date-range { position: relative; min-width: 0; }
+.date-range-box { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.date-range-dash { color: var(--muted-ink); }
+.date-range .date-field-box { width: 146px; }
+.date-range-active input { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+.date-pick-panel .date-range-foot { justify-content: space-between; align-items: center; color: var(--muted-ink); font-size: 12px; }
+@media (max-width: 720px) {
+  .date-range .date-field-box { flex: 1 1 0; width: auto; min-width: 0; }
+  /* Two dates share a 390px line: room for "dd/mm/yyyy" beside the calendar button. */
+  .date-range .date-field-box input { padding-right: 34px; padding-left: 10px; }
+}
 .date-field-foot { display: flex; justify-content: flex-end; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-soft); }
 .date-pick-selected .date-pick-num { background: var(--brand); color: #fff; font-weight: 600; }
 .date-pick-day.date-pick-selected:hover .date-pick-num { background: var(--brand-ink); }

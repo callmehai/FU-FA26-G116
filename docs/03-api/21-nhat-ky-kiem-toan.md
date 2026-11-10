@@ -91,6 +91,9 @@ tài khoản/vai trò hoặc 8 ký tự đầu của mã).
 - Mọi tiêu chí nằm trên URL (`from`, `to` dạng `YYYY-MM-DD`, `actor`, `action`, `q`, `page`, `pageSize`); giá trị sai
   dạng bị bỏ qua. Khoảng ngày là trọn ngày theo giờ máy người xem, gửi lên dạng UTC. Ngày bắt đầu sau ngày kết thúc
   thì báo dưới ô và **không** áp dụng.
+- Khoảng ngày chọn trên **một** lịch (`components/DateRangeField.tsx`): bấm lần đầu là ngày bắt đầu, lần hai là ngày
+  kết thúc, dải màu chạy theo con trỏ ở giữa; bấm một ngày trước ngày bắt đầu thì nó thành ngày bắt đầu mới. Mở riêng ô
+  "Từ ngày" hoặc "Đến ngày" để sửa một đầu; vẫn gõ được dd/mm/yyyy; nút *Xoá* trong lịch bỏ cả hai.
 - Ô "Tìm theo đối tượng…" (màn 3.3): `q` khớp tên ở cột Đối tượng (tài khoản, vai trò), mã đối tượng và giá trị
   trong `details`.
 - Ô người thực hiện: Khách, Hệ thống, rồi mọi tài khoản từ `GET /api/users` (hai người trùng tên thì hiện email; mã

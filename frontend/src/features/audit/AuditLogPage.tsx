@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { listAuditEventTypes, listAuditLog } from '../../api/auditLog'
 import { listUsers } from '../../api/users'
 import { Badge } from '../../components/Badge'
-import { DateField } from '../../components/DateField'
+import { DateRangeField } from '../../components/DateRangeField'
 import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
 import { Pagination } from '../../components/Pagination'
@@ -327,21 +327,7 @@ export function AuditLogPage() {
             {activeFilters > 0 && <span className="filters-count">{activeFilters}</span>}
           </button>
           <div id="audit-filters" className={filtersOpen ? 'toolbar-filters toolbar-filters-open' : 'toolbar-filters'}>
-            <div className="audit-range" role="group" aria-label="Khoảng thời gian">
-              <label className="audit-day">
-                <span className="visually-hidden">Từ ngày</span>
-                <DateField
-                  value={range.from}
-                  onChange={(from) => changeRange({ ...range, from })}
-                  invalid={invalidRange}
-                />
-              </label>
-              <span aria-hidden="true">–</span>
-              <label className="audit-day">
-                <span className="visually-hidden">Đến ngày</span>
-                <DateField value={range.to} onChange={(to) => changeRange({ ...range, to })} invalid={invalidRange} />
-              </label>
-            </div>
+            <DateRangeField value={range} onChange={changeRange} invalid={invalidRange} />
             <Select
               value={criteria.actor}
               options={actorOptions}
