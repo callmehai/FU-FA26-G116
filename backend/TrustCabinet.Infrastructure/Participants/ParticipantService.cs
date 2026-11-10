@@ -543,8 +543,8 @@ public sealed partial class ParticipantService(
                 new AuditLogEntry
                 {
                     ActorId = actor.UserId,
-                    Action = "meeting.participants." + operation,
-                    ObjectType = "Meeting",
+                    Action = AuditActions.MeetingParticipants(operation),
+                    ObjectType = AuditActions.MeetingObjectType,
                     ObjectId = meetingId,
                     IpAddress = caller.IpAddress,
                     Details = JsonSerializer.Serialize(

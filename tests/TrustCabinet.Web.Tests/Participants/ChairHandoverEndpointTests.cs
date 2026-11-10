@@ -90,7 +90,8 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
         var dispatch = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync();
         Assert.Equal(2, dispatch.Length);
         Assert.All(dispatch, d => Assert.Equal(InvitationEventKind.RoleChanged, d.EventKind));
-        var audit = await db.AuditLog.SingleAsync(a => a.ObjectId == s.MeetingId);
+        // The meeting's lifecycle rows have audit rows of their own (BR-445).
+        var audit = await db.AuditLog.SingleAsync(a => a.ObjectId == s.MeetingId && a.Action.StartsWith("meeting.participants."));
         Assert.Equal("meeting.participants.HandOverChair", audit.Action);
         Assert.Equal(2, JsonDocument.Parse(audit.Details!).RootElement.GetProperty("changes").GetArrayLength());
         var changed = Assert.Single(f.Changes.Events, e => e.Change.MeetingId == s.MeetingId);
@@ -362,7 +363,7 @@ public sealed class ChairHandoverEndpointTests(ParticipantFixture f) : IClassFix
         Assert.Equal(0, (await db.Meetings.FindAsync(s.MeetingId))!.ParticipantsRevision);
         Assert.False(await db.Notifications.AnyAsync(n => n.MeetingId == s.MeetingId));
         Assert.False(await db.MeetingInvitationDispatches.AnyAsync(d => d.MeetingId == s.MeetingId));
-        Assert.False(await db.AuditLog.AnyAsync(a => a.ObjectId == s.MeetingId));
+        Assert.False(await db.AuditLog.AnyAsync(a => a.ObjectId == s.MeetingId && a.Action.StartsWith("meeting.participants.")));
         Assert.DoesNotContain(f.Changes.Events, e => e.Change.MeetingId == s.MeetingId);
     }
 }

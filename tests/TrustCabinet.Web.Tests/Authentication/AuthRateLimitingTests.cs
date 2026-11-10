@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Access;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -51,6 +52,8 @@ public class AuthRateLimitingTests
                 services.AddSingleton<IRefreshTokenStore>(new FakeRefreshTokenStore());
                 services.RemoveAll<IPasswordHasher>();
                 services.AddSingleton<IPasswordHasher, FakePasswordHasher>();
+                services.RemoveAll<IAuditService>();
+                services.AddSingleton<IAuditService>(new FakeAuditService());
             });
         }
     }

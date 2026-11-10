@@ -201,7 +201,10 @@ mỗi khi BE thêm mã.
 
 **Docs:** ~~đưa §3–§5 vào Report 3 DOCX~~ — xong 10/11/2026 (`check_docx.py` OK, `sync_reports.py` khớp 100% danh mục).
 
-**BE** (không cần migration cho phía đọc):
+**BE** (không cần migration cho phía đọc) — **đã làm 10/11/2026**, contract và chỗ lệch D8–D9 ở
+[21-nhat-ky-kiem-toan.md](../03-api/21-nhat-ky-kiem-toan.md); bước 3 giữ đọc bốn khoá, không thêm cột. D8–D9 đã đưa vào
+Report 3 cùng ngày: BR-444, BR-445 ở §4 là bản trước khi sửa, bản chuẩn nằm trong
+[06-business-rules.md](../01-requirements/06-business-rules.md):
 
 1. `IAuditLogQueryService` trong `Domain/Audit`, cài đặt trong `Infrastructure/Audit`; `AuditLogEndpoints` và bộ đọc
    tham số trong `Web/Endpoints`, sau `RequireAdminUsers()`.
@@ -215,8 +218,10 @@ mỗi khi BE thêm mã.
 6. Test endpoint (quyền, lọc, phân trang, Khách và hệ thống), `docs/03-api/21-nhat-ky-kiem-toan.md`, chuyển
    `MSG469`–`MSG470` sang trạng thái BE trong danh mục.
 
-**FE:** `features/audit/`, `api/auditLog.ts`, `types/auditLog.ts`, route `/mgmt/admin/audit-log` trong `routes.ts`,
-mục sidebar dưới Quản trị (chỉ hiện khi có `AdminUsers`), theo đặc tả màn 3.3 trừ các điểm D3–D7.
+**FE** — **đã làm 10/11/2026**, xem mục *Màn hình* trong
+[21-nhat-ky-kiem-toan.md](../03-api/21-nhat-ky-kiem-toan.md): `features/audit/`, `api/auditLog.ts`, `types/auditLog.ts`,
+route `/mgmt/admin/audit-log` trong `routes.ts`, mục sidebar dưới Quản trị (chỉ hiện khi có `AdminUsers`), theo đặc tả
+màn 3.3 trừ các điểm D3–D7.
 
 Không làm: ghi lại việc *xem* nhật ký; chuỗi hash chống sửa (đã loại ở [02-erd.md](../02-design/02-erd.md)); chuyển
 dữ liệu `meeting_status_history` cũ sang `audit_log`.

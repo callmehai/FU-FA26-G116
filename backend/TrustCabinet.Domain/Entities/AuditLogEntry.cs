@@ -13,8 +13,9 @@ namespace TrustCabinet.Domain.Entities;
 public class AuditLogEntry : Entity
 {
     /// <summary>
-    /// Null only for an action with no signed-in actor, such as a failed sign-in attempt, or one the system did on its
-    /// own, such as deleting a meeting's unopened vote drafts when it ends.
+    /// Null only for an action with no account behind it: a Guest's (the invitation is then in the details) or one the
+    /// system did on its own, such as deleting a meeting's unopened vote drafts when it ends. A failed sign-in names the
+    /// account it was attempted on (SCRUM-16).
     /// </summary>
     public Guid? ActorId { get; set; }
     public User? Actor { get; set; }

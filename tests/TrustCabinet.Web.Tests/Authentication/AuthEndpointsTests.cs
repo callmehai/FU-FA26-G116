@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Access;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -69,8 +70,14 @@ public class AuthEndpointsTests : IDisposable
                 // The real hasher is deliberately slow; each of these tests signs in at least once.
                 services.RemoveAll<IPasswordHasher>();
                 services.AddSingleton<IPasswordHasher, FakePasswordHasher>();
+
+                // Sign-in is recorded (BR-444); the real writer needs PostgreSQL.
+                services.RemoveAll<IAuditService>();
+                services.AddSingleton<IAuditService>(Audit);
             });
         }
+
+        internal FakeAuditService Audit { get; } = new();
     }
 
     private HttpClient NewClient(

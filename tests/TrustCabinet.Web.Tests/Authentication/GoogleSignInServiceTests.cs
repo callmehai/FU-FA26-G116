@@ -60,6 +60,10 @@ public class GoogleSignInServiceTests
         Assert.Equal(GoogleSignInOutcome.Success, result.Outcome);
         Assert.True(result.Succeeded);
         Assert.Equal([Capability.MinutesEditor], result.Capabilities);
+        // BR-444: the method, and nothing of the ID token.
+        var record = Assert.Single(_audit.Records);
+        Assert.Equal((AuditActions.SignedIn, result.User!.Id), (record.Action, record.ActorId));
+        Assert.Equal("{ method = google }", record.Details?.ToString());
     }
 
     [Fact]
@@ -164,10 +168,9 @@ public class GoogleSignInServiceTests
 
         Assert.Equal(GoogleSignInOutcome.Success, result.Outcome);
         Assert.Equal(GoogleSubject, user.GoogleSubjectId);
-        var record = Assert.Single(_audit.Records);
-        Assert.Equal(AuditActions.UserGoogleLinked, record.Action);
-        Assert.Equal(user.Id, record.ObjectId);
-        Assert.Equal(user.Id, record.ActorId);
+        // The link, then the sign-in it allowed (BR-444).
+        Assert.Equal([AuditActions.UserGoogleLinked, AuditActions.SignedIn], _audit.Records.Select(r => r.Action));
+        Assert.All(_audit.Records, r => Assert.Equal((user.Id, user.Id), (r.ObjectId, r.ActorId)));
     }
 
     [Fact]
@@ -200,7 +203,10 @@ public class GoogleSignInServiceTests
         // the wrong thing to tell them. Still not linked.
         Assert.Equal(GoogleSignInOutcome.AccountDeactivated, result.Outcome);
         Assert.Null(user.GoogleSubjectId);
-        Assert.Empty(_audit.Records);
+        // Recorded as a refused sign-in (BR-444), not as a link.
+        var record = Assert.Single(_audit.Records);
+        Assert.Equal((AuditActions.SignInFailed, user.Id), (record.Action, record.ActorId));
+        Assert.Equal("{ method = google, reason = account_deactivated }", record.Details?.ToString());
         Assert.Empty(_refreshTokens.ActiveTokens);
     }
 

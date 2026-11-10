@@ -130,7 +130,7 @@ public static partial class MeetingListQueryParser
         return true;
     }
 
-    private static string? Read(
+    internal static string? Read(
         IQueryCollection values, string key, IDictionary<string, string> errors)
     {
         if (!values.TryGetValue(key, out StringValues value))
@@ -153,7 +153,7 @@ public static partial class MeetingListQueryParser
             && Enum.IsDefined(result)
             && string.Equals(value, result.ToString(), StringComparison.Ordinal);
 
-    private static DateTimeOffset? ParseTimestamp(
+    internal static DateTimeOffset? ParseTimestamp(
         string? raw, string key, IDictionary<string, string> errors)
     {
         if (raw is null)
@@ -171,7 +171,7 @@ public static partial class MeetingListQueryParser
         return null;
     }
 
-    private static int ParsePositiveInt(
+    internal static int ParsePositiveInt(
         string? raw, string key, int defaultValue, int maximum, IDictionary<string, string> errors)
     {
         if (raw is null)
