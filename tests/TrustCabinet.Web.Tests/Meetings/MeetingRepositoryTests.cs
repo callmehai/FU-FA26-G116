@@ -1396,6 +1396,43 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(2, approverFirst.Items.Count);
     }
 
+    [Theory]
+    [InlineData("e2e loc")]
+    [InlineData("E2E LỘC")]
+    [InlineData("da nang")]
+    public async Task Search_ignores_case_and_accents(string search)
+    {
+        var startsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+        _db.Meetings.AddRange(
+            ListMeeting("E2E Lộc họp ở Đà Nẵng", MeetingStatus.Draft, startsAt),
+            ListMeeting("Giao ban tuần", MeetingStatus.Draft, startsAt));
+        await _db.SaveChangesAsync();
+
+        var page = await new MeetingRepository(_db).FindAuthorizedPageAsync(_creatorId, ListQuery(search: search));
+
+        Assert.Equal("E2E Lộc họp ở Đà Nẵng", Assert.Single(page.Items).Title);
+    }
+
+    [Theory]
+    [InlineData("%")]
+    [InlineData("％")]
+    [InlineData("＿")]
+    [InlineData("＼")]
+    public async Task Search_treats_wildcards_and_their_full_width_forms_as_plain_text(string search)
+    {
+        // unaccent maps ％ ＿ ＼ to % _ \: they must still match only themselves.
+        var startsAt = new DateTimeOffset(2026, 10, 1, 2, 0, 0, TimeSpan.Zero);
+        _db.Meetings.AddRange(
+            ListMeeting("Tỷ lệ 50% đạt", MeetingStatus.Draft, startsAt),
+            ListMeeting("Giao ban tuần", MeetingStatus.Draft, startsAt));
+        await _db.SaveChangesAsync();
+
+        var page = await new MeetingRepository(_db).FindAuthorizedPageAsync(_creatorId, ListQuery(search: search));
+
+        Assert.All(page.Items, item => Assert.Equal("Tỷ lệ 50% đạt", item.Title));
+        Assert.Equal(search is "%" or "％" ? 1 : 0, page.TotalCount);
+    }
+
     [Fact]
     public async Task A_member_sees_a_meeting_cancelled_after_it_was_announced_but_not_one_cancelled_before()
     {

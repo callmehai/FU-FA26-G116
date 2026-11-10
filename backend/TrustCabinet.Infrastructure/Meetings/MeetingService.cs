@@ -62,7 +62,7 @@ public sealed class MeetingService(
             {
                 var rosterErrors = new Dictionary<string, string>();
                 if (participants is null || participants.Count is < 1 or > 100)
-                    rosterErrors["participants"] = "Chọn từ 1 đến 100 thành phần tham dự, có đúng một Chủ tọa.";
+                    rosterErrors["participants"] = "Chọn từ 1 đến 100 thành phần tham dự, có đúng một Chủ toạ.";
                 else
                 {
                     var seen = new HashSet<Guid>();
@@ -72,10 +72,10 @@ public sealed class MeetingService(
                         if (seed is null || seed.UserId == Guid.Empty || !seen.Add(seed.UserId))
                             rosterErrors[$"participants[{i}].userId"] = "Người dùng không hợp lệ hoặc bị trùng.";
                         if (seed is null || !ParticipantRules.TryRole(seed.Role, out _))
-                            rosterErrors[$"participants[{i}].role"] = "Chọn Chủ tọa, Thư ký hoặc Thành viên.";
+                            rosterErrors[$"participants[{i}].role"] = "Chọn Chủ toạ, Thư ký hoặc Thành viên.";
                     }
                     if (participants.Count(p => p?.Role == nameof(MeetingRole.Chair)) != 1)
-                        rosterErrors["participants"] = "Cuộc họp phải có đúng một Chủ tọa.";
+                        rosterErrors["participants"] = "Cuộc họp phải có đúng một Chủ toạ.";
                 }
                 if (rosterErrors.Count > 0)
                     return new MeetingResult(MeetingOutcome.InvalidParticipants, Errors: rosterErrors);

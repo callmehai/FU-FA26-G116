@@ -48,7 +48,7 @@ Checklist FE:
 
 ## Side effect và giới hạn nhất quán
 
-Start lưu Meeting và history cùng transaction rồi mới lưu batch notification. Recipient là active current internal participants, distinct UserId, trừ Chủ tọa vừa bấm Start (không ai nhận thông báo về thao tác của chính mình, như Publish), vẫn gồm Declined; loại Guest/Removed/Delegated/inactive. Notification `MeetingStarted`, target Meeting, OriginHistoryId và khóa `meeting-started:{historyId}:{userId}`. Unique index hiện có chống trùng. Notification đã lưu được worker push tiếp; lỗi tạo notification sau commit là best effort, **không có outbox/replay bền vững mới**, không gửi email Start.
+Start lưu Meeting và history cùng transaction rồi mới lưu batch notification. Recipient là active current internal participants, distinct UserId, trừ Chủ toạ vừa bấm Start (không ai nhận thông báo về thao tác của chính mình, như Publish), vẫn gồm Declined; loại Guest/Removed/Delegated/inactive. Notification `MeetingStarted`, target Meeting, OriginHistoryId và khóa `meeting-started:{historyId}:{userId}`. Unique index hiện có chống trùng. Notification đã lưu được worker push tiếp; lỗi tạo notification sau commit là best effort, **không có outbox/replay bền vững mới**, không gửi email Start.
 
 End hoàn tất current agenda trong cùng transaction; không có current item vẫn thành công. Pending/Done khác và Vote/ballot/attendance/response giữ nguyên. Timestamp agenda không hợp lệ làm rollback toàn bộ với MSG116, không sửa hộ dữ liệu.
 
@@ -70,7 +70,7 @@ Giờ End của Meeting/history là mốc nghiệp vụ; CallSession dùng giờ
 
 ## FE đã tích hợp
 
-- Trang chi tiết: Chủ tọa thấy **Bắt đầu họp** khi `Published` và **Kết thúc họp** khi `InProgress`, cạnh "Vào phòng họp". Nút dựa trên `myMeetingRole`, server vẫn kiểm lại.
+- Trang chi tiết: Chủ toạ thấy **Bắt đầu họp** khi `Published` và **Kết thúc họp** khi `InProgress`, cạnh "Vào phòng họp". Nút dựa trên `myMeetingRole`, server vẫn kiểm lại.
 - Bắt đầu: còn ≤ 15 phút tới giờ dự kiến thì bấm là chạy ngay; sớm hơn thì hỏi "Bắt đầu sớm hơn lịch?". Không có Thư ký thì hộp thoại nói lý do và không gửi request. Kết thúc luôn hỏi xác nhận.
 - Lỗi: `409 MSG112/MSG114` và `403 MSG112/MSG114` hiện toast rồi đọc lại trang; `503 MSG115/MSG116` hiện toast và giữ nút để thử lại.
 - Người khác đang mở trang tự cập nhật: Kết thúc qua `agendaChanged` loại `MeetingEnded` trên `/hubs/meetings`; Bắt đầu qua thông báo `MeetingStarted` (hub thông báo). Màn chờ phòng họp "chỉ mở khi cuộc họp đang diễn ra" tự chuyển sang màn vào phòng khi nhận `MeetingStarted`.

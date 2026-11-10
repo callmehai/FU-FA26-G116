@@ -25,7 +25,7 @@ public sealed class AuditService(TrustCabinetDbContext db, ICallerContext caller
     /// Safe here because the value is never interpolated into a page: the audit screen will fetch
     /// it as JSON, and the browser escapes on output.
     /// </summary>
-    private static readonly JsonSerializerOptions DetailsOptions = new()
+    internal static readonly JsonSerializerOptions DetailsOptions = new()
     {
         Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
     };

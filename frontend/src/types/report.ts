@@ -3,7 +3,7 @@ import type { MeetingStatus, Sensitivity } from './meeting'
 /**
  * SCRUM-38 (UC-70a) — what `GET /api/reports/meetings` returns: counts, rates and averages only, never a meeting's id
  * or title (BR-437). `byMonth` lists every month of the period and the other two every value, zeros included.
- * Months are "yyyy-MM" in Vietnam time. Contract: docs/03-api/21-bao-cao-thong-ke.md.
+ * Months are "yyyy-MM" in Vietnam time. Contract: docs/03-api/22-bao-cao-thong-ke.md.
  */
 export interface MeetingReport {
   from: string

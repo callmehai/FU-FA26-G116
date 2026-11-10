@@ -33,6 +33,8 @@ export const routes = {
   adminRoles: '/mgmt/admin/roles',
   /** ADR-0056: which model writes the AI drafts of ordinary meetings. */
   adminAi: '/mgmt/admin/ai',
+  /** SCRUM-16 (UC-13): the system audit log, read-only. */
+  adminAuditLog: '/mgmt/admin/audit-log',
   /** SCRUM-113: a deactivated person's library, read-only, for the administrator who recovers it. */
   userLibrary: (userId: string, folderId: string | null = null) =>
     `/mgmt/admin/users/${userId}/library${folderId ? `?folder=${folderId}` : ''}`,

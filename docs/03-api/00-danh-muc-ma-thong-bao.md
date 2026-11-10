@@ -61,9 +61,9 @@ Các mã UC-27–30 dưới đây đã có Backend. OTP/session production thu�
 | `MSG106` | 400 | Response/schema sai | Thông tin gửi lên không hợp lệ. |
 | `MSG107` | 409 | Invitation đọc được nhưng không còn answerable | Lời mời này không còn cho phép phản hồi. |
 | `MSG108` | 503 | Response không lưu được | Không lưu được thay đổi. Vui lòng thử lại. |
-| `MSG109` | 409 | Vi phạm required Chair/Secretary | Cuộc họp phải giữ Chủ tọa và Thư ký theo quy định. Hãy phân công người thay thế. |
+| `MSG109` | 409 | Vi phạm required Chair/Secretary | Cuộc họp phải giữ Chủ toạ và Thư ký theo quy định. Hãy phân công người thay thế. |
 | `MSG285` | 409 | PUT invitation-response: đã trả lời Tham dự/Không tham dự rồi, gửi câu trả lời khác (trả lời một lần, như AI-eCabinet) | Bạn đã trả lời lời mời này. Câu trả lời không đổi được. |
-| `MSG286` | 409 | PUT invitation-response: Chủ tọa trả lời lời mời | Chủ tọa điều hành cuộc họp nên không cần xác nhận tham dự. |
+| `MSG286` | 409 | PUT invitation-response: Chủ toạ trả lời lời mời | Chủ toạ điều hành cuộc họp nên không cần xác nhận tham dự. |
 | `MSG152` | — | Ngừng dùng — quyền bổ sung đã bỏ theo PO 20/10/2026 | Không tái cấp. |
 | `MSG153` | — | Ngừng dùng — quyền bổ sung đã bỏ theo PO 20/10/2026 | Không tái cấp. |
 | `MSG154` | 200 | Role/grants không có thay đổi, hoặc gửi lại đúng câu trả lời đã ghi | Không có thay đổi cần lưu. |
@@ -80,7 +80,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 |---|---|---|---|
 | `MSG60` | 201 | POST agenda | Tạo mục nghị sự thành công. |
 | `MSG61` | 200 | PUT item | Cập nhật mục nghị sự thành công. |
-| `MSG62` | 200 | DELETE item | Xóa mục nghị sự thành công. |
+| `MSG62` | 200 | DELETE item | Xoá mục nghị sự thành công. |
 | `MSG63` | 200 | PUT order | Sắp xếp mục nghị sự thành công. |
 | `MSG64` | 200 | POST current | Bắt đầu mục nghị sự thành công. |
 | `MSG65` | 200 | POST complete | Hoàn thành mục nghị sự thành công. |
@@ -99,7 +99,7 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 | `MSG75` | 503 | Lưu start thất bại | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
 | `MSG76` | 503 | Lưu complete thất bại hoặc actual time không hợp lệ | Không lưu được thao tác nghị sự. Vui lòng thử lại. |
 | `MSG128` | 500 | GET agenda/options thất bại | Không tải được chương trình nghị sự. |
-| `MSG142` | 409 | Xóa item đã bắt đầu | Chỉ được xóa mục nghị sự chưa bắt đầu. |
+| `MSG142` | 409 | Xóa item đã bắt đầu | Chỉ được xoá mục nghị sự chưa bắt đầu. |
 | `MSG143` | 400 | Reorder: body hoặc tập ID toàn bộ mục không hợp lệ | Danh sách sắp xếp phải chứa đúng mỗi mục nghị sự một lần. |
 | `MSG143` | 409 | Reorder: orderVersion cũ | Chương trình nghị sự đã thay đổi. Vui lòng tải lại. |
 | `MSG34` | 415 | Agenda POST/PUT có body không phải JSON | Yêu cầu phải dùng Content-Type application/json. |
@@ -109,14 +109,14 @@ Các dòng nguồn UC trong bảng phía dưới được giữ để đối chi
 
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
 |---|---|---|---|
-| `MSG256` | 409 | PUT assignments: Secretary tác động Chair còn active ở Published/InProgress | Chỉ Chủ tọa được giao vai trò Chủ tọa khi tài khoản hiện tại còn hoạt động. |
-| `MSG257` | 200 | PUT assignments / POST chair-handover: Chair bàn giao ở Published/InProgress | Giao vai trò Chủ tọa thành công. |
-| `MSG258` | 200 | GET chair-handover-candidates: toàn meeting không có current active Member đủ điều kiện. FE không gọi endpoint này và không hiển thị mã: không ai nhận được thì không dòng nào có lựa chọn "Chủ tọa" | Không có thành viên đủ điều kiện nhận vai trò Chủ tọa. Hãy thêm thành viên nội bộ trước. |
-| `MSG259` | 400 | PUT assignments / POST chair-handover: người nhận Chair không phải current active Member khác Chair | Người nhận vai trò Chủ tọa phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký. |
-| `MSG260` | 409 | GET chair-handover-candidates / POST chair-handover: người đọc nội bộ không còn là current Chair hoặc status không cho bàn giao | Bạn không còn quyền giao vai trò Chủ tọa cho cuộc họp này. |
+| `MSG256` | 409 | PUT assignments: Secretary tác động Chair còn active ở Published/InProgress | Chỉ Chủ toạ được giao vai trò Chủ toạ khi tài khoản hiện tại còn hoạt động. |
+| `MSG257` | 200 | PUT assignments / POST chair-handover: Chair bàn giao ở Published/InProgress | Giao vai trò Chủ toạ thành công. |
+| `MSG258` | 200 | GET chair-handover-candidates: toàn meeting không có current active Member đủ điều kiện. FE không gọi endpoint này và không hiển thị mã: không ai nhận được thì không dòng nào có lựa chọn "Chủ toạ" | Không có thành viên đủ điều kiện nhận vai trò Chủ toạ. Hãy thêm thành viên nội bộ trước. |
+| `MSG259` | 400 | PUT assignments / POST chair-handover: người nhận Chair không phải current active Member khác Chair | Người nhận vai trò Chủ toạ phải là thành viên nội bộ hiện tại, đang hoạt động và không phải Thư ký. |
+| `MSG260` | 409 | GET chair-handover-candidates / POST chair-handover: người đọc nội bộ không còn là current Chair hoặc status không cho bàn giao | Bạn không còn quyền giao vai trò Chủ toạ cho cuộc họp này. |
 | `MSG277` | 400 | POST meetings: roster khởi tạo không hợp lệ | Danh sách thành phần tham dự không hợp lệ. |
 
-`MSG258` và `MSG260` đã triển khai trong API chuyên biệt UC-73 của SCRUM-97. `MSG258` là empty state trong response thành công, không dùng cho search không khớp; BE vẫn trả mã này nhưng FE không hiển thị (ẩn lựa chọn Chủ tọa). SCRUM-26 dùng `MSG289` cho lỗi đọc và `MSG278` cho query không hợp lệ; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
+`MSG258` và `MSG260` đã triển khai trong API chuyên biệt UC-73 của SCRUM-97. `MSG258` là empty state trong response thành công, không dùng cho search không khớp; BE vẫn trả mã này nhưng FE không hiển thị (ẩn lựa chọn Chủ toạ). SCRUM-26 dùng `MSG289` cho lỗi đọc và `MSG278` cho query không hợp lệ; `MSG277` đã thuộc validation roster khi tạo họp trong PR #92.
 
 ### Bắt đầu/kết thúc cuộc họp — SCRUM-69 (UC-21/22)
 
@@ -319,7 +319,7 @@ hồi hay cuộc họp không còn mở đều trả cùng `MSG371`, không lộ
 
 ## Mã tiếp theo
 
-**`MSG471`** — `MSG469`–`MSG470` dành sẵn, chưa có code, cho xem nhật ký kiểm toán (SCRUM-16, UC-13), theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-16.md), đã vào Report 3 ngày 10/11/2026. `MSG468` dành sẵn, chưa có code, cho chặn Chấp nhận khi người gửi bị vô hiệu hoá (SCRUM-142, UC-84c EX-5), thêm theo PO 09/11/2026 (PR #295). `MSG467` dành sẵn, chưa có code, cho lỗi đọc danh sách người của chia sẻ lịch (SCRUM-142, UC-84a EX-6, UC-84b EX-6), thêm theo review PR #295. `MSG463`–`MSG465` đã triển khai cho báo cáo và thống kê (SCRUM-38, UC-70a, UC-70b, [contract](21-bao-cao-thong-ke.md)), `MSG466` do FE hiển thị (FE chưa làm), theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-38.md). `MSG457`–`MSG462` cấp cho đăng ký phát biểu (SCRUM-27, UC-79, [contract](20-dang-ky-phat-bieu.md)); UC-79 dùng lại `MSG117`, không dùng `MSG124` vì không thao tác nào gọi LiveKit. `MSG424`–`MSG434` và `MSG456` đã triển khai cho gửi duyệt, duyệt và ban hành, trả lại và đính chính biên bản (SCRUM-33, UC-61, UC-64, UC-65, UC-83, [contract](17-du-thao-bien-ban.md#duyệt-và-ban-hành--scrum-33)); `MSG456` không liền dải vì được thêm theo review PR #279 sau khi `MSG435`–`MSG455` đã cấp. `MSG435`–`MSG455` dành sẵn, chưa có code, cho chia sẻ lịch và tìm giờ họp (SCRUM-142, SCRUM-137; UC-84 gom UC-84a → UC-84f, UC-85 gom UC-85a → UC-85c theo mẫu Report 3; đổi số từ `MSG424`–`MSG443` vì PR #279 đã nhận), theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-137-142.md). `MSG415`–`MSG422` đã triển khai cho ghi chú thư ký (SCRUM-30, UC-82, [contract](19-ghi-chu-cuoc-hop.md)), `MSG423` do FE hiển thị, theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-30.md). `MSG414` cấp cho giới hạn số lần thử đăng nhập và đặt lại mật khẩu (SCRUM-132, 429). `MSG408`–`MSG413` cấp cho màn Cấu hình AI của quản trị: chọn máy AI local hay API cho dự thảo của cuộc họp Thường ([ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md)). `MSG407` cấp cho đổi người nói của riêng một câu gỡ băng (SCRUM-35, như "chỉ câu này" của AI-eCabinet; người không hợp lệ dùng lại `MSG317`). `MSG406` cấp cho định dạng tải biên bản không hỗ trợ (`?format=`, SCRUM-32: biên bản tải về dạng Word hoặc PDF dựng trên server). `MSG384`–`MSG394` cấp cho dự thảo AI (SCRUM-36), `MSG395`–`MSG405` cho bản nháp biên bản (SCRUM-32), [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md). `MSG382` cấp cho tệp tài liệu đã mất hẳn khỏi kho (410, thay cho `MSG158`/`MSG160` "thử lại" ở tình huống này) và `MSG383` (FE) cho trình duyệt không vẽ được tệp, sau lượt test E2E tài liệu 02/11/2026 (SCRUM-21). `MSG381` cấp cho Khách đổi tên tự khai sau khi đã khai (SCRUM-116, PO 01/11/2026). `MSG380` cấp cho Khách vào phòng họp trực tuyến mà chưa xác nhận thông báo ghi âm (SCRUM-59), dùng lại khi micro của Khách gửi câu mà phiên chưa xác nhận thông báo đó (SCRUM-129). `MSG379` cấp cho giới hạn 20 mã OTP mỗi 24 giờ của UC-04 (SCRUM-116, chốt 31/10/2026). `MSG371`–`MSG378` cấp cho truy cập Khách UC-04 (SCRUM-116, [contract](16-truy-cap-khach-uc04.md)); `MSG368`–`MSG370` đã lên `main` cùng ADR-0043 rồi bị hoàn tác, giữ lại cho lần làm lại, không cấp cho việc khác. `MSG366`–`MSG367` cấp cho xoá một lượt ghi của bản ghi phòng (SCRUM-29, PO 29/10/2026; AI-eCabinet không có). `MSG359`–`MSG365` cấp cho mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi (ADR-0041). `MSG358` cấp cho bản ghi phòng của cuộc họp trực tuyến (ADR-0040: cách ghi suy ra từ hình thức họp; `MSG324`–`MSG327` của endpoint đổi cách ghi âm và `MSG344` của ghi âm cả cuộc gọi ngừng dùng). `MSG351`–`MSG354` cấp cho loại câu khỏi bản ghi theo micro (SCRUM-109), `MSG355`–`MSG357` cho tải bản ghi và xuất bản gỡ băng (SCRUM-29, SCRUM-31), cả hai bê từ AI-eCabinet. `MSG346`–`MSG348` đã cấp cho kho tài liệu cá nhân và góp ý tài liệu (SCRUM-58, SCRUM-23, PR #169), chưa lên `main`. Cuộc họp đã huỷ là trạng thái cuối (BR-299): thay đổi bị từ chối bằng `MSG349` (tải tài liệu lên; gắn/gỡ tài liệu và góp ý trên cuộc họp đã huỷ dùng lại mã này), phòng họp trực tuyến báo `MSG350` (FE). Huỷ cuộc họp (SCRUM-99, UC-75) dùng `MSG261`–`MSG264` đã dành sẵn và `MSG345` (lý do quá dài). Thông báo FE của phòng họp trực tuyến (SCRUM-41) dùng `MSG328`–`MSG344`; `MSG119`–`MSG122`, `MSG125` ngừng dùng, không tái cấp. Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`; ghi âm theo micro từng người (SCRUM-109) dùng `MSG318`–`MSG327`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, `MSG252`–`MSG255` và `MSG265`–`MSG270` (thay đổi Report 3 ngày 18/10/2026: UC-55, UC-74, UC-76) đã triển khai trong SCRUM-96. `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` của FE-11 (UC-52a, UC-52b, UC-53–UC-57) đã triển khai trong SCRUM-28, trừ `MSG207` do FE hiển thị. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
+**`MSG471`** — `MSG469`–`MSG470` đã triển khai cho xem nhật ký kiểm toán (SCRUM-16, UC-13, [contract](21-nhat-ky-kiem-toan.md)), theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-16.md), đã vào Report 3 ngày 10/11/2026. `MSG468` dành sẵn, chưa có code, cho chặn Chấp nhận khi người gửi bị vô hiệu hoá (SCRUM-142, UC-84c EX-5), thêm theo PO 09/11/2026 (PR #295). `MSG467` dành sẵn, chưa có code, cho lỗi đọc danh sách người của chia sẻ lịch (SCRUM-142, UC-84a EX-6, UC-84b EX-6), thêm theo review PR #295. `MSG463`–`MSG465` đã triển khai cho báo cáo và thống kê (SCRUM-38, UC-70a, UC-70b, [contract](22-bao-cao-thong-ke.md)), `MSG466` do FE hiển thị (FE chưa làm), theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-38.md). `MSG457`–`MSG462` cấp cho đăng ký phát biểu (SCRUM-27, UC-79, [contract](20-dang-ky-phat-bieu.md)); UC-79 dùng lại `MSG117`, không dùng `MSG124` vì không thao tác nào gọi LiveKit. `MSG424`–`MSG434` và `MSG456` đã triển khai cho gửi duyệt, duyệt và ban hành, trả lại và đính chính biên bản (SCRUM-33, UC-61, UC-64, UC-65, UC-83, [contract](17-du-thao-bien-ban.md#duyệt-và-ban-hành--scrum-33)); `MSG456` không liền dải vì được thêm theo review PR #279 sau khi `MSG435`–`MSG455` đã cấp. `MSG435`–`MSG455` dành sẵn, chưa có code, cho chia sẻ lịch và tìm giờ họp (SCRUM-142, SCRUM-137; UC-84 gom UC-84a → UC-84f, UC-85 gom UC-85a → UC-85c theo mẫu Report 3; đổi số từ `MSG424`–`MSG443` vì PR #279 đã nhận), theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-137-142.md). `MSG415`–`MSG422` đã triển khai cho ghi chú thư ký (SCRUM-30, UC-82, [contract](19-ghi-chu-cuoc-hop.md)), `MSG423` do FE hiển thị, theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-30.md). `MSG414` cấp cho giới hạn số lần thử đăng nhập và đặt lại mật khẩu (SCRUM-132, 429). `MSG408`–`MSG413` cấp cho màn Cấu hình AI của quản trị: chọn máy AI local hay API cho dự thảo của cuộc họp Thường ([ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md)). `MSG407` cấp cho đổi người nói của riêng một câu gỡ băng (SCRUM-35, như "chỉ câu này" của AI-eCabinet; người không hợp lệ dùng lại `MSG317`). `MSG406` cấp cho định dạng tải biên bản không hỗ trợ (`?format=`, SCRUM-32: biên bản tải về dạng Word hoặc PDF dựng trên server). `MSG384`–`MSG394` cấp cho dự thảo AI (SCRUM-36), `MSG395`–`MSG405` cho bản nháp biên bản (SCRUM-32), [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md). `MSG382` cấp cho tệp tài liệu đã mất hẳn khỏi kho (410, thay cho `MSG158`/`MSG160` "thử lại" ở tình huống này) và `MSG383` (FE) cho trình duyệt không vẽ được tệp, sau lượt test E2E tài liệu 02/11/2026 (SCRUM-21). `MSG381` cấp cho Khách đổi tên tự khai sau khi đã khai (SCRUM-116, PO 01/11/2026). `MSG380` cấp cho Khách vào phòng họp trực tuyến mà chưa xác nhận thông báo ghi âm (SCRUM-59), dùng lại khi micro của Khách gửi câu mà phiên chưa xác nhận thông báo đó (SCRUM-129). `MSG379` cấp cho giới hạn 20 mã OTP mỗi 24 giờ của UC-04 (SCRUM-116, chốt 31/10/2026). `MSG371`–`MSG378` cấp cho truy cập Khách UC-04 (SCRUM-116, [contract](16-truy-cap-khach-uc04.md)); `MSG368`–`MSG370` đã lên `main` cùng ADR-0043 rồi bị hoàn tác, giữ lại cho lần làm lại, không cấp cho việc khác. `MSG366`–`MSG367` cấp cho xoá một lượt ghi của bản ghi phòng (SCRUM-29, PO 29/10/2026; AI-eCabinet không có). `MSG359`–`MSG365` cấp cho mic phòng ghi từng lượt, đẩy lên từng phần trong khi ghi (ADR-0041). `MSG358` cấp cho bản ghi phòng của cuộc họp trực tuyến (ADR-0040: cách ghi suy ra từ hình thức họp; `MSG324`–`MSG327` của endpoint đổi cách ghi âm và `MSG344` của ghi âm cả cuộc gọi ngừng dùng). `MSG351`–`MSG354` cấp cho loại câu khỏi bản ghi theo micro (SCRUM-109), `MSG355`–`MSG357` cho tải bản ghi và xuất bản gỡ băng (SCRUM-29, SCRUM-31), cả hai bê từ AI-eCabinet. `MSG346`–`MSG348` đã cấp cho kho tài liệu cá nhân và góp ý tài liệu (SCRUM-58, SCRUM-23, PR #169), chưa lên `main`. Cuộc họp đã huỷ là trạng thái cuối (BR-299): thay đổi bị từ chối bằng `MSG349` (tải tài liệu lên; gắn/gỡ tài liệu và góp ý trên cuộc họp đã huỷ dùng lại mã này), phòng họp trực tuyến báo `MSG350` (FE). Huỷ cuộc họp (SCRUM-99, UC-75) dùng `MSG261`–`MSG264` đã dành sẵn và `MSG345` (lý do quá dài). Thông báo FE của phòng họp trực tuyến (SCRUM-41) dùng `MSG328`–`MSG344`; `MSG119`–`MSG122`, `MSG125` ngừng dùng, không tái cấp. Bản ghi cuộc họp (SCRUM-29) dùng `MSG290`–`MSG298`; gỡ băng (SCRUM-31) dùng `MSG299`–`MSG304`; Voice ID (SCRUM-35) dùng `MSG305`–`MSG317`; ghi âm theo micro từng người (SCRUM-109) dùng `MSG318`–`MSG327`. `MSG288` (UC-33a EX-8, giới hạn 10 tệp / 200 MB mỗi lần tải, PO 22/10/2026) đã triển khai cùng `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174` trong SCRUM-107. SCRUM-105 dùng `MSG287` (FE). Phòng họp trực tuyến (SCRUM-39/41) dùng `MSG117`, `MSG118`, `MSG123`, `MSG124` đã dành sẵn và `MSG280`–`MSG284`. SCRUM-20 đã triển khai `MSG95`–`MSG109`, `MSG154`, `MSG256`/`MSG257`/`MSG259`, `MSG275`–`MSG277`, `MSG285`/`MSG286`; `MSG278` và `MSG289` thuộc SCRUM-26; `MSG279` chưa cấp. `MSG258`/`MSG260` đã triển khai trong SCRUM-97; trong dải `MSG252`–`MSG274`, `MSG252`–`MSG255` và `MSG265`–`MSG270` (thay đổi Report 3 ngày 18/10/2026: UC-55, UC-74, UC-76) đã triển khai trong SCRUM-96. `MSG238`–`MSG249` và `MSG251` dành sẵn, chưa triển khai, cho ADR-0020; `MSG250` ngừng dùng. `MSG163`, `MSG168`, `MSG173`, `MSG237` ngừng dùng, không tái cấp. `MSG205`–`MSG236` của FE-11 (UC-52a, UC-52b, UC-53–UC-57) đã triển khai trong SCRUM-28, trừ `MSG207` do FE hiển thị. `MSG156`–`MSG204` dành sẵn cho toàn bộ UC FE-07 trong Report 3; trong dải này SCRUM-107 đã triển khai `MSG161`, `MSG162`, `MSG164`, `MSG166`, `MSG172`, `MSG174`, SCRUM-21 đã triển khai `MSG156`–`MSG160`, phần còn lại chưa triển khai. `MSG140` dành cho UC-18 EX-5; `MSG145`/`MSG146` dành cho thay đổi FE-06 trong Report 3; `MSG147`–`MSG151` đã triển khai trong SCRUM-26; `MSG152`/`MSG153` ngừng dùng, không tái cấp. Agenda đã triển khai `MSG60`–`MSG76`, `MSG128`, `MSG142`–`MSG143`, `MSG271`–`MSG274` theo bảng contract phía trên. Workflow SCRUM-19 dùng `MSG41`–`MSG47`, `MSG78`–`MSG89` và `MSG130`–`MSG137`; dời lịch cuộc họp dùng `MSG138`. `MSG90`–`MSG91`, `MSG139`, `MSG155` ngừng dùng, không tái cấp. `MSG95`–`MSG126` dành cho participant, room và các màn đọc liên quan theo từng dòng bên dưới; các mã Meeting Session (`MSG48`–`MSG59`, `MSG77`, `MSG113`, `MSG127`) ngừng dùng theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md). Đặt lại mật khẩu UC-07 dùng `MSG92`–`MSG94` và `MSG129` (FE).
 
 ## Danh mục
 
@@ -438,7 +438,7 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG82` | 400 | POST SubmitForApproval | Người duyệt inactive, thiếu `MeetingApprover` hoặc trùng Organizer | `Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.` | BE |
 | `MSG83` | 400 | POST Reject | Lý do từ chối bị thiếu hoặc chỉ có khoảng trắng | `Cần nhập lý do từ chối.` | BE |
 | `MSG84` | 400 | POST Reject | Lý do từ chối dài hơn 1.000 ký tự sau khi trim | `Lý do từ chối không được vượt quá 1.000 ký tự.` | BE |
-| `MSG85` | 403 | GET readiness, POST transitions, participant mutations/editor-options | Caller không có quyền thực hiện action | `Bạn không có quyền thực hiện thao tác này.` | BE |
+| `MSG85` | 403 | GET readiness, POST transitions, participant mutations/editor-options | Caller không có quyền thực hiện action — kể cả POST Cancel của người không (còn) là Organizer (SCRUM-150) | `Bạn không có quyền thực hiện thao tác này.` | BE |
 | `MSG86` | 400 | GET history | Query phân trang history không hợp lệ | `Tham số truy vấn không hợp lệ.` | BE |
 | `MSG87` | 413 | POST transitions, PUT meeting | Body JSON vượt quá 64 KiB | `Nội dung JSON vượt quá 64 KiB.` | BE |
 | `MSG88` | 503 | POST Approve, Reject, ReturnToDraft, TransferOrganizer | Không lưu được transition | `Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.` | BE |
@@ -450,12 +450,12 @@ body để không lộ sự tồn tại của cuộc họp (AGENTS.md, mục *40
 | `MSG134` | 400 | POST TransferOrganizer | Organizer mới không hợp lệ, inactive, thiếu MeetingCreator hoặc là Assigned Approver | `Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp.` | BE |
 | `MSG135` | 409 | POST TransferOrganizer | Meeting không còn Approved hoặc Organizer hiện tại vẫn active | `Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.` | BE |
 | `MSG136` | 503 | GET readiness, GET history | Không tải được readiness/history | `Không thể tải dữ liệu quy trình cuộc họp. Vui lòng thử lại.` | BE |
-| `MSG137` | 409 | POST Publish | Không có đúng một Chair active hoặc không có Secretary active | `Cuộc họp cần có đúng một Chủ tọa đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.` | BE |
+| `MSG137` | 409 | POST Publish | Không có đúng một Chair active hoặc không có Secretary active | `Cuộc họp cần có đúng một Chủ toạ đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.` | BE |
 | `MSG138` | 200 | `PUT /api/meetings/{id}` | Organizer dời lịch cuộc họp `Published` (UC-15 AF-1): thời gian hoặc địa điểm đã đổi và người được mời đã có thông báo. PUT không đổi gì vẫn trả `MSG30` | `Đã dời lịch cuộc họp. Người được mời sẽ nhận thông báo.` | BE |
 | `MSG261` | 200 | POST Cancel | Organizer huỷ cuộc họp trước khi bắt đầu (UC-75, SCRUM-99) | `Đã huỷ cuộc họp.` | BE |
 | `MSG262` | 400 | POST Cancel | Thiếu lý do huỷ, `null` hoặc chỉ có khoảng trắng (UC-75 EX-1) | `Cần nhập lý do huỷ cuộc họp.` | BE |
 | `MSG263` | 409 | POST Cancel | Cuộc họp đã bắt đầu, đã kết thúc hoặc đã huỷ (UC-75 EX-2) | `Cuộc họp này không còn có thể huỷ.` | BE |
-| `MSG263` | 403 | POST Cancel | Người gọi đọc được cuộc họp nhưng không (còn) là Organizer (UC-75 EX-2) | `Cuộc họp này không còn có thể huỷ.` | BE |
+| `MSG263` | 403 | ~~POST Cancel~~ | **Ngừng dùng ở 403** (SCRUM-150): người đọc được cuộc họp nhưng không (còn) là Organizer nay nhận `MSG85`, vì câu của `MSG263` nói về trạng thái chứ không về quyền. `409/MSG263` giữ nguyên | ~~`Cuộc họp này không còn có thể huỷ.`~~ | — |
 | `MSG264` | 503 | POST Cancel | Không lưu được trạng thái và lịch sử huỷ (UC-75 EX-3) | `Không thể huỷ cuộc họp. Vui lòng thử lại.` | BE |
 | `MSG345` | 400 | POST Cancel | Lý do huỷ quá 1.000 ký tự. Không có trong đặc tả UC-75, thêm cho tương ứng với `MSG84` của Reject | `Lý do huỷ không được vượt quá 1.000 ký tự.` | BE |
 
@@ -543,7 +543,7 @@ lại `MSG295` — cùng tình huống "không phải Thư ký mà quản lý b�
 | `MSG299` | 500 | `GET …/transcript` | Lỗi database khi đọc bản gỡ băng | `Không tải được bản gỡ băng.` | BE |
 | `MSG300` | 202 | `POST /api/recordings/{id}/transcribe` | Đưa bản ghi (chưa có bản gỡ băng, lần trước lỗi, hoặc làm lại bản đã xong) vào hàng chờ | `Đã đưa bản ghi vào hàng chờ chuyển thành chữ.` | BE |
 | `MSG301` | 409 | `POST /api/recordings/{id}/transcribe` | Bản gỡ băng đang chờ hoặc đang chạy | `Bản ghi đang chờ hoặc đang được chuyển thành chữ, chưa chạy lại được.` | BE |
-| `MSG355` | 403 | `GET /api/recordings/{id}/download`, `GET …/transcript.txt`, `GET /api/meetings/{id}/speech-clips.txt` | Người trong cuộc họp nhưng không phải Chủ tọa hay Thư ký tải bản ghi hoặc bản gỡ băng về | `Chỉ Chủ tọa hoặc Thư ký được tải bản ghi và bản gỡ băng về.` | BE |
+| `MSG355` | 403 | `GET /api/recordings/{id}/download`, `GET …/transcript.txt`, `GET /api/meetings/{id}/speech-clips.txt` | Người trong cuộc họp nhưng không phải Chủ toạ hay Thư ký tải bản ghi hoặc bản gỡ băng về | `Chỉ Chủ toạ hoặc Thư ký được tải bản ghi và bản gỡ băng về.` | BE |
 | `MSG356` | 403 | như `MSG355` | Cuộc họp Mật: không ai tải bản ghi hay bản gỡ băng về | `Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về.` | BE |
 | `MSG357` | 409 | `GET /api/recordings/{id}/transcript.txt` | Bản gỡ băng chưa xong (chưa có, đang chờ, đang chạy hoặc lỗi) | `Bản gỡ băng chưa xong nên chưa tải về được.` | BE |
 | `MSG302` | 200 | `PUT /api/transcript-segments/{id}` | Thư ký sửa chữ một đoạn; ghi người sửa và lúc sửa | `Đã lưu đoạn gỡ băng.` | BE |
@@ -597,10 +597,10 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 | `MSG324` | — | ~~`PUT …/capture-mode`~~ | **Ngừng dùng** — ADR-0040: cách ghi suy ra từ hình thức họp, endpoint đã bỏ. Không tái cấp. | ~~`Đã đổi cách ghi âm.`~~ | — |
 | `MSG325` | — | ~~`PUT …/capture-mode`~~ | **Ngừng dùng** — ADR-0040: cách ghi suy ra từ hình thức họp, endpoint đã bỏ. Không tái cấp. | ~~`Cuộc họp đã bắt đầu nên không đổi được cách ghi âm.`~~ | — |
 | `MSG326` | — | ~~`PUT …/capture-mode`~~ | **Ngừng dùng** — ADR-0040: cách ghi suy ra từ hình thức họp, endpoint đã bỏ. Không tái cấp. | ~~`Cách ghi âm không hợp lệ.`~~ | — |
-| `MSG327` | — | ~~`PUT …/capture-mode`~~ | **Ngừng dùng** — ADR-0040: cách ghi suy ra từ hình thức họp, endpoint đã bỏ. Không tái cấp. | ~~`Chỉ Chủ tọa hoặc Thư ký được đổi cách ghi âm.`~~ | — |
-| `MSG351` | 200 | `PUT /api/speech-clips/{id}/exclusion` | Chủ tọa hoặc Thư ký loại một câu khỏi bản ghi (lọt tiếng hoặc lý do khác); câu không bị xoá | `Đã loại câu khỏi bản ghi.` | BE |
-| `MSG352` | 200 | `PUT /api/speech-clips/{id}/exclusion` | Chủ tọa hoặc Thư ký đưa câu đã loại trở lại bản ghi | `Đã đưa câu trở lại bản ghi.` | BE |
-| `MSG353` | 403 | `PUT /api/speech-clips/{id}/exclusion` | Người trong cuộc họp nhưng không phải Chủ tọa hay Thư ký | `Chỉ Chủ tọa hoặc Thư ký được loại câu khỏi bản ghi.` | BE |
+| `MSG327` | — | ~~`PUT …/capture-mode`~~ | **Ngừng dùng** — ADR-0040: cách ghi suy ra từ hình thức họp, endpoint đã bỏ. Không tái cấp. | ~~`Chỉ Chủ toạ hoặc Thư ký được đổi cách ghi âm.`~~ | — |
+| `MSG351` | 200 | `PUT /api/speech-clips/{id}/exclusion` | Chủ toạ hoặc Thư ký loại một câu khỏi bản ghi (lọt tiếng hoặc lý do khác); câu không bị xoá | `Đã loại câu khỏi bản ghi.` | BE |
+| `MSG352` | 200 | `PUT /api/speech-clips/{id}/exclusion` | Chủ toạ hoặc Thư ký đưa câu đã loại trở lại bản ghi | `Đã đưa câu trở lại bản ghi.` | BE |
+| `MSG353` | 403 | `PUT /api/speech-clips/{id}/exclusion` | Người trong cuộc họp nhưng không phải Chủ toạ hay Thư ký | `Chỉ Chủ toạ hoặc Thư ký được loại câu khỏi bản ghi.` | BE |
 | `MSG354` | 400 | `PUT /api/speech-clips/{id}/exclusion` | `reason` khác `Leak`, `Other` khi loại câu | `Lý do loại câu không hợp lệ.` | BE |
 
 
@@ -608,14 +608,14 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG384` | 202 | `POST /api/meetings/{id}/summary` | Chủ tọa hoặc Thư ký yêu cầu dự thảo (lần đầu hoặc tạo lại); vào hàng chờ của máy AI | `Đã gửi yêu cầu. Dự thảo sẽ tự hiện khi AI viết xong.` | BE |
-| `MSG385` | 403 | `POST …/summary`, `PUT …/summary`, `POST …/summary/review` | Người trong cuộc họp nhưng không phải Chủ tọa hay Thư ký | `Chỉ Chủ tọa hoặc Thư ký được tạo, sửa và duyệt dự thảo.` | BE |
+| `MSG384` | 202 | `POST /api/meetings/{id}/summary` | Chủ toạ hoặc Thư ký yêu cầu dự thảo (lần đầu hoặc tạo lại); vào hàng chờ của máy AI | `Đã gửi yêu cầu. Dự thảo sẽ tự hiện khi AI viết xong.` | BE |
+| `MSG385` | 403 | `POST …/summary`, `PUT …/summary`, `POST …/summary/review` | Người trong cuộc họp nhưng không phải Chủ toạ hay Thư ký | `Chỉ Chủ toạ hoặc Thư ký được tạo, sửa và duyệt dự thảo.` | BE |
 | `MSG386` | 409 | `POST …/summary` | Cuộc họp chưa bắt đầu hoặc đã huỷ | `Chỉ tạo dự thảo khi cuộc họp đang diễn ra hoặc đã kết thúc.` | BE |
 | `MSG387` | 409 | `POST …/summary`, `PUT …/summary`, `POST …/summary/review` | Dự thảo đang chờ hoặc AI đang viết (tạo lại, sửa hay duyệt đều phải chờ) | `AI đang viết dự thảo, vui lòng chờ.` | BE |
 | `MSG388` | 200 | `PUT …/summary` | Lưu phần sửa 3 mục của dự thảo; dự thảo về trạng thái chưa duyệt | `Đã lưu dự thảo.` | BE |
 | `MSG389` | 400 | `PUT …/summary` | Mục trống hoặc quá dài (I: 2.000, II: 12.000, III: 8.000 ký tự) | `Nội dung dự thảo không hợp lệ.` | BE |
 | `MSG390` | 409 | `PUT …/summary`, `POST …/summary/review` | Chưa có dự thảo nào viết xong | `Chưa có dự thảo để sửa hoặc duyệt.` | BE |
-| `MSG391` | 200 | `POST …/summary/review` | Chủ tọa hoặc Thư ký duyệt dự thảo; từ đây người dự họp khác đọc được | `Đã duyệt dự thảo.` | BE |
+| `MSG391` | 200 | `POST …/summary/review` | Chủ toạ hoặc Thư ký duyệt dự thảo; từ đây người dự họp khác đọc được | `Đã duyệt dự thảo.` | BE |
 | `MSG392` | 500 | `GET …/summary` | Lỗi database khi đọc dự thảo | `Không tải được dự thảo.` | BE |
 | `MSG393` | 503 | `POST …/summary`, `PUT …/summary`, `POST …/summary/review` | Lỗi database khi lưu | `Không lưu được dự thảo. Vui lòng thử lại.` | BE |
 | `MSG394` | 503 | `POST …/summary` | Server chưa cấu hình máy AI (`Ai:BaseUrl`, `Ai:Model`) | `Máy AI chưa sẵn sàng. Liên hệ quản trị hệ thống.` | BE |
@@ -626,7 +626,7 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 |---|---|---|---|---|---|
 | `MSG395` | 201 | `POST /api/meetings/{id}/minutes` | Tạo (hoặc tạo lại, `rebuild: true`) bản nháp từ mẫu và dự thảo hiện có | `Đã tạo bản nháp biên bản.` | BE |
 | `MSG396` | 200 | `PUT /api/minutes/{id}` | Lưu bản nháp | `Đã lưu biên bản.` | BE |
-| `MSG397` | 403 | `POST …/minutes`, `PUT /api/minutes/{id}`, `POST /api/minutes/{id}/corrections` | Không phải Chủ tọa hay Thư ký, với bản người đó đọc được (đã ban hành hoặc đã thay thế); bản nháp, chờ duyệt thì `404`. Tải về không còn dùng mã này: bản đã ban hành ai đọc được cũng tải được (PO 08/11/2026) | `Chỉ Chủ tọa hoặc Thư ký được soạn biên bản.` | BE |
+| `MSG397` | 403 | `POST …/minutes`, `PUT /api/minutes/{id}`, `POST /api/minutes/{id}/corrections` | Không phải Chủ toạ hay Thư ký, với bản người đó đọc được (đã ban hành hoặc đã thay thế); bản nháp, chờ duyệt thì `404`. Tải về không còn dùng mã này: bản đã ban hành ai đọc được cũng tải được (PO 08/11/2026) | `Chỉ Chủ toạ hoặc Thư ký được soạn biên bản.` | BE |
 | `MSG398` | 409 | `POST …/minutes` | Cuộc họp chưa bắt đầu hoặc đã huỷ | `Chỉ soạn biên bản khi cuộc họp đang diễn ra hoặc đã kết thúc.` | BE |
 | `MSG399` | 409 | `POST …/minutes` | Đã có bản nháp mà không gửi `rebuild: true` | `Cuộc họp đã có bản nháp biên bản.` | BE |
 | `MSG400` | 409 | `POST …/minutes`, `PUT /api/minutes/{id}`, `POST /api/minutes/{id}/submit` | Biên bản đã gửi duyệt hoặc đã ban hành (SCRUM-33); bản bị trả lại thì sửa và gửi lại được | `Biên bản đã gửi duyệt hoặc đã ban hành, không sửa được nữa.` | BE |
@@ -634,7 +634,7 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 | `MSG402` | 400 | `PUT /api/minutes/{id}` | Nội dung trống (không còn chữ sau khi lọc HTML), quá 300.000 ký tự, hoặc thẻ lồng sâu quá 64 tầng | `Nội dung biên bản không hợp lệ.` | BE |
 | `MSG403` | 500 | `GET …/minutes`, `GET /api/minutes/{id}`, `GET /api/minutes/{id}/export` | Lỗi database khi đọc hoặc dựng file | `Không tải được biên bản.` | BE |
 | `MSG404` | 503 | `POST …/minutes`, `PUT /api/minutes/{id}`, `POST /api/minutes/{id}/submit`, `…/approve`, `…/reject`, `…/corrections` | Lỗi database khi lưu; trạng thái không đổi, không ai nhận thông báo | `Không lưu được biên bản. Vui lòng thử lại.` | BE |
-| `MSG405` | 403 | `GET /api/minutes/{id}/export` | Cuộc họp Mật: biên bản chỉ xem trên màn hình, kể cả Chủ tọa, Thư ký | `Biên bản của cuộc họp Mật không được tải về.` | BE |
+| `MSG405` | 403 | `GET /api/minutes/{id}/export` | Cuộc họp Mật: biên bản chỉ xem trên màn hình, kể cả Chủ toạ, Thư ký | `Biên bản của cuộc họp Mật không được tải về.` | BE |
 | `MSG406` | 400 | `GET /api/minutes/{id}/export` | `format` không phải `docx` hay `pdf` | `Chỉ tải biên bản dạng Word (docx) hoặc PDF.` | BE |
 | `MSG407` | 200 | `PUT /api/transcript-segments/{id}/speaker` | Thư ký đổi người nói của riêng một câu: câu chuyển sang giọng của người đó (giọng mới nếu chưa có) hoặc về một giọng của bản ghi theo `label`; các câu khác giữ giọng của mình — SCRUM-35 | `Đã đổi người nói của câu này.` | BE |
 | `MSG408` | 200 | `PUT /api/admin/ai` | Quản trị lưu cấu hình AI viết dự thảo: local hoặc API, địa chỉ, model, key (key không bao giờ trả lại) — ADR-0056 | `Đã lưu cấu hình AI.` | BE |
@@ -648,13 +648,13 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
-| `MSG424` | 200 | `POST /api/minutes/{id}/submit` | Thư ký gửi bản nháp hoặc bản bị trả lại cho Chủ tọa duyệt (UC-61) | `Đã gửi biên bản cho Chủ toạ duyệt.` | BE |
-| `MSG425` | 403 | `POST /api/minutes/{id}/submit` | Chủ tọa bấm gửi duyệt: chỉ Thư ký gửi (BR-404); người không phải Chủ tọa, Thư ký nhận `404` | `Chỉ Thư ký được gửi duyệt biên bản.` | BE |
+| `MSG424` | 200 | `POST /api/minutes/{id}/submit` | Thư ký gửi bản nháp hoặc bản bị trả lại cho Chủ toạ duyệt (UC-61) | `Đã gửi biên bản cho Chủ toạ duyệt.` | BE |
+| `MSG425` | 403 | `POST /api/minutes/{id}/submit` | Chủ toạ bấm gửi duyệt: chỉ Thư ký gửi (BR-404); người không phải Chủ toạ, Thư ký nhận `404` | `Chỉ Thư ký được gửi duyệt biên bản.` | BE |
 | `MSG426` | 409 | `POST /api/minutes/{id}/submit` | Cuộc họp chưa kết thúc (BR-405) | `Chỉ gửi duyệt biên bản sau khi cuộc họp kết thúc.` | BE |
-| `MSG427` | 200 | `POST /api/minutes/{id}/approve` | Chủ tọa duyệt: ban hành ngay, khoá; bản bị đính chính thành `Superseded` (UC-64) | `Đã duyệt và ban hành biên bản.` | BE |
-| `MSG428` | 403 | `POST /api/minutes/{id}/approve`, `…/reject` | Thư ký bấm duyệt hoặc trả lại: chỉ Chủ tọa làm (BR-406); người không phải Chủ tọa, Thư ký nhận `404` | `Chỉ Chủ toạ được duyệt hoặc trả lại biên bản.` | BE |
+| `MSG427` | 200 | `POST /api/minutes/{id}/approve` | Chủ toạ duyệt: ban hành ngay, khoá; bản bị đính chính thành `Superseded` (UC-64) | `Đã duyệt và ban hành biên bản.` | BE |
+| `MSG428` | 403 | `POST /api/minutes/{id}/approve`, `…/reject` | Thư ký bấm duyệt hoặc trả lại: chỉ Chủ toạ làm (BR-406); người không phải Chủ toạ, Thư ký nhận `404` | `Chỉ Chủ toạ được duyệt hoặc trả lại biên bản.` | BE |
 | `MSG429` | 409 | `POST /api/minutes/{id}/approve`, `…/reject` | Bản không ở trạng thái chờ duyệt | `Biên bản không ở trạng thái chờ duyệt.` | BE |
-| `MSG430` | 200 | `POST /api/minutes/{id}/reject` | Chủ tọa trả lại kèm lý do (UC-65) | `Đã trả lại biên bản cho Thư ký.` | BE |
+| `MSG430` | 200 | `POST /api/minutes/{id}/reject` | Chủ toạ trả lại kèm lý do (UC-65) | `Đã trả lại biên bản cho Thư ký.` | BE |
 | `MSG431` | 400 | `POST /api/minutes/{id}/reject` | Lý do trống (sau khi bỏ khoảng trắng) hoặc quá 2.000 ký tự (BR-407) | `Nhập lý do trả lại, tối đa 2.000 ký tự.` | BE |
 | `MSG432` | 201 | `POST /api/minutes/{id}/corrections` | Tạo bản đính chính từ bản đã ban hành (UC-83) | `Đã tạo bản đính chính.` | BE |
 | `MSG433` | 409 | `POST /api/minutes/{id}/corrections` | Bản được chọn không phải bản đang ban hành (nháp, chờ duyệt, bị trả lại, đã thay thế) | `Chỉ đính chính được biên bản đã ban hành.` | BE |
@@ -689,7 +689,17 @@ thao tác của chủ yêu cầu do người khác gọi: `404`, không mã. Th�
 | `MSG461` | 500 | `GET …/speaking-requests` | Lỗi database khi đọc hàng đợi | `Không tải được danh sách phát biểu. Vui lòng thử lại.` | BE |
 | `MSG462` | 503 | mọi thao tác ghi | Lỗi database khi lưu; không có gì thay đổi | `Không lưu được thay đổi lượt phát biểu. Vui lòng thử lại.` | BE |
 
-### Báo cáo và thống kê — SCRUM-38 (`/api/reports/meetings`) · [contract](21-bao-cao-thong-ke.md)
+### Nhật ký hệ thống — SCRUM-16 (`/api/audit-log`) · [contract](21-nhat-ky-kiem-toan.md)
+
+Thiếu quyền *Quản trị người dùng* trả `403` không mã, như mọi endpoint sau `AdminUsers`. Không có dòng nào khớp (AF-3)
+là `200` với danh sách rỗng, không mã — màn hình tự hiện câu theo BR-12.
+
+| Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
+|---|---|---|---|---|---|
+| `MSG469` | 400 | `GET /api/audit-log` | UC-13 EX-1: `from` sau `to`, thời điểm sai định dạng, `actor`/`action` không hợp lệ, `q` quá 100 ký tự, `page`/`pageSize` ngoài khoảng, tham số lạ hoặc gửi hai lần; kèm `errors` theo tên tham số | `Bộ lọc nhật ký không hợp lệ. Kiểm tra khoảng thời gian và các giá trị đã chọn.` | BE |
+| `MSG470` | 500 | `GET /api/audit-log` | UC-13 EX-2: lỗi database khi đọc nhật ký | `Không tải được nhật ký hệ thống. Vui lòng thử lại.` | BE |
+
+### Báo cáo và thống kê — SCRUM-38 (`/api/reports/meetings`) · [contract](22-bao-cao-thong-ke.md)
 
 | Mã | HTTP | Endpoint | Tình huống | `message` | Trạng thái |
 |---|---|---|---|---|---|
@@ -803,7 +813,7 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG139` | UC-22 cũ · Ngừng dùng 13/10/2026 | Không còn gate đóng Vote trước End Meeting; không tái cấp mã. |
 | `MSG140` | UC-18 Submit Meeting for Approval · EX-5 — Dành sẵn | *No eligible meeting approver is available. Please contact the administrator.* — `Chưa có người duyệt đủ điều kiện. Vui lòng liên hệ quản trị viên.` |
 | `MSG141` | Ngừng dùng từ SCRUM-98 | Quy tắc cũ đã bỏ theo PO; không tái cấp mã. |
-| `MSG142` | UC-23c / EX-2 · Đã triển khai SCRUM-25 | *Only Pending agenda items can be deleted.* — Chỉ được xóa mục nghị sự chưa bắt đầu. |
+| `MSG142` | UC-23c / EX-2 · Đã triển khai SCRUM-25 | *Only Pending agenda items can be deleted.* — Chỉ được xoá mục nghị sự chưa bắt đầu. |
 | `MSG143` | UC-23d / EX-2 · Đã triển khai SCRUM-25 | *The agenda order is invalid or out of date. Refresh the agenda and try again.* — Thứ tự chương trình nghị sự không hợp lệ hoặc đã cũ. Vui lòng tải lại và thử lại. Câu chữ đổi 18/10/2026 (PO 16/10/2026: sắp xếp mục ở mọi trạng thái); cùng tình huống, giữ mã. |
 | `MSG144` | Ngừng dùng từ SCRUM-98 | Quy tắc cũ đã bỏ theo PO; không tái cấp mã. |
 | `MSG415` | UC-82 Take Meeting Notes · Main Flow · Đã triển khai SCRUM-30 | *Note saved.* — Đã lưu ghi chú. |
@@ -860,8 +870,6 @@ Bảng nguồn phân bổ trong sequence diagram: các mã Agenda đã có endpo
 | `MSG466` | UC-70a View Reports & Statistics · AF-2 — Dành sẵn (SCRUM-38) | *There are no meetings you can view in this period.* — Không có cuộc họp nào bạn xem được trong khoảng này. FE hiển thị. Mã mới. |
 | `MSG467` | UC-84a EX-6, UC-84b EX-6 — Dành sẵn (SCRUM-142) | *Unable to load the candidate list.* — Không tải được danh sách người. HTTP dự kiến 500. Mã mới (PR #295). |
 | `MSG468` | UC-84c EX-5 — Dành sẵn (SCRUM-142) | *The sender's account has been deactivated. You cannot accept this share.* — Tài khoản người gửi đã bị vô hiệu hoá nên không chấp nhận được. HTTP dự kiến 409. Mã mới (PO 09/11/2026, PR #295). |
-| `MSG469` | UC-13 View Audit Log · EX-1 — Dành sẵn (SCRUM-16) | *The audit log filter is invalid. Check the period and the selected values.* — Bộ lọc nhật ký không hợp lệ. Kiểm tra khoảng thời gian và các giá trị đã chọn. HTTP dự kiến 400, kèm `errors` theo tham số. Mã mới. |
-| `MSG470` | UC-13 View Audit Log · EX-2 — Dành sẵn (SCRUM-16) | *Unable to load the audit log. Please try again.* — Không tải được nhật ký hệ thống. Vui lòng thử lại. HTTP dự kiến 500. Mã mới. |
 
 `MSG83` và `MSG84` đã được workflow SCRUM-19 dùng. `MSG90` và `MSG91` chỉ được giữ để không tái cấp.
 

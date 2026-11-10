@@ -63,6 +63,14 @@ public sealed class AuthenticationService(
         if (!passwordHasher.Verify(user?.PasswordHash ?? _dummyHash.Value, password) || user is null)
         {
             logger.LogInformation("Sign-in rejected: invalid credentials.");
+            // BR-444: only an attempt on an existing account. An unknown email is not recorded (SCRUM-16 note §8):
+            // it may be a password typed into the email box. The extra write makes this branch a few milliseconds
+            // slower than the unknown-email one — accepted on 10/11/2026.
+            if (user is not null)
+            {
+                await RecordSignInAsync(user, PasswordMethod, "invalid_password", ct);
+            }
+
             return SignInResult.Failure(SignInOutcome.InvalidCredentials);
         }
 
@@ -71,6 +79,7 @@ public sealed class AuthenticationService(
         if (!user.IsActive)
         {
             logger.LogInformation("Sign-in rejected: account {UserId} is deactivated.", user.Id);
+            await RecordSignInAsync(user, PasswordMethod, DeactivatedReason, ct);
             return SignInResult.Failure(SignInOutcome.AccountDeactivated);
         }
 
@@ -79,7 +88,9 @@ public sealed class AuthenticationService(
 
         // Branch 3 — success.
         logger.LogInformation("Sign-in succeeded for account {UserId}.", user.Id);
-        return await IssueAsync(user, capabilities, ct);
+        var issued = await IssueAsync(user, capabilities, ct);
+        await RecordSignInAsync(user, PasswordMethod, null, ct);
+        return issued;
     }
 
     public async Task<GoogleSignInResult> SignInWithGoogleAsync(
@@ -122,6 +133,7 @@ public sealed class AuthenticationService(
                 logger.LogInformation(
                     "Google sign-in rejected: account {UserId} is deactivated and was never linked.",
                     deactivated.Id);
+                await RecordSignInAsync(deactivated, GoogleMethod, DeactivatedReason, ct);
                 return GoogleSignInResult.Failure(GoogleSignInOutcome.AccountDeactivated);
             }
         }
@@ -140,6 +152,7 @@ public sealed class AuthenticationService(
         if (!user.IsActive)
         {
             logger.LogInformation("Google sign-in rejected: account {UserId} is deactivated.", user.Id);
+            await RecordSignInAsync(user, GoogleMethod, DeactivatedReason, ct);
             return GoogleSignInResult.Failure(GoogleSignInOutcome.AccountDeactivated);
         }
 
@@ -149,6 +162,7 @@ public sealed class AuthenticationService(
         // they are does not change what their session is.
         logger.LogInformation("Google sign-in succeeded for account {UserId}.", user.Id);
         var issued = await IssueAsync(user, capabilities, ct);
+        await RecordSignInAsync(user, GoogleMethod, null, ct);
 
         return new GoogleSignInResult(
             GoogleSignInOutcome.Success,
@@ -230,6 +244,20 @@ public sealed class AuthenticationService(
 
         logger.LogInformation("Sign-out: session of account {UserId} ended.", userId);
     }
+
+    private const string PasswordMethod = "password";
+    private const string GoogleMethod = "google";
+    private const string DeactivatedReason = "account_deactivated";
+
+    /// <summary>
+    /// BR-444 — one row per sign-in to an existing account, success or failure. The method and the reason only: never
+    /// the password, the Google token or the refresh token. A refresh is not a sign-in and is not recorded.
+    /// </summary>
+    private Task RecordSignInAsync(User user, string method, string? failureReason, CancellationToken ct)
+        => failureReason is null
+            ? audit.RecordAsync(AuditActions.SignedIn, AuditActions.UserObjectType, user.Id, user.Id, new { method }, ct)
+            : audit.RecordAsync(AuditActions.SignInFailed, AuditActions.UserObjectType, user.Id, user.Id,
+                new { method, reason = failureReason }, ct);
 
     private async Task<SignInResult> IssueAsync(
         User user, IReadOnlyCollection<Capability> capabilities, CancellationToken ct)

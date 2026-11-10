@@ -16,8 +16,10 @@ export function MonthCalendar({
   onShow,
   now,
   selected,
+  rangeEnd,
   viewed = [],
   onPick,
+  onHover,
 }: {
   /** The first day of the month on screen. */
   shown: Date
@@ -25,9 +27,13 @@ export function MonthCalendar({
   now: Date
   /** The day the field holds, drawn filled. */
   selected?: Date | null
-  /** The days on screen in a week view, drawn as a band. */
+  /** A range's other end, drawn filled as well. */
+  rangeEnd?: Date | null
+  /** The days on screen in a week view, or the days of a range, drawn as a band. */
   viewed?: Date[]
   onPick: (day: Date) => void
+  /** The day under the pointer (null on leaving the grid), for previewing a range. */
+  onHover?: (day: Date | null) => void
 }) {
   const year = shown.getFullYear()
   const firstYear = Math.min(now.getFullYear() - YEARS_AROUND, year)
@@ -74,7 +80,7 @@ export function MonthCalendar({
         </button>
       </div>
 
-      <div className="date-pick-grid">
+      <div className="date-pick-grid" onMouseLeave={onHover && (() => onHover(null))}>
         {WEEKDAY_SHORT.map((weekday) => (
           <span key={weekday} className="date-pick-weekday" aria-hidden="true">
             {weekday}
@@ -83,7 +89,7 @@ export function MonthCalendar({
         {days.map((day, i) => {
           const viewedDay = inView.has(toDateInput(day))
           const today = sameDay(day, now)
-          const picked = !!selected && sameDay(day, selected)
+          const picked = (!!selected && sameDay(day, selected)) || (!!rangeEnd && sameDay(day, rangeEnd))
           // The band over the days on screen is rounded where it starts and ends in each row.
           const cls = [
             'date-pick-day',
@@ -103,6 +109,7 @@ export function MonthCalendar({
               aria-current={today ? 'date' : undefined}
               aria-pressed={selected === undefined ? undefined : picked}
               onClick={() => onPick(day)}
+              onMouseEnter={onHover && (() => onHover(day))}
             >
               <span className="date-pick-num">{day.getDate()}</span>
             </button>

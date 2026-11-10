@@ -210,7 +210,7 @@ public static class RecordingEndpoints
             var (status, code, message) = result.Failure switch
             {
                 RecordingFailure.Forbidden => (403, Msg295NotSecretary, "Chỉ Thư ký cuộc họp được quản lý bản ghi."),
-                RecordingFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ tọa hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
+                RecordingFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ toạ hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
                 RecordingFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
                 RecordingFailure.NoRoom => (409, Msg358OnlineNoRoom,
                     "Cuộc họp trực tuyến ghi theo micro từng người, không có bản ghi phòng."),

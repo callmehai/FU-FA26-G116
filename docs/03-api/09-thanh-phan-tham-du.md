@@ -1,6 +1,6 @@
 # SCRUM-20 / SCRUM-97 — API thành phần tham dự
 
-Baseline PO Hải ngày 20/10/2026, thay thế các quy tắc roster cũ của PR #92. UC-73 bàn giao Chủ tọa được thực hiện ngay trong SCRUM-20. UC/BR/sequence được BA đồng bộ tại Final Review; không dùng các mô tả grants/recovery cũ để tích hợp API này.
+Baseline PO Hải ngày 20/10/2026, thay thế các quy tắc roster cũ của PR #92. UC-73 bàn giao Chủ toạ được thực hiện ngay trong SCRUM-20. UC/BR/sequence được BA đồng bộ tại Final Review; không dùng các mô tả grants/recovery cũ để tích hợp API này.
 
 ## 1. Quyền và bất biến
 
@@ -89,9 +89,9 @@ Câu trả lời chỉ là xác nhận trước, giống AI-eCabinet (`migration
 
 - **Trả lời một lần.** Gửi lại đúng câu đã ghi: 200/MSG154. Gửi câu khác: 409/MSG285, không ghi gì.
 - PUT thành công (MSG105) và gửi lại cùng câu trả lời (MSG154) đều trả `response.canRespond:false`, nhất quán với GET invitation-response/context, cho cả internal và Guest. No-op giữ nguyên respondedAt, không thêm audit/event hoặc tăng revision.
-- **Chủ tọa không trả lời** (Chủ tọa điều hành cuộc họp): 409/MSG286. Response của Chủ tọa giữ `Pending` và không hiển thị.
+- **Chủ toạ không trả lời** (Chủ toạ điều hành cuộc họp): 409/MSG286. Response của Chủ toạ giữ `Pending` và không hiển thị.
 - **Chưa trả lời coi như tham dự.** Không có bộ đếm Chờ/Chấp nhận/Từ chối.
-- **Không đổi quyền gì.** Từ chối vẫn xem được cuộc họp, tài liệu và vào phòng họp; tác dụng duy nhất là cuộc họp biến khỏi lịch của người đó (`GET /api/meetings?excludeDeclined=true`, xem [05-quan-ly-cuoc-hop.md](05-quan-ly-cuoc-hop.md)). Chủ tọa không bị ẩn kể cả còn câu từ chối từ trước khi nhận vai trò.
+- **Không đổi quyền gì.** Từ chối vẫn xem được cuộc họp, tài liệu và vào phòng họp; tác dụng duy nhất là cuộc họp biến khỏi lịch của người đó (`GET /api/meetings?excludeDeclined=true`, xem [05-quan-ly-cuoc-hop.md](05-quan-ly-cuoc-hop.md)). Chủ toạ không bị ẩn kể cả còn câu từ chối từ trước khi nhận vai trò.
 - FE hỏi ở đầu màn chi tiết và trên thẻ cuộc họp ở lịch dạng danh sách, theo `canRespond` có sẵn trong dữ liệu cuộc họp; không hỏi trong tab thành phần. Tab chỉ hiện nhãn cạnh tên người đã trả lời.
 
 Đã bỏ routes `POST /participants/secretary-recovery`, `PUT /guest-invitations/{id}/permissions`, `GET /invitation-responses`; client không gọi nữa.
@@ -112,7 +112,7 @@ Câu trả lời chỉ là xác nhận trước, giống AI-eCabinet (`migration
 | 409/MSG256 | Secretary thay Chair active từ Published |
 | 409/MSG275 | Stale revision |
 | 409/MSG285 | Đã trả lời lời mời, gửi câu trả lời khác |
-| 409/MSG286 | Chủ tọa trả lời lời mời |
+| 409/MSG286 | Chủ toạ trả lời lời mời |
 | 413/MSG87; 415/MSG34 | Body quá lớn; content type sai |
 | 500/MSG95 | Đọc roster thất bại |
 | 503/MSG99, MSG102, MSG104, MSG108 | Lưu add, assignments, remove, response thất bại |
@@ -162,7 +162,7 @@ Response `200`, `ETag: "participants-7"`, `Cache-Control: no-store`:
 
 `participantId` là assignment ID, không phải user ID. `eligibleTotal` đếm toàn meeting trước search; `total` đếm sau search trước paging. Revision là string cùng roster revision, đọc trong transaction RepeatableRead.
 
-Nếu toàn meeting không có người nhận: `items:[]`, `total:0`, `eligibleTotal:0`, `code:"MSG258"`, `message:"Không có thành viên đủ điều kiện nhận vai trò Chủ tọa. Hãy thêm thành viên nội bộ trước."`, vẫn HTTP200. Nếu chỉ search không khớp/page vượt cuối nhưng eligibleTotal>0: items rỗng, code/message null.
+Nếu toàn meeting không có người nhận: `items:[]`, `total:0`, `eligibleTotal:0`, `code:"MSG258"`, `message:"Không có thành viên đủ điều kiện nhận vai trò Chủ toạ. Hãy thêm thành viên nội bộ trước."`, vẫn HTTP200. Nếu chỉ search không khớp/page vượt cuối nhưng eligibleTotal>0: items rỗng, code/message null.
 
 ### 8.2. Một request chuyển giao
 
@@ -179,18 +179,18 @@ If-Match: "participants-7"
 Không gửi actor, Chair cũ, role hoặc batch. Backend xác định chúng từ principal/database. Response200, ETag `"participants-8"` và no-store:
 
 ```json
-{"code":"MSG257","message":"Giao vai trò Chủ tọa thành công.","revision":"8"}
+{"code":"MSG257","message":"Giao vai trò Chủ toạ thành công.","revision":"8"}
 ```
 
 Hậu điều kiện: Chair cũ thành Member, người nhận thành Chair; giữ assignment IDs và trạng thái Current; một Chair và ít nhất một current Secretary. Không thay system role, response/respondedAt, attendance/recorder/time, ballots hoặc history. Không gỡ Chair cũ, không tự rời phòng. Revision tăng đúng một lần.
 
-Khóa meeting FOR UPDATE, đọc account mới dưới FOR SHARE theo thứ tự ID. Demote/save rồi promote/save trong **cùng transaction** để tuân thủ unique Chair. Hai dispatch RoleChanged và notification MeetingRoleChanged cho người nhận vai trò — Chủ tọa tự giao thì không nhận notification về thao tác của chính mình; Thư ký thay Chủ tọa bị khóa thì cả hai Chủ tọa cũ và mới đều nhận — cùng một audit `meeting.participants.HandOverChair` chứa hai changes được commit chung. Bất kỳ save lỗi rollback toàn bộ. Sau commit phát một participantsChanged đến readers trước/sau; transport lỗi chỉ log, durable intent vẫn còn, response vẫn thành công. Không gửi SMTP trong request.
+Khóa meeting FOR UPDATE, đọc account mới dưới FOR SHARE theo thứ tự ID. Demote/save rồi promote/save trong **cùng transaction** để tuân thủ unique Chair. Hai dispatch RoleChanged và notification MeetingRoleChanged (body nói vai trò mới: `Cuộc họp “{title}”: bạn đã được giao làm {Chủ toạ|Thư ký|Thành viên}.`, SCRUM-147) cho người nhận vai trò — Chủ toạ tự giao thì không nhận notification về thao tác của chính mình; Thư ký thay Chủ toạ bị khóa thì cả hai Chủ toạ cũ và mới đều nhận — cùng một audit `meeting.participants.HandOverChair` chứa hai changes được commit chung. Bất kỳ save lỗi rollback toàn bộ. Sau commit phát một participantsChanged đến readers trước/sau; transport lỗi chỉ log, durable intent vẫn còn, response vẫn thành công. Không gửi SMTP trong request.
 
 ### 8.3. Thứ tự lỗi cố định
 
 1. Authentication401 theo middleware hiện hành.
 2. Tài khoản/quyền đọc: không tồn tại/không được đọc404 rỗng; inactive403 rỗng; Guest có quyền đọc403/MSG85.
-3. Current active Chair và status Published/InProgress; nếu không409/MSG260: “Bạn không còn quyền giao vai trò Chủ tọa cho cuộc họp này.”
+3. Current active Chair và status Published/InProgress; nếu không409/MSG260: “Bạn không còn quyền giao vai trò Chủ toạ cho cuộc họp này.”
 4. Content type, size, JSON/schema body.
 5. Header If-Match hiện diện/đúng định dạng; POST không nhận query.
 6. Người nhận hợp lệ dưới account lock; sai400/MSG259.
