@@ -183,6 +183,40 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
     }
 
     [Fact]
+    public async Task The_keyword_matches_the_account_or_role_name_the_list_shows_and_no_other_object()
+    {
+        var log = await Seed();
+        var tag = Guid.NewGuid().ToString("N")[..10];
+        var person = new User { FullName = $"Đỗ Tên {tag}", Email = $"{Guid.NewGuid():N}@audit.test", PasswordHash = "x" };
+        var role = new Role { Name = $"Vai trò {tag}" };
+        await using (var db = f.Db())
+        {
+            db.Users.Add(person);
+            db.Roles.Add(role);
+            (string Action, string Type, Guid Object)[] rows =
+            [
+                (AuditActions.UserUpdated, AuditActions.UserObjectType, person.Id),
+                (AuditActions.RoleUpdated, AuditActions.RoleObjectType, role.Id),
+                // Same id under another type: the name is not this object's, so it must not match (BR-443).
+                (AuditActions.DocumentViewed, AuditActions.MeetingDocumentObjectType, person.Id),
+            ];
+            db.AuditLog.AddRange(rows.Select(r => new AuditLogEntry
+            {
+                ActorId = log.Admin, Action = r.Action, ObjectType = r.Type, ObjectId = r.Object, Details = "{}",
+            }));
+            await db.SaveChangesAsync();
+        }
+        using var admin = Admin(log);
+
+        var byPerson = await Page(admin, $"q={Uri.EscapeDataString($"tên {tag.ToUpperInvariant()}")}");
+        Assert.Equal([AuditActions.UserUpdated], Actions(byPerson));
+        Assert.Equal($"Đỗ Tên {tag}", byPerson.GetProperty("items")[0].GetProperty("objectName").GetString());
+        Assert.Equal([AuditActions.RoleUpdated], Actions(await Page(admin, $"q={Uri.EscapeDataString($"Vai trò {tag}")}")));
+        // The actor's name is not the object: the admin's own name finds only rows about the admin.
+        Assert.DoesNotContain(AuditActions.RoleCreated, Actions(await Page(admin, $"q={Uri.EscapeDataString("Phạm Quản Trị")}&action={AuditActions.RoleCreated}")));
+    }
+
+    [Fact]
     public async Task A_save_retried_after_a_failure_writes_one_audit_row_per_lifecycle_row()
     {
         var s = await f.Seed(MeetingStatus.Published);
