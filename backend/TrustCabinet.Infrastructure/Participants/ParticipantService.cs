@@ -717,7 +717,7 @@ public sealed partial class ParticipantService(
         )
             return Invalid("userIds", "Chọn từ 1 đến 100 người dùng hợp lệ, không trùng nhau.");
         if (!ParticipantRules.TryRole(input.Role, out var role))
-            return Invalid("role", "Chọn Chủ tọa, Thư ký hoặc Thành viên.");
+            return Invalid("role", "Chọn Chủ toạ, Thư ký hoặc Thành viên.");
         // Locks prevent a selected account from changing email/active state between validation and save.
         var users = await db
             .Users.FromSqlInterpolated(

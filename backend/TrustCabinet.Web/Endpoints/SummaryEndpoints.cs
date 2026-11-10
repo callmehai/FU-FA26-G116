@@ -48,7 +48,7 @@ public static class SummaryEndpoints
         {
             var (status, code, message) = result.Failure switch
             {
-                SummaryFailure.Forbidden => (403, Msg385NotOfficer, "Chỉ Chủ tọa hoặc Thư ký được tạo, sửa và duyệt dự thảo."),
+                SummaryFailure.Forbidden => (403, Msg385NotOfficer, "Chỉ Chủ toạ hoặc Thư ký được tạo, sửa và duyệt dự thảo."),
                 SummaryFailure.WrongMeetingStatus => (409, Msg386WrongMeetingStatus,
                     "Chỉ tạo dự thảo khi cuộc họp đang diễn ra hoặc đã kết thúc."),
                 SummaryFailure.Busy => (409, Msg387Busy, "AI đang viết dự thảo, vui lòng chờ."),

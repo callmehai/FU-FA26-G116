@@ -81,6 +81,8 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
         // "Anh@x.vn" and "anh@x.vn" would be two different accounts that both satisfy the unique
         // index — a textbook way to let one person register twice and confuse sign-in.
         modelBuilder.HasPostgresExtension("citext");
+        // Accent-insensitive meeting search (SCRUM-148).
+        modelBuilder.HasPostgresExtension("unaccent");
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(TrustCabinetDbContext).Assembly);
     }

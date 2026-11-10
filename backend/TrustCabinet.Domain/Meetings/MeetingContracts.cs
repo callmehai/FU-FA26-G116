@@ -30,7 +30,8 @@ public sealed record ValidatedMeetingInput(
 public sealed record ParticipantSeed(Guid UserId, string? Role);
 public sealed record MeetingPerson(Guid UserId, string FullName);
 
-public sealed record MeetingApproverOption(Guid Id, string FullName);
+/// <param name="Email">Tells two approvers of one name apart in the picker (SCRUM-150).</param>
+public sealed record MeetingApproverOption(Guid Id, string FullName, string Email);
 
 public sealed record MeetingApproverListResult(
     MeetingOutcome Outcome,
