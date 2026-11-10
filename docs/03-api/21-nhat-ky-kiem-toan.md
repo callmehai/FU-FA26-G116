@@ -22,10 +22,10 @@ Cả hai endpoint nằm sau `RequireAdminUsers()` — dùng lại quyền *Quả
 
 | Tham số | Kiểu | Ý nghĩa |
 |---|---|---|
-| `from`, `to` | ISO 8601 **có múi giờ** (`2026-11-10T08:00:00+07:00`) | Khoảng `occurredAt`, tính cả hai đầu. `from` không được sau `to` |
+| `from`, `to` | ISO 8601 **có múi giờ** (`2026-11-10T08:00:00+07:00`; trong URL viết `%2B07:00` — dấu `+` không mã hoá thành khoảng trắng và bị `MSG469`) | Khoảng `occurredAt`, tính cả hai đầu. `from` không được sau `to` |
 | `actor` | Guid tài khoản, `guest` hoặc `system` | Một tài khoản; mọi dòng của Khách; mọi dòng hệ thống tự ghi |
 | `action` | mã sự kiện | Phải là một `code` của `/event-types` |
-| `q` | 1–100 ký tự | Tìm không phân biệt hoa thường trong mã đối tượng và `details`; `%`, `_` được tìm đúng ký tự đó |
+| `q` | 1–100 ký tự | Tìm không phân biệt hoa thường trong mã đối tượng và các **giá trị** trong `details` (không khớp tên trường hay `null`); `%`, `_`, `\` được tìm đúng ký tự đó |
 | `page`, `pageSize` | số nguyên | Mặc định `1`, `20`; `pageSize` tối đa `100` |
 
 Mọi tiêu chí phải cùng khớp (BR-31). Thứ tự: `occurredAt` giảm dần, rồi `id` giảm dần. Trang vượt quá số trang trả
@@ -72,7 +72,8 @@ BR-12.
   `details`). Các loại khác luôn `null`: nhật ký không tra tiêu đề cuộc họp hay tên tài liệu (BR-443).
 - `details` là JSON nguyên như lúc ghi; tên trường khác nhau giữa các loại sự kiện (có loại PascalCase, có loại
   camelCase). Hiện dạng key–value chỉ đọc, đừng dựa vào một tên trường cố định.
-- `ipAddress` rỗng với việc hệ thống tự làm (job tự huỷ cuộc họp, xoá nháp biểu quyết khi kết thúc họp).
+- `ipAddress` là địa chỉ của request đã gây ra việc đó, rỗng khi không có request (job tự huỷ cuộc họp). Nháp biểu
+  quyết bị xoá khi kết thúc họp mang IP của Chủ toạ đã bấm kết thúc, dù người thực hiện là hệ thống.
 - `actionLabel` là tên tiếng Việt; mã chưa có tên thì là chính mã đó.
 
 ## `GET /api/audit-log/event-types`

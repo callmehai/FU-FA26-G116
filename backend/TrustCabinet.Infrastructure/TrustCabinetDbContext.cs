@@ -81,7 +81,8 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     private void BeforeSave()
     {
         EnsureAppendOnly<MeetingStatusHistory>("Meeting lifecycle history is append-only.");
-        // BR-440: no function of the application changes or deletes an audit entry.
+        // BR-440: no function of the application changes or deletes an audit entry. Change tracker only:
+        // ExecuteUpdate/ExecuteDelete and raw SQL bypass it, so never point either at audit_log.
         EnsureAppendOnly<AuditLogEntry>("The audit log is append-only.");
         AuditMeetingHistory();
         StampAuditIpAddress();

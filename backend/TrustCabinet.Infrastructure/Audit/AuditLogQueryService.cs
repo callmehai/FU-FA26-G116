@@ -67,11 +67,14 @@ internal sealed class AuditLogQueryService(TrustCabinetDbContext db, ILogger<Aud
         if (query.ActorUserId is { } actor) Where("a.actor_id = @actor", "actor", actor, NpgsqlDbType.Uuid);
         if (query.ActorKind == AuditActorKind.Guest) sql.Append($" AND a.actor_id IS NULL AND {GuestInvitationSql} IS NOT NULL");
         if (query.ActorKind == AuditActorKind.System) sql.Append($" AND a.actor_id IS NULL AND {GuestInvitationSql} IS NULL");
-        // ponytail: ILIKE over the whole jsonb text scans every row in the period; add a trigram index if the log grows
-        // past what a sequential scan answers quickly.
+        // The recorded values only (BR-442), at any depth and unescaped: a key name or a null never matches, so "reason"
+        // does not return every row that has a reason field.
+        // ponytail: walks every row's details in the period; add a generated text column with a trigram index if the
+        // log grows past what a sequential scan answers quickly.
         if (query.Search is { } search)
-            Where("(a.object_id::text ILIKE @q OR a.details::text ILIKE @q)", "q", $"%{EscapeLike(search)}%",
-                NpgsqlDbType.Text);
+            Where("(a.object_id::text ILIKE @q OR EXISTS (SELECT 1 FROM jsonb_path_query(a.details, '$.**') v "
+                    + "WHERE jsonb_typeof(v) IN ('string', 'number', 'boolean') AND v #>> ARRAY[]::text[] ILIKE @q))",
+                "q", $"%{EscapeLike(search)}%", NpgsqlDbType.Text);
 
         return db.AuditLog.FromSqlRaw(sql.ToString(), parameters.ToArray()).AsNoTracking();
     }

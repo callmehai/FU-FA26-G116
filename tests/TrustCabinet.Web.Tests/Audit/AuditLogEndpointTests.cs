@@ -161,6 +161,50 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
     }
 
     [Fact]
+    public async Task The_keyword_matches_recorded_values_never_key_names()
+    {
+        var log = await Seed();
+        var key = "k" + Guid.NewGuid().ToString("N");
+        var path = $@"C:\tai-lieu\{Guid.NewGuid():N}";
+        await using (var db = f.Db())
+        {
+            db.AuditLog.Add(new AuditLogEntry
+            {
+                ActorId = log.Admin, Action = AuditActions.PersonalLibraryRead, ObjectType = AuditActions.UserObjectType,
+                Details = JsonSerializer.Serialize(new Dictionary<string, object?> { [key] = new { path, count = 7 } }),
+            });
+            await db.SaveChangesAsync();
+        }
+        using var admin = Admin(log);
+
+        Assert.Equal(0, (await Page(admin, $"q={key}")).GetProperty("totalCount").GetInt32());
+        // A nested value, backslashes and all, as typed.
+        Assert.Equal(1, (await Page(admin, $"q={Uri.EscapeDataString(path)}")).GetProperty("totalCount").GetInt32());
+    }
+
+    [Fact]
+    public async Task A_save_retried_after_a_failure_writes_one_audit_row_per_lifecycle_row()
+    {
+        var s = await f.Seed(MeetingStatus.Published);
+        await using (var db = f.Db())
+        {
+            db.MeetingStatusHistory.Add(new MeetingStatusHistory
+            {
+                MeetingId = s.MeetingId, FromStatus = MeetingStatus.Published, ToStatus = MeetingStatus.Published,
+                Action = MeetingHistoryAction.Reschedule, ActorId = s.Organizer, OccurredAt = Base,
+            });
+            var orphan = new AgendaItem { MeetingId = Guid.NewGuid(), Position = 1, Title = "Không có cuộc họp" };
+            db.AgendaItems.Add(orphan);
+            await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
+            db.Entry(orphan).State = EntityState.Detached;
+            await db.SaveChangesAsync();
+        }
+
+        await using var check = f.Db();
+        Assert.Equal(1, await check.AuditLog.CountAsync(a => a.ObjectId == s.MeetingId && a.Action == "meeting.rescheduled"));
+    }
+
+    [Fact]
     public async Task Pages_keep_their_size_and_report_the_total()
     {
         var log = await Seed();

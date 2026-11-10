@@ -65,7 +65,9 @@ public static class AuditLogEndpoints
 internal static class AuditLogQueryParser
 {
     private const int SearchMaxLength = 100;
-    private static readonly HashSet<string> Known = ["from", "to", "actor", "action", "q", "page", "pageSize"];
+    // Case-insensitive like IQueryCollection itself, so "PageSize" is read as pageSize rather than refused.
+    private static readonly HashSet<string> Known = new(["from", "to", "actor", "action", "q", "page", "pageSize"],
+        StringComparer.OrdinalIgnoreCase);
 
     public static bool TryParse(IQueryCollection values, out AuditLogQuery? query, out IReadOnlyDictionary<string, string> errors)
     {
