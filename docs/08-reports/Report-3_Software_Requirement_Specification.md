@@ -66,6 +66,7 @@ Table of Contents
 | 08/11/2026 | M | KhánhPG | Sensitivity now has three levels (ADR-0057): Meeting.Sensitivity is Normal, Internal or Secret; the Confidential level is removed from UC-28a AF-1, UC-32c, UC-34b, BR-182, BR-318 and BR-334, with the sequence and class diagrams and the screen specifications; the 365-day share limit and the busy-status list are confirmed by the PO. |
 | 08/11/2026 | M | KhánhPG | BA Final Review SCRUM-28, 96: UC-52a/b bỏ System Admin; UC-56 POST-1 tally từ ballots; UC-54 bước 5 Khách không cần xác minh lúc mở; UC-74 thêm EX-3/EX-4, alreadyConfirmed; UC-76a EX-4 thêm MSG166; UC-22 POST-4 nháp tự xoá khi Ended kèm audit; BR-189, BR-290, BR-292 cập nhật; ERD, sequence, class diagram đồng bộ (SCRUM-28, 96). |
 | 09/11/2026 | A | HuyNT | SCRUM-38: specify UC-70a View Reports & Statistics and UC-70b Export Report (replacing the placeholders); add BR-432 to BR-438 and MSG463 to MSG466 (reserved), as settled in the SCRUM-38 specification. |
+| 10/11/2026 | M, A | LocHD | SCRUM-16: rewrite UC-13 View Audit Log as settled in the SCRUM-16 specification — the actor is a user account, a Guest or the system, filters by period, actor, event type and keyword, details of an entry, the permission check (EX-3) and no access to the Meetings the entries are about; add UC-13 to BR-11, BR-12 and BR-31; add BR-440 to BR-446 (BR-444 to BR-446 record sign-in, Meeting status changes and the issue of minutes) and MSG469 to MSG470 (reserved). Screen 3.3 is not changed. |
 
 *A - Added M - Modified D - Deleted
 
@@ -1265,12 +1266,12 @@ This single end-to-end sequence covers code request, invited-email verification,
 
 | Primary Actors | System Admin | Secondary Actors | None |
 | --- | --- | --- | --- |
-| Description | Allows the System Admin to review recorded system events for security, accountability, and operational investigation. |  |  |
-| Preconditions | ● PRE-1: The System Admin is authenticated and has permission to view the audit log. |  |  |
-| Postconditions | ● POST-1: The requested audit entries are displayed read-only.<br>● POST-2: No audit entry is changed by viewing or filtering the log. |  |  |
-| Normal Flow | View Audit Log<br>1. The System Admin opens Audit Log.<br>2. The system retrieves audit entries within the Admin's requested date range and filters.<br>3. The system displays entries in reverse chronological order with actor, event, target, time, and outcome where recorded.<br>4. The System Admin opens an entry or changes filters/pages the results.<br>5. The system displays the matching entries and preserves the read-only state. |  |  |
-| Alternative Flows | AF-1: If no entries match the filters, the system displays an empty-result message and permits the Admin to revise the filters. |  |  |
-| Exception Flows | EX-1: Invalid filter or date-range values: the system identifies the invalid criteria and does not apply them.<br>EX-2: The audit log cannot be loaded: the system reports the failure and provides a retry action. |  |  |
+| Description | Allows the System Admin to review the recorded business and security events — who did what, to which object, when and from which IP address — for accountability and investigation. The audit log is read-only. (BR-440, BR-441) |  |  |
+| Preconditions | ● PRE-1: The System Admin is signed in.<br>● PRE-2: The System Admin's role holds the User administration permission. (BR-440) |  |  |
+| Postconditions | ● POST-1: The audit entries matching the chosen period and filters are displayed, newest first. (BR-442)<br>● POST-2: No audit entry is changed or deleted. (BR-440)<br>● POST-3: The System Admin gains no access to the Meetings, documents or minutes the entries are about. (BR-443) |  |  |
+| Normal Flow | View Audit Log<br>1. The System Admin opens Nhật ký hệ thống [Audit Log] from the Administration menu.<br>2. The system checks that the System Admin's role holds the User administration permission. (BR-440)<br>3. The system retrieves the audit entries, newest first, one page at a time. (BR-442, BR-11)<br>4. The system displays, for each entry, the time, the actor, the event, the object and the IP address. An actor is shown as a user account, a Guest or the system. (BR-441)<br>5. The System Admin browses the pages; the chosen period and filters are kept across pages. |  |  |
+| Alternative Flows | AF-1 – Filter the audit log<br>1. At Step 4 of the Main Flow, the System Admin chooses a period, an actor (a user account, Guests or the system), an event type, or enters a keyword.<br>2. The system retrieves the entries that match all the chosen criteria. (BR-31, BR-442)<br>3. The flow resumes at Step 4 of the Main Flow.<br>AF-2 – View the details of an entry<br>1. At Step 4 of the Main Flow, the System Admin selects an entry.<br>2. The system displays the details recorded with that entry, read-only — for a change, the values before and after it. (BR-441, BR-443)<br>3. The flow resumes at Step 5 of the Main Flow.<br>AF-3 – No entry matches<br>1. At Step 3 of the Main Flow, no audit entry matches the period and filters.<br>2. The system displays an empty list and a no-results message. (BR-12)<br>3. The System Admin may change the period or the filters; the flow resumes at Step 1 of AF-1. |  |  |
+| Exception Flows | EX-1 – The period or a filter is not valid<br>1. At Step 3 of the Main Flow, the start of the period is after its end, or a filter value is not valid. (BR-442)<br>2. No entry is retrieved. The system displays MSG469 – “The audit log filter is invalid. Check the period and the selected values.”<br>3. The flow resumes at Step 1 of AF-1.<br>EX-2 – The audit log cannot be loaded<br>1. At Step 3 of the Main Flow, the system cannot read the audit entries.<br>2. No entry is displayed. The system displays MSG470 – “Unable to load the audit log. Please try again.”<br>3. The use case ends.<br>EX-3 – The permission is not held<br>1. At Step 2 of the Main Flow, the System Admin's role does not hold the User administration permission, or no longer holds it.<br>2. The system returns no audit entry and the Audit Log page is not shown.<br>3. The use case ends. |  |  |
 
 ### 4. FE-04 – Meeting Management
 
@@ -4485,8 +4486,8 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-08 | User permissions are determined by the system and must not be selected manually during the sign-in process. | UC-01, UC-02 |  |  |
 | BR-09 | After a successful sign-out, the current authentication state must no longer grant access to protected system functions. The user must authenticate again before protected functions can be accessed. | UC-03 |  |  |
 | BR-10 | Sensitive authentication information, including passwords, password hashes, reset credentials, and authentication tokens, must not be displayed in User Management. | UC-07 |  |  |
-| BR-11 | List views must support pagination when the number of records exceeds the configured page size. | UC-05, UC-17, UC-66 |  |  |
-| BR-12 | When a search or filter returns no matching records, the system must display an appropriate no-results message instead of treating the result as a system error. | UC-05, UC-17 |  |  |
+| BR-11 | List views must support pagination when the number of records exceeds the configured page size. | UC-05, UC-17, UC-66, UC-13 |  |  |
+| BR-12 | When a search or filter returns no matching records, the system must display an appropriate no-results message instead of treating the result as a system error. | UC-05, UC-17, UC-13 |  |  |
 | BR-13 | Username and email must each be unique across user accounts. | UC-06a |  |  |
 | BR-14 | All mandatory user-account information must be provided and valid before an account can be created or updated. | UC-06a, UC-06b |  |  |
 | BR-15 | A newly created user account must have Active status by default. | UC-06a |  |  |
@@ -4505,7 +4506,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-28 | Updating meeting information must not implicitly change the meeting lifecycle status. | UC-15 |  |  |
 | BR-29 | A user may access a meeting only when the user has an authorized relationship with that meeting as its Meeting Organizer, assigned Meeting Approver, Chair, Secretary, or Participant. Authentication alone does not grant access to a meeting. | UC-16, UC-17, UC-26, UC-27, UC-30, UC-32a, UC-37, UC-68 |  |  |
 | BR-30 | The Meeting list offers fixed time choices. Today and This week match a Meeting whose own planned start/end interval overlaps that day or week in the viewer's time zone. Not yet held matches a Meeting whose planned start time is later than the current time; Already held matches a Meeting whose planned start time is the current time or earlier, so a Meeting in progress counts as Already held. | UC-17 | SCRUM-18 (PR #111) — fixed time choices |  |
-| BR-31 | When multiple search or filter criteria are applied, a record must satisfy all applicable criteria to appear in the result. | UC-05, UC-17 |  |  |
+| BR-31 | When multiple search or filter criteria are applied, a record must satisfy all applicable criteria to appear in the result. | UC-05, UC-17, UC-13 |  |  |
 | BR-32 | The meeting list must support sorting, and the current search, filter, and sorting criteria must be preserved when navigating between pages. | UC-17 |  |  |
 | BR-33 | Meeting approval submission requires all mandatory information including the planned schedule and Draft or Rejected status. | UC-18 |  |  |
 | BR-34 | Submitting a Draft or Rejected Meeting for approval changes its status to WaitingApproval. General Meeting information cannot be edited until an approval decision is made. This restriction does not apply to Agenda Management: the assigned Secretary may create, update, delete and reorder Agenda Items under BR-65, BR-68 and BR-74. | UC-15, UC-18, UC-23a, UC-23b, UC-23c, UC-23d |  |  |
@@ -4849,6 +4850,13 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-436 | The minutes turnaround of an Ended Meeting is the time from its actual end to the first issue of its minutes; corrections issued later do not count. A Meeting whose minutes are not issued yet is left out. The average turnaround is the mean of those times. | UC-70a, UC-70b | SCRUM-38 — thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản |  |
 | BR-437 | The report shows only counts, rates and averages. It never shows the title, participants or content of a Meeting, on the page or in the exported file. | UC-70a, UC-70b | Cuộc họp Mật — số liệu tổng hợp không được thành đường vòng để đọc cuộc họp |  |
 | BR-438 | An exported report is an Excel file holding exactly the figures of UC-70a for the same period, computed at the time of export. Every export is recorded in the audit log with the user, the period and the time. | UC-70b | SCRUM-38 — xuất Excel; tệp mang số liệu ra khỏi hệ thống |  |
+| BR-440 | Only a signed-in user whose role holds the User administration permission may view the audit log. The audit log is read-only: no function of the application changes or deletes an audit entry. | UC-13 | SCRUM-16 — chỉ quản trị viên; chỉ ghi thêm | Audit |
+| BR-441 | Each audit entry shows when it happened, who acted, the event, the object acted on, the IP address of the request and the details recorded with it. The actor is a user account, a Guest — shown with the invited name and email — or the system when no person acted. | UC-13 | SCRUM-16, SCRUM-123 — dòng do Khách tạo không hiện là hệ thống | Audit |
+| BR-442 | Audit entries are listed newest first. They may be narrowed by a period, by actor (one user account, Guests, or the system), by event type and by a keyword matched against the object and the recorded details. A period is valid when its start is not after its end. | UC-13 | SCRUM-16 — lọc nhật ký | Audit |
+| BR-443 | The audit log shows only what was recorded with each entry. It does not show the Meeting, document or minutes an entry is about, and viewing it gives the System Admin no access to them. | UC-13 | SCRUM-16 — Quản trị không có quyền đọc thêm cuộc họp | Audit |
+| BR-444 | Each successful sign-in, and each failed sign-in to an existing account, is recorded in the audit log with the sign-in method and, for a failure, the reason. A password or a token is never recorded. A Guest's successful verification is recorded as well. | UC-01, UC-02, UC-04 | SCRUM-16 — ghi lại đăng nhập | Audit |
+| BR-445 | Each change of a Meeting's status, including a cancellation made by the system, is recorded in the audit log with who made it, the status before and after and the reason given, in addition to the Meeting's own history. | UC-18, UC-19, UC-20, UC-21, UC-22, UC-75 | SCRUM-16 — ghi lại chuyển trạng thái cuộc họp | Audit |
+| BR-446 | Each issue of minutes, including a correction, is recorded in the audit log with who issued it. | UC-64 | SCRUM-16 — ghi lại ban hành biên bản | Audit |
 
 ### 2. System Messages
 
@@ -5280,6 +5288,8 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 464 | MSG464 | Dành sẵn, chưa triển khai | UC-70a / EX-2 | Unable to load the report. Please try again. |
 | 465 | MSG465 | Dành sẵn, chưa triển khai | UC-70b / EX-2 | Unable to export the report. Please try again. |
 | 466 | MSG466 | Dành sẵn, chưa triển khai | UC-70a / AF-2 | There are no meetings you can view in this period. |
+| 469 | MSG469 | Dành sẵn, chưa triển khai | UC-13 / EX-1 | The audit log filter is invalid. Check the period and the selected values. |
+| 470 | MSG470 | Dành sẵn, chưa triển khai | UC-13 / EX-2 | Unable to load the audit log. Please try again. |
 
 ### 3. Other Requirements
 
