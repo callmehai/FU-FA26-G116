@@ -310,8 +310,8 @@ export function AuditLogPage() {
               value={search}
               maxLength={100}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo mã, chi tiết…"
-              aria-label="Tìm theo mã đối tượng hoặc chi tiết"
+              placeholder="Tìm theo đối tượng…"
+              aria-label="Tìm theo đối tượng: tên, mã hoặc chi tiết"
             />
           </label>
 

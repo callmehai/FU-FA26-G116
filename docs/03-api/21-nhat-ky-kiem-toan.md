@@ -91,9 +91,8 @@ tài khoản/vai trò hoặc 8 ký tự đầu của mã).
 - Mọi tiêu chí nằm trên URL (`from`, `to` dạng `YYYY-MM-DD`, `actor`, `action`, `q`, `page`, `pageSize`); giá trị sai
   dạng bị bỏ qua. Khoảng ngày là trọn ngày theo giờ máy người xem, gửi lên dạng UTC. Ngày bắt đầu sau ngày kết thúc
   thì báo dưới ô và **không** áp dụng.
-- Ô tìm kiếm ghi "Tìm theo mã, chi tiết…": `q` khớp mã đối tượng và giá trị trong `details`, **không** khớp tên tài
-  khoản/vai trò ở cột Đối tượng. **D10** (chờ BA Final Review): màn 3.3 ghi "matches the target object name"; muốn tìm
-  theo tên thì BE phải khớp thêm tên đã tra cho `User`/`Role`.
+- Ô "Tìm theo đối tượng…" (màn 3.3): `q` khớp tên ở cột Đối tượng (tài khoản, vai trò), mã đối tượng và giá trị
+  trong `details`.
 - Ô người thực hiện: Khách, Hệ thống, rồi mọi tài khoản từ `GET /api/users` (hai người trùng tên thì hiện email; mã
   tài khoản trên URL không có trong danh sách thì hiện "Tài khoản không rõ"). Ngày không có thật trên URL bị bỏ qua.
 - `auth.sign_in_failed`: chip đỏ, dòng nền đỏ nhạt.
