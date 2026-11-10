@@ -14,8 +14,8 @@ export type WorkflowOutcome =
   /**
    * 403 MSG85, or MSG46 on publish — the caller is no longer the one who may take this action
    * (an organizer who lost `MeetingCreator` gets MSG46 from publish). Start and end answer MSG112
-   * and MSG114 to someone who is no longer the meeting's Chair, cancel MSG263 to someone who is no
-   * longer its organizer.
+   * and MSG114 to someone who is no longer the meeting's Chair. Cancel answers someone who is no longer
+   * its organizer MSG85 (SCRUM-150); MSG263 there is what a backend from before that change sends.
    */
   | { kind: 'forbidden'; message: string }
   /** 404 — the meeting is gone, or the caller may no longer read it. */

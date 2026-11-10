@@ -256,4 +256,12 @@ public static class AuditActions
     /// <summary>A share past its end date (BR-425) closed when a new share of the same pair was sent. No notification.</summary>
     public const string CalendarShareClosedAfterEndDate = "calendar_share.closed_after_end_date";
     public const string CalendarShareObjectType = "CalendarShare";
+
+    /// <summary>
+    /// SCRUM-38, UC-70b — a user exported the meeting report to Excel (BR-438). No object id: the report is not a row.
+    /// The details carry the period; viewing the report on screen is not recorded.
+    /// </summary>
+    public const string ReportExported = "report.exported";
+
+    public const string ReportObjectType = "Report";
 }

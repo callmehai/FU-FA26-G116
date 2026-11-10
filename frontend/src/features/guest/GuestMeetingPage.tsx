@@ -134,7 +134,7 @@ export function GuestMeetingPage() {
           ) : tab === 'votes' ? (
             <VotingPanel meetingId={meeting.id} variant="page" />
           ) : (
-            <ParticipantsPanel meetingId={meeting.id} onChanged={invitation.reload} />
+            <ParticipantsPanel meetingId={meeting.id} meetingStatus={meeting.status} onChanged={invitation.reload} />
           )}
         </section>
       </main>

@@ -25,6 +25,7 @@ public static class AuditEventCatalog
     private const string Voice = "Voice ID";
     private const string Settings = "Cấu hình";
     private const string CalendarSharing = "Chia sẻ lịch";
+    private const string Reports = "Báo cáo";
 
     public static IReadOnlyList<AuditEventType> All { get; } =
     [
@@ -114,6 +115,8 @@ public static class AuditEventCatalog
         new(AuditActions.CalendarShareEnded, "Ngừng chia sẻ lịch", CalendarSharing),
         new(AuditActions.CalendarShareStopped, "Dừng chia sẻ lịch (mất quyền hoặc vô hiệu hoá)", CalendarSharing),
         new(AuditActions.CalendarShareClosedAfterEndDate, "Đóng chia sẻ lịch đã quá hạn khi có chia sẻ mới", CalendarSharing),
+        // SCRUM-38 (BR-438): only the export is recorded, not viewing the report.
+        new(AuditActions.ReportExported, "Xuất báo cáo cuộc họp", Reports),
     ];
 
     private static readonly Dictionary<string, AuditEventType> ByCode = All.ToDictionary(e => e.Code, StringComparer.Ordinal);

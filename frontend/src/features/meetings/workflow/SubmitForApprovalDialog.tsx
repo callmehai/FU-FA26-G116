@@ -12,8 +12,10 @@ import { Icon } from '../../../components/Icon'
 /**
  * UC-18 Submit for approval: the organizer picks who reviews this cycle. The approver is chosen
  * here, not on the form — a draft has none (SCRUM-19). A rejected meeting goes through the same
- * dialog (UC-18 AF-1) and may pick a different approver. The server re-checks readiness and the
- * approver's eligibility in the same transaction, so both can still fail after the list was read.
+ * dialog (UC-18 AF-1) and may pick a different approver; the previous one comes picked, while still
+ * eligible (SCRUM-150). The picker searches by name and email, and shows the email under each name so
+ * two people of one name differ. The server re-checks readiness and the approver's eligibility in the
+ * same transaction, so both can still fail after the list was read.
  */
 export function SubmitForApprovalDialog({
   meeting,
@@ -26,7 +28,7 @@ export function SubmitForApprovalDialog({
   onDone: (outcome: WorkflowOutcome) => void
   onClose: () => void
 }) {
-  const [approverId, setApproverId] = useState('')
+  const [approverId, setApproverId] = useState(meeting.status === 'Rejected' ? (meeting.assignedApproverId ?? '') : '')
   const [approverError, setApproverError] = useState<string | null>(null)
   const [problems, setProblems] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -40,11 +42,17 @@ export function SubmitForApprovalDialog({
     reloadApprovers()
   }, [reloadApprovers])
 
-  const options: SelectOption<string>[] = (approvers.list ?? []).map((a) => ({ value: a.id, label: a.fullName }))
+  const options: SelectOption<string>[] = (approvers.list ?? []).map((a) => ({
+    value: a.id,
+    label: a.fullName,
+    sub: a.email,
+  }))
   const noneEligible = approvers.list?.length === 0
+  // The previous approver counts only while still on the list: deactivated or demoted, they are not picked.
+  const picked = options.some((o) => o.value === approverId) ? approverId : ''
 
   async function submit() {
-    if (!approverId) {
+    if (!picked) {
       setApproverError('Vui lòng chọn người duyệt.')
       fieldRef.current?.querySelector<HTMLElement>('.select-trigger')?.focus()
       return
@@ -55,7 +63,7 @@ export function SubmitForApprovalDialog({
     try {
       const response: MeetingTransitionResponse = await transitionMeeting(meeting.id, {
         action: 'SubmitForApproval',
-        assignedApproverId: approverId,
+        assignedApproverId: picked,
       })
       onDone({ kind: 'done', response })
     } catch (err) {
@@ -109,8 +117,10 @@ export function SubmitForApprovalDialog({
             </p>
           ) : (
             <Select
-              value={approverId}
+              value={picked || null}
               options={options}
+              searchable
+              searchPlaceholder="Tìm theo tên hoặc email"
               onChange={(value) => {
                 setApproverId(value)
                 setApproverError(null)

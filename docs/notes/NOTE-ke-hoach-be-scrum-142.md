@@ -5,7 +5,7 @@
 
 > **Sửa 10/11/2026.** PR #295 / [note 39](ban-giao-ba-final-review/39-scrum-142-thieu-sequence-chia-se-lich.md) bổ sung sequence còn
 > thiếu và áp quyết định PO 09/11 (Q-A → Q-E). Note này đã sửa theo; chỗ nào khác bản 08/11 ghi rõ ở **§0b**. Contract chính thức:
-> [22-chia-se-lich.md](../03-api/22-chia-se-lich.md).
+> [23-chia-se-lich.md](../03-api/23-chia-se-lich.md).
 
 ## 0b. Quyết định PO 09/11/2026 đã áp vào code
 
@@ -369,7 +369,7 @@ người riêng (email ngẫu nhiên) để các test chạy song song không gi
 
 ## 10. Tài liệu cập nhật cùng commit code
 
-- `docs/03-api/22-chia-se-lich.md` — contract §3 (tiếng Việt), và `docs/03-api/22-chia-se-lich-note-cho-fe.md` — ghi chú cho FE (§12);
+- `docs/03-api/23-chia-se-lich.md` — contract §3 (tiếng Việt), và `docs/03-api/23-chia-se-lich-note-cho-fe.md` — ghi chú cho FE (§12);
   thêm hai dòng vào `docs/03-api/README.md`.
 - `docs/03-api/00-danh-muc-ma-thong-bao.md` — mục mới "Chia sẻ lịch — SCRUM-142" với dòng có HTTP cho mã BE gửi; `MSG439`
   dòng `—` trạng thái FE (`MSG440` đã ngừng dùng); sửa các dòng "Dành sẵn" `MSG435`–`MSG455` của SCRUM-142 thành "Đã triển khai SCRUM-142"; câu ở "Mã tiếp theo".
@@ -390,7 +390,7 @@ Không commit, không push, không merge khi chưa được đồng ý.
 
 ## 12. Ghi chú cho FE (người làm FE-16)
 
-Chi tiết ở `docs/03-api/22-chia-se-lich-note-cho-fe.md`. Tóm tắt:
+Chi tiết ở `docs/03-api/23-chia-se-lich-note-cho-fe.md`. Tóm tắt:
 
 - Nút nào hiện thì đọc `actions` của từng chia sẻ, không tự suy từ trạng thái.
 - `MSG439` là câu FE tự hiện cho nhãn "Đã dừng" (BE chỉ trả `status`). Không có "Hết hạn": chia sẻ quá ngày biến khỏi danh sách.

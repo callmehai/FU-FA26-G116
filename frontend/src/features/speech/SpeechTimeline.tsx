@@ -359,7 +359,7 @@ function Paragraph({
             <span
               className="tl-struck-label"
               tabIndex={0}
-              data-tooltip={`${first.excludedByName ?? 'Chủ tọa hoặc Thư ký'} đã bỏ${
+              data-tooltip={`${first.excludedByName ?? 'Chủ toạ hoặc Thư ký'} đã bỏ${
                 first.exclusionReason === 'Leak' ? ' vì lẫn tiếng micro khác' : ''
               }`}
             >

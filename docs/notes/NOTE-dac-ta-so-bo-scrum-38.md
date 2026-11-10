@@ -29,7 +29,7 @@ màn 15.1 ở §III (vẫn ghi chọn ngày và "Export PDF", D3 — BA sửa kh
 | Quyền đọc cuộc họp | `MeetingReadPolicy.ForUser` — cùng luật với danh sách cuộc họp: người tạo, người duyệt được giao, Chủ toạ/Thư ký hiện tại, thành phần hiện tại từ khi `Published`. **Quản trị không có quyền đọc thêm** | Màn, endpoint báo cáo |
 | Số liệu cuộc họp | `Status`, `Sensitivity` (Thường / Nội bộ / Mật), `PlannedStartTime`, `ActualEndedAt` | — |
 | Điểm danh | `Attendance` trên `meeting_participants` và `meeting_guest_invitations` (Present / Absent; Excused, Delegated là dữ liệu cũ) | — |
-| Ban hành biên bản | Cột `IssuedAt` trên `meeting_minutes` có sẵn trong model | Luồng ban hành (SCRUM-33, PR #297 đang mở). Trên `main` chưa biên bản nào có `IssuedAt` |
+| Ban hành biên bản | Cột `IssuedAt` trên `meeting_minutes` có sẵn trong model | ~~Luồng ban hành (SCRUM-33, PR #297 đang mở)~~ — đã vào `main` 09/11/2026 (#297): `IssuedAt` được ghi khi ban hành, bản bị thay (`Superseded`) giữ mốc ban hành đầu |
 | Xuất tệp | `MinutesDocx` tự dựng OpenXML bằng `ZipArchive`, không thư viện ngoài | Tệp `.xlsx` |
 
 Không cần migration: mọi số liệu đọc từ bảng đã có.
@@ -40,8 +40,8 @@ Không cần migration: mọi số liệu đọc từ bảng đã có.
 |---|---|---|---|
 | D1 | SCRUM-38: "Là quản trị viên hoặc lãnh đạo" | Mọi người dùng nội bộ đã đăng nhập đều mở được báo cáo; Khách thì không. Không thêm capability mới | Số liệu chỉ tính trên cuộc họp người xem đọc được (tiêu chí của chính ticket), nên mở cho mọi người không lộ gì thêm. Hệ thống không có vai trò "lãnh đạo". Report 3 §I.4.4 cũng cho mọi vai trò nội bộ *Restricted ¹⁸* |
 | D2 | Report 3 §I.4.4 chú thích ¹⁸: "System Admin sees system-wide data" | Quản trị cũng chỉ thấy số liệu của cuộc họp mình đọc được | Ticket ghi rõ "chỉ tính trên các cuộc họp người xem có quyền truy cập". `MeetingReadPolicy` không cho Quản trị đọc mọi cuộc họp; báo cáo đếm cả cuộc họp Mật mà Quản trị không được mở thì lộ sự tồn tại của chúng. Xem Q1 |
-| D3 | Report 3 màn 15.1: "average duration, timely sealing … export to Excel or PDF" | Không có thời lượng trung bình; chỉ xuất Excel. "Timely sealing" thay bằng thời gian trung bình từ khi kết thúc tới khi ban hành biên bản | Theo tiêu chí nghiệm thu của ticket. Xem Q2 |
-| D4 | SCRUM-38: "Thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản" | Chỉ số này luôn "chưa có dữ liệu" cho tới khi SCRUM-33 (ban hành biên bản) vào `main` | Chưa có biên bản nào được ban hành trên `main` |
+| D3 | Report 3 màn 15.1: "average duration, timely sealing … export to Excel or PDF" | ~~Không có thời lượng trung bình~~ **Có** thời lượng họp trung bình (PO chốt Q2 ngày 09/11/2026, BR-447 đề xuất); chỉ xuất Excel, không PDF. "Timely sealing" thay bằng thời gian trung bình từ khi kết thúc tới khi ban hành biên bản | Theo tiêu chí nghiệm thu của ticket và Q2 |
+| D4 | SCRUM-38: "Thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản" | ~~Chỉ số này luôn "chưa có dữ liệu" cho tới khi SCRUM-33 vào `main`~~ — hết lệch: SCRUM-33 đã vào `main` 09/11/2026 (#297), chỉ số có dữ liệu thật | Lúc viết note chưa có biên bản nào được ban hành trên `main` |
 
 ## 3. Use Case đề xuất
 
@@ -97,6 +97,7 @@ Không có. Báo cáo chỉ đọc, không đổi luồng nào khác.
 | `BR-436` | The minutes turnaround of an Ended Meeting is the time from its actual end to the first issue of its minutes; corrections issued later do not count. A Meeting whose minutes are not issued yet is left out. The average turnaround is the mean of those times. | UC-70a, UC-70b | SCRUM-38 — thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản |
 | `BR-437` | The report shows only counts, rates and averages. It never shows the title, participants or content of a Meeting, on the page or in the exported file. | UC-70a, UC-70b | Cuộc họp Mật — số liệu tổng hợp không được thành đường vòng để đọc cuộc họp |
 | `BR-438` | An exported report is an Excel file holding exactly the figures of UC-70a for the same period, computed at the time of export. Every export is recorded in the audit log with the user, the period and the time. | UC-70b | SCRUM-38 — xuất Excel; tệp mang số liệu ra khỏi hệ thống |
+| `BR-447` *(đề xuất, PO 09/11/2026, chưa vào Report 3)* | The duration of an Ended Meeting is the time from its actual start to its actual end. A Meeting without both times is left out. The average duration is the mean of those durations. | UC-70a, UC-70b | Q2 — PO thêm thời lượng họp trung bình |
 
 ## 5. Mã thông báo (dành sẵn)
 
@@ -126,6 +127,7 @@ tới là `401` như mọi endpoint `RequireAuthorization()`, không có mã.
   "byStatus": [{ "status": "Ended", "count": 20 }],
   "bySensitivity": [{ "sensitivity": "Secret", "count": 4 }],
   "attendance": { "averageRate": 0.87, "meetings": 18, "meetingsWithoutAttendance": 2 },
+  "duration": { "averageMinutes": 95.5, "meetings": 20, "meetingsWithoutTimes": 0 },
   "minutesTurnaround": { "averageHours": 30.5, "meetings": 0, "meetingsWithoutIssuedMinutes": 20 }
 }
 ```
@@ -143,11 +145,13 @@ tới là `401` như mọi endpoint `RequireAuthorization()`, không có mã.
 
 ## 7. Câu hỏi cần PO / BA chốt
 
-| # | Câu hỏi | Đề xuất trong note |
-|---|---|---|
-| Q1 | Quản trị có thấy số liệu toàn hệ thống (Report 3 chú thích ¹⁸) không? | Không, theo ticket (D2). Nếu PO muốn thì cần quyết định cho Quản trị đọc mọi cuộc họp — một ADR, vì nó đổi cả danh sách cuộc họp |
-| Q2 | Có cần thời lượng họp trung bình và xuất PDF như màn 15.1 của Report 3 không? | Không trong SCRUM-38 (D3). Thời lượng tính được ngay từ `ActualStartedAt`/`ActualEndedAt` nếu PO muốn |
-| Q3 | Có giới hạn báo cáo cho một nhóm người (capability *Xem báo cáo*) như "quản trị viên hoặc lãnh đạo" của ticket không? | Không (D1). Nếu cần thì thêm capability `ReportViewer` và một migration gán cho vai trò Quản trị |
+PO chốt cả ba ngày 09/11/2026.
+
+| # | Câu hỏi | Đề xuất trong note | PO chốt (09/11/2026) |
+|---|---|---|---|
+| Q1 | Quản trị có thấy số liệu toàn hệ thống (Report 3 chú thích ¹⁸) không? | Không, theo ticket (D2). Nếu PO muốn thì cần quyết định cho Quản trị đọc mọi cuộc họp — một ADR, vì nó đổi cả danh sách cuộc họp | **Không.** Quản trị cũng chỉ thấy số liệu của cuộc họp mình được xem, như mọi người (BR-432 giữ nguyên) |
+| Q2 | Có cần thời lượng họp trung bình và xuất PDF như màn 15.1 của Report 3 không? | Không trong SCRUM-38 (D3). Thời lượng tính được ngay từ `ActualStartedAt`/`ActualEndedAt` nếu PO muốn | **Thêm** thời lượng họp trung bình (BR-447 đề xuất, đã có ở BE: `duration`). **Không** xuất PDF |
+| Q3 | Có giới hạn báo cáo cho một nhóm người (capability *Xem báo cáo*) như "quản trị viên hoặc lãnh đạo" của ticket không? | Không (D1). Nếu cần thì thêm capability `ReportViewer` và một migration gán cho vai trò Quản trị | **Không giới hạn.** Ai đăng nhập bằng tài khoản nội bộ cũng xem và xuất được; Khách vẫn không (BR-432) |
 
 ## 8. Việc còn lại
 
@@ -157,8 +161,11 @@ tới là `401` như mọi endpoint `RequireAuthorization()`, không có mã.
 - [x] BA: đưa UC-70a, UC-70b, BR-432 → BR-438 và `MSG463`–`MSG466` vào Report 3 DOCX, cập nhật inventory (09/11/2026;
       `check_docx.py` OK, `sync_requirement_extracts.py --check` UP TO DATE). UC diagram đã có "View & Export Reports"
       cho đúng 6 actor nên không sửa.
-- [ ] BA: sửa chú thích ¹⁸ của Permission Matrix khi PO chốt Q1.
-- [ ] BA: sửa đặc tả màn 15.1 (§III) theo D3 — bỏ "Export PDF", chọn theo tháng — khi FE có màn chạy thật.
-- [ ] BE: `GET /api/reports/meetings`, `GET /api/reports/meetings/export`, audit `ReportExported`; contract ở `docs/03-api/`;
-      `MSG463`–`MSG465` sang *BE*.
-- [ ] FE: trang Báo cáo, chọn khoảng tháng, nút Xuất Excel; `MSG466`.
+- [ ] BA: sửa chú thích ¹⁸ của Permission Matrix theo Q1 (PO chốt 09/11/2026: Quản trị như mọi người).
+- [ ] BA: đưa BR-447 (thời lượng họp trung bình, Q2) vào Report 3; thêm thời lượng vào Description/Normal Flow bước 4 và
+      AF-3 của UC-70a.
+- [ ] BA: sửa đặc tả màn 15.1 (§III) theo D3 — giữ thời lượng trung bình, bỏ "Export PDF", chọn theo tháng — khi FE có
+      màn chạy thật.
+- [x] BE: `GET /api/reports/meetings`, `GET /api/reports/meetings/export`, audit `report.exported`; contract ở
+      [`22-bao-cao-thong-ke.md`](../03-api/22-bao-cao-thong-ke.md); `MSG463`–`MSG465` sang *BE* (09/11/2026).
+- [x] FE: trang Báo cáo (`/mgmt/reports`), chọn khoảng tháng, nút Xuất Excel; `MSG466` (10/11/2026, PR xếp trên PR BE #310).

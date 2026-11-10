@@ -20,6 +20,8 @@ interface NavEntry {
 const WORK: NavEntry[] = [
   { to: routes.calendar, label: 'Lịch làm việc', icon: 'calendar' },
   { to: routes.meetings, label: 'Cuộc họp', icon: 'meeting' },
+  // SCRUM-38: no capability — the figures count only the meetings the viewer may read (BR-432).
+  { to: routes.reports, label: 'Báo cáo', icon: 'chart' },
 ]
 
 /** Under "Quản trị". The group disappears when none of its entries is visible. */

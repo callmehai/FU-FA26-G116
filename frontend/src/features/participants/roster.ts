@@ -15,6 +15,6 @@ export const ROSTER_MAX = 100
 export function rosterError(roster: RosterEntry[]): string | undefined {
   if (roster.length === 0) return 'Chọn ít nhất một người dự họp.'
   if (roster.length > ROSTER_MAX) return `Mỗi lần tạo chọn tối đa ${ROSTER_MAX} người.`
-  if (roster.filter((p) => p.role === 'Chair').length !== 1) return 'Chọn một người làm Chủ tọa.'
+  if (roster.filter((p) => p.role === 'Chair').length !== 1) return 'Chọn một người làm Chủ toạ.'
   return undefined
 }

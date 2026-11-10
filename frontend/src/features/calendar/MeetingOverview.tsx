@@ -160,7 +160,7 @@ export function OverviewContent({
                 <span className="skeleton overview-skeleton" />
               </Row>
             ))}
-          <Row label="Chủ tọa">
+          <Row label="Chủ toạ">
             {meeting ? (
               (meeting.chair?.fullName ?? <em className="value-empty">Chưa có</em>)
             ) : (

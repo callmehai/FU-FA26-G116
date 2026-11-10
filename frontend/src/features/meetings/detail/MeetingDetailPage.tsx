@@ -407,7 +407,12 @@ function MeetingDetail({
               approver={isOrganizer || isApprover ? approverLabel(meeting, user?.id, nameOf, approvers) : null}
             />
           ) : tab === 'attendees' ? (
-            <ParticipantsPanel meetingId={meeting.id} sensitivity={meeting.sensitivity} onChanged={() => void reload()} />
+            <ParticipantsPanel
+              meetingId={meeting.id}
+              meetingStatus={meeting.status}
+              sensitivity={meeting.sensitivity}
+              onChanged={() => void reload()}
+            />
           ) : tab === 'agenda' ? (
             <AgendaPanel meetingId={meeting.id} variant="page" meeting={meeting} />
           ) : tab === 'documents' ? (
@@ -559,7 +564,7 @@ function Overview({ meeting, approver }: { meeting: Meeting; approver: { text: s
       : []),
   ]
   const who: FactRow[] = [
-    { label: 'Chủ tọa', value: meeting.chair?.fullName ?? empty() },
+    { label: 'Chủ toạ', value: meeting.chair?.fullName ?? empty() },
     {
       label: 'Thư ký',
       value: meeting.secretaries.length > 0 ? meeting.secretaries.map((s) => s.fullName).join(', ') : empty(),

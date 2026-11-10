@@ -294,13 +294,14 @@ code {
 
 @keyframes press { 40% { transform: scale(.95); } }
 
-/* A finger needs 40px: fields and buttons grow on a touch screen. */
+/* A finger needs 40px: fields and buttons grow on a touch screen — the small ones too (SCRUM-151).
+   Page buttons, a dialog's close and the quick-choice chips grow beside their own rules, further down. */
 @media (pointer: coarse) {
   :root { --control-height: 40px; --button-height: 40px; }
-  .btn-sm { height: 36px; }
-  .btn-lg { height: 40px; }
-  .btn-icon.btn-sm { width: 36px; }
+  .btn-sm, .btn-lg { height: 40px; }
+  .btn-icon.btn-sm { width: 40px; }
   .select-option { min-height: 40px; }
+  .icon-button-sm { width: 40px; height: 40px; }
 }
 .is-pressed { animation: press .18s ease-out; }
 
@@ -462,6 +463,15 @@ input[aria-invalid='true'] { border-color: var(--danger); }
 .select-option-hint { margin-left: 8px; color: var(--muted-ink); font-size: 12px; font-weight: 400; }
 .select-option-hint-accent { padding: 1px 6px; border-radius: 4px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--brand-wash-line); color: var(--brand); font-weight: 600; }
 .select-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; }
+/* A second line under an option: the email that tells two people of one name apart (SCRUM-150). */
+.select-option-sub { display: block; overflow: hidden; color: var(--muted-ink); font-size: 12.5px; font-weight: 400; text-overflow: ellipsis; }
+/* A long list's menu: a search box on top, only the options scroll under it. Its height stays put
+   while the matches shrink, so the box under the caret never moves as a name is typed; it holds
+   the box and about seven people before the list scrolls. */
+.select-menu-search { display: flex; flex-direction: column; gap: 4px; height: min(400px, calc(100dvh - 16px)); max-height: none; overflow: hidden; }
+.search.select-search { width: 100%; flex: none; }
+.select-list { min-height: 0; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.select-none { padding: 10px 8px; color: var(--muted-ink); font-size: 14px; }
 .select-trigger:disabled { cursor: progress; opacity: .7; }
 /* The table-row size: 32px, so a row stays one line of text tall. Touch keeps the 40px target. */
 .select-sm .select-trigger { min-width: 0; height: 32px; padding: 0 8px 0 10px; font-size: 13px; font-weight: 600; }
@@ -1109,6 +1119,11 @@ a.menu-item { text-decoration: none; }
   .toolbar-filters { display: none; }
   .toolbar-filters-open { display: flex; flex: 1 1 100%; flex-wrap: wrap; gap: 8px; }
 }
+/* A phone: the toggle keeps its icon and count, so the search beside it has room for its hint (SCRUM-151). */
+@media (max-width: 480px) {
+  .filters-toggle { padding: 0 12px; }
+  .filters-toggle-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 
 /* A checkbox filter on the toolbar ("Hiện cả người đã rời"). */
 .toolbar-check { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); white-space: nowrap; cursor: pointer; }
@@ -1217,6 +1232,40 @@ a.menu-item { text-decoration: none; }
 /* The previous page stays readable but visibly stale while the next one loads. */
 .data-table-stale tbody { opacity: .55; transition: opacity .15s; }
 
+/* A long meeting title ends in "…" after two lines, the full title in its tooltip (SCRUM-148). Only in
+   the table: a phone card shows the whole title, since a tap opens no tooltip (review of PR #302). */
+.meetings-table .cell-title a { overflow-wrap: anywhere; }
+@media (min-width: 721px) {
+  .meetings-table .cell-title a { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+}
+/* Wide enough: fixed columns, so the Time column does not move between pages with the length of
+   their titles (SCRUM-148). The title takes what the others leave. From 1280px the action fits
+   "Vào phòng họp"; below, down to 1100px (a 1200px window less the 256px sidebar), the columns are
+   tighter and the live button keeps its icon, its name and its tooltip, so the title keeps room.
+   Narrower still, the table keeps its automatic layout. */
+@media (min-width: 1100px) {
+  .meetings-table { table-layout: fixed; }
+  .meetings-table th.cell-index { width: 44px; }
+  .meetings-table th.cell-schedule { width: 164px; }
+  .meetings-table th.cell-place { width: 96px; }
+  .meetings-table th.cell-status { width: 124px; }
+  .meetings-table th.cell-level { width: 88px; }
+  .meetings-table th.col-action { width: 96px; }
+  .meetings-table td.cell-place { min-width: 0; }
+}
+@media (min-width: 1100px) and (max-width: 1279px) {
+  .meetings-table .btn-live-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .meetings-table .btn-live { width: 40px; padding: 0; justify-content: center; }
+}
+@media (min-width: 1280px) {
+  .meetings-table th.cell-index { width: 48px; }
+  .meetings-table th.cell-schedule { width: 172px; }
+  .meetings-table th.cell-place { width: 104px; }
+  .meetings-table th.cell-status { width: 132px; }
+  .meetings-table th.cell-level { width: 96px; }
+  .meetings-table th.col-action { width: 156px; }
+}
+
 /* Meetings on a phone, as AI-eCabinet lays them out: the panel grows with its rows and the page
    scrolls; each meeting is a card — its state and level, the title, the place, the time, and the
    gold "Vào phòng họp" across the card while it runs. */
@@ -1240,6 +1289,8 @@ a.menu-item { text-decoration: none; }
   .meetings-table td.col-action:has(.btn-live) { flex: 1 1 100%; }
   .meetings-table .btn-live { width: 100%; height: 40px; }
   .meetings-table td.col-action:has(.icon-button) { position: absolute; top: 8px; right: 8px; }
+  /* The first line (state, level, place) stops short of that button. */
+  .meetings-table tr:has(td.col-action .icon-button) td.cell-place { margin-right: 40px; }
   .meetings-table tbody tr:not(.row-skeleton) { position: relative; }
 }
 .empty-title { margin: 0 0 12px; color: var(--ink); font-weight: 600; }
@@ -1269,9 +1320,6 @@ a.menu-item { text-decoration: none; }
   .users-table .person-name { overflow-wrap: anywhere; }
   .users-table .cell-sub { overflow-wrap: anywhere; }
   .users-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 6px; font-size: 13px; }
-}
-@media (pointer: coarse) {
-  .users-table .icon-button-sm { width: 40px; height: 40px; }
 }
 
 /* System audit log (SCRUM-16, screen 3.3). */
@@ -1385,11 +1433,17 @@ a.menu-item { text-decoration: none; }
 .pagination-page-current:hover:not(:disabled) { border-color: var(--brand-wash-line); background: var(--brand-wash); color: var(--brand); }
 .pagination-page:disabled { cursor: default; }
 .pagination-gap { min-width: 24px; color: var(--muted-ink); text-align: center; }
+.pagination-gap-phone { display: none; }
+@media (pointer: coarse) {
+  .pagination-page, .pagination-step { min-width: 40px; height: 40px; }
+  .pagination-size .select-trigger { height: 40px; }
+}
 /* On a phone the page buttons get their own line, with only the first, current and last page —
    "‹ 1 … 10 … 33 ›" — so they never run past the panel or break onto a second line. */
 @media (max-width: 480px) {
   .pagination-controls { margin-left: 0; }
   .pagination-page-near { display: none; }
+  .pagination-gap-phone { display: inline-block; }
 }
 .row-actions { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
 .chip-row { display: inline-flex; flex-wrap: wrap; gap: 4px; }
@@ -1467,6 +1521,11 @@ a.menu-item { text-decoration: none; }
 
 /* ---------- Tabs ---------- */
 .tabs { display: flex; flex: none; gap: 4px; margin-bottom: 16px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+/* Narrow: the row scrolls sideways, so its right edge fades to say there is more (SCRUM-151). The end
+   padding is as wide as the fade, so the last tab, once scrolled to, is not under it. */
+@media (max-width: 900px) {
+  .tabs { padding-right: 32px; mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+}
 
 .tab {
   display: flex;
@@ -1788,6 +1847,7 @@ a.menu-item { text-decoration: none; }
 .dialog-head h2 { font-size: 18px; font-weight: 600; line-height: 28px; }
 .dialog-desc { margin: 4px 0 0; color: var(--muted-ink); font-size: 14px; }
 .dialog-close { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; color: var(--muted-ink); }
+@media (pointer: coarse) { .dialog-close { top: 10px; right: 10px; width: 40px; height: 40px; } }
 .dialog-body { padding: 20px 24px; overflow-y: auto; }
 .dialog-text { margin: 0; color: var(--ink-soft); }
 .dialog-error { margin-top: 12px; }
@@ -1878,7 +1938,7 @@ a.menu-item { text-decoration: none; }
 .chip-toggle:hover:not(:disabled, [aria-pressed='true']) { background: var(--surface-alt); }
 .chip-toggle[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; font-weight: 600; }
 .chip-toggle:disabled { opacity: .5; cursor: not-allowed; }
-@media (pointer: coarse) { .chip-toggle { height: 36px; } }
+@media (pointer: coarse) { .chip-toggle { height: 40px; } }
 @media (max-width: 760px) {
   .meeting-form-cols { grid-template-columns: minmax(0, 1fr); }
   .meeting-form-main > [data-field='participants'] { flex: none; }
@@ -2058,6 +2118,7 @@ a.menu-item { text-decoration: none; }
   color: var(--label-ink);
 }
 .date-field-box .icon-button:hover:not(:disabled) { color: var(--ink); }
+@media (pointer: coarse) { .date-field-box .icon-button { top: 0; right: 0; width: 40px; height: 40px; } }
 /* In the top layer (popover="manual"), placed under the field by useAnchoredPopover; `inset: auto`
    and `margin: 0` undo the UA popover centring. */
 .date-field-panel { position: fixed; inset: auto; margin: 0; max-width: calc(100vw - 8px); color: var(--ink); }
@@ -2113,6 +2174,7 @@ a.menu-item { text-decoration: none; }
   .view-toggle-icon { display: inline-flex; }
   .view-toggle-label { display: none; }
 }
+@media (pointer: coarse) { .view-toggle button { height: 40px; } }
 
 .calendar {
   display: flex;
@@ -2449,6 +2511,7 @@ a.menu-item { text-decoration: none; }
 .overview-task-title .icon { color: var(--brand); }
 .overview-foot { flex: none; display: flex; justify-content: flex-end; gap: 8px; padding: 11px 14px; border-top: 1px solid var(--line-soft); background: var(--surface-alt); }
 .overview-foot .btn { height: 36px; }
+@media (pointer: coarse) { .overview-foot .btn { height: 40px; } }
 .overview-skeleton { display: block; width: 60%; height: 18px; }
 .overview-skeleton-label { display: block; width: 144px; height: 16px; margin-bottom: 10px; }
 .overview-skeleton-avatar { display: block; width: 32px; height: 32px; margin: 0 24px; border-radius: 50%; }
@@ -2533,6 +2596,7 @@ a.menu-item { text-decoration: none; }
 .agenda-facts span { display: inline-flex; align-items: center; gap: 6px; }
 .agenda-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; }
 .agenda-open { flex: none; height: 38px; padding: 0 12px 0 16px; border-radius: 19px; color: var(--brand); }
+@media (pointer: coarse) { .agenda-open { height: 40px; border-radius: 20px; } }
 .agenda-empty { grid-column: 3; margin: 0; padding: 14px 18px; border: 1px dashed var(--control-line); border-radius: 10px; color: var(--muted-ink); }
 .agenda-card-skeleton { grid-column: 3; flex-direction: column; align-items: stretch; gap: 10px; }
 .agenda-card-skeleton .skeleton:first-child { width: 45%; height: 16px; }
@@ -2582,7 +2646,8 @@ a.menu-item { text-decoration: none; }
 .roster-menu-error { color: var(--danger-ink); }
 
 /* The picked list keeps its height and scrolls (AI-eCabinet), about four people, so the dialog itself does not scroll. */
-.roster-list { display: flex; flex-direction: column; max-height: 13rem; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
+/* No height of its own: the dialog body is the one thing that scrolls (SCRUM-149). */
+.roster-list { display: flex; flex-direction: column; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); list-style: none; }
 .roster-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; }
 .roster-row + .roster-row { border-top: 1px solid var(--line-soft); }
 /* A person the server refused: the row's own message says why; a light red wash shows which row, without a side stripe. */
@@ -2598,6 +2663,9 @@ a.menu-item { text-decoration: none; }
 .person-text { display: flex; flex-direction: column; min-width: 0; }
 .person-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .person-text > .person-name { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+/* Person marks where an email may wrap; Chrome breaks at a <wbr> even under nowrap, so the marks count
+   only where the email is allowed to wrap (the narrow roster). */
+.person-text wbr { display: none; }
 
 /* "Bạn có tham dự cuộc họp này?" — the two answers, and the answer once given. */
 .rsvp-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
@@ -2623,8 +2691,11 @@ a.menu-item { text-decoration: none; }
      line up from row to row instead of trailing each email. */
   .participants-panel .participant-cell { gap: 6px 8px; padding-left: 48px; }
   .participants-panel .participant-cell > .person { flex-basis: calc(100% + 48px); margin-left: -48px; }
-  /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip). */
+  /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip).
+     So does the email, before the "@" and "." Person marks (SCRUM-151), not mid-word; only a part
+     wider than the line still breaks where it must. */
   .participants-panel .person-name, .participants-panel .person .cell-sub { white-space: normal; overflow-wrap: anywhere; }
+  .participants-panel .person .cell-sub wbr { display: inline; }
 }
 .participants-alert { margin: 12px 16px 0; }
 
@@ -2817,6 +2888,7 @@ a.menu-item { text-decoration: none; }
 .agenda-actions { flex: none; gap: 6px; }
 .icon-button-danger { color: var(--danger); }
 .agenda-action-slot { width: 34px; flex: none; }
+@media (pointer: coarse) { .agenda-action-slot { width: 40px; } }
 .agenda-body { padding: 4px var(--agenda-pad) 12px var(--agenda-indent); }
 .agenda-text.agenda-note { margin: 0 0 12px; color: var(--muted-ink); }
 .agenda-boxes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
@@ -4364,10 +4436,6 @@ body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px)
 .documents-empty { margin: 0; padding: 16px; color: var(--muted-ink); }
 .documents-empty-nested { padding: 12px 16px 12px 40px; border-top: 1px solid var(--line-soft); }
 .documents-skeleton { width: 100%; height: 40px; margin: 8px 16px; }
-/* Touch: the small icon buttons of the list, the library table, the upload rows and the viewer's zoom reach 40px. */
-@media (pointer: coarse) {
-  .documents-row .icon-button-sm, .library-table .icon-button-sm, .upload-row .icon-button-sm, .viewer-zoom .icon-button-sm { width: 40px; height: 40px; }
-}
 
 /* In the room: sections instead of a card; each file is a bordered line. */
 .room-panel-body .documents-section { display: flex; flex-direction: column; gap: 8px; }
@@ -4991,3 +5059,40 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .notes-entry { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .notes-entry .card-title { margin: 0; }
 .dialog-lg .notes-text-input { min-height: min(420px, 50dvh); }
+
+/* ---------- Báo cáo (SCRUM-38) ----------
+   The figures are numbers in tables, never a row of KPI tiles: two columns of cards, each a heading over a table.
+   Counts are right-aligned in tabular figures so they line up; a zero is muted, not hidden. */
+.report-toolbar { gap: 8px; }
+.report-toolbar .select { min-width: 168px; }
+.report-toolbar-word { color: var(--muted-ink); }
+.report-generated { margin-left: auto; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
+.report-period-error { margin: -8px 0 16px; }
+.report-grid { display: grid; flex: none; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.report-column { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.report-card { padding: 0; overflow: hidden; }
+.report-card-title { margin: 0; padding: 14px 16px; border-bottom: 1px solid var(--line); font-size: 16px; }
+.report-card .table-card { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+.report-table .cell-num { text-align: right; font-variant-numeric: tabular-nums; }
+.report-table .cell-zero { color: var(--faint-ink); }
+.report-table td.report-metric { width: 55%; white-space: normal; }
+.report-metric .info-tip { margin-left: 4px; vertical-align: middle; }
+.report-table td.report-value { white-space: normal; }
+.report-value strong { color: var(--ink); font-weight: 600; white-space: nowrap; }
+.report-basis { display: inline-block; margin-left: 8px; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
+.report-table .report-bar-cell { width: 45%; padding-left: 0; }
+.report-bar { display: block; height: 8px; min-width: 4px; border-radius: 4px; background: var(--brand); }
+.report-skeleton { display: flex; flex-direction: column; gap: 18px; padding: 20px 16px; }
+.report-empty { flex: none; padding: 56px 16px; text-align: center; }
+.report-empty .empty-title { margin: 0; color: var(--muted-ink); }
+@media (max-width: 1100px) {
+  .report-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  /* "Từ [tháng]" and "đến [tháng]" each on a line of their own, the pickers as wide as the column. */
+  .report-toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+  .report-toolbar .select { min-width: 0; }
+  .report-generated { grid-column: 1 / -1; margin-left: 0; }
+  .report-basis { display: block; margin-left: 0; }
+  .report-table .report-bar-cell { width: 35%; }
+}

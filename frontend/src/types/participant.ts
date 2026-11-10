@@ -10,7 +10,7 @@ export const MEETING_ROLES = ['Chair', 'Secretary', 'Member'] as const
 export type MeetingRole = (typeof MEETING_ROLES)[number]
 
 export const MEETING_ROLE_LABEL: Record<MeetingRole, string> = {
-  Chair: 'Chủ tọa',
+  Chair: 'Chủ toạ',
   Secretary: 'Thư ký',
   Member: 'Thành viên',
 }

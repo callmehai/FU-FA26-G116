@@ -1,6 +1,6 @@
 # Ghi chú cho FE — Chia sẻ lịch (SCRUM-142, FE-16)
 
-**Từ:** BE (Huy), 10/11/2026. **Contract:** [22-chia-se-lich.md](22-chia-se-lich.md). BE đã có API, FE làm màn sau.
+**Từ:** BE (Huy), 10/11/2026. **Contract:** [23-chia-se-lich.md](23-chia-se-lich.md). BE đã có API, FE làm màn sau.
 
 ## Việc FE cần làm
 
@@ -10,6 +10,8 @@
    cặp (status, mã) không có trong [danh mục](00-danh-muc-ma-thong-bao.md).
 4. Route màn: BE dựng link thông báo là `/calendar/sharing?share={id}`. Nếu FE đặt route khác, báo BE để sửa một dòng
    (`NotificationTargetResponse.BuildUrl`). Mở từ thông báo thì cuộn tới / mở chia sẻ có `id` đó.
+5. Màn Nhật ký hệ thống (SCRUM-16): BE ghi `objectType = "CalendarShare"` cho 13 mã `calendar_share.*`. Thêm dòng
+   `CalendarShare: 'Chia sẻ lịch'` vào `frontend/src/features/audit/objectTypes.ts`, nếu không cột Đối tượng hiện nguyên chữ `CalendarShare`.
 
 ## Những điểm dễ sai
 

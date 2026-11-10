@@ -5,7 +5,7 @@
 **Nguồn:** [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-137-142.md), sequence trong
 [calendar-sharing/](../06-sequencediagram/calendar-sharing/), quyết định PO 09/11/2026 (Q-A → Q-E, [note 39](../notes/ban-giao-ba-final-review/39-scrum-142-thieu-sequence-chia-se-lich.md)),
 [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md). Mã thông báo: [danh mục](00-danh-muc-ma-thong-bao.md) mục *Chia sẻ lịch*.
-Ghi chú cho FE: [22-chia-se-lich-note-cho-fe.md](22-chia-se-lich-note-cho-fe.md).
+Ghi chú cho FE: [23-chia-se-lich-note-cho-fe.md](23-chia-se-lich-note-cho-fe.md).
 
 ## 1. Quy tắc chung
 
