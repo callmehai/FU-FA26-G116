@@ -45,6 +45,8 @@ export const routes = {
     `/mgmt/documents/${id}${folderId ? `?folder=${folderId}` : ''}`,
   // SCRUM-35: the signed-in person's own Voice ID.
   myVoice: '/mgmt/my-voice',
+  /** SCRUM-38: the meeting report, open to every internal user (BR-432); `?from=&to=` hold the period. */
+  reports: '/mgmt/reports',
   calendar: '/calendar',
 } as const
 
