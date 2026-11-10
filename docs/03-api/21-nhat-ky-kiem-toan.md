@@ -108,7 +108,10 @@ Không bao giờ ghi mật khẩu, Google ID token, refresh token hay mã OTP. E
 (có thể là mật khẩu gõ nhầm vào ô email) — đổi lại nhánh "sai mật khẩu" chậm hơn nhánh "email lạ" vài mili giây vì có
 thêm một lần ghi; đã chấp nhận ngày 10/11/2026.
 
-## Chỗ lệch khỏi đặc tả, cần BA xử lý ở BA Final Review
+## Chỗ lệch khỏi đặc tả — đã đưa vào Report 3 ngày 10/11/2026
+
+BR-444 và BR-445 trong Report 3 đã sửa theo hai dòng dưới (UC-14, UC-15 thêm vào *Applies to* của BR-445), kèm một dòng
+Change Log. Chú thích `AuditLogEntry.ActorId` trong code đã sửa theo D8.
 
 | # | Đặc tả | Code | Lý do |
 |---|---|---|---|
