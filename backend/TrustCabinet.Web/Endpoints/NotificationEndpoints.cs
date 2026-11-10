@@ -135,9 +135,13 @@ public sealed record NotificationTargetResponse(string TargetType, Guid TargetId
                 ?? throw new InvalidOperationException("Unsupported notification target."));
 
     public static string? BuildUrl(string? targetType, Guid? targetId)
-        => targetType == "Meeting" && targetId is { } id
-            ? $"/mgmt/meetings/{id:D}"
-            : null;
+        => (targetType, targetId) switch
+        {
+            ("Meeting", { } id) => $"/mgmt/meetings/{id:D}",
+            // SCRUM-142: the Chia sẻ lịch page of FE-16, opened on that share.
+            ("CalendarShare", { } id) => $"/calendar/sharing?share={id:D}",
+            _ => null,
+        };
 }
 
 public sealed record NotificationErrorResponse(

@@ -14,6 +14,7 @@ using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Infrastructure.Calls;
+using TrustCabinet.Infrastructure.CalendarSharing;
 using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notes;
@@ -85,6 +86,9 @@ builder.Services.AddTrustCabinetRecordings(builder.Configuration, builder.Enviro
 builder.Services.AddHostedService<RecordingRetentionWorker>();
 // SCRUM-99: cancels meetings nobody started a day after their planned start (BR-301).
 builder.Services.AddHostedService<MeetingOverdueWorker>();
+
+// SCRUM-142: calendar sharing (UC-84a → UC-84f, UC-85c). A share past its end date is left out when read (BR-425): no job.
+builder.Services.AddTrustCabinetCalendarSharing();
 
 // SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.
 builder.Services.AddTrustCabinetTranscription(builder.Configuration);
@@ -276,6 +280,9 @@ app.MapAiSettingsEndpoints();
 app.MapAuditLogEndpoints();
 app.MapMinutesEndpoints();
 app.MapMeetingNoteEndpoints();
+
+// SCRUM-142: calendar sharing and the shared week.
+app.MapCalendarSharingEndpoints();
 
 // SCRUM-35: the caller's own Voice ID.
 app.MapVoiceIdEndpoints();

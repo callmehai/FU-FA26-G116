@@ -82,6 +82,13 @@ public sealed class NotificationService(
     private async Task<bool> CanOpenTargetAsync(Guid userId, Notification notification,
         CancellationToken ct = default)
     {
+        // SCRUM-142: a calendar-share notice opens the share for its owner or viewer — re-checked, like a meeting.
+        if (notification.TargetType == "CalendarShare")
+        {
+            return notification.TargetId is { } shareId
+                && await repository.IsCalendarSharePartyAsync(shareId, userId, ct);
+        }
+
         if (notification.TargetType != "Meeting"
             || notification.TargetId is not { } meetingId
             || notification.MeetingId != meetingId)

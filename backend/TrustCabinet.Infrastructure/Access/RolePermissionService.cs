@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -20,6 +21,7 @@ public sealed class RolePermissionService(
     IAuditService audit,
     ICapabilitiesChangePublisher capabilitiesChanged,
     IAdministratorInvariantGuard administratorInvariant,
+    ICalendarShareStopper calendarShares,
     ILogger<RolePermissionService> logger) : IRolePermissionService
 {
     public async Task<RolePermissionMatrix> GetMatrixAsync(CancellationToken ct = default)
@@ -168,6 +170,13 @@ public sealed class RolePermissionService(
         //
         // Collected here, pushed by the caller once the transaction has committed.
         var affected = await roles.FindActiveUserIdsInRoleAsync(roleId, ct);
+
+        // UC-11 POST-4 (BR-424): taking MeetingCreator away from the role stops every share its holders view, in this
+        // transaction. Granting it back later restarts none of them.
+        if (before.Contains(Capability.MeetingCreator) && !requested.Contains(Capability.MeetingCreator))
+        {
+            await calendarShares.StopDeadSharesAsync(affected, actorId, CalendarShareStopReason.ViewerLostMeetingCreator, ct);
+        }
 
         logger.LogInformation(
             "Permissions for role {RoleId} changed by {ActorId}; {Count} account(s) to notify.",

@@ -9,6 +9,7 @@ using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
@@ -55,6 +56,10 @@ public class RoleEndpointsTests : IDisposable
 
                 services.RemoveAll<IUserAccountRepository>();
                 services.AddSingleton<IUserAccountRepository>(Accounts);
+
+                // Stopping calendar shares (BR-424) needs PostgreSQL; CalendarShareStopTests covers it there.
+                services.RemoveAll<ICalendarShareStopper>();
+                services.AddSingleton<ICalendarShareStopper>(new FakeCalendarShareStopper());
 
                 services.RemoveAll<IAuditService>();
                 services.AddSingleton<IAuditService>(Audit);

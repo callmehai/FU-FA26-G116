@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
@@ -64,6 +65,10 @@ public class UserEndpointsTests : IDisposable
                 // database in AdministratorInvariantGuardTests; here it only has to run the write.
                 services.RemoveAll<IAdministratorInvariantGuard>();
                 services.AddSingleton<IAdministratorInvariantGuard>(Invariant);
+
+                // Stopping calendar shares (BR-424) needs PostgreSQL; CalendarShareStopTests covers it there.
+                services.RemoveAll<ICalendarShareStopper>();
+                services.AddSingleton<ICalendarShareStopper>(new FakeCalendarShareStopper());
 
                 services.RemoveAll<IAuditService>();
                 services.AddSingleton<IAuditService>(Audit);

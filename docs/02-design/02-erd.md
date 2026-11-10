@@ -38,6 +38,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | User | Tài khoản nội bộ | IMPLEMENTED | Giữ. |
 | Role | Vai trò RBAC cấp hệ thống | IMPLEMENTED | Giữ; độc lập với MeetingRole. |
 | RoleCapability | Quyền năng gắn với Role | IMPLEMENTED | Giữ. |
+| CalendarShare | Chủ lịch cho một người xem thấy bận/rảnh (SCRUM-142) | IMPLEMENTED | Migration `AddCalendarShares`; xem mục 10. |
 | Meeting | Hồ sơ, lịch và vòng đời cuộc họp (một cuộc họp = một buổi họp) | IMPLEMENTED | Đã có `PlannedStartTime`, `PlannedEndTime`, `ActualStartedAt`, `ActualEndedAt`, `OnlineLink`; đã bỏ `Sessions`, `MinutesIssued`, `Archived` (migration `MeetingOwnsScheduleDropSessions`, ADR-0013). |
 | MeetingStatusHistory | Bằng chứng chuyển trạng thái | NEED MIGRATION / RESTRUCTURE | Giữ append-only; đồng bộ vòng đời đích. |
 | MeetingParticipant | Phân công người tham dự nội bộ | NEED MIGRATION / RESTRUCTURE | Bỏ Guest; hỗ trợ phân công Current/Removed và lưu lịch sử. |
@@ -684,6 +685,55 @@ erDiagram
     }
 }
 ```
+## 10. Chia sẻ lịch (SCRUM-142)
+
+`calendar_shares` — một chủ lịch cho một người xem thấy giờ bận/rảnh của mình (UC-84a → UC-84f, ADR-0058). Chỉ chứa ai, mốc và
+khoảng ngày; giờ bận được tính lúc đọc từ `meetings` + `meeting_participants`, không lưu bản sao và không bao giờ lộ tên, địa điểm hay người
+dự cuộc họp (BR-427).
+
+| Cột | Ý nghĩa |
+|---|---|
+| `owner_id`, `viewer_id` | chủ lịch, người xem; FK `users` `RESTRICT` (user chỉ bị vô hiệu hoá, không xoá) |
+| `initiated_by` | `Viewer` (UC-84a, người xem xin) hoặc `Owner` (UC-84b, chủ lịch tự chia sẻ): quyết định ai trả lời, ai rút |
+| `level` | `Level1` = họp Thường, `Level2` = Thường + Nội bộ; họp Mật không bao giờ chia sẻ (BR-414) |
+| `start_date`, `end_date` | `date` theo lịch Việt Nam, tính cả hai đầu, tối đa 365 ngày (BR-431) |
+| `status` | `Pending`, `Effective`, `Declined`, `Withdrawn`, `Ended`, `Stopped` — không có `Expired` (PO 09/11/2026) |
+| `pending_level`, `pending_end_date`, `pending_requested_at` | thay đổi người xem đang xin (UC-84d); ba cột cùng có hoặc cùng null (check) |
+| `decided_at`, `closed_at`, `closed_by_id` | lúc trả lời; lúc đóng và người đóng (null khi hệ thống đóng) |
+
+```mermaid
+erDiagram
+    User ||--o{ CalendarShare : "owning"
+    User ||--o{ CalendarShare : "viewing"
+
+    CalendarShare {
+        uuid Id PK
+        uuid OwnerId FK
+        uuid ViewerId FK
+        string InitiatedBy
+        string Level
+        date StartDate
+        date EndDate
+        string Status
+        string PendingLevel "nullable"
+        date PendingEndDate "nullable"
+        timestamptz PendingRequestedAt "nullable"
+        uuid ClosedById FK "nullable"
+    }
+```
+
+Ràng buộc và lý do:
+
+- `ux_calendar_shares_open_pair`: unique `(owner_id, viewer_id)` **có lọc** `status IN ('Pending', 'Effective')` — mỗi cặp có chiều tối đa
+  một chia sẻ mở (BR-423); A xem lịch B không chặn B xin xem lịch A; lịch sử các chia sẻ đã đóng không chặn gì.
+- `ck_calendar_shares_not_self` (`owner_id <> viewer_id`), `ck_calendar_shares_range` (`start_date <= end_date`),
+  `ck_calendar_shares_pending_change`.
+- Hết ngày kết thúc không ghi gì vào bảng (BR-425): dòng vẫn `Pending`/`Effective` nhưng mọi lần đọc loại nó ra. Khi có chia sẻ mới cho
+  cùng cặp, dòng cũ được đóng thành `Ended` (người đóng null, audit `calendar_share.closed_after_end_date`, không thông báo) để nhường
+  chỗ trong unique index.
+- `Stopped` được **lưu** ngay trong thao tác vô hiệu hoá / đổi vai trò / sửa ma trận quyền (BR-424), không suy ra lúc đọc, và không có đường nào
+  đưa `Stopped` về `Effective`.
+- Thông báo của chia sẻ dùng `notifications` sẵn có với `target_type = 'CalendarShare'`, `meeting_id` null.
 ## Tổng hợp đầy đủ các quan hệ
 
 | Thực thể nguồn | Số lượng liên kết | Thực thể đích | Quan hệ nghiệp vụ |

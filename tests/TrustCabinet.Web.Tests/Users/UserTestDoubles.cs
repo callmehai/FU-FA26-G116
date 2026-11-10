@@ -1,6 +1,7 @@
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
@@ -388,5 +389,21 @@ internal sealed class FakeVoiceIdErasure(FakeAdministratorInvariantGuard? guard 
     {
         Ended.Add((userId, actorId, reason, guard?.IsInsideWrite ?? false));
         return Task.FromResult(true);
+    }
+}
+
+/// <summary>
+/// Records which people's calendar shares were asked to stop (SCRUM-142, BR-424), and whether inside the guarded write.
+/// The stop itself is tested against PostgreSQL in <c>CalendarShareStopTests</c>.
+/// </summary>
+internal sealed class FakeCalendarShareStopper(FakeAdministratorInvariantGuard? guard = null) : ICalendarShareStopper
+{
+    public List<(Guid[] UserIds, Guid? ActorId, CalendarShareStopReason Reason, bool InsideGuard)> Calls { get; } = [];
+
+    public Task<int> StopDeadSharesAsync(IReadOnlyCollection<Guid> userIds, Guid? actorId, CalendarShareStopReason reason,
+        CancellationToken ct = default)
+    {
+        Calls.Add(([.. userIds], actorId, reason, guard?.IsInsideWrite ?? false));
+        return Task.FromResult(0);
     }
 }

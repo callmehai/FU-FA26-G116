@@ -26,9 +26,12 @@ public class RolePermissionServiceTests
     private readonly FakeCapabilitiesChangePublisher _publisher = new();
     private readonly FakeAdministratorInvariantGuard _invariant = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
+    private readonly FakeCalendarShareStopper _calendarShares;
+
+    public RolePermissionServiceTests() => _calendarShares = new FakeCalendarShareStopper(_invariant);
 
     private RolePermissionService NewService() => new(
-        _roles, _audit, _publisher, _invariant,
+        _roles, _audit, _publisher, _invariant, _calendarShares,
         NullLogger<RolePermissionService>.Instance);
 
     // ------------------------------------------------------ UC-10 · View role & permission matrix

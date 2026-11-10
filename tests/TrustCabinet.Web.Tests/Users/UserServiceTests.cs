@@ -30,8 +30,13 @@ public class UserServiceTests
     private readonly TrustCabinet.Web.Tests.Access.FakeCapabilitiesChangePublisher _capabilitiesChanged = new();
     private readonly Guid _actorId = Guid.CreateVersion7();
     private readonly FakeVoiceIdErasure _voiceId;
+    private readonly FakeCalendarShareStopper _calendarShares;
 
-    public UserServiceTests() => _voiceId = new FakeVoiceIdErasure(_invariant);
+    public UserServiceTests()
+    {
+        _voiceId = new FakeVoiceIdErasure(_invariant);
+        _calendarShares = new FakeCalendarShareStopper(_invariant);
+    }
 
     private UserService NewService() => new(
         _users,
@@ -43,6 +48,7 @@ public class UserServiceTests
         _resetEmail,
         _capabilitiesChanged,
         _voiceId,
+        _calendarShares,
         NullLogger<UserService>.Instance);
 
     private User GivenUser(
@@ -140,7 +146,7 @@ public class UserServiceTests
         var hasher = new TrustCabinet.Infrastructure.Authentication.PasswordHasher();
         var service = new UserService(
             _users, hasher, _audit, _refreshTokens, _invariant, _resetTokens, _resetEmail,
-            _capabilitiesChanged, _voiceId, NullLogger<UserService>.Instance);
+            _capabilitiesChanged, _voiceId, _calendarShares, NullLogger<UserService>.Instance);
 
         await service.CreateAsync(
             new NewUser("Trần Chủ Toạ", "chutoa@trustcabinet.local", ValidPassword, BuiltInRoles.Chair),

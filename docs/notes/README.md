@@ -6,6 +6,8 @@ UC Specification, Business Rules hoặc ADR đã chốt.
 
 ## Danh sách
 
+- [Kế hoạch BE SCRUM-142](NOTE-ke-hoach-be-scrum-142.md) — 08/11/2026, sửa theo PO 09/11/2026; kế hoạch triển khai từng bước chia sẻ lịch
+  (UC-84a → UC-84f, UC-85c): bảng `calendar_shares`, quy tắc BR-414 → BR-431 trong code, API, thông báo/audit, dừng (BR-424), test, chỗ lệch cần ghi Jira.
 - [Đặc tả sơ bộ SCRUM-16](NOTE-dac-ta-so-bo-scrum-16.md) — 10/11/2026, **đã chốt và vào Report 3 cùng ngày**; nhật ký
   kiểm toán: đối chiếu 6 tiêu chí của ticket, UC-13 viết lại, BR-440 → BR-446, `MSG469`–`MSG470`, sequence UC-13 vẽ
   lại. BE đã làm 10/11/2026 (PR #311, [contract](../03-api/21-nhat-ky-kiem-toan.md)): `GET /api/audit-log`, ghi đăng

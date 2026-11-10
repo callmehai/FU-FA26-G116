@@ -88,6 +88,7 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
             // The real guard, not the fake: these tests run against a real PostgreSQL, and the
             // lock is the thing under test on the concurrency cases below.
             new AdministratorInvariantGuard(db),
+            new FakeCalendarShareStopper(),
             NullLogger<RolePermissionService>.Instance);
 
     [Fact]

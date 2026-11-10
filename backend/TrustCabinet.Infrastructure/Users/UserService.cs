@@ -5,6 +5,7 @@ using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
@@ -29,6 +30,7 @@ public sealed partial class UserService(
     IPasswordResetEmailSender passwordResetEmail,
     ICapabilitiesChangePublisher capabilitiesChanged,
     IVoiceIdErasure voiceId,
+    ICalendarShareStopper calendarShares,
     ILogger<UserService> logger) : IUserService
 {
     /// <summary>
@@ -227,6 +229,13 @@ public sealed partial class UserService(
 
         logger.LogInformation("Account {UserId} updated by {ActorId}.", user.Id, actorId);
 
+        // UC-08 POST-5 (BR-424): a new role without MeetingCreator stops every share this person views, at once and for
+        // good, in this transaction. The stopper reads the role just saved, so a role that keeps the right stops nothing.
+        if (before.RoleId != user.RoleId)
+        {
+            await calendarShares.StopDeadSharesAsync([user.Id], actorId, CalendarShareStopReason.ViewerLostMeetingCreator, ct);
+        }
+
         // A role change keeps the session (SCRUM-105, PO 22/10/2026). Capabilities travel inside
         // the access token, but every gated endpoint re-reads them from the database, so a lost
         // capability is refused at the next request anyway; the person is told instead, and their
@@ -323,6 +332,13 @@ public sealed partial class UserService(
         if (!isActive && await voiceId.EndAsync(user.Id, actorId, VoiceIdEndReason.AccountDeactivated, ct))
         {
             logger.LogInformation("Voice ID of deactivated account {UserId} was ended.", user.Id);
+        }
+
+        // UC-06c step 10 (BR-424): every share where this account is the owner or the viewer stops in this transaction,
+        // and both sides are told. Reactivating restarts none of them.
+        if (!isActive)
+        {
+            await calendarShares.StopDeadSharesAsync([user.Id], actorId, CalendarShareStopReason.AccountDeactivated, ct);
         }
 
         logger.LogInformation(

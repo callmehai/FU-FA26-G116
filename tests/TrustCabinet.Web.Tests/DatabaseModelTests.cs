@@ -40,7 +40,7 @@ public class DatabaseModelTests
         // this is also what catches one that was written but never registered.
         Assert.Equal(
             [
-                "agenda_items", "ai_provider_settings", "audit_log", "call_participants", "call_sessions",
+                "agenda_items", "ai_provider_settings", "audit_log", "calendar_shares", "call_participants", "call_sessions",
                 "document_comments", "document_read_confirmations", "documents", "email_messages", "folders",
                 "guest_sessions", "guest_verification_challenges",
                 "meeting_document_agenda_items", "meeting_documents", "meeting_guest_invitations", "meeting_invitation_dispatches",
@@ -59,6 +59,10 @@ public class DatabaseModelTests
     [InlineData(typeof(Meeting), nameof(Meeting.Status))]
     [InlineData(typeof(Meeting), nameof(Meeting.Sensitivity))]
     [InlineData(typeof(RoleCapability), nameof(RoleCapability.Capability))]
+    [InlineData(typeof(CalendarShare), nameof(CalendarShare.Level))]
+    [InlineData(typeof(CalendarShare), nameof(CalendarShare.Status))]
+    [InlineData(typeof(CalendarShare), nameof(CalendarShare.InitiatedBy))]
+    [InlineData(typeof(CalendarShare), nameof(CalendarShare.PendingLevel))]
     public void Enums_are_stored_as_text(Type entity, string property)
     {
         using var db = NewContext();
@@ -578,6 +582,21 @@ public class DatabaseModelTests
             .DeleteBehavior);
     }
 
+    [Fact]
+    public void A_pair_has_at_most_one_open_calendar_share_per_direction()
+    {
+        using var db = NewContext();
+        var entity = db.Model.FindEntityType(typeof(CalendarShare))!;
+
+        // BR-423: unique on (owner, viewer) — directed — but only among Pending and Effective rows, so the history of
+        // declined, withdrawn, ended and stopped shares never blocks a new one.
+        var index = Assert.Single(entity.GetIndexes(), i => i.IsUnique);
+        Assert.Equal(["OwnerId", "ViewerId"], index.Properties.Select(p => p.Name));
+        Assert.Equal("status IN ('Pending', 'Effective')", index.GetFilter());
+
+        // Accounts are deactivated, never deleted: no share may vanish with a user row.
+        Assert.All(entity.GetForeignKeys(), fk => Assert.Equal(DeleteBehavior.Restrict, fk.DeleteBehavior));
+    }
     [Fact]
     public void Audit_details_are_queryable_json()
     {
