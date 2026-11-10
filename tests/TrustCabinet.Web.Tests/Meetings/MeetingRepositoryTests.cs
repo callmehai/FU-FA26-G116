@@ -1207,6 +1207,58 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task A_transition_reads_the_status_committed_before_the_lock_not_a_stale_tracked_copy()
+    {
+        // The deterministic half of the concurrent publish race: this context still tracks the meeting as Approved
+        // when another request publishes it, so the locked read must refresh the tracked row or it publishes twice.
+        var approver = NewUser("Stale tracked approver", _approverRoleId);
+        _db.Users.Add(approver);
+        var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
+        Assert.True(created.Succeeded);
+        var meetingId = created.Meeting!.Id;
+        _db.AgendaItems.Add(new AgendaItem
+        {
+            MeetingId = meetingId,
+            Position = 1,
+            Title = "Báo cáo",
+            PresenterId = _creatorId,
+        });
+        _db.MeetingParticipants.Add(new MeetingParticipant
+        {
+            MeetingId = meetingId,
+            UserId = approver.Id,
+            Role = MeetingRole.Secretary,
+            Response = InvitationResponse.Pending,
+        });
+        await _db.SaveChangesAsync();
+
+        var service = NewService();
+        Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.SubmitForApproval, approver.Id),
+            _creatorId)).Outcome);
+        Assert.Equal(MeetingWorkflowOutcome.Success, (await service.TransitionAsync(
+            meetingId,
+            new MeetingTransitionCommand(MeetingTransitionAction.Approve),
+            approver.Id)).Outcome);
+        Assert.Equal(MeetingStatus.Approved, (await _db.Meetings.SingleAsync(m => m.Id == meetingId)).Status);
+
+        await using (var otherContext = NewContext())
+        {
+            Assert.Equal(MeetingWorkflowOutcome.Success, (await NewService(otherContext).TransitionAsync(
+                meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _creatorId)).Outcome);
+        }
+
+        var stale = await service.TransitionAsync(
+            meetingId, new MeetingTransitionCommand(MeetingTransitionAction.Publish), _creatorId);
+
+        Assert.Equal(MeetingWorkflowOutcome.StatusConflict, stale.Outcome);
+        await using var verify = NewContext();
+        Assert.Single(await verify.MeetingStatusHistory.Where(item =>
+            item.MeetingId == meetingId && item.Action == MeetingHistoryAction.Publish).ToListAsync());
+    }
+
+    [Fact]
     public async Task Update_waits_for_a_concurrent_status_change_then_refuses_the_stale_edit()
     {
         var created = await NewService().CreateAsync(Input(), _creatorId, [new(_creatorId, "Chair")]);
