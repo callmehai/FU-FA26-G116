@@ -50,12 +50,16 @@ public readonly record struct ReportPeriod(int FromYear, int FromMonth, int ToYe
         return period.Months is >= 1 and <= MaxMonths ? period : null;
     }
 
+    /// <summary>
+    /// Years 2000 to 9998: below, nothing was ever scheduled; above, the end of the period (the month after the last)
+    /// would pass <see cref="DateTime.MaxValue"/> and fail as a read error instead of an invalid period (review #310).
+    /// </summary>
     private static bool TryMonth(string? value, out DateTime month)
     {
         month = default;
         return value is { Length: 7 }
             && DateTime.TryParseExact(value, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out month)
-            && month.Year >= 2000;
+            && month.Year is >= 2000 and <= 9998;
     }
 }
 

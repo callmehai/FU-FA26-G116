@@ -41,7 +41,7 @@ Cả hai trả header `Cache-Control: private, no-store`.
 - Bỏ cả hai thì server lấy 12 tháng, kết thúc ở tháng hiện tại theo giờ Việt Nam.
 - Server trả `400` `MSG463` khi:
   - chỉ gửi một trong hai tham số;
-  - tham số sai dạng, ví dụ `2026-1`, `2026-13`;
+  - tham số sai dạng, ví dụ `2026-1`, `2026-13`, hoặc năm ngoài khoảng 2000–9998;
   - tháng bắt đầu sau tháng kết thúc;
   - khoảng thời gian dài quá 24 tháng.
 - Cuộc họp thuộc tháng chứa **giờ bắt đầu dự kiến** của nó (BR-434). Cuộc họp đã huỷ vẫn được đếm.
@@ -68,7 +68,7 @@ Cả hai trả header `Cache-Control: private, no-store`.
   - Cuộc họp chưa ai được điểm danh `Present` hoặc `Absent` thì không tính, và được đếm vào `meetingsWithoutAttendance`.
   - `averageRate` là trung bình các tỷ lệ, dạng phân số (`0.87` là 87 %), làm tròn 4 chữ số. Bằng `null` khi không có
     cuộc họp nào để tính.
-- **`duration` (PO chốt Q2 ngày 09/11/2026, BR-439 đề xuất):** chỉ tính cuộc họp `Ended`.
+- **`duration` (PO chốt Q2 ngày 09/11/2026, BR-447 đề xuất):** chỉ tính cuộc họp `Ended`.
   - Thời lượng của một cuộc họp = từ `actualStartedAt` tới `actualEndedAt`.
   - Cuộc họp thiếu một trong hai mốc thì không tính, và được đếm vào `meetingsWithoutTimes`.
   - `averageMinutes` làm tròn 1 chữ số. Bằng `null` khi không có cuộc họp nào để tính.

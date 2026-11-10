@@ -194,6 +194,10 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
     [InlineData("from=2026-13&to=2026-12")]
     [InlineData("from=2026-1&to=2026-12")]
     [InlineData("from=abc&to=2026-12")]
+    // Past the last year a period may end in: the month after it would overflow DateTime (review #310).
+    [InlineData("from=9999-01&to=9999-12")]
+    [InlineData("from=9998-12&to=9999-01")]
+    [InlineData("from=1999-12&to=2000-01")]
     public async Task An_invalid_period_is_refused_by_both_endpoints(string query)
     {
         var me = (await f.Users(1))[0];
@@ -202,6 +206,16 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
         await AssertCode(await client.GetAsync($"{Export}?{query}"), 400, "MSG463");
         await using var db = f.Db();
         Assert.False(await db.AuditLog.AnyAsync(a => a.ActorId == me));
+    }
+
+    [Fact]
+    public async Task The_last_year_a_period_may_reach_is_9998()
+    {
+        var me = (await f.Users(1))[0];
+        using var client = f.Client(me);
+        var report = await client.GetFromJsonAsync<JsonElement>($"{Report}?from=9998-01&to=9998-12");
+        Assert.Equal(12, report.GetProperty("byMonth").GetArrayLength());
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"{Export}?from=9998-01&to=9998-12")).StatusCode);
     }
 
     [Fact]
@@ -306,11 +320,18 @@ public sealed class ReportEndpointTests(ReportFixture f) : IClassFixture<ReportF
     }
 
     [Fact]
-    public async Task Anonymous_callers_and_deactivated_accounts_are_refused()
+    public async Task Anonymous_callers_guests_and_deactivated_accounts_are_refused()
     {
         using var anonymous = f.Client();
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(Report)).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(Export)).StatusCode);
+
+        // A Guest may not view or export the report (BR-432, PO 09/11/2026 Q3): a guest token has no internal account.
+        using var guest = f.GuestClient();
+        Assert.Equal(HttpStatusCode.Forbidden, (await guest.GetAsync(Report)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await guest.GetAsync(Export)).StatusCode);
+        await using (var db = f.Db())
+            Assert.False(await db.AuditLog.AnyAsync(a => a.Action == AuditActions.ReportExported && a.ActorId == null));
 
         var gone = (await f.Users(1, active: false))[0];
         using var deactivated = f.Client(gone);

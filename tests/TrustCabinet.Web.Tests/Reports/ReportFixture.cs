@@ -123,8 +123,24 @@ public sealed class ReportFixture : IAsyncLifetime
         return client;
     }
 
-    private static string Token(Guid actor) => new JwtSecurityTokenHandler().WriteToken(
-        new JwtSecurityToken("TrustCabinet", "TrustCabinet", [new Claim("sub", actor.ToString())],
+    /// <summary>
+    /// A caller with a guest token (UC-04): the shape <c>GuestSessionTests</c> pins — subject "guest:{session}" and the
+    /// three guest claims, signed like any token — and no internal account behind it.
+    /// </summary>
+    internal HttpClient GuestClient()
+    {
+        var (meeting, invitation, session) = (Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var client = Host.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Sign(
+            [new Claim("sub", $"guest:{session}"), new Claim("guest_meeting", meeting.ToString()),
+                new Claim("guest_invitation", invitation.ToString()), new Claim("guest_session", session.ToString())]));
+        return client;
+    }
+
+    private static string Token(Guid actor) => Sign([new Claim("sub", actor.ToString())]);
+
+    private static string Sign(Claim[] claims) => new JwtSecurityTokenHandler().WriteToken(
+        new JwtSecurityToken("TrustCabinet", "TrustCabinet", claims,
             expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
                 SecurityAlgorithms.HmacSha256)));
