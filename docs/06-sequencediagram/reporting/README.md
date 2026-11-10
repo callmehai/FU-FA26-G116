@@ -1,4 +1,4 @@
-# Báo cáo và thống kê — FE-15 (đã vào Report 3; BE đã có, FE chưa)
+# Báo cáo và thống kê — FE-15 (đã vào Report 3; đã có BE và FE)
 
 Các sequence UC-70a, UC-70b tuân theo [convention chung](../README.md). Đặc tả UC-70a, UC-70b, BR-432 → BR-438 và
 mã `MSG463`–`MSG466` đã vào Report 3 ngày 09/11/2026 (bản trích ở

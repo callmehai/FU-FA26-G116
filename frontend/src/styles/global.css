@@ -4991,3 +4991,40 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .notes-entry { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .notes-entry .card-title { margin: 0; }
 .dialog-lg .notes-text-input { min-height: min(420px, 50dvh); }
+
+/* ---------- Báo cáo (SCRUM-38) ----------
+   The figures are numbers in tables, never a row of KPI tiles: two columns of cards, each a heading over a table.
+   Counts are right-aligned in tabular figures so they line up; a zero is muted, not hidden. */
+.report-toolbar { gap: 8px; }
+.report-toolbar .select { min-width: 168px; }
+.report-toolbar-word { color: var(--muted-ink); }
+.report-generated { margin-left: auto; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
+.report-period-error { margin: -8px 0 16px; }
+.report-grid { display: grid; flex: none; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.report-column { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.report-card { padding: 0; overflow: hidden; }
+.report-card-title { margin: 0; padding: 14px 16px; border-bottom: 1px solid var(--line); font-size: 16px; }
+.report-card .table-card { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+.report-table .cell-num { text-align: right; font-variant-numeric: tabular-nums; }
+.report-table .cell-zero { color: var(--faint-ink); }
+.report-table td.report-metric { width: 55%; white-space: normal; }
+.report-metric .info-tip { margin-left: 4px; vertical-align: middle; }
+.report-table td.report-value { white-space: normal; }
+.report-value strong { color: var(--ink); font-weight: 600; white-space: nowrap; }
+.report-basis { display: inline-block; margin-left: 8px; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
+.report-table .report-bar-cell { width: 45%; padding-left: 0; }
+.report-bar { display: block; height: 8px; min-width: 4px; border-radius: 4px; background: var(--brand); }
+.report-skeleton { display: flex; flex-direction: column; gap: 18px; padding: 20px 16px; }
+.report-empty { flex: none; padding: 56px 16px; text-align: center; }
+.report-empty .empty-title { margin: 0; color: var(--muted-ink); }
+@media (max-width: 1100px) {
+  .report-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) {
+  /* "Từ [tháng]" and "đến [tháng]" each on a line of their own, the pickers as wide as the column. */
+  .report-toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+  .report-toolbar .select { min-width: 0; }
+  .report-generated { grid-column: 1 / -1; margin-left: 0; }
+  .report-basis { display: block; margin-left: 0; }
+  .report-table .report-bar-cell { width: 35%; }
+}

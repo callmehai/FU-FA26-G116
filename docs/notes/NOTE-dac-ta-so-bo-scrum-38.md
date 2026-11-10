@@ -168,4 +168,4 @@ PO chốt cả ba ngày 09/11/2026.
       màn chạy thật.
 - [x] BE: `GET /api/reports/meetings`, `GET /api/reports/meetings/export`, audit `report.exported`; contract ở
       [`22-bao-cao-thong-ke.md`](../03-api/22-bao-cao-thong-ke.md); `MSG463`–`MSG465` sang *BE* (09/11/2026).
-- [ ] FE: trang Báo cáo, chọn khoảng tháng, nút Xuất Excel; `MSG466`.
+- [x] FE: trang Báo cáo (`/mgmt/reports`), chọn khoảng tháng, nút Xuất Excel; `MSG466` (10/11/2026, PR xếp trên PR BE #310).

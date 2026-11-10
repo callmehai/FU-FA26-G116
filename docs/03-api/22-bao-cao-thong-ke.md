@@ -7,7 +7,9 @@ UC-70a *View Reports & Statistics* và UC-70b *Export Report*, theo
 Mã thông báo: `MSG463`–`MSG466` ([danh mục](00-danh-muc-ma-thong-bao.md)). `MSG466` do FE tự hiện.
 Code: [`ReportEndpoints`](../../backend/TrustCabinet.Web/Endpoints/ReportEndpoints.cs),
 [`ReportService`](../../backend/TrustCabinet.Infrastructure/Reports/ReportService.cs),
-[`MeetingReportXlsx`](../../backend/TrustCabinet.Infrastructure/Reports/MeetingReportXlsx.cs). FE chưa làm.
+[`MeetingReportXlsx`](../../backend/TrustCabinet.Infrastructure/Reports/MeetingReportXlsx.cs). FE:
+[`ReportsPage`](../../frontend/src/features/reports/ReportsPage.tsx), kiểu [`types/report.ts`](../../frontend/src/types/report.ts),
+gọi API ở [`api/reports.ts`](../../frontend/src/api/reports.ts).
 
 ## Quyền
 
@@ -121,3 +123,20 @@ Các test phủ:
 - `MSG463`–`MSG465`;
 - nội dung tệp `.xlsx`, dòng audit, và trường hợp không ghi được audit thì không trả tệp;
 - `401` và `403`.
+
+## Hợp đồng tích hợp FE
+
+- **Màn:** mục *Báo cáo* trên sidebar, cho mọi người dùng nội bộ (không cần capability), route `/mgmt/reports`.
+  Khoảng thời gian nằm trên URL: `?from=yyyy-MM&to=yyyy-MM`. Đổi tháng thì thay URL (`replace`), nên tải lại trang hoặc gửi
+  link vẫn mở đúng số liệu. Tháng sai dạng trên URL bị bỏ qua, trang dùng khoảng mặc định.
+- **Khoảng mặc định:** FE tự tính 12 tháng tới tháng hiện tại theo giờ Việt Nam (`Asia/Ho_Chi_Minh`), như server.
+- **`MSG463`:** FE kiểm tra trước, cùng luật BR-433 và cùng câu thông báo. Khoảng sai thì hiện lỗi dưới thanh chọn tháng,
+  không gọi API, và khoá nút *Xuất Excel*. Nếu server vẫn trả `MSG463`, FE hiện câu của server ở cùng chỗ.
+- **`MSG464`:** thông báo của server, kèm nút *Thử lại*. **`MSG465`:** toast. **`MSG466`:** FE tự hiện khi `total = 0`.
+- **Đang tải lại:** số liệu cũ vẫn hiện, mờ đi (`aria-busy`). Lần tải đầu hiện khung chờ.
+- **Số liệu hiện bằng bảng, không dùng ô KPI:**
+  - *Tổng quan*: ba chỉ số trung bình, mỗi chỉ số kèm "trên x/y cuộc họp" và một (i) giải thích;
+  - *Theo tháng*: số cuộc họp và thanh ngang tỉ lệ theo tháng nhiều nhất;
+  - *Theo trạng thái* và *Theo mức độ*: dùng `StatusBadge`/`SensitivityBadge`.
+  - Số `0` được làm mờ, không ẩn. Tổng số cuộc họp nằm ở dòng mô tả dưới tiêu đề trang.
+- **Tải tệp:** tên tệp `bao-cao-cuoc-hop_<from>_<to>.xlsx`, như server đặt.

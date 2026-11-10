@@ -13,6 +13,8 @@ const OBJECT_TYPE_LABEL: Record<string, string> = {
   VoiceSample: 'Mẫu giọng',
   GuestSession: 'Phiên của Khách',
   AiProviderSetting: 'Cấu hình AI',
+  // SCRUM-38: an export of the meeting report (report.exported); it has no object id.
+  Report: 'Báo cáo',
 }
 
 export const objectTypeLabel = (type: string) => OBJECT_TYPE_LABEL[type] ?? type

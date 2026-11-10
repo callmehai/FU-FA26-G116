@@ -50,6 +50,7 @@ const GuestDocumentPage = lazy(() =>
   import('../features/guest/GuestMeetingPage').then((m) => ({ default: m.GuestDocumentPage })),
 )
 const VoicePage = lazy(() => import('../features/voice/VoicePage').then((m) => ({ default: m.VoicePage })))
+const ReportsPage = lazy(() => import('../features/reports/ReportsPage').then((m) => ({ default: m.ReportsPage })))
 
 /**
  * Route map: a public login and password reset, then every screen behind a session gate, inside
@@ -100,6 +101,7 @@ export function App() {
             <Route path={routes.calendar} element={<CalendarPage />} />
             <Route path={routes.documents} element={<DocumentsPage />} />
             <Route path={routes.myVoice} element={<VoicePage />} />
+            <Route path={routes.reports} element={<ReportsPage />} />
             <Route path={routes.meetings} element={<MeetingsPage />} />
             {/* Create and edit are dialogs now (`?create=`, `?edit=`); old links land on them. */}
             <Route path={routes.meetingNew} element={<Navigate to={`${routes.meetings}?create=1`} replace />} />
