@@ -81,9 +81,9 @@ Planned Start/End Time (BR-33, BR-62); Agenda is not required
             activate MeetingService
         MeetingService-->MeetingController: Eligible Meeting Approvers
         deactivate MeetingService
-        MeetingController-->MeetingPage: Display eligible Meeting Approvers
+        MeetingController-->MeetingPage: Eligible Meeting Approvers with name and email
         deactivate MeetingController
-        MeetingPage-->Organizer: Display eligible Meeting Approvers
+        MeetingPage-->Organizer: Display eligible Meeting Approvers with name and email, searchable\nignoring case and diacritics (BR-439); on resubmission the previous approver\nis preselected while still eligible (AF-1)
 
         Organizer->MeetingPage: Select a Meeting Approver
         MeetingPage->MeetingController: Submit selected Meeting Approver
