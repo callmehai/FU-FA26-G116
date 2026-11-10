@@ -17,7 +17,8 @@ export interface AuditLogItem {
   /** Vietnamese name of the event; the code itself when the backend has none. */
   actionLabel: string
   objectType: string
-  objectId: string
+  /** Null for an event on no single object (a change to several roles' permissions). */
+  objectId: string | null
   /** Only for `User` and `Role` (BR-443) — never a meeting title or a document name. */
   objectName: string | null
   ipAddress: string | null

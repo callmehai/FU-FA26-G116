@@ -10,7 +10,6 @@ export function listAuditLog(query: AuditLogQuery) {
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined && value !== '') params.set(key, String(value))
   }
-  // URLSearchParams encodes the offset's "+" as %2B; a bare "+" would reach the backend as a space.
   return api.get<AuditLogPage>(`/api/audit-log?${params}`)
 }
 

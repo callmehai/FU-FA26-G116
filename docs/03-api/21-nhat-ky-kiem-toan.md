@@ -68,6 +68,7 @@ BR-12.
 
 - `actor.kind`: `user`, `guest` hoặc `system` (BR-441). Với `guest`, `id` là mã **lời mời** và `name`/`email` là tên,
   email được mời (không phải tên Khách tự khai). Với `system`, `id`, `name`, `email` đều `null`.
+- `objectId` có thể `null`: sự kiện không gắn với một đối tượng (đổi quyền của nhiều vai trò một lúc).
 - `objectName` chỉ có với `User` (họ tên) và `Role` (tên vai trò; `null` nếu vai trò đã xoá — tên cũ nằm trong
   `details`). Các loại khác luôn `null`: nhật ký không tra tiêu đề cuộc họp hay tên tài liệu (BR-443).
 - `details` là JSON nguyên như lúc ghi; tên trường khác nhau giữa các loại sự kiện (có loại PascalCase, có loại
@@ -90,9 +91,13 @@ tài khoản/vai trò hoặc 8 ký tự đầu của mã).
 - Mọi tiêu chí nằm trên URL (`from`, `to` dạng `YYYY-MM-DD`, `actor`, `action`, `q`, `page`, `pageSize`); giá trị sai
   dạng bị bỏ qua. Khoảng ngày là trọn ngày theo giờ máy người xem, gửi lên dạng UTC. Ngày bắt đầu sau ngày kết thúc
   thì báo dưới ô và **không** áp dụng.
-- Ô người thực hiện: Khách, Hệ thống, rồi mọi tài khoản từ `GET /api/users` (hai người trùng tên thì hiện email).
+- Ô tìm kiếm ghi "Tìm theo mã, chi tiết…": `q` khớp mã đối tượng và giá trị trong `details`, **không** khớp tên tài
+  khoản/vai trò ở cột Đối tượng. **D10** (chờ BA Final Review): màn 3.3 ghi "matches the target object name"; muốn tìm
+  theo tên thì BE phải khớp thêm tên đã tra cho `User`/`Role`.
+- Ô người thực hiện: Khách, Hệ thống, rồi mọi tài khoản từ `GET /api/users` (hai người trùng tên thì hiện email; mã
+  tài khoản trên URL không có trong danh sách thì hiện "Tài khoản không rõ"). Ngày không có thật trên URL bị bỏ qua.
 - `auth.sign_in_failed`: chip đỏ, dòng nền đỏ nhạt.
-- Bấm một dòng mở ngăn bên phải, chỉ đọc: người thực hiện, mã sự kiện, mã đối tượng đầy đủ, IP, rồi `details` từng
+- Bấm một dòng mở ngăn bên phải, chỉ đọc: thời điểm tới giây, người thực hiện, mã sự kiện, mã đối tượng đầy đủ, IP, rồi `details` từng
   khoá như đã ghi.
 - `MSG469` (link sửa tay) → "Bộ lọc trên đường dẫn không hợp lệ." và *Đặt lại bộ lọc*; `MSG470` → câu của backend và
   *Thử lại*; `403` giữa phiên → `useAccessLost`.

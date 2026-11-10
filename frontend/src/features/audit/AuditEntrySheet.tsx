@@ -1,7 +1,6 @@
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
 import { avatarColors, initials } from '../../lib/avatar'
-import { formatDateTime } from '../../lib/format'
 import type { AuditActor, AuditLogItem } from '../../types/auditLog'
 import { objectTypeLabel } from './objectTypes'
 
@@ -35,6 +34,16 @@ export function ActorCell({ actor }: { actor: AuditActor }) {
   )
 }
 
+/** Evidence: entries of one minute are told apart by the second. */
+const withSeconds = new Intl.DateTimeFormat('vi-VN', {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+})
+
 /**
  * UC-13 AF-2: one entry, read-only, beside the list. `details` is shown key by key exactly as recorded —
  * its field names differ between event types, so none is singled out.
@@ -48,7 +57,12 @@ export function AuditEntrySheet({ item, onClose }: { item: AuditLogItem; onClose
         : [['', item.details] as [string, unknown]]
 
   return (
-    <Dialog title={item.actionLabel} description={formatDateTime(item.occurredAt)} onClose={onClose} size="sheet">
+    <Dialog
+      title={item.actionLabel}
+      description={withSeconds.format(new Date(item.occurredAt)).replace(', ', ' ')}
+      onClose={onClose}
+      size="sheet"
+    >
       <dl className="audit-facts">
         <div>
           <dt>Người thực hiện</dt>
@@ -57,9 +71,8 @@ export function AuditEntrySheet({ item, onClose }: { item: AuditLogItem; onClose
           </dd>
         </div>
         <div>
-          <dt>Sự kiện</dt>
+          <dt>Mã sự kiện</dt>
           <dd>
-            {item.actionLabel}
             <code className="audit-code">{item.action}</code>
           </dd>
         </div>
@@ -68,7 +81,7 @@ export function AuditEntrySheet({ item, onClose }: { item: AuditLogItem; onClose
           <dd>
             {objectTypeLabel(item.objectType)}
             {item.objectName && ` · ${item.objectName}`}
-            <code className="audit-code">{item.objectId}</code>
+            {item.objectId && <code className="audit-code">{item.objectId}</code>}
           </dd>
         </div>
         <div>

@@ -39,7 +39,14 @@ interface Criteria {
 
 /** The URL read defensively: a malformed value is dropped rather than sent, so an old link opens unfiltered. */
 function readCriteria(params: URLSearchParams): Criteria {
-  const day = (key: string) => (DAY.test(params.get(key) ?? '') ? params.get(key)! : '')
+  // A real day only: 2026-02-31 would otherwise roll over to 3 March.
+  const day = (key: string) => {
+    const value = params.get(key) ?? ''
+    if (!DAY.test(value)) return ''
+    const [y, m, d] = value.split('-').map(Number)
+    const date = new Date(y, m - 1, d)
+    return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d ? value : ''
+  }
   const page = Number(params.get('page'))
   const pageSize = Number(params.get('pageSize'))
   return {
@@ -89,7 +96,8 @@ export function AuditLogPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [eventTypes, setEventTypes] = useState<AuditEventType[]>([])
-  const [actors, setActors] = useState<SelectOption<string>[]>([])
+  /** Null until `/api/users` has answered. */
+  const [actors, setActors] = useState<SelectOption<string>[] | null>(null)
   const [opened, setOpened] = useState<AuditLogItem | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
@@ -196,8 +204,12 @@ export function AuditLogPage() {
     { value: '', label: 'Mọi người thực hiện' },
     { value: 'guest', label: 'Khách' },
     { value: 'system', label: 'Hệ thống' },
-    ...actors,
+    ...(actors ?? []),
   ]
+  // A link naming an account that is not in the list still filters by it: say so rather than look unset.
+  if (actors && criteria.actor && !actorOptions.some((o) => o.value === criteria.actor)) {
+    actorOptions.push({ value: criteria.actor, label: 'Tài khoản không rõ' })
+  }
   const eventOptions: SelectOption<string>[] = [
     { value: '', label: 'Mọi loại sự kiện' },
     ...eventTypes.map((t) => ({ value: t.code, label: t.label })),
@@ -261,7 +273,7 @@ export function AuditLogPage() {
           </td>
           <td className="audit-object">
             {objectTypeLabel(item.objectType)}
-            <span className="cell-sub">{item.objectName ?? `#${item.objectId.slice(0, 8)}`}</span>
+            <span className="cell-sub">{item.objectName ?? (item.objectId && `#${item.objectId.slice(0, 8)}`)}</span>
           </td>
           <td className="cell-muted audit-ip">{item.ipAddress || <span className="audit-none">Không có</span>}</td>
           <td className="col-action">
@@ -298,8 +310,8 @@ export function AuditLogPage() {
               value={search}
               maxLength={100}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo đối tượng…"
-              aria-label="Tìm theo mã đối tượng hoặc nội dung chi tiết"
+              placeholder="Tìm theo mã, chi tiết…"
+              aria-label="Tìm theo mã đối tượng hoặc chi tiết"
             />
           </label>
 
