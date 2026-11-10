@@ -169,18 +169,24 @@ public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassF
         await f.AddShare(p.Owner2, p.Organizer, CalendarShareStatus.Effective, start: Today.AddDays(-20), end: Today.AddDays(-1));
         await f.AddShare(p.Owner2, p.Organizer2);
         await Meeting(p.Admin, p.Owner2, Monday, (8, 0), (12, 0));
+        // Organizer2 has only a Pending share (not yet accepted) to the finder. (Owner2 cannot also have one: the lapsed
+        // Effective row above still holds the pair's single open place.)
+        await f.AddShare(p.Organizer2, p.Organizer, CalendarShareStatus.Pending);
+        await Meeting(p.Admin, p.Organizer2, Monday, (8, 0), (12, 0));
 
         using var organizer = f.Client(p.Organizer);
-        var result = await Ok(await organizer.PostAsJsonAsync("/api/calendar/slots", Search([p.Owner, p.Owner2])));
+        var result = await Ok(await organizer.PostAsJsonAsync("/api/calendar/slots",
+            Search([p.Owner, p.Owner2, p.Organizer2])));
         var owner2 = result.GetProperty("people")[1];
         Assert.Equal("NotShared", owner2.GetProperty("status").GetString());
         Assert.Equal(JsonValueKind.Null, owner2.GetProperty("level").ValueKind);
+        Assert.Equal("NotShared", result.GetProperty("people")[2].GetProperty("status").GetString());
         // Owner2's busy morning does not show: they are simply not counted (BR-416).
         Assert.True(result.GetProperty("allFree").GetBoolean());
         Assert.All(Slots(result), s => Assert.Equal(1, s.GetProperty("countedCount").GetInt32()));
 
         // Nobody counted at all: nothing to propose, and never "everyone is free".
-        var nobody = await Ok(await organizer.PostAsJsonAsync("/api/calendar/slots", Search([p.Owner2])));
+        var nobody = await Ok(await organizer.PostAsJsonAsync("/api/calendar/slots", Search([p.Owner2, p.Organizer2])));
         Assert.False(nobody.GetProperty("allFree").GetBoolean());
         Assert.Equal(JsonValueKind.Null, nobody.GetProperty("code").ValueKind);
         Assert.Empty(Slots(nobody));
@@ -210,6 +216,42 @@ public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassF
             Assert.Equal([p.Owner], Ids(s, "busyUserIds"));
             Assert.Equal([p.Owner2], Ids(s, "unknownUserIds"));
         });
+    }
+
+    [Fact]
+    public async Task A_share_that_does_not_reach_the_search_range_leaves_only_unknown_days()
+    {
+        var p = await f.Seed();
+        // Shared, but only from next week on: every searched day is unknown for Owner.
+        await f.AddShare(p.Owner, p.Organizer, start: Monday.AddDays(7), end: Monday.AddDays(20));
+        using var organizer = f.Client(p.Organizer);
+
+        // Alone, Owner is never free: no slot, no MSG445 — even though Owner is listed as Shared.
+        var alone = await Ok(await organizer.PostAsJsonAsync("/api/calendar/slots", Search([p.Owner])));
+        Assert.Equal("Shared", alone.GetProperty("people")[0].GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, alone.GetProperty("code").ValueKind);
+        Assert.Empty(Slots(alone));
+
+        // With the finder counted, the finder is free and Owner unknown: the most people free, never Owner.
+        var withMe = await Ok(await organizer.PostAsJsonAsync("/api/calendar/slots", Search([p.Owner], includeMe: true)));
+        Assert.Equal("MSG445", withMe.GetProperty("code").GetString());
+        Assert.All(Slots(withMe), s =>
+        {
+            Assert.Equal(1, s.GetProperty("freeCount").GetInt32());
+            Assert.Equal([p.Owner], Ids(s, "unknownUserIds"));
+        });
+    }
+
+    [Fact]
+    public async Task A_meeting_before_working_hours_still_counts_inside_the_gap()
+    {
+        var p = await f.Seed();
+        await f.AddShare(p.Owner, p.Organizer);
+        // Ends 07:50, before the working day: with a 30-minute gap the 08:00 slot is too close.
+        await Meeting(p.Admin, p.Owner, Monday, (7, 0), (7, 50));
+        using var organizer = f.Client(p.Organizer);
+        var result = await Ok(await organizer.PostAsJsonAsync("/api/calendar/slots", Search([p.Owner], buffer: 30)));
+        Assert.Equal([9, 10, 11], StartHours(result));
     }
 
     [Fact]

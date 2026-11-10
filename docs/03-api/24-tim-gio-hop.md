@@ -45,7 +45,7 @@ không, `errors.durationMinutes = "Thời lượng dài hơn một buổi làm v
 
 ### 2.2 Cách tính khung (BR-415, BR-422, D15)
 
-- Giờ bắt đầu nằm trên lưới `stepMinutes` tính từ 00:00 (bước 30 → :00, :30), trong giờ làm việc, kết thúc trước `workEnd`.
+- Giờ bắt đầu nằm trên lưới `stepMinutes` tính từ 00:00 (bước 30 → :00, :30), trong giờ làm việc, kết thúc không quá `workEnd` (được kết thúc đúng bằng `workEnd`).
 - Khung **không bao giờ chồng giờ nghỉ trưa**. Không đề xuất giờ bắt đầu đã qua. Chỉ các thứ trong `weekdays`.
 - Với mỗi người được tính: **chưa biết** nếu ngày nằm ngoài khoảng chia sẻ (BR-415); **bận** nếu có giờ bận cách khung chưa đủ
   `bufferMinutes` ở **trước hoặc sau** (D15); còn lại **rảnh**. Ví dụ: họp xong 09:10, cách 30, bước 30 → khung sớm nhất 10:00.
@@ -53,7 +53,8 @@ không, `errors.durationMinutes = "Thời lượng dài hơn một buổi làm v
 - Có khung mà mọi người được tính đều rảnh → trả đúng các khung đó (`allFree = true`).
 - Không có → các khung có **số người rảnh cao nhất**, kèm ai bận / ai chưa biết, và `code = MSG445` (UC-85a AF-1). Người chưa biết
   không bao giờ tính là rảnh.
-- Không có ai để tính (không `includeMe` và không ai chia sẻ), hoặc không khung nào có người rảnh → `days = []`, không mã.
+- Không có ai để tính (không `includeMe` và không ai chia sẻ), hoặc không khung nào có người rảnh (vd. người duy nhất có chia sẻ
+  nhưng khoảng chia sẻ không chạm khoảng tìm, nên mọi ngày đều chưa biết) → `days = []`, không mã. Muốn biết vì sao, xem `people[].status`.
 - Tối đa **200** khung theo thứ tự thời gian; bị cắt thì `truncated = true`.
 
 ### 2.3 Response `200`
@@ -131,7 +132,7 @@ không, `errors.durationMinutes = "Thời lượng dài hơn một buổi làm v
 | HTTP | Mã | Khi |
 |---|---|---|
 | 400 | `MSG31` | Giá trị cuộc họp sai (thiếu tiêu đề, giờ bắt đầu đã qua kể từ lúc tìm…) hoặc giờ/đệm/`acceptedBusyUserIds` sai, kèm `errors` |
-| 400 | `MSG277` | Danh sách người mời sai, hoặc có người không tồn tại / bị vô hiệu hoá, kèm `errors` |
+| 400 | `MSG277` | Danh sách người mời sai, hoặc có người không tồn tại / bị vô hiệu hoá, kèm `errors`. Key luôn theo body đã gửi: `userIds` (cả danh sách) hoặc `userIds[i]` (người thứ `i` trong `userIds`) — không bao giờ `participants[…]` |
 | 401 | — | Không đăng nhập |
 | 403 | `MSG448` | Không có quyền tạo cuộc họp (UC-85b EX-2) |
 | 409 | `MSG446` | Khung không còn trống (UC-85b EX-1) — câu giống nhau dù có họp không được tiết lộ hay không |

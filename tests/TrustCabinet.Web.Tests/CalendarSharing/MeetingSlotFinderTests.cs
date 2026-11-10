@@ -58,9 +58,47 @@ public sealed class MeetingSlotFinderTests
         Assert.Contains(new TimeOnly(9, 30), starts);
         Assert.DoesNotContain(new TimeOnly(10, 0), starts);
         Assert.DoesNotContain(new TimeOnly(11, 30), starts);
-        // A gap exactly met is enough.
-        Assert.Contains(new TimeOnly(9, 30), Starts(MeetingSlotFinder.Find(Search(buffer: 30), SundayMorning,
-            [Person(A, Busy(Monday, (11, 0), (11, 30)))])));
+    }
+
+    [Fact]
+    public void Busy_periods_may_arrive_unsorted_and_overlapping()
+    {
+        var finding = MeetingSlotFinder.Find(Search(buffer: 0), SundayMorning,
+        [
+            Person(A, Busy(Monday, (14, 0), (15, 0)), Busy(Monday, (8, 0), (9, 30)), Busy(Monday, (9, 0), (10, 0))),
+        ]);
+        Assert.Equal([new TimeOnly(10, 0), new TimeOnly(10, 30), new TimeOnly(11, 0), new TimeOnly(13, 0),
+            new TimeOnly(15, 0), new TimeOnly(15, 30), new TimeOnly(16, 0)], Starts(finding));
+    }
+
+    [Fact]
+    public void The_binary_search_agrees_with_a_plain_scan()
+    {
+        // Many random busy periods over a month: every slot's verdict must match checking each period one by one.
+        var random = new Random(137);
+        var busy = Enumerable.Range(0, 400).Select(_ =>
+        {
+            var day = Monday.AddDays(random.Next(0, 31));
+            var start = random.Next(7 * 60, 18 * 60);
+            var startAt = At(day, start / 60, start % 60);
+            return new BusyInterval(startAt, startAt.AddMinutes(random.Next(5, 180)));
+        }).ToArray();
+        SlotPerson[] persons = [Windowed(A, new KnownDays(Monday, Monday.AddDays(30)), busy)];
+        var verdicts = new HashSet<bool>();
+        for (var day = Monday; day <= Monday.AddDays(30); day = day.AddDays(1))
+        {
+            for (var minute = 8 * 60; minute <= 17 * 60; minute += 5)
+            {
+                var start = At(day, minute / 60, minute % 60);
+                var end = start.AddMinutes(30);
+                var scan = busy.Any(b => b.Start < end.AddMinutes(15) && b.End > start.AddMinutes(-15));
+                var (found, _) = MeetingSlotFinder.Check(start, end, 15, persons);
+                Assert.Equal(scan, found.Contains(A));
+                verdicts.Add(scan);
+            }
+        }
+
+        Assert.Equal(2, verdicts.Count); // both busy and free slots were exercised
     }
 
     [Fact]

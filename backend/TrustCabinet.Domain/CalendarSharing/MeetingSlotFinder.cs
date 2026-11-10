@@ -14,6 +14,7 @@ public static class MeetingSlotFinder
     public static SlotFinding Find(SlotSearch search, DateTimeOffset now, IReadOnlyList<SlotPerson> persons)
     {
         if (persons.Count == 0) return new(SlotResultKind.None, [], false);
+        persons = Sorted(persons);
 
         var duration = TimeSpan.FromMinutes(search.DurationMinutes);
         var workStart = MeetingSlotRules.Minutes(search.WorkStart);
@@ -34,7 +35,7 @@ public static class MeetingSlotFinder
                 var start = VietnamTime.At(date, new TimeOnly(minute / 60, minute % 60));
                 if (start <= now) continue;
                 var end = start + duration;
-                var (busy, unknown) = Check(start, end, search.BufferMinutes, persons);
+                var (busy, unknown) = CheckSorted(start, end, search.BufferMinutes, persons);
                 candidates.Add(new FoundSlot(date, start, end, persons.Count - busy.Count - unknown.Count, persons.Count,
                     busy, unknown));
             }
@@ -56,6 +57,32 @@ public static class MeetingSlotFinder
     /// </summary>
     public static (IReadOnlyList<Guid> Busy, IReadOnlyList<Guid> Unknown) Check(DateTimeOffset start, DateTimeOffset end,
         int bufferMinutes, IReadOnlyList<SlotPerson> persons)
+        => CheckSorted(start, end, bufferMinutes, Sorted(persons));
+
+    /// <summary>Each person's busy periods sorted and joined, so one binary search answers "busy near this slot?".</summary>
+    private static IReadOnlyList<SlotPerson> Sorted(IReadOnlyList<SlotPerson> persons)
+        => [.. persons.Select(p => p with { Busy = CalendarBusyRules.Merge(p.Busy) })];
+
+    /// <summary>
+    /// Whether a sorted, non-overlapping list of busy periods has one inside [<paramref name="from"/>, <paramref name="to"/>):
+    /// the first period ending after <paramref name="from"/> (ends are increasing) must start before <paramref name="to"/>.
+    /// O(log n) per slot instead of scanning every period (review of SCRUM-137, worst case ~1 s per search).
+    /// </summary>
+    private static bool AnyOverlap(IReadOnlyList<BusyInterval> busy, DateTimeOffset from, DateTimeOffset to)
+    {
+        int low = 0, high = busy.Count;
+        while (low < high)
+        {
+            var middle = (low + high) / 2;
+            if (busy[middle].End > from) high = middle;
+            else low = middle + 1;
+        }
+
+        return low < busy.Count && busy[low].Start < to;
+    }
+
+    private static (IReadOnlyList<Guid> Busy, IReadOnlyList<Guid> Unknown) CheckSorted(DateTimeOffset start,
+        DateTimeOffset end, int bufferMinutes, IReadOnlyList<SlotPerson> persons)
     {
         var buffer = TimeSpan.FromMinutes(bufferMinutes);
         var firstDay = DateOnly.FromDateTime(VietnamTime.ToLocal(start).DateTime);
@@ -68,7 +95,7 @@ public static class MeetingSlotFinder
         {
             if (person.Window is { } window && !(window.Contains(firstDay) && window.Contains(lastDay)))
                 unknown.Add(person.Id);
-            else if (person.Busy.Any(b => b.Start < to && b.End > from))
+            else if (AnyOverlap(person.Busy, from, to))
                 busy.Add(person.Id);
         }
 

@@ -138,8 +138,9 @@ Lưu ý: đệm **chỉ** áp với giờ bận, không áp với đầu/cuối 
 
 Chọn kết quả:
 
-1. `persons` rỗng (không tính lịch mình và không ai chia sẻ) → không khung nào, `allFree = false`, không mã. FE hiện trạng thái
-   trống "Chưa ai trong danh sách chia sẻ lịch với bạn". (Không coi là "mọi người rảnh".)
+1. `persons` rỗng (không tính lịch mình và không ai chia sẻ) → không khung nào, `allFree = false`, không mã. (Không coi là
+   "mọi người rảnh".) FE chọn câu trạng thái trống theo `people[].status`: trường hợp 3 bên dưới với `max == 0` cũng ra
+   `days = []` (vd. người duy nhất có chia sẻ nhưng khoảng chia sẻ không chạm khoảng tìm).
 2. Có khung mà `busy` và `unknown` đều rỗng → **khung chung**: lấy đúng các khung đó, `allFree = true`, không mã (UC-85a bước 4).
 3. Không có khung chung: `max = max(freeCount)` trên mọi candidate. `max == 0` hoặc không có candidate → rỗng, `allFree = false`,
    không mã. Ngược lại → các khung có `freeCount == max`, `allFree = false`, **`MSG445`** (UC-85a AF-1).
@@ -149,7 +150,8 @@ Chọn kết quả:
 
 - Đọc lại chia sẻ và giờ bận như §2.2 cho `userIds` (+ người tìm nếu `includeMe`), khoảng
   `[plannedStart - buffer, plannedEnd + buffer)`.
-- Với mỗi người được tính: `unknown` nếu ngày (VN) của `plannedStart` **hoặc** `plannedEnd` nằm ngoài cửa sổ; `busy` nếu có giờ bận
+- Với mỗi người được tính: `unknown` nếu ngày (VN) của `plannedStart` **hoặc** của `plannedEnd − 1 tick` nằm ngoài cửa sổ (khung
+  kết thúc đúng 00:00 thuộc ngày trước); `busy` nếu có giờ bận
   chồng `[plannedStart - buffer, plannedEnd + buffer)`; còn lại `free`.
 - Nếu có người `busy` hoặc `unknown` mà **không** nằm trong `acceptedBusyUserIds` → `409 MSG446`. Câu luôn giống nhau, không kể
   có họp Mật hay không (BR-428 — mà Mật của người được mời vốn không bao giờ được đọc).
@@ -334,6 +336,8 @@ public interface IMeetingSlotService
 ### 4.3 Domain — `backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotFinder.cs` (mới, thuần)
 
 - `static SlotFinding Find(SlotSearch search, DateTimeOffset now, IReadOnlyList<SlotPerson> persons)` — đúng §2.3.
+- Giờ bận của mỗi người được sắp xếp và gộp một lần (`CalendarBusyRules.Merge`), rồi kiểm "có bận gần khung không" bằng binary
+  search (`AnyOverlap`): khoảng đầu tiên có `End > from` phải có `Start < to` (sửa theo review, tránh quét tuyến tính).
 - `static (IReadOnlyList<Guid> Busy, IReadOnlyList<Guid> Unknown) Check(DateTimeOffset start, DateTimeOffset end, int bufferMinutes,
   IReadOnlyList<SlotPerson> persons)` — dùng chung cho §2.3 và §2.4 (một chỗ tính bận/chưa biết). Ngày "biết" của một khoảng:
   ngày VN của `start` và của `end - 1 tick` đều trong cửa sổ.
@@ -374,6 +378,8 @@ public sealed class MeetingSlotService(TrustCabinetDbContext db, CalendarBusyRea
    hoá chỉ đơn giản không có chia sẻ ở bước này; `CreateAsync` sẽ từ chối họ bằng `MSG277`).
 5. `MeetingSlotFinder.Check(...)`; ai bận/chưa biết mà không nằm trong `acceptedBusyUserIds` → `SlotTaken`.
 6. Dựng seeds (§2.5) và `return new(None, await meetings.CreateAsync(input, actorId, seeds, ct))`.
+   Nếu kết quả là `InvalidParticipants`, đổi key lỗi `participants[i].userId` → `userIds[i]` (với `i < userIds.Length`; key
+   khác → `userIds`) để FE tô đúng người đã gửi (`InviteeErrors`, sửa theo review).
 
 Tách phần dùng chung của bước đọc (kiểm người tìm, đọc chia sẻ, gọi reader) thành method `private` để hai luồng không lệch nhau.
 
@@ -521,3 +527,4 @@ Chi tiết ở `docs/03-api/24-tim-gio-hop-note-cho-fe.md`. Tóm tắt:
 |---|---|---|---|
 | 08/11/2026 | Q9 (BR-420 trạng thái tính bận) | PO, Jira 10474 | Đã có trong `CalendarBusyRules` |
 | 11/11/2026 | P1 → P5 (endpoint riêng, recheck theo `acceptedBusyUserIds`, nghỉ trưa, chưa biết ≠ rảnh, tối đa 200 khung) | Huy (BE), trước khi code | §2, §3 |
+| 11/11/2026 | Sửa theo review của đối tác (commit `c4f542ea`): key lỗi `MSG277` của UC-85b đổi từ `participants[i].userId` (roster do server dựng) sang `userIds[i]`; kiểm bận bằng binary search trên giờ bận đã sắp xếp và gộp (trường hợp xấu nhất ~1 giây CPU → O(khung × log giờ bận)); thêm test chia sẻ `Pending`, mốc Level1 + họp Nội bộ khi tạo nháp, chủ lịch chỉ chia sẻ cho người khác, khoảng chia sẻ ngoài khoảng tìm, giờ bận trước `workStart` trong khoảng đệm; contract "kết thúc không quá `workEnd`" | Review đối tác | `MeetingSlotService.InviteeErrors`, `MeetingSlotFinder.AnyOverlap` |

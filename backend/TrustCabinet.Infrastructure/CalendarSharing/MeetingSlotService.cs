@@ -105,7 +105,31 @@ public sealed class MeetingSlotService(
         seeds.Add(new ParticipantSeed(actorId, nameof(MeetingRole.Secretary)));
         var meeting = new MeetingInput(input.Title, input.PlannedStartTime, input.PlannedEndTime, input.Mode, input.Location,
             input.OnlineLink, input.Sensitivity, input.Description);
-        return new(MeetingSlotFailure.None, await meetings.CreateAsync(meeting, actorId, seeds, ct));
+        var created = await meetings.CreateAsync(meeting, actorId, seeds, ct);
+        return new(MeetingSlotFailure.None, created.Outcome == MeetingOutcome.InvalidParticipants
+            ? created with { Errors = InviteeErrors(created.Errors, userIds.Length) }
+            : created);
+    }
+
+    /// <summary>
+    /// UC-14 names roster errors after the roster this service built (<c>participants[i].userId</c>); the caller sent
+    /// <c>userIds</c>, and the roster lists them first, in the same order, then the finder. Rename the keys so the page can
+    /// highlight the person it sent.
+    /// </summary>
+    private static Dictionary<string, string>? InviteeErrors(IReadOnlyDictionary<string, string>? errors, int inviteeCount)
+    {
+        if (errors is null) return null;
+        var renamed = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (key, message) in errors)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(key, @"\Aparticipants\[(\d+)\]\.");
+            var target = match.Success && int.TryParse(match.Groups[1].ValueSpan, out var index) && index < inviteeCount
+                ? $"userIds[{index}]"
+                : "userIds";
+            renamed.TryAdd(target, message);
+        }
+
+        return renamed;
     }
 
     /// <summary>BR-430: an active account whose role holds MeetingCreator, checked again on every request.</summary>

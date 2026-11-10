@@ -127,10 +127,24 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
     }
 
     [Fact]
+    public async Task A_meeting_above_the_shared_level_never_blocks_a_draft()
+    {
+        var p = await f.Seed();
+        await f.AddShare(p.Owner, p.Organizer, level: CalendarShareLevel.Level1);
+        await Meeting(p.Admin, p.Owner, Monday, (9, 0), (10, 0), Sensitivity.Internal);
+        using var organizer = f.Client(p.Organizer);
+        // BR-417: at Level 1 an Internal meeting is free for the finder, at the search and at the recheck alike.
+        await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft", Draft([p.Owner])), 201, "MSG29");
+    }
+
+    [Fact]
     public async Task People_without_a_share_are_not_rechecked()
     {
         var p = await f.Seed();
         await Meeting(p.Admin, p.Owner, Monday, (9, 0), (10, 0));
+        // Owner shares only with someone else: the finder knows nothing about Owner's hours.
+        await f.AddShare(p.Owner2, p.Organizer2);
+        await f.AddShare(p.Owner, p.Organizer2, level: CalendarShareLevel.Level2);
         using var organizer = f.Client(p.Organizer);
         await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft", Draft([p.Owner])), 201, "MSG29");
     }
@@ -173,8 +187,12 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
             Assert.True(body.GetProperty("errors").TryGetProperty("userIds", out _));
         }
 
-        // A deactivated account is refused by UC-14's own roster check.
-        await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft", Draft([p.Locked])), 400, "MSG277");
+        // A deactivated account is refused by UC-14's own roster check, named after the invitee the page sent.
+        var locked = await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
+            Draft([p.Owner, p.Locked])), 400, "MSG277");
+        var errors = locked.GetProperty("errors");
+        Assert.Equal(MeetingSlotRules.UserUnavailableError, errors.GetProperty("userIds[1]").GetString());
+        Assert.DoesNotContain(errors.EnumerateObject(), e => e.Name.StartsWith("participants", StringComparison.Ordinal));
         Assert.Equal(0, await MeetingsCreatedBy(p.Organizer));
     }
 

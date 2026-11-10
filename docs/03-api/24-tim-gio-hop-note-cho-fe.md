@@ -34,8 +34,11 @@ BE đã sẵn hai endpoint: `POST /api/calendar/slots` (UC-85a) và `POST /api/c
   như rảnh. Tên lấy từ `people` theo id. Không có tên cuộc họp nào để hiện (API không trả).
 - `allFree = true` → mọi người được tính đều rảnh. `code = "MSG445"` → hiện câu `message` phía trên danh sách (thông tin, không
   phải lỗi), mỗi khung ghi ai bận / chưa biết.
-- `days = []` và `code = null` → trạng thái trống: chưa ai chia sẻ lịch (mọi người `NotShared` và không tick "Tính cả tôi") hoặc
-  không còn khung nào trong khoảng đã chọn.
+- `days = []` và `code = null` → trạng thái trống. Chọn câu theo `people[].status`, không chỉ theo `days`:
+  - mọi người `NotShared` và không tick "Tính cả tôi" → chưa ai chia sẻ lịch với bạn;
+  - có người `Shared` nhưng `startDate`–`endDate` của họ không chạm khoảng tìm → lịch được chia sẻ không phủ khoảng ngày này
+    (mọi ngày đều "chưa biết");
+  - còn lại → không còn khung nào trong khoảng đã chọn.
 - `truncated = true` → chỉ hiện 200 khung đầu; gợi ý thu hẹp khoảng ngày.
 
 ## 4. Tạo nháp từ một khung (UC-85b)
@@ -46,7 +49,8 @@ BE đã sẵn hai endpoint: `POST /api/calendar/slots` (UC-85a) và `POST /api/c
   `includeMe`, `bufferMinutes` đúng như lúc tìm và `acceptedBusyUserIds = slot.busyUserIds ∪ slot.unknownUserIds`.
 - `201 MSG29` → mở chi tiết cuộc họp `meeting.id` (cuộc họp ở Nháp, đi luồng duyệt bình thường).
 - `409 MSG446` → báo câu đó, đóng hộp thoại, tìm lại.
-- `400 MSG31` / `400 MSG277` → tô ô theo `errors` (vd. giờ bắt đầu đã qua kể từ lúc tìm → `plannedStartTime`).
+- `400 MSG31` / `400 MSG277` → tô ô theo `errors` (vd. giờ bắt đầu đã qua kể từ lúc tìm → `plannedStartTime`). Key của `MSG277`
+  theo đúng body đã gửi: `userIds` hoặc `userIds[i]` (người thứ `i` trong `userIds`, vd. tài khoản vừa bị vô hiệu hoá).
 - `500 MSG453` / `500 MSG35` → báo lỗi, cho thử lại.
 
 ## 5. Mã FE cần khớp
