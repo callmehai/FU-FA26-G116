@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Enums;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
@@ -280,6 +281,14 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
             Assert.Equal(MinutesStatus.Superseded, (await db.MeetingMinutes.SingleAsync(m => m.Id == first)).Status);
             Assert.Equal(issued.GetProperty("content").GetString(), (await db.MeetingMinutes.SingleAsync(m => m.Id == first)).Content);
             Assert.Equal(MinutesStatus.Issued, (await db.MeetingMinutes.SingleAsync(m => m.Id == second)).Status);
+            // BR-446: the issue and its correction, each by the Chair who issued it.
+            var issues = await db.AuditLog.Where(a => a.Action == AuditActions.MinutesIssued
+                    && (a.ObjectId == first || a.ObjectId == second)).OrderBy(a => a.OccurredAt).ToListAsync();
+            Assert.Equal([first, second], issues.Select(a => a.ObjectId!.Value));
+            Assert.All(issues, a => Assert.Equal((s.Chair, AuditActions.MinutesObjectType), (a.ActorId!.Value, a.ObjectType)));
+            var corrected = JsonDocument.Parse(issues[1].Details).RootElement;
+            Assert.Equal((s.MeetingId, 2, first), (corrected.GetProperty("meetingId").GetGuid(),
+                corrected.GetProperty("revisionNumber").GetInt32(), corrected.GetProperty("supersedesId").GetGuid()));
         }
         var after = await State(member, s);
         Assert.Equal(second, Id(after.GetProperty("minutes")));

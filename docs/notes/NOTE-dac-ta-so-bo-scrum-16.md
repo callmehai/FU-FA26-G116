@@ -201,7 +201,8 @@ mỗi khi BE thêm mã.
 
 **Docs:** ~~đưa §3–§5 vào Report 3 DOCX~~ — xong 10/11/2026 (`check_docx.py` OK, `sync_reports.py` khớp 100% danh mục).
 
-**BE** (không cần migration cho phía đọc):
+**BE** (không cần migration cho phía đọc) — **đã làm 10/11/2026**, contract và chỗ lệch D8–D9 ở
+[21-nhat-ky-kiem-toan.md](../03-api/21-nhat-ky-kiem-toan.md); bước 3 giữ đọc bốn khoá, không thêm cột:
 
 1. `IAuditLogQueryService` trong `Domain/Audit`, cài đặt trong `Infrastructure/Audit`; `AuditLogEndpoints` và bộ đọc
    tham số trong `Web/Endpoints`, sau `RequireAdminUsers()`.

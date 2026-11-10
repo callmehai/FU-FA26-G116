@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -211,6 +213,16 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
                 earlier.Status = MinutesStatus.Superseded;
                 earlier.UpdatedAt = now;
             }
+            // BR-446 — saved with the issue itself, so minutes are never issued without the evidence of who issued them.
+            db.AuditLog.Add(new AuditLogEntry
+            {
+                ActorId = actorId, Action = AuditActions.MinutesIssued, ObjectType = AuditActions.MinutesObjectType,
+                ObjectId = row.Id, OccurredAt = now, CreatedAt = now, UpdatedAt = now,
+                Details = JsonSerializer.Serialize(new
+                {
+                    meetingId = meeting.Id, revisionNumber = row.RevisionNumber, supersedesId = row.SupersedesId,
+                }),
+            });
             Notify(await ReadersAsync(meeting, token), actorId, meeting, row, now, NotificationType.MinutesIssued,
                 "minutes-issued", "Biên bản đã ban hành",
                 row.SupersedesId is null

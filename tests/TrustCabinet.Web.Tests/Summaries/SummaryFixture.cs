@@ -198,6 +198,7 @@ public sealed class SummaryFixture : IAsyncLifetime
         internal bool FailMinutesRead;
         internal bool FailAiSettingsRead;
         internal bool FailNotesRead;
+        internal bool FailAuditRead;
         internal bool FailSave;
         internal Func<Task>? AfterMinutesRead;
 
@@ -208,7 +209,8 @@ public sealed class SummaryFixture : IAsyncLifetime
             if ((FailSummaryRead && command.CommandText.Contains("FROM meeting_summaries", StringComparison.Ordinal))
                 || (FailMinutesRead && command.CommandText.Contains("FROM meeting_minutes", StringComparison.Ordinal))
                 || (FailAiSettingsRead && command.CommandText.Contains("FROM ai_provider_settings", StringComparison.Ordinal))
-                || (FailNotesRead && command.CommandText.Contains("FROM meeting_notes", StringComparison.Ordinal)))
+                || (FailNotesRead && command.CommandText.Contains("FROM meeting_notes", StringComparison.Ordinal))
+                || (FailAuditRead && command.CommandText.Contains("FROM audit_log", StringComparison.Ordinal)))
                 throw new Npgsql.NpgsqlException("Injected read failure.");
             return ValueTask.FromResult(result);
         }

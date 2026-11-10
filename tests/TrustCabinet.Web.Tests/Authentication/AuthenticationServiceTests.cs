@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using TrustCabinet.Domain.Access;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -22,9 +23,54 @@ public class AuthenticationServiceTests
     private readonly FakeGoogleTokenVerifier _google = new();
     private readonly FakePasswordHasher _passwordHasher = new();
 
+    private readonly FakeAuditService _audit = new();
+
     private AuthenticationService NewService() => new(
-        _users, _passwordHasher, _tokenIssuer, _refreshTokens, _google, new FakeAuditService(),
+        _users, _passwordHasher, _tokenIssuer, _refreshTokens, _google, _audit,
         NullLogger<AuthenticationService>.Instance);
+
+    // ------------------------------------------------------------------- BR-444, audit log
+
+    [Fact]
+    public async Task A_successful_sign_in_is_recorded_with_its_method_and_never_the_password()
+    {
+        var user = NewUser();
+        _users.WithUser(user);
+
+        await NewService().SignInAsync(user.Email, Password);
+
+        var record = Assert.Single(_audit.Records);
+        Assert.Equal((AuditActions.SignedIn, AuditActions.UserObjectType, user.Id, user.Id),
+            (record.Action, record.ObjectType, record.ObjectId, record.ActorId));
+        Assert.Equal("{ method = password }", record.Details?.ToString());
+    }
+
+    [Theory]
+    [InlineData(true, "SaiMatKhau@2026", "invalid_password")]
+    [InlineData(false, Password, "account_deactivated")]
+    public async Task A_refused_sign_in_to_an_existing_account_is_recorded_with_the_reason(
+        bool isActive, string password, string reason)
+    {
+        var user = NewUser(isActive: isActive);
+        _users.WithUser(user);
+
+        await NewService().SignInAsync(user.Email, password);
+
+        var record = Assert.Single(_audit.Records);
+        Assert.Equal((AuditActions.SignInFailed, user.Id, user.Id), (record.Action, record.ObjectId, record.ActorId));
+        Assert.Equal($"{{ method = password, reason = {reason} }}", record.Details?.ToString());
+        Assert.DoesNotContain(password, record.Details?.ToString());
+    }
+
+    [Fact]
+    public async Task A_sign_in_with_an_email_no_account_has_is_not_recorded()
+    {
+        _users.WithUser(NewUser());
+
+        await NewService().SignInAsync("nguoi.la@trustcabinet.local", Password);
+
+        Assert.Empty(_audit.Records);
+    }
 
     private static User NewUser(
         string email = "thuky@trustcabinet.local",
