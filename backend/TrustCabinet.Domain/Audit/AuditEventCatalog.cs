@@ -24,6 +24,7 @@ public static class AuditEventCatalog
     private const string Recordings = "Bản ghi và gỡ băng";
     private const string Voice = "Voice ID";
     private const string Settings = "Cấu hình";
+    private const string CalendarSharing = "Chia sẻ lịch";
     private const string Reports = "Báo cáo";
 
     public static IReadOnlyList<AuditEventType> All { get; } =
@@ -101,6 +102,19 @@ public static class AuditEventCatalog
 
         new(AuditActions.AiSettingsUpdated, "Đổi cấu hình AI", Settings),
 
+        new(AuditActions.CalendarShareRequested, "Xin xem lịch", CalendarSharing),
+        new(AuditActions.CalendarShareShared, "Tự chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareAccepted, "Chấp nhận chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareDeclined, "Từ chối chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareChangeRequested, "Xin thay đổi chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareChangeAccepted, "Duyệt thay đổi chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareChangeDeclined, "Từ chối thay đổi chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareUpdated, "Chủ lịch đổi chia sẻ", CalendarSharing),
+        new(AuditActions.CalendarShareWithdrawn, "Rút yêu cầu chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareChangeWithdrawn, "Rút thay đổi chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareEnded, "Ngừng chia sẻ lịch", CalendarSharing),
+        new(AuditActions.CalendarShareStopped, "Dừng chia sẻ lịch (mất quyền hoặc vô hiệu hoá)", CalendarSharing),
+        new(AuditActions.CalendarShareClosedAfterEndDate, "Đóng chia sẻ lịch đã quá hạn khi có chia sẻ mới", CalendarSharing),
         // SCRUM-38 (BR-438): only the export is recorded, not viewing the report.
         new(AuditActions.ReportExported, "Xuất báo cáo cuộc họp", Reports),
     ];

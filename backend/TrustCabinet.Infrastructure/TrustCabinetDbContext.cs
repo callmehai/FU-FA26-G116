@@ -58,6 +58,7 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<AuditLogEntry> AuditLog => Set<AuditLogEntry>();
     public DbSet<CallSession> CallSessions => Set<CallSession>();
     public DbSet<CallParticipant> CallParticipants => Set<CallParticipant>();
+    public DbSet<CalendarShare> CalendarShares => Set<CalendarShare>();
 
     /// <summary>
     /// The audit row written alongside each lifecycle row (BR-445), keyed by the history row, so a retried save does

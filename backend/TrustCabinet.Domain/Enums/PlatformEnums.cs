@@ -21,6 +21,18 @@ public enum NotificationType
     MeetingStarted,
     /// <summary>The Chair sent the minutes back to the Secretary with a reason (SCRUM-33, UC-65).</summary>
     MinutesReturned,
+
+    // SCRUM-142 — calendar sharing (BR-426). Target "CalendarShare", never a meeting.
+    CalendarShareRequested,
+    CalendarShareReceived,
+    CalendarShareAccepted,
+    CalendarShareDeclined,
+    CalendarShareChangeRequested,
+    CalendarShareUpdated,
+    CalendarShareChangeDeclined,
+    CalendarShareWithdrawn,
+    CalendarShareEnded,
+    CalendarShareStopped,
 }
 
 /// <summary>Delivery state of a queued email (SCRUM-15).</summary>

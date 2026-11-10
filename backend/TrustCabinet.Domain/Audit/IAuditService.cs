@@ -238,6 +238,26 @@ public static class AuditActions
     };
 
     /// <summary>
+    /// SCRUM-142 — every step of a calendar share (BR-426). The <c>ObjectId</c> is the share; the details name both people,
+    /// the level and the range, before and after for a change, and the reason for a stop. A system close has no actor.
+    /// </summary>
+    public const string CalendarShareRequested = "calendar_share.requested";
+    public const string CalendarShareShared = "calendar_share.shared";
+    public const string CalendarShareAccepted = "calendar_share.accepted";
+    public const string CalendarShareDeclined = "calendar_share.declined";
+    public const string CalendarShareChangeRequested = "calendar_share.change_requested";
+    public const string CalendarShareChangeAccepted = "calendar_share.change_accepted";
+    public const string CalendarShareChangeDeclined = "calendar_share.change_declined";
+    public const string CalendarShareUpdated = "calendar_share.updated";
+    public const string CalendarShareWithdrawn = "calendar_share.withdrawn";
+    public const string CalendarShareChangeWithdrawn = "calendar_share.change_withdrawn";
+    public const string CalendarShareEnded = "calendar_share.ended";
+    public const string CalendarShareStopped = "calendar_share.stopped";
+    /// <summary>A share past its end date (BR-425) closed when a new share of the same pair was sent. No notification.</summary>
+    public const string CalendarShareClosedAfterEndDate = "calendar_share.closed_after_end_date";
+    public const string CalendarShareObjectType = "CalendarShare";
+
+    /// <summary>
     /// SCRUM-38, UC-70b — a user exported the meeting report to Excel (BR-438). No object id: the report is not a row.
     /// The details carry the period; viewing the report on screen is not recorded.
     /// </summary>

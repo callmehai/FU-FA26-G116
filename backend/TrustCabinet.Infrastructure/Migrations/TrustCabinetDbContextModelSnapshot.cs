@@ -254,6 +254,107 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.ToTable("audit_log", (string)null);
                 });
 
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.CalendarShare", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<Guid?>("ClosedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("closed_by_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<string>("InitiatedBy")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("initiated_by");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("level");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_id");
+
+                    b.Property<DateOnly?>("PendingEndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("pending_end_date");
+
+                    b.Property<string>("PendingLevel")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("pending_level");
+
+                    b.Property<DateTimeOffset?>("PendingRequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("pending_requested_at");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("ViewerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("viewer_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_shares");
+
+                    b.HasIndex("ClosedById")
+                        .HasDatabaseName("ix_calendar_shares_closed_by_id");
+
+                    b.HasIndex("OwnerId", "Status")
+                        .HasDatabaseName("ix_calendar_shares_owner_id_status");
+
+                    b.HasIndex("OwnerId", "ViewerId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_calendar_shares_open_pair")
+                        .HasFilter("status IN ('Pending', 'Effective')");
+
+                    b.HasIndex("ViewerId", "Status")
+                        .HasDatabaseName("ix_calendar_shares_viewer_id_status");
+
+                    b.ToTable("calendar_shares", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_calendar_shares_not_self", "owner_id <> viewer_id");
+
+                            t.HasCheckConstraint("ck_calendar_shares_pending_change", "(pending_requested_at IS NULL) = (pending_level IS NULL) AND (pending_requested_at IS NULL) = (pending_end_date IS NULL)");
+
+                            t.HasCheckConstraint("ck_calendar_shares_range", "start_date <= end_date");
+                        });
+                });
+
             modelBuilder.Entity("TrustCabinet.Domain.Entities.CallParticipant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3074,6 +3175,35 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_audit_log_users_actor_id");
 
                     b.Navigation("Actor");
+                });
+
+            modelBuilder.Entity("TrustCabinet.Domain.Entities.CalendarShare", b =>
+                {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "ClosedBy")
+                        .WithMany()
+                        .HasForeignKey("ClosedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_calendar_shares_users_closed_by_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_shares_users_owner_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "Viewer")
+                        .WithMany()
+                        .HasForeignKey("ViewerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_shares_users_viewer_id");
+
+                    b.Navigation("ClosedBy");
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("Viewer");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.CallParticipant", b =>
