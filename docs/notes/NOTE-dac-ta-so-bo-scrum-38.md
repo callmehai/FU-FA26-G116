@@ -166,5 +166,5 @@ PO chốt cả ba ngày 09/11/2026.
 - [ ] BA: sửa đặc tả màn 15.1 (§III) theo D3 — giữ thời lượng trung bình, bỏ "Export PDF", chọn theo tháng — khi FE có
       màn chạy thật.
 - [x] BE: `GET /api/reports/meetings`, `GET /api/reports/meetings/export`, audit `report.exported`; contract ở
-      [`20-bao-cao-thong-ke.md`](../03-api/20-bao-cao-thong-ke.md); `MSG463`–`MSG465` sang *BE* (09/11/2026).
+      [`21-bao-cao-thong-ke.md`](../03-api/21-bao-cao-thong-ke.md); `MSG463`–`MSG465` sang *BE* (09/11/2026).
 - [ ] FE: trang Báo cáo, chọn khoảng tháng, nút Xuất Excel; `MSG466`.
