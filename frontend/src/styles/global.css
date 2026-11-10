@@ -1271,6 +1271,50 @@ a.menu-item { text-decoration: none; }
   .users-table .icon-button-sm { width: 40px; height: 40px; }
 }
 
+/* System audit log (SCRUM-16, screen 3.3). */
+.audit-range { display: flex; align-items: center; gap: 6px; color: var(--muted-ink); }
+.audit-day { width: 146px; min-width: 0; }
+.audit-range-error { flex: 1 1 100%; margin: -4px 0 0; }
+.audit-time { font-variant-numeric: tabular-nums; }
+.audit-ip { font-variant-numeric: tabular-nums; }
+.audit-none { color: var(--muted-ink); font-style: italic; }
+.avatar.audit-system { background: var(--surface-alt); color: var(--muted-ink); box-shadow: inset 0 0 0 1px var(--line); }
+/* A failed sign-in is a warning: the row carries a faint red wash, its chip the red tone. */
+.data-table tbody tr.row-alert { background: color-mix(in srgb, var(--danger) 5%, var(--surface)); }
+.data-table tbody tr.row-alert:hover { background: color-mix(in srgb, var(--danger) 9%, var(--surface)); }
+.audit-facts { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.audit-facts > div { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 12px; }
+.audit-facts dt { color: var(--muted-ink); overflow-wrap: anywhere; }
+.audit-facts dd { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 0; overflow-wrap: anywhere; }
+.audit-code { color: var(--muted-ink); font-size: 12px; overflow-wrap: anywhere; }
+.audit-details-title { margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid var(--line-soft); font-size: 14px; }
+.audit-value { white-space: pre-wrap; }
+.audit-json { width: 100%; margin: 0; padding: 8px 10px; overflow-x: auto; border-radius: var(--radius); background: var(--surface); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 720px) {
+  /* Without min-width: 0 the panel takes the two date inputs' natural width and runs off the screen. */
+  .audit-toolbar .toolbar-filters-open, .audit-range { min-width: 0; }
+  .audit-range { flex: 1 1 100%; }
+  .audit-day { flex: 1 1 0; width: auto; }
+  /* Two dates share a 390px line: room for "dd/mm/yyyy" beside the calendar button. */
+  .audit-day .date-field-box input { padding-right: 34px; padding-left: 10px; }
+  .audit-toolbar .toolbar-filters .select { flex: 1 1 140px; min-width: 0; }
+  /* Each entry becomes a card: event and time, then who, then on what. The IP is in the sheet. */
+  .audit-table thead, .audit-table td.audit-ip, .audit-table .row-skeleton td:not(:first-child) { display: none; }
+  .audit-table tbody tr:not(.row-skeleton) { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 12px 16px; border-bottom: 1px solid #e9ecf1; }
+  .audit-table tbody tr:not(.row-skeleton) td { padding: 0; border: none; }
+  /* Only the first line shares its row with the eye button. */
+  .audit-table td.audit-event { order: 1; max-width: calc(100% - 48px); white-space: normal; }
+  .audit-table td.audit-time { order: 2; color: var(--muted-ink); font-size: 13px; }
+  .audit-table td.audit-actor { flex: 1 1 100%; order: 3; }
+  .audit-table td.audit-object { flex: 1 1 100%; order: 4; white-space: normal; color: var(--muted-ink); font-size: 13px; }
+  .audit-table td.audit-object .cell-sub { display: inline; margin-left: 6px; }
+  .audit-table td.col-action { position: absolute; top: 8px; right: 8px; }
+  .audit-table .person-name, .audit-table .cell-sub { overflow-wrap: anywhere; }
+}
+@media (pointer: coarse) {
+  .audit-table .icon-button-sm { width: 40px; height: 40px; }
+}
+
 /* Sortable header: the whole label is the button; the arrow is faint until the column is active. */
 .sort-button {
   display: inline-flex;

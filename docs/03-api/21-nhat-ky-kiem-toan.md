@@ -1,6 +1,6 @@
 # Nhật ký hệ thống — SCRUM-16 (UC-13)
 
-**Trạng thái:** BE đã triển khai 10/11/2026 · FE chưa làm · Đặc tả: [UC-13](../01-requirements/05-use-case-specifications.md),
+**Trạng thái:** BE và FE đã triển khai 10/11/2026 · Đặc tả: [UC-13](../01-requirements/05-use-case-specifications.md),
 BR-440 → BR-446, [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-16.md),
 [sequence](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt).
 
@@ -80,6 +80,22 @@ BR-12.
 
 Danh sách cho ô lọc loại sự kiện, theo nhóm: `[{ "code": "auth.signed_in", "label": "Đăng nhập", "group": "Đăng nhập" }, …]`.
 Tên nằm ở backend (`AuditEventCatalog`); `AuditEventCatalogTests` hỏng khi một mã trong `AuditActions` chưa có tên.
+
+## Màn hình (FE)
+
+`/mgmt/admin/audit-log`, mục *Nhật ký hệ thống* dưới Quản trị — `features/audit/AuditLogPage.tsx`. Theo màn 3.3 trừ
+D3–D7 (không Xuất CSV; người thực hiện có thêm Khách, Hệ thống; không "5 lần liên tiếp"; cột Đối tượng là loại + tên
+tài khoản/vai trò hoặc 8 ký tự đầu của mã).
+
+- Mọi tiêu chí nằm trên URL (`from`, `to` dạng `YYYY-MM-DD`, `actor`, `action`, `q`, `page`, `pageSize`); giá trị sai
+  dạng bị bỏ qua. Khoảng ngày là trọn ngày theo giờ máy người xem, gửi lên dạng UTC. Ngày bắt đầu sau ngày kết thúc
+  thì báo dưới ô và **không** áp dụng.
+- Ô người thực hiện: Khách, Hệ thống, rồi mọi tài khoản từ `GET /api/users` (hai người trùng tên thì hiện email).
+- `auth.sign_in_failed`: chip đỏ, dòng nền đỏ nhạt.
+- Bấm một dòng mở ngăn bên phải, chỉ đọc: người thực hiện, mã sự kiện, mã đối tượng đầy đủ, IP, rồi `details` từng
+  khoá như đã ghi.
+- `MSG469` (link sửa tay) → "Bộ lọc trên đường dẫn không hợp lệ." và *Đặt lại bộ lọc*; `MSG470` → câu của backend và
+  *Thử lại*; `403` giữa phiên → `useAccessLost`.
 
 ## Nhận diện Khách
 
