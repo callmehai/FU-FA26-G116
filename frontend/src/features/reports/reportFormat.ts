@@ -17,9 +17,15 @@ const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/
 const index = (month: string) => Number(month.slice(0, 4)) * 12 + Number(month.slice(5, 7)) - 1
 const fromIndex = (i: number) => `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`
 
+/** Years the server takes (BR-433, review #310): past 9998 the month after the period would overflow its dates. */
+const FIRST_YEAR = 2000
+const LAST_YEAR = 9998
+
 /** "yyyy-MM" as the server takes it, or null for anything else. */
 export function parseMonth(value: string | null): string | null {
-  return value && MONTH.test(value) && Number(value.slice(0, 4)) >= 2000 ? value : null
+  if (!value || !MONTH.test(value)) return null
+  const year = Number(value.slice(0, 4))
+  return year >= FIRST_YEAR && year <= LAST_YEAR ? value : null
 }
 
 /** The current month in Vietnam time, which is what the server counts in, whatever the viewer's own zone. */
