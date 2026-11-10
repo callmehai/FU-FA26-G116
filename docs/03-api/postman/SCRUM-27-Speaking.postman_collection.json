@@ -1,0 +1,1033 @@
+{
+  "info": {
+    "_postman_id": "a2a2ad26-8a2d-4824-bab6-def62e004fcb",
+    "name": "SCRUM-27 — Đăng ký phát biểu (UC-79)",
+    "description": "Chạy tuần tự trên backend Development sau khi chạy scrum27-room-setup.sql. Xem docs/03-api/20-dang-ky-phat-bieu.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Đăng nhập chairToken",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('chairToken', pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{chairEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "02 Đăng nhập secretaryToken",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('secretaryToken', pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{secretaryEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "03 Đăng nhập memberToken",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('memberToken', pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{memberEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "04 Đăng nhập adminToken",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('adminToken', pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{demoPassword}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "05 Thành viên xem hàng đợi trống, không có quyền điều hành",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const q = pm.response.json();",
+              "pm.test('canManage false', () => pm.expect(q.canManage).to.eql(false));",
+              "pm.test('queue empty', () => pm.expect(q.requests).to.have.length(0));",
+              "pm.test('no-store', () => pm.expect(pm.response.headers.get('Cache-Control')).to.eql('no-store'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests"
+          ]
+        }
+      }
+    },
+    {
+      "name": "06 Thành viên giơ tay (UC-79 bước 1–2)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));",
+              "const q = pm.response.json();",
+              "pm.collectionVariables.set('memberRequestId', q.myRequestId);",
+              "pm.test('Queued, isMine', () => { pm.expect(q.requests[0].status).to.eql('Queued'); pm.expect(q.requests[0].isMine).to.eql(true); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests"
+          ]
+        }
+      }
+    },
+    {
+      "name": "07 Giơ tay lần nữa giữ nguyên yêu cầu (EX-2, BR-337)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('same request', () => pm.expect(pm.response.json().myRequestId).to.eql(pm.collectionVariables.get('memberRequestId')));",
+              "pm.test('still one', () => pm.expect(pm.response.json().requests).to.have.length(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests"
+          ]
+        }
+      }
+    },
+    {
+      "name": "08 Thư ký giơ tay",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('secretaryRequestId', pm.response.json().myRequestId);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{secretaryToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests"
+          ]
+        }
+      }
+    },
+    {
+      "name": "09 Chủ toạ thấy hàng đợi theo thứ tự giơ tay (bước 3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const q = pm.response.json();",
+              "pm.test('canManage true', () => pm.expect(q.canManage).to.eql(true));",
+              "pm.test('order', () => pm.expect(q.requests.map(r => r.id)).to.eql([pm.collectionVariables.get('memberRequestId'), pm.collectionVariables.get('secretaryRequestId')]));",
+              "pm.test('no meeting content beyond names', () => pm.expect(q.requests[0]).to.have.all.keys('id','kind','displayName','role','status','queuePosition','requestedAt','invitedAt','startedAt','agendaItemId','agendaItemTitle','isMine'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{chairToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests"
+          ]
+        }
+      }
+    },
+    {
+      "name": "10 Thành viên gọi thẳng API mời bị từ chối (EX-4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('403 MSG457', () => { pm.response.to.have.status(403); pm.expect(pm.response.json().code).to.eql('MSG457'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/invite",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "invite"
+          ]
+        }
+      }
+    },
+    {
+      "name": "11 Thành viên gọi thẳng API đổi thứ tự bị từ chối",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('403 MSG457', () => { pm.response.to.have.status(403); pm.expect(pm.response.json().code).to.eql('MSG457'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/move-up",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "move-up"
+          ]
+        }
+      }
+    },
+    {
+      "name": "12 Chủ toạ đưa Thư ký lên đầu (AF-2)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('secretary first', () => pm.expect(pm.response.json().requests[0].id).to.eql(pm.collectionVariables.get('secretaryRequestId')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{chairToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/move-up",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "move-up"
+          ]
+        }
+      }
+    },
+    {
+      "name": "13 Chủ toạ mời Thư ký (bước 4–5)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "const r = pm.response.json().requests.find(x => x.id === pm.collectionVariables.get('secretaryRequestId'));",
+              "pm.test('Invited', () => { pm.expect(r.status).to.eql('Invited'); pm.expect(r.invitedAt).to.be.a('string'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{chairToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/invite",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "invite"
+          ]
+        }
+      }
+    },
+    {
+      "name": "14 Mời người thứ hai khi đang có người nắm lượt (BR-338)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('409 MSG459', () => { pm.response.to.have.status(409); pm.expect(pm.response.json().code).to.eql('MSG459'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{chairToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{memberRequestId}}/invite",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{memberRequestId}}",
+            "invite"
+          ]
+        }
+      }
+    },
+    {
+      "name": "15 Người khác bắt đầu lượt của Thư ký → 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/start",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "start"
+          ]
+        }
+      }
+    },
+    {
+      "name": "16 Thư ký bắt đầu lượt (bước 6)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('Speaking', () => pm.expect(pm.response.json().requests[0].status).to.eql('Speaking'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{secretaryToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/start",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "start"
+          ]
+        }
+      }
+    },
+    {
+      "name": "17 Thành viên không phải Chủ toạ kết thúc lượt của người khác",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('403 MSG457', () => { pm.response.to.have.status(403); pm.expect(pm.response.json().code).to.eql('MSG457'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/finish",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "finish"
+          ]
+        }
+      }
+    },
+    {
+      "name": "18 Thư ký kết thúc lượt (bước 7)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('only member left', () => pm.expect(pm.response.json().requests.map(r => r.id)).to.eql([pm.collectionVariables.get('memberRequestId')]));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{secretaryToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/finish",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "finish"
+          ]
+        }
+      }
+    },
+    {
+      "name": "19 Kết thúc lại lượt đã xong",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('409 MSG460', () => { pm.response.to.have.status(409); pm.expect(pm.response.json().code).to.eql('MSG460'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{secretaryToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{secretaryRequestId}}/finish",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{secretaryRequestId}}",
+            "finish"
+          ]
+        }
+      }
+    },
+    {
+      "name": "20 Chủ toạ từ chối yêu cầu của Thành viên (AF-3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('queue empty', () => pm.expect(pm.response.json().requests).to.have.length(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{chairToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{memberRequestId}}/decline",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{memberRequestId}}",
+            "decline"
+          ]
+        }
+      }
+    },
+    {
+      "name": "21 Thành viên hạ tay yêu cầu đã đóng",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('409 MSG460', () => { pm.response.to.have.status(409); pm.expect(pm.response.json().code).to.eql('MSG460'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{memberRequestId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{memberRequestId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "22 Thành viên giơ tay rồi tự hạ tay (AF-1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('memberRequestId', pm.response.json().myRequestId);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests"
+          ]
+        }
+      }
+    },
+    {
+      "name": "23 Hạ tay",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200', () => pm.response.to.have.status(200));",
+              "pm.test('no own request', () => pm.expect(pm.response.json().myRequestId).to.eql(null));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{memberToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/{{memberRequestId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "{{memberRequestId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "24 Người ngoài cuộc họp không thấy gì (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests"
+          ]
+        }
+      }
+    },
+    {
+      "name": "25 Chưa đăng nhập (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests"
+          ]
+        }
+      }
+    },
+    {
+      "name": "26 Yêu cầu không tồn tại (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{chairToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/meetings/{{meetingId}}/speaking-requests/00000000-0000-7000-8000-000000000000/invite",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "meetings",
+            "{{meetingId}}",
+            "speaking-requests",
+            "00000000-0000-7000-8000-000000000000",
+            "invite"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5225"
+    },
+    {
+      "key": "meetingId",
+      "value": "25000000-0000-7000-8000-000000000002"
+    },
+    {
+      "key": "chairEmail",
+      "value": "chutoa@trustcabinet.local"
+    },
+    {
+      "key": "secretaryEmail",
+      "value": "thuky@trustcabinet.local"
+    },
+    {
+      "key": "memberEmail",
+      "value": "thanhvien@trustcabinet.local"
+    },
+    {
+      "key": "adminEmail",
+      "value": "quantri@trustcabinet.local"
+    },
+    {
+      "key": "demoPassword",
+      "value": "TrustCabinet@2026"
+    },
+    {
+      "key": "chairToken",
+      "value": ""
+    },
+    {
+      "key": "secretaryToken",
+      "value": ""
+    },
+    {
+      "key": "memberToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "memberRequestId",
+      "value": ""
+    },
+    {
+      "key": "secretaryRequestId",
+      "value": ""
+    }
+  ]
+}

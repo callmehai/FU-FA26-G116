@@ -43,13 +43,15 @@ public interface ICallRepository
     /// <summary>Opens a stint unless one is already open for this member — webhooks repeat.</summary>
     Task RecordJoinAsync(Guid sessionId, CallMember member, DateTimeOffset joinedAt, CancellationToken ct = default);
 
-    Task RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default);
+    /// <summary>Closes the member's open stint; returns how many raised hands that closed (BR-337).</summary>
+    Task<int> RecordLeaveAsync(Guid sessionId, CallMember member, DateTimeOffset leftAt, CancellationToken ct = default);
 
     /// <summary>
     /// Ends the session and closes every stint still open. The effective end cannot precede
-    /// the session start or any already recorded participant join/leave timestamp.
+    /// the session start or any already recorded participant join/leave timestamp. Returns how many raised hands
+    /// that closed (BR-337).
     /// </summary>
-    Task EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default);
+    Task<int> EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default);
 
     Task<IReadOnlyList<ActiveRoomSession>> ListActiveRoomSessionsAsync(CancellationToken ct = default);
 }

@@ -1,6 +1,6 @@
 # Chia sẻ lịch và tìm giờ họp — FE-16 (sơ bộ, chưa có code)
 
-Các sequence UC-84a → UC-84e, UC-85a → UC-85c tuân theo [convention chung](../README.md). Đặc tả sơ bộ nằm tại
+Các sequence UC-84a → UC-84f, UC-85a → UC-85c tuân theo [convention chung](../README.md). Đặc tả sơ bộ nằm tại
 [NOTE-dac-ta-so-bo-scrum-137-142.md](../../notes/NOTE-dac-ta-so-bo-scrum-137-142.md) (SCRUM-142 chia sẻ lịch,
 SCRUM-137 tìm giờ họp), quyết định phạm vi ở [ADR-0058](../../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md); hai UC cha UC-84/UC-85 là UC gom, đặc tả nằm ở các UC con.
 
@@ -11,6 +11,26 @@ SCRUM-137 tìm giờ họp), quyết định phạm vi ở [ADR-0058](../../05-d
   UC-85b `<<extend>>` UC-85a (từ một khung đã tìm mới tạo nháp).
 - Số hiệu dựa trên PR #279 merge trước (UC-83, BR-404 → BR-413, `MSG424`–`MSG434`); nếu nhánh này merge
   trước thì #279 dời số. Số UC-86..UC-90 trả lại, không dùng.
+- Danh sách sequence (9): UC-84a → UC-84f, UC-85a → UC-85c. Job `SYS_ExpireCalendarShares` đã bỏ theo PO
+  09/11/2026 (hết hạn tính lúc đọc, không job, không trạng thái Expired).
+
+| Use Case / Tác nhân | Source |
+|---|---|
+| UC-84f View Calendar Shares | [UC84f_ViewCalendarShares.txt](UC84f_ViewCalendarShares.txt) |
+| UC-84a Request Calendar Share | [UC84a_RequestCalendarShare.txt](UC84a_RequestCalendarShare.txt) |
+| UC-84b Share Calendar Directly | [UC84b_ShareCalendarDirectly.txt](UC84b_ShareCalendarDirectly.txt) |
+| UC-84c Respond to Calendar Share | [UC84c_RespondToCalendarShare.txt](UC84c_RespondToCalendarShare.txt) |
+| UC-84d Change Calendar Share | [UC84d_ChangeCalendarShare.txt](UC84d_ChangeCalendarShare.txt) |
+| UC-84e Withdraw or End Calendar Share | [UC84e_WithdrawOrEndCalendarShare.txt](UC84e_WithdrawOrEndCalendarShare.txt) |
+| UC-85a Find Meeting Time Slots | [UC85a_FindMeetingTimeSlots.txt](UC85a_FindMeetingTimeSlots.txt) |
+| UC-85b Create Draft Meeting from Slot | [UC85b_CreateDraftMeetingFromSlot.txt](UC85b_CreateDraftMeetingFromSlot.txt) |
+| UC-85c View Shared Calendar | [UC85c_ViewSharedCalendar.txt](UC85c_ViewSharedCalendar.txt) |
+
+Màn Chia sẻ lịch (UC-84f) đòi `MeetingCreator` (BR-430); mất quyền thì ẩn luôn màn, không còn xem chỉ-đọc (PO 09/11/2026).
+
+Ngoại lệ hai tương tác Actor → Boundary: UC-84a/UC-84b tải danh sách người để chọn (endpoint `share-candidates`, lọc ở
+server, BR-430, `MSG448`/`MSG467`) trước nút gửi, nên có hai tương tác như UC-04; UC-84f chỉ xem hai danh sách, không có
+danh sách người, nên phần tải này không dồn sang đó. Chi tiết xem [README cha](../README.md) §2.1.
 
 ## Xuất ảnh
 

@@ -6,7 +6,9 @@ using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Speaking;
 using TrustCabinet.Infrastructure.Recordings;
+using TrustCabinet.Infrastructure.Speaking;
 
 namespace TrustCabinet.Infrastructure.Calls;
 
@@ -22,9 +24,18 @@ public sealed class CallRoomService(
     IAuditService audit,
     ILogger<CallRoomService> logger,
     IOptions<RecordingOptions>? recording = null,
-    TimeProvider? timeProvider = null) : ICallRoomService
+    TimeProvider? timeProvider = null,
+    ISpeakingChangePublisher? speaking = null) : ICallRoomService
 {
     private DateTimeOffset UtcNow => (timeProvider ?? TimeProvider.System).GetUtcNow();
+
+    /// <summary>
+    /// Someone left, or the room closed, and the repository closed <paramref name="closedHands"/> raised hands with it
+    /// (BR-337): the queue panels refetch. Nothing is sent when no hand was up.
+    /// </summary>
+    private Task SpeakingLeftAsync(Guid meetingId, int closedHands)
+        => speaking is null || closedHands == 0 ? Task.CompletedTask : SpeakingService.PublishAsync(speaking, logger,
+            new SpeakingChange(Guid.CreateVersion7(), meetingId, "Left", null, UtcNow), null);
 
     // Called only after an Online/Hybrid meeting's End transaction has committed.
     public async Task CloseMeetingRoomAsync(Guid meetingId, CancellationToken ct = default)
@@ -243,7 +254,7 @@ public sealed class CallRoomService(
                 if (CallMember.TryParse(webhook.ParticipantIdentity, out var leaver)
                     && await calls.FindActiveRoomSessionAsync(meetingId, ct) is { } open)
                 {
-                    await calls.RecordLeaveAsync(open.Id, leaver, webhook.CreatedAt, ct);
+                    await SpeakingLeftAsync(meetingId, await calls.RecordLeaveAsync(open.Id, leaver, webhook.CreatedAt, ct));
                 }
 
                 break;
@@ -251,7 +262,7 @@ public sealed class CallRoomService(
             case "room_finished":
                 if (await calls.FindActiveRoomSessionAsync(meetingId, ct) is { } finished)
                 {
-                    await calls.EndSessionAsync(finished.Id, webhook.CreatedAt, ct);
+                    await SpeakingLeftAsync(meetingId, await calls.EndSessionAsync(finished.Id, webhook.CreatedAt, ct));
                 }
 
                 break;
@@ -358,15 +369,17 @@ public sealed class CallRoomService(
 
         if (present.Count == 0 && live.Count == 0)
         {
-            await calls.EndSessionAsync(session.SessionId, now, ct);
+            await SpeakingLeftAsync(meetingId, await calls.EndSessionAsync(session.SessionId, now, ct));
             return;
         }
 
         var presentMembers = present.Select(p => p.Member).ToHashSet();
+        var closedHands = 0;
         foreach (var gone in session.OpenMembers.Where(m => !presentMembers.Contains(m)))
         {
-            await calls.RecordLeaveAsync(session.SessionId, gone, now, ct);
+            closedHands += await calls.RecordLeaveAsync(session.SessionId, gone, now, ct);
         }
+        await SpeakingLeftAsync(meetingId, closedHands);
 
         foreach (var (participant, member) in present.Where(p => !session.OpenMembers.Contains(p.Member)))
         {
