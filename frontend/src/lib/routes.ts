@@ -50,6 +50,11 @@ export const routes = {
   /** SCRUM-38: the meeting report, open to every internal user (BR-432); `?from=&to=` hold the period. */
   reports: '/mgmt/reports',
   calendar: '/calendar',
+  /**
+   * SCRUM-142: calendar sharing (UC-84a → UC-84f) and the shared week (`?tab=week&week=`, UC-85c). The backend links its
+   * notifications here as `?share={id}`.
+   */
+  calendarSharing: '/calendar/sharing',
 } as const
 
 /**

@@ -26,6 +26,9 @@ const AuditLogPage = lazy(() => import('../features/audit/AuditLogPage').then((m
 const ResetPasswordPage = lazy(() =>
   import('../features/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
 )
+const CalendarSharingPage = lazy(() =>
+  import('../features/calendarSharing/CalendarSharingPage').then((m) => ({ default: m.CalendarSharingPage })),
+)
 const CalendarPage = lazy(() =>
   import('../features/calendar/CalendarPage').then((m) => ({ default: m.CalendarPage })),
 )
@@ -99,6 +102,8 @@ export function App() {
                 that would drop the notification connection. */}
             <Route path={routes.mgmt} element={<Navigate to={routes.meetings} replace />} />
             <Route path={routes.calendar} element={<CalendarPage />} />
+            {/* Open to everyone: one's own calendar is shared from here; the server gates the rest (SCRUM-142). */}
+            <Route path={routes.calendarSharing} element={<CalendarSharingPage />} />
             <Route path={routes.documents} element={<DocumentsPage />} />
             <Route path={routes.myVoice} element={<VoicePage />} />
             <Route path={routes.reports} element={<ReportsPage />} />

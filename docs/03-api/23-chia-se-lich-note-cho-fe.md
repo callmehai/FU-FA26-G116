@@ -1,6 +1,6 @@
 # Ghi chú cho FE — Chia sẻ lịch (SCRUM-142, FE-16)
 
-**Từ:** BE (Huy), 10/11/2026. **Contract:** [23-chia-se-lich.md](23-chia-se-lich.md). BE đã có API, FE làm màn sau.
+**Từ:** BE (Huy), 10/11/2026. **Contract:** [23-chia-se-lich.md](23-chia-se-lich.md). **FE đã làm xong** (10/11/2026), mô tả ở §8 của contract.
 
 ## Việc FE cần làm
 

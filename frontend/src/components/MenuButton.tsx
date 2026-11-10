@@ -19,11 +19,14 @@ export function MenuButton({
   icon,
   items,
   disabled,
+  iconOnly = false,
 }: {
   label: string
   icon: IconName
   items: MenuItem[]
   disabled?: boolean
+  /** The icon alone ("…" at the end of a row), named by `label`; the menu then opens towards the left. */
+  iconOnly?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -62,20 +65,26 @@ export function MenuButton({
   }
 
   return (
-    <div ref={rootRef} className="menu-button">
+    <div ref={rootRef} className={iconOnly ? 'menu-button menu-button-end' : 'menu-button'}>
       <button
         ref={triggerRef}
         type="button"
-        className="btn btn-outline btn-sm"
+        className={iconOnly ? 'icon-button' : 'btn btn-outline btn-sm'}
+        aria-label={iconOnly ? label : undefined}
+        data-tooltip={iconOnly && !open ? label : undefined}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
       >
-        <Icon name={icon} size={16} />
-        {label}
-        <Icon name="chevronDown" size={14} />
+        <Icon name={icon} size={iconOnly ? 18 : 16} />
+        {!iconOnly && (
+          <>
+            {label}
+            <Icon name="chevronDown" size={14} />
+          </>
+        )}
       </button>
       {open && (
         // Laid out under the button inside the page, not in the top layer: it scrolls with the page in one piece instead

@@ -186,6 +186,10 @@ export const api = {
   put: <T>(path: string, body?: unknown, init?: RequestOptions) =>
     request<T>(path, { ...init, method: 'PUT', body: body === undefined ? undefined : JSON.stringify(body) }),
 
+  /** A partial update: only the fields sent change (SCRUM-142 calendar shares). */
+  patch: <T>(path: string, body?: unknown, init?: RequestOptions) =>
+    request<T>(path, { ...init, method: 'PATCH', body: body === undefined ? undefined : JSON.stringify(body) }),
+
   delete: <T>(path: string, init?: RequestOptions) => request<T>(path, { ...init, method: 'DELETE' }),
 
   /** A multipart upload — files go as they are, never base64 inside JSON. */
