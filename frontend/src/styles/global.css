@@ -2074,7 +2074,6 @@ a.menu-item { text-decoration: none; }
 .date-range-dash { color: var(--muted-ink); }
 .date-range .date-field-box { width: 146px; }
 .date-range-active input { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
-.date-pick-panel .date-range-foot { justify-content: space-between; align-items: center; color: var(--muted-ink); font-size: 12px; }
 @media (max-width: 720px) {
   .date-range .date-field-box { flex: 1 1 0; width: auto; min-width: 0; }
   /* Two dates share a 390px line: room for "dd/mm/yyyy" beside the calendar button. */

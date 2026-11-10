@@ -89,7 +89,14 @@ export function DateRangeField({
   function pick(day: Date) {
     const picked = toDateInput(day)
     setHover(null)
-    if (active === 'from' || !value.from || picked < value.from) {
+    if (active === 'to' && value.from && picked < value.from) {
+      // An end before the start: the two swap, and the period is kept rather than picked again.
+      onChange({ from: picked, to: value.from })
+      setOpen(false)
+      inputs.to.current?.focus()
+      return
+    }
+    if (active === 'from' || !value.from) {
       // A new start; an end before it no longer holds.
       const to = value.to && value.to >= picked ? value.to : ''
       onChange({ from: picked, to })
@@ -121,9 +128,14 @@ export function DateRangeField({
     }
   }
 
-  // The band: the chosen period, or while the end is being picked, the start up to the day under the pointer.
-  const start = value.from
-  const end = open && active === 'to' && start && hover && toDateInput(hover) >= start ? toDateInput(hover) : value.to
+  // The band: the chosen period, or while the end is being picked, from the start to the day under the pointer —
+  // on either side of it, since an earlier day swaps the two.
+  const pointed = open && active === 'to' && value.from && hover ? toDateInput(hover) : ''
+  const [start, end] = pointed
+    ? pointed < value.from
+      ? [pointed, value.from]
+      : [value.from, pointed]
+    : [value.from, value.to]
   const band = start && end ? monthGridDays(shown).filter((d) => toDateInput(d) >= start && toDateInput(d) <= end) : []
 
   return (
@@ -179,15 +191,14 @@ export function DateRangeField({
             shown={shown}
             onShow={setShown}
             now={new Date()}
-            selected={fromValue(value.from)}
+            selected={fromValue(start)}
             rangeEnd={fromValue(end)}
             viewed={band}
             onPick={pick}
             onHover={setHover}
           />
-          <div className="date-field-foot date-range-foot">
-            <span>{active === 'from' ? 'Chọn ngày bắt đầu' : 'Chọn ngày kết thúc'}</span>
-            {(value.from || value.to) && (
+          {(value.from || value.to) && (
+            <div className="date-field-foot">
               <button
                 type="button"
                 className="btn btn-ghost btn-sm"
@@ -200,8 +211,8 @@ export function DateRangeField({
               >
                 Xoá
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

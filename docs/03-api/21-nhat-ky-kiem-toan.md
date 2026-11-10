@@ -92,7 +92,9 @@ tài khoản/vai trò hoặc 8 ký tự đầu của mã).
   dạng bị bỏ qua. Khoảng ngày là trọn ngày theo giờ máy người xem, gửi lên dạng UTC. Ngày bắt đầu sau ngày kết thúc
   thì báo dưới ô và **không** áp dụng.
 - Khoảng ngày chọn trên **một** lịch (`components/DateRangeField.tsx`): bấm lần đầu là ngày bắt đầu, lần hai là ngày
-  kết thúc, dải màu chạy theo con trỏ ở giữa; bấm một ngày trước ngày bắt đầu thì nó thành ngày bắt đầu mới. Mở riêng ô
+  kết thúc, dải màu chạy theo con trỏ ở giữa (cả về trước ngày bắt đầu); bấm một ngày trước ngày bắt đầu thì hai đầu
+  đổi chỗ — ngày đó thành ngày bắt đầu, ngày bắt đầu cũ thành ngày kết thúc — và khoảng được ghi luôn. Chỉ chọn một
+  ngày thì đó là ngày bắt đầu, không có ngày kết thúc. Mở riêng ô
   "Từ ngày" hoặc "Đến ngày" để sửa một đầu; vẫn gõ được dd/mm/yyyy; nút *Xoá* trong lịch bỏ cả hai.
 - Ô "Tìm theo đối tượng…" (màn 3.3): `q` khớp tên ở cột Đối tượng (tài khoản, vai trò), mã đối tượng và giá trị
   trong `details`.
