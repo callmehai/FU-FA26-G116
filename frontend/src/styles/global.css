@@ -986,9 +986,12 @@ a.menu-item { text-decoration: none; }
 
 .route-fallback { padding: 24px; color: var(--muted-ink); }
 
-/* A single "back to the list" link above a record's header. */
+/* A single "back to the list" link above a record's header. It sits in the column-flex .content, so it
+   must not shrink: otherwise a tab whose content overflows squeezes its 32px down to the text height and
+   pulls the header up by 12px (seen on the Thành phần tham dự tab). */
 .back-link {
   display: inline-flex;
+  flex: none;
   align-self: flex-start;
   align-items: center;
   gap: 4px;
