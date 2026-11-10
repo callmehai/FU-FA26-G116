@@ -24,6 +24,7 @@ public static class AuditEventCatalog
     private const string Recordings = "Bản ghi và gỡ băng";
     private const string Voice = "Voice ID";
     private const string Settings = "Cấu hình";
+    private const string Reports = "Báo cáo";
 
     public static IReadOnlyList<AuditEventType> All { get; } =
     [
@@ -99,6 +100,9 @@ public static class AuditEventCatalog
         new(AuditActions.VoiceSampleDeleted, "Xoá mẫu giọng", Voice),
 
         new(AuditActions.AiSettingsUpdated, "Đổi cấu hình AI", Settings),
+
+        // SCRUM-38 (BR-438): only the export is recorded, not viewing the report.
+        new(AuditActions.ReportExported, "Xuất báo cáo cuộc họp", Reports),
     ];
 
     private static readonly Dictionary<string, AuditEventType> ByCode = All.ToDictionary(e => e.Code, StringComparer.Ordinal);

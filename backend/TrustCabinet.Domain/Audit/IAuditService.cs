@@ -236,4 +236,12 @@ public static class AuditActions
         MeetingHistoryAction.AutoCancel => "meeting.auto_cancelled",
         _ => "meeting.status_changed",
     };
+
+    /// <summary>
+    /// SCRUM-38, UC-70b — a user exported the meeting report to Excel (BR-438). No object id: the report is not a row.
+    /// The details carry the period; viewing the report on screen is not recorded.
+    /// </summary>
+    public const string ReportExported = "report.exported";
+
+    public const string ReportObjectType = "Report";
 }

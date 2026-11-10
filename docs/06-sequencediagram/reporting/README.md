@@ -1,4 +1,4 @@
-# Báo cáo và thống kê — FE-15 (đã vào Report 3, chưa có code trên `main`)
+# Báo cáo và thống kê — FE-15 (đã vào Report 3; BE đã có, FE chưa)
 
 Các sequence UC-70a, UC-70b tuân theo [convention chung](../README.md). Đặc tả UC-70a, UC-70b, BR-432 → BR-438 và
 mã `MSG463`–`MSG466` đã vào Report 3 ngày 09/11/2026 (bản trích ở
@@ -15,7 +15,8 @@ các UC con.
 - Kết quả chỉ có số đếm, tỷ lệ và trung bình — không tiêu đề, người dự hay nội dung cuộc họp (BR-437).
 - UC-70b tính lại số liệu lúc xuất và ghi audit; không ghi được audit thì không trả tệp (BR-438).
 - Đã xuất PNG và thêm 2 tab vào `TrustCabinet_Sequence_Diagrams.drawio` ngày 09/11/2026. Lifeline
-  `:Report Controller` / `:Report Service` là tên dự kiến.
+  `:Report Controller` / `:Report Service` ứng với `ReportEndpoints` / `ReportService`; `:Meeting Repository` là truy
+  vấn EF Core ngay trong `ReportService`, `:Audit Service` là `IAuditService`.
 
 ## Xuất ảnh
 
