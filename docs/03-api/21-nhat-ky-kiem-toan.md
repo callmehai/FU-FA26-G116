@@ -25,7 +25,7 @@ Cả hai endpoint nằm sau `RequireAdminUsers()` — dùng lại quyền *Quả
 | `from`, `to` | ISO 8601 **có múi giờ** (`2026-11-10T08:00:00+07:00`; trong URL viết `%2B07:00` — dấu `+` không mã hoá thành khoảng trắng và bị `MSG469`) | Khoảng `occurredAt`, tính cả hai đầu. `from` không được sau `to` |
 | `actor` | Guid tài khoản, `guest` hoặc `system` | Một tài khoản; mọi dòng của Khách; mọi dòng hệ thống tự ghi |
 | `action` | mã sự kiện | Phải là một `code` của `/event-types` |
-| `q` | 1–100 ký tự | Tìm không phân biệt hoa thường trong mã đối tượng và các **giá trị** trong `details` (không khớp tên trường hay `null`); `%`, `_`, `\` được tìm đúng ký tự đó |
+| `q` | 1–100 ký tự | Tìm không phân biệt hoa thường trong mã đối tượng, **tên** đối tượng khi nó là tài khoản (họ tên) hoặc vai trò (tên vai trò) — đúng `objectName` — và các **giá trị** trong `details` (không khớp tên trường hay `null`); `%`, `_`, `\` được tìm đúng ký tự đó. Không khớp tên người thực hiện, tiêu đề cuộc họp hay tên tài liệu (BR-443). Có dấu phải gõ đúng dấu |
 | `page`, `pageSize` | số nguyên | Mặc định `1`, `20`; `pageSize` tối đa `100` |
 
 Mọi tiêu chí phải cùng khớp (BR-31). Thứ tự: `occurredAt` giảm dần, rồi `id` giảm dần. Trang vượt quá số trang trả
