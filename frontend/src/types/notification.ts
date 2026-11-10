@@ -30,6 +30,17 @@ export type NotificationType =
   | 'MeetingParticipantRemoved'
   /** SCRUM-98: someone else made the reader the presenter of an agenda item. */
   | 'AgendaPresenterAssigned'
+  /** SCRUM-142: calendar sharing; the target is the share (`/calendar/sharing?share=`), never a meeting. */
+  | 'CalendarShareRequested'
+  | 'CalendarShareReceived'
+  | 'CalendarShareAccepted'
+  | 'CalendarShareDeclined'
+  | 'CalendarShareChangeRequested'
+  | 'CalendarShareUpdated'
+  | 'CalendarShareChangeDeclined'
+  | 'CalendarShareWithdrawn'
+  | 'CalendarShareEnded'
+  | 'CalendarShareStopped'
 
 export interface AppNotification {
   id: string

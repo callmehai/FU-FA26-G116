@@ -31,6 +31,16 @@ const KINDS: Record<NotificationType, Kind> = {
   MeetingRoleChanged: { icon: 'users', tone: 'blue' },
   MeetingParticipantRemoved: { icon: 'calendarX', tone: 'slate' },
   AgendaPresenterAssigned: { icon: 'meeting', tone: 'indigo' },
+  CalendarShareRequested: { icon: 'calendarCheck', tone: 'violet' },
+  CalendarShareReceived: { icon: 'calendarCheck', tone: 'blue' },
+  CalendarShareAccepted: { icon: 'calendarCheck', tone: 'emerald' },
+  CalendarShareDeclined: { icon: 'calendarX', tone: 'slate' },
+  CalendarShareChangeRequested: { icon: 'calendarCheck', tone: 'violet' },
+  CalendarShareUpdated: { icon: 'calendarCheck', tone: 'blue' },
+  CalendarShareChangeDeclined: { icon: 'calendarX', tone: 'slate' },
+  CalendarShareWithdrawn: { icon: 'calendarX', tone: 'slate' },
+  CalendarShareEnded: { icon: 'calendarX', tone: 'slate' },
+  CalendarShareStopped: { icon: 'calendarX', tone: 'red' },
 }
 
 /** A kind added on the backend later still renders, as a plain bell. */

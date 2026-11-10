@@ -15,6 +15,8 @@ const OBJECT_TYPE_LABEL: Record<string, string> = {
   AiProviderSetting: 'Cấu hình AI',
   // SCRUM-38: an export of the meeting report (report.exported); it has no object id.
   Report: 'Báo cáo',
+  // SCRUM-142: the thirteen calendar_share.* events.
+  CalendarShare: 'Chia sẻ lịch',
 }
 
 export const objectTypeLabel = (type: string) => OBJECT_TYPE_LABEL[type] ?? type

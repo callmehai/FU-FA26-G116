@@ -55,6 +55,8 @@ export function AppSidebar({ collapsed }: { collapsed: boolean }) {
         <NavLink
           key={entry.to}
           to={entry.to}
+          // Only the calendar itself: calendar sharing lives under /calendar but opens from the account menu.
+          end={entry.to === routes.calendar}
           className="sidebar-item"
           data-tooltip={collapsed ? entry.label : undefined}
         >

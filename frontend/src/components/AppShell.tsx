@@ -22,6 +22,8 @@ const NARROW_QUERY = '(max-width: 720px)'
 const PERSONAL = [
   { to: routes.documents, label: 'Kho tài liệu', icon: 'folder' },
   { to: routes.myVoice, label: 'Giọng nói của tôi', icon: 'mic' },
+  // SCRUM-142: everyone shares their own calendar here (PO 10/11/2026, L8); AI-eCabinet keeps it in the avatar menu too.
+  { to: routes.calendarSharing, label: 'Chia sẻ lịch', icon: 'calendarCheck' },
 ] as const
 
 /**
