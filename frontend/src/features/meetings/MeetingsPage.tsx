@@ -71,6 +71,24 @@ type Load =
   | { kind: 'loaded'; data: MeetingListResponse }
   | { kind: 'error'; message: string; invalidQuery: boolean }
 
+/** Sets the title's tooltip just before it would show: only when the two-line clamp cut the title. */
+function tipIfClamped(link: HTMLElement, title: string) {
+  if (link.scrollHeight > link.clientHeight + 1) link.dataset.tooltip = title
+  else delete link.dataset.tooltip
+}
+
+/** Which empty state a list with these criteria shows. */
+function emptyKind(s: ListState) {
+  const rest = !s.q.trim() && !s.status && !s.sensitivity
+  return {
+    filtered: hasFilters(s),
+    // The list as it opens: today's meetings, which some days is none.
+    onlyToday: s.when === 'today' && rest && !s.scope,
+    // "Cần xử lý" on its own: nothing waits on the caller.
+    onlyTodo: s.scope === 'todo' && rest && !s.when,
+  }
+}
+
 /**
  * UC-17 View Meeting List (SCRUM-18). Search, filters, sorting and paging are all done by the server
  * after it has dropped every meeting the caller may not see, so nothing here filters rows itself.
@@ -88,8 +106,12 @@ export function MeetingsPage() {
   const queryKey = writeListState(state).toString()
 
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
-  /** The last good page, kept on screen while the next one loads so the table does not flash empty. */
-  const [shown, setShown] = useState<MeetingListResponse | null>(null)
+  /**
+   * The last good page, kept on screen while the next one loads so the table does not flash empty, with
+   * the criteria that produced it: its empty state speaks of those, not of the URL already moved on
+   * (SCRUM-148 — clearing a filter over an empty page flashed "Chưa có cuộc họp nào.").
+   */
+  const [shown, setShown] = useState<{ data: MeetingListResponse; key: string } | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [attempt, setAttempt] = useState(0)
 
@@ -120,7 +142,7 @@ export function MeetingsPage() {
           setSearchParams(writeListState({ ...readListState(params), page: data.totalPages }), { replace: true })
           return
         }
-        setShown(data)
+        setShown({ data, key: queryKey })
         setLoad({ kind: 'loaded', data })
       } catch (err) {
         if (cancelled || handleAccessLost(err)) return
@@ -157,14 +179,12 @@ export function MeetingsPage() {
     setSearchParams(writeListState(card ? statState(card, state) : clearedState(state)), { replace: true })
   }
 
-  const filtered = hasFilters(state)
   const activeFilters = [state.status, state.sensitivity, state.when].filter(Boolean).length
   const [filtersOpen, setFiltersOpen] = useState(false)
-  // The list as it opens: today's meetings, which some days is none.
-  const onlyToday = state.when === 'today' && !state.q.trim() && !state.status && !state.sensitivity && !state.scope
-  // "Cần xử lý" on its own: nothing waits on the caller.
-  const onlyTodo = state.scope === 'todo' && !state.q.trim() && !state.status && !state.sensitivity && !state.when
-  const data = shown
+  // The toolbar's "×" follows the URL; the empty state follows the page on screen.
+  const showClear = hasFilters(state) && !emptyKind(state).onlyToday
+  const data = shown?.data ?? null
+  const { filtered, onlyToday, onlyTodo } = emptyKind(shown ? readListState(new URLSearchParams(shown.key)) : state)
   const canCreate = can('MeetingCreator')
   const createLink = useCreateMeetingLink()
 
@@ -241,7 +261,14 @@ export function MeetingsPage() {
       >
         <td className="cell-index">{offset + index + 1}</td>
         <td className="cell-title">
-          <Link to={routes.meeting(m.id)} state={back} onClick={(e) => e.stopPropagation()}>
+          {/* Two lines at most (CSS); a title cut short shows in full as a tooltip, one that fits does not. */}
+          <Link
+            to={routes.meeting(m.id)}
+            state={back}
+            onClick={(e) => e.stopPropagation()}
+            onPointerEnter={(e) => tipIfClamped(e.currentTarget, m.title)}
+            onFocus={(e) => tipIfClamped(e.currentTarget, m.title)}
+          >
             {m.title}
           </Link>
           {m.mode !== 'Online' && m.location && (
@@ -272,9 +299,14 @@ export function MeetingsPage() {
           {m.status === 'InProgress' && m.mode !== 'InPerson' ? (
             // The call to act now: green like the "Đang diễn ra" state, and it pings. The room
             // answers 404 to someone who is not invited.
-            <Link className="btn btn-live btn-sm btn-ping" to={routes.meetingRoom(m.id)} onClick={(e) => e.stopPropagation()}>
+            <Link
+              className="btn btn-live btn-sm btn-ping"
+              to={routes.meetingRoom(m.id)}
+              onClick={(e) => e.stopPropagation()}
+              data-tooltip="Vào phòng họp"
+            >
               <Icon name="video" size={16} />
-              Vào phòng họp
+              <span className="btn-live-label">Vào phòng họp</span>
             </Link>
           ) : (
             <Link
@@ -317,7 +349,7 @@ export function MeetingsPage() {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo tên cuộc họp…"
+              placeholder="Tìm cuộc họp…"
               aria-label="Tìm theo tên cuộc họp"
             />
           </label>
@@ -331,7 +363,7 @@ export function MeetingsPage() {
             onClick={() => setFiltersOpen((o) => !o)}
           >
             <Icon name="filter" size={16} />
-            Bộ lọc
+            <span className="filters-toggle-label">Bộ lọc</span>
             {activeFilters > 0 && <span className="filters-count">{activeFilters}</span>}
           </button>
           <div id="meeting-filters" className={filtersOpen ? 'toolbar-filters toolbar-filters-open' : 'toolbar-filters'}>
@@ -356,7 +388,7 @@ export function MeetingsPage() {
             />
 
             {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
-            {filtered && (
+            {showClear && (
               <button
                 type="button"
                 className="icon-button"
@@ -379,12 +411,12 @@ export function MeetingsPage() {
                 <SortHeader column="title" state={state} onSort={sortBy}>
                   Tên cuộc họp
                 </SortHeader>
-                <SortHeader column="plannedStartTime" state={state} onSort={sortBy}>
+                <SortHeader column="plannedStartTime" state={state} onSort={sortBy} className="cell-schedule">
                   Thời gian diễn ra
                 </SortHeader>
                 <th className="cell-place">Hình thức</th>
-                <th>Trạng thái</th>
-                <th>Mức độ</th>
+                <th className="cell-status">Trạng thái</th>
+                <th className="cell-level">Mức độ</th>
                 <th className="col-action">Thao tác</th>
               </tr>
             </thead>
@@ -428,9 +460,11 @@ function SortHeader({
   column,
   state,
   onSort,
+  className,
   children,
 }: {
   column: MeetingSortBy
+  className?: string
   state: ListState
   onSort: (column: MeetingSortBy) => void
   children: ReactNode
@@ -438,7 +472,7 @@ function SortHeader({
   const active = state.sortBy === column
   const direction = active ? state.sortDir : null
   return (
-    <th aria-sort={direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'}>
+    <th className={className} aria-sort={direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'}>
       <button
         type="button"
         className={active ? 'sort-button sort-button-active' : 'sort-button'}

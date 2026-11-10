@@ -223,6 +223,8 @@ export interface MeetingMutationResponse {
 export interface MeetingApprover {
   id: string
   fullName: string
+  /** Tells two approvers of one name apart in the picker (SCRUM-150). */
+  email: string
 }
 
 /**

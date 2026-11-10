@@ -11,7 +11,8 @@ const REASON_MAX = 1000
 
 /**
  * UC-75 Cancel Meeting: the organizer says why, before the meeting starts. Who hears about it depends on
- * whether it was announced, so the dialog says which. What was typed stays when the request fails.
+ * the status, so the dialog says who (SCRUM-150): everyone invited once it is announced, the assigned
+ * approver while it waits for approval, nobody otherwise. What was typed stays when the request fails.
  */
 export function CancelMeetingDialog({
   meeting,
@@ -96,7 +97,9 @@ export function CancelMeetingDialog({
       <p className="dialog-text dialog-note">
         {meeting.status === 'Published'
           ? 'Mọi người được mời sẽ nhận thông báo và email kèm lý do. Không hoàn tác được.'
-          : 'Cuộc họp chưa công bố nên không ai nhận thông báo. Không hoàn tác được.'}
+          : meeting.status === 'WaitingApproval'
+            ? 'Người duyệt sẽ nhận thông báo kèm lý do, không cần duyệt nữa. Không hoàn tác được.'
+            : 'Cuộc họp chưa công bố nên không ai nhận thông báo. Không hoàn tác được.'}
       </p>
 
       {error && (

@@ -23,6 +23,26 @@ function pageWindow(page: number, totalPages: number): (number | 'gap')[] {
 }
 
 /**
+ * A phone shows only the first, the current and the last page (CSS hides the "near" ones). Each run of
+ * hidden pages that no gap already stands for gets a gap of its own there, so "1 2 3" reads "1 … 3"
+ * on a phone instead of "1 3" (SCRUM-148).
+ */
+function withPhoneGaps(items: (number | 'gap')[], page: number, totalPages: number) {
+  const near = (item: number | 'gap' | undefined) =>
+    typeof item === 'number' && item !== page && item !== 1 && item !== totalPages
+  const out: (number | 'gap' | 'phoneGap')[] = []
+  items.forEach((item, i) => {
+    if (near(item) && !near(items[i - 1]) && items[i - 1] !== 'gap') {
+      let end = i
+      while (near(items[end + 1])) end++
+      if (items[end + 1] !== 'gap') out.push('phoneGap')
+    }
+    out.push(item)
+  })
+  return out
+}
+
+/**
  * The footer of a server-paged table: where you are ("21–40 trong 45"), how many rows per page, and
  * the page buttons. Counts come from the server, so they cover every page, not just this one.
  */
@@ -89,9 +109,13 @@ export function Pagination({
         >
           <Icon name="chevronLeft" size={16} />
         </button>
-        {pageWindow(page, totalPages).map((item, index) =>
-          item === 'gap' ? (
-            <span key={`gap-${index}`} className="pagination-gap" aria-hidden="true">
+        {withPhoneGaps(pageWindow(page, totalPages), page, totalPages).map((item, index) =>
+          item === 'gap' || item === 'phoneGap' ? (
+            <span
+              key={`gap-${index}`}
+              className={item === 'gap' ? 'pagination-gap' : 'pagination-gap pagination-gap-phone'}
+              aria-hidden="true"
+            >
               …
             </span>
           ) : (

@@ -66,7 +66,7 @@ Các mã UC-27–30 dưới đây đã có Backend. OTP/session production thu�
 | `MSG286` | 409 | PUT invitation-response: Chủ toạ trả lời lời mời | Chủ toạ điều hành cuộc họp nên không cần xác nhận tham dự. |
 | `MSG152` | — | Ngừng dùng — quyền bổ sung đã bỏ theo PO 20/10/2026 | Không tái cấp. |
 | `MSG153` | — | Ngừng dùng — quyền bổ sung đã bỏ theo PO 20/10/2026 | Không tái cấp. |
-| `MSG154` | 200 | Role/grants không có thay đổi, hoặc gửi lại đúng câu trả lời đã ghi | Không có thay đổi cần lưu. |
+| `MSG154` | 200 | Role/grants không có thay đổi, hoặc gửi lại đúng câu trả lời đã ghi; FE cũng tự hiện câu này khi lưu form sửa/dời lịch cuộc họp mà không đổi gì, không gọi `PUT` (SCRUM-149) | Không có thay đổi cần lưu. |
 | `MSG275` | 409 | Revision roster stale | Danh sách thành phần đã thay đổi. Vui lòng tải lại và thử lại. |
 | `MSG276` | 400 | Query (kể cả lookup trước tạo họp) hoặc If-Match thiếu/sai | Query hoặc If-Match không hợp lệ. Vui lòng tải lại dữ liệu. |
 
