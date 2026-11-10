@@ -1223,8 +1223,12 @@ a.menu-item { text-decoration: none; }
 /* The previous page stays readable but visibly stale while the next one loads. */
 .data-table-stale tbody { opacity: .55; transition: opacity .15s; }
 
-/* A long meeting title ends in "…" after two lines, the full title in its tooltip (SCRUM-148). */
-.meetings-table .cell-title a { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+/* A long meeting title ends in "…" after two lines, the full title in its tooltip (SCRUM-148). Only in
+   the table: a phone card shows the whole title, since a tap opens no tooltip (review of PR #302). */
+.meetings-table .cell-title a { overflow-wrap: anywhere; }
+@media (min-width: 721px) {
+  .meetings-table .cell-title a { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+}
 /* Wide enough: fixed columns, so the Time column does not move between pages with the length of
    their titles (SCRUM-148). The title takes what the others leave. From 1280px the action fits
    "Vào phòng họp"; below, down to 1100px (a 1200px window less the 256px sidebar), the columns are
