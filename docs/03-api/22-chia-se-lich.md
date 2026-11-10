@@ -36,7 +36,7 @@ Một cặp **có chiều** (chủ lịch → người xem) chỉ có tối đa 
 
 | Trạng thái | Người gọi | `actions` |
 |---|---|---|
-| `Pending` | bên được hỏi (chủ lịch nếu `initiatedBy = Viewer`, người xem nếu `Owner`) | `accept`, `decline` — chỉ `decline` khi `senderDeactivated = true` (UC-84c EX-5) |
+| `Pending` | bên được hỏi (chủ lịch nếu `initiatedBy = Viewer`, người xem nếu `Owner`) | `accept`, `decline` — chỉ `decline` khi `senderDeactivated = true` (UC-84c EX-5) hoặc người xem đã mất quyền tạo cuộc họp (Chấp nhận → `409 MSG450`) |
 | `Pending` | bên gửi | `withdraw` |
 | `Effective`, không có thay đổi chờ | người xem / chủ lịch | `requestChange`, `end` / `update`, `end` |
 | `Effective`, có thay đổi chờ | người xem / chủ lịch | `withdraw`, `end` / `accept`, `decline`, `update`, `end` |
@@ -66,7 +66,7 @@ khi không có thay đổi chờ. Không có trường nào về cuộc họp (B
 
 `200 { "asOwner": Share[], "asViewer": Share[] }`, mới nhất trước, đã loại chia sẻ quá ngày kết thúc. `asViewer` chỉ có dữ liệu khi
 người gọi có `MeetingCreator`; người không có quyền nhận `asViewer = []` nhưng vẫn thấy `asOwner` để trả lời, đổi hoặc ngừng chia sẻ
-lịch của mình (xem §6, L8). Đọc lỗi → `500 MSG453`.
+lịch của mình (PO chốt L8 ngày 10/11/2026, Jira 10498). Đọc lỗi → `500 MSG453`.
 
 ### `GET /api/calendar/share-candidates?purpose=request|direct&q=&page=1&pageSize=20` — UC-84a/UC-84b bước 1
 

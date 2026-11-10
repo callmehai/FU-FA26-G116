@@ -457,6 +457,32 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
     }
 
     [Fact]
+    public async Task A_request_whose_viewer_lost_the_right_offers_only_decline()
+    {
+        var p = await f.Seed();
+        using var organizer = f.Client(p.Organizer);
+        var id = Id(await AssertCode(await Request(organizer, p.Owner, "Level1", Today, Today.AddDays(5)), 201, "MSG435"));
+        using var admin = f.Client(p.Admin, "AdminUsers");
+        await using (var db = f.Db())
+        {
+            var viewer = await db.Users.FindAsync(p.Organizer);
+            await AssertCode(await admin.PutAsJsonAsync($"/api/users/{p.Organizer}", new
+            {
+                fullName = viewer!.FullName, email = viewer.Email, roleId = TrustCabinet.Domain.Access.BuiltInRoles.Member.ToString(),
+            }), 200, "MSG10");
+        }
+
+        // The invitation stays (only Effective shares stop), but it can no longer become Effective (BR-430, P3-A).
+        using var owner = f.Client(p.Owner);
+        var listed = Assert.Single((await owner.GetFromJsonAsync<JsonElement>("/api/calendar/shares"))
+            .GetProperty("asOwner").EnumerateArray());
+        Assert.False(listed.GetProperty("senderDeactivated").GetBoolean());
+        Assert.Equal(["decline"], Actions(listed));
+        await AssertCode(await Post(owner, id, "accept"), 409, "MSG450");
+        await AssertCode(await Post(owner, id, "decline"), 200, "MSG437");
+    }
+
+    [Fact]
     public async Task A_member_lists_their_own_shares_but_never_shares_with_them()
     {
         var p = await f.Seed();

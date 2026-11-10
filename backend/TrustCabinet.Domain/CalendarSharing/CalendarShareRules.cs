@@ -109,16 +109,17 @@ public static class CalendarShareRules
 
     /// <summary>
     /// What <paramref name="actorId"/> may do to the share now (the table of the plan, §2.5). Empty for anyone who is not
-    /// one of the two people, and for a share that is final or past its end date. An invitation whose sender has been
-    /// deactivated can only be declined (UC-84c EX-5, PO 09/11/2026 Q-C).
+    /// one of the two people, and for a share that is final or past its end date. <paramref name="acceptBlocked"/>: a
+    /// Pending share that can no longer become Effective — its sender was deactivated (UC-84c EX-5, PO 09/11/2026 Q-C) or its
+    /// viewer lost the Meeting Organizer right (BR-430) — so the asked side may only decline it.
     /// </summary>
-    public static IReadOnlyList<string> Actions(CalendarShare share, Guid actorId, DateOnly today, bool senderDeactivated)
+    public static IReadOnlyList<string> Actions(CalendarShare share, Guid actorId, DateOnly today, bool acceptBlocked)
     {
         if (!IsParty(share, actorId) || IsLapsed(share, today)) return [];
         var isOwner = share.OwnerId == actorId;
         return share.Status switch
         {
-            CalendarShareStatus.Pending when AskedSide(share) == actorId && senderDeactivated => [Decline],
+            CalendarShareStatus.Pending when AskedSide(share) == actorId && acceptBlocked => [Decline],
             CalendarShareStatus.Pending when AskedSide(share) == actorId => [Accept, Decline],
             CalendarShareStatus.Pending => [Withdraw],
             CalendarShareStatus.Effective when isOwner && share.HasPendingChange => [Accept, Decline, Update, End],

@@ -14,7 +14,7 @@
 ## Những điểm dễ sai
 
 - **Nút hiện theo `actions`** của từng chia sẻ (`accept`, `decline`, `withdraw`, `requestChange`, `update`, `end`). Đừng tự suy từ `status`:
-  ví dụ lời mời có `senderDeactivated = true` chỉ còn `decline`, và FE hiện câu `MSG468` ("Tài khoản người gửi đã bị vô hiệu hoá…").
+  ví dụ lời mời có `senderDeactivated = true` chỉ còn `decline`, và FE hiện câu `MSG468` ("Tài khoản người gửi đã bị vô hiệu hoá…"); yêu cầu mà người xin đã mất quyền tạo cuộc họp cũng chỉ còn `decline`.
 - `requestChange` (người xem) và `update` (chủ lịch) cùng gọi `PATCH /api/calendar/shares/{id}`; người xem nhận `201 MSG454`, chủ lịch `200 MSG442`.
 - `accept` của chủ lịch với yêu cầu UC-84a cho phép chọn mốc thấp hơn / khoảng ngắn hơn **trong** khoảng được xin; với chia sẻ UC-84b
   (`initiatedBy = Owner`) thì không gửi `level`/ngày (gửi khác giá trị hiện tại là `400 MSG443`).
@@ -22,7 +22,7 @@
   chia sẻ quá ngày kết thúc biến khỏi danh sách (PO 09/11).
 - Người không có quyền tạo cuộc họp (Thành viên) vẫn mở được màn Chia sẻ lịch để thấy **lịch mình đã chia sẻ** (`asOwner`) — trả lời yêu cầu,
   tự chia sẻ (UC-84b), đổi, ngừng. `asViewer` của họ luôn rỗng; nút "Xin xem lịch" và tab Lịch được chia sẻ ẩn với họ
-  (gọi vẫn trả `403 MSG448`). Đây là chỗ đang chờ PO xác nhận (xem L8 trong [kế hoạch BE](../notes/NOTE-ke-hoach-be-scrum-142.md)).
+  (gọi vẫn trả `403 MSG448`). **PO chốt 10/11/2026 (L8, Jira 10498)** — giống AI-eCabinet, nên đặt màn Chia sẻ lịch ở chỗ mọi tài khoản vào được (eCab để trong menu tài khoản).
 - Ô chọn người: `GET /api/calendar/share-candidates?purpose=request` (xin xem) hoặc `purpose=direct` (tự chia sẻ), tìm theo `q`, phân trang;
   `hasOpenShare = true` thì làm mờ người đó. Lỗi đọc `500 MSG467`.
 - Ngày gửi lên dạng `YYYY-MM-DD` theo lịch Việt Nam; ngày bắt đầu sớm nhất là hôm nay, tối đa 365 ngày tính cả hai đầu (BR-431) — kiểm ở FE

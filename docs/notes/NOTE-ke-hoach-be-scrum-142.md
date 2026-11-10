@@ -15,7 +15,7 @@
 | Q-B | Hết ngày kết thúc thì chia sẻ tự hết: **không job, không trạng thái `Expired`, không thông báo** (`MSG440` ngừng dùng) | Bỏ worker, `ICalendarShareExpiry`, `Expired`. `CalendarShareRules.IsLapsed` = `EndDate < today`: đọc loại ra, thao tác trả `409 MSG450`, không ghi gì. Gửi chia sẻ mới cho cùng cặp thì dòng quá hạn được đóng `Ended` lặng lẽ (audit `calendar_share.closed_after_end_date`) để nhường unique index |
 | Q-C | Vô hiệu hoá: dừng chia sẻ **Effective**; lời mời **Pending giữ lại**, bên được hỏi chỉ Từ chối; server chặn Chấp nhận | Stopper chỉ `status = 'Effective'`; `accept` khi người gửi bị vô hiệu hoá → `409 MSG468` (UC-84c EX-5); `senderDeactivated` + `actions = ["decline"]` |
 | Q-D | Danh sách chia sẻ là UC con **UC-84f** | `GET /api/calendar/shares` |
-| Q-E | Mất quyền tạo cuộc họp thì ẩn màn Chia sẻ lịch | Phần "chia sẻ cho tôi" (`asViewer`) chỉ cho người có `MeetingCreator`; phần "tôi chia sẻ" vẫn trả cho mọi tài khoản — xem L8 (§13) |
+| Q-E → **L8 (PO 10/11/2026, Jira 10498)** | Thay Q-E: người không có `MeetingCreator` vẫn vào màn Chia sẻ lịch, nhưng chỉ phần "lịch của tôi" (đang chia sẻ cho ai, đồng ý/từ chối yêu cầu, tự chia sẻ). "Được chia sẻ với tôi", Xin xem lịch, xem tuần và Tìm giờ họp chỉ cho người có `MeetingCreator` | Đúng như code: `asViewer` chỉ cho người có quyền, xin xem lịch / `share-candidates?purpose=request` / `shared-week` → `403 MSG448`; `asOwner` và tự chia sẻ mở cho mọi tài khoản. Không đổi code |
 | — | Danh sách người để chọn: **một** endpoint `share-candidates?purpose=request\|direct&q=&page=&pageSize=`, lỗi đọc `MSG467` | Thay cho `owner-options`/`viewer-options` của bản 08/11 |
 
 | Jira | Tên | Phần của note này |
@@ -394,7 +394,7 @@ Chi tiết ở `docs/03-api/22-chia-se-lich-note-cho-fe.md`. Tóm tắt:
 
 - Nút nào hiện thì đọc `actions` của từng chia sẻ, không tự suy từ trạng thái.
 - `MSG439` là câu FE tự hiện cho nhãn "Đã dừng" (BE chỉ trả `status`). Không có "Hết hạn": chia sẻ quá ngày biến khỏi danh sách.
-- Lời mời có `senderDeactivated = true`: chỉ nút Từ chối, hiện câu `MSG468`.
+- Lời mời có `senderDeactivated = true`: chỉ nút Từ chối, hiện câu `MSG468`. Yêu cầu mà người xin đã mất quyền tạo cuộc họp cũng chỉ còn Từ chối (`actions = ["decline"]`).
 - Thông báo chia sẻ lịch có `targetType = "CalendarShare"`; `/api/notifications/{id}/target` trả `url = /calendar/sharing?share={id}`.
 - Mọi ngày là `YYYY-MM-DD` theo lịch Việt Nam; giờ bận là ISO có `+07:00`.
 - UC-85c: `known = false` là "chưa biết", không được vẽ như rảnh.
@@ -410,6 +410,17 @@ Chi tiết ở `docs/03-api/22-chia-se-lich-note-cho-fe.md`. Tóm tắt:
 | L5 | ~~Thiếu sequence~~ — đã bổ sung ở PR #295 (note 39), 09/11/2026 | — |
 | L6 | Bên gửi gọi `accept`/`decline` trên yêu cầu của chính mình → `404` (UC-84c EX-1), người là một bên gọi hành động sai trạng thái → `409 MSG450` | Theo đúng EX-1/EX-2 |
 | L7 | Từ chối thay đổi (UC-84c AF-1) chỉ báo người xem (sequence), không báo người bấm như câu "both sides are notified" | Người bấm đã thấy `MSG452` |
-| L8 | UC-84f gác cả màn bằng `MeetingCreator` (`403 MSG448`, PO Q-E), nhưng BR-430/UC-84b cho mọi tài khoản làm chủ lịch: một Thành viên sẽ không có chỗ trả lời yêu cầu (UC-84c), tự chia sẻ (UC-84b), đổi/ngừng (UC-84d/84e). BE chỉ gác phần `asViewer`; `asOwner` trả cho mọi tài khoản đang hoạt động | **Chờ PO xác nhận** — nếu PO giữ nguyên Q-E thì đổi một dòng trong `CalendarSharingService.ListAsync` |
+| L8 | UC-84f gác cả màn bằng `MeetingCreator` (Q-E), trái BR-430 | **Đã chốt PO 10/11/2026 (Jira 10498):** chỉ gác phần "được chia sẻ với tôi", Xin xem lịch, xem tuần, Tìm giờ họp — đúng code. BA sửa UC-84f và §6 đặc tả sơ bộ |
 | L9 | Gửi chia sẻ mới cho một cặp mà dòng cũ đã quá ngày nhưng vẫn `Pending`/`Effective`: dòng cũ thành `Ended` (người đóng null, audit `calendar_share.closed_after_end_date`, không thông báo) | Không có job nên phải nhường chỗ trong unique index (BR-423) |
 | L10 | Chấp nhận yêu cầu UC-84a mà người xem đã mất `MeetingCreator` (chưa bị vô hiệu hoá) → `409 MSG450`; chia sẻ `Pending` không bị dừng | Đặc tả chỉ nói trường hợp người gửi bị vô hiệu hoá (EX-5) |
+
+## 14. Nhật ký quyết định
+
+| Ngày | Quyết định | Nguồn | Ảnh hưởng code |
+|---|---|---|---|
+| 08/11/2026 | Q9 (BR-420 trạng thái tính bận), Q10 (BR-431 tối đa 365 ngày) | PO, Jira 10473 | Theo đề xuất |
+| 09/11/2026 | Q-A → Q-E: chỉ vô hiệu hoá mới dừng; không job, không `Expired`; dừng chỉ Effective, Pending giữ, chặn Chấp nhận `MSG468`; UC-84f; (Q-E thay bởi L8) | PO, Jira 10490, PR #295 | Đã làm (§0b) |
+| 10/11/2026 | Stopper không dừng chia sẻ đã quá ngày kết thúc (không audit, không báo) | Review PR #315 (callmehai) | `CalendarShareStopper` lọc `end_date >= today` |
+| 10/11/2026 | **L8**: người không có `MeetingCreator` vẫn vào màn Chia sẻ lịch, chỉ phần "lịch của tôi" | PO, Jira 10498 | Không đổi (code đã đúng) |
+| 10/11/2026 | Yêu cầu có người xin đã mất quyền tạo cuộc họp: danh sách chỉ còn Từ chối (khớp với `409 MSG450` khi Chấp nhận) | BE, theo phương án A của P3 | `CalendarShareRules.Actions(…, acceptBlocked)` |
+| *chờ* | **P1** `share-candidates` có trả `email`; **P2** đóng dòng quá hạn có ghi audit; **P3** mã lỗi khi chấp nhận yêu cầu của người mất quyền; **P4** duyệt thay đổi sau khi chủ lịch đã hạ mốc | [PR #315 comment](https://github.com/callmehai/FU-FA26-G116/pull/315#issuecomment-6770385798) | Phương án A = code hiện tại; chọn B thì sửa theo cột cuối của bảng câu hỏi |

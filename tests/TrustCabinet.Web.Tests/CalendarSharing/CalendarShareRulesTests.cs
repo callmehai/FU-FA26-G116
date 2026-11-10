@@ -132,14 +132,14 @@ public sealed class CalendarShareRulesTests
     [Fact]
     public void The_actions_follow_who_sent_it_and_what_is_pending()
     {
-        string[] Of(CalendarShare share, Guid actor, bool senderDeactivated = false)
-            => [.. CalendarShareRules.Actions(share, actor, Today, senderDeactivated)];
+        string[] Of(CalendarShare share, Guid actor, bool acceptBlocked = false)
+            => [.. CalendarShareRules.Actions(share, actor, Today, acceptBlocked)];
 
         var request = Share(CalendarShareStatus.Pending);
         Assert.Equal(["accept", "decline"], Of(request, OwnerId));
         Assert.Equal(["withdraw"], Of(request, ViewerId));
-        // UC-84c EX-5: the sender was deactivated, so the invitation can only be declined.
-        Assert.Equal(["decline"], Of(request, OwnerId, senderDeactivated: true));
+        // UC-84c EX-5 / BR-430: the sender was deactivated or the viewer lost the right, so it can only be declined.
+        Assert.Equal(["decline"], Of(request, OwnerId, acceptBlocked: true));
 
         var direct = Share(CalendarShareStatus.Pending, initiatedBy: CalendarShareInitiator.Owner);
         Assert.Equal(["accept", "decline"], Of(direct, ViewerId));

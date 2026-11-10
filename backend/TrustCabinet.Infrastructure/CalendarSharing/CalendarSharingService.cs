@@ -39,8 +39,16 @@ public sealed class CalendarSharingService(
                 .Where(s => (s.OwnerId == actorId || (organizer && s.ViewerId == actorId)) && s.EndDate >= today)
                 .OrderByDescending(s => s.CreatedAt).ThenByDescending(s => s.Id)
                 .ToListAsync(ct);
+            // Whose viewer still holds MeetingCreator, for the Pending rows only: a request whose viewer lost it can only be
+            // declined (BR-430), so its row offers no Accept.
+            var pendingViewers = shares.Where(s => s.Status == CalendarShareStatus.Pending).Select(s => s.ViewerId).Distinct()
+                .ToArray();
+            var organizers = (await db.Users.AsNoTracking()
+                .Where(u => pendingViewers.Contains(u.Id)
+                    && db.RoleCapabilities.Any(rc => rc.RoleId == u.RoleId && rc.Capability == Capability.MeetingCreator))
+                .Select(u => u.Id).ToListAsync(ct)).ToHashSet();
             ShareView View(CalendarShare s) => CalendarShareViews.From(s, Person(s.Owner), Person(s.Viewer), actorId, today,
-                SenderDeactivated(s, s.Owner.IsActive, s.Viewer.IsActive));
+                SenderDeactivated(s, s.Owner.IsActive, s.Viewer.IsActive), organizers.Contains(s.ViewerId));
             return new(new ShareLists(
                 [.. shares.Where(s => s.OwnerId == actorId).Select(View)],
                 [.. shares.Where(s => s.ViewerId == actorId).Select(View)]));
@@ -456,7 +464,7 @@ public sealed class CalendarSharingService(
     private static CalendarShareOutcome Done(CalendarShareSuccess success, CalendarShare share, PersonState owner,
         PersonState viewer, Guid actorId, DateOnly today)
         => new(Success: success, Share: CalendarShareViews.From(share, owner.View, viewer.View, actorId, today,
-            SenderDeactivated(share, owner.IsActive, viewer.IsActive)));
+            SenderDeactivated(share, owner.IsActive, viewer.IsActive), viewer.IsOrganizer));
 
     /// <summary>UC-84c EX-5: a Pending invitation whose sender's account was deactivated.</summary>
     private static bool SenderDeactivated(CalendarShare share, bool ownerActive, bool viewerActive)
@@ -467,7 +475,7 @@ public sealed class CalendarSharingService(
 internal static class CalendarShareViews
 {
     internal static ShareView From(CalendarShare share, SharePerson owner, SharePerson viewer, Guid actorId, DateOnly today,
-        bool senderDeactivated)
+        bool senderDeactivated, bool viewerIsOrganizer)
         => new(
             share.Id,
             share.InitiatedBy.ToString(),
@@ -485,5 +493,6 @@ internal static class CalendarShareViews
             share.DecidedAt,
             share.ClosedAt,
             senderDeactivated,
-            CalendarShareRules.Actions(share, actorId, today, senderDeactivated));
+            CalendarShareRules.Actions(share, actorId, today,
+                acceptBlocked: share.Status == CalendarShareStatus.Pending && (senderDeactivated || !viewerIsOrganizer)));
 }
