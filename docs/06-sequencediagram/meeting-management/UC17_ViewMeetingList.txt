@@ -26,7 +26,7 @@ else Query criteria are valid
     activate MeetingService
     MeetingService->MeetingRepository: Find authorized meetings with criteria\n(BR-29, BR-30, BR-31, BR-32)
     activate MeetingRepository
-    MeetingRepository->Database: Filter authorized meetings by name, status (including Cancelled), confidentiality,\nToday/This week overlapping Meeting Planned Start/End Time, or Not yet held/Already held by Planned Start Time\n(BR-30, BR-297); omit declined meetings only when excludeDeclined=true (calendar, BR-321)
+    MeetingRepository->Database: Filter authorized meetings by name (ignoring case and diacritics, BR-439), status (including Cancelled), confidentiality,\nToday/This week overlapping Meeting Planned Start/End Time, or Not yet held/Already held by Planned Start Time\n(BR-30, BR-297); omit declined meetings only when excludeDeclined=true (calendar, BR-321)
     activate Database
 
     alt Meeting list cannot be retrieved - EX-1

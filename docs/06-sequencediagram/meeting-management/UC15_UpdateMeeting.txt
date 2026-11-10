@@ -11,6 +11,12 @@ database ":Database" as Database
 Organizer->MeetingPage: Submit updated meeting information or reschedule
 activate MeetingPage
 
+alt Nothing has changed - AF-2
+    MeetingPage-->Organizer: MSG154 - No changes to save. (nothing is sent)
+else Draft or Rejected start is more than 24 hours ago - EX-4
+    MeetingPage-->Organizer: Ask for another start time; nothing is sent (BR-301)
+else Values changed
+
 MeetingPage->MeetingController: Update meeting or reschedule
 activate MeetingController
 
@@ -199,6 +205,7 @@ else Meeting is Draft or Rejected
             end
         end
     end
+end
 end
 
 deactivate MeetingPage

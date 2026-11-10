@@ -391,6 +391,7 @@ Danh mục này đồng bộ nguyên văn mục *V.1 Business Rules* của [Repo
 | `BR-436` | The minutes turnaround of an Ended Meeting is the time from its actual end to the first issue of its minutes; corrections issued later do not count. A Meeting whose minutes are not issued yet is left out. The average turnaround is the mean of those times. | UC-70a, UC-70b | SCRUM-38 — thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản |  |
 | `BR-437` | The report shows only counts, rates and averages. It never shows the title, participants or content of a Meeting, on the page or in the exported file. | UC-70a, UC-70b | Cuộc họp Mật — số liệu tổng hợp không được thành đường vòng để đọc cuộc họp |  |
 | `BR-438` | An exported report is an Excel file holding exactly the figures of UC-70a for the same period, computed at the time of export. Every export is recorded in the audit log with the user, the period and the time. | UC-70b | SCRUM-38 — xuất Excel; tệp mang số liệu ra khỏi hệ thống |  |
+| `BR-439` | A search by name, or by name or email, ignores letter case and Vietnamese diacritics, so “chu toa” finds “Chủ Toạ” and “d” finds “đ”. Every other character, including % and _, is matched as typed. This applies to the Meeting list search and to the list of eligible Meeting Approvers. | UC-17, UC-18 | SCRUM-148, SCRUM-150 – E2E run 09/11/2026 | Meeting Management |
 
 ## BR đã ngừng dùng
 

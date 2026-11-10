@@ -27,7 +27,11 @@ MeetingRepository-->MeetingService: Meeting and status
 deactivate MeetingRepository
 
 MeetingService->MeetingService: Verify actor is the Meeting Organizer and Meeting is Draft,\nWaitingApproval, Rejected, Approved or Published (BR-297)
-alt Meeting can no longer be cancelled - EX-2
+alt Actor is not the Meeting Organizer - EX-5
+    MeetingService-->MeetingController: MSG85 - You do not have permission to perform this action.
+    MeetingController-->MeetingPage: MSG85 - You do not have permission to perform this action.
+    MeetingPage-->Organizer: MSG85 - You do not have permission to perform this action.
+else Meeting can no longer be cancelled - EX-2
     MeetingService-->MeetingController: MSG263 - This meeting can no longer be cancelled.
     MeetingController-->MeetingPage: MSG263 - This meeting can no longer be cancelled.
     MeetingPage-->Organizer: MSG263 - This meeting can no longer be cancelled.

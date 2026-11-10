@@ -7,7 +7,7 @@ control ":Meeting Participant Service" as ParticipantService
 participant ":Meeting Participant Repository" as ParticipantRepository
 database ":Database" as Database
 
-User->MeetingPage: Submit Accepted or Declined for own invitation\n(question at the top of Meeting detail or on the calendar card)
+User->MeetingPage: Submit Accepted, or Declined after confirming it, for own invitation\n(question at the top of Meeting detail or on the calendar card)
 activate MeetingPage
 MeetingPage->ParticipantController: Submit Accepted or Declined for own invitation
 activate ParticipantController
