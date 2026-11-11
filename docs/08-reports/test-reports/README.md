@@ -14,6 +14,9 @@ bố cục bảng và các phần cố định của mẫu. Nội dung dự án 
 | `Report5.3_System_Test.xlsx` | Các workflow kiểm thử toàn hệ thống; bảng ba vòng theo mẫu |
 | `Report5.4_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
 
+**Viết lại 5.2 / 5.2.2 theo Feature (FE-01 → FE-16), test case nghiệp vụ:** agent đọc
+[AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết case, nguồn `cases/*.json` và cách chia việc.
+
 Trong Acceptance Test, giữ nguyên bảng tiêu chí/phản hồi ngắn của mẫu. Di chuột hoặc mở
 Notes tại ô tiêu chí để xem precondition, procedure, expected result và source của từng kịch bản.
 
