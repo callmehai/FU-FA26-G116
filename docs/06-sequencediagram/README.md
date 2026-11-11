@@ -5,7 +5,7 @@
 ## Cấu trúc file và cách đồng bộ
 
 - Mỗi Use Case có source `.txt` và ảnh `.png` cùng tên trong thư mục theo Feature. Nội dung `.txt` là
-  bản cần sửa; sau khi sửa, xuất lại PNG tương ứng bằng `node scripts/export-diagrams.js <đường-dẫn-file-hoặc-thư-mục>`.
+  bản cần sửa; sau khi sửa, xuất lại cả hai ảnh (sequencediagram.org và `drawio-png/`) bằng `python scripts/export_sequence.py <mã UC hoặc file .txt>`.
 - [`TrustCabinet_Sequence_Diagrams.drawio`](TrustCabinet_Sequence_Diagrams.drawio) là file draw.io gộp
   các sequence thành từng tab, dùng để duyệt và chỉnh sửa sơ đồ native. Khi thay đổi một source, cập
   nhật đúng PNG và tab UC tương ứng trong file gộp; giữ nguyên các tab khác. Ảnh xuất từ các tab UC
@@ -572,7 +572,7 @@ deactivate MeetingPage
 | [calendar-sharing/](calendar-sharing/README.md) | UC-84 (UC-84a → UC-84f), UC-85 (UC-85a → UC-85c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
 | [reporting/](reporting/README.md) | UC-70a, UC-70b (SCRUM-38) |
 
-Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).
+Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file .txt>` — ra cả ảnh sequencediagram.org cạnh `.txt` (cần truy cập `sequencediagram.org`) lẫn `drawio-png/`; chỉ truyền file đã sửa.
 
 Đồng bộ ảnh `.drawio.png` từ 64 tab UC của file draw.io gộp (bỏ qua tab index):
 `python scripts/sync_sequence_drawio_png.py` (cần cài Draw.io; có thể đặt `DRAWIO_EXECUTABLE` nếu CLI chưa có trong PATH).

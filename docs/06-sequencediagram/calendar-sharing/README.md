@@ -34,22 +34,16 @@ danh sách người, nên phần tải này không dồn sang đó. Chi tiết x
 
 ## Xuất ảnh
 
-Từ thư mục gốc repository:
+Một lệnh xuất đủ **hai** ảnh của mỗi sơ đồ — truyền mã UC hoặc đường dẫn `.txt` đã sửa, từ thư mục gốc repository:
 
 ```bash
-python scripts/txt_to_sequence_drawio_png.py docs/06-sequencediagram/calendar-sharing/*.txt
+python scripts/export_sequence.py UC84b UC84f
 ```
 
-Lệnh ghép tab vào `TrustCabinet_Sequence_Diagrams.drawio` và xuất ảnh vào `drawio-png/`. Mở từng ảnh kiểm tra
-không cắt; chạy validate của drawio-skill trên file gộp, xác nhận chỉ thêm tab mới.
+1. `drawio-png/<uc>.drawio.png` và tab trong `TrustCabinet_Sequence_Diagrams.drawio` (`txt_to_sequence_drawio_png.py`).
+2. `<UC>.png` cạnh file `.txt`, ảnh sequencediagram.org (`export-diagrams.js`, cần truy cập `sequencediagram.org`).
 
-Mỗi file `.txt` có **hai** ảnh, nhớ làm cả hai khi sửa sequence:
+`--only drawio` / `--only seqorg` xuất riêng một bộ. Chỉ truyền file đã sửa: lệnh không nhận thư mục, và không chạy
+`scripts/sync_sequence_drawio_png.py` (xuất lại toàn bộ `drawio-png/`, draw.io CLI cắt nửa dưới sơ đồ rất dài như
+UC-84b). Mở từng ảnh kiểm tra không cắt; chạy validate của drawio-skill trên file gộp, xác nhận chỉ đổi tab đã sửa.
 
-1. `drawio-png/<uc>.drawio.png` — lệnh trên, từ tab trong file draw.io gộp.
-2. `<UC>.png` cạnh file `.txt` (ảnh sequencediagram.org) — `node scripts/export-diagrams.js <file .txt>`, cần truy cập
-   `sequencediagram.org`. Truyền đúng các file đã sửa; truyền cả thư mục sẽ xuất lại mọi ảnh trong đó và làm đổi
-   cả ảnh không liên quan.
-
-Không chạy `scripts/sync_sequence_drawio_png.py` chỉ để cập nhật một ảnh: nó xuất lại toàn bộ `drawio-png/`. Với sơ đồ
-rất dài (UC-84b), `--scale 2` của draw.io desktop làm ảnh bị cắt nửa dưới (trắng); xuất riêng tab đó với `--scale 1.5`
-và mở ảnh kiểm tra.
