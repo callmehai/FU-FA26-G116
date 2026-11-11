@@ -1,6 +1,6 @@
 # Review PR #321 và #322 — việc sửa và cách chia cho agent
 
-**Người ghi:** KhánhPG/BA, 11/11/2026. **Nguồn:** review `CHANGES_REQUESTED` của callmehai trên
+**Người ghi:** KhánhPG/BA, 11/11/2026 (thêm §1b cùng ngày: leader giao BA Final Review SCRUM-16, SCRUM-38, SCRUM-142). **Nguồn:** review `CHANGES_REQUESTED` của callmehai trên
 [#321](https://github.com/callmehai/FU-FA26-G116/pull/321) (SCRUM-33, SCRUM-16) và
 [#322](https://github.com/callmehai/FU-FA26-G116/pull/322) (SCRUM-142); note [41](41-pr297-scrum-33-duyet-ban-hanh-bien-ban.md),
 [42](42-pr311-scrum-16-nhat-ky-kiem-toan.md), [NOTE-dac-ta-so-bo-scrum-137-142](../NOTE-dac-ta-so-bo-scrum-137-142.md).
@@ -35,7 +35,23 @@
 | 13 | #322 [K] | UC-84f AF-2: thẻ "Lịch được chia sẻ với tôi" **không hiện** (không phải rỗng) khi không có quyền tạo họp; bước 3: Stopped vào nhóm đã đóng; UC-84c bước 4, UC-84e: "sau khi xác nhận" | DOCX | A |
 | 14 | #321/#322 [K] | Sequence: ":Minutes Controller" → ":Minutes Endpoints" (UC-58–65, UC-83); UC-58 AF-3 thêm nhánh 404; UC-84f: tài khoản không hoạt động là **403** (`RequireActiveUser`), thay hai chỗ "(empty state wording pending BA)" bằng "Bạn chưa chia sẻ lịch với ai." / "Chưa ai chia sẻ lịch với bạn.", bỏ hai khối `opt … end` rỗng. Xuất lại bằng `scripts/export_sequence.py` | sequence | C |
 | 15 | #322 [K] | `scripts/export_sequence.py`: docstring/comment sang tiếng Anh, đổi tên biến `rel` (đang giữ đường dẫn tuyệt đối); `docs/06-sequencediagram/README.md`: bỏ lời khuyên chạy `sync_sequence_drawio_png.py` cho mọi PNG, trỏ sang `export_sequence.py` | script + README | D |
-| 16 | #322 [K] | Note 137-142: tick B1–B4, sửa dòng ~411 "Report 3 chưa có gì…"; note 41: mục 33-11 giữ tick sau khi B xong; note 42/41 checklist theo các việc trên | notes | D (cuối) |
+| 16 | #322 [K] | Note 137-142: tick B1–B4; NOTE-dac-ta-so-bo-scrum-38: tick BR-447, chú thích ¹⁸, màn 15.1 sau #18–#20; sửa dòng ~411 "Report 3 chưa có gì…"; note 41: mục 33-11 giữ tick sau khi B xong; note 42/41 checklist theo các việc trên | notes | D (cuối) |
+
+### 1b. Việc thêm — leader nhắn 11/11/2026 (ba ticket sang BA Final Review)
+
+Làm chung lượt với §1 vì cùng sửa DOCX Report 3 và cùng nhánh #322. Nguồn Jira: SCRUM-16 `10497`, `10517`; SCRUM-38 `10491`, `10499`,
+`10500`; SCRUM-142 `10512`, `10515`, `10516`.
+
+| # | Ticket | Việc | File | Agent |
+|---|---|---|---|---|
+| 17 | SCRUM-16 | Đối chiếu UC-13, BR-440 → BR-446, sequence UC-13, class diagram FE-03 với bản đang chạy: phần lớn đã làm ở #321 (note 42). Lượt này chỉ: kiểm lại sau #1, #9; xác nhận PO `10517` (Q-A, Q-B) đã có. Đặc tả màn 3.3 vẫn **PENDING** (note 42 §7) trừ khi leader yêu cầu — FE đã lên main nên mở khoá được, hỏi leader trước | DOCX | A |
+| 18 | SCRUM-38 | Thêm **BR-447** vào Report 3 (bản đề xuất ở [NOTE-dac-ta-so-bo-scrum-38](../NOTE-dac-ta-so-bo-scrum-38.md) dòng ~100): thời lượng một cuộc họp Ended = giờ bắt đầu thực tế → giờ kết thúc thực tế; thiếu một trong hai thì không tính; trung bình tính bằng phút, làm tròn 1 chữ số (`ReportService.cs:72-117`). BR-447 còn trống trong Report 3 | DOCX | A |
+| 19 | SCRUM-38 | UC-70a: thêm thời lượng trung bình vào Description, Normal Flow bước 4, AF-3 (chưa có số liệu); UC-70b: file Excel có ba dòng trung bình (`MeetingReportXlsx.cs:121-125`), chỉ Excel, không PDF. Đối chiếu cả UC-70a/70b với FE `/mgmt/reports` (#314) và `docs/03-api/22-bao-cao-thong-ke.md` | DOCX | A |
+| 20 | SCRUM-38 | Chú thích ¹⁸ ma trận quyền: Quản trị **không** xem toàn hệ thống, như mọi người (PO Q1, BR-432). Màn 15.1 (§III): giữ thời lượng trung bình, bỏ "Export PDF", chọn kỳ theo tháng | DOCX | A |
+| 21 | SCRUM-38 | Sequence UC-70a/UC-70b: kiểm có `duration`; sửa nếu thiếu | sequence | C |
+| 22 | SCRUM-142 | Ba chỗ khác eCab (`10512`) vào UC-84f, UC-85c: (a) quản lý chia sẻ và lịch tuần **một màn hai tab** `/calendar/sharing`, mở từ menu tài khoản; (b) lịch tuần **mỗi người một hàng**, ngày ngoài khoảng ghi **"Chưa biết"**, chia sẻ đã dừng ghi "Đã dừng" + MSG439 (gộp với #4); (c) Từ chối, Rút, Ngừng **hỏi xác nhận trước** (gộp với #13). Thêm: chia sẻ đã đóng vẫn hiện, làm mờ | DOCX | A |
+| 23 | SCRUM-142 | UC-84c AF-1 và dòng MSG450 (`10515`): duyệt thay đổi chờ mà khoảng xin không còn hợp ngày bắt đầu **hiện tại** (chủ lịch đã dời ngày, hoặc ngày xin đã qua) → không có nút Đồng ý; nếu vẫn gửi → `409 MSG450` | DOCX + sequence UC-84c | A, C |
+| 24 | SCRUM-142 | Mở thông báo `?share={id}` mà dòng không còn (`10516`): toast MSG439 (người xem mất quyền tạo họp) hoặc "Chia sẻ này không còn." — đưa vào UC-84f (hoặc UC-68 nếu đó là chỗ mở thông báo) | DOCX | A |
 
 ## 2. Thứ tự chạy agent
 
@@ -51,8 +67,8 @@ Mỗi agent **commit riêng phần mình** (commit tiếng Việt, tiền tố `
 ### Prompt mẫu
 
 **A — DOCX Report 3**
-> Đọc `docs/notes/ban-giao-ba-final-review/43-review-pr321-pr322-viec-sua.md`. Bạn là agent A: làm việc #1, #3, #4, #6, #7 (phần DOCX), #8–#11, #13
-> trên nhánh `docs/ba-final-review-scrum-137-142`. Sửa chỉ `docs/08-reports/source/Report_3_Software_Requirement_Specification.docx`
+> Đọc `docs/notes/ban-giao-ba-final-review/43-review-pr321-pr322-viec-sua.md`. Bạn là agent A: làm việc #1, #3, #4, #6, #7 (phần DOCX), #8–#11, #13,
+> #17–#20, #22, #23 (phần DOCX), #24 trên nhánh `docs/ba-final-review-scrum-137-142`. Sửa chỉ `docs/08-reports/source/Report_3_Software_Requirement_Specification.docx`
 > (theo `docs/08-reports/README.md`, giữ định dạng) và `docs/01-requirements/00-master-use-case-inventory.md`. Mỗi câu kiểm với code trước
 > khi viết. Cuối cùng chạy `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
 > và `python scripts/check_docx.py`, thêm một dòng Change Log 11/11. Commit, không push. Báo: việc đã làm, việc bỏ (lý do), kết quả check.
@@ -63,8 +79,8 @@ Mỗi agent **commit riêng phần mình** (commit tiếng Việt, tiền tố `
 > xuất lại các `uc-*.png` bị ảnh hưởng, mở ảnh kiểm tra. Chỉ sửa `docs/14-uc-diagram/`. Commit, không push.
 
 **C — Sequence**
-> Đọc note 43, `docs/06-sequencediagram/README.md`, `DRAWIO_EDITING_RULES.md`. Làm việc #5, #7 (phần sequence), #14. Sửa `.txt` theo code
-> (`SharedCalendarService`, `CalendarSharingService`, `MinutesEndpoints`), cập nhật tab tương ứng trong `TrustCabinet_Sequence_Diagrams.drawio`
+> Đọc note 43, `docs/06-sequencediagram/README.md`, `DRAWIO_EDITING_RULES.md`. Làm việc #5, #7 (phần sequence), #14, #21, #23 (phần sequence). Sửa `.txt` theo code
+> (`SharedCalendarService`, `CalendarSharingService`, `MinutesEndpoints`, `ReportService`), cập nhật tab tương ứng trong `TrustCabinet_Sequence_Diagrams.drawio`
 > (giữ id), xuất ảnh bằng `python scripts/export_sequence.py <UC…>`. Chỉ sửa `docs/06-sequencediagram/`. Commit, không push.
 
 **D — Script, README, notes**
@@ -74,13 +90,13 @@ Mỗi agent **commit riêng phần mình** (commit tiếng Việt, tiền tố `
 ## 3. Người giao việc làm sau cùng
 
 1. Rà `git log` / `git diff main...` trên nhánh #322: không có commit nào trên nhánh #321; snapshot Report 3 chỉ đổi qua sync.
-2. `git push` nhánh `docs/ba-final-review-scrum-137-142`; sửa mô tả #322 liệt kê #1–#16.
+2. `git push` nhánh `docs/ba-final-review-scrum-137-142`; sửa mô tả #322 liệt kê #1–#24 (ghi rõ #17–#24 là BA Final Review SCRUM-16, SCRUM-38, SCRUM-142 theo leader 11/11).
 3. Nhắn "đã sửa" ở kênh pull-request (Discord) và trả lời hai review trên GitHub.
-4. Sau khi #321, #322 vào `main`: comment Jira SCRUM-33, SCRUM-16 (kèm trả lời comment `10353` ở SCRUM-123), SCRUM-142 theo note 41 §6, 42 §5.
+4. Sau khi #321, #322 vào `main`: comment Jira SCRUM-33, SCRUM-16 (kèm trả lời comment `10353` ở SCRUM-123), SCRUM-142 theo note 41 §6, 42 §5; SCRUM-38 (BR-447, UC-70a/70b, chú thích ¹⁸, màn 15.1) và tick checklist trong [NOTE-dac-ta-so-bo-scrum-38](../NOTE-dac-ta-so-bo-scrum-38.md). Chuyển trạng thái theo [DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update).
 
 ## 4. Checklist
 
-- [ ] Lượt 1: B (#2), C (#5, #7, #14), D (#12, #15)
-- [ ] Lượt 2: A (#1, #3, #4, #6–#11, #13), sync + check_docx
+- [ ] Lượt 1: B (#2), C (#5, #7, #14, #21, #23), D (#12, #15)
+- [ ] Lượt 2: A (#1, #3, #4, #6–#11, #13, #17–#20, #22–#24), sync + check_docx
 - [ ] Lượt 3: D (#16), push, "đã sửa"
 - [ ] Jira sau merge
