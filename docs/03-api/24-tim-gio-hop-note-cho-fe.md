@@ -21,7 +21,7 @@ BE đã sẵn hai endpoint: `POST /api/calendar/slots` (UC-85a) và `POST /api/c
 - Ô **"Tính cả tôi"** → `includeMe` (server mặc định `false`; FE chọn mặc định hiển thị).
 - Mặc định như eCab: thời lượng 120 phút; từ hôm nay → thứ Sáu; T2–T6; 08:00–17:00; nghỉ trưa 12:00–13:00 (có công tắc tắt →
   `lunchBreak: false`, dùng cho cuộc họp dài hơn một buổi); "Cách cuộc họp khác" 30 phút (0–4 giờ); "Làm tròn giờ bắt đầu" 30 phút
-  (5 phút–2 giờ). Thời lượng, đệm, bước là bội 5 phút. Khoảng ngày tối đa 31 ngày.
+  (5 phút–2 giờ). Thời lượng, đệm, bước là bội 5 phút. Khoảng ngày tối đa 31 ngày; ngày bắt đầu từ hôm nay đến tối đa 365 ngày sau.
 - Luôn hiện câu cố định (BR-428): `Chỉ tính lịch đã được chia sẻ. Người được mời vẫn có thể bận.`
 - `400 MSG444` có `errors` theo tên trường (`durationMinutes`, `toDate`, `userIds[2]`…): tô đỏ đúng ô, hiện câu trong `errors`.
 

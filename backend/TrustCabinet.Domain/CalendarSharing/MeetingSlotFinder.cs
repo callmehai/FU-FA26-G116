@@ -51,9 +51,10 @@ public static class MeetingSlotFinder
     }
 
     /// <summary>
-    /// Who is busy and whose day is unknown for [<paramref name="start"/>, <paramref name="end"/>). A day outside a
-    /// person's known days is unknown, never free (BR-415); otherwise a busy period closer than the buffer on either side
-    /// makes them busy (BR-422, D15). Used by the search and by the recheck before a draft (UC-85b, BR-428).
+    /// Who is busy and whose day is unknown for [<paramref name="start"/>, <paramref name="end"/>). A person is unknown,
+    /// never free, when any day of [start − buffer, end + buffer) lies outside their known days (BR-415); otherwise a busy
+    /// period closer than the buffer on either side makes them busy (BR-422, D15).
+    /// Used by the search and by the recheck before a draft (UC-85b, BR-428).
     /// </summary>
     public static (IReadOnlyList<Guid> Busy, IReadOnlyList<Guid> Unknown) Check(DateTimeOffset start, DateTimeOffset end,
         int bufferMinutes, IReadOnlyList<SlotPerson> persons)
@@ -85,10 +86,12 @@ public static class MeetingSlotFinder
         DateTimeOffset end, int bufferMinutes, IReadOnlyList<SlotPerson> persons)
     {
         var buffer = TimeSpan.FromMinutes(bufferMinutes);
-        var firstDay = DateOnly.FromDateTime(VietnamTime.ToLocal(start).DateTime);
-        var lastDay = DateOnly.FromDateTime(VietnamTime.ToLocal(end.AddTicks(-1)).DateTime);
         var from = start - buffer;
         var to = end + buffer;
+        // Every day the busy check reads must be known, the buffer included: a gap that reaches past midnight into a day
+        // outside the share would otherwise tell busy from free on that day (BR-415, review of PR #319).
+        var firstDay = DateOnly.FromDateTime(VietnamTime.ToLocal(from).DateTime);
+        var lastDay = DateOnly.FromDateTime(VietnamTime.ToLocal(to.AddTicks(-1)).DateTime);
         var busy = new List<Guid>();
         var unknown = new List<Guid>();
         foreach (var person in persons)

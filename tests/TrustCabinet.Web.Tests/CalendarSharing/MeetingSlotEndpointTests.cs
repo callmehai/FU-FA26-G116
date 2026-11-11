@@ -255,6 +255,38 @@ public sealed class MeetingSlotEndpointTests(CalendarSharingFixture f) : IClassF
     }
 
     [Fact]
+    public async Task Dates_at_either_end_of_the_calendar_are_refused_not_crashed_on()
+    {
+        var p = await f.Seed();
+        using var organizer = f.Client(p.Organizer);
+        foreach (var day in new[] { "9999-12-31", "0001-01-01" })
+        {
+            var body = await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots",
+                new { userIds = new[] { p.Owner }, fromDate = day, toDate = day }), 400, "MSG444");
+            Assert.True(body.GetProperty("errors").TryGetProperty("fromDate", out _));
+        }
+    }
+
+    [Fact]
+    public async Task A_gap_past_midnight_never_reads_a_day_outside_the_share()
+    {
+        var p = await f.Seed();
+        // Shared from Monday on; a meeting on Sunday evening, outside the share (BR-415, review of PR #319).
+        await f.AddShare(p.Owner, p.Organizer, start: Monday, end: Monday.AddDays(4));
+        await Meeting(p.Admin, p.Owner, Monday.AddDays(-1), (22, 0), (23, 0));
+        using var organizer = f.Client(p.Organizer);
+
+        var result = await Ok(await organizer.PostAsJsonAsync("/api/calendar/slots", new
+        {
+            userIds = new[] { p.Owner }, durationMinutes = 60, fromDate = Day(Monday), toDate = Day(Monday),
+            workStart = "00:00", workEnd = "06:00", lunchBreak = false, bufferMinutes = 240, stepMinutes = 60,
+        }));
+        // 00:00–03:00 reach back into Sunday with the 4-hour gap: unknown, never busy, so they are not common slots.
+        Assert.Equal([4, 5], StartHours(result));
+        Assert.All(Slots(result), s => Assert.Empty(Ids(s, "busyUserIds")));
+    }
+
+    [Fact]
     public async Task A_gap_keeps_slots_away_from_busy_periods()
     {
         var p = await f.Seed();

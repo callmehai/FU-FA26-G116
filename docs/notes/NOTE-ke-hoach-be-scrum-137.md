@@ -62,7 +62,7 @@ thì dùng mặc định.
 | `userIds` | `Guid[]` | — (bắt buộc) | 1 → 10 phần tử (D14: tối đa 10 người **ngoài** người tìm), không trùng, không `Guid.Empty`, không chứa chính người tìm, mỗi id là tài khoản **tồn tại và đang hoạt động** | `userIds` (số lượng / trùng / chính mình), `userIds[i]` (không tồn tại hoặc bị vô hiệu hoá) |
 | `includeMe` | `bool` | `false` | — | — |
 | `durationMinutes` | `int` | `120` | `15 ≤ x ≤ 480` và `x % 5 == 0` | `durationMinutes` |
-| `fromDate` | `DateOnly` | hôm nay (VN) | `fromDate ≥ hôm nay` | `fromDate` |
+| `fromDate` | `DateOnly` | hôm nay (VN) | `hôm nay ≤ fromDate ≤ hôm nay + 365` (`MaxDaysAhead`, chặn tràn ở hai đầu lịch) | `fromDate` |
 | `toDate` | `DateOnly` | thứ Sáu của tuần chứa `fromDate`; nếu `fromDate` là thứ Bảy/CN thì thứ Sáu tuần sau | `toDate ≥ fromDate` và `toDate - fromDate + 1 ≤ 31` | `toDate` |
 | `weekdays` | `int[]` | `[1,2,3,4,5]` | không rỗng, không trùng, mỗi phần tử `1..5` (1 = thứ Hai … 5 = thứ Sáu; BR-422 chỉ thứ 2–6) | `weekdays` |
 | `workStart` | `"HH:mm"` | `"08:00"` | parse được | `workStart` |
@@ -74,8 +74,8 @@ thì dùng mặc định.
 | `stepMinutes` | `int` | `30` | `5 ≤ x ≤ 120` và `x % 5 == 0` | `stepMinutes` |
 
 Thêm một kiểm chéo (ticket: "giờ kết thúc > giờ bắt đầu + thời lượng"): thời lượng phải **vừa trong ít nhất một buổi làm việc**.
-Không nghỉ trưa: `workEnd - workStart ≥ duration`. Có nghỉ trưa: `lunchStart - workStart ≥ duration` **hoặc**
-`workEnd - lunchEnd ≥ duration`. Sai → `errors["durationMinutes"] = "Thời lượng dài hơn một buổi làm việc. Rút ngắn hoặc bỏ nghỉ trưa."`.
+Mỗi buổi tính từ giờ bắt đầu đầu tiên trên lưới bước: `g(x) = ceil(x / step) * step`. Không nghỉ trưa:
+`g(workStart) + duration ≤ workEnd`. Có nghỉ trưa: `g(workStart) + duration ≤ lunchStart` **hoặc** `g(lunchEnd) + duration ≤ workEnd`. Sai → `errors["durationMinutes"] = "Thời lượng dài hơn một buổi làm việc. Rút ngắn hoặc bỏ nghỉ trưa."`.
 Chỉ kiểm chéo này khi các giờ đã hợp lệ.
 
 Câu lỗi tiếng Việt cho từng key (đặt trong `MeetingSlotRules`, FE hiện cạnh ô tương ứng):
@@ -85,7 +85,7 @@ Câu lỗi tiếng Việt cho từng key (đặt trong `MeetingSlotRules`, FE hi
 | `userIds` | `Chọn từ 1 đến 10 người, không trùng và không chọn chính mình.` |
 | `userIds[i]` | `Người dùng không tồn tại hoặc đã ngừng hoạt động.` |
 | `durationMinutes` | `Thời lượng từ 15 phút đến 8 giờ, bội số của 5 phút.` (hoặc câu kiểm chéo ở trên) |
-| `fromDate` | `Ngày bắt đầu không được trước hôm nay.` |
+| `fromDate` | `Ngày bắt đầu từ hôm nay đến tối đa 365 ngày sau.` |
 | `toDate` | `Khoảng ngày tối đa 31 ngày, ngày kết thúc không trước ngày bắt đầu.` |
 | `weekdays` | `Chọn ít nhất một ngày từ thứ Hai đến thứ Sáu.` |
 | `workStart` / `workEnd` | `Giờ làm việc không hợp lệ.` |
@@ -150,8 +150,12 @@ Chọn kết quả:
 
 - Đọc lại chia sẻ và giờ bận như §2.2 cho `userIds` (+ người tìm nếu `includeMe`), khoảng
   `[plannedStart - buffer, plannedEnd + buffer)`.
-- Với mỗi người được tính: `unknown` nếu ngày (VN) của `plannedStart` **hoặc** của `plannedEnd − 1 tick` nằm ngoài cửa sổ (khung
-  kết thúc đúng 00:00 thuộc ngày trước); `busy` nếu có giờ bận
+- Trước khi tính gì trên giờ: giờ bắt đầu phải sau hiện tại và trước 00:00 của ngày `hôm nay + 365 + 31`, kết thúc sau bắt đầu và
+  dài tối đa 8 giờ (`MeetingSlotRules.CheckSlotTimes`, `400 MSG31`). So sánh bằng thời điểm, không đổi sang giờ VN (đổi giờ gần năm
+  9999 cũng tràn).
+- Với mỗi người được tính: `unknown` nếu ngày (VN) của `plannedStart − buffer` **hoặc** của `plannedEnd + buffer − 1 tick` nằm ngoài
+  cửa sổ — mọi ngày mà phép kiểm bận đọc tới đều phải "biết" (BR-415; khoảng kết thúc đúng 00:00 thuộc ngày trước). Áp đúng như
+  vậy cho tìm khung (§2.3); `busy` nếu có giờ bận
   chồng `[plannedStart - buffer, plannedEnd + buffer)`; còn lại `free`.
 - Nếu có người `busy` hoặc `unknown` mà **không** nằm trong `acceptedBusyUserIds` → `409 MSG446`. Câu luôn giống nhau, không kể
   có họp Mật hay không (BR-428 — mà Mật của người được mời vốn không bao giờ được đọc).
@@ -528,3 +532,4 @@ Chi tiết ở `docs/03-api/24-tim-gio-hop-note-cho-fe.md`. Tóm tắt:
 | 08/11/2026 | Q9 (BR-420 trạng thái tính bận) | PO, Jira 10474 | Đã có trong `CalendarBusyRules` |
 | 11/11/2026 | P1 → P5 (endpoint riêng, recheck theo `acceptedBusyUserIds`, nghỉ trưa, chưa biết ≠ rảnh, tối đa 200 khung) | Huy (BE), trước khi code | §2, §3 |
 | 11/11/2026 | Sửa theo review của đối tác (commit `c4f542ea`): key lỗi `MSG277` của UC-85b đổi từ `participants[i].userId` (roster do server dựng) sang `userIds[i]`; kiểm bận bằng binary search trên giờ bận đã sắp xếp và gộp (trường hợp xấu nhất ~1 giây CPU → O(khung × log giờ bận)); thêm test chia sẻ `Pending`, mốc Level1 + họp Nội bộ khi tạo nháp, chủ lịch chỉ chia sẻ cho người khác, khoảng chia sẻ ngoài khoảng tìm, giờ bận trước `workStart` trong khoảng đệm; contract "kết thúc không quá `workEnd`" | Review đối tác | `MeetingSlotService.InviteeErrors`, `MeetingSlotFinder.AnyOverlap` |
+| 12/11/2026 | Sửa theo review PR #319 (callmehai, CHANGES_REQUESTED): (1) ngày "biết" tính trên cả phần đệm `[start − buffer, end + buffer)`, để đệm vắt qua nửa đêm không đọc được giờ bận của ngày ngoài khoảng chia sẻ (BR-415), áp cho cả tìm và kiểm lại; (2) `fromDate ≤ hôm nay + 365`, và UC-85b từ chối giờ bắt đầu đã qua / quá xa / dài quá 8 giờ bằng `MSG31` trước mọi phép tính, nên năm 0001/9999 ra `400` thay vì `500`; thêm: kiểm "vừa một buổi" theo lưới bước, bỏ "SCRUM-137 dùng lại" ở dòng `MSG447`, dùng chung `MeetingRules.TryParseTimestamp` | Review PR #319 | `MeetingSlotFinder.CheckSorted`, `MeetingSlotRules.TryValidate` / `CheckSlotTimes` / `FitsOneBlock` |

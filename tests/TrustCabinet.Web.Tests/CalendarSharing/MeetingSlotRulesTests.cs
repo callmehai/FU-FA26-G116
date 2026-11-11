@@ -202,4 +202,52 @@ public sealed class MeetingSlotRulesTests
     [InlineData(null, false)]
     public void Slot_times_carry_an_offset(string? value, bool valid)
         => Assert.Equal(valid, MeetingSlotRules.TryParseTimestamp(value, out _));
+
+    [Fact]
+    public void A_search_starts_at_most_365_days_ahead_and_never_overflows()
+    {
+        Valid(Input(from: Wednesday.AddDays(365), to: Wednesday.AddDays(365)));
+        Assert.Equal(MeetingSlotRules.FromDateError, Errors(Input(from: Wednesday.AddDays(366)))["fromDate"]);
+        // The ends of the calendar are refused, not thrown on (review of PR #319).
+        Assert.Equal(MeetingSlotRules.FromDateError,
+            Errors(Input(from: DateOnly.MaxValue, to: DateOnly.MaxValue))["fromDate"]);
+        Assert.Equal(MeetingSlotRules.FromDateError, Errors(Input(from: DateOnly.MaxValue))["fromDate"]);
+        Assert.Equal(MeetingSlotRules.FromDateError, Errors(Input(from: DateOnly.MinValue))["fromDate"]);
+        Assert.Equal(MeetingSlotRules.ToDateError, Errors(Input(to: DateOnly.MaxValue))["toDate"]);
+    }
+
+    [Fact]
+    public void The_duration_must_fit_a_block_from_a_start_on_the_step_grid()
+    {
+        // 08:15–12:00 holds 225 minutes, but with a 30-minute step the first start is 08:30, which ends at 12:15.
+        Assert.Equal(MeetingSlotRules.DurationTooLongError,
+            Errors(Input(duration: 225, workStart: "08:15", workEnd: "12:00", lunchBreak: false, step: 30))["durationMinutes"]);
+        Valid(Input(duration: 225, workStart: "08:15", workEnd: "12:00", lunchBreak: false, step: 15));
+        // The afternoon block counts too: 13:00 is on the grid and 13:00 + 225 minutes ends before 17:00.
+        Valid(Input(duration: 225, workStart: "08:15", step: 30));
+    }
+
+    [Fact]
+    public void A_slot_starts_after_now_within_reach_of_a_search_and_lasts_at_most_8_hours()
+    {
+        var now = VietnamTime.At(Wednesday, new TimeOnly(10, 0));
+        IDictionary<string, string> Check(DateTimeOffset start, DateTimeOffset end)
+        {
+            var errors = new Dictionary<string, string>();
+            MeetingSlotRules.CheckSlotTimes(start, end, now, errors);
+            return errors;
+        }
+
+        Assert.Empty(Check(now.AddMinutes(30), now.AddHours(8).AddMinutes(30)));
+        Assert.Equal(MeetingSlotRules.SlotPastError, Check(now, now.AddHours(1))["plannedStartTime"]);
+        Assert.Equal(MeetingSlotRules.SlotPastError, Check(DateTimeOffset.MinValue, now)["plannedStartTime"]);
+        var lastDay = VietnamTime.At(Wednesday.AddDays(MeetingSlotRules.MaxDaysAhead + MeetingSlotRules.MaxRangeDays - 1),
+            new TimeOnly(9, 0));
+        Assert.Empty(Check(lastDay, lastDay.AddHours(1)));
+        Assert.Equal(MeetingSlotRules.SlotTooFarError, Check(lastDay.AddDays(1), lastDay.AddDays(1).AddHours(1))["plannedStartTime"]);
+        Assert.Equal(MeetingSlotRules.SlotTooFarError,
+            Check(DateTimeOffset.MaxValue.AddHours(-1), DateTimeOffset.MaxValue)["plannedStartTime"]);
+        Assert.Equal(MeetingSlotRules.SlotEndError, Check(now.AddHours(1), now.AddHours(9).AddMinutes(1))["plannedEndTime"]);
+        Assert.Equal(MeetingSlotRules.SlotEndError, Check(now.AddHours(2), now.AddHours(1))["plannedEndTime"]);
+    }
 }

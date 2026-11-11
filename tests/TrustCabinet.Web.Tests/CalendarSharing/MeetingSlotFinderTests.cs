@@ -223,4 +223,30 @@ public sealed class MeetingSlotFinderTests
         var (none, _) = MeetingSlotFinder.Check(At(Monday, 10), At(Monday, 11), 10, persons);
         Assert.Empty(none);
     }
+
+    [Fact]
+    public void A_gap_reaching_into_a_day_outside_the_share_makes_the_person_unknown()
+    {
+        // Shared Monday only; a meeting on Sunday evening. A 4-hour gap around 00:00 Monday reaches back into Sunday:
+        // the answer must not depend on Sunday at all (BR-415, review of PR #319).
+        var window = new KnownDays(Monday, Monday);
+        var sunday = Monday.AddDays(-1);
+        SlotPerson[] withSunday = [Windowed(A, window, Busy(sunday, (22, 0), (23, 0)))];
+        SlotPerson[] withoutSunday = [Windowed(A, window)];
+        foreach (var persons in new[] { withSunday, withoutSunday })
+        {
+            var (busy, unknown) = MeetingSlotFinder.Check(At(Monday, 0), At(Monday, 1), 240, persons);
+            Assert.Empty(busy);
+            Assert.Equal([A], unknown);
+        }
+
+        // Once the gap stays inside Monday the person is known (and free).
+        var (lateBusy, lateUnknown) = MeetingSlotFinder.Check(At(Monday, 4), At(Monday, 5), 240, withSunday);
+        Assert.Empty(lateBusy);
+        Assert.Empty(lateUnknown);
+
+        // The other edge: a gap reaching past midnight into Tuesday is unknown; one ending exactly at midnight is not.
+        Assert.Equal([A], MeetingSlotFinder.Check(At(Monday, 22), At(Monday, 23), 240, withoutSunday).Unknown);
+        Assert.Empty(MeetingSlotFinder.Check(At(Monday, 19), At(Monday, 20), 240, withoutSunday).Unknown);
+    }
 }

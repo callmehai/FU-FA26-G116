@@ -31,7 +31,7 @@ Mọi trường không gửi (hoặc `null`) dùng mặc định.
 | `userIds` | `Guid[]` | — | 1–10 người **ngoài** người gọi (D14), không trùng, không `Guid.Empty`, không có người gọi; mỗi người tồn tại và đang hoạt động | `userIds`, `userIds[i]` |
 | `includeMe` | `bool` | `false` | — | — |
 | `durationMinutes` | `int` | `120` | 15–480, bội 5 | `durationMinutes` |
-| `fromDate` | `YYYY-MM-DD` | hôm nay | không trước hôm nay | `fromDate` |
+| `fromDate` | `YYYY-MM-DD` | hôm nay | từ hôm nay đến tối đa 365 ngày sau | `fromDate` |
 | `toDate` | `YYYY-MM-DD` | thứ Sáu của tuần chứa `fromDate` (thứ Bảy/CN → thứ Sáu tuần sau) | không trước `fromDate`, khoảng ≤ 31 ngày tính cả hai đầu | `toDate` |
 | `weekdays` | `int[]` | `[1,2,3,4,5]` | không rỗng, không trùng, mỗi số 1–5 (1 = thứ Hai … 5 = thứ Sáu) | `weekdays` |
 | `workStart`, `workEnd` | `"HH:mm"` | `"08:00"`, `"17:00"` | đúng định dạng 24 giờ, `workEnd > workStart` | `workStart`, `workEnd` |
@@ -40,14 +40,16 @@ Mọi trường không gửi (hoặc `null`) dùng mặc định.
 | `bufferMinutes` | `int` | `30` | 0–240, bội 5 — "Cách cuộc họp khác" | `bufferMinutes` |
 | `stepMinutes` | `int` | `30` | 5–120, bội 5 — "Làm tròn giờ bắt đầu" | `stepMinutes` |
 
-Kiểm chéo: thời lượng phải vừa **một buổi** (không nghỉ trưa: cả ngày làm việc; có nghỉ trưa: buổi sáng hoặc buổi chiều) → nếu
-không, `errors.durationMinutes = "Thời lượng dài hơn một buổi làm việc. Rút ngắn hoặc bỏ nghỉ trưa."`.
+Kiểm chéo: thời lượng phải vừa **một buổi** (không nghỉ trưa: cả ngày làm việc; có nghỉ trưa: buổi sáng hoặc buổi chiều), tính
+từ giờ bắt đầu đầu tiên **trên lưới bước** của buổi đó (vd. `workStart 08:15`, bước 30 → buổi sáng bắt đầu 08:30) → nếu không,
+`errors.durationMinutes = "Thời lượng dài hơn một buổi làm việc. Rút ngắn hoặc bỏ nghỉ trưa."`.
 
 ### 2.2 Cách tính khung (BR-415, BR-422, D15)
 
 - Giờ bắt đầu nằm trên lưới `stepMinutes` tính từ 00:00 (bước 30 → :00, :30), trong giờ làm việc, kết thúc không quá `workEnd` (được kết thúc đúng bằng `workEnd`).
 - Khung **không bao giờ chồng giờ nghỉ trưa**. Không đề xuất giờ bắt đầu đã qua. Chỉ các thứ trong `weekdays`.
-- Với mỗi người được tính: **chưa biết** nếu ngày nằm ngoài khoảng chia sẻ (BR-415); **bận** nếu có giờ bận cách khung chưa đủ
+- Với mỗi người được tính: **chưa biết** nếu **bất kỳ ngày nào** của `[bắt đầu − bufferMinutes, kết thúc + bufferMinutes)` nằm ngoài
+  khoảng chia sẻ (BR-415) — kể cả khi chỉ phần đệm vắt qua nửa đêm sang ngày ngoài khoảng; **bận** nếu có giờ bận cách khung chưa đủ
   `bufferMinutes` ở **trước hoặc sau** (D15); còn lại **rảnh**. Ví dụ: họp xong 09:10, cách 30, bước 30 → khung sớm nhất 10:00.
 - Người trong `userIds` không có chia sẻ hiệu lực cho người gọi là **NotShared**: không rảnh, không bận, không tính (BR-416).
 - Có khung mà mọi người được tính đều rảnh → trả đúng các khung đó (`allFree = true`).
@@ -119,10 +121,13 @@ không, `errors.durationMinutes = "Thời lượng dài hơn một buổi làm v
 ### 3.2 Xử lý
 
 1. Không có `MeetingCreator` → `403 MSG448`.
-2. `userIds` không 1–10 / trùng / rỗng / có người gọi → `400 MSG277` (`errors.userIds`). Giờ sai định dạng (ISO có offset), kết thúc
-   không sau bắt đầu, `bufferMinutes` sai, `acceptedBusyUserIds` có người lạ → `400 MSG31` (`errors` theo tên trường).
+2. `userIds` không 1–10 / trùng / rỗng / có người gọi → `400 MSG277` (`errors.userIds`). Giờ sai định dạng (ISO có offset), giờ bắt
+   đầu không sau hiện tại hoặc sau ngày cuối một lần tìm có thể tới (hôm nay + 365 + 30 ngày), kết thúc không sau bắt đầu hoặc dài
+   quá 8 giờ, `bufferMinutes` sai, `acceptedBusyUserIds` có người lạ → `400 MSG31` (`errors` theo tên trường). Các kiểm này chạy
+   **trước** mọi phép tính trên giờ, nên giờ ở hai đầu lịch (năm 0001, 9999) cũng chỉ ra `400`, và không hỏi được ngày quá khứ.
 3. **Kiểm lại khung** theo đúng dữ liệu đã chia sẻ như lúc tìm (BR-428): ai được tính mà nay **bận hoặc chưa biết** ở
-   `[plannedStartTime − bufferMinutes, plannedEndTime + bufferMinutes)` và **không** nằm trong `acceptedBusyUserIds` → `409 MSG446`.
+   `[plannedStartTime − bufferMinutes, plannedEndTime + bufferMinutes)` (chưa biết theo cùng quy tắc §2.2) và **không** nằm trong
+   `acceptedBusyUserIds` → `409 MSG446`.
    Người chưa chia sẻ không được kiểm. Họp Mật của người được mời không bao giờ được đọc, nên không bao giờ chặn (BR-428, D12).
 4. Tạo cuộc họp qua bước 5–6 của UC-14: `201 MSG29` + `Location: /api/meetings/{id}` + body giống `POST /api/meetings`
    (`{ code, message, meeting }`), cuộc họp ở **Nháp** và đi luồng duyệt bình thường; không kiểm trùng lịch (BR-429).

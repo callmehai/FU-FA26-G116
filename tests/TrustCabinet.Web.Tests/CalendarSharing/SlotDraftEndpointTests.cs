@@ -228,6 +228,51 @@ public sealed class SlotDraftEndpointTests(CalendarSharingFixture f) : IClassFix
     }
 
     [Fact]
+    public async Task Times_at_either_end_of_the_calendar_or_too_long_are_refused_not_crashed_on()
+    {
+        var p = await f.Seed();
+        using var organizer = f.Client(p.Organizer);
+        object Body(string start, string end) => new
+        {
+            title = "Họp", plannedStartTime = start, plannedEndTime = end, userIds = new[] { p.Owner }, bufferMinutes = 240,
+        };
+
+        var past = await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
+            Body("0001-01-01T00:00:00Z", "0001-01-01T01:00:00Z")), 400, "MSG31");
+        Assert.Equal(MeetingSlotRules.SlotPastError, past.GetProperty("errors").GetProperty("plannedStartTime").GetString());
+
+        var far = await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
+            Body("9999-12-31T20:00:00Z", "9999-12-31T21:00:00Z")), 400, "MSG31");
+        Assert.Equal(MeetingSlotRules.SlotTooFarError, far.GetProperty("errors").GetProperty("plannedStartTime").GetString());
+
+        var tooLong = await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
+            Body(Iso(At(Monday, 8)), "9999-12-31T21:00:00Z")), 400, "MSG31");
+        Assert.Equal(MeetingSlotRules.SlotEndError, tooLong.GetProperty("errors").GetProperty("plannedEndTime").GetString());
+        Assert.Equal(0, await MeetingsCreatedBy(p.Organizer));
+    }
+
+    [Fact]
+    public async Task The_recheck_answers_the_same_whatever_lies_outside_the_share()
+    {
+        // A 4-hour gap around a Monday 00:00 slot reaches into Sunday, outside the share: the answer must not tell
+        // whether Owner has a meeting on Sunday evening (BR-415, BR-428, review of PR #319).
+        var withMeeting = await f.Seed();
+        await f.AddShare(withMeeting.Owner, withMeeting.Organizer, start: Monday, end: Monday.AddDays(4));
+        await Meeting(withMeeting.Admin, withMeeting.Owner, Monday.AddDays(-1), (22, 0), (23, 0));
+        var without = await f.Seed();
+        await f.AddShare(without.Owner, without.Organizer, start: Monday, end: Monday.AddDays(4));
+
+        foreach (var p in new[] { withMeeting, without })
+        {
+            using var organizer = f.Client(p.Organizer);
+            await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
+                Draft([p.Owner], hour: 0, buffer: 240)), 409, "MSG446");
+            await AssertCode(await organizer.PostAsJsonAsync("/api/calendar/slots/draft",
+                Draft([p.Owner], hour: 0, buffer: 240, accepted: [p.Owner])), 201, "MSG29");
+        }
+    }
+
+    [Fact]
     public async Task A_read_failure_answers_MSG453_and_a_save_failure_MSG35()
     {
         var p = await f.Seed();

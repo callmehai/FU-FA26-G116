@@ -70,9 +70,10 @@ public sealed class MeetingSlotService(
             var slotErrors = new Dictionary<string, string>(StringComparer.Ordinal);
             var startOk = MeetingSlotRules.TryParseTimestamp(input.PlannedStartTime, out var start);
             var endOk = MeetingSlotRules.TryParseTimestamp(input.PlannedEndTime, out var end);
+            var now = clock.GetUtcNow();
             if (!startOk) slotErrors["plannedStartTime"] = MeetingSlotRules.SlotTimeError;
             if (!endOk) slotErrors["plannedEndTime"] = MeetingSlotRules.SlotTimeError;
-            else if (startOk && end <= start) slotErrors["plannedEndTime"] = MeetingSlotRules.SlotEndError;
+            if (startOk && endOk) MeetingSlotRules.CheckSlotTimes(start, end, now, slotErrors);
             var bufferMinutes = input.BufferMinutes ?? MeetingSlotRules.DefaultBuffer;
             if (!MeetingSlotRules.ValidBuffer(bufferMinutes)) slotErrors["bufferMinutes"] = MeetingSlotRules.BufferError;
             var includeMe = input.IncludeMe ?? false;
@@ -84,7 +85,7 @@ public sealed class MeetingSlotService(
             // BR-428: recheck against the same shared data as the search — never against undisclosed meetings — and
             // refuse only when someone free then is busy or unknown now.
             var buffer = TimeSpan.FromMinutes(bufferMinutes);
-            var today = VietnamTime.Today(clock.GetUtcNow());
+            var today = VietnamTime.Today(now);
             var (_, persons) = await CountedPeopleAsync(actorId, userIds, includeMe, today, start - buffer, end + buffer, ct);
             var (nowBusy, nowUnknown) = MeetingSlotFinder.Check(start, end, bufferMinutes, persons);
             if (nowBusy.Concat(nowUnknown).Any(id => !accepted.Contains(id))) return new(MeetingSlotFailure.SlotTaken);
