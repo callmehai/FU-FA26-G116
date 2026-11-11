@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useEffectEvent, useId, useState } from 'react'
 import { acceptShare, changeShare, listShareCandidates, requestShare, shareDirectly } from '../../api/calendarSharing'
 import { Badge } from '../../components/Badge'
 import { DateRangeField, type DayRange } from '../../components/DateRangeField'
@@ -119,6 +119,8 @@ function PersonPick({
   const [page, setPage] = useState<{ items: ShareCandidate[]; total: number } | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const name = useId()
+  // The caller usually passes an inline arrow: read the latest one without making each render search again.
+  const refused = useEffectEvent((error: unknown) => onRefused(error))
 
   useEffect(() => {
     let cancelled = false
@@ -130,7 +132,7 @@ function PersonPick({
         setLoadError(null)
       } catch (err) {
         if (cancelled) return
-        if (isApiError(err, 403)) onRefused(err)
+        if (isApiError(err, 403)) refused(err)
         else setLoadError(errorMessage(err))
       }
     }, SEARCH_DELAY_MS)
@@ -138,7 +140,7 @@ function PersonPick({
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [purpose, query, onRefused])
+  }, [purpose, query])
 
   return (
     <div className="field">
@@ -350,7 +352,8 @@ export function AcceptShareDialog({
     void run(() => acceptShare(share.id, values))
   }
 
-  const sender = share.initiatedBy === 'Viewer' ? share.viewer : share.owner
+  // A pending change is always the viewer's (UC-84c AF-1), whichever side started the share.
+  const sender = change || share.initiatedBy === 'Viewer' ? share.viewer : share.owner
   return (
     <Dialog
       title={change ? 'Đồng ý thay đổi' : share.initiatedBy === 'Viewer' ? 'Cho xem lịch' : 'Nhận chia sẻ lịch'}
