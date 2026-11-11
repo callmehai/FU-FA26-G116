@@ -48,3 +48,22 @@
 | `MSG453`, `MSG467` | 500 | đọc lỗi (danh sách, tuần / danh sách người) |
 | `MSG447` | 503 | lưu lỗi |
 | `MSG439` | — | FE tự hiện cho `Stopped` |
+
+## Sau review của đối tác (11/11/2026)
+
+BE đã sửa (nhánh `fix/scrum-142-duyet-thay-doi-sau-khi-doi-khoang`): duyệt một thay đổi chờ mà chủ lịch đã dời ngày bắt đầu qua ngày
+kết thúc được xin trước đây trả `503 MSG447` ("thử lại" mãi không được). Nay `actions` của chủ lịch không có `accept` trong trường hợp đó,
+và gọi `accept` trả `409 MSG450`. FE đọc `actions` và đã xử lý `MSG450` (đóng hộp thoại, toast, tải lại), nên không phải đổi gì cho phần này.
+
+Hai lỗi nhỏ phía FE, review tìm ra, BE không sửa:
+
+1. `frontend/src/features/calendarSharing/ShareDialogs.tsx` (khoảng dòng 353): hộp thoại "Đồng ý thay đổi" của chia sẻ UC-84b hiện tên
+   chủ lịch (chính người đang bấm). Thay đổi chờ luôn do người xem gửi, nên khi có `pendingChange` thì người gửi là `share.viewer`:
+   `const sender = change ? share.viewer : (share.initiatedBy === 'Viewer' ? share.viewer : share.owner)`.
+2. `ShareDialogs.tsx` (khoảng dòng 141 và 307): `onRefused` truyền vào là arrow function viết tại chỗ và nằm trong deps của `useEffect`,
+   nên mỗi lần render lại hộp thoại là gọi lại `share-candidates` (đổi mức xem 2 lần → 4 request giống nhau). Bọc bằng `useCallback`
+   trong `NewShareDialog`, hoặc giữ trong `useRef`.
+
+Thêm một điểm để FE xem: thông báo `CalendarShareStopped` gửi cho người xem vừa mất quyền tạo cuộc họp mở `/calendar/sharing?share=…`,
+nhưng theo L8 người đó không còn phần "được chia sẻ với tôi", nên trang không có dòng nào để tô. Nội dung thông báo đã nói lý do; nếu
+không tìm thấy `share` trên trang thì FE có thể hiện câu `MSG439` thay vì im lặng.

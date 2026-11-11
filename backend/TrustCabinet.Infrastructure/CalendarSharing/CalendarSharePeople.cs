@@ -25,6 +25,19 @@ internal static class CalendarSharePeople
             .ToDictionaryAsync(p => p.Id, ct);
     }
 
+    /// <summary>
+    /// <see cref="LoadAsync"/> after taking a share lock (FOR SHARE) on the users' rows until the transaction ends. A
+    /// deactivation or role change updates that row, so it waits for this transaction; one that committed first is read.
+    /// </summary>
+    internal static async Task<Dictionary<Guid, PersonState>> LockAndLoadAsync(TrustCabinetDbContext db,
+        IEnumerable<Guid> ids, CancellationToken ct)
+    {
+        var list = ids.Distinct().Order().ToArray();
+        await db.Users.FromSqlInterpolated($"SELECT * FROM users WHERE id = ANY({list}) ORDER BY id FOR SHARE")
+            .AsNoTracking().ToArrayAsync(ct);
+        return await LoadAsync(db, list, ct);
+    }
+
     /// <summary>BR-424: an open share lives while both accounts are active and the viewer is still a Meeting Organizer.</summary>
     internal static bool IsLive(CalendarShare share, IReadOnlyDictionary<Guid, PersonState> people)
         => people.TryGetValue(share.OwnerId, out var owner) && owner.IsActive

@@ -39,7 +39,7 @@ Một cặp **có chiều** (chủ lịch → người xem) chỉ có tối đa 
 | `Pending` | bên được hỏi (chủ lịch nếu `initiatedBy = Viewer`, người xem nếu `Owner`) | `accept`, `decline` — chỉ `decline` khi `senderDeactivated = true` (UC-84c EX-5) hoặc người xem đã mất quyền tạo cuộc họp (Chấp nhận → `409 MSG450`) |
 | `Pending` | bên gửi | `withdraw` |
 | `Effective`, không có thay đổi chờ | người xem / chủ lịch | `requestChange`, `end` / `update`, `end` |
-| `Effective`, có thay đổi chờ | người xem / chủ lịch | `withdraw`, `end` / `accept`, `decline`, `update`, `end` |
+| `Effective`, có thay đổi chờ | người xem / chủ lịch | `withdraw`, `end` / `accept`, `decline`, `update`, `end` — không có `accept` khi thay đổi chờ không còn hợp với khoảng hiện tại (xem `accept` bên dưới) |
 | đã đóng, đã dừng | cả hai | `[]` |
 
 ## 3. Đối tượng `Share`
@@ -100,8 +100,10 @@ Body tuỳ chọn `{ "level", "startDate", "endDate" }`.
   - yêu cầu UC-84a: chủ lịch có thể hạ mốc / thu hẹp khoảng **trong** khoảng được xin, ngày kết thúc từ hôm nay → sai `400 MSG443`;
   - chia sẻ UC-84b: không được đổi gì (trường gửi lên phải trống hoặc bằng giá trị hiện tại) → sai `400 MSG443`;
   - thành công `200 MSG436`, chia sẻ `Effective`, báo bên gửi.
-- Chia sẻ `Effective` có thay đổi chờ, người gọi là chủ lịch: áp dụng đúng mốc và ngày kết thúc bên xem đã xin, kiểm lại BR-431 lúc duyệt →
-  `200 MSG442`, báo người xem.
+- Chia sẻ `Effective` có thay đổi chờ, người gọi là chủ lịch: áp dụng đúng mốc và ngày kết thúc bên xem đã xin → `200 MSG442`, báo
+  người xem. Trường gửi lên phải trống hoặc bằng cái đã xin, sai → `400 MSG443`. Lúc duyệt kiểm lại BR-431: ngày kết thúc được xin phải
+  từ hôm nay, không trước ngày bắt đầu **hiện tại** và trong 365 ngày tính từ ngày đó. Chủ lịch có thể đã dời ngày (UC-84d AF-1) hoặc
+  ngày xin đã qua; khi đó thay đổi chờ chỉ còn Từ chối được: `actions` không có `accept`, gọi `accept` → `409 MSG450`, không ghi gì.
 - Người gửi gọi `accept` trên yêu cầu của chính mình → `404` (EX-1). Không có gì đang chờ, đã đóng, đã quá ngày → `409 MSG450`.
 
 ### `POST /api/calendar/shares/{id}/decline` — UC-84c

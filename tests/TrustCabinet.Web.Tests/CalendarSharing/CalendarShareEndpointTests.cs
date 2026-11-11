@@ -322,6 +322,64 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
     }
 
     [Fact]
+    public async Task A_change_the_owner_moved_the_dates_past_can_only_be_declined()
+    {
+        var p = await f.Seed();
+        var id = await f.AddShare(p.Owner, p.Organizer, end: Today.AddDays(10));
+        using var organizer = f.Client(p.Organizer);
+        using var owner = f.Client(p.Owner);
+        await AssertCode(await Patch(organizer, id, new { endDate = Day(Today.AddDays(40)) }), 201, "MSG454");
+        // UC-84d AF-1: the owner moves the whole share past the end the viewer asked for.
+        var moved = await AssertCode(await Patch(owner, id,
+            new { startDate = Day(Today.AddDays(50)), endDate = Day(Today.AddDays(55)) }), 200, "MSG442");
+        Assert.Equal(["decline", "update", "end"], Actions(moved.GetProperty("share")));
+
+        var audit = (await f.AuditOf(id)).Count;
+        var notices = (await f.NotificationsOf(p.Organizer)).Count;
+        // A state the owner can only decline, not a save failure to retry (it used to break the range check: 503 MSG447).
+        await AssertCode(await Post(owner, id, "accept"), 409, "MSG450");
+        var share = await f.Share(id);
+        Assert.Equal(Today.AddDays(50), share.StartDate);
+        Assert.Equal(Today.AddDays(40), share.PendingEndDate);
+        Assert.Equal(audit, (await f.AuditOf(id)).Count);
+        Assert.Equal(notices, (await f.NotificationsOf(p.Organizer)).Count);
+
+        await AssertCode(await Post(owner, id, "decline"), 200, "MSG452");
+        Assert.Null((await f.Share(id)).PendingEndDate);
+    }
+
+    [Fact]
+    public async Task Accepting_while_the_sender_is_being_deactivated_waits_for_it_and_refuses()
+    {
+        var p = await f.Seed();
+        var id = await f.AddShare(p.Owner, p.Organizer, CalendarShareStatus.Pending);
+        using var owner = f.Client(p.Owner);
+        // Warm the app up first, so the wait below measures the lock and not a first request.
+        Assert.Equal(HttpStatusCode.OK, (await owner.GetAsync("/api/calendar/shares")).StatusCode);
+
+        // UC-06c running at the same moment: the sender's row is updated but not committed yet.
+        await using var connection = await f.Database.DataSource.OpenConnectionAsync();
+        await using var deactivation = await connection.BeginTransactionAsync();
+        await using (var update = connection.CreateCommand())
+        {
+            update.Transaction = deactivation;
+            update.CommandText = "UPDATE users SET is_active = false WHERE id = @id";
+            update.Parameters.AddWithValue("id", p.Organizer);
+            await update.ExecuteNonQueryAsync();
+        }
+
+        // The stop of BR-424 only looks at Effective shares, so accepting must wait for the deactivation, not run past it
+        // and leave an Effective share nobody stops.
+        var accept = Post(owner, id, "accept");
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        Assert.False(accept.IsCompleted, "accept did not wait for the deactivation of its sender");
+        await deactivation.CommitAsync();
+
+        await AssertCode(await accept, 409, "MSG468");
+        Assert.Equal(CalendarShareStatus.Pending, (await f.Share(id)).Status);
+    }
+
+    [Fact]
     public async Task A_pending_share_cannot_be_changed()
     {
         var p = await f.Seed();
