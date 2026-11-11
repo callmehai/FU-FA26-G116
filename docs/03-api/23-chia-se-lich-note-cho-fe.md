@@ -67,3 +67,7 @@ Hai lỗi nhỏ phía FE, review tìm ra, BE không sửa:
 Thêm một điểm để FE xem: thông báo `CalendarShareStopped` gửi cho người xem vừa mất quyền tạo cuộc họp mở `/calendar/sharing?share=…`,
 nhưng theo L8 người đó không còn phần "được chia sẻ với tôi", nên trang không có dòng nào để tô. Nội dung thông báo đã nói lý do; nếu
 không tìm thấy `share` trên trang thì FE có thể hiện câu `MSG439` thay vì im lặng.
+
+**FE đã sửa cả ba điểm trên** (nhánh `fix/scrum-142-share-dialog-sender`): hộp thoại "Đồng ý thay đổi" ghi người xem là người xin;
+`onRefused` đọc qua `useEffectEvent` nên chỉ gõ tìm mới gọi lại `share-candidates`; mở `?share=` mà trang không có dòng đó thì hiện
+toast `MSG439` (chia sẻ đã dừng, hoặc người xem không còn thẻ "được chia sẻ với tôi") hay "Chia sẻ này không còn.".
