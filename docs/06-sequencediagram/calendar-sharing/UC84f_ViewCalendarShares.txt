@@ -17,7 +17,7 @@ activate SharingController
 SharingController->SharingService: viewShares(actorId)
 activate SharingService
 
-SharingService->UserRepository: Verify actor is an active internal account holding MeetingCreator (BR-430)
+SharingService->UserRepository: Verify actor is an active internal account (BR-430)
 activate UserRepository
 UserRepository->Database: Retrieve actor account with capabilities
 activate Database
@@ -33,63 +33,78 @@ alt Actor is not an active internal account
     deactivate SharingController
     SharingPage-->Actor: (session ended)
 else Actor is verified
-    alt Actor has no right to create meetings - EX-2
-        SharingService-->SharingController: MSG448 - Only a Meeting Organizer can do this.
+    SharingService->ShareRepository: Get shares where the actor is the owner (I share to), end date on or after today (BR-423, BR-425)
+    activate ShareRepository
+    ShareRepository->Database: Retrieve shares by owner
+    activate Database
+    Database-->ShareRepository: Owner-side shares / Read failed
+    deactivate Database
+    ShareRepository-->SharingService: Owner-side shares / Read failed
+    deactivate ShareRepository
+
+    alt Shares cannot be read - EX-1
+        SharingService-->SharingController: MSG453 - Unable to load the calendar sharing data. Please try again.
         deactivate SharingService
-        SharingController-->SharingPage: 403 MSG448
+        SharingController-->SharingPage: 500 MSG453
         deactivate SharingController
-        SharingPage-->Actor: MSG448 - Only a Meeting Organizer can do this.
-    else Actor holds MeetingCreator
-        SharingService->ShareRepository: Get shares where the actor is the owner (I share to), end date on or after today (BR-423, BR-425)
+        SharingPage-->Actor: MSG453 - Unable to load the calendar sharing data. Please try again.
+    else Owner-side shares are loaded
+        alt Actor holds MeetingCreator
+        SharingService->ShareRepository: Get shares where the actor is the viewer (shared with me), end date on or after today (BR-423, BR-424, BR-425)
         activate ShareRepository
-        ShareRepository->Database: Retrieve shares by owner
+        ShareRepository->Database: Retrieve shares by viewer
         activate Database
-        Database-->ShareRepository: Owner-side shares / Read failed
+        Database-->ShareRepository: Viewer-side shares / Read failed
         deactivate Database
-        ShareRepository-->SharingService: Owner-side shares / Read failed
+        ShareRepository-->SharingService: Viewer-side shares / Read failed
         deactivate ShareRepository
 
-        alt Shares cannot be read - EX-1
+        alt Viewer-side shares cannot be read - EX-1
             SharingService-->SharingController: MSG453 - Unable to load the calendar sharing data. Please try again.
             deactivate SharingService
             SharingController-->SharingPage: 500 MSG453
             deactivate SharingController
             SharingPage-->Actor: MSG453 - Unable to load the calendar sharing data. Please try again.
-        else Shares are loaded
-            SharingService->ShareRepository: Get shares where the actor is the viewer (shared with me), end date on or after today (BR-423, BR-424, BR-425)
-            activate ShareRepository
-            ShareRepository->Database: Retrieve shares by viewer
-            activate Database
-            Database-->ShareRepository: Viewer-side shares / Read failed
-            deactivate Database
-            ShareRepository-->SharingService: Viewer-side shares / Read failed
-            deactivate ShareRepository
+        else Both lists are loaded
+            SharingService->SharingService: Mark each share with its state (Pending - Chờ đồng ý / Effective - Đang hiệu lực /\nStopped - Đã dừng / Declined / Withdrawn / Ended); shares whose end date is before today are excluded at read time (BR-425)
 
-            alt Viewer-side shares cannot be read - EX-1
-                SharingService-->SharingController: MSG453 - Unable to load the calendar sharing data. Please try again.
+            alt No share in either list
+                SharingService-->SharingController: Empty lists
                 deactivate SharingService
-                SharingController-->SharingPage: 500 MSG453
+                SharingController-->SharingPage: 200 Empty lists
                 deactivate SharingController
-                SharingPage-->Actor: MSG453 - Unable to load the calendar sharing data. Please try again.
-            else Both lists are loaded
-                SharingService->SharingService: Mark each share with its state (Pending - Chờ đồng ý / Effective - Đang hiệu lực /\nStopped - Đã dừng / Closed); shares whose end date is before today are excluded at read time (BR-425)
+                SharingPage-->Actor: (empty state wording pending BA)
+            else Shares exist
+                SharingService-->SharingController: Two lists with states
+                deactivate SharingService
+                SharingController-->SharingPage: 200 Two lists with states
+                deactivate SharingController
+                SharingPage-->Actor: Show the owner list ("I share to") and the viewer list ("Shared with me", only when the actor holds MeetingCreator) with state labels.\nStopped share detail: MSG439.
 
-                alt No share in either list
-                    SharingService-->SharingController: Empty lists
-                    deactivate SharingService
-                    SharingController-->SharingPage: 200 Empty lists
-                    deactivate SharingController
-                    SharingPage-->Actor: (empty state wording pending BA)
-                else Shares exist
-                    SharingService-->SharingController: Two lists with states
-                    deactivate SharingService
-                    SharingController-->SharingPage: 200 Two lists with states
-                    deactivate SharingController
-                    SharingPage-->Actor: Show "I share to" and "Shared with me" lists with state labels.\nStopped share detail: MSG439.
+                opt Actor opens a stopped share
+                    SharingPage-->Actor: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was deactivated. Ask for a new share.
+                end
+            end
+        end
+        else Actor has no MeetingCreator right
+            SharingService->SharingService: Viewer list is empty (no query)
+            SharingService->SharingService: Mark each owner share with its state (Pending - Chờ đồng ý / Effective - Đang hiệu lực /\nStopped - Đã dừng / Declined / Withdrawn / Ended); shares whose end date is before today are excluded at read time (BR-425)
 
-                    opt Actor opens a stopped share
-                        SharingPage-->Actor: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was deactivated. Ask for a new share.
-                    end
+            alt No share in the owner list
+                SharingService-->SharingController: Empty lists
+                deactivate SharingService
+                SharingController-->SharingPage: 200 Empty lists
+                deactivate SharingController
+                SharingPage-->Actor: (empty state wording pending BA)
+            else Owner shares exist
+                SharingService-->SharingController: Owner list with states
+                deactivate SharingService
+                SharingController-->SharingPage: 200 Owner list with states
+                deactivate SharingController
+                SharingPage-->Actor: Show the "I share to" list with state labels.\nStopped share detail: MSG439.
+
+                opt Actor opens a stopped share
+                    SharingPage-->Actor: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was deactivated. Ask for a new share.
                 end
             end
         end

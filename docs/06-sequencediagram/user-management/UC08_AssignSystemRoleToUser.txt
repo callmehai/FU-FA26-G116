@@ -117,7 +117,7 @@ else Selected role is available
             end
         end
 
-        note right of UserService: Regaining the meeting-creation right does not restart stopped shares (BR-424).\nLosing the right hides the Chia sẻ lịch screen; the user no longer sees the lists (UC-84f, BR-430).
+        note right of UserService: Regaining the meeting-creation right does not restart stopped shares (BR-424).\nLosing the right keeps the "I share to" list but empties "Shared with me" (UC-84f, BR-430, PO 10/11/2026).
 
         UserService-->UserController: User role updated successfully
         deactivate UserService
