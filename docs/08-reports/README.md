@@ -256,6 +256,19 @@ và OrphanFilePurgeWorker. Số trang mục lục lấy từ Word sau khi dàn t
 Log (LocHD). Trước khi đẩy, md5 của file Drive trùng bản đẩy lần trước (không ai sửa trên Drive); đã đẩy bằng
 `push_reports.py 4 --confirm`, `--check` trả `UP TO DATE`, file ID và link không đổi.
 
+**Report 4 — fill script (`scripts/fill_report4.py`):** md5-sync ảnh mục I (kiến trúc, 4 trang
+package) và mục II (class + sequence) với PNG trong repo; rebuild mục I.3 thành hình ERD mục tiêu
+(`13-erd/muc-tieu`, Chen không dùng ở Report 4) nằm thẳng dưới H2 + một H3 cho mỗi bảng
+(`3.1 User` … `3.37 VoiceSample`, 38 bảng copy từ Report 3 §3.2 — Report 3 là nguồn viết tay,
+rerun copy lại khi số bảng lệch); thêm các mục II còn thiếu (FE-08, FE-09,
+FE-10, FE-15, FE-16, class FE-11, UC-52a → UC-57) kèm dòng mục lục, đánh lại số mục II theo thứ tự FE
+(chỉ đúng 3 FE-11/12/13 nên chạy lại an toàn), giữ nguyên cặp nửa cắt tay UC-33b; ghi caption
+`Figure {số}: ...` căn giữa-nghiêng dưới mọi diagram mục I+II (sinh lại mỗi lần chạy).
+Chạy khô trước (`python scripts/fill_report4.py`), ghi bản thử (`--output`), chỉ `--write` khi đã chốt;
+xong mở Word Update Field mục lục, thêm dòng Change Log, dàn trang ngang/dọc và cắt ảnh cao. Script không đụng
+Markdown snapshot (Report 4 chưa có snapshot) và không đẩy Drive. `npx pyright scripts/fill_report4.py`
+phải 0 lỗi (VS Code báo đỏ thường do đoạn này).
+
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
 một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
 
