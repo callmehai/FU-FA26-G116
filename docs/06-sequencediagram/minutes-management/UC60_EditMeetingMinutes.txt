@@ -1,6 +1,6 @@
 title UC-60 - Edit Meeting Minutes
 
-actor "Chair / Secretary" as Actor
+actor "Chair / Secretary / Reader" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
@@ -37,7 +37,7 @@ alt Actor is not the current Chair or Secretary - EX-4
     MinutesController-->MinutesCard: 404 / MSG397 - Only the Chair or Secretary may write the minutes.
     MinutesCard-->Actor: No draft, or MSG397 - Only the Chair or Secretary may write the minutes.
 else Actor may edit
-    MinutesService->MinutesService: Check the revision is still a draft (BR-388), the content is not empty\nand within 300,000 characters (BR-394), and nobody saved since it was read (BR-389)
+    MinutesService->MinutesService: Check the revision is a draft or was returned (BR-388, BR-407),\nthe content is not empty and within 300,000 characters (BR-394),\nand nobody saved since it was read (BR-389)
     MinutesService->MinutesService: Filter the HTML - allowed tags, tags nested no deeper than 64 levels (BR-385, BR-394, ADR-0055)
 
     alt The minutes can no longer be changed - EX-3
@@ -77,19 +77,29 @@ deactivate MinutesService
 deactivate MinutesController
 
 opt Download the minutes as Word or PDF - AF-1, AF-2
+
     Actor->MinutesCard: Select Download Word or Download PDF
     MinutesCard->MinutesController: export(minutesId, format)
     activate MinutesController
     MinutesController->MinutesService: exportAsync(minutesId, actorId, format)
     activate MinutesService
+    MinutesService->Database: Retrieve the revision
+    activate Database
+    Database-->MinutesService: Minutes / None
+    deactivate Database
     MinutesService->MeetingRepository: Get the Meeting
     activate MeetingRepository
     MeetingRepository-->MinutesService: Meeting with its sensitivity
     deactivate MeetingRepository
+    MinutesService->MinutesService: Check the actor may download this revision: the current\nChair and Secretary any revision, everyone else an Issued or Superseded one (BR-412),\nand that the Meeting is not Secret (BR-390)
 
-    alt The Meeting is Secret - EX-6
+    alt The actor may not read that revision
+        MinutesService-->MinutesController: Not found, no code
+        MinutesController-->MinutesCard: 404
+        MinutesCard-->Actor: No minutes
+    else The Meeting is Secret - EX-6
         MinutesService-->MinutesController: MSG405 - The minutes of a Secret meeting cannot be downloaded.
-        MinutesController-->MinutesCard: MSG405 - The minutes of a Secret meeting cannot be downloaded.
+        MinutesController-->MinutesCard: 403 MSG405 - The minutes of a Secret meeting cannot be downloaded.
         MinutesCard-->Actor: MSG405 - The minutes of a Secret meeting cannot be downloaded.
     else Not Secret and format is docx - AF-1
         MinutesService->MinutesDocx: Build the Word file from the same content,\nkeeping the first 63 columns of a wider table (BR-391)

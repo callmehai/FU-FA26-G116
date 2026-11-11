@@ -4,7 +4,6 @@ actor "Chair" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
 
@@ -12,21 +11,12 @@ Actor->MinutesCard: Confirm Approve and Issue
 activate MinutesCard
 MinutesCard->MinutesController: approve(minutesId, updatedAt)
 activate MinutesController
-MinutesController->MinutesService: approveAsync(minutesId, actorId, updatedAt)
+MinutesController->MinutesService: ApproveAsync(minutesId, actorId, updatedAt)
 activate MinutesService
-MinutesService->Database: Retrieve the revision
+MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
 activate Database
-Database-->MinutesService: Minutes / None
+Database-->MinutesService: Meeting and revision / None
 deactivate Database
-MinutesService->MeetingRepository: Get the Meeting
-activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
-activate Database
-Database-->MeetingRepository: Meeting / Not found
-deactivate Database
-MeetingRepository-->MinutesService: Meeting / Not found
-deactivate MeetingRepository
-MinutesService->MinutesService: Check the actor is the current Chair (BR-406)
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-5
     MinutesService-->MinutesController: Not found
@@ -49,17 +39,18 @@ else Actor is the current Chair
         MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else Approval valid
         MinutesService->Database: Set Issued, who approved and when (BR-408);\nthe Meeting status is not changed
-        activate Database
 
         opt The revision corrects an earlier issued one - AF-1
             MinutesService->Database: Set the earlier revision Superseded (BR-409)
         end
 
+        MinutesService->Database: Insert the audit entry of the issue with who issued it (BR-446),\ntogether with the notification for everyone who may read the issued minutes except\nthe Chair and never a Guest, in one save (BR-411, BR-412)
+        activate Database
         Database-->MinutesService: Saved / Failed
         deactivate Database
 
         alt Saved
-            MinutesService->NotificationService: Notify everyone who may read the issued minutes (BR-411, BR-412)
+            MinutesService->NotificationService: The notification is saved with the issue; the dispatcher pushes it
             activate NotificationService
             NotificationService-->MinutesService: Queued
             deactivate NotificationService

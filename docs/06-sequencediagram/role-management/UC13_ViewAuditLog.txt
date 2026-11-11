@@ -2,55 +2,47 @@ title UC-13 - View Audit Log
 
 actor "System Admin" as Admin
 boundary "Audit Log Page" as AuditLogPage
-control ":Audit Log Controller" as AuditLogController
+control ":Audit Log Endpoints" as AuditLogEndpoints
 control ":Audit Log Query Service" as AuditLogQueryService
-participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
-Admin->AuditLogPage: View the audit log for the chosen period, filters and page
+Admin->AuditLogPage: Open Nhật ký hệ thống with a period, filters and page
 activate AuditLogPage
-AuditLogPage->AuditLogController: Get the audit entries for the period, filters and page
-activate AuditLogController
-AuditLogController->AuditLogController: Check the caller's role still holds\nthe User administration permission (BR-440)
+AuditLogPage->AuditLogEndpoints: GET /api/audit-log with the query string
+activate AuditLogEndpoints
 
-alt The permission is not held - EX-3
-    AuditLogController-->AuditLogPage: Request refused, no audit entry returned
+alt The session has expired
+    AuditLogEndpoints-->AuditLogPage: 401, no code
+    AuditLogPage-->Admin: Sent back to sign-in
+else The caller's role does not hold the User administration permission - EX-3
+    AuditLogEndpoints-->AuditLogPage: 403, no code, no audit entry returned
     AuditLogPage-->Admin: Audit Log is not shown
 else The permission is held
-    AuditLogController->AuditLogQueryService: getAuditEntries(criteria, page)
-    activate AuditLogQueryService
-    AuditLogQueryService->AuditLogQueryService: Check the start of the period is not after its end\nand every filter value is valid (BR-442)
+    AuditLogEndpoints->AuditLogEndpoints: Parse the query string (period, actor, event, keyword, page)\nand check every value (BR-442)
 
-    alt The period or a filter is not valid - EX-1
-        AuditLogQueryService-->AuditLogController: MSG469 - The audit log filter is invalid. Check the period and the selected values.
-        AuditLogController-->AuditLogPage: MSG469 - The audit log filter is invalid. Check the period and the selected values.
+    alt A parameter is unknown, repeated or out of range - EX-1
+        AuditLogEndpoints-->AuditLogPage: 400 MSG469 - The audit log filter is invalid. Check the period and the selected values.
         AuditLogPage-->Admin: MSG469 - The audit log filter is invalid. Check the period and the selected values.
     else The criteria are valid
-        AuditLogQueryService->AuditLogRepository: Find the entries matching all criteria,\nnewest first, one page (BR-11, BR-31, BR-442)
-        activate AuditLogRepository
-        AuditLogRepository->Database: Retrieve the matching audit entries and their total
+        AuditLogEndpoints->AuditLogQueryService: getPage(query)
+        activate AuditLogQueryService
+        AuditLogQueryService->Database: Retrieve the matching audit entries and their total,\nnewest first, one page (BR-11, BR-31, BR-442)
         activate Database
-        Database-->AuditLogRepository: Entries and total / Read failure
+        Database-->AuditLogQueryService: Entries and total / Read failure
         deactivate Database
-        AuditLogRepository-->AuditLogQueryService: Entries and total / Read failure
-        deactivate AuditLogRepository
 
         alt The entries cannot be read - EX-2
-            AuditLogQueryService-->AuditLogController: MSG470 - Unable to load the audit log. Please try again.
-            AuditLogController-->AuditLogPage: MSG470 - Unable to load the audit log. Please try again.
+            AuditLogQueryService-->AuditLogEndpoints: Read failed
+            AuditLogEndpoints-->AuditLogPage: 500 MSG470 - Unable to load the audit log. Please try again.
             AuditLogPage-->Admin: MSG470 - Unable to load the audit log. Please try again.
         else Entries read
-            AuditLogQueryService->AuditLogRepository: Get the user accounts and Guest invitations named by the entries
-            activate AuditLogRepository
-            AuditLogRepository->Database: Retrieve names and emails
+            AuditLogQueryService->Database: Retrieve the names and emails of the accounts\nand Guest invitations named by the entries
             activate Database
-            Database-->AuditLogRepository: Names and emails
+            Database-->AuditLogQueryService: Names and emails
             deactivate Database
-            AuditLogRepository-->AuditLogQueryService: Names and emails
-            deactivate AuditLogRepository
-            AuditLogQueryService->AuditLogQueryService: Name each actor as a user account, a Guest\nor the system (BR-441)
-            AuditLogQueryService-->AuditLogController: Page of entries with time, actor, event, object,\nIP address and recorded details (BR-441, BR-443)
-            AuditLogController-->AuditLogPage: Page of audit entries
+            AuditLogQueryService->AuditLogQueryService: Name each actor as a user account, a Guest\nor the system (BR-441), and each event with its Vietnamese label
+            AuditLogQueryService-->AuditLogEndpoints: Page of entries with time, actor, event, object,\nIP address and recorded details (BR-441, BR-443)
+            AuditLogEndpoints-->AuditLogPage: 200 page of audit entries
 
             alt No entry matches - AF-3
                 AuditLogPage-->Admin: No matching audit entries (BR-12)
@@ -58,8 +50,8 @@ else The permission is held
                 AuditLogPage-->Admin: Audit entries, newest first, read-only
             end
         end
+        deactivate AuditLogQueryService
     end
-    deactivate AuditLogQueryService
 end
-deactivate AuditLogController
+deactivate AuditLogEndpoints
 deactivate AuditLogPage

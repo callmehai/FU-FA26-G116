@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 16 Feature, UC-01 → UC-81 và UC-84 → UC-85** (FE-16 thêm ngày 07/11/2026; UC-82, UC-83 thuộc SCRUM-30/SCRUM-33). Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 16 Feature, UC-01 → UC-81 và UC-83 → UC-85** (FE-16 thêm ngày 07/11/2026; UC-82 thuộc SCRUM-30; UC-83 là Tạo bản đính chính biên bản, đã đặc tả ở SCRUM-33). Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b vẫn bỏ; UC-33b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-33d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 9 UC chi tiết.
@@ -69,11 +69,11 @@ Bổ sung ngày 30/10/2026 (BA Final Review FE-09/FE-10): tổ chức lại theo
 | **Meeting Approver** | Duyệt / từ chối yêu cầu duyệt được phân công cho mình |
 | **Chair** | Chủ toạ: bắt đầu / kết thúc họp, điều khiển agenda, tạo – mở – đóng biểu quyết, ghi kết luận, điều phối phòng họp |
 | **Secretary** | Thư ký: agenda, thành phần, điểm danh, tài liệu, upload audio, transcript, tóm tắt, biên bản |
-| **Participant** | Thành viên được mời: phản hồi lời mời, vào phòng họp, xem tài liệu, bình luận, bỏ phiếu, ký biên bản khi được chỉ định |
+| **Participant** | Thành viên được mời: phản hồi lời mời, vào phòng họp, xem tài liệu, bình luận, bỏ phiếu, đọc và tải biên bản đã ban hành |
 | **Guest** | Khách ngoài, không có tài khoản; truy cập đúng một cuộc họp qua lời mời và mã xác minh email (UC-04) |
 | *OAuth Provider* | Actor hệ thống ngoài: xác thực tài khoản Google và trả danh tính đã xác minh (UC-02) |
 | *AI Drafting Service* | Actor hệ thống: máy AI của nhóm chạy trong hệ thống, viết dự thảo 3 mục của cuộc họp từ bản gỡ băng, chương trình và kết quả biểu quyết (UC-47, PR #260). Chỉ nhận chữ, không nhận âm thanh; lời thoại không ra khỏi hệ thống (ADR-0054, BR-381) |
-| *Resend Email* | Actor hệ thống ngoài: gửi email đặt lại mật khẩu, thư mời, email liên quan ký biên bản |
+| *Resend Email* | Actor hệ thống ngoài: gửi email đặt lại mật khẩu, thư mời, thông báo |
 | *Cloudflare R2* | Actor hệ thống ngoài: kho đối tượng giữ byte tệp tài liệu cá nhân và tài liệu cuộc họp (ADR-0024) |
 
 **Khoá actor (05/11/2026): 7 actor người và 3 actor hệ thống ngoài, không thêm bớt khi chưa có quyết định của PO.**
@@ -223,18 +223,19 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-57 | Ghi kết luận biểu quyết *(Record Vote Conclusion)* — Chair chọn `Passed` / `NotPassed` / `Deferred`; ghi rồi không sửa | Chair | Đã đặc tả | `<<extend>>` UC-52 |
 | UC-76 | Quản lý tài liệu biểu quyết *(Manage Vote Documents)* — gồm UC-76a Gắn tài liệu vào Vote nháp, UC-76b Bỏ gắn; danh sách chốt khi Vote mở | Chair, Secretary | Đã đặc tả các UC con | `<<extend>>` UC-53 |
 
-## FE-12 — Biên bản & Ký điện tử *(Meeting Minutes & Digital Signing)*
+## FE-12 — Biên bản & Duyệt, ban hành *(Meeting Minutes & Approval)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-58 | Xem biên bản *(View Meeting Minutes)* — bản nháp chỉ Chủ tọa/Thư ký; biên bản đã ban hành cho người có quyền (SCRUM-33, chưa làm) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-16 |
+| UC-58 | Xem biên bản *(View Meeting Minutes)* — bản nháp, chờ duyệt, bị trả lại chỉ Chủ tọa/Thư ký; bản đã ban hành (và bản cũ) cho mọi người đọc được cuộc họp, trừ Khách; tải Word/PDF trừ họp Mật (BR-412) | Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-59 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — một mẫu cố định (Mẫu 1.4 NĐ30), điền từ hồ sơ cuộc họp + dự thảo đã duyệt | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-60 | Chỉnh biên bản *(Edit Meeting Minutes)* — văn bản thuần có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
-| UC-61 | Gửi ký biên bản *(Submit Meeting Minutes for Signing)* | Secretary; Email / SMTP | Placeholder | `<<extend>>` UC-58 |
-| UC-62 | Ký biên bản *(Sign Meeting Minutes)* | Người ký được chỉ định | Placeholder | `<<extend>>` UC-58 |
-| UC-63 | Xem trạng thái ký & lịch sử *(View Signature Status & Audit Trail)* | User có quyền | Placeholder | `<<extend>>` UC-58 |
-| UC-64 | Hoàn tất / niêm phong biên bản *(Finalize Meeting Minutes)* | **Secretary** | Placeholder | `<<extend>>` UC-58 |
-| UC-65 | Yêu cầu sửa biên bản *(Request Revision of Meeting Minutes)* | Người ký được chỉ định | Placeholder | `<<extend>>` UC-58 |
+| UC-61 | Gửi duyệt biên bản *(Submit Meeting Minutes for Approval)* — Thư ký gửi bản nháp hoặc bị trả lại cho Chủ tọa | Secretary; Chair nhận thông báo | Đã đặc tả | `<<extend>>` UC-58 |
+| UC-62 | Ký biên bản *(Sign Meeting Minutes)* — để dành ký số mô phỏng (SCRUM-37) | Người ký được chỉ định | Placeholder | `<<extend>>` UC-58 |
+| UC-63 | Xem trạng thái ký & lịch sử *(View Signature Status & Signing History)* — để dành ký số mô phỏng (SCRUM-37) | User có quyền | Placeholder | `<<extend>>` UC-58 |
+| UC-64 | Duyệt và ban hành biên bản *(Approve and Issue Meeting Minutes)* — duyệt là ban hành luôn, ghi nhật ký (BR-446) | **Chair** | Đã đặc tả | `<<extend>>` UC-58 |
+| UC-65 | Trả lại biên bản *(Return Meeting Minutes for Revision)* — kèm lý do, chỉ giữ lý do của lần trả cuối | **Chair** | Đã đặc tả | `<<extend>>` UC-58 |
+| UC-83 | Tạo bản đính chính biên bản *(Correct Issued Meeting Minutes)* — bản mới từ bản đã ban hành, bản cũ giữ nguyên | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
 
 ## FE-13 — Email & Thông báo trong ứng dụng *(Email & In-App Notification)*
 
@@ -352,8 +353,9 @@ UC-53 Tạo/cấu hình nháp khi Approved / Published / InProgress
 Sau Ended: không nhận phiếu mới; Chair vẫn UC-56 đóng phiếu còn mở và UC-57 ghi kết luận (ADR-0017). Phiếu Draft xoá được trong UC-53
 
 Biên bản
-UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu cầu sửa (chữ ký cũ mất hiệu lực, vòng ký mới)
-→ đủ chữ ký → UC-64 Secretary niêm phong
+UC-59 Sinh nháp → UC-60 Sửa → UC-61 Thư ký gửi duyệt → UC-64 Chủ tọa duyệt và ban hành (khoá vĩnh viễn)
+UC-65 Chủ tọa trả lại kèm lý do → Thư ký sửa (UC-60) rồi gửi lại (UC-61)
+Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64; bản cũ thành Superseded
 ```
 
 # 7. Thống kê
@@ -371,11 +373,11 @@ UC-59 Sinh nháp → UC-60 Sửa → UC-61 Gửi ký → UC-62 Ký | UC-65 Yêu 
 | FE-09 | Meeting Recording | 3 | 8 |
 | FE-10 | Transcription, Speaker Identification & Meeting Summary | 8 | 13 |
 | FE-11 | Voting Management | 7 | 4 |
-| FE-12 | Meeting Minutes & Digital Signing | 8 | — |
+| FE-12 | Meeting Minutes & Approval | 9 | — |
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **81** | **59** |
+| **Tổng** | | **82** | **59** |
 
 # 8. Ngoài phạm vi UC
 

@@ -4,28 +4,18 @@ actor "Chair / Secretary" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
-participant ":Meeting Repository" as MeetingRepository
 database ":Database" as Database
 
-Actor->MinutesCard: Confirm Create Correction
+Actor->MinutesCard: Confirm Create Correction on an issued revision
 activate MinutesCard
-MinutesCard->MinutesController: createCorrection(minutesId)
+MinutesCard->MinutesController: correct(minutesId)
 activate MinutesController
-MinutesController->MinutesService: createCorrectionAsync(minutesId, actorId)
+MinutesController->MinutesService: CorrectAsync(minutesId, actorId)
 activate MinutesService
-MinutesService->Database: Retrieve the selected revision and any later revision of the same minutes
+MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
 activate Database
-Database-->MinutesService: Minutes / None
+Database-->MinutesService: Meeting and revision / None
 deactivate Database
-MinutesService->MeetingRepository: Get the Meeting
-activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
-activate Database
-Database-->MeetingRepository: Meeting / Not found
-deactivate Database
-MeetingRepository-->MinutesService: Meeting / Not found
-deactivate MeetingRepository
-MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386)
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary\nand the selected revision is not Issued or Superseded - EX-5
     MinutesService-->MinutesController: Not found
@@ -49,13 +39,17 @@ else Actor is the current Chair or Secretary
     else Correction valid
         MinutesService->Database: Insert a Draft revision: the issued text, revision number + 1,\npointing at the issued revision (BR-409); the issued revision is not changed
         activate Database
-        Database-->MinutesService: Saved / Failed
+        Database-->MinutesService: Saved / Failed / Unique violation
         deactivate Database
 
         alt Saved
             MinutesService-->MinutesController: New revision
             MinutesController-->MinutesCard: 201 MSG432 - Correction draft created.
             MinutesCard-->Actor: MSG432 - Correction draft created. The new revision opens for editing (UC-60)
+        else Another correction was created at the same moment - unique violation on the revision number - EX-3
+            MinutesService-->MinutesController: MSG434 - A correction of these minutes is already in progress.
+            MinutesController-->MinutesCard: 409 MSG434
+            MinutesCard-->Actor: MSG434 - A correction of these minutes is already in progress.
         else The revision cannot be saved - EX-4
             MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
             MinutesController-->MinutesCard: 503 MSG404

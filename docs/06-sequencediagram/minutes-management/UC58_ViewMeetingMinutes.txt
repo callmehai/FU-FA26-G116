@@ -1,17 +1,17 @@
 title UC-58 - View Meeting Minutes
 
-actor "Chair / Secretary" as Actor
+actor "Chair / Secretary / Reader" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
 participant ":Meeting Repository" as MeetingRepository
 database ":Database" as Database
 
-Actor->MinutesCard: Open the Biên bản tab
+Actor->MinutesCard: Open the Biên bản tab, or choose a revision from the list
 activate MinutesCard
-MinutesCard->MinutesController: get(meetingId)
+MinutesCard->MinutesController: get(meetingId), or getRevision(minutesId)
 activate MinutesController
-MinutesController->MinutesService: getAsync(meetingId, actorId)
+MinutesController->MinutesService: getAsync(meetingId, actorId), or getRevisionAsync(minutesId, actorId)
 activate MinutesService
 MinutesService->MeetingRepository: Get the Meeting
 activate MeetingRepository
@@ -22,29 +22,71 @@ deactivate Database
 MeetingRepository-->MinutesService: Meeting / Not found
 deactivate MeetingRepository
 
-alt The Meeting is not accessible - EX-2
+alt The Meeting is not accessible - EX-3
     MinutesService-->MinutesController: Not found
     MinutesController-->MinutesCard: 404
     MinutesCard-->Actor: The Meeting is not available
 else Actor may read the Meeting
-    MinutesService->Database: Retrieve the latest revision
-    activate Database
-    Database-->MinutesService: Minutes / None
-    deactivate Database
     MinutesService->MinutesService: Check whether the actor is the current Chair or Secretary (BR-386)
 
-    alt Actor is the current Chair or Secretary and a draft exists
-        MinutesService-->MinutesController: 200 MinutesState with the draft
-        MinutesController-->MinutesCard: 200 MinutesState
-        MinutesCard-->Actor: The paper as it will print, revision number, status, who created it and when, last save
-    else No draft yet - AF-1
-        MinutesService-->MinutesController: 200 MinutesState with no draft
-        MinutesController-->MinutesCard: 200 MinutesState
-        MinutesCard-->Actor: Empty state and, for the Chair and Secretary, the control to build one (UC-59)
-    else Neither the Chair nor the Secretary
-        MinutesService-->MinutesController: 200 MinutesState with no draft
-        MinutesController-->MinutesCard: 200 MinutesState
-        MinutesCard-->Actor: No minutes: a draft is not disclosed, and issued minutes are not part of this release
+    alt Actor is the current Chair or Secretary
+        MinutesService->Database: Retrieve the latest revision, or the chosen revision, with\nwho created, submitted, approved and returned it, when, and the reason\nof the latest return (BR-407)
+        activate Database
+        Database-->MinutesService: Minutes / None
+        deactivate Database
+
+        alt A revision exists - the draft or returned revision, or a waiting one
+            MinutesService-->MinutesController: 200 MinutesState with the revision and every revision in history
+            MinutesController-->MinutesCard: 200 MinutesState
+            MinutesCard-->Actor: The paper as it will print, revision number and status,\nwho created, submitted, approved or returned it and when,\nand the reason of the latest return
+        else No minutes yet - AF-1
+            MinutesService-->MinutesController: 200 MinutesState with no revision
+            MinutesController-->MinutesCard: 200 MinutesState
+            MinutesCard-->Actor: Empty state and the control to build one (UC-59)
+        end
+    else Actor is anyone else who may read the Meeting
+        MinutesService->Database: Retrieve the latest Issued revision, and the revisions\nin history that are Issued or Superseded only (BR-412)
+        activate Database
+        Database-->MinutesService: Minutes / None, filtered history
+        deactivate Database
+
+        alt An Issued revision exists
+            MinutesService-->MinutesController: 200 MinutesState with the Issued revision\nand the filtered history
+            MinutesController-->MinutesCard: 200 MinutesState
+            MinutesCard-->Actor: The issued paper, its revision number and status,\nand the revisions it replaced marked Superseded
+        else No Issued revision yet - AF-1
+            MinutesService-->MinutesController: 200 MinutesState with no revision
+            MinutesController-->MinutesCard: 200 MinutesState
+            MinutesCard-->Actor: No issued minutes yet; no draft or unissued correction is disclosed
+        end
+    end
+
+    opt Actor asks for another revision - AF-2
+        MinutesCard->MinutesController: getRevision(minutesId)
+        MinutesController->MinutesService: getRevisionAsync(minutesId, actorId)
+        alt The actor may read that revision - Issued or Superseded
+            MinutesService-->MinutesController: 200 the chosen revision with the same state
+            MinutesController-->MinutesCard: 200 MinutesState
+            MinutesCard-->Actor: The chosen revision, with its own number and status
+        else The revision is a draft, waiting, returned or an unissued correction - EX-2
+            MinutesService-->MinutesController: Not found, no code
+            MinutesController-->MinutesCard: 404
+            MinutesCard-->Actor: No minutes; nothing about that revision is disclosed
+        end
+    end
+
+    opt Actor downloads an Issued or Superseded revision - AF-3
+        MinutesCard->MinutesController: export(minutesId, format)
+        MinutesController->MinutesService: exportAsync(minutesId, actorId, format)
+        alt The Meeting is Secret - EX-4
+            MinutesService-->MinutesController: MSG405 - The minutes of a Secret meeting cannot be downloaded.
+            MinutesController-->MinutesCard: 403 MSG405
+            MinutesCard-->Actor: MSG405 - The minutes of a Secret meeting cannot be downloaded.
+        else Not Secret and the actor may read the revision
+            MinutesService-->MinutesController: 200 file built from the same content (BR-390, BR-391, BR-412)
+            MinutesController-->MinutesCard: 200 .docx / .pdf
+            MinutesCard-->Actor: The file
+        end
     end
 end
 deactivate MinutesService
