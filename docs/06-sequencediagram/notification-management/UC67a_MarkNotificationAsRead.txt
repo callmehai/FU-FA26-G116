@@ -1,4 +1,4 @@
-title UC-18 - Mark Notification as Read
+title UC-67a - Mark Notification as Read
 
 actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
 boundary "Notification Panel" as NotificationPanel
