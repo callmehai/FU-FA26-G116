@@ -197,7 +197,8 @@ Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá v
 ## Bản ghi tổng hợp của họp kết hợp ([ADR-0061](../05-decisions/0061-hop-ket-hop-mot-dong-thoi-gian.md) điểm 5)
 
 Họp kết hợp kết thúc rồi, server trộn bản ghi mic phòng và mọi câu theo micro của người trực tuyến (trừ câu đã loại khỏi
-biên bản) thành một tệp WAV 16 kHz mono, đặt mỗi nguồn theo giờ thật; chồng tiếng thì nghe chồng. Tệp nằm trong
+biên bản) thành một tệp WAV 16 kHz mono, đặt mỗi nguồn theo giờ thật; chồng tiếng thì nghe chồng. Khoảng lặng dài hơn
+2 giây giữa hai quãng có tiếng rút còn 2 giây; bản dài quá 12 giờ thì không dựng. Tệp nằm trong
 `GET …/recordings` với `source: "Combined"`, tên `ban-ghi-tong-hop-dd-MM-yyyy-HHmm.wav`, cùng mục đích, người tạo và thời
 hạn lưu với bản ghi mic phòng; nghe (`/playback`), tải (`/download`) và xoá (`DELETE`) như mọi bản ghi.
 

@@ -24,6 +24,12 @@ public static class CombinedRecordingRules
     /// <summary>Late sentences can arrive up to a week after the end (SpeechClipRules.LateUpload); then nothing changes.</summary>
     public static readonly TimeSpan Window = TimeSpan.FromDays(8);
 
+    /// <summary>Silence longer than this between two stretches of sound (a break, every mic off) is cut down to it.</summary>
+    public static readonly TimeSpan MaxGap = TimeSpan.FromSeconds(2);
+
+    /// <summary>Longer than any sitting: a track past it is not built, whatever the sources say.</summary>
+    public static readonly TimeSpan MaxLength = TimeSpan.FromHours(12);
+
     public static string FileName(DateTimeOffset startedAt)
         => $"ban-ghi-tong-hop-{TimeZoneInfo.ConvertTime(startedAt, Vietnam):dd-MM-yyyy-HHmm}.wav";
 
@@ -80,4 +86,55 @@ public static class CombinedRecordingRules
 
     /// <summary>Sums into 16 bits, clipping rather than wrapping when voices add up past full scale.</summary>
     public static short Clip(int sum) => (short)Math.Clamp(sum, short.MinValue, short.MaxValue);
+}
+
+/// <summary>
+/// Where each moment of the meeting falls on the combined track. Sources that sound within <see cref="CombinedRecordingRules.MaxGap"/>
+/// of each other form one stretch, kept on the real clock, so two people speaking at once stay at once; between stretches
+/// the silence is cut to that gap. A meeting left running for days, or a sentence sent long after, never becomes hours of
+/// silence on disk.
+/// </summary>
+public sealed class CombinedTrack
+{
+    private readonly (DateTimeOffset Start, DateTimeOffset End, long OutMs)[] stretches;
+
+    public CombinedTrack(IEnumerable<(DateTimeOffset Start, long DurationMs)> sources)
+    {
+        var sorted = sources.Where(s => s.DurationMs > 0).OrderBy(s => s.Start).ToList();
+        var list = new List<(DateTimeOffset Start, DateTimeOffset End, long OutMs)>();
+        foreach (var (start, duration) in sorted)
+        {
+            var end = start.AddMilliseconds(duration);
+            if (list.Count > 0 && start <= list[^1].End + CombinedRecordingRules.MaxGap)
+            {
+                if (end > list[^1].End) list[^1] = list[^1] with { End = end };
+                continue;
+            }
+            var outMs = list.Count == 0 ? 0
+                : list[^1].OutMs + Ms(list[^1].End - list[^1].Start) + Ms(CombinedRecordingRules.MaxGap);
+            list.Add((start, end, outMs));
+        }
+        stretches = [.. list];
+        TotalMs = list.Count == 0 ? 0 : list[^1].OutMs + Ms(list[^1].End - list[^1].Start);
+    }
+
+    public long TotalMs { get; }
+
+    public long TotalSamples => TotalMs * CombinedRecordingRules.SampleRate / 1000;
+
+    /// <summary>The sample on the track where this moment of a source falls.</summary>
+    public long SampleAt(DateTimeOffset at)
+    {
+        var lo = 0;
+        var hi = stretches.Length - 1;
+        while (lo < hi)
+        {
+            var mid = (lo + hi + 1) / 2;
+            if (stretches[mid].Start <= at) lo = mid; else hi = mid - 1;
+        }
+        var stretch = stretches[lo];
+        return (long)Math.Round((stretch.OutMs + (at - stretch.Start).TotalMilliseconds) * CombinedRecordingRules.SampleRate / 1000);
+    }
+
+    private static long Ms(TimeSpan span) => (long)Math.Round(span.TotalMilliseconds);
 }

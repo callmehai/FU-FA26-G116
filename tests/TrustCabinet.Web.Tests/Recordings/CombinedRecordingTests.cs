@@ -206,6 +206,64 @@ public sealed class CombinedRecordingTests(RecordingFixture fixture) : IClassFix
     }
 
     [Fact]
+    public async Task Long_silence_is_cut_to_two_seconds_and_a_track_past_twelve_hours_is_not_built()
+    {
+        // A meeting left running for days: the room spoke at T0, an online sentence came three hours later.
+        var s = await fixture.Seed(MeetingStatus.Ended, MeetingMode.Hybrid);
+        var settled = fixture.Clock.Now.AddMinutes(-5);
+        var start = fixture.Clock.Now.AddHours(-4);
+        await using (var db = fixture.Db())
+        {
+            await db.Meetings.Where(m => m.Id == s.MeetingId).ExecuteUpdateAsync(u => u
+                .SetProperty(m => m.ActualStartedAt, start).SetProperty(m => m.ActualEndedAt, fixture.Clock.Now.AddMinutes(-10)));
+            db.Recordings.Add(new Recording
+            {
+                MeetingId = s.MeetingId, Source = RecordingSource.BrowserCapture, Status = RecordingStatus.Available,
+                FileName = "ghi-am-phong.wav", StoragePath = Store(Wav((1000, 100))), ContentType = "audio/wav",
+                ByteSize = 44 + 1000 * 32, DurationMs = 1000, Takes = [new(0, 1000, start)], CreatedById = s.Secretary,
+                CreatedAt = settled, UpdatedAt = settled,
+            });
+            db.SpeechClips.Add(new SpeechClip
+            {
+                MeetingId = s.MeetingId, SpeakerId = s.Member, ClientClipId = Guid.NewGuid(), StartedAt = start.AddHours(3),
+                DurationMs = 1000, Text = "x", AudioPath = Store(Wav((1000, 700))), AudioContentType = "audio/wav",
+                CreatedAt = settled, UpdatedAt = settled,
+            });
+            await db.SaveChangesAsync();
+        }
+        await BuildAll();
+        var combined = (await Combined(s.MeetingId))!;
+        Assert.Equal(4000, combined.DurationMs);           // 1 s, 2 s of the three hours, 1 s
+        Assert.Equal(44 + 4000 * 32, new FileInfo(Path.Combine(fixture.StorageRoot, combined.StoragePath)).Length);
+        Assert.Equal(100, At(combined, 500));
+        Assert.Equal(0, At(combined, 2000));
+        Assert.Equal(700, At(combined, 3500));
+
+        // A room recording that claims thirteen hours of sound is never written out.
+        var (huge, room, _) = await Arrange();
+        await using (var db = fixture.Db())
+            await db.Recordings.Where(r => r.Id == room).ExecuteUpdateAsync(u => u
+                .SetProperty(r => r.Takes, new List<RecordingTake> { new(0, (long)TimeSpan.FromHours(13).TotalMilliseconds, T0) }));
+        var files = fixture.StoredFileCount();
+        await BuildAll();
+        Assert.Null(await Combined(huge.MeetingId));
+        Assert.Equal(files, fixture.StoredFileCount());
+    }
+
+    [Fact]
+    public void A_track_keeps_the_real_clock_within_a_stretch_of_sound_and_cuts_the_silence_between()
+    {
+        var t = new DateTimeOffset(2026, 11, 13, 8, 0, 0, TimeSpan.Zero);
+        var track = new CombinedTrack([(t, 1000), (t.AddMilliseconds(2500), 1000), (t.AddMinutes(10), 500), (t.AddMinutes(10).AddMilliseconds(100), 100)]);
+        // [0, 3.5 s] is one stretch (a 1.5 s pause); ten minutes later another, 0.5 s long, 2 s after it on the track.
+        Assert.Equal(3500 + 2000 + 500, track.TotalMs);
+        Assert.Equal(0, track.SampleAt(t));
+        Assert.Equal(2500 * 16, track.SampleAt(t.AddMilliseconds(2500)));
+        Assert.Equal(5500 * 16, track.SampleAt(t.AddMinutes(10)));
+        Assert.Equal(5600 * 16, track.SampleAt(t.AddMinutes(10).AddMilliseconds(100)));
+    }
+
+    [Fact]
     public void Only_16_kHz_mono_16_bit_wav_is_read()
     {
         Assert.Empty(CombinedRecordingRules.ReadPcm(Wav())!);

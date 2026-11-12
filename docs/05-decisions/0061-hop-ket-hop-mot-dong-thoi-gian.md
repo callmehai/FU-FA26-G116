@@ -44,7 +44,10 @@ người họp trực tuyến nói qua hệ thống, ghi theo micro của chính
      muộn, câu bị loại, lượt bị cắt) thì tự dựng lại, giữ nguyên dòng bản ghi. Thư ký xoá thì không dựng lại.
    - Chỉ để nghe: không gỡ băng lại (`POST …/transcribe` trả `409 MSG479`), vì lời đã có từ mic phòng và mic từng người.
    - Trộn ngay trong backend (mọi nguồn đều là PCM 16 kHz mono), theo khối 10 giây: không cần worker nhận dạng giọng, không
-     nạp cả buổi họp vào bộ nhớ. Khoảng lặng giữa các lượt giữ nguyên, để vị trí trên thanh phát khớp giờ họp.
+     nạp cả buổi họp vào bộ nhớ.
+   - Trong một quãng có tiếng (các nguồn cách nhau không quá 2 giây) giữ đúng giờ thật, nên ai nói chen vẫn nghe chen.
+     Khoảng lặng dài hơn 2 giây giữa hai quãng (giải lao, mọi mic tắt) rút còn 2 giây: cuộc họp quên kết thúc nhiều ngày,
+     hay câu gửi muộn, không thành hàng giờ im lặng trên đĩa. Bản dài quá 12 giờ thì không dựng.
 
 ## Hệ quả
 

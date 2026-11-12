@@ -15,6 +15,9 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// sources settle (no take open, nothing new for a minute), and built again whenever one of them changes later: a late
 /// sentence, one taken out of the record, a take cut. A Secretary who erases it is not overridden.
 ///
+/// Each stretch of sound keeps the real clock; silence between stretches is cut to two seconds (<see cref="CombinedTrack"/>),
+/// and a track past twelve hours is not built.
+///
 /// Mixed in blocks of ten seconds, so a meeting of hours never sits in memory: the room recording is read where the
 /// block needs it, and a sentence (a minute at most) is loaded when the block reaches it and dropped once passed.
 /// </summary>
@@ -98,10 +101,11 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
     private async Task BuildAsync(Plan plan, CancellationToken ct)
     {
         var origin = Min(plan.Room.Min(p => p.StartedAt), plan.Clips.Min(c => c.StartedAt));
-        var end = Max(plan.Room.Max(p => p.StartedAt.AddMilliseconds(p.DurationMs)),
-            plan.Clips.Max(c => c.StartedAt.AddMilliseconds(c.DurationMs)));
-        long Sample(DateTimeOffset at) => (long)Math.Round((at - origin).TotalMilliseconds * CombinedRecordingRules.SampleRate / 1000);
-        var total = Sample(end);
+        var track = new CombinedTrack([.. plan.Room.Select(p => (p.StartedAt, p.DurationMs)), .. plan.Clips.Select(c => (c.StartedAt, c.DurationMs))]);
+        if (track.TotalMs > CombinedRecordingRules.MaxLength.TotalMilliseconds)
+            throw new InvalidOperationException($"The combined recording would last {track.TotalMs} ms, past the limit.");
+        var total = track.TotalSamples;
+        long Sample(DateTimeOffset at) => track.SampleAt(at);
 
         var path = storage.Create(".wav");
         try
@@ -119,7 +123,7 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
 
         var now = clock.GetUtcNow();
         var byteSize = RecordingRules.WavHeaderBytes + total * 2;
-        var durationMs = total * 1000 / CombinedRecordingRules.SampleRate;
+        var durationMs = track.TotalMs;
         string? replaced = null;
         var kept = await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
@@ -268,5 +272,4 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
     }
 
     private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b) => a < b ? a : b;
-    private static DateTimeOffset Max(DateTimeOffset a, DateTimeOffset b) => a > b ? a : b;
 }
