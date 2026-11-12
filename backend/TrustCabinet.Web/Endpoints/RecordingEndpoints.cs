@@ -24,6 +24,7 @@ public static class RecordingEndpoints
     private const string Msg355ExportForbidden = "MSG355";
     private const string Msg356SecretMeeting = "MSG356";
     private const string Msg358OnlineNoRoom = "MSG358";
+    private const string Msg478HybridLiveOnly = "MSG478";
     private const string Msg359NotRunning = "MSG359";
     private const string Msg360TakeOpen = "MSG360";
     private const string Msg361BadPart = "MSG361";
@@ -214,6 +215,8 @@ public static class RecordingEndpoints
                 RecordingFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
                 RecordingFailure.NoRoom => (409, Msg358OnlineNoRoom,
                     "Cuộc họp trực tuyến ghi theo micro từng người, không có bản ghi phòng."),
+                RecordingFailure.HybridLiveOnly => (409, Msg478HybridLiveOnly,
+                    "Họp kết hợp ghi trực tiếp bằng mic phòng để khớp giờ với lời người họp trực tuyến, không tải tệp ghi âm lên."),
                 RecordingFailure.Locked => (409, Msg294UploadLocked, "Chỉ lưu bản ghi khi cuộc họp đang diễn ra hoặc đã kết thúc."),
                 RecordingFailure.NotRunning => (409, Msg359NotRunning, "Chỉ bật mic phòng khi cuộc họp đang diễn ra."),
                 RecordingFailure.TakeOpen when erasing => (409, Msg364ErasePending,

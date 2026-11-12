@@ -20,7 +20,12 @@ public enum RecordingFailure
     TakeClosed,
     TooLarge,
     /// <summary>The recording has one take left: erasing it is erasing the recording.</summary>
-    LastTake
+    LastTake,
+    /// <summary>
+    /// ADR-0061: a hybrid meeting's room is recorded live on the room mic, never from an uploaded file — a file does not
+    /// know when it was said, so it could not sit in one timeline with the online attendees' sentences.
+    /// </summary>
+    HybridLiveOnly,
 }
 
 public sealed record RecordingOutcome(RecordingFailure Failure = RecordingFailure.None, object? Data = null,
@@ -165,6 +170,12 @@ public static class RecordingRules
 
     /// <summary>Recording happens during the sitting or is uploaded right after it — never before it starts.</summary>
     public static bool UploadAllowed(MeetingStatus status) => status is MeetingStatus.InProgress or MeetingStatus.Ended;
+
+    /// <summary>
+    /// ADR-0061: only an in-person meeting takes a recorded file. A hybrid one is recorded live on the room mic, whose
+    /// takes know the wall clock, so the room and the online sentences make one timeline.
+    /// </summary>
+    public static bool TakesUploads(MeetingMode mode) => mode == MeetingMode.InPerson;
 
     /// <summary>
     /// ADR-0040: a meeting held in a room is recorded through the room's one mic, by the Secretary; an online meeting
