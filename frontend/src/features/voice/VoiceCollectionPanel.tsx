@@ -19,7 +19,7 @@ type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 
  * ADR-0060 — the Secretary of an in-person or hybrid meeting records Voice ID samples for its people on the room's mic,
  * the mic the meeting is transcribed from, so the room's voices are named right. Shown only to the meeting's Secretary
  * holding "Thu giọng mẫu hộ"; the server rechecks both on every call. A person who has not agreed cannot be recorded:
- * they agree themselves, on their own "Giọng nói của tôi" page.
+ * they turn Voice ID on themselves, on their own "Giọng nói của tôi" page — one consent covers both sets.
  */
 export function VoiceCollectionPanel({ meetingId }: { meetingId: string }) {
   const toast = useToast()
@@ -92,7 +92,13 @@ export function VoiceCollectionPanel({ meetingId }: { meetingId: string }) {
                     {person.sampleCount}/{data.maxSamples}
                   </span>
                 ) : (
-                  <span className="voice-person-state">Chưa đồng ý</span>
+                  <span
+                    className="voice-person-state"
+                    data-tooltip="Người này chưa bật Voice ID, hoặc chưa đồng ý điều khoản mới, ở trang Giọng nói của tôi"
+                    tabIndex={0}
+                  >
+                    Chưa đồng ý
+                  </span>
                 )}
                 {canRecord && (
                   <button type="button" className="btn btn-outline btn-sm" onClick={() => setRecordFor(person)}>
@@ -191,7 +197,7 @@ function Header() {
   return (
     <div className="voice-status">
       <h2 className="card-title">Giọng mẫu cho mic phòng</h2>
-      <InfoTip text="Thu giọng từng người bằng chính micro phòng họp để bản gỡ băng nhận đúng tên. Người dự phải tự bật đồng ý ở trang Giọng nói của tôi, tab Thư ký thu hộ; họ nhận thông báo mỗi lần được thu và xoá được mẫu bất cứ lúc nào." />
+      <InfoTip text="Thu giọng từng người bằng chính micro phòng họp để bản gỡ băng nhận đúng tên. Chỉ thu được người đã tự bật Voice ID ở trang Giọng nói của tôi; họ nhận thông báo mỗi lần được thu và xoá được mẫu bất cứ lúc nào." />
     </div>
   )
 }

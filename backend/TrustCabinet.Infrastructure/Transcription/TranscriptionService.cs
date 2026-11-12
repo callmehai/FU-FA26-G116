@@ -473,10 +473,8 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         var nameable = new HashSet<Guid>();
         foreach (var sample in await voices.ListMatchableSamplesAsync(people, result.EmbeddingModel, ct))
         {
-            // A sample a Secretary took on the room's mic was given under a notice that says the name is filled in
-            // (ADR-0060); one the person took names them only from notice 1.2 on.
-            if (sample.Consent.Scope == VoiceConsentScope.Proxy
-                || string.CompareOrdinal(sample.Consent.NoticeVersion, VoiceIdRules.AutoAssignNoticeVersion) >= 0)
+            // The machine names the person only under notice 1.2 or later; a sample a Secretary took always is (1.3+).
+            if (string.CompareOrdinal(sample.Consent.NoticeVersion, VoiceIdRules.AutoAssignNoticeVersion) >= 0)
                 nameable.Add(sample.UserId);
             try
             {

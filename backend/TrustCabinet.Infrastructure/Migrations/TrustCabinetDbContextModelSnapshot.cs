@@ -2712,12 +2712,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("purpose");
 
-                    b.Property<string>("Scope")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("scope");
-
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -2733,9 +2727,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_voice_consents");
 
-                    b.HasIndex("UserId", "Scope")
+                    b.HasIndex("UserId")
                         .IsUnique()
-                        .HasDatabaseName("ix_voice_consents_user_id_scope")
+                        .HasDatabaseName("ix_voice_consents_user_id")
                         .HasFilter("withdrawn_at IS NULL");
 
                     b.ToTable("voice_consents", (string)null);

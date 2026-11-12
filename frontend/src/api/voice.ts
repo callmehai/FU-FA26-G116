@@ -26,13 +26,6 @@ export const voiceSampleAudio = (sampleId: string) => api.blob(`/api/me/voice/sa
 export const deleteVoiceSample = (sampleId: string) =>
   api.delete<VoiceMutation<VoiceProfile>>(`/api/me/voice/samples/${sampleId}`)
 
-/** ADR-0060: let the Secretaries of one's meetings record samples on the room's mic — a consent of its own. */
-export const grantProxyVoiceConsent = (noticeVersion: string) =>
-  api.post<VoiceMutation<VoiceProfile>>('/api/me/voice/proxy-consent', { noticeVersion })
-
-/** Takes it back and erases every sample a Secretary took; one's own samples stay. */
-export const withdrawProxyVoiceConsent = () => api.delete<VoiceMutation<VoiceProfile>>('/api/me/voice/proxy-consent')
-
 /** The meeting Secretary's view: needs `VoiceCollector` and being this meeting's Secretary, rechecked server-side. */
 export const getVoiceCollection = (meetingId: string) =>
   api.get<VoiceCollection>(`/api/meetings/${meetingId}/voice-collection`)

@@ -26,7 +26,7 @@ type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 
 export function VoicePage() {
   const [state, setState] = useState<State>({ kind: 'loading' })
   const generation = useRef(0)
-  // ADR-0060: two sets, each under its own consent. A "Thư ký đã thu giọng mẫu" notice opens ?tab=proxy.
+  // ADR-0060: two sets under one consent. A "Thư ký đã thu giọng mẫu" notice opens ?tab=proxy.
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') === 'proxy' ? 'proxy' : 'self'
   const openTab = (next: 'self' | 'proxy') => setParams(next === 'proxy' ? { tab: 'proxy' } : {}, { replace: true })
@@ -66,8 +66,12 @@ export function VoicePage() {
           </button>
         </div>
       )}
-      {state.kind === 'loaded' && (
+      {state.kind === 'loaded' && !state.profile.consent && <ConsentCard profile={state.profile} onChange={change} />}
+      {state.kind === 'loaded' && state.profile.consent && (
         <>
+          {state.profile.consent.noticeVersion !== state.profile.noticeVersion && (
+            <RenewNotice profile={state.profile} onChange={change} />
+          )}
           <div className="tabs" role="tablist" aria-label="Bộ giọng mẫu">
             <button
               type="button"
@@ -92,10 +96,8 @@ export function VoicePage() {
           </div>
           {tab === 'proxy' ? (
             <ProxyTab profile={state.profile} onChange={change} onReload={load} />
-          ) : state.profile.consent ? (
-            <Enrolled profile={state.profile} onChange={change} onReload={load} />
           ) : (
-            <ConsentCard profile={state.profile} onChange={change} />
+            <Enrolled profile={state.profile} onChange={change} onReload={load} />
           )}
         </>
       )}
@@ -159,9 +161,6 @@ function Enrolled({
           {profile.samples.length}/{profile.maxSamples}
         </span>
       </div>
-      {profile.consent!.noticeVersion !== profile.noticeVersion && (
-        <RenewNotice profile={profile} onChange={onChange} />
-      )}
       {profile.samples.length < 2 && (
         <p className="alert alert-info">
           {profile.samples.length === 0
@@ -252,8 +251,9 @@ function Enrolled({
           }}
         >
           <p>
-            Toàn bộ {profile.samples.length} giọng mẫu tự thu, mọi gợi ý và tên máy đã điền từ giọng của bạn bị xoá ngay.
-            Tên Thư ký đã gán và giọng mẫu Thư ký thu hộ giữ nguyên. Bạn có thể bật lại sau.
+            Toàn bộ {profile.samples.length} giọng mẫu tự thu
+            {profile.proxy.samples.length > 0 && ` và ${profile.proxy.samples.length} mẫu Thư ký thu hộ`}, mọi gợi ý và
+            tên máy đã điền từ giọng của bạn bị xoá ngay. Tên Thư ký đã gán giữ nguyên. Bạn có thể bật lại sau.
           </p>
         </ConfirmDialog>
       )}
@@ -263,8 +263,8 @@ function Enrolled({
 
 /**
  * The notice changed since the person agreed: 1.1 keeps the sample recording for its owner to hear back (ADR-0042), 1.2
- * lets the machine fill in their name on a sure match (ADR-0048). Until they renew, nothing new applies to them: the
- * next samples are not kept as recordings, and the machine only suggests their name.
+ * lets the machine fill in their name on a sure match (ADR-0048), 1.3 lets their meetings' Secretary record samples on
+ * the room's mic (ADR-0060). Until they renew, nothing new applies to them.
  */
 function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (profile: VoiceProfile) => void }) {
   const toast = useToast()
@@ -285,6 +285,7 @@ function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (
   const changes = [
     agreed < '1.1' && 'giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại',
     agreed < '1.2' && 'máy tự điền tên bạn khi giọng khớp rõ, Thư ký vẫn sửa được',
+    agreed < '1.3' && 'Thư ký cuộc họp bạn dự thu được giọng mẫu hộ bằng micro phòng họp',
   ].filter(Boolean)
   return (
     <div className="alert alert-info voice-renew">

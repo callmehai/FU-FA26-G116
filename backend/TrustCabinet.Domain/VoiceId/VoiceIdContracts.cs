@@ -20,13 +20,15 @@ public sealed record VoiceSampleView(Guid Id, DateTimeOffset CreatedAt, long Spe
 /// <summary>A sample's recording, decrypted for its owner to hear.</summary>
 public sealed record VoiceSampleAudio(byte[] Bytes, string ContentType);
 /// <param name="Controller">Who decides how the voice is processed (Luật 91/2025, Điều 9.2.b): part of the notice.</param>
-/// <param name="Proxy">ADR-0060: the second set, recorded for the person by a meeting's Secretary.</param>
+/// <param name="Proxy">ADR-0060: the second set, recorded for the person by a meeting's Secretary, under the same consent
+/// (ADR-0060).</param>
 public sealed record VoiceProfile(VoiceConsentView? Consent, IReadOnlyList<VoiceSampleView> Samples, int MaxSamples,
     string NoticeVersion, string Purpose, string Controller, ProxyVoiceProfile Proxy);
 
 /// <summary>ADR-0060 — the samples meetings' Secretaries recorded for the person, as the person sees them.</summary>
-public sealed record ProxyVoiceProfile(VoiceConsentView? Consent, IReadOnlyList<ProxySampleView> Samples, int MaxSamples,
-    string NoticeVersion, string Purpose);
+/// <param name="Allowed">The person's consent is to a notice that names Secretaries recording on the room's mic
+/// (<see cref="VoiceIdRules.CollectionNoticeVersion"/>): without it no Secretary can record them.</param>
+public sealed record ProxyVoiceProfile(bool Allowed, IReadOnlyList<ProxySampleView> Samples, int MaxSamples);
 
 /// <summary>One sample a Secretary took for the person: where, by whom, so nothing is taken out of their sight.</summary>
 public sealed record ProxySampleView(Guid Id, DateTimeOffset CreatedAt, long SpeechMs, bool Playable, Guid MeetingId,
@@ -34,18 +36,14 @@ public sealed record ProxySampleView(Guid Id, DateTimeOffset CreatedAt, long Spe
 
 /// <summary>
 /// SCRUM-35 — a person's own Voice ID: consent, enrolment samples, withdrawal. Only ever about the caller. Covers both
-/// sets (ADR-0060): the caller enrols only their own, but sees, hears and deletes the ones Secretaries took for them, and
-/// gives or withdraws the consent that lets Secretaries take them.
+/// sets (ADR-0060): the caller enrols only their own, but sees, hears and deletes the ones Secretaries took for them.
+/// One consent covers both, and withdrawing it erases both (ADR-0060).
 /// </summary>
 public interface IVoiceIdService
 {
     Task<VoiceOutcome> GetAsync(Guid actorId, CancellationToken ct = default);
     Task<VoiceOutcome> GrantAsync(Guid actorId, string? noticeVersion, CancellationToken ct = default);
     Task<VoiceOutcome> WithdrawAsync(Guid actorId, CancellationToken ct = default);
-    /// <summary>ADR-0060: lets the Secretaries of the caller's meetings record samples for them.</summary>
-    Task<VoiceOutcome> GrantProxyAsync(Guid actorId, string? noticeVersion, CancellationToken ct = default);
-    /// <summary>ADR-0060: takes that back and erases every sample a Secretary took; the caller's own set stays.</summary>
-    Task<VoiceOutcome> WithdrawProxyAsync(Guid actorId, CancellationToken ct = default);
     Task<VoiceOutcome> AddSampleAsync(Guid actorId, Stream audio, string contentType, CancellationToken ct = default);
     Task<VoiceOutcome> DeleteSampleAsync(Guid actorId, Guid sampleId, CancellationToken ct = default);
     /// <summary>The caller's own sample recording; null when it is not theirs, does not exist or was not kept.</summary>
@@ -53,7 +51,8 @@ public interface IVoiceIdService
 }
 
 /// <summary>A participant of the meeting as its Secretary sees them for collecting samples (ADR-0060).</summary>
-/// <param name="Consented">Whether they let Secretaries record for them; without it nothing can be taken.</param>
+/// <param name="Consented">Whether their consent covers Secretaries recording them (ADR-0060); without it nothing can be
+/// taken.</param>
 /// <param name="SampleCount">All the samples Secretaries took for them, in any meeting, against the limit.</param>
 /// <param name="Samples">Only the ones taken in this meeting: the Secretary manages nothing taken elsewhere.</param>
 /// <param name="Role">The meeting role's name (Chair, Secretary, Member), as every other endpoint sends it.</param>
@@ -70,7 +69,8 @@ public sealed record VoiceCollectionView(bool CanCollect, int MaxSamples, IReadO
 /// the mic the meeting will be transcribed from. Every call requires the caller to hold <see cref="Capability.VoiceCollector"/>
 /// (checked by the endpoint) and to be the Secretary of that very meeting (checked here, on every call); anything else is
 /// answered like a meeting that does not exist. A sample is the participant's own data and needs their own standing
-/// <see cref="VoiceConsentScope.Proxy"/> consent: a Secretary can never consent for them.
+/// consent, to a notice that names this (<see cref="VoiceIdRules.CollectionNoticeVersion"/>): a Secretary can never
+/// consent for them.
 /// </summary>
 public interface IVoiceCollectionService
 {
@@ -94,15 +94,13 @@ public enum VoiceIdEndReason { Withdrawn, AccountDeactivated }
 /// </summary>
 public interface IVoiceIdErasure
 {
-    /// <param name="scope">The one set to end; null ends both, as deactivating the account does.</param>
     /// <returns>False when no consent stood, so there was nothing to end.</returns>
-    Task<bool> EndAsync(Guid userId, Guid actorId, VoiceIdEndReason reason, CancellationToken ct, VoiceConsentScope? scope = null);
+    Task<bool> EndAsync(Guid userId, Guid actorId, VoiceIdEndReason reason, CancellationToken ct);
 }
 
 public interface IVoiceIdRepository
 {
-    Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct,
-        VoiceConsentScope scope = VoiceConsentScope.Self);
+    Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct);
     /// <summary>Every sample of the person, both sets, oldest first.</summary>
     Task<IReadOnlyList<VoiceSample>> ListSamplesAsync(Guid userId, CancellationToken ct);
     /// <summary>The person's samples Secretaries took, with the meeting and the Secretary for showing them.</summary>
@@ -114,7 +112,7 @@ public interface IVoiceIdRepository
     /// row for update) waits for a transcription matching against them, and the other way round.
     /// </summary>
     Task LockConsentsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
-    /// <summary>Deletes the samples taken under this consent.</summary>
+    /// <summary>Deletes the samples taken under this consent, both sets.</summary>
     Task<int> DeleteSamplesAsync(Guid consentId, CancellationToken ct);
     /// <summary>Clears machine suggestions that point at this person; names a secretary assigned stay.</summary>
     Task<int> ClearSuggestionsAsync(Guid userId, DateTimeOffset now, CancellationToken ct);
@@ -149,22 +147,15 @@ public interface IVoiceEmbedder
 
 public static class VoiceIdRules
 {
-    /// <summary>ADR-0060: the notice for letting Secretaries record samples; consent is to these words.</summary>
-    public const string ProxyNoticeVersion = "1.0";
-
-    public const string ProxyPurpose =
-        "Cho phép Thư ký của cuộc họp tôi tham dự (người được giao quyền Thu giọng mẫu hộ) ghi giọng mẫu của tôi bằng "
-        + "micro phòng họp, để nhận ra và điền tên tôi trong bản gỡ băng các cuộc họp tôi tham dự. Thư ký đó chỉ nghe lại "
-        + "và xoá được mẫu thu ở cuộc họp của họ; tôi xem, nghe, xoá mọi mẫu và rút đồng ý bất cứ lúc nào.";
-
     /// <summary>
     /// Bump when the wording below changes: consent is to the words a person actually read. 1.1 (ADR-0042): the sample
     /// recording is kept too, encrypted, for its owner to hear back. A sample's audio is kept only under a consent to
     /// 1.1 or later; a person who agreed to 1.0 renews to have it kept. 1.2 (ADR-0048): the machine fills in the name
     /// on a sure match (ADR-0045), only for a person whose consent is to 1.2 or later; for the others it still only
-    /// suggests.
+    /// suggests. 1.3 (ADR-0060): the same consent lets the Secretary of a meeting the person attends record their samples
+    /// on the room's mic (ADR-0060); a person who agreed to an earlier notice renews before a Secretary can.
     /// </summary>
-    public const string NoticeVersion = "1.2";
+    public const string NoticeVersion = "1.3";
 
     /// <summary>The first notice under which a sample's recording is kept.</summary>
     public const string AudioNoticeVersion = "1.1";
@@ -172,9 +163,14 @@ public static class VoiceIdRules
     /// <summary>The first notice under which the machine names a sure match by itself.</summary>
     public const string AutoAssignNoticeVersion = "1.2";
 
+    /// <summary>The first notice under which a meeting's Secretary may record the person's samples (ADR-0060).</summary>
+    public const string CollectionNoticeVersion = "1.3";
+
+    public static bool AllowsCollection(string noticeVersion) => string.CompareOrdinal(noticeVersion, CollectionNoticeVersion) >= 0;
+
     public const string Purpose =
         "Nhận ra người phát biểu trong bản gỡ băng của các cuộc họp tôi tham dự (gợi ý tên, tự điền tên khi giọng khớp "
-        + "rõ), để Thư ký lập biên bản.";
+        + "rõ), để Thư ký lập biên bản. Giọng mẫu do tôi tự thu, hoặc do Thư ký cuộc họp tôi dự thu bằng micro phòng họp.";
 
     public const int MaxSamples = 5;
     public const int MaxSampleBytes = 10 * 1024 * 1024;
