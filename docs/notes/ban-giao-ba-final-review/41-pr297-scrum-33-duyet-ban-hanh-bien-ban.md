@@ -68,11 +68,14 @@ Bảng as-built và kế hoạch làm khi mở khoá nằm ở [§9](#9-pending-
 ## 5. Câu hỏi còn mở
 
 - Class diagram FE-12: vẽ mới hay ghi chú "chưa có" như FE-11? **Đề xuất:** ghi chú trước, vẽ khi còn thời gian — Report 4 chưa có mục FE-12 nào nên làm phần sequence trước.
-- Q5 (Thư ký rút lại bản đã gửi duyệt) và Q6 (email thông báo ban hành) không làm trong SCRUM-33 — ghi vào UC-61/UC-64 là "ngoài phạm vi" nếu Tester hỏi.
+- **PO chốt 11/11/2026:** Q5 (Thư ký rút lại bản đã gửi duyệt) và Q6 (gửi email khi ban hành biên bản) là
+  **ngoài phạm vi**; eCab cũng chưa có hai việc này. Việc kéo theo: ghi "ngoài phạm vi" vào Report 3 DOCX —
+  UC-61 (không rút lại được bản đã gửi duyệt) và UC-64 (ban hành chỉ báo trong ứng dụng, không gửi email) — rồi
+  `sync_reports.py --report 3` và `check_docx.py`. **Chưa sửa DOCX** (snapshot 11/11 chưa có câu này).
 
 ## 6. Jira — làm sau khi PR docs vào `main`
 
-1. Comment SCRUM-33 (trả lời comment `10492`): UC / BR / MSG đã đổi, PR docs và commit merge (kiểm `git log origin/main`), việc còn lại (màn hình 12.1–12.4, class diagram FE-12).
+1. Comment SCRUM-33 (trả lời comment `10492`): UC / BR / MSG đã đổi, PR docs và commit merge (kiểm `git log origin/main`), việc còn lại (màn hình 12.1–12.4, class diagram FE-12); ghi quyết định PO 11/11/2026: Q5 rút lại và Q6 email ban hành là ngoài phạm vi.
 2. Không đổi trạng thái (`In Review` giữ nguyên). SCRUM-37 không đụng tới.
 3. Nhắc Tester: vòng thử 3 người (Thư ký / Chủ toạ / thành viên), `MSG401` khi bản cũ, bản đính chính, họp Mật không tải.
 
@@ -81,6 +84,8 @@ Bảng as-built và kế hoạch làm khi mở khoá nằm ở [§9](#9-pending-
 - [x] §8 Pha 0 → Pha 7 (kế hoạch chi tiết) — 11/11/2026, trừ Pha 7 (chờ PR docs vào `main`)
 - [x] §2: 33-1 → 33-13 (DOCX Report 3, `sync_reports.py --report 3`, `check_docx.py` OK) — 11/11/2026
 - [x] §3: sequence `.txt` + PNG + tab drawio; Report 4 FE-12 — 11/11/2026
+- [x] §5: PO chốt Q5, Q6 ngoài phạm vi — 11/11/2026
+- [x] §5: ghi "ngoài phạm vi" vào UC-61, UC-64 trong Report 3 DOCX + sync — xong 11/11/2026, PR #322
 - [ ] §6: comment Jira sau khi PR docs đã vào `main` — **chưa làm**, chưa commit
 - [ ] **PENDING** §9: đặc tả màn hình và wireframe FE-12 (chưa làm; mở khoá khi PO/BA đồng ý)
 

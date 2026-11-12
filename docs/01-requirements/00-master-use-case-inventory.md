@@ -229,7 +229,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 |---|---|---|---|---|
 | UC-58 | Xem biên bản *(View Meeting Minutes)* — bản nháp, chờ duyệt, bị trả lại chỉ Chủ tọa/Thư ký; bản đã ban hành (và bản cũ) cho mọi người đọc được cuộc họp, trừ Khách; tải Word/PDF trừ họp Mật (BR-412) | Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-59 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — một mẫu cố định (Mẫu 1.4 NĐ30), điền từ hồ sơ cuộc họp + dự thảo đã duyệt | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
-| UC-60 | Chỉnh biên bản *(Edit Meeting Minutes)* — văn bản thuần có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
+| UC-60 | Chỉnh biên bản *(Edit Meeting Minutes)* — trình soạn HTML (BR-385) có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-61 | Gửi duyệt biên bản *(Submit Meeting Minutes for Approval)* — Thư ký gửi bản nháp hoặc bị trả lại cho Chủ tọa | Secretary; Chair nhận thông báo | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-62 | Ký biên bản *(Sign Meeting Minutes)* — để dành ký số mô phỏng (SCRUM-37) | Người ký được chỉ định | Placeholder | `<<extend>>` UC-58 |
 | UC-63 | Xem trạng thái ký & lịch sử *(View Signature Status & Signing History)* — để dành ký số mô phỏng (SCRUM-37) | User có quyền | Placeholder | `<<extend>>` UC-58 |
@@ -263,7 +263,7 @@ Quyết định phạm vi: [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-g
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
-| UC-84 | Quản lý chia sẻ lịch *(Manage Calendar Sharing)* — gồm UC-84a Yêu cầu xem lịch, UC-84b Tự chia sẻ lịch (luôn Mốc 1), UC-84c Trả lời chia sẻ lịch, UC-84d Thay đổi chia sẻ lịch, UC-84e Rút hoặc ngừng chia sẻ lịch; chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ (BR-414) | Meeting Organizer (bên xem); mọi tài khoản nội bộ đang hoạt động (chủ lịch) | Đã đặc tả các UC con | UC-84a `<<extend>>` UC-85a |
+| UC-84 | Quản lý chia sẻ lịch *(Manage Calendar Sharing)* — gồm UC-84a Yêu cầu xem lịch, UC-84b Tự chia sẻ lịch (luôn Mốc 1), UC-84c Trả lời chia sẻ lịch, UC-84d Thay đổi chia sẻ lịch, UC-84e Rút hoặc ngừng chia sẻ lịch, UC-84f Xem danh sách chia sẻ; chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ (BR-414) | Meeting Organizer (bên xem); mọi tài khoản nội bộ đang hoạt động (chủ lịch) | Đã đặc tả các UC con | UC-84a `<<extend>>` UC-85a |
 | UC-85 | Tìm giờ họp *(Find Meeting Time)* — gồm UC-85a Tìm khung giờ (tối đa 10 người ngoài người tìm), UC-85b Tạo nháp từ khung giờ, UC-85c Xem lịch được chia sẻ | Meeting Organizer | Đã đặc tả các UC con | UC-85b `<<extend>>` UC-85a, dùng lại luồng UC-14 |
 
 ---

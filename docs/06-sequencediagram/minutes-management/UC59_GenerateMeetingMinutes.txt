@@ -2,7 +2,7 @@ title UC-59 - Generate Meeting Minutes
 
 actor "Chair / Secretary" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
-control ":Minutes Controller" as MinutesController
+control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Minutes Template" as MinutesTemplate
@@ -11,9 +11,9 @@ database ":Database" as Database
 
 Actor->MinutesCard: Select Create minutes, or Fill from meeting data
 activate MinutesCard
-MinutesCard->MinutesController: create(meetingId, rebuild)
-activate MinutesController
-MinutesController->MinutesService: createAsync(meetingId, actorId, rebuild)
+MinutesCard->MinutesEndpoints: create(meetingId, rebuild)
+activate MinutesEndpoints
+MinutesEndpoints->MinutesService: createAsync(meetingId, actorId, rebuild)
 activate MinutesService
 MinutesService->MeetingRepository: Get the Meeting, locking its row for the transaction
 activate MeetingRepository
@@ -26,24 +26,24 @@ deactivate MeetingRepository
 MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386),\nthe Meeting is InProgress or Ended (BR-387), the latest revision is absent,\na draft or returned (BR-388, BR-407), that rebuild was asked when one exists,\nand that it is not a correction (BR-413)
 
 alt Actor is not the current Chair or Secretary - EX-1
-    MinutesService-->MinutesController: MSG397 - Only the Chair or Secretary may write the minutes.
-    MinutesController-->MinutesCard: MSG397 - Only the Chair or Secretary may write the minutes.
+    MinutesService-->MinutesEndpoints: MSG397 - Only the Chair or Secretary may write the minutes.
+    MinutesEndpoints-->MinutesCard: MSG397 - Only the Chair or Secretary may write the minutes.
     MinutesCard-->Actor: MSG397 - Only the Chair or Secretary may write the minutes.
 else The Meeting has not started or was cancelled - EX-2
-    MinutesService-->MinutesController: MSG398 - The minutes can be written only while the meeting is in progress or after it has ended.
-    MinutesController-->MinutesCard: MSG398 - The minutes can be written only while the meeting is in progress or after it has ended.
+    MinutesService-->MinutesEndpoints: MSG398 - The minutes can be written only while the meeting is in progress or after it has ended.
+    MinutesEndpoints-->MinutesCard: MSG398 - The minutes can be written only while the meeting is in progress or after it has ended.
     MinutesCard-->Actor: MSG398 - The minutes can be written only while the meeting is in progress or after it has ended.
 else The minutes can no longer be changed - EX-4
-    MinutesService-->MinutesController: MSG400 - The minutes have been submitted or issued and can no longer be changed.
-    MinutesController-->MinutesCard: MSG400 - The minutes have been submitted or issued and can no longer be changed.
+    MinutesService-->MinutesEndpoints: MSG400 - The minutes have been submitted or issued and can no longer be changed.
+    MinutesEndpoints-->MinutesCard: MSG400 - The minutes have been submitted or issued and can no longer be changed.
     MinutesCard-->Actor: MSG400 - The minutes have been submitted or issued and can no longer be changed.
 else A draft already exists and rebuild is false - EX-3
-    MinutesService-->MinutesController: MSG399 - This meeting already has a minutes draft.
-    MinutesController-->MinutesCard: MSG399 - This meeting already has a minutes draft.
+    MinutesService-->MinutesEndpoints: MSG399 - This meeting already has a minutes draft.
+    MinutesEndpoints-->MinutesCard: MSG399 - This meeting already has a minutes draft.
     MinutesCard-->Actor: MSG399 - This meeting already has a minutes draft.
 else The latest revision is a correction and rebuild is true - EX-7
-    MinutesService-->MinutesController: MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
-    MinutesController-->MinutesCard: 409 MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
+    MinutesService-->MinutesEndpoints: MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
+    MinutesEndpoints-->MinutesCard: 409 MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
     MinutesCard-->Actor: MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
 else Actor may build
     opt A draft or a returned revision already exists - AF-2
@@ -72,15 +72,15 @@ else Actor may build
     deactivate Database
 
     alt Saved - AF-1 when this is the first draft
-        MinutesService-->MinutesController: State
-        MinutesController-->MinutesCard: 201 MSG395 - Minutes draft created.
+        MinutesService-->MinutesEndpoints: State
+        MinutesEndpoints-->MinutesCard: 201 MSG395 - Minutes draft created.
         MinutesCard-->Actor: MSG395 - Minutes draft created.
     else The draft cannot be saved - EX-5
-        MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
-        MinutesController-->MinutesCard: MSG404 - Unable to save the minutes. Please try again.
+        MinutesService-->MinutesEndpoints: MSG404 - Unable to save the minutes. Please try again.
+        MinutesEndpoints-->MinutesCard: MSG404 - Unable to save the minutes. Please try again.
         MinutesCard-->Actor: MSG404 - Unable to save the minutes. Please try again.
     end
 end
 deactivate MinutesService
-deactivate MinutesController
+deactivate MinutesEndpoints
 deactivate MinutesCard

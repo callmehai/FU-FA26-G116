@@ -34,7 +34,7 @@ alt Actor is not the asked side - EX-1
     deactivate SharingController
     SharingPage-->AskedSide: No such share request
 else Actor is the asked side
-    alt Share is no longer Pending, including one already Stopped (BR-424) or past its end date (BR-425) - EX-2
+    alt Share is no longer Pending, including one already Stopped (BR-424) or past its end date (BR-425),\nor the viewer lost the Meeting Organizer right (BR-430) - EX-2
         SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
         deactivate SharingService
         SharingController-->SharingPage: 409 MSG450
@@ -135,35 +135,44 @@ else Actor is the asked side
                 SharingPage-->AskedSide: MSG437 - Calendar share request declined.
             end
         else Pending change is approved - AF-1
-            SharingService->ShareRepository: Apply new level and range and audit entry (BR-426)
-            activate ShareRepository
-            ShareRepository->Database: Update share and audit record
-            activate Database
-            Database-->ShareRepository: Saved / Save failed
-            deactivate Database
-            ShareRepository-->SharingService: Updated share / Save failed
-            deactivate ShareRepository
-
-            alt Answer cannot be saved - EX-4
-                SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+            alt The requested range no longer fits the current start date
+            (the owner moved the start, or the requested date has passed)
+                SharingService-->SharingController: MSG450 - This action is not allowed in the current state of the share.
                 deactivate SharingService
-                SharingController-->SharingPage: 503 MSG447
+                SharingController-->SharingPage: 409 MSG450
                 deactivate SharingController
-                SharingPage-->AskedSide: MSG447 - Unable to save the calendar sharing data. Please try again.
-            else Change is applied
-                SharingService->NotificationService: Notify the viewer the share was updated (BR-426)
-                activate NotificationService
-                NotificationService->Database: Record viewer notification
+                SharingPage-->AskedSide: MSG450 - This action is not allowed in the current state of the share.
+            else The requested range still fits
+                SharingService->ShareRepository: Apply new level and range and audit entry (BR-426)
+                activate ShareRepository
+                ShareRepository->Database: Update share and audit record
                 activate Database
-                Database-->NotificationService: Notification recorded
+                Database-->ShareRepository: Saved / Save failed
                 deactivate Database
-                NotificationService-->SharingService: Viewer notified
-                deactivate NotificationService
-                SharingService-->SharingController: Updated share
-                deactivate SharingService
-                SharingController-->SharingPage: 200 MSG442 - Calendar share updated.
-                deactivate SharingController
-                SharingPage-->AskedSide: MSG442 - Calendar share updated.
+                ShareRepository-->SharingService: Updated share / Save failed
+                deactivate ShareRepository
+
+                alt Answer cannot be saved - EX-4
+                    SharingService-->SharingController: MSG447 - Unable to save the calendar sharing data. Please try again.
+                    deactivate SharingService
+                    SharingController-->SharingPage: 503 MSG447
+                    deactivate SharingController
+                    SharingPage-->AskedSide: MSG447 - Unable to save the calendar sharing data. Please try again.
+                else Change is applied
+                    SharingService->NotificationService: Notify the viewer the share was updated (BR-426)
+                    activate NotificationService
+                    NotificationService->Database: Record viewer notification
+                    activate Database
+                    Database-->NotificationService: Notification recorded
+                    deactivate Database
+                    NotificationService-->SharingService: Viewer notified
+                    deactivate NotificationService
+                    SharingService-->SharingController: Updated share
+                    deactivate SharingService
+                    SharingController-->SharingPage: 200 MSG442 - Calendar share updated.
+                    deactivate SharingController
+                    SharingPage-->AskedSide: MSG442 - Calendar share updated.
+                end
             end
         else Pending change is declined - AF-1
             SharingService->ShareRepository: Keep share as it was and audit entry (BR-426)

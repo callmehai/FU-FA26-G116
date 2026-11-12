@@ -1,4 +1,4 @@
-title UC-17 - View Notifications
+title UC-66 - View Notifications
 
 actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
 boundary "Notification Panel" as NotificationPanel

@@ -19,7 +19,7 @@ UC-58, UC-59, UC-60, UC-61, UC-64, UC-65 và UC-83. UC-62, UC-63 (ký số mô p
 
 Quy ước riêng của nhóm này:
 
-- Lifeline theo code: `:Minutes Controller` là `MinutesEndpoints` (Minimal API), `:Minutes Service` là
+- Lifeline theo code: `:Minutes Endpoints` là `MinutesEndpoints` (Minimal API), `:Minutes Service` là
   `IMinutesService`, `:Minutes Template` là lớp tĩnh `MinutesTemplate`, `:Minutes Word File` là `MinutesDocx`,
   `:Minutes PDF File` là `MinutesPdf` (QuestPDF).
 - Bốn thao tác của SCRUM-33 đi qua `TransitionAsync`: khoá dòng cuộc họp và dòng biên bản (`FOR UPDATE`) trong cùng
@@ -36,8 +36,11 @@ Quy ước riêng của nhóm này:
 
 ## Xuất ảnh
 
+Từ thư mục gốc repository, sau khi sửa `.txt` — chỉ truyền file đã sửa:
+
 ```bash
-node scripts/export-diagrams.js docs/06-sequencediagram/minutes-management
+python scripts/export_sequence.py UC58 UC59 UC60 UC61 UC64 UC65 UC83
 ```
 
-Giữ `.txt`, `.png`, tab trong `TrustCabinet_Sequence_Diagrams.drawio` và ảnh trong `drawio-png/` đồng bộ.
+Lệnh xuất cả ảnh sequencediagram.org cạnh `.txt` lẫn tab trong
+`TrustCabinet_Sequence_Diagrams.drawio` và ảnh trong `drawio-png/`. Mở từng ảnh kiểm tra không cắt.

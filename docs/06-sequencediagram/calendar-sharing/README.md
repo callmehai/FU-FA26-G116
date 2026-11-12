@@ -26,7 +26,7 @@ SCRUM-137 tìm giờ họp), quyết định phạm vi ở [ADR-0058](../../05-d
 | UC-85b Create Draft Meeting from Slot | [UC85b_CreateDraftMeetingFromSlot.txt](UC85b_CreateDraftMeetingFromSlot.txt) |
 | UC-85c View Shared Calendar | [UC85c_ViewSharedCalendar.txt](UC85c_ViewSharedCalendar.txt) |
 
-Màn Chia sẻ lịch (UC-84f) đòi `MeetingCreator` (BR-430); mất quyền thì ẩn luôn màn, không còn xem chỉ-đọc (PO 09/11/2026).
+Màn Chia sẻ lịch mở cho mọi tài khoản đang hoạt động; phần "được chia sẻ với tôi", Xin xem lịch, xem tuần và Tìm giờ họp đòi `MeetingCreator` (BR-430). Mất quyền thì phần "tôi chia sẻ cho ai" vẫn còn (PO 10/11/2026, L8).
 
 Ngoại lệ hai tương tác Actor → Boundary: UC-84a/UC-84b tải danh sách người để chọn (endpoint `share-candidates`, lọc ở
 server, BR-430, `MSG448`/`MSG467`) trước nút gửi, nên có hai tương tác như UC-04; UC-84f chỉ xem hai danh sách, không có
@@ -34,11 +34,16 @@ danh sách người, nên phần tải này không dồn sang đó. Chi tiết x
 
 ## Xuất ảnh
 
-Từ thư mục gốc repository:
+Một lệnh xuất đủ **hai** ảnh của mỗi sơ đồ — truyền mã UC hoặc đường dẫn `.txt` đã sửa, từ thư mục gốc repository:
 
 ```bash
-python scripts/txt_to_sequence_drawio_png.py docs/06-sequencediagram/calendar-sharing/*.txt
+python scripts/export_sequence.py UC84b UC84f
 ```
 
-Lệnh ghép tab vào `TrustCabinet_Sequence_Diagrams.drawio` và xuất ảnh vào `drawio-png/`. Mở từng ảnh kiểm tra
-không cắt; chạy validate của drawio-skill trên file gộp, xác nhận chỉ thêm tab mới.
+1. `drawio-png/<uc>.drawio.png` và tab trong `TrustCabinet_Sequence_Diagrams.drawio` (`txt_to_sequence_drawio_png.py`).
+2. `<UC>.png` cạnh file `.txt`, ảnh sequencediagram.org (`export-diagrams.js`, cần truy cập `sequencediagram.org`).
+
+`--only drawio` / `--only seqorg` xuất riêng một bộ. Chỉ truyền file đã sửa: lệnh không nhận thư mục, và không chạy
+`scripts/sync_sequence_drawio_png.py` (xuất lại toàn bộ `drawio-png/`, draw.io CLI cắt nửa dưới sơ đồ rất dài như
+UC-84b). Mở từng ảnh kiểm tra không cắt; chạy validate của drawio-skill trên file gộp, xác nhận chỉ đổi tab đã sửa.
+

@@ -34,22 +34,22 @@ else The period is valid
         ReportController-->ReportsPage: MSG464 - Unable to load the report. Please try again.
         ReportsPage-->Actor: MSG464 - Unable to load the report. Please try again.
     else Counts read
-        ReportService->MeetingRepository: Get attendance and first minutes issue of the readable Ended Meetings in the period
+        ReportService->MeetingRepository: Get attendance, actual start and end times, and first minutes issue of the readable Ended Meetings in the period
         activate MeetingRepository
-        MeetingRepository->Database: Retrieve attendance marks and minutes issue times
+        MeetingRepository->Database: Retrieve attendance marks, actual start and end times, and minutes issue times
         activate Database
-        Database-->MeetingRepository: Attendance marks, issue times
+        Database-->MeetingRepository: Attendance marks, actual times, issue times
         deactivate Database
-        MeetingRepository-->ReportService: Attendance marks, issue times
+        MeetingRepository-->ReportService: Attendance marks, actual times, issue times
         deactivate MeetingRepository
-        ReportService->ReportService: Compute the average attendance rate (BR-435)\nand the average minutes turnaround (BR-436)
+        ReportService->ReportService: Compute the average attendance rate (BR-435),\nthe average meeting duration in minutes with one decimal (BR-447: ActualStartedAt to ActualEndedAt, skipped when either is missing)\nand the average minutes turnaround (BR-436)
         ReportService-->ReportController: Meeting statistics (counts, rates and averages only - BR-437)
         ReportController-->ReportsPage: Meeting statistics
 
         alt No readable Meeting in the period - AF-2
             ReportsPage-->Actor: MSG466 - There are no meetings you can view in this period.
         else At least one readable Meeting
-            ReportsPage-->Actor: Meetings per month, by status and by sensitivity,\naverage attendance rate and average minutes turnaround
+            ReportsPage-->Actor: Meetings per month, by status and by sensitivity,\naverage attendance rate, average meeting duration and average minutes turnaround
         end
     end
 end

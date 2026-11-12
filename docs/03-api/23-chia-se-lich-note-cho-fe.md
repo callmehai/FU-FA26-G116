@@ -13,6 +13,22 @@
 5. Màn Nhật ký hệ thống (SCRUM-16): BE ghi `objectType = "CalendarShare"` cho 13 mã `calendar_share.*`. Thêm dòng
    `CalendarShare: 'Chia sẻ lịch'` vào `frontend/src/features/audit/objectTypes.ts`, nếu không cột Đối tượng hiện nguyên chữ `CalendarShare`.
 
+## Việc FE còn thiếu — từ BA Final Review (12/11/2026)
+
+**Mở thông báo `?share={id}` mà dòng không còn thì phải báo lý do.** Hiện `CalendarSharingPage.tsx:70-71` chỉ `scrollIntoView` khi tìm thấy dòng
+`share-{id}`; không thấy thì im lặng, người dùng không biết vì sao thông báo không dẫn tới đâu. `stale()` (dòng 96-101) chỉ toast cho lỗi 404 **sau khi lưu**, không phải lúc mở.
+
+Cần: khi `lists` đã tải xong, có `focusId` mà không có dòng nào khớp (cả `asOwner` lẫn `asViewer`) thì hiện toast lỗi **một lần**, rồi bỏ `?share=` khỏi URL
+(để tải lại trang không toast lại):
+
+| Trường hợp | Toast |
+|---|---|
+| Người dùng không có quyền tạo cuộc họp (đã mất quyền, nên chia sẻ cho họ xem đã dừng) | câu `MSG439` |
+| Còn lại (chia sẻ đã đóng, quá ngày kết thúc, hoặc không phải của họ) | "Chia sẻ này không còn." |
+
+Cơ sở: UC-84f AF-3 (Report 3 §UC-84f), quyết định PO ở Jira `10516`. Không cần BE đổi gì: dữ liệu đã đủ trong `GET /api/calendar/shares`.
+Nên có một test FE hoặc kiểm tay: mở `/calendar/sharing?share=<id không tồn tại>`, thấy toast và URL sạch `?share=`.
+
 ## Những điểm dễ sai
 
 - **Nút hiện theo `actions`** của từng chia sẻ (`accept`, `decline`, `withdraw`, `requestChange`, `update`, `end`). Đừng tự suy từ `status`:

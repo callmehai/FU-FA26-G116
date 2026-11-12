@@ -57,14 +57,16 @@ chờ, thêm **một câu cảnh báo đầu màn 3.3** (việc 42-8). Các ch�
 
 Hai điểm BE đã chấp nhận (ghi để Tester biết, không phải lỗi): email lạ không ghi (chậm hơn vài ms ở nhánh "sai mật khẩu"); nếu ghi audit lỗi lúc đăng nhập thì người dùng nhận 500 (giữ bằng chứng theo BR-444).
 
-## 4. Câu hỏi còn mở
+## 4. Câu hỏi — PO đã trả lời 11/11/2026
 
-- Q-A: nhánh AF-2 (xem chi tiết): giữ chữ "before and after" hay đổi như 42-5? **Đề xuất đổi** vì `details` không đồng nhất. Chờ PO nếu muốn giữ.
-- Q-B: comment `10353` (SCRUM-123) hỏi có ghi audit Khách **đăng xuất** không. #311 chỉ ghi lúc Khách **xác minh** (`guest.verified`). **Đề xuất:** không ghi đăng xuất (không có trong tiêu chí ticket); nếu PO muốn thì mở ticket mới.
+| # | Câu hỏi | PO chốt (11/11/2026) | Việc kéo theo |
+|---|---|---|---|
+| Q-A | UC-13 AF-2 (xem chi tiết) giữ chữ "before and after" hay đổi như 42-5? | **Sửa đặc tả theo code**: chi tiết mỗi loại sự kiện một kiểu, không bắt buộc có trước/sau. eCab cũng không có. | Không làm lại BE. 42-5 đã sửa DOCX 11/11 ("the details recorded with that entry") — đúng hướng PO, không cần sửa thêm. |
+| Q-B | Comment `10353` (SCRUM-123): có ghi nhật ký khi Khách **đăng xuất**? #311 chỉ ghi lúc Khách xác minh OTP (`guest.verified`). | **Không ghi.** | Không mở ticket mới; không sửa code. Khi đóng ticket, trả lời comment `10353` ở SCRUM-123 bằng quyết định này. |
 
 ## 5. Jira — làm sau khi PR docs vào `main`
 
-1. Comment SCRUM-16: UC-13 / sequence / class diagram / UC-01, 02, 04, 14, 15, 18–22, 64, 75 đã đổi; PR docs và commit merge (kiểm `git log origin/main`); việc còn lại: đặc tả màn 3.3 (hoãn), Q-A, Q-B.
+1. Comment SCRUM-16: UC-13 / sequence / class diagram / UC-01, 02, 04, 14, 15, 18–22, 64, 75 đã đổi; PR docs và commit merge (kiểm `git log origin/main`); việc còn lại: đặc tả màn 3.3 (hoãn). Ghi quyết định PO 11/11/2026: Q-A sửa đặc tả theo code, Q-B Khách đăng xuất không ghi nhật ký (trả lời luôn comment `10353` ở SCRUM-123).
 2. Chuyển `BA Final Review` → `In Review` cho Tester. Nhắc Tester: lọc theo Khách / Hệ thống; `%2B07:00` trong URL; Khách đọc tài liệu Mật hiện là Khách chứ không phải "Hệ thống"; thiếu quyền → 403 không mã; route thiếu quyền hiện 404.
 
 ## 6. Kế hoạch chi tiết
@@ -155,7 +157,7 @@ File: `docs/07-classdiagram/feature-03-role-management-class-diagram.drawio` (+ 
 ### Pha 6 — Đóng ticket (sau khi PR **đã vào `main`**)
 
 1. `git fetch && git log --oneline origin/main` thấy commit merge.
-2. Comment SCRUM-16 (trả lời `10494`): UC, sequence, class diagram đã đổi; PR docs + commit; còn lại = PENDING §7, Q-A, Q-B.
+2. Comment SCRUM-16 (trả lời `10494`): UC, sequence, class diagram đã đổi; PR docs + commit; còn lại = PENDING §7; kèm quyết định PO 11/11/2026 cho Q-A, Q-B (§4).
 3. Chuyển `BA Final Review` → `In Review`.
 4. Cập nhật dòng 42 trong README.
 
@@ -199,5 +201,6 @@ File: `docs/07-classdiagram/feature-03-role-management-class-diagram.drawio` (+ 
 - [x] 42-1, 42-2: sequence UC-13 và class diagram FE-03 (xuất PNG, validate drawio) — 11/11/2026
 - [x] 42-3, 42-4: thêm bước ghi nhật ký vào UC-01, 02, 04, 14, 15, 18–22, 75, 64 (DOCX) — 11/11/2026
 - [x] 42-5, 42-6, 42-7, 42-8: UC-13 AF-2, Change Log, `sync_reports.py --report 3`, `check_docx.py`, câu cảnh báo màn 3.3 — 11/11/2026
+- [x] §4: PO trả lời Q-A (sửa đặc tả theo code — đã khớp 42-5) và Q-B (Khách đăng xuất không ghi) — 11/11/2026
 - [ ] §5: comment Jira và chuyển `In Review` sau khi PR docs vào `main` — **chưa làm**, chưa commit
 - [ ] **PENDING** §7: đặc tả màn 3.3 và wireframe (chưa làm; mở khoá khi PO/BA đồng ý)
