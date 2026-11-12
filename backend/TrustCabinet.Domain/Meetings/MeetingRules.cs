@@ -174,7 +174,8 @@ public static partial class MeetingRules
         }
     }
 
-    private static bool TryParseTimestamp(string? value, out DateTimeOffset timestamp)
+    /// <summary>An ISO 8601 timestamp with an offset; shared with the draft from a slot (UC-85b) so both read times alike.</summary>
+    internal static bool TryParseTimestamp(string? value, out DateTimeOffset timestamp)
     {
         timestamp = default;
         return !string.IsNullOrEmpty(value)
