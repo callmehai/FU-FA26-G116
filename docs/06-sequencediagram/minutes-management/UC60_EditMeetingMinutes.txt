@@ -2,7 +2,7 @@ title UC-60 - Edit Meeting Minutes
 
 actor "Chair / Secretary / Reader" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
-control ":Minutes Controller" as MinutesController
+control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
 participant ":Minutes Word File" as MinutesDocx
 participant ":Minutes PDF File" as MinutesPdf
@@ -14,9 +14,9 @@ activate MinutesCard
 MinutesCard-->Actor: Word-processor editor, plain text when needed, and the paper preview from the same content (BR-385)
 Actor->MinutesCard: Correct the text; the preview follows
 Actor->MinutesCard: Select Save
-MinutesCard->MinutesController: save(minutesId, content, updatedAt)
-activate MinutesController
-MinutesController->MinutesService: saveAsync(minutesId, actorId, content, updatedAt)
+MinutesCard->MinutesEndpoints: save(minutesId, content, updatedAt)
+activate MinutesEndpoints
+MinutesEndpoints->MinutesService: saveAsync(minutesId, actorId, content, updatedAt)
 activate MinutesService
 MinutesService->Database: Retrieve the revision
 activate Database
@@ -33,24 +33,24 @@ deactivate MeetingRepository
 MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386)
 
 alt Actor is not the current Chair or Secretary - EX-4
-    MinutesService-->MinutesController: Not found for a draft / MSG397 for issued minutes
-    MinutesController-->MinutesCard: 404 / MSG397 - Only the Chair or Secretary may write the minutes.
+    MinutesService-->MinutesEndpoints: Not found for a draft / MSG397 for issued minutes
+    MinutesEndpoints-->MinutesCard: 404 / MSG397 - Only the Chair or Secretary may write the minutes.
     MinutesCard-->Actor: No draft, or MSG397 - Only the Chair or Secretary may write the minutes.
 else Actor may edit
     MinutesService->MinutesService: Check the revision is a draft or was returned (BR-388, BR-407),\nthe content is not empty and within 300,000 characters (BR-394),\nand nobody saved since it was read (BR-389)
     MinutesService->MinutesService: Filter the HTML - allowed tags, tags nested no deeper than 64 levels (BR-385, BR-394, ADR-0055)
 
     alt The minutes can no longer be changed - EX-3
-        MinutesService-->MinutesController: MSG400 - The minutes have been submitted or issued and can no longer be changed.
-        MinutesController-->MinutesCard: MSG400 - The minutes have been submitted or issued and can no longer be changed.
+        MinutesService-->MinutesEndpoints: MSG400 - The minutes have been submitted or issued and can no longer be changed.
+        MinutesEndpoints-->MinutesCard: MSG400 - The minutes have been submitted or issued and can no longer be changed.
         MinutesCard-->Actor: MSG400 - The minutes have been submitted or issued and can no longer be changed.
     else The content is invalid - EX-2
-        MinutesService-->MinutesController: MSG402 - The minutes content is invalid.
-        MinutesController-->MinutesCard: MSG402 - The minutes content is invalid.
+        MinutesService-->MinutesEndpoints: MSG402 - The minutes content is invalid.
+        MinutesEndpoints-->MinutesCard: MSG402 - The minutes content is invalid.
         MinutesCard-->Actor: MSG402 - The minutes content is invalid.
     else Someone else saved first - EX-1
-        MinutesService-->MinutesController: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
-        MinutesController-->MinutesCard: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
+        MinutesService-->MinutesEndpoints: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
+        MinutesEndpoints-->MinutesCard: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
         MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else Save valid
         MinutesService->Database: Update the filtered content and the save time, only if it was not saved since it was read
@@ -59,29 +59,29 @@ else Actor may edit
         deactivate Database
 
         alt Updated
-            MinutesService-->MinutesController: State and the filtered content
-            MinutesController-->MinutesCard: 200 MSG396 - Minutes saved.
+            MinutesService-->MinutesEndpoints: State and the filtered content
+            MinutesEndpoints-->MinutesCard: 200 MSG396 - Minutes saved.
             MinutesCard-->Actor: MSG396 - Minutes saved.
         else No row updated - EX-1
-            MinutesService-->MinutesController: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
-            MinutesController-->MinutesCard: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
+            MinutesService-->MinutesEndpoints: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
+            MinutesEndpoints-->MinutesCard: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
             MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
         else The change cannot be saved - EX-5
-            MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
-            MinutesController-->MinutesCard: MSG404 - Unable to save the minutes. Please try again.
+            MinutesService-->MinutesEndpoints: MSG404 - Unable to save the minutes. Please try again.
+            MinutesEndpoints-->MinutesCard: MSG404 - Unable to save the minutes. Please try again.
             MinutesCard-->Actor: MSG404 - Unable to save the minutes. Please try again.
         end
     end
 end
 deactivate MinutesService
-deactivate MinutesController
+deactivate MinutesEndpoints
 
 opt Download the minutes as Word or PDF - AF-1, AF-2
 
     Actor->MinutesCard: Select Download Word or Download PDF
-    MinutesCard->MinutesController: export(minutesId, format)
-    activate MinutesController
-    MinutesController->MinutesService: exportAsync(minutesId, actorId, format)
+    MinutesCard->MinutesEndpoints: export(minutesId, format)
+    activate MinutesEndpoints
+    MinutesEndpoints->MinutesService: exportAsync(minutesId, actorId, format)
     activate MinutesService
     MinutesService->Database: Retrieve the revision
     activate Database
@@ -94,35 +94,35 @@ opt Download the minutes as Word or PDF - AF-1, AF-2
     MinutesService->MinutesService: Check the actor may download this revision: the current\nChair and Secretary any revision, everyone else an Issued or Superseded one (BR-412),\nand that the Meeting is not Secret (BR-390)
 
     alt The actor may not read that revision
-        MinutesService-->MinutesController: Not found, no code
-        MinutesController-->MinutesCard: 404
+        MinutesService-->MinutesEndpoints: Not found, no code
+        MinutesEndpoints-->MinutesCard: 404
         MinutesCard-->Actor: No minutes
     else The Meeting is Secret - EX-6
-        MinutesService-->MinutesController: MSG405 - The minutes of a Secret meeting cannot be downloaded.
-        MinutesController-->MinutesCard: 403 MSG405 - The minutes of a Secret meeting cannot be downloaded.
+        MinutesService-->MinutesEndpoints: MSG405 - The minutes of a Secret meeting cannot be downloaded.
+        MinutesEndpoints-->MinutesCard: 403 MSG405 - The minutes of a Secret meeting cannot be downloaded.
         MinutesCard-->Actor: MSG405 - The minutes of a Secret meeting cannot be downloaded.
     else Not Secret and format is docx - AF-1
         MinutesService->MinutesDocx: Build the Word file from the same content,\nkeeping the first 63 columns of a wider table (BR-391)
         activate MinutesDocx
         MinutesDocx-->MinutesService: Biên bản - <tên cuộc họp>.docx
         deactivate MinutesDocx
-        MinutesService-->MinutesController: File
-        MinutesController-->MinutesCard: 200 .docx
+        MinutesService-->MinutesEndpoints: File
+        MinutesEndpoints-->MinutesCard: 200 .docx
         MinutesCard-->Actor: The Word file
     else Not Secret and format is pdf - AF-2
         MinutesService->MinutesPdf: Build the PDF file from the same content,\nkeeping the first 63 columns of a wider table (BR-391)
         activate MinutesPdf
         MinutesPdf-->MinutesService: Biên bản - <tên cuộc họp>.pdf
         deactivate MinutesPdf
-        MinutesService-->MinutesController: File
-        MinutesController-->MinutesCard: 200 .pdf
+        MinutesService-->MinutesEndpoints: File
+        MinutesEndpoints-->MinutesCard: 200 .pdf
         MinutesCard-->Actor: The PDF file
     else Unsupported format - EX-8
-        MinutesService-->MinutesController: MSG406 - Download the minutes as a Word (docx) or PDF file only.
-        MinutesController-->MinutesCard: MSG406 - Download the minutes as a Word (docx) or PDF file only.
+        MinutesService-->MinutesEndpoints: MSG406 - Download the minutes as a Word (docx) or PDF file only.
+        MinutesEndpoints-->MinutesCard: MSG406 - Download the minutes as a Word (docx) or PDF file only.
         MinutesCard-->Actor: MSG406 - Download the minutes as a Word (docx) or PDF file only.
     end
     deactivate MinutesService
-    deactivate MinutesController
+    deactivate MinutesEndpoints
 end
 deactivate MinutesCard

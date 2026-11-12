@@ -26,12 +26,18 @@ deactivate Database
 UserRepository-->SharingService: Verification result
 deactivate UserRepository
 
-alt Actor is not an active internal account
+alt The session has expired
     SharingService-->SharingController: Unauthorized
     deactivate SharingService
     SharingController-->SharingPage: 401
     deactivate SharingController
-    SharingPage-->Actor: (session ended)
+    SharingPage-->Actor: Sent back to sign-in
+else The account is no longer active
+    SharingService-->SharingController: Forbidden, no code
+    deactivate SharingService
+    SharingController-->SharingPage: 403
+    deactivate SharingController
+    SharingPage-->Actor: Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.
 else Actor is verified
     SharingService->ShareRepository: Get shares where the actor is the owner (I share to), end date on or after today (BR-423, BR-425)
     activate ShareRepository
@@ -73,17 +79,13 @@ else Actor is verified
                 deactivate SharingService
                 SharingController-->SharingPage: 200 Empty lists
                 deactivate SharingController
-                SharingPage-->Actor: (empty state wording pending BA)
+                SharingPage-->Actor: Bạn chưa chia sẻ lịch với ai.
             else Shares exist
                 SharingService-->SharingController: Two lists with states
                 deactivate SharingService
                 SharingController-->SharingPage: 200 Two lists with states
                 deactivate SharingController
                 SharingPage-->Actor: Show the owner list ("I share to") and the viewer list ("Shared with me", only when the actor holds MeetingCreator) with state labels.\nStopped share detail: MSG439.
-
-                opt Actor opens a stopped share
-                    SharingPage-->Actor: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was deactivated. Ask for a new share.
-                end
             end
         end
         else Actor has no MeetingCreator right
@@ -95,17 +97,13 @@ else Actor is verified
                 deactivate SharingService
                 SharingController-->SharingPage: 200 Empty lists
                 deactivate SharingController
-                SharingPage-->Actor: (empty state wording pending BA)
+                SharingPage-->Actor: Chưa ai chia sẻ lịch với bạn.
             else Owner shares exist
                 SharingService-->SharingController: Owner list with states
                 deactivate SharingService
                 SharingController-->SharingPage: 200 Owner list with states
                 deactivate SharingController
                 SharingPage-->Actor: Show the "I share to" list with state labels.\nStopped share detail: MSG439.
-
-                opt Actor opens a stopped share
-                    SharingPage-->Actor: MSG439 - This calendar share was stopped because the viewer is no longer a Meeting Organizer\nor an account was deactivated. Ask for a new share.
-                end
             end
         end
     end

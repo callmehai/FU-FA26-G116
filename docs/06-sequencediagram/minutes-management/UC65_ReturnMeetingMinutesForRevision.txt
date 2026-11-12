@@ -2,16 +2,16 @@ title UC-65 - Return Meeting Minutes for Revision
 
 actor "Chair" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
-control ":Minutes Controller" as MinutesController
+control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
 
 Actor->MinutesCard: Confirm Return with the reason
 activate MinutesCard
-MinutesCard->MinutesController: reject(minutesId, reason, updatedAt)
-activate MinutesController
-MinutesController->MinutesService: ReturnAsync(minutesId, actorId, reason, updatedAt)
+MinutesCard->MinutesEndpoints: reject(minutesId, reason, updatedAt)
+activate MinutesEndpoints
+MinutesEndpoints->MinutesService: ReturnAsync(minutesId, actorId, reason, updatedAt)
 activate MinutesService
 MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
 activate Database
@@ -19,27 +19,27 @@ Database-->MinutesService: Meeting and revision / None
 deactivate Database
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-5
-    MinutesService-->MinutesController: Not found
-    MinutesController-->MinutesCard: 404
+    MinutesService-->MinutesEndpoints: Not found
+    MinutesEndpoints-->MinutesCard: 404
     MinutesCard-->Actor: No minutes
 else Actor is the current Secretary, not the Chair - EX-1
-    MinutesService-->MinutesController: MSG428 - Only the Chair may approve or return the minutes.
-    MinutesController-->MinutesCard: 403 MSG428
+    MinutesService-->MinutesEndpoints: MSG428 - Only the Chair may approve or return the minutes.
+    MinutesEndpoints-->MinutesCard: 403 MSG428
     MinutesCard-->Actor: MSG428 - Only the Chair may approve or return the minutes.
 else Actor is the current Chair
     MinutesService->MinutesService: Check the revision is WaitingApproval, it is the copy the actor read (BR-389)\nand the reason is not empty after trimming and within 2,000 characters (BR-407)
 
     alt Not waiting for approval - EX-2
-        MinutesService-->MinutesController: MSG429 - These minutes are not waiting for approval.
-        MinutesController-->MinutesCard: 409 MSG429
+        MinutesService-->MinutesEndpoints: MSG429 - These minutes are not waiting for approval.
+        MinutesEndpoints-->MinutesCard: 409 MSG429
         MinutesCard-->Actor: MSG429 - These minutes are not waiting for approval.
     else Changed after the actor opened it - EX-6
-        MinutesService-->MinutesController: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
-        MinutesController-->MinutesCard: 409 MSG401
+        MinutesService-->MinutesEndpoints: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
+        MinutesEndpoints-->MinutesCard: 409 MSG401
         MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else The reason is missing or too long - EX-3
-        MinutesService-->MinutesController: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
-        MinutesController-->MinutesCard: 400 MSG431
+        MinutesService-->MinutesEndpoints: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
+        MinutesEndpoints-->MinutesCard: 400 MSG431
         MinutesCard-->Actor: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
     else Return valid
         MinutesService->Database: Set Rejected (returned), the reason, who returned it and when (BR-407);\nthe reason of an earlier return is replaced, together with the Secretary's\nnotification, in one save (BR-411)
@@ -52,16 +52,16 @@ else Actor is the current Chair
             activate NotificationService
             NotificationService-->MinutesService: Queued
             deactivate NotificationService
-            MinutesService-->MinutesController: State
-            MinutesController-->MinutesCard: 200 MSG430 - Minutes returned to the Secretary.
+            MinutesService-->MinutesEndpoints: State
+            MinutesEndpoints-->MinutesCard: 200 MSG430 - Minutes returned to the Secretary.
             MinutesCard-->Actor: MSG430 - Minutes returned to the Secretary.
         else The change cannot be saved - EX-4
-            MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
-            MinutesController-->MinutesCard: 503 MSG404
+            MinutesService-->MinutesEndpoints: MSG404 - Unable to save the minutes. Please try again.
+            MinutesEndpoints-->MinutesCard: 503 MSG404
             MinutesCard-->Actor: MSG404 - Unable to save the minutes. Please try again.
         end
     end
 end
 deactivate MinutesService
-deactivate MinutesController
+deactivate MinutesEndpoints
 deactivate MinutesCard
