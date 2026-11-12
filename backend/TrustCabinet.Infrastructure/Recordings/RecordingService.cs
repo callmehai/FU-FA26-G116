@@ -32,7 +32,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             var export = RecordingRules.Export(meeting, actorId) == RecordingFailure.None;
             var items = await recordings.ListAsync(meetingId, ct);
             return new(Data: new RecordingList(meetingId,
-                secretary && RecordingRules.UploadAllowed(meeting.Status) && RecordingRules.HasRoom(meeting.Mode),
+                secretary && RecordingRules.UploadAllowed(meeting.Status) && RecordingRules.TakesUploads(meeting.Mode),
                 items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId)));
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -51,6 +51,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             if (meeting is null) return new(failure);
             if (!RecordingRules.IsSecretary(meeting, actorId)) return new(RecordingFailure.Forbidden);
             if (!RecordingRules.HasRoom(meeting.Mode)) return new(RecordingFailure.NoRoom);
+            if (!RecordingRules.TakesUploads(meeting.Mode)) return new(RecordingFailure.HybridLiveOnly);
             return RecordingRules.UploadAllowed(meeting.Status) ? new() : new(RecordingFailure.Locked);
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -72,6 +73,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return new(RecordingFailure.NotFound);
                 if (!RecordingRules.IsSecretary(meeting, actorId)) return new(RecordingFailure.Forbidden);
                 if (!RecordingRules.HasRoom(meeting.Mode)) return new(RecordingFailure.NoRoom);
+                if (!RecordingRules.TakesUploads(meeting.Mode)) return new(RecordingFailure.HybridLiveOnly);
                 if (!RecordingRules.UploadAllowed(meeting.Status)) return new(RecordingFailure.Locked);
                 var errors = RecordingRules.Validate(upload);
                 if (errors.Count > 0) return new(RecordingFailure.Invalid, Errors: errors);

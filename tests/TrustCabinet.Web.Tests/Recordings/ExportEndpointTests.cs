@@ -126,7 +126,7 @@ public sealed class ExportEndpointTests(RecordingFixture fixture) : IClassFixtur
     [Fact]
     public async Task The_per_mic_transcript_is_saved_without_the_sentences_taken_out()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = null;
         fixture.Speech.Result = new(2000, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [new(0, 2000, null, "Tôi đồng ý.", -24)], []);
         using var member = fixture.Client(s.Member);

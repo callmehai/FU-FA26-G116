@@ -185,8 +185,11 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal string Url => $"/api/meetings/{MeetingId}/recordings";
     }
 
-    /// <summary>A hybrid meeting by default: it is captured both ways (ADR-0040), so either kind of test can use it.</summary>
-    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress, MeetingMode mode = MeetingMode.Hybrid)
+    /// <summary>
+    /// An in-person meeting by default: its room takes an uploaded file. A hybrid one is recorded live only (ADR-0061), so a
+    /// test of the per-mic sentences asks for <see cref="MeetingMode.Hybrid"/> or <see cref="MeetingMode.Online"/>.
+    /// </summary>
+    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress, MeetingMode mode = MeetingMode.InPerson)
     {
         await using var db = Db();
         var users = Enumerable.Range(0, 5).Select(i => new User { FullName = $"Recording test {i}",

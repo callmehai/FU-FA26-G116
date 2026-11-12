@@ -130,6 +130,20 @@ public sealed class RecordingEndpointTests(RecordingFixture fixture) : IClassFix
     [Theory]
     [InlineData(MeetingStatus.InProgress)]
     [InlineData(MeetingStatus.Ended)]
+    public async Task A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file(MeetingStatus status)
+    {
+        // ADR-0061: a file does not know when it was said, so it could not sit in one timeline with the online sentences.
+        var s = await fixture.Seed(status, MeetingMode.Hybrid);
+        var before = fixture.StoredFileCount();
+        using var client = fixture.Client(s.Secretary);
+        await AssertCode(await client.PostAsync(s.Url, Form()), 409, "MSG478");
+        Assert.False((await client.GetFromJsonAsync<JsonElement>(s.Url)).GetProperty("canUpload").GetBoolean());
+        Assert.Equal(before, fixture.StoredFileCount());
+    }
+
+    [Theory]
+    [InlineData(MeetingStatus.InProgress)]
+    [InlineData(MeetingStatus.Ended)]
     public async Task An_online_meeting_has_no_room_recording(MeetingStatus status)
     {
         var s = await fixture.Seed(status, MeetingMode.Online);

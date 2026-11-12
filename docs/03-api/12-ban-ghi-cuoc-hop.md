@@ -102,8 +102,9 @@ Quyền và trạng thái cuộc họp được kiểm **trước** khi nhận b
 lý do gì khiến bản ghi không được giữ (thiếu đồng ý, lỗi database…), tệp đã ghi bị xoá ngay.
 
 `201 MSG290` `{ code, message, recordingId }`. Lỗi: `400 MSG291`, `415 MSG292`, `413 MSG293`,
-`409 MSG294`, `409 MSG358`, `403 MSG295`, `503 MSG298`. `canUpload` trong danh sách là `false` với cuộc họp
-`Online`.
+`409 MSG294`, `409 MSG358`, `409 MSG478`, `403 MSG295`, `503 MSG298`. `canUpload` trong danh sách là `false` với cuộc
+họp `Online` và `Hybrid`: họp kết hợp chỉ ghi phòng bằng mic phòng, để lời phòng họp có giờ thực và xếp chung một dòng
+thời gian với câu của người trực tuyến (`409 MSG478`, [ADR-0061](../05-decisions/0061-hop-ket-hop-mot-dong-thoi-gian.md)).
 
 ## Mic phòng (ADR-0041)
 
@@ -400,7 +401,10 @@ gửi cho người trong danh sách cuộc họp. Không mang chữ: ai nhận t
 ## Chưa làm
 
 - Chữ chạy trong khi mic phòng đang ghi: eCab cũng đã bỏ, chữ có sau mỗi lần tắt mic (ADR-0041).
-- Chế độ "Máy phòng họp" cho họp kết hợp (ADR-0040).
+
+Chế độ "Máy phòng họp" cho họp kết hợp (ADR-0040 điểm 5) không làm: ADR-0061 giữ máy Thư ký ghi mic phòng, người trực
+tuyến ghi theo micro của mình, và bản dự thảo đọc cả hai thành một dòng thời gian, bỏ tiếng loa phòng phát lại lời người
+trực tuyến.
 
 Ghi trộn cả cuộc gọi từ máy Thư ký (SCRUM-44, ADR-0030) đã bỏ theo ADR-0040: họp trực tuyến ghi theo micro từng
 người.

@@ -59,7 +59,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_sentence_from_my_mic_is_transcribed_without_diarization_and_named_after_me_once()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = null;
         fixture.Speech.Result = OneSentence;
         var calls = fixture.Speech.Calls;
@@ -129,7 +129,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = null;
         fixture.Speech.Result = OneSentence;
         var wav = PcmWav();
@@ -178,7 +178,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var clip = await StoreSentence(s, s.Member);
         using var chair = fixture.Client(s.Chair);
         await AssertCode(await chair.PutAsJsonAsync($"/api/speech-clips/{clip}/exclusion", new { excluded = true, reason = "Other" }),
@@ -196,7 +196,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_database_outage_while_signing_a_link_says_so()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var clip = await StoreSentence(s, s.Member);
         using var member = fixture.Client(s.Member);
         fixture.Failures.FailClipRead = true;
@@ -213,7 +213,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_sentence_the_database_could_not_store_leaves_no_audio_behind()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = null;
         fixture.Speech.Result = OneSentence;
         var files = fixture.StoredFileCount();
@@ -233,7 +233,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Silence_stores_nothing()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = null;
         fixture.Speech.Result = Silence;
         var files = fixture.StoredFileCount();
@@ -253,11 +253,11 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
             Assert.False((await List(member, room.MeetingId)).GetProperty("canCapture").GetBoolean());
         }
 
-        var published = await fixture.Seed(MeetingStatus.Published);
+        var published = await fixture.Seed(MeetingStatus.Published, MeetingMode.Hybrid);
         using (var member = fixture.Client(published.Member))
             await AssertCode(await Send(member, published.MeetingId, Guid.NewGuid()), 409, "MSG320");
 
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         using var outsider = fixture.Client(s.Outsider);
         Assert.Equal(HttpStatusCode.NotFound, (await Send(outsider, s.MeetingId, Guid.NewGuid())).StatusCode);
         // The organizer may read the meeting but is not on its roster: no one's words are theirs to read.
@@ -268,7 +268,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = null;
         var calls = fixture.Speech.Calls;
         using var member = fixture.Client(s.Member);
@@ -282,7 +282,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_worker_outage_keeps_nothing_so_the_browser_sends_it_again()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         fixture.Speech.Failure = new SpeechEngineException("Không kết nối được máy chủ nhận dạng giọng nói.");
         try
         {
@@ -299,7 +299,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task The_secretary_corrects_a_sentence_and_nobody_else_can()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var clip = await StoreSentence(s, s.Member);
         using var member = fixture.Client(s.Member);
         await AssertCode(await member.PutAsJsonAsync($"/api/speech-clips/{clip}/text", new { text = "Sửa" }), 403, "MSG295");
@@ -326,7 +326,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task The_speaker_or_the_secretary_takes_a_sentence_back()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var mine = await StoreSentence(s, s.Member);
         var other = await StoreSentence(s, s.Member);
         using var chair = fixture.Client(s.Chair);
@@ -342,7 +342,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task Deleting_a_sentence_or_its_retention_running_out_erases_its_audio()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var taken = await StoreSentence(s, s.Member);
         var expiring = await StoreSentence(s, s.Member);
         await using var db = fixture.Db();
@@ -377,7 +377,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_database_outage_on_read_says_so()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         using var member = fixture.Client(s.Member);
         fixture.Failures.FailClipRead = true;
         try
@@ -402,7 +402,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var at = fixture.Clock.Now.AddSeconds(-10);
         // The neighbour's laptop sends first; its clock is 300 ms ahead.
         var copy = await StoreAt(s, s.Member, Overheard, at.AddMilliseconds(300));
@@ -431,7 +431,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back()
     {
-        var s = await fixture.Seed();
+        var s = await fixture.Seed(mode: MeetingMode.Hybrid);
         var clip = await StoreSentence(s, s.Member);
         string url = $"/api/speech-clips/{clip}/exclusion";
         using var member = fixture.Client(s.Member);
@@ -471,7 +471,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
     [Fact]
     public async Task A_sentence_kept_on_the_device_still_arrives_up_to_a_week_after_the_meeting()
     {
-        var s = await fixture.Seed(MeetingStatus.Ended);
+        var s = await fixture.Seed(MeetingStatus.Ended, MeetingMode.Hybrid);
         var ended = fixture.Clock.Now.AddDays(-1);
         await using (var db = fixture.Db())
         {
