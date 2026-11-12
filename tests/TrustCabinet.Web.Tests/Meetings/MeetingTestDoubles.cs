@@ -22,6 +22,9 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         => Task.FromResult<IReadOnlyList<Guid>>(Meetings
             .Where(m => MeetingRules.IsCancellable(m.Status) && m.PlannedStartTime <= cutoff)
             .OrderBy(m => m.PlannedStartTime).Select(m => m.Id).Take(take).ToArray());
+    public Task<IReadOnlyList<Guid>> ListOverrunAsync(DateTimeOffset cutoff, int take, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<Guid>>(Meetings.Where(m => MeetingRules.IsOverrun(m, cutoff))
+            .OrderBy(m => m.PlannedEndTime).Select(m => m.Id).Take(take).ToArray());
     public Task StageCancellationAsync(
         Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default)
     {

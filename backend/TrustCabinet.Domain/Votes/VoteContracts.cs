@@ -111,7 +111,8 @@ public interface IVoteChangePublisher
 /// </summary>
 public interface IVoteMeetingEnd
 {
-    Task<IReadOnlyList<VoteChange>> DeleteDraftsAsync(Guid meetingId, Guid endedById, DateTimeOffset endedAt,
+    /// <param name="endedById">The Chair who ended it; null when the system ended a meeting left running (ADR-0062).</param>
+    Task<IReadOnlyList<VoteChange>> DeleteDraftsAsync(Guid meetingId, Guid? endedById, DateTimeOffset endedAt,
         CancellationToken ct = default);
 }
 

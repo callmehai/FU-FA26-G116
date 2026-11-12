@@ -3,8 +3,8 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Web;
 
 /// <summary>
-/// Cancels meetings nobody started a day after their planned start (SCRUM-99, BR-301). Every 15 minutes is enough: the
-/// rule is about a day, and the organizer has all of it to reschedule.
+/// Cancels meetings nobody started a day after their planned start (SCRUM-99, BR-301), and ends meetings nobody ended
+/// 12 hours after their planned end (ADR-0062). Every 15 minutes is enough: both rules are about hours.
 /// </summary>
 public sealed class MeetingOverdueWorker(IServiceScopeFactory scopes, ILogger<MeetingOverdueWorker> logger)
     : BackgroundService
@@ -17,9 +17,11 @@ public sealed class MeetingOverdueWorker(IServiceScopeFactory scopes, ILogger<Me
             try
             {
                 using var scope = scopes.CreateScope();
-                var cancelled = await scope.ServiceProvider.GetRequiredService<IMeetingOverdueService>()
-                    .CancelOverdueAsync(stoppingToken);
+                var overdue = scope.ServiceProvider.GetRequiredService<IMeetingOverdueService>();
+                var cancelled = await overdue.CancelOverdueAsync(stoppingToken);
                 if (cancelled > 0) logger.LogInformation("Cancelled {Count} overdue meetings", cancelled);
+                var ended = await overdue.EndOverrunAsync(stoppingToken);
+                if (ended > 0) logger.LogInformation("Ended {Count} meetings left running", ended);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {

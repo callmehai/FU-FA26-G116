@@ -1595,6 +1595,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         _db.ChangeTracker.Clear();
         var service = new MeetingOverdueService(
             new MeetingRepository(_db),
+            null!,
             Microsoft.Extensions.Options.Options.Create(new MeetingOverdueOptions()),
             new FixedClock(now),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<MeetingOverdueService>.Instance);

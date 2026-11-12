@@ -40,6 +40,11 @@ public enum MeetingHistoryAction
     Cancel,
     /// <summary>The system cancelled a meeting nobody started a day after its planned start (BR-301).</summary>
     AutoCancel,
+    /// <summary>
+    /// The system ended a meeting nobody ended 12 hours after its planned end, or after its actual start when that was
+    /// later (ADR-0062).
+    /// </summary>
+    AutoEnd,
 }
 
 /// <summary>Actions accepted by the meeting transition API. LegacyTransition is never a command.</summary>

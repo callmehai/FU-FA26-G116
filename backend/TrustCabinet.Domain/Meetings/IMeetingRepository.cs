@@ -23,6 +23,9 @@ public interface IMeetingRepository
     /// <summary>Not-yet-started meetings whose planned start is at or before <paramref name="cutoff"/>, oldest first.</summary>
     Task<IReadOnlyList<Guid>> ListOverdueAsync(DateTimeOffset cutoff, int take, CancellationToken ct = default);
 
+    /// <summary>Meetings still InProgress whose planned end and actual start are both at or before the cutoff.</summary>
+    Task<IReadOnlyList<Guid>> ListOverrunAsync(DateTimeOffset cutoff, int take, CancellationToken ct = default);
+
     Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default);
 
