@@ -7,7 +7,7 @@ import { InfoTip } from '../../components/InfoTip'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate, formatDateTime } from '../../lib/format'
-import type { Recording, RecordingList } from '../../types/recording'
+import type { Recording, RecordingList, RecordingSource } from '../../types/recording'
 import type { TranscriptStatus } from '../../types/transcript'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
@@ -232,6 +232,12 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
   )
 }
 
+const SOURCE_LABEL: Record<RecordingSource, string> = {
+  BrowserCapture: 'Mic phòng',
+  Upload: 'Tải lên',
+  Combined: 'Tổng hợp',
+}
+
 const TRANSCRIPT_BADGE: Partial<Record<TranscriptStatus, { tone: BadgeTone; label: string }>> = {
   Pending: { tone: 'amber', label: 'Đang chuyển chữ' },
   Processing: { tone: 'amber', label: 'Đang chuyển chữ' },
@@ -344,7 +350,7 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
           {recording.fileName}
         </span>
         <span className="recording-meta" data-tooltip={details} tabIndex={0}>
-          <Badge tone="slate">{recording.source === 'BrowserCapture' ? 'Mic phòng' : 'Tải lên'}</Badge>
+          <Badge tone="slate">{SOURCE_LABEL[recording.source]}</Badge>
           {recording.takes && recording.takes.length > 1 && <span>{recording.takes.length} lượt ghi</span>}
           {deleted ? (
             <Badge tone="red">Đã xoá</Badge>
@@ -450,22 +456,26 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
               }}
             />
           </div>
-          <TranscriptView
-            fileName={recording.fileName}
-            recordingId={recording.id}
-            takes={recording.takes}
-            listedStatus={recording.transcriptStatus}
-            currentMs={currentMs}
-            playing={playing}
-            onPause={() => audio.current?.pause()}
-            onSeek={(ms) => {
-              const element = audio.current
-              if (!element) return
-              element.currentTime = ms / 1000
-              void element.play().catch(() => undefined)
-            }}
-            onStatus={setTranscriptStatus}
-          />
+          {recording.source === 'Combined' ? (
+            <p className="field-hint">Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.</p>
+          ) : (
+            <TranscriptView
+              fileName={recording.fileName}
+              recordingId={recording.id}
+              takes={recording.takes}
+              listedStatus={recording.transcriptStatus}
+              currentMs={currentMs}
+              playing={playing}
+              onPause={() => audio.current?.pause()}
+              onSeek={(ms) => {
+                const element = audio.current
+                if (!element) return
+                element.currentTime = ms / 1000
+                void element.play().catch(() => undefined)
+              }}
+              onStatus={setTranscriptStatus}
+            />
+          )}
         </div>
       )}
     </li>

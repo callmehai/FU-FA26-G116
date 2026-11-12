@@ -43,9 +43,16 @@ export function ConsentDialog({
       }
     >
       {consent.kind === 'upload' && (
-        <p className="consent-file">
-          <Icon name="fileAudio" size={16} /> {consent.file.name} · {formatSize(consent.file.size)}
-        </p>
+        <>
+          <p className="consent-file">
+            <Icon name="fileAudio" size={16} /> {consent.file.name} · {formatSize(consent.file.size)}
+          </p>
+          {/* ADR-0060: Voice ID matches the room's voices against samples taken on the room's own mic. */}
+          <p className="alert alert-warning">
+            Tệp phải ghi bằng đúng micro phòng họp đã dùng thu giọng mẫu. Ghi bằng điện thoại hay laptop thì máy khó nhận
+            đúng người nói.
+          </p>
+        </>
       )}
       <label className="field">
         <span>Mục đích ghi âm</span>

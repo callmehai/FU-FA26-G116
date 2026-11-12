@@ -2,8 +2,11 @@ import type { TranscriptStatus } from './transcript'
 
 /** Mirrors the recording responses of docs/03-api/12-ban-ghi-cuoc-hop.md (SCRUM-29). */
 
-/** `BrowserCapture` is the room mic's recording, its takes appended one after another (ADR-0041). */
-export type RecordingSource = 'Upload' | 'BrowserCapture'
+/**
+ * `BrowserCapture` is the room mic's recording, its takes appended one after another (ADR-0041). `Combined` is a hybrid
+ * meeting's room mic and online mics mixed on the real clock by the server after the end (ADR-0061): only to listen.
+ */
+export type RecordingSource = 'Upload' | 'BrowserCapture' | 'Combined'
 /** `Pending`: a room-mic take still being recorded; everyone sees it, nobody hears it yet. */
 export type RecordingStatus = 'Pending' | 'Available' | 'Deleted'
 
