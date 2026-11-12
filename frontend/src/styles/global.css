@@ -4024,15 +4024,27 @@ audio.recording-player { height: 40px; }
 .voice-review audio { width: 100%; }
 .voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
 /* ADR-0060 — a sample a Secretary took names its meeting, which may be long: it shortens rather than push the row. */
-.voice-sample-name a { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; color: inherit; }
+.voice-sample-name a { color: inherit; }
 .voice-sample-text > .voice-sample-name { min-width: 0; max-width: 100%; }
 /* The Secretary's list of the meeting's people: name, role, consent or count, then the samples taken here. */
 .voice-people { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .voice-person { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--line-soft); }
 .voice-person:last-child { padding-bottom: 0; border-bottom: 0; }
-.voice-person-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+/* One line on a wide screen: who (name, role) | consent or count | Thu. On a phone, who on top and the rest under it. */
+.voice-person-head { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'who count act'; align-items: center; gap: 8px 10px; }
+.voice-person-who { grid-area: who; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.voice-person-who .badge { flex: none; }
 .voice-person-name { min-width: 0; overflow: hidden; color: var(--ink); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.voice-person-count { margin-left: auto; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
+.voice-person-count { grid-area: count; justify-self: end; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
+.voice-person-head > .btn { grid-area: act; }
+@media (max-width: 560px) {
+  .voice-person-head { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'who who' 'count act'; }
+  .voice-person-count { justify-self: start; }
+}
+/* A long "who · length · date" wraps rather than run under the row's buttons; a meeting title takes two lines at most. */
+.voice-sample-text > * { max-width: 100%; }
+.voice-sample-text > .field-hint { white-space: normal; }
+.voice-sample-name a { display: -webkit-box; overflow: hidden; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 @media (max-width: 560px) {
   .voice-actions { flex-direction: column-reverse; align-items: stretch; }
 }

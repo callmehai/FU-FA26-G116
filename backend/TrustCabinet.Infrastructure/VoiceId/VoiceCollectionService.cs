@@ -57,7 +57,7 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
                 .Select(p =>
                 {
                     var own = samples.Where(s => s.UserId == p.UserId).ToArray();
-                    return new VoiceCollectionPerson(p.UserId, p.User.FullName, p.Role, consented.Contains(p.UserId),
+                    return new VoiceCollectionPerson(p.UserId, p.User.FullName, p.Role.ToString(), consented.Contains(p.UserId),
                         own.Length,
                         [.. own.Where(s => s.MeetingId == meetingId).OrderBy(s => s.CreatedAt)
                             .Select(s => new CollectedSampleView(s.Id, s.CreatedAt, s.SpeechMs, s.CollectedByName))]);

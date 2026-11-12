@@ -88,8 +88,10 @@ export function VoiceCollectionPanel({ meetingId }: { meetingId: string }) {
           return (
             <li key={person.userId} className="voice-person">
               <div className="voice-person-head">
-                <span className="voice-person-name">{person.fullName}</span>
-                <Badge tone="slate">{MEETING_ROLE_LABEL[person.role]}</Badge>
+                <span className="voice-person-who">
+                  <span className="voice-person-name">{person.fullName}</span>
+                  <Badge tone="slate">{MEETING_ROLE_LABEL[person.role]}</Badge>
+                </span>
                 {person.consented ? (
                   <span
                     className="voice-person-count"

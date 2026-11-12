@@ -250,6 +250,9 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         var people = view.GetProperty("people").EnumerateArray().ToDictionary(p => p.GetProperty("userId").GetGuid());
         Assert.Equal(new[] { s.Secretary, s.Chair, s.Member }.Order(), people.Keys.Order());
         Assert.DoesNotContain(gone, people.Keys);
+        // The role reads by name, as every other endpoint sends it.
+        Assert.Equal("Chair", people[s.Chair].GetProperty("role").GetString());
+        Assert.Equal("Member", people[s.Member].GetProperty("role").GetString());
         Assert.DoesNotContain("Khách mời", view.GetRawText());
 
         var member = people[s.Member];

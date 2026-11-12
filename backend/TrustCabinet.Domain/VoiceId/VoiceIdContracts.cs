@@ -56,7 +56,8 @@ public interface IVoiceIdService
 /// <param name="Consented">Whether they let Secretaries record for them; without it nothing can be taken.</param>
 /// <param name="SampleCount">All the samples Secretaries took for them, in any meeting, against the limit.</param>
 /// <param name="Samples">Only the ones taken in this meeting: the Secretary manages nothing taken elsewhere.</param>
-public sealed record VoiceCollectionPerson(Guid UserId, string FullName, MeetingRole Role, bool Consented, int SampleCount,
+/// <param name="Role">The meeting role's name (Chair, Secretary, Member), as every other endpoint sends it.</param>
+public sealed record VoiceCollectionPerson(Guid UserId, string FullName, string Role, bool Consented, int SampleCount,
     IReadOnlyList<CollectedSampleView> Samples);
 
 public sealed record CollectedSampleView(Guid Id, DateTimeOffset CreatedAt, long SpeechMs, string CollectedByName);
