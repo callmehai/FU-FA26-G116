@@ -145,14 +145,17 @@ function ProxySamples({
       ) : (
         <ol className="voice-samples">
           {proxy.samples.map((sample, index) => (
-            <li key={sample.id} className="voice-sample">
-              <Icon name="mic" size={16} />
+            <li key={sample.id} className="voice-sample voice-sample-stacked">
               <span className="voice-sample-text">
                 <span className="voice-sample-name">
                   <Link to={routes.meeting(sample.meetingId)}>{sample.meetingTitle}</Link>
                 </span>
-                <span className="field-hint">
-                  {sample.collectedByName} · {formatDuration(sample.speechMs)} · {formatDate(sample.createdAt)}
+                <span
+                  className="field-hint"
+                  data-tooltip={`${formatDuration(sample.speechMs)} giọng nói, thu lúc ${formatDateTime(sample.createdAt)}`}
+                  tabIndex={0}
+                >
+                  {sample.collectedByName} · {formatDate(sample.createdAt)}
                 </span>
               </span>
               {sample.playable && (

@@ -1,13 +1,11 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { collectedSampleAudio, collectVoiceSample, deleteCollectedSample, getVoiceCollection } from '../../api/voice'
-import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { InfoTip } from '../../components/InfoTip'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
 import { formatDate, formatDateTime } from '../../lib/format'
-import { MEETING_ROLE_LABEL } from '../../types/participant'
 import type { CollectedSample, VoiceCollection, VoiceCollectionPerson } from '../../types/voice'
 import { formatDuration } from '../recordings/format'
 import { useAccessLost } from '../auth/useAccessLost'
@@ -71,27 +69,20 @@ export function VoiceCollectionPanel({ meetingId }: { meetingId: string }) {
   }
 
   const { data } = state
-  const ready = data.people.filter((p) => p.consented).length
   return (
     <section className="card voice-card voice-collection" aria-label="Giọng mẫu cho mic phòng">
-      <Header>
-        <span className="voice-count" data-tooltip="Số người đã đồng ý cho Thư ký thu hộ" tabIndex={0}>
-          {ready}/{data.people.length} đồng ý
-        </span>
-      </Header>
+      <Header />
       {!data.canCollect && (
         <p className="alert alert-info">Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.</p>
       )}
       <ul className="voice-people">
         {data.people.map((person) => {
-          const full = person.sampleCount >= data.maxSamples
+          const canRecord = person.consented && data.canCollect && person.sampleCount < data.maxSamples
           return (
             <li key={person.userId} className="voice-person">
+              {/* One line per person: who, then what can be done. Nothing disabled is shown: no consent reads as words. */}
               <div className="voice-person-head">
-                <span className="voice-person-who">
-                  <span className="voice-person-name">{person.fullName}</span>
-                  <Badge tone="slate">{MEETING_ROLE_LABEL[person.role]}</Badge>
-                </span>
+                <span className="voice-person-name">{person.fullName}</span>
                 {person.consented ? (
                   <span
                     className="voice-person-count"
@@ -101,34 +92,19 @@ export function VoiceCollectionPanel({ meetingId }: { meetingId: string }) {
                     {person.sampleCount}/{data.maxSamples}
                   </span>
                 ) : (
-                  <span className="voice-person-count" data-tooltip="Người này chưa bật đồng ý thu hộ" tabIndex={0}>
-                    <Badge tone="amber">Chưa đồng ý</Badge>
-                  </span>
+                  <span className="voice-person-state">Chưa đồng ý</span>
                 )}
-                <button
-                  type="button"
-                  className="btn btn-outline btn-sm"
-                  disabled={!person.consented || !data.canCollect || full}
-                  data-tooltip={
-                    !person.consented
-                      ? 'Chưa đồng ý thu hộ'
-                      : !data.canCollect
-                        ? 'Cuộc họp chưa công bố hoặc đã kết thúc'
-                        : full
-                          ? `Đã đủ ${data.maxSamples} mẫu`
-                          : undefined
-                  }
-                  onClick={() => setRecordFor(person)}
-                >
-                  <Icon name="mic" size={16} />
-                  Thu
-                </button>
+                {canRecord && (
+                  <button type="button" className="btn btn-outline btn-sm" onClick={() => setRecordFor(person)}>
+                    <Icon name="mic" size={16} />
+                    Thu
+                  </button>
+                )}
               </div>
               {person.samples.length > 0 && (
                 <ol className="voice-samples">
                   {person.samples.map((sample, index) => (
                     <li key={sample.id} className="voice-sample">
-                      <Icon name="mic" size={16} />
                       <span className="voice-sample-text">
                         <span className="voice-sample-name">Mẫu {index + 1}</span>
                         <span
@@ -211,12 +187,11 @@ export function VoiceCollectionPanel({ meetingId }: { meetingId: string }) {
   )
 }
 
-function Header({ children }: { children?: ReactNode }) {
+function Header() {
   return (
     <div className="voice-status">
       <h2 className="card-title">Giọng mẫu cho mic phòng</h2>
       <InfoTip text="Thu giọng từng người bằng chính micro phòng họp để bản gỡ băng nhận đúng tên. Người dự phải tự bật đồng ý ở trang Giọng nói của tôi, tab Thư ký thu hộ; họ nhận thông báo mỗi lần được thu và xoá được mẫu bất cứ lúc nào." />
-      {children}
     </div>
   )
 }

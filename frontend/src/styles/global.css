@@ -4025,26 +4025,30 @@ audio.recording-player { height: 40px; }
 .voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
 /* ADR-0060 — a sample a Secretary took names its meeting, which may be long: it shortens rather than push the row. */
 .voice-sample-name a { color: inherit; }
-.voice-sample-text > .voice-sample-name { min-width: 0; max-width: 100%; }
-/* The Secretary's list of the meeting's people: name, role, consent or count, then the samples taken here. */
-.voice-people { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.voice-person { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--line-soft); }
+/* The Secretary's list of the meeting's people: one line each — who, then the count and Thu, or "Chưa đồng ý". */
+.voice-people { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.voice-person { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+.voice-person:first-child { padding-top: 0; }
 .voice-person:last-child { padding-bottom: 0; border-bottom: 0; }
-/* One line on a wide screen: who (name, role) | consent or count | Thu. On a phone, who on top and the rest under it. */
-.voice-person-head { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'who count act'; align-items: center; gap: 8px 10px; }
-.voice-person-who { grid-area: who; display: flex; align-items: center; gap: 8px; min-width: 0; }
-.voice-person-who .badge { flex: none; }
-.voice-person-name { min-width: 0; overflow: hidden; color: var(--ink); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.voice-person-count { grid-area: count; justify-self: end; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
-.voice-person-head > .btn { grid-area: act; }
+.voice-person-head { display: flex; align-items: center; gap: 10px; min-height: 34px; }
+/* A long name takes a second line rather than push the action off or lose its end. */
+.voice-person-name { flex: 1; min-width: 0; color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+.voice-person-count, .voice-person-state { flex: none; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
+.voice-person-head > .btn { flex: none; }
+/* A sample a Secretary took: the meeting on the first line (two at most), who took it and when on the second. */
+.voice-sample-stacked .voice-sample-text { flex-direction: column; flex-wrap: nowrap; }
+.voice-sample-stacked .voice-sample-text > * { overflow: hidden; }
+.voice-sample-stacked .field-hint { white-space: normal; }
+/* On a phone the meeting takes the whole first line; who and when share the second with the two buttons. */
 @media (max-width: 560px) {
-  .voice-person-head { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'who who' 'count act'; }
-  .voice-person-count { justify-self: start; }
+  .voice-sample-stacked { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'title title title' 'hint play erase'; column-gap: 4px; row-gap: 0; }
+  .voice-sample-stacked .voice-sample-text { display: contents; }
+  .voice-sample-stacked .voice-sample-name { grid-area: title; }
+  .voice-sample-stacked .field-hint { grid-area: hint; align-self: center; }
+  .voice-sample-stacked > .btn:nth-last-of-type(2) { grid-area: play; }
+  .voice-sample-stacked > .btn:last-of-type { grid-area: erase; }
 }
-/* A long "who · length · date" wraps rather than run under the row's buttons; a meeting title takes two lines at most. */
-.voice-sample-text > * { max-width: 100%; }
-.voice-sample-text > .field-hint { white-space: normal; }
-.voice-sample-name a { display: -webkit-box; overflow: hidden; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.voice-sample-stacked .voice-sample-name a { display: -webkit-box; overflow: hidden; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 @media (max-width: 560px) {
   .voice-actions { flex-direction: column-reverse; align-items: stretch; }
 }
