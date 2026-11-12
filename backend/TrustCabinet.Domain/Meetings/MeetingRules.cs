@@ -16,6 +16,14 @@ public static partial class MeetingRules
     public static bool IsEditable(MeetingStatus status)
         => status is MeetingStatus.Draft or MeetingStatus.Rejected;
 
+    /// <summary>
+    /// A meeting left running: still InProgress although both its planned end and its actual start are at or before
+    /// <paramref name="cutoff"/> (now minus the grace). A late start gets the whole grace from when it really began.
+    /// </summary>
+    public static bool IsOverrun(Meeting meeting, DateTimeOffset cutoff)
+        => meeting.Status == MeetingStatus.InProgress && meeting.PlannedEndTime <= cutoff
+            && (meeting.ActualStartedAt is null || meeting.ActualStartedAt <= cutoff);
+
     /// <summary>UC-75: only before the meeting starts (BR-297). Started, ended or cancelled meetings are final.</summary>
     public static bool IsCancellable(MeetingStatus status)
         => status is MeetingStatus.Draft or MeetingStatus.WaitingApproval or MeetingStatus.Rejected

@@ -240,6 +240,7 @@ public static class AuditActions
         MeetingHistoryAction.End => "meeting.ended",
         MeetingHistoryAction.Cancel => "meeting.cancelled",
         MeetingHistoryAction.AutoCancel => "meeting.auto_cancelled",
+        MeetingHistoryAction.AutoEnd => "meeting.auto_ended",
         _ => "meeting.status_changed",
     };
 

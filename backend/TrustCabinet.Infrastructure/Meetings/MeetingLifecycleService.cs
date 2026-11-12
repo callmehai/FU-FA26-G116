@@ -13,7 +13,10 @@ using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
-/// <summary>Serializes Chair lifecycle commands with roster, scheduling and agenda mutations.</summary>
+/// <summary>
+/// Serializes Chair lifecycle commands with roster, scheduling and agenda mutations, and ends meetings left running as the
+/// system (ADR-0062).
+/// </summary>
 public sealed class MeetingLifecycleService(
     IMeetingRepository meetings,
     IAgendaMeetingEnd agendaEnd,
@@ -34,10 +37,8 @@ public sealed class MeetingLifecycleService(
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.InvalidRequest);
 
         var starting = command.Action == MeetingTransitionAction.Start;
-        AgendaChange? change = null;
-        IReadOnlyList<VoteChange> deletedDrafts = [];
+        EndEffects? end = null;
         Guid[] recipients = [];
-        var closeRoom = false;
         MeetingWorkflowResult result;
         try
         {
@@ -67,14 +68,7 @@ public sealed class MeetingLifecycleService(
                 }
                 else
                 {
-                    change = await agendaEnd.PrepareAsync(meetingId, now, token)
-                        ?? new AgendaChange(Guid.CreateVersion7(), meetingId, "MeetingEnded", null, null, now);
-                    // Readers refetch the queue on "MeetingEnded", so no speaking event of its own is needed.
-                    await speakingEnd.PrepareAsync(meetingId, now, token);
-                    meeting.ActualEndedAt = now;
-                    // A draft can only be opened while InProgress (BR-160), so none survives the end (PO 08/11/2026).
-                    deletedDrafts = await voteEnd.DeleteDraftsAsync(meetingId, actorId, now, token);
-                    closeRoom = meeting.Mode is MeetingMode.Online or MeetingMode.Hybrid;
+                    end = await PrepareEndAsync(meeting, actorId, now, token);
                 }
 
                 meeting.Status = starting ? MeetingStatus.InProgress : MeetingStatus.Ended;
@@ -114,17 +108,78 @@ public sealed class MeetingLifecycleService(
         }
         else
         {
-            await AfterCommitAsync("agenda event", meetingId, record.Id, EffectBudget,
-                token => publisher.PublishAsync(change!, token));
-            // Drafts were seen by the Chair and Secretary only (BR-253), so only they are told.
-            foreach (var deleted in deletedDrafts)
-                await AfterCommitAsync("vote draft deletion", meetingId, record.Id, EffectBudget,
-                    token => votePublisher.PublishAsync(deleted, managersOnly: true, token));
-            if (closeRoom)
-                await AfterCommitAsync("room closure", meetingId, record.Id, EffectBudget,
-                    token => rooms.CloseMeetingRoomAsync(meetingId, token));
+            await AfterEndAsync(meetingId, record.Id, end!);
         }
         return result;
+    }
+
+    public async Task<bool> EndOverrunAsync(Guid meetingId, DateTimeOffset cutoff, string reason, CancellationToken ct = default)
+    {
+        EndEffects? end = null;
+        var historyId = Guid.Empty;
+        try
+        {
+            var ended = await meetings.InTransactionAsync(async token =>
+            {
+                var meeting = await meetings.FindWorkflowAsync(meetingId, forUpdate: true, token);
+                if (meeting is null || !MeetingRules.IsOverrun(meeting, cutoff)) return false;
+
+                var now = AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
+                end = await PrepareEndAsync(meeting, null, now, token);
+                meeting.Status = MeetingStatus.Ended;
+                meeting.UpdatedAt = now;
+                var history = new MeetingStatusHistory
+                {
+                    Id = Guid.CreateVersion7(), MeetingId = meetingId, ActorId = null,
+                    Action = MeetingHistoryAction.AutoEnd, FromStatus = MeetingStatus.InProgress, ToStatus = MeetingStatus.Ended,
+                    Reason = reason, OccurredAt = now, CreatedAt = now, UpdatedAt = now,
+                };
+                meeting.StatusHistory.Add(history);
+                await meetings.AddHistoryAsync(history, token);
+                await meetings.SaveChangesAsync(token);
+                historyId = history.Id;
+                return true;
+            }, ct);
+            if (!ended) return false;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException or InvalidAgendaExecutionException)
+        {
+            logger.LogError(error, "Could not end overrunning meeting {MeetingId}.", meetingId);
+            return false;
+        }
+
+        logger.LogInformation("Ended meeting {MeetingId} left running past its planned end.", meetingId);
+        await AfterEndAsync(meetingId, historyId, end!);
+        return true;
+    }
+
+    /// <summary>What ending does inside the meeting's transaction; the Chair's End and the system's share it.</summary>
+    private sealed record EndEffects(AgendaChange Change, IReadOnlyList<VoteChange> DeletedDrafts, bool CloseRoom);
+
+    private async Task<EndEffects> PrepareEndAsync(Meeting meeting, Guid? actorId, DateTimeOffset now, CancellationToken token)
+    {
+        var change = await agendaEnd.PrepareAsync(meeting.Id, now, token)
+            ?? new AgendaChange(Guid.CreateVersion7(), meeting.Id, "MeetingEnded", null, null, now);
+        // Readers refetch the queue on "MeetingEnded", so no speaking event of its own is needed.
+        await speakingEnd.PrepareAsync(meeting.Id, now, token);
+        meeting.ActualEndedAt = now;
+        // A draft can only be opened while InProgress (BR-160), so none survives the end (PO 08/11/2026).
+        var deletedDrafts = await voteEnd.DeleteDraftsAsync(meeting.Id, actorId, now, token);
+        return new(change, deletedDrafts, meeting.Mode is MeetingMode.Online or MeetingMode.Hybrid);
+    }
+
+    private async Task AfterEndAsync(Guid meetingId, Guid historyId, EndEffects end)
+    {
+        await AfterCommitAsync("agenda event", meetingId, historyId, EffectBudget,
+            token => publisher.PublishAsync(end.Change, token));
+        // Drafts were seen by the Chair and Secretary only (BR-253), so only they are told.
+        foreach (var deleted in end.DeletedDrafts)
+            await AfterCommitAsync("vote draft deletion", meetingId, historyId, EffectBudget,
+                token => votePublisher.PublishAsync(deleted, managersOnly: true, token));
+        if (end.CloseRoom)
+            await AfterCommitAsync("room closure", meetingId, historyId, EffectBudget,
+                token => rooms.CloseMeetingRoomAsync(meetingId, token));
     }
 
     /// <summary>A hub push or a LiveKit call: a stalled one must not hold the Chair's response for long.</summary>

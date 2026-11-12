@@ -11,6 +11,7 @@ public static class MeetingServiceCollectionExtensions
         services.AddOptions<MeetingOverdueOptions>()
             .Bind(configuration.GetSection(MeetingOverdueOptions.SectionName))
             .Validate(o => o.AutoCancelAfterHours is >= 1 and <= 720, "Meetings:AutoCancelAfterHours must be 1–720.")
+            .Validate(o => o.AutoEndAfterHours is >= 1 and <= 720, "Meetings:AutoEndAfterHours must be 1–720.")
             .ValidateOnStart();
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddScoped<IMeetingRepository, MeetingRepository>();

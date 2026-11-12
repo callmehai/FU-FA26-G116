@@ -270,6 +270,8 @@ export type MeetingHistoryAction =
   | 'Cancel'
   /** BR-301: the system cancelled it a day after its planned start; `actorId` is null. */
   | 'AutoCancel'
+  /** ADR-0062: the system ended it 24 hours after its planned end; `actorId` is null. */
+  | 'AutoEnd'
   | 'LegacyTransition'
 
 /** One immutable row of GET /api/meetings/{id}/history. */
@@ -280,7 +282,7 @@ export interface MeetingHistoryItem {
   /** Null on the row that created the meeting. */
   fromStatus: MeetingStatus | null
   resultingStatus: MeetingStatus
-  /** Null when the system acted (an `AutoCancel` row); `actorName` then reads "Hệ thống". */
+  /** Null when the system acted (an `AutoCancel` or `AutoEnd` row); `actorName` then reads "Hệ thống". */
   actorId: string | null
   actorName: string
   occurredAt: string

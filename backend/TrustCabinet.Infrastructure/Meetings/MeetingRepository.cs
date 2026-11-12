@@ -246,6 +246,16 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             .Take(take)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<Guid>> ListOverrunAsync(DateTimeOffset cutoff, int take, CancellationToken ct = default)
+        => await db.Meetings.AsNoTracking()
+            .Where(m => m.Status == MeetingStatus.InProgress && m.PlannedEndTime <= cutoff
+                && (m.ActualStartedAt == null || m.ActualStartedAt <= cutoff))
+            .OrderBy(m => m.PlannedEndTime)
+            .ThenBy(m => m.Id)
+            .Select(m => m.Id)
+            .Take(take)
+            .ToListAsync(ct);
+
     public async Task<MeetingHistoryPage?> FindHistoryPageAsync(
         Guid meetingId, int page, int pageSize, CancellationToken ct = default)
     {

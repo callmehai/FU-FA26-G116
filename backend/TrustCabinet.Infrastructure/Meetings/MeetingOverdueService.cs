@@ -17,6 +17,13 @@ public sealed class MeetingOverdueOptions
     /// the start, not the end).
     /// </summary>
     public int AutoCancelAfterHours { get; set; } = 24;
+
+    /// <summary>
+    /// Hours after the planned end (or the actual start, when later) before a meeting nobody ended is ended by the
+    /// system (ADR-0062). Generous enough for any real overrun; it stops a forgotten
+    /// "Đang diễn ra" from keeping its room, its live panels and every worker that reads an open meeting busy for days.
+    /// </summary>
+    public int AutoEndAfterHours { get; set; } = 24;
 }
 
 /// <summary>
@@ -25,6 +32,7 @@ public sealed class MeetingOverdueOptions
 /// </summary>
 public sealed class MeetingOverdueService(
     IMeetingRepository meetings,
+    IMeetingLifecycleService lifecycle,
     IOptions<MeetingOverdueOptions> options,
     TimeProvider clock,
     ILogger<MeetingOverdueService> logger) : IMeetingOverdueService
@@ -32,7 +40,21 @@ public sealed class MeetingOverdueService(
     /// <summary>Shown on the meeting and in its history; the actor is the system (BR-301).</summary>
     internal static string Reason(int hours) => $"Không diễn ra theo lịch: quá {hours} giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.";
 
+    /// <summary>On the AutoEnd history row; the actor is the system (ADR-0062).</summary>
+    internal static string EndReason(int hours) => $"Đang diễn ra quá {hours} giờ sau giờ kết thúc dự kiến mà chưa ai kết thúc.";
+
     private const int BatchSize = 50;
+
+    public async Task<int> EndOverrunAsync(CancellationToken ct = default)
+    {
+        var hours = options.Value.AutoEndAfterHours;
+        var cutoff = clock.GetUtcNow() - TimeSpan.FromHours(hours);
+        var ended = 0;
+        // Each meeting in its own transaction inside the lifecycle service, which logs its own failures.
+        foreach (var id in await meetings.ListOverrunAsync(cutoff, BatchSize, ct))
+            if (await lifecycle.EndOverrunAsync(id, cutoff, EndReason(hours), ct)) ended++;
+        return ended;
+    }
 
     public async Task<int> CancelOverdueAsync(CancellationToken ct = default)
     {

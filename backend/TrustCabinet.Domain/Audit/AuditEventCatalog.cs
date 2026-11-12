@@ -59,6 +59,7 @@ public static class AuditEventCatalog
         History(MeetingHistoryAction.End, "Kết thúc cuộc họp"),
         History(MeetingHistoryAction.Cancel, "Huỷ cuộc họp"),
         History(MeetingHistoryAction.AutoCancel, "Hệ thống tự huỷ cuộc họp"),
+        History(MeetingHistoryAction.AutoEnd, "Hệ thống tự kết thúc cuộc họp"),
 
         Participant(ParticipantOperation.AddInternal, "Thêm thành phần"),
         Participant(ParticipantOperation.AddGuest, "Mời Khách"),

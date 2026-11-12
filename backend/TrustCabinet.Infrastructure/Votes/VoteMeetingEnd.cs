@@ -15,7 +15,7 @@ namespace TrustCabinet.Infrastructure.Votes;
 /// </summary>
 public sealed class VoteMeetingEnd(TrustCabinetDbContext db) : IVoteMeetingEnd
 {
-    public async Task<IReadOnlyList<VoteChange>> DeleteDraftsAsync(Guid meetingId, Guid endedById, DateTimeOffset endedAt,
+    public async Task<IReadOnlyList<VoteChange>> DeleteDraftsAsync(Guid meetingId, Guid? endedById, DateTimeOffset endedAt,
         CancellationToken ct = default)
     {
         // Vote writes take the meeting lock first, so holding it here means no draft is edited or opened under us.

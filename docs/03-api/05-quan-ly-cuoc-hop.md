@@ -653,6 +653,12 @@ khi `plannedStartTime` đã qua `Meetings:AutoCancelAfterHours` giờ (mặc đ�
 `actorName = "Hệ thống"`, lý do “Không diễn ra theo lịch: quá 24 giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.”; chỉ Organizer
 nhận thông báo. Quy tắc tự `Ended` sau 4 giờ (BR-302) **bỏ** theo PO.
 
+**Tự kết thúc ([ADR-0062](../05-decisions/0062-tu-ket-thuc-cuoc-hop-bi-bo-quen.md), PO 13/11/2026):** cùng worker kết thúc
+cuộc họp `InProgress` khi cả `plannedEndTime` lẫn `actualStartedAt` đã qua `Meetings:AutoEndAfterHours` giờ (mặc định 24, cùng mốc với tự huỷ).
+Kết thúc giống hệt `End` của Chủ toạ (mục đang chạy chốt `Done`, hàng chờ phát biểu đóng, phiếu nháp bị xoá, phòng gọi đóng,
+sự kiện `MeetingEnded`), không gửi thông báo. History `AutoEnd`, `actorId = null`, `actorName = "Hệ thống"`; audit
+`meeting.auto_ended`. Chủ toạ kết thúc cùng lúc thì lần của Chủ toạ thắng (khoá cuộc họp).
+
 `GET /api/meetings/{id}/history`: `actorId` có thể `null` (Hệ thống); thêm `cancellationReason` trên dòng `Cancel`/`AutoCancel`,
 ai đọc được cuộc họp cũng thấy. `GET /api/meetings?status=Cancelled` lọc được trạng thái mới.
 
