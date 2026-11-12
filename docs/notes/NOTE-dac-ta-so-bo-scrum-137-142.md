@@ -408,9 +408,9 @@ Q9 và Q10 đã chốt 08/11/2026 (Hải) — xem D17, D18; không còn câu h�
       để trống cho SCRUM-30/SCRUM-33; UC-86 → UC-90 không dùng).
 - [ ] BA Final Review (phần còn lại): cập nhật inventory, UC diagram, màn FE-16 (§I.5.1 + §III) sau khi FE có màn
       chạy thật (quy trình note 06); sửa mô tả SCRUM-137/SCRUM-142 theo D1–D3 (§2) và chốt Q7, Q8. Q4 và Q-A → Q-E đã chốt 09/11/2026 (Hải, xem §7); Q9/Q10 đã chốt (D17, D18).
-- [ ] BA Final Review theo PO 09/11 (Q-A → Q-D) và 10/11/2026 (L8). **Kiểm 11/11/2026: Report 3 chưa có gì của các quyết định này** (chưa có UC-84f và `MSG468`; BR-424/425/426 và `MSG439`/`MSG440` còn bản cũ). Việc BA, theo thứ tự:
+- [ ] BA Final Review theo PO 09/11 (Q-A → Q-D) và 10/11/2026 (L8). **Đã xong 11/11/2026 (PR #322):** UC-84f và `MSG468` đã vào Report 3; BR-424/425/426 và `MSG439`/`MSG440` theo bản mới. Việc BA, theo thứ tự:
   - Kế hoạch từng bước, chữ hiện tại và chữ mới, lệnh, cổng kiểm, prompt giao agent: xem **§9**.
-  - [ ] **B1 — DOCX Report 3** (`docs/08-reports/source/Report_3_Software_Requirement_Specification.docx`, không sửa `.md` sinh ra):
+  - [x] **B1 — DOCX Report 3** (`docs/08-reports/source/Report_3_Software_Requirement_Specification.docx`, không sửa `.md` sinh ra): — xong 11/11/2026, PR #322.
     - BR-424: "locked" → "deactivated"; dừng chỉ chia sẻ **Effective**; Pending giữ (người nhận chỉ Từ chối); mất `MeetingCreator` vẫn dừng như cũ (Q-A, Q-C).
     - BR-425: bỏ "closes itself (Expired)"; viết "a share counts only until its end date; after it the share, a pending request and a pending change are no longer listed and give no hours; no job, no status, no notification" (Q-B). Cột UC bỏ UC-84e nếu không còn bước nào ở đó.
     - BR-426: bỏ "and expiry" và "or an expiry notifies both sides"; hết hạn không ghi, không báo (Q-B).
@@ -421,9 +421,9 @@ Q9 và Q10 đã chốt 08/11/2026 (Hải) — xem D17, D18; không còn câu h�
     - UC-84e, UC-85c, UC-84d: bỏ chữ "expired share shows its state"; hết hạn không còn nhãn, hàng bị loại lúc đọc.
     - UC-06c, UC-08, UC-11 (dòng "deactivating either side…", POST dừng chia sẻ): sửa "stops the related shares" → "stops Effective shares; Pending kept"; bỏ "notifies both sides" nếu code không báo.
     - Chạy `sync_reports.py --report 3` hai lần (lần hai không đổi file) và `check_docx.py`.
-  - [ ] **B2 — Sequence (đã vẽ theo Q-E, nay lệch L8):** `UC84f_ViewCalendarShares.txt` dòng 20 và 42 (đòi `MeetingCreator` cả màn → chỉ phần viewer), `calendar-sharing/README.md` dòng 29 ("ẩn luôn màn" → L8), nhánh UC-08/UC-11 nói "mất quyền thì ẩn màn". Chạy `txt_to_sequence_drawio_png.py` cho từng file sửa rồi `sync_sequence_drawio_png.py`.
-  - [ ] **B3 — Đặc tả sơ bộ (file này):** §6 dòng 44 và 336 ("locked" → "deactivated"), mục UC-84 "ẩn màn" → L8, và mọi chỗ còn "Expired"/"job"/`SYS_ExpireCalendarShares`.
-  - [ ] **B4 — Inventory và UC diagram:** `00-master-use-case-inventory.md` thêm UC-84f; `docs/14-uc-diagram/` thêm UC-84f dưới UC-84.
+  - [x] **B2 — Sequence** (đã vẽ theo Q-E, nay lệch L8 — đã sửa 11/11/2026, PR #322): `UC84f_ViewCalendarShares.txt` dòng 20 và 42 (đòi `MeetingCreator` cả màn → chỉ phần viewer), `calendar-sharing/README.md` dòng 29 ("ẩn luôn màn" → L8), nhánh UC-08/UC-11 nói "mất quyền thì ẩn màn". Chạy `txt_to_sequence_drawio_png.py` cho từng file sửa rồi `sync_sequence_drawio_png.py`.
+  - [x] **B3 — Đặc tả sơ bộ (file này)** — xong 11/11/2026, PR #322: §6 dòng 44 và 336 ("locked" → "deactivated"), mục UC-84 "ẩn màn" → L8, và mọi chỗ còn "Expired"/"job"/`SYS_ExpireCalendarShares`.
+  - [x] **B4 — Inventory và UC diagram** — xong 11/11/2026, PR #322: `00-master-use-case-inventory.md` thêm UC-84f; `docs/14-uc-diagram/` thêm UC-84f dưới UC-84.
   - [ ] **B5 — Q7, Q8 vẫn chờ BA chốt chữ** (§7 phía trên): Q7 câu cố định màn tìm giờ; Q8 khung nhiều người dự nhất chỉ hiện tên trong danh sách mời.
   - [ ] **B6 — Jira:** comment SCRUM-142 gồm L8 (`10498`), Q-A → Q-D, PR #295 và PR docs mới; xem danh sách ở dưới.
 - [ ] Ticket màn FE-16 tạo riêng (note 36 §6); cập nhật `scopeData`/landing ở PR màn hình, không ở đây.

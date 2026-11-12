@@ -161,11 +161,10 @@ PO chốt cả ba ngày 09/11/2026.
 - [x] BA: đưa UC-70a, UC-70b, BR-432 → BR-438 và `MSG463`–`MSG466` vào Report 3 DOCX, cập nhật inventory (09/11/2026;
       `check_docx.py` OK, `sync_requirement_extracts.py --check` UP TO DATE). UC diagram đã có "View & Export Reports"
       cho đúng 6 actor nên không sửa.
-- [ ] BA: sửa chú thích ¹⁸ của Permission Matrix theo Q1 (PO chốt 09/11/2026: Quản trị như mọi người).
-- [ ] BA: đưa BR-447 (thời lượng họp trung bình, Q2) vào Report 3; thêm thời lượng vào Description/Normal Flow bước 4 và
-      AF-3 của UC-70a.
-- [ ] BA: sửa đặc tả màn 15.1 (§III) theo D3 — giữ thời lượng trung bình, bỏ "Export PDF", chọn theo tháng — khi FE có
-      màn chạy thật.
+- [x] BA: sửa chú thích ¹⁸ của Permission Matrix theo Q1 (PO chốt 09/11/2026: Quản trị như mọi người) — xong 11/11/2026, PR #322.
+- [x] BA: đưa BR-447 (thời lượng họp trung bình, Q2) vào Report 3; thêm thời lượng vào Description/Normal Flow bước 4 và
+      AF-3 của UC-70a — xong 11/11/2026, PR #322.
+- [x] BA: sửa đặc tả màn 15.1 (§III) theo D3 — giữ thời lượng trung bình, bỏ "Export PDF", chọn theo tháng — xong 11/11/2026, PR #322 (FE có màn chạy thật).
 - [x] BE: `GET /api/reports/meetings`, `GET /api/reports/meetings/export`, audit `report.exported`; contract ở
       [`22-bao-cao-thong-ke.md`](../03-api/22-bao-cao-thong-ke.md); `MSG463`–`MSG465` sang *BE* (09/11/2026).
 - [x] FE: trang Báo cáo (`/mgmt/reports`), chọn khoảng tháng, nút Xuất Excel; `MSG466` (10/11/2026, PR xếp trên PR BE #310).
