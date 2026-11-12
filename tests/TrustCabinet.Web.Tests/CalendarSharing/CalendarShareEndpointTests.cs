@@ -43,7 +43,9 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         Assert.Equal("CalendarShare", notice.TargetType);
         Assert.Equal(Id(body), notice.TargetId);
         Assert.Null(notice.MeetingId);
-        Assert.Contains("Mốc 2", notice.Body);
+        // The level reads as on the Chia sẻ lịch screen, not "Mốc 2".
+        Assert.Contains("(Thường và Nội bộ, ", notice.Body);
+        Assert.DoesNotContain("Mốc", notice.Body);
         var audit = Assert.Single(await f.AuditOf(Id(body)));
         Assert.Equal(AuditActions.CalendarShareRequested, audit.Action);
         Assert.Equal(p.Organizer, audit.ActorId);
@@ -169,7 +171,9 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
         var share = body.GetProperty("share");
         Assert.Equal("Level1", share.GetProperty("level").GetString());
         Assert.Equal("Owner", share.GetProperty("initiatedBy").GetString());
-        Assert.Equal(NotificationType.CalendarShareReceived, Assert.Single(await f.NotificationsOf(p.Organizer)).Type);
+        var received = Assert.Single(await f.NotificationsOf(p.Organizer));
+        Assert.Equal(NotificationType.CalendarShareReceived, received.Type);
+        Assert.Contains("(Họp Thường, ", received.Body);
 
         // The recipient takes it as offered; asking for more is UC-84d.
         using var organizer = f.Client(p.Organizer);
