@@ -78,8 +78,17 @@ export function CalendarSharingPage() {
       const share = [...lists.asOwner, ...lists.asViewer].find((s) => s.id === focusId)
       const stopped = share ? share.status === 'Stopped' : !organizer
       toast.show(stopped ? MSG439_STOPPED : 'Chia sẻ này không còn.', 'info')
+      // Said once: drop the link's target so a reload or a shared URL does not say it again.
+      setParams(
+        (current) => {
+          const next = new URLSearchParams(current)
+          next.delete('share')
+          return next
+        },
+        { replace: true },
+      )
     }
-  }, [lists, focusId, organizer, toast])
+  }, [lists, focusId, organizer, toast, setParams])
 
   function setTab(next: Tab) {
     const p = new URLSearchParams(params)
