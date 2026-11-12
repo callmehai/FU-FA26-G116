@@ -4,7 +4,6 @@ actor "Secretary" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
 
@@ -12,21 +11,12 @@ Actor->MinutesCard: Confirm Submit for Approval
 activate MinutesCard
 MinutesCard->MinutesController: submit(minutesId, updatedAt)
 activate MinutesController
-MinutesController->MinutesService: submitAsync(minutesId, actorId, updatedAt)
+MinutesController->MinutesService: SubmitAsync(minutesId, actorId, updatedAt)
 activate MinutesService
-MinutesService->Database: Retrieve the revision
+MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
 activate Database
-Database-->MinutesService: Minutes / None
+Database-->MinutesService: Meeting and revision / None
 deactivate Database
-MinutesService->MeetingRepository: Get the Meeting
-activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
-activate Database
-Database-->MeetingRepository: Meeting / Not found
-deactivate Database
-MeetingRepository-->MinutesService: Meeting / Not found
-deactivate MeetingRepository
-MinutesService->MinutesService: Check the actor is the current Secretary (BR-404)
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-6
     MinutesService-->MinutesController: Not found
@@ -52,13 +42,13 @@ else Actor is the current Secretary
         MinutesController-->MinutesCard: 409 MSG401
         MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else Submission valid
-        MinutesService->Database: Set WaitingApproval, who submitted and when, together with\nthe Chair's notification (BR-388, BR-411)
+        MinutesService->Database: Set WaitingApproval, who submitted and when, together with\nthe Chair's notification, in one save (BR-388, BR-411)
         activate Database
         Database-->MinutesService: Saved / Failed
         deactivate Database
 
         alt Saved
-            MinutesService->NotificationService: Notify the current Chair: minutes waiting for approval (BR-411)
+            MinutesService->NotificationService: The notification is saved with the state; the dispatcher pushes it
             activate NotificationService
             NotificationService-->MinutesService: Queued
             deactivate NotificationService

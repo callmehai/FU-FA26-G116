@@ -15,15 +15,15 @@ MinutesCard->MinutesController: create(meetingId, rebuild)
 activate MinutesController
 MinutesController->MinutesService: createAsync(meetingId, actorId, rebuild)
 activate MinutesService
-MinutesService->MeetingRepository: Get the Meeting
+MinutesService->MeetingRepository: Get the Meeting, locking its row for the transaction
 activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
+MeetingRepository->Database: Lock and retrieve the Meeting (FOR UPDATE)
 activate Database
 Database-->MeetingRepository: Meeting / Not found
 deactivate Database
 MeetingRepository-->MinutesService: Meeting / Not found
 deactivate MeetingRepository
-MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386),\nthe Meeting is InProgress or Ended (BR-387), and the latest\nrevision is absent or still a draft (BR-388)
+MinutesService->MinutesService: Check the actor is the current Chair or Secretary (BR-386),\nthe Meeting is InProgress or Ended (BR-387), the latest revision is absent,\na draft or returned (BR-388, BR-407), that rebuild was asked when one exists,\nand that it is not a correction (BR-413)
 
 alt Actor is not the current Chair or Secretary - EX-1
     MinutesService-->MinutesController: MSG397 - Only the Chair or Secretary may write the minutes.
@@ -41,8 +41,12 @@ else A draft already exists and rebuild is false - EX-3
     MinutesService-->MinutesController: MSG399 - This meeting already has a minutes draft.
     MinutesController-->MinutesCard: MSG399 - This meeting already has a minutes draft.
     MinutesCard-->Actor: MSG399 - This meeting already has a minutes draft.
+else The latest revision is a correction and rebuild is true - EX-7
+    MinutesService-->MinutesController: MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
+    MinutesController-->MinutesCard: 409 MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
+    MinutesCard-->Actor: MSG456 - A correction cannot be rebuilt from the template. Correct it by hand.
 else Actor may build
-    opt A draft already exists - AF-2
+    opt A draft or a returned revision already exists - AF-2
         MinutesCard-->Actor: Warn that every correction will be replaced (BR-388)
         Actor->MinutesCard: Confirm
     end
@@ -62,7 +66,7 @@ else Actor may build
         MinutesTemplate-->MinutesService: Minutes with the agenda and the Chair's conclusions, and "......" to fill (BR-382)
     end
     deactivate MinutesTemplate
-    MinutesService->Database: Save the draft with its revision number
+    MinutesService->Database: Save the revision with its revision number, in the same save\nas the locked Meeting row
     activate Database
     Database-->MinutesService: Saved / Failed
     deactivate Database

@@ -4,7 +4,6 @@ actor "Chair" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
 
@@ -12,21 +11,12 @@ Actor->MinutesCard: Confirm Return with the reason
 activate MinutesCard
 MinutesCard->MinutesController: reject(minutesId, reason, updatedAt)
 activate MinutesController
-MinutesController->MinutesService: rejectAsync(minutesId, actorId, reason, updatedAt)
+MinutesController->MinutesService: ReturnAsync(minutesId, actorId, reason, updatedAt)
 activate MinutesService
-MinutesService->Database: Retrieve the revision
+MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
 activate Database
-Database-->MinutesService: Minutes / None
+Database-->MinutesService: Meeting and revision / None
 deactivate Database
-MinutesService->MeetingRepository: Get the Meeting
-activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
-activate Database
-Database-->MeetingRepository: Meeting / Not found
-deactivate Database
-MeetingRepository-->MinutesService: Meeting / Not found
-deactivate MeetingRepository
-MinutesService->MinutesService: Check the actor is the current Chair (BR-406)
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-5
     MinutesService-->MinutesController: Not found
@@ -37,7 +27,7 @@ else Actor is the current Secretary, not the Chair - EX-1
     MinutesController-->MinutesCard: 403 MSG428
     MinutesCard-->Actor: MSG428 - Only the Chair may approve or return the minutes.
 else Actor is the current Chair
-    MinutesService->MinutesService: Check the revision is WaitingApproval, it is the copy the actor read (BR-389)\nand the reason is not empty and within 2,000 characters (BR-407)
+    MinutesService->MinutesService: Check the revision is WaitingApproval, it is the copy the actor read (BR-389)\nand the reason is not empty after trimming and within 2,000 characters (BR-407)
 
     alt Not waiting for approval - EX-2
         MinutesService-->MinutesController: MSG429 - These minutes are not waiting for approval.
@@ -52,13 +42,13 @@ else Actor is the current Chair
         MinutesController-->MinutesCard: 400 MSG431
         MinutesCard-->Actor: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
     else Return valid
-        MinutesService->Database: Set Rejected (returned), the reason, who returned it and when (BR-407)
+        MinutesService->Database: Set Rejected (returned), the reason, who returned it and when (BR-407);\nthe reason of an earlier return is replaced, together with the Secretary's\nnotification, in one save (BR-411)
         activate Database
         Database-->MinutesService: Saved / Failed
         deactivate Database
 
         alt Saved
-            MinutesService->NotificationService: Notify the current Secretary: minutes returned (BR-411)
+            MinutesService->NotificationService: The notification is saved with the state; the dispatcher pushes it
             activate NotificationService
             NotificationService-->MinutesService: Queued
             deactivate NotificationService
