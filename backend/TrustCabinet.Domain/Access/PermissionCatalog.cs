@@ -31,6 +31,10 @@ public static class PermissionCatalog
                 "Soạn biên bản",
                 "Soạn và chỉnh sửa biên bản cuộc họp trước khi ban hành.",
                 "Biên bản"),
+            [Capability.VoiceCollector] = (
+                "Thu giọng mẫu hộ",
+                "Khi là Thư ký của cuộc họp, ghi giọng mẫu Voice ID cho người dự bằng micro phòng họp, nghe lại và xoá các mẫu đã thu.",
+                "Cuộc họp"),
             [Capability.AdminUsers] = (
                 "Quản trị người dùng",
                 "Quản lý tài khoản người dùng và ma trận phân quyền.",

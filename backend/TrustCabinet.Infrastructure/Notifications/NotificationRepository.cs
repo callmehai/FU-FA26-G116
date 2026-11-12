@@ -128,6 +128,9 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
     public Task<bool> IsCalendarSharePartyAsync(Guid shareId, Guid userId, CancellationToken ct = default)
         => db.CalendarShares.AnyAsync(s => s.Id == shareId && (s.OwnerId == userId || s.ViewerId == userId), ct);
 
+    public Task<bool> IsOwnVoiceSampleAsync(Guid sampleId, Guid userId, CancellationToken ct = default)
+        => db.VoiceSamples.AnyAsync(s => s.Id == sampleId && s.UserId == userId, ct);
+
     private static DateTimeOffset ToDatabasePrecision(DateTimeOffset value)
         => value.AddTicks(-(value.Ticks % 10));
 }

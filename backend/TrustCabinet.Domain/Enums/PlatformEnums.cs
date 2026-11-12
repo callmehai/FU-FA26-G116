@@ -33,6 +33,9 @@ public enum NotificationType
     CalendarShareWithdrawn,
     CalendarShareEnded,
     CalendarShareStopped,
+
+    /// <summary>ADR-0060: a meeting's Secretary recorded a Voice ID sample for the person. Target "VoiceSample".</summary>
+    VoiceSampleCollected,
 }
 
 /// <summary>Delivery state of a queued email (SCRUM-15).</summary>

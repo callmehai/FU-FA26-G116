@@ -99,11 +99,18 @@ export function RecordSampleDialog({
   onClose,
   onSaved,
   onStale,
+  title = 'Ghi giọng mẫu',
+  hint = 'Ngồi ở nơi yên tĩnh, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:',
+  upload = addVoiceSample,
 }: {
   passage: string
   onClose: () => void
   onSaved: (message: string) => Promise<void>
   onStale: () => Promise<void>
+  title?: string
+  hint?: string
+  /** Where the kept take goes: the caller's own set by default; a Secretary's collection passes its own (ADR-0060). */
+  upload?: (audio: Blob, fileName: string) => Promise<{ message: string }>
 }) {
   const recorder = useRecorder()
   const [take, setTake] = useState<{ file: RecordedTake; url: string } | null>(null)
@@ -142,7 +149,7 @@ export function RecordSampleDialog({
     setSaving(true)
     setError(null)
     try {
-      const result = await addVoiceSample(take.file.blob, `giong-mau.${take.file.extension}`)
+      const result = await upload(take.file.blob, `giong-mau.${take.file.extension}`)
       await onSaved(result.message)
     } catch (failure) {
       if (isApiError(failure, 409)) void onStale()
@@ -165,7 +172,7 @@ export function RecordSampleDialog({
   const active = recorder.state.kind === 'recording' || recorder.state.kind === 'paused'
   return (
     <Dialog
-      title="Ghi giọng mẫu"
+      title={title}
       size="lg"
       onClose={() => {
         recorder.discard()
@@ -206,7 +213,7 @@ export function RecordSampleDialog({
         )
       }
     >
-      <p className="field-hint">Ngồi ở nơi yên tĩnh, nói tự nhiên như khi phát biểu, đọc đoạn văn sau:</p>
+      <p className="field-hint">{hint}</p>
       <blockquote className="voice-passage">{passage}</blockquote>
       {active && (
         <p className="voice-recording" role="status">

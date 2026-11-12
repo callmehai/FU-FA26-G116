@@ -2712,6 +2712,12 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("purpose");
 
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("scope");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -2727,9 +2733,9 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_voice_consents");
 
-                    b.HasIndex("UserId")
+                    b.HasIndex("UserId", "Scope")
                         .IsUnique()
-                        .HasDatabaseName("ix_voice_consents_user_id")
+                        .HasDatabaseName("ix_voice_consents_user_id_scope")
                         .HasFilter("withdrawn_at IS NULL");
 
                     b.ToTable("voice_consents", (string)null);
@@ -2755,6 +2761,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("bytea")
                         .HasColumnName("ciphertext");
 
+                    b.Property<Guid?>("CollectedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("collected_by_id");
+
                     b.Property<Guid>("ConsentId")
                         .HasColumnType("uuid")
                         .HasColumnName("consent_id");
@@ -2768,6 +2778,10 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("embedding_model");
+
+                    b.Property<Guid?>("MeetingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meeting_id");
 
                     b.Property<long>("SpeechMs")
                         .HasColumnType("bigint")
@@ -2784,13 +2798,22 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_voice_samples");
 
+                    b.HasIndex("CollectedById")
+                        .HasDatabaseName("ix_voice_samples_collected_by_id");
+
                     b.HasIndex("ConsentId")
                         .HasDatabaseName("ix_voice_samples_consent_id");
+
+                    b.HasIndex("MeetingId")
+                        .HasDatabaseName("ix_voice_samples_meeting_id");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_voice_samples_user_id");
 
-                    b.ToTable("voice_samples", (string)null);
+                    b.ToTable("voice_samples", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_voice_samples_collected_in_meeting", "(collected_by_id IS NULL) = (meeting_id IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoteChoice", b =>
@@ -4047,12 +4070,24 @@ namespace TrustCabinet.Infrastructure.Migrations
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.VoiceSample", b =>
                 {
+                    b.HasOne("TrustCabinet.Domain.Entities.User", "CollectedBy")
+                        .WithMany()
+                        .HasForeignKey("CollectedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_voice_samples_users_collected_by_id");
+
                     b.HasOne("TrustCabinet.Domain.Entities.VoiceConsent", "Consent")
                         .WithMany()
                         .HasForeignKey("ConsentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_voice_samples_voice_consents_consent_id");
+
+                    b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
+                        .WithMany()
+                        .HasForeignKey("MeetingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_voice_samples_meetings_meeting_id");
 
                     b.HasOne("TrustCabinet.Domain.Entities.User", "User")
                         .WithMany()
@@ -4061,7 +4096,11 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_voice_samples_users_user_id");
 
+                    b.Navigation("CollectedBy");
+
                     b.Navigation("Consent");
+
+                    b.Navigation("Meeting");
 
                     b.Navigation("User");
                 });

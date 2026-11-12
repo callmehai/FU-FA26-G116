@@ -140,6 +140,8 @@ public sealed record NotificationTargetResponse(string TargetType, Guid TargetId
             ("Meeting", { } id) => $"/mgmt/meetings/{id:D}",
             // SCRUM-142: the Chia sẻ lịch page of FE-16, opened on that share.
             ("CalendarShare", { } id) => $"/calendar/sharing?share={id:D}",
+            // ADR-0060: the owner's Voice ID page, on the samples Secretaries took for them.
+            ("VoiceSample", { }) => "/mgmt/my-voice?tab=proxy",
             _ => null,
         };
 }

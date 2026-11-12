@@ -18,6 +18,7 @@ public static class VoiceIdServiceCollectionExtensions
         services.AddScoped<IVoiceIdRepository, VoiceIdRepository>();
         services.AddScoped<IVoiceIdErasure, VoiceIdErasure>();
         services.AddScoped<IVoiceIdService, VoiceIdService>();
+        services.AddScoped<IVoiceCollectionService, VoiceCollectionService>();
         return services;
     }
 }

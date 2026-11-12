@@ -51,6 +51,7 @@ public static class ReferenceData
         new() { RoleId = BuiltInRoles.Chair, Capability = Capability.MeetingApprover },
         new() { RoleId = BuiltInRoles.Secretary, Capability = Capability.MeetingCreator },
         new() { RoleId = BuiltInRoles.Secretary, Capability = Capability.MinutesEditor },
+        new() { RoleId = BuiltInRoles.Secretary, Capability = Capability.VoiceCollector },
         new() { RoleId = BuiltInRoles.Admin, Capability = Capability.AdminUsers },
     ];
 }

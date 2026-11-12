@@ -37,4 +37,7 @@ public interface INotificationRepository
 
     /// <summary>SCRUM-142: whether the user is the owner or the viewer of the calendar share a notification points to.</summary>
     Task<bool> IsCalendarSharePartyAsync(Guid shareId, Guid userId, CancellationToken ct = default);
+
+    /// <summary>ADR-0060: the sample still exists and is this person's own.</summary>
+    Task<bool> IsOwnVoiceSampleAsync(Guid sampleId, Guid userId, CancellationToken ct = default);
 }

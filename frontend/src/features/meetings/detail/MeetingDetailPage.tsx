@@ -21,6 +21,7 @@ import {
 import { placeLabel } from '../place'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
+import { VoiceCollectionPanel } from '../../voice/VoiceCollectionPanel'
 import { useNotifications } from '../../notifications/notificationsContext'
 import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
@@ -180,6 +181,13 @@ function MeetingDetail({
     room.phase !== 'off' ||
     room.unfinished !== null ||
     (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null)
+  // ADR-0060: the Secretary trusted with "Thu giọng mẫu hộ" records samples on the room's mic, never in a Secret meeting.
+  const collectsVoices =
+    meeting.mode !== 'Online' &&
+    meeting.myMeetingRole === 'Secretary' &&
+    can('VoiceCollector') &&
+    meeting.sensitivity !== 'Secret' &&
+    meeting.status !== 'Cancelled'
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -423,6 +431,7 @@ function MeetingDetail({
             <div className="recordings-tab">
               <SpeechPanel speech={speech} perMic={perMic} userId={user?.id} startedAt={meeting.actualStartedAt} />
               <RecordingsPanel meetingId={meeting.id} existingOnly={meeting.mode === 'Online'} />
+              {collectsVoices && <VoiceCollectionPanel meetingId={meeting.id} />}
             </div>
           ) : (
             <MinutesPanel meeting={meeting} />
