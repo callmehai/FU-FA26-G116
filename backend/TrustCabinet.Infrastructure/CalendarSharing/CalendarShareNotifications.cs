@@ -12,7 +12,9 @@ internal static class CalendarShareNotifications
 {
     internal const string TargetType = "CalendarShare";
 
-    internal static string LevelName(CalendarShareLevel level) => level == CalendarShareLevel.Level1 ? "Mốc 1" : "Mốc 2";
+    /// <summary>The level as the Chia sẻ lịch screen names it (frontend <c>shareFormat.ts</c>), so a notice and the screen agree.</summary>
+    internal static string LevelName(CalendarShareLevel level)
+        => level == CalendarShareLevel.Level1 ? "Họp Thường" : "Thường và Nội bộ";
 
     internal static string Day(DateOnly date) => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
 
