@@ -785,7 +785,7 @@
         <mxCell id="uc-77" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Minutes" vertex="1">
           <mxGeometry height="44" width="170" x="783" y="1034" as="geometry" />
         </mxCell>
-        <mxCell id="uc-81" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign Meeting Minutes" vertex="1">
+        <mxCell id="uc-83" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Approve and Issue Meeting Minutes" vertex="1">
           <mxGeometry height="44" width="170" x="737" y="1184" as="geometry" />
         </mxCell>
         <mxCell id="uc-82" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Signature Status &amp; Audit Trail" vertex="1">
@@ -797,8 +797,11 @@
         <mxCell id="uc-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Comment on Meeting Document" vertex="1">
           <mxGeometry height="44" width="170" x="1201" y="852" as="geometry" />
         </mxCell>
-        <mxCell id="uc-93" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Request Revision of Meeting Minutes" vertex="1">
+        <mxCell id="uc-93" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Return Meeting Minutes for Revision" vertex="1">
           <mxGeometry height="66" width="180" x="905" y="1231" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-correct-issued-minutes" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Correct Issued Meeting Minutes" vertex="1">
+          <mxGeometry height="44" width="170" x="700" y="950" as="geometry" />
         </mxCell>
         <mxCell id="uc-22" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Notifications" vertex="1">
           <mxGeometry height="44" width="170" x="318" y="962" as="geometry" />
@@ -929,13 +932,16 @@
         <mxCell id="rel-77-17-extend" edge="1" parent="1" source="uc-77" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0.427;exitY=0.031;exitDx=0;exitDy=0;entryX=0.361;entryY=0.969;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" target="uc-17" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel-81-77-extend" edge="1" parent="1" source="uc-81" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-83-77-extend" edge="1" parent="1" source="uc-83" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-82-77-extend" edge="1" parent="1" source="uc-82" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=0.754;entryY=0.939;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-93-77-extend" edge="1" parent="1" source="uc-93" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel-correct-issued-minutes-77-extend" edge="1" parent="1" source="uc-correct-issued-minutes" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=10;" value="OAuth Provider" vertex="1">
@@ -1175,17 +1181,11 @@
         <mxCell id="uc-79" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Edit Meeting Minutes" vertex="1">
           <mxGeometry height="44" width="170" x="1181" y="1842" as="geometry" />
         </mxCell>
-        <mxCell id="uc-80" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Submit Meeting Minutes for Signing" vertex="1">
+        <mxCell id="uc-80" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Submit Meeting Minutes for Approval" vertex="1">
           <mxGeometry height="50" width="183" x="1232" y="1912" as="geometry" />
-        </mxCell>
-        <mxCell id="uc-81" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign Meeting Minutes" vertex="1">
-          <mxGeometry height="44" width="170" x="1152" y="1988" as="geometry" />
         </mxCell>
         <mxCell id="uc-82" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Signature Status &amp; Audit Trail" vertex="1">
           <mxGeometry height="57" width="183" x="938" y="1981.5" as="geometry" />
-        </mxCell>
-        <mxCell id="uc-83" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Finalize Meeting Minutes" vertex="1">
-          <mxGeometry height="44" width="170" x="758" y="1957" as="geometry" />
         </mxCell>
         <mxCell id="uc-84" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Personal Dashboard &amp; Meeting Workspace" vertex="1">
           <mxGeometry height="44" width="170" x="362" y="1050" as="geometry" />
@@ -1199,7 +1199,7 @@
         <mxCell id="uc-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Comment on Meeting Document" vertex="1">
           <mxGeometry height="44" width="170" x="1193" y="1253" as="geometry" />
         </mxCell>
-        <mxCell id="uc-93" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Request Revision of Meeting Minutes" vertex="1">
+        <mxCell id="uc-correct-issued-minutes" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Correct Issued Meeting Minutes" vertex="1">
           <mxGeometry height="44" width="170" x="618" y="1868" as="geometry" />
         </mxCell>
         <mxCell id="uc-22" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Notifications" vertex="1">
@@ -1352,13 +1352,7 @@
         <mxCell id="rel-80-77-extend" edge="1" parent="1" source="uc-80" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.978;entryY=0.641;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel-81-77-extend" edge="1" parent="1" source="uc-81" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.938;entryY=0.824;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="rel-82-77-extend" edge="1" parent="1" source="uc-82" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.706;entryY=0.948;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="rel-83-77-extend" edge="1" parent="1" source="uc-83" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.39;entryY=0.998;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-88-37-extend" edge="1" parent="1" source="uc-88" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.855;entryY=0.852;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-37" value="&amp;#171;extend&amp;#187;">
@@ -1367,7 +1361,7 @@
         <mxCell id="rel-90-64-extend" edge="1" parent="1" source="uc-90" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.975;entryY=0.657;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-64" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel-93-77-extend" edge="1" parent="1" source="uc-93" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.068;entryY=0.724;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
+        <mxCell id="rel-correct-issued-minutes-77-extend" edge="1" parent="1" source="uc-correct-issued-minutes" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=10;endArrow=open;endFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.068;entryY=0.724;entryDx=0;entryDy=0;labelBackgroundColor=#FFFFFF;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="google-idp" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#666666;fontSize=9;" value="OAuth Provider" vertex="1">
@@ -1555,9 +1549,6 @@
         <mxCell id="uc-77" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Meeting Minutes" vertex="1">
           <mxGeometry height="44" width="170" x="800" y="764" as="geometry" />
         </mxCell>
-        <mxCell id="uc-81" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Sign Meeting Minutes" vertex="1">
-          <mxGeometry height="44" width="170" x="1054" y="717" as="geometry" />
-        </mxCell>
         <mxCell id="uc-82" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="View Signature Status &amp; Audit Trail" vertex="1">
           <mxGeometry height="44" width="170" x="1079" y="786" as="geometry" />
         </mxCell>
@@ -1572,9 +1563,6 @@
         </mxCell>
         <mxCell id="uc-91" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Comment on Meeting Document" vertex="1">
           <mxGeometry height="44" width="170" x="1068" y="411" as="geometry" />
-        </mxCell>
-        <mxCell id="uc-93" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Request Revision of Meeting Minutes" vertex="1">
-          <mxGeometry height="44" width="170" x="1033" y="867" as="geometry" />
         </mxCell>
         <mxCell id="uc-94" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Upload Document to Personal Library" vertex="1">
           <mxGeometry height="62" width="178" x="579" y="1028" as="geometry" />
@@ -1659,13 +1647,7 @@
         <mxCell id="rel-77-17-extend" edge="1" parent="1" source="uc-77" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.659;entryY=0.974;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-17" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel-81-77-extend" edge="1" parent="1" source="uc-81" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.224;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="rel-82-77-extend" edge="1" parent="1" source="uc-82" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="rel-93-77-extend" edge="1" parent="1" source="uc-93" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.917;entryY=0.776;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-77" value="&amp;#171;extend&amp;#187;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel-94-89-extend" edge="1" parent="1" source="uc-94" style="edgeStyle=none;html=1;dashed=1;strokeColor=#555555;fontColor=#333333;fontSize=9;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1.000;entryY=0.500;entryDx=0;entryDy=0;entryPerimeter=0;" target="uc-89" value="&amp;#171;extend&amp;#187;">

@@ -26,6 +26,12 @@ id có tên (`uc-handover-chair`, `uc-my-voice-id`…) để không trùng số 
 
 ## Đồng bộ với inventory (02/11/2026)
 
+FE-12 theo luồng duyệt–ban hành mới (SCRUM-33, 11/11/2026; khớp `MinutesService.SubmitAsync/ApproveAsync/ReturnAsync/CorrectAsync`):
+Thư ký giữ *Generate*, *Edit*, *Submit Meeting Minutes for Approval* (UC-61) và *Correct Issued Meeting Minutes* (UC-83),
+bỏ *Submit … for Signing*, *Sign*, *Finalize*, *Request Revision*;
+Chủ tọa có *Approve and Issue Meeting Minutes* (UC-64), *Return Meeting Minutes for Revision* (UC-65) và UC-83, bỏ *Sign*;
+Người dự họp chỉ còn *View Meeting Minutes*. *View Signature Status & Audit Trail* giữ nguyên (placeholder UC-63, SCRUM-37).
+
 Trước đợt này file còn ở baseline 10/10/2026 (70 UC). Đã bổ sung:
 
 - **UC mới:** UC-34b (System Admin); UC-73, UC-74, UC-76, UC-77, UC-78, UC-79, UC-80, UC-81 và UC-75 vào trang
