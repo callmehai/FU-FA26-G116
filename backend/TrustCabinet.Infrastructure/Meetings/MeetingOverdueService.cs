@@ -23,7 +23,7 @@ public sealed class MeetingOverdueOptions
     /// system (ADR-0062). Generous enough for any real overrun; it stops a forgotten
     /// "Đang diễn ra" from keeping its room, its live panels and every worker that reads an open meeting busy for days.
     /// </summary>
-    public int AutoEndAfterHours { get; set; } = 12;
+    public int AutoEndAfterHours { get; set; } = 24;
 }
 
 /// <summary>

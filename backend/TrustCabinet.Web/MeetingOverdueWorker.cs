@@ -4,7 +4,7 @@ namespace TrustCabinet.Web;
 
 /// <summary>
 /// Cancels meetings nobody started a day after their planned start (SCRUM-99, BR-301), and ends meetings nobody ended
-/// 12 hours after their planned end (ADR-0062). Every 15 minutes is enough: both rules are about hours.
+/// 24 hours after their planned end (ADR-0062). Every 15 minutes is enough: both rules are about a day.
 /// </summary>
 public sealed class MeetingOverdueWorker(IServiceScopeFactory scopes, ILogger<MeetingOverdueWorker> logger)
     : BackgroundService

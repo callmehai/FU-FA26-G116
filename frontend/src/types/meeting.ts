@@ -270,7 +270,7 @@ export type MeetingHistoryAction =
   | 'Cancel'
   /** BR-301: the system cancelled it a day after its planned start; `actorId` is null. */
   | 'AutoCancel'
-  /** ADR-0062: the system ended it 12 hours after its planned end; `actorId` is null. */
+  /** ADR-0062: the system ended it 24 hours after its planned end; `actorId` is null. */
   | 'AutoEnd'
   | 'LegacyTransition'
 

@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Meetings;
 namespace TrustCabinet.Web.Tests.Meetings;
 
 /// <summary>
-/// ADR-0062: 12 hours after its planned end (or its actual start, when later) the system ends
+/// ADR-0062: 24 hours after its planned end (or its actual start, when later) the system ends
 /// it the way the Chair would. A forgotten "Đang diễn ra" meeting once kept a hybrid room open for ten days.
 /// </summary>
 public sealed partial class MeetingLifecycleTests
@@ -28,9 +28,9 @@ public sealed partial class MeetingLifecycleTests
     public async Task Meetings_left_running_are_ended_by_the_system_twelve_hours_after_their_planned_end()
     {
         var forgotten = await SeedRunning(MeetingMode.Hybrid, endedHoursAgo: 240, startedHoursAgo: 241);
-        var overtime = await SeedRunning(MeetingMode.Online, endedHoursAgo: 11, startedHoursAgo: 12);
+        var overtime = await SeedRunning(MeetingMode.Online, endedHoursAgo: 23, startedHoursAgo: 24);
         // Started long after its planned end: it gets the whole grace from its real start.
-        var lateStart = await SeedRunning(MeetingMode.Online, endedHoursAgo: 20, startedHoursAgo: 2);
+        var lateStart = await SeedRunning(MeetingMode.Online, endedHoursAgo: 30, startedHoursAgo: 2);
         var draft = await SeedVote(forgotten.MeetingId, forgotten.Secretary, VotingStatus.Draft, "Nháp bị bỏ quên");
         await using (var db = fixture.Db())
         {
@@ -59,7 +59,7 @@ public sealed partial class MeetingLifecycleTests
         Assert.Equal(MeetingStatus.InProgress, history.FromStatus);
         Assert.Equal(MeetingStatus.Ended, history.ToStatus);
         Assert.Null(history.ActorId);
-        Assert.Contains("12 giờ", history.Reason);
+        Assert.Contains("24 giờ", history.Reason);
 
         // The same end as the Chair's: the current item closes, the draft goes, the room closes, readers are told.
         var item0 = await check.AgendaItems.SingleAsync(i => i.Id == forgotten.Items[0]);
@@ -80,12 +80,12 @@ public sealed partial class MeetingLifecycleTests
     [Fact]
     public async Task System_end_yields_to_a_chair_who_already_ended_the_meeting()
     {
-        var s = await SeedRunning(MeetingMode.InPerson, endedHoursAgo: 30, startedHoursAgo: 31);
+        var s = await SeedRunning(MeetingMode.InPerson, endedHoursAgo: 40, startedHoursAgo: 41);
         await Expect(await Act(s, "End"), 200, "MSG111");
 
         await using var scope = fixture.Host.Services.CreateAsyncScope();
         var lifecycle = scope.ServiceProvider.GetRequiredService<IMeetingLifecycleService>();
-        Assert.False(await lifecycle.EndOverrunAsync(s.MeetingId, fixture.Clock.Now.AddHours(-12), "x"));
+        Assert.False(await lifecycle.EndOverrunAsync(s.MeetingId, fixture.Clock.Now.AddHours(-24), "x"));
 
         await using var check = fixture.Db();
         var history = await check.MeetingStatusHistory.Where(h => h.MeetingId == s.MeetingId).ToArrayAsync();

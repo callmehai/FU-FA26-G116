@@ -1,4 +1,4 @@
-# ADR-0062: Hệ thống tự kết thúc cuộc họp bị bỏ quên 12 giờ sau giờ kết thúc dự kiến
+# ADR-0062: Hệ thống tự kết thúc cuộc họp bị bỏ quên 24 giờ sau giờ kết thúc dự kiến
 
 - **Trạng thái:** Đề xuất — PO (Hải) 13/11/2026
 - **Ngày:** 2026-11-13
@@ -19,13 +19,14 @@ biểu, phiếu nháp) và mọi việc chạy nền đọc cuộc họp đang m
 
 ## Quyết định
 
-1. **Cuộc họp `InProgress` quá 12 giờ sau giờ kết thúc dự kiến thì hệ thống tự kết thúc.** Nếu cuộc họp bắt đầu muộn hơn
-   giờ kết thúc dự kiến, 12 giờ tính từ lúc bắt đầu thật: cuộc họp nào cũng có trọn 12 giờ để chạy quá giờ. Mốc nằm ở
-   `Meetings:AutoEndAfterHours` (mặc định 12, cho phép 1–720).
+1. **Cuộc họp `InProgress` quá 24 giờ sau giờ kết thúc dự kiến thì hệ thống tự kết thúc.** Nếu cuộc họp bắt đầu muộn hơn
+   giờ kết thúc dự kiến, 24 giờ tính từ lúc bắt đầu thật: cuộc họp nào cũng có trọn 24 giờ để chạy quá giờ. 24 giờ,
+   cùng mốc với tự huỷ (BR-301), cho dễ nhớ: một ngày quá hạn thì hệ thống dọn. Mốc nằm ở
+   `Meetings:AutoEndAfterHours` (mặc định 24, cho phép 1–720).
 2. **Kết thúc giống hệt Chủ toạ bấm "Kết thúc"** (UC-22): mục chương trình đang chạy chốt `Done`, hàng chờ phát biểu đóng,
    phiếu nháp chưa mở bị xoá (có audit), phòng gọi đóng. Mọi người đang mở cuộc họp nhận sự kiện `MeetingEnded`. Không gửi
    thông báo, giống như khi Chủ toạ kết thúc.
-3. **Lịch sử ghi `AutoEnd`**, `actorId = null`, `actorName = "Hệ thống"`, kèm lý do "Đang diễn ra quá 12 giờ sau giờ kết thúc
+3. **Lịch sử ghi `AutoEnd`**, `actorId = null`, `actorName = "Hệ thống"`, kèm lý do "Đang diễn ra quá 24 giờ sau giờ kết thúc
    dự kiến mà chưa ai kết thúc.". Audit có mã `meeting.auto_ended`.
 4. `MeetingOverdueWorker` (15 phút một lần) chạy cả hai quy tắc: tự huỷ (BR-301) và tự kết thúc. Mỗi cuộc họp được xử lý trong
    transaction riêng, kiểm tra lại dưới khoá của cuộc họp, nên Chủ toạ bấm "Kết thúc" cùng lúc thì lần bấm của Chủ toạ thắng.
@@ -33,8 +34,8 @@ biểu, phiếu nháp) và mọi việc chạy nền đọc cuộc họp đang m
 
 ## Hệ quả
 
-- Cuộc họp thật không bị cắt: 12 giờ sau giờ kết thúc dự kiến là quá xa so với mọi lần chạy quá giờ.
-- Một cuộc họp bị bỏ quên đóng lại trong vòng 12 giờ 15 phút. Bản ghi tổng hợp, bản dự thảo và các việc khác chờ `Ended`
+- Cuộc họp thật không bị cắt: 24 giờ sau giờ kết thúc dự kiến là quá xa so với mọi lần chạy quá giờ.
+- Một cuộc họp bị bỏ quên đóng lại trong vòng 24 giờ 15 phút. Bản ghi tổng hợp, bản dự thảo và các việc khác chờ `Ended`
   sẽ chạy như sau một lần kết thúc bình thường.
 - Khi deploy, các cuộc họp test bị bỏ ở "Đang diễn ra" trên server sẽ tự kết thúc trong lần chạy đầu tiên của worker.
 - Lượt ghi mic phòng còn mở không bị ảnh hưởng: lượt ghi không hoạt động đã được lưu sẵn sau `Recordings:IdleTakeHours`.

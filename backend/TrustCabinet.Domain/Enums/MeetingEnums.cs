@@ -41,7 +41,7 @@ public enum MeetingHistoryAction
     /// <summary>The system cancelled a meeting nobody started a day after its planned start (BR-301).</summary>
     AutoCancel,
     /// <summary>
-    /// The system ended a meeting nobody ended 12 hours after its planned end, or after its actual start when that was
+    /// The system ended a meeting nobody ended 24 hours after its planned end, or after its actual start when that was
     /// later (ADR-0062).
     /// </summary>
     AutoEnd,
