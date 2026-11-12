@@ -28,13 +28,12 @@ export interface VoiceProfile {
   proxy: ProxyVoiceProfile
 }
 
-/** The samples Secretaries took for the person, under the person's own separate consent (ADR-0060). */
+/** The samples Secretaries took for the person, under the same one Voice ID consent (ADR-0060). */
 export interface ProxyVoiceProfile {
-  consent: VoiceConsent | null
+  /** The consent is to notice 1.3 or later, which names Secretaries recording on the room's mic. */
+  allowed: boolean
   samples: ProxySample[]
   maxSamples: number
-  noticeVersion: string
-  purpose: string
 }
 
 export interface ProxySample extends VoiceSample {

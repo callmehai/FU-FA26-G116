@@ -53,16 +53,20 @@ export function ConsentForm({
           <strong>Mục đích:</strong> {profile.purpose}
         </li>
         <li>
-          <strong>Lưu gì:</strong> bản ghi giọng mẫu bạn đọc và đặc trưng giọng (một dãy số), cả hai đã mã hoá. Chỉ bạn
-          nghe lại được bản ghi mẫu.
+          <strong>Ai thu:</strong> bạn tự thu trên máy mình, hoặc Thư ký cuộc họp bạn dự (người được giao quyền "Thu giọng
+          mẫu hộ") thu bằng micro phòng họp. Mỗi lần Thư ký thu, bạn nhận một thông báo.
+        </li>
+        <li>
+          <strong>Lưu gì:</strong> bản ghi giọng mẫu và đặc trưng giọng (một dãy số), cả hai đã mã hoá. Chỉ bạn nghe lại
+          được mọi mẫu; Thư ký chỉ nghe mẫu thu ở cuộc họp của mình.
         </li>
         <li>
           <strong>Dùng ở đâu:</strong> chỉ so với giọng trong bản ghi các cuộc họp bạn tham dự. Máy gợi ý tên người
           nói, và tự điền tên bạn khi giọng khớp rõ; Thư ký xem và sửa được.
         </li>
         <li>
-          <strong>Quyền của bạn:</strong> xem và xoá từng giọng mẫu, rút lại đồng ý bất cứ lúc nào ở trang "Giọng nói
-          của tôi"; rút lại thì giọng mẫu, mọi gợi ý và tên máy đã điền bị xoá ngay.
+          <strong>Quyền của bạn:</strong> xem, nghe và xoá từng giọng mẫu, rút lại đồng ý bất cứ lúc nào ở trang "Giọng
+          nói của tôi"; rút lại thì mọi giọng mẫu (cả mẫu Thư ký thu), gợi ý và tên máy đã điền bị xoá ngay.
         </li>
         <li>
           <strong>Bên kiểm soát dữ liệu:</strong> {profile.controller}
