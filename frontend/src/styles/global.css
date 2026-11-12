@@ -40,7 +40,9 @@
   --gold: #c99a2e;
   --gold-soft: #e3c06a;
   --focus: #2f6feb;
-  --focus-ring: #2f6feb66;
+  /* A focused or open field (input, Select, date): one thin border in the brand colour, as a chosen
+     option card draws it — no halo around it (BA, 12/11/2026). Buttons keep the --focus outline. */
+  --focus-line: var(--brand);
   /* A heads-up sign (the lobby's "this meeting is recorded"): a yellow triangle, outlined dark so it stands out on
      white. Yellow alone is too faint to read as an icon. */
   --warning-fill: #fcc419;
@@ -285,14 +287,15 @@ code {
 
 /* ---------- Press feedback ----------
    Hover alone says "this is clickable"; a click also has to show it landed, or repeated clicks
-   (generate password, retry) look like nothing happened. The shrink is a keyframe animation that
-   lib/pressFeedback.ts starts on press, not a transition on :active — a trackpad tap releases
-   too fast for :active to ever be seen. */
+   (generate password, retry) look like nothing happened. The feedback is a brief darken, the same
+   for every button kind: a keyframe animation that lib/pressFeedback.ts starts on press, not a
+   transition on :active — a trackpad tap releases too fast for :active to ever be seen. It does
+   not shrink or move the button: the earlier scale(.95) read as a bounce (BA, 12/11/2026). */
 .btn, .icon-button, .select-trigger, .menu-item, .select-option, .toast-close {
   transition: background-color .15s, border-color .15s, box-shadow .15s;
 }
 
-@keyframes press { 40% { transform: scale(.95); } }
+@keyframes press { from { filter: brightness(.92); } }
 
 /* A finger needs 40px: fields and buttons grow on a touch screen — the small ones too (SCRUM-151).
    Page buttons, a dialog's close and the quick-choice chips grow beside their own rules, further down. */
@@ -303,9 +306,9 @@ code {
   .select-option { min-height: 40px; }
   .icon-button-sm { width: 40px; height: 40px; }
 }
-.is-pressed { animation: press .18s ease-out; }
+.press-flash { animation: press .12s ease-out; }
 
-.btn-primary:active:not(:disabled) { background: var(--brand-ink); box-shadow: inset 0 1px 2px #0003; }
+.btn-primary:active:not(:disabled) { background: var(--brand-ink); }
 .btn-danger:active:not(:disabled) { background: color-mix(in srgb, var(--danger) 22%, var(--surface)); }
 :is(.btn-ghost, .btn-outline, .icon-button, .menu-item, .select-option):active:not(:disabled) { background: var(--line); }
 :is(.sidebar-item, .sidebar-subitem):active { background: var(--sidebar-active); }
@@ -325,8 +328,8 @@ code {
 .input-group input { flex: 1; min-width: 0; }
 .input-group .btn { margin-left: 4px; }
 
-/* A password input with its show/hide button drawn inside the box, on the right. Positioned with
-   top/right, not transform — the press animation already owns transform. */
+/* A password input with its show/hide button drawn inside the box, on the right, placed with
+   top/right. */
 .input-reveal { position: relative; display: flex; }
 .input-reveal input { flex: 1; min-width: 0; padding-right: 40px; }
 .input-reveal .icon-button {
@@ -357,8 +360,7 @@ input:disabled, textarea:disabled { background: var(--surface-alt); color: var(-
 
 input:focus-visible, textarea:focus-visible {
   outline: none;
-  border-color: var(--focus);
-  box-shadow: 0 0 0 3px var(--focus-ring);
+  border-color: var(--focus-line);
 }
 
 input[type='checkbox'] {
@@ -371,6 +373,8 @@ input[type='checkbox'] {
 }
 
 input[aria-invalid='true'] { border-color: var(--danger); }
+/* Focused while in error: the red border stays and thickens, so focus still shows without a halo. */
+input[aria-invalid='true']:focus-visible { box-shadow: inset 0 0 0 1px var(--danger); }
 
 .field-error { color: var(--danger); font-size: 13px; }
 .field-hint { margin: 0; color: var(--muted-ink); font-size: 13px; }
@@ -414,7 +418,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   cursor: pointer;
 }
 
-.select-trigger[aria-expanded='true'] { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+.select-trigger:focus-visible, .select-trigger[aria-expanded='true'] { outline: none; border-color: var(--focus-line); }
 .select-trigger .icon { color: var(--label-ink); }
 .select-placeholder { color: var(--muted-ink); }
 .select-trigger[aria-expanded='true'] .icon { transform: rotate(180deg); }
@@ -2137,7 +2141,7 @@ a.menu-item { text-decoration: none; }
 .date-range-box { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .date-range-dash { color: var(--muted-ink); }
 .date-range .date-field-box { width: 146px; }
-.date-range-active input { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+.date-range-active input { border-color: var(--focus-line); }
 @media (max-width: 720px) {
   .date-range .date-field-box { flex: 1 1 0; width: auto; min-width: 0; }
   /* Two dates share a 390px line: room for "dd/mm/yyyy" beside the calendar button. */
@@ -2472,7 +2476,7 @@ a.menu-item { text-decoration: none; }
   -webkit-line-clamp: 3;
   outline: none;
 }
-.overview-head h2:focus-visible { border-radius: 4px; box-shadow: var(--focus-ring); }
+.overview-head h2:focus-visible { border-radius: 4px; outline: 2px solid var(--focus); outline-offset: 2px; }
 .overview-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 20px 16px; font-size: 13.5px; }
 .overview-facts { display: flex; flex-direction: column; gap: 10px; margin: 0; }
 .overview-row { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 12px; }
@@ -3570,7 +3574,7 @@ a.menu-item { text-decoration: none; }
   font-size: 14px;
   color: var(--ink);
 }
-.room-chat-form textarea:focus { outline: 2px solid var(--focus-ring); border-color: var(--focus); }
+.room-chat-form textarea:focus { outline: none; border-color: var(--focus-line); }
 .room-chat-actions { display: flex; justify-content: space-between; align-items: center; }
 
 .room-controls {
@@ -4179,6 +4183,8 @@ audio.recording-player { height: 40px; }
   border-radius: var(--radius); background: transparent; color: var(--muted-ink); box-shadow: none;
 }
 .select-trigger.select-icon:hover, .select-trigger.select-icon[aria-expanded="true"] { background: var(--brand-wash); color: var(--brand); }
+/* Borderless, so no border to colour: keyboard focus falls back to the buttons' outline. */
+.select-trigger.select-icon:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 @media (hover: none) {
   .tl-tools { opacity: 1; }
   /* A finger-sized target that keeps the line its height: the extra reaches into the space around it. */
@@ -4344,6 +4350,9 @@ body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px)
 .speaker-row .select-trigger { width: auto; max-width: 100%; }
 .speaker-row .select-trigger:not(.select-empty) { border-color: transparent; background: transparent; box-shadow: none; }
 .speaker-row .select-trigger:not(.select-empty):hover { background: var(--surface-alt); }
+/* Borderless at rest, so focus (and an open menu) draws the one thin border every field shows. */
+.speaker-row .select-trigger:is(:focus-visible, [aria-expanded='true']),
+.tl-name-pick .select-trigger:focus-visible { border-color: var(--focus-line); }
 .speaker-row .select-value, .speaker-row .select-placeholder { min-width: 0; }
 /* A person's name is never cut (PO 03/11/2026): where it does not fit, the speaking time moves below it, and a name
    longer than the whole row wraps rather than ending in "…". */

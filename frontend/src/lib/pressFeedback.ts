@@ -1,5 +1,6 @@
 /**
- * A press animation for every button, driven from script rather than `:active`.
+ * A press animation for every button — a brief darken, no movement — driven from script rather
+ * than `:active`.
  *
  * `:active` lasts only while the pointer is held. A trackpad tap-to-click releases within a few
  * milliseconds, so a CSS transition keyed on `:active` never gets to run and the click looks like
@@ -8,7 +9,9 @@
  */
 const PRESSABLE =
   '.btn, .icon-button, .select-trigger, .menu-item, .sidebar-item, .sidebar-subitem'
-const PRESSED_CLASS = 'is-pressed'
+// Not `is-pressed`: the editor toolbar uses that for a toggled-on button, and removing it when the
+// animation ended could switch that highlight off behind React’s back.
+const PRESSED_CLASS = 'press-flash'
 
 function press(target: EventTarget | null) {
   const element = target instanceof Element ? target.closest<HTMLElement>(PRESSABLE) : null
