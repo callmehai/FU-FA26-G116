@@ -1,4 +1,4 @@
-# ADR-0061: Họp kết hợp: phòng ghi trực tiếp bằng mic phòng, người trực tuyến ghi theo micro của mình, một dòng thời gian
+# ADR-0061: Họp kết hợp: phòng ghi trực tiếp bằng mic phòng, người trực tuyến ghi theo micro của mình, một dòng thời gian, một bản ghi tổng hợp
 
 - **Trạng thái:** Đề xuất — PO (Hải) 12/11/2026
 - **Ngày:** 2026-11-12
@@ -33,6 +33,18 @@ người họp trực tuyến nói qua hệ thống, ghi theo micro của chính
    từ** trùng câu đó là tiếng loa phòng phát lại: bỏ khỏi dòng thời gian của bản dự thảo. Ai ngồi ở phòng nói chen cùng lúc
    thì giữ, vì lời khác nhau. So từ bỏ dấu, chữ hoa và dấu câu, vì hai lần gỡ băng cùng một giọng hiếm khi khớp từng dấu.
 4. Không làm chế độ "Máy phòng họp" của ADR-0040 điểm 5: máy Thư ký ghi mic phòng là đủ.
+5. **Bản ghi tổng hợp: N mic trực tuyến + 1 mic phòng thành một tệp nghe lại** (PO 13/11/2026). Họp kết hợp kết thúc rồi,
+   server tự trộn bản ghi mic phòng (đặt từng lượt theo giờ bắt đầu thật) với mọi câu theo micro của người trực tuyến (đặt
+   theo giờ nói) thành **một tệp WAV**, nằm trong danh sách Bản ghi với nhãn **Tổng hợp**: nghe bằng thanh phát như mọi bản
+   ghi, Chủ toạ và Thư ký tải về được (như ADR-0040, không cho họp Mật).
+   - Hai người nói cùng lúc thì nghe cùng lúc: chấp nhận chồng tiếng. Lời người trực tuyến nghe hơi vọng, vì mic phòng cũng
+     thu tiếng loa phát lời họ.
+   - Câu đã bị loại khỏi biên bản không vào bản tổng hợp.
+   - Dựng khi nguồn đã ổn: không còn lượt mic phòng đang ghi, và không có gì mới trong 1 phút. Nguồn đổi về sau (câu gửi
+     muộn, câu bị loại, lượt bị cắt) thì tự dựng lại, giữ nguyên dòng bản ghi. Thư ký xoá thì không dựng lại.
+   - Chỉ để nghe: không gỡ băng lại (`POST …/transcribe` trả `409 MSG479`), vì lời đã có từ mic phòng và mic từng người.
+   - Trộn ngay trong backend (mọi nguồn đều là PCM 16 kHz mono), theo khối 10 giây: không cần worker nhận dạng giọng, không
+     nạp cả buổi họp vào bộ nhớ. Khoảng lặng giữa các lượt giữ nguyên, để vị trí trên thanh phát khớp giờ họp.
 
 ## Hệ quả
 
@@ -40,3 +52,6 @@ người họp trực tuyến nói qua hệ thống, ghi theo micro của chính
 - Mất mic phòng giữa buổi thì không bù bằng tệp ghi ngoài được. Bù lại, ADR-0041 đã giữ phần chưa gửi trên máy và ghi tiếp được.
 - Tab Bản ghi vẫn hiện bản gỡ băng của mic phòng nguyên vẹn, kể cả đoạn vọng: Thư ký xem được đủ, chỉ bản dự thảo bỏ.
 - Nhận đúng tên người ngồi ở phòng dựa vào Voice ID, tốt nhất là giọng mẫu Thư ký thu bằng chính mic phòng (ADR-0060).
+- Bản tổng hợp tốn chỗ như bản ghi mic phòng (khoảng 115 MB mỗi giờ) và tự xoá cùng thời hạn lưu trữ.
+- Họp trực tiếp chỉ có một nguồn (mic phòng, hoặc tệp tải lên), họp trực tuyến đã nghe được cả buổi trên một thanh theo micro
+  từng người (ADR-0039), nên không cần bản tổng hợp.

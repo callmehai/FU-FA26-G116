@@ -194,6 +194,20 @@ trả `Content-Disposition: attachment` với tên tệp gốc. Chữ ký của 
 
 Thư ký xoá theo yêu cầu. `200 MSG296`; gọi lại trên bản đã xoá vẫn `200 MSG296`.
 
+## Bản ghi tổng hợp của họp kết hợp ([ADR-0061](../05-decisions/0061-hop-ket-hop-mot-dong-thoi-gian.md) điểm 5)
+
+Họp kết hợp kết thúc rồi, server trộn bản ghi mic phòng và mọi câu theo micro của người trực tuyến (trừ câu đã loại khỏi
+biên bản) thành một tệp WAV 16 kHz mono, đặt mỗi nguồn theo giờ thật; chồng tiếng thì nghe chồng. Tệp nằm trong
+`GET …/recordings` với `source: "Combined"`, tên `ban-ghi-tong-hop-dd-MM-yyyy-HHmm.wav`, cùng mục đích, người tạo và thời
+hạn lưu với bản ghi mic phòng; nghe (`/playback`), tải (`/download`) và xoá (`DELETE`) như mọi bản ghi.
+
+- Dựng khi cuộc họp `Ended`, không Mật, đã có cả bản ghi mic phòng lẫn câu trực tuyến có tiếng, không còn lượt mic phòng
+  đang ghi, và nguồn không đổi trong 1 phút. Một worker nền xét mỗi 30 giây, trong 8 ngày sau khi họp xong (câu gửi muộn
+  tối đa 7 ngày).
+- Nguồn đổi về sau thì dựng lại tại chỗ (cùng `id`, tệp mới thay tệp cũ) và gửi `RecordingsChanged`. Thư ký đã xoá thì
+  không dựng lại.
+- Không có bản gỡ băng: `transcriptStatus` là `"None"`, `POST …/transcribe` trả `409 MSG479`.
+
 ## Cấu hình (`Recordings:*`)
 
 | Khoá | Mặc định | Ghi chú |

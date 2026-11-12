@@ -66,6 +66,15 @@ public class TrustCabinetApiFactory : WebApplicationFactory<Program>
                 services.Remove(retention);
             }
 
+            // And the hybrid meetings' combined recording: tests build it themselves through BuildNextAsync.
+            var combined = services.SingleOrDefault(descriptor =>
+                descriptor.ServiceType == typeof(IHostedService)
+                && descriptor.ImplementationType == typeof(CombinedRecordingWorker));
+            if (combined is not null)
+            {
+                services.Remove(combined);
+            }
+
             // And the overdue meeting sweep, which would open a database connection too.
             var overdue = services.SingleOrDefault(descriptor =>
                 descriptor.ServiceType == typeof(IHostedService)

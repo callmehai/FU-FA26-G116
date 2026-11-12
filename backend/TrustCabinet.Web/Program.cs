@@ -87,6 +87,7 @@ builder.Services.AddTrustCabinetDocuments(builder.Configuration);
 // SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.
 builder.Services.AddTrustCabinetRecordings(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddHostedService<RecordingRetentionWorker>();
+builder.Services.AddHostedService<CombinedRecordingWorker>();
 // SCRUM-99: cancels meetings nobody started a day after their planned start (BR-301).
 builder.Services.AddHostedService<MeetingOverdueWorker>();
 

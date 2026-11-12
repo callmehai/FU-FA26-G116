@@ -3974,6 +3974,7 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
 .recording-player { grid-column: 2 / -1; width: 100%; margin: 4px 0 0; }
 audio.recording-player { height: 40px; }
 .consent-file { display: flex; align-items: center; gap: 6px; margin: 0 0 14px; color: var(--muted-ink); font-size: 14px; }
+.consent-file + .alert { margin: 0 0 14px; }
 .consent-check { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0 8px; font-size: 14px; line-height: 1.45; cursor: pointer; }
 .consent-check input { margin-top: 2px; flex: none; }
 @media (max-width: 560px) {
