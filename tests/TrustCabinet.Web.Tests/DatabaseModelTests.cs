@@ -279,6 +279,8 @@ public class DatabaseModelTests
             (BuiltInRoles.Chair, Capability.MeetingApprover),
             (BuiltInRoles.Secretary, Capability.MeetingCreator),
             (BuiltInRoles.Secretary, Capability.MinutesEditor),
+            // ADR-0060: records Voice ID samples for the people of a meeting the holder is the Secretary of.
+            (BuiltInRoles.Secretary, Capability.VoiceCollector),
             (BuiltInRoles.Admin, Capability.AdminUsers),
         };
 
