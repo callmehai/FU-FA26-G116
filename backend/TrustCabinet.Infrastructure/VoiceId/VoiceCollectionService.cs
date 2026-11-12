@@ -20,7 +20,7 @@ namespace TrustCabinet.Infrastructure.VoiceId;
 /// <item>the caller holds <see cref="Capability.VoiceCollector"/> (the endpoint group checks it on every request);</item>
 /// <item>the caller is the Secretary of this very meeting, now — checked here on every call, so a Secretary replaced
 /// mid-meeting loses it at once; anyone else is answered as if the meeting did not exist;</item>
-/// <item>the person has their own standing <see cref="VoiceConsentScope.Proxy"/> consent, which only they can give.</item>
+/// <item>the person has their own standing consent, to a notice that names this (ADR-0060), which only they can give.</item>
 /// </list>
 /// A sample is bound to the person and encrypted exactly as one they took themself; the Secretary sees, hears and deletes
 /// only the samples taken in their meeting, each play is audited, and the person is told each time one is taken.
@@ -46,8 +46,9 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
                 .GroupBy(p => p.UserId).Select(g => g.OrderBy(p => p.Role).First()).ToArray();
             var ids = people.Select(p => p.UserId).ToArray();
             var consented = (await db.VoiceConsents.AsNoTracking()
-                    .Where(c => ids.Contains(c.UserId) && c.Scope == VoiceConsentScope.Proxy && c.WithdrawnAt == null)
-                    .Select(c => c.UserId).ToListAsync(ct)).ToHashSet();
+                    .Where(c => ids.Contains(c.UserId) && c.WithdrawnAt == null)
+                    .Select(c => new { c.UserId, c.NoticeVersion }).ToListAsync(ct))
+                .Where(c => VoiceIdRules.AllowsCollection(c.NoticeVersion)).Select(c => c.UserId).ToHashSet();
             var samples = await db.VoiceSamples.AsNoTracking()
                 .Where(s => ids.Contains(s.UserId) && s.CollectedById != null)
                 .Select(s => new { s.Id, s.UserId, s.MeetingId, s.CreatedAt, s.SpeechMs, CollectedByName = s.CollectedBy!.FullName })
@@ -84,7 +85,8 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
             // Only a person of this meeting, with an account: a guest has no Voice ID to keep a sample under.
             if (!meeting.Participants.Any(p => p.UserId == userId && ParticipantRules.Active(p))) return new(VoiceFailure.NotFound);
             // Checked before the audio goes to the worker, then again under the lock before anything is kept.
-            if (await repository.FindActiveConsentAsync(userId, false, ct, VoiceConsentScope.Proxy) is null)
+            if (await repository.FindActiveConsentAsync(userId, false, ct) is not { } given
+                || !VoiceIdRules.AllowsCollection(given.NoticeVersion))
                 return new(VoiceFailure.NoConsent);
             if ((await repository.ListProxySamplesAsync(userId, ct)).Count >= VoiceIdRules.MaxSamples)
                 return new(VoiceFailure.LimitReached);
@@ -122,8 +124,9 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
             return await repository.InTransactionAsync(async token =>
             {
                 // The same row lock a withdrawal takes: a sample is never kept after the person said no.
-                var consent = await repository.FindActiveConsentAsync(userId, true, token, VoiceConsentScope.Proxy);
-                if (consent is null) return new VoiceOutcome(VoiceFailure.NoConsent);
+                var consent = await repository.FindActiveConsentAsync(userId, true, token);
+                if (consent is null || !VoiceIdRules.AllowsCollection(consent.NoticeVersion))
+                    return new VoiceOutcome(VoiceFailure.NoConsent);
                 // The Secretary, and the meeting's state, again: either may have changed while the worker listened.
                 var current = await ManagedAsync(meetingId, actorId, token);
                 if (current is null) return new(VoiceFailure.NotFound);

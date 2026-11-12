@@ -7,16 +7,14 @@ namespace TrustCabinet.Infrastructure.VoiceId;
 
 public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdRepository
 {
-    public async Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct,
-        VoiceConsentScope scope = VoiceConsentScope.Self)
+    public async Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct)
     {
         // Withdrawal and adding a sample lock the same row, so no sample is ever stored after a withdrawal.
-        var name = scope.ToString();
         if (forUpdate)
             await db.VoiceConsents.FromSqlInterpolated(
-                $"SELECT * FROM voice_consents WHERE user_id = {userId} AND scope = {name} AND withdrawn_at IS NULL FOR UPDATE")
+                $"SELECT * FROM voice_consents WHERE user_id = {userId} AND withdrawn_at IS NULL FOR UPDATE")
                 .AsNoTracking().ToListAsync(ct);
-        return await db.VoiceConsents.SingleOrDefaultAsync(c => c.UserId == userId && c.Scope == scope && c.WithdrawnAt == null, ct);
+        return await db.VoiceConsents.SingleOrDefaultAsync(c => c.UserId == userId && c.WithdrawnAt == null, ct);
     }
 
     public async Task<IReadOnlyList<VoiceSample>> ListSamplesAsync(Guid userId, CancellationToken ct)

@@ -12,7 +12,7 @@ namespace TrustCabinet.Domain.Entities;
 ///
 /// A sample the Secretary of a meeting took for the person on the room's mic (ADR-0060) names who took it and in which
 /// meeting; both are null for a sample the person recorded themself. It is still the person's: it is bound to them,
-/// lives under their own <see cref="VoiceConsentScope.Proxy"/> consent, and they can hear and delete it.
+/// lives under their own consent, the same one as the samples they record (ADR-0060), and they can hear and delete it.
 /// </summary>
 public class VoiceSample : Entity
 {

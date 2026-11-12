@@ -12,7 +12,8 @@ namespace TrustCabinet.Infrastructure.VoiceId;
 
 /// <summary>
 /// SCRUM-35 — a person's own Voice ID. Nothing here acts on anyone but the caller: no one can enrol, keep or withdraw
-/// someone else's voice. Withdrawal erases every sample and every machine suggestion pointing at the person, in
+/// someone else's voice. One consent covers the samples the person records and the ones Secretaries record for them
+/// (ADR-0060). Withdrawal erases every sample and every machine suggestion pointing at the person, in
 /// one transaction, under the same row lock a new sample takes.
 /// </summary>
 public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasure erasure, IVoiceEmbedder embedder,
@@ -96,65 +97,12 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
         try
         {
             await repository.InTransactionAsync(
-                token => erasure.EndAsync(actorId, actorId, VoiceIdEndReason.Withdrawn, token, VoiceConsentScope.Self), ct);
+                token => erasure.EndAsync(actorId, actorId, VoiceIdEndReason.Withdrawn, token), ct);
             return new(Data: await ProfileAsync(actorId, ct));
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
             logger.LogError(ex, "Failed to withdraw Voice ID of {UserId}", actorId);
-            return new(VoiceFailure.SaveFailed);
-        }
-    }
-
-    public async Task<VoiceOutcome> GrantProxyAsync(Guid actorId, string? noticeVersion, CancellationToken ct = default)
-    {
-        if (noticeVersion != VoiceIdRules.ProxyNoticeVersion)
-            return new(VoiceFailure.Invalid, Errors: new Dictionary<string, string[]>
-            {
-                ["noticeVersion"] = ["Nội dung thông báo đã thay đổi. Hãy tải lại trang và đọc lại trước khi đồng ý."],
-            });
-        try
-        {
-            await repository.InTransactionAsync(async token =>
-            {
-                // The person's own act: no route lets anyone else create this row (ADR-0060).
-                if (await repository.FindActiveConsentAsync(actorId, true, token, VoiceConsentScope.Proxy) is not null) return 0;
-                var now = clock.GetUtcNow();
-                var consent = new VoiceConsent
-                {
-                    UserId = actorId, Scope = VoiceConsentScope.Proxy, GrantedAt = now,
-                    NoticeVersion = VoiceIdRules.ProxyNoticeVersion, Purpose = VoiceIdRules.ProxyPurpose, CreatedAt = now, UpdatedAt = now,
-                };
-                repository.Add(consent);
-                await audit.RecordAsync(AuditActions.VoiceConsentGranted, AuditActions.VoiceConsentObjectType, consent.Id, actorId,
-                    new { scope = "proxy", consent.NoticeVersion, consent.Purpose }, token);
-                await repository.SaveChangesAsync(token);
-                return 0;
-            }, ct);
-            return new(Data: await ProfileAsync(actorId, ct));
-        }
-        catch (Exception ex) when (AlreadyAgreed(ex))
-        {
-            return new(Data: await ProfileAsync(actorId, ct));
-        }
-        catch (Exception ex) when (PersistenceError(ex))
-        {
-            logger.LogError(ex, "Failed to record proxy Voice ID consent of {UserId}", actorId);
-            return new(VoiceFailure.SaveFailed);
-        }
-    }
-
-    public async Task<VoiceOutcome> WithdrawProxyAsync(Guid actorId, CancellationToken ct = default)
-    {
-        try
-        {
-            await repository.InTransactionAsync(
-                token => erasure.EndAsync(actorId, actorId, VoiceIdEndReason.Withdrawn, token, VoiceConsentScope.Proxy), ct);
-            return new(Data: await ProfileAsync(actorId, ct));
-        }
-        catch (Exception ex) when (PersistenceError(ex))
-        {
-            logger.LogError(ex, "Failed to withdraw proxy Voice ID of {UserId}", actorId);
             return new(VoiceFailure.SaveFailed);
         }
     }
@@ -276,17 +224,16 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
     {
         var consent = await repository.FindActiveConsentAsync(userId, false, ct);
         var samples = await repository.ListSamplesAsync(userId, ct);
-        var proxyConsent = await repository.FindActiveConsentAsync(userId, false, ct, VoiceConsentScope.Proxy);
         var proxySamples = await repository.ListProxySamplesAsync(userId, ct);
         return new(View(consent),
             [.. samples.Where(s => s.CollectedById is null)
                 .Select(s => new VoiceSampleView(s.Id, s.CreatedAt, s.SpeechMs, s.AudioCiphertext is not null))],
             VoiceIdRules.MaxSamples,
             VoiceIdRules.NoticeVersion, VoiceIdRules.Purpose, options.Value.Controller,
-            new(View(proxyConsent),
+            new(consent is not null && VoiceIdRules.AllowsCollection(consent.NoticeVersion),
                 [.. proxySamples.Select(s => new ProxySampleView(s.Id, s.CreatedAt, s.SpeechMs, s.AudioCiphertext is not null,
                     s.MeetingId!.Value, s.Meeting!.Title, s.CollectedBy!.FullName))],
-                VoiceIdRules.MaxSamples, VoiceIdRules.ProxyNoticeVersion, VoiceIdRules.ProxyPurpose));
+                VoiceIdRules.MaxSamples));
     }
 
     private static VoiceConsentView? View(VoiceConsent? consent)

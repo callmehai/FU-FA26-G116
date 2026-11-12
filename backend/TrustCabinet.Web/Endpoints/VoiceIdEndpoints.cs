@@ -11,7 +11,7 @@ namespace TrustCabinet.Web.Endpoints;
 ///
 /// ADR-0060 adds the one way to record someone else's voice: the Secretary of an in-person or hybrid meeting, holding
 /// <see cref="Capability.VoiceCollector"/>, records samples for its people on the room's mic, under each person's own
-/// consent to that (<c>/api/me/voice/proxy-consent</c>).
+/// Voice ID consent: the one consent covers both sets (ADR-0060).
 /// </summary>
 public static class VoiceIdEndpoints
 {
@@ -27,8 +27,6 @@ public static class VoiceIdEndpoints
     private const string Msg313Invalid = "MSG313";
     private const string Msg314ReadFailed = "MSG314";
     private const string Msg315SaveFailed = "MSG315";
-    private const string Msg471ProxyConsentGranted = "MSG471";
-    private const string Msg472ProxyConsentWithdrawn = "MSG472";
     private const string Msg473ProxySampleAdded = "MSG473";
     private const string Msg474ProxySampleDeleted = "MSG474";
     private const string Msg475NoProxyConsent = "MSG475";
@@ -61,13 +59,6 @@ public static class VoiceIdEndpoints
         voice.MapDelete("/samples/{sampleId:guid}", async (Guid sampleId, HttpContext context, IVoiceIdService service, CancellationToken ct)
             => Map(await service.DeleteSampleAsync(CapabilityGate.GatedUserId(context.User), sampleId, ct),
                 Msg311SampleDeleted, "Đã xoá giọng mẫu."));
-        // ADR-0060: only the person agrees to Secretaries recording them, and only they take it back.
-        voice.MapPost("/proxy-consent", async (ConsentBody body, HttpContext context, IVoiceIdService service, CancellationToken ct)
-            => Map(await service.GrantProxyAsync(CapabilityGate.GatedUserId(context.User), body.NoticeVersion, ct),
-                Msg471ProxyConsentGranted, "Đã cho phép Thư ký cuộc họp thu giọng mẫu hộ bạn."));
-        voice.MapDelete("/proxy-consent", async (HttpContext context, IVoiceIdService service, CancellationToken ct)
-            => Map(await service.WithdrawProxyAsync(CapabilityGate.GatedUserId(context.User), ct),
-                Msg472ProxyConsentWithdrawn, "Đã rút đồng ý thu hộ và xoá mọi giọng mẫu Thư ký đã thu."));
 
         // ADR-0060: the capability, then — on every call, in the service — the Secretary of this very meeting.
         var collection = app.MapGroup("/api/meetings/{meetingId:guid}/voice-collection")
@@ -153,7 +144,7 @@ public static class VoiceIdEndpoints
             var (status, code, message) = result.Failure switch
             {
                 VoiceFailure.NoConsent when collection => (409, Msg475NoProxyConsent,
-                    "Người này chưa đồng ý cho Thư ký thu giọng mẫu hộ. Họ bật ở trang Giọng nói của tôi, tab Thư ký thu hộ."),
+                    "Người này chưa đồng ý dùng Voice ID theo điều khoản mới. Họ bật ở trang Giọng nói của tôi."),
                 VoiceFailure.LimitReached when collection => (409, Msg476ProxySampleLimit,
                     $"Người này đã đủ {VoiceIdRules.MaxSamples} giọng mẫu thu hộ. Xoá bớt mẫu thu ở cuộc họp này rồi thu lại."),
                 VoiceFailure.NotCollectable => (409, Msg477NotCollectable,
