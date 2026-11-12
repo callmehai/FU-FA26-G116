@@ -18,6 +18,7 @@ public static class TranscriptEndpoints
     private const string Msg355ExportForbidden = "MSG355";
     private const string Msg356SecretMeeting = "MSG356";
     private const string Msg357TranscriptNotReady = "MSG357";
+    private const string Msg479CombinedNotTranscribed = "MSG479";
 
     internal sealed record SegmentBody(string? Text);
     /// <summary>A user of the meeting or one of its guests, at most one of them; neither clears the name.</summary>
@@ -66,6 +67,8 @@ public static class TranscriptEndpoints
                 TranscriptFailure.ExportForbidden => (403, Msg355ExportForbidden, "Chỉ Chủ toạ hoặc Thư ký được tải bản ghi và bản gỡ băng về."),
                 TranscriptFailure.SecretMeeting => (403, Msg356SecretMeeting, "Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về."),
                 TranscriptFailure.NotReady => (409, Msg357TranscriptNotReady, "Bản gỡ băng chưa xong nên chưa tải về được."),
+                TranscriptFailure.Combined => (409, Msg479CombinedNotTranscribed,
+                    "Bản ghi tổng hợp chỉ để nghe lại. Lời nói đã được gỡ băng từ mic phòng và mic của từng người."),
                 TranscriptFailure.Invalid => (400, Msg303InvalidText, "Nội dung đoạn gỡ băng không hợp lệ."),
                 TranscriptFailure.InvalidSpeaker => (400, Msg317InvalidSpeaker, "Người được gán phải có trong danh sách cuộc họp."),
                 TranscriptFailure.ReadFailed => (500, Msg299ReadFailed, "Không tải được bản gỡ băng."),

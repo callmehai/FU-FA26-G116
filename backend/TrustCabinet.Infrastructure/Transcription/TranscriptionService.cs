@@ -78,6 +78,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 var (recording, meeting, failure) = await ReadableAsync(recordingId, actorId, token, forUpdate: true);
                 if (recording is null || meeting is null) return new TranscriptOutcome(failure);
                 if (!RecordingRules.IsSecretary(meeting, actorId)) return new(TranscriptFailure.Forbidden);
+                if (recording.Source == RecordingSource.Combined) return new(TranscriptFailure.Combined);
                 var transcript = await transcripts.FindByRecordingAsync(recordingId, true, token);
                 var now = clock.GetUtcNow();
                 if (transcript is null)

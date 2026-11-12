@@ -35,7 +35,9 @@ public sealed class SpeechEngineException(string userMessage, Exception? inner =
 public enum TranscriptFailure
 {
     None, NotFound, Inactive, Forbidden, NotRetryable, Invalid, InvalidSpeaker, ReadFailed, SaveFailed, ExportForbidden,
-    SecretMeeting, NotReady
+    SecretMeeting, NotReady,
+    /// <summary>ADR-0061: a combined recording is only for listening; its words are already in its sources.</summary>
+    Combined,
 }
 
 public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFailure.None, object? Data = null,
