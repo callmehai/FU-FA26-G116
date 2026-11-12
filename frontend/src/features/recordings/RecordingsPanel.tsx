@@ -152,7 +152,12 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
       {data && kept.length === 0 && (
         <div className="cell-empty">
           <p className="empty-title">Chưa có bản ghi.</p>
-          {canUpload && <p className="field-hint">Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.</p>}
+          {canUpload ? (
+            <p className="field-hint">Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.</p>
+          ) : (
+            // ADR-0061: a hybrid meeting's room is recorded live only, so its words keep their time.
+            data.canRecord && <p className="field-hint">Bật mic phòng ở ô góc màn hình.</p>
+          )}
         </div>
       )}
 
