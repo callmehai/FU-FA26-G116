@@ -7,17 +7,25 @@ namespace TrustCabinet.Infrastructure.VoiceId;
 
 public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdRepository
 {
-    public async Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct)
+    public async Task<VoiceConsent?> FindActiveConsentAsync(Guid userId, bool forUpdate, CancellationToken ct,
+        VoiceConsentScope scope = VoiceConsentScope.Self)
     {
         // Withdrawal and adding a sample lock the same row, so no sample is ever stored after a withdrawal.
+        var name = scope.ToString();
         if (forUpdate)
             await db.VoiceConsents.FromSqlInterpolated(
-                $"SELECT * FROM voice_consents WHERE user_id = {userId} AND withdrawn_at IS NULL FOR UPDATE").AsNoTracking().ToListAsync(ct);
-        return await db.VoiceConsents.SingleOrDefaultAsync(c => c.UserId == userId && c.WithdrawnAt == null, ct);
+                $"SELECT * FROM voice_consents WHERE user_id = {userId} AND scope = {name} AND withdrawn_at IS NULL FOR UPDATE")
+                .AsNoTracking().ToListAsync(ct);
+        return await db.VoiceConsents.SingleOrDefaultAsync(c => c.UserId == userId && c.Scope == scope && c.WithdrawnAt == null, ct);
     }
 
     public async Task<IReadOnlyList<VoiceSample>> ListSamplesAsync(Guid userId, CancellationToken ct)
         => await db.VoiceSamples.Where(s => s.UserId == userId).OrderBy(s => s.CreatedAt).ThenBy(s => s.Id).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<VoiceSample>> ListProxySamplesAsync(Guid userId, CancellationToken ct)
+        => await db.VoiceSamples.AsNoTracking().Include(s => s.Meeting).Include(s => s.CollectedBy)
+            .Where(s => s.UserId == userId && s.CollectedById != null)
+            .OrderBy(s => s.CreatedAt).ThenBy(s => s.Id).ToListAsync(ct);
 
     public async Task<IReadOnlyList<VoiceSample>> ListMatchableSamplesAsync(IReadOnlyCollection<Guid> userIds,
         string embeddingModel, CancellationToken ct)
@@ -35,8 +43,8 @@ public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdReposi
             $"SELECT id AS \"Value\" FROM voice_consents WHERE user_id = ANY({ids}) AND withdrawn_at IS NULL FOR SHARE").ToListAsync(ct);
     }
 
-    public Task<int> DeleteSamplesAsync(Guid userId, CancellationToken ct)
-        => db.VoiceSamples.Where(s => s.UserId == userId).ExecuteDeleteAsync(ct);
+    public Task<int> DeleteSamplesAsync(Guid consentId, CancellationToken ct)
+        => db.VoiceSamples.Where(s => s.ConsentId == consentId).ExecuteDeleteAsync(ct);
 
     public async Task<int> ClearSuggestionsAsync(Guid userId, DateTimeOffset now, CancellationToken ct)
     {

@@ -99,6 +99,7 @@ public static class AuditEventCatalog
         new(AuditActions.VoiceConsentWithdrawn, "Rút đồng ý Voice ID", Voice),
         new(AuditActions.VoiceSampleAdded, "Thêm mẫu giọng", Voice),
         new(AuditActions.VoiceSampleDeleted, "Xoá mẫu giọng", Voice),
+        new(AuditActions.VoiceSamplePlayed, "Thư ký nghe lại mẫu giọng thu hộ", Voice),
 
         new(AuditActions.AiSettingsUpdated, "Đổi cấu hình AI", Settings),
 

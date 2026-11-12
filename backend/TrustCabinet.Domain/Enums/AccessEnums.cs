@@ -14,4 +14,11 @@ public enum Capability
     MeetingApprover,
     MinutesEditor,
     AdminUsers,
+
+    /// <summary>
+    /// ADR-0060: may record Voice ID samples for the people of a meeting it is the Secretary of, on the room's mic, and
+    /// hear back and delete the ones taken there. Held apart from the Secretary's meeting role because it reaches
+    /// other people's biometric data: an administrator grants it only to Secretaries the organisation trusts with that.
+    /// </summary>
+    VoiceCollector,
 }

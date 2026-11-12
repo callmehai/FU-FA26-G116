@@ -85,7 +85,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
         try
         {
             await repository.InTransactionAsync(
-                token => erasure.EndAsync(actorId, actorId, VoiceIdEndReason.Withdrawn, token), ct);
+                token => erasure.EndAsync(actorId, actorId, VoiceIdEndReason.Withdrawn, token, VoiceConsentScope.Self), ct);
             return new(Data: await ProfileAsync(actorId, ct));
         }
         catch (Exception ex) when (PersistenceError(ex))
@@ -95,13 +95,65 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
         }
     }
 
+    public async Task<VoiceOutcome> GrantProxyAsync(Guid actorId, string? noticeVersion, CancellationToken ct = default)
+    {
+        if (noticeVersion != VoiceIdRules.ProxyNoticeVersion)
+            return new(VoiceFailure.Invalid, Errors: new Dictionary<string, string[]>
+            {
+                ["noticeVersion"] = ["Nội dung thông báo đã thay đổi. Hãy tải lại trang và đọc lại trước khi đồng ý."],
+            });
+        try
+        {
+            await repository.InTransactionAsync(async token =>
+            {
+                // The person's own act: no route lets anyone else create this row (ADR-0060).
+                if (await repository.FindActiveConsentAsync(actorId, true, token, VoiceConsentScope.Proxy) is not null) return 0;
+                var now = clock.GetUtcNow();
+                var consent = new VoiceConsent
+                {
+                    UserId = actorId, Scope = VoiceConsentScope.Proxy, GrantedAt = now,
+                    NoticeVersion = VoiceIdRules.ProxyNoticeVersion, Purpose = VoiceIdRules.ProxyPurpose, CreatedAt = now, UpdatedAt = now,
+                };
+                repository.Add(consent);
+                await audit.RecordAsync(AuditActions.VoiceConsentGranted, AuditActions.VoiceConsentObjectType, consent.Id, actorId,
+                    new { scope = "proxy", consent.NoticeVersion, consent.Purpose }, token);
+                await repository.SaveChangesAsync(token);
+                return 0;
+            }, ct);
+            return new(Data: await ProfileAsync(actorId, ct));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to record proxy Voice ID consent of {UserId}", actorId);
+            return new(VoiceFailure.SaveFailed);
+        }
+    }
+
+    public async Task<VoiceOutcome> WithdrawProxyAsync(Guid actorId, CancellationToken ct = default)
+    {
+        try
+        {
+            await repository.InTransactionAsync(
+                token => erasure.EndAsync(actorId, actorId, VoiceIdEndReason.Withdrawn, token, VoiceConsentScope.Proxy), ct);
+            return new(Data: await ProfileAsync(actorId, ct));
+        }
+        catch (Exception ex) when (PersistenceError(ex))
+        {
+            logger.LogError(ex, "Failed to withdraw proxy Voice ID of {UserId}", actorId);
+            return new(VoiceFailure.SaveFailed);
+        }
+    }
+
+    /// <summary>The samples the person recorded themself; the ones Secretaries took count against their own limit.</summary>
+    private static int OwnCount(IEnumerable<VoiceSample> samples) => samples.Count(s => s.CollectedById is null);
+
     public async Task<VoiceOutcome> AddSampleAsync(Guid actorId, Stream audio, string contentType, CancellationToken ct = default)
     {
         try
         {
             // Checked before the audio goes to the worker, then again under the lock before anything is kept.
             if (await repository.FindActiveConsentAsync(actorId, false, ct) is null) return new(VoiceFailure.NoConsent);
-            if ((await repository.ListSamplesAsync(actorId, ct)).Count >= VoiceIdRules.MaxSamples) return new(VoiceFailure.LimitReached);
+            if (OwnCount(await repository.ListSamplesAsync(actorId, ct)) >= VoiceIdRules.MaxSamples) return new(VoiceFailure.LimitReached);
         }
         catch (Exception ex) when (PersistenceError(ex))
         {
@@ -138,7 +190,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
             {
                 var consent = await repository.FindActiveConsentAsync(actorId, true, token);
                 if (consent is null) return new VoiceOutcome(VoiceFailure.NoConsent);
-                if ((await repository.ListSamplesAsync(actorId, token)).Count >= VoiceIdRules.MaxSamples)
+                if (OwnCount(await repository.ListSamplesAsync(actorId, token)) >= VoiceIdRules.MaxSamples)
                     return new(VoiceFailure.LimitReached);
                 var now = clock.GetUtcNow();
                 var id = Guid.CreateVersion7();
@@ -175,8 +227,10 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
             var sample = (await repository.ListSamplesAsync(actorId, ct)).SingleOrDefault(s => s.Id == sampleId);
             // Someone else's sample is answered exactly like one that does not exist.
             if (sample is null) return new(VoiceFailure.NotFound);
+            // Either set: the samples a Secretary took are the person's too, and theirs to delete (ADR-0060).
             repository.Remove(sample);
-            await audit.RecordAsync(AuditActions.VoiceSampleDeleted, AuditActions.VoiceSampleObjectType, sampleId, actorId, null, ct);
+            await audit.RecordAsync(AuditActions.VoiceSampleDeleted, AuditActions.VoiceSampleObjectType, sampleId, actorId,
+                sample.CollectedById is null ? null : new { scope = "proxy", sample.MeetingId, sample.CollectedById }, ct);
             await repository.SaveChangesAsync(ct);
             return new(Data: await ProfileAsync(actorId, ct));
         }
@@ -207,9 +261,19 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
     {
         var consent = await repository.FindActiveConsentAsync(userId, false, ct);
         var samples = await repository.ListSamplesAsync(userId, ct);
-        return new(consent is null ? null : new(consent.GrantedAt, consent.NoticeVersion, consent.Purpose),
-            [.. samples.Select(s => new VoiceSampleView(s.Id, s.CreatedAt, s.SpeechMs, s.AudioCiphertext is not null))],
+        var proxyConsent = await repository.FindActiveConsentAsync(userId, false, ct, VoiceConsentScope.Proxy);
+        var proxySamples = await repository.ListProxySamplesAsync(userId, ct);
+        return new(View(consent),
+            [.. samples.Where(s => s.CollectedById is null)
+                .Select(s => new VoiceSampleView(s.Id, s.CreatedAt, s.SpeechMs, s.AudioCiphertext is not null))],
             VoiceIdRules.MaxSamples,
-            VoiceIdRules.NoticeVersion, VoiceIdRules.Purpose, options.Value.Controller);
+            VoiceIdRules.NoticeVersion, VoiceIdRules.Purpose, options.Value.Controller,
+            new(View(proxyConsent),
+                [.. proxySamples.Select(s => new ProxySampleView(s.Id, s.CreatedAt, s.SpeechMs, s.AudioCiphertext is not null,
+                    s.MeetingId!.Value, s.Meeting!.Title, s.CollectedBy!.FullName))],
+                VoiceIdRules.MaxSamples, VoiceIdRules.ProxyNoticeVersion, VoiceIdRules.ProxyPurpose));
     }
+
+    private static VoiceConsentView? View(VoiceConsent? consent)
+        => consent is null ? null : new(consent.GrantedAt, consent.NoticeVersion, consent.Purpose);
 }

@@ -8,7 +8,11 @@ namespace TrustCabinet.Domain.Entities;
 /// else cannot be decrypted. As in AI-eCabinet, the recording itself is kept too (<see cref="AudioCiphertext"/>,
 /// encrypted the same way) so its owner can hear it back and keep the clear ones; nobody else can play it.
 ///
-/// Erased with every other sample of the person when they withdraw consent.
+/// Erased with every other sample of its set when the person withdraws the consent it was taken under.
+///
+/// A sample the Secretary of a meeting took for the person on the room's mic (ADR-0060) names who took it and in which
+/// meeting; both are null for a sample the person recorded themself. It is still the person's: it is bound to them,
+/// lives under their own <see cref="VoiceConsentScope.Proxy"/> consent, and they can hear and delete it.
 /// </summary>
 public class VoiceSample : Entity
 {
@@ -32,4 +36,12 @@ public class VoiceSample : Entity
 
     /// <summary>The recording's media type, to play it back as it was sent.</summary>
     public string? AudioContentType { get; set; }
+
+    /// <summary>The Secretary who recorded it for the person; null when the person recorded it themself.</summary>
+    public Guid? CollectedById { get; set; }
+    public User? CollectedBy { get; set; }
+
+    /// <summary>The meeting whose Secretary recorded it; null when the person recorded it themself.</summary>
+    public Guid? MeetingId { get; set; }
+    public Meeting? Meeting { get; set; }
 }

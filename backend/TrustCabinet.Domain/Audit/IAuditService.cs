@@ -116,6 +116,12 @@ public static class AuditActions
 
     public const string VoiceSampleAdded = "voice.sample_added";
     public const string VoiceSampleDeleted = "voice.sample_deleted";
+
+    /// <summary>
+    /// ADR-0060 — a meeting's Secretary listened to a sample they took for someone else. The owner's own listening is not
+    /// audited; anyone else hearing a person's biometric sample is.
+    /// </summary>
+    public const string VoiceSamplePlayed = "voice.sample_played";
     public const string VoiceConsentObjectType = "VoiceConsent";
     public const string VoiceSampleObjectType = "VoiceSample";
 

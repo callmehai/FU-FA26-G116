@@ -89,6 +89,13 @@ public sealed class NotificationService(
                 && await repository.IsCalendarSharePartyAsync(shareId, userId, ct);
         }
 
+        // ADR-0060: "a Secretary took your sample" opens it while it is still there; deleted, it is gone like any target.
+        if (notification.TargetType == "VoiceSample")
+        {
+            return notification.TargetId is { } sampleId
+                && await repository.IsOwnVoiceSampleAsync(sampleId, userId, ct);
+        }
+
         if (notification.TargetType != "Meeting"
             || notification.TargetId is not { } meetingId
             || notification.MeetingId != meetingId)
