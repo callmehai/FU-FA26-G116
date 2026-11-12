@@ -95,11 +95,9 @@ public sealed class VoiceIdProxyConsentTests(RecordingFixture fixture) : IClassF
             using var first = fixture.Client(s.Member);
             using var second = fixture.Client(s.Member);
             var both = await Task.WhenAll(VoiceCollection.GrantProxy(first), VoiceCollection.GrantProxy(second));
-            // The unique index holds the line. The request that loses the race can still answer 503/MSG315 rather
-            // than 200 (there is no row yet for FOR UPDATE to lock); asked again, it answers 200.
-            Assert.Contains(both, r => r.StatusCode == HttpStatusCode.OK);
-            foreach (var response in both.Where(r => r.StatusCode != HttpStatusCode.OK))
-                await VoiceCollection.AssertCode(response, 503, "MSG315");
+            // A double click: there is no row yet for FOR UPDATE to lock, so both insert and the unique index keeps one;
+            // the request that lost the race answers as if it had won — the person has agreed.
+            foreach (var response in both) await VoiceCollection.AssertCode(response, 200, Msg471Granted);
             await VoiceCollection.AssertCode(await VoiceCollection.GrantProxy(second), 200, Msg471Granted);
             await using var db = fixture.Db();
             Assert.Equal(1, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member && c.WithdrawnAt == null));

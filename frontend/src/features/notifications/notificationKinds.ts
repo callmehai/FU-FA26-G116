@@ -41,6 +41,7 @@ const KINDS: Record<NotificationType, Kind> = {
   CalendarShareWithdrawn: { icon: 'calendarX', tone: 'slate' },
   CalendarShareEnded: { icon: 'calendarX', tone: 'slate' },
   CalendarShareStopped: { icon: 'calendarX', tone: 'red' },
+  VoiceSampleCollected: { icon: 'mic', tone: 'violet' },
 }
 
 /** A kind added on the backend later still renders, as a plain bell. */

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { deleteVoiceSample, getMyVoice, grantVoiceConsent, voiceSampleAudio, withdrawVoiceConsent } from '../../api/voice'
+import { useSearchParams } from 'react-router-dom'
+import { deleteVoiceSample, getMyVoice, grantVoiceConsent, withdrawVoiceConsent } from '../../api/voice'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
@@ -10,6 +11,8 @@ import { formatDate, formatDateTime } from '../../lib/format'
 import type { VoiceProfile } from '../../types/voice'
 import { formatDuration } from '../recordings/format'
 import { PASSAGES } from './passages'
+import { ProxyTab } from './ProxyVoice'
+import { useSamplePlayer } from './samplePlayer'
 import { ConsentForm, RecordSampleDialog } from './VoiceEnrol'
 
 /**
@@ -23,6 +26,11 @@ type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 
 export function VoicePage() {
   const [state, setState] = useState<State>({ kind: 'loading' })
   const generation = useRef(0)
+  // ADR-0060: two sets, each under its own consent. A "Thư ký đã thu giọng mẫu" notice opens ?tab=proxy.
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') === 'proxy' ? 'proxy' : 'self'
+  const openTab = (next: 'self' | 'proxy') => setParams(next === 'proxy' ? { tab: 'proxy' } : {}, { replace: true })
+  const change = (profile: VoiceProfile) => setState({ kind: 'loaded', profile })
 
   const load = useCallback(async () => {
     const mine = generation.current
@@ -58,16 +66,39 @@ export function VoicePage() {
           </button>
         </div>
       )}
-      {state.kind === 'loaded' &&
-        (state.profile.consent ? (
-          <Enrolled
-            profile={state.profile}
-            onChange={(profile) => setState({ kind: 'loaded', profile })}
-            onReload={load}
-          />
-        ) : (
-          <ConsentCard profile={state.profile} onChange={(profile) => setState({ kind: 'loaded', profile })} />
-        ))}
+      {state.kind === 'loaded' && (
+        <>
+          <div className="tabs" role="tablist" aria-label="Bộ giọng mẫu">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'self'}
+              className={`tab${tab === 'self' ? ' tab-active' : ''}`}
+              onClick={() => openTab('self')}
+            >
+              Tự thu
+              <span className="tab-count">{state.profile.samples.length}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'proxy'}
+              className={`tab${tab === 'proxy' ? ' tab-active' : ''}`}
+              onClick={() => openTab('proxy')}
+            >
+              Thư ký thu hộ
+              <span className="tab-count">{state.profile.proxy.samples.length}</span>
+            </button>
+          </div>
+          {tab === 'proxy' ? (
+            <ProxyTab profile={state.profile} onChange={change} onReload={load} />
+          ) : state.profile.consent ? (
+            <Enrolled profile={state.profile} onChange={change} onReload={load} />
+          ) : (
+            <ConsentCard profile={state.profile} onChange={change} />
+          )}
+        </>
+      )}
     </div>
   )
 }
@@ -221,43 +252,13 @@ function Enrolled({
           }}
         >
           <p>
-            Toàn bộ {profile.samples.length} giọng mẫu, mọi gợi ý và tên máy đã điền từ giọng của bạn bị xoá ngay. Tên
-            Thư ký đã gán giữ nguyên. Bạn có thể bật lại sau.
+            Toàn bộ {profile.samples.length} giọng mẫu tự thu, mọi gợi ý và tên máy đã điền từ giọng của bạn bị xoá ngay.
+            Tên Thư ký đã gán và giọng mẫu Thư ký thu hộ giữ nguyên. Bạn có thể bật lại sau.
           </p>
         </ConfirmDialog>
       )}
     </section>
   )
-}
-
-/** One player for the list: the owner hears a sample back, fetched with their session, gone when the page closes. */
-function useSamplePlayer() {
-  const [playing, setPlaying] = useState<string | null>(null)
-  const audio = useRef<HTMLAudioElement | null>(null)
-  const url = useRef<string | null>(null)
-
-  const stop = useCallback(() => {
-    audio.current?.pause()
-    if (url.current) URL.revokeObjectURL(url.current)
-    url.current = null
-    setPlaying(null)
-  }, [])
-  useEffect(() => stop, [stop])
-
-  const toggle = async (sampleId: string) => {
-    const wasPlaying = playing === sampleId
-    stop()
-    if (wasPlaying) return
-    const blob = await voiceSampleAudio(sampleId)
-    url.current = URL.createObjectURL(blob)
-    const el = (audio.current ??= new Audio())
-    el.onended = stop
-    el.src = url.current
-    setPlaying(sampleId)
-    await el.play()
-  }
-
-  return { playing, toggle, stop }
 }
 
 /**

@@ -41,6 +41,8 @@ export type NotificationType =
   | 'CalendarShareWithdrawn'
   | 'CalendarShareEnded'
   | 'CalendarShareStopped'
+  /** ADR-0060: a meeting's Secretary recorded a Voice ID sample for the person; opens their Voice ID page. */
+  | 'VoiceSampleCollected'
 
 export interface AppNotification {
   id: string

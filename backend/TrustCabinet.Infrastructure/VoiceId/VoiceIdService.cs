@@ -20,6 +20,13 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
 {
     private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
+    /// <summary>
+    /// Two agreements at once (a double click): neither finds a row to lock, both insert, the unique index keeps one.
+    /// The loser's answer is the same as the winner's — the person has agreed.
+    /// </summary>
+    private static bool AlreadyAgreed(Exception ex)
+        => ex is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } };
+
     public async Task<VoiceOutcome> GetAsync(Guid actorId, CancellationToken ct = default)
     {
         try
@@ -73,6 +80,10 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
             }, ct);
             return new(Data: await ProfileAsync(actorId, ct));
         }
+        catch (Exception ex) when (AlreadyAgreed(ex))
+        {
+            return new(Data: await ProfileAsync(actorId, ct));
+        }
         catch (Exception ex) when (PersistenceError(ex))
         {
             logger.LogError(ex, "Failed to record Voice ID consent of {UserId}", actorId);
@@ -120,6 +131,10 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
                 await repository.SaveChangesAsync(token);
                 return 0;
             }, ct);
+            return new(Data: await ProfileAsync(actorId, ct));
+        }
+        catch (Exception ex) when (AlreadyAgreed(ex))
+        {
             return new(Data: await ProfileAsync(actorId, ct));
         }
         catch (Exception ex) when (PersistenceError(ex))

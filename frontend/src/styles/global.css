@@ -4023,6 +4023,16 @@ audio.recording-player { height: 40px; }
 .voice-review .field-hint { margin: 0; }
 .voice-review audio { width: 100%; }
 .voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+/* ADR-0060 — a sample a Secretary took names its meeting, which may be long: it shortens rather than push the row. */
+.voice-sample-name a { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; color: inherit; }
+.voice-sample-text > .voice-sample-name { min-width: 0; max-width: 100%; }
+/* The Secretary's list of the meeting's people: name, role, consent or count, then the samples taken here. */
+.voice-people { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.voice-person { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--line-soft); }
+.voice-person:last-child { padding-bottom: 0; border-bottom: 0; }
+.voice-person-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.voice-person-name { min-width: 0; overflow: hidden; color: var(--ink); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.voice-person-count { margin-left: auto; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
 @media (max-width: 560px) {
   .voice-actions { flex-direction: column-reverse; align-items: stretch; }
 }
