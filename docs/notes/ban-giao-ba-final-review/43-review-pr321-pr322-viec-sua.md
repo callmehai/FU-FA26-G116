@@ -88,47 +88,47 @@ Số `43-n` là số việc ở §1 và §1b. Tick khi commit của bước đó
 
 **Bước 1 — script, README; bước 2 — sơ đồ use case; bước 3 — sequence**
 
-- [ ] 43-2: sơ đồ use case FE-12 theo luồng mới, xuất lại `uc-*.png`
-- [ ] 43-5: sequence `UC85c_ViewSharedCalendar` theo 43-4
-- [ ] 43-7 (sequence): UC-84c có nhánh người xem mất quyền Meeting Organizer → `MSG450`
-- [ ] 43-14: sequence Minutes Endpoints (UC-58–65, UC-83), UC-58 AF-3 nhánh 404, UC-84f 403 và câu trống, xuất lại bằng `export_sequence.py`
-- [ ] 43-21: sequence UC-70a/UC-70b có `duration`
-- [ ] 43-23 (sequence): UC-84c nhánh `409 MSG450` khi khoảng xin không còn hợp
-- [ ] 43-12: sửa `scripts/sync_reports.py` giữ tiêu đề FE-12 mới, chạy khô kiểm
-- [ ] 43-15: `scripts/export_sequence.py` comment tiếng Anh, đổi biến `rel`; sửa `docs/06-sequencediagram/README.md`
+- [x] 43-2: sơ đồ use case FE-12 theo luồng mới, xuất lại `uc-*.png`
+- [x] 43-5: sequence `UC85c_ViewSharedCalendar` theo 43-4
+- [x] 43-7 (sequence): UC-84c có nhánh người xem mất quyền Meeting Organizer → `MSG450`
+- [x] 43-14: sequence Minutes Endpoints (UC-58–65, UC-83), UC-58 AF-3 nhánh 404, UC-84f 403 và câu trống, xuất lại bằng `export_sequence.py`
+- [x] 43-21: sequence UC-70a/UC-70b có `duration`
+- [x] 43-23 (sequence): UC-84c nhánh `409 MSG450` khi khoảng xin không còn hợp
+- [x] 43-12: sửa `scripts/sync_reports.py` giữ tiêu đề FE-12 mới, chạy khô kiểm
+- [x] 43-15: `scripts/export_sequence.py` comment tiếng Anh, đổi biến `rel`; sửa `docs/06-sequencediagram/README.md`
 
 **Bước 4 — DOCX Report 3**
 
-- [ ] 43-1: UC-15 bỏ bước 6 và POST-4, thêm câu BR-445 cho AF-1
-- [ ] 43-3: thay ảnh sơ đồ use case §I.4.3 bằng PNG của 43-2
-- [ ] 43-4: UC-85c theo `23-chia-se-lich.md` §8, mỗi người một hàng, "Chưa biết", EX `MSG448`
-- [ ] 43-6: BR-426 thêm `calendar_share.closed_after_end_date`
-- [ ] 43-7 (DOCX): UC-84c EX-2 và BR-424 thêm `MSG450`
-- [ ] 43-8: UC-61 và UC-64 ghi ngoài phạm vi (PO Q5, Q6)
-- [ ] 43-9: UC-01 EX-2, UC-02 EX-4/POST-5 ghi nhật ký `account_deactivated`
-- [ ] 43-10: UC-58 bước 4, UC-61 EX-5
-- [ ] 43-11: màn 12.1 và dòng UC-60 trong inventory: trình soạn HTML (BR-385)
-- [ ] 43-13: UC-84f AF-2, bước 3, UC-84c bước 4, UC-84e
-- [ ] 43-17: kiểm lại UC-13, BR-440–446 sau 43-1, 43-9; hỏi leader về màn 3.3 PENDING
-- [ ] 43-18: thêm BR-447
-- [ ] 43-19: UC-70a/70b thời lượng trung bình, Excel ba dòng
-- [ ] 43-20: chú thích ¹⁸ và màn 15.1
-- [ ] 43-22: UC-84f, UC-85c: một màn hai tab, hỏi xác nhận, chia sẻ đã đóng làm mờ
-- [ ] 43-23 (DOCX): UC-84c AF-1 và dòng MSG450
-- [ ] 43-24: UC-84f mở `?share=` mà dòng không còn (MSG439 hoặc "Chia sẻ này không còn.")
-- [ ] Một dòng Change Log 11/11, `sync_reports.py --report 3`, `check_docx.py` đều qua
+- [x] 43-1: UC-15 bỏ bước 6 và POST-4, thêm câu BR-445 cho AF-1
+- [x] 43-3: thay ảnh sơ đồ use case §I.4.3 bằng PNG của 43-2
+- [x] 43-4: UC-85c theo `23-chia-se-lich.md` §8, mỗi người một hàng, "Chưa biết", EX `MSG448`
+- [x] 43-6: BR-426 thêm `calendar_share.closed_after_end_date`
+- [x] 43-7 (DOCX): UC-84c EX-2 và BR-424 thêm `MSG450`
+- [x] 43-8: UC-61 và UC-64 ghi ngoài phạm vi (PO Q5, Q6)
+- [x] 43-9: UC-01 EX-2, UC-02 EX-4/POST-5 ghi nhật ký `account_deactivated`
+- [x] 43-10: UC-58 bước 4, UC-61 EX-5
+- [x] 43-11: màn 12.1 và dòng UC-60 trong inventory: trình soạn HTML (BR-385)
+- [x] 43-13: UC-84f AF-2, bước 3, UC-84c bước 4, UC-84e
+- [x] 43-17: kiểm lại UC-13, BR-440–446 sau 43-1, 43-9; màn 3.3 vẫn PENDING, chưa hỏi leader
+- [x] 43-18: thêm BR-447
+- [x] 43-19: UC-70a/70b thời lượng trung bình, Excel ba dòng
+- [x] 43-20: chú thích ¹⁸ và màn 15.1
+- [x] 43-22: UC-84f, UC-85c: một màn hai tab, hỏi xác nhận, chia sẻ đã đóng làm mờ
+- [x] 43-23 (DOCX): UC-84c AF-1 và dòng MSG450
+- [x] 43-24: UC-84f mở `?share=` mà dòng không còn (MSG439 hoặc "Chia sẻ này không còn.")
+- [x] Một dòng Change Log 11/11, `sync_reports.py --report 3`, `check_docx.py` đều qua
 
 **Bước 5 và giao việc**
 
-- [ ] 43-16: tick note 137-142, NOTE-dac-ta-so-bo-scrum-38 (BR-447, ¹⁸, màn 15.1, dòng ~411), note 41, note 42
-- [ ] §3.1: rà `git log` / `git diff main...` — không commit nào trên nhánh #321, snapshot chỉ đổi qua sync
+- [x] 43-16: tick note 137-142, NOTE-dac-ta-so-bo-scrum-38 (BR-447, ¹⁸, màn 15.1, dòng ~411), note 41, note 42
+- [x] §3.1: rà `git log` / `git diff main...` — không commit nào trên nhánh #321, snapshot chỉ đổi qua sync
 - [ ] §3.2: push nhánh #322, sửa mô tả #322 liệt kê #1–#24
 - [ ] §3.3: nhắn "đã sửa" ở kênh pull-request, trả lời hai review trên GitHub
 
 **Sau khi #321, #322 vào `main`**
 
-- [ ] §3.4: comment Jira SCRUM-33 (note 41 §6)
-- [ ] §3.4: comment Jira SCRUM-16 (note 42 §5, kèm trả lời comment `10353` ở SCRUM-123)
-- [ ] §3.4: comment Jira SCRUM-142
-- [ ] §3.4: comment Jira SCRUM-38, tick checklist NOTE-dac-ta-so-bo-scrum-38
-- [ ] Chuyển trạng thái theo [DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update)
+- [x] §3.4: comment Jira SCRUM-33 (note 41 §6)
+- [x] §3.4: comment Jira SCRUM-16 (note 42 §5, kèm trả lời comment `10353` ở SCRUM-123)
+- [x] §3.4: comment Jira SCRUM-142
+- [x] §3.4: comment Jira SCRUM-38, tick checklist NOTE-dac-ta-so-bo-scrum-38
+- [x] Chuyển trạng thái theo [DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update)

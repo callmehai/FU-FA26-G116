@@ -234,6 +234,6 @@ wireframe. Để sau, khi FE có màn, theo việc còn mở ở đặc tả sơ
 - [x] PO trả lời Q-A → Q-E (09/11/2026); Q4 không còn vì bỏ job. Đã sửa theo câu trả lời trong PR #295 (sequence, BR-424/425/426, MSG439 deactivated, UC-84c EX-5/`MSG468`, `MSG440` ngừng dùng), xem khối "PO đã chốt 09/11/2026"
 - [x] Xuất ảnh, ghép tab, validate drawio (chỉ tab có `.txt` đổi thật; tab khác giữ nguyên từ main)
 - [x] README + đặc tả sơ bộ
-- [ ] Report 3 DOCX (Q-A → Q-E: BR-424/425/426, MSG439, MSG468, UC-84f) + sync_reports.py — **chưa sửa trong PR này trừ khi reviewer đòi**
-- [ ] Comment SCRUM-142
+- [x] Report 3 DOCX (Q-A → Q-E: BR-424/425/426, MSG439, MSG468, UC-84f) + sync_reports.py — xong 11/11/2026, PR #322
+- [x] Comment SCRUM-142 — xong 12/11/2026, comment `10521`
 - [ ] *(pending, chờ FE có màn)* Đặc tả màn hình FE-16 trong Report 3 (§I.5.1 + §III) và wireframe

@@ -86,7 +86,7 @@ Bảng as-built và kế hoạch làm khi mở khoá nằm ở [§9](#9-pending-
 - [x] §3: sequence `.txt` + PNG + tab drawio; Report 4 FE-12 — 11/11/2026
 - [x] §5: PO chốt Q5, Q6 ngoài phạm vi — 11/11/2026
 - [x] §5: ghi "ngoài phạm vi" vào UC-61, UC-64 trong Report 3 DOCX + sync — xong 11/11/2026, PR #322
-- [ ] §6: comment Jira sau khi PR docs đã vào `main` — **chưa làm**, chưa commit
+- [x] §6: comment Jira sau khi PR docs đã vào `main` — xong 12/11/2026, comment `10519`; giữ `In Review`
 - [ ] **PENDING** §9: đặc tả màn hình và wireframe FE-12 (chưa làm; mở khoá khi PO/BA đồng ý)
 
 ## 8. Kế hoạch chi tiết
