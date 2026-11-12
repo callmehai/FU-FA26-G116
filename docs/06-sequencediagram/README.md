@@ -5,7 +5,7 @@
 ## Cấu trúc file và cách đồng bộ
 
 - Mỗi Use Case có source `.txt` và ảnh `.png` cùng tên trong thư mục theo Feature. Nội dung `.txt` là
-  bản cần sửa; sau khi sửa, xuất lại PNG tương ứng bằng `node scripts/export-diagrams.js <đường-dẫn-file-hoặc-thư-mục>`.
+  bản cần sửa; sau khi sửa, xuất lại cả hai ảnh (sequencediagram.org và `drawio-png/`) bằng `python scripts/export_sequence.py <mã UC hoặc file .txt>`.
 - [`TrustCabinet_Sequence_Diagrams.drawio`](TrustCabinet_Sequence_Diagrams.drawio) là file draw.io gộp
   các sequence thành từng tab, dùng để duyệt và chỉnh sửa sơ đồ native. Khi thay đổi một source, cập
   nhật đúng PNG và tab UC tương ứng trong file gộp; giữ nguyên các tab khác. Ảnh xuất từ các tab UC
@@ -566,15 +566,12 @@ deactivate MeetingPage
 | [voting-management/](voting-management/README.md) | UC-52a → UC-57, UC-76a, UC-76b |
 | [meeting-recording/](meeting-recording/README.md) | UC-43a → UC-43c, UC-44a → UC-44e, UC-80 |
 | [transcription-voice-id/](transcription-voice-id/README.md) | UC-45a → UC-45c (UC-45c có thêm sơ đồ hệ thống xử lý hàng chờ), UC-46a → UC-46d, UC-47 → UC-50 (dự thảo AI), UC-81a → UC-81f |
-| [minutes-management/](minutes-management/README.md) | UC-58, UC-59, UC-60 (bản nháp biên bản); UC-61, UC-64, UC-65, UC-83 (sơ bộ, duyệt và ban hành) |
+| [minutes-management/](minutes-management/README.md) | UC-58, UC-59, UC-60 (bản nháp biên bản) và UC-61, UC-64, UC-65, UC-83 (duyệt và ban hành, theo code PR #297) |
 | [notification-management/](notification-management/README.md) | UC-66, UC-67a, UC-67b, UC-68 |
 | [online-meeting-room/](online-meeting-room/README.md) | UC-37, UC-38, UC-39a → UC-39d (UC-39a AF-2 ghi lời theo micro: `UC39a_RecordSpeechWhileMicrophoneOn`), UC-40, UC-41, UC-42, UC-78, UC-79 |
 | [calendar-sharing/](calendar-sharing/README.md) | UC-84 (UC-84a → UC-84f), UC-85 (UC-85a → UC-85c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
 | [reporting/](reporting/README.md) | UC-70a, UC-70b (SCRUM-38) |
 
-Xuất PNG: `node scripts/export-diagrams.js docs/06-sequencediagram/<thư mục hoặc file>` (cần truy cập `sequencediagram.org`).
-
-Đồng bộ ảnh `.drawio.png` từ 64 tab UC của file draw.io gộp (bỏ qua tab index):
-`python scripts/sync_sequence_drawio_png.py` (cần cài Draw.io; có thể đặt `DRAWIO_EXECUTABLE` nếu CLI chưa có trong PATH).
+Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file .txt>` — ra cả ảnh sequencediagram.org cạnh `.txt` (cần truy cập `sequencediagram.org`) lẫn `drawio-png/`; chỉ truyền file đã sửa. Không chạy `sync_sequence_drawio_png.py` cho toàn bộ (draw.io CLI cắt nửa dưới sơ đồ rất dài như UC-84b — xem README của [`calendar-sharing/`](calendar-sharing/README.md)).
 
 UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.

@@ -115,6 +115,13 @@ public sealed class CalendarShareRulesTests
         Assert.False(CalendarShareRules.ValidPendingApproval(share, Today));
         share.PendingEndDate = Today.AddDays(-1);
         Assert.False(CalendarShareRules.ValidPendingApproval(share, Today));
+
+        // The owner moved the share after the end the viewer asked for (UC-84d AF-1): it fits no more and can only be
+        // declined — the table's range check would refuse it.
+        var moved = Share(startOffset: 70, endOffset: 80, pendingChange: true); // pending end is day 60
+        Assert.False(CalendarShareRules.ValidPendingApproval(moved, Today));
+        Assert.Equal(["decline", "update", "end"], CalendarShareRules.Actions(moved, OwnerId, Today, false));
+        Assert.Equal(["withdraw", "end"], CalendarShareRules.Actions(moved, ViewerId, Today, false));
     }
 
     [Fact]

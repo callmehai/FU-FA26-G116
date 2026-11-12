@@ -1,4 +1,4 @@
-title UC-12a - Update Role
+title UC-12b - Update Role
 
 actor "System Admin" as Admin
 boundary "Role & Permission Management Page" as RolePage

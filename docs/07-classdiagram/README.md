@@ -362,6 +362,24 @@ Return, activation, `alt` và self-call kiểm quyền không sinh operation; ki
   nhau, đều ở bó cạnh service → hạ tầng (mỗi service phụ thuộc 3–5 interface hạ tầng, đi chung hành lang phía trên hàng service).
   PNG xuất bằng draw.io CLI scale 1 với `--disable-gpu --disable-software-rasterizer`, không nhúng XML; đã mở xem, không bị cắt.
 
+## 6h. FE-03 — UC-13 nhật ký kiểm toán as-built · 11/11/2026
+
+BA Final Review SCRUM-16 (PR #311, note 42). Sửa **cục bộ** source
+`feature-03-role-management-class-diagram.drawio`, giữ ID lớp khác và toàn bộ quan hệ còn lại:
+
+- `AuditLogController` → `AuditLogEndpoints` (`«control»`, Minimal API — không phải lớp controller), thao tác theo code:
+  `getAuditLog(query: AuditLogQuery)` và `parseQuery(queryString)` (`AuditLogQueryParser`).
+- `AuditLogQueryService`: `getPage(query): AuditLogPage` (code: `GetPageAsync`) và `nameActors(page)`; bỏ
+  `validateCriteria` vì bộ đọc tham số nằm ở endpoints.
+- Xoá lớp `AuditLogRepository` cùng hai cạnh `e16`/`e17`; thêm cạnh phụ thuộc `e17` từ `AuditLogQueryService` thẳng tới
+  thực thể `AuditLogEntry` — service đọc `AuditLogEntry` qua `TrustCabinetDbContext` của Infrastructure, không có
+  repository riêng.
+- Không vẽ DTO `AuditLogPage` / `AuditLogItem` / `AuditActor` thành lớp, cùng quy ước với FE-07 (DTO không vẽ thành
+  class).
+- XML hợp lệ, ID duy nhất, mọi cạnh còn `source`/`target` hợp lệ; PNG xuất lại bằng draw.io desktop `--scale 2` và đã
+  mở xem: hai lớp mới không bị cắt chữ, cạnh mới không chồng lên cạnh khác.
+- Dòng 176 (FE-07, `AuditLogRepository` phục vụ BR-318) **giữ nguyên** — đó là feature khác, không phải UC-13.
+
 ## 7. Rà soát hiện trạng · 14/10/2026
 
 Đã đọc 7 source DCD, 44 sequence `.txt` theo feature, các README tương ứng, UC/BR/Entity Descriptions
@@ -447,7 +465,7 @@ message khi sửa thiết kế. Tất cả feature còn `NEEDS REVIEW` theo bả
 | UC-12a / FE-03 | [UC12a_CreateRole.txt](../06-sequencediagram/role-management/UC12a_CreateRole.txt) | `RoleService → createRole` | ≈ tạo; DCD-10 |
 | UC-12b / FE-03 | [UC12b_UpdateRole.txt](../06-sequencediagram/role-management/UC12b_UpdateRole.txt) | `RoleService → updateRole` | ≈ sửa; DCD-10 |
 | UC-12c / FE-03 | [UC12c_DeleteRole.txt](../06-sequencediagram/role-management/UC12c_DeleteRole.txt) | `RoleService → deleteRole` | ≈ xóa; DCD-10 |
-| UC-13 / FE-03 | [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt) | `AuditLogQueryService → getAuditEntries; AuditLogRepository → findReadOnlyPage` | Trùng tên |
+| UC-13 / FE-03 | [UC13_ViewAuditLog.txt](../06-sequencediagram/role-management/UC13_ViewAuditLog.txt) | `AuditLogEndpoints (AuditLogQueryParser) → parseQuery / getAuditLog; AuditLogQueryService → GetPageAsync` | Sửa 11/11/2026: bỏ `AuditLogRepository`, đọc `Database` trực tiếp (BA Final Review SCRUM-16, note 42) |
 | UC-14 / FE-04 | [UC14_CreateMeeting.txt](../06-sequencediagram/meeting-management/UC14_CreateMeeting.txt) | `MeetingService → createMeeting` | ≈ tạo |
 | UC-15 / FE-04 | [UC15_UpdateMeeting.txt](../06-sequencediagram/meeting-management/UC15_UpdateMeeting.txt) | `MeetingService → updateMeeting / rescheduleMeeting` | ≈ cập nhật lịch |
 | UC-16 / FE-04 | [UC16_ViewMeetingDetails.txt](../06-sequencediagram/meeting-management/UC16_ViewMeetingDetails.txt) | `MeetingService → getMeetingDetails` | Trùng tên |

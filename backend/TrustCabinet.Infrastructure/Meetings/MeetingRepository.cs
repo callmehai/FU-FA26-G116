@@ -190,6 +190,10 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             {
                 return null;
             }
+            // A context that already tracks this meeting would hand back that copy from the tracked query below, with
+            // the status it had before a competing request committed and released the lock, and repeat a transition
+            // that has already happened. Refresh it from the locked row, as for the participants' accounts.
+            RefreshTracked(lockedRows[0]);
             // Publication readiness must not race account deactivation after the meeting lock.
             var lockedUsers = await db.Users.FromSqlInterpolated($"SELECT * FROM users WHERE id IN (SELECT user_id FROM meeting_participants WHERE meeting_id = {id}) ORDER BY id FOR SHARE")
                 .AsNoTracking().ToArrayAsync(ct);
@@ -197,11 +201,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             // EF identity resolution would otherwise reuse that stale account in the roster query.
             foreach (var user in lockedUsers)
             {
-                var entry = db.ChangeTracker.Entries<User>()
-                    .SingleOrDefault(e => e.Entity.Id == user.Id && e.State == EntityState.Unchanged);
-                if (entry is null) continue;
-                entry.CurrentValues.SetValues(user);
-                entry.OriginalValues.SetValues(user);
+                RefreshTracked(user);
             }
         }
 
@@ -217,6 +217,21 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         }
 
         return await query.SingleOrDefaultAsync(meeting => meeting.Id == id, ct);
+    }
+
+    /// <summary>Overwrites an unchanged tracked copy of <paramref name="locked"/> with the values read under the lock.</summary>
+    private void RefreshTracked<TEntity>(TEntity locked) where TEntity : class
+    {
+        var key = db.Model.FindEntityType(typeof(TEntity))!.FindPrimaryKey()!.Properties.Single();
+        var id = key.PropertyInfo!.GetValue(locked);
+        var entry = db.ChangeTracker.Entries<TEntity>().SingleOrDefault(e =>
+            e.State == EntityState.Unchanged && Equals(e.Property(key.Name).CurrentValue, id));
+        if (entry is null)
+        {
+            return;
+        }
+        entry.CurrentValues.SetValues(locked);
+        entry.OriginalValues.SetValues(locked);
     }
 
     public async Task<IReadOnlyList<Guid>> ListOverdueAsync(DateTimeOffset cutoff, int take, CancellationToken ct = default)

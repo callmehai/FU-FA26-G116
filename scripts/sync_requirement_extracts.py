@@ -215,12 +215,23 @@ def sync_use_cases(check: bool) -> int:
         lines[start] = f"{match.group(1)} {uc} – {title}"
         blocks = parse_spec(lines)
 
-    # 3. Add the UCs the report has and the extract lacks, at the end of their Feature.
-    fe_titles = {}
+    # 2b. Update every FE section heading to the report's title. The report is
+    # the source; the old code rebuilt the ToC from the extract's own
+    # headings, so FE-12 stayed "Meeting Minutes & Digital Signing" after the
+    # report renamed it "Meeting Minutes & Approval".
+    report_fe_titles: dict[str, str] = {}
     for line in report_lines:
         fe_match = REPORT_FE_HEADING.match(line)
         if fe_match:
-            fe_titles.setdefault(fe_match.group(1), fe_match.group(2).strip())
+            report_fe_titles.setdefault(fe_match.group(1), fe_match.group(2).strip())
+    for index, line in enumerate(lines):
+        fe_match = FE_HEADING.match(line)
+        if fe_match and report_fe_titles.get(fe_match.group(1)):
+            lines[index] = f"## {fe_match.group(1)} — {report_fe_titles[fe_match.group(1)]}"
+    blocks = parse_spec(lines)
+
+    # 3. Add the UCs the report has and the extract lacks, at the end of their Feature.
+    fe_titles = report_fe_titles
     for uc, title, fe in order:
         if uc in {block[2] for block in blocks}:
             continue

@@ -20,16 +20,13 @@ các UC con.
 
 ## Xuất ảnh
 
-Từ thư mục gốc repository, sau khi sửa `.txt`:
+Từ thư mục gốc repository, sau khi sửa `.txt` — chỉ truyền file đã sửa:
 
 ```bash
-node scripts/export-diagrams.js docs/06-sequencediagram/reporting
+python scripts/export_sequence.py UC70a UC70b
 ```
 
-```bash
-python scripts/txt_to_sequence_drawio_png.py docs/06-sequencediagram/reporting/*.txt
-```
-
-Lệnh thứ nhất xuất `.png` cạnh `.txt`; lệnh thứ hai ghép tab vào `TrustCabinet_Sequence_Diagrams.drawio` và xuất ảnh vào
-`drawio-png/` (trên Windows đặt `PYTHONUTF8=1` để script in được tiếng Việt). Mở từng ảnh kiểm tra không cắt; xác nhận
-file gộp chỉ thêm tab mới.
+Lệnh xuất cả ảnh sequencediagram.org cạnh `.txt` lẫn tab trong
+`TrustCabinet_Sequence_Diagrams.drawio` và ảnh trong `drawio-png/`
+(trên Windows đặt `PYTHONUTF8=1` để script in được tiếng Việt). Mở từng ảnh kiểm tra không cắt; xác nhận
+file gộp chỉ đổi tab đã sửa.

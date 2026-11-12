@@ -13,7 +13,7 @@ import { AcceptShareDialog, ChangeShareDialog, NewShareDialog } from './ShareDia
 import { isStale, type ShareOutcome } from './shareOutcome'
 import { ShareRow, type RowIntent } from './ShareRow'
 import { SharedWeek } from './SharedWeek'
-import { isClosed, vietnamToday } from './shareFormat'
+import { MSG439_STOPPED, isClosed, vietnamToday } from './shareFormat'
 
 type Tab = 'list' | 'week'
 type Open = RowIntent | { kind: 'new'; mode: 'request' | 'direct' } | null
@@ -65,11 +65,30 @@ export function CalendarSharingPage() {
 
   const reload = useCallback(() => setAttempt((n) => n + 1), [])
 
-  // A notification lands on `?share={id}`: bring that row into view once the lists are in.
+  // A notification lands on `?share={id}`: bring that row into view once the lists are in, once per link. A viewer who
+  // lost the right to create meetings no longer has the "shared with me" card, so the row of the stop that told them
+  // is not on the page: say why instead of landing on nothing.
+  const focusHandled = useRef<string | null>(null)
   useEffect(() => {
-    if (!lists || !focusId) return
-    document.getElementById(`share-${focusId}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [lists, focusId])
+    if (!lists || !focusId || focusHandled.current === focusId) return
+    focusHandled.current = focusId
+    const row = document.getElementById(`share-${focusId}`)
+    if (row) row.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    else {
+      const share = [...lists.asOwner, ...lists.asViewer].find((s) => s.id === focusId)
+      const stopped = share ? share.status === 'Stopped' : !organizer
+      toast.show(stopped ? MSG439_STOPPED : 'Chia sẻ này không còn.', 'info')
+      // Said once: drop the link's target so a reload or a shared URL does not say it again.
+      setParams(
+        (current) => {
+          const next = new URLSearchParams(current)
+          next.delete('share')
+          return next
+        },
+        { replace: true },
+      )
+    }
+  }, [lists, focusId, organizer, toast, setParams])
 
   function setTab(next: Tab) {
     const p = new URLSearchParams(params)

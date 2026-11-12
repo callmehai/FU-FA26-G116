@@ -27,9 +27,9 @@ UserRepository-->SharingService: Verification result
 deactivate UserRepository
 
 alt Owner is not active - EX-5
-    SharingService-->SharingController: Not found, nothing disclosed
+    SharingService-->SharingController: Refused, nothing disclosed
     deactivate SharingService
-    SharingController-->SharingPage: 404
+    SharingController-->SharingPage: Request refused
     deactivate SharingController
     SharingPage-->Owner: (nothing disclosed)
 else Owner is verified

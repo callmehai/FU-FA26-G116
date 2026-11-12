@@ -82,9 +82,14 @@ public static class CalendarShareRules
             && Length(start, end) <= MaxDays
             && (level != share.Level || start != share.StartDate || end != share.EndDate);
 
-    /// <summary>UC-84c AF-1: the pending change is checked again when the owner approves it — time has passed since.</summary>
+    /// <summary>
+    /// UC-84c AF-1: the pending change is checked again when the owner approves it. Time has passed since, and the owner
+    /// may have moved the dates meanwhile (UC-84d AF-1), so the asked end date must still be today or later, on or after
+    /// the current start, and within 365 days of it (BR-431).
+    /// </summary>
     public static bool ValidPendingApproval(CalendarShare share, DateOnly today)
-        => share.PendingEndDate is { } end && end >= today && Length(share.StartDate, end) <= MaxDays;
+        => share.PendingEndDate is { } end && end >= today && end >= share.StartDate
+            && Length(share.StartDate, end) <= MaxDays;
 
     /// <summary>The side that sent the share: the viewer for UC-84a, the owner for UC-84b.</summary>
     public static Guid Sender(CalendarShare share)
@@ -109,7 +114,8 @@ public static class CalendarShareRules
 
     /// <summary>
     /// What <paramref name="actorId"/> may do to the share now (the table of the plan, §2.5). Empty for anyone who is not
-    /// one of the two people, and for a share that is final or past its end date. <paramref name="acceptBlocked"/>: a
+    /// one of the two people, and for a share that is final or past its end date. A pending change that no longer fits the
+    /// share (<see cref="ValidPendingApproval"/>) can only be declined. <paramref name="acceptBlocked"/>: a
     /// Pending share that can no longer become Effective — its sender was deactivated (UC-84c EX-5, PO 09/11/2026 Q-C) or its
     /// viewer lost the Meeting Organizer right (BR-430) — so the asked side may only decline it.
     /// </summary>
@@ -122,6 +128,8 @@ public static class CalendarShareRules
             CalendarShareStatus.Pending when AskedSide(share) == actorId && acceptBlocked => [Decline],
             CalendarShareStatus.Pending when AskedSide(share) == actorId => [Accept, Decline],
             CalendarShareStatus.Pending => [Withdraw],
+            CalendarShareStatus.Effective when isOwner && share.HasPendingChange && !ValidPendingApproval(share, today)
+                => [Decline, Update, End],
             CalendarShareStatus.Effective when isOwner && share.HasPendingChange => [Accept, Decline, Update, End],
             CalendarShareStatus.Effective when isOwner => [Update, End],
             CalendarShareStatus.Effective when share.HasPendingChange => [Withdraw, End],

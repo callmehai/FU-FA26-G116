@@ -1,4 +1,4 @@
-title UC-20 - Open Notification Target
+title UC-68 - Open Notification Target
 
 actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
 boundary "Notification Panel" as NotificationPanel

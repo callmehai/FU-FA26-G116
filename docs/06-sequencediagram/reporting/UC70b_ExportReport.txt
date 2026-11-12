@@ -21,9 +21,9 @@ alt The period is not valid - EX-1
     ReportController-->ReportsPage: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
     ReportsPage-->Actor: MSG463 - The report period is invalid. Choose up to 24 months, with the start month not after the end month.
 else The period is valid
-    ReportService->MeetingRepository: Count the readable Meetings in the period and get their attendance\nand first minutes issue (BR-432, BR-434, BR-435, BR-436)
+    ReportService->MeetingRepository: Count the readable Meetings in the period and get their attendance,\nactual start and end times, and first minutes issue (BR-432, BR-434, BR-435, BR-436, BR-447)
     activate MeetingRepository
-    MeetingRepository->Database: Retrieve counts, attendance marks and issue times of readable Meetings
+    MeetingRepository->Database: Retrieve counts, attendance marks, actual start and end times, and issue times of readable Meetings
     activate Database
     Database-->MeetingRepository: Figures / Read failure
     deactivate Database
@@ -35,7 +35,7 @@ else The period is valid
         ReportController-->ReportsPage: MSG465 - Unable to export the report. Please try again.
         ReportsPage-->Actor: MSG465 - Unable to export the report. Please try again.
     else Figures read, zero counts when no Meeting is readable - AF-1
-        ReportService->ReportService: Build the Excel file with the same figures as the page,\nno meeting title, participant or content (BR-437, BR-438)
+        ReportService->ReportService: Build the Excel file with the same figures as the page,\nincluding the three average rows (attendance rate, meeting duration in minutes, minutes turnaround),\nno meeting title, participant or content (BR-437, BR-438)
         ReportService->AuditService: Record the export with the actor and the period (BR-438)
         activate AuditService
         AuditService->Database: Insert audit entry

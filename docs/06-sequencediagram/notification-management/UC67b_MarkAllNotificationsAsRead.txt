@@ -1,4 +1,4 @@
-title UC-19 - Mark All Notifications as Read
+title UC-67b - Mark All Notifications as Read
 
 actor "Meeting Organizer / Meeting Approver / System Admin / Chair / Secretary / Participant" as User
 boundary "Notification Panel" as NotificationPanel

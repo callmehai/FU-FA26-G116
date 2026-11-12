@@ -188,6 +188,11 @@ public sealed class CalendarSharingService(
                 level = parsed;
             }
 
+            // Accepting turns a Pending share Effective, and the stop of BR-424 only looks at Effective shares. Hold both
+            // accounts until this commits and read them again, so a deactivation or role change running at the same time
+            // either waits for this share and stops it, or is seen here and refuses it.
+            if (share.Status == CalendarShareStatus.Pending)
+                people = await CalendarSharePeople.LockAndLoadAsync(db, [share.OwnerId, share.ViewerId], token);
             var owner = people[share.OwnerId];
             var viewer = people[share.ViewerId];
             if (share.Status == CalendarShareStatus.Pending)
@@ -231,8 +236,11 @@ public sealed class CalendarSharingService(
 
             // AF-1: approve the viewer's change exactly as asked, checked again now (BR-431).
             if (Differs(level, share.PendingLevel!.Value) || Differs(values.EndDate, share.PendingEndDate!.Value)
-                || Differs(values.StartDate, share.StartDate) || !CalendarShareRules.ValidPendingApproval(share, today))
+                || Differs(values.StartDate, share.StartDate))
                 return new(CalendarShareFailure.InvalidValues);
+            // The owner moved the dates after the change was asked, or time ran past it: it no longer fits the share and
+            // can only be declined (MSG450). Saving it anyway would break the range check of the table.
+            if (!CalendarShareRules.ValidPendingApproval(share, today)) return new(CalendarShareFailure.NotAllowed);
             var before = CalendarShareAudit.Snapshot(share);
             share.Level = share.PendingLevel.Value;
             share.EndDate = share.PendingEndDate.Value;

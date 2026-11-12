@@ -114,11 +114,12 @@ def resolve_browser() -> Path | None:
     if configured:
         candidates.append(Path(configured))
     if os.name == "nt":
-        for env in ("ProgramFiles(x86)", "ProgramFiles", "LOCALAPPDATA"):
-            base = os.environ.get(env)
-            if base:
-                candidates.append(Path(base) / "Microsoft/Edge/Application/msedge.exe")
-                candidates.append(Path(base) / "Google/Chrome/Application/chrome.exe")
+        # Chrome trước Edge: Edge đang mở sẵn thì chế độ headless thoát mã 0 mà không ghi ảnh.
+        for vendor in ("Google/Chrome/Application/chrome.exe", "Microsoft/Edge/Application/msedge.exe"):
+            for env in ("ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA"):
+                base = os.environ.get(env)
+                if base:
+                    candidates.append(Path(base) / vendor)
     for candidate in candidates:
         if candidate.is_file():
             return candidate.resolve()

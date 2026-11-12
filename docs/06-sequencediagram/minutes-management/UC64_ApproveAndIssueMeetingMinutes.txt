@@ -2,77 +2,68 @@ title UC-64 - Approve and Issue Meeting Minutes
 
 actor "Chair" as Actor
 boundary "Minutes Card (Biên bản tab)" as MinutesCard
-control ":Minutes Controller" as MinutesController
+control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Notification Service" as NotificationService
 database ":Database" as Database
 
 Actor->MinutesCard: Confirm Approve and Issue
 activate MinutesCard
-MinutesCard->MinutesController: approve(minutesId, updatedAt)
-activate MinutesController
-MinutesController->MinutesService: approveAsync(minutesId, actorId, updatedAt)
+MinutesCard->MinutesEndpoints: approve(minutesId, updatedAt)
+activate MinutesEndpoints
+MinutesEndpoints->MinutesService: ApproveAsync(minutesId, actorId, updatedAt)
 activate MinutesService
-MinutesService->Database: Retrieve the revision
+MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
 activate Database
-Database-->MinutesService: Minutes / None
+Database-->MinutesService: Meeting and revision / None
 deactivate Database
-MinutesService->MeetingRepository: Get the Meeting
-activate MeetingRepository
-MeetingRepository->Database: Retrieve Meeting
-activate Database
-Database-->MeetingRepository: Meeting / Not found
-deactivate Database
-MeetingRepository-->MinutesService: Meeting / Not found
-deactivate MeetingRepository
-MinutesService->MinutesService: Check the actor is the current Chair (BR-406)
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-5
-    MinutesService-->MinutesController: Not found
-    MinutesController-->MinutesCard: 404
+    MinutesService-->MinutesEndpoints: Not found
+    MinutesEndpoints-->MinutesCard: 404
     MinutesCard-->Actor: No minutes
 else Actor is the current Secretary, not the Chair - EX-1
-    MinutesService-->MinutesController: MSG428 - Only the Chair may approve or return the minutes.
-    MinutesController-->MinutesCard: 403 MSG428
+    MinutesService-->MinutesEndpoints: MSG428 - Only the Chair may approve or return the minutes.
+    MinutesEndpoints-->MinutesCard: 403 MSG428
     MinutesCard-->Actor: MSG428 - Only the Chair may approve or return the minutes.
 else Actor is the current Chair
     MinutesService->MinutesService: Check the revision is WaitingApproval and it is the copy the actor read (BR-389)
 
     alt Not waiting for approval - EX-2
-        MinutesService-->MinutesController: MSG429 - These minutes are not waiting for approval.
-        MinutesController-->MinutesCard: 409 MSG429
+        MinutesService-->MinutesEndpoints: MSG429 - These minutes are not waiting for approval.
+        MinutesEndpoints-->MinutesCard: 409 MSG429
         MinutesCard-->Actor: MSG429 - These minutes are not waiting for approval.
     else Changed after the actor opened it - EX-3
-        MinutesService-->MinutesController: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
-        MinutesController-->MinutesCard: 409 MSG401
+        MinutesService-->MinutesEndpoints: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
+        MinutesEndpoints-->MinutesCard: 409 MSG401
         MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else Approval valid
         MinutesService->Database: Set Issued, who approved and when (BR-408);\nthe Meeting status is not changed
-        activate Database
 
         opt The revision corrects an earlier issued one - AF-1
             MinutesService->Database: Set the earlier revision Superseded (BR-409)
         end
 
+        MinutesService->Database: Insert the audit entry of the issue with who issued it (BR-446),\ntogether with the notification for everyone who may read the issued minutes except\nthe Chair and never a Guest, in one save (BR-411, BR-412)
+        activate Database
         Database-->MinutesService: Saved / Failed
         deactivate Database
 
         alt Saved
-            MinutesService->NotificationService: Notify everyone who may read the issued minutes (BR-411, BR-412)
+            MinutesService->NotificationService: The notification is saved with the issue; the dispatcher pushes it
             activate NotificationService
             NotificationService-->MinutesService: Queued
             deactivate NotificationService
-            MinutesService-->MinutesController: State
-            MinutesController-->MinutesCard: 200 MSG427 - Minutes approved and issued.
+            MinutesService-->MinutesEndpoints: State
+            MinutesEndpoints-->MinutesCard: 200 MSG427 - Minutes approved and issued.
             MinutesCard-->Actor: MSG427 - Minutes approved and issued.
         else The change cannot be saved - EX-4
-            MinutesService-->MinutesController: MSG404 - Unable to save the minutes. Please try again.
-            MinutesController-->MinutesCard: 503 MSG404
+            MinutesService-->MinutesEndpoints: MSG404 - Unable to save the minutes. Please try again.
+            MinutesEndpoints-->MinutesCard: 503 MSG404
             MinutesCard-->Actor: MSG404 - Unable to save the minutes. Please try again.
         end
     end
 end
 deactivate MinutesService
-deactivate MinutesController
+deactivate MinutesEndpoints
 deactivate MinutesCard
