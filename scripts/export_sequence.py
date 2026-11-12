@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Một lệnh xuất đủ HAI bộ ảnh cho mỗi sơ đồ tuần tự .txt được truyền vào:
+"""Export both PNG sets for each given sequence-diagram .txt file:
 
-  1. tab trong TrustCabinet_Sequence_Diagrams.drawio + docs/06-sequencediagram/drawio-png/<page_id>.drawio.png
-     (scripts/txt_to_sequence_drawio_png.py — chụp bằng Edge/Chrome, tự chọn scale để không cắt ảnh)
-  2. ảnh sequencediagram.org nằm cạnh file .txt
+  1. the tab in TrustCabinet_Sequence_Diagrams.drawio + docs/06-sequencediagram/drawio-png/<page_id>.drawio.png
+     (scripts/txt_to_sequence_drawio_png.py — screenshots via Edge/Chrome, auto scale to avoid cropping)
+  2. the sequencediagram.org image next to the .txt file
      (scripts/export-diagrams.js — Playwright)
 
-Chỉ xuất đúng file được truyền; KHÔNG nhận thư mục (xuất cả thư mục làm đổi ảnh của sơ đồ không sửa).
-Mỗi tham số là đường dẫn .txt hoặc mã UC (vd. UC84b, uc-84b) — mã UC khớp tên file UC84b_*.txt.
+Only the given files are exported; directories are NOT accepted (exporting a
+whole directory would refresh diagrams that were not changed).
+Each argument is a .txt path or a UC code (e.g. UC84b, uc-84b) — a code matches
+the UC84b_*.txt file name.
 
-Ví dụ:
+Examples:
   python scripts/export_sequence.py UC84b UC84f
   python scripts/export_sequence.py docs/06-sequencediagram/role-management/UC11_ConfigureRolePermissions.txt
-  python scripts/export_sequence.py UC84b --only drawio     # chỉ bộ 1
-  python scripts/export_sequence.py UC84b --only seqorg     # chỉ bộ 2
+  python scripts/export_sequence.py UC84b --only drawio     # first set only
+  python scripts/export_sequence.py UC84b --only seqorg     # second set only
 """
 from __future__ import annotations
 
@@ -60,9 +62,9 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("targets", nargs="+", help="đường dẫn .txt hoặc mã UC (UC84b)")
-    parser.add_argument("--only", choices=["drawio", "seqorg"], help="chỉ xuất một bộ ảnh")
-    parser.add_argument("--scale", type=float, help="ép scale drawio.png (mặc định tự chọn)")
+    parser.add_argument("targets", nargs="+", help="a .txt path or UC code (UC84b)")
+    parser.add_argument("--only", choices=["drawio", "seqorg"], help="export only one image set")
+    parser.add_argument("--scale", type=float, help="force the drawio.png scale (default: auto)")
     args = parser.parse_args()
 
     files = []
@@ -70,15 +72,15 @@ def main() -> int:
         path = resolve(target)
         if path not in files:
             files.append(path)
-    rel = [str(p) for p in files]
+    abs_paths = [str(p) for p in files]
 
     if args.only != "seqorg":
-        cmd = [sys.executable, "-X", "utf8", str(SCRIPTS / "txt_to_sequence_drawio_png.py"), *rel]
+        cmd = [sys.executable, "-X", "utf8", str(SCRIPTS / "txt_to_sequence_drawio_png.py"), *abs_paths]
         if args.scale:
             cmd += ["--scale", str(args.scale)]
         run(cmd)
     if args.only != "drawio":
-        run(["node", str(SCRIPTS / "export-diagrams.js"), *rel])
+        run(["node", str(SCRIPTS / "export-diagrams.js"), *abs_paths])
 
     print("\nxong — kiểm tra bằng: git status --short docs/06-sequencediagram", flush=True)
     return 0

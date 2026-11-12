@@ -572,9 +572,6 @@ deactivate MeetingPage
 | [calendar-sharing/](calendar-sharing/README.md) | UC-84 (UC-84a → UC-84f), UC-85 (UC-85a → UC-85c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
 | [reporting/](reporting/README.md) | UC-70a, UC-70b (SCRUM-38) |
 
-Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file .txt>` — ra cả ảnh sequencediagram.org cạnh `.txt` (cần truy cập `sequencediagram.org`) lẫn `drawio-png/`; chỉ truyền file đã sửa.
-
-Đồng bộ ảnh `.drawio.png` từ 64 tab UC của file draw.io gộp (bỏ qua tab index):
-`python scripts/sync_sequence_drawio_png.py` (cần cài Draw.io; có thể đặt `DRAWIO_EXECUTABLE` nếu CLI chưa có trong PATH).
+Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file .txt>` — ra cả ảnh sequencediagram.org cạnh `.txt` (cần truy cập `sequencediagram.org`) lẫn `drawio-png/`; chỉ truyền file đã sửa. Không chạy `sync_sequence_drawio_png.py` cho toàn bộ (draw.io CLI cắt nửa dưới sơ đồ rất dài như UC-84b — xem README của [`calendar-sharing/`](calendar-sharing/README.md)).
 
 UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.
