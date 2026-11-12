@@ -15,14 +15,15 @@ using TrustCabinet.Domain.VoiceId;
 namespace TrustCabinet.Web.Tests.Recordings;
 
 /// <summary>
-/// ADR-0060, the person's side: their own consent to Secretaries recording them, separate from enrolling their own
-/// voice; and the samples taken under it, which stay theirs to see, hear and delete.
+/// ADR-0060, the person's side: one Voice ID consent covers the samples they record and the ones a meeting's
+/// Secretary records for them on the room's mic; withdrawing it erases both. The Secretary's samples stay the person's
+/// to see, hear and delete.
 /// </summary>
-public sealed class VoiceIdProxyConsentTests(RecordingFixture fixture) : IClassFixture<RecordingFixture>
+public sealed class VoiceIdOneConsentTests(RecordingFixture fixture) : IClassFixture<RecordingFixture>
 {
-    private const string Msg471Granted = "MSG471";
-    private const string Msg472Withdrawn = "MSG472";
-    private const string Msg475NoProxyConsent = "MSG475";
+    private const string Msg305Granted = "MSG305";
+    private const string Msg306Withdrawn = "MSG306";
+    private const string Msg475NoConsent = "MSG475";
 
     private async Task<(RecordingFixture.Scenario S, HttpClient Secretary)> Arrange()
     {
@@ -39,51 +40,59 @@ public sealed class VoiceIdProxyConsentTests(RecordingFixture fixture) : IClassF
     }
 
     [Fact]
-    public async Task The_profile_carries_an_empty_proxy_set_with_its_own_notice()
+    public async Task There_is_no_second_consent_to_give()
     {
         var s = await fixture.Seed();
         using var member = fixture.Client(s.Member);
         var proxy = (await member.GetFromJsonAsync<JsonElement>("/api/me/voice")).GetProperty("proxy");
-        Assert.Equal(JsonValueKind.Null, proxy.GetProperty("consent").ValueKind);
+        Assert.False(proxy.GetProperty("allowed").GetBoolean());
         Assert.Equal(0, proxy.GetProperty("samples").GetArrayLength());
         Assert.Equal(VoiceIdRules.MaxSamples, proxy.GetProperty("maxSamples").GetInt32());
-        Assert.Equal("1.0", proxy.GetProperty("noticeVersion").GetString());
-        Assert.Equal(VoiceIdRules.ProxyPurpose, proxy.GetProperty("purpose").GetString());
-
-        using var anonymous = fixture.Client();
-        Assert.Equal(HttpStatusCode.Unauthorized, (await VoiceCollection.GrantProxy(anonymous)).StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.DeleteAsync("/api/me/voice/proxy-consent")).StatusCode);
+        Assert.False(proxy.TryGetProperty("consent", out _));
+        Assert.False((await member.PostAsJsonAsync("/api/me/voice/proxy-consent", new { noticeVersion = "1.0" })).IsSuccessStatusCode);
+        Assert.False((await member.DeleteAsync("/api/me/voice/proxy-consent")).IsSuccessStatusCode);
     }
 
     [Fact]
-    public async Task The_proxy_consent_is_explicit_versioned_given_once_and_independent_of_the_own_one()
+    public async Task One_consent_covers_both_sets()
     {
-        var s = await fixture.Seed();
+        var (s, secretary) = await Arrange();
         using var member = fixture.Client(s.Member);
-        var stale = await VoiceCollection.AssertCode(await VoiceCollection.GrantProxy(member, VoiceIdRules.NoticeVersion), 400, "MSG313");
-        Assert.True(stale.GetProperty("errors").TryGetProperty("noticeVersion", out _));
-
-        // No consent to enrol their own voice is needed.
-        var granted = await VoiceCollection.AssertCode(await VoiceCollection.GrantProxy(member), 200, Msg471Granted);
+        var granted = await VoiceCollection.AssertCode(await VoiceCollection.Agree(member), 200, Msg305Granted);
         var data = granted.GetProperty("data");
-        Assert.Equal(JsonValueKind.Null, data.GetProperty("consent").ValueKind);
-        var consent = data.GetProperty("proxy").GetProperty("consent");
-        Assert.Equal(VoiceIdRules.ProxyNoticeVersion, consent.GetProperty("noticeVersion").GetString());
-        Assert.Equal(VoiceIdRules.ProxyPurpose, consent.GetProperty("purpose").GetString());
-        await VoiceCollection.AssertCode(await VoiceCollection.GrantProxy(member), 200, Msg471Granted);
+        Assert.Equal(VoiceIdRules.NoticeVersion, data.GetProperty("consent").GetProperty("noticeVersion").GetString());
+        Assert.Contains("Thư ký", data.GetProperty("purpose").GetString());
+        Assert.True(data.GetProperty("proxy").GetProperty("allowed").GetBoolean());
 
+        var own = await EnrolOwn(member);
+        var taken = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         await using var db = fixture.Db();
-        var row = await db.VoiceConsents.SingleAsync(c => c.UserId == s.Member);
-        Assert.Equal(VoiceConsentScope.Proxy, row.Scope);
-        Assert.Null(row.WithdrawnAt);
-        var audit = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.VoiceConsentGranted && a.ActorId == s.Member);
-        Assert.Equal(row.Id, audit.ObjectId);
-        Assert.Contains("\"scope\":\"proxy\"", audit.Details.Replace(" ", ""));
+        var consent = await db.VoiceConsents.SingleAsync(c => c.UserId == s.Member);
+        Assert.Null(consent.WithdrawnAt);
+        Assert.Equal(consent.Id, (await db.VoiceSamples.SingleAsync(x => x.Id == own)).ConsentId);
+        Assert.Equal(consent.Id, (await db.VoiceSamples.SingleAsync(x => x.Id == taken)).ConsentId);
+    }
 
-        // The own consent is a second standing row; neither replaces the other.
-        await VoiceCollection.AssertCode(await member.PostAsJsonAsync("/api/me/voice/consent",
-            new { noticeVersion = VoiceIdRules.NoticeVersion }), 200, "MSG305");
-        Assert.Equal(2, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member && c.WithdrawnAt == null));
+    [Fact]
+    public async Task A_consent_to_an_older_notice_lets_no_secretary_record_until_renewed()
+    {
+        var (s, secretary) = await Arrange();
+        await VoiceCollection.AgreeToOldNotice(fixture, s.Member);
+        using var member = fixture.Client(s.Member);
+        Assert.False((await member.GetFromJsonAsync<JsonElement>("/api/me/voice")).GetProperty("proxy").GetProperty("allowed").GetBoolean());
+        var people = (await secretary.GetFromJsonAsync<JsonElement>(VoiceCollection.Url(s.MeetingId))).GetProperty("people");
+        Assert.False(people.EnumerateArray().Single(p => p.GetProperty("userId").GetGuid() == s.Member).GetProperty("consented").GetBoolean());
+        await VoiceCollection.AssertCode(await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples",
+            VoiceCollection.Sample()), 409, Msg475NoConsent);
+
+        // Agreeing to the current notice renews the same consent in place, and now covers the Secretary.
+        var renewed = await VoiceCollection.AssertCode(await VoiceCollection.Agree(member), 200, Msg305Granted);
+        Assert.True(renewed.GetProperty("data").GetProperty("proxy").GetProperty("allowed").GetBoolean());
+        await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
+        await using var db = fixture.Db();
+        Assert.Equal(1, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member));
+        var audit = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.VoiceConsentRenewed && a.ActorId == s.Member);
+        Assert.Contains("\"from\":\"1.2\"", audit.Details.Replace(" ", ""));
     }
 
     [Fact]
@@ -94,64 +103,44 @@ public sealed class VoiceIdProxyConsentTests(RecordingFixture fixture) : IClassF
             var s = await fixture.Seed();
             using var first = fixture.Client(s.Member);
             using var second = fixture.Client(s.Member);
-            var both = await Task.WhenAll(VoiceCollection.GrantProxy(first), VoiceCollection.GrantProxy(second));
+            var both = await Task.WhenAll(VoiceCollection.Agree(first), VoiceCollection.Agree(second));
             // A double click: there is no row yet for FOR UPDATE to lock, so both insert and the unique index keeps one;
             // the request that lost the race answers as if it had won — the person has agreed.
-            foreach (var response in both) await VoiceCollection.AssertCode(response, 200, Msg471Granted);
-            await VoiceCollection.AssertCode(await VoiceCollection.GrantProxy(second), 200, Msg471Granted);
+            foreach (var response in both) await VoiceCollection.AssertCode(response, 200, Msg305Granted);
             await using var db = fixture.Db();
             Assert.Equal(1, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member && c.WithdrawnAt == null));
         }
     }
 
     [Fact]
-    public async Task Withdrawing_one_consent_erases_only_its_own_set()
+    public async Task Withdrawing_erases_both_sets_at_once()
     {
         var (s, secretary) = await Arrange();
         using var member = fixture.Client(s.Member);
         var own = await EnrolOwn(member);
-        await VoiceCollection.GrantProxy(fixture, s.Member);
         var taken = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
 
-        var withdrawn = await VoiceCollection.AssertCode(await member.DeleteAsync("/api/me/voice/proxy-consent"), 200, Msg472Withdrawn);
+        var withdrawn = await VoiceCollection.AssertCode(await member.DeleteAsync("/api/me/voice/consent"), 200, Msg306Withdrawn);
         var data = withdrawn.GetProperty("data");
-        Assert.Equal(JsonValueKind.Null, data.GetProperty("proxy").GetProperty("consent").ValueKind);
+        Assert.Equal(JsonValueKind.Null, data.GetProperty("consent").ValueKind);
+        Assert.Equal(0, data.GetProperty("samples").GetArrayLength());
         Assert.Equal(0, data.GetProperty("proxy").GetProperty("samples").GetArrayLength());
-        Assert.NotEqual(JsonValueKind.Null, data.GetProperty("consent").ValueKind);
-        Assert.Equal(own, Assert.Single(data.GetProperty("samples").EnumerateArray()).GetProperty("id").GetGuid());
+        Assert.False(data.GetProperty("proxy").GetProperty("allowed").GetBoolean());
         await using var db = fixture.Db();
-        Assert.False(await db.VoiceSamples.AnyAsync(x => x.Id == taken));
-        Assert.True(await db.VoiceSamples.AnyAsync(x => x.Id == own));
-        var proxyEnded = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.VoiceConsentWithdrawn && a.ActorId == s.Member);
-        Assert.Contains("\"scope\":\"proxy\"", proxyEnded.Details.Replace(" ", ""));
-        Assert.Contains("\"erasedSamples\":1", proxyEnded.Details.Replace(" ", ""));
+        Assert.False(await db.VoiceSamples.AnyAsync(x => x.Id == own || x.Id == taken));
+        var ended = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.VoiceConsentWithdrawn && a.ActorId == s.Member);
+        Assert.Contains("\"erasedSamples\":2", ended.Details.Replace(" ", ""));
         // The Secretary can take nothing more, and the withdrawn row stays as evidence.
         await VoiceCollection.AssertCode(await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples",
-            VoiceCollection.Sample()), 409, Msg475NoProxyConsent);
-        Assert.NotNull((await db.VoiceConsents.SingleAsync(c => c.UserId == s.Member && c.Scope == VoiceConsentScope.Proxy)).WithdrawnAt);
-
-        // Agreeing again starts a new consent; withdrawing the own one now leaves the Secretary's samples alone.
-        await VoiceCollection.AssertCode(await VoiceCollection.GrantProxy(member), 200, Msg471Granted);
-        var again = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
-        var ownEnded = await VoiceCollection.AssertCode(await member.DeleteAsync("/api/me/voice/consent"), 200, "MSG306");
-        Assert.Equal(JsonValueKind.Null, ownEnded.GetProperty("data").GetProperty("consent").ValueKind);
-        Assert.Equal(again, Assert.Single(ownEnded.GetProperty("data").GetProperty("proxy").GetProperty("samples").EnumerateArray())
-            .GetProperty("id").GetGuid());
-        Assert.False(await db.VoiceSamples.AnyAsync(x => x.Id == own));
-        Assert.True(await db.VoiceSamples.AnyAsync(x => x.Id == again));
-        Assert.Equal(2, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member && c.Scope == VoiceConsentScope.Proxy));
-        Assert.Contains(await db.AuditLog.Where(a => a.Action == AuditActions.VoiceConsentWithdrawn && a.ActorId == s.Member)
-            .Select(a => a.Details).ToListAsync(), d => d.Replace(" ", "").Contains("\"scope\":\"self\""));
-        // Withdrawing a consent that does not stand changes nothing.
-        await VoiceCollection.AssertCode(await member.DeleteAsync("/api/me/voice/consent"), 200, "MSG306");
-        Assert.True(await db.VoiceSamples.AnyAsync(x => x.Id == again));
+            VoiceCollection.Sample()), 409, Msg475NoConsent);
+        Assert.NotNull((await db.VoiceConsents.SingleAsync(c => c.UserId == s.Member)).WithdrawnAt);
     }
 
     [Fact]
     public async Task The_own_limit_counts_only_the_samples_the_person_recorded()
     {
         var (s, secretary) = await Arrange();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         for (var i = 0; i < VoiceIdRules.MaxSamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         using var member = fixture.Client(s.Member);
         await EnrolOwn(member);
@@ -168,7 +157,7 @@ public sealed class VoiceIdProxyConsentTests(RecordingFixture fixture) : IClassF
     public async Task The_person_sees_hears_and_deletes_a_sample_a_secretary_took_and_nobody_else_does()
     {
         var (s, secretary) = await Arrange();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         var taken = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         using var member = fixture.Client(s.Member);
 
@@ -205,11 +194,10 @@ public sealed class VoiceIdProxyConsentTests(RecordingFixture fixture) : IClassF
     }
 
     [Fact]
-    public async Task Deactivating_an_account_ends_both_consents_and_erases_both_sets()
+    public async Task Deactivating_an_account_ends_the_consent_and_erases_both_sets()
     {
         var (s, secretary) = await Arrange();
         using (var member = fixture.Client(s.Member)) await EnrolOwn(member);
-        await VoiceCollection.GrantProxy(fixture, s.Member);
         await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
 
         using (var scope = fixture.Host.Services.CreateScope())
@@ -217,22 +205,17 @@ public sealed class VoiceIdProxyConsentTests(RecordingFixture fixture) : IClassF
 
         await using var db = fixture.Db();
         Assert.False(await db.VoiceSamples.AnyAsync(x => x.UserId == s.Member));
-        Assert.Equal(2, await db.VoiceConsents.CountAsync(c => c.UserId == s.Member && c.WithdrawnAt != null));
-        Assert.False(await db.VoiceConsents.AnyAsync(c => c.UserId == s.Member && c.WithdrawnAt == null));
-        var ended = (await db.AuditLog.Where(a => a.Action == AuditActions.VoiceConsentWithdrawn && a.ActorId == s.Organizer)
-            .Select(a => a.Details).ToListAsync()).Select(d => d.Replace(" ", "")).ToList();
-        Assert.Equal(2, ended.Count);
-        Assert.All(ended, d => Assert.Contains("\"reason\":\"accountDeactivated\"", d));
-        Assert.Contains(ended, d => d.Contains("\"scope\":\"self\""));
-        Assert.Contains(ended, d => d.Contains("\"scope\":\"proxy\""));
+        Assert.NotNull((await db.VoiceConsents.SingleAsync(c => c.UserId == s.Member)).WithdrawnAt);
+        var ended = await db.AuditLog.SingleAsync(a => a.Action == AuditActions.VoiceConsentWithdrawn && a.ActorId == s.Organizer);
+        Assert.Contains("\"reason\":\"accountDeactivated\"", ended.Details.Replace(" ", ""));
+        Assert.Contains("\"erasedSamples\":2", ended.Details.Replace(" ", ""));
     }
 
     [Fact]
     public async Task A_sample_a_secretary_took_names_the_person_in_the_transcript()
     {
         var (s, secretary) = await Arrange();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
-        // The proxy notice is 1.0, under the 1.2 an own consent needs: it says the name is filled in all the same.
+        await VoiceCollection.Agree(fixture, s.Member);
         await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member, 0f, 1f, 0f);
         while (true)
         {

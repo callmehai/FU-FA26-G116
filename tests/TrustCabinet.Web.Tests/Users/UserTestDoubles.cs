@@ -385,8 +385,7 @@ internal sealed class FakeVoiceIdErasure(FakeAdministratorInvariantGuard? guard 
 {
     public List<(Guid UserId, Guid ActorId, VoiceIdEndReason Reason, bool InsideGuard)> Ended { get; } = [];
 
-    public Task<bool> EndAsync(Guid userId, Guid actorId, VoiceIdEndReason reason, CancellationToken ct,
-        VoiceConsentScope? scope = null)
+    public Task<bool> EndAsync(Guid userId, Guid actorId, VoiceIdEndReason reason, CancellationToken ct)
     {
         Ended.Add((userId, actorId, reason, guard?.IsInsideWrite ?? false));
         return Task.FromResult(true);

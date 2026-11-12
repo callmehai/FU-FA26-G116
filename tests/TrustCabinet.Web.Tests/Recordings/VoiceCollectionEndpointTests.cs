@@ -65,13 +65,26 @@ internal static class VoiceCollection
         await db.Users.Where(u => users.Contains(u.Id)).ExecuteUpdateAsync(u => u.SetProperty(x => x.RoleId, BuiltInRoles.Secretary));
     }
 
-    internal static Task<HttpResponseMessage> GrantProxy(HttpClient client, string version = VoiceIdRules.ProxyNoticeVersion)
-        => client.PostAsJsonAsync("/api/me/voice/proxy-consent", new { noticeVersion = version });
+    /// <summary>The person's one Voice ID consent, to the current notice: it covers Secretaries recording them (ADR-0060).</summary>
+    internal static Task<HttpResponseMessage> Agree(HttpClient client, string version = VoiceIdRules.NoticeVersion)
+        => client.PostAsJsonAsync("/api/me/voice/consent", new { noticeVersion = version });
 
-    internal static async Task GrantProxy(RecordingFixture fixture, Guid user)
+    internal static async Task Agree(RecordingFixture fixture, Guid user)
     {
         using var client = fixture.Client(user);
-        await AssertCode(await GrantProxy(client), 200, "MSG471");
+        await AssertCode(await Agree(client), 200, "MSG305");
+    }
+
+    /// <summary>A consent given before notice 1.3, which did not yet name Secretaries recording on the room's mic.</summary>
+    internal static async Task AgreeToOldNotice(RecordingFixture fixture, Guid user)
+    {
+        await using var db = fixture.Db();
+        db.VoiceConsents.Add(new()
+        {
+            UserId = user, GrantedAt = fixture.Clock.Now, NoticeVersion = "1.2", Purpose = "Nhận ra người phát biểu.",
+            CreatedAt = fixture.Clock.Now, UpdatedAt = fixture.Clock.Now,
+        });
+        await db.SaveChangesAsync();
     }
 
     internal static string Url(Guid meetingId) => $"/api/meetings/{meetingId}/voice-collection";
@@ -130,7 +143,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     public async Task Without_the_capability_even_the_meetings_secretary_gets_403()
     {
         var s = await fixture.Seed();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         var url = VoiceCollection.Url(s.MeetingId);
         // A plain Member role, with no claim at all, or with a claim the database no longer backs: the gate is the data.
         using var noClaim = fixture.Client(s.Secretary);
@@ -165,7 +178,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     {
         var (s, secretary) = await Arrange();
         var other = await fixture.Seed();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         var sample = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         // The Chair of this meeting, the Secretary of another one and an outsider all hold the capability.
         var url = VoiceCollection.Url(s.MeetingId);
@@ -200,7 +213,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         Sensitivity sensitivity, MeetingStatus status)
     {
         var (s, secretary) = await Arrange();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         var sample = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         await VoiceCollection.SetMeeting(fixture, s.MeetingId, status, sensitivity, mode);
         var url = VoiceCollection.Url(s.MeetingId);
@@ -235,11 +248,9 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
             await db.SaveChangesAsync();
             gone = leaver.Id;
         }
-        await VoiceCollection.GrantProxy(fixture, s.Member);
-        // A consent to enrol one's own voice is not a consent to be recorded by a Secretary.
-        using (var chair = fixture.Client(s.Chair))
-            await VoiceCollection.AssertCode(await chair.PostAsJsonAsync("/api/me/voice/consent",
-                new { noticeVersion = VoiceIdRules.NoticeVersion }), 200, "MSG305");
+        await VoiceCollection.Agree(fixture, s.Member);
+        // A consent to a notice from before Secretaries recorded on the room's mic does not cover it (ADR-0060).
+        await VoiceCollection.AgreeToOldNotice(fixture, s.Chair);
         var here = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         using (var elsewhere = VoiceCollection.Client(fixture, other.Secretary, Capability.VoiceCollector))
             await VoiceCollection.Collect(fixture, elsewhere, other.MeetingId, s.Member);
@@ -277,7 +288,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         MeetingStatus status, bool collectable)
     {
         var (s, secretary) = await Arrange(status);
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         var view = await secretary.GetFromJsonAsync<JsonElement>(VoiceCollection.Url(s.MeetingId));
         Assert.Equal(collectable, view.GetProperty("canCollect").GetBoolean());
         Assert.Equal(3, view.GetProperty("people").GetArrayLength());
@@ -293,7 +304,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     public async Task A_sample_is_the_persons_own_kept_encrypted_audited_and_they_are_told()
     {
         var (s, secretary) = await Arrange();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         fixture.Speech.NextEmbedding = [0.25f, -0.5f, 0.75f];
         var added = await VoiceCollection.AssertCode(
             await secretary.PostAsync($"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples", VoiceCollection.Sample()), 201, Msg473Added);
@@ -305,8 +316,9 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         Assert.Equal(s.Member, stored.UserId);
         Assert.Equal(s.Secretary, stored.CollectedById);
         Assert.Equal(s.MeetingId, stored.MeetingId);
-        Assert.Equal(VoiceConsentScope.Proxy, stored.Consent.Scope);
-        Assert.Equal(s.Member, stored.Consent.UserId);
+        // Under the person's one consent, the same one their own samples are under (ADR-0060).
+        Assert.Equal(await db.VoiceConsents.Where(c => c.UserId == s.Member && c.WithdrawnAt == null).Select(c => c.Id).SingleAsync(),
+            stored.ConsentId);
         Assert.Equal("audio/wav", stored.AudioContentType);
         Assert.NotNull(stored.AudioCiphertext);
         Assert.DoesNotContain(Convert.ToHexString(Encoding.ASCII.GetBytes("RIFF-giong")), Convert.ToHexString(stored.AudioCiphertext!));
@@ -335,22 +347,23 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     }
 
     [Fact]
-    public async Task Nothing_is_taken_without_the_persons_proxy_consent_and_only_for_a_person_of_the_meeting()
+    public async Task Nothing_is_taken_without_the_persons_consent_to_it_and_only_for_a_person_of_the_meeting()
     {
         var (s, secretary) = await Arrange();
         var url = VoiceCollection.Url(s.MeetingId);
-        // Their own Voice ID is on, but they never let a Secretary record them.
-        using (var member = fixture.Client(s.Member))
-            await VoiceCollection.AssertCode(await member.PostAsJsonAsync("/api/me/voice/consent",
-                new { noticeVersion = VoiceIdRules.NoticeVersion }), 200, "MSG305");
+        // No Voice ID at all.
+        await VoiceCollection.AssertCode(await secretary.PostAsync($"{url}/{s.Member}/samples", VoiceCollection.Sample()), 409,
+            Msg475NoProxyConsent);
+        // Voice ID on, but under a notice that did not yet name Secretaries recording them.
+        await VoiceCollection.AgreeToOldNotice(fixture, s.Member);
         await VoiceCollection.AssertCode(await secretary.PostAsync($"{url}/{s.Member}/samples", VoiceCollection.Sample()), 409,
             Msg475NoProxyConsent);
 
         // Someone outside the meeting, unknown, or no longer active is not a person of it, consent or not.
-        await VoiceCollection.GrantProxy(fixture, s.Outsider);
+        await VoiceCollection.Agree(fixture, s.Outsider);
         Assert.Equal(HttpStatusCode.NotFound, (await secretary.PostAsync($"{url}/{s.Outsider}/samples", VoiceCollection.Sample())).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await secretary.PostAsync($"{url}/{Guid.NewGuid()}/samples", VoiceCollection.Sample())).StatusCode);
-        await VoiceCollection.GrantProxy(fixture, s.Chair);
+        await VoiceCollection.Agree(fixture, s.Chair);
         await using var db = fixture.Db();
         await db.MeetingParticipants.Where(p => p.MeetingId == s.MeetingId && p.UserId == s.Chair)
             .ExecuteUpdateAsync(u => u.SetProperty(p => p.AssignmentStatus, AssignmentStatus.Removed)
@@ -358,7 +371,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
         Assert.Equal(HttpStatusCode.NotFound, (await secretary.PostAsync($"{url}/{s.Chair}/samples", VoiceCollection.Sample())).StatusCode);
 
         // The form is checked as for one's own sample.
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         await VoiceCollection.AssertCode(await secretary.PostAsync($"{url}/{s.Member}/samples", VoiceCollection.Sample("text/plain")), 415, "MSG292");
         await VoiceCollection.AssertCode(await secretary.PostAsync($"{url}/{s.Member}/samples", JsonContent.Create(new { })), 400, "MSG313");
         fixture.Speech.EmbedFailure = new VoiceSampleRejectedException("multiple_speakers");
@@ -376,11 +389,9 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     public async Task A_person_holds_at_most_five_proxy_samples_across_meetings_and_their_own_set_does_not_count()
     {
         var (s, secretary) = await Arrange();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         using (var member = fixture.Client(s.Member))
         {
-            await VoiceCollection.AssertCode(await member.PostAsJsonAsync("/api/me/voice/consent",
-                new { noticeVersion = VoiceIdRules.NoticeVersion }), 200, "MSG305");
             for (var i = 0; i < VoiceIdRules.MaxSamples; i++)
                 await VoiceCollection.AssertCode(await member.PostAsync("/api/me/voice/samples", VoiceCollection.Sample()), 201, "MSG307");
         }
@@ -413,7 +424,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
             db.MeetingParticipants.Add(new() { MeetingId = other.MeetingId, UserId = s.Member, Role = MeetingRole.Member });
             await db.SaveChangesAsync();
         }
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         var here = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         using var elsewhere = VoiceCollection.Client(fixture, other.Secretary, Capability.VoiceCollector);
         var there = await VoiceCollection.Collect(fixture, elsewhere, other.MeetingId, s.Member);
@@ -467,7 +478,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
             db.MeetingParticipants.Add(new() { MeetingId = other.MeetingId, UserId = s.Member, Role = MeetingRole.Member });
             await db.SaveChangesAsync();
         }
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         for (var i = 1; i < VoiceIdRules.MaxSamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         using var elsewhere = VoiceCollection.Client(fixture, other.Secretary, Capability.VoiceCollector);
 
@@ -484,7 +495,7 @@ public sealed class VoiceCollectionEndpointTests(RecordingFixture fixture) : ICl
     public async Task Deleting_frees_a_place_under_the_limit()
     {
         var (s, secretary) = await Arrange();
-        await VoiceCollection.GrantProxy(fixture, s.Member);
+        await VoiceCollection.Agree(fixture, s.Member);
         var first = await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         for (var i = 1; i < VoiceIdRules.MaxSamples; i++) await VoiceCollection.Collect(fixture, secretary, s.MeetingId, s.Member);
         var url = $"{VoiceCollection.Url(s.MeetingId)}/{s.Member}/samples";
