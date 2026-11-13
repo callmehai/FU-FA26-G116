@@ -1,0 +1,80 @@
+{
+  "feature": "FE-08",
+  "code": "ROOM",
+  "sheet": "Online Room",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "Join Meeting Room",
+      "uc": [
+        "UC-37"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Leave Meeting Room",
+      "uc": [
+        "UC-38"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Microphone, Camera & Screen Share",
+      "uc": [
+        "UC-39a",
+        "UC-39b",
+        "UC-39c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Choose Devices",
+      "uc": [
+        "UC-39d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "People in the Room",
+      "uc": [
+        "UC-40"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Mute a Participant",
+      "uc": [
+        "UC-41"
+      ],
+      "cases": []
+    },
+    {
+      "title": "In-room Chat",
+      "uc": [
+        "UC-42"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Floating Window",
+      "uc": [
+        "UC-78"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Register to Speak",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Meeting Notes",
+      "uc": [
+        "UC-82"
+      ],
+      "cases": []
+    }
+  ]
+}

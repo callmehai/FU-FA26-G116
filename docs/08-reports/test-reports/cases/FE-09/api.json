@@ -1,0 +1,123 @@
+{
+  "feature": "FE-09",
+  "code": "REC",
+  "sheet": "Recording",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/meetings/{meetingId}/recordings",
+      "uc": [
+        "UC-43a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/recordings",
+      "uc": [
+        "UC-44c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/recordings/{recordingId}/parts/{part}",
+      "uc": [
+        "UC-44c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/recordings/{recordingId}/complete",
+      "uc": [
+        "UC-44c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/recordings/takes",
+      "uc": [
+        "UC-44b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/recordings/{recordingId}/takes/{take}",
+      "uc": [
+        "UC-44d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/recordings/{recordingId}",
+      "uc": [
+        "UC-44e"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/recordings/{recordingId}/playback",
+      "uc": [
+        "UC-43b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/recordings/{recordingId}/audio",
+      "uc": [
+        "UC-43b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/recordings/{recordingId}/download",
+      "uc": [
+        "UC-43c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/speech-clips",
+      "uc": [
+        "UC-43a",
+        "UC-80"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}",
+      "uc": [
+        "UC-80"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/speech-clips/{clipId}/playback",
+      "uc": [
+        "UC-43b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/speech-clips/{clipId}/audio",
+      "uc": [
+        "UC-43b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/speech-clips/{clipId}/exclusion",
+      "uc": [
+        "UC-80",
+        "UC-46c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/speech-clips/{clipId}",
+      "uc": [
+        "UC-80",
+        "UC-46d"
+      ],
+      "cases": []
+    }
+  ]
+}

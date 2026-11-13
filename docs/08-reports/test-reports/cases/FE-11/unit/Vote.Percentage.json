@@ -1,0 +1,64 @@
+{
+  "description": "Vote percentage display: per-option share with banker's rounding and the zero-ballot case.",
+  "feature": "FE-11",
+  "methods": [
+    {
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "count: 1; ballots: 3.",
+          "log": "N/A",
+          "note": "BR-261 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (One_of_three_is_33_33_percent)",
+          "preconditions": [
+            "A closed vote with 3 ballots and 1 ballot for the option."
+          ],
+          "return": "33.33.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "count: 0; ballots: 0.",
+          "log": "N/A",
+          "note": "BR-261 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (No_ballot_means_no_percentage)",
+          "preconditions": [
+            "A vote with no ballots yet."
+          ],
+          "return": "null; no percentage is shown.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "count: 3; ballots: 3.",
+          "log": "N/A",
+          "note": "BR-261 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (A_unanimous_vote_is_100_percent)",
+          "preconditions": [
+            "A vote where every ballot chose the option."
+          ],
+          "return": "100.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "count: 1; ballots: 6.",
+          "log": "N/A",
+          "note": "BR-261 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (Rounding_is_away_from_zero_with_two_decimals)",
+          "preconditions": [
+            "A vote with 6 ballots and 1 ballot for the option."
+          ],
+          "return": "16.67; rounded away from zero to 2 decimals.",
+          "type": "Boundary"
+        }
+      ],
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "line": 96,
+      "method": "VoteRules.Percentage"
+    }
+  ],
+  "module": "VOTE",
+  "precondition": "Ballot count and per-option counts.",
+  "sheet": "Vote.Percentage"
+}

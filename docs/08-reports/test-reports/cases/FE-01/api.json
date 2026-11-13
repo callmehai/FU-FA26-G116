@@ -1,0 +1,1121 @@
+{
+  "feature": "FE-01",
+  "code": "AUTH",
+  "sheet": "Authentication",
+  "precondition": "Test build of backend + frontend; role accounts supplied by QA lead; a controlled inbox for Guest invitations; Postman or curl.",
+  "groups": [
+    {
+      "title": "POST /api/auth/login",
+      "uc": [
+        "UC-01"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT01",
+          "description": "Verify POST /api/auth/login signs in an active account and starts a session.",
+          "procedure": [
+            "Send POST /api/auth/login",
+            "Headers: Content-Type: application/json",
+            "Body: { \"email\": \"<Secretary email>\", \"password\": \"<Secretary password>\" }",
+            "Send GET /api/auth/me with Authorization: Bearer <accessToken from step 1>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body has \"accessToken\", \"accessTokenExpiresAt\" (about 15 minutes ahead) and \"user\": { \"id\", \"email\", \"fullName\", \"roleId\", \"roleName\", \"capabilities\": [...] }; \"roleName\" and \"capabilities\" match the account's role in the role matrix (UC-11).",
+            "Set-Cookie: tc_refresh_token=...; HttpOnly; Secure; SameSite=Strict; Path=/api/auth; Max-Age=604800 (7 days).",
+            "Body has no \"refreshToken\", no password and no password hash.",
+            "Step 2: HTTP 200 with the same user."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_returns_a_token_pair_and_the_user; Login_puts_the_refresh_token_in_an_HttpOnly_cookie_and_not_in_the_body; Login_never_returns_the_password_hash)"
+        },
+        {
+          "id": "AUTH_API_IT02",
+          "description": "Verify POST /api/auth/login rejects a wrong password.",
+          "procedure": [
+            "Send POST /api/auth/login",
+            "Headers: Content-Type: application/json",
+            "Body: { \"email\": \"<Secretary email>\", \"password\": \"SaiMatKhau@2026\" }"
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "Body: { \"code\": \"MSG01\", \"message\": \"Email hoặc mật khẩu không đúng.\" }",
+            "No tc_refresh_token cookie is set."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG01_for_bad_credentials)"
+        },
+        {
+          "id": "AUTH_API_IT03",
+          "description": "Verify POST /api/auth/login answers an unknown email exactly like a wrong password.",
+          "procedure": [
+            "Send POST /api/auth/login",
+            "Headers: Content-Type: application/json",
+            "Body: { \"email\": \"khongtontai@trustcabinet.local\", \"password\": \"SaiMatKhau@2026\" }",
+            "Compare status and body with the previous case."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "Body: { \"code\": \"MSG01\", \"message\": \"Email hoặc mật khẩu không đúng.\" } — identical to a wrong password, so the answer does not reveal whether the email has an account.",
+            "No tc_refresh_token cookie is set."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "No account uses the email \"khongtontai@trustcabinet.local\"."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (An_unknown_email_and_a_wrong_password_are_indistinguishable)"
+        },
+        {
+          "id": "AUTH_API_IT04",
+          "description": "Verify POST /api/auth/login rejects empty credentials.",
+          "procedure": [
+            "Send POST /api/auth/login",
+            "Headers: Content-Type: application/json",
+            "Body: { \"email\": \"\", \"password\": \"\" }"
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "Body: { \"code\": \"MSG01\", \"message\": \"Email hoặc mật khẩu không đúng.\" }",
+            "No tc_refresh_token cookie is set."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-01 | Manual only (empty input takes the MSG01 branch)"
+        },
+        {
+          "id": "AUTH_API_IT05",
+          "description": "Verify POST /api/auth/login refuses a deactivated account given the right password.",
+          "procedure": [
+            "Send POST /api/auth/login",
+            "Headers: Content-Type: application/json",
+            "Body: { \"email\": \"<deactivated email>\", \"password\": \"<its password>\" }"
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "Body: { \"code\": \"MSG02\", \"message\": \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" }",
+            "No tc_refresh_token cookie is set."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A password account deactivated by the Admin (UC-06c), supplied by QA lead with its password."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG02_for_a_deactivated_account)"
+        },
+        {
+          "id": "AUTH_API_IT06",
+          "description": "Verify POST /api/auth/login does not reveal a deactivated account to a wrong password.",
+          "procedure": [
+            "Send POST /api/auth/login",
+            "Headers: Content-Type: application/json",
+            "Body: { \"email\": \"<deactivated email>\", \"password\": \"SaiMatKhau@2026\" }"
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized, body code \"MSG01\" — not MSG02: the password is checked before the account status, so only someone who knows the password learns that the account is deactivated."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Same deactivated account as the previous case."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_API_IT07",
+          "description": "Verify POST /api/auth/login signs in an account whose role grants no capability.",
+          "procedure": [
+            "Send POST /api/auth/login",
+            "Headers: Content-Type: application/json",
+            "Body: { \"email\": \"<Member email>\", \"password\": \"<Member password>\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK with \"accessToken\" and the tc_refresh_token cookie.",
+            "\"user.capabilities\" = [] (attending, reading and voting need no capability)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account whose role grants no capability (e.g. Member), supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_succeeds_when_the_role_grants_nothing)"
+        },
+        {
+          "id": "AUTH_API_IT08",
+          "description": "Verify POST /api/auth/login blocks the 6th attempt for one email within a minute, even with the right password.",
+          "procedure": [
+            "Within one minute send POST /api/auth/login 5 times for the Secretary email with password \"SaiMatKhau@2026\".",
+            "Within the same minute send a 6th request with the correct password."
+          ],
+          "expected": [
+            "Requests 1–5: HTTP 401, code \"MSG01\".",
+            "Request 6: HTTP 429 Too Many Requests, header Retry-After (seconds), body { \"code\": \"MSG414\", \"message\": \"Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.\" }.",
+            "No tc_refresh_token cookie is set: a correct guess during the lockout is not revealed."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Sign-in rate limits at their defaults (test server): 5 attempts per minute per email, 60 per minute per IP.",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Login_past_the_email_limit_answers_429_MSG414_even_with_the_right_password)"
+        },
+        {
+          "id": "AUTH_API_IT09",
+          "description": "Verify POST /api/auth/login works again once the limit window has passed.",
+          "procedure": [
+            "Repeat the previous case until HTTP 429.",
+            "Wait the number of seconds given in Retry-After.",
+            "Send POST /api/auth/login with the correct Secretary credentials."
+          ],
+          "expected": [
+            "Step 3: HTTP 200 OK with \"accessToken\" and the tc_refresh_token cookie."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Sign-in rate limits at their defaults (test server): 5 attempts per minute per email, 60 per minute per IP.",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Login_works_again_once_the_window_has_passed)"
+        },
+        {
+          "id": "AUTH_API_IT10",
+          "description": "Verify the per-IP limit is shared by /login, /google and /password-reset.",
+          "procedure": [
+            "From one machine, within one minute, send 60 requests in total spread over POST /api/auth/login (different emails), POST /api/auth/google and POST /api/auth/password-reset.",
+            "Send a 61st request to any of the three."
+          ],
+          "expected": [
+            "Requests 1–60: their normal answers (401, 400...).",
+            "Request 61: HTTP 429, header Retry-After, body code \"MSG414\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Sign-in rate limits at their defaults (test server): 5 attempts per minute per email, 60 per minute per IP.",
+            "Run from a network address no other tester uses during that minute."
+          ],
+          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (The_ip_limit_is_shared_by_login_google_and_password_reset)"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/auth/google",
+      "uc": [
+        "UC-02"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT11",
+          "description": "Verify POST /api/auth/google signs in a linked active account with the same response as password sign-in.",
+          "procedure": [
+            "Send POST /api/auth/google",
+            "Headers: Content-Type: application/json",
+            "Body: { \"idToken\": \"<Google ID token>\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body has \"accessToken\", \"accessTokenExpiresAt\" and \"user\": { \"id\", \"email\", \"fullName\", \"roleId\", \"roleName\", \"capabilities\": [...] } — same shape as POST /api/auth/login.",
+            "Set-Cookie: tc_refresh_token=... (HttpOnly, Secure, SameSite=Strict, Path=/api/auth)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Google sign-in enabled on the build (Authentication:Google:Enabled = true).",
+            "Active account already linked to the tester's Gmail (has signed in with Google before).",
+            "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
+          ],
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (A_linked_active_account_gets_a_token_pair; The_response_shape_matches_password_sign_in)"
+        },
+        {
+          "id": "AUTH_API_IT12",
+          "description": "Verify POST /api/auth/google links an account at its first Google sign-in by verified email.",
+          "procedure": [
+            "Send POST /api/auth/google with { \"idToken\": \"<ID token of that Gmail>\" }.",
+            "Later, sign in with Google again using a new ID token of the same Gmail.",
+            "As Admin, open the audit log (UC-13) and filter by the account."
+          ],
+          "expected": [
+            "Step 1: HTTP 200 OK with a session for the account the Admin created.",
+            "Step 2: HTTP 200 OK.",
+            "Step 3: one \"user.google_linked\" entry for the account."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Google sign-in enabled on the build (Authentication:Google:Enabled = true).",
+            "The Admin has created an active account with the tester's Gmail as its email (UC-06a); it has never signed in with Google.",
+            "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
+          ],
+          "note": "UC-02 | ADR-0009 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_account_an_administrator_created_with_that_gmail_signs_in_without_manual_linking)"
+        },
+        {
+          "id": "AUTH_API_IT13",
+          "description": "Verify POST /api/auth/google rejects an ID token that cannot be verified.",
+          "procedure": [
+            "Send POST /api/auth/google with { \"idToken\": \"a.b.c\" }.",
+            "Repeat with an ID token older than 1 hour."
+          ],
+          "expected": [
+            "Both: HTTP 401 Unauthorized, body { \"code\": \"MSG03\", \"message\": \"Đăng nhập bằng Google không thành công.\" } — never HTTP 500.",
+            "No tc_refresh_token cookie is set."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Google sign-in enabled on the build (Authentication:Google:Enabled = true)."
+          ],
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_unverifiable_token_answers_MSG03)"
+        },
+        {
+          "id": "AUTH_API_IT14",
+          "description": "Verify POST /api/auth/google refuses a Google account that has no TrustCabinet account.",
+          "procedure": [
+            "Send POST /api/auth/google with { \"idToken\": \"<ID token of that Gmail>\" }.",
+            "As Admin, search the user list (UC-05) for that Gmail."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized, body { \"code\": \"MSG05\", \"message\": \"Tài khoản Google này chưa được cấp quyền truy cập hệ thống.\" }.",
+            "No cookie is set and no account is created: the Gmail is not in the user list."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Google sign-in enabled on the build (Authentication:Google:Enabled = true).",
+            "A Gmail that no TrustCabinet account uses.",
+            "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
+          ],
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_unlinked_google_account_answers_MSG05)"
+        },
+        {
+          "id": "AUTH_API_IT15",
+          "description": "Verify POST /api/auth/google refuses a linked account that has been deactivated.",
+          "procedure": [
+            "Send POST /api/auth/google with { \"idToken\": \"<ID token of that Gmail>\" }."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized, body { \"code\": \"MSG02\", \"message\": \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" }.",
+            "No tc_refresh_token cookie is set."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Google sign-in enabled on the build (Authentication:Google:Enabled = true).",
+            "An account linked to the tester's Gmail, then deactivated by the Admin (UC-06c).",
+            "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
+          ],
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (A_deactivated_account_answers_MSG02)"
+        },
+        {
+          "id": "AUTH_API_IT16",
+          "description": "Verify POST /api/auth/google answers MSG02, not MSG05, for an account deactivated before its first Google sign-in.",
+          "procedure": [
+            "Send POST /api/auth/google with { \"idToken\": \"<ID token of that Gmail>\" }.",
+            "Have the Admin reactivate the account, then sign in with Google again with a new ID token."
+          ],
+          "expected": [
+            "Step 1: HTTP 401, body code \"MSG02\"; the account is not linked.",
+            "Step 2: HTTP 200 OK — the account links at this first successful sign-in."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Google sign-in enabled on the build (Authentication:Google:Enabled = true).",
+            "An account created with the tester's Gmail, never signed in with Google, then deactivated.",
+            "A fresh Google ID token for that Gmail, captured from the \"Tiếp tục với Google\" button on /login (DevTools > Network > POST /api/auth/google > request body \"idToken\"), used within 1 hour."
+          ],
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (An_account_deactivated_before_its_first_google_sign_in_answers_MSG02)"
+        },
+        {
+          "id": "AUTH_API_IT17",
+          "description": "Verify POST /api/auth/google does not exist when Google sign-in is switched off.",
+          "procedure": [
+            "Send POST /api/auth/google with { \"idToken\": \"a.b.c\" }.",
+            "Send POST /api/auth/login with the Secretary credentials."
+          ],
+          "expected": [
+            "Step 1: HTTP 404 Not Found, no message code — the route looks like an unknown URL.",
+            "Step 2: HTTP 200 OK — password sign-in is unaffected."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A build with Authentication:Google:Enabled = false, prepared by QA lead.",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-02 | Automated: tests/TrustCabinet.Web.Tests/Authentication/GoogleAuthEndpointTests.cs (The_endpoint_is_absent_when_google_sign_in_is_switched_off)"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/auth/refresh",
+      "uc": [
+        "UC-01"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT18",
+          "description": "Verify POST /api/auth/refresh exchanges the cookie for a new session and retires the old cookie.",
+          "procedure": [
+            "Sign in as the Secretary with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie.",
+            "Send POST /api/auth/refresh with header Cookie: tc_refresh_token=<value from step 1> and no body.",
+            "Within 60 seconds send POST /api/auth/refresh again with the cookie from step 1 (not the new one)."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 OK, same body shape as login, a new \"accessToken\" and a new tc_refresh_token value.",
+            "Step 3: HTTP 401, body code \"MSG01\": a refresh token works only once."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_exchanges_the_token_for_a_new_pair; Refresh_rejects_a_token_that_was_already_used)"
+        },
+        {
+          "id": "AUTH_API_IT19",
+          "description": "Verify POST /api/auth/refresh without the cookie answers like an expired session.",
+          "procedure": [
+            "Send POST /api/auth/refresh with no Cookie header and no body."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "Body: { \"code\": \"MSG01\", \"message\": \"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.\" }",
+            "Set-Cookie: tc_refresh_token=; max-age=0; path=/api/auth (cookie cleared)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_without_the_cookie_answers_like_an_expired_token; A_refused_refresh_clears_the_cookie)"
+        },
+        {
+          "id": "AUTH_API_IT20",
+          "description": "Verify POST /api/auth/refresh ignores a refresh token sent in the body.",
+          "procedure": [
+            "Sign in as the Secretary with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie.",
+            "Send POST /api/auth/refresh with no Cookie header; Headers: Content-Type: application/json; Body: { \"refreshToken\": \"<cookie value from step 1>\" }."
+          ],
+          "expected": [
+            "HTTP 401, body code \"MSG01\": the refresh token is read only from the cookie."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_ignores_a_token_sent_in_the_body)"
+        },
+        {
+          "id": "AUTH_API_IT21",
+          "description": "Verify replaying a used refresh token after 60 seconds ends every session of the account.",
+          "procedure": [
+            "Sign in as the Secretary with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie. Call the cookie RT1.",
+            "Send POST /api/auth/refresh with RT1; call the new cookie RT2.",
+            "Wait more than 60 seconds.",
+            "Send POST /api/auth/refresh with RT1 again.",
+            "Send POST /api/auth/refresh with RT2."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 OK.",
+            "Step 4: HTTP 401, code \"MSG01\" (reuse detected).",
+            "Step 5: HTTP 401, code \"MSG01\": the session continued with RT2 has ended too, so whoever stole RT1 keeps nothing."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/RedisRefreshTokenStoreTests.cs (Replaying_a_used_token_ends_every_session_of_its_account)"
+        },
+        {
+          "id": "AUTH_API_IT22",
+          "description": "Verify POST /api/auth/refresh ends the session of an account deactivated meanwhile.",
+          "procedure": [
+            "Sign in as the disposable account with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie.",
+            "As Admin, deactivate the account (UC-06c).",
+            "Send POST /api/auth/refresh with the cookie from step 1."
+          ],
+          "expected": [
+            "HTTP 401, body { \"code\": \"MSG02\", \"message\": \"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\" }.",
+            "Set-Cookie: tc_refresh_token=; max-age=0; path=/api/auth (cookie cleared)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Disposable active account and an Admin account, supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_answers_MSG02_once_the_account_is_deactivated); Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (Deactivating_an_account_ends_its_session_at_the_next_refresh)"
+        },
+        {
+          "id": "AUTH_API_IT23",
+          "description": "Verify a capability change reaches the user at the next refresh without signing in again.",
+          "procedure": [
+            "Sign in as the disposable account with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie.",
+            "As Admin, remove one capability from the account's role (UC-11).",
+            "Send POST /api/auth/refresh with the cookie from step 1."
+          ],
+          "expected": [
+            "HTTP 200 OK; \"user.capabilities\" no longer contains the removed capability."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Disposable role with at least one capability and an account in it, supplied by QA lead; restore the role afterwards."
+          ],
+          "note": "UC-01 | Manual only"
+        },
+        {
+          "id": "AUTH_API_IT24",
+          "description": "Verify POST /api/auth/refresh is not rate limited.",
+          "procedure": [
+            "Sign in as the Secretary with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie.",
+            "Within one minute send POST /api/auth/refresh 10 times, each with the cookie returned by the previous call."
+          ],
+          "expected": [
+            "Every call: HTTP 200 OK, never 429."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Sign-in rate limits at their defaults (test server): 5 attempts per minute per email, 60 per minute per IP.",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | SCRUM-132 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (Refresh_and_logout_are_not_limited)"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/auth/logout",
+      "uc": [
+        "UC-03"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT25",
+          "description": "Verify POST /api/auth/logout ends the session on the server and clears the cookie.",
+          "procedure": [
+            "Sign in as the Secretary with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie.",
+            "Send POST /api/auth/logout with Cookie: tc_refresh_token=<value from step 1>.",
+            "Send POST /api/auth/refresh with the same cookie."
+          ],
+          "expected": [
+            "Step 2: HTTP 204 No Content; Set-Cookie: tc_refresh_token=; max-age=0; path=/api/auth (cookie cleared).",
+            "Step 3: HTTP 401, code \"MSG01\": the refresh token was revoked on the server, not only removed from the browser."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Logout_invalidates_the_refresh_token_server_side_and_clears_the_cookie)"
+        },
+        {
+          "id": "AUTH_API_IT26",
+          "description": "Verify POST /api/auth/logout always answers 204, even without a valid session.",
+          "procedure": [
+            "Send POST /api/auth/logout with no cookie.",
+            "Send it again with Cookie: tc_refresh_token=khonghople."
+          ],
+          "expected": [
+            "Both: HTTP 204 No Content with the cookie-clearing Set-Cookie header; nothing reveals whether a session existed."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-03 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Logout_is_idempotent; Logout_clears_the_cookie_even_with_no_valid_token)"
+        },
+        {
+          "id": "AUTH_API_IT27",
+          "description": "Verify signing out on one device leaves the other devices signed in.",
+          "procedure": [
+            "Sign in as the Secretary twice with two separate POST /api/auth/login calls; keep cookie A and cookie B.",
+            "Send POST /api/auth/logout with cookie A.",
+            "Send POST /api/auth/refresh with cookie B."
+          ],
+          "expected": [
+            "Step 2: HTTP 204.",
+            "Step 3: HTTP 200 OK: only session A ended."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-03 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "GET /api/auth/me",
+      "uc": [
+        "UC-01"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT28",
+          "description": "Verify GET /api/auth/me returns the signed-in user.",
+          "procedure": [
+            "Sign in as the Secretary with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie.",
+            "Send GET /api/auth/me with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"id\", \"email\", \"fullName\", \"roleId\", \"roleName\", \"capabilities\" } for the Secretary."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Me_returns_the_signed_in_user)"
+        },
+        {
+          "id": "AUTH_API_IT29",
+          "description": "Verify GET /api/auth/me rejects a missing or forged token.",
+          "procedure": [
+            "Send GET /api/auth/me with no Authorization header.",
+            "Send it with Authorization: Bearer <a valid accessToken with one character of its signature changed>."
+          ],
+          "expected": [
+            "Both: HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-01 | Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Me_rejects_a_request_with_no_token; Me_rejects_a_forged_token)"
+        },
+        {
+          "id": "AUTH_API_IT30",
+          "description": "Verify GET /api/auth/me refuses a still-valid access token once the account is deactivated.",
+          "procedure": [
+            "Sign in as the disposable account with POST /api/auth/login; keep the accessToken and the tc_refresh_token cookie.",
+            "As Admin, deactivate the account.",
+            "Within 15 minutes of step 1, send GET /api/auth/me with the accessToken from step 1."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized (not 403): the account status is read from the database on every request, not from the token."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Disposable active account and an Admin account, supplied by QA lead."
+          ],
+          "note": "UC-01 | SCRUM-12 | Automated: tests/TrustCabinet.Web.Tests/Access/CapabilityGateTests.cs (A_token_belonging_to_a_deactivated_account_is_refused)"
+        },
+        {
+          "id": "AUTH_API_IT31",
+          "description": "Verify GET /api/auth/me refuses a Guest access token.",
+          "procedure": [
+            "Send GET /api/auth/me with Authorization: Bearer <Guest access token>."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized: a Guest token never opens an internal endpoint."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A Guest access token from a successful POST .../verify for this invitation."
+          ],
+          "note": "UC-04 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/guest-access/invitations/{invitationId}",
+      "uc": [
+        "UC-04"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT32",
+          "description": "Verify opening a valid invitation shows the meeting and a masked email.",
+          "procedure": [
+            "From the invitation link <base>/guest/{invitationId}#token={linkToken}, note invitationId and linkToken.",
+            "Send POST /api/guest-access/invitations/{invitationId}",
+            "Headers: Content-Type: application/json",
+            "Body: { \"token\": \"<linkToken>\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"invitationId\", \"meeting\": { \"id\", \"title\", \"status\": \"Published\", \"plannedStartTime\", \"plannedEndTime\" }, \"maskedEmail\" } where maskedEmail hides most of the local part.",
+            "This call sends no code: the Guest inbox receives nothing new."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 | BR-152 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Open_needs_the_link_token_and_shows_the_meeting_with_a_masked_email)"
+        },
+        {
+          "id": "AUTH_API_IT33",
+          "description": "Verify an invitation opened with a wrong link token is refused without a reason.",
+          "procedure": [
+            "Send POST /api/guest-access/invitations/{invitationId} with Body: { \"token\": \"saitoken\" }.",
+            "Send it with a random invitationId and the real linkToken."
+          ],
+          "expected": [
+            "Both: HTTP 404, body { \"code\": \"MSG371\", \"message\": \"Lời mời không còn hiệu lực. Vui lòng liên hệ Thư ký cuộc họp.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 EX-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Open_needs_the_link_token_and_shows_the_meeting_with_a_masked_email)"
+        },
+        {
+          "id": "AUTH_API_IT34",
+          "description": "Verify the invitation of a meeting that is no longer open is refused.",
+          "procedure": [
+            "Have the Chair end the meeting (UC-22) or the Secretary cancel it (UC-75).",
+            "Send POST /api/guest-access/invitations/{invitationId} with the real linkToken."
+          ],
+          "expected": [
+            "HTTP 404, body code \"MSG371\" — the same answer as a wrong token."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. Use a disposable meeting."
+          ],
+          "note": "UC-04 EX-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Invitation_of_a_meeting_that_is_not_open_is_no_longer_valid)"
+        },
+        {
+          "id": "AUTH_API_IT35",
+          "description": "Verify a revoked invitation is refused.",
+          "procedure": [
+            "As Secretary, remove the Guest from the participants (UC-28c).",
+            "Send POST /api/guest-access/invitations/{invitationId} with the real linkToken."
+          ],
+          "expected": [
+            "HTTP 404, body code \"MSG371\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 | BR-157 | Manual only"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/guest-access/invitations/{invitationId}/code",
+      "uc": [
+        "UC-04"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT36",
+          "description": "Verify requesting a code sends a 6-digit code to the invited email only.",
+          "procedure": [
+            "From the invitation link <base>/guest/{invitationId}#token={linkToken}, note invitationId and linkToken.",
+            "Send POST /api/guest-access/invitations/{invitationId}/code",
+            "Headers: Content-Type: application/json",
+            "Body: { \"token\": \"<linkToken>\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"code\": \"MSG375\", \"message\": \"Đã gửi mã xác minh tới email được mời.\", \"expiresInSeconds\": 900, \"resendAfterSeconds\": 60 }.",
+            "The invited inbox receives one email with a 6-digit code; the body cannot redirect it to another address."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 | BR-153 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_goes_only_to_the_invited_email_and_is_stored_only_as_a_hash)"
+        },
+        {
+          "id": "AUTH_API_IT37",
+          "description": "Verify a second code request within 1 minute is refused with a countdown.",
+          "procedure": [
+            "Send POST .../code.",
+            "Within 60 seconds send POST .../code again."
+          ],
+          "expected": [
+            "Step 2: HTTP 429, header Retry-After, body { \"code\": \"MSG373\", \"message\": \"Vui lòng chờ trước khi gửi lại mã.\", \"retryAfterSeconds\": n } with 0 < n ≤ 60.",
+            "No second email arrives."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 EX-5 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Resend_waits_one_minute_then_retires_the_previous_code)"
+        },
+        {
+          "id": "AUTH_API_IT38",
+          "description": "Verify a new code sent after 1 minute retires the previous one.",
+          "procedure": [
+            "Send POST .../code; note code C1 from the inbox.",
+            "After 60 seconds send POST .../code again; note code C2.",
+            "Send POST .../verify with C1.",
+            "Send POST .../verify with C2."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG375\".",
+            "Step 3: HTTP 400, code \"MSG126\" (not counted as a wrong attempt).",
+            "Step 4: HTTP 200 with an \"accessToken\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Resend_waits_one_minute_then_retires_the_previous_code)"
+        },
+        {
+          "id": "AUTH_API_IT39",
+          "description": "Verify an invitation receives at most 20 codes in 24 hours.",
+          "procedure": [
+            "Request codes 1 minute apart until 20 have been sent within 24 hours.",
+            "After one more minute send POST .../code again."
+          ],
+          "expected": [
+            "HTTP 429, header Retry-After, body { \"code\": \"MSG379\", \"message\": \"Bạn đã yêu cầu quá số mã cho phép trong 24 giờ. Vui lòng thử lại sau hoặc liên hệ Thư ký cuộc họp.\", \"retryAfterSeconds\": n }, n = time until the oldest code leaves the 24-hour window.",
+            "No email is sent."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. Use a disposable invitation."
+          ],
+          "note": "UC-04 EX-6 | BR-153 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Twenty_codes_in_24_hours_is_the_cap_until_the_oldest_leaves_the_window)"
+        },
+        {
+          "id": "AUTH_API_IT40",
+          "description": "Verify a failed email delivery keeps no code and allows an immediate retry.",
+          "procedure": [
+            "Send POST .../code while email delivery is broken.",
+            "Restore email delivery and immediately send POST .../code again."
+          ],
+          "expected": [
+            "Step 1: HTTP 503, body { \"code\": \"MSG374\", \"message\": \"Không thể xác minh lúc này. Vui lòng thử lại sau.\" }.",
+            "Step 2: HTTP 200, code \"MSG375\", without the 1-minute wait; the email arrives."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "QA lead can break email delivery on the build (wrong SMTP setting) and restore it."
+          ],
+          "note": "UC-04 EX-3 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Mail_failure_leaves_no_code_and_allows_an_immediate_retry)"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/guest-access/invitations/{invitationId}/verify",
+      "uc": [
+        "UC-04"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT41",
+          "description": "Verify the right code opens a Guest session.",
+          "procedure": [
+            "From the invitation link <base>/guest/{invitationId}#token={linkToken}, note invitationId and linkToken.",
+            "Send POST /api/guest-access/invitations/{invitationId}/verify",
+            "Headers: Content-Type: application/json",
+            "Body: { \"token\": \"<linkToken>\", \"code\": \"<6-digit code>\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"accessToken\", \"expiresAt\" (12 hours ahead), \"meetingId\" (the invited meeting), \"profileCompleted\": false }.",
+            "GET /api/guest-access/session with the token answers 200.",
+            "No internal user account is created for the Guest (user list unchanged)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
+          ],
+          "note": "UC-04 | BR-153 | BR-155 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Verification_issues_a_guest_token_bound_to_the_session_without_internal_claims)"
+        },
+        {
+          "id": "AUTH_API_IT42",
+          "description": "Verify a wrong code is refused.",
+          "procedure": [
+            "Send POST .../verify with { \"token\": \"<linkToken>\", \"code\": \"<6 digits other than the code>\" }."
+          ],
+          "expected": [
+            "HTTP 400, body { \"code\": \"MSG126\", \"message\": \"Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.\" }.",
+            "No session is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
+          ],
+          "note": "UC-04 EX-2 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent)"
+        },
+        {
+          "id": "AUTH_API_IT43",
+          "description": "Verify a code that is not 6 digits is refused.",
+          "procedure": [
+            "Send POST .../verify with \"code\": \"12ab\".",
+            "Send it with \"code\": \"1234567\"."
+          ],
+          "expected": [
+            "Both: HTTP 400, body code \"MSG126\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
+          ],
+          "note": "UC-04 EX-2 | Manual only"
+        },
+        {
+          "id": "AUTH_API_IT44",
+          "description": "Verify the 5th wrong code locks the code, even against the right code.",
+          "procedure": [
+            "Send POST .../verify 5 times with wrong 6-digit codes.",
+            "Send POST .../verify with the right code.",
+            "After 1 minute request a new code and verify with it."
+          ],
+          "expected": [
+            "Attempts 1–4: HTTP 400, code \"MSG126\".",
+            "Attempt 5 and step 2: HTTP 400, body { \"code\": \"MSG372\", \"message\": \"Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.\" }.",
+            "Step 3: HTTP 200 with an \"accessToken\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
+          ],
+          "note": "UC-04 EX-4 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Fifth_wrong_code_locks_it_even_against_the_right_code_until_a_new_one_is_sent)"
+        },
+        {
+          "id": "AUTH_API_IT45",
+          "description": "Verify a code works only once.",
+          "procedure": [
+            "Send POST .../verify with the right code.",
+            "Send the same request again."
+          ],
+          "expected": [
+            "Step 1: HTTP 200 with an \"accessToken\".",
+            "Step 2: HTTP 400, code \"MSG126\"; no second session."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
+          ],
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_is_single_use_and_concurrent_verifications_open_one_session_without_users)"
+        },
+        {
+          "id": "AUTH_API_IT46",
+          "description": "Verify a code expires 15 minutes after it was sent.",
+          "procedure": [
+            "Wait more than 15 minutes after the code was sent.",
+            "Send POST .../verify with that code."
+          ],
+          "expected": [
+            "HTTP 400, code \"MSG126\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
+          ],
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Code_expires_after_fifteen_minutes)"
+        },
+        {
+          "id": "AUTH_API_IT47",
+          "description": "Verify revoking the invitation between sending and verifying denies the code.",
+          "procedure": [
+            "As Secretary, remove the Guest from the participants (UC-28c).",
+            "Send POST .../verify with the right code."
+          ],
+          "expected": [
+            "HTTP 404, body code \"MSG371\"; no session is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A code has been requested for the invitation (POST .../code) and the 6-digit code read from the Guest inbox."
+          ],
+          "note": "UC-04 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestVerificationTests.cs (Revoking_between_send_and_verify_denies_the_code)"
+        }
+      ]
+    },
+    {
+      "title": "GET /api/guest-access/session",
+      "uc": [
+        "UC-04"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT48",
+          "description": "Verify GET /api/guest-access/session returns the live Guest session.",
+          "procedure": [
+            "Send GET /api/guest-access/session with Authorization: Bearer <Guest access token>."
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"sessionId\", \"expiresAt\", \"meeting\": { \"id\", \"title\", \"status\", \"plannedStartTime\", \"plannedEndTime\" }, \"email\" (invited email), \"invitedName\" (as the Secretary entered it), \"displayName\", \"jobTitle\", \"profileCompleted\", \"canDownload\": true }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. The meeting is not marked \"Mật\".",
+            "A Guest access token from a successful POST .../verify for this invitation."
+          ],
+          "note": "UC-04 AF-1 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Reopening_with_a_live_session_needs_no_new_code_and_a_second_device_reuses_the_profile)"
+        },
+        {
+          "id": "AUTH_API_IT49",
+          "description": "Verify the session of a \"Mật\" meeting forbids downloads without revealing the sensitivity.",
+          "procedure": [
+            "Send GET /api/guest-access/session with the Guest access token of the \"Mật\" meeting."
+          ],
+          "expected": [
+            "HTTP 200 OK with \"canDownload\": false.",
+            "The body carries no sensitivity field."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Guest invited to a Published meeting marked \"Mật\" and verified; Guest access token kept."
+          ],
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_says_whether_documents_may_be_downloaded_without_telling_the_sensitivity)"
+        },
+        {
+          "id": "AUTH_API_IT50",
+          "description": "Verify Guest session endpoints refuse anonymous and internal callers.",
+          "procedure": [
+            "Send GET /api/guest-access/session with no Authorization header.",
+            "Send it with Authorization: Bearer <Secretary accessToken>."
+          ],
+          "expected": [
+            "Step 1: HTTP 401.",
+            "Step 2: HTTP 403: an internal token cannot act as a Guest."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account supplied by QA lead."
+          ],
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_endpoints_refuse_anonymous_and_internal_callers)"
+        },
+        {
+          "id": "AUTH_API_IT51",
+          "description": "Verify the Guest session ends when the meeting ends or the invitation is revoked.",
+          "procedure": [
+            "As Chair, end the meeting (UC-22) — or as Secretary, remove the Guest (UC-28c).",
+            "Send GET /api/guest-access/session with the Guest access token."
+          ],
+          "expected": [
+            "HTTP 404, body { \"code\": \"MSG378\", \"message\": \"Phiên truy cập đã kết thúc. Vui lòng mở lại liên kết trong email.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived. Use a disposable meeting.",
+            "A Guest access token from a successful POST .../verify for this invitation."
+          ],
+          "note": "UC-04 EX-8 | BR-155 | BR-157 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Session_ends_after_twelve_hours_and_with_its_invitation)"
+        }
+      ]
+    },
+    {
+      "title": "PUT /api/guest-access/session/profile",
+      "uc": [
+        "UC-04"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT52",
+          "description": "Verify the Guest saves a self-declared display name and job title.",
+          "procedure": [
+            "Send PUT /api/guest-access/session/profile",
+            "Headers: Authorization: Bearer <Guest access token>; Content-Type: application/json",
+            "Body: { \"displayName\": \"  Nguyễn Văn Khách  \", \"jobTitle\": \"Chuyên viên\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"code\": \"MSG376\", \"message\": \"Đã lưu thông tin hiển thị.\", \"session\": { ..., \"displayName\": \"Nguyễn Văn Khách\" (trimmed), \"jobTitle\": \"Chuyên viên\", \"profileCompleted\": true } }.",
+            "\"invitedName\" and \"email\" are unchanged: the declared name never overwrites the invitation."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A Guest access token from a successful POST .../verify for this invitation. No display name declared yet for this invitation."
+          ],
+          "note": "UC-04 step 5 | BR-180 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Profile_is_self_declared_and_never_overwrites_the_invitation)"
+        },
+        {
+          "id": "AUTH_API_IT53",
+          "description": "Verify an empty display name is rejected.",
+          "procedure": [
+            "Send PUT .../profile with Body: { \"displayName\": \"   \", \"jobTitle\": \"\" }.",
+            "Send GET /api/guest-access/session."
+          ],
+          "expected": [
+            "Step 1: HTTP 400, body { \"code\": \"MSG377\", \"message\": \"Thông tin hiển thị không hợp lệ.\", \"errors\": { \"displayName\": [...] } }.",
+            "Step 2: \"profileCompleted\": false."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A Guest access token from a successful POST .../verify for this invitation. No display name declared yet for this invitation."
+          ],
+          "note": "UC-04 EX-7 | BR-180 | Manual only"
+        },
+        {
+          "id": "AUTH_API_IT54",
+          "description": "Verify a display name or job title over 200 characters, or with control characters, is rejected.",
+          "procedure": [
+            "Send PUT .../profile with a 201-character \"displayName\".",
+            "Send it with \"displayName\": \"Khách\\nmới\" (a line break inside).",
+            "Send it with a valid \"displayName\" and a 201-character \"jobTitle\"."
+          ],
+          "expected": [
+            "Steps 1–2: HTTP 400, code \"MSG377\", \"errors.displayName\".",
+            "Step 3: HTTP 400, code \"MSG377\", \"errors.jobTitle\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A Guest access token from a successful POST .../verify for this invitation. No display name declared yet for this invitation."
+          ],
+          "note": "UC-04 EX-7 | BR-180 | Manual only"
+        },
+        {
+          "id": "AUTH_API_IT55",
+          "description": "Verify sending the same profile again is accepted.",
+          "procedure": [
+            "Save a profile as in the first case of this group.",
+            "Send PUT .../profile again with exactly the same values."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG376\": a repeated click is not an error."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A Guest access token from a successful POST .../verify for this invitation."
+          ],
+          "note": "UC-04 | Manual only"
+        },
+        {
+          "id": "AUTH_API_IT56",
+          "description": "Verify the declared name cannot be changed afterwards, even from another session.",
+          "procedure": [
+            "Save a profile with \"displayName\": \"Nguyễn Văn Khách\".",
+            "Verify again on another device to get a second Guest token.",
+            "With the second token send PUT .../profile with \"displayName\": \"Tên khác\".",
+            "Send GET /api/guest-access/session."
+          ],
+          "expected": [
+            "Step 3: HTTP 409, body { \"code\": \"MSG381\", \"message\": \"Tên hiển thị đã được khai cho lời mời này và không thể đổi.\" }.",
+            "Step 4: \"displayName\" is still \"Nguyễn Văn Khách\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived.",
+            "A Guest access token from a successful POST .../verify for this invitation."
+          ],
+          "note": "UC-04 EX-9 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (The_declared_name_cannot_be_changed_afterwards_even_from_another_session) | Deviation: docs/03-api/16-truy-cap-khach-uc04.md §9 still says the name is not locked; the code locks it."
+        }
+      ]
+    },
+    {
+      "title": "DELETE /api/guest-access/session",
+      "uc": [
+        "UC-04"
+      ],
+      "cases": [
+        {
+          "id": "AUTH_API_IT57",
+          "description": "Verify the Guest signs out of the current session only.",
+          "procedure": [
+            "Verify on two devices to get Guest tokens A and B.",
+            "Send DELETE /api/guest-access/session with token A.",
+            "Send GET /api/guest-access/session with token A, then with token B.",
+            "Send DELETE /api/guest-access/session with token A again."
+          ],
+          "expected": [
+            "Step 2: HTTP 204 No Content.",
+            "Step 3: token A gets HTTP 404, code \"MSG378\"; token B gets HTTP 200.",
+            "Step 4: HTTP 204: repeating is not an error."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Secretary has invited an external Guest (name + email of a controlled inbox) to a Published meeting (UC-28a); the invitation email has arrived."
+          ],
+          "note": "UC-04 | Automated: tests/TrustCabinet.Web.Tests/GuestAccess/GuestSessionTests.cs (Logout_ends_only_that_session_and_cannot_be_undone_by_signing_in_again)"
+        }
+      ]
+    }
+  ]
+}

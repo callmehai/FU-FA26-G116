@@ -1,0 +1,87 @@
+{
+  "feature": "FE-07",
+  "code": "DOC",
+  "sheet": "Documents",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "Personal Library",
+      "uc": [
+        "UC-34"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Upload to Library",
+      "uc": [
+        "UC-36"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Manage Personal Documents",
+      "uc": [
+        "UC-71"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Manage Library Folders",
+      "uc": [
+        "UC-72"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Locked Account's Library",
+      "uc": [
+        "UC-34b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Meeting Documents",
+      "uc": [
+        "UC-32a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Add & Remove Meeting Documents",
+      "uc": [
+        "UC-33a",
+        "UC-33c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Link Documents to Agenda Items",
+      "uc": [
+        "UC-33b",
+        "UC-33d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "View & Download Document",
+      "uc": [
+        "UC-32c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Document Comments",
+      "uc": [
+        "UC-35"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Confirm Document Read",
+      "uc": [
+        "UC-74"
+      ],
+      "cases": []
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "feature": "FE-13",
+  "code": "NOTI",
+  "sheet": "Notifications",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "Notification Panel",
+      "uc": [
+        "UC-66"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Mark as Read",
+      "uc": [
+        "UC-67a",
+        "UC-67b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Open Notification Target",
+      "uc": [
+        "UC-68"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Real-time Delivery",
+      "uc": [
+        "UC-66"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Invitation & Workflow Emails",
+      "uc": [
+        "UC-20"
+      ],
+      "cases": []
+    }
+  ]
+}

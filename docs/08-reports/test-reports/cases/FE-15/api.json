@@ -1,0 +1,22 @@
+{
+  "feature": "FE-15",
+  "code": "RPT",
+  "sheet": "Reporting",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/reports/meetings",
+      "uc": [
+        "UC-70a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/reports/meetings/export",
+      "uc": [
+        "UC-70b"
+      ],
+      "cases": []
+    }
+  ]
+}

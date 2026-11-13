@@ -1,0 +1,71 @@
+{
+  "feature": "FE-06",
+  "code": "PART",
+  "sheet": "Participants",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "View Participants",
+      "uc": [
+        "UC-27"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Add Internal Participants",
+      "uc": [
+        "UC-28a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Invite Guest",
+      "uc": [
+        "UC-28a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Change Role & Rights",
+      "uc": [
+        "UC-28b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Remove Participant & Revoke Guest",
+      "uc": [
+        "UC-28c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Respond to Invitation",
+      "uc": [
+        "UC-29"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Response Status",
+      "uc": [
+        "UC-30"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Record Attendance",
+      "uc": [
+        "UC-31"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Hand Over Chair",
+      "uc": [
+        "UC-73"
+      ],
+      "cases": []
+    }
+  ]
+}

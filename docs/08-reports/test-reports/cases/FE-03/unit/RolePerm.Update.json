@@ -1,0 +1,15 @@
+{
+  "feature": "FE-03",
+  "module": "RBAC",
+  "sheet": "RolePerm.Update",
+  "description": "Capability matrix update: grant/revoke capabilities with the lock-out guard.",
+  "precondition": "Roles seeded; admin actor holds role management capability.",
+  "methods": [
+    {
+      "method": "RolePermissionService.UpdateAsync",
+      "file": "backend/TrustCabinet.Infrastructure/Access/RolePermissionService.cs",
+      "line": 30,
+      "cases": []
+    }
+  ]
+}

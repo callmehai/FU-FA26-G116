@@ -1,0 +1,15 @@
+{
+  "feature": "FE-06",
+  "module": "PART",
+  "sheet": "Participant.CanRespond",
+  "description": "Invitation response rule: who may answer, once, and when the answer is final.",
+  "precondition": "Participant row with known role, status and response; meeting in Published or InProgress.",
+  "methods": [
+    {
+      "method": "ParticipantRules.CanRespond",
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "line": 37,
+      "cases": []
+    }
+  ]
+}

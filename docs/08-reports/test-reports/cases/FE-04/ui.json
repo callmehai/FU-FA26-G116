@@ -1,0 +1,72 @@
+{
+  "feature": "FE-04",
+  "code": "MEET",
+  "sheet": "Meeting Management",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "Create Meeting",
+      "uc": [
+        "UC-14"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Update & Reschedule Meeting",
+      "uc": [
+        "UC-15"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Meeting List",
+      "uc": [
+        "UC-17"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Meeting Details & History",
+      "uc": [
+        "UC-16"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Submit for Approval",
+      "uc": [
+        "UC-18"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Approve & Reject Meeting",
+      "uc": [
+        "UC-19"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Publish Meeting",
+      "uc": [
+        "UC-20"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Start & End Meeting",
+      "uc": [
+        "UC-21",
+        "UC-22"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Cancel Meeting",
+      "uc": [
+        "UC-75"
+      ],
+      "cases": []
+    }
+  ]
+}

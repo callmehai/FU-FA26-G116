@@ -1,0 +1,610 @@
+{
+  "book": {
+    "environment": ".NET 10; xUnit. Each UTC calls the production function directly (in-process) with the listed inputs; no browser, no HTTP. Round 1 starts as Pending; only a real execution sets Passed or Failed.",
+    "file": "Report5.1_Unit_Test.xlsx",
+    "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. One sheet per production function (Class.Method shortened to <=31 chars); the group row holds the full Class.Method. UTC numbering restarts per sheet.",
+    "title": "UNIT TEST DOCUMENT"
+  },
+  "cover": {
+    "changes": [
+      {
+        "date": "2026-11-13",
+        "description": "Rebuilt as a JSON pipeline like 5.2/5.2.2: one sheet per production function, UTC rows, from unit/*.json",
+        "item": "All sheets",
+        "reference": "docs/08-reports/test-reports/AGENTS.md",
+        "type": "M",
+        "version": "2.0"
+      }
+    ],
+    "creator": "TrustCabinet Team",
+    "issueDate": "2026-11-13",
+    "version": "2.0"
+  },
+  "project": "TrustCabinet",
+  "projectCode": "SEP490-G116",
+  "sheets": [
+    {
+      "description": "Password sign-in decision: valid credentials vs unknown email vs wrong password vs deactivated account.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": "Returns success with token pair and capabilities, or InvalidCredentials (MSG01) vs AccountDeactivated (MSG02); unknown email costs one password verification and is indistinguishable from a wrong password.",
+          "directTests": [
+            "An_active_user_with_the_right_password_signs_in",
+            "A_wrong_password_is_rejected",
+            "An_unknown_email_is_rejected",
+            "A_deactivated_account_is_told_so_only_after_the_password_matched",
+            "Blank_input_is_rejected_without_touching_the_database"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Authentication/AuthenticationService.cs",
+          "line": 50,
+          "method": "AuthenticationService.SignInAsync"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "Seeded users exist (active, deactivated); password hasher configured.",
+      "sheet": "Auth.SignIn"
+    },
+    {
+      "description": "Password hashing and verification: same password verifies, different password fails, malformed hash fails instead of throwing.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": "Hash creates a salted hash; Verify returns true only for the matching password (incl. rehash-needed); malformed or placeholder hash returns false, never throws.",
+          "directTests": [
+            "A_password_verifies_against_its_own_hash",
+            "A_different_password_does_not_verify",
+            "A_malformed_stored_hash_fails_verification_instead_of_throwing",
+            "The_same_password_hashes_differently_every_time"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+          "line": 30,
+          "method": "PasswordHasher.Verify"
+        },
+        {
+          "method": "PasswordHasher.Hash",
+          "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+          "line": 28,
+          "decides": "Creates a salted hash with a fresh random salt on every call; the same password never produces the same hash text.",
+          "directTests": [
+            "The_same_password_hashes_differently_every_time"
+          ]
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "No database needed; pure hashing check.",
+      "sheet": "Password.Verify"
+    },
+    {
+      "description": "Access token contents and lifetime: subject, capability claims, expiry, tamper rejection.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": "Creates a signed JWT with sub, jti, email, name and one cap claim per capability; expires after the configured lifetime; tampered or wrong-key tokens are rejected by the validator.",
+          "directTests": [
+            "The_access_token_identifies_the_user",
+            "The_access_token_carries_one_claim_per_capability",
+            "The_access_token_expires_after_the_configured_lifetime",
+            "A_tampered_token_is_rejected"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Authentication/JwtTokenIssuer.cs",
+          "line": 28,
+          "method": "JwtTokenIssuer.CreateAccessToken"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "Signing key configured; test user with known capabilities.",
+      "sheet": "Jwt.AccessToken"
+    },
+    {
+      "description": "User creation rules: valid input creates an active account; validation, duplicate email and unknown role are refused.",
+      "feature": "FE-02",
+      "methods": [
+        {
+          "decides": "Valid input stores an active account with a hashed password and audits; invalid fields are reported together; duplicate email answers MSG08; unknown role answers MSG09.",
+          "directTests": [
+            "Create_stores_an_active_account_and_records_the_audit_entry",
+            "Create_rejects_a_password_shorter_than_the_minimum",
+            "Create_rejects_an_email_that_already_exists",
+            "Create_rejects_a_role_that_does_not_exist"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Users/UserService.cs",
+          "line": 61,
+          "method": "UserService.CreateAsync"
+        }
+      ],
+      "module": "USER",
+      "precondition": "Admin actor with user-management capability; roles seeded.",
+      "sheet": "User.Create"
+    },
+    {
+      "description": "Deactivate and reactivate rules: status change, last-admin guard, session and Voice ID side effects.",
+      "feature": "FE-02",
+      "methods": [
+        {
+          "decides": "Deactivate/reactivate flips status and audits; self-target, no-op and last-admin deactivation are refused; deactivation ends sessions and the Voice ID inside the same write.",
+          "directTests": [
+            "Deactivate_sets_the_status_ends_the_sessions_and_audits",
+            "Status_change_is_refused_when_an_administrator_aims_at_their_own_account",
+            "Deactivating_the_last_administrator_is_refused"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Users/UserService.cs",
+          "line": 262,
+          "method": "UserService.ChangeStatusAsync"
+        }
+      ],
+      "module": "USER",
+      "precondition": "At least two active administrators exist for the guard cases.",
+      "sheet": "User.ChangeStatus"
+    },
+    {
+      "description": "Capability matrix update: grant/revoke capabilities with the lock-out guard.",
+      "feature": "FE-03",
+      "methods": [
+        {
+          "decides": "Saves the requested capabilities, deduped and sorted; refuses an unknown capability (MSG17) and removing AdminUsers from the last role holding it; identical sets write nothing.",
+          "directTests": [
+            "Update_saves_the_requested_capabilities",
+            "Update_that_changes_nothing_writes_nothing",
+            "Update_refuses_to_remove_admin_users_from_the_last_role_holding_it"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Access/RolePermissionService.cs",
+          "line": 30,
+          "method": "RolePermissionService.UpdateAsync"
+        }
+      ],
+      "module": "RBAC",
+      "precondition": "Roles seeded; admin actor holds role management capability.",
+      "sheet": "RolePerm.Update"
+    },
+    {
+      "description": "Custom role creation: name and capability validation, duplicate guard, built-in protection.",
+      "feature": "FE-03",
+      "methods": [
+        {
+          "decides": "Valid input creates a custom role; blank or over-long names, unknown capabilities and duplicate names (MSG20/MSG21) are refused; built-in roles are never created this way.",
+          "directTests": [
+            "Create_accepts_64_characters_and_refuses_65",
+            "Create_refuses_a_capability_given_as_a_number",
+            "Create_answers_MSG21_for_the_same_name_typed_with_combining_marks"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Access/RoleService.cs",
+          "line": 37,
+          "method": "RoleService.CreateAsync"
+        }
+      ],
+      "module": "RBAC",
+      "precondition": "Capability catalogue available; no role with the test name exists.",
+      "sheet": "Role.Create"
+    },
+    {
+      "description": "Meeting workflow transitions: submit, approve, reject, publish, cancel and organizer transfer with guards.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": "Each legal edge changes status, writes history and notifies; wrong actor, lost capability, self-approval, ineligible approver, unready roster and stale state are refused with 404/403/409/400 and the matching MSGnn.",
+          "directTests": [
+            "Submit_records_assignment_history_and_approver_notification",
+            "Approve_notifies_the_organizer",
+            "Publish_requires_exactly_one_active_chair_and_an_active_secretary"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Meetings/MeetingService.cs",
+          "line": 411,
+          "method": "MeetingService.TransitionAsync"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting in the required start status with a valid roster; actor with the required capability.",
+      "sheet": "Meeting.Transition"
+    },
+    {
+      "description": "Meeting start and end: chair-only transitions with roster checks and fan-out on end.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": "Chair starts a Published meeting and ends a running one; non-chair, wrong status and broken roster are refused; end fans out to agenda, speaking, vote drafts and room closure.",
+          "directTests": [
+            "Old_workflow_service_rejects_lifecycle_actions_and_new_service_rejects_other_commands",
+            "Client_cancellation_after_commit_does_not_cancel_effects"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Meetings/MeetingLifecycleService.cs",
+          "gap": "Partial direct coverage (invalid-command rejection and cancellation-after-commit); roster and auth branches are HTTP-only.",
+          "line": 32,
+          "method": "MeetingLifecycleService.TransitionAsync"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Published meeting with one chair and at least one secretary for Start; InProgress meeting for End.",
+      "sheet": "Meeting.Lifecycle"
+    },
+    {
+      "description": "Meeting create and update validation: title, mode, timestamps and the Published reschedule lock.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": "Valid input creates or updates the meeting; blank title, bad enum, end before start and locked-field changes on a Published meeting are refused with field errors.",
+          "directTests": [
+            "Create_rejects_a_missing_or_blank_title",
+            "Validation_collects_field_errors_and_enforces_lengths",
+            "Create_accepts_each_supported_mode_and_sensitivity"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Meetings/MeetingService.cs",
+          "line": 20,
+          "method": "MeetingService.CreateAsync"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Organizer with meeting-creation capability; valid timestamps with offsets.",
+      "sheet": "Meeting.Create"
+    },
+    {
+      "description": "Overrun detection: a running meeting left past its planned end is auto-ended by the worker.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": "Returns true when status is InProgress and the planned end (or actual start) is at or before the cutoff; otherwise false; the worker then writes the AutoEnd history row.",
+          "directTests": [],
+          "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
+          "gap": "No direct truth-table test; covered only transitively via MeetingTestDoubles and worker HTTP tests.",
+          "line": 23,
+          "method": "MeetingRules.IsOverrun"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting with known status, planned end and actual start; cutoff is now minus grace.",
+      "sheet": "Meeting.IsOverrun"
+    },
+    {
+      "description": "Meeting read policy: who may read a meeting, its history and its rejection reason.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": "Creator, assigned approver and current participants by status may read; outsiders and cancelled-from-Draft meetings get 404; rejection reason is visible only to its audience.",
+          "directTests": [
+            "Assigned_chair_reads_content_and_redacted_history_in_all_states",
+            "Unassigned_or_ineligible_secretary_cannot_read_prepublication_rejection_evidence"
+          ],
+          "file": "backend/TrustCabinet.Domain/Meetings/MeetingReadPolicy.cs",
+          "line": 34,
+          "method": "MeetingReadPolicy.CanRead"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting with known creator, approver and participant list.",
+      "sheet": "Meeting.CanRead"
+    },
+    {
+      "description": "Agenda item validation: title, description, presenter and document links.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": "Valid input normalizes newlines and passes; blank or over-long titles, bad presenter assignments and duplicate document links return field errors.",
+          "directTests": [
+            "Normalization_preserves_newlines_and_validates_boundaries"
+          ],
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "gap": "Direct coverage is Validate/Normalize only; the action matrix (Actions/CanRecordConclusion) is HTTP-only.",
+          "line": 32,
+          "method": "AgendaRules.Validate"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting exists; presenter is a participant of the meeting.",
+      "sheet": "Agenda.Validate"
+    },
+    {
+      "description": "Invitation response rule: who may answer, once, and when the answer is final.",
+      "feature": "FE-06",
+      "methods": [
+        {
+          "decides": "Active non-chair participants with a Pending response in a Published or InProgress meeting may answer once; chair answers, second answers and wrong statuses are refused.",
+          "directTests": [],
+          "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+          "gap": "No ParticipantRulesTests file; covered only via HTTP endpoint tests.",
+          "line": 37,
+          "method": "ParticipantRules.CanRespond"
+        }
+      ],
+      "module": "PART",
+      "precondition": "Participant row with known role, status and response; meeting in Published or InProgress.",
+      "sheet": "Participant.CanRespond"
+    },
+    {
+      "description": "Attendance save: secretary-only write with optimistic concurrency and totals on read.",
+      "feature": "FE-06",
+      "methods": [
+        {
+          "decides": "Secretary saves the attendance list for an InProgress meeting; non-secretary, wrong status, stale version token and unknown targets are refused; read returns totals and permissions.",
+          "directTests": [],
+          "file": "backend/TrustCabinet.Infrastructure/Attendance/AttendanceService.cs",
+          "gap": "No direct service test; all coverage is HTTP/SignalR (AttendanceEndpointTests). Needs direct tests.",
+          "line": 67,
+          "method": "AttendanceService.SaveAsync"
+        }
+      ],
+      "module": "PART",
+      "precondition": "InProgress meeting; actor is an active secretary; current version token known.",
+      "sheet": "Attendance.Save"
+    },
+    {
+      "description": "Meeting document upload gate: access, file count, sizes, type agreement and hostile content.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": "Valid PDF/DOCX files pass with SHA-256 and page counts; access, file count, total and per-file sizes, type mismatches and hostile PDFs are refused per file with an index.",
+          "directTests": [
+            "Pdf_and_docx_are_recognised_by_their_bytes",
+            "Total_size_over_200_MB_is_checked_before_any_file_is_read"
+          ],
+          "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+          "line": 88,
+          "method": "DocumentFileRules.ValidateAsync"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Active user who may read the meeting; candidate files with names and bytes.",
+      "sheet": "Document.Validate"
+    },
+    {
+      "description": "Online room status: whether the call room is open for a meeting status and mode.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": "Maps meeting status and mode to room status (open, not-started, ended, in-person-only, cancelled); join and mute follow the same rule.",
+          "directTests": [
+            "Room_names_round_trip_and_reject_anything_else",
+            "Room_status_follows_meeting_status_and_mode"
+          ],
+          "file": "backend/TrustCabinet.Domain/Calls/CallContracts.cs",
+          "line": 41,
+          "method": "CallRoomRules.StatusOf"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Meeting with known status and mode.",
+      "sheet": "Call.StatusOf"
+    },
+    {
+      "description": "Microphone-bleed fold: leaked speech sentences are attributed to the louder speaker.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": "A segment covered by another speaker (60 percent within 2s lag, 50 percent word containment, 6 dB louder) is marked as a leak of that speaker; own loud voice is kept.",
+          "directTests": [
+            "Marks_what_the_shared_case_expects",
+            "Words_are_compared_without_case_or_punctuation"
+          ],
+          "file": "backend/TrustCabinet.Domain/Recordings/SpeechClipFold.cs",
+          "line": 46,
+          "method": "SpeechClipFold.Fold"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Speech clips with words, timings and peak levels; shared fold cases available.",
+      "sheet": "SpeechClip.Fold"
+    },
+    {
+      "description": "Speaker suggestion: which user each diarized voice belongs to, with margin and split-person checks.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": "Best-sample cosine over the threshold with a sufficient margin suggests the user; near-ties are refused; a second voice of the same person is suggested twice only with evidence.",
+          "directTests": [
+            "Below_the_threshold_a_voice_stays_unnamed",
+            "A_near_tie_between_two_people_is_not_guessed",
+            "A_second_voice_that_does_not_sound_like_the_first_is_not_given_the_same_name"
+          ],
+          "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdContracts.cs",
+          "line": 227,
+          "method": "SpeakerMatcher.Suggest"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Diarized speakers with embeddings and candidate users with voice samples; threshold and margin configured.",
+      "sheet": "Speaker.Suggest"
+    },
+    {
+      "description": "Transcript-to-take fit: each segment snaps to the take holding most of it.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": "Returns the fitted start and end inside the take with the largest overlap; ties go to the later take; null or single takes pass through.",
+          "directTests": [
+            "A_segment_moves_to_the_take_holding_most_of_it"
+          ],
+          "file": "backend/TrustCabinet.Domain/Transcription/TranscriptionContracts.cs",
+          "line": 128,
+          "method": "TranscriptRules.FitToTake"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Transcript segment with start and end; recording takes with known ranges.",
+      "sheet": "Transcript.FitToTake"
+    },
+    {
+      "description": "Vote draft validation: question, options, eligibility roles and anonymity flag.",
+      "feature": "FE-11",
+      "methods": [
+        {
+          "decides": "A draft with 2 distinct options and at least one eligible role passes; empty titles, over-long text, duplicate options and bad role strings return field errors keyed by field.",
+          "directTests": [],
+          "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+          "gap": "No direct test; covered only via HTTP (VoteEndpointTests). Needs direct validation tests.",
+          "line": 60,
+          "method": "VoteRules.Validate"
+        }
+      ],
+      "module": "VOTE",
+      "precondition": "Draft input with title, options and eligible roles.",
+      "sheet": "Vote.Validate"
+    },
+    {
+      "description": "Eligible voter freeze: who may vote is fixed when the vote opens.",
+      "feature": "FE-11",
+      "methods": [
+        {
+          "decides": "Returns the distinct ordered ids of active users holding the selected roles who may read the meeting; attendance is ignored and Guests are excluded; empty means the vote cannot open.",
+          "directTests": [],
+          "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+          "gap": "No direct test; covered only via HTTP opening tests.",
+          "line": 91,
+          "method": "VoteRules.EligibleUsers"
+        }
+      ],
+      "module": "VOTE",
+      "precondition": "Meeting with participants and roles; selected eligible roles.",
+      "sheet": "Vote.EligibleUsers"
+    },
+    {
+      "description": "Vote percentage display: per-option share rounded away from zero to 2 decimals, and the zero-ballot case.",
+      "feature": "FE-11",
+      "methods": [
+        {
+          "decides": "Returns the rounded percentage (away from zero, 2 decimals) or null when no ballots exist; 0 votes and unanimous votes are Boundary cases.",
+          "directTests": [],
+          "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+          "gap": "No direct test; covered only implicitly via HTTP result tests.",
+          "line": 96,
+          "method": "VoteRules.Percentage"
+        }
+      ],
+      "module": "VOTE",
+      "precondition": "Ballot count and per-option counts.",
+      "sheet": "Vote.Percentage"
+    },
+    {
+      "description": "Fixed minutes template: renders sections I-III from the reviewed draft or from agenda, conclusions, votes and notes.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": "Draft present renders its sections; otherwise agenda plus recorded conclusions, votes and secretary notes render with blank placeholders; hostile AI text stays a plain line and pipes are neutralized.",
+          "directTests": [
+            "Ai_text_cannot_turn_into_a_title_a_table_row_or_a_centred_line",
+            "Without_a_reviewed_draft_the_agenda_conclusions_and_votes_fill_the_sections_and_blanks_remain"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesTemplate.cs",
+          "line": 32,
+          "method": "MinutesTemplate.Build"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes records with agenda, people, conclusions, votes and notes; optional reviewed draft.",
+      "sheet": "Minutes.Build"
+    },
+    {
+      "description": "Minutes HTML sanitizer: allow-listed tags and styles, depth guard and empty-document detection.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": "Allowed tags and styles pass and the result is idempotent; script, iframe, images and over-deep trees fall back to text; empty documents are refused by SaveAsync.",
+          "directTests": [
+            "What_the_editor_writes_survives_unchanged",
+            "Scripts_frames_and_their_kind_go_with_their_content",
+            "Lines_become_html"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+          "line": 79,
+          "method": "MinutesHtml.Sanitize"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "HTML fragment from the editor; allow-list and depth limit configured.",
+      "sheet": "Minutes.Sanitize"
+    },
+    {
+      "description": "Starting-soon reminders: one notification per active participant inside the 15-minute window.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": "Queues one reminder row per active participant of Published meetings in the window; existing keys are skipped so a reschedule creates a new key; returns the created count.",
+          "directTests": [
+            "Reminder_is_queued_once_for_each_active_participant_in_the_15_minute_window"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Notifications/NotificationService.cs",
+          "line": 113,
+          "method": "NotificationService.QueueStartingSoonAsync"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Published meetings starting within 15 minutes with active participants.",
+      "sheet": "Noti.StartingSoon"
+    },
+    {
+      "description": "Email queue worker: claim the oldest message, send it, retry with backoff or fail permanently.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": "Sends the claimed message; 400/422 and undeliverable domains fail at once while 429/5xx retry with exponential backoff; expired leases are reclaimed and shutdown cancels without marking.",
+          "directTests": [
+            "Processor_sends_queued_messages_oldest_first_and_marks_them_sent",
+            "A_message_the_provider_refuses_fails_at_once_without_retries",
+            "Processor_retries_then_preserves_a_permanent_failure_for_audit"
+          ],
+          "file": "backend/TrustCabinet.Infrastructure/Email/EmailQueueProcessor.cs",
+          "line": 32,
+          "method": "EmailQueueProcessor.ProcessNextAsync"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Queued email rows with attempts below the maximum; provider reachable.",
+      "sheet": "Email.ProcessNext"
+    },
+    {
+      "description": "Report period parsing: trailing 12 months by default, explicit yyyy-MM ranges up to 24 months.",
+      "feature": "FE-15",
+      "methods": [
+        {
+          "decides": "Both missing means the trailing 12 months; otherwise two yyyy-MM values forming a 1-24 month range within years 2000-9998; anything else returns null and the endpoint answers 400.",
+          "directTests": [],
+          "file": "backend/TrustCabinet.Domain/Reports/ReportContracts.cs",
+          "gap": "No direct Parse test; covered only via HTTP report tests.",
+          "line": 40,
+          "method": "ReportPeriod.Parse"
+        }
+      ],
+      "module": "RPT",
+      "precondition": "Optional from and to strings; current time for the default window.",
+      "sheet": "Report.ParsePeriod"
+    },
+    {
+      "description": "Meeting time search: candidate slots on the work grid with busy and unknown marking.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": "Walks the step grid inside working hours minus lunch, skips the past, expands busy periods by the buffer and returns all-free or most-free slots capped at 200 with truncation flags.",
+          "directTests": [
+            "The_BR_422_example_gives_10_00",
+            "Without_a_common_slot_the_most_people_free_are_shown",
+            "At_most_200_slots_in_time_order"
+          ],
+          "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotFinder.cs",
+          "line": 14,
+          "method": "MeetingSlotFinder.Find"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "Slot search with invitees, duration, range and working hours; each person with busy windows.",
+      "sheet": "MeetingSlot.Find"
+    },
+    {
+      "description": "Calendar share state machine: who may request, share, respond, change, withdraw and end; direct unit tests cover the action table.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": "Pending and Effective shares expose different actions to owner and viewer; accept with a pending change, sensitivity coverage (never Secret) and lapse rules gate each action.",
+          "directTests": [
+            "A_pending_change_is_checked_again_when_approved",
+            "A_share_past_its_end_date_has_ended_with_nothing_left_to_do",
+            "The_actions_follow_who_sent_it_and_what_is_pending"
+          ],
+          "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+          "line": 122,
+          "method": "CalendarShareRules.Actions"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "Calendar share with known state, owner, viewer and sensitivity level.",
+      "sheet": "CalShare.Actions"
+    }
+  ]
+}

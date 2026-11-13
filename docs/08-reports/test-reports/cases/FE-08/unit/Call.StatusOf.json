@@ -1,0 +1,15 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "Call.StatusOf",
+  "description": "Online room status: whether the call room is open for a meeting status and mode.",
+  "precondition": "Meeting with known status and mode.",
+  "methods": [
+    {
+      "method": "CallRoomRules.StatusOf",
+      "file": "backend/TrustCabinet.Domain/Calls/CallContracts.cs",
+      "line": 41,
+      "cases": []
+    }
+  ]
+}

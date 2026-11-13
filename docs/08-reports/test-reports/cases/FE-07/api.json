@@ -1,0 +1,176 @@
+{
+  "feature": "FE-07",
+  "code": "DOC",
+  "sheet": "Documents",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/documents",
+      "uc": [
+        "UC-34"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/documents/upload",
+      "uc": [
+        "UC-36"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/documents/{documentId}/content",
+      "uc": [
+        "UC-34"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/documents/{documentId}/name",
+      "uc": [
+        "UC-71b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/documents/{documentId}/folder",
+      "uc": [
+        "UC-71c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/documents/{documentId}",
+      "uc": [
+        "UC-71a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/folders",
+      "uc": [
+        "UC-72a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/folders/{folderId}/name",
+      "uc": [
+        "UC-72b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/folders/{folderId}/parent",
+      "uc": [
+        "UC-72c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/folders/{folderId}",
+      "uc": [
+        "UC-72d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/users/{userId}/library",
+      "uc": [
+        "UC-34b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/users/{userId}/library/documents/{documentId}/content",
+      "uc": [
+        "UC-34b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/documents",
+      "uc": [
+        "UC-32a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/documents",
+      "uc": [
+        "UC-33a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/documents/upload",
+      "uc": [
+        "UC-33a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/documents/{meetingDocumentId}/content",
+      "uc": [
+        "UC-32c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/documents/{meetingDocumentId}",
+      "uc": [
+        "UC-33c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/agenda/{agendaItemId}/documents",
+      "uc": [
+        "UC-33b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/agenda/{agendaItemId}/documents/from-library",
+      "uc": [
+        "UC-33b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/agenda/{agendaItemId}/documents/upload",
+      "uc": [
+        "UC-33b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/agenda/{agendaItemId}/documents/{meetingDocumentId}",
+      "uc": [
+        "UC-33d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/documents/{meetingDocumentId}/comments",
+      "uc": [
+        "UC-35"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/documents/{meetingDocumentId}/comments",
+      "uc": [
+        "UC-35"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/documents/{meetingDocumentId}/read-confirmation",
+      "uc": [
+        "UC-74"
+      ],
+      "cases": []
+    }
+  ]
+}

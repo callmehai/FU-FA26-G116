@@ -1,0 +1,22 @@
+{
+  "feature": "FE-15",
+  "code": "RPT",
+  "sheet": "Reporting",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "View Report",
+      "uc": [
+        "UC-70a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Export Report",
+      "uc": [
+        "UC-70b"
+      ],
+      "cases": []
+    }
+  ]
+}

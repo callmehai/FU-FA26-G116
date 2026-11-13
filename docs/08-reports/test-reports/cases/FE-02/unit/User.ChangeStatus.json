@@ -1,0 +1,15 @@
+{
+  "feature": "FE-02",
+  "module": "USER",
+  "sheet": "User.ChangeStatus",
+  "description": "Deactivate and reactivate rules: status change, last-admin guard, session and Voice ID side effects.",
+  "precondition": "At least two active administrators exist for the guard cases.",
+  "methods": [
+    {
+      "method": "UserService.ChangeStatusAsync",
+      "file": "backend/TrustCabinet.Infrastructure/Users/UserService.cs",
+      "line": 262,
+      "cases": []
+    }
+  ]
+}

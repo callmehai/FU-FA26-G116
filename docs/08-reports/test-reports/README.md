@@ -8,14 +8,34 @@ bố cục bảng và các phần cố định của mẫu. Nội dung dự án 
 | File | Nội dung |
 |---|---|
 | `Report5.0_Test_Documentation.docx` | Phạm vi, chiến lược, kế hoạch, testcase và báo cáo, theo thứ tự mục của Word mẫu |
-| `Report5.1_Unit_Test.xlsx` | Guideline, Cover, MethodList, Statistics và ma trận Condition/Confirm cho từng test method |
-| `Report5.2_Integration_Test.xlsx` | Test không qua HTTP và kịch bản UI; bảng ba vòng theo mẫu |
-| `Report5.2.2_Integration_Test_API_Test.xlsx` | Test API/TestServer; bảng ba vòng theo mẫu |
+| `Report5.1_Unit_Test.xlsx` | Test unit theo hàng: mỗi production function một sheet, mỗi sheet các nhóm `Class.Method` và các dòng `UTCnnn`; sinh từ `cases/FE-xx/unit/` |
+| `Report5.2_Integration_Test.xlsx` | Test tích hợp qua giao diện, mỗi Feature một sheet; sinh từ `cases/FE-xx/ui.json` |
+| `Report5.2.2_Integration_Test_API_Test.xlsx` | Test API, mỗi Feature một sheet, mỗi *endpoint* một nhóm; sinh từ `cases/FE-xx/api.json` |
 | `Report5.3_System_Test.xlsx` | Các workflow kiểm thử toàn hệ thống; bảng ba vòng theo mẫu |
 | `Report5.4_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
 
-**Viết lại 5.2 / 5.2.2 theo Feature (FE-01 → FE-16), test case nghiệp vụ:** agent đọc
-[AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết case, nguồn `cases/*.json` và cách chia việc.
+**5.2 / 5.2.2 viết lại theo Feature (FE-01 → FE-16), test case nghiệp vụ.** Nguồn là JSON trong
+[cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
+
+```powershell
+python scripts/test_reports/integration_cases.py check   # kiểm tra
+python scripts/test_reports/integration_cases.py build   # sinh lại 2 workbook (đóng Excel trước)
+```
+
+Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết case và cách chia việc.
+`generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2; nó chỉ sinh 5.0, 5.3, 5.4.
+
+**5.1 viết lại theo production function (mỗi function một sheet), test case nghiệp vụ.**
+Nguồn là JSON trong [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
+
+```powershell
+python scripts/test_reports/unit_cases.py check   # kiểm tra
+python scripts/test_reports/unit_cases.py build   # sinh lại workbook (đóng Excel trước)
+```
+
+Mỗi UTC gọi trực tiếp production function (in-process), không qua browser hay HTTP.
+`Expected Results` luôn có ba dòng `Return: …`, `Exception: …`, `Log Message: …`.
+Mọi vòng đều bắt đầu là `Pending`; chỉ một lần chạy thật mới được đánh `Passed`/`Failed`.
 
 Trong Acceptance Test, giữ nguyên bảng tiêu chí/phản hồi ngắn của mẫu. Di chuột hoặc mở
 Notes tại ô tiêu chí để xem precondition, procedure, expected result và source của từng kịch bản.
@@ -41,11 +61,11 @@ Máy sinh báo cáo cần Windows có Microsoft Excel để render hình minh h�
 Microsoft Word dùng để tự động xuất PDF, lấy số trang và cập nhật cache mục lục sau khi sinh.
 Các file mẫu gốc chỉ được đọc và không được đưa vào repository.
 
-Roslyn đọc cú pháp C# để lấy test method, dữ liệu Theory, fixture, assertion và vị trí source.
-Script phân loại theo dependency; BA/Tester cần rà phân loại và mapping Jira/UC. Một method
-là một định nghĩa, có thể sinh nhiều execution. Workbook Unit đếm định nghĩa; không suy số
-method thành code coverage. Dữ liệu kiểm thử và đoạn code trích nguyên văn có thể chứa chuỗi
-tiếng Việt của sản phẩm; phần diễn giải báo cáo là tiếng Anh.
+Roslyn đọc cú pháp C# để lấy test method, dữ liệu Theory, fixture, assertion và vị trí source
+cho 5.0/5.3/5.4. Script phân loại theo dependency; BA/Tester cần rà phân loại và mapping Jira/UC.
+Workbook 5.1 mới không đếm định nghĩa test method và không suy số method thành code coverage:
+mỗi UTC là một hành vi của production function, gọi trực tiếp. Dữ liệu kiểm thử và đoạn code
+trích nguyên văn có thể chứa chuỗi tiếng Việt của sản phẩm; phần diễn giải báo cáo là tiếng Anh.
 
 ## Kết quả và evidence
 

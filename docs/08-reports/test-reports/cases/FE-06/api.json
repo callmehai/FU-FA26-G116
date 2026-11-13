@@ -1,0 +1,115 @@
+{
+  "feature": "FE-06",
+  "code": "PART",
+  "sheet": "Participants",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/meetings/participant-options",
+      "uc": [
+        "UC-14",
+        "UC-28a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/participant-context",
+      "uc": [
+        "UC-27"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/participants",
+      "uc": [
+        "UC-27",
+        "UC-30"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/participants/editor-options",
+      "uc": [
+        "UC-28a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/participants",
+      "uc": [
+        "UC-28a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/participants/assignments",
+      "uc": [
+        "UC-28b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/participants/{targetId}",
+      "uc": [
+        "UC-28c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/guest-invitations",
+      "uc": [
+        "UC-28a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/guest-invitations/{targetId}",
+      "uc": [
+        "UC-28c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/invitation-response",
+      "uc": [
+        "UC-29"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/invitation-response",
+      "uc": [
+        "UC-29"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/attendance",
+      "uc": [
+        "UC-31"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/attendance",
+      "uc": [
+        "UC-31"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/participants/chair-handover-candidates",
+      "uc": [
+        "UC-73"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/participants/chair-handover",
+      "uc": [
+        "UC-73"
+      ],
+      "cases": []
+    }
+  ]
+}

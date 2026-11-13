@@ -1,0 +1,114 @@
+{
+  "feature": "FE-08",
+  "code": "ROOM",
+  "sheet": "Online Room",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/meetings/{id}/call",
+      "uc": [
+        "UC-37"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{id}/call/join",
+      "uc": [
+        "UC-37"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{id}/call/participants/{identity}/mute",
+      "uc": [
+        "UC-41"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/livekit/webhook",
+      "uc": [
+        "UC-37",
+        "UC-38"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/speaking-requests",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/speaking-requests",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/speaking-requests/{requestId}",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/invite",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/start",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/finish",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/decline",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/move-up",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/move-down",
+      "uc": [
+        "UC-79"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/notes",
+      "uc": [
+        "UC-82"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/notes",
+      "uc": [
+        "UC-82"
+      ],
+      "cases": []
+    }
+  ]
+}

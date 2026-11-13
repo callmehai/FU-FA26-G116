@@ -1,0 +1,64 @@
+{
+  "feature": "FE-03",
+  "code": "RBAC",
+  "sheet": "Access Control",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/roles",
+      "uc": [
+        "UC-10"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/roles",
+      "uc": [
+        "UC-12a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/roles/{id}",
+      "uc": [
+        "UC-12b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/roles/{id}",
+      "uc": [
+        "UC-12c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/roles/capabilities",
+      "uc": [
+        "UC-10"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/roles/capabilities",
+      "uc": [
+        "UC-11"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/audit-log",
+      "uc": [
+        "UC-13"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/audit-log/event-types",
+      "uc": [
+        "UC-13"
+      ],
+      "cases": []
+    }
+  ]
+}

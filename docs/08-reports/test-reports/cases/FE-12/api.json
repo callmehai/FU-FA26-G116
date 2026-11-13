@@ -1,0 +1,71 @@
+{
+  "feature": "FE-12",
+  "code": "MIN",
+  "sheet": "Minutes",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "POST /api/meetings/{meetingId}/minutes",
+      "uc": [
+        "UC-59"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/minutes",
+      "uc": [
+        "UC-58"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/minutes/{minutesId}",
+      "uc": [
+        "UC-58"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/minutes/{minutesId}",
+      "uc": [
+        "UC-60"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/minutes/{minutesId}/export",
+      "uc": [
+        "UC-60"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/minutes/{minutesId}/submit",
+      "uc": [
+        "UC-61"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/minutes/{minutesId}/approve",
+      "uc": [
+        "UC-64"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/minutes/{minutesId}/reject",
+      "uc": [
+        "UC-65"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/minutes/{minutesId}/corrections",
+      "uc": [
+        "UC-83"
+      ],
+      "cases": []
+    }
+  ]
+}

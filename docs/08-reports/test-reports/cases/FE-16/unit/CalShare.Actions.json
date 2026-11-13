@@ -1,0 +1,15 @@
+{
+  "feature": "FE-16",
+  "module": "CAL",
+  "sheet": "CalShare.Actions",
+  "description": "Calendar share state machine: who may request, share, respond, change, withdraw and end.",
+  "precondition": "Calendar share with known state, owner, viewer and sensitivity level.",
+  "methods": [
+    {
+      "method": "CalendarShareRules.Actions",
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "line": 122,
+      "cases": []
+    }
+  ]
+}

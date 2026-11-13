@@ -1,0 +1,15 @@
+{
+  "feature": "FE-03",
+  "module": "RBAC",
+  "sheet": "Role.Create",
+  "description": "Custom role creation: name and capability validation, duplicate guard, built-in protection.",
+  "precondition": "Capability catalogue available; no role with the test name exists.",
+  "methods": [
+    {
+      "method": "RoleService.CreateAsync",
+      "file": "backend/TrustCabinet.Infrastructure/Access/RoleService.cs",
+      "line": 37,
+      "cases": []
+    }
+  ]
+}

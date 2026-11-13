@@ -1,0 +1,76 @@
+{
+  "feature": "FE-10",
+  "code": "TRANS",
+  "sheet": "Transcription & Summary",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "View & Export Transcript",
+      "uc": [
+        "UC-45a",
+        "UC-45b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Re-run Transcription",
+      "uc": [
+        "UC-45c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Edit Transcript & Speakers",
+      "uc": [
+        "UC-46a",
+        "UC-46b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Exclude & Delete Sentences",
+      "uc": [
+        "UC-46c",
+        "UC-46d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Generate Summary",
+      "uc": [
+        "UC-47"
+      ],
+      "cases": []
+    },
+    {
+      "title": "View, Edit & Approve Summary",
+      "uc": [
+        "UC-48",
+        "UC-49",
+        "UC-50"
+      ],
+      "cases": []
+    },
+    {
+      "title": "My Voice ID",
+      "uc": [
+        "UC-81"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Collect Voice Samples",
+      "uc": [
+        "UC-81c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "AI Settings",
+      "uc": [
+        "UC-47"
+      ],
+      "cases": []
+    }
+  ]
+}

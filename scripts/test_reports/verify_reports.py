@@ -63,10 +63,10 @@ def verify(directory,templates):
                     assert sr.xpath('count(//w:drawing)',namespaces=N)==fr.xpath('count(//w:drawing)',namespaces=N)
                 text=' '.join(fr.xpath('//w:t/text()',namespaces=N))+' '.join(E.fromstring(z.read('word/footer1.xml')).xpath('//w:t/text()',namespaces=N))
                 assert not re.search(r'\bACCE\b|TienTM|TrangCTQ|pytest|Django|FA25_SEP490|Code coverage ≥ 70|coverage ≥ 80',text),'Prior project content remains in Word'
-    assert {t['id'] for t in inventory}<=covered,'Missing test IDs: '+str({t['id'] for t in inventory}-covered)
-    assert reports['Report5.1_Unit_Test.xlsx']==manifest['classification']['UNIT']
-    assert reports['Report5.2_Integration_Test.xlsx']==manifest['classification']['INTEGRATION']+manifest['manualCases']['UI']
-    assert reports['Report5.2.2_Integration_Test_API_Test.xlsx']==manifest['classification']['API']
+    # Report 5.1 is checked by scripts/test_reports/unit_cases.py check, not here.
+    # Report 5.2 / 5.2.2 are checked by scripts/test_reports/integration_cases.py check, not here.
+    here={t['id'] for t in inventory if t.get('level') not in {'UNIT','INTEGRATION','API','UI'}}
+    assert here<=covered,'Missing test IDs: '+str(here-covered)
     assert reports['Report5.3_System_Test.xlsx']==manifest['manualCases']['SYS']
     print(json.dumps(dict(verifiedFiles=len(manifest['files']),testMethods=len(tests),tracedIDs=len(covered),summaryCounts=reports,referenceTemplatesUnchanged=True,sourceStylesPreserved=True),indent=2))
 

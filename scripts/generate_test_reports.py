@@ -13,8 +13,14 @@ sys.path.insert(0,str(ROOT/'scripts/test_reports'))
 from manual_cases import scenarios
 from template_workbooks import unit_book,table_book,uat_book
 from template_document import make_document,refresh_cached_toc
-FILES={'UNIT':'Report5.1_Unit_Test.xlsx','INTEGRATION':'Report5.2_Integration_Test.xlsx','API':'Report5.2.2_Integration_Test_API_Test.xlsx','SYSTEM':'Report5.3_System_Test.xlsx','UAT':'Report5.4_Acceptance_Test.xlsx'}
-TEMPLATES={**FILES,'API':'FA25_SEP490-G158_Report5.2.2_Integration Test_API Test.xlsx','DOCX':'FA25_SEP490-G158_Report5.0_Test Documentation.docx'}
+# Report 5.1 (Unit) is no longer generated here: it is built from
+# docs/08-reports/test-reports/cases/FE-xx/unit/*.json by scripts/test_reports/unit_cases.py build.
+# This script leaves the workbook untouched; its tests stay in inventory.json, marked by level.
+# Report 5.2 (Integration) and 5.2.2 (API) are no longer generated here: they are built from
+# docs/08-reports/test-reports/cases/FE-xx/{ui,api}.json by scripts/test_reports/integration_cases.py build.
+# This script leaves both workbooks untouched; their tests stay in inventory.json, marked by level.
+FILES={'SYSTEM':'Report5.3_System_Test.xlsx','UAT':'Report5.4_Acceptance_Test.xlsx'}
+TEMPLATES={**FILES,'DOCX':'FA25_SEP490-G158_Report5.0_Test Documentation.docx'}
 
 
 def write_json(path,data):
@@ -115,9 +121,11 @@ def main():
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     meta=dict(project='TrustCabinet',projectCode='SEP490-G116',date=datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')).strftime('%Y-%m-%d'),generatedAt=datetime.now(timezone.utc).isoformat(),commit=commit,sourceDigest=fingerprint,evidenceVerified=verified,testMethods=len(tests),classification=dict(Counter(c['level'] for c in tests)),status=dict(Counter(c['status'] for c in tests)),manualCases=dict(Counter(c['level'] for c in manual)),executions=len(results),templates={name:digest(a.template_dir/name) for name in TEMPLATES.values()})
     books={}
-    books['UNIT']=unit_book(a.template_dir/TEMPLATES['UNIT'],[c for c in tests if c['level']=='UNIT'],meta)
-    books['INTEGRATION']=table_book(a.template_dir/TEMPLATES['INTEGRATION'],[c for c in tests if c['level']=='INTEGRATION']+[c for c in manual if c['level']=='UI'],meta,'INTEGRATION TEST DOCUMENT')
-    books['API']=table_book(a.template_dir/TEMPLATES['API'],[c for c in tests if c['level']=='API'],meta,'API TEST')
+    # Retired: Report 5.1 comes from scripts/test_reports/unit_cases.py build.
+    # books['UNIT']=unit_book(a.template_dir/TEMPLATES['UNIT'],[c for c in tests if c['level']=='UNIT'],meta)
+    # Retired: Report 5.2 / 5.2.2 come from scripts/test_reports/integration_cases.py build.
+    # books['INTEGRATION']=table_book(a.template_dir/TEMPLATES['INTEGRATION'],[c for c in tests if c['level']=='INTEGRATION']+[c for c in manual if c['level']=='UI'],meta,'INTEGRATION TEST DOCUMENT')
+    # books['API']=table_book(a.template_dir/TEMPLATES['API'],[c for c in tests if c['level']=='API'],meta,'API TEST')
     books['SYSTEM']=table_book(a.template_dir/TEMPLATES['SYSTEM'],[c for c in manual if c['level']=='SYS'],meta,'SYSTEM TEST REPORT DOCUMENT',True)
     books['UAT']=uat_book(a.template_dir/TEMPLATES['UAT'],[c for c in manual if c['level']=='UAT'],meta)
     specs=build/'authoring.json';write_json(specs,[book.spec(FILES[k]) for k,book in books.items()]);authored=build/'authored'
@@ -130,7 +138,7 @@ def main():
     subprocess.run(['C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-File',str(ROOT/'scripts/test_reports/render_word.ps1'),'-InputPath',str(out/'Report5.0_Test_Documentation.docx'),'-PdfPath',str(pdf)],cwd=ROOT,check=True)
     meta['tocEntriesRefreshed']=refresh_cached_toc(out/'Report5.0_Test_Documentation.docx',str(pdf)+'.toc.json')
     write_json(out/'inventory.json',tests+manual);write_json(out/'execution-evidence.json',dict(verified=verified,results=results))
-    meta['files']={f.name:digest(f) for f in out.iterdir() if f.suffix in {'.xlsx','.docx'}};write_json(out/'manifest.json',meta)
+    meta['files']={f.name:digest(f) for f in out.iterdir() if f.name in {*FILES.values(),'Report5.0_Test_Documentation.docx'}};write_json(out/'manifest.json',meta)
     print(json.dumps(meta,ensure_ascii=False,indent=2));return exitcode
 
 if __name__=='__main__':raise SystemExit(main())

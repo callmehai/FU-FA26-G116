@@ -1,0 +1,15 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "Transcript.FitToTake",
+  "description": "Transcript-to-take fit: each segment snaps to the take holding most of it.",
+  "precondition": "Transcript segment with start and end; recording takes with known ranges.",
+  "methods": [
+    {
+      "method": "TranscriptRules.FitToTake",
+      "file": "backend/TrustCabinet.Domain/Transcription/TranscriptionContracts.cs",
+      "line": 128,
+      "cases": []
+    }
+  ]
+}

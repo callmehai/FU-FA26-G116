@@ -1,0 +1,66 @@
+{
+  "feature": "FE-16",
+  "code": "CAL",
+  "sheet": "Calendar",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "Working Calendar",
+      "uc": [
+        "UC-17"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Request & Share Calendar",
+      "uc": [
+        "UC-84a",
+        "UC-84b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Respond to Calendar Share",
+      "uc": [
+        "UC-84c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Calendar Share List",
+      "uc": [
+        "UC-84f"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Change, Withdraw & End Share",
+      "uc": [
+        "UC-84d",
+        "UC-84e"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Shared Week",
+      "uc": [
+        "UC-85c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Find Meeting Time",
+      "uc": [
+        "UC-85a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Create Draft from Time Slot",
+      "uc": [
+        "UC-85b"
+      ],
+      "cases": []
+    }
+  ]
+}

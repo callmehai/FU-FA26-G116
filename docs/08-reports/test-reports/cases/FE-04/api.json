@@ -1,0 +1,70 @@
+{
+  "feature": "FE-04",
+  "code": "MEET",
+  "sheet": "Meeting Management",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "POST /api/meetings",
+      "uc": [
+        "UC-14"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{id}",
+      "uc": [
+        "UC-15"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings",
+      "uc": [
+        "UC-17"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{id}",
+      "uc": [
+        "UC-16"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/approvers",
+      "uc": [
+        "UC-14",
+        "UC-18"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{id}/submission-readiness",
+      "uc": [
+        "UC-18"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{id}/transitions",
+      "uc": [
+        "UC-18",
+        "UC-19",
+        "UC-20",
+        "UC-21",
+        "UC-22",
+        "UC-75"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{id}/history",
+      "uc": [
+        "UC-16"
+      ],
+      "cases": []
+    }
+  ]
+}

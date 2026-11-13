@@ -1,0 +1,71 @@
+{
+  "feature": "FE-05",
+  "code": "AGENDA",
+  "sheet": "Agenda",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/meetings/{meetingId}/agenda",
+      "uc": [
+        "UC-26"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/agenda/editor-options",
+      "uc": [
+        "UC-23"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/agenda",
+      "uc": [
+        "UC-23a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/agenda/{itemId}",
+      "uc": [
+        "UC-23b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/agenda/{itemId}",
+      "uc": [
+        "UC-23c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/agenda/order",
+      "uc": [
+        "UC-23d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/agenda/{itemId}/current",
+      "uc": [
+        "UC-24"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/agenda/{itemId}/complete",
+      "uc": [
+        "UC-25"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/agenda/{itemId}/conclusion",
+      "uc": [
+        "UC-77"
+      ],
+      "cases": []
+    }
+  ]
+}

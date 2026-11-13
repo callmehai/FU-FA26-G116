@@ -1,0 +1,58 @@
+{
+  "feature": "FE-02",
+  "code": "USER",
+  "sheet": "User Management",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/users",
+      "uc": [
+        "UC-05"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/users/{id}",
+      "uc": [
+        "UC-05"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/users",
+      "uc": [
+        "UC-06a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/users/{id}",
+      "uc": [
+        "UC-06b",
+        "UC-08"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/users/{id}/status",
+      "uc": [
+        "UC-06c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/users/{id}/password-reset",
+      "uc": [
+        "UC-07"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/auth/password-reset",
+      "uc": [
+        "UC-07"
+      ],
+      "cases": []
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "feature": "FE-10",
+  "code": "TRANS",
+  "sheet": "Transcription & Summary",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "POST /api/recordings/{recordingId}/transcribe",
+      "uc": [
+        "UC-45c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/recordings/{recordingId}/transcript",
+      "uc": [
+        "UC-45a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/recordings/{recordingId}/transcript.txt",
+      "uc": [
+        "UC-45b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/speech-clips.txt",
+      "uc": [
+        "UC-45b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/transcript-segments/{segmentId}",
+      "uc": [
+        "UC-46a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/speech-clips/{clipId}/text",
+      "uc": [
+        "UC-46a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/transcript-segments/{segmentId}/speaker",
+      "uc": [
+        "UC-46b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/recordings/{recordingId}/speakers/{label}",
+      "uc": [
+        "UC-46b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/summary",
+      "uc": [
+        "UC-47"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/summary",
+      "uc": [
+        "UC-48"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/summary",
+      "uc": [
+        "UC-49"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/summary/review",
+      "uc": [
+        "UC-50"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/me/voice",
+      "uc": [
+        "UC-81a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/me/voice/consent",
+      "uc": [
+        "UC-81b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/me/voice/consent",
+      "uc": [
+        "UC-81f"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/me/voice/samples",
+      "uc": [
+        "UC-81c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/me/voice/samples/{sampleId}/audio",
+      "uc": [
+        "UC-81d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/me/voice/samples/{sampleId}",
+      "uc": [
+        "UC-81e"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/voice-collection",
+      "uc": [
+        "UC-81c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/voice-collection/{userId}/samples",
+      "uc": [
+        "UC-81c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/voice-collection/samples/{sampleId}/audio",
+      "uc": [
+        "UC-81d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/voice-collection/samples/{sampleId}",
+      "uc": [
+        "UC-81e"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/admin/ai",
+      "uc": [
+        "UC-47"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PUT /api/admin/ai",
+      "uc": [
+        "UC-47"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/admin/ai/test",
+      "uc": [
+        "UC-47"
+      ],
+      "cases": []
+    }
+  ]
+}

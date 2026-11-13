@@ -1,0 +1,89 @@
+{
+  "description": "Password sign-in decision: valid credentials vs unknown email vs wrong password vs deactivated account.",
+  "feature": "FE-01",
+  "methods": [
+    {
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "email: \"organizer@example.com\"; password: \"<correct password>\"",
+          "log": "Sign-in succeeded for account {UserId}.",
+          "note": "UC-01 · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (An_active_user_with_the_right_password_signs_in)",
+          "preconditions": [
+            "Active account exists for organizer@example.com.",
+            "Password hasher configured."
+          ],
+          "return": "Success with access token and refresh token; capabilities read from the database.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "email: \"nobody@example.com\"; password: \"<any password>\"",
+          "log": "Sign-in rejected: invalid credentials.",
+          "note": "UC-01 · MSG01 · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (An_unknown_email_is_rejected)",
+          "preconditions": [
+            "No account exists for nobody@example.com."
+          ],
+          "return": "Failure(InvalidCredentials); no sign-in attempt recorded.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "email: \"organizer@example.com\"; password: \"<wrong password>\"",
+          "log": "Sign-in rejected: invalid credentials.",
+          "note": "UC-01 · MSG01 · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (A_wrong_password_is_rejected)",
+          "preconditions": [
+            "Active account exists for organizer@example.com."
+          ],
+          "return": "Failure(InvalidCredentials); sign-in attempt recorded with reason invalid_password.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "email: \"former@example.com\"; password: \"<correct password>\"",
+          "log": "Sign-in rejected: account {UserId} is deactivated.",
+          "note": "UC-01 · MSG02 · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (A_deactivated_account_is_told_so_only_after_the_password_matched)",
+          "preconditions": [
+            "Account former@example.com exists and is deactivated."
+          ],
+          "return": "Failure(AccountDeactivated); sign-in attempt recorded.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "email: \"\"; password: \"<any password>\"",
+          "log": "N/A",
+          "note": "UC-01 · MSG01 · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (Blank_input_is_rejected_without_touching_the_database)",
+          "preconditions": [
+            "No database access needed."
+          ],
+          "return": "Failure(InvalidCredentials); the database is not touched.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "email: \"former@example.com\"; password: \"<wrong password>\"",
+          "log": "Sign-in rejected: invalid credentials.",
+          "note": "UC-01 · MSG01 · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthenticationServiceTests.cs (A_deactivated_account_with_a_wrong_password_reveals_nothing)",
+          "preconditions": [
+            "Account former@example.com exists and is deactivated."
+          ],
+          "return": "Failure(InvalidCredentials); the caller cannot tell the account is deactivated.",
+          "type": "Abnormal"
+        }
+      ],
+      "file": "backend/TrustCabinet.Infrastructure/Authentication/AuthenticationService.cs",
+      "line": 50,
+      "method": "AuthenticationService.SignInAsync"
+    }
+  ],
+  "module": "AUTH",
+  "precondition": "Seeded users exist (active, deactivated); password hasher configured.",
+  "sheet": "Auth.SignIn"
+}

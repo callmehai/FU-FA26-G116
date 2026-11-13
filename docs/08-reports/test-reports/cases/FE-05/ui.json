@@ -1,0 +1,52 @@
+{
+  "feature": "FE-05",
+  "code": "AGENDA",
+  "sheet": "Agenda",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "View Agenda",
+      "uc": [
+        "UC-26"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Manage Agenda Items",
+      "uc": [
+        "UC-23a",
+        "UC-23b",
+        "UC-23c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Reorder Agenda Items",
+      "uc": [
+        "UC-23d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Set Current Item",
+      "uc": [
+        "UC-24"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Complete Item",
+      "uc": [
+        "UC-25"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Record Item Conclusion",
+      "uc": [
+        "UC-77"
+      ],
+      "cases": []
+    }
+  ]
+}

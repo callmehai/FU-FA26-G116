@@ -1,0 +1,15 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.Validate",
+  "description": "Agenda item validation: title, description, presenter and document links.",
+  "precondition": "Meeting exists; presenter is a participant of the meeting.",
+  "methods": [
+    {
+      "method": "AgendaRules.Validate",
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "line": 32,
+      "cases": []
+    }
+  ]
+}

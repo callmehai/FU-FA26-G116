@@ -1,0 +1,50 @@
+{
+  "feature": "FE-13",
+  "code": "NOTI",
+  "sheet": "Notifications",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/notifications",
+      "uc": [
+        "UC-66"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/notifications/unread-count",
+      "uc": [
+        "UC-66"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/notifications/{id}/read",
+      "uc": [
+        "UC-67a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/notifications/read-all",
+      "uc": [
+        "UC-67b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/notifications/{id}/target",
+      "uc": [
+        "UC-68"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/email/resend/webhook",
+      "uc": [
+        "UC-20"
+      ],
+      "cases": []
+    }
+  ]
+}

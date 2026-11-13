@@ -1,0 +1,858 @@
+{
+  "feature": "FE-11",
+  "code": "VOTE",
+  "sheet": "Voting",
+  "precondition": "Backend running on the test build (GET /api/health answers 200). Chair, Secretary and Member accounts supplied by QA lead; a meeting the Chair chairs, in the needed status, with the needed roster. A controlled inbox for Guest invitation emails.",
+  "groups": [
+    {
+      "title": "GET /api/meetings/{meetingId}/votes",
+      "uc": [
+        "UC-52a"
+      ],
+      "cases": [
+        {
+          "description": "Verify GET /api/meetings/{meetingId}/votes lists the drafts and votes the caller may see.",
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"meetingId\", \"meetingStatus\": \"InProgress\", \"permissions\": { \"canManageDraft\": true, ... }, \"votes\": [ { \"id\", \"title\", \"status\", \"isAnonymous\", \"eligibleRoles\", \"eligibleCount\", \"receiptCount\", \"hasVoted\", \"documentCount\", \"actions\": { ... } } ] }.",
+            "Drafts appear only for the Chair and Secretary; a Member gets the same 200 without them."
+          ],
+          "id": "VOTE_API_IT01",
+          "note": "UC-52a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting in InProgress chaired by the Chair, with a Secretary, a Member and one draft vote."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/votes with Authorization: Bearer <accessToken>.",
+            "Sign in as the Member and repeat step 2."
+          ]
+        },
+        {
+          "description": "Verify GET /api/meetings/{meetingId}/votes answers 404 for a caller who may not read the meeting.",
+          "expected": [
+            "HTTP 404 Not Found.",
+            "Body: { \"code\": \"MSG205\", \"message\": \"Không truy cập được biểu quyết của cuộc họp này.\" }."
+          ],
+          "id": "VOTE_API_IT02",
+          "note": "UC-52a | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting the caller is not a participant of, or a Draft meeting an outsider cannot read."
+          ],
+          "procedure": [
+            "Sign in as the outsider (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/votes with Authorization: Bearer <accessToken>."
+          ]
+        },
+        {
+          "description": "Verify GET /api/meetings/{meetingId}/votes without a token answers 401.",
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "id": "VOTE_API_IT03",
+          "note": "UC-52a | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "procedure": [
+            "Send GET /api/meetings/{meetingId}/votes with no Authorization header."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "GET /api/meetings/{meetingId}/votes/{voteId}",
+      "uc": [
+        "UC-52b"
+      ],
+      "cases": [
+        {
+          "description": "Verify GET /api/meetings/{meetingId}/votes/{voteId} returns the detail with options, documents and the tally.",
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"id\", \"title\", \"description\", \"status\": \"Closed\", \"options\": [ { \"id\", \"position\", \"label\" } ], \"documents\": [ { \"id\", \"fileName\", \"readConfirmedAt\" } ], \"result\": { \"ballotCount\", \"options\": [ { \"count\", \"percentage\" } ], \"voters\": [ ... ] } }.",
+            "A secret vote returns \"voters\": null; a public one names each voter and choice."
+          ],
+          "id": "VOTE_API_IT04",
+          "note": "UC-52b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice; A_secret_ballot_leaves_nothing_that_pairs_a_choice_with_its_voter)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A closed public vote and a closed secret vote in the same meeting."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/votes/{publicVoteId} with Authorization: Bearer <accessToken>.",
+            "Send GET /api/meetings/{meetingId}/votes/{secretVoteId}."
+          ]
+        },
+        {
+          "description": "Verify GET /api/meetings/{meetingId}/votes/{voteId} answers 404 for an unknown vote or another meeting's vote.",
+          "expected": [
+            "HTTP 404 Not Found, body code \"MSG205\"."
+          ],
+          "id": "VOTE_API_IT05",
+          "note": "UC-52b | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting the Chair may read; a random vote id. A second meeting with its own vote."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/{meetingId}/votes/{randomId}.",
+            "Send GET /api/meetings/{meetingId}/votes/{otherMeetingsVoteId}."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/votes",
+      "uc": [
+        "UC-53"
+      ],
+      "cases": [
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes creates a draft and returns its location.",
+          "expected": [
+            "HTTP 201 Created, header Location: /api/meetings/{meetingId}/votes/{voteId}.",
+            "Body: { \"code\": \"MSG210\", \"message\": \"Tạo biểu quyết nháp thành công.\", \"meetingId\", \"voteId\" }.",
+            "GET /api/meetings/{meetingId}/votes lists the new draft for the Chair and Secretary, not for the Member."
+          ],
+          "id": "VOTE_API_IT06",
+          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting in Approved chaired by the Chair, with a Secretary and a Member."
+          ],
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes",
+            "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "Body: { \"title\": \"Thông qua kế hoạch quý IV\", \"description\": \"\", \"options\": [\"Thông qua\", \"Không thông qua\"], \"isAnonymous\": false, \"eligibleRoles\": [\"Chair\", \"Member\"] }"
+          ]
+        },
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes rejects a bad configuration with one error per field.",
+          "expected": [
+            "HTTP 400 Bad Request.",
+            "Body: { \"code\": \"MSG209\", \"message\": \"Thông tin biểu quyết không hợp lệ. Kiểm tra các trường được đánh dấu.\", \"errors\": { \"title\": [...], \"options\": [...], \"isAnonymous\": [...], \"eligibleRoles\": [...] } }.",
+            "No draft is saved: the list is unchanged."
+          ],
+          "id": "VOTE_API_IT07",
+          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Invalid_configuration_is_rejected_and_saves_nothing)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting in Approved chaired by the Chair."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes",
+            "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "Body: { \"title\": \"\", \"options\": [\"Một\"], \"eligibleRoles\": [] } (missing isAnonymous, one option, no roles)"
+          ]
+        },
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes refuses a non-JSON body and a body over 64 KiB.",
+          "expected": [
+            "Non-JSON Content-Type: HTTP 415, body code \"MSG34\".",
+            "Body over 64 KiB: HTTP 413, body code \"MSG87\".",
+            "Neither saves a draft."
+          ],
+          "id": "VOTE_API_IT08",
+          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Body_must_be_json_and_at_most_64_KiB)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting in Approved chaired by the Chair."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes with Content-Type: text/plain and a JSON body.",
+            "Send it with Content-Type: application/json and a body larger than 64 KiB."
+          ]
+        },
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes refuses a caller who may not manage drafts.",
+          "expected": [
+            "A Member: HTTP 404, body code \"MSG205\" — the draft box is invisible to them.",
+            "An Approved meeting managed by a Chair without the role: HTTP 409, body code \"MSG213\"."
+          ],
+          "id": "VOTE_API_IT09",
+          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Only_the_current_chair_or_secretary_manage_drafts_and_only_before_or_during_the_sitting)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting in Approved with a Chair, a Secretary and a Member."
+          ],
+          "procedure": [
+            "Sign in as the Member and send POST /api/meetings/{meetingId}/votes with a valid draft body.",
+            "Sign in as the Chair and repeat it."
+          ]
+        },
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes with openImmediately opens at once and leaves no draft on failure.",
+          "expected": [
+            "Happy path: HTTP 200, body code \"MSG217\".",
+            "No eligible voter: HTTP 409, body code \"MSG220\", and no draft is left behind."
+          ],
+          "id": "VOTE_API_IT10",
+          "note": "UC-53 | UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_from_the_form_opens_at_once_or_leaves_no_draft)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting in InProgress chaired by the Chair."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes with a valid draft body plus \"openImmediately\": true and eligibleRoles covering the roster.",
+            "Repeat it with \"eligibleRoles\": [\"Guest\"] while no Guest may vote."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "PUT /api/meetings/{meetingId}/votes/{voteId}",
+      "uc": [
+        "UC-53"
+      ],
+      "cases": [
+        {
+          "description": "Verify PUT /api/meetings/{meetingId}/votes/{voteId} replaces the draft configuration.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG211\".",
+            "GET the vote shows the new title, options and roles."
+          ],
+          "id": "VOTE_API_IT11",
+          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote the Chair manages."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/{meetingId}/votes/{voteId}",
+            "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "Body: the full draft with a new title and new options."
+          ]
+        },
+        {
+          "description": "Verify PUT /api/meetings/{meetingId}/votes/{voteId} with openImmediately keeps the old draft when the vote cannot open.",
+          "expected": [
+            "HTTP 409 with the open error (e.g. code \"MSG219\").",
+            "The draft keeps its previous configuration: GET shows the old title and options."
+          ],
+          "id": "VOTE_API_IT12",
+          "note": "UC-53 | UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_from_the_edit_form_keeps_the_edits_only_when_the_vote_opens)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote and a second, already open vote in an InProgress meeting."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/{meetingId}/votes/{draftId} with a new title plus \"openImmediately\": true.",
+            "Send GET /api/meetings/{meetingId}/votes/{draftId} and check the title."
+          ]
+        },
+        {
+          "description": "Verify PUT /api/meetings/{meetingId}/votes/{voteId} answers 404 for a Member.",
+          "expected": [
+            "HTTP 404 Not Found, body code \"MSG205\"."
+          ],
+          "id": "VOTE_API_IT13",
+          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote in a meeting with a Member."
+          ],
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/{meetingId}/votes/{voteId} with a valid draft body."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/votes/{voteId}",
+      "uc": [
+        "UC-53"
+      ],
+      "cases": [
+        {
+          "description": "Verify DELETE /api/meetings/{meetingId}/votes/{voteId} removes a draft.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG212\".",
+            "The vote is gone from the list."
+          ],
+          "id": "VOTE_API_IT14",
+          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote the Chair manages."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send DELETE /api/meetings/{meetingId}/votes/{voteId} with Authorization: Bearer <accessToken>."
+          ]
+        },
+        {
+          "description": "Verify DELETE /api/meetings/{meetingId}/votes/{voteId} answers 404 for a Member and 409 for an open vote.",
+          "expected": [
+            "Member: HTTP 404, body code \"MSG205\".",
+            "Open vote by the Chair: HTTP 409, body code \"MSG213\"."
+          ],
+          "id": "VOTE_API_IT15",
+          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote and an open vote in the same meeting."
+          ],
+          "procedure": [
+            "Sign in as the Member and send DELETE for the draft vote.",
+            "Sign in as the Chair and send DELETE for the open vote."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents",
+      "uc": [
+        "UC-76a"
+      ],
+      "cases": [
+        {
+          "description": "Verify attaching meeting documents to a draft links them in one save.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG265\" with \"documents\": the linked meeting documents.",
+            "The vote detail shows the documents; the meeting documents stay in the meeting."
+          ],
+          "id": "VOTE_API_IT16",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Secretary_attaches_meeting_documents_to_a_draft_and_detaches_one_that_stays_in_the_meeting)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote and two meeting documents the Chair may read."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents",
+            "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "Body: { \"meetingDocumentIds\": [\"<doc1>\", \"<doc2>\"] }"
+          ]
+        },
+        {
+          "description": "Verify attaching a document that is not in the meeting answers 404.",
+          "expected": [
+            "HTTP 404, body code \"MSG170\".",
+            "Nothing is linked."
+          ],
+          "id": "VOTE_API_IT17",
+          "note": "UC-76a | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote; a document id from another meeting."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents with Body: { \"meetingDocumentIds\": [\"<foreign doc>\"] }."
+          ]
+        },
+        {
+          "description": "Verify attaching an already linked document answers 409.",
+          "expected": [
+            "HTTP 409, body code \"MSG266\"."
+          ],
+          "id": "VOTE_API_IT18",
+          "note": "UC-76a | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote with one linked document."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents with the already linked document id."
+          ]
+        },
+        {
+          "description": "Verify attaching documents to a vote that is no longer a draft answers 409.",
+          "expected": [
+            "HTTP 409, body code \"MSG213\"."
+          ],
+          "id": "VOTE_API_IT19",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Documents_change_only_while_the_vote_is_a_draft_and_only_by_the_chair_or_secretary)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote in an InProgress meeting."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{openVoteId}/documents with a meeting document id."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library",
+      "uc": [
+        "UC-76a"
+      ],
+      "cases": [
+        {
+          "description": "Verify attaching from the personal library adds the files to the meeting and links them.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG265\".",
+            "The files become meeting documents and appear on the vote."
+          ],
+          "id": "VOTE_API_IT20",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Chair_attaches_from_the_library_and_from_the_computer_adding_them_to_the_meeting_in_the_same_save)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote; a PDF in the Chair's personal library."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library",
+            "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "Body: { \"documentIds\": [\"<library doc>\"] }"
+          ]
+        },
+        {
+          "description": "Verify attaching from the library with no documents answers 400.",
+          "expected": [
+            "HTTP 400, body code \"MSG249\"."
+          ],
+          "id": "VOTE_API_IT21",
+          "note": "UC-76a | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library with Body: { \"documentIds\": [] }."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload",
+      "uc": [
+        "UC-76a"
+      ],
+      "cases": [
+        {
+          "description": "Verify uploading a file to a draft adds it to the meeting and links it in the same save.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG265\" with \"documents\": the new meeting document.",
+            "The file is also in the uploader's personal library."
+          ],
+          "id": "VOTE_API_IT22",
+          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Chair_attaches_from_the_library_and_from_the_computer_adding_them_to_the_meeting_in_the_same_save)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote; a PDF file under 50 MB on the test machine."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
+          ]
+        },
+        {
+          "description": "Verify uploading a non-PDF/DOCX file answers 400.",
+          "expected": [
+            "HTTP 400, body code \"MSG164\".",
+            "Nothing is added to the meeting or the vote."
+          ],
+          "id": "VOTE_API_IT23",
+          "note": "UC-76a | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote; a .txt file on the test machine."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the .txt file."
+          ]
+        },
+        {
+          "description": "Verify uploading more than 10 files or 200 MB answers 400.",
+          "expected": [
+            "HTTP 400, body code \"MSG288\".",
+            "Nothing is added to the meeting or the vote."
+          ],
+          "id": "VOTE_API_IT24",
+          "note": "UC-76a | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote; 11 small PDFs on the test machine."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the 11 files."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "DELETE /api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId}",
+      "uc": [
+        "UC-76b"
+      ],
+      "cases": [
+        {
+          "description": "Verify detaching a document removes the link but keeps the meeting document.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG268\".",
+            "The vote detail no longer shows the document; GET /api/meetings/{meetingId}/documents still lists it."
+          ],
+          "id": "VOTE_API_IT25",
+          "note": "UC-76b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Secretary_attaches_meeting_documents_to_a_draft_and_detaches_one_that_stays_in_the_meeting)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote with one linked document."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send DELETE /api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId} with Authorization: Bearer <accessToken>."
+          ]
+        },
+        {
+          "description": "Verify detaching a document that was never linked answers 404.",
+          "expected": [
+            "HTTP 404, body code \"MSG269\"."
+          ],
+          "id": "VOTE_API_IT26",
+          "note": "UC-76b | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote; a meeting document that was never linked to it."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send DELETE for that document id."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/votes/{voteId}/open",
+      "uc": [
+        "UC-54"
+      ],
+      "cases": [
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/open opens the vote and fixes the voter list.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG217\".",
+            "The vote status is Open; the eligible list is the active role holders at this instant (later roster changes change nothing)."
+          ],
+          "id": "VOTE_API_IT27",
+          "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_fixes_who_may_vote_from_the_selected_roles_regardless_of_attendance)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote with eligible roles covering the roster, in an InProgress meeting chaired by the Chair."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
+          ]
+        },
+        {
+          "description": "Verify opening a draft answers 409 when the caller is not the current Chair.",
+          "expected": [
+            "HTTP 409, body code \"MSG218\"."
+          ],
+          "id": "VOTE_API_IT28",
+          "note": "UC-54 | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote in an InProgress meeting."
+          ],
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
+          ]
+        },
+        {
+          "description": "Verify opening a second vote while one is open answers 409.",
+          "expected": [
+            "HTTP 409, body code \"MSG219\".",
+            "The first vote stays open; the draft stays a draft."
+          ],
+          "id": "VOTE_API_IT29",
+          "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Simultaneous_opens_leave_one_vote_open)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote and a draft vote in the same InProgress meeting."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{draftId}/open with Authorization: Bearer <accessToken>."
+          ]
+        },
+        {
+          "description": "Verify opening a vote with nobody eligible answers 409 and does not open.",
+          "expected": [
+            "HTTP 409, body code \"MSG220\".",
+            "The vote stays a draft."
+          ],
+          "id": "VOTE_API_IT30",
+          "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_vote_with_nobody_eligible_does_not_open)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A draft vote whose eligible roles match nobody in the meeting."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/votes/{voteId}/ballots",
+      "uc": [
+        "UC-55"
+      ],
+      "cases": [
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/ballots records one ballot.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG227\".",
+            "The option count grows by one."
+          ],
+          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote in an InProgress meeting; a Member on the eligible list."
+          ],
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots",
+            "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "Body: { \"optionId\": \"<one option id from the vote detail>\" }"
+          ],
+          "id": "VOTE_API_IT31"
+        },
+        {
+          "description": "Verify a second ballot from the same voter answers 409 and changes nothing.",
+          "expected": [
+            "HTTP 409, body code \"MSG226\".",
+            "The counts stay as after the first ballot."
+          ],
+          "note": "UC-55 | BR-265 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice; Simultaneous_ballots_from_one_person_record_exactly_one)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote in an InProgress meeting; a Member on the eligible list who has already voted."
+          ],
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<the other option id>\" }.",
+            "Send GET /api/meetings/{meetingId}/votes/{voteId} and check the counts."
+          ],
+          "id": "VOTE_API_IT32"
+        },
+        {
+          "description": "Verify a voter outside the fixed eligible list answers 409.",
+          "expected": [
+            "HTTP 409, body code \"MSG224\".",
+            "No ballot is saved."
+          ],
+          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Only_holders_of_the_selected_roles_at_opening_may_vote)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote whose eligible list has no Member."
+          ],
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
+          ],
+          "id": "VOTE_API_IT33"
+        },
+        {
+          "description": "Verify voting on a vote that is no longer open answers 409.",
+          "expected": [
+            "HTTP 409, body code \"MSG225\"."
+          ],
+          "note": "UC-55 | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A closed vote; a Member who was eligible."
+          ],
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
+          ],
+          "id": "VOTE_API_IT34"
+        },
+        {
+          "description": "Verify a ballot without an optionId answers 400.",
+          "expected": [
+            "HTTP 400, body code \"MSG222\".",
+            "No ballot is saved."
+          ],
+          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote; a Member on the eligible list."
+          ],
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: {}."
+          ],
+          "id": "VOTE_API_IT35"
+        },
+        {
+          "description": "Verify a ballot with an optionId from another vote answers 400.",
+          "expected": [
+            "HTTP 400, body code \"MSG223\".",
+            "No ballot is saved."
+          ],
+          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote; a Member on the eligible list; an option id from another vote."
+          ],
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<foreign option id>\" }."
+          ],
+          "id": "VOTE_API_IT36"
+        },
+        {
+          "description": "Verify a voter with unread vote documents answers 409 until every document is confirmed read.",
+          "expected": [
+            "HTTP 409, body code \"MSG252\" with \"documents\": the unread vote documents.",
+            "After confirming each document read (POST .../read-confirmation with lastPageReached true), the ballot returns HTTP 200, code \"MSG227\"."
+          ],
+          "note": "UC-55 | UC-74 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote with one linked document; a Member on the eligible list who has not confirmed it."
+          ],
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }.",
+            "Confirm the document read, then repeat step 2."
+          ],
+          "id": "VOTE_API_IT37"
+        },
+        {
+          "description": "Verify a verified Guest votes once by invitation.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG227\".",
+            "A second ballot answers 409, code \"MSG226\"."
+          ],
+          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_verified_guest_votes_once_by_invitation)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote whose eligible roles include Guest; a verified Guest session for the meeting."
+          ],
+          "procedure": [
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Authorization: Bearer <Guest access token> and Body: { \"optionId\": \"<option id>\" }.",
+            "Repeat step 1."
+          ],
+          "id": "VOTE_API_IT38"
+        }
+      ]
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/votes/{voteId}/close",
+      "uc": [
+        "UC-56"
+      ],
+      "cases": [
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/close closes the vote with its tally.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG229\" with \"result\": { \"ballotCount\", \"options\": [ { \"count\", \"percentage\" } ] }.",
+            "No further ballot is accepted (HTTP 409, code \"MSG225\")."
+          ],
+          "id": "VOTE_API_IT39",
+          "note": "UC-56 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (After_the_meeting_ends_the_chair_still_closes_and_concludes_once)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote with ballots, in a meeting the Chair chairs."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/close with Authorization: Bearer <accessToken>.",
+            "Sign in as a voter and send a ballot."
+          ]
+        },
+        {
+          "description": "Verify closing an open vote answers 409 for anyone but the current Chair.",
+          "expected": [
+            "HTTP 409, body code \"MSG230\"."
+          ],
+          "id": "VOTE_API_IT40",
+          "note": "UC-56 | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote in an InProgress meeting."
+          ],
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/close with Authorization: Bearer <accessToken>."
+          ]
+        }
+      ]
+    },
+    {
+      "title": "POST /api/meetings/{meetingId}/votes/{voteId}/conclusion",
+      "uc": [
+        "UC-57"
+      ],
+      "cases": [
+        {
+          "description": "Verify POST /api/meetings/{meetingId}/votes/{voteId}/conclusion records the conclusion once.",
+          "expected": [
+            "HTTP 200 OK, body code \"MSG235\".",
+            "The detail shows the conclusion; recording again answers 409, code \"MSG233\"."
+          ],
+          "id": "VOTE_API_IT41",
+          "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (After_the_meeting_ends_the_chair_still_closes_and_concludes_once)",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A closed vote with no conclusion, in a meeting the Chair chairs."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion",
+            "Headers: Authorization: Bearer <accessToken>; Content-Type: application/json",
+            "Body: { \"conclusion\": \"Passed\", \"note\": \"Đa số thông qua.\" }",
+            "Repeat step 2 with \"conclusion\": \"NotPassed\"."
+          ]
+        },
+        {
+          "description": "Verify a conclusion outside Passed/NotPassed/Deferred answers 400.",
+          "expected": [
+            "HTTP 400, body code \"MSG232\"."
+          ],
+          "id": "VOTE_API_IT42",
+          "note": "UC-57 | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A closed vote with no conclusion."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Maybe\", \"note\": \"\" }."
+          ]
+        },
+        {
+          "description": "Verify recording a conclusion answers 409 when the vote is not closed.",
+          "expected": [
+            "HTTP 409, body code \"MSG234\"."
+          ],
+          "id": "VOTE_API_IT43",
+          "note": "UC-57 | Manual only",
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An open vote in an InProgress meeting."
+          ],
+          "procedure": [
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Passed\" }."
+          ]
+        }
+      ]
+    }
+  ]
+}

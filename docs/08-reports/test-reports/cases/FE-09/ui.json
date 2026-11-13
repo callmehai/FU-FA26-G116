@@ -1,0 +1,60 @@
+{
+  "feature": "FE-09",
+  "code": "REC",
+  "sheet": "Recording",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "Recording List & Playback",
+      "uc": [
+        "UC-43a",
+        "UC-43b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Download Recording",
+      "uc": [
+        "UC-43c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Record Room Microphone",
+      "uc": [
+        "UC-44a",
+        "UC-44b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Upload Audio File",
+      "uc": [
+        "UC-44c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Delete Take & Recording",
+      "uc": [
+        "UC-44d",
+        "UC-44e"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Personal Microphone Clips",
+      "uc": [
+        "UC-80"
+      ],
+      "cases": []
+    },
+    {
+      "title": "My Recorded Speech",
+      "uc": [
+        "UC-80"
+      ],
+      "cases": []
+    }
+  ]
+}

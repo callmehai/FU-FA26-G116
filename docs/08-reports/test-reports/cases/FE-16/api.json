@@ -1,0 +1,92 @@
+{
+  "feature": "FE-16",
+  "code": "CAL",
+  "sheet": "Calendar",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "GET /api/calendar/shares",
+      "uc": [
+        "UC-84f"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/calendar/share-candidates",
+      "uc": [
+        "UC-84a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/calendar/shares",
+      "uc": [
+        "UC-84a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/calendar/shares/direct",
+      "uc": [
+        "UC-84b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/calendar/shares/{id}/accept",
+      "uc": [
+        "UC-84c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/calendar/shares/{id}/decline",
+      "uc": [
+        "UC-84c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "PATCH /api/calendar/shares/{id}",
+      "uc": [
+        "UC-84d"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/calendar/shares/{id}/withdraw",
+      "uc": [
+        "UC-84e"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/calendar/shares/{id}/end",
+      "uc": [
+        "UC-84e"
+      ],
+      "cases": []
+    },
+    {
+      "title": "GET /api/calendar/shared-week",
+      "uc": [
+        "UC-85c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/calendar/slots",
+      "uc": [
+        "UC-85a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "POST /api/calendar/slots/draft",
+      "uc": [
+        "UC-85b"
+      ],
+      "cases": []
+    }
+  ]
+}

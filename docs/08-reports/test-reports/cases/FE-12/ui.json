@@ -1,0 +1,64 @@
+{
+  "feature": "FE-12",
+  "code": "MIN",
+  "sheet": "Minutes",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "Generate Draft Minutes",
+      "uc": [
+        "UC-59"
+      ],
+      "cases": []
+    },
+    {
+      "title": "View Minutes",
+      "uc": [
+        "UC-58"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Edit Minutes",
+      "uc": [
+        "UC-60"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Export to Word",
+      "uc": [
+        "UC-60"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Submit Minutes",
+      "uc": [
+        "UC-61"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Approve & Issue Minutes",
+      "uc": [
+        "UC-64"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Return Minutes",
+      "uc": [
+        "UC-65"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Correct Issued Minutes",
+      "uc": [
+        "UC-83"
+      ],
+      "cases": []
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "feature": "FE-02",
+  "module": "USER",
+  "sheet": "User.Create",
+  "description": "User creation rules: valid input creates an active account; validation, duplicate email and unknown role are refused.",
+  "precondition": "Admin actor with user-management capability; roles seeded.",
+  "methods": [
+    {
+      "method": "UserService.CreateAsync",
+      "file": "backend/TrustCabinet.Infrastructure/Users/UserService.cs",
+      "line": 61,
+      "cases": []
+    }
+  ]
+}

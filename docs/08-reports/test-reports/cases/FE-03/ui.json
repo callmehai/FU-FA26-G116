@@ -1,0 +1,37 @@
+{
+  "feature": "FE-03",
+  "code": "RBAC",
+  "sheet": "Access Control",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "Role & Permission Matrix",
+      "uc": [
+        "UC-10",
+        "UC-11"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Manage Roles",
+      "uc": [
+        "UC-12"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Audit Log",
+      "uc": [
+        "UC-13"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Capability-gated Screens",
+      "uc": [
+        "UC-10"
+      ],
+      "cases": []
+    }
+  ]
+}

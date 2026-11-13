@@ -1,0 +1,50 @@
+{
+  "feature": "FE-02",
+  "code": "USER",
+  "sheet": "User Management",
+  "precondition": "",
+  "groups": [
+    {
+      "title": "User List & Search",
+      "uc": [
+        "UC-05"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Create User",
+      "uc": [
+        "UC-06a"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Update User",
+      "uc": [
+        "UC-06b"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Deactivate & Reactivate User",
+      "uc": [
+        "UC-06c"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Assign Role",
+      "uc": [
+        "UC-08"
+      ],
+      "cases": []
+    },
+    {
+      "title": "Password Reset",
+      "uc": [
+        "UC-07"
+      ],
+      "cases": []
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "description": "Eligible voter freeze: who may vote is fixed when the vote opens.",
+  "feature": "FE-11",
+  "methods": [
+    {
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "Meeting with active Chair and active Member; roles: [Chair, Member].",
+          "log": "N/A",
+          "note": "UC-54 · BR-190 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (Eligible_users_are_the_active_readable_holders_of_the_selected_roles)",
+          "preconditions": [
+            "Meeting with an active Chair and an active Member who may read it."
+          ],
+          "return": "Both user ids, distinct and ordered.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "Meeting with an active Member who has not marked attendance; roles: [Member].",
+          "log": "N/A",
+          "note": "UC-54 · BR-190 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (Attendance_plays_no_part_in_eligibility)",
+          "preconditions": [
+            "Meeting with an active Member who may read it and has no attendance row."
+          ],
+          "return": "The Member id; attendance plays no part.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "Meeting with an active Chair and a deactivated Member; roles: [Chair, Member].",
+          "log": "N/A",
+          "note": "UC-54 · BR-190 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (A_deactivated_holder_is_excluded)",
+          "preconditions": [
+            "Meeting with an active Chair and a deactivated Member."
+          ],
+          "return": "Only the Chair id.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "Meeting with an active Chair; roles: [Guest].",
+          "log": "N/A",
+          "note": "UC-54 · BR-190 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (Nobody_eligible_means_an_empty_list)",
+          "preconditions": [
+            "Meeting with no Guest participants."
+          ],
+          "return": "Empty list; the vote cannot open (MSG220).",
+          "type": "Boundary"
+        }
+      ],
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "line": 91,
+      "method": "VoteRules.EligibleUsers"
+    }
+  ],
+  "module": "VOTE",
+  "precondition": "Meeting with participants and roles; selected eligible roles.",
+  "sheet": "Vote.EligibleUsers"
+}
