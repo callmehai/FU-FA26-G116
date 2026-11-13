@@ -100,7 +100,8 @@ public static class CallEndpoints
         {
             return (await request.ReadFromJsonAsync<JoinBody>(ct))?.RecordingNoticeAcknowledged == true;
         }
-        catch (JsonException)
+        // InvalidOperationException: a charset the reader does not know (application/json; charset=bogus).
+        catch (Exception error) when (error is JsonException or InvalidOperationException)
         {
             return false;
         }

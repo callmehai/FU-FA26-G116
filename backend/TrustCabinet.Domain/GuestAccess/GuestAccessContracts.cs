@@ -17,7 +17,7 @@ public sealed record GuestVerified(string AccessToken, DateTimeOffset ExpiresAt,
 public sealed record GuestSessionView(Guid SessionId, DateTimeOffset ExpiresAt, GuestMeetingView Meeting, string Email,
     string InvitedName, string? DisplayName, string? JobTitle, bool ProfileCompleted, bool CanDownload);
 
-/// <param name="RemainingAttempts">With MSG126: wrong codes the current code still takes before it locks (MSG372); null when no code is live.</param>
+/// <param name="RemainingAttempts">With MSG126: tries the current code still has, the last wrong one locking it (MSG372); null when no code is live.</param>
 public sealed record GuestAccessResult(GuestAccessFailure Failure = GuestAccessFailure.None, object? Data = null,
     int RetryAfterSeconds = 0, IReadOnlyDictionary<string, string[]>? Errors = null, int? RemainingAttempts = null);
 

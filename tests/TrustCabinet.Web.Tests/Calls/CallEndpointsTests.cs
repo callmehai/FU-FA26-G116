@@ -230,6 +230,9 @@ public sealed class CallEndpointsTests : IDisposable
                 HttpStatusCode.BadRequest, "MSG380");
         await AssertError(await client.PostAsync($"{CallPath}/join", new StringContent("recordingNoticeAcknowledged=true")),
             HttpStatusCode.BadRequest, "MSG380");
+        var unknownCharset = new StringContent("{\"recordingNoticeAcknowledged\":true}");
+        unknownCharset.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=bogus");
+        await AssertError(await client.PostAsync($"{CallPath}/join", unknownCharset), HttpStatusCode.BadRequest, "MSG380");
 
         var join = await client.PostAsJsonAsync($"{CallPath}/join", new { recordingNoticeAcknowledged = true });
         Assert.Equal(HttpStatusCode.OK, join.StatusCode);

@@ -89,7 +89,7 @@ Body `{ "token": "…", "code": "123456" }`. Chỉ mã mới nhất của lời 
 | HTTP | Tình huống |
 |---|---|
 | 200 | `{ "accessToken", "expiresAt", "meetingId", "profileCompleted": false }` — mã bị tiêu thụ, phiên mới được tạo |
-| 400 `MSG126` | Mã sai, hết hạn, đã dùng, chưa từng gửi, hoặc không phải 6 chữ số (EX-2). Mã sai (đủ 6 chữ số) làm tăng số lần sai, trừ khi đó là mã vừa bị thay bằng mã mới (Khách nhập mã cũ trước khi thư mới tới): vẫn `MSG126` nhưng không tính là lần sai. Khi còn mã đang hiệu lực, body có thêm `remainingAttempts` (số lần sai mã còn nhận trước khi khoá, sau lần này): `{ "code": "MSG126", "message", "remainingAttempts": 3 }`; mã hết hạn, đã dùng hoặc chưa từng gửi thì không có trường này |
+| 400 `MSG126` | Mã sai, hết hạn, đã dùng, chưa từng gửi, hoặc không phải 6 chữ số (EX-2). Mã sai (đủ 6 chữ số) làm tăng số lần sai, trừ khi đó là mã vừa bị thay bằng mã mới (Khách nhập mã cũ trước khi thư mới tới): vẫn `MSG126` nhưng không tính là lần sai. Khi còn mã đang hiệu lực, body có thêm `remainingAttempts` (số lần còn được thử sau lần này; lần sai cuối cùng khoá mã bằng `MSG372`): `{ "code": "MSG126", "message", "remainingAttempts": 3 }`; mã hết hạn, đã dùng hoặc chưa từng gửi thì không có trường này |
 | 400 `MSG372` | Mã đã bị khoá vì sai đủ 5 lần: lần sai thứ 5 và mọi lần nhập sau đó, kể cả mã đúng hay chuỗi không phải 6 chữ số. Phải gửi mã mới |
 | 404 `MSG371` | EX-1, kể cả khi lời mời bị thu hồi giữa lúc gửi mã và xác minh |
 | 503 `MSG374` | Không lưu được kết quả xác minh (EX-3); không có phiên nào được tạo |
