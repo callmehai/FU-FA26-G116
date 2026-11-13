@@ -24,7 +24,8 @@ Màn **Tìm giờ họp** ở `/calendar/find` (`routes.findTime`, `frontend/src
 - Điện thoại (≤640px): cài đặt thu thành thẻ tóm tắt + "Sửa điều kiện"; ô giờ cao 40px.
 
 Khác wireframe / để BA Final Review đối chiếu: tab "Lịch được chia sẻ" có ở **hai** nơi (Tìm giờ họp và Chia sẻ lịch, cùng
-component); đổi Chủ toạ bằng nút ↑/↓ thay vì kéo thả; `NewShareDialog` nhận thêm `initialPerson` để mở chọn sẵn một người.
+component); **không** hiện câu cố định BR-428 "Chỉ tính lịch đã được chia sẻ…" ở đầu trang (bỏ theo yêu cầu 13/11 — người
+chưa chia sẻ vẫn có cảnh báo riêng); "Cách cuộc họp khác" bỏ mức 1 giờ 30 phút (server vẫn nhận mọi bội 5 phút 0–240); đổi Chủ toạ bằng nút ↑/↓ thay vì kéo thả; `NewShareDialog` nhận thêm `initialPerson` để mở chọn sẵn một người.
 
 ## 1. Màn hình và quyền
 

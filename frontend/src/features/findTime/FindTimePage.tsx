@@ -214,8 +214,6 @@ export function FindTimePage() {
           ]}
           onChange={setTab}
         />
-        {/* BR-428: always shown, whatever the result. */}
-        <p className="find-note">Chỉ tính lịch đã được chia sẻ. Người được mời vẫn có thể bận.</p>
       </div>
 
       {tab === 'shared' ? (

@@ -42,7 +42,7 @@ const minutesLabel = (m: number) =>
   m < 60 ? `${m} phút` : m % 60 === 0 ? `${m / 60} giờ` : `${Math.floor(m / 60)} giờ ${m % 60} phút`
 
 export const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120, 180, 240, 480].map((m) => ({ value: String(m), label: minutesLabel(m) }))
-export const BUFFER_OPTIONS = [0, 15, 30, 45, 60, 90, 120, 180, 240].map((m) => ({
+export const BUFFER_OPTIONS = [0, 15, 30, 45, 60, 120, 180, 240].map((m) => ({
   value: String(m),
   label: m === 0 ? 'Không cách' : minutesLabel(m),
 }))
