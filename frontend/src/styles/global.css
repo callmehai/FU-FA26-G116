@@ -2147,6 +2147,13 @@ a.menu-item { text-decoration: none; }
 .date-pick-selected .date-pick-num { background: var(--brand); color: #fff; font-weight: 600; }
 .date-pick-day.date-pick-selected:hover .date-pick-num { background: var(--brand-ink); }
 .time-field-menu { max-height: 264px; font-variant-numeric: tabular-nums; }
+.time-columns { display: flex; gap: 4px; max-height: none; overflow: visible; font-variant-numeric: tabular-nums; }
+.time-column { width: 64px; max-height: 264px; margin: 0; padding: 0; overflow-y: auto; list-style: none; overscroll-behavior: contain; scrollbar-width: thin; }
+.time-column + .time-column { padding-left: 4px; border-left: 1px solid var(--line-soft); }
+.time-column-option { display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 6px; cursor: pointer; }
+.time-column-option:hover { background: var(--brand-wash); }
+.time-column-option[aria-selected='true'] { background: var(--brand); color: #fff; font-weight: 600; }
+@media (pointer: coarse) { .time-column-option { height: 40px; } }
 .date-pick-swatch-today { box-shadow: inset 0 0 0 2px var(--gold); }
 .date-pick-swatch-viewed { border-radius: 3px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--edge-blue); }
 .calendar-toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }

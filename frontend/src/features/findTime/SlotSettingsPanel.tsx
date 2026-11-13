@@ -100,10 +100,10 @@ export function SlotSettingsPanel({
         <span>Giờ làm việc</span>
         <div className="find-pair-row">
           <label htmlFor={`${id}-ws`} className="visually-hidden">Giờ bắt đầu làm việc</label>
-          <TimeField id={`${id}-ws`} value={value.workStart} onChange={(v) => set('workStart', v)} invalid={!!errors.workStart} />
+          <TimeField id={`${id}-ws`} value={value.workStart} onChange={(v) => set('workStart', v)} invalid={!!errors.workStart} columns />
           <Icon name="arrowRight" size={16} />
           <label htmlFor={`${id}-we`} className="visually-hidden">Giờ kết thúc làm việc</label>
-          <TimeField id={`${id}-we`} value={value.workEnd} onChange={(v) => set('workEnd', v)} invalid={!!errors.workEnd} />
+          <TimeField id={`${id}-we`} value={value.workEnd} onChange={(v) => set('workEnd', v)} invalid={!!errors.workEnd} columns />
         </div>
         {error(errors.workStart) ?? error(errors.workEnd)}
       </fieldset>
@@ -116,10 +116,10 @@ export function SlotSettingsPanel({
         {value.lunch && (
           <div className="find-pair-row">
             <label htmlFor={`${id}-ls`} className="visually-hidden">Bắt đầu nghỉ trưa</label>
-            <TimeField id={`${id}-ls`} value={value.lunchStart} onChange={(v) => set('lunchStart', v)} invalid={!!errors.lunchStart} />
+            <TimeField id={`${id}-ls`} value={value.lunchStart} onChange={(v) => set('lunchStart', v)} invalid={!!errors.lunchStart} columns />
             <Icon name="arrowRight" size={16} />
             <label htmlFor={`${id}-le`} className="visually-hidden">Kết thúc nghỉ trưa</label>
-            <TimeField id={`${id}-le`} value={value.lunchEnd} onChange={(v) => set('lunchEnd', v)} invalid={!!errors.lunchEnd} />
+            <TimeField id={`${id}-le`} value={value.lunchEnd} onChange={(v) => set('lunchEnd', v)} invalid={!!errors.lunchEnd} columns />
           </div>
         )}
         {error(errors.lunchStart) ?? error(errors.lunchEnd)}
