@@ -163,14 +163,21 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   const navigate = useNavigate()
   const home = useMeetingHome(meeting.id)
   const recheckGuest = useGuest()?.recheck
+  // A guest's meeting page closes with the meeting (UC-04 EX-1), so a room that is over has nowhere to send them back.
+  const asGuest = recheckGuest !== undefined
 
   useEffect(() => {
     function onDisconnected(reason?: DisconnectReason) {
       if (leavingRef.current) return
       setPhase({ kind: 'left', reason })
-      // Put out by the server: for a guest that is a revoked invitation or a lapsed session, and the guest page
-      // then replaces the room with its closed screen, taking the meeting off the screen.
-      if (reason === DisconnectReason.PARTICIPANT_REMOVED) recheckGuest?.()
+      // Put out by the server — for a guest a revoked invitation or a lapsed session — or the meeting ended: the guest
+      // page then replaces the room with its closed screen, taking the meeting off the screen.
+      if (
+        reason === DisconnectReason.PARTICIPANT_REMOVED ||
+        reason === DisconnectReason.ROOM_DELETED ||
+        reason === DisconnectReason.ROOM_CLOSED
+      )
+        recheckGuest?.()
     }
     room.on(RoomEvent.Disconnected, onDisconnected)
     return () => {
@@ -195,7 +202,8 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
       Cancelled: roomMessage.cancelled,
       Open: '',
     }[call.status]
-    return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} />
+    const over = call.status === 'Ended' || call.status === 'Cancelled'
+    return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!(asGuest && over)} />
   }
 
   if (!call.available) {
@@ -209,7 +217,7 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   if (phase.kind === 'left') {
     const { text, canRejoin } = disconnectMessage(phase.reason)
     return (
-      <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text}>
+      <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!asGuest || canRejoin}>
         {canRejoin && (
           <button type="button" className="btn btn-primary" onClick={() => setPhase({ kind: 'lobby' })}>
             Vào lại
@@ -634,11 +642,14 @@ export function LobbyMessage({
   meetingId,
   title,
   text,
+  showHome = true,
   children,
 }: {
   meetingId: string
   title: string
   text: string
+  /** False when the meeting page is gone too: a guest's, once the meeting ended or the invitation was revoked. */
+  showHome?: boolean
   children?: ReactNode
 }) {
   const home = useMeetingHome(meetingId)
@@ -648,9 +659,11 @@ export function LobbyMessage({
         <h1>{text}</h1>
         <p className="prejoin-meeting">{title}</p>
         <div className="prejoin-message-actions">
-          <Link className="btn btn-outline" to={home}>
-            Về trang cuộc họp
-          </Link>
+          {showHome && (
+            <Link className="btn btn-outline" to={home}>
+              Về trang cuộc họp
+            </Link>
+          )}
           {children}
         </div>
       </main>

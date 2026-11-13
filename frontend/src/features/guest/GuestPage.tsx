@@ -4,11 +4,12 @@ import { setGuestAuth } from '../../api/client'
 import { getGuestSession, openInvitation } from '../../api/guest'
 import { BrandMark } from '../../components/BrandMark'
 import { Icon } from '../../components/Icon'
+import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { GuestInvitation, GuestSession } from '../../types/guest'
 import { GuestContext, type GuestScope } from './guestContext'
 import { GuestProfileForm } from './GuestProfileForm'
-import { dropGuestSession, readGuestEntry, updateGuestEntry } from './guestStore'
+import { dropGuestSession, guestSessionExpired, readGuestEntry, updateGuestEntry } from './guestStore'
 import { GuestVerifyForm } from './GuestVerifyForm'
 
 /** MSG371's text, for a link the page cannot even try: no token in it, or a malformed invitation id. */
@@ -51,10 +52,14 @@ export function GuestPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const [gate, setGate] = useState<Gate>({ kind: 'checking' })
+  const { clear: clearToasts } = useToast()
   // What the gate shows, for the re-check, which only has work to do while the meeting is on screen.
   useEffect(() => {
     shownGate = gate.kind
-  }, [gate.kind])
+    // A toast confirms something on the screen it came from ("Đã ghi nhận phản hồi lời mời."); a gate that
+    // replaces the meeting takes it down. Into the meeting it stays: MSG376 confirms the name just saved.
+    if (gate.kind !== 'in') clearToasts()
+  }, [gate.kind, clearToasts])
 
   // The link token travels in the fragment, never to a server; keep it, then drop it from the address bar.
   // An id that is no GUID can open nothing, so nothing is kept for it.
@@ -119,7 +124,10 @@ export function GuestPage() {
     rechecking = true
     try {
       const token = readGuestEntry(invitationId).accessToken
-      if (!token) return await enter()
+      // No token while the meeting is on screen: past its time (MSG378, as the server would say), or gone with
+      // "Thoát" in another tab of this browser, which shares the storage — then say so as that tab does, rather
+      // than ask for a code nobody asked for.
+      if (!token) return guestSessionExpired(invitationId) ? await enter(SESSION_ENDED) : setGate({ kind: 'signedOut' })
       const session = await getGuestSession(token)
       setGate((g) =>
         g.kind === 'in' && JSON.stringify(g.session) !== JSON.stringify(session) ? { kind: 'in', session } : g,

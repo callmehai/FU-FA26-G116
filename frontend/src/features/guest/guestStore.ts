@@ -44,6 +44,12 @@ export function readGuestEntry(invitationId: string): GuestEntry {
   return entry
 }
 
+/** A session this browser still holds but past its time — not one taken away by "Thoát" in another tab. */
+export function guestSessionExpired(invitationId: string) {
+  const entry = readAll()[invitationId.toLowerCase()]
+  return !!entry?.accessToken && !!entry.expiresAt && Date.parse(entry.expiresAt) <= Date.now()
+}
+
 /** Merges into the invitation's entry; `undefined` fields are removed. */
 export function updateGuestEntry(invitationId: string, change: GuestEntry) {
   const entries = readAll()

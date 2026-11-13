@@ -16,6 +16,8 @@ import type { GuestInvitation } from '../../types/guest'
 import { readGuestEntry, updateGuestEntry } from './guestStore'
 
 const DIGITS = 6
+/** From the third miss of five, a wrong code says how many tries are left, so the lock (MSG372) is no surprise. */
+const WARN_FROM_REMAINING = 2
 
 /** "45 giây", "3 phút", "2 giờ 5 phút": MSG379's wait can run to hours. */
 function formatWait(seconds: number) {
@@ -29,8 +31,9 @@ function formatWait(seconds: number) {
 /**
  * Screen 1.3's code step (UC-04 steps 2–4). A code is sent as the screen opens — the email's link is the
  * request for one — and "Gửi lại mã" waits as long as the backend says (MSG373, MSG379), counted down
- * from its `retryAfterSeconds`, never guessed. A wrong code (MSG126) keeps the boxes for a fix; a code
- * locked after five misses (MSG372) can only be replaced, so the resend link is what the message points to.
+ * from its `retryAfterSeconds`, never guessed. A wrong code (MSG126) empties the boxes and goes back to the first,
+ * so the next code is typed from the start, and says how many tries are left near the end; a code locked after
+ * five misses (MSG372) can only be replaced, so the resend link is what the message points to.
  */
 export function GuestVerifyForm({
   invitationId,
@@ -158,8 +161,17 @@ export function GuestVerifyForm({
     } catch (err) {
       setPending(false)
       if (isApiError(err, 404)) return onClosed(errorMessage(err))
-      setError({ message: errorMessage(err), locked: isApiError(err, 400, 'MSG372') })
-      if (!isApiError(err, 400, 'MSG372')) boxes.current[DIGITS - 1]?.select()
+      const locked = isApiError(err, 400, 'MSG372')
+      const left = isApiError(err, 400, 'MSG126') ? err.body?.remainingAttempts : undefined
+      setError({
+        message: left !== undefined && left <= WARN_FROM_REMAINING ? `${errorMessage(err)} Còn ${left} lần thử.` : errorMessage(err),
+        locked,
+      })
+      if (!locked) {
+        // As after "Gửi lại mã": the next code goes in from the first box, not onto the end of the wrong one.
+        setDigits(Array(DIGITS).fill(''))
+        boxes.current[0]?.focus()
+      }
     }
   }
 
@@ -231,7 +243,7 @@ export function GuestVerifyForm({
           ) : (
             <small id="guest-code-note" className="field-hint">
               {recent
-                ? 'Mã vừa gửi chưa tới 1 phút. Đã dùng mã đó thì chờ gửi lại mã mới.'
+                ? 'Mã đã được gửi, vui lòng nhập mã mới nhất hoặc yêu cầu gửi lại mã.'
                 : validMinutes
                   ? `Mã có hiệu lực trong ${validMinutes} phút.`
                   : 'Mã chỉ dùng được một lần.'}

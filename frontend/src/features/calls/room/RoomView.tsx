@@ -96,9 +96,8 @@ const CHAT_MAX = 1000
  * only a touch screen is treated the same even when its browser reports the API, so a phone never
  * shows a button that would fail. Watching someone else present still works everywhere.
  */
-const CAN_SHARE_SCREEN =
-  typeof navigator.mediaDevices?.getDisplayMedia === 'function' &&
-  !window.matchMedia('(hover: none) and (pointer: coarse)').matches
+const TOUCH_ONLY = window.matchMedia('(hover: none) and (pointer: coarse)').matches
+const CAN_SHARE_SCREEN = typeof navigator.mediaDevices?.getDisplayMedia === 'function' && !TOUCH_ONLY
 
 const ROLE_ORDER: Record<MeetingRole, number> = { Chair: 0, Secretary: 1, Member: 2, Guest: 3 }
 
@@ -1228,7 +1227,8 @@ function ChatPanel({
           rows={2}
           maxLength={CHAT_MAX}
           value={draft}
-          placeholder="Nhập tin nhắn — Enter để gửi, Shift+Enter xuống dòng"
+          // A phone's keyboard has no Shift+Enter to speak of: the hint is a desktop's.
+          placeholder={TOUCH_ONLY ? 'Nhập tin nhắn' : 'Nhập tin nhắn — Enter để gửi, Shift+Enter xuống dòng'}
           aria-label="Tin nhắn"
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={onKeyDown}

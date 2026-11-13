@@ -4,6 +4,8 @@ export type ToastTone = 'success' | 'error' | 'info'
 
 export interface ToastApi {
   show: (message: string, tone?: ToastTone) => void
+  /** Takes every toast down, for a screen that replaces the one they confirmed. */
+  clear: () => void
 }
 
 /** Kept apart from the provider so the module exports no component — fast refresh needs that. */

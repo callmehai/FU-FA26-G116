@@ -93,15 +93,20 @@ export function GuestProfileForm({
             autoComplete="name"
             autoFocus
             aria-invalid={!!errors.displayName}
-            aria-describedby={errors.displayName ? 'guest-display-name-error' : undefined}
+            aria-describedby={errors.displayName ? 'guest-display-name-error' : 'guest-display-name-hint'}
             onChange={(e) => {
               setDisplayName(e.target.value)
               setErrors((s) => ({ ...s, displayName: undefined }))
             }}
           />
-          {errors.displayName && (
+          {errors.displayName ? (
             <small id="guest-display-name-error" className="field-error">
               {errors.displayName}
+            </small>
+          ) : (
+            // Declared once per invitation (MSG381): say so before the guest commits to a name.
+            <small id="guest-display-name-hint" className="field-hint">
+              Tên hiển thị sẽ không thể thay đổi sau bước này.
             </small>
           )}
         </div>
