@@ -459,7 +459,7 @@ message khi sửa thiết kế. Tất cả feature còn `NEEDS REVIEW` theo bả
 | UC-01 / FE-01 | [UC01_SignIn.txt](../06-sequencediagram/auth/UC01_SignIn.txt) | `AuthenticationService → signIn` | Trùng tên; DCD-02 |
 | UC-02 / FE-01 | [UC02_SignInWithGoogle.txt](../06-sequencediagram/auth/UC02_SignInWithGoogle.txt) | `AuthenticationService → signInWithGoogle` | Trùng tên; DCD-03 |
 | UC-03 / FE-01 | [UC03_SignOut.txt](../06-sequencediagram/auth/UC03_SignOut.txt) | `AuthenticatedPage → signOut / removeJwtToken` | ≈ UI event; DCD-04 |
-| UC-04 / FE-01 | [UC04_AccessMeetingViaGuestInvitation.txt](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt) | `GuestAccessService → open / sendCode / verify / saveProfile / signOut` | Khớp sequence sau E2E 12/11/2026 |
+| UC-04 / FE-01 | [UC04_AccessMeetingViaGuestInvitation.txt](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt) | `GuestAccessService → open / sendCode / verify / saveProfile / signOut` | Trùng tên với sequence sau E2E 12/11/2026 |
 | UC-05 / FE-02 | [UC05_ViewUserAccount.txt](../06-sequencediagram/user-management/UC05_ViewUserAccount.txt) | `UserService → getUserAccounts / getUser` | ≈ đọc tài khoản; DCD-02 |
 | UC-06a / FE-02 | [UC06a_CreateUserAccount.txt](../06-sequencediagram/user-management/UC06a_CreateUserAccount.txt) | `UserService → createUser` | ≈ tạo; audit |
 | UC-06b / FE-02 | [UC06b_UpdateUserAccount.txt](../06-sequencediagram/user-management/UC06b_UpdateUserAccount.txt) | `UserService → updateUser` | ≈ sửa; DCD-05 |

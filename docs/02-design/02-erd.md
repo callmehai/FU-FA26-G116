@@ -820,7 +820,7 @@ Ràng buộc và lý do:
 4. Mỗi participant nội bộ có đúng một MeetingRole: Chair, Secretary hoặc Member. MeetingRole độc lập với system Role.
 5. Guest bên ngoài không có User account hay system Role; quyền Guest theo Member, không có quyền cấp bổ sung (PO 20/10/2026), và chỉ áp dụng trong Meeting được mời. Phải xác minh email trước khi thiết lập guest session.
 6. Mỗi cặp (MeetingId, UserId) có tối đa một phân công Current. Khuyến nghị dùng unique index có điều kiện trên `(meeting_id, user_id)` khi trạng thái phân công là Current. Giữ bằng chứng Removed/lịch sử khi cần truy vết.
-7. Mỗi cặp (MeetingId, GuestEmail) có tối đa một lời mời Guest còn hiệu lực. Không mời email Guest nếu email đó đã thuộc một participant nội bộ hiện hành trong cùng Meeting.
+7. Mỗi cặp (MeetingId, Email) có tối đa một lời mời Guest còn hiệu lực. Không mời email Guest nếu email đó đã thuộc một participant nội bộ hiện hành trong cùng Meeting.
 8. Để công bố hoặc bắt đầu Meeting, phải có đúng một Chair và ít nhất một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động (BR-124, BR-125, BR-127).
 9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-105). Điểm danh chỉ Present/Absent; chưa ghi nhận giữ null, không coi là Absent.
 10. MeetingDocument tham chiếu một StoredFile bất biến; mỗi StoredFile có tối đa một MeetingDocument đang hiệu lực (`RemovedAt` null) trong mỗi Meeting. Một tài liệu gắn được nhiều mục nghị sự của cùng Meeting qua MeetingDocumentAgendaItem (BR-277, BR-278). Không thêm, gỡ hay đổi liên kết được khi Meeting đã kết thúc (BR-185, ADR-0020).

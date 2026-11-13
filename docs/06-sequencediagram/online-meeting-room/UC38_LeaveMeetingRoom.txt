@@ -37,7 +37,7 @@ opt The connection ends without the actor choosing Leave
     else This tab left the room without Leave - EX-5
         Page-->Actor: MSG328 - You have left the meeting room.
     else Guest session ended while in the room - EX-6
-        alt Session expired or the Guest signed out on another device (closed within 30 seconds)
+        alt Session expired (closed within 30 seconds)
             Page-->Actor: MSG378 - The guest session has ended.\nMeeting data removed; the Guest may verify again (UC-04)
         else The Guest signed out in another tab of this browser
             Page-->Actor: You have left the meeting - the signed-out screen of UC-04 AF-3

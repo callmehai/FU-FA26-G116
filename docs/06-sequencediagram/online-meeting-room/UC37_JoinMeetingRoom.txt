@@ -35,7 +35,7 @@ else Actor is no longer eligible - EX-4
 else Meeting has ended - EX-1
     RoomService-->RoomController: MSG331 - The meeting has ended, the meeting room is closed.
     RoomController-->Page: MSG331 - The meeting has ended, the meeting room is closed.
-    Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.\nA Guest is offered no way back to the Meeting page, which has closed too
+    Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.\nA Guest gets no MSG331: the ended Meeting is not open to the Guest, so EX-4 applies\nand the Guest page shows the end screen of UC-04 EX-1
 else Meeting is cancelled - EX-6
     RoomService-->RoomController: MSG350 - The meeting was cancelled, so the meeting room does not open.
     RoomController-->Page: MSG350 - The meeting was cancelled, so the meeting room does not open.
@@ -68,8 +68,13 @@ else Meeting is In Progress and the actor is eligible
         activate Database
         Database-->AuditRepository: Saved / Failure
         deactivate Database
-        AuditRepository-->RoomService: Saved / Failure (EX-5)
+        AuditRepository-->RoomService: Saved / Failure
         deactivate AuditRepository
+        opt Admission cannot be recorded - EX-5
+            RoomService-->RoomController: MSG118 - Unable to join the meeting room. Please try again.
+            RoomController-->Page: MSG118 - Unable to join the meeting room. Please try again.
+            Page-->Actor: MSG118 - Unable to join the meeting room. Please try again.\nNo connection is issued; the use case ends
+        end
     end
     RoomService->RoomProvider: Request a room connection for the actor with the actor's current Meeting Role (BR-323, BR-329)
     activate RoomProvider

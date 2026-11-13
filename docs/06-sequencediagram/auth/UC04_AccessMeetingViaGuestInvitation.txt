@@ -4,7 +4,7 @@ actor "Guest" as Guest
 boundary "Guest Invitation Page" as Page
 control ":Guest Access Controller" as Controller
 control ":Guest Access Service" as Service
-participant ":Guest Invitation Repository" as Repository
+participant ":Guest Access Repository" as Repository
 database ":Database" as Database
 participant ":Email Service" as Email
 
@@ -12,7 +12,7 @@ Guest->Page: Open invitation and request access, or reopen the invitation
 activate Page
 Page->Controller: Start or resume access via Guest invitation
 activate Controller
-Controller->Service: Check invitation and existing verified Guest access
+Controller->Service: open(invitationId, linkToken), then sendCode(invitationId, linkToken)
 activate Service
 Service->Repository: Read current invitation, verification challenge and Guest access
 activate Repository
@@ -28,10 +28,10 @@ Controller-->Page: MSG371 - The guest invitation is no longer valid.
 Page-->Guest: MSG371 - The guest invitation is no longer valid.
 else Verification/access service is unavailable - EX-3
 Service-->Controller: Verification could not be completed; no Guest session
-Controller-->Page: Verification unavailable
-Page-->Guest: Verification unavailable
+Controller-->Page: MSG374 - Verification could not be completed.
+Page-->Guest: MSG374 - Verification could not be completed.
 else Invitation is current
-alt Reopen already verified active Guest session - ALT-1
+alt Reopen already verified active Guest session - AF-1
 Service->Service: Reuse access only for this invited Meeting; do not request another code
 Service-->Controller: Invited Meeting and allowed Member participation actions
 Controller-->Page: Display invited Meeting; subsequent requests recheck access
@@ -53,23 +53,23 @@ Database-->Repository: Saved / Failure
 Repository-->Service: Challenge result
 alt Challenge cannot be saved - EX-3
 Service-->Controller: Verification unavailable; no Guest session
-Controller-->Page: Verification unavailable
-Page-->Guest: Verification unavailable
+Controller-->Page: MSG374 - Verification could not be completed.
+Page-->Guest: MSG374 - Verification could not be completed.
 else Challenge saved
 Service->Email: Send code to the invited email (BR-153)
 activate Email
 Email-->Service: Delivery accepted / Failure
 alt Email delivery cannot be arranged - EX-3
 Service-->Controller: Verification unavailable; no Guest session
-Controller-->Page: Verification unavailable
-Page-->Guest: Verification unavailable
+Controller-->Page: MSG374 - Verification could not be completed.
+Page-->Guest: MSG374 - Verification could not be completed.
 else Code delivered
 Service-->Controller: Request one-time code entry
 Controller-->Page: Display invited-email code entry
 Page-->Guest: Enter the code sent to the invited email
 Guest->Page: Submit the one-time code
 Page->Controller: Verify code for this invitation
-Controller->Service: Verify code and current invitation
+Controller->Service: verify(invitationId, linkToken, code)
 Service->Service: Check correct, unexpired, unused code and invited-email binding (BR-153)
 alt Code is incorrect, expired or already used - EX-2
 Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.\nwith the entries left before the code locks
@@ -98,7 +98,7 @@ Controller-->Page: Show display name and job title entry; invited email remains 
 Page-->Guest: Enter display name and optional job title for presentation
 Guest->Page: Submit self-declared display information
 Page->Controller: Complete invited-Meeting access
-Controller->Service: Complete Guest access for this invitation
+Controller->Service: saveProfile(session, displayName, jobTitle)
 Service->Service: Check display name is present and display information is valid (BR-180)
 Service->Service: Check the display information is not already declared\nwith different values for this invitation (BR-180)
 alt Display information is invalid - EX-7
@@ -127,7 +127,7 @@ Page-->Guest: MSG376 - Display information saved; invited Meeting available, ema
 opt Guest chooses Thoát [Sign out] - AF-3
 Guest->Page: Sign out
 Page->Controller: End this Guest session
-Controller->Service: End the session of this token only (BR-155)
+Controller->Service: signOut(session): this session only (BR-155)
 Service->Repository: Revoke this Guest session
 Repository->Database: Set the session revoked; other sessions of the invitation stay
 Database-->Repository: Saved

@@ -165,8 +165,8 @@ Khách dùng token này cho: `GET /api/meetings/{id}/agenda`, các GET của th�
 (`/participant-context`, `/participants`, `/invitation-response`), `PUT /invitation-response` (UC-29),
 `GET /attendance`, hub `/hubs/meetings`, phòng họp trực tuyến `GET /call`, `POST /call/join` (SCRUM-59,
 [contract](09-phong-hop-truc-tuyen.md#khách-scrum-59)), và micro của chính Khách trong phòng: gửi, đọc, nghe lại và
-xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051)), `GET …/speaking-requests`
-(xem hàng đợi phát biểu, [contract](20-dang-ky-phat-bieu.md)) và góp ý tài liệu `…/documents/{id}/comments` (đọc và gửi,
+xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051)), `…/speaking-requests`
+(xem hàng đợi; giơ/hạ tay, bắt đầu/kết thúc lượt của mình khi ở trong phòng, [contract](20-dang-ky-phat-bieu.md)) và góp ý tài liệu `…/documents/{id}/comments` (đọc và gửi,
 [contract](11-tai-lieu-cuoc-hop.md#khách-góp-ý)). Tài liệu và biểu quyết của Khách: xem §9. Mọi endpoint khác trả `403` (endpoint cố định) hoặc `404`
 (tài nguyên cụ thể) như người không có quyền.
 
@@ -217,7 +217,9 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
   "Còn N lần thử.". Form tên ghi "Tên hiển thị sẽ không thể thay đổi sau bước này." (tên khai một lần, `MSG381`).
 - "Thoát" gặp `401`/`404` (phiên đã hết) vẫn xoá token và về màn đã thoát. Các tab khác của cùng trình duyệt dùng chung
   `localStorage`: lần kiểm lại phiên kế tiếp thấy token đã bị xoá thì cũng hiện màn đã thoát, không tự gửi mã mới; token
-  chỉ hết hạn (còn trong `localStorage`) thì về màn nhập mã kèm `MSG378`.
+  chỉ hết hạn (còn trong `localStorage`) thì về màn nhập mã kèm `MSG378`. Thoát ghi cờ `signedOut` vào
+  `localStorage` (xác minh lần sau xoá cờ): chỉ khi có cờ tab kia mới hiện màn đã thoát; mất token mà không có cờ (tab
+  khác vừa thấy cuộc họp kết thúc) thì mở lại lời mời, ra màn kết thúc hoặc màn nhập mã.
 - Phòng họp trực tuyến của Khách (SCRUM-127): `/guest/{invitationId}/room`, xem
   [09-phong-hop-truc-tuyen.md](09-phong-hop-truc-tuyen.md#hợp-đồng-tích-hợp-fe).
 - Trang kiểm lại `GET /session` mỗi 20 giây, khi tab được focus và sau mọi `404` của panel. `404` thì bỏ toàn bộ dữ liệu

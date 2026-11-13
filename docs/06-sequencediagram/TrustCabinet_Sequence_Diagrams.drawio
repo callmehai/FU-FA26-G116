@@ -1129,13 +1129,13 @@ deactivate AuthenticatedPage
         <mxCell id="60" parent="5" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
           <mxGeometry height="5846" width="10" x="74" y="203" as="geometry" />
         </mxCell>
-        <UserObject label=":Guest Invitation Repository" mermaidId="n:Repository" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":Guest Invitation Repository" id="6">
+        <UserObject label=":Guest Access Repository" mermaidId="n:Repository" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":Guest Access Repository" id="6">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" vertex="1">
-            <mxGeometry height="6234" width="204" x="2958" as="geometry" y="50" />
+            <mxGeometry height="6234" width="182" x="2969" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <mxCell id="59" parent="6" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="5800" width="10" x="97" y="249" as="geometry" />
+          <mxGeometry height="5800" width="10" x="86" y="249" as="geometry" />
         </mxCell>
         <UserObject label=":Database" mermaidId="n:Database" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqDatabase;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue=":Database" id="7">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqDatabase;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
@@ -1178,7 +1178,7 @@ deactivate AuthenticatedPage
             <mxGeometry height="5209" width="3932" x="10" y="980.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="16" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Reopen already verified active Guest session - ALT-1]" vertex="1">
+        <mxCell id="16" parent="15" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Reopen already verified active Guest session - AF-1]" vertex="1">
           <mxGeometry height="16" width="3878" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="17" parent="15" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
@@ -1339,7 +1339,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Check invitation and existing verified Guest access" mermaidId="e:Controller-&gt;Service#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Check invitation and existing verified Guest access" id="65">
+        <UserObject label="open(invitationId, linkToken), then sendCode(invitationId, linkToken)" mermaidId="e:Controller-&gt;Service#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="open(invitationId, linkToken), then sendCode(invitationId, linkToken)" id="65">
           <mxCell edge="1" parent="1" source="61" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="60">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -1465,7 +1465,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Verification unavailable" mermaidId="e:Controller-&gt;Page#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Verification unavailable" id="77">
+        <UserObject label="MSG374 - Verification could not be completed." mermaidId="e:Controller-&gt;Page#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG374 - Verification could not be completed." id="77">
           <mxCell edge="1" parent="1" source="61" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="62">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -1476,7 +1476,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Verification unavailable" mermaidId="e:Page-&gt;Guest#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Verification unavailable" id="78">
+        <UserObject label="MSG374 - Verification could not be completed." mermaidId="e:Page-&gt;Guest#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG374 - Verification could not be completed." id="78">
           <mxCell edge="1" parent="1" source="62" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -1673,7 +1673,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Verification unavailable" mermaidId="e:Controller-&gt;Page#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Verification unavailable" id="97">
+        <UserObject label="MSG374 - Verification could not be completed." mermaidId="e:Controller-&gt;Page#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG374 - Verification could not be completed." id="97">
           <mxCell edge="1" parent="1" source="61" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="62">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -1684,7 +1684,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Verification unavailable" mermaidId="e:Page-&gt;Guest#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Verification unavailable" id="98">
+        <UserObject label="MSG374 - Verification could not be completed." mermaidId="e:Page-&gt;Guest#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG374 - Verification could not be completed." id="98">
           <mxCell edge="1" parent="1" source="62" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -1728,7 +1728,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Verification unavailable" mermaidId="e:Controller-&gt;Page#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Verification unavailable" id="102">
+        <UserObject label="MSG374 - Verification could not be completed." mermaidId="e:Controller-&gt;Page#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG374 - Verification could not be completed." id="102">
           <mxCell edge="1" parent="1" source="61" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="62">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -1739,7 +1739,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Verification unavailable" mermaidId="e:Page-&gt;Guest#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Verification unavailable" id="103">
+        <UserObject label="MSG374 - Verification could not be completed." mermaidId="e:Page-&gt;Guest#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG374 - Verification could not be completed." id="103">
           <mxCell edge="1" parent="1" source="62" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -1805,7 +1805,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Verify code and current invitation" mermaidId="e:Controller-&gt;Service#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Verify code and current invitation" id="109">
+        <UserObject label="verify(invitationId, linkToken, code)" mermaidId="e:Controller-&gt;Service#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="verify(invitationId, linkToken, code)" id="109">
           <mxCell edge="1" parent="1" source="61" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="60">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -2063,7 +2063,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Complete Guest access for this invitation" mermaidId="e:Controller-&gt;Service#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Complete Guest access for this invitation" id="133">
+        <UserObject label="saveProfile(session, displayName, jobTitle)" mermaidId="e:Controller-&gt;Service#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="saveProfile(session, displayName, jobTitle)" id="133">
           <mxCell edge="1" parent="1" source="61" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="60">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -2336,7 +2336,7 @@ deactivate AuthenticatedPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="End the session of this token only (BR-155)" mermaidId="e:Controller-&gt;Service#3" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="End the session of this token only (BR-155)" id="160">
+        <UserObject label="signOut(session): this session only (BR-155)" mermaidId="e:Controller-&gt;Service#3" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="signOut(session): this session only (BR-155)" id="160">
           <mxCell edge="1" parent="1" source="61" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="60">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -41917,74 +41917,74 @@ deactivate MeetingPage
         <mxCell id="1" parent="0" />
         <mxCell id="title-uc37_joinmeetingroom" value="UC-37 - Join Meeting Room" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#000000;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="3593" height="42" as="geometry" /></mxCell><UserObject label="Participant" mermaidId="n:Actor" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=1.25;size=90;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue="Participant" id="2">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=1.25;size=90;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="3265" width="150" as="geometry" y="50" />
+            <mxGeometry height="3494" width="150" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <UserObject label="Meeting Lobby Page" mermaidId="n:Page" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqBoundary;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue="Meeting Lobby Page" id="3">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqBoundary;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="3240" width="150" x="716" as="geometry" y="50" />
+            <mxGeometry height="3469" width="150" x="716" as="geometry" y="50" />
           </mxCell>
         </UserObject>
-        <mxCell id="46" parent="3" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="3014" width="10" x="70" y="111" as="geometry" />
+        <mxCell id="48" parent="3" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="3243" width="10" x="70" y="111" as="geometry" />
         </mxCell>
         <UserObject label=":Meeting Room Controller" mermaidId="n:RoomController" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqControl;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue=":Meeting Room Controller" id="4">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqControl;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="3240" width="188" x="1411" as="geometry" y="50" />
+            <mxGeometry height="3469" width="188" x="1411" as="geometry" y="50" />
           </mxCell>
         </UserObject>
-        <mxCell id="45" parent="4" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="2968" width="10" x="89" y="157" as="geometry" />
+        <mxCell id="47" parent="4" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="3197" width="10" x="89" y="157" as="geometry" />
         </mxCell>
         <UserObject label=":Meeting Room Service" mermaidId="n:RoomService" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqControl;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue=":Meeting Room Service" id="5">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqControl;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="3240" width="167" x="2136" as="geometry" y="50" />
+            <mxGeometry height="3469" width="167" x="2136" as="geometry" y="50" />
           </mxCell>
         </UserObject>
-        <mxCell id="44" parent="5" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="2922" width="10" x="79" y="203" as="geometry" />
+        <mxCell id="46" parent="5" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="3151" width="10" x="79" y="203" as="geometry" />
         </mxCell>
         <UserObject label=":Meeting Repository" mermaidId="n:MeetingRepository" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":Meeting Repository" id="6">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" vertex="1">
-            <mxGeometry height="3240" width="150" x="2725" as="geometry" y="50" />
+            <mxGeometry height="3469" width="150" x="2725" as="geometry" y="50" />
           </mxCell>
         </UserObject>
-        <mxCell id="39" parent="6" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+        <mxCell id="41" parent="6" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
           <mxGeometry height="138" width="10" x="70" y="249" as="geometry" />
         </mxCell>
         <UserObject label=":Audit Log Repository" mermaidId="n:AuditRepository" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":Audit Log Repository" id="7">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" vertex="1">
-            <mxGeometry height="3240" width="157" x="2994" as="geometry" y="50" />
+            <mxGeometry height="3469" width="157" x="2994" as="geometry" y="50" />
           </mxCell>
         </UserObject>
-        <mxCell id="41" parent="7" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="138" width="10" x="74" y="2336" as="geometry" />
+        <mxCell id="43" parent="7" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="138" width="10" x="74" y="2354" as="geometry" />
         </mxCell>
         <UserObject label=":Room Service" mermaidId="n:RoomProvider" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":Room Service" id="8">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" vertex="1">
-            <mxGeometry height="3240" width="150" x="3243" as="geometry" y="50" />
+            <mxGeometry height="3469" width="150" x="3243" as="geometry" y="50" />
           </mxCell>
         </UserObject>
-        <mxCell id="42" parent="8" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="46" width="10" x="70" y="2530" as="geometry" />
+        <mxCell id="44" parent="8" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="46" width="10" x="70" y="2759" as="geometry" />
         </mxCell>
-        <mxCell id="43" parent="8" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="46" width="10" x="70" y="2942" as="geometry" />
+        <mxCell id="45" parent="8" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="46" width="10" x="70" y="3171" as="geometry" />
         </mxCell>
         <UserObject label=":Database" mermaidId="n:Database" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqDatabase;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue=":Database" id="9">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqDatabase;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="3240" width="150" x="3443" as="geometry" y="50" />
+            <mxGeometry height="3469" width="150" x="3443" as="geometry" y="50" />
           </mxCell>
         </UserObject>
-        <mxCell id="38" parent="9" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+        <mxCell id="40" parent="9" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
           <mxGeometry height="46" width="10" x="70" y="295" as="geometry" />
         </mxCell>
-        <mxCell id="40" parent="9" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="46" width="10" x="70" y="2382" as="geometry" />
+        <mxCell id="42" parent="9" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="46" width="10" x="70" y="2400" as="geometry" />
         </mxCell>
         <UserObject label="alt" mermaidId="n:f0" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="alt" id="10">
           <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="2664" width="3493" x="45" y="541.0" as="geometry" />
+            <mxGeometry height="2893" width="3493" x="45" y="541.0" as="geometry" />
           </mxCell>
         </UserObject>
         <mxCell id="11" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Room status cannot be loaded - EX-8]" vertex="1">
@@ -42003,79 +42003,87 @@ deactivate MeetingPage
           <mxGeometry height="16" width="3493" y="373" as="geometry" />
         </mxCell>
         <mxCell id="16" parent="10" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3493" y="572" as="geometry" />
+          <mxGeometry height="1" width="3493" y="590" as="geometry" />
         </mxCell>
         <mxCell id="17" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Meeting is cancelled - EX-6]" vertex="1">
-          <mxGeometry height="16" width="3493" y="574" as="geometry" />
+          <mxGeometry height="16" width="3493" y="592" as="geometry" />
         </mxCell>
         <mxCell id="18" parent="10" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3493" y="755" as="geometry" />
+          <mxGeometry height="1" width="3493" y="773" as="geometry" />
         </mxCell>
         <mxCell id="19" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Meeting is held in person - EX-2]" vertex="1">
-          <mxGeometry height="16" width="3493" y="757" as="geometry" />
+          <mxGeometry height="16" width="3493" y="775" as="geometry" />
         </mxCell>
         <mxCell id="20" parent="10" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3493" y="938" as="geometry" />
+          <mxGeometry height="1" width="3493" y="956" as="geometry" />
         </mxCell>
         <mxCell id="21" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Meeting has not started yet - AF-3]" vertex="1">
-          <mxGeometry height="16" width="3493" y="940" as="geometry" />
+          <mxGeometry height="16" width="3493" y="958" as="geometry" />
         </mxCell>
         <mxCell id="22" parent="10" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3493" y="1139" as="geometry" />
+          <mxGeometry height="1" width="3493" y="1157" as="geometry" />
         </mxCell>
         <mxCell id="23" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Room service is not configured - EX-3]" vertex="1">
-          <mxGeometry height="16" width="3493" y="1141" as="geometry" />
+          <mxGeometry height="16" width="3493" y="1159" as="geometry" />
         </mxCell>
         <mxCell id="24" parent="10" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3493" y="1322" as="geometry" />
+          <mxGeometry height="1" width="3493" y="1340" as="geometry" />
         </mxCell>
         <mxCell id="25" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Guest session has ended - EX-10]" vertex="1">
-          <mxGeometry height="16" width="3493" y="1324" as="geometry" />
+          <mxGeometry height="16" width="3493" y="1342" as="geometry" />
         </mxCell>
         <mxCell id="26" parent="10" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3493" y="1523" as="geometry" />
+          <mxGeometry height="1" width="3493" y="1541" as="geometry" />
         </mxCell>
         <mxCell id="27" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Guest has not confirmed the recording notice - EX-9]" vertex="1">
-          <mxGeometry height="16" width="3493" y="1525" as="geometry" />
+          <mxGeometry height="16" width="3493" y="1543" as="geometry" />
         </mxCell>
         <mxCell id="28" parent="10" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="3493" y="1706" as="geometry" />
+          <mxGeometry height="1" width="3493" y="1724" as="geometry" />
         </mxCell>
         <mxCell id="29" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Meeting is In Progress and the actor is eligible]" vertex="1">
-          <mxGeometry height="16" width="3493" y="1708" as="geometry" />
+          <mxGeometry height="16" width="3493" y="1726" as="geometry" />
         </mxCell>
         <UserObject label="opt" mermaidId="n:f1" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="opt" id="30">
           <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="247" width="1319" x="2210" y="2287.0" as="geometry" />
+            <mxGeometry height="458" width="3473" x="55" y="2305.0" as="geometry" />
           </mxCell>
         </UserObject>
         <mxCell id="31" parent="30" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Actor is a Guest who confirmed the recording notice - Step 5]" vertex="1">
-          <mxGeometry height="16" width="1265" x="54" y="2" as="geometry" />
+          <mxGeometry height="16" width="3419" x="54" y="2" as="geometry" />
         </mxCell>
-        <UserObject label="alt" mermaidId="n:f2" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="alt" id="32">
+        <UserObject label="opt" mermaidId="n:f2" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="opt" id="32">
           <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="559" width="3273" x="55" y="2636.0" as="geometry" />
+            <mxGeometry height="201" width="2165" x="65" y="2552.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="33" parent="32" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Join cannot be completed - EX-5]" vertex="1">
+        <mxCell id="33" parent="32" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Admission cannot be recorded - EX-5]" vertex="1">
+          <mxGeometry height="16" width="2111" x="54" y="2" as="geometry" />
+        </mxCell>
+        <UserObject label="alt" mermaidId="n:f3" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="alt" id="34">
+          <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
+            <mxGeometry height="559" width="3273" x="55" y="2865.0" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="35" parent="34" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Join cannot be completed - EX-5]" vertex="1">
           <mxGeometry height="16" width="3219" x="54" y="2" as="geometry" />
         </mxCell>
-        <mxCell id="34" parent="32" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
+        <mxCell id="36" parent="34" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
           <mxGeometry height="1" width="3273" y="188" as="geometry" />
         </mxCell>
-        <mxCell id="35" parent="32" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Room connection issued]" vertex="1">
+        <mxCell id="37" parent="34" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Room connection issued]" vertex="1">
           <mxGeometry height="16" width="3273" y="190" as="geometry" />
         </mxCell>
-        <UserObject label="opt" mermaidId="n:f3" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="opt" id="36">
+        <UserObject label="opt" mermaidId="n:f4" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="opt" id="38">
           <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="91" width="736" x="65" y="3094.0" as="geometry" />
+            <mxGeometry height="91" width="736" x="65" y="3323.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="37" parent="36" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Browser blocks audio playback - AF-4]" vertex="1">
+        <mxCell id="39" parent="38" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Browser blocks audio playback - AF-4]" vertex="1">
           <mxGeometry height="16" width="682" x="54" y="2" as="geometry" />
         </mxCell>
-        <UserObject label="Choose Join room" mermaidId="e:Actor-&gt;Page#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Choose Join room" id="47">
-          <mxCell edge="1" parent="1" source="2" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="Choose Join room" mermaidId="e:Actor-&gt;Page#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Choose Join room" id="49">
+          <mxCell edge="1" parent="1" source="2" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="431" y="161.0" />
@@ -42085,8 +42093,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Join the Meeting room" mermaidId="e:Page-&gt;RoomController#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Join the Meeting room" id="48">
-          <mxCell edge="1" parent="1" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="Join the Meeting room" mermaidId="e:Page-&gt;RoomController#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Join the Meeting room" id="50">
+          <mxCell edge="1" parent="1" source="48" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="1148" y="207.0" />
@@ -42096,8 +42104,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="joinMeetingRoom(meetingId, actorId)" mermaidId="e:RoomController-&gt;RoomService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="joinMeetingRoom(meetingId, actorId)" id="49">
-          <mxCell edge="1" parent="1" source="45" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="44">
+        <UserObject label="joinMeetingRoom(meetingId, actorId)" mermaidId="e:RoomController-&gt;RoomService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="joinMeetingRoom(meetingId, actorId)" id="51">
+          <mxCell edge="1" parent="1" source="47" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="1862" y="253.0" />
@@ -42107,8 +42115,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Read Meeting status, mode and the actor's current participant assignment" mermaidId="e:RoomService-&gt;MeetingRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Read Meeting status, mode and the actor's current participant assignment" id="50">
-          <mxCell edge="1" parent="1" source="44" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="39">
+        <UserObject label="Read Meeting status, mode and the actor's current participant assignment" mermaidId="e:RoomService-&gt;MeetingRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Read Meeting status, mode and the actor's current participant assignment" id="52">
+          <mxCell edge="1" parent="1" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="41">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="2510" y="299.0" />
@@ -42118,8 +42126,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Retrieve Meeting and roster information" mermaidId="e:MeetingRepository-&gt;Database#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Retrieve Meeting and roster information" id="51">
-          <mxCell edge="1" parent="1" source="39" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="38">
+        <UserObject label="Retrieve Meeting and roster information" mermaidId="e:MeetingRepository-&gt;Database#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Retrieve Meeting and roster information" id="53">
+          <mxCell edge="1" parent="1" source="41" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="40">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="3159" y="345.0" />
@@ -42129,8 +42137,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Current information" mermaidId="e:Database-&gt;MeetingRepository#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Current information" id="52">
-          <mxCell edge="1" parent="1" source="38" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="39">
+        <UserObject label="Current information" mermaidId="e:Database-&gt;MeetingRepository#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Current information" id="54">
+          <mxCell edge="1" parent="1" source="40" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="41">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="3159" y="391.0" />
@@ -42140,8 +42148,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Current information" mermaidId="e:MeetingRepository-&gt;RoomService#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Current information" id="53">
-          <mxCell edge="1" parent="1" source="39" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="44">
+        <UserObject label="Current information" mermaidId="e:MeetingRepository-&gt;RoomService#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Current information" id="55">
+          <mxCell edge="1" parent="1" source="41" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="2510" y="437.0" />
@@ -42151,8 +42159,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="" mermaidId="e:RoomService-&gt;RoomService#0" mermaidBaseStyle="edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="" id="54">
-          <mxCell edge="1" parent="1" source="44" style="edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="44">
+        <UserObject label="" mermaidId="e:RoomService-&gt;RoomService#0" mermaidBaseStyle="edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="" id="56">
+          <mxCell edge="1" parent="1" source="46" style="edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="2260" y="501.0" />
@@ -42164,11 +42172,11 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <mxCell id="55" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=13;fontColor=#000000;labelBackgroundColor=#ffffff;" value="Verify the actor may still view the Meeting and holds a current room-entry&#10;relationship; for a Guest verify the invitation (BR-97, BR-101, BR-152 – BR-157, BR-181, BR-323)" vertex="1">
+        <mxCell id="57" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=13;fontColor=#000000;labelBackgroundColor=#ffffff;" value="Verify the actor may still view the Meeting and holds a current room-entry&#10;relationship; for a Guest verify the invitation (BR-97, BR-101, BR-152 – BR-157, BR-181, BR-323)" vertex="1">
           <mxGeometry height="18" width="200" x="2125" y="475.0" as="geometry" />
         </mxCell>
-        <UserObject label="MSG283 - Unable to load the meeting room status. Please try again." mermaidId="e:RoomService-&gt;RoomController#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG283 - Unable to load the meeting room status. Please try again." id="56">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="MSG283 - Unable to load the meeting room status. Please try again." mermaidId="e:RoomService-&gt;RoomController#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG283 - Unable to load the meeting room status. Please try again." id="58">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="1862" y="622.0" />
@@ -42178,8 +42186,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG283 - Unable to load the meeting room status. Please try again." mermaidId="e:RoomController-&gt;Page#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG283 - Unable to load the meeting room status. Please try again." id="57">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="MSG283 - Unable to load the meeting room status. Please try again." mermaidId="e:RoomController-&gt;Page#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG283 - Unable to load the meeting room status. Please try again." id="59">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="1148" y="668.0" />
@@ -42189,8 +42197,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG283 - Unable to load the meeting room status. Please try again." mermaidId="e:Page-&gt;Actor#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG283 - Unable to load the meeting room status. Please try again." id="58">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG283 - Unable to load the meeting room status. Please try again." mermaidId="e:Page-&gt;Actor#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG283 - Unable to load the meeting room status. Please try again." id="60">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="431" y="714.0" />
@@ -42200,8 +42208,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Meeting not found for the actor" mermaidId="e:RoomService-&gt;RoomController#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Meeting not found for the actor" id="59">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="Meeting not found for the actor" mermaidId="e:RoomService-&gt;RoomController#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Meeting not found for the actor" id="61">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="1862" y="805.0" />
@@ -42211,8 +42219,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Meeting not found for the actor" mermaidId="e:RoomController-&gt;Page#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Meeting not found for the actor" id="60">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="Meeting not found for the actor" mermaidId="e:RoomController-&gt;Page#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Meeting not found for the actor" id="62">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="1148" y="851.0" />
@@ -42222,8 +42230,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Meeting page shown as for a Meeting that does not exist" mermaidId="e:Page-&gt;Actor#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Meeting page shown as for a Meeting that does not exist" id="61">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="Meeting page shown as for a Meeting that does not exist" mermaidId="e:Page-&gt;Actor#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Meeting page shown as for a Meeting that does not exist" id="63">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="431" y="897.0" />
@@ -42233,8 +42241,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG331 - The meeting has ended, the meeting room is closed." mermaidId="e:RoomService-&gt;RoomController#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG331 - The meeting has ended, the meeting room is closed." id="62">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="MSG331 - The meeting has ended, the meeting room is closed." mermaidId="e:RoomService-&gt;RoomController#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG331 - The meeting has ended, the meeting room is closed." id="64">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="1862" y="988.0" />
@@ -42244,8 +42252,8 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG331 - The meeting has ended, the meeting room is closed." mermaidId="e:RoomController-&gt;Page#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG331 - The meeting has ended, the meeting room is closed." id="63">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="MSG331 - The meeting has ended, the meeting room is closed." mermaidId="e:RoomController-&gt;Page#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG331 - The meeting has ended, the meeting room is closed." id="65">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
                 <mxPoint x="1148" y="1034.0" />
@@ -42255,377 +42263,410 @@ deactivate MeetingPage
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG331 - The meeting has ended, the meeting room is closed.&#10;A Guest is offered no way back to the Meeting page, which has closed too" mermaidId="e:Page-&gt;Actor#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG331 - The meeting has ended, the meeting room is closed.&#10;A Guest is offered no way back to the Meeting page, which has closed too" id="64">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG331 - The meeting has ended, the meeting room is closed.&#10;A Guest gets no MSG331: the ended Meeting is not open to the Guest, so EX-4 applies&#10;and the Guest page shows the end screen of UC-04 EX-1" mermaidId="e:Page-&gt;Actor#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG331 - The meeting has ended, the meeting room is closed.&#10;A Guest gets no MSG331: the ended Meeting is not open to the Guest, so EX-4 applies&#10;and the Guest page shows the end screen of UC-04 EX-1" id="66">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="1098.0" />
+                <mxPoint x="431" y="1116.0" />
               </Array>
-              <mxPoint x="786" y="1098.0" as="sourcePoint" />
-              <mxPoint x="75" y="1098.0" as="targetPoint" />
+              <mxPoint x="786" y="1116.0" as="sourcePoint" />
+              <mxPoint x="75" y="1116.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG350 - The meeting was cancelled, so the meeting room does not open." mermaidId="e:RoomService-&gt;RoomController#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG350 - The meeting was cancelled, so the meeting room does not open." id="65">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="MSG350 - The meeting was cancelled, so the meeting room does not open." mermaidId="e:RoomService-&gt;RoomController#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG350 - The meeting was cancelled, so the meeting room does not open." id="67">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1862" y="1189.0" />
+                <mxPoint x="1862" y="1207.0" />
               </Array>
-              <mxPoint x="2215" y="1189.0" as="sourcePoint" />
-              <mxPoint x="1510" y="1189.0" as="targetPoint" />
+              <mxPoint x="2215" y="1207.0" as="sourcePoint" />
+              <mxPoint x="1510" y="1207.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG350 - The meeting was cancelled, so the meeting room does not open." mermaidId="e:RoomController-&gt;Page#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG350 - The meeting was cancelled, so the meeting room does not open." id="66">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="MSG350 - The meeting was cancelled, so the meeting room does not open." mermaidId="e:RoomController-&gt;Page#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG350 - The meeting was cancelled, so the meeting room does not open." id="68">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1148" y="1235.0" />
+                <mxPoint x="1148" y="1253.0" />
               </Array>
-              <mxPoint x="1500" y="1235.0" as="sourcePoint" />
-              <mxPoint x="796" y="1235.0" as="targetPoint" />
+              <mxPoint x="1500" y="1253.0" as="sourcePoint" />
+              <mxPoint x="796" y="1253.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG350 - The meeting was cancelled, so the meeting room does not open." mermaidId="e:Page-&gt;Actor#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG350 - The meeting was cancelled, so the meeting room does not open." id="67">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG350 - The meeting was cancelled, so the meeting room does not open." mermaidId="e:Page-&gt;Actor#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG350 - The meeting was cancelled, so the meeting room does not open." id="69">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="1281.0" />
+                <mxPoint x="431" y="1299.0" />
               </Array>
-              <mxPoint x="786" y="1281.0" as="sourcePoint" />
-              <mxPoint x="75" y="1281.0" as="targetPoint" />
+              <mxPoint x="786" y="1299.0" as="sourcePoint" />
+              <mxPoint x="75" y="1299.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG280 - This meeting is held in person, so it has no online meeting room." mermaidId="e:RoomService-&gt;RoomController#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG280 - This meeting is held in person, so it has no online meeting room." id="68">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="MSG280 - This meeting is held in person, so it has no online meeting room." mermaidId="e:RoomService-&gt;RoomController#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG280 - This meeting is held in person, so it has no online meeting room." id="70">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1862" y="1372.0" />
+                <mxPoint x="1862" y="1390.0" />
               </Array>
-              <mxPoint x="2215" y="1372.0" as="sourcePoint" />
-              <mxPoint x="1510" y="1372.0" as="targetPoint" />
+              <mxPoint x="2215" y="1390.0" as="sourcePoint" />
+              <mxPoint x="1510" y="1390.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG280 - This meeting is held in person, so it has no online meeting room." mermaidId="e:RoomController-&gt;Page#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG280 - This meeting is held in person, so it has no online meeting room." id="69">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="MSG280 - This meeting is held in person, so it has no online meeting room." mermaidId="e:RoomController-&gt;Page#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG280 - This meeting is held in person, so it has no online meeting room." id="71">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1148" y="1418.0" />
+                <mxPoint x="1148" y="1436.0" />
               </Array>
-              <mxPoint x="1500" y="1418.0" as="sourcePoint" />
-              <mxPoint x="796" y="1418.0" as="targetPoint" />
+              <mxPoint x="1500" y="1436.0" as="sourcePoint" />
+              <mxPoint x="796" y="1436.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG280 - This meeting is held in person, so it has no online meeting room." mermaidId="e:Page-&gt;Actor#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG280 - This meeting is held in person, so it has no online meeting room." id="70">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG280 - This meeting is held in person, so it has no online meeting room." mermaidId="e:Page-&gt;Actor#4" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG280 - This meeting is held in person, so it has no online meeting room." id="72">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="1464.0" />
+                <mxPoint x="431" y="1482.0" />
               </Array>
-              <mxPoint x="786" y="1464.0" as="sourcePoint" />
-              <mxPoint x="75" y="1464.0" as="targetPoint" />
+              <mxPoint x="786" y="1482.0" as="sourcePoint" />
+              <mxPoint x="75" y="1482.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG117 - The meeting room opens only while the meeting is in progress." mermaidId="e:RoomService-&gt;RoomController#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG117 - The meeting room opens only while the meeting is in progress." id="71">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="MSG117 - The meeting room opens only while the meeting is in progress." mermaidId="e:RoomService-&gt;RoomController#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG117 - The meeting room opens only while the meeting is in progress." id="73">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1862" y="1555.0" />
+                <mxPoint x="1862" y="1573.0" />
               </Array>
-              <mxPoint x="2215" y="1555.0" as="sourcePoint" />
-              <mxPoint x="1510" y="1555.0" as="targetPoint" />
+              <mxPoint x="2215" y="1573.0" as="sourcePoint" />
+              <mxPoint x="1510" y="1573.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG117 - The meeting room opens only while the meeting is in progress." mermaidId="e:RoomController-&gt;Page#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG117 - The meeting room opens only while the meeting is in progress." id="72">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="MSG117 - The meeting room opens only while the meeting is in progress." mermaidId="e:RoomController-&gt;Page#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG117 - The meeting room opens only while the meeting is in progress." id="74">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1148" y="1601.0" />
+                <mxPoint x="1148" y="1619.0" />
               </Array>
-              <mxPoint x="1500" y="1601.0" as="sourcePoint" />
-              <mxPoint x="796" y="1601.0" as="targetPoint" />
+              <mxPoint x="1500" y="1619.0" as="sourcePoint" />
+              <mxPoint x="796" y="1619.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG117 - The meeting room opens only while the meeting is in progress.&#10;The lobby opens by itself when the Meeting starts; a Guest page asks again every 10 seconds" mermaidId="e:Page-&gt;Actor#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG117 - The meeting room opens only while the meeting is in progress.&#10;The lobby opens by itself when the Meeting starts; a Guest page asks again every 10 seconds" id="73">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG117 - The meeting room opens only while the meeting is in progress.&#10;The lobby opens by itself when the Meeting starts; a Guest page asks again every 10 seconds" mermaidId="e:Page-&gt;Actor#5" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG117 - The meeting room opens only while the meeting is in progress.&#10;The lobby opens by itself when the Meeting starts; a Guest page asks again every 10 seconds" id="75">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="1665.0" />
+                <mxPoint x="431" y="1683.0" />
               </Array>
-              <mxPoint x="786" y="1665.0" as="sourcePoint" />
-              <mxPoint x="75" y="1665.0" as="targetPoint" />
+              <mxPoint x="786" y="1683.0" as="sourcePoint" />
+              <mxPoint x="75" y="1683.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG281 - The online meeting room is not ready. Please contact the administrator." mermaidId="e:RoomService-&gt;RoomController#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG281 - The online meeting room is not ready. Please contact the administrator." id="74">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="MSG281 - The online meeting room is not ready. Please contact the administrator." mermaidId="e:RoomService-&gt;RoomController#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG281 - The online meeting room is not ready. Please contact the administrator." id="76">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1862" y="1756.0" />
+                <mxPoint x="1862" y="1774.0" />
               </Array>
-              <mxPoint x="2215" y="1756.0" as="sourcePoint" />
-              <mxPoint x="1510" y="1756.0" as="targetPoint" />
+              <mxPoint x="2215" y="1774.0" as="sourcePoint" />
+              <mxPoint x="1510" y="1774.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG281 - The online meeting room is not ready. Please contact the administrator." mermaidId="e:RoomController-&gt;Page#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG281 - The online meeting room is not ready. Please contact the administrator." id="75">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="MSG281 - The online meeting room is not ready. Please contact the administrator." mermaidId="e:RoomController-&gt;Page#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG281 - The online meeting room is not ready. Please contact the administrator." id="77">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1148" y="1802.0" />
+                <mxPoint x="1148" y="1820.0" />
               </Array>
-              <mxPoint x="1500" y="1802.0" as="sourcePoint" />
-              <mxPoint x="796" y="1802.0" as="targetPoint" />
+              <mxPoint x="1500" y="1820.0" as="sourcePoint" />
+              <mxPoint x="796" y="1820.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG281 - The online meeting room is not ready. Please contact the administrator." mermaidId="e:Page-&gt;Actor#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG281 - The online meeting room is not ready. Please contact the administrator." id="76">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG281 - The online meeting room is not ready. Please contact the administrator." mermaidId="e:Page-&gt;Actor#6" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG281 - The online meeting room is not ready. Please contact the administrator." id="78">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="1848.0" />
+                <mxPoint x="431" y="1866.0" />
               </Array>
-              <mxPoint x="786" y="1848.0" as="sourcePoint" />
-              <mxPoint x="75" y="1848.0" as="targetPoint" />
+              <mxPoint x="786" y="1866.0" as="sourcePoint" />
+              <mxPoint x="75" y="1866.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Guest session ended" mermaidId="e:RoomService-&gt;RoomController#7" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Guest session ended" id="77">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="Guest session ended" mermaidId="e:RoomService-&gt;RoomController#7" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Guest session ended" id="79">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1862" y="1939.0" />
+                <mxPoint x="1862" y="1957.0" />
               </Array>
-              <mxPoint x="2215" y="1939.0" as="sourcePoint" />
-              <mxPoint x="1510" y="1939.0" as="targetPoint" />
+              <mxPoint x="2215" y="1957.0" as="sourcePoint" />
+              <mxPoint x="1510" y="1957.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Guest session ended" mermaidId="e:RoomController-&gt;Page#7" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Guest session ended" id="78">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="Guest session ended" mermaidId="e:RoomController-&gt;Page#7" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Guest session ended" id="80">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1148" y="1985.0" />
+                <mxPoint x="1148" y="2003.0" />
               </Array>
-              <mxPoint x="1500" y="1985.0" as="sourcePoint" />
-              <mxPoint x="796" y="1985.0" as="targetPoint" />
+              <mxPoint x="1500" y="2003.0" as="sourcePoint" />
+              <mxPoint x="796" y="2003.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG378 - The guest session has ended.&#10;Meeting data removed; the Guest may verify again (UC-04)" mermaidId="e:Page-&gt;Actor#7" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG378 - The guest session has ended.&#10;Meeting data removed; the Guest may verify again (UC-04)" id="79">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG378 - The guest session has ended.&#10;Meeting data removed; the Guest may verify again (UC-04)" mermaidId="e:Page-&gt;Actor#7" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG378 - The guest session has ended.&#10;Meeting data removed; the Guest may verify again (UC-04)" id="81">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="2049.0" />
+                <mxPoint x="431" y="2067.0" />
               </Array>
-              <mxPoint x="786" y="2049.0" as="sourcePoint" />
-              <mxPoint x="75" y="2049.0" as="targetPoint" />
+              <mxPoint x="786" y="2067.0" as="sourcePoint" />
+              <mxPoint x="75" y="2067.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG380 - Confirm that you have read the recording notice before joining the meeting room." mermaidId="e:RoomService-&gt;RoomController#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG380 - Confirm that you have read the recording notice before joining the meeting room." id="80">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="MSG380 - Confirm that you have read the recording notice before joining the meeting room." mermaidId="e:RoomService-&gt;RoomController#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG380 - Confirm that you have read the recording notice before joining the meeting room." id="82">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1862" y="2140.0" />
+                <mxPoint x="1862" y="2158.0" />
               </Array>
-              <mxPoint x="2215" y="2140.0" as="sourcePoint" />
-              <mxPoint x="1510" y="2140.0" as="targetPoint" />
+              <mxPoint x="2215" y="2158.0" as="sourcePoint" />
+              <mxPoint x="1510" y="2158.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG380 - Confirm that you have read the recording notice before joining the meeting room." mermaidId="e:RoomController-&gt;Page#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG380 - Confirm that you have read the recording notice before joining the meeting room." id="81">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="MSG380 - Confirm that you have read the recording notice before joining the meeting room." mermaidId="e:RoomController-&gt;Page#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG380 - Confirm that you have read the recording notice before joining the meeting room." id="83">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1148" y="2186.0" />
+                <mxPoint x="1148" y="2204.0" />
               </Array>
-              <mxPoint x="1500" y="2186.0" as="sourcePoint" />
-              <mxPoint x="796" y="2186.0" as="targetPoint" />
+              <mxPoint x="1500" y="2204.0" as="sourcePoint" />
+              <mxPoint x="796" y="2204.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG380 - Confirm that you have read the recording notice before joining the meeting room." mermaidId="e:Page-&gt;Actor#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG380 - Confirm that you have read the recording notice before joining the meeting room." id="82">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG380 - Confirm that you have read the recording notice before joining the meeting room." mermaidId="e:Page-&gt;Actor#8" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG380 - Confirm that you have read the recording notice before joining the meeting room." id="84">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="2232.0" />
+                <mxPoint x="431" y="2250.0" />
               </Array>
-              <mxPoint x="786" y="2232.0" as="sourcePoint" />
-              <mxPoint x="75" y="2232.0" as="targetPoint" />
+              <mxPoint x="786" y="2250.0" as="sourcePoint" />
+              <mxPoint x="75" y="2250.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Save call.guest_admitted audit entry: Guest session, invitation,&#10;declared name, IP address and time, before any connection is issued" mermaidId="e:RoomService-&gt;AuditRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save call.guest_admitted audit entry: Guest session, invitation,&#10;declared name, IP address and time, before any connection is issued" id="83">
-          <mxCell edge="1" parent="1" source="44" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="41">
+        <UserObject label="Save call.guest_admitted audit entry: Guest session, invitation,&#10;declared name, IP address and time, before any connection is issued" mermaidId="e:RoomService-&gt;AuditRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Save call.guest_admitted audit entry: Guest session, invitation,&#10;declared name, IP address and time, before any connection is issued" id="85">
+          <mxCell edge="1" parent="1" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="43">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2646" y="2386.0" />
+                <mxPoint x="2646" y="2404.0" />
               </Array>
-              <mxPoint x="2225" y="2386.0" as="sourcePoint" />
-              <mxPoint x="3068" y="2386.0" as="targetPoint" />
+              <mxPoint x="2225" y="2404.0" as="sourcePoint" />
+              <mxPoint x="3068" y="2404.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Insert audit record" mermaidId="e:AuditRepository-&gt;Database#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Insert audit record" id="84">
-          <mxCell edge="1" parent="1" source="41" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="40">
+        <UserObject label="Insert audit record" mermaidId="e:AuditRepository-&gt;Database#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Insert audit record" id="86">
+          <mxCell edge="1" parent="1" source="43" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="42">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="3295" y="2432.0" />
+                <mxPoint x="3295" y="2450.0" />
               </Array>
-              <mxPoint x="3078" y="2432.0" as="sourcePoint" />
-              <mxPoint x="3513" y="2432.0" as="targetPoint" />
+              <mxPoint x="3078" y="2450.0" as="sourcePoint" />
+              <mxPoint x="3513" y="2450.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Saved / Failure" mermaidId="e:Database-&gt;AuditRepository#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Saved / Failure" id="85">
-          <mxCell edge="1" parent="1" source="40" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="41">
+        <UserObject label="Saved / Failure" mermaidId="e:Database-&gt;AuditRepository#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Saved / Failure" id="87">
+          <mxCell edge="1" parent="1" source="42" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="43">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="3295" y="2478.0" />
+                <mxPoint x="3295" y="2496.0" />
               </Array>
-              <mxPoint x="3513" y="2478.0" as="sourcePoint" />
-              <mxPoint x="3078" y="2478.0" as="targetPoint" />
+              <mxPoint x="3513" y="2496.0" as="sourcePoint" />
+              <mxPoint x="3078" y="2496.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Saved / Failure (EX-5)" mermaidId="e:AuditRepository-&gt;RoomService#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Saved / Failure (EX-5)" id="86">
-          <mxCell edge="1" parent="1" source="41" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="44">
+        <UserObject label="Saved / Failure" mermaidId="e:AuditRepository-&gt;RoomService#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Saved / Failure" id="88">
+          <mxCell edge="1" parent="1" source="43" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2646" y="2524.0" />
+                <mxPoint x="2646" y="2542.0" />
               </Array>
-              <mxPoint x="3068" y="2524.0" as="sourcePoint" />
-              <mxPoint x="2225" y="2524.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Request a room connection for the actor with the actor's current Meeting Role (BR-323, BR-329)" mermaidId="e:RoomService-&gt;RoomProvider#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Request a room connection for the actor with the actor's current Meeting Role (BR-323, BR-329)" id="87">
-          <mxCell edge="1" parent="1" source="44" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="42">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="2769" y="2580.0" />
-              </Array>
-              <mxPoint x="2225" y="2580.0" as="sourcePoint" />
-              <mxPoint x="3313" y="2580.0" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Room connection / refused" mermaidId="e:RoomProvider-&gt;RoomService#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Room connection / refused" id="88">
-          <mxCell edge="1" parent="1" source="42" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="44">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="2769" y="2626.0" />
-              </Array>
-              <mxPoint x="3313" y="2626.0" as="sourcePoint" />
-              <mxPoint x="2225" y="2626.0" as="targetPoint" />
+              <mxPoint x="3068" y="2542.0" as="sourcePoint" />
+              <mxPoint x="2225" y="2542.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
         <UserObject label="MSG118 - Unable to join the meeting room. Please try again." mermaidId="e:RoomService-&gt;RoomController#9" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG118 - Unable to join the meeting room. Please try again." id="89">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1862" y="2717.0" />
+                <mxPoint x="1862" y="2633.0" />
               </Array>
-              <mxPoint x="2215" y="2717.0" as="sourcePoint" />
-              <mxPoint x="1510" y="2717.0" as="targetPoint" />
+              <mxPoint x="2215" y="2633.0" as="sourcePoint" />
+              <mxPoint x="1510" y="2633.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
         <UserObject label="MSG118 - Unable to join the meeting room. Please try again." mermaidId="e:RoomController-&gt;Page#9" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG118 - Unable to join the meeting room. Please try again." id="90">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1148" y="2763.0" />
+                <mxPoint x="1148" y="2679.0" />
               </Array>
-              <mxPoint x="1500" y="2763.0" as="sourcePoint" />
-              <mxPoint x="796" y="2763.0" as="targetPoint" />
+              <mxPoint x="1500" y="2679.0" as="sourcePoint" />
+              <mxPoint x="796" y="2679.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG118 - Unable to join the meeting room. Please try again." mermaidId="e:Page-&gt;Actor#9" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG118 - Unable to join the meeting room. Please try again." id="91">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG118 - Unable to join the meeting room. Please try again.&#10;No connection is issued; the use case ends" mermaidId="e:Page-&gt;Actor#9" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG118 - Unable to join the meeting room. Please try again.&#10;No connection is issued; the use case ends" id="91">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="2809.0" />
+                <mxPoint x="431" y="2743.0" />
               </Array>
-              <mxPoint x="786" y="2809.0" as="sourcePoint" />
-              <mxPoint x="75" y="2809.0" as="targetPoint" />
+              <mxPoint x="786" y="2743.0" as="sourcePoint" />
+              <mxPoint x="75" y="2743.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Room connection" mermaidId="e:RoomService-&gt;RoomController#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Room connection" id="92">
-          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+        <UserObject label="Request a room connection for the actor with the actor's current Meeting Role (BR-323, BR-329)" mermaidId="e:RoomService-&gt;RoomProvider#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Request a room connection for the actor with the actor's current Meeting Role (BR-323, BR-329)" id="92">
+          <mxCell edge="1" parent="1" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="44">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1862" y="2900.0" />
+                <mxPoint x="2769" y="2809.0" />
               </Array>
-              <mxPoint x="2215" y="2900.0" as="sourcePoint" />
-              <mxPoint x="1510" y="2900.0" as="targetPoint" />
+              <mxPoint x="2225" y="2809.0" as="sourcePoint" />
+              <mxPoint x="3313" y="2809.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Room connection" mermaidId="e:RoomController-&gt;Page#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Room connection" id="93">
-          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="Room connection / refused" mermaidId="e:RoomProvider-&gt;RoomService#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Room connection / refused" id="93">
+          <mxCell edge="1" parent="1" source="44" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1148" y="2946.0" />
+                <mxPoint x="2769" y="2855.0" />
               </Array>
-              <mxPoint x="1500" y="2946.0" as="sourcePoint" />
-              <mxPoint x="796" y="2946.0" as="targetPoint" />
+              <mxPoint x="3313" y="2855.0" as="sourcePoint" />
+              <mxPoint x="2225" y="2855.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Connect to the meeting room (fewer than 50 people, BR-336; EX-7 when full)" mermaidId="e:Page-&gt;RoomProvider#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Connect to the meeting room (fewer than 50 people, BR-336; EX-7 when full)" id="94">
-          <mxCell edge="1" parent="1" source="46" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="43">
+        <UserObject label="MSG118 - Unable to join the meeting room. Please try again." mermaidId="e:RoomService-&gt;RoomController#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG118 - Unable to join the meeting room. Please try again." id="94">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2055" y="2992.0" />
+                <mxPoint x="1862" y="2946.0" />
               </Array>
-              <mxPoint x="796" y="2992.0" as="sourcePoint" />
-              <mxPoint x="3313" y="2992.0" as="targetPoint" />
+              <mxPoint x="2215" y="2946.0" as="sourcePoint" />
+              <mxPoint x="1510" y="2946.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="People already in the room" mermaidId="e:RoomProvider-&gt;Page#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="People already in the room" id="95">
-          <mxCell edge="1" parent="1" source="43" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="46">
+        <UserObject label="MSG118 - Unable to join the meeting room. Please try again." mermaidId="e:RoomController-&gt;Page#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG118 - Unable to join the meeting room. Please try again." id="95">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2055" y="3038.0" />
+                <mxPoint x="1148" y="2992.0" />
               </Array>
-              <mxPoint x="3313" y="3038.0" as="sourcePoint" />
-              <mxPoint x="796" y="3038.0" as="targetPoint" />
+              <mxPoint x="1500" y="2992.0" as="sourcePoint" />
+              <mxPoint x="796" y="2992.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Online Meeting Room - Video Grid with the people in the room (UC-40)" mermaidId="e:Page-&gt;Actor#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Online Meeting Room - Video Grid with the people in the room (UC-40)" id="96">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="MSG118 - Unable to join the meeting room. Please try again." mermaidId="e:Page-&gt;Actor#10" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG118 - Unable to join the meeting room. Please try again." id="96">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="3084.0" />
+                <mxPoint x="431" y="3038.0" />
               </Array>
-              <mxPoint x="786" y="3084.0" as="sourcePoint" />
-              <mxPoint x="75" y="3084.0" as="targetPoint" />
+              <mxPoint x="786" y="3038.0" as="sourcePoint" />
+              <mxPoint x="75" y="3038.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="MSG338 - The browser is blocking audio playback." mermaidId="e:Page-&gt;Actor#11" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG338 - The browser is blocking audio playback." id="97">
-          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+        <UserObject label="Room connection" mermaidId="e:RoomService-&gt;RoomController#11" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Room connection" id="97">
+          <mxCell edge="1" parent="1" source="46" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="47">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="431" y="3175.0" />
+                <mxPoint x="1862" y="3129.0" />
               </Array>
-              <mxPoint x="786" y="3175.0" as="sourcePoint" />
-              <mxPoint x="75" y="3175.0" as="targetPoint" />
+              <mxPoint x="2215" y="3129.0" as="sourcePoint" />
+              <mxPoint x="1510" y="3129.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Room connection" mermaidId="e:RoomController-&gt;Page#11" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Room connection" id="98">
+          <mxCell edge="1" parent="1" source="47" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1148" y="3175.0" />
+              </Array>
+              <mxPoint x="1500" y="3175.0" as="sourcePoint" />
+              <mxPoint x="796" y="3175.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Connect to the meeting room (fewer than 50 people, BR-336; EX-7 when full)" mermaidId="e:Page-&gt;RoomProvider#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Connect to the meeting room (fewer than 50 people, BR-336; EX-7 when full)" id="99">
+          <mxCell edge="1" parent="1" source="48" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="45">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2055" y="3221.0" />
+              </Array>
+              <mxPoint x="796" y="3221.0" as="sourcePoint" />
+              <mxPoint x="3313" y="3221.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="People already in the room" mermaidId="e:RoomProvider-&gt;Page#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="People already in the room" id="100">
+          <mxCell edge="1" parent="1" source="45" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="48">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="2055" y="3267.0" />
+              </Array>
+              <mxPoint x="3313" y="3267.0" as="sourcePoint" />
+              <mxPoint x="796" y="3267.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Online Meeting Room - Video Grid with the people in the room (UC-40)" mermaidId="e:Page-&gt;Actor#11" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Online Meeting Room - Video Grid with the people in the room (UC-40)" id="101">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="431" y="3313.0" />
+              </Array>
+              <mxPoint x="786" y="3313.0" as="sourcePoint" />
+              <mxPoint x="75" y="3313.0" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="MSG338 - The browser is blocking audio playback." mermaidId="e:Page-&gt;Actor#12" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="MSG338 - The browser is blocking audio playback." id="102">
+          <mxCell edge="1" parent="1" source="48" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="431" y="3404.0" />
+              </Array>
+              <mxPoint x="786" y="3404.0" as="sourcePoint" />
+              <mxPoint x="75" y="3404.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -42639,20 +42680,20 @@ deactivate MeetingPage
         <mxCell id="1" parent="0" />
         <mxCell id="title-uc38_leavemeetingroom" value="UC-38 - Leave Meeting Room" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#000000;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="1179" height="42" as="geometry" /></mxCell><UserObject label="Participant" mermaidId="n:Actor" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=1.25;size=90;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue="Participant" id="2">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=1.25;size=90;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="1741" width="150" as="geometry" y="50" />
+            <mxGeometry height="1725" width="150" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <UserObject label="Online Meeting Room Page" mermaidId="n:Page" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqBoundary;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue="Online Meeting Room Page" id="3">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqBoundary;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="1716" width="194" x="636" as="geometry" y="50" />
+            <mxGeometry height="1700" width="194" x="636" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <mxCell id="34" parent="3" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
-          <mxGeometry height="1490" width="10" x="92" y="111" as="geometry" />
+          <mxGeometry height="1474" width="10" x="92" y="111" as="geometry" />
         </mxCell>
         <UserObject label=":Room Service" mermaidId="n:RoomProvider" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":Room Service" id="4">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" vertex="1">
-            <mxGeometry height="1716" width="150" x="1029" as="geometry" y="50" />
+            <mxGeometry height="1700" width="150" x="1029" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <mxCell id="33" parent="4" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
@@ -42674,7 +42715,7 @@ deactivate MeetingPage
         </mxCell>
         <UserObject label="opt" mermaidId="n:f1" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="opt" id="9">
           <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="1074" width="718" x="45" y="607.0" as="geometry" />
+            <mxGeometry height="1058" width="718" x="45" y="607.0" as="geometry" />
           </mxCell>
         </UserObject>
         <mxCell id="10" parent="9" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[The connection ends without the actor choosing Leave]" vertex="1">
@@ -42682,7 +42723,7 @@ deactivate MeetingPage
         </mxCell>
         <UserObject label="alt" mermaidId="n:f2" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="alt" id="11">
           <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="1019" width="698" x="55" y="652.0" as="geometry" />
+            <mxGeometry height="1003" width="698" x="55" y="652.0" as="geometry" />
           </mxCell>
         </UserObject>
         <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[The Meeting ended - EX-1]" vertex="1">
@@ -42742,17 +42783,17 @@ deactivate MeetingPage
         </mxCell>
         <UserObject label="alt" mermaidId="n:f5" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="alt" id="29">
           <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="216" width="678" x="65" y="1445.0" as="geometry" />
+            <mxGeometry height="200" width="678" x="65" y="1445.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="30" parent="29" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Session expired or the Guest signed out on another device (closed within 30&#10;seconds)]" vertex="1">
-          <mxGeometry height="32" width="624" x="54" y="2" as="geometry" />
+        <mxCell id="30" parent="29" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Session expired (closed within 30 seconds)]" vertex="1">
+          <mxGeometry height="16" width="624" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="31" parent="29" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="678" y="130" as="geometry" />
+          <mxGeometry height="1" width="678" y="114" as="geometry" />
         </mxCell>
         <mxCell id="32" parent="29" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[The Guest signed out in another tab of this browser]" vertex="1">
-          <mxGeometry height="16" width="678" y="132" as="geometry" />
+          <mxGeometry height="16" width="678" y="116" as="geometry" />
         </mxCell>
         <UserObject label="Confirm Leave" mermaidId="e:Actor-&gt;Page#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Confirm Leave" id="35">
           <mxCell edge="1" parent="1" source="2" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="34">
@@ -42933,10 +42974,10 @@ deactivate MeetingPage
           <mxCell edge="1" parent="1" source="34" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="402" y="1560.0" />
+                <mxPoint x="402" y="1544.0" />
               </Array>
-              <mxPoint x="728" y="1560.0" as="sourcePoint" />
-              <mxPoint x="75" y="1560.0" as="targetPoint" />
+              <mxPoint x="728" y="1544.0" as="sourcePoint" />
+              <mxPoint x="75" y="1544.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -42944,10 +42985,10 @@ deactivate MeetingPage
           <mxCell edge="1" parent="1" source="34" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="2">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="402" y="1651.0" />
+                <mxPoint x="402" y="1635.0" />
               </Array>
-              <mxPoint x="728" y="1651.0" as="sourcePoint" />
-              <mxPoint x="75" y="1651.0" as="targetPoint" />
+              <mxPoint x="728" y="1635.0" as="sourcePoint" />
+              <mxPoint x="75" y="1635.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
