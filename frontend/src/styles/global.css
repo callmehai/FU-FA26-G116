@@ -1528,12 +1528,6 @@ a.menu-item { text-decoration: none; }
 @media (max-width: 900px) {
   .tabs { padding-right: 32px; mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
 }
-/* A phone: tighter tabs, so the next one is cut through its words under the fade rather than off screen
-   altogether, which read as a row with nothing more to scroll to (the guest page's fourth tab at 390px). */
-@media (max-width: 560px) {
-  .tabs { gap: 0; }
-  .tab { padding: 0 10px; }
-}
 
 .tab {
   display: flex;
@@ -1554,6 +1548,12 @@ a.menu-item { text-decoration: none; }
 .tab:hover { color: var(--ink); }
 .tab-active, .tab-active:hover { color: var(--brand); box-shadow: inset 0 -3px 0 var(--brand); }
 .tab:focus-visible { outline-offset: -2px; }
+/* A phone (after .tab, which it overrides): tighter tabs, so the next one is cut through its words under the fade rather than off screen
+   altogether, which read as a row with nothing more to scroll to (the guest page's fourth tab at 390px). */
+@media (max-width: 560px) {
+  .tabs { gap: 0; }
+  .tab { padding: 0 10px; }
+}
 .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 7px; border-radius: 10px; background: #eef1f5; color: var(--ink-soft); font-size: 12px; font-weight: 700; }
 .tab-active .tab-count { background: var(--brand-wash); color: var(--brand); }
 

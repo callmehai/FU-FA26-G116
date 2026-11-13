@@ -21,7 +21,7 @@ import { RsvpButtons, RsvpChip } from '../participants/Rsvp'
 import { VotingPanel } from '../votes/VotingPanel'
 import { guestName, useGuest } from './guestContext'
 import type { GuestOutletContext } from './GuestPage'
-import { dropGuestSession, readGuestEntry } from './guestStore'
+import { readGuestEntry, signOutGuestSession } from './guestStore'
 import { useGuestCall } from './useGuestCall'
 
 const TABS = [
@@ -188,7 +188,7 @@ function GuestBar() {
         return toast.show(errorMessage(err), 'error')
       }
     }
-    dropGuestSession(invitationId)
+    signOutGuestSession(invitationId)
     signedOut()
   }
 

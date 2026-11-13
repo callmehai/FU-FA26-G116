@@ -16,6 +16,8 @@ export interface GuestEntry {
   linkToken?: string
   accessToken?: string
   expiresAt?: string
+  /** Set by "Thoát", cleared by the next verification: tells another tab of this browser why its token went. */
+  signedOut?: boolean
 }
 
 function readAll(): Record<string, GuestEntry> {
@@ -64,4 +66,9 @@ export function updateGuestEntry(invitationId: string, change: GuestEntry) {
 /** Forgets the session, keeping the link token so the invitation can be reopened. */
 export function dropGuestSession(invitationId: string) {
   updateGuestEntry(invitationId, { accessToken: undefined, expiresAt: undefined })
+}
+
+/** "Thoát": forgets the session and says so, for the other tabs of this browser. */
+export function signOutGuestSession(invitationId: string) {
+  updateGuestEntry(invitationId, { accessToken: undefined, expiresAt: undefined, signedOut: true })
 }

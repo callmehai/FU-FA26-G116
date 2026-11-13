@@ -156,7 +156,7 @@ export function GuestVerifyForm({
     setPending(true)
     try {
       const verified = await verifyGuestCode(invitationId, linkToken, code)
-      updateGuestEntry(invitationId, { accessToken: verified.accessToken, expiresAt: verified.expiresAt })
+      updateGuestEntry(invitationId, { accessToken: verified.accessToken, expiresAt: verified.expiresAt, signedOut: undefined })
       onVerified()
     } catch (err) {
       setPending(false)
@@ -167,8 +167,9 @@ export function GuestVerifyForm({
         message: left !== undefined && left <= WARN_FROM_REMAINING ? `${errorMessage(err)} Còn ${left} lần thử.` : errorMessage(err),
         locked,
       })
-      if (!locked) {
-        // As after "Gửi lại mã": the next code goes in from the first box, not onto the end of the wrong one.
+      if (isApiError(err, 400, 'MSG126')) {
+        // As after "Gửi lại mã": the next code goes in from the first box, not onto the end of the wrong one. Any other
+        // failure (network, 5xx) keeps the digits, which may well be right.
         setDigits(Array(DIGITS).fill(''))
         boxes.current[0]?.focus()
       }

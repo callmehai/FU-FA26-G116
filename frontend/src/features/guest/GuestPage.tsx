@@ -123,11 +123,15 @@ export function GuestPage() {
     if (rechecking || shownGate !== 'in') return
     rechecking = true
     try {
-      const token = readGuestEntry(invitationId).accessToken
-      // No token while the meeting is on screen: past its time (MSG378, as the server would say), or gone with
-      // "Thoát" in another tab of this browser, which shares the storage — then say so as that tab does, rather
-      // than ask for a code nobody asked for.
-      if (!token) return guestSessionExpired(invitationId) ? await enter(SESSION_ENDED) : setGate({ kind: 'signedOut' })
+      const entry = readGuestEntry(invitationId)
+      // No token while the meeting is on screen. "Thoát" in another tab of this browser (it shares the storage) says
+      // so as that tab does, without a code nobody asked for; a token past its time is MSG378, as the server would
+      // say; anything else (another tab found the meeting over) is settled by reopening the invitation.
+      if (!entry.accessToken) {
+        if (entry.signedOut) return setGate({ kind: 'signedOut' })
+        return await enter(guestSessionExpired(invitationId) ? SESSION_ENDED : null)
+      }
+      const token = entry.accessToken
       const session = await getGuestSession(token)
       setGate((g) =>
         g.kind === 'in' && JSON.stringify(g.session) !== JSON.stringify(session) ? { kind: 'in', session } : g,
