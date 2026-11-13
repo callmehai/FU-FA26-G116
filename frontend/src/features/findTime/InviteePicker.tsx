@@ -113,7 +113,11 @@ export function InviteePicker({
 
   function toggle(option: Invitee) {
     if (picked.has(option.id)) onChange(value.filter((p) => p.id !== option.id))
-    else if (!full) onChange([...value, { id: option.id, fullName: option.fullName, email: option.email }])
+    else if (!full) {
+      onChange([...value, { id: option.id, fullName: option.fullName, email: option.email }])
+      // Ready for the next name, rather than appending to the last one.
+      setQuery('')
+    }
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {

@@ -49,7 +49,7 @@ component); đổi Chủ toạ bằng nút ↑/↓ thay vì kéo thả; `NewShar
 ## 3. Kết quả
 
 - `people[]` theo thứ tự: mình (nếu tick, `status = "Own"`), rồi người đã chọn. `status = "NotShared"` → hiện
-  **"Chưa được chia sẻ lịch"** cạnh tên, kèm nút **"Xin xem lịch"** mở hộp thoại UC-84a sẵn có (`POST /api/calendar/shares`,
+  **"Chưa được chia sẻ lịch"** cạnh tên, kèm nút **"Yêu cầu chia sẻ lịch"** (như AI-eCabinet; hộp thoại mở ra có tiêu đề "Xin xem lịch") mở hộp thoại UC-84a sẵn có (`POST /api/calendar/shares`,
   chọn sẵn người đó). Người NotShared không rảnh cũng không bận.
 - `days[].slots[]`: gom theo ngày. `busyUserIds` = bận, `unknownUserIds` = **chưa biết** (ngày ngoài khoảng chia sẻ) — không được vẽ
   như rảnh. Tên lấy từ `people` theo id. Không có tên cuộc họp nào để hiện (API không trả).

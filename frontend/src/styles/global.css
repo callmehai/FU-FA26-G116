@@ -5280,6 +5280,8 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .find-people-list .roster-row > .icon-button { grid-column: 2; grid-row: 1; }
   .find-people-list .find-person-state { grid-column: 1 / -1; grid-row: 2; }
   .find-chip { height: 40px; min-width: 72px; }
+  .find-days .chip-toggle { height: 40px; min-width: 40px; }
+  .find-collapse { justify-self: start; }
   .find-detail-head .btn { width: 100%; justify-content: center; }
   .find-locked-note { margin-left: 0; }
 }

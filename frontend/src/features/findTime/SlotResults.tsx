@@ -88,6 +88,11 @@ export function SlotResults({
                   key={slotKey(slot)}
                   type="button"
                   className="chip-toggle find-chip"
+                  aria-label={
+                    mostFree
+                      ? `${clockOf(slot.start)}, ${slot.freeCount} trên ${slot.countedCount} người rảnh`
+                      : clockOf(slot.start)
+                  }
                   aria-pressed={slotKey(slot) === selected}
                   onClick={() => onSelect(slotKey(slot) === selected ? null : slotKey(slot))}
                 >

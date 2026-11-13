@@ -74,7 +74,8 @@ export function FindTimePage() {
   const [includeMe, setIncludeMe] = useState(false)
   const [peopleError, setPeopleError] = useState<string | undefined>()
   const [peopleRowErrors, setPeopleRowErrors] = useState<Record<string, string>>({})
-  const [shares, setShares] = useState<Share[] | null>(null)
+  /** null while loading, 'error' when the list could not be read: then no row claims a share state either way. */
+  const [shares, setShares] = useState<Share[] | 'error' | null>(null)
   const [search, setSearch] = useState<Search>({ kind: 'idle' })
   const [selected, setSelected] = useState<string | null>(null)
   const [draft, setDraft] = useState<{ slot: Slot; day: string } | null>(null)
@@ -87,7 +88,7 @@ export function FindTimePage() {
     listShares().then(
       (lists) => !cancelled && setShares(lists.asViewer),
       // Without the list the rows just show no share state; the search itself still tells who is counted.
-      () => !cancelled && setShares([]),
+      () => !cancelled && setShares('error'),
     )
     return () => {
       cancelled = true
@@ -97,16 +98,18 @@ export function FindTimePage() {
   /** Before searching, each invitee's share with the caller, from "Lịch được chia sẻ với tôi". */
   const shareOf = useCallback(
     (id: string): ShareState | null => {
-      if (!shares) return null
-      const share = shares.find((s) => s.owner.id === id && (s.status === 'Effective' || s.status === 'Pending'))
-      if (!share) return { kind: 'none' }
-      return share.status === 'Effective' ? { kind: 'shared', level: share.level } : { kind: 'pending' }
+      if (!shares || shares === 'error') return null
+      // Effective wins over a Pending one of the same owner (a change asked while sharing).
+      const mine = shares.filter((s) => s.owner.id === id)
+      const effective = mine.find((s) => s.status === 'Effective')
+      if (effective) return { kind: 'shared', level: effective.level }
+      return mine.some((s) => s.status === 'Pending') ? { kind: 'pending' } : { kind: 'none' }
     },
     [shares],
   )
   const quick = useMemo(
     () =>
-      (shares ?? [])
+      (Array.isArray(shares) ? shares : [])
         .filter((s) => s.status === 'Effective' && !invitees.some((p) => p.id === s.owner.id))
         .map((s) => ({ id: s.owner.id, fullName: s.owner.fullName, email: s.owner.email })),
     [shares, invitees],
@@ -137,11 +140,17 @@ export function FindTimePage() {
     setPeopleRowErrors({})
     if (Object.keys(errors).length > 0 || noPeople) return
 
-    const request = toRequest(
-      settings,
-      invitees.map((p) => p.id),
-      includeMe,
+    await send(
+      toRequest(
+        settings,
+        invitees.map((p) => p.id),
+        includeMe,
+      ),
     )
+  }
+
+  /** Sends a search; also used to search again with the request a slot came from (409 MSG446). */
+  async function send(request: SlotSearchRequest) {
     setSearch({ kind: 'loading' })
     setSelected(null)
     try {
@@ -154,7 +163,7 @@ export function FindTimePage() {
         const rows: Record<string, string> = {}
         for (const [key, message] of Object.entries(err.body?.errors ?? {})) {
           const row = /^userIds\[(\d+)\]$/.exec(key)
-          if (row && invitees[Number(row[1])]) rows[invitees[Number(row[1])].id] = message
+          if (row && request.userIds[Number(row[1])]) rows[request.userIds[Number(row[1])]] = message
           else if (key === 'userIds') setPeopleError(message)
           else if ((SETTINGS_FIELDS as string[]).includes(key)) fieldErrors[key as SettingsField] = message
         }
@@ -225,7 +234,15 @@ export function FindTimePage() {
               </button>
             </div>
           ) : (
-            settingsPanel
+            <>
+              {phone && (
+                <button type="button" className="btn btn-ghost find-collapse" onClick={() => setEditing(false)}>
+                  <Icon name="chevronUp" size={16} />
+                  Thu gọn điều kiện
+                </button>
+              )}
+              {settingsPanel}
+            </>
           )}
 
           <div className="find-main">
@@ -310,7 +327,8 @@ export function FindTimePage() {
           onTaken={(message) => {
             setDraft(null)
             toast.show(message, 'error')
-            void runSearch()
+            // The slot came from that search, not from whatever the conditions say now.
+            void send(done.request)
           }}
         />
       )}
