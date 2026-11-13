@@ -31,6 +31,7 @@ Khách gọi `GET …/call` và `POST …/call/join` bằng **token Khách** c�
 - cuộc họp `InProgress`, hình thức `Online`/`Hybrid` — như thành viên (UC-37). Khi cuộc họp `Published`,
   `GET …/call` trả `NotStarted`; khi `Ended`/`Cancelled` Khách mất toàn bộ quyền với cuộc họp nên nhận `404`;
 - **xác nhận đã đọc thông báo ghi âm**: body `{ "recordingNoticeAcknowledged": true }`, thiếu thì `400 MSG380`.
+  Chỉ giá trị JSON `true` được tính; `"true"` dạng chuỗi, JSON hỏng hay `Content-Type` khác cũng là `400 MSG380`.
   Thành viên không cần gửi body.
 
 Mỗi lần cấp token cho Khách ghi một dòng `audit_log` `call.guest_admitted` (`object_type = GuestSession`,
@@ -103,7 +104,7 @@ Tắt mic chỉ **tắt**, không bao giờ bật hộ. Người đã tắt sẵ
 | `POST …/join` | `409` | `MSG280` | Cuộc họp `InPerson` |
 | `POST …/join` | `409` | `MSG117` | Cuộc họp không `InProgress` |
 | `POST …/join` | `503` | `MSG281` | Chưa cấu hình LiveKit |
-| `POST …/join` | `400` | `MSG380` | Khách chưa xác nhận thông báo ghi âm |
+| `POST …/join` | `400` | `MSG380` | Khách chưa xác nhận thông báo ghi âm: thiếu body, `recordingNoticeAcknowledged` khác JSON `true`, hoặc body không đọc được |
 | `POST …/join` | `500` | `MSG118` | Lỗi database, hoặc không ghi được bằng chứng xác nhận ghi âm của Khách |
 | `POST …/mute` | `403` | `MSG123` | Người gọi được mời nhưng không phải chủ toạ |
 | `POST …/mute` | `409` | `MSG117` | Phòng không mở |

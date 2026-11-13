@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -222,6 +223,12 @@ public sealed class CallEndpointsTests : IDisposable
 
         await AssertError(await client.PostAsync($"{CallPath}/join", null), HttpStatusCode.BadRequest, "MSG380");
         await AssertError(await client.PostAsJsonAsync($"{CallPath}/join", new { recordingNoticeAcknowledged = false }),
+            HttpStatusCode.BadRequest, "MSG380");
+        // A body the binder would refuse is the same unconfirmed notice, not a bare 400 (E2E U16).
+        foreach (var body in new[] { "{\"recordingNoticeAcknowledged\":\"true\"}", "{", "[]" })
+            await AssertError(await client.PostAsync($"{CallPath}/join", new StringContent(body, Encoding.UTF8, "application/json")),
+                HttpStatusCode.BadRequest, "MSG380");
+        await AssertError(await client.PostAsync($"{CallPath}/join", new StringContent("recordingNoticeAcknowledged=true")),
             HttpStatusCode.BadRequest, "MSG380");
 
         var join = await client.PostAsJsonAsync($"{CallPath}/join", new { recordingNoticeAcknowledged = true });

@@ -92,6 +92,24 @@ public sealed class EmailDeliveryTests
             part => part.ContentType.MimeType == "text/calendar");
         Assert.Equal("REQUEST", calendar.ContentType.Parameters["method"]);
         Assert.Equal("thu-moi-hop.ics", calendar.FileName);
+        Assert.Equal(queued.Body, message.TextBody);
+        Assert.Equal(EmailHtml.FromText(queued.Body), message.HtmlBody);
+    }
+
+    [Fact]
+    public void Html_part_links_each_web_address_and_escapes_the_rest()
+    {
+        // E2E U6: a guest's link must be clickable in a client that does not detect links in plain text.
+        var html = EmailHtml.FromText("Xin chào <Khách> & bạn,\n\nXác minh: https://hop.example.vn/guest/1#token=a&b=c\nHết.");
+
+        Assert.Contains(
+            "<a href=\"https://hop.example.vn/guest/1#token=a&amp;b=c\" style=\"color:#2a4d94;word-break:break-all\">"
+            + "https://hop.example.vn/guest/1#token=a&amp;b=c</a>",
+            html,
+            StringComparison.Ordinal);
+        Assert.Contains("Xin chào &lt;Khách&gt; &amp; bạn,<br><br>Xác minh: ", html, StringComparison.Ordinal);
+        Assert.Contains("</a><br>Hết.", html, StringComparison.Ordinal);
+        Assert.Contains(">TrustCabinet</p>", html, StringComparison.Ordinal);
     }
 
     private static TrustCabinetDbContext NewDatabase()

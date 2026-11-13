@@ -84,6 +84,11 @@ Server gửi qua API của Resend ([ADR-0031](../05-decisions/0031-gui-email-qua
 | `provider_message_id` | id Resend trả về | trống |
 | Kết quả giao thư | Webhook bên dưới | Không biết |
 
+Mỗi thư gửi cả hai phần: `text` (nội dung lưu trong `email_messages.body`) và `html` dựng từ chính nội dung đó lúc gửi
+(`EmailHtml`): tên TrustCabinet ở đầu, mỗi địa chỉ web thành thẻ `<a>` nhưng vẫn ghi nguyên địa chỉ để chép được. Không
+lưu thêm cột nào. Lý do: trình đọc thư không tự nhận link trong văn bản thuần thì Khách phải chép tay link mời dài (E2E
+Khách 12/11/2026, U6).
+
 ### `POST /api/email/resend/webhook`
 
 Chỉ Resend gọi. Không đăng nhập; Resend chứng minh bằng chữ ký Svix trên đúng các byte của body (header `svix-id`,

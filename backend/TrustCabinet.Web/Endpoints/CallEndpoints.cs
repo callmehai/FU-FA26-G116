@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using TrustCabinet.Domain.Calls;
 
 namespace TrustCabinet.Web.Endpoints;
@@ -66,10 +67,11 @@ public static class CallEndpoints
     }
 
     private static async Task<IResult> JoinAsync(
-        Guid id, JoinBody? body, ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities,
+        Guid id, HttpRequest request, ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities,
         ICallRoomService service, CancellationToken ct)
     {
-        var result = await service.JoinAsync(id, Caller(principal, identities), body?.RecordingNoticeAcknowledged == true, ct);
+        var acknowledged = await ReadAcknowledgedAsync(request, ct);
+        var result = await service.JoinAsync(id, Caller(principal, identities), acknowledged, ct);
         return result.Outcome switch
         {
             CallOutcome.Success => Results.Ok(CallJoinResponse.From(result.Value!)),
@@ -86,6 +88,23 @@ public static class CallEndpoints
 
     /// <summary>Only a guest must send it; a member's join takes no body.</summary>
     internal sealed record JoinBody(bool? RecordingNoticeAcknowledged);
+
+    /// <summary>
+    /// Read by hand rather than bound: a body the binder refuses (<c>"true"</c> as a string, broken JSON, another content
+    /// type) would be a bare 400, where a guest must get MSG380 as for a missing field. Only a JSON <c>true</c> counts.
+    /// </summary>
+    private static async Task<bool> ReadAcknowledgedAsync(HttpRequest request, CancellationToken ct)
+    {
+        if (!request.HasJsonContentType()) return false;
+        try
+        {
+            return (await request.ReadFromJsonAsync<JoinBody>(ct))?.RecordingNoticeAcknowledged == true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
 
     /// <summary>A guest token for this meeting, or the signed-in user the filter already checked is active.</summary>
     private static CallCaller Caller(ClaimsPrincipal principal, IMeetingGuestIdentityResolver identities)
