@@ -22,6 +22,7 @@ import {
   Bell,
   Building2,
   CalendarCheck,
+  CalendarSearch,
   CalendarDays,
   CalendarX,
   Check,
@@ -142,6 +143,7 @@ const ICONS = {
   calendar: CalendarDays,
   // The meeting list's count cards, as AI-eCabinet's: today, published (the invitations are out).
   calendarCheck: CalendarCheck,
+  calendarSearch: CalendarSearch,
   megaphone: Megaphone,
   // SCRUM-109: the per-mic transcript, a line of words per sentence.
   captions: Captions,

@@ -55,6 +55,11 @@ export const routes = {
    * notifications here as `?share={id}`.
    */
   calendarSharing: '/calendar/sharing',
+  /**
+   * SCRUM-137: find a time everyone shared is free (UC-85a) and draft a meeting from it (UC-85b); `?tab=shared&week=` is
+   * the week of shared hours (UC-85c). Needs `MeetingCreator`.
+   */
+  findTime: '/calendar/find',
 } as const
 
 /**
