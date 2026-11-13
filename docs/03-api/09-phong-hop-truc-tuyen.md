@@ -202,13 +202,17 @@ phiên (`ON DELETE CASCADE`), tức theo lời mời; audit giữ theo chính s�
   màn chờ và `RoomView` của thành viên. Trang Khách hiện nút **Vào phòng họp** khi `status = Open`, còn `NotStarted`
   / `InPersonOnly` thì hiện `MSG117` / `MSG280`. Bắt đầu cuộc họp không báo gì cho Khách (chỉ có thông báo cho thành
   viên), nên khi phòng chưa mở FE hỏi lại `GET …/call` mỗi 10 giây và khi quay lại tab. Thời hạn trong thông báo ghi âm
-  lấy từ `retentionDays` của `GET …/call`. Khách không gắn bộ ghi âm theo micro (SCRUM-109): không gọi endpoint
-  speech-clip nào, kể cả gửi lại câu còn kẹt trong trình duyệt. Bị LiveKit đưa ra (`PARTICIPANT_REMOVED`) thì trang
-  Khách kiểm lại phiên ngay: lời mời bị thu hồi → màn "Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi", không vào lại
-  được; phiên hết hạn hoặc Khách đăng xuất ở tab khác (job đối soát đưa ra trong khoảng 20–30 giây) → lời mời vẫn còn,
-  nên về màn nhập mã với `MSG378` như UC-04 (xác minh lại thì vào lại được). Token quá hạn nhận `401` không có body;
-  FE vẫn hiện câu của `MSG378` cho trường hợp này. Cuộc họp kết thúc thì hiện `MSG331`, rồi lần
-  kiểm lại phiên kế tiếp (tối đa 20 giây) chuyển sang màn kết thúc.
+  lấy từ `retentionDays` của `GET …/call`; phòng vừa mở thì trang kiểm lại phiên ngay để huy hiệu trạng thái đổi cùng
+  nút. Khách được ghi theo micro từ SCRUM-129 như thành viên (tab Khách gọi `GET`/`PUT …/speech-clips`, phòng hiện
+  "Đang ghi lời bạn"), xem [bản ghi cuộc họp](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051). Bị LiveKit đưa ra
+  (`PARTICIPANT_REMOVED`) thì trang Khách kiểm lại phiên ngay: lời mời bị thu hồi → màn "Cuộc họp đã kết thúc hoặc lời
+  mời đã bị thu hồi", không vào lại được; phiên hết hạn hoặc Khách đăng xuất trên thiết bị khác (job đối soát đưa ra
+  trong khoảng 20–30 giây) → lời mời vẫn còn, nên về màn nhập mã với `MSG378` như UC-04 (xác minh lại thì vào lại
+  được). Khách bấm Thoát ở một tab khác của **cùng trình duyệt** thì token trong `localStorage` dùng chung đã bị xoá:
+  tab đang trong phòng hiện màn "Bạn đã thoát khỏi cuộc họp" như tab kia, không kèm `MSG378` và không tự gửi mã. Token
+  quá hạn nhận `401` không có body; FE vẫn hiện câu của `MSG378` cho trường hợp này. Cuộc họp kết thúc thì hiện
+  `MSG331` không kèm nút "Về trang cuộc họp" (trang cuộc họp của Khách cũng đã đóng) và trang Khách kiểm lại phiên ngay,
+  chuyển sang màn kết thúc; ở màn chờ (chưa vào phòng) thì lần kiểm lại phiên kế tiếp (tối đa 20 giây) làm việc này.
 
 SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát cùng dùng `ParticipantRules.ActiveExpression`. Gỡ rồi mời lại chỉ xét assignment Current mới; dòng lịch sử không tạo quyền hoặc làm truy vấn trả nhiều dòng.
 

@@ -5,6 +5,7 @@ boundary "Meeting Lobby Page" as Page
 control ":Meeting Room Controller" as RoomController
 control ":Meeting Room Service" as RoomService
 participant ":Meeting Repository" as MeetingRepository
+participant ":Audit Log Repository" as AuditRepository
 participant ":Room Service" as RoomProvider
 database ":Database" as Database
 
@@ -34,7 +35,7 @@ else Actor is no longer eligible - EX-4
 else Meeting has ended - EX-1
     RoomService-->RoomController: MSG331 - The meeting has ended, the meeting room is closed.
     RoomController-->Page: MSG331 - The meeting has ended, the meeting room is closed.
-    Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.
+    Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.\nA Guest is offered no way back to the Meeting page, which has closed too
 else Meeting is cancelled - EX-6
     RoomService-->RoomController: MSG350 - The meeting was cancelled, so the meeting room does not open.
     RoomController-->Page: MSG350 - The meeting was cancelled, so the meeting room does not open.
@@ -46,12 +47,30 @@ else Meeting is held in person - EX-2
 else Meeting has not started yet - AF-3
     RoomService-->RoomController: MSG117 - The meeting room opens only while the meeting is in progress.
     RoomController-->Page: MSG117 - The meeting room opens only while the meeting is in progress.
-    Page-->Actor: MSG117 - The meeting room opens only while the meeting is in progress.\nThe lobby opens by itself when the Meeting starts
+    Page-->Actor: MSG117 - The meeting room opens only while the meeting is in progress.\nThe lobby opens by itself when the Meeting starts; a Guest page asks again every 10 seconds
 else Room service is not configured - EX-3
     RoomService-->RoomController: MSG281 - The online meeting room is not ready. Please contact the administrator.
     RoomController-->Page: MSG281 - The online meeting room is not ready. Please contact the administrator.
     Page-->Actor: MSG281 - The online meeting room is not ready. Please contact the administrator.
+else Guest session has ended - EX-10
+    RoomService-->RoomController: Guest session ended
+    RoomController-->Page: Guest session ended
+    Page-->Actor: MSG378 - The guest session has ended.\nMeeting data removed; the Guest may verify again (UC-04)
+else Guest has not confirmed the recording notice - EX-9
+    RoomService-->RoomController: MSG380 - Confirm that you have read the recording notice before joining the meeting room.
+    RoomController-->Page: MSG380 - Confirm that you have read the recording notice before joining the meeting room.
+    Page-->Actor: MSG380 - Confirm that you have read the recording notice before joining the meeting room.
 else Meeting is In Progress and the actor is eligible
+    opt Actor is a Guest who confirmed the recording notice - Step 5
+        RoomService->AuditRepository: Save call.guest_admitted audit entry: Guest session, invitation,\ndeclared name, IP address and time, before any connection is issued
+        activate AuditRepository
+        AuditRepository->Database: Insert audit record
+        activate Database
+        Database-->AuditRepository: Saved / Failure
+        deactivate Database
+        AuditRepository-->RoomService: Saved / Failure (EX-5)
+        deactivate AuditRepository
+    end
     RoomService->RoomProvider: Request a room connection for the actor with the actor's current Meeting Role (BR-323, BR-329)
     activate RoomProvider
     RoomProvider-->RoomService: Room connection / refused

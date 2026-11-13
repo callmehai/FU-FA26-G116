@@ -20,15 +20,28 @@ Page-->Actor: Meeting detail page
 opt The connection ends without the actor choosing Leave
     alt The Meeting ended - EX-1
         Page-->Actor: MSG331 - The meeting has ended, the meeting room is closed.
+        opt Actor is a Guest
+            Page-->Actor: No way back to the Meeting page; the end screen of UC-04 EX-1 at once
+        end
     else Same account joined from another tab or device - EX-2 (BR-328)
         Page-->Actor: MSG329 - You joined this room from another tab or device, so this tab left the room.
     else Actor is no longer on the participant list - EX-3
-        Page-->Actor: MSG330 - You are no longer on the participant list of this meeting room.
+        alt Internal participant removed from the roster
+            Page-->Actor: MSG330 - You are no longer on the participant list of this meeting room.
+        else Guest invitation revoked
+            Page-->Actor: End screen of UC-04 EX-1: the meeting has ended or the invitation has been revoked
+        end
     else Connection is lost - EX-4
         Page-->Actor: MSG333 - Connection lost, reconnecting...
         Page-->Actor: MSG332 - Connection to the meeting room lost.
     else This tab left the room without Leave - EX-5
         Page-->Actor: MSG328 - You have left the meeting room.
+    else Guest session ended while in the room - EX-6
+        alt Session expired or the Guest signed out on another device (closed within 30 seconds)
+            Page-->Actor: MSG378 - The guest session has ended.\nMeeting data removed; the Guest may verify again (UC-04)
+        else The Guest signed out in another tab of this browser
+            Page-->Actor: You have left the meeting - the signed-out screen of UC-04 AF-3
+        end
     end
 end
 deactivate Page

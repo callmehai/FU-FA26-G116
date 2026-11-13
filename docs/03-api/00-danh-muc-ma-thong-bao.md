@@ -1036,7 +1036,7 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Đã triển khai SCRUM-21, SCRUM-23, SCRUM-123 | Meeting documents are not accessible. |
 | `MSG157` | UC-32a / EX-2 · Dành sẵn | Unable to load the document list. Please try again. |
 | `MSG158` | UC-32c / EX-2; UC-34b / EX-3 · Dành sẵn | Unable to display the document. Please try again. |
-| `MSG159` | UC-32c / EX-3 · Dành sẵn | Secret Meeting documents can only be viewed online and cannot be downloaded. |
+| `MSG159` | UC-32c / EX-3 · Đã triển khai SCRUM-21 (`403`) | Secret Meeting documents can only be viewed online and cannot be downloaded. |
 | `MSG160` | UC-32c / EX-4 · Dành sẵn | Unable to download the document. Please try again. |
 | `MSG161` | UC-33a / Normal Flow · Đã triển khai SCRUM-107 | Documents added to the Meeting successfully. |
 | `MSG162` | UC-33a / EX-1 · Đã triển khai SCRUM-107 | You no longer have permission to add documents to this Meeting. |
