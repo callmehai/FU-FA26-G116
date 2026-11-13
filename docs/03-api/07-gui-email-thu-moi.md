@@ -87,7 +87,8 @@ Server gửi qua API của Resend ([ADR-0031](../05-decisions/0031-gui-email-qua
 Mỗi thư gửi cả hai phần: `text` (nội dung lưu trong `email_messages.body`) và `html` dựng từ chính nội dung đó lúc gửi
 (`EmailHtml`): tên TrustCabinet ở đầu, mỗi địa chỉ web thành thẻ `<a>` nhưng vẫn ghi nguyên địa chỉ để chép được. Không
 lưu thêm cột nào. Lý do: trình đọc thư không tự nhận link trong văn bản thuần thì Khách phải chép tay link mời dài (E2E
-Khách 12/11/2026, U6).
+Khách 12/11/2026, U6). Dấu câu ngay sau địa chỉ (`.`, `)`…) không tính vào link. **Click/open tracking của Resend phải
+tắt** trên domain gửi: link đặt lại mật khẩu và link mời Khách mang token sau `#`, tracking sẽ ghi lại cả URL đó.
 
 ### `POST /api/email/resend/webhook`
 
