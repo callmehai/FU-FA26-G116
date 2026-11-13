@@ -10,7 +10,8 @@ namespace TrustCabinet.Infrastructure.Email;
 /// </summary>
 internal static partial class EmailHtml
 {
-    [GeneratedRegex(@"https?://[^\s<>""]+")]
+    // Never ends on punctuation: "…/tb." or "(https://x.vn/a)" in a user's text keeps its "." or ")" outside the link.
+    [GeneratedRegex(@"https?://[^\s<>""]*[^\s<>"".,;:!?)\]}”’']")]
     private static partial Regex WebAddress();
 
     public static string FromText(string text)
