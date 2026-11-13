@@ -425,7 +425,7 @@ Q9 và Q10 đã chốt 08/11/2026 (Hải) — xem D17, D18; không còn câu h�
   - [x] **B3 — Đặc tả sơ bộ (file này)** — xong 11/11/2026, PR #322: §6 dòng 44 và 336 ("locked" → "deactivated"), mục UC-84 "ẩn màn" → L8, và mọi chỗ còn "Expired"/"job"/`SYS_ExpireCalendarShares`.
   - [x] **B4 — Inventory và UC diagram** — xong 11/11/2026, PR #322: `00-master-use-case-inventory.md` thêm UC-84f; `docs/14-uc-diagram/` thêm UC-84f dưới UC-84.
   - [ ] **B5 — Q7, Q8 vẫn chờ BA chốt chữ** (§7 phía trên): Q7 câu cố định màn tìm giờ; Q8 khung nhiều người dự nhất chỉ hiện tên trong danh sách mời.
-  - [ ] **B6 — Jira:** comment SCRUM-142 gồm L8 (`10498`), Q-A → Q-D, PR #295 và PR docs mới; xem danh sách ở dưới.
+  - [x] **B6 — Jira:** (xong: comment `10521`, `10523` ngày 12/11/2026) comment SCRUM-142 gồm L8 (`10498`), Q-A → Q-D, PR #295 và PR docs mới; xem danh sách ở dưới.
 - [ ] Ticket màn FE-16 tạo riêng (note 36 §6); cập nhật `scopeData`/landing ở PR màn hình, không ở đây.
 - [ ] Comment cần đăng lên Jira sau khi note này merge (xem §2 + D12–D16, không sửa ticket trong task này):
   - SCRUM-142: D12 (khung trùng Mật vẫn cho tạo nháp, kiểm lại theo dữ liệu đã chia sẻ, câu cố định trên màn);

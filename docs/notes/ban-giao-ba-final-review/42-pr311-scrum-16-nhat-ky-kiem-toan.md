@@ -202,5 +202,5 @@ File: `docs/07-classdiagram/feature-03-role-management-class-diagram.drawio` (+ 
 - [x] 42-3, 42-4: thêm bước ghi nhật ký vào UC-01, 02, 04, 14, 15, 18–22, 75, 64 (DOCX) — 11/11/2026
 - [x] 42-5, 42-6, 42-7, 42-8: UC-13 AF-2, Change Log, `sync_reports.py --report 3`, `check_docx.py`, câu cảnh báo màn 3.3 — 11/11/2026
 - [x] §4: PO trả lời Q-A (sửa đặc tả theo code — đã khớp 42-5) và Q-B (Khách đăng xuất không ghi) — 11/11/2026
-- [ ] §5: comment Jira và chuyển `In Review` sau khi PR docs vào `main` — **chưa làm**, chưa commit
+- [x] §5: comment Jira sau khi PR docs vào `main` — xong 12/11/2026, comment `10520`; ticket đã `Done` nên không đổi trạng thái
 - [ ] **PENDING** §7: đặc tả màn 3.3 và wireframe (chưa làm; mở khoá khi PO/BA đồng ý)

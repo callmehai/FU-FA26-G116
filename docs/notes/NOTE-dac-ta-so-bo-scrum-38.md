@@ -97,7 +97,7 @@ Không có. Báo cáo chỉ đọc, không đổi luồng nào khác.
 | `BR-436` | The minutes turnaround of an Ended Meeting is the time from its actual end to the first issue of its minutes; corrections issued later do not count. A Meeting whose minutes are not issued yet is left out. The average turnaround is the mean of those times. | UC-70a, UC-70b | SCRUM-38 — thời gian trung bình từ khi kết thúc họp tới khi ban hành biên bản |
 | `BR-437` | The report shows only counts, rates and averages. It never shows the title, participants or content of a Meeting, on the page or in the exported file. | UC-70a, UC-70b | Cuộc họp Mật — số liệu tổng hợp không được thành đường vòng để đọc cuộc họp |
 | `BR-438` | An exported report is an Excel file holding exactly the figures of UC-70a for the same period, computed at the time of export. Every export is recorded in the audit log with the user, the period and the time. | UC-70b | SCRUM-38 — xuất Excel; tệp mang số liệu ra khỏi hệ thống |
-| `BR-447` *(đề xuất, PO 09/11/2026, chưa vào Report 3)* | The duration of an Ended Meeting is the time from its actual start to its actual end. A Meeting without both times is left out. The average duration is the mean of those durations. | UC-70a, UC-70b | Q2 — PO thêm thời lượng họp trung bình |
+| `BR-447` *(PO 09/11/2026; vào Report 3 ngày 11/11/2026, PR #322)* | The duration of an Ended Meeting is the time from its actual start to its actual end. A Meeting without both times is left out. The average duration is the mean of those durations. | UC-70a, UC-70b | Q2 — PO thêm thời lượng họp trung bình |
 
 ## 5. Mã thông báo (dành sẵn)
 
@@ -155,7 +155,7 @@ PO chốt cả ba ngày 09/11/2026.
 
 ## 8. Việc còn lại
 
-- [ ] Ghi D1 → D4 lên SCRUM-38 bằng comment (skill `jira-deviation-note`).
+- [x] Ghi D1 → D4 lên SCRUM-38 bằng comment (skill `jira-deviation-note`) — xong 12/11/2026, comment `10525`; ticket chuyển `In Review`.
 - [x] Xuất PNG cho hai sequence `.txt` và thêm tab vào `TrustCabinet_Sequence_Diagrams.drawio` (09/11/2026). Xuất lại
       lúc BA Final Review nếu đặc tả còn đổi.
 - [x] BA: đưa UC-70a, UC-70b, BR-432 → BR-438 và `MSG463`–`MSG466` vào Report 3 DOCX, cập nhật inventory (09/11/2026;
