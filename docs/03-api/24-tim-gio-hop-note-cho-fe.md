@@ -5,6 +5,28 @@
 BE đã sẵn hai endpoint: `POST /api/calendar/slots` (UC-85a) và `POST /api/calendar/slots/draft` (UC-85b). Ghi chú này là những
 điều người làm màn hình cần biết; quy tắc đầy đủ ở contract.
 
+## 0. FE đã làm (13/11/2026)
+
+Màn **Tìm giờ họp** ở `/calendar/find` (`routes.findTime`, `frontend/src/features/findTime/`), theo wireframe v12 màn
+16.7 → 16.10 (`docs/wireframe/`), bố cục tham khảo AI-eCabinet:
+
+- Mục sidebar "Tìm giờ họp" chỉ hiện với `MeetingCreator`; route bọc `RequireCapability` (thiếu quyền → 404).
+- Cột cài đặt bên trái (mặc định như BE: 2 giờ, hôm nay → thứ Sáu, T2–T6, 08:00–17:00, tránh nghỉ trưa 12:00–13:00, cách
+  30 phút, làm tròn 30 phút), kiểm phía FE đúng luật `MeetingSlotRules`; `MSG444` của server gắn vào đúng ô.
+- Người dự chính: ô tìm (`participant-options`), tối đa 10 người, chip "+ Tên" thêm nhanh người đã chia sẻ với mình; mỗi
+  dòng có trạng thái chia sẻ (lấy từ `GET /api/calendar/shares` `asViewer`) và nút "Yêu cầu chia sẻ lịch" mở hộp thoại
+  UC-84a chọn sẵn người đó. "Tính cả lịch của tôi" mặc định không tick.
+- Kết quả: ô giờ bắt đầu theo ngày; chọn một ô mở chi tiết Rảnh / Bận / Chưa biết và nút Tạo nháp. `MSG445` và người chưa
+  chia sẻ hiện chung một cảnh báo; ba trạng thái trống như §3.
+- Tạo nháp: hộp thoại riêng (không sửa `MeetingForm`), giờ khoá theo khung, nút ↑/↓ chọn người làm Chủ toạ, mình là Thư ký;
+  `409 MSG446` → báo, đóng hộp thoại và tự tìm lại; `201 MSG29` → mở chi tiết cuộc họp.
+- Tab "Lịch được chia sẻ" dùng lại `SharedWeek` của SCRUM-142 (`?tab=shared&week=`); tab Lịch tuần ở màn Chia sẻ lịch giữ nguyên.
+- Điện thoại (≤640px): cài đặt thu thành thẻ tóm tắt + "Sửa điều kiện"; ô giờ cao 40px.
+
+Khác wireframe / để BA Final Review đối chiếu: tab "Lịch được chia sẻ" có ở **hai** nơi (Tìm giờ họp và Chia sẻ lịch, cùng
+component); **không** hiện câu cố định BR-428 "Chỉ tính lịch đã được chia sẻ…" ở đầu trang (bỏ theo yêu cầu 13/11 — người
+chưa chia sẻ vẫn có cảnh báo riêng); "Cách cuộc họp khác" bỏ mức 1 giờ 30 phút (server vẫn nhận mọi bội 5 phút 0–240); đổi Chủ toạ bằng nút ↑/↓ thay vì kéo thả; `NewShareDialog` nhận thêm `initialPerson` để mở chọn sẵn một người.
+
 ## 1. Màn hình và quyền
 
 - Mục sidebar **"Tìm giờ họp"** chỉ hiện với capability `MeetingCreator` (AC ticket). Server vẫn kiểm lại và trả `403 MSG448`;
@@ -28,7 +50,7 @@ BE đã sẵn hai endpoint: `POST /api/calendar/slots` (UC-85a) và `POST /api/c
 ## 3. Kết quả
 
 - `people[]` theo thứ tự: mình (nếu tick, `status = "Own"`), rồi người đã chọn. `status = "NotShared"` → hiện
-  **"Chưa được chia sẻ lịch"** cạnh tên, kèm nút **"Xin xem lịch"** mở hộp thoại UC-84a sẵn có (`POST /api/calendar/shares`,
+  **"Chưa được chia sẻ lịch"** cạnh tên, kèm nút **"Yêu cầu chia sẻ lịch"** (như AI-eCabinet; hộp thoại mở ra có tiêu đề "Xin xem lịch") mở hộp thoại UC-84a sẵn có (`POST /api/calendar/shares`,
   chọn sẵn người đó). Người NotShared không rảnh cũng không bận.
 - `days[].slots[]`: gom theo ngày. `busyUserIds` = bận, `unknownUserIds` = **chưa biết** (ngày ngoài khoảng chia sẻ) — không được vẽ
   như rảnh. Tên lấy từ `people` theo id. Không có tên cuộc họp nào để hiện (API không trả).
