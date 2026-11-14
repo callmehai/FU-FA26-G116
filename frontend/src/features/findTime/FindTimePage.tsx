@@ -65,6 +65,10 @@ export function FindTimePage() {
   const phone = usePhone()
   const [params, setParams] = useSearchParams()
   const tab: Tab = params.get('tab') === 'shared' ? 'shared' : 'find'
+  // Once opened, the shared week stays mounted and is only hidden, as the search is: switching tabs then shows what
+  // was there instead of a loading grid and a fresh request each time (the flash reported on 14/11).
+  const [sharedOpened, setSharedOpened] = useState(tab === 'shared')
+  if (tab === 'shared' && !sharedOpened) setSharedOpened(true)
   const weekParam = params.get('week')
   const week = weekParam && DAY.test(weekParam) ? weekParam : vietnamToday()
 
@@ -117,11 +121,9 @@ export function FindTimePage() {
 
   function setTab(next: Tab) {
     const p = new URLSearchParams(params)
+    // The week stays in the URL on the other tab, so coming back shows the week that was being read.
     if (next === 'shared') p.set('tab', 'shared')
-    else {
-      p.delete('tab')
-      p.delete('week')
-    }
+    else p.delete('tab')
     setParams(p, { replace: true })
   }
 
@@ -216,9 +218,12 @@ export function FindTimePage() {
         />
       </div>
 
-      {tab === 'shared' ? (
-        <SharedWeek week={week} onWeek={setWeek} onAsk={() => setAsking('any')} />
-      ) : (
+      {sharedOpened && (
+        <div className="find-tab-panel" hidden={tab !== 'shared'}>
+          <SharedWeek week={week} onWeek={setWeek} onAsk={() => setAsking('any')} />
+        </div>
+      )}
+      <div className="find-tab-panel" hidden={tab === 'shared'}>
         <div className="find-layout">
           {phone && !editing ? (
             <div className="card find-summary">
@@ -304,7 +309,7 @@ export function FindTimePage() {
             )}
           </div>
         </div>
-      )}
+      </div>
 
       {draft && done && me && (
         <SlotDraftDialog
