@@ -19,9 +19,16 @@ namespace TrustCabinet.Infrastructure.Ai;
 /// four characters.
 /// </summary>
 public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector protector, IHttpClientFactory clients,
-    IOptions<LanguageModelOptions> options, IAuditService audit, TimeProvider clock, ILogger<AiSettingsService> logger)
+    IOptions<LanguageModelOptions> options, ILanguageModel local, IAuditService audit, TimeProvider clock,
+    ILogger<AiSettingsService> logger)
     : IAiSettingsService
 {
+    /// <summary>
+    /// How long "Thử kết nối" waits for the in-house model: loading a 7B model on a laptop takes a few seconds, while a
+    /// machine that is off or off the tailnet would otherwise hold the button for the draft's whole 15-minute timeout.
+    /// </summary>
+    internal static readonly TimeSpan LocalTestTimeout = TimeSpan.FromSeconds(90);
+
     /// <summary>The one row: a fixed id, so two first saves at once cannot leave two settings behind.</summary>
     internal static readonly Guid SettingId = Guid.Parse("01a1b200-0000-7000-8000-000000000001");
 
@@ -97,6 +104,7 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
 
     public async Task<AiSettingsOutcome> TestAsync(AiSettingsInput input, CancellationToken ct = default)
     {
+        if (input.Mode is nameof(AiProviderMode.Local)) return await TestLocalAsync(ct);
         var errors = Validate(input with { Mode = nameof(AiProviderMode.Api) }, out _, out var baseUrl, out var model, out var key);
         string? stored = null;
         if (key is null or "")
@@ -129,6 +137,34 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
         catch (LanguageModelException failure)
         {
             return new(AiSettingsFailure.TestFailed, Message: failure.Message);
+        }
+    }
+
+    /// <summary>
+    /// The in-house model as the server reaches it for real (its <c>Ai:BaseUrl</c>, over the tailnet), so an
+    /// administrator can tell before a meeting whether an Internal, Secret or Top secret draft will be written: those
+    /// never go to the API (ADR-0056). Nothing is saved; the form's API fields are ignored.
+    /// </summary>
+    private async Task<AiSettingsOutcome> TestLocalAsync(CancellationToken ct)
+    {
+        if (!local.IsConfigured)
+            return new(AiSettingsFailure.TestFailed, Message: "Server chưa cấu hình máy local (Ai:BaseUrl, Ai:Model).");
+        using var limit = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        limit.CancelAfter(LocalTestTimeout);
+        var watch = Stopwatch.StartNew();
+        try
+        {
+            await local.CompleteAsync("Bạn là trợ lý kiểm tra kết nối.", "Trả lời đúng một từ: OK", limit.Token);
+            return new(Test: new AiTestResult(local.Model, watch.ElapsedMilliseconds));
+        }
+        catch (LanguageModelException failure)
+        {
+            return new(AiSettingsFailure.TestFailed, Message: failure.Message);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return new(AiSettingsFailure.TestFailed,
+                Message: $"Máy local không trả lời sau {(int)LocalTestTimeout.TotalSeconds} giây. Kiểm tra máy còn bật và Tailscale đang kết nối.");
         }
     }
 

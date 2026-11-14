@@ -91,11 +91,17 @@ export function AiSettingsPage() {
     }
   }
 
-  const runTest = async () => {
+  /**
+   * "Thử kết nối" for the API in the form, or for the in-house model the server is configured with: Internal, Secret
+   * and Top secret meetings always use that one (ADR-0056), so it is worth checking before a meeting whatever is chosen.
+   */
+  const runTest = async (target: 'Api' | 'Local') => {
     setTesting(true)
     setTest(null)
     try {
-      const result = await testAiSettings(input())
+      const result = await testAiSettings(
+        target === 'Local' ? { mode: 'Local', apiBaseUrl: '', apiModel: '', apiKey: null } : input(),
+      )
       setTest({ ok: true, text: `${result.message} · ${(result.elapsedMs / 1000).toFixed(1).replace('.', ',')} giây` })
     } catch (error) {
       if (isApiError(error, 400, 'MSG409')) setErrors(fieldErrors(error))
@@ -157,6 +163,18 @@ export function AiSettingsPage() {
             <Badge tone={settings.localConfigured ? 'emerald' : 'slate'}>
               {settings.localConfigured ? 'Đã cấu hình' : 'Chưa cấu hình'}
             </Badge>
+            {settings.localConfigured && (
+              <button
+                type="button"
+                className="btn btn-outline btn-sm ai-settings-local-test"
+                onClick={() => void runTest('Local')}
+                disabled={testing || saving}
+                aria-label="Thử kết nối máy local"
+              >
+                <Icon name="broadcast" size={16} />
+                {testing ? 'Đang thử…' : 'Thử kết nối'}
+              </button>
+            )}
           </p>
 
           {api && (
@@ -240,9 +258,9 @@ export function AiSettingsPage() {
             )}
             <div className="form-actions">
               {api && (
-                <button type="button" className="btn btn-outline" onClick={() => void runTest()} disabled={testing || saving}>
+                <button type="button" className="btn btn-outline" onClick={() => void runTest('Api')} disabled={testing || saving}>
                   <Icon name="broadcast" size={16} />
-                  {testing ? 'Đang thử…' : 'Thử kết nối'}
+                  {testing ? 'Đang thử…' : 'Thử API'}
                 </button>
               )}
               <button type="submit" className="btn btn-primary" disabled={!dirty || saving || testing}>
