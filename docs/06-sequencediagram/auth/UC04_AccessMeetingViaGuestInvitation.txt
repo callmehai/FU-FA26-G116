@@ -4,7 +4,7 @@ actor "Guest" as Guest
 boundary "Guest Invitation Page" as Page
 control ":Guest Access Controller" as Controller
 control ":Guest Access Service" as Service
-participant ":Guest Invitation Repository" as Repository
+participant ":Guest Access Repository" as Repository
 database ":Database" as Database
 participant ":Email Service" as Email
 
@@ -12,11 +12,11 @@ Guest->Page: Open invitation and request access, or reopen the invitation
 activate Page
 Page->Controller: Start or resume access via Guest invitation
 activate Controller
-Controller->Service: Check invitation and existing verified Guest access
+Controller->Service: open(invitationId, linkToken), then sendCode(invitationId, linkToken)
 activate Service
 Service->Repository: Read current invitation, verification challenge and Guest access
 activate Repository
-Repository->Database: Read invitation status/expiry, challenge and access
+Repository->Database: Read invitation (revoked or not), Meeting status, latest challenge and Guest session
 activate Database
 Database-->Repository: Current information / Read failure
 Repository-->Service: Current information / Read failure
@@ -28,10 +28,10 @@ Controller-->Page: MSG371 - The guest invitation is no longer valid.
 Page-->Guest: MSG371 - The guest invitation is no longer valid.
 else Verification/access service is unavailable - EX-3
 Service-->Controller: Verification could not be completed; no Guest session
-Controller-->Page: Verification unavailable
-Page-->Guest: Verification unavailable
+Controller-->Page: MSG374 - Verification could not be completed.
+Page-->Guest: MSG374 - Verification could not be completed.
 else Invitation is current
-alt Reopen already verified active Guest session - ALT-1
+alt Reopen already verified active Guest session - AF-1
 Service->Service: Reuse access only for this invited Meeting; do not request another code
 Service-->Controller: Invited Meeting and allowed Member participation actions
 Controller-->Page: Display invited Meeting; subsequent requests recheck access
@@ -53,35 +53,35 @@ Database-->Repository: Saved / Failure
 Repository-->Service: Challenge result
 alt Challenge cannot be saved - EX-3
 Service-->Controller: Verification unavailable; no Guest session
-Controller-->Page: Verification unavailable
-Page-->Guest: Verification unavailable
+Controller-->Page: MSG374 - Verification could not be completed.
+Page-->Guest: MSG374 - Verification could not be completed.
 else Challenge saved
 Service->Email: Send code to the invited email (BR-153)
 activate Email
 Email-->Service: Delivery accepted / Failure
 alt Email delivery cannot be arranged - EX-3
 Service-->Controller: Verification unavailable; no Guest session
-Controller-->Page: Verification unavailable
-Page-->Guest: Verification unavailable
+Controller-->Page: MSG374 - Verification could not be completed.
+Page-->Guest: MSG374 - Verification could not be completed.
 else Code delivered
 Service-->Controller: Request one-time code entry
 Controller-->Page: Display invited-email code entry
 Page-->Guest: Enter the code sent to the invited email
 Guest->Page: Submit the one-time code
 Page->Controller: Verify code for this invitation
-Controller->Service: Verify code and current invitation
+Controller->Service: verify(invitationId, linkToken, code)
 Service->Service: Check correct, unexpired, unused code and invited-email binding (BR-153)
 alt Code is incorrect, expired or already used - EX-2
-Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Service-->Controller: MSG126 - Unable to verify the guest invitation. Check the code and try again.\nwith the entries left before the code locks
 Controller-->Page: MSG126 - Unable to verify the guest invitation. Check the code and try again.
-Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.
+Page-->Guest: MSG126 - Unable to verify the guest invitation. Check the code and try again.\nCode boxes emptied; from the third incorrect entry, the entries left
 else Code is locked after 5 incorrect entries - EX-4
 Service-->Controller: MSG372 - Too many incorrect codes. Request a new code.
 Controller-->Page: MSG372 - Too many incorrect codes. Request a new code.
 Page-->Guest: MSG372 - Too many incorrect codes. Request a new code.
 else Code and invitation are valid
-Service->Repository: Consume code and record invited-email verification consistently
-Repository->Database: Save verification; recheck current invitation and unused challenge
+Service->Repository: Consume code, open a Meeting-scoped Guest session valid for 12 hours (BR-155)\nand record the verification in the audit log (BR-444), in one transaction
+Repository->Database: Lock the invitation; recheck the unused challenge;\nsave consumed code, Guest session and guest.verified audit entry
 Database-->Repository: Verification saved / Conflict / Failure
 Repository-->Service: Verification result
 alt Code was consumed by a concurrent request - EX-2
@@ -93,12 +93,12 @@ Service-->Controller: Verification not completed; no Guest session
 Controller-->Page: Verification could not be completed
 Page-->Guest: Verification could not be completed
 else Invited-email control verified
-Service-->Controller: Continue with self-declared display information
+Service-->Controller: Guest session token; display information still to declare
 Controller-->Page: Show display name and job title entry; invited email remains unchanged
 Page-->Guest: Enter display name and optional job title for presentation
 Guest->Page: Submit self-declared display information
 Page->Controller: Complete invited-Meeting access
-Controller->Service: Complete Guest access for this invitation
+Controller->Service: saveProfile(session, displayName, jobTitle)
 Service->Service: Check display name is present and display information is valid (BR-180)
 Service->Service: Check the display information is not already declared\nwith different values for this invitation (BR-180)
 alt Display information is invalid - EX-7
@@ -111,11 +111,11 @@ Controller-->Page: MSG381 - The display name was already declared.
 Page-->Guest: MSG381 - The display name was already declared.
 else Display information is valid
 Service->Service: Keep display fields self-declared, separate from verified email (BR-180)
-Service->Repository: Save display information and establish Meeting-scoped Guest access valid for 12 hours (BR-155)
-Repository->Database: Save profile and Guest access
+Service->Repository: Save display name and job title on the invitation
+Repository->Database: Save self-declared display information
 Database-->Repository: Saved / Failure
-Repository-->Service: Access result
-Service->Service: Apply Guest Member participation and permitted additional grants;\nno internal account, system role or Chair/Secretary authority (BR-181)
+Repository-->Service: Save result
+Service->Service: Apply Guest Member participation only; no additional grants,\nno internal account, system role or Chair/Secretary authority (BR-181)
 alt Access cannot be completed - EX-3
 Service-->Controller: No successful Guest access
 Controller-->Page: Access could not be completed
@@ -124,6 +124,19 @@ else Guest access is established
 Service-->Controller: Invited Meeting and allowed Member participation actions
 Controller-->Page: Display invited Meeting; subsequent requests recheck access
 Page-->Guest: MSG376 - Display information saved; invited Meeting available, email verified, display information self-declared
+opt Guest chooses Thoát [Sign out] - AF-3
+Guest->Page: Sign out
+Page->Controller: End this Guest session
+Controller->Service: signOut(session): this session only (BR-155)
+Service->Repository: Revoke this Guest session
+Repository->Database: Set the session revoked; other sessions of the invitation stay
+Database-->Repository: Saved
+Repository-->Service: Session ended
+Service-->Controller: Session ended
+Controller-->Page: Session ended
+Page->Page: Forget the session token; remove the Meeting data from the screen;\nother tabs of this browser show the same screen at their next check
+Page-->Guest: You have left the meeting - Rejoin asks for a new code
+end
 end
 end
 end

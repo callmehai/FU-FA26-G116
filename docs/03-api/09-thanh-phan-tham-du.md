@@ -59,10 +59,10 @@ thì `email = null` ở mọi dòng trừ dòng của chính Khách và `q` khô
 | Method/path | Body | Thành công |
 |---|---|---|
 | POST /participants | `{userIds:["guid"],role:"Member"}` (1..100 unique active users) | 201/MSG96 + createdIds + revision |
-| POST /guest-invitations | `{invitedName:"Khách",email:"guest@example.test"}` | 201/MSG96 + createdIds + revision |
+| POST /guest-invitations | `{invitedName:"Khách",email:"guest@example.test"}` | 201/MSG96 (`Đã mời khách. Thư mời sẽ được gửi tới email của khách.`) + createdIds + revision |
 | PUT /participants/assignments | `{changes:[{participantId,role}],chairReplacement?:{outgoingParticipantId,incomingParticipantId,confirmed:true}}` | 200/MSG100; Chair bàn giao sau Published: MSG257 |
 | DELETE /participants/{participantId} | Không body | 200/MSG103 |
-| DELETE /guest-invitations/{invitationId} | Không body | 200/MSG103 |
+| DELETE /guest-invitations/{invitationId} | Không body | 200/MSG103 (`Đã thu hồi lời mời khách.`) |
 | PUT /invitation-response | `{response:"Accepted"}` hoặc Declined | 200/MSG105 + response |
 
 Guest name trim 1..200, email trim 1..256 và đúng format; email current unique không phân biệt hoa thường và không trùng current internal. Changes 1..100 assignment ID không trùng. Reinvite tạo ID mới, không kế thừa response/attendance của assignment cũ. No-op: 200/MSG154.

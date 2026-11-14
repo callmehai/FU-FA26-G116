@@ -31,6 +31,7 @@ Khách gọi `GET …/call` và `POST …/call/join` bằng **token Khách** c�
 - cuộc họp `InProgress`, hình thức `Online`/`Hybrid` — như thành viên (UC-37). Khi cuộc họp `Published`,
   `GET …/call` trả `NotStarted`; khi `Ended`/`Cancelled` Khách mất toàn bộ quyền với cuộc họp nên nhận `404`;
 - **xác nhận đã đọc thông báo ghi âm**: body `{ "recordingNoticeAcknowledged": true }`, thiếu thì `400 MSG380`.
+  Chỉ giá trị JSON `true` được tính; `"true"` dạng chuỗi, JSON hỏng hay `Content-Type` khác cũng là `400 MSG380`.
   Thành viên không cần gửi body.
 
 Mỗi lần cấp token cho Khách ghi một dòng `audit_log` `call.guest_admitted` (`object_type = GuestSession`,
@@ -103,7 +104,7 @@ Tắt mic chỉ **tắt**, không bao giờ bật hộ. Người đã tắt sẵ
 | `POST …/join` | `409` | `MSG280` | Cuộc họp `InPerson` |
 | `POST …/join` | `409` | `MSG117` | Cuộc họp không `InProgress` |
 | `POST …/join` | `503` | `MSG281` | Chưa cấu hình LiveKit |
-| `POST …/join` | `400` | `MSG380` | Khách chưa xác nhận thông báo ghi âm |
+| `POST …/join` | `400` | `MSG380` | Khách chưa xác nhận thông báo ghi âm: thiếu body, `recordingNoticeAcknowledged` khác JSON `true`, hoặc body không đọc được |
 | `POST …/join` | `500` | `MSG118` | Lỗi database, hoặc không ghi được bằng chứng xác nhận ghi âm của Khách |
 | `POST …/mute` | `403` | `MSG123` | Người gọi được mời nhưng không phải chủ toạ |
 | `POST …/mute` | `409` | `MSG117` | Phòng không mở |
@@ -201,13 +202,18 @@ phiên (`ON DELETE CASCADE`), tức theo lời mời; audit giữ theo chính s�
   màn chờ và `RoomView` của thành viên. Trang Khách hiện nút **Vào phòng họp** khi `status = Open`, còn `NotStarted`
   / `InPersonOnly` thì hiện `MSG117` / `MSG280`. Bắt đầu cuộc họp không báo gì cho Khách (chỉ có thông báo cho thành
   viên), nên khi phòng chưa mở FE hỏi lại `GET …/call` mỗi 10 giây và khi quay lại tab. Thời hạn trong thông báo ghi âm
-  lấy từ `retentionDays` của `GET …/call`. Khách không gắn bộ ghi âm theo micro (SCRUM-109): không gọi endpoint
-  speech-clip nào, kể cả gửi lại câu còn kẹt trong trình duyệt. Bị LiveKit đưa ra (`PARTICIPANT_REMOVED`) thì trang
-  Khách kiểm lại phiên ngay: lời mời bị thu hồi → màn "Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi", không vào lại
-  được; phiên hết hạn hoặc Khách đăng xuất ở tab khác (job đối soát đưa ra trong khoảng 20–30 giây) → lời mời vẫn còn,
-  nên về màn nhập mã với `MSG378` như UC-04 (xác minh lại thì vào lại được). Token quá hạn nhận `401` không có body;
-  FE vẫn hiện câu của `MSG378` cho trường hợp này. Cuộc họp kết thúc thì hiện `MSG331`, rồi lần
-  kiểm lại phiên kế tiếp (tối đa 20 giây) chuyển sang màn kết thúc.
+  lấy từ `retentionDays` của `GET …/call`; phòng vừa mở thì trang kiểm lại phiên ngay để huy hiệu trạng thái đổi cùng
+  nút. Khách được ghi theo micro từ SCRUM-129 như thành viên (tab Khách gọi `GET`/`PUT …/speech-clips`, phòng hiện
+  "Đang ghi lời bạn"), xem [bản ghi cuộc họp](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051). Bị LiveKit đưa ra
+  (`PARTICIPANT_REMOVED`) thì trang Khách kiểm lại phiên ngay: lời mời bị thu hồi → màn "Cuộc họp đã kết thúc hoặc lời
+  mời đã bị thu hồi", không vào lại được; phiên hết hạn (job đối soát đưa ra
+  trong khoảng 20–30 giây; Thoát trên thiết bị khác chỉ kết thúc phiên của thiết bị đó) → lời mời vẫn còn, nên về màn nhập mã với `MSG378` như UC-04 (xác minh lại thì vào lại
+  được). Khách bấm Thoát ở một tab khác của **cùng trình duyệt** thì token trong `localStorage` dùng chung đã bị xoá:
+  tab đang trong phòng hiện màn "Bạn đã thoát khỏi cuộc họp" như tab kia, không kèm `MSG378` và không tự gửi mã. Token
+  quá hạn nhận `401` không có body; FE vẫn hiện câu của `MSG378` cho trường hợp này. Cuộc họp kết thúc khi Khách đang trong phòng thì thoáng hiện
+  `MSG331` không kèm nút "Về trang cuộc họp" (trang cuộc họp của Khách cũng đã đóng) và trang Khách kiểm lại phiên ngay,
+  chuyển sang màn kết thúc; ở màn chờ (chưa vào phòng) Khách không thấy `MSG331` vì `GET …/call` của cuộc họp đã kết thúc trả `404` cho Khách:
+  lần kiểm lại phiên kế tiếp (tối đa 20 giây), hoặc bấm Vào phòng, đưa sang màn kết thúc.
 
 SCRUM-20: cấp quyền phòng và danh sách cho phép của job đối soát cùng dùng `ParticipantRules.ActiveExpression`. Gỡ rồi mời lại chỉ xét assignment Current mới; dòng lịch sử không tạo quyền hoặc làm truy vấn trả nhiều dòng.
 

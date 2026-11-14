@@ -4,11 +4,12 @@ import { setGuestAuth } from '../../api/client'
 import { getGuestSession, openInvitation } from '../../api/guest'
 import { BrandMark } from '../../components/BrandMark'
 import { Icon } from '../../components/Icon'
+import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { GuestInvitation, GuestSession } from '../../types/guest'
 import { GuestContext, type GuestScope } from './guestContext'
 import { GuestProfileForm } from './GuestProfileForm'
-import { dropGuestSession, readGuestEntry, updateGuestEntry } from './guestStore'
+import { dropGuestSession, guestSessionExpired, readGuestEntry, updateGuestEntry } from './guestStore'
 import { GuestVerifyForm } from './GuestVerifyForm'
 
 /** MSG371's text, for a link the page cannot even try: no token in it, or a malformed invitation id. */
@@ -51,10 +52,14 @@ export function GuestPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const [gate, setGate] = useState<Gate>({ kind: 'checking' })
+  const { clear: clearToasts } = useToast()
   // What the gate shows, for the re-check, which only has work to do while the meeting is on screen.
   useEffect(() => {
     shownGate = gate.kind
-  }, [gate.kind])
+    // A toast confirms something on the screen it came from ("Đã ghi nhận phản hồi lời mời."); a gate that
+    // replaces the meeting takes it down. Into the meeting it stays: MSG376 confirms the name just saved.
+    if (gate.kind !== 'in') clearToasts()
+  }, [gate.kind, clearToasts])
 
   // The link token travels in the fragment, never to a server; keep it, then drop it from the address bar.
   // An id that is no GUID can open nothing, so nothing is kept for it.
@@ -118,8 +123,15 @@ export function GuestPage() {
     if (rechecking || shownGate !== 'in') return
     rechecking = true
     try {
-      const token = readGuestEntry(invitationId).accessToken
-      if (!token) return await enter()
+      const entry = readGuestEntry(invitationId)
+      // No token while the meeting is on screen. "Thoát" in another tab of this browser (it shares the storage) says
+      // so as that tab does, without a code nobody asked for; a token past its time is MSG378, as the server would
+      // say; anything else (another tab found the meeting over) is settled by reopening the invitation.
+      if (!entry.accessToken) {
+        if (entry.signedOut) return setGate({ kind: 'signedOut' })
+        return await enter(guestSessionExpired(invitationId) ? SESSION_ENDED : null)
+      }
+      const token = entry.accessToken
       const session = await getGuestSession(token)
       setGate((g) =>
         g.kind === 'in' && JSON.stringify(g.session) !== JSON.stringify(session) ? { kind: 'in', session } : g,

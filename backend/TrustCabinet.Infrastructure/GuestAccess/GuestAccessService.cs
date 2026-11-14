@@ -125,17 +125,19 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             var challenge = recent.FirstOrDefault();
             if (challenge is null || challenge.ConsumedAt is not null || challenge.ExpiresAt <= now) return InvalidCode;
             if (challenge.FailedAttempts >= limits.MaxFailedAttempts) return Locked;
-            if (code is not { Length: 6 } || !code.All(char.IsAsciiDigit)) return InvalidCode;
+            // A refusal tells how many tries the live code has left, so the lock (MSG372) does not come unannounced.
+            GuestAccessResult Wrong(int failed) => InvalidCode with { RemainingAttempts = limits.MaxFailedAttempts - failed };
+            if (code is not { Length: 6 } || !code.All(char.IsAsciiDigit)) return Wrong(challenge.FailedAttempts);
             challenge.UpdatedAt = now;
             if (!Matches(challenge, code))
             {
                 // The code this one replaced, typed before the new email arrived: still refused, but it is the
                 // guest's own code, not a guess, so it does not count against the new one.
-                if (recent is [_, var replaced] && Matches(replaced, code)) return InvalidCode;
+                if (recent is [_, var replaced] && Matches(replaced, code)) return Wrong(challenge.FailedAttempts);
                 challenge.FailedAttempts++;
                 await db.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
-                return challenge.FailedAttempts >= limits.MaxFailedAttempts ? Locked : InvalidCode;
+                return challenge.FailedAttempts >= limits.MaxFailedAttempts ? Locked : Wrong(challenge.FailedAttempts);
             }
             challenge.ConsumedAt = now;
             var session = new GuestSession

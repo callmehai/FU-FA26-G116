@@ -1012,6 +1012,8 @@ a.menu-item { text-decoration: none; }
   font-weight: 600;
 }
 .back-link:hover { color: var(--brand); }
+/* 32px is short for a finger: the document viewer's "‹ Tài liệu" on a phone. */
+@media (pointer: coarse) { .back-link { height: 40px; } }
 
 .page-header {
   display: flex;
@@ -1546,6 +1548,12 @@ a.menu-item { text-decoration: none; }
 .tab:hover { color: var(--ink); }
 .tab-active, .tab-active:hover { color: var(--brand); box-shadow: inset 0 -3px 0 var(--brand); }
 .tab:focus-visible { outline-offset: -2px; }
+/* A phone (after .tab, which it overrides): tighter tabs, so the next one is cut through its words under the fade rather than off screen
+   altogether, which read as a row with nothing more to scroll to (the guest page's fourth tab at 390px). */
+@media (max-width: 560px) {
+  .tabs { gap: 0; }
+  .tab { padding: 0 10px; }
+}
 .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 7px; border-radius: 10px; background: #eef1f5; color: var(--ink-soft); font-size: 12px; font-weight: 700; }
 .tab-active .tab-count { background: var(--brand-wash); color: var(--brand); }
 
@@ -1995,6 +2003,8 @@ a.menu-item { text-decoration: none; }
   line-height: 1;
   cursor: pointer;
 }
+/* The × was 23×20 on a phone; the margin keeps the toast as tall as before. */
+@media (pointer: coarse) { .toast-close { min-width: 40px; min-height: 40px; margin: -10px -12px -10px 0; } }
 
 /* ---------- Role ↔ capability matrix ---------- */
 /* Two header rows: the functional group, underlined across its columns, then the capability
@@ -3280,9 +3290,10 @@ a.menu-item { text-decoration: none; }
 .prejoin-sample-action:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* A dialog opened from the lobby (the voice sample) reads as any form, not centred like the lobby. */
 .prejoin-side dialog { text-align: start; }
-/* A guest confirms the notice before joining (SCRUM-59): the whole line is the checkbox's label, 40px tall to tap. */
-.prejoin-consent { align-items: center; min-height: 40px; color: var(--ink); text-align: left; cursor: pointer; }
-.prejoin-consent input[type='checkbox'] { flex: none; width: 18px; height: 18px; }
+/* A guest confirms the notice before joining (SCRUM-59): the whole line is the checkbox's label, 40px tall to tap.
+   Flex, unlike the members' notice above: the box beside one block of text, the second line under the first. */
+.prejoin-consent { display: flex; gap: 8px; align-items: center; min-height: 40px; color: var(--ink); text-align: left; text-wrap: pretty; cursor: pointer; }
+.prejoin-consent input[type='checkbox'] { flex: none; width: 18px; height: 18px; margin: 0; }
 .prejoin-join {
   position: relative;
   width: 240px;
@@ -3944,14 +3955,16 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
   /* Phones have no floating window (Document Picture-in-Picture is desktop-only). */
   .room-control-pip { display: none; }
   .room-controls-main { --panel-pad: 8px; --tray-gap: 8px; margin-bottom: 11px; border-radius: 20px; }
-  .room-controls-row { gap: 6px; }
+  .room-controls-row { gap: 4px; }
   body:has(.room-controls-main.is-open) { --corner-bottom: 164px; }
   .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }
   .room-control-leave { width: 54px; }
   /* Five panels do not fit beside the call controls: all but "Người dự" and "Chat" go behind ⋯. */
   .room-controls-side .room-control-tucked { display: none; }
   .room-more { display: flex; }
-  .room-split-more { width: 26px; height: 42px; }
+  /* Wider for a finger (E2E U9: 26px). 34px is what fits at 390px beside the other controls, paid for by the row's
+     tighter gap; a full 40px would push "Chat" into the gutter. */
+  .room-split-more { width: 34px; height: 42px; }
 }
 
 /* SCRUM-29 — recordings panel. One line per recording; who, purpose and erase date sit in the tooltip. */

@@ -48,14 +48,14 @@ Các mã UC-27–30 dưới đây đã có Backend. OTP/session production thu�
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
 |---|---|---|---|
 | `MSG95` | 500 | GET participant context/roster/options/own-response hoặc /api/meetings/participant-options lỗi đọc | Không tải được danh sách thành phần hoặc phản hồi lời mời. |
-| `MSG96` | 201 | Thêm internal/Guest hoặc recovery thêm Secretary | Thêm thành phần tham dự thành công. |
+| `MSG96` | 201 | Thêm internal/Guest hoặc recovery thêm Secretary | Thêm thành phần tham dự thành công. — Mời Khách (`POST …/guest-invitations`): `Đã mời khách. Thư mời sẽ được gửi tới email của khách.` |
 | `MSG97` | 400 | Selection/batch/Guest input không hợp lệ | Thông tin gửi lên không hợp lệ. |
 | `MSG98` | 409 | State không cho sửa roster | Không thể sửa thành phần ở trạng thái hiện tại của cuộc họp. |
 | `MSG99` | 503 | Add/recovery không lưu được | Không lưu được thay đổi. Vui lòng thử lại. |
 | `MSG100` | 200 | Đổi role hoặc recovery current Member | Cập nhật vai trò cuộc họp thành công. |
 | `MSG101` | 400 | Role/atomic replacement input sai | Vai trò cuộc họp hoặc yêu cầu thay vai trò không hợp lệ. |
 | `MSG102` | 503 | Role/grants không lưu được | Không lưu được thay đổi. Vui lòng thử lại. |
-| `MSG103` | 200 | Remove/revoke | Gỡ thành phần tham dự thành công. |
+| `MSG103` | 200 | Remove/revoke | Gỡ thành phần tham dự thành công. — Thu hồi lời mời Khách (`DELETE …/guest-invitations/{id}`): `Đã thu hồi lời mời khách.` |
 | `MSG104` | 503 | Remove/revoke không lưu được | Không lưu được thay đổi. Vui lòng thử lại. |
 | `MSG105` | 200 | Own invitation response được ghi | Đã ghi nhận phản hồi lời mời. |
 | `MSG106` | 400 | Response/schema sai | Thông tin gửi lên không hợp lệ. |
@@ -305,7 +305,7 @@ hồi hay cuộc họp không còn mở đều trả cùng `MSG371`, không lộ
 
 | Mã | HTTP | Endpoint / tình huống | Thông báo |
 |---|---|---|---|
-| `MSG126` | 400 | `POST …/verify`: mã sai, hết hạn, đã dùng (EX-2) | Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại. |
+| `MSG126` | 400 | `POST …/verify`: mã sai, hết hạn, đã dùng (EX-2); kèm `remainingAttempts` khi mã còn hiệu lực | Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại. |
 | `MSG371` | 404 | `POST /api/guest-access/invitations/{id}`, `…/code`, `…/verify`: lời mời không còn hiệu lực (EX-1) | Lời mời không còn hiệu lực. Vui lòng liên hệ Thư ký cuộc họp. |
 | `MSG372` | 400 | `POST …/verify`: mã bị khoá sau 5 lần sai | Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới. |
 | `MSG373` | 429 | `POST …/code`: gửi lại trong vòng 1 phút, kèm `retryAfterSeconds` | Vui lòng chờ trước khi gửi lại mã. |
@@ -481,7 +481,7 @@ Các câu phòng họp tự hiện (không có response từ server) dùng `MSG3
 | `MSG282` | 409 | `POST …/call/participants/{identity}/mute` | Người bị tắt mic không còn trong phòng hoặc không có micro | `Người này không còn trong phòng hoặc chưa bật micro.` | BE |
 | `MSG283` | 500 | `GET …/call` | Lỗi database khi tải trạng thái phòng | `Không thể tải trạng thái phòng họp. Vui lòng thử lại.` | BE |
 | `MSG284` | 500 | `POST …/call/participants/{identity}/mute` | Lỗi database khi kiểm quyền tắt mic | `Không thể tắt micro. Vui lòng thử lại.` | BE |
-| `MSG380` | 400 | `POST …/call/join`, `PUT …/speech-clips/{clientId}` | Khách (SCRUM-59) xin vào phòng mà chưa xác nhận đã đọc thông báo ghi âm (`recordingNoticeAcknowledged` khác `true`); hoặc micro của Khách gửi câu nói khi phiên Khách chưa từng xác nhận thông báo đó (SCRUM-129, ADR-0051) | `Vui lòng xác nhận đã đọc thông báo ghi âm trước khi vào phòng họp.` | BE |
+| `MSG380` | 400 | `POST …/call/join`, `PUT …/speech-clips/{clientId}` | Khách (SCRUM-59) xin vào phòng mà chưa xác nhận đã đọc thông báo ghi âm (`recordingNoticeAcknowledged` khác JSON `true`, kể cả body không đọc được); hoặc micro của Khách gửi câu nói khi phiên Khách chưa từng xác nhận thông báo đó (SCRUM-129, ADR-0051) | `Vui lòng xác nhận đã đọc thông báo ghi âm trước khi vào phòng họp.` | BE |
 | `MSG328` | — | — (FE, phòng ngắt kết nối) | Tab này tự ngắt khỏi phòng mà không qua nút Rời phòng | `Bạn đã rời phòng họp.` | FE |
 | `MSG329` | — | — (FE, phòng ngắt kết nối) | Cùng tài khoản vừa vào phòng từ tab hoặc thiết bị khác (mỗi tài khoản một kết nối); có nút Vào lại | `Bạn đã vào phòng này từ tab hoặc thiết bị khác. Tab này đã rời phòng.` | FE |
 | `MSG330` | — | — (FE, phòng ngắt kết nối) | Người dự bị gỡ khỏi thành phần tham dự trong lúc ở trong phòng; không có nút Vào lại | `Bạn không còn trong danh sách tham dự phòng họp này.` | FE |
@@ -1036,7 +1036,7 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG156` | UC-32a / EX-1; UC-32c / EX-1; UC-35 / EX-2 · Đã triển khai SCRUM-21, SCRUM-23, SCRUM-123 | Meeting documents are not accessible. |
 | `MSG157` | UC-32a / EX-2 · Dành sẵn | Unable to load the document list. Please try again. |
 | `MSG158` | UC-32c / EX-2; UC-34b / EX-3 · Dành sẵn | Unable to display the document. Please try again. |
-| `MSG159` | UC-32c / EX-3 · Dành sẵn | Secret Meeting documents can only be viewed online and cannot be downloaded. |
+| `MSG159` | UC-32c / EX-3 · Đã triển khai SCRUM-21 (`403`) | Secret Meeting documents can only be viewed online and cannot be downloaded. |
 | `MSG160` | UC-32c / EX-4 · Dành sẵn | Unable to download the document. Please try again. |
 | `MSG161` | UC-33a / Normal Flow · Đã triển khai SCRUM-107 | Documents added to the Meeting successfully. |
 | `MSG162` | UC-33a / EX-1 · Đã triển khai SCRUM-107 | You no longer have permission to add documents to this Meeting. |

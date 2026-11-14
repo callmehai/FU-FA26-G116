@@ -455,6 +455,11 @@ public static class ParticipantEndpoints
             return Results.Ok(result.Data);
         var (successCode, successMessage) = result.Success switch
         {
+            // A guest is told by email, not in the app, so the Secretary hears that the invitation goes out (E2E U15).
+            ParticipantSuccess.Created when operation == ParticipantOperation.AddGuest => (
+                Msg96Added,
+                "Đã mời khách. Thư mời sẽ được gửi tới email của khách."
+            ),
             ParticipantSuccess.Created => (Msg96Added, "Thêm thành phần tham dự thành công."),
             ParticipantSuccess.ChairHandedOver => (
                 Msg257ChairHandedOver,
@@ -463,6 +468,10 @@ public static class ParticipantEndpoints
             ParticipantSuccess.RoleChanged => (
                 Msg100RoleChanged,
                 "Cập nhật vai trò cuộc họp thành công."
+            ),
+            ParticipantSuccess.Removed when operation == ParticipantOperation.RevokeGuest => (
+                Msg103Removed,
+                "Đã thu hồi lời mời khách."
             ),
             ParticipantSuccess.Removed => (Msg103Removed, "Gỡ thành phần tham dự thành công."),
             ParticipantSuccess.Responded => (Msg105Responded, "Đã ghi nhận phản hồi lời mời."),
