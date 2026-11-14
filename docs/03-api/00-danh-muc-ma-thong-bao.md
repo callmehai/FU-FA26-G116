@@ -661,8 +661,8 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 | `MSG409` | 400 | `PUT /api/admin/ai`, `POST /api/admin/ai/test` | Cấu hình sai: địa chỉ API không phải https, thiếu model hoặc key khi chọn API, key có khoảng trắng, xoá key khi đang dùng API; kèm `errors` theo trường | `Cấu hình AI không hợp lệ.` | BE |
 | `MSG410` | 500 | `GET /api/admin/ai` | Lỗi database khi đọc cấu hình AI | `Không tải được cấu hình AI.` | BE |
 | `MSG411` | 503 | `PUT /api/admin/ai` | Lỗi database khi lưu cấu hình AI | `Không lưu được cấu hình AI. Vui lòng thử lại.` | BE |
-| `MSG412` | 200 | `POST /api/admin/ai/test` | Gọi thử API AI thành công (không lưu gì) | `Kết nối được {model}.` | BE |
-| `MSG413` | 502 | `POST /api/admin/ai/test` | Gọi thử API AI thất bại; `message` là lý do (từ chối key, không kết nối được, trả lỗi) | *(lý do cụ thể)* | BE |
+| `MSG412` | 200 | `POST /api/admin/ai/test` | Gọi thử máy AI (API hoặc máy local) thành công (không lưu gì) | `Kết nối được {model}.` | BE |
+| `MSG413` | 502 | `POST /api/admin/ai/test` | Gọi thử máy AI (API hoặc máy local) thất bại; `message` là lý do (từ chối key, không kết nối được, máy local chưa cấu hình hoặc không trả lời, trả lỗi) | *(lý do cụ thể)* | BE |
 
 ### Duyệt và ban hành biên bản — SCRUM-33 (`/api/minutes/{id}/submit`, `…/approve`, `…/reject`, `…/corrections`) · [contract](17-du-thao-bien-ban.md#duyệt-và-ban-hành--scrum-33)
 
