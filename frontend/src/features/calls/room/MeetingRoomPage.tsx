@@ -20,7 +20,7 @@ import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
 import type { CallRoomState } from '../../../types/call'
 import type { GuestMeeting } from '../../../types/guest'
-import type { Meeting } from '../../../types/meeting'
+import type { Meeting, Sensitivity } from '../../../types/meeting'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { guestName, useGuest, useMeetingHome } from '../../guest/guestContext'
@@ -42,6 +42,21 @@ import {
 /** What being recorded means for the person about to join, behind the lobby notice's (i). */
 const RECORDING_DETAIL =
   'Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình.'
+
+/**
+ * ADR-0056: where the words go when the AI drafts the minutes. Only a Normal meeting's transcript (text, never audio) may
+ * go to an outside AI service; Internal and Secret ones stay on the team's own machine. A guest is not told the
+ * meeting's sensitivity, so they get the rule itself.
+ */
+function recordingDetail(sensitivity: Sensitivity | null) {
+  const ai =
+    sensitivity === 'Normal'
+      ? 'Để viết dự thảo biên bản, lời thoại (chữ, không có tiếng) có thể được gửi tới dịch vụ AI bên ngoài.'
+      : sensitivity
+        ? 'Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.'
+        : 'Với cuộc họp Thường, lời thoại (chữ, không có tiếng) có thể được gửi tới dịch vụ AI bên ngoài để viết dự thảo biên bản; cuộc họp Nội bộ, Mật thì không.'
+  return `${RECORDING_DETAIL} ${ai}`
+}
 
 type Phase = { kind: 'lobby' } | { kind: 'inRoom' } | { kind: 'left'; reason: DisconnectReason | undefined }
 
@@ -442,7 +457,7 @@ function PreJoin({
               />
               <span>
                 Tôi biết cuộc họp được ghi âm để lập biên bản, tự xoá sau {retentionDays} ngày
-                <InfoTip text={RECORDING_DETAIL} />
+                <InfoTip text={recordingDetail(sensitivity)} />
               </span>
             </label>
           ) : (
@@ -450,7 +465,7 @@ function PreJoin({
               <p className="prejoin-recording">
                 <Icon name="warning" size={16} />
                 Cuộc họp được ghi âm để lập biên bản · tự xoá sau {retentionDays} ngày
-                <InfoTip text={RECORDING_DETAIL} />
+                <InfoTip text={recordingDetail(sensitivity)} />
               </p>
             )
           )}

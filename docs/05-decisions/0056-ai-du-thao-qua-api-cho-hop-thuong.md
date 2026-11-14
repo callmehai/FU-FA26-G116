@@ -1,9 +1,9 @@
 # ADR-0056: Quản trị chọn máy AI viết dự thảo — máy local hoặc API, chỉ cuộc họp Thường được gửi ra API
 
-- **Trạng thái:** Đề xuất — PO (Hải) 06/11/2026; bổ sung, không thay [ADR-0054](0054-ai-du-thao-bien-ban-chay-tai-cho.md)
+- **Trạng thái:** Chấp nhận — PO (Hải) đề xuất 06/11/2026, chấp nhận 14/11/2026; bổ sung, không thay [ADR-0054](0054-ai-du-thao-bien-ban-chay-tai-cho.md)
 - **Ngày:** 2026-11-06
 - **Người quyết định:** Hải (PO)
-- **Liên quan:** SCRUM-36 (dự thảo AI); [ADR-0054](0054-ai-du-thao-bien-ban-chay-tai-cho.md) (AI chạy tại chỗ);
+- **Liên quan:** SCRUM-36 (dự thảo AI); SCRUM-186 (chế độ API); [ADR-0054](0054-ai-du-thao-bien-ban-chay-tai-cho.md) (AI chạy tại chỗ);
   Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15
 
 ## Bối cảnh
@@ -48,4 +48,7 @@ nhân, và cuộc họp Mật, Tối mật còn có thông tin không được �
 - Cuộc họp Thường có dự thảo trong vài giây đến vài chục giây, không cần máy của thành viên nào thức.
 - Lời thoại cuộc họp Thường đi tới nhà cung cấp API. Model miễn phí của OpenCode Zen có thể được dùng để cải thiện model;
   cần ghi điều này vào thông báo ghi âm trước khi dùng API với dữ liệu thật. Server test hiện chỉ có dữ liệu giả.
+  Từ 14/11/2026 phần chi tiết (i) của thông báo ghi âm trước khi vào phòng nói rõ: họp Thường thì lời thoại (chữ, không có
+  tiếng) có thể được gửi tới dịch vụ AI bên ngoài; họp Nội bộ, Mật thì dự thảo do máy AI của nhóm viết. Khách không được
+  biết độ mật nên đọc chính quy tắc đó.
 - Thêm một bảng, một migration (`AiProviderSetting`) và mã `MSG408`–`MSG413`.
