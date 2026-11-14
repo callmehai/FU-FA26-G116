@@ -16,13 +16,13 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v11
+## Bản hiện có — v12
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v11.html](TrustCabinet-wireframe-v11.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v11/](figma-v11/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v11. |
+| HTML | [TrustCabinet-wireframe-v12.html](TrustCabinet-wireframe-v12.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v12/](figma-v12/) (`manifest.json`, `code.js`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v12. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
 
 Bản đen trắng rút gọn (1 sơ đồ luồng, 20 màn chính) nằm ở [lofi/](lofi/README.md), có quy trình riêng
@@ -101,7 +101,7 @@ Ví dụ nâng từ v5 lên v6:
 | `<script>` đầu | Builder: hàm nhỏ trả về chuỗi HTML (`B`, `C`, `F`, `T`, `DL`, `SH`, `SPR`…) |
 | Dữ liệu mẫu | `M`, `MS` (cuộc họp mẫu), `WHO` (người mẫu), `DTABS` (tab trang chi tiết), `VOTE`, `ROLES`… |
 | `const LUONG = [...]` | Luồng cuộc họp S01–S17. Mỗi bước có `frames`, mỗi frame có `fig: 'x.y'`: số màn trong Figma |
-| `const GROUPS = [...]` | 15 nhóm FE-01 → FE-15. Mỗi phần tử trong `screens` là **một màn** (một frame trong Figma, một file PNG) |
+| `const GROUPS = [...]` | 16 nhóm FE-01 → FE-16. Mỗi phần tử trong `screens` là **một màn** (một frame trong Figma, một file PNG) |
 | Cuối script | Render bảng màn, nút **Kích thước thật** |
 
 Một màn được khai báo theo một trong hai cách:
@@ -356,5 +356,6 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 | v9 | 26/10/2026 | FE-05, FE-07 theo bản đã chạy và UC-23a–UC-23d, UC-33a, SCRUM-107: nghị sự không thời lượng / giờ dự kiến, kéo thả mọi mục, tài liệu của mục chỉ chọn trong cuộc họp, tab Tài liệu bỏ ghim ba lựa chọn, tải từ máy ở 7.4b, "Từ kho của tôi" (7.4) chờ SCRUM-58. Sửa 5.1, 5.2, 5.3, 7.3, 7.4, 7.4b; thêm 5.1b |
 | v10 | 29/10/2026 | BA Final Review FE-08 (SCRUM-41, SCRUM-42): thêm 8.1b chọn thiết bị và 8.2b cửa sổ nổi |
 | v11 | 01/11/2026 | Thống nhất giao diện: sidebar gồm Lịch làm việc, Cuộc họp, Kho tài liệu, Giọng nói của tôi, Quản trị; trang chi tiết 7 tab, thanh trạng thái theo từng bước, cột phải Lịch sử trạng thái; danh sách cuộc họp có ô đếm, cột STT, Thao tác; kho tài liệu mở thư mục trong bảng; nghị sự và biểu quyết dạng thẻ; bản ghi theo mic phòng và từng người; thống nhất tên Đang diễn ra. Thêm 1.4, 1.5, 2.4, 3.1b, 3.1c, 4.4c, 4.4d, 4.4e, 4.5d, 4.10, 4.11, 4.12, 6.2b, 7.2b, 7.2c, 8.8, 8.9, 9.1b, 9.3, 9.4, 9.4b, 9.4c. 02/11/2026: 10.1 vẽ lại theo `features/recordings` (gán tên ở ô chọn người nói, sửa chữ tại chỗ; bỏ khung gán riêng, ô tìm, nút Tạo tóm tắt). 02/11/2026, đối chiếu web sau khi merge main (ADR-0043): thông tin chung lưới hai cột, luôn có chip mức độ, danh sách có thanh lọc ngoài thẻ và cột sắp xếp, form tạo/sửa/dời lịch 2 cột, sidebar có nút thu gọn; 4.4c đổi thành tìm người dự; thêm 4.1e, 4.4f, 4.4g, 9.3b |
+| v12 | 13/11/2026 | Thêm nhóm FE-16 Lịch làm việc & tìm giờ họp (SCRUM-142, SCRUM-137, ADR-0058): Chia sẻ lịch vẽ theo web đang chạy (16.1, 16.1b, 16.2, 16.2b, 16.3, 16.4, 16.4b, 16.5, 16.6) và Tìm giờ họp theo contract BE, mục sidebar riêng hai tab, bố cục tham khảo AI-eCabinet: cột cài đặt, người dự chính có trạng thái chia sẻ, kết quả là ô giờ bắt đầu theo ngày, chọn ô mở chi tiết và Tạo nháp (16.7, 16.7b, 16.7c, 16.7d, 16.7e trước khi tìm, 16.8, 16.9, 16.10 điện thoại). Màn cũ giữ nguyên. Plugin: section FE-16 trước đây là dấu hiệu "file Figma còn số FE cũ" (v2/v3); từ v12 chỉ section FE-16 mang tên khác "FE-16 · Lịch làm việc & tìm giờ họp" mới tính là số cũ, nếu không chạy plugin lần hai sẽ dịch số màn |
 
 Ra bản mới thì thêm một dòng vào bảng này.
