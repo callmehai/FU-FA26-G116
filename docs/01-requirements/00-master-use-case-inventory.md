@@ -231,8 +231,8 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-59 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — một mẫu cố định (Mẫu 1.4 NĐ30), điền từ hồ sơ cuộc họp + dự thảo đã duyệt | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-60 | Chỉnh biên bản *(Edit Meeting Minutes)* — trình soạn HTML (BR-385) có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-61 | Gửi duyệt biên bản *(Submit Meeting Minutes for Approval)* — Thư ký gửi bản nháp hoặc bị trả lại cho Chủ tọa | Secretary; Chair nhận thông báo | Đã đặc tả | `<<extend>>` UC-58 |
-| UC-62 | Ký biên bản *(Sign Meeting Minutes)* — để dành ký số mô phỏng (SCRUM-37) | Người ký được chỉ định | Placeholder | `<<extend>>` UC-58 |
-| UC-63 | Xem trạng thái ký & lịch sử *(View Signature Status & Signing History)* — để dành ký số mô phỏng (SCRUM-37) | User có quyền | Placeholder | `<<extend>>` UC-58 |
+| UC-62 | ~~Ký biên bản *(Sign Meeting Minutes)*~~ — **bỏ** (PO 14/11/2026, SCRUM-37 đóng): không ký số, kể cả mô phỏng | — | Bỏ | `<<extend>>` UC-58 |
+| UC-63 | ~~Xem trạng thái ký & lịch sử *(View Signature Status & Signing History)*~~ — **bỏ** cùng UC-62 (PO 14/11/2026) | — | Bỏ | `<<extend>>` UC-58 |
 | UC-64 | Duyệt và ban hành biên bản *(Approve and Issue Meeting Minutes)* — duyệt là ban hành luôn, ghi nhật ký (BR-446) | **Chair** | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-65 | Trả lại biên bản *(Return Meeting Minutes for Revision)* — kèm lý do, chỉ giữ lý do của lần trả cuối | **Chair** | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-83 | Tạo bản đính chính biên bản *(Correct Issued Meeting Minutes)* — bản mới từ bản đã ban hành, bản cũ giữ nguyên | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
@@ -387,6 +387,10 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
   tích hợp eOffice, nhiều tổ chức / đơn vị ([ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
 - Thư ký thu hồi riêng một phiên của Khách (PO chốt 01/11/2026, SCRUM-116): không làm. Gỡ lời mời là mọi phiên của lời mời
   đó hết hiệu lực (UC-28c POST-2); Khách đăng xuất chỉ kết thúc phiên của chính họ (UC-04). Chỉ mở lại khi hội đồng hoặc PO yêu cầu.
+- PO chốt 14/11/2026, không làm:
+  - Ký số biên bản, kể cả bản mô phỏng (SCRUM-37 đóng; UC-62, UC-63 bỏ). Biên bản dừng ở Chủ tọa duyệt là ban hành (UC-64).
+  - Thư ký gom góp ý trên tài liệu thành danh sách để đưa vào nghị sự (SCRUM-106 đóng). Bình luận trên tài liệu cuộc họp
+    vẫn có (SCRUM-23).
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
 
 Guest 13/10/2026: [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md); UC-27/30 cần quyền xem tương ứng như Member, UC-40 xem người đang kết nối mặc định. BR-122 đã chốt; xem [quyết định mới](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md).
