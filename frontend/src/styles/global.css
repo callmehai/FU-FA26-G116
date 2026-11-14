@@ -3464,6 +3464,10 @@ a.menu-item { text-decoration: none; }
 .room-vote-notice strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .room-vote-notice .btn { flex: none; }
 
+/* "Đến lượt bạn phát biểu" (SCRUM-27): an invitation to act, so blue rather than the amber of a warning. */
+.room-banner-turn { flex-wrap: wrap; background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
+.room-banner-turn .btn { flex: none; }
+
 .room-body { flex: 1; min-height: 0; display: flex; }
 .room-stage { flex: 1; min-width: 0; min-height: 0; padding: 16px; display: flex; }
 .room-grid-wrap { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -3573,6 +3577,52 @@ a.menu-item { text-decoration: none; }
 .room-person-mic { display: inline-flex; color: var(--ink-soft); }
 .room-person-mic.is-muted { color: var(--danger); }
 .room-speaking-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--speaking); flex: none; }
+
+/* The caller's own raised hand on their tile (SCRUM-27, UC-79 step 2). */
+.room-tile-hand {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--brand);
+}
+
+/* Register to Speak (SCRUM-27): one line per raised hand, in the room's 360px panel and on the page's side card. */
+.room-panel-body.speaking-panel { overflow-y: auto; }
+/* One column no wider than the panel, so a long name is cut instead of pushing "Mời" past the edge. */
+.speaking-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.speaking-row { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.speaking-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.speaking-row.is-mine .speaking-name { font-weight: 600; }
+.speaking-place {
+  flex: none;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 12px;
+  background: var(--chip-slate-bg);
+  color: var(--chip-slate-fg);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+}
+.speaking-actions { flex: none; display: inline-flex; align-items: center; gap: 2px; }
+.speaking-actions .btn { margin-left: 4px; }
+.speaking-mine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.speaking-mine > span:first-child:not(.status), .speaking-mine > strong { flex: 1; min-width: 0; display: inline-flex; align-items: center; gap: 6px; }
+.speaking-mine > .status { flex: none; margin-right: auto; }
+.speaking-raise { align-self: flex-start; }
+.speaking-note { margin: 0; color: var(--muted-ink); font-size: 13px; }
+.speaking-empty { display: flex; align-items: center; gap: 8px; color: var(--muted-ink); font-size: 13px; }
+.speaking-empty p { margin: 0; }
+.speaking-skeleton { width: 100%; height: 32px; }
 
 .room-chat-note { margin: 0; color: var(--muted-ink); font-size: 12px; }
 .room-chat-list { flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0; display: grid; align-content: start; gap: 12px; }
@@ -3969,6 +4019,9 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
   /* Wider for a finger (E2E U9: 26px). 34px is what fits at 390px beside the other controls, paid for by the row's
      tighter gap; a full 40px would push "Chat" into the gutter. */
   .room-split-more { width: 34px; height: 42px; }
+  /* SCRUM-27: a sixth call control would push "Chat" off a 390px screen. As in Meet on a phone, the hand goes behind
+     ⋯ → "Phát biểu", whose panel raises and lowers it; the turn banner still starts the turn in one tap. */
+  .room-control-hand { display: none; }
 }
 
 /* SCRUM-29 — recordings panel. One line per recording; who, purpose and erase date sit in the tooltip. */
