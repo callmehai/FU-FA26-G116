@@ -46,15 +46,14 @@ const RECORDING_DETAIL =
 /**
  * ADR-0056: where the words go when the AI drafts the minutes. Only a Normal meeting's transcript (text, never audio) may
  * go to an outside AI service; Internal and Secret ones stay on the team's own machine. A guest is not told the
- * meeting's sensitivity, so they get the rule itself.
+ * meeting's sensitivity, and the PO chose to leave the AI out of their notice (2026-11-14).
  */
 function recordingDetail(sensitivity: Sensitivity | null) {
+  if (!sensitivity) return RECORDING_DETAIL
   const ai =
     sensitivity === 'Normal'
       ? 'Để viết dự thảo biên bản, lời thoại (chữ, không có tiếng) có thể được gửi tới dịch vụ AI bên ngoài.'
-      : sensitivity
-        ? 'Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.'
-        : 'Với cuộc họp Thường, lời thoại (chữ, không có tiếng) có thể được gửi tới dịch vụ AI bên ngoài để viết dự thảo biên bản; cuộc họp Nội bộ, Mật thì không.'
+      : 'Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.'
   return `${RECORDING_DETAIL} ${ai}`
 }
 

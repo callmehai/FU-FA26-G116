@@ -49,6 +49,5 @@ nhân, và cuộc họp Mật, Tối mật còn có thông tin không được �
 - Lời thoại cuộc họp Thường đi tới nhà cung cấp API. Model miễn phí của OpenCode Zen có thể được dùng để cải thiện model;
   cần ghi điều này vào thông báo ghi âm trước khi dùng API với dữ liệu thật. Server test hiện chỉ có dữ liệu giả.
   Từ 14/11/2026 phần chi tiết (i) của thông báo ghi âm trước khi vào phòng nói rõ: họp Thường thì lời thoại (chữ, không có
-  tiếng) có thể được gửi tới dịch vụ AI bên ngoài; họp Nội bộ, Mật thì dự thảo do máy AI của nhóm viết. Khách không được
-  biết độ mật nên đọc chính quy tắc đó.
+  tiếng) có thể được gửi tới dịch vụ AI bên ngoài; họp Nội bộ, Mật thì dự thảo do máy AI của nhóm viết. Thông báo của khách (không được biết độ mật) giữ nguyên, không nhắc tới AI.
 - Thêm một bảng, một migration (`AiProviderSetting`) và mã `MSG408`–`MSG413`.
