@@ -1,4 +1,6 @@
 import {
+  createContext,
+  useContext,
   useEffect,
   useId,
   useLayoutEffect,
@@ -38,6 +40,7 @@ import {
   type TrackPublication,
 } from 'livekit-client'
 import { muteCallParticipant } from '../../../api/calls'
+import { finishSpeaking, lowerHand, raiseHand, startSpeaking } from '../../../api/speaking'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Icon, type IconName } from '../../../components/Icon'
 import { useToast } from '../../../components/toastContext'
@@ -51,6 +54,9 @@ import { AgendaPanel } from '../../agenda/AgendaPanel'
 import { AttendancePanel } from '../../attendance/AttendancePanel'
 import { DocumentsPanel } from '../../documents/DocumentsPanel'
 import { NotesPanel } from '../../notes/NotesPanel'
+import { SpeakingPanel } from '../../speaking/SpeakingPanel'
+import { useRaisedHandAlerts } from '../../speaking/useRaisedHandAlerts'
+import { useSpeaking, type Speaking } from '../../speaking/useSpeaking'
 import { VoteOpenedNotice } from '../../votes/VoteOpenedNotice'
 import { VotingPanel } from '../../votes/VotingPanel'
 import { MyClips } from '../../speech/MyClips'
@@ -67,10 +73,11 @@ import { deviceErrorMessage, roomMessage } from './roomSupport'
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform)
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 
-type PanelId = 'people' | 'agenda' | 'notes' | 'attendance' | 'documents' | 'votes' | 'chat'
+type PanelId = 'people' | 'speaking' | 'agenda' | 'notes' | 'attendance' | 'documents' | 'votes' | 'chat'
 
 const PANEL_LABEL: Record<PanelId, string> = {
   people: 'Người dự',
+  speaking: 'Phát biểu',
   agenda: 'Nội dung họp',
   notes: 'Ghi chú',
   attendance: 'Điểm danh',
@@ -81,6 +88,7 @@ const PANEL_LABEL: Record<PanelId, string> = {
 
 /** On a phone only "Người dự" and "Chat" fit beside the call controls; these go behind ⋯, as in Meet. */
 const TUCKED_PANELS: { id: PanelId; icon: IconName }[] = [
+  { id: 'speaking', icon: 'hand' },
   { id: 'agenda', icon: 'list' },
   { id: 'notes', icon: 'notes' },
   { id: 'attendance', icon: 'userCheck' },
@@ -102,6 +110,12 @@ const CAN_SHARE_SCREEN = typeof navigator.mediaDevices?.getDisplayMedia === 'fun
 const ROLE_ORDER: Record<MeetingRole, number> = { Chair: 0, Secretary: 1, Member: 2, Guest: 3 }
 
 /**
+ * Whether the caller's own hand is up (SCRUM-27), for the hand on their own tile. Only their own: the queue names
+ * people, not their LiveKit identities, so another tile cannot be matched to a request without guessing by name.
+ */
+const MyHandContext = createContext(false)
+
+/**
  * Inside the room (SCRUM-41). Everything reads the Room through RoomContext, so the LiveKit hooks
  * re-render on the events they care about. Nothing in here navigates the tab: the side panels are
  * where meeting features live while the call runs (ADR-0011).
@@ -120,11 +134,16 @@ export function RoomView({
   // The role the room was joined with holds only until the roster says otherwise (BR-328).
   const roleOf = useRoomRoles(meeting.id)
   const currentRole = roleOf(room.localParticipant) ?? myRole
+  // Register to Speak (SCRUM-27): the raise-hand button, the "Đến lượt bạn" banner, the Chair's alerts, the panel and
+  // the hand on the caller's own tile share one read.
+  const speaking = useSpeaking(meeting.id)
 
   return (
     <RoomContext.Provider value={room}>
       <RoomRolesContext.Provider value={roleOf}>
-        <RoomLayout room={room} meeting={meeting} myRole={currentRole} onLeave={onLeave} />
+        <MyHandContext.Provider value={speaking.mine !== null}>
+          <RoomLayout room={room} meeting={meeting} myRole={currentRole} speaking={speaking} onLeave={onLeave} />
+        </MyHandContext.Provider>
       </RoomRolesContext.Provider>
       <RoomAudioRenderer />
     </RoomContext.Provider>
@@ -135,11 +154,13 @@ function RoomLayout({
   room,
   meeting,
   myRole,
+  speaking,
   onLeave,
 }: {
   room: Room
   meeting: Meeting | GuestMeeting
   myRole: MeetingRole
+  speaking: Speaking
   onLeave: () => Promise<void>
 }) {
   // As in Meet, the stage starts with the whole width; the panels open on demand.
@@ -166,6 +187,8 @@ function RoomLayout({
   const tray = useDeviceTray()
   const micTrack = localParticipant.getTrackPublication(Track.Source.Microphone)?.audioTrack
   const guest = useGuest()
+  const queued = speaking.data?.canManage ? speaking.data.requests.filter((r) => r.status === 'Queued').length : 0
+  useRaisedHandAlerts(speaking, panel === 'speaking')
 
   // Closing the tab while connected asks first; the browser shows its own wording.
   useBeforeUnload((event) => event.preventDefault())
@@ -310,6 +333,12 @@ function RoomLayout({
         </div>
       )}
       <StartAudioBanner />
+      <TurnBanner
+        meetingId={meeting.id}
+        speaking={speaking}
+        micOn={isMicrophoneEnabled}
+        onMicOn={() => void toggleMic()}
+      />
       <VoteOpenedNotice
         meetingId={meeting.id}
         panelOpen={panel === 'votes'}
@@ -359,6 +388,8 @@ function RoomLayout({
           <aside className="room-panel" aria-label={PANEL_LABEL[panel]}>
             {panel === 'people' ? (
               <ParticipantsPanel meetingId={meeting.id} participants={participants} isChair={myRole === 'Chair'} />
+            ) : panel === 'speaking' ? (
+              <SpeakingPanel meetingId={meeting.id} speaking={speaking} />
             ) : panel === 'agenda' ? (
               <AgendaPanel meetingId={meeting.id} variant="room" />
             ) : panel === 'notes' ? (
@@ -459,6 +490,7 @@ function RoomLayout({
                 onClick={() => (floating.pip ? floating.close() : void floating.open())}
               />
             )}
+            <HandButton meetingId={meeting.id} speaking={speaking} />
             <ControlButton icon="phoneOff" label="Rời phòng" leave onClick={() => setConfirmingLeave(true)} />
           </div>
         </div>
@@ -478,10 +510,12 @@ function RoomLayout({
               side
               className="room-control-tucked"
               active={panel === item.id}
+              // The Chair sees how many hands wait, as the chat shows unread messages.
+              badge={item.id === 'speaking' && queued > 0 ? queued : undefined}
               onClick={() => togglePanel(item.id)}
             />
           ))}
-          <MorePanels panel={panel} panels={tucked} onPick={togglePanel} />
+          <MorePanels panel={panel} panels={tucked} badge={queued > 0 ? queued : undefined} onPick={togglePanel} />
           <ControlButton
             icon="messageSquare"
             label="Chat"
@@ -676,10 +710,13 @@ function PipView({
 function MorePanels({
   panel,
   panels,
+  badge,
   onPick,
 }: {
   panel: PanelId | null
   panels: { id: PanelId; icon: IconName }[]
+  /** Hands waiting for the Chair (SCRUM-27), which a phone would otherwise hide behind ⋯. */
+  badge?: number
   onPick: (id: PanelId) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -737,6 +774,7 @@ function MorePanels({
         onClick={() => setOpen(!open)}
       >
         <Icon name="more" size={20} />
+        {badge !== undefined && <span className="room-badge">{badge > 99 ? '99+' : badge}</span>}
       </button>
       {open && (
         <div className="room-select-menu room-more-menu" role="menu" id={menuId} aria-label="Thêm">
@@ -798,7 +836,7 @@ function ControlButton({
       className={`room-control${side ? ' room-control-side' : ''}${variant} ${className}`.trimEnd()}
       aria-label={label}
       aria-keyshortcuts={shortcut ? shortcut.replace(' + ', '+').replace('⌘', 'Meta') : undefined}
-      aria-pressed={side || icon === 'monitor' || icon === 'pictureInPicture' ? active : undefined}
+      aria-pressed={side || icon === 'monitor' || icon === 'pictureInPicture' || icon === 'hand' ? active : undefined}
       onClick={onClick}
     >
       <Icon name={icon} size={20} />
@@ -820,6 +858,74 @@ function StartAudioBanner() {
       <button type="button" className="btn btn-primary btn-sm" onClick={() => void startAudio()}>
         <Icon name="volume" size={16} />
         Bấm để nghe mọi người
+      </button>
+    </div>
+  )
+}
+
+/**
+ * Raise or lower one's hand from the call controls, as in Meet (SCRUM-27, UC-79 step 1, AF-1). During one's own turn
+ * the same button closes it (step 7). It waits for the first read of the queue: the server records someone as in the
+ * room only once LiveKit reports them joined, so a click in the first seconds can still answer MSG458, said in a toast.
+ */
+function HandButton({ meetingId, speaking }: { meetingId: string; speaking: Speaking }) {
+  const { data, mine, pending, run } = speaking
+  if (!data || data.meetingStatus !== 'InProgress') return null
+  const label = !mine ? 'Giơ tay' : mine.status === 'Speaking' ? 'Kết thúc phát biểu' : 'Hạ tay'
+  return (
+    <ControlButton
+      icon="hand"
+      label={label}
+      className="room-control-hand"
+      active={mine !== null}
+      disabled={pending}
+      onClick={() =>
+        void run(() =>
+          !mine
+            ? raiseHand(meetingId)
+            : mine.status === 'Speaking'
+              ? finishSpeaking(meetingId, mine.id)
+              : lowerHand(meetingId, mine.id),
+        )
+      }
+    />
+  )
+}
+
+/**
+ * "Đến lượt bạn" (UC-79 step 5): stays under the title bar while the Chair's invitation waits on the caller. Being
+ * invited never turns the microphone on (BR-338), so the banner offers that first, then the start of the turn.
+ */
+function TurnBanner({
+  meetingId,
+  speaking,
+  micOn,
+  onMicOn,
+}: {
+  meetingId: string
+  speaking: Speaking
+  micOn: boolean
+  onMicOn: () => void
+}) {
+  const { mine, pending, run } = speaking
+  if (mine?.status !== 'Invited') return null
+  return (
+    <div className="room-banner room-banner-turn" role="status">
+      <Icon name="hand" size={18} />
+      <strong>Đến lượt bạn phát biểu</strong>
+      {!micOn && (
+        <button type="button" className="btn btn-outline btn-sm" onClick={onMicOn}>
+          <Icon name="mic" size={16} />
+          Bật micro
+        </button>
+      )}
+      <button
+        type="button"
+        className="btn btn-primary btn-sm"
+        disabled={pending}
+        onClick={() => void run(() => startSpeaking(meetingId, mine.id))}
+      >
+        Bắt đầu phát biểu
       </button>
     </div>
   )
@@ -1027,11 +1133,17 @@ function ParticipantTile({ trackRef, style }: { trackRef: TrackReferenceOrPlaceh
   const micMuted = !useMicrophoneOn(participant)
   const name = participant.name || 'Người dự'
   const role = useRoleOf()(participant)
+  const handUp = useContext(MyHandContext) && participant.isLocal
   const showVideo = isTrackReference(trackRef) && !trackRef.publication.isMuted
   const colors = avatarColors(name)
 
   return (
     <figure className={`room-tile${speaking ? ' room-tile-speaking' : ''}`} style={style}>
+      {handUp && (
+        <span className="room-tile-hand" role="img" aria-label="Đang giơ tay">
+          <Icon name="hand" size={16} />
+        </span>
+      )}
       {showVideo ? (
         <VideoTrack
           trackRef={trackRef}

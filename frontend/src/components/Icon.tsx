@@ -1,5 +1,6 @@
 import {
   ChartColumn,
+  Hand,
   NotebookPen,
   ArrowDown,
   History,
@@ -298,6 +299,8 @@ const ICONS = {
   notes: NotebookPen,
   // SCRUM-38: the meeting report in the sidebar.
   chart: ChartColumn,
+  // SCRUM-27: a raised hand, in the call controls and the speaking queue.
+  hand: Hand,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
