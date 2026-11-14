@@ -5212,38 +5212,40 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .week-nav { display: flex; gap: 4px; }
 .week-title { margin: 0; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .week-hours { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
-.week-card { flex: none; padding: 0; overflow-x: auto; }
-.week-table { width: 100%; min-width: 760px; border-collapse: collapse; table-layout: fixed; }
-.week-table th, .week-table td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: middle; }
-.week-table tbody tr:last-child > * { border-bottom: 0; }
-.week-table thead th { background: var(--surface-alt); color: var(--muted-ink); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
-.week-table thead th.week-today { color: var(--brand); }
-.week-date { font-weight: 500; text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
-.week-person-col { width: 220px; }
-.week-table tbody th { font-weight: 400; }
-.week-person { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.week-person .avatar { width: 28px; height: 28px; font-size: 11px; }
 .week-swatch { flex: none; width: 10px; height: 10px; border-radius: 3px; }
-.week-person-meta { display: flex; align-items: center; gap: 4px; margin: 2px 0 0 18px; color: var(--muted-ink); font-size: 12.5px; }
-.week-bar { position: relative; height: 22px; border-radius: 6px; background: var(--surface-alt); box-shadow: inset 0 0 0 1px var(--line-soft); overflow: hidden; }
-/* A faint line each hour of the 9-hour day, so a block's time can be read off the bar. */
-.week-bar-hours { background-image: repeating-linear-gradient(90deg, transparent 0 calc(100% / 9 - 1px), var(--line-soft) calc(100% / 9 - 1px) calc(100% / 9)); }
-.week-busy { position: absolute; top: 0; bottom: 0; min-width: 3px; border-radius: 4px; }
-.week-bar-unknown {
-  display: flex; align-items: center; justify-content: center;
-  background: repeating-linear-gradient(135deg, var(--surface-alt) 0 6px, var(--surface) 6px 12px);
-  color: var(--faint-ink); font-size: 12px;
-}
-.week-row-stopped .person { opacity: .6; }
-.week-busy-text { display: block; margin-top: 6px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+/* UC-85c as AI-eCabinet's shared week: people as chips over a grid of working hours, a column a day. */
+.shared-people { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.shared-person { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; }
+.shared-person-name { min-width: 0; overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.shared-person-meta { color: var(--muted-ink); font-size: 12px; font-weight: 400; white-space: nowrap; }
+/* Shown or hidden, not a selection: the person's colour carries it, so no brand fill as other chip toggles have. */
+.shared-person[aria-pressed='true'] { border-color: var(--line); background: var(--surface); color: var(--ink); font-weight: 400; }
+.shared-person[aria-pressed='false']:not(:disabled) .shared-person-name { color: var(--muted-ink); font-weight: 500; text-decoration: line-through; }
+.shared-person-stopped { opacity: .6; }
+.shared-grid { flex: none; padding: 0; overflow: hidden; }
+.shared-grid-head, .shared-grid-body { display: grid; }
+.shared-grid-head { border-bottom: 1px solid var(--line); background: var(--surface-alt); }
+.shared-day { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 8px 10px; border-left: 1px solid var(--line-soft); }
+.shared-day-name { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.shared-day-today .shared-day-name { color: var(--brand); }
+.shared-day-unknown { overflow: hidden; color: var(--faint-ink); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.shared-grid-body { padding-bottom: 8px; }
+.shared-hours { position: relative; }
+.shared-hours span { position: absolute; right: 8px; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; transform: translateY(-50%); }
+.shared-hours span:first-child { transform: none; }
+/* An hour line every 56px (HOUR_PX), so a block's time reads off the grid. */
+.shared-column { position: relative; border-left: 1px solid var(--line-soft); background-image: linear-gradient(var(--line-soft) 1px, transparent 1px); }
+.shared-busy { position: absolute; display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 3px 6px; overflow: hidden; border: 1px solid; border-radius: 6px; font-size: 12px; line-height: 16px; }
+.shared-busy b { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.shared-busy span { overflow: hidden; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
+.shared-busy-short { flex-direction: row; align-items: center; gap: 6px; padding-block: 0; }
+.shared-column-unknown { background-color: var(--surface-alt); }
+.shared-unknown-text { position: absolute; top: 50%; left: 0; right: 0; color: var(--faint-ink); font-size: 13px; text-align: center; transform: translateY(-50%); }
+.shared-skeleton { position: absolute; inset: 8px; height: auto; }
 @media (max-width: 640px) {
   .week-toolbar { flex-wrap: wrap; }
   .week-hours { margin-left: 0; }
-  .week-table { min-width: 0; }
-  .week-person-col { width: 46%; }
-  /* The colour swatch already tells people apart; the avatar would squeeze the name to a word a line. */
-  .week-person .avatar { display: none; }
-  .week-person-meta { margin-left: 18px; }
+  .shared-person { min-height: 40px; }
 }
 
 /* SCRUM-137 — Tìm giờ họp (UC-85a, UC-85b), wireframe v12 16.7–16.10, laid out after AI-eCabinet's page: the search
