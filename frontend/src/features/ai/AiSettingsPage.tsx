@@ -92,8 +92,9 @@ export function AiSettingsPage() {
   }
 
   /**
-   * "Thử kết nối" for the API in the form, or for the in-house model the server is configured with: Internal, Secret
-   * and Top secret meetings always use that one (ADR-0056), so it is worth checking before a meeting whatever is chosen.
+   * "Thử kết nối" tests what the picked tab shows: the API in the form, or the in-house model the server is configured
+   * with. Internal and Secret meetings always use the latter (ADR-0056), so an administrator on API can still pick Máy
+   * local and test it; picking a tab saves nothing.
    */
   const runTest = async (target: 'Api' | 'Local') => {
     setTesting(true)
@@ -102,7 +103,7 @@ export function AiSettingsPage() {
       const result = await testAiSettings(
         target === 'Local' ? { mode: 'Local', apiBaseUrl: '', apiModel: '', apiKey: null } : input(),
       )
-      setTest({ ok: true, text: `${result.message} · ${(result.elapsedMs / 1000).toFixed(1).replace('.', ',')} giây` })
+      setTest({ ok: true, text: `${result.message.replace(/\.$/, '')} · ${(result.elapsedMs / 1000).toFixed(1).replace('.', ',')} giây` })
     } catch (error) {
       if (isApiError(error, 400, 'MSG409')) setErrors(fieldErrors(error))
       setTest({ ok: false, text: errorMessage(error) })
@@ -163,18 +164,6 @@ export function AiSettingsPage() {
             <Badge tone={settings.localConfigured ? 'emerald' : 'slate'}>
               {settings.localConfigured ? 'Đã cấu hình' : 'Chưa cấu hình'}
             </Badge>
-            {settings.localConfigured && (
-              <button
-                type="button"
-                className="btn btn-outline btn-sm ai-settings-local-test"
-                onClick={() => void runTest('Local')}
-                disabled={testing || saving}
-                aria-label="Thử kết nối máy local"
-              >
-                <Icon name="broadcast" size={16} />
-                {testing ? 'Đang thử…' : 'Thử kết nối'}
-              </button>
-            )}
           </p>
 
           {api && (
@@ -257,10 +246,16 @@ export function AiSettingsPage() {
               </small>
             )}
             <div className="form-actions">
-              {api && (
-                <button type="button" className="btn btn-outline" onClick={() => void runTest('Api')} disabled={testing || saving}>
+              {(api || settings.localConfigured) && (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => void runTest(api ? 'Api' : 'Local')}
+                  disabled={testing || saving}
+                  aria-label={api ? 'Thử kết nối API' : 'Thử kết nối máy local'}
+                >
                   <Icon name="broadcast" size={16} />
-                  {testing ? 'Đang thử…' : 'Thử API'}
+                  {testing ? 'Đang thử…' : 'Thử kết nối'}
                 </button>
               )}
               <button type="submit" className="btn btn-primary" disabled={!dirty || saving || testing}>

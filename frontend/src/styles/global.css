@@ -5124,7 +5124,6 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .ai-settings-label { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 .ai-settings-local { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: var(--muted-ink); }
 .ai-settings-local strong { color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
-.ai-settings-local-test { margin-left: auto; }
 .ai-settings-api { min-width: 0; margin: 0; padding: 0; border: 0; }
 .ai-settings-api legend { margin-bottom: 12px; padding: 0; }
 .ai-settings-key { display: flex; gap: 8px; }
