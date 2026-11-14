@@ -392,7 +392,7 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
   - Thư ký gom góp ý trên tài liệu thành danh sách để đưa vào nghị sự (SCRUM-106 đóng). Bình luận trên tài liệu cuộc họp
     vẫn có (SCRUM-23).
   - Thu giọng mẫu (Voice ID) của Khách (SCRUM-136 đóng). Khách trực tuyến đã có tên theo micro của chính họ; câu của Khách
-    ngồi trong phòng (mic phòng) để "Người nói chưa rõ", Thư ký đổi người nói từng câu. Lý do: giọng dùng để nhận diện là dữ
+    ngồi trong phòng (mic phòng) hiện "Chưa rõ người nói", Thư ký đổi người nói từng câu. Lý do: giọng dùng để nhận diện là dữ
     liệu sinh trắc học nhạy cảm (Luật 91/2025/QH15), không thu của người ngoài hệ thống theo nguyên tắc tối thiểu hoá dữ liệu.
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
 
