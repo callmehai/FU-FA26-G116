@@ -391,6 +391,9 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
   - Ký số biên bản, kể cả bản mô phỏng (SCRUM-37 đóng; UC-62, UC-63 bỏ). Biên bản dừng ở Chủ tọa duyệt là ban hành (UC-64).
   - Thư ký gom góp ý trên tài liệu thành danh sách để đưa vào nghị sự (SCRUM-106 đóng). Bình luận trên tài liệu cuộc họp
     vẫn có (SCRUM-23).
+  - Thu giọng mẫu (Voice ID) của Khách (SCRUM-136 đóng). Khách trực tuyến đã có tên theo micro của chính họ; câu của Khách
+    ngồi trong phòng (mic phòng) hiện "Chưa rõ người nói", Thư ký đổi người nói từng câu. Lý do: giọng dùng để nhận diện là dữ
+    liệu sinh trắc học nhạy cảm (Luật 91/2025/QH15), không thu của người ngoài hệ thống theo nguyên tắc tối thiểu hoá dữ liệu.
 - Lịch sử trạng thái, lịch tuần / tháng: là màn hình / luồng phụ của UC-16, UC-17, không tách UC.
 
 Guest 13/10/2026: [ADR-0016](../05-decisions/0016-khach-tham-gia-nhu-thanh-vien.md); UC-27/30 cần quyền xem tương ứng như Member, UC-40 xem người đang kết nối mặc định. BR-122 đã chốt; xem [quyết định mới](../05-decisions/0017-ket-thuc-hop-khong-phu-thuoc-diem-danh-bieu-quyet.md).
