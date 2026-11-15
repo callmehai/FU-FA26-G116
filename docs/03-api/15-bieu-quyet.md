@@ -71,7 +71,7 @@ trừ khi BE và FE thống nhất lại trong cùng PR.
 {
   "title": "Thông qua kế hoạch Q4",
   "description": "",
-  "options": ["Đồng ý", "Không đồng ý", "Bỏ phiếu trắng"],
+  "options": ["Đồng ý", "Không đồng ý", "Không ý kiến"],
   "isAnonymous": false,
   "eligibleRoles": ["Chair", "Secretary", "Member", "Guest"],
   "openImmediately": false
