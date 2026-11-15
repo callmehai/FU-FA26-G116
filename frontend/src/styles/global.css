@@ -2001,6 +2001,11 @@ a.menu-item { text-decoration: none; }
 }
 
 .toast span { flex: 1; }
+/* On a phone the stack spans the screen and covered the collapsed sidebar's bell, so a new notification hid its own
+   count: inside the app shell it starts right of the 72px rail instead. */
+@media (max-width: 720px) {
+  body:has(.shell) .toast-stack { left: calc(var(--sidebar-width-collapsed) + 16px); width: auto; }
+}
 .toast-success .toast-dot { background: var(--chip-emerald-fg); }
 .toast-error { color: var(--danger); }
 .toast-error .toast-dot { background: var(--danger); }
