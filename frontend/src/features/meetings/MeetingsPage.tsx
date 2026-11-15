@@ -7,7 +7,7 @@ import { Pagination } from '../../components/Pagination'
 import { Select } from '../../components/Select'
 import { backState } from '../../lib/backTarget'
 import { errorMessage, isApiError } from '../../lib/errors'
-import { formatClock, formatDate, formatWeekdayDate } from '../../lib/format'
+import { formatClock, formatDate, formatDateRange, formatWeekdayDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import { useSearchBox } from '../../lib/useSearchBox'
 import { latestSearchParams } from '../../lib/latestSearchParams'
@@ -284,9 +284,17 @@ export function MeetingsPage() {
             {formatClock(m.plannedStartTime)} – {formatClock(m.plannedEndTime)}
           </b>
           <span className="cell-sub">
-            {formatDate(m.plannedStartTime) === formatDate(m.plannedEndTime)
-              ? formatWeekdayDate(m.plannedStartTime)
-              : `${formatDate(m.plannedStartTime)} – ${formatDate(m.plannedEndTime)}`}
+            {formatDate(m.plannedStartTime) === formatDate(m.plannedEndTime) ? (
+              formatWeekdayDate(m.plannedStartTime)
+            ) : formatDate(m.plannedStartTime).slice(6) === formatDate(m.plannedEndTime).slice(6) ? (
+              formatDateRange(m.plannedStartTime, m.plannedEndTime)
+            ) : (
+              // Across a new year both dates are written in full, wider than the column: one per line.
+              <>
+                {formatDate(m.plannedStartTime)} –<br />
+                {formatDate(m.plannedEndTime)}
+              </>
+            )}
           </span>
         </td>
         <td className="cell-muted cell-place">{MEETING_MODE_LABEL[m.mode]}</td>

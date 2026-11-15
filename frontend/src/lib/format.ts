@@ -59,6 +59,19 @@ export function formatClock(iso: string) {
   return timeOnly.format(new Date(iso))
 }
 
+/**
+ * The days a sitting spans, as short as reads clearly: "29/10 – 30/10/2026", the year once; across a new year
+ * "31/12/2026 – 01/01/2027".
+ */
+export function formatDateRange(startIso: string, endIso: string) {
+  const start = new Date(startIso)
+  const end = new Date(endIso)
+  return start.getFullYear() === end.getFullYear()
+    ? // Cut from the full date: vi-VN writes day and month alone as "20-11".
+      `${formatDate(startIso).slice(0, 5)} – ${formatDate(endIso)}`
+    : `${formatDate(startIso)} – ${formatDate(endIso)}`
+}
+
 /** "Thứ Năm, 15/10/2026" */
 export function formatWeekdayDate(iso: string) {
   return `${WEEKDAYS[new Date(iso).getDay()]}, ${formatDate(iso)}`
