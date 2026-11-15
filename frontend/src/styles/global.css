@@ -2010,6 +2010,22 @@ a.menu-item { text-decoration: none; }
 /* The × was 23×20 on a phone; the margin keeps the toast as tall as before. */
 @media (pointer: coarse) { .toast-close { min-width: 40px; min-height: 40px; margin: -10px -12px -10px 0; } }
 
+/* Roles on a phone: four columns do not fit 390px, and edit / delete ended up past the card's edge. Each role becomes
+   a card instead: the name and its chips, the description, the number of accounts; edit and delete at the top right. */
+.roles-count-unit { display: none; }
+@media (max-width: 720px) {
+  .roles-table thead { display: none; }
+  .roles-table tbody tr { position: relative; display: flex; flex-wrap: wrap; gap: 4px 8px; padding: 12px 16px; border-bottom: 1px solid #e9ecf1; }
+  .roles-table tbody tr:last-child { border-bottom: none; }
+  .data-table.roles-table tbody td { padding: 0; border: none; }
+  .roles-table td.cell-title { flex: 1 1 100%; overflow-wrap: anywhere; }
+  .roles-table tr:has(.row-actions) td.cell-title { padding-right: 88px; }
+  .roles-table td.roles-desc { flex: 1 1 100%; white-space: normal; }
+  .roles-table td.roles-count { color: var(--muted-ink); font-size: 13px; }
+  .roles-count-unit { display: inline; }
+  .roles-table td.roles-actions { position: absolute; top: 6px; right: 8px; }
+}
+
 /* ---------- Role ↔ capability matrix ---------- */
 /* Two header rows: the functional group, underlined across its columns, then the capability
    names. "Vai trò" and "Thao tác" span both and sit centred on them, so nothing floats. */
@@ -2049,6 +2065,17 @@ a.menu-item { text-decoration: none; }
 /* A long name wraps (even inside a long word); a chip never breaks across lines. */
 .matrix-table td.cell-title { white-space: normal; overflow-wrap: anywhere; }
 .matrix-table td.cell-title .badge { white-space: nowrap; }
+/* On a phone the matrix scrolls inside its card, so the role names stay pinned on the left: every checkbox keeps its
+   row's name beside it. The column narrows to leave room for the checkboxes, and its chips go (the list tab shows
+   them): "Vai trò của bạn" alone is wider than the column. */
+@media (max-width: 720px) {
+  .matrix-table th.matrix-role,
+  .matrix-table td.cell-title { position: sticky; left: 0; z-index: 1; width: 112px; min-width: 112px; max-width: 112px; box-shadow: inset -1px 0 0 var(--line); }
+  .matrix-table td.cell-title { background: var(--surface); }
+  .data-table.matrix-table tbody tr:hover td.cell-title { background: #f6f8fb; }
+  .matrix-table td.cell-title .badge { display: none; }
+  .matrix-table th.matrix-cap { min-width: 88px; }
+}
 /* The label fills the cell, so the whole cell is the click target, not just the 16px box. */
 .matrix-table td.matrix-cell { position: relative; padding: 0; text-align: center; }
 .matrix-hit { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
