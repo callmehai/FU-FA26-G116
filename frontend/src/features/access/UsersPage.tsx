@@ -18,6 +18,7 @@ import type { UserAccount, UserMutationResponse } from '../../types/user'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
 import { UserFormDialog, type UserFormTarget } from './UserFormDialog'
+import { latestSearchParams } from '../../lib/latestSearchParams'
 
 type RoleFilter = string | 'all'
 type StatusFilter = 'all' | 'active' | 'inactive'
@@ -86,8 +87,8 @@ export function UsersPage() {
   const setFilter = useCallback(
     (key: FilterKey, value: string) =>
       setSearchParams(
-        (current) => {
-          const next = new URLSearchParams(current)
+        () => {
+          const next = latestSearchParams()
           if (value && value !== 'all') next.set(key, value)
           else next.delete(key)
           return next

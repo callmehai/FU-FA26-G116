@@ -21,6 +21,7 @@ import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import { useSearchBox } from '../../lib/useSearchBox'
+import { latestSearchParams } from '../../lib/latestSearchParams'
 import type { LibraryDocument, LibraryFolder, LibraryView } from '../../types/document'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useUploadsSettled } from '../uploads/uploadsContext'
@@ -76,14 +77,14 @@ export function DocumentsPage() {
 
   const update = useCallback(
     (patch: { folder?: string | null; q?: string; type?: TypeFilter }, replace = true) => {
-      const next = new URLSearchParams(params)
+      const next = latestSearchParams()
       for (const [key, value] of Object.entries(patch)) {
         if (value) next.set(key, value)
         else next.delete(key)
       }
       setParams(next, { replace })
     },
-    [params, setParams],
+    [setParams],
   )
   const [search, setSearch] = useSearchBox(q, (value) => update({ q: value.trim() }))
 
