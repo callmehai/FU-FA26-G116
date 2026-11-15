@@ -66,6 +66,8 @@ services:
       # Máy AI viết dự thảo biên bản (ADR-0054): server có API chuẩn OpenAI (Ollama, llama.cpp…) trên máy của
       # nhóm, qua Tailscale. Để trống thì app vẫn chạy, nút tạo dự thảo báo 503/MSG394. Xem deploy/README.md §11.
       Ai__BaseUrl: "${AI_URL:-}"
+      # Máy dự phòng chạy cùng model (ADR-0063): máy chính không kết nối được thì dự thảo chuyển sang máy này.
+      Ai__BackupBaseUrl: "${AI_BACKUP_URL:-}"
       Ai__Model: "${AI_MODEL:-}"
       Ai__ApiKey: "${AI_API_KEY:-}"
       # Khoá mã hoá vector giọng (ADR-0027). Để trống thì suy ra từ SIGNING_KEY; đặt riêng để đổi

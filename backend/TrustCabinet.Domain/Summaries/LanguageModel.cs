@@ -16,7 +16,15 @@ public interface ILanguageModel
 }
 
 /// <summary>The model could not be reached or gave no usable answer; the message is for the Secretary.</summary>
-public sealed class LanguageModelException(string message, Exception? inner = null) : Exception(message, inner);
+/// <param name="Unreachable">
+/// No answer came back at all: the machine is off, off the tailnet, or never finished. Only then is the backup machine
+/// tried; a machine that answers with an error would answer the same on the backup.
+/// </param>
+public sealed class LanguageModelException(string message, Exception? inner = null, bool unreachable = false)
+    : Exception(message, inner)
+{
+    public bool Unreachable { get; } = unreachable;
+}
 
 /// <summary>
 /// One thing said, on the meeting's clock. <see cref="Ref"/> points back at its source so a summary can cite it:
