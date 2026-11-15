@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Users;
 
 namespace TrustCabinet.Web.Endpoints;
 

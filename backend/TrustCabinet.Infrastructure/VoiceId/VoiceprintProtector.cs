@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
-using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Application.VoiceId;
 
 namespace TrustCabinet.Infrastructure.VoiceId;
 

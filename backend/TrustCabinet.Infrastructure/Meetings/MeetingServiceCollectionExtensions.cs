@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Application.Meetings;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 

@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.Transcription;
+using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Transcription;
-using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Web.Tests.Authentication;
 using TrustCabinet.Web.Tests.Users;
@@ -73,8 +73,8 @@ public sealed class RecordingFixture : IAsyncLifetime
                 services.AddSingleton<TimeProvider>(fixture.Clock);
                 services.RemoveAll<ISpeechEngine>();
                 services.AddSingleton<ISpeechEngine>(fixture.Speech);
-                services.RemoveAll<TrustCabinet.Domain.Calls.ILiveKitGateway>();
-                services.AddSingleton<TrustCabinet.Domain.Calls.ILiveKitGateway>(fixture.LiveKit);
+                services.RemoveAll<TrustCabinet.Application.Calls.ILiveKitGateway>();
+                services.AddSingleton<TrustCabinet.Application.Calls.ILiveKitGateway>(fixture.LiveKit);
                 services.RemoveAll<IVoiceEmbedder>();
                 services.AddSingleton<IVoiceEmbedder>(fixture.Speech);
                 // Deactivating an account ends its sessions; no Redis for that here.

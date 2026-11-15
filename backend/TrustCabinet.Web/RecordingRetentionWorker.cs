@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Recordings;
+using TrustCabinet.Application.Recordings;
 
 namespace TrustCabinet.Web;
 

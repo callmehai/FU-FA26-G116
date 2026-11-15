@@ -1,5 +1,5 @@
-using TrustCabinet.Domain.Participants;
-using TrustCabinet.Domain.Speaking;
+using TrustCabinet.Application.Participants;
+using TrustCabinet.Application.Speaking;
 
 namespace TrustCabinet.Web.Endpoints;
 

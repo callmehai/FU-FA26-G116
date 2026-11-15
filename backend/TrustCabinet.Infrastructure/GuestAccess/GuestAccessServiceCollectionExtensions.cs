@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TrustCabinet.Domain.Agenda;
-using TrustCabinet.Domain.GuestAccess;
-using TrustCabinet.Domain.Participants;
+using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.GuestAccess;
+using TrustCabinet.Application.Participants;
 
 namespace TrustCabinet.Infrastructure.GuestAccess;
 

@@ -1,7 +1,7 @@
 using TrustCabinet.Domain.Meetings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TrustCabinet.Domain.Participants;
+using TrustCabinet.Application.Participants;
 
 namespace TrustCabinet.Infrastructure.Participants;
 

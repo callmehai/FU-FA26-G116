@@ -29,8 +29,8 @@ Bản vẽ từng use case:
 | `:User Repository` | [`backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs`](../../backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs) |
 | `:Audit Service` | [`backend/TrustCabinet.Infrastructure/Audit/AuditService.cs`](../../backend/TrustCabinet.Infrastructure/Audit/AuditService.cs) |
 | `:Token Service` | `IRefreshTokenStore.RevokeAllForUserAsync` — bản vẽ chỉ có ở UC-06c, code dùng cả ở UC-06b (xem mục 4 bên dưới). Chi tiết: [Vô hiệu hoá phải kết thúc phiên](#vô-hiệu-hoá-phải-kết-thúc-phiên). Bản vẽ trước đây đặt tên là `:Session Service`; đổi thành `:Token Service` vì hệ thống dùng JWT chứ không có session phía server — xem [07-classdiagram/README.md](../07-classdiagram/README.md#phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server) |
-| `:Authentication Service` (UC-07 — "Create password reset request") | [`IPasswordResetTokenStore`](../../backend/TrustCabinet.Domain/Authentication/IPasswordResetTokenStore.cs) → [`RedisPasswordResetTokenStore`](../../backend/TrustCabinet.Infrastructure/Authentication/RedisPasswordResetTokenStore.cs) |
-| `:Email Service` (UC-07) | [`IPasswordResetEmailSender`](../../backend/TrustCabinet.Domain/Users/IPasswordResetEmailSender.cs) → [`PasswordResetEmailSender`](../../backend/TrustCabinet.Infrastructure/Email/PasswordResetEmailSender.cs) |
+| `:Authentication Service` (UC-07 — "Create password reset request") | [`IPasswordResetTokenStore`](../../backend/TrustCabinet.Application/Authentication/IPasswordResetTokenStore.cs) → [`RedisPasswordResetTokenStore`](../../backend/TrustCabinet.Infrastructure/Authentication/RedisPasswordResetTokenStore.cs) |
+| `:Email Service` (UC-07) | [`IPasswordResetEmailSender`](../../backend/TrustCabinet.Application/Users/IPasswordResetEmailSender.cs) → [`PasswordResetEmailSender`](../../backend/TrustCabinet.Infrastructure/Email/PasswordResetEmailSender.cs) |
 | `Database` | bảng `users` và `audit_log`; token đặt lại mật khẩu nằm ở Redis |
 
 ### Những chỗ code khác bản vẽ

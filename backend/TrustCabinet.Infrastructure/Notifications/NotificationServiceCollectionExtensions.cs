@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Notifications;
+using TrustCabinet.Application.Notifications;
 
 namespace TrustCabinet.Infrastructure.Notifications;
 

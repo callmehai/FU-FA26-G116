@@ -2,7 +2,7 @@ using System.Buffers.Text;
 using System.Security.Cryptography;
 using System.Text;
 using StackExchange.Redis;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
 
 namespace TrustCabinet.Infrastructure.Authentication;
 

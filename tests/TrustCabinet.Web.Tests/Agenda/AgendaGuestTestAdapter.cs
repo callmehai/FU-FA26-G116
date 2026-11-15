@@ -1,7 +1,7 @@
 using TrustCabinet.Domain.Meetings;
 using System.Collections.Concurrent;
 using System.Security.Claims;
-using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Application.Agenda;
 
 namespace TrustCabinet.Web.Tests.Agenda;
 

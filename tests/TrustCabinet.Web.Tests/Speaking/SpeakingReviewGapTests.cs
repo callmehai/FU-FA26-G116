@@ -4,10 +4,10 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Calls;
+using TrustCabinet.Application.Calls;
+using TrustCabinet.Application.Speaking;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Speaking;
 using TrustCabinet.Web.Tests.Participants;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 
@@ -333,8 +333,8 @@ public sealed class SpeakingReviewGapTests(ParticipantFixture f) : IClassFixture
         await NoBody(await chair.DeleteAsync($"{Queue(s)}/{id}"), HttpStatusCode.NotFound);
 
         await using (var scope = f.Host.Services.CreateAsyncScope())
-            Assert.True((await scope.ServiceProvider.GetRequiredService<TrustCabinet.Domain.Meetings.IMeetingLifecycleService>()
-                .TransitionAsync(s.MeetingId, new TrustCabinet.Domain.Meetings.MeetingTransitionCommand(
+            Assert.True((await scope.ServiceProvider.GetRequiredService<TrustCabinet.Application.Meetings.IMeetingLifecycleService>()
+                .TransitionAsync(s.MeetingId, new TrustCabinet.Application.Meetings.MeetingTransitionCommand(
                     MeetingTransitionAction.End), s.Chair)).Succeeded);
 
         // Contract: an owner-only action on someone else's request is 404, as for a request that does not exist.

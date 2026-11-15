@@ -1,14 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Calls;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Notifications;
+using TrustCabinet.Application.Speaking;
+using TrustCabinet.Application.Votes;
 using TrustCabinet.Domain.Agenda;
-using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Domain.Speaking;
-using TrustCabinet.Domain.Votes;
 using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Meetings;

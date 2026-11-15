@@ -2,9 +2,9 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Ai;
+using TrustCabinet.Application.Ai;
 using TrustCabinet.Infrastructure.Ai;
-using TrustCabinet.Domain.Summaries;
+using TrustCabinet.Application.Summaries;
 
 namespace TrustCabinet.Infrastructure.Summaries;
 

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Votes;
+using TrustCabinet.Application.Votes;
 
 namespace TrustCabinet.Infrastructure.Votes;
 

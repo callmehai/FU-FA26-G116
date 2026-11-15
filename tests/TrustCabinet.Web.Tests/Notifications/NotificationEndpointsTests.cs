@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Users;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Web.Tests.Users;
 

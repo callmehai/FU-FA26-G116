@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Documents;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;

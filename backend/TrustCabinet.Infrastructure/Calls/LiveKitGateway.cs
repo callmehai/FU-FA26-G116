@@ -4,7 +4,7 @@ using System.Text;
 using Google.Protobuf;
 using Livekit.Server.Sdk.Dotnet;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Calls;
+using TrustCabinet.Application.Calls;
 
 namespace TrustCabinet.Infrastructure.Calls;
 

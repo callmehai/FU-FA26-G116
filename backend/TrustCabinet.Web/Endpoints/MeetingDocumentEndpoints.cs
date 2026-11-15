@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
+using TrustCabinet.Application.Documents;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Documents;
-using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Web.Endpoints;
 

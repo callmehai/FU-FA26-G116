@@ -5,8 +5,8 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Transcription;
 
 namespace TrustCabinet.Web.Tests.Recordings;
 

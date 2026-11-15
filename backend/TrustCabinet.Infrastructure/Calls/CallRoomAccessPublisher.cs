@@ -1,5 +1,5 @@
-using TrustCabinet.Domain.Calls;
-using TrustCabinet.Domain.Participants;
+using TrustCabinet.Application.Calls;
+using TrustCabinet.Application.Participants;
 
 namespace TrustCabinet.Infrastructure.Calls;
 

@@ -4,9 +4,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Recordings;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Recordings;
 
 namespace TrustCabinet.Web.Tests.Recordings;
 

@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Reports;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Domain.Reports;
 
 namespace TrustCabinet.Infrastructure.Reports;
 

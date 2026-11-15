@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Calls;
 using TrustCabinet.Domain.Agenda;
-using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;

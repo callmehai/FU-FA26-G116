@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using TrustCabinet.Domain.Users;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Infrastructure.Authentication;
 
 namespace TrustCabinet.Web.Endpoints;

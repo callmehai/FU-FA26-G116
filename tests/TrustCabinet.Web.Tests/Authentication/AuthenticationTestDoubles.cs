@@ -1,5 +1,5 @@
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Domain.Access;
-using TrustCabinet.Domain.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Seed;

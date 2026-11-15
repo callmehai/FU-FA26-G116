@@ -1,7 +1,8 @@
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 

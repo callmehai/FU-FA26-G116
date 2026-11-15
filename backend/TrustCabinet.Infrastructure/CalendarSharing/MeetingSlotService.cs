@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.CalendarSharing;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;

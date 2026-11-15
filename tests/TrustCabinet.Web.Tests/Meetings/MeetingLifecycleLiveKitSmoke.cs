@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Calls;
+using TrustCabinet.Application.Calls;
 using TrustCabinet.Infrastructure.Calls;
 
 namespace TrustCabinet.Web.Tests.Meetings;

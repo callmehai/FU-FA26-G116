@@ -1,7 +1,7 @@
 using Google.Apis.Auth;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
 
 namespace TrustCabinet.Infrastructure.Authentication;
 

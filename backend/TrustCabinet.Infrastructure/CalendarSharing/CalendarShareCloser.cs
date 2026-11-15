@@ -1,3 +1,4 @@
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;

@@ -1,7 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
-using TrustCabinet.Domain.Audit;
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Infrastructure.Audit;

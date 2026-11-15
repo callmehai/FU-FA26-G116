@@ -4,13 +4,14 @@ using System.Text.Unicode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Ai;
+using TrustCabinet.Application.Ai;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Domain.Summaries;
 
 namespace TrustCabinet.Infrastructure.Summaries;
 

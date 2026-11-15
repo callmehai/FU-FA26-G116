@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Notifications;
+using TrustCabinet.Application.Notifications;
 
 namespace TrustCabinet.Infrastructure.Email;
 

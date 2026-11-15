@@ -3,9 +3,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Notes;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Notes;
 using TrustCabinet.Infrastructure.Summaries;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 

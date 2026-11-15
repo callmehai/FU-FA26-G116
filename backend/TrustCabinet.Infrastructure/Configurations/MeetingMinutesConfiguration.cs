@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Domain.Summaries;
 
 namespace TrustCabinet.Infrastructure.Configurations;
 

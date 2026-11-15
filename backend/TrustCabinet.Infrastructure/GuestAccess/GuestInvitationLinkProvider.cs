@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Participants;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Infrastructure.Email;
 
 namespace TrustCabinet.Infrastructure.GuestAccess;

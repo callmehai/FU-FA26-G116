@@ -6,7 +6,7 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
-using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Application.Agenda;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Agenda;

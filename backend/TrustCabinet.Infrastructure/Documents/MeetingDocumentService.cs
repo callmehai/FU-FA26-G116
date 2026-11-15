@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Documents;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;

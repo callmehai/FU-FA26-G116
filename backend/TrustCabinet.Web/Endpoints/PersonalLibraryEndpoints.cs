@@ -1,3 +1,4 @@
+using TrustCabinet.Application.Documents;
 using TrustCabinet.Domain.Documents;
 
 namespace TrustCabinet.Web.Endpoints;

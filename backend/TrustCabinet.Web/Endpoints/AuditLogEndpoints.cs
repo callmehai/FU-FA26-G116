@@ -1,3 +1,4 @@
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Audit;
 
 namespace TrustCabinet.Web.Endpoints;

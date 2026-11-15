@@ -1,6 +1,6 @@
 using System.Security.Claims;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Web.Endpoints;
 

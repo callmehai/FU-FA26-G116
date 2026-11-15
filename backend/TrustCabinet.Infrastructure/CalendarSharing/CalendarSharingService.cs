@@ -1,6 +1,8 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.CalendarSharing;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;

@@ -1,3 +1,4 @@
+using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Transcription;
 
 namespace TrustCabinet.Web.Endpoints;

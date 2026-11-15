@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Agenda;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;

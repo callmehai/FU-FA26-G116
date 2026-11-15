@@ -1,14 +1,15 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TrustCabinet.Domain.Access;
+using TrustCabinet.Application.Access;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.CalendarSharing;
+using TrustCabinet.Application.Users;
+using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Audit;
-using TrustCabinet.Domain.Authentication;
-using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Users;
-using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Users;

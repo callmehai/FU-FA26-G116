@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.CalendarSharing;
+using TrustCabinet.Application.CalendarSharing;
 
 namespace TrustCabinet.Infrastructure.CalendarSharing;
 

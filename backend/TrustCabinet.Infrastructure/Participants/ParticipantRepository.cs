@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.Participants;

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Attendance;
+using TrustCabinet.Application.Attendance;
 
 namespace TrustCabinet.Infrastructure.Attendance;
 

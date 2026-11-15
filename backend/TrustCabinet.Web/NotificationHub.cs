@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using TrustCabinet.Domain.Users;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Web.Endpoints;
 
 namespace TrustCabinet.Web;

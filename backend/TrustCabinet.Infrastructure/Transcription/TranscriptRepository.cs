@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Transcription;
 
 namespace TrustCabinet.Infrastructure.Transcription;
 

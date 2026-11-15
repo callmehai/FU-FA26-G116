@@ -5,13 +5,13 @@ using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.Calls;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Access;
-using TrustCabinet.Domain.Authentication;
-using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Users;
 using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Web.Endpoints;
 using TrustCabinet.Web.Tests.Users;
@@ -46,8 +46,8 @@ public sealed class CallEndpointsTests : IDisposable
                 services.AddSingleton<ICallRepository>(Calls);
                 services.RemoveAll<ILiveKitGateway>();
                 services.AddSingleton<ILiveKitGateway>(LiveKit);
-                services.RemoveAll<TrustCabinet.Domain.Audit.IAuditService>();
-                services.AddSingleton<TrustCabinet.Domain.Audit.IAuditService>(Audit);
+                services.RemoveAll<TrustCabinet.Application.Audit.IAuditService>();
+                services.AddSingleton<TrustCabinet.Application.Audit.IAuditService>(Audit);
             });
         }
 

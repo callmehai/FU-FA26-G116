@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using TrustCabinet.Domain.Documents;
+using TrustCabinet.Application.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
@@ -63,8 +63,8 @@ public sealed partial class GuestAccessFixture : IAsyncLifetime
                 services.AddSingleton<TimeProvider>(fixture.Clock);
                 services.RemoveAll<IFileStorage>();
                 services.AddSingleton<IFileStorage>(fixture.Storage);
-                services.RemoveAll<TrustCabinet.Domain.Calls.ILiveKitGateway>();
-                services.AddSingleton<TrustCabinet.Domain.Calls.ILiveKitGateway>(fixture.LiveKit);
+                services.RemoveAll<TrustCabinet.Application.Calls.ILiveKitGateway>();
+                services.AddSingleton<TrustCabinet.Application.Calls.ILiveKitGateway>(fixture.LiveKit);
                 services.RemoveAll<IEmailSender>();
                 services.AddSingleton<IEmailSender>(fixture.Mail);
                 // Switched on after binding, so the queue worker is never registered.

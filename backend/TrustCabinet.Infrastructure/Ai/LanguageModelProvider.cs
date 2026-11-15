@@ -2,9 +2,9 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Ai;
+using TrustCabinet.Application.Ai;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Summaries;
 using TrustCabinet.Infrastructure.Summaries;
 
 namespace TrustCabinet.Infrastructure.Ai;

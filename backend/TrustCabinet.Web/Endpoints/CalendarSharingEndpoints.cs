@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.CalendarSharing;
+using TrustCabinet.Application.CalendarSharing;
 
 namespace TrustCabinet.Web.Endpoints;
 

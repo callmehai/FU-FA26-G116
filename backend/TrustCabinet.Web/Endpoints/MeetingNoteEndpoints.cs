@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Notes;
+using TrustCabinet.Application.Notes;
 
 namespace TrustCabinet.Web.Endpoints;
 

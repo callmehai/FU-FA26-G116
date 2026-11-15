@@ -7,12 +7,12 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Web.Tests.Recordings;
 

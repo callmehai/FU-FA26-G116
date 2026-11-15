@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using TrustCabinet.Domain.Calls;
+using TrustCabinet.Application.Calls;
 using TrustCabinet.Infrastructure.Calls;
 
 namespace TrustCabinet.Web.Tests.Calls;

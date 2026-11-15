@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using TrustCabinet.Domain.Access;
+using TrustCabinet.Application.Access;
 
 namespace TrustCabinet.Infrastructure.Access;
 

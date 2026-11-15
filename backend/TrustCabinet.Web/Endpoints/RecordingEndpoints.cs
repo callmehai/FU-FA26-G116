@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using TrustCabinet.Application.Recordings;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Infrastructure.Recordings;
 
 namespace TrustCabinet.Web.Endpoints;

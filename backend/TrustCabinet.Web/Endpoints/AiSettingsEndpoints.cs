@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Ai;
+using TrustCabinet.Application.Ai;
 
 namespace TrustCabinet.Web.Endpoints;
 

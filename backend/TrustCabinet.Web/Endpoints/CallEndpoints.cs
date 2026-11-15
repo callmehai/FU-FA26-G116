@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using System.Text.Json;
-using TrustCabinet.Domain.Calls;
+using TrustCabinet.Application.Calls;
 
 namespace TrustCabinet.Web.Endpoints;
 

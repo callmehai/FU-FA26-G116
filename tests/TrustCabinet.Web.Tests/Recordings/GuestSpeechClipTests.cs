@@ -4,12 +4,12 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Recordings;
+using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Recordings;
-using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Infrastructure.GuestAccess;
 
 namespace TrustCabinet.Web.Tests.Recordings;

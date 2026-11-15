@@ -3,7 +3,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Documents;
+using TrustCabinet.Application.Documents;
 
 namespace TrustCabinet.Infrastructure.Documents;
 

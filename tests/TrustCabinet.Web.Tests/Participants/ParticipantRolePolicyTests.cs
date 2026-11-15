@@ -3,9 +3,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.Meetings;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 

@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
-using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Application.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 
 using TrustCabinet.Web.Tests.Agenda;
-using TrustCabinet.Domain.Calls;
+using TrustCabinet.Application.Calls;
 using TrustCabinet.Domain.Meetings;
 using System.Data.Common;
 
