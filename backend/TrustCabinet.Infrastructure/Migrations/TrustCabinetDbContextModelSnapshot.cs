@@ -705,6 +705,11 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("delivery_state_at");
 
+                    b.Property<string>("HtmlBody")
+                        .HasMaxLength(500000)
+                        .HasColumnType("character varying(500000)")
+                        .HasColumnName("html_body");
+
                     b.Property<string>("LastError")
                         .IsRequired()
                         .HasMaxLength(2000)

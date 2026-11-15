@@ -272,6 +272,15 @@ public sealed class MeetingInvitationDispatchProcessor(
             var payload =
                 JsonSerializer.Deserialize<InvitationPayload>(dispatch.PayloadJson)
                 ?? throw new JsonException("Missing invitation payload.");
+            // Who chairs it and whom to ask, read now rather than staged: a handover since staging is what counts.
+            var chair = await db.MeetingParticipants.Where(ParticipantRules.ActiveExpression)
+                .Where(p => p.MeetingId == meetingId && p.Role == MeetingRole.Chair)
+                .Select(p => p.User.FullName).FirstOrDefaultAsync(ct);
+            var organizer = await db.Meetings.Where(m => m.Id == meetingId)
+                .Select(m => new { m.CreatedBy.FullName, m.CreatedBy.Email }).SingleAsync(ct);
+            // A Guest is told whom to ask, not given a staff member's address.
+            var people = new MeetingPeople(chair, organizer.FullName,
+                dispatch.GuestInvitationId is null ? organizer.Email : null);
             var removal = dispatch.EventKind == InvitationEventKind.Removed;
             var cancellation = dispatch.EventKind == InvitationEventKind.Cancelled;
             var subject =
@@ -291,6 +300,8 @@ public sealed class MeetingInvitationDispatchProcessor(
             }
             else if (!removal)
             {
+                if (payload.PreviousStartsAt is { } previousStart)
+                    body += $"\nThời gian cũ: {TimeZoneInfo.ConvertTime(previousStart, zone):dd/MM/yyyy HH:mm zzz}";
                 body +=
                     $"\nBắt đầu: {TimeZoneInfo.ConvertTime(payload.StartsAt, zone):dd/MM/yyyy HH:mm zzz}\nKết thúc: {TimeZoneInfo.ConvertTime(payload.EndsAt, zone):dd/MM/yyyy HH:mm zzz}\n";
                 body += $"Vai trò: {MeetingInvitationEvents.RoleLabel(payload.Role)}\n";
@@ -301,6 +312,7 @@ public sealed class MeetingInvitationDispatchProcessor(
                     ? $"\nXem cuộc họp: {link}\n"
                     : $"\nXác minh email để truy cập cuộc họp: {link}\n";
             }
+            body += $"\nNgười tổ chức: {people.Contact}\n";
             var email = new EmailMessage
             {
                 MeetingId = meetingId,
@@ -308,6 +320,9 @@ public sealed class MeetingInvitationDispatchProcessor(
                 ToAddress = payload.Email,
                 Subject = subject,
                 Body = body,
+                // Same facts as the text; a withdrawal offers no way in, as in the text.
+                HtmlBody = EmailTemplates.Meeting(dispatch.EventKind, payload, removal || cancellation ? null : link,
+                    guest: dispatch.GuestInvitationId is not null, people),
                 CreatedAt = now,
                 UpdatedAt = now,
             };

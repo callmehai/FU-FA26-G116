@@ -7,15 +7,19 @@ using TrustCabinet.Domain.Participants;
 namespace TrustCabinet.Infrastructure.Email;
 
 /// <param name="Reason">Why the meeting was cancelled; only on a <see cref="InvitationEventKind.Cancelled"/> event (BR-300).</param>
+/// <param name="PreviousStartsAt">The time a reschedule moved the meeting from, so the email can show old and new; null on
+/// every other event and on reschedules staged before it was recorded.</param>
 public sealed record InvitationPayload(string Name, string Email, string MeetingTitle, string Description,
-    DateTimeOffset StartsAt, DateTimeOffset EndsAt, string Place, string Mode, string? Role, string? Reason = null);
+    DateTimeOffset StartsAt, DateTimeOffset EndsAt, string Place, string Mode, string? Role, string? Reason = null,
+    DateTimeOffset? PreviousStartsAt = null, DateTimeOffset? PreviousEndsAt = null);
 
 public static class MeetingInvitationEvents
 {
     public static string InitialKey(MeetingParticipant p) => p.InitialInvitationDeliveryKey ?? $"meeting:{p.MeetingId}:published:{p.UserId}";
 
     public static void Stage(TrustCabinetDbContext db, Meeting meeting, MeetingParticipant? p, MeetingGuestInvitation? g,
-        InvitationEventKind kind, DateTimeOffset now, bool notify, Guid? sourceEventId = null, string? reason = null)
+        InvitationEventKind kind, DateTimeOffset now, bool notify, Guid? sourceEventId = null, string? reason = null,
+        (DateTimeOffset Start, DateTimeOffset End)? previous = null)
     {
         var eventId = sourceEventId ?? Guid.CreateVersion7();
         var ownerId = p?.Id ?? g!.Id;
@@ -42,7 +46,7 @@ public static class MeetingInvitationEvents
             UpdatedAt = now,
             PayloadJson = JsonSerializer.Serialize(new InvitationPayload(p?.User.FullName ?? g!.InvitedName, p?.User.Email ?? g!.Email,
                 meeting.Title, meeting.Description, meeting.PlannedStartTime, meeting.PlannedEndTime, place,
-                meeting.Mode.ToString(), p?.Role.ToString(), reason))
+                meeting.Mode.ToString(), p?.Role.ToString(), reason, previous?.Start, previous?.End))
         });
         if (notify && p is not null)
         {
