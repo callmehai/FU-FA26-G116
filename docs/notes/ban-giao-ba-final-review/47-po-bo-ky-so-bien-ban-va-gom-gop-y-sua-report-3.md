@@ -6,6 +6,12 @@ kể cả mô phỏng; không có UC Thư ký gom góp ý, bỏ luôn nếu có 
 đánh dấu bỏ. Trước đó PO 14/11/2026 đã chốt bỏ ký số biên bản kể cả mô phỏng (SCRUM-37, UC-62/63)
 và bỏ Thư ký gom góp ý thành danh sách (SCRUM-106) — commit `83aa9ed1` (vào `main`).
 
+**Quyết định 15/11/2026 (Khánh): xoá hẳn.** Gỡ UC-62/63 khỏi Report 3 và mọi chỗ SRS; BR-166 Retired (giữ số).
+Ranh giới: code còn bảng `MinutesSignature` (`DbSet` trong `TrustCabinetDbContext`, entity + migration) nên
+**không đụng code và ERD theo code** (02-erd mermaid, mục tiêu, Chen giữ nguyên bảng); chỉ dọn nội dung SRS
+(Report 3, inventory, UC diagram, SM-13/14, prose 02-design) + câu chữ ERD nhắc BR-166/ký số.
+Bỏ bảng khỏi code cần migration BE riêng — ticket riêng, không làm ở đây.
+
 **Đã kiểm trùng:** không có note nào về sửa Report 3 theo quyết định này. `NOTE-dac-ta-so-bo-scrum-33.md`
 chỉ ghi UC-62/63 "để dành cho ký số mô phỏng SCRUM-37" (trước khi bỏ); inventory đã đánh dấu Bỏ;
 `05-use-case-specifications.md` / `06-business-rules.md` và snapshot Report 3 vẫn còn chỗ ký.

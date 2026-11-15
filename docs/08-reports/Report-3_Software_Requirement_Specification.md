@@ -76,6 +76,7 @@ Table of Contents
 | 15/11/2026 | M, A | KhanhPG | SCRUM-152 BA Final Review (note 44, ADR-0060): a Secretary collects Voice ID samples for attendees on the meeting room microphone. UC-81a gains AF-2 and the two sample sets; UC-81b moves the notice to 1.3; UC-81c, UC-81d, UC-81e and UC-81f wording covers Secretary-collected samples; new UC-86a–UC-86d with the shared Secretary-and-Meeting checks; BR-448–BR-454 and MSG473–MSG477; the collect permission in the matrix (Secretary only). Withdrawal and deactivation delete both sets (BR-365, BR-372, BR-454). |
 | 15/11/2026 | M, A | KhanhPG | SCRUM-153 BA Final Review (note 45, ADR-0061): recording follows the Meeting format — uploads only for In-person Meetings (UC-44c Description and PRE-2, the room-microphone reminder, EX-8 MSG478); a Hybrid Meeting that has ended gains one system-built combined recording (UC-43a Description, source list and AF-3; UC-43b and UC-43c wording; UC-44e POST-4 never builds it again, with the AF-1 retention; UC-45c EX-4 MSG479); BR-340 and BR-342 rewritten, BR-347 covers the combined recording, new BR-455–BR-459 (BR-459 draft, pending leader approval) and MSG478–MSG479. |
 | 15/11/2026 | M, A | KhanhPG | PR #332 BA Final Review (note 46, ADR-0062, PO 13/11/2026): a Meeting left In Progress is ended by the system 24 hours after its planned end time — or 24 hours after its actual start when it started after its planned end — the same way as UC-22, with System as the actor and no notification; new BR-460 (Related UC: UC-22; UC-22 flow unchanged); BR-302 stays retired and points to BR-460. |
+| 15/11/2026 | M, D | KhanhPG | PO decision 14–15/11/2026 (SCRUM-37 closed — simulated signing of minutes dropped; SCRUM-106 closed — no Secretary-compiled feedback list): remove UC-62 and UC-63 placeholders and renumber §12 (UC-64→12.5, UC-65→12.6, UC-83→12.7); retire BR-166 (number kept, never reused); remove the signing flow from the permission matrix, actor descriptions and screens (12.2–12.3 removed, Finalized kept without signing/history); SCRUM-106 scan: no UC/BR/MSG in Report 3. (note 47; source: Hải 15/11/2026 + Khánh 15/11/2026) |
 
 *A - Added M - Modified D - Deleted
 
@@ -135,7 +136,7 @@ End condition: The meeting is Ended; its agenda outcomes and meeting-level votin
 
 Trigger: A meeting has Ended and its post-meeting records need to be processed.
 
-End condition: The meeting has formal minutes that have completed signing, finalization and sealing, and the meeting records can be accessed according to permissions.
+End condition: The meeting has formal minutes that have been approved and issued, and the meeting records can be accessed according to permissions.
 
 ### 3. Conceptual Data Model
 
@@ -722,7 +723,7 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | Agenda ownership | Each Agenda Item belongs to exactly one Meeting. Reordering is within that Meeting. | Agenda management |
 | Vote ownership | Each Vote belongs to one Meeting and is not linked to an Agenda Item. | Voting management |
 | Vote conclusion ownership | A Vote belongs to one Meeting, whose Minutes incorporate vote tallies and the Chair’s conclusions. | Vote Conclusion creation |
-| Minutes scope | Each Meeting has its own Minutes process with versioned signing and revision history. | Minutes governance |
+| Minutes scope | Each Meeting has its own Minutes process with versioned revision history. | Minutes governance |
 | Meeting audit trail | Meeting lifecycle, approval, publication and permitted schedule changes remain traceable. | Meeting audit |
 
 ### 4. User Requirements
@@ -809,8 +810,6 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | UC-59 | Generate Meeting Minutes | Meeting Minutes & Approval | Build the minutes from one fixed template (Decree 30, Mẫu 1.4) and the Meeting records, using the approved AI draft for sections I-III. |
 | UC-60 | Edit Meeting Minutes | Meeting Minutes & Approval | Correct the content of the draft in a word-processor editor with a live preview, save it, and download the same content as a Word or PDF file; the minutes of a Secret Meeting cannot be downloaded. |
 | UC-61 | Submit Meeting Minutes for Approval | Meeting Minutes & Approval | Send the finished minutes to the current Chair for approval; the revision is locked until the Chair approves or returns it. |
-| UC-62 | Sign Meeting Minutes | Meeting Minutes & Approval | Placeholder only – reserved for simulated digital signing (SCRUM-37); detailed Use Case Specification will be added later. |
-| UC-63 | View Signature Status & Signing History | Meeting Minutes & Approval | Placeholder only – reserved for simulated digital signing (SCRUM-37); detailed Use Case Specification will be added later. |
 | UC-64 | Approve and Issue Meeting Minutes | Meeting Minutes & Approval | The current Chair approves the minutes waiting for approval; approval issues them at once. |
 | UC-65 | Return Meeting Minutes for Revision | Meeting Minutes & Approval | The current Chair returns the minutes with a reason so the Secretary can correct and submit them again. |
 | UC-66 | View Notifications | Email & In-App Notification | View personal notifications and the unread notification count. |
@@ -868,19 +867,19 @@ The Meeting Organizer creates and updates meetings, submits them for approval an
 
 ##### 4.3.3 UCs for Meeting Approver
 
-The Meeting Approver reviews assigned meeting approval requests and approves or rejects them. The Approver can view meeting details and related records (agenda, documents, media, votes, minutes and signature status), use the online room (controls, room participants, in-room chat, leave room), and view reports, notifications and the personal workspace.
+The Meeting Approver reviews assigned meeting approval requests and approves or rejects them. The Approver can view meeting details and related records (agenda, documents, media, votes and minutes), use the online room (controls, room participants, in-room chat, leave room), and view reports, notifications and the personal workspace.
 
 ##### 4.3.4 UCs for Chair
 
-The Chair starts and ends the meeting, steers the agenda (set current / complete item), joins and moderates the online room, and creates, opens and closes votes and records each vote's conclusion. The Chair does not respond to the invitation because the Chair runs the meeting. The Chair also adds and removes meeting documents, comments on meeting documents, signs or requests revision of the minutes, and can view all records of the chaired meeting. The current assigned Chair may cast a vote (UC-55) while the Meeting is InProgress and the Vote is Open, under BR-160 and BR-165.
+The Chair starts and ends the meeting, steers the agenda (set current / complete item), joins and moderates the online room, and creates, opens and closes votes and records each vote's conclusion. The Chair does not respond to the invitation because the Chair runs the meeting. The Chair also adds and removes meeting documents, comments on meeting documents, and can view all records of the chaired meeting. The current assigned Chair may cast a vote (UC-55) while the Meeting is InProgress and the Vote is Open, under BR-160 and BR-165.
 
 ##### 4.3.5 UCs for Secretary
 
-The Secretary prepares the meeting: agenda items, participants and meeting roles, invitation responses, attendance and meeting documents, and also responds to the invitation and takes part in the online room. After the meeting, the Secretary uploads audio, corrects the AI speaker-attributed transcript, generates, edits, approves and publishes the summary, and generates, edits, submits and finalizes the minutes for digital signing, signing or requesting revision when designated as a signer. The current assigned Secretary may cast a vote (UC-55) while the Meeting is InProgress and the Vote is Open, under BR-160 and BR-165.
+The Secretary prepares the meeting: agenda items, participants and meeting roles, invitation responses, attendance and meeting documents, and also responds to the invitation and takes part in the online room. After the meeting, the Secretary uploads audio, corrects the AI speaker-attributed transcript, generates, edits, approves and publishes the summary, and generates, edits and submits the minutes for approval. The current assigned Secretary may cast a vote (UC-55) while the Meeting is InProgress and the Vote is Open, under BR-160 and BR-165.
 
 ##### 4.3.6 UCs for Participant
 
-The Participant responds to the meeting invitation, joins the online room, views meetings, agenda, documents and media, comments on documents, casts votes when eligible, and signs or requests revision of the minutes when designated as a signer. The Participant can also view reports, notifications and the personal workspace.
+The Participant responds to the meeting invitation, joins the online room, views meetings, agenda, documents and media, comments on documents and casts votes when eligible. The Participant can also view reports, notifications and the personal workspace.
 
 ##### 4.3.7 UCs for Guest
 
@@ -946,11 +945,7 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Vote | View vote conclusion | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
 | Minutes | View | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | No |
 | Minutes | Generate / Edit | No | No | No | No | Restricted ¹⁵ | No | No |
-| Minutes | Submit for signing | No | No | No | No | Restricted ¹⁵ | No | No |
-| Minutes | Sign | No | No | No | Restricted ¹⁶ | Restricted ¹⁶ | Restricted ¹⁶ | No |
-| Minutes | Request revision | No | No | No | Restricted ¹⁶ | Restricted ¹⁶ | Restricted ¹⁶ | No |
-| Minutes | View signature status & audit trail | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | No |
-| Minutes | Finalize / Seal | No | No | No | No | Restricted ¹⁷ | No | No |
+| Minutes | Submit for approval | No | No | No | No | Restricted ¹⁵ | No | No |
 | Notification | View | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
 | Notification | Mark as read / Mark all / Open target | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
 | Dashboard | View personal dashboard & workspace | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | Restricted ¹² | No |
@@ -993,10 +988,6 @@ Notes:
 ¹⁴ Only people on the eligible list fixed when the Vote opens and retaining current Meeting access may cast a ballot, and only while the Meeting is InProgress and the Vote is Open. A role change does not change that list. Guest email verification and invitation validity are required. (BR-165, BR-190, BR-268, BR-269)
 
 ¹⁵ Only in the assigned meeting while the minutes are in Draft or Revision Requested status.
-
-¹⁶ Only users designated as signers of the minutes, and only while the minutes are pending signature.
-
-¹⁷ Only after all designated signers have signed the minutes.
 
 ¹⁸ Statistics and exports are limited to meetings within the user's own scope, for the System Admin as for anyone else. (BR-432, PO 09/11/2026 Q1).
 
@@ -1059,12 +1050,10 @@ Notes:
 | 11.3 | Cast Vote | FE-11 Voting Management | Allows an eligible Chair, Secretary, Participant or verified Guest to view an open Vote of the InProgress Meeting, choose one option and submit a single ballot that cannot be changed afterwards. |
 | 11.4 | Vote Result & Conclusion | FE-11 Voting Management | Allows the Chair to view the tallied result of a closed Vote, including public ballots, and record its conclusion – Passed, NotPassed or Deferred – with a note carried into the minutes. |
 | 12.1 | Minutes Editor | FE-12 Meeting Minutes & Approval | Allows the current Chair and the current Secretary to build the minutes from one fixed template (Decree 30, Mẫu 1.4) and the Meeting records, correct the plain text with a live preview, save it, and download it as a Word or PDF file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the minutes to the Chair for approval; the Chair approves and issues them, or returns them with a reason. Signing the minutes is not implemented in this release. |
-| 12.2 | Sign Minutes Dialog | FE-12 Meeting Minutes & Approval | Allows a designated signer to read the minutes pending signature, see who has already signed, and either sign the current revision or request a revision with a reason. |
-| 12.3 | Signing Status & Finalization | FE-12 Meeting Minutes & Approval | Allows the Secretary to track each signer’s status on the current revision and the full signing history, and to seal the minutes once every designated signer has signed. |
-| 12.4 | Finalized Meeting Minutes | FE-12 Meeting Minutes & Approval | Allows users involved in the Meeting to view the sealed, read-only minutes with all signatures, open the signing history and download the minutes as a PDF. |
+| 12.2 | Finalized Meeting Minutes | FE-12 Meeting Minutes & Approval | Allows users involved in the Meeting to view the issued, read-only minutes and download the minutes as a PDF. |
 | 13.1 | Notification Panel | FE-13 Email & In-App Notification | Allows every signed-in internal user to view personal in-app notifications and the unread count, mark one or all as read, and open the meeting a notification refers to. |
 | 13.2 | Meeting Invitation Email | FE-13 Email & In-App Notification | Allows an invited internal participant or external Guest to read the meeting invitation – time, location, Chair and role – and open the response or meeting details from the email. |
-| 14.1 | Personal Dashboard | FE-14 Personal Dashboard & Meeting Workspace | Allows every signed-in internal user to see today’s meetings, counters of pending invitations, open votes, minutes to sign and this week’s meetings, and jump straight to each waiting task. |
+| 14.1 | Personal Dashboard | FE-14 Personal Dashboard & Meeting Workspace | Allows every signed-in internal user to see today’s meetings, counters of pending invitations, open votes and this week’s meetings, and jump straight to each waiting task. |
 | 14.2 | Meeting Workspace | FE-14 Personal Dashboard & Meeting Workspace | Allows the Chair, Secretary and Participants of an InProgress Meeting to follow the current agenda item and its documents, see what comes next, vote on an open Vote and keep private notes. |
 | 15.1 | Reports & Statistics | FE-15 Reporting & Statistics | Allows users to view meeting statistics for a chosen period – meeting count, attendance rate, average duration and average turnaround, monthly and status breakdowns – and export them to Excel. |
 
@@ -2380,8 +2369,6 @@ Scope: the current Chair or the current Secretary may prepare Vote drafts while 
 
 ### 12. FE-12 – Meeting Minutes & Approval
 
-### Note: screens 12.2–12.4 still describe the old signing flow; approving and issuing (SCRUM-33) replaced it, and the screen specification below is waiting to be updated.
-
 #### 12.1 UC-58 – View Meeting Minutes
 
 | Primary Actors | Chair, Secretary; every other internal person who may read the Meeting | Secondary Actors | None |
@@ -2426,15 +2413,7 @@ Scope: the current Chair or the current Secretary may prepare Vote drafts while 
 | Alternative Flows | AF-1 – Places are still left blank<br>1. At Step 1, the text still holds “……” where the Secretary was to write.<br>2. The screen warns that some places are still blank and asks for confirmation; the server does not block the submission.<br>3. The actor confirms and the flow resumes at Step 2 of the Main Flow.<br>AF-2 – Submit again after the Chair returned the minutes<br>1. At Step 1, the latest revision was returned; the system shows the Chair's reason above the paper. (BR-407)<br>2. The actor corrects the text (UC-60) or submits it unchanged.<br>3. The flow resumes at Step 2 of the Main Flow. |  |  |
 | Exception Flows | EX-1 – Actor is the current Chair, not the Secretary<br>1. At Step 2, the actor is the current Chair but not the current Secretary. (BR-404)<br>2. The revision stays as it is. The system displays MSG425 – “Only the Secretary may submit the minutes for approval.”<br>3. The use case ends.<br>EX-2 – The Meeting has not ended<br>1. At Step 2, the Meeting is still InProgress. (BR-405)<br>2. The revision stays a draft. The system displays MSG426 – “The minutes can be submitted only after the meeting has ended.”<br>3. The use case ends.<br>EX-3 – The revision was already submitted or issued<br>1. At Step 2, the latest revision is waiting for approval or has been issued. (BR-388)<br>2. Nothing changes. The system displays MSG400 – “The minutes have been submitted or issued and can no longer be changed.”<br>3. The use case ends.<br>EX-4 – Someone saved after the actor read the minutes<br>1. At Step 2, the revision was saved by another person after the actor read it. (BR-389)<br>2. Nothing is submitted. The system displays MSG401 – “The minutes were just changed by someone else. Reload to see the latest version.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-5 – The change cannot be saved<br>1. At Step 3, the system cannot save the new state. (BR-411)<br>2. The revision stays a draft or returned revision and nobody is notified. The system displays MSG404 – “Unable to save the minutes. Please try again.”<br>3. The use case ends.<br>EX-6 – The minutes are not accessible<br>1. At Step 2, the Meeting is unavailable, the actor may no longer read it, or the actor is neither the current Chair nor the current Secretary. (BR-386)<br>2. The system answers as if the minutes did not exist, with no message code, and discloses nothing about them.<br>3. The use case ends. |  |  |
 
-#### 12.5 UC-62 – Sign Meeting Minutes
-
-Placeholder only – reserved for simulated digital signing (SCRUM-37); detailed Use Case Specification will be added later.
-
-#### 12.6 UC-63 – View Signature Status & Signing History
-
-Placeholder only – reserved for simulated digital signing (SCRUM-37); detailed Use Case Specification will be added later.
-
-#### 12.7 UC-64 – Approve and Issue Meeting Minutes
+#### 12.5 UC-64 – Approve and Issue Meeting Minutes
 
 | Primary Actors | Chair | Secondary Actors | Secretary, and everyone who may read the issued minutes (notified) |
 | --- | --- | --- | --- |
@@ -2445,7 +2424,7 @@ Placeholder only – reserved for simulated digital signing (SCRUM-37); detailed
 | Alternative Flows | AF-1 – Issue a correction<br>1. At Step 4, the revision corrects an earlier issued revision.<br>2. The system marks the earlier revision as superseded; it stays readable in the list of revisions. (BR-409)<br>3. The flow resumes at Step 5 of the Main Flow. |  |  |
 | Exception Flows | EX-1 – Actor is the current Secretary, not the Chair<br>1. At Step 3, the actor is the current Secretary but not the current Chair. (BR-406)<br>2. The revision stays as it is. The system displays MSG428 – “Only the Chair may approve or return the minutes.”<br>3. The use case ends.<br>EX-2 – The minutes are not waiting for approval<br>1. At Step 3, the revision is a draft, was returned, or has already been issued.<br>2. Nothing changes. The system displays MSG429 – “These minutes are not waiting for approval.”<br>3. The use case ends.<br>EX-3 – The minutes changed after the actor opened them<br>1. At Step 3, the revision is not the copy the actor read. (BR-389)<br>2. Nothing is issued. The system displays MSG401 – “The minutes were just changed by someone else. Reload to see the latest version.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-4 – The change cannot be saved<br>1. At Steps 4–6, the system cannot save the new state, the audit entry or the notifications.<br>2. The revision stays waiting for approval, no audit entry is kept and nobody is notified. The system displays MSG404 – “Unable to save the minutes. Please try again.”<br>3. The use case ends.<br>EX-5 – The minutes are not accessible<br>1. At Step 3, the Meeting is unavailable, the actor may no longer read it, or the actor is neither the current Chair nor the current Secretary. (BR-386)<br>2. The system answers as if the minutes did not exist, with no message code, and discloses nothing about them.<br>3. The use case ends. |  |  |
 
-#### 12.8 UC-65 – Return Meeting Minutes for Revision
+#### 12.6 UC-65 – Return Meeting Minutes for Revision
 
 | Primary Actors | Chair | Secondary Actors | Secretary (notified) |
 | --- | --- | --- | --- |
@@ -2456,7 +2435,7 @@ Placeholder only – reserved for simulated digital signing (SCRUM-37); detailed
 | Alternative Flows | N/A |  |  |
 | Exception Flows | EX-1 – Actor is the current Secretary, not the Chair<br>1. At Step 3, the actor is the current Secretary but not the current Chair. (BR-406)<br>2. The revision stays as it is. The system displays MSG428 – “Only the Chair may approve or return the minutes.”<br>3. The use case ends.<br>EX-2 – The minutes are not waiting for approval<br>1. At Step 3, the revision is a draft, was returned, or has been issued.<br>2. Nothing changes. The system displays MSG429 – “These minutes are not waiting for approval.”<br>3. The use case ends.<br>EX-3 – The reason is missing or too long<br>1. At Step 3, the reason is empty after trimming or longer than 2,000 characters. (BR-407)<br>2. Nothing changes. The system displays MSG431 – “Enter a reason for returning the minutes, up to 2,000 characters.”<br>3. The flow resumes at Step 2 of the Main Flow.<br>EX-4 – The change cannot be saved<br>1. At Steps 4–5, the system cannot save the new state or the notification.<br>2. The revision stays waiting for approval and nobody is notified. The system displays MSG404 – “Unable to save the minutes. Please try again.”<br>3. The use case ends.<br>EX-5 – The minutes are not accessible<br>1. At Step 3, the Meeting is unavailable, the actor may no longer read it, or the actor is neither the current Chair nor the current Secretary. (BR-386)<br>2. The system answers as if the minutes did not exist, with no message code, and discloses nothing about them.<br>3. The use case ends.<br>EX-6 – The minutes changed after the actor opened them<br>1. At Step 3, the revision is not the copy the actor read. (BR-389)<br>2. Nothing is returned. The system displays MSG401 – “The minutes were just changed by someone else. Reload to see the latest version.”<br>3. The flow resumes at Step 1 of the Main Flow. |  |  |
 
-#### 12.9 UC-83 – Correct Issued Meeting Minutes
+#### 12.7 UC-83 – Correct Issued Meeting Minutes
 
 | Primary Actors | Chair, Secretary | Secondary Actors | None |
 | --- | --- | --- | --- |
@@ -4116,7 +4095,7 @@ Field Description
 
 #### 12.1 Minutes Editor
 
-The Minutes Editor is the Biên bản tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. The draft is filled from one fixed template — Biên bản cuộc họp theo Mẫu 1.4 Nghị định 30/2020/NĐ-CP — with the Meeting's information, attendance, each agenda item's recorded conclusion, the Vote results and conclusions, and the three sections of the approved AI draft when there is one. The Secretary edits the HTML text in the word-processor editor (BR-385) with a live preview of the paper, saves explicitly, and downloads the same text as a Word file; the minutes of a Secret Meeting cannot be downloaded. Sending the minutes for signing and issuing them are not implemented in this release (UC-58, UC-59, UC-60; UC-61–UC-65 are not implemented).
+The Minutes Editor is the Biên bản tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. The draft is filled from one fixed template — Biên bản cuộc họp theo Mẫu 1.4 Nghị định 30/2020/NĐ-CP — with the Meeting's information, attendance, each agenda item's recorded conclusion, the Vote results and conclusions, and the three sections of the approved AI draft when there is one. The Secretary edits the HTML text in the word-processor editor (BR-385) with a live preview of the paper, saves explicitly, and downloads the same text as a Word file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the finished minutes to the Chair for approval (UC-61); the Chair approves and issues them (UC-64), or returns them with a reason (UC-65).
 
 This screen allows the current Chair and the current Secretary to:
 
@@ -4145,85 +4124,27 @@ Field Description
 | Quyền xem [Visibility rule] | Read-only note: only the current Chair and Secretary see and correct a draft; everyone else sees the minutes only after they are issued; someone who is neither receives no draft at all. |
 | Ghi chú nhiệm vụ [Task note] | Read-only: “2. Nhiệm vụ, sản phẩm và thời hạn” is text in the minutes; no assignee, due date or progress is tracked. |
 
-#### 12.2 Sign Minutes Dialog
+#### 12.2 Finalized Meeting Minutes
 
-The Sign Minutes screen is the Minutes tab of an Ended Meeting as seen by a designated signer (here the Chair) while the minutes are Pending Signature. It is opened from the signing notification, the Personal Dashboard or the Minutes tab. The signer reads the current revision and either signs it or requests a revision; a revision request voids all signatures and the Secretary must resubmit (UC-58, UC-62, UC-63, UC-65).
-
-This screen allows the Chair, Secretary or Participant designated as a signer to:
-
-- View Meeting Minutes: read the current revision of the minutes (UC-58).
-
-- View Signature Status: see how many signers have signed and when (UC-63).
-
-- Sign Meeting Minutes: click “Sign minutes” and confirm to sign the current revision (UC-62).
-
-- Request Revision of Meeting Minutes: click “Request revision”, enter a mandatory reason and submit; every signature already given becomes void (UC-65).
-
-Field Description
-
-| Field Name | Description |
-| --- | --- |
-| Request revision [Yêu cầu sửa] | Red outline button, visible only to designated signers while the minutes are Pending Signature. Opens a reason input (required). On submit the minutes become Revision Requested, existing signatures on this revision are invalidated and the Secretary is notified (BR-166). |
-| Sign minutes [Ký biên bản] | Primary button, visible only to a designated signer who has not yet signed the current revision; asks for confirmation, then records the signature with timestamp. |
-| Minutes header | Read-only “Biên bản · lần sửa 2” with status chip Pending Signature [Chờ ký]. |
-| Minutes content | Read-only document: title, Meeting name, date, time and location, Attendance [Thành phần], Content [Nội dung] (from the published summary), Vote conclusions [Kết luận biểu quyết] with tally. |
-| Signatures [Chữ ký · n/m] | Panel with the number of signatures collected on the current revision, e.g. 1/2. |
-| Signer rows | Avatar, name and meeting role; status Waiting [Chờ ký] or Signed [Đã ký] chip with signing time (dd/mm hh:mm). |
-| Information box | Read-only, e.g. “Thư ký niêm phong khi đủ 2/2 chữ ký. Lần sửa 1 đã bị huỷ chữ ký do yêu cầu sửa của Chủ trì.”: explains that only the Secretary seals after all signatures and why earlier signatures were voided (BR-166). |
-| Seal minutes [Niêm phong biên bản] | Button shown disabled to signers; only the assigned Secretary can seal, and only after all designated signers have signed (BR-166). |
-
-#### 12.3 Signing Status & Finalization
-
-The Signing Status & Finalization screen is the Minutes tab seen by the assigned Secretary after the minutes have been submitted for signing. It shows the signature of every designated signer on the current revision and a history grouped by revision, including revision requests and voided signatures. When all signers have signed, the Secretary seals the minutes (UC-63, UC-64, UC-61, UC-65).
-
-This screen allows the Secretary to:
-
-- View Signature Status & Audit Trail: view each signer’s status and signing time on the current revision and the signing history of all revisions (UC-63).
-
-- Finalize Meeting Minutes: click “Seal minutes” and confirm, after all designated signers have signed, to lock the minutes as the official record (UC-64).
-
-- Review Revision Requests: read who requested a revision, when and why, and resubmit the corrected minutes for signing from the Minutes Editor (UC-65, UC-61).
-
-On the screen, s/he can also:
-
-- View Minutes: click “View minutes” to read the signed revision (UC-58).
-
-Field Description
-
-| Field Name | Description |
-| --- | --- |
-| Signing status chip | Fully signed [Đã ký đủ] when all designated signers have signed, otherwise Pending Signature [Chờ ký]. |
-| Revision summary | Read-only, e.g. “Lần sửa 2 (hiện tại) · 2/2 người ký đã ký”. |
-| View minutes [Xem biên bản] | Button; opens the read-only minutes of the current revision. |
-| Seal minutes [Niêm phong biên bản] | Primary button, Secretary only; enabled only when every designated signer has signed the current revision (BR-166). A confirmation dialog warns that sealing locks the minutes permanently. |
-| Signer table | Columns Signer [Người ký] (avatar, name), Role [Vai trò] (Chair / Secretary / …), Revision n [Lần sửa n] (Signed [Đã ký] / Waiting [Chờ ký] chip), Time [Thời điểm] (dd/mm hh:mm). |
-| Signing history [Lịch sử ký] | Read-only timeline grouped by revision, newest first. Current revision events (e.g. Chair signed, Secretary signed, Secretary resubmitted for signing); earlier revisions are labelled “signatures void” [chữ ký đã huỷ] and show events such as a revision request with its reason, the Secretary’s edit that voided all signatures, and the voided signatures (BR-166). History entries cannot be changed. |
-
-#### 12.4 Finalized Meeting Minutes
-
-The Finalized Meeting Minutes screen is the Minutes tab after the Secretary has sealed the minutes. The sealed minutes are the official record of the Meeting and can no longer be edited or resubmitted; the Meeting itself remains Ended. Every user allowed to view the Meeting’s minutes sees this read-only version (UC-58, UC-63, UC-64).
+The Finalized Meeting Minutes screen is the Minutes tab after the Chair has approved and issued the minutes. The issued minutes are the official record of the Meeting and can no longer be edited; the Meeting itself remains Ended. Every user allowed to view the Meeting’s minutes sees this read-only version (UC-58, UC-64).
 
 This screen allows the System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary and Participant (within their meeting scope) to:
 
-- View Meeting Minutes: read the sealed minutes with the signature block of every signer (UC-58).
-
-- View Signature Status & Audit Trail: click “View signing history” to open the signing history of all revisions (UC-63).
+- View Meeting Minutes: read the issued minutes (UC-58).
 
 On the screen, s/he can also:
 
-- Download PDF: click “Download PDF” to save the sealed minutes as a PDF file.
+- Download PDF: click “Download PDF” to save the issued minutes as a PDF file.
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Status chip | Sealed [Đã niêm phong]. |
-| Seal summary | Read-only, e.g. “Lần sửa 2 · niêm phong bởi Đỗ Hải Yến lúc 15/10/2026 14:40”: sealed revision, Secretary who sealed and seal time (UC-64). |
-| View signing history [Xem lịch sử ký] | Button; opens the signing history timeline (as on Signing Status & Finalization). |
-| Download PDF [Tải PDF] | Button; downloads the sealed revision as PDF. |
-| Information banner | Read-only: “Biên bản đã niêm phong là hồ sơ chính thức của cuộc họp: không sửa, không gửi ký lại được.” – editing, revision requests and resubmission are no longer available (BR-166). |
+| Status chip | Issued [Đã ban hành]. |
+| Seal summary | Read-only, e.g. “Lần sửa 2 · ban hành bởi Chủ tọa lúc 15/10/2026 14:40”: issued revision, Chair who issued and issue time (UC-64). |
+| Download PDF [Tải PDF] | Button; downloads the issued revision as PDF. |
+| Information banner | Read-only: “Biên bản đã ban hành là hồ sơ chính thức của cuộc họp: không sửa được, mọi sửa đổi thực hiện bằng lần sửa mới (UC-83).” – the issued minutes cannot be edited; a correction is a new revision (BR-409). |
 | Minutes document | Read-only page: title “BIÊN BẢN CUỘC HỌP”, Meeting name, date and actual time, full content (attendance, content from the published summary, vote conclusions). |
-| Signature blocks | One block per signer: meeting role (CHAIR [CHỦ TRÌ], SECRETARY [THƯ KÝ]), “Signed dd/mm hh:mm” [Đã ký …] and signer name. |
 
 ### 13. FE-13 – Email & In-App Notification
 
@@ -4295,7 +4216,7 @@ This screen allows the Meeting Organizer, Meeting Approver, System Admin, Chair,
 
 - Open Filtered List: click a counter tile to open the corresponding filtered list (UC-69).
 
-- Open Waiting Task: click the action of a task (Sign, Vote, Respond, Open) to go directly to the screen where it is completed (UC-69).
+- Open Waiting Task: click the action of a task (Vote, Respond, Open) to go directly to the screen where it is completed (UC-69).
 
 - Join Meeting Room: click “Join meeting room” on an InProgress Meeting of today (UC-37).
 
@@ -4310,12 +4231,11 @@ Field Description
 | Greeting | Read-only “Good morning, <first name>” [Chào buổi sáng, Thu Hà] with the current weekday and date (dd/mm/yyyy). |
 | Pending invitations [Chờ tôi phản hồi lời mời] | Counter tile: number of the user’s invitations still Pending; click opens the filtered list. |
 | Open votes [Biểu quyết đang mở] | Counter tile: open Votes in InProgress Meetings for which the user is eligible and has not voted yet. |
-| Minutes to sign [Biên bản chờ tôi ký] | Counter tile: minutes Pending Signature on which the user is a designated signer and has not signed. |
 | Meetings this week [Cuộc họp tuần này] | Counter tile: Meetings the user is involved in that are planned in the current week. |
 | Today [Hôm nay] | Panel of today’s Meetings the user may view (BR-29): planned time range, Meeting title, mode/location and status chip (e.g. Pending Approval [Chờ duyệt], InProgress [Đang họp]). |
 | Join meeting room [Vào phòng họp] | Primary button on a row whose Meeting is InProgress; opens the Meeting Lobby (8.1). Room entry follows the Meeting mode and the user’s access (UC-37). |
 | Open calendar [Mở lịch ›] | Link; opens the Meeting Calendar – Calendar View. |
-| Waiting tasks [Việc đang chờ bạn] | List of the user’s own pending actions, each with title, context and action button: Sign minutes [Ký biên bản] → Sign [Ký] (12.2); Vote [Bỏ phiếu] → Vote (11.3); Respond to invitation [Phản hồi lời mời] → Respond [Phản hồi] (6.4); Assign speakers [Gán người nói] → Open [Mở] (10.1). Only tasks of the signed-in user are listed. |
+| Waiting tasks [Việc đang chờ bạn] | List of the user’s own pending actions, each with title, context and action button: Vote [Bỏ phiếu] → Vote (11.3); Respond to invitation [Phản hồi lời mời] → Respond [Phản hồi] (6.4); Assign speakers [Gán người nói] → Open [Mở] (10.1). Only tasks of the signed-in user are listed. |
 | Empty state | When a panel has nothing to show it displays a short “nothing waiting” text instead of the list. |
 
 #### 14.2 Meeting Workspace
@@ -4492,14 +4412,14 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 | Requirement | Description |
 | --- | --- |
-| Learnability and training time | An internal Member with basic computer skills must be able to find an upcoming meeting, respond to an invitation, open a meeting document, cast a vote and sign minutes after a guided introduction of no more than 30 minutes. A Meeting Organizer, Secretary, Chair or System Admin must be able to complete their full role workflow (e.g. create, submit and publish a meeting; manage sessions, agenda and participants; upload audio and approve the summary; seal minutes) after no more than 2 hours of training. An external Guest must be able to verify their email and respond to an invitation without any training. |
+| Learnability and training time | An internal Member with basic computer skills must be able to find an upcoming meeting, respond to an invitation, open a meeting document, cast a vote after a guided introduction of no more than 30 minutes. A Meeting Organizer, Secretary, Chair or System Admin must be able to complete their full role workflow (e.g. create, submit and publish a meeting; manage sessions, agenda and participants; upload audio and approve the summary; issue minutes) after no more than 2 hours of training. An external Guest must be able to verify their email and respond to an invitation without any training. |
 | Vietnamese user interface | All user-facing text - menus, labels, buttons, field hints, validation and system messages, notifications, emails and exported reports - is in Vietnamese with correct diacritics (UTF-8). Searches must handle Vietnamese text with diacritics correctly. Terminology must be consistent with the glossary of this SRS (e.g. the same Vietnamese term for Meeting, Agenda Item, Secretary throughout). |
 | Consistency | All screens share the same layout (navigation menu, header with notification bell and user menu, content area), the same placement of primary and secondary actions, the same date/time format, and the same visual badge for each lifecycle status (meeting, session, agenda item, vote, minutes). Lists use the same search, filter, sort and pagination controls (BR-11, BR-31, BR-32), and empty results show a no-results message rather than an error (BR-12). |
 | Responsive, desktop-first layout | All features are fully usable on desktop/laptop screens of 1280 px width or more and remain usable at 1024 px. The external-Guest invitation and email-verification screens, Respond to Meeting Invitation, voting, notification list and document viewing must be usable on mobile browsers of 360 px width or more without horizontal scrolling or loss of function. |
 | Browser support | The application must work correctly on the two most recent stable versions of Google Chrome, Microsoft Edge, Mozilla Firefox and Safari (desktop), and on Chrome for Android and Safari on iOS for the mobile-capable screens. The online meeting room requires a WebRTC-capable browser; when the browser or device permissions are not suitable, the system tells the user what is missing instead of failing silently. |
 | Accessibility basics | Screens should follow the basic WCAG 2.1 Level AA practices: every form field has a visible label, all functions are reachable with the keyboard with a visible focus indicator, text has a contrast ratio of at least 4.5:1, status and errors are not conveyed by colour alone, and pages remain usable when the browser zoom is set to 200%. |
 | Clear error messages with codes | Every error or warning shown to a user uses the wording and code defined in the System Messages catalogue (Section V.2, MSGnn), explains in plain Vietnamese what happened and what the user can do next, is displayed next to the affected field when it concerns a field, and never shows stack traces or technical internals. Data already entered in a form is preserved after a validation error. |
-| Confirmation of destructive and irreversible actions | Before any action that deletes, cancels, revokes or cannot be undone - e.g. deleting an agenda item or document, cancelling a session, removing a participant or revoking a Guest, deactivating an account, rejecting a meeting, closing a vote, signing or sealing minutes - the system asks the user to confirm in a dialog that names the affected object and states the consequence. Actions that cannot be reversed must say so explicitly. |
+| Confirmation of destructive and irreversible actions | Before any action that deletes, cancels, revokes or cannot be undone - e.g. deleting an agenda item or document, cancelling a session, removing a participant or revoking a Guest, deactivating an account, rejecting a meeting, closing a vote, issuing minutes - the system asks the user to confirm in a dialog that names the affected object and states the consequence. Actions that cannot be reversed must say so explicitly. |
 | Feedback on long-running operations | Any operation that takes longer than 1 second shows a loading indicator, and the user cannot submit the same form twice. File uploads show progress, and audio processing (transcription and summary generation) shows its current status (e.g. queued, processing, completed, failed) so that the Secretary does not need to wait on the page. |
 
 #### 2.2 Performance
@@ -4529,16 +4449,16 @@ The quality attributes below are stated as measurable targets for a single-organ
 | External Guest access scope | A Guest requires a secure current Meeting invitation and invited-email verification by a one-time code expiring within 10 minutes. After providing self-declared display information, the Guest uses Member participation rights only in this Meeting, including all attached documents, comments, voting and room controls. Access expires and revocation takes effect on each protected request. No internal account, Chair/Secretary role, delegated authority, room moderation or personal library is granted. (BR-150, BR-152–BR-157, BR-180, BR-181) |
 | Encryption of data in transit | All communication between browsers and the server, between the server and external services (Google, SMTP, any external speech/AI provider) and all meeting media must be encrypted in transit (TLS 1.2 or later; encrypted WebRTC media). The system must not be served over unencrypted HTTP in production. |
 | Protection of stored data and backups | Uploaded documents and meeting audio are stored only on TrustSoft's own infrastructure and are reachable only through the application's access checks, never through a public or guessable URL. Secrets (signing keys, database, Redis and SMTP credentials) are kept out of the source code and configuration repository. The database and file storage are backed up at least daily; backups are stored separately from the production host with access restricted to authorised administrators. |
-| Audit logging | The system records security and governance events - sign-in success/failure, lockout and unlock, password reset, Google account linking, user and role changes, meeting lifecycle transitions, access to Secret documents, audio upload and deletion, summary approval, vote closing, minutes signing and sealing - with actor, time, action, target object and source IP address (BR-16, BR-38). Audit entries cannot be modified or deleted through the application; only the System Admin can view and search them (UC-13). Passwords, tokens and verification codes are never written to any log. |
+| Audit logging | The system records security and governance events - sign-in success/failure, lockout and unlock, password reset, Google account linking, user and role changes, meeting lifecycle transitions, access to Secret documents, audio upload and deletion, summary approval, vote closing, the issue of minutes - with actor, time, action, target object and source IP address (BR-16, BR-38). Audit entries cannot be modified or deleted through the application; only the System Admin can view and search them (UC-13). Passwords, tokens and verification codes are never written to any log. |
 | Personal data protection and audio consent (Decree 13/2023/ND-CP) | Personal data (account details, Guest name and email, voices in meeting audio, attendance) is processed only for the stated meeting-management purpose. A meeting audio file can be uploaded only after the Secretary confirms that participants were informed and consented and states the purpose; each recording has a retention date, after which (or on a justified request) it is erased and the erasure is recorded. The online meeting room stores only join/leave times, never media or chat content. If an external speech/AI provider is selected, audio and transcripts are sent only to that provider, only for processing, and must not be retained or used by it for other purposes. |
-| Integrity of signed minutes, vote conclusions and stored documents | Once a Vote Conclusion is recorded or minutes are sealed, their content cannot be changed by anyone, including administrators; any change to minutes before sealing invalidates signatures collected for the previous content version. Each signature is bound to the exact content version signed so that later tampering is detectable, and each stored document version can be verified against the fingerprint taken at upload. Because v1 uses internal electronic signatures without a certification authority (Report 1, LI-06), the user interface must state that the signature has no legal weight outside TrustCabinet. |
+| Integrity of issued minutes, vote conclusions and stored documents | Once a Vote Conclusion is recorded or minutes are issued, their content cannot be changed by anyone, including administrators. Issued minutes, vote conclusions and lifecycle histories are retained as immutable records, and each stored document version can be verified against the fingerprint taken at upload. |
 | Upload safety | Uploaded files are accepted only within the allowed size limits and file types; the file type is determined from the file content, not from its name. Files are never executed by the server, and audio uploads accept audio formats only (no video, Report 1, LI-03). |
 
 #### 2.4 Reliability
 
 | Requirement | Description |
 | --- | --- |
-| No loss of committed data | A business operation (e.g. approving a meeting, recording a vote, signing minutes) is either completed in full or not at all; a failure part-way never leaves partially saved data. After an unplanned restart no confirmed transaction is lost. |
+| No loss of committed data | A business operation (e.g. approving a meeting, recording a vote, issuing minutes) is either completed in full or not at all; a failure part-way never leaves partially saved data. After an unplanned restart no confirmed transaction is lost. |
 | Reliable asynchronous delivery | Invitation and notification emails are queued and retried automatically (up to 8 attempts with increasing intervals) until delivered or marked failed; a failure to deliver never reverts the meeting state that triggered it (BR-39, BR-40, BR-94). Delivery status is traceable (BR-43). |
 | Recoverable AI processing | If transcription or summary generation fails or the provider is unavailable, the uploaded audio is kept, the job is marked failed with a reason, and the Secretary can retry without re-uploading. AI output is always a draft until reviewed and approved by the Secretary. |
 | Defect target | No Critical defect may remain open at acceptance (Report 2 quality objectives); system-level defects are tracked in Reports 5.3-5.5. |
@@ -4574,7 +4494,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | Requirement | Description |
 | --- | --- |
 | Personal data protection | Processing of personal data, including voices in uploaded meeting audio, complies with Decree 13/2023/ND-CP on personal data protection: stated purpose, recorded consent, defined retention and recorded erasure. |
-| Electronic signatures and records | Minutes signing in v1 is an internal electronic-signature workflow with a complete audit trail; it does not claim the legal status of a CA-issued digital signature (Report 1, LI-06). Sealed minutes, vote conclusions and lifecycle histories are retained as immutable records. |
+| Issued minutes and records | Minutes are approved and issued by the Chair (UC-64) with a complete audit trail; they carry no CA-issued digital signature. Issued minutes, vote conclusions and lifecycle histories are retained as immutable records. |
 | Licensing | All third-party libraries, tools and services used must be free, open-source or student-licensed, with licences compatible with internal deployment at TrustSoft (Report 2, constraint 2). |
 
 ## V. Requirement Appendix
@@ -4712,7 +4632,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-163 | Online/Hybrid Meetings use the internal TrustCabinet Online Meeting Room. Online Link is managed by the system as part of Online Meeting Room functionality and may be empty until generated. Users cannot enter or modify it during Meeting creation, editing or rescheduling. Link generation is outside Create Meeting and Update Meeting. | UC-14, UC-15 | PO Q4 / BF-02 | Meeting / Voting / Minutes services |
 | BR-164 | Starting a Meeting creates an in-app notification for its currently invited internal participants; notification failure does not roll back the successful Meeting start. The Chair who pressed Start is not notified in the application (BR-322). | UC-21 | PO Q11 / BF-03 | Meeting / Voting / Minutes services |
 | BR-165 | A ballot may be cast only while the Meeting is InProgress, the Vote is Open and the voter retains current Meeting access. | UC-55 | PO 14/10/2026 — FE-11 specification / ADR-0019 | Meeting / Voting Management |
-| BR-166 | When designated minutes signers request revision or minutes content changes after signing begins, previous signatures on the earlier content version are invalidated and the revised version requires a new signing cycle. Only the assigned Secretary may finalize and seal the completed minutes after all designated signers sign. | UC-60, UC-61, UC-62, UC-64, UC-65 | PO / BF-04 | Meeting / Voting / Minutes services |
+| BR-166 | Retired (PO 14/11/2026): designated signing of meeting minutes was dropped, including simulated signing (SCRUM-37); minutes are issued at Chair approval (UC-64). The number is kept so existing references stay valid and must not be reused. Replaced by nothing — signing dropped PO 14/11/2026. | UC-60, UC-61, UC-64, UC-65 | PO / BF-04 | Meeting / Voting / Minutes services |
 | BR-167 | User account list sorting must use an allowed sort field/order, and current search/filter/sort criteria are preserved across pages. | UC-05 | UC-05 user-list acceptance criteria | User Management |
 | BR-168 | A submission adding multiple internal Meeting Participants must be saved as one indivisible roster change. If any selected account or assigned Meeting Role is invalid, no account in the submitted batch may be added. Invitation dispatch occurs only after a successful roster save; delivery errors follow BR-94. | UC-28a | FE-06 revision, 12/10/2026 | Meeting Participant Management |
 | BR-169 | Replacing or handing over the Chair changes the outgoing Chair to Member and the incoming current internal participant to Chair together. The final list must retain the required Secretary and Chair. If either change fails, both people keep their previous roles. | UC-28b, UC-73 | FE-06 revision, 12/10/2026; PO 16/10/2026 — Chair hands over the Chair role; Secretary does not replace the Chair | Meeting Participant Management |
