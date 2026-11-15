@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
@@ -94,8 +95,6 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
     TrustCabinetDbContext db, StoredFileWriter writer, IFileStorage storage, IAuditService audit, IAgendaGuestAccess guests,
     TimeProvider clock, ILogger<MeetingDocumentService> logger) : IMeetingDocumentService
 {
-    private static bool PersistenceError(Exception ex) => StoredFileWriter.PersistenceError(ex);
-
     public async Task<MeetingDocumentListOutcome> ListAsync(Guid meetingId, ParticipantActor reader, CancellationToken ct = default)
     {
         try
@@ -111,7 +110,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             if (meeting.Status != MeetingStatus.InProgress) votes = [.. votes.Select(v => v with { CanConfirmRead = false })];
             return new(List: list with { Votes = votes });
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to list documents of meeting {MeetingId}", meetingId);
             return new(DocumentReadFailure.ReadFailed);
@@ -129,7 +128,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             if (meeting is null) return new(DocumentReadFailure.NotFound);
             file = await documents.FindAttachedFileAsync(meetingId, meetingDocumentId, SeesDrafts(meeting, reader), ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to look up document {DocumentId} of meeting {MeetingId}", meetingDocumentId, meetingId);
             return new(DocumentReadFailure.ReadFailed);
@@ -170,7 +169,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             catch (Exception ex)
             {
                 await content.DisposeAsync();
-                if (!PersistenceError(ex)) throw;
+                if (!DbErrors.IsPersistenceFailure(ex)) throw;
                 logger.LogError(ex, "Failed to audit access to document {DocumentId}", meetingDocumentId);
                 return new(DocumentReadFailure.ReadFailed);
             }
@@ -214,7 +213,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
             }
             return new(access);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to check document upload access for meeting {MeetingId}", meetingId);
             return new(DocumentUploadFailure.StoreFailed);
@@ -286,7 +285,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
         {
             return await ItemExistsAsync(meetingId, agendaItemId, ct) ? access : new(DocumentUploadFailure.AgendaItemNotFound);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to check agenda item {AgendaItemId} of meeting {MeetingId}", agendaItemId, meetingId);
             return new(DocumentUploadFailure.StoreFailed);
@@ -360,7 +359,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                     d.FileName, d.StoredFile.ContentType, d.StoredFile.ByteSize, d.StoredFile.PageCount)).ToList());
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to {What} meeting {MeetingId}", what, meetingId);
             return new(DocumentUploadFailure.StoreFailed);

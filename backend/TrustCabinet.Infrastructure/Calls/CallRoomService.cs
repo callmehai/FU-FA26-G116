@@ -2,11 +2,11 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Speaking;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Recordings;
 using TrustCabinet.Infrastructure.Speaking;
 
@@ -56,7 +56,7 @@ public sealed class CallRoomService(
         {
             access = await FindAccessAsync(meetingId, caller, ct);
         }
-        catch (Exception error) when (IsDatabaseFailure(error))
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             logger.LogError(error, "Could not read call room access for meeting {MeetingId}", meetingId);
             return CallResult<CallRoomView>.Fail(CallOutcome.ReadFailed);
@@ -94,7 +94,7 @@ public sealed class CallRoomService(
         {
             access = await FindAccessAsync(meetingId, caller, ct);
         }
-        catch (Exception error) when (IsDatabaseFailure(error))
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             logger.LogError(error, "Could not read call room access for meeting {MeetingId}", meetingId);
             return CallResult<CallJoinTicket>.Fail(CallOutcome.ReadFailed);
@@ -137,7 +137,7 @@ public sealed class CallRoomService(
                     new { meetingId, invitationId = guest.InvitationId, displayName = access.FullName, recordingNoticeAcknowledged = true },
                     ct);
             }
-            catch (Exception error) when (IsDatabaseFailure(error))
+            catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
             {
                 logger.LogError(error, "Could not record the admission of guest session {SessionId}", guest.SessionId);
                 return CallResult<CallJoinTicket>.Fail(CallOutcome.ReadFailed);
@@ -158,7 +158,7 @@ public sealed class CallRoomService(
         {
             access = await calls.FindRoomAccessAsync(meetingId, actorId, ct);
         }
-        catch (Exception error) when (IsDatabaseFailure(error))
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             logger.LogError(error, "Could not read call room access for meeting {MeetingId}", meetingId);
             return CallOutcome.ReadFailed;
@@ -423,7 +423,4 @@ public sealed class CallRoomService(
         => member.GuestSessionId is { } guest
             ? calls.FindGuestRoomAccessAsync(meetingId, guest, invitationId, ct)
             : calls.FindRoomAccessAsync(meetingId, member.UserId!.Value, ct);
-
-    private static bool IsDatabaseFailure(Exception error)
-        => error is DbUpdateException or NpgsqlException or TimeoutException;
 }

@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
@@ -13,6 +12,7 @@ using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Domain.GuestAccess;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Speaking;
 
 namespace TrustCabinet.Infrastructure.Participants;
@@ -29,10 +29,6 @@ public sealed partial class ParticipantService(
     IAgendaChangePublisher agendaPublisher
 ) : IParticipantService
 {
-    private static bool Persistence(Exception ex) =>
-        ex is DbUpdateException or NpgsqlException or TimeoutException
-            or InvalidOperationException { InnerException: NpgsqlException or TimeoutException };
-
     private static string Revision(Meeting m) =>
         m.ParticipantsRevision.ToString(CultureInfo.InvariantCulture);
 
@@ -281,7 +277,7 @@ public sealed partial class ParticipantService(
                 Revision: m.ParticipantsRevision
             );
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Participant read failed for {MeetingId}", meetingId);
             return new(ParticipantFailure.ReadFailed);
@@ -308,7 +304,7 @@ public sealed partial class ParticipantService(
             );
             return await OptionsAsync(null, query, ct);
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Participant creation options read failed");
             return new(ParticipantFailure.ReadFailed);
@@ -586,7 +582,7 @@ public sealed partial class ParticipantService(
                 );
             result = result with { Revision = response ? null : m.ParticipantsRevision };
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             db.ChangeTracker.Clear();
             logger.LogError(

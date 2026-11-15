@@ -6,6 +6,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
@@ -18,8 +19,6 @@ namespace TrustCabinet.Infrastructure.Documents;
 public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileWriter writer, IFileStorage storage,
     IAuditService audit, TimeProvider clock, ILogger<PersonalLibraryService> logger) : IPersonalLibraryService
 {
-    private static bool PersistenceError(Exception ex) => StoredFileWriter.PersistenceError(ex);
-
     public async Task<LibraryOutcome<LibraryView>> ViewAsync(Guid readerId, Guid ownerId, Guid? folderId,
         string? search, string? fileType, Guid? meetingId = null, CancellationToken ct = default)
     {
@@ -54,7 +53,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
                 .ToListAsync(ct);
             return new(Value: new(folderId, folders, documents, await writer.UsedBytesAsync(ct), writer.LimitBytes));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to load the personal library of {OwnerId}", ownerId);
             return new(LibraryFailure.SaveFailed);
@@ -77,7 +76,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             file = await query.Select(d => new AttachedDocumentFile(d.FileName, d.StoredFile.StorageKey, d.StoredFile.ContentType,
                     d.StoredFile.ByteSize)).SingleOrDefaultAsync(ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to look up library document {DocumentId}", documentId);
             return new(DocumentReadFailure.ReadFailed);
@@ -107,7 +106,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             catch (Exception ex)
             {
                 await content.DisposeAsync();
-                if (!PersistenceError(ex)) throw;
+                if (!DbErrors.IsPersistenceFailure(ex)) throw;
                 logger.LogError(ex, "Failed to audit the read of library document {DocumentId}", documentId);
                 return new(DocumentReadFailure.ReadFailed);
             }
@@ -183,7 +182,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, ct))
                 return LibraryFailure.DestinationNotFound;
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to check the upload destination of {OwnerId}", ownerId);
             return LibraryFailure.SaveFailed;
@@ -322,7 +321,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             if (outcome.Failure == LibraryFailure.None) await transaction.CommitAsync(ct);
             return outcome;
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to {What} in the personal library of {OwnerId}", what, ownerId);
             return new(LibraryFailure.SaveFailed);

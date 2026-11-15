@@ -177,8 +177,10 @@ Cài đặt là [`Infrastructure/Persistence/EfUnitOfWork.cs`](../../backend/Tru
   bên trong transaction của nơi khác, nó thoát ra mà không commit và để nơi gọi quyết định.
 - Lồng nhau chỉ theo một chiều. Code cũ mở transaction rồi gọi unit of work thì nhập được. Chiều ngược lại, unit of
   work bọc ngoài một đoạn code cũ gọi `BeginTransactionAsync` mà không kiểm `CurrentTransaction`, thì đoạn cũ ném
-  "The connection is already in a transaction". CA-01 sửa `MeetingRepository.InTransactionAsync`; chỗ khác được xử lý
-  ở subtask chuyển module đó, hoặc bằng port mỏng theo R9.
+  "The connection is already in a transaction". CA-01 đã sửa `MeetingRepository.InTransactionAsync` và
+  `VoiceIdRepository.InTransactionAsync`: đang có transaction thì chạy `operation` trong transaction đó và không
+  commit, chưa có thì mở và commit như cũ (test ở `EfUnitOfWorkTests`). Chỗ khác được xử lý ở subtask chuyển module
+  đó, hoặc bằng port mỏng theo R9.
 - Sau rollback, change tracker vẫn giữ những gì `work` đã xếp hàng; lần `SaveChangesAsync` sau sẽ ghi lại chúng. Muốn
   thử lại từ dữ liệu đã lưu thì gọi `DiscardChanges()`, như code cũ gọi `ChangeTracker.Clear()`.
 - Lệnh ghi thẳng (SQL thô, `ExecuteUpdateAsync`) thất bại trong transaction làm PostgreSQL huỷ cả transaction đó
@@ -220,6 +222,34 @@ public enum UniqueConflict { Unknown = 0 /* module thêm dần */ }
   của translator trong cùng PR.
 - Code còn ở Infrastructure (repository, adapter, service chưa chuyển) dùng `DbErrors` (CA-01), lớp này nhận ra cả
   exception gốc lẫn exception đã dịch.
+
+[`Infrastructure/Persistence/DbErrors.cs`](../../backend/TrustCabinet.Infrastructure/Persistence/DbErrors.cs)
+(`internal static`, test ở `tests/TrustCabinet.Web.Tests/Persistence/DbErrorsTests.cs`):
+
+```csharp
+bool IsPersistenceFailure(Exception exception)                        // mọi lỗi lưu trữ, dạng rộng nhất
+bool IsUniqueViolation(Exception exception, string? constraint = null) // 23505; có tên thì đúng index đó
+bool IsReferenceViolation(Exception exception)                        // 23503 hoặc 23001
+bool IsConcurrencyConflict(Exception exception)                       // DbUpdateConcurrencyException
+```
+
+- `DbErrors` và translator phân loại bằng cùng một hàm, `PersistenceExceptionTranslator.Classify`, nên một lỗi được
+  trả lời giống nhau dù tới `catch` ở dạng gốc hay dạng đã dịch. Với `PersistenceException`, `DbErrors` phân loại
+  exception gốc nằm trong `InnerException` (nhờ vậy vẫn so được tên index); exception đã dịch không mang exception
+  gốc, như fake trong unit test ném ra, thì xét theo kiểu.
+- `IsPersistenceFailure` đúng với cả ba loại hẹp hơn. Vì vậy `catch` cho unique, reference, concurrency phải đứng
+  **trước** `catch` dùng `IsPersistenceFailure`, như thứ tự code cũ.
+- Vi phạm unique và reference được tìm trong cả chuỗi `InnerException`: vi phạm ném trần từ SQL thô hoặc
+  `ExecuteUpdateAsync`, và vi phạm bọc trong `InvalidOperationException` của execution strategy, cũng được nhận ra.
+  Bộ lọc cũ kiểu `DbUpdateException { InnerException: PostgresException }` chỉ thấy dạng EF bọc một lớp.
+- Hai loại còn lại không dò chuỗi. Concurrency chỉ xét chính exception đó: `InvalidOperationException` bọc
+  `DbUpdateConcurrencyException` là lỗi lưu trữ thường, không phải concurrency. Lỗi lưu trữ khác xét chính exception
+  đó, hoặc đúng một lớp `InvalidOperationException` bọc ngoài; bọc hai lớp thì không còn là lỗi lưu trữ.
+- Tên index vẫn là hằng trong file đang dùng nó; subtask của module chuyển nó vào bảng của translator cùng lúc đổi
+  `catch` sang `UniqueConflictException`.
+- Sau CA-01, `using Npgsql` ở Infrastructure chỉ còn trong `Persistence/PersistenceExceptionTranslator.cs`,
+  `Audit/AuditLogQueryService.cs` (dùng `NpgsqlParameter`, `NpgsqlDbType`) và `Migrations/` (file sinh ra). File mới
+  không tự so `SqlState` hay kiểu exception của EF Core/Npgsql.
 
 `PersistenceExceptionTranslator.Translate(Exception)` trả `PersistenceException?` và phân loại theo đúng thứ tự này
 (test ở `tests/TrustCabinet.Web.Tests/Persistence/PersistenceExceptionTranslatorTests.cs`):

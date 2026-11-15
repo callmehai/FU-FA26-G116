@@ -1,13 +1,13 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Summaries;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Summaries;
 
@@ -71,7 +71,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
                 return new(Data: await StateAsync(meeting, actorId, token));
             }, ct);
         }
-        catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (Exception error) when (DbErrors.IsUniqueViolation(error))
         {
             // Two first builds at once: the unique meeting index lets one through. Any other failure is a failed save.
             logger.LogWarning(error, "Concurrent minutes creation for meeting {MeetingId}", meetingId);
@@ -299,7 +299,7 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
                 return new(Data: await StateAsync(meeting, actorId, token));
             }, ct);
         }
-        catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (Exception error) when (DbErrors.IsUniqueViolation(error))
         {
             // Two corrections of the same revision at once: the revision-number index lets one through (BR-410).
             logger.LogWarning(error, "Concurrent minutes {Action} on {MinutesId}", action, minutesId);

@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -9,6 +8,7 @@ using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.VoiceId;
 
@@ -30,8 +30,6 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
     : IVoiceCollectionService
 {
     private const string NotificationTargetType = "VoiceSample";
-
-    private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
     /// <summary>Samples can be taken while the people are gathered or about to be: Published or InProgress.</summary>
     public static bool CanCollect(MeetingStatus status) => status is MeetingStatus.Published or MeetingStatus.InProgress;
@@ -66,7 +64,7 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
                 .ToArray();
             return new(Data: new VoiceCollectionView(CanCollect(meeting.Status), VoiceIdRules.MaxSamples, list));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read voice collection of meeting {MeetingId}", meetingId);
             return new(VoiceFailure.ReadFailed);
@@ -91,7 +89,7 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
             if ((await repository.ListProxySamplesAsync(userId, ct)).Count >= VoiceIdRules.MaxSamples)
                 return new(VoiceFailure.LimitReached);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read voice collection of meeting {MeetingId}", meetingId);
             return new(VoiceFailure.SaveFailed);
@@ -160,7 +158,7 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
                 return new VoiceOutcome(Data: new CollectedSampleView(id, now, embedding.SpeechMs, secretary));
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to store a voice sample collected in meeting {MeetingId}", meetingId);
             return new(VoiceFailure.SaveFailed);
@@ -205,7 +203,7 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
             await db.SaveChangesAsync(ct);
             return new(Data: new { id = sampleId });
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to delete voice sample {SampleId}", sampleId);
             return new(VoiceFailure.SaveFailed);

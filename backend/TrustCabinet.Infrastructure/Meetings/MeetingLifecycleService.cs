@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
@@ -10,6 +9,7 @@ using TrustCabinet.Domain.Notifications;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Speaking;
 using TrustCabinet.Domain.Votes;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -90,7 +90,7 @@ public sealed class MeetingLifecycleService(
             }, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException or InvalidAgendaExecutionException)
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error) || error is InvalidAgendaExecutionException)
         {
             logger.LogError(error, "Could not perform {Action} for meeting {MeetingId}.", command.Action, meetingId);
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.SaveFailed);
@@ -143,7 +143,7 @@ public sealed class MeetingLifecycleService(
             if (!ended) return false;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException or InvalidAgendaExecutionException)
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error) || error is InvalidAgendaExecutionException)
         {
             logger.LogError(error, "Could not end overrunning meeting {MeetingId}.", meetingId);
             return false;

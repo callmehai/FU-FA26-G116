@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -67,7 +67,7 @@ public sealed class MeetingOverdueService(
             {
                 if (await CancelAsync(id, delay, ct)) cancelled++;
             }
-            catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException)
+            catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
             {
                 logger.LogError(error, "Could not cancel overdue meeting {MeetingId}.", id);
             }

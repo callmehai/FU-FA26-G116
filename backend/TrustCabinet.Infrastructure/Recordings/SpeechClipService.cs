@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -9,6 +8,7 @@ using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Recordings;
 
@@ -35,8 +35,6 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     IOptions<RecordingOptions> options, IRecordingStorage storage, ISpeechClipAudioSigner signer,
     ILogger<SpeechClipService> logger) : ISpeechClipService
 {
-    private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
-
     public async Task<SpeechClipOutcome> ListAsync(Guid meetingId, Guid actorId, DateTimeOffset? since, CancellationToken ct = default)
     {
         try
@@ -52,7 +50,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             var items = rows.Shown.Select(r => View(r, marks.GetValueOrDefault(r.Id), byId, actorId, secretary, officer)).ToList();
             return new(Data: new SpeechClipList(meetingId, SpeechClipRules.Capturing(meeting), secretary, now, items, officer, RecordingRules.Export(meeting, actorId) == RecordingFailure.None, options.Value.RetentionDays));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to list speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.ReadFailed);
@@ -81,7 +79,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 new { sentences = rows.Count }, ct);
             return new(Data: new ExportedText(TranscriptText.FileName(started), text));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to export the speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.ReadFailed);
@@ -96,7 +94,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             if (meeting is null) return new(failure);
             return SpeechClipRules.Accepts(meeting, clock.GetUtcNow()) ? new() : new(SpeechClipFailure.NotCapturing);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to check speech capture for {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
@@ -134,7 +132,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             existing = await FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, ct);
             if (existing is not null) return new(Data: existing);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
@@ -174,13 +172,13 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             await PublishAsync(meetingId, "ClipAdded", ct);
             return new(Data: await FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, ct));
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (Exception ex) when (DbErrors.IsUniqueViolation(ex))
         {
             // The same sentence sent twice at once: the other request stored it.
             db.ChangeTracker.Clear();
             return new(Data: await FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, ct));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to store a speech clip of {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
@@ -215,7 +213,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 return new();
             }, "ClipEdited", ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to edit speech clip {ClipId}", clipId);
             return new(SpeechClipFailure.SaveFailed);
@@ -245,7 +243,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             if (outcome.Failure == SpeechClipFailure.None) DeleteAudio(audioPath);
             return outcome;
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to delete speech clip {ClipId}", clipId);
             return new(SpeechClipFailure.SaveFailed);
@@ -282,7 +280,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 return new(Data: excluded);
             }, "ClipEdited", ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to change the exclusion of speech clip {ClipId}", clipId);
             return new(SpeechClipFailure.SaveFailed);
@@ -315,7 +313,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             var capturing = SpeechClipRules.AcceptsGuest(meeting) && await GuestNoticeConfirmedAsync(guest, ct);
             return new(Data: new SpeechClipList(meetingId, capturing, false, now, items, RetentionDays: options.Value.RetentionDays));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to list a guest's speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.ReadFailed);
@@ -333,7 +331,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             // Never recorded before being told: the call room's pre-join notice is what the guest consented to.
             return await GuestNoticeConfirmedAsync(guest, ct) ? new() : new(SpeechClipFailure.NoticeRequired);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to check a guest's speech capture for {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
@@ -373,7 +371,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             await PublishAsync(guest.MeetingId, "ClipDeleted", ct);
             return outcome;
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to delete speech clip {ClipId} for a guest", clipId);
             return new(SpeechClipFailure.SaveFailed);
@@ -389,7 +387,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 && c.GuestInvitationId == guest.InvitationId && c.AudioPath != null && c.ExcludedAt == null, ct);
             return heard ? new(Data: signer.Sign(clipId, clock.GetUtcNow())) : new(SpeechClipFailure.NotFound);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to sign playback for speech clip {ClipId} for a guest", clipId);
             return new(SpeechClipFailure.ReadFailed);
@@ -437,7 +435,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 return new(SpeechClipFailure.NotFound);
             return new(Data: signer.Sign(clipId, clock.GetUtcNow()));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to sign playback for speech clip {ClipId}", clipId);
             return new(SpeechClipFailure.ReadFailed);

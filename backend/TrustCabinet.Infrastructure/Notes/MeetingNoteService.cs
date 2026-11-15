@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Notes;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Notes;
 
@@ -58,7 +58,7 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
             outcome = await meetings.InTransactionAsync(token => SaveLockedAsync(meetingId, actorId, agendaItemId, body,
                 loadedAt, token), ct);
         }
-        catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation })
+        catch (Exception error) when (DbErrors.IsReferenceViolation(error))
         {
             logger.LogInformation(error, "Agenda item {ItemId} went away while its note was saved", agendaItemId);
             return new(NoteFailure.ItemGone);

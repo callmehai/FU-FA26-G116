@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.CalendarSharing;
 
@@ -70,7 +70,7 @@ public sealed class SharedCalendarService(
 
             return new(new SharedWeek(monday, friday, DayStart.ToString("HH:mm"), DayEnd.ToString("HH:mm"), people));
         }
-        catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException)
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             logger.LogError(error, "Could not read the shared week of {UserId}", actorId);
             return new(null, CalendarShareFailure.ReadFailed);

@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Meetings;
 
@@ -106,7 +106,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not create a meeting for actor {ActorId}.", actorId);
             return MeetingResult.Failure(MeetingOutcome.SaveFailed);
@@ -127,7 +127,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not read meeting {MeetingId} for actor {ActorId}.", id, actorId);
             return MeetingResult.Failure(MeetingOutcome.ReadFailed);
@@ -146,7 +146,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not list meetings for actor {ActorId}.", actorId);
             return MeetingListResult.ReadFailed();
@@ -165,7 +165,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not list eligible meeting approvers.");
             return MeetingApproverListResult.ReadFailed();
@@ -191,7 +191,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not check whether meeting {MeetingId} can be updated by actor {ActorId}.", id, actorId);
             return MeetingResult.Failure(MeetingOutcome.ReadFailed);
@@ -251,7 +251,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not update meeting {MeetingId} for actor {ActorId}.", id, actorId);
             return MeetingResult.Failure(MeetingOutcome.SaveFailed);
@@ -363,9 +363,6 @@ public sealed class MeetingService(
     private static string PlaceOf(MeetingMode mode, string location)
         => mode == MeetingMode.Online ? string.Empty : location;
 
-    private static bool IsPersistenceFailure(Exception exception)
-        => exception is DbUpdateException or NpgsqlException or TimeoutException;
-
     public async Task<MeetingSubmissionReadiness> GetSubmissionReadinessAsync(
         Guid id, Guid actorId, CancellationToken ct = default)
     {
@@ -401,7 +398,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not read submission readiness for meeting {MeetingId}.", id);
             return ReadinessFailure(MeetingWorkflowOutcome.ReadFailed, id);
@@ -722,7 +719,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not perform {Action} for meeting {MeetingId}.", command.Action, id);
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.SaveFailed);
@@ -777,7 +774,7 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (IsPersistenceFailure(exception))
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Could not read lifecycle history for meeting {MeetingId}.", id);
             return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.ReadFailed);

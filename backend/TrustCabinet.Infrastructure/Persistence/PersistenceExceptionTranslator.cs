@@ -27,8 +27,30 @@ internal static class PersistenceExceptionTranslator
     internal static PersistenceException? Translate(
         Exception exception, IReadOnlyDictionary<string, UniqueConflict> uniqueIndexes)
     {
-        if (exception is PersistenceException or OperationCanceledException) return null;
-        if (exception is DbUpdateConcurrencyException) return new ConcurrencyConflictException(exception);
+        if (exception is PersistenceException) return null;
+
+        return Classify(exception, out var index) switch
+        {
+            StorageFailure.UniqueViolation => new UniqueConflictException(
+                index is not null && uniqueIndexes.TryGetValue(index, out var conflict) ? conflict : UniqueConflict.Unknown,
+                exception),
+            StorageFailure.ReferenceViolation => new ReferenceConflictException(exception),
+            StorageFailure.ConcurrencyConflict => new ConcurrencyConflictException(exception),
+            StorageFailure.Unavailable => new PersistenceUnavailableException(exception),
+            _ => null,
+        };
+    }
+
+    /// <summary>
+    /// What kind of storage failure a database exception is, with the constraint a unique violation names.
+    /// <see cref="Translate(Exception)"/> and <see cref="DbErrors"/> both decide by this, so code that still
+    /// catches the database exception and code that catches the translated one agree on every failure.
+    /// </summary>
+    internal static StorageFailure Classify(Exception exception, out string? constraint)
+    {
+        constraint = null;
+        if (exception is OperationCanceledException) return StorageFailure.None;
+        if (exception is DbUpdateConcurrencyException) return StorageFailure.ConcurrencyConflict;
 
         // EF Core wraps the PostgreSQL error in a DbUpdateException; raw SQL and ExecuteUpdate throw it bare.
         for (var current = exception; current is not null; current = current.InnerException)
@@ -36,12 +58,10 @@ internal static class PersistenceExceptionTranslator
             switch ((current as PostgresException)?.SqlState)
             {
                 case PostgresErrorCodes.UniqueViolation:
-                    var index = ((PostgresException)current).ConstraintName;
-                    return new UniqueConflictException(
-                        index is not null && uniqueIndexes.TryGetValue(index, out var conflict) ? conflict : UniqueConflict.Unknown,
-                        exception);
+                    constraint = ((PostgresException)current).ConstraintName;
+                    return StorageFailure.UniqueViolation;
                 case PostgresErrorCodes.ForeignKeyViolation or PostgresErrorCodes.RestrictViolation:
-                    return new ReferenceConflictException(exception);
+                    return StorageFailure.ReferenceViolation;
             }
         }
 
@@ -49,7 +69,10 @@ internal static class PersistenceExceptionTranslator
         // connection, or a serialization failure, which reaches it inside a DbUpdateException when it happens in a save.
         return exception is DbUpdateException or NpgsqlException or TimeoutException
             or InvalidOperationException { InnerException: DbUpdateException or NpgsqlException or TimeoutException }
-            ? new PersistenceUnavailableException(exception)
-            : null;
+            ? StorageFailure.Unavailable
+            : StorageFailure.None;
     }
 }
+
+/// <summary>The kinds of storage failure, one per exception of <c>PersistenceExceptions.cs</c>.</summary>
+internal enum StorageFailure { None, UniqueViolation, ReferenceViolation, ConcurrencyConflict, Unavailable }

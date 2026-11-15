@@ -2,11 +2,11 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.VoiceId;
 
@@ -19,14 +19,12 @@ namespace TrustCabinet.Infrastructure.VoiceId;
 public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasure erasure, IVoiceEmbedder embedder,
     IVoiceprintProtector protector, IAuditService audit, TimeProvider clock, IOptions<VoiceIdOptions> options, ILogger<VoiceIdService> logger) : IVoiceIdService
 {
-    private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
-
     /// <summary>
     /// Two agreements at once (a double click): neither finds a row to lock, both insert, the unique index keeps one.
     /// The loser's answer is the same as the winner's — the person has agreed.
     /// </summary>
     private static bool AlreadyAgreed(Exception ex)
-        => ex is DbUpdateException { InnerException: PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } };
+        => DbErrors.IsUniqueViolation(ex);
 
     public async Task<VoiceOutcome> GetAsync(Guid actorId, CancellationToken ct = default)
     {
@@ -34,7 +32,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
         {
             return new(Data: await ProfileAsync(actorId, ct));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read Voice ID of {UserId}", actorId);
             return new(VoiceFailure.ReadFailed);
@@ -85,7 +83,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
         {
             return new(Data: await ProfileAsync(actorId, ct));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to record Voice ID consent of {UserId}", actorId);
             return new(VoiceFailure.SaveFailed);
@@ -100,7 +98,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
                 token => erasure.EndAsync(actorId, actorId, VoiceIdEndReason.Withdrawn, token), ct);
             return new(Data: await ProfileAsync(actorId, ct));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to withdraw Voice ID of {UserId}", actorId);
             return new(VoiceFailure.SaveFailed);
@@ -118,7 +116,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
             if (await repository.FindActiveConsentAsync(actorId, false, ct) is null) return new(VoiceFailure.NoConsent);
             if (OwnCount(await repository.ListSamplesAsync(actorId, ct)) >= VoiceIdRules.MaxSamples) return new(VoiceFailure.LimitReached);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read Voice ID of {UserId}", actorId);
             return new(VoiceFailure.SaveFailed);
@@ -176,7 +174,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
                 return new VoiceOutcome(Data: new VoiceSampleView(id, now, embedding.SpeechMs, sample.AudioCiphertext is not null));
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to store a voice sample of {UserId}", actorId);
             return new(VoiceFailure.SaveFailed);
@@ -197,7 +195,7 @@ public sealed class VoiceIdService(IVoiceIdRepository repository, IVoiceIdErasur
             await repository.SaveChangesAsync(ct);
             return new(Data: await ProfileAsync(actorId, ct));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to delete voice sample {SampleId}", sampleId);
             return new(VoiceFailure.SaveFailed);

@@ -1,7 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
@@ -11,6 +10,7 @@ using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Votes;
 using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Domain.GuestAccess;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Votes;
 
@@ -33,10 +33,6 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         "ix_document_read_confirmations_meeting_document_id_guest_invit"
     ];
 
-    // The execution strategy wraps a transient failure in InvalidOperationException, as ParticipantService handles.
-    private static bool Persistence(Exception ex) =>
-        ex is DbUpdateException or NpgsqlException or TimeoutException
-            or InvalidOperationException { InnerException: NpgsqlException or TimeoutException };
     private DateTimeOffset Now => AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
 
     /// <summary>
@@ -73,7 +69,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
                     r.IsAnonymous, Roles(r), r.OpenedAt, r.ClosedAt, r.EligibleCount, r.ReceiptCount, r.HasVoted,
                     Conclusion(r), r.DocumentCount, Actions(meeting, viewer!, r, anyOpen))).ToArray()));
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read votes of meeting {MeetingId}", meetingId);
             return new(VoteFailure.ListReadFailed);
@@ -104,7 +100,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
                 r.EligibleCount, r.ReceiptCount, r.IsEligible, r.HasVoted, Conclusion(r), r.DocumentCount, attached, result,
                 Actions(meeting, viewer!, r, anotherOpen)));
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read vote {VoteId} of meeting {MeetingId}", voteId, meetingId);
             return new(VoteFailure.DetailReadFailed);
@@ -156,18 +152,18 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             };
             change = new(Guid.CreateVersion7(), meetingId, vote!.Id, changeType, opened ? vote.Title : null, now);
         }
-        catch (DbUpdateException ex) when (Violates(ex, OpenVoteIndex))
+        catch (Exception ex) when (DbErrors.IsUniqueViolation(ex, OpenVoteIndex))
         {
             db.ChangeTracker.Clear();
             return new(VoteFailure.AnotherOpen);
         }
-        catch (DbUpdateException ex) when (ReceiptIndexes.Any(index => Violates(ex, index)))
+        catch (Exception ex) when (ReceiptIndexes.Any(index => DbErrors.IsUniqueViolation(ex, index)))
         {
             // Two simultaneous ballots by the same person: the database kept the first (BR-258).
             db.ChangeTracker.Clear();
             return new(VoteFailure.AlreadyCast);
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             db.ChangeTracker.Clear();
             logger.LogError(ex, "Failed vote {Operation} for meeting {MeetingId}", operation, meetingId);
@@ -218,7 +214,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
                 return new(VoteFailure.NotFound);
             if (!VoteRules.CanManageDraft(s!.Meeting, viewer!) || r.Status != VotingStatus.Draft) return new(VoteFailure.DraftDenied);
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to check document upload to vote {VoteId} of meeting {MeetingId}", voteId, meetingId);
             return new(VoteFailure.SaveFailed);
@@ -291,14 +287,14 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             await tx.CommitAsync(ct);
             return new(Data: new DocumentReadView(meetingDocumentId, now, false));
         }
-        catch (DbUpdateException ex) when (ReadConfirmationIndexes.Any(index => Violates(ex, index)))
+        catch (Exception ex) when (ReadConfirmationIndexes.Any(index => DbErrors.IsUniqueViolation(ex, index)))
         {
             // The same person ticked twice at once: the first confirmation stands.
             db.ChangeTracker.Clear();
             var existing = await votes.FindReadConfirmationAsync(meetingDocumentId, viewer!, ct);
             return new(Data: new DocumentReadView(meetingDocumentId, existing!.ConfirmedAt, true));
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             db.ChangeTracker.Clear();
             logger.LogError(ex, "Failed to confirm reading document {DocumentId} of meeting {MeetingId}", meetingDocumentId, meetingId);
@@ -545,8 +541,4 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
 
     private static VoteConclusionView? Conclusion(VoteRow r) => r.Conclusion is { } value
         ? new(value.ToString(), r.ConclusionNote, r.ConcludedById, r.ConcludedByName, r.ConcludedAt) : null;
-
-    private static bool Violates(DbUpdateException ex, string index)
-        => ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } postgres
-            && postgres.ConstraintName == index;
 }

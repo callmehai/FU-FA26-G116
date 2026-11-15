@@ -2,9 +2,9 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
@@ -32,8 +32,6 @@ public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage stor
     /// </summary>
     public Task<long> UsedBytesAsync(CancellationToken ct)
         => db.StoredFiles.Where(f => f.PurgedAt == null).SumAsync(f => f.ByteSize, ct);
-
-    public static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
     /// <summary>
     /// <paramref name="commit"/> runs in the transaction with the new rows and the upload time; it is committed
@@ -71,7 +69,7 @@ public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage stor
             await db.SaveChangesAsync(ct);
             await reserve.CommitAsync(ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to record uploaded files of {ActorId}", actorId);
             return failed;
@@ -112,7 +110,7 @@ public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage stor
         {
             // Any failure here, not only a database one: the purge would get them, but not for a day.
             await ReleaseAsync(stored, written);
-            if (!PersistenceError(ex)) throw;
+            if (!DbErrors.IsPersistenceFailure(ex)) throw;
             logger.LogError(ex, "Failed to save uploaded files of {ActorId}", actorId);
             return failed;
         }
@@ -145,7 +143,7 @@ public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage stor
             await db.StoredFiles.Where(f => gone.Contains(f.Id))
                 .ExecuteUpdateAsync(u => u.SetProperty(f => f.PurgedAt, now), CancellationToken.None);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogWarning(ex, "Could not release the storage of a failed upload");
         }

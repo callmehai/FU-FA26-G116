@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -11,6 +10,7 @@ using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.VoiceId;
 
 namespace TrustCabinet.Infrastructure.Transcription;
@@ -25,8 +25,6 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
     IVoiceprintProtector protector, IOptions<VoiceIdOptions> voiceOptions, IAuditService audit,
     ISpeechChangePublisher publisher, TimeProvider clock, ILogger<TranscriptionService> logger) : ITranscriptionService
 {
-    private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
-
     public async Task<TranscriptOutcome> GetAsync(Guid recordingId, Guid actorId, CancellationToken ct = default)
     {
         try
@@ -62,7 +60,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     s.AssignedGuestId, AutoAssigned(s)))],
                 people, canExport && transcript.Status == TranscriptStatus.Completed));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read transcript of {RecordingId}", recordingId);
             return new(TranscriptFailure.ReadFailed);
@@ -100,7 +98,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 return new TranscriptOutcome();
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to queue transcription of {RecordingId}", recordingId);
             return new(TranscriptFailure.SaveFailed);
@@ -129,7 +127,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 new { recording.MeetingId, segments = transcript.Segments.Count }, ct);
             return new(Data: new ExportedText(TranscriptText.FileName(meeting.ActualStartedAt ?? recording.CreatedAt), text));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to export the transcript of {RecordingId}", recordingId);
             return new(TranscriptFailure.ReadFailed);
@@ -171,7 +169,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
             await transcripts.SaveChangesAsync(ct);
             return new(Data: new { segmentId, text = trimmed, editedAt = now });
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to edit transcript segment {SegmentId}", segmentId);
             return new(TranscriptFailure.SaveFailed);
@@ -213,7 +211,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                     AssignedGuestId: guestId));
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to name speaker {Label} of {RecordingId}", label, recordingId);
             return new(TranscriptFailure.SaveFailed);
@@ -301,7 +299,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 return new(Data: new { segmentId, speakerLabel = target, previousLabel = from, newVoice = created is not null });
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to move transcript segment {SegmentId} to another voice", segmentId);
             return new(TranscriptFailure.SaveFailed);

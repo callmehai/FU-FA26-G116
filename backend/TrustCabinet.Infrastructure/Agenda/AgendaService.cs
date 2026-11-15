@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.GuestAccess;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Agenda;
 
@@ -13,7 +13,6 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
     IAgendaDocumentRepository documents, IAgendaChangePublisher publisher, TimeProvider clock,
     ILogger<AgendaService> logger, IAgendaGuestAccess guests, IAgendaPresenterNotifier notifier) : IAgendaService
 {
-    private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
     private DateTimeOffset Now => AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
 
     public Task<AgendaOutcome> GetAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
@@ -32,7 +31,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                 return new(AgendaFailure.NotFound);
             return await SnapshotAsync(meeting, null, false, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read guest agenda {MeetingId}", meetingId);
             return new(AgendaFailure.ReadFailed);
@@ -60,7 +59,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
             }
             return await SnapshotAsync(meeting, actorId, planning, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read agenda {MeetingId}", meetingId);
             return new(AgendaFailure.ReadFailed);
@@ -249,7 +248,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
                 return new(ItemId: item?.Id);
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed agenda {Operation} for meeting {MeetingId}", operation, meetingId);
             return new(AgendaFailure.SaveFailed);

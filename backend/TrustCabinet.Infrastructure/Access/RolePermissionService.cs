@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Access;
 
@@ -129,13 +129,13 @@ public sealed class RolePermissionService(
         {
             await roles.SaveChangesAsync(ct);
         }
-        catch (Exception exception) when (exception is DbUpdateException or NpgsqlException)
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             // MSG18 — the diagram's "Permission configuration cannot be saved". Caught rather
             // than left to surface as a bare 500, because the diagram gives this its own branch
             // and because "retry" is the right advice for it, unlike for a validation failure.
             //
-            // NpgsqlException as well as DbUpdateException: EF wraps a constraint violation, but
+            // Any storage failure, not only a refused save: EF wraps a constraint violation, but
             // a dropped connection or a lock timeout comes straight from the driver, and those
             // are exactly the transient failures the branch is meant to describe.
             logger.LogError(

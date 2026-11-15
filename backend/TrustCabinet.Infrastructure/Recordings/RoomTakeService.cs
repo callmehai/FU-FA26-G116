@@ -2,13 +2,13 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Recordings;
 
@@ -26,8 +26,6 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
     TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RoomTakeService> logger) : IRoomTakeService
 {
     private static readonly TimeSpan Vietnam = TimeSpan.FromHours(7);
-
-    private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
     private long MaxBytes => options.Value.MaxUploadMegabytes * 1024L * 1024;
 
@@ -80,11 +78,11 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             if (kept) await PublishAsync(meetingId, ct);
             return outcome;
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (Exception ex) when (DbErrors.IsUniqueViolation(ex))
         {
             return new(RecordingFailure.TakeOpen);
         }
-        catch (Exception ex) when (PersistenceError(ex) || ex is IOException)
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is IOException)
         {
             logger.LogError(ex, "Failed to open a room-mic take for {MeetingId}", meetingId);
             return new(RecordingFailure.SaveFailed);
@@ -128,7 +126,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 return new RecordingOutcome(RecordingId: take.Id);
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex) || ex is IOException)
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is IOException)
         {
             logger.LogError(ex, "Failed to write part {Part} of take {RecordingId}", part, recordingId);
             return new(RecordingFailure.SaveFailed);
@@ -160,7 +158,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             if (outcome.Failure == RecordingFailure.None) await PublishAsync(found.MeetingId, ct);
             return outcome;
         }
-        catch (Exception ex) when (PersistenceError(ex) || ex is IOException)
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is IOException)
         {
             logger.LogError(ex, "Failed to save take {RecordingId}", recordingId);
             return new(RecordingFailure.SaveFailed);
@@ -309,7 +307,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             if (outcome.Failure == RecordingFailure.None) await PublishAsync(found.MeetingId, ct);
             return outcome;
         }
-        catch (Exception ex) when (PersistenceError(ex) || ex is IOException)
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is IOException)
         {
             logger.LogError(ex, "Failed to erase take {Take} of {RecordingId}", take, recordingId);
             return new(RecordingFailure.SaveFailed);
