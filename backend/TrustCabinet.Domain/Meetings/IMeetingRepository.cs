@@ -53,8 +53,12 @@ public interface IMeetingRepository
     Task StageCancellationAsync(
         Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default);
 
-    /// <param name="previous">The planned start and end before this reschedule, which the Guest's email shows struck through.</param>
-    Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, (DateTimeOffset Start, DateTimeOffset End) previous,
+    /// <summary>
+    /// Emails every invitee and Guest of a Published meeting its new time (PO 15/11/2026: internal invitees too, not
+    /// only the bell).
+    /// </summary>
+    /// <param name="previous">The planned start and end before this reschedule, which the email shows struck through.</param>
+    Task StageRescheduleInvitationsAsync(Meeting meeting, Guid historyId, (DateTimeOffset Start, DateTimeOffset End) previous,
         DateTimeOffset now, CancellationToken ct = default)
         => Task.CompletedTask;
 

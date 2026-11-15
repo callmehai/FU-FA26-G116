@@ -382,7 +382,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
-    public async Task Reschedule_notifies_current_guests_atomically_and_deduplicates_each_event()
+    public async Task Reschedule_emails_every_invitee_and_current_guest_atomically_and_deduplicates_each_event()
     {
         var s = await f.Seed(); var initialId = await AddGuest(s);
         var links = new Links { Result = new(GuestLinkStatus.Ready, "https://meetings.test/guest/verify?key=test-only") };
@@ -413,13 +413,20 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         Assert.Single(await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync());
         Assert.Equal(MeetingOutcome.Success, (await Reschedule(input)).Outcome);
         var history = await db.MeetingStatusHistory.SingleAsync(h => h.MeetingId == s.MeetingId);
-        var dispatch = Assert.Single(await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId && d.Id != initialId).ToArrayAsync());
+        var dispatch = Assert.Single(await db.MeetingInvitationDispatches
+            .Where(d => d.MeetingId == s.MeetingId && d.Id != initialId && d.GuestInvitationId != null).ToArrayAsync());
+        // PO 15/11/2026: every internal invitee gets the email too, the organizer who moved it included.
+        var internals = await db.MeetingInvitationDispatches
+            .Where(d => d.MeetingId == s.MeetingId && d.ParticipantId != null && d.EventKind == InvitationEventKind.Rescheduled).ToArrayAsync();
+        var invitees = await db.MeetingParticipants.CountAsync(p => p.MeetingId == s.MeetingId && p.RemovedAt == null);
+        Assert.Equal(invitees, internals.Length);
+        Assert.All(internals, d => Assert.Equal(history.Id, d.EventId));
         Assert.Equal(guest.Id, dispatch.GuestInvitationId);
         Assert.Equal(history.Id, dispatch.EventId);
         Assert.Contains(history.Id.ToString(), dispatch.DeduplicationKey);
         Assert.Equal(3, await db.Notifications.CountAsync(n => n.MeetingId == s.MeetingId && n.Type == NotificationType.MeetingRescheduled));
         Assert.Equal(MeetingOutcome.Success, (await Reschedule(input)).Outcome);
-        Assert.Equal(2, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
+        Assert.Equal(2 + invitees, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
         Assert.Equal(1, (await Task.WhenAll(Process(dispatch.Id, links), Process(dispatch.Id, links))).Sum());
         var email = await db.EmailMessages.SingleAsync(e => e.DeduplicationKey == dispatch.DeduplicationKey);
         Assert.Contains("dời lịch", email.Subject);
@@ -430,8 +437,14 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         Assert.Contains("line-through", email.HtmlBody);
         Assert.DoesNotContain("Phòng mới", email.HtmlBody);
         Assert.Equal(guest.Email, email.ToAddress);
+        var mine = internals[0];
+        Assert.Equal(1, await Process(mine.Id, links));
+        var staffEmail = await db.EmailMessages.SingleAsync(e => e.DeduplicationKey == mine.DeduplicationKey);
+        Assert.Contains("dời lịch", staffEmail.Subject);
+        Assert.Contains("Thời gian cũ", staffEmail.HtmlBody);
+        Assert.Contains($"/mgmt/meetings/{s.MeetingId:D}", staffEmail.HtmlBody);
         Assert.Equal(MeetingOutcome.Success, (await Reschedule(input with { PlannedStartTime = f.Clock.Now.AddDays(2).ToString("O"), PlannedEndTime = f.Clock.Now.AddDays(2).AddHours(1).ToString("O") })).Outcome);
-        Assert.Equal(3, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
+        Assert.Equal(3 + 2 * invitees, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));
     }
 
     [Fact]

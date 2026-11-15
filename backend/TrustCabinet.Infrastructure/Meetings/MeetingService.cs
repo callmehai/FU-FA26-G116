@@ -314,7 +314,7 @@ public sealed class MeetingService(
         };
         meeting.StatusHistory.Add(history);
         await meetings.AddHistoryAsync(history, ct);
-        await meetings.StageGuestRescheduleInvitationsAsync(meeting, history.Id, previous, now, ct);
+        await meetings.StageRescheduleInvitationsAsync(meeting, history.Id, previous, now, ct);
         // The organizer who moved it is not told of their own change, as for Publish.
         await meetings.AddNotificationsAsync(
             MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants)

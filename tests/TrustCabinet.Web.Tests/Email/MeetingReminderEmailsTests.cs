@@ -88,6 +88,40 @@ public sealed class MeetingReminderEmailsTests
         Assert.Contains("Phòng họp A", email.HtmlBody);
     }
 
+    [Fact]
+    public async Task Someone_invited_inside_the_window_is_not_emailed_twice()
+    {
+        await using var db = NewDb();
+        var organizer = NewUser("thu@example.vn", "Lê Thị Thu");
+        var early = NewUser("an@example.vn", "Nguyễn Văn An");
+        var late = NewUser("binh@example.vn", "Trần Văn Bình");
+        var meeting = NewMeeting(organizer, Now.AddMinutes(10));
+        db.Users.AddRange(organizer, early, late);
+        db.Meetings.Add(meeting);
+        var invitedEarly = new MeetingParticipant { MeetingId = meeting.Id, UserId = early.Id, Role = MeetingRole.Member };
+        var invitedLate = new MeetingParticipant { MeetingId = meeting.Id, UserId = late.Id, Role = MeetingRole.Member };
+        var guest = new MeetingGuestInvitation { MeetingId = meeting.Id, InvitedName = "Khách Hoa", Email = "hoa@guest.vn", InvitedById = organizer.Id };
+        db.MeetingParticipants.AddRange(invitedEarly, invitedLate);
+        db.MeetingGuestInvitations.Add(guest);
+        // An hour ago for one; two minutes ago — inside the 15 minutes before the start — for the other and the Guest.
+        db.MeetingInvitationDispatches.AddRange(
+            Invited(meeting, invitedEarly.Id, null, Now.AddHours(-1)),
+            Invited(meeting, invitedLate.Id, null, Now.AddMinutes(-2)),
+            Invited(meeting, null, guest.Id, Now.AddMinutes(-2)));
+        await db.SaveChangesAsync();
+
+        Assert.Equal(1, await NewService(db).QueueDueAsync());
+
+        Assert.Equal("an@example.vn", (await db.EmailMessages.SingleAsync()).ToAddress);
+    }
+
+    private static MeetingInvitationDispatch Invited(Meeting meeting, Guid? participant, Guid? guest, DateTimeOffset at) => new()
+    {
+        EventId = Guid.CreateVersion7(), MeetingId = meeting.Id, ParticipantId = participant, GuestInvitationId = guest,
+        EventKind = InvitationEventKind.Invitation, DeduplicationKey = $"test:{Guid.CreateVersion7():D}", PayloadJson = "{}",
+        CreatedAt = at, UpdatedAt = at,
+    };
+
     private static MeetingReminderEmails NewService(TrustCabinetDbContext db)
         => new(db, new Links(), Options.Create(new EmailDeliveryOptions { ApplicationBaseUrl = "https://hop.example.vn" }), new Clock());
 

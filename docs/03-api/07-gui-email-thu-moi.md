@@ -51,8 +51,8 @@ SMTP được kết nối bằng MailKit và không phụ thuộc Gmail hay mộ
 Mỗi thư Publish gồm nội dung tiếng Việt, thông tin Meeting, địa điểm/hình thức và đường dẫn trực tiếp
 tới `/mgmt/meetings/{id}`. Thư ghi giờ bắt đầu/kết thúc theo giờ Việt Nam và đính kèm `thu-moi-hop.ics`
 (`DTSTART`/`DTEND` từ `plannedStartTime`/`plannedEndTime`). Họp trực tuyến ghi link, hoặc "Phòng họp trực
-tuyến TrustCabinet" khi không có link. Dời lịch chưa gửi email cập nhật; người được mời nhận thông báo
-trong ứng dụng.
+tuyến TrustCabinet" khi không có link. Dời lịch gửi thư "Cuộc họp đã dời lịch" (bảng dưới) kèm chuông trong ứng
+dụng. Thư huỷ đính kèm `huy-hop.ics` (`METHOD:CANCEL`) để trình lịch gỡ sự kiện.
 
 ## Điểm tích hợp với SCRUM-19
 
@@ -97,7 +97,7 @@ Thư mã xác minh không có link: trang xác minh tự gửi mã mới mỗi l
 |---|---|---|
 | Lời mời tham dự | người trong roster, Khách | Xem cuộc họp / Xác minh email để vào cuộc họp |
 | Vai trò đã thay đổi | người trong roster | Xem cuộc họp |
-| Cuộc họp đã dời lịch | Khách | Xác minh email để vào cuộc họp |
+| Cuộc họp đã dời lịch | người trong roster (cả người tổ chức vừa dời), Khách | Xem cuộc họp / Xác minh email để vào cuộc họp |
 | Cuộc họp đã bị huỷ | người đã nhận lời mời, Khách | không |
 | Lời mời đã được thu hồi | người đã nhận lời mời, Khách | không |
 | Phân công trình bày | Khách được gán trình bày | Xác minh email để vào cuộc họp |
@@ -106,11 +106,14 @@ Thư mã xác minh không có link: trang xác minh tự gửi mã mới mỗi l
 | Cuộc họp sắp bắt đầu | người được mời đang hoạt động, Khách hiện tại | Vào phòng họp (phòng TrustCabinet) / Xem cuộc họp / Xác minh email để vào cuộc họp (Khách) |
 | Biên bản đã ban hành, bản đính chính đã ban hành | đúng những người nhận chuông "Biên bản đã ban hành", trừ Chủ toạ vừa duyệt | Xem biên bản (mở tab Biên bản) |
 
-**Hai thư thêm theo PO 15/11/2026** (ngoài BR-303 và BR-411 hiện ghi chỉ trong ứng dụng, chờ BA cập nhật):
+**Thêm theo PO 15/11/2026** (ngoài BR-303, BR-411 và quy tắc dời lịch hiện ghi chỉ trong ứng dụng, chờ BA cập nhật):
+- Dời lịch: trước chỉ Khách nhận email, người nội bộ chỉ có chuông. Giờ mọi người trong roster nhận email, gạch thời gian
+  cũ cạnh thời gian mới; chuông vẫn không gửi cho người tổ chức vừa dời.
 - Nhắc họp: `MeetingReminderEmails` chạy cùng nhịp `NotificationWorker` với chuông nhắc, trong 15 phút trước giờ bắt đầu
   của cuộc họp Đã công bố. Khoá chống trùng `email-starting-soon:{meetingId}:{giờ bắt đầu}:{người}` giữ giờ bắt đầu, nên dời
   lịch thì nhắc lại theo giờ mới. Khác chuông, thư nhắc tới cả Khách (Khách không có chuông), kèm link xác minh; không tạo
-  được link thì không gửi thư cho Khách đó.
+  được link thì không gửi thư cho Khách đó. Ai được mời trong chính 15 phút đó (thư mời tạo sau giờ bắt đầu trừ 15 phút)
+  thì không nhận thư nhắc, vì thư mời vừa tới đã ghi giờ họp; chuông nhắc vẫn có.
 - Biên bản ban hành: đưa vào hàng đợi trong cùng giao dịch duyệt biên bản, khoá `email-minutes-issued:{minutesId}:{người}`.
   Thư biên bản họp Mật không nhắc tải Word/PDF vì biên bản Mật chỉ đọc trên màn hình.
 

@@ -76,7 +76,7 @@ internal sealed class ResendEmailSender(
             :
             [
                 new Attachment(
-                    Filename: "thu-moi-hop.ics",
+                    Filename: CalendarInvitationBuilder.FileNameOf(message.CalendarAttachment),
                     Content: Convert.ToBase64String(Encoding.UTF8.GetBytes(message.CalendarAttachment)),
                     ContentType: $"text/calendar; charset=utf-8; method={CalendarInvitationBuilder.MethodOf(message.CalendarAttachment)}"),
             ],
