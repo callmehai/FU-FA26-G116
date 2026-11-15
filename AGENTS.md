@@ -18,8 +18,10 @@ and the draft minutes from the one fixed template (SCRUM-32, UC-58–UC-60) run 
 ([ADR-0054](docs/05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)), and sending the minutes for approval,
 approving (which issues them), returning and correcting them (SCRUM-33, UC-61, UC-64, UC-65, UC-83) are built too.
 Signing the minutes, even a simulated signature (SCRUM-37, UC-62–UC-63), and the Secretary's list of document
-comments (SCRUM-106) were dropped by the PO on 2026-11-14 — do not build them. Register to Speak (SCRUM-27, UC-79)
-has its backend but no screen yet. Check the code before assuming a feature exists.
+comments (SCRUM-106) were dropped by the PO on 2026-11-14 — do not build them, nor the personal dashboard and
+meeting workspace (UC-69) or locking an account after wrong passwords (UC-09), dropped on 2026-11-15; the per-minute
+sign-in limit (MSG414) stays. Register to Speak (SCRUM-27, UC-79) is built: raising a hand in the online room, the
+Phát biểu panel and the chair's Mời. Check the code before assuming a feature exists.
 
 The EF Core model covers the whole backlog: access, meetings, agenda, documents, voting, recordings,
 transcripts, minutes, notifications, audit and calls.
