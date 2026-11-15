@@ -239,9 +239,12 @@ bool IsConcurrencyConflict(Exception exception)                       // DbUpdat
   gốc, như fake trong unit test ném ra, thì xét theo kiểu.
 - `IsPersistenceFailure` đúng với cả ba loại hẹp hơn. Vì vậy `catch` cho unique, reference, concurrency phải đứng
   **trước** `catch` dùng `IsPersistenceFailure`, như thứ tự code cũ.
-- Mọi hàm xét cả chuỗi `InnerException`: vi phạm ném trần từ SQL thô hoặc `ExecuteUpdateAsync`, và vi phạm bọc trong
-  `InvalidOperationException` của execution strategy, cũng được nhận ra. Bộ lọc cũ kiểu
-  `DbUpdateException { InnerException: PostgresException }` chỉ thấy dạng EF bọc một lớp.
+- Vi phạm unique và reference được tìm trong cả chuỗi `InnerException`: vi phạm ném trần từ SQL thô hoặc
+  `ExecuteUpdateAsync`, và vi phạm bọc trong `InvalidOperationException` của execution strategy, cũng được nhận ra.
+  Bộ lọc cũ kiểu `DbUpdateException { InnerException: PostgresException }` chỉ thấy dạng EF bọc một lớp.
+- Hai loại còn lại không dò chuỗi. Concurrency chỉ xét chính exception đó: `InvalidOperationException` bọc
+  `DbUpdateConcurrencyException` là lỗi lưu trữ thường, không phải concurrency. Lỗi lưu trữ khác xét chính exception
+  đó, hoặc đúng một lớp `InvalidOperationException` bọc ngoài; bọc hai lớp thì không còn là lỗi lưu trữ.
 - Tên index vẫn là hằng trong file đang dùng nó; subtask của module chuyển nó vào bảng của translator cùng lúc đổi
   `catch` sang `UniqueConflictException`.
 - Sau CA-01, `using Npgsql` ở Infrastructure chỉ còn trong `Persistence/PersistenceExceptionTranslator.cs`,

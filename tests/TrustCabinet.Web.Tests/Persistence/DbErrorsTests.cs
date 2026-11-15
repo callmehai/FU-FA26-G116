@@ -93,7 +93,9 @@ public sealed class DbErrorsTests
         new InvalidOperationException("transient", new NpgsqlException("connection reset")),
         new InvalidOperationException("transient", new TimeoutException()),
         new InvalidOperationException("transient",
-            new DbUpdateException("save failed", Postgres(PostgresErrorCodes.SerializationFailure))));
+            new DbUpdateException("save failed", Postgres(PostgresErrorCodes.SerializationFailure))),
+        // A concurrency conflict is judged on the exception itself: wrapped, it is only a failed save.
+        new InvalidOperationException("transient", new DbUpdateConcurrencyException("0 rows")));
 
     [Theory]
     [MemberData(nameof(OtherStorageFailures))]
@@ -115,6 +117,11 @@ public sealed class DbErrorsTests
         Assert.True(DbErrors.IsConcurrencyConflict(new ConcurrencyConflictException()));
         Assert.True(DbErrors.IsPersistenceFailure(new PersistenceUnavailableException()));
         Assert.False(DbErrors.IsUniqueViolation(new PersistenceUnavailableException()));
+
+        // The same when what it carries is not a database exception.
+        var carriesSomethingElse = new UniqueConflictException(UniqueConflict.Unknown, new Exception("fake"));
+        Assert.True(DbErrors.IsUniqueViolation(carriesSomethingElse));
+        Assert.False(DbErrors.IsReferenceViolation(carriesSomethingElse));
     }
 
     public static TheoryData<Exception> NotStorage => new()
