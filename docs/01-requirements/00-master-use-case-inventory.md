@@ -118,7 +118,6 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-06 | Quản lý tài khoản *(Manage User Accounts)* — gồm UC-06a Tạo, UC-06b Cập nhật, UC-06c Vô hiệu hoá / Kích hoạt lại | System Admin | Đã đặc tả | `<<extend>>` UC-05 |
 | UC-07 | Đặt lại mật khẩu *(Reset User Password)* | System Admin; Email / SMTP | Đã đặc tả | `<<extend>>` UC-05 |
 | UC-08 | Gán vai trò hệ thống *(Assign System Role to User)* | System Admin | Đã đặc tả | `<<extend>>` UC-05 |
-| UC-09 | Mở khoá tài khoản *(Unlock User Account)* | System Admin | Đã đặc tả | `<<extend>>` UC-05 |
 
 ## FE-03 — Kiểm soát truy cập theo vai trò *(Role-Based Access Control)*
 
@@ -246,12 +245,6 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-67 | Đánh dấu đã đọc *(Mark Notifications as Read)* — gồm UC-67a Một thông báo, UC-67b Tất cả | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-66 |
 | UC-68 | Mở đối tượng từ thông báo *(Open Notification Target)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-66 |
 
-## FE-14 — Dashboard cá nhân & Không gian họp *(Personal Dashboard & Meeting Workspace)*
-
-| UC | Tên | Actor | Đặc tả | Quan hệ |
-|---|---|---|---|---|
-| UC-69 | Xem dashboard cá nhân & không gian họp *(View Personal Dashboard & Meeting Workspace)* | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Placeholder | Độc lập |
-
 ## FE-15 — Báo cáo & Thống kê *(Reporting & Statistics)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
@@ -366,7 +359,7 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
 | FE | Feature | Số UC | UC con |
 |---|---|---:|---:|
 | FE-01 | Authentication & Account Security | 4 | — |
-| FE-02 | User & Profile Management | 5 | 3 |
+| FE-02 | User & Profile Management | 4 | 3 |
 | FE-03 | Role-Based Access Control | 4 | 3 |
 | FE-04 | Meeting Management | 10 | — |
 | FE-05 | Agenda Management | 5 | 4 |
@@ -378,9 +371,8 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
 | FE-11 | Voting Management | 7 | 4 |
 | FE-12 | Meeting Minutes & Approval | 7 | — |
 | FE-13 | Email & In-App Notification | 3 | 2 |
-| FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **81** | **63** |
+| **Tổng** | | **79** | **63** |
 
 # 8. Ngoài phạm vi UC
 
@@ -392,6 +384,9 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
   đó hết hiệu lực (UC-28c POST-2); Khách đăng xuất chỉ kết thúc phiên của chính họ (UC-04). Chỉ mở lại khi hội đồng hoặc PO yêu cầu.
 - PO chốt 14/11/2026, không làm:
   - Ký số biên bản, kể cả bản mô phỏng (SCRUM-37 đóng; UC-62, UC-63 bỏ). Biên bản dừng ở Chủ tọa duyệt là ban hành (UC-64).
+- PO chốt 15/11/2026, không làm (SCRUM-207, QA 15/11):
+  - Mở khoá tài khoản (UC-09 bỏ hẳn; không khoá khi nhập sai mật khẩu; giới hạn đăng nhập theo phút MSG414 giữ nguyên).
+  - Dashboard cá nhân & Không gian họp (UC-69/FE-14 bỏ hẳn; chỉ giữ bốn thẻ đếm trên danh sách cuộc họp).
   - Thư ký gom góp ý trên tài liệu thành danh sách để đưa vào nghị sự (SCRUM-106 đóng). Bình luận trên tài liệu cuộc họp
     vẫn có (SCRUM-23).
   - Thu giọng mẫu (Voice ID) của Khách (SCRUM-136 đóng). Khách trực tuyến đã có tên theo micro của chính họ; câu của Khách
