@@ -29,9 +29,16 @@ Làm **sau note 45** (số BR lấy tiếp).
 - [ ] State machine [SM-01_Meeting](../../10-statemachine/): chuyển `InProgress → Ended` thêm sự kiện "quá 24 giờ sau giờ kết thúc dự kiến" của hệ thống. Kiểm SM-01 còn nhắc 4 giờ không.
 - [ ] ERD: `MeetingStatusHistory` action thêm `AutoEnd` (enum chuỗi).
 - [ ] Report 3 Change Log.
-- [ ] Jira (**chốt 13/11/2026**): comment vào **SCRUM-99** (ADR-0062 thay điểm 6 ADR-0032 của SCRUM-99, cùng worker với tự
-      huỷ BR-301), rồi nhắn leader một câu: "tự kết thúc #332 mình ghi ở SCRUM-99; cần ticket riêng thì báo". Không đổi
-      trạng thái SCRUM-99 chỉ vì comment này.
+- [ ] Jira: comment vào **SCRUM-99 sau khi PR #350 vào `main`**
+      (kiểm `git log origin/main` có merge commit rồi mới comment; **giữ `Done`, không đổi trạng thái**).
+      Nội dung (tiếng Việt):
+
+      > BA Final Review PR #332 xong (Report 3, PR #350 <merge-commit>): thêm BR-460 (hệ thống tự kết thúc
+      > họp Đang diễn ra quá 24 giờ sau giờ kết thúc dự kiến, actor Hệ thống, có nhật ký, không thông báo);
+      > BR-302 giữ Retired, trỏ sang BR-460; UC-22 không đổi luồng; SM-01 chuyển InProgress → Ended thêm
+      > sự kiện 24 giờ của hệ thống; ERD `MeetingStatusHistory.Action` thêm `AutoEnd`; sequence nền
+      > SYS_AutoEndForgottenMeeting (DRAFT, không số UC). Ghi ở SCRUM-99 vì ADR-0062 thay điểm 6 ADR-0032
+      > của ticket này (cùng worker tự huỷ BR-301). Không cần ticket riêng cho #332.
 
 ## 3. Dự thảo luồng UC (câu chữ cho Report 3) — chờ duyệt
 

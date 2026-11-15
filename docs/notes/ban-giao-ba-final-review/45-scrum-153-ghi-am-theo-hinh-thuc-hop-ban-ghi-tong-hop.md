@@ -82,7 +82,17 @@ Nhãn Tổng hợp trong tab Bản ghi, cảnh báo micro phòng trong hộp tho
 
 ### 2.6. Jira
 
-- [ ] Comment SCRUM-153 sau khi PR docs vào `main`, chuyển trạng thái theo §2.2 workflow.
+- [ ] Comment SCRUM-153 **sau khi PR #350 vào `main`** (kiểm `git log origin/main` có merge commit rồi mới comment).
+      Ticket đang `Done` — **giữ nguyên, chỉ comment**, không chuyển trạng thái. Nội dung (tiếng Việt):
+
+      > BA Final Review xong (Report 3, PR #350 <merge-commit>): sửa BR-340/342 theo bảng 3 hình thức họp;
+      > UC-44c chỉ họp trực tiếp + EX-8 MSG478 + nhắc micro phòng; UC-43a thêm AF-3 bản ghi tổng hợp;
+      > UC-43b/43c sửa câu; UC-44e POST không dựng lại sau khi xoá; UC-45c EX-4 MSG479; BR-455–458
+      > (nhắc micro phòng; tự dựng sau Ended theo giờ thật, lặng >2s còn 2s, quá 12h không dựng, không họp
+      > Mật; nguồn đổi dựng lại, xoá thì thôi; chỉ nghe không chuyển chữ); MSG478/479; ERD
+      > `RecordingSource.Combined`; sequence UC44c/UC43a/UC45c/UC44e (+ nháp SYS bản tổng hợp, DRAFT).
+      > Còn lại: đặc tả màn hình (nhãn Tổng hợp, cảnh báo micro phòng) — PENDING; BR-459 (Q2 tiếng vọng
+      > loa phòng) còn chờ PO duyệt có đưa vào SRS.
 
 ## 3. Câu hỏi
 

@@ -92,7 +92,17 @@ Giọng nói của tôi (tab Thư ký thu, `/mgmt/my-voice?tab=proxy`), hộp th
 
 ### 2.7. Jira
 
-- [ ] Comment SCRUM-152: UC/BR/MSG đã sửa, PR docs + commit, còn lại màn hình. Đổi trạng thái theo [DEVELOPMENT_WORKFLOW §2.2](../../DEVELOPMENT_WORKFLOW.md#22-closing-a-review-which-tickets-to-update) **sau khi** PR docs vào `main`.
+- [ ] Comment SCRUM-152 **sau khi PR #350 vào `main`** (kiểm `git log origin/main` có merge commit rồi mới comment).
+      Ticket đang `Done` — **giữ nguyên, chỉ comment**, không chuyển trạng thái. Nội dung (tiếng Việt):
+
+      > BA Final Review xong (Report 3, PR #350 <merge-commit>): UC-81a thêm AF-2 (tab Thư ký thu hộ) + sửa
+      > câu 81b–81f theo một lần đồng ý 1.3 cho cả hai bộ mẫu; UC-86a–86d mới cho Thư ký; BR-448–454
+      > (hai bộ mẫu mỗi bộ tối đa 5, quyền "Thu giọng mẫu hộ", chỉ Thư ký hiện tại của chính cuộc họp,
+      > họp trực tiếp/kết hợp không Mật, trạng thái Đã công bố/Đang họp, thông báo mỗi lần thu + nhật ký
+      > mỗi lần nghe, rút đồng ý xoá cả hai bộ); MSG473–477 (MSG471/472 ngừng dùng); ma trận phân quyền
+      > thêm "Thu giọng mẫu hộ"; ERD `voice_samples` thêm `collected_by_id`/`meeting_id`; sequence
+      > UC81a/b/f + UC86a–d (source + PNG + tab drawio); UC diagram trang Secretary.
+      > Còn lại: đặc tả màn hình (tab Thư ký thu, hộp thoại thu hộ) — PENDING, lùi sang lượt sau.
 
 ## 3. Câu hỏi
 
