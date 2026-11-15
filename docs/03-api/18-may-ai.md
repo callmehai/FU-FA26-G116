@@ -66,7 +66,8 @@ Chưa lưu lần nào thì `mode` là `Local`, các trường API rỗng, `updat
 
 Body: `{ mode, apiBaseUrl, apiModel, apiKey }`.
 
-- `mode`: `Local` hoặc `Api` (đúng chữ hoa thường).
+- `mode`: `Local` hoặc `Api` (đúng chữ hoa thường). Giá trị khác, kể cả `api` hay `LOCAL`, là `400 MSG409` với
+  `errors.mode`, khi lưu cũng như khi gọi thử (gọi thử không gọi ra ngoài).
 - `apiBaseUrl`: `https://…`, tối đa 500 ký tự, không chứa user/password; bắt buộc khi `mode` là `Api`. Chọn `Local` thì
   địa chỉ và model vẫn được giữ cho lần sau.
 - `apiModel`: không khoảng trắng, tối đa 100 ký tự; bắt buộc khi `Api`.
