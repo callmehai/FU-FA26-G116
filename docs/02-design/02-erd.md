@@ -6,13 +6,13 @@
 
 **Hiện thực Backend SCRUM-116 / UC-04 (30/10/2026):** hai bảng kỹ thuật `guest_verification_challenges` (mã OTP, chỉ lưu HMAC, số lần sai, thời điểm tiêu thụ) và `guest_sessions` (phiên Khách đã xác minh email, hạn 12 giờ, `revoked_at` khi đăng xuất), cùng khoá ngoại tới `meeting_guest_invitations` và xoá theo lời mời; `meeting_guest_invitations` thêm `self_declared_display_name`, `self_declared_job_title` (BR-180, tách khỏi `invited_name`/`email`). Không tạo `users` hay `meeting_participants` cho Khách. Từ 03/11/2026 `GuestSession` là **thực thể của mô hình đích** (một lời mời có nhiều phiên, mỗi thiết bị một phiên), còn `guest_verification_challenges` vẫn là bảng kỹ thuật không vẽ trong ERD. Chi tiết: [API UC-04 §6](../03-api/16-truy-cap-khach-uc04.md#6-lưu-trữ).
 
-Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **35 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018; `GuestSession` và `TranscriptSpeaker` ngày 03/11/2026; `SpeechClip`, `VoiceConsent` và `VoiceSample` ngày 03/11/2026 — `SpeechClip` có từ SCRUM-109 mà tài liệu này bỏ sót, hai bảng Voice ID theo ADR-0027). Bốn bảng nối (`MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`) không tính vào 35. Con số này khớp Report 3 §I.3.2 và các hình ERD ở [13-erd/](../13-erd/README.md). Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
+Tài liệu này mô tả **mô hình dữ liệu khái niệm/logic mục tiêu** của TrustCabinet để làm nguồn cho Report 3, không phải bản trích xuất schema hiện tại. Mô hình đích có đúng **37 thực thể nghiệp vụ/dữ liệu** (thêm `Folder` ngày 13/10/2026, ADR-0018; `GuestSession` và `TranscriptSpeaker` ngày 03/11/2026; `SpeechClip`, `VoiceConsent` và `VoiceSample` ngày 03/11/2026 — `SpeechClip` có từ SCRUM-109 mà tài liệu này bỏ sót, hai bảng Voice ID theo ADR-0027; `AiProviderSetting` SCRUM-36 và `CalendarShare` SCRUM-142). Bốn bảng nối (`MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`) không tính vào 37. Report 3 §I.3.2 hiện vẫn liệt kê 35 thực thể — thiếu `AiProviderSetting` và `CalendarShare`, chờ note BA Final Review của SCRUM-36/SCRUM-142 đưa vào; hai bảng này đã triển khai nên hình ở [13-erd/](../13-erd/README.md) vẽ đủ 37. Hệ thống được triển khai bằng EF Core code-first và PostgreSQL; thay đổi ERD không tự thay đổi entity, cấu hình, schema hay migration.
 
 **ERD thực thể–quan hệ:** [file drawio chỉnh sửa được](../13-erd/chen/trustcabinet-erd-chen.drawio) và
 [ảnh toàn bộ mô hình](../13-erd/chen/trustcabinet-erd-chen.drawio.png). Một ảnh chứa toàn bộ
 35 thực thể hình chữ nhật và 59 quan hệ hình thoi; action trong hình thoi dùng tiếng Anh.
-Bản dạng bảng ở [13-erd/muc-tieu](../13-erd/muc-tieu/README.md) vẽ lại theo code ngày 04/11/2026
-(sinh từ EF model snapshot bằng `scripts/draw_erd.py`): đủ 41 bảng — 35 thực thể đó, bốn bảng nối
+Bản dạng bảng ở [13-erd/muc-tieu](../13-erd/muc-tieu/README.md) vẽ lại theo code ngày 15/11/2026
+(sinh từ EF model snapshot bằng `scripts/draw_erd.py`): đủ 43 bảng — 37 thực thể đó, bốn bảng nối
 `MeetingDocumentAgendaItem`, `VoteEligibleVoter`, `VoteDocument`, `DocumentReadConfirmation`, và hai bảng
 kỹ thuật `MeetingInvitationDispatch`, `GuestVerificationChallenge`.
 Bội số thể hiện bằng đầu nối crow’s foot, không ghi số trên đường nối. Sơ đồ bỏ thuộc tính
@@ -49,7 +49,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | StoredFile | File bất biến trong kho đối tượng; kho cá nhân và cuộc họp chỉ tham chiếu tới nó | IMPLEMENTED (SCRUM-107) | Thay `DocumentVersion`; có OriginalFileName, PageCount, UploadedAt, PurgedAt (ADR-0018). Byte nằm trên Cloudflare R2 (ADR-0024); job dọn file mồ côi ghi PurgedAt. |
 | Folder | Thư mục trong kho cá nhân, lồng tối đa 5 cấp (như AI-eCabinet) | IMPLEMENTED (SCRUM-107, bảng) | `MeetingId` cho thư mục tự tạo khi tải thẳng vào cuộc họp, duy nhất theo (OwnerId, MeetingId) (ADR-0018). Giới hạn 5 cấp và thao tác thư mục thuộc UC-72 (SCRUM-58). |
 | MeetingDocument | Một dòng tài liệu trong cuộc họp, trỏ tới một StoredFile | IMPLEMENTED (SCRUM-107) | Tham chiếu StoredFile (không chép byte), Document nguồn tuỳ chọn (SetNull), gỡ bằng RemovedAt; unique (MeetingId, StoredFileId) khi RemovedAt null (ADR-0018). |
-| MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, bảng nối, không tính vào 35 thực thể) | IMPLEMENTED (SCRUM-107, bảng) | Theo ADR-0020: thay cột `AgendaItemId` đơn. Adapter Agenda đã hỗ trợ nhiều mục mỗi tài liệu trong SCRUM-98. |
+| MeetingDocumentAgendaItem | Bảng nối tài liệu cuộc họp ↔ mục nghị sự (Entity 20a, bảng nối, không tính vào 37 thực thể) | IMPLEMENTED (SCRUM-107, bảng) | Theo ADR-0020: thay cột `AgendaItemId` đơn. Adapter Agenda đã hỗ trợ nhiều mục mỗi tài liệu trong SCRUM-98. |
 | DocumentComment | Góp ý trong ngữ cảnh tài liệu đính kèm cuộc họp | IMPLEMENTED (SCRUM-107, bảng) | MeetingDocumentId; AuthorId nullable, GuestInvitationId (ADR-0016), check đúng một tác giả. Trả lời một cấp (BR-317) do SCRUM-23 kiểm. |
 | SpeakingRequest | Yêu cầu/lượt phát biểu | IMPLEMENTED (SCRUM-27, có endpoint) | Người giơ tay là thành viên (`UserId`) hoặc Khách (`GuestInvitationId`), check đúng một trong hai. Mỗi người một yêu cầu đang mở (`Queued`/`Invited`/`Speaking`) và mỗi cuộc họp tối đa một yêu cầu `Invited`/`Speaking`, cả hai do unique index có điều kiện ép (BR-337, BR-338). Giữ `InvitedAt`, `StartedAt`, `EndedAt` cho biên bản (BR-339). |
 | MeetingNote | Ghi chú thư ký | IMPLEMENTED | Giữ. |
@@ -57,10 +57,10 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | VotingOption | Phương án | IMPLEMENTED | `BallotCount` là tally của mọi phiếu, kể cả phiếu kín (SCRUM-28). |
 | VoteReceipt | Bằng chứng người bỏ phiếu đã bỏ phiếu | IMPLEMENTED (bảng); Guest thêm ở SCRUM-96 | Người bỏ phiếu là đúng một trong `VoterId` (User) và `GuestInvitationId` (Guest, ADR-0016); duy nhất theo (session, voter) và (session, guest). |
 | VoteChoice | Ai chọn gì trong phiếu **công khai** | IMPLEMENTED; Guest thêm ở SCRUM-96 | Phiếu kín không ghi dòng nào (SCRUM-28, migration `SecretBallotsCountedOnOptions`). Đúng một trong `VoterId` và `GuestInvitationId`; không có `CastAt`. Xem “Biểu quyết ẩn danh”. |
-| VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 35 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
-| VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 35 thực thể) | IMPLEMENTED (bảng: migration `VotesBelongToMeetingWithEligibleVotersAndDocuments`; endpoint: SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
-| DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu (bảng nối tài liệu ↔ người đọc, không tính vào 35 thực thể) | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
-| Recording | Bản ghi âm do Thư ký upload | NEED MIGRATION / RESTRUCTURE | Thêm `UploadedById`; `Source` chỉ còn `Upload`; giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
+| VoteEligibleVoter | Bảng nối Vote ↔ người được bỏ phiếu, chốt lúc mở (bảng nối, không tính vào 37 thực thể) | PLANNED (SCRUM-96) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (session, user) và (session, guest). Sinh từ `EligibleRoles` và quyền truy cập Meeting lúc mở; điểm danh không ảnh hưởng (BR-190). |
+| VoteDocument | Bảng nối Vote ↔ tài liệu cuộc họp (bảng nối, không tính vào 37 thực thể) | IMPLEMENTED (bảng: migration `VotesBelongToMeetingWithEligibleVotersAndDocuments`; endpoint: SCRUM-96) | Khoá (VotingSessionId, MeetingDocumentId). Gắn/gỡ chỉ khi Vote `Draft`, chốt khi mở (BR-287, BR-288); gỡ không xoá tài liệu khỏi cuộc họp (BR-305). |
+| DocumentReadConfirmation | Xác nhận đã đọc một tài liệu cuộc họp (UC-74); dùng chung mọi Vote gắn cùng tài liệu (bảng nối tài liệu ↔ người đọc, không tính vào 37 thực thể) | IMPLEMENTED (SCRUM-96, migration `DocumentReadConfirmations`) | Đúng một trong `UserId` và `GuestInvitationId`; duy nhất theo (MeetingDocumentId, user) và (MeetingDocumentId, guest). Không liên kết `VoteChoice` (BR-291, BR-293). Client phải đã tới trang cuối rồi mới xác nhận (BR-290). |
+| Recording | Bản ghi âm do Thư ký upload | NEED MIGRATION / RESTRUCTURE | Thêm `UploadedById`; `Source` (enum lưu chuỗi) có thêm `Combined` (bản tổng hợp họp kết hợp, ADR-0061, SCRUM-153); giữ consent, mục đích, lưu giữ và xóa dữ liệu cá nhân. |
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
 | TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. |
 | TranscriptSpeaker | Một giọng trong bản gỡ băng và người được gán tên (SCRUM-35) | IMPLEMENTED (migration `TranscriptSpeakerGuest`) | `TranscriptId`, `Label` (SPEAKER_00…), `SpeechMs`; máy gợi ý `SuggestedUserId` + `SuggestionScore`, và từ 03/11/2026 (ADR-0045) tự **điền** `AssignedUserId` khi điểm khớp đạt ngưỡng tự gán (mặc định 0,75) và người đó đã đồng ý thông báo 1.2; Thư ký gán hoặc đổi sang `AssignedUserId` **hoặc** `AssignedGuestId` (Khách còn lời mời). `AssignedById` rỗng nghĩa là máy điền, có người là Thư ký điền; cờ `autoAssigned` chỉ có trong phản hồi API, không lưu. Không lưu vector giọng. |
@@ -94,8 +94,9 @@ Các ERD bên dưới mô tả mô hình đích. Bảng trạng thái triển kh
 | Hoạt động trong cuộc họp | SpeakingRequest, MeetingNote, VotingSession, VotingOption, VoteReceipt, VoteChoice |
 | Bản ghi, biên bản và AI sau họp | Recording, Transcript, TranscriptSegment, TranscriptSpeaker, SpeechClip, VoiceConsent, VoiceSample, MeetingMinutes, MinutesSignature, MeetingSummary, AiProviderSetting |
 | Phòng họp trực tuyến | CallSession, CallParticipant, GuestSession |
+| Chia sẻ lịch | CalendarShare |
 
-Các nhóm trên gồm 35 thực thể; trạng thái triển khai được liệt kê riêng ở trên.
+Các nhóm trên gồm 37 thực thể; trạng thái triển khai được liệt kê riêng ở trên.
 
 ## 1. Truy cập, cuộc họp và thành phần tham dự
 
@@ -162,9 +163,10 @@ erDiagram
     MeetingStatusHistory {
         uuid Id PK
         uuid MeetingId FK
+        string Action "Create|SubmitForApproval|Approve|Reject|ReturnToDraft|Publish|TransferOrganizer|Reschedule|LegacyTransition|Start|End|Cancel|AutoCancel|AutoEnd; enum lưu chuỗi (AutoEnd = hệ thống tự kết thúc, ADR-0062)"
         string FromStatus "null ở bản ghi tạo mới"
         string ToStatus
-        uuid ActorId FK "nullable; null = hệ thống (tự huỷ cuộc họp quá hạn)"
+        uuid ActorId FK "nullable; null = hệ thống (tự huỷ/tự kết thúc cuộc họp quá hạn)"
         string Reason "bắt buộc khi từ chối hoặc huỷ"
         timestamptz OccurredAt
     }
@@ -424,6 +426,8 @@ erDiagram
     User ||--o{ VoiceConsent : "granting"
     VoiceConsent ||--o{ VoiceSample : "covering"
     User ||--o{ VoiceSample : "owning"
+    User o|--o{ VoiceSample : "collecting as Secretary"
+    Meeting o|--o{ VoiceSample : "hosting proxy collection at"
     Meeting ||--o{ MeetingMinutes : "issuing"
     MeetingMinutes ||--o{ MinutesSignature : "receiving"
     MeetingMinutes ||--o| MeetingMinutes : "superseding"
@@ -435,7 +439,7 @@ erDiagram
         uuid Id PK
         uuid MeetingId FK
         uuid UploadedById FK "Secretary"
-        string Source "Upload"
+        string Source "BrowserCapture|Upload|CallRoom|Combined"
         string Status "Pending|Available|Failed|Deleted"
         string StoragePath
         bigint DurationMs
@@ -511,6 +515,8 @@ erDiagram
         bigint SpeechMs
         bytea AudioCiphertext "nullable; bản ghi gốc, mã hoá"
         string AudioContentType "nullable"
+        uuid CollectedById FK "nullable; Thư ký thu hộ (ADR-0060)"
+        uuid MeetingId FK "nullable; cuộc họp nơi thu hộ"
     }
     MeetingMinutes {
         uuid Id PK
@@ -797,6 +803,8 @@ Ràng buộc và lý do:
 | User | 1 → 0..* | VoiceConsent | Đồng ý Voice ID |
 | VoiceConsent | 1 → 0..* | VoiceSample | Mẫu giọng nằm dưới lần đồng ý |
 | User | 1 → 0..* | VoiceSample | Sở hữu mẫu giọng |
+| User | 0..1 → 0..* | VoiceSample | Thu hộ mẫu giọng (Thư ký, SCRUM-152) |
+| Meeting | 0..1 → 0..* | VoiceSample | Nơi thu hộ mẫu giọng (SCRUM-152) |
 | Meeting | 1 → 0..* | MeetingMinutes | Ban hành |
 | MeetingMinutes | 1 → 0..* | MinutesSignature | Nhận chữ ký |
 | User | 1 → 0..* | MinutesSignature | Ký |
@@ -836,7 +844,7 @@ Ràng buộc và lý do:
 19. Meeting được kết thúc khi Vote còn Open; Ended ngừng nhận phiếu và Chair có thể đóng/kiểm phiếu cũ sau họp (BR-159/160). Vote còn `Draft` lúc kết thúc bị hệ thống xoá trong cùng transaction, mỗi nháp một dòng `AuditLogEntry` `vote.draft_deleted_on_meeting_end` (PO 08/11/2026); Vote Open/Closed giữ nguyên (BR-189).
 20. Biên bản bị yêu cầu sửa hoặc sửa sau khi đã có chữ ký: các chữ ký trên phiên bản cũ có `InvalidatedAt`, phiên bản mới cần vòng ký mới; chỉ Secretary niêm phong sau khi đủ chữ ký (BR-166).
 21. Mỗi câu nói thu từ micro (`SpeechClip`) có **đúng một** người nói: `SpeakerId` (thành viên) hoặc `GuestInvitationId` (Khách), do `ck_speech_clips_one_speaker` ép; câu của Khách gắn với **lời mời**, không với phiên (ADR-0051). Câu là dữ liệu cá nhân: chủ câu tự xoá khi phiên còn, Chủ toạ/Thư ký loại khỏi bản ghi hoặc xoá, và hệ thống xoá cùng hạn với bản ghi (ADR-0040).
-22. Voice ID: mỗi `VoiceSample` thuộc đúng một lần đồng ý (`VoiceConsent`) của đúng một người; rút đồng ý xoá mọi mẫu trong cùng transaction và không được hồi; mẫu chỉ lưu **đã mã hoá**, không bảng nào khác giữ vector giọng (ADR-0027).
+22. Voice ID: mỗi `VoiceSample` thuộc đúng một lần đồng ý (`VoiceConsent`) của đúng một người; rút đồng ý xoá mọi mẫu trong cùng transaction và không được hồi; mẫu chỉ lưu **đã mã hoá**, không bảng nào khác giữ vector giọng (ADR-0027). Mẫu tự thu có `CollectedById`/`MeetingId` null; mẫu Thư ký thu hộ có cả hai (SCRUM-152, ADR-0060).
 
 ## Khác biệt với implementation hiện tại và ghi chú migration
 
@@ -853,7 +861,7 @@ Ràng buộc và lý do:
 ### Xung đột yêu cầu cần đối chiếu
 
 - **ADR-0010:** phần gắn CallSession với MeetingSession đã được [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md) thay thế: phòng ở cấp Meeting, mở khi Meeting `InProgress`.
-- **`CallSession.RecordingId`:** ERD vẫn giữ quan hệ phòng họp → bản ghi, mâu thuẫn với "hệ thống không tự ghi âm" (Recording.Source chỉ còn `Upload`). Giữ nguyên lần này; cần quyết định khi làm FE-08 / FE-09.
+- **`CallSession.RecordingId`:** ERD vẫn giữ quan hệ phòng họp → bản ghi, mâu thuẫn với "hệ thống không tự ghi âm" (Recording.Source có `Upload`, `BrowserCapture`, `CallRoom` và từ SCRUM-153 thêm `Combined`). Giữ nguyên lần này; cần quyết định khi làm FE-08 / FE-09.
 - **Guest:** quyết định PO 13/10/2026 tại ADR-0016 thay quyền chỉ nghe; ADR-0017 bỏ gate đóng Vote trước End Meeting. Comment của Guest (SCRUM-107) và phiếu của Guest (25/10/2026) định danh qua `GuestInvitationId`, không tạo User. Schema cho Guest display information chưa thiết kế trong đợt này.
 - **Tài liệu vòng đời cuộc họp:** đã chỉnh sơ đồ — Rejected sửa rồi gửi duyệt lại sang WaitingApproval; bỏ `MinutesIssued`, `Archived`.
 - **ADR-0006 / ADR-0018:** kho cá nhân, quyền sở hữu và ngữ cảnh comment qua MeetingDocument phù hợp với mô hình đích; phần phiên bản và ghim phiên bản của ADR-0006 đã được ADR-0018 thay bằng tham chiếu tới StoredFile. Câu hỏi chưa chốt về hạn mức kho và quyền truy cập của người đã rời tổ chức nằm ngoài phạm vi ERD này.

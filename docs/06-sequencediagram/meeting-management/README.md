@@ -14,6 +14,7 @@ Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên c
 | UC-21 Start Meeting | [UC21_StartMeeting.txt](UC21_StartMeeting.txt) |
 | UC-22 End Meeting | [UC22_EndMeeting.txt](UC22_EndMeeting.txt) |
 | UC-75 Cancel Meeting | [UC75_CancelMeeting.txt](UC75_CancelMeeting.txt) |
+| SYS Auto-End Forgotten Meeting (bản nháp chờ duyệt, không gắn số UC — ngoại lệ theo note 46 §2) | [SYS_AutoEndForgottenMeeting.txt](SYS_AutoEndForgottenMeeting.txt) |
 
 Các file Mermaid `SubmitMeetingForApproval.mmd`, `ReviewMeetingApproval.mmd`, `PublishMeeting.mmd` (UC-18, UC-19, UC-20) là bản đối chiếu mã thông báo; `MessageCodeCatalogueTests` đọc chúng để kiểm tra mã và HTTP status khớp [danh mục mã thông báo](../../03-api/00-danh-muc-ma-thong-bao.md).
 

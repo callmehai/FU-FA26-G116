@@ -25,6 +25,10 @@ UC-47 → UC-50 thêm ngày 05/11/2026 theo PR #260. UC-51 (công bố tóm tắ
 | UC-81d Play Voice Sample | [UC81d_PlayVoiceSample.txt](UC81d_PlayVoiceSample.txt) |
 | UC-81e Delete Voice Sample | [UC81e_DeleteVoiceSample.txt](UC81e_DeleteVoiceSample.txt) |
 | UC-81f Withdraw Voice ID Consent | [UC81f_WithdrawVoiceIdConsent.txt](UC81f_WithdrawVoiceIdConsent.txt) |
+| UC-86a View Voice Collection | [UC86a_ViewVoiceCollection.txt](UC86a_ViewVoiceCollection.txt) |
+| UC-86b Record Voice Sample for Attendee | [UC86b_RecordVoiceSampleForAttendee.txt](UC86b_RecordVoiceSampleForAttendee.txt) |
+| UC-86c Play Collected Voice Sample | [UC86c_PlayCollectedVoiceSample.txt](UC86c_PlayCollectedVoiceSample.txt) |
+| UC-86d Delete Collected Voice Sample | [UC86d_DeleteCollectedVoiceSample.txt](UC86d_DeleteCollectedVoiceSample.txt) |
 
 Quy ước riêng của nhóm này:
 
