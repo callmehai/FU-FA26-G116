@@ -1,6 +1,6 @@
 # Sequence Diagram — Quản lý người dùng
 
-Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho UC-05 → UC-09.
+Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho UC-05 → UC-08.
 
 | Use Case | Source |
 |---|---|
@@ -10,7 +10,6 @@ Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên c
 | UC-06c Deactivate/Reactivate User Account | [UC06c_DeactivateReactivateUserAccount.txt](UC06c_DeactivateReactivateUserAccount.txt) |
 | UC-07 Reset User Password | [UC07_ResetUserPassword.txt](UC07_ResetUserPassword.txt) |
 | UC-08 Assign System Role to User | [UC08_AssignSystemRoleToUser.txt](UC08_AssignSystemRoleToUser.txt) |
-| UC-09 Unlock User Account | [UC09_UnlockUserAccount.txt](UC09_UnlockUserAccount.txt) |
 
 Đọc [convention sequence chung](../README.md), đặc tả UC và Business Rules trước khi sửa. Các thao tác
 quản trị tài khoản và gán role cấp hệ thống không đồng nghĩa với quyền trong một cuộc họp. Nội dung

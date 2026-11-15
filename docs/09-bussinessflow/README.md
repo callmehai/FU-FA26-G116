@@ -16,7 +16,7 @@ draw.io vẫn sửa tiếp được. Diễn giải chi tiết từng bước, k�
 
 - **Một cuộc họp = một buổi họp.** Không còn Meeting Session; lịch nhập khi tạo cuộc họp, agenda gắn thẳng vào cuộc họp
   ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)). Theo AI-eCabinet: chữ "phiên họp" trên UI của họ là agenda item.
-- **BF-01:** đăng nhập sai quá số lần cho phép thì khoá tài khoản; System Admin mở khoá (UC-09). Mọi thay đổi của Admin
+- **BF-01:** đăng nhập sai quá số lần cho phép trong một phút thì hệ thống báo lỗi và yêu cầu thử lại sau (MSG414); không khoá tài khoản, không có thao tác mở khoá. Mọi thay đổi của Admin
   ghi audit log.
 - **BF-02:** Organizer tạo cuộc họp (tiêu đề, lịch, hình thức, địa điểm, độ mật), gán Thư ký đầu tiên, chọn người duyệt,
   gửi duyệt. Thư ký chuẩn bị thành phần (kể cả Guest), vai trò, agenda, tài liệu. Bị từ chối thì Organizer sửa và gửi lại.

@@ -197,9 +197,6 @@
   - [UC-67b — Mark All Notifications as Read](#uc-67b--mark-all-notifications-as-read)
 - [UC-68 — Open Notification Target](#uc-68--open-notification-target)
 
-### FE-14 — Personal Dashboard & Meeting Workspace
-
-
 ### FE-15 — Reporting & Statistics
 
 - [UC-70 — View & Export Reports](#uc-70--view--export-reports)
@@ -2004,8 +2001,6 @@ Sequence Diagram: [UC68_OpenNotificationTarget.txt](../06-sequencediagram/notifi
 | **Exception Flows** | N/A |
 
 ---
-
-## FE-14 — Personal Dashboard & Meeting Workspace
 
 ## FE-15 — Reporting & Statistics
 
