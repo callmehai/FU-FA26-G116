@@ -5,9 +5,8 @@
 // (docs/wireframe/TrustCabinet-wireframe-v12.html, FE-14) and the permission matrix row "Dashboard — own items only"
 // (Report 3, note ¹²). No Jira ticket carries UC-69.
 //
-// The code has neither screen: "/" and sign-in land on the calendar, the sidebar has no "Tổng quan", and the overview
-// tab of a running meeting is the same fact sheet as before it starts. AC1 and AC2 record that as findings, with
-// evidence, rather than invent the screens.
+// The PO dropped UC-69 on 15/11/2026 (QA round 3 found neither screen; FE-14 was Should-have and never had a ticket), so
+// the plan has no criteria for 14.1 / 14.2: AC1 and AC2, which recorded the missing screens, were removed.
 //
 // The nearest thing that runs is the four count cards over the meeting list (PO decision, PR #287: Họp hôm nay — the
 // list's default — Đã công bố, Cần xử lý, Bản nháp; contract in docs/03-api/05-quan-ly-cuoc-hop.md, "scope" and the FE
@@ -301,77 +300,6 @@ export default {
       async run(qa) {
         await prepareAll(qa)
         for (const [key, m] of Object.entries(made)) qa.note(`${key}: ${m.title} · ${m.status} · ${m.id}`)
-      },
-    },
-
-    // ------------------------------------------------------------------------------------- UC-69 14.1 Tổng quan
-    {
-      id: 'AC1',
-      role: 'anon',
-      devices: ['desktop', 'phone'],
-      title: 'Đăng nhập xong vào màn Tổng quan cá nhân (Report 3 §14.1), có mục "Tổng quan" trên menu',
-      steps: ['Mở /login, đăng nhập thanhvien@ bằng mật khẩu', 'Xem trang mở ra và menu chính'],
-      expected:
-        'Report 3 §14.1 (UC-69): "The Personal Dashboard [Tổng quan] is the landing page after sign-in, reached from Overview in the sidebar": lời chào, ngày hôm nay, ô đếm (Chờ tôi phản hồi lời mời, Biểu quyết đang mở, Cuộc họp tuần này), khung "Hôm nay", khung "Việc đang chờ bạn"',
-      async run(qa) {
-        await qa.goto('/login')
-        await qa.page.getByLabel('Email').fill(EMAIL.member)
-        await qa.page.getByLabel('Mật khẩu', { exact: true }).fill(PASSWORD)
-        await qa.page.getByRole('button', { name: 'Đăng nhập bằng mật khẩu' }).click()
-        await qa.expect(qa.page).not.toHaveURL(/\/login/, { timeout: 15_000 })
-        await qa.page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => undefined)
-        await settled(qa)
-        await qa.shot('trang-mo-ra-sau-dang-nhap')
-        const landed = new URL(qa.page.url()).pathname
-        const nav = await qa.page
-          .getByRole('navigation', { name: 'Điều hướng chính' })
-          .locator('a')
-          .evaluateAll((links) => links.map((a) => a.textContent.trim()))
-        const text = await qa.page.locator('main').innerText()
-        qa.note(`Trang mở ra: ${landed}; menu chính: ${nav.join(' | ')}`)
-        const missing = []
-        if (!nav.some((t) => /Tổng quan/.test(t))) missing.push('menu không có mục "Tổng quan"')
-        if (/\/calendar|\/mgmt\/meetings/.test(landed)) missing.push(`đăng nhập xong vào ${landed}, không phải trang Tổng quan`)
-        for (const label of ['Chờ tôi phản hồi lời mời', 'Biểu quyết đang mở', 'Cuộc họp tuần này', 'Việc đang chờ bạn'])
-          if (!text.includes(label)) missing.push(`không có "${label}"`)
-        await noSidewaysScroll(qa)
-        qa.expect(missing, `Không có màn Tổng quan cá nhân (UC-69):\n${missing.join('\n')}`).toEqual([])
-      },
-    },
-
-    // ------------------------------------------------------------------------------- UC-69 14.2 Không gian họp
-    {
-      id: 'AC2',
-      role: 'member',
-      devices: ['desktop', 'phone'],
-      title: 'Cuộc họp đang diễn ra: tab Thông tin chung thành Không gian cuộc họp (Report 3 §14.2)',
-      steps: [
-        'Chuẩn bị: "[QA] FE-14 không gian họp" Đang diễn ra, Chủ toạ đặt mục 1 đang bàn, mở một biểu quyết cho Chủ toạ/Thư ký/Thành viên',
-        'Đăng nhập thanhvien@, mở cuộc họp (tab Thông tin chung)',
-      ],
-      expected:
-        'Report 3 §14.2: dải "Đang diễn ra" với "Bắt đầu HH:mm · đã họp N phút"; "Mục đang thảo luận" (tên mục, người trình bày, giờ bắt đầu) và tài liệu của mục; "Tiếp theo"; thẻ Biểu quyết đang mở với nút "Bỏ phiếu"; "Ghi chú của tôi" chỉ mình thấy',
-      async run(qa) {
-        const m = await liveMeeting(qa)
-        await qa.goto(`/mgmt/meetings/${m.id}`)
-        await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible()
-        await qa.expect(qa.page.getByRole('tab', { name: 'Thông tin chung' })).toHaveAttribute('aria-selected', 'true')
-        await settled(qa)
-        await qa.shot('thong-tin-chung-khi-dang-hop', { fullPage: true })
-        const overview = (await qa.page.locator('.detail-grid > section').first().innerText()).trim()
-        const missing = []
-        if (!/đã họp \d+/.test(overview)) missing.push('không có giờ bắt đầu thực tế và thời gian đã họp')
-        if (!overview.includes(qa.name(ITEM_NOW))) missing.push(`không có "Mục đang thảo luận" (${qa.name(ITEM_NOW)})`)
-        if (!overview.includes(qa.name(ITEM_NEXT))) missing.push(`không có "Tiếp theo" (${qa.name(ITEM_NEXT)})`)
-        if (!overview.includes(qa.name(VOTE_TITLE))) missing.push('không có thẻ biểu quyết đang mở')
-        if (!/Ghi chú của tôi/.test(await qa.page.locator('main').innerText())) missing.push('không có "Ghi chú của tôi"')
-        // Where the same facts do live today, for the report.
-        await press(qa, qa.page.getByRole('tab', { name: 'Nội dung cuộc họp' }))
-        await qa.expect(qa.page.getByText(qa.name(ITEM_NOW)).first()).toBeVisible()
-        await settled(qa)
-        await qa.shot('muc-dang-ban-chi-o-tab-noi-dung')
-        await noSidewaysScroll(qa)
-        qa.expect(missing, `Không gian cuộc họp chưa có:\n${missing.join('\n')}`).toEqual([])
       },
     },
 
