@@ -65,6 +65,10 @@ def main() -> int:
     parser.add_argument("targets", nargs="+", help="a .txt path or UC code (UC84b)")
     parser.add_argument("--only", choices=["drawio", "seqorg"], help="export only one image set")
     parser.add_argument("--scale", type=float, help="force the drawio.png scale (default: auto)")
+    parser.add_argument("--originals-dir", default=None,
+                        help="thư mục local giữ bản gốc (mặc định $DIAGRAM_ORIGINALS_DIR hoặc anh-goc/)")
+    parser.add_argument("--no-originals", action="store_true", help="không lưu bản gốc")
+    parser.add_argument("--no-compress", action="store_true", help="giữ nguyên bản xuất trong repo")
     args = parser.parse_args()
 
     files = []
@@ -78,9 +82,22 @@ def main() -> int:
         cmd = [sys.executable, "-X", "utf8", str(SCRIPTS / "txt_to_sequence_drawio_png.py"), *abs_paths]
         if args.scale:
             cmd += ["--scale", str(args.scale)]
+        if args.originals_dir:
+            cmd += ["--originals-dir", args.originals_dir]
+        if args.no_originals:
+            cmd += ["--no-originals"]
+        if args.no_compress:
+            cmd += ["--no-compress"]
         run(cmd)
     if args.only != "drawio":
-        run(["node", str(SCRIPTS / "export-diagrams.js"), *abs_paths])
+        cmd = ["node", str(SCRIPTS / "export-diagrams.js"), *abs_paths]
+        if args.originals_dir:
+            cmd += [f"--originals-dir={args.originals_dir}"]
+        if args.no_originals:
+            cmd += ["--no-originals"]
+        if args.no_compress:
+            cmd += ["--no-compress"]
+        run(cmd)
 
     print("\nxong — kiểm tra bằng: git status --short docs/06-sequencediagram", flush=True)
     return 0
