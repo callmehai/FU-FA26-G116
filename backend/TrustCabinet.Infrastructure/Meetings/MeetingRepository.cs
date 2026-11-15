@@ -362,9 +362,14 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
                 notify: false, historyId, reason);
     }
 
-    public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId,
+    public async Task StageRescheduleInvitationsAsync(Meeting meeting, Guid historyId,
         (DateTimeOffset Start, DateTimeOffset End) previous, DateTimeOffset now, CancellationToken ct = default)
     {
+        // The bell is added by the caller (not for the organizer who moved it); the email goes to everyone, as a
+        // cancellation does, so the organizer's own calendar is put right too.
+        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
+            Email.MeetingInvitationEvents.Stage(db, meeting, participant, null, InvitationEventKind.Rescheduled, now, notify: false,
+                historyId, previous: previous);
         foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
             Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId,
                 previous: previous);

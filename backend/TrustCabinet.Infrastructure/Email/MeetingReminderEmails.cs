@@ -20,10 +20,12 @@ public sealed class MeetingReminderEmails(
 {
     private const string Subject = "Cuộc họp sắp bắt đầu";
 
+    private static readonly TimeSpan Window = TimeSpan.FromMinutes(15);
+
     public async Task<int> QueueDueAsync(CancellationToken ct = default)
     {
         var now = clock.GetUtcNow();
-        var cutoff = now.AddMinutes(15);
+        var cutoff = now + Window;
         var meetings = await db.Meetings.AsNoTracking()
             .Where(m => m.Status == MeetingStatus.Published && m.PlannedStartTime > now && m.PlannedStartTime <= cutoff)
             .Select(m => new
@@ -43,6 +45,15 @@ public sealed class MeetingReminderEmails(
             .Where(g => ids.Contains(g.MeetingId) && g.RevokedAt == null)
             .Select(g => new { g.Id, g.MeetingId, g.InvitedName, g.Email })
             .ToListAsync(ct);
+        // Invited inside the reminder window: the invitation already gives the time, so a second email a minute later only
+        // repeats it (PO 15/11/2026). Queued rows count too, sent or not yet. The bell still rings.
+        var invitedLate = (await db.MeetingInvitationDispatches.AsNoTracking()
+                .Where(d => ids.Contains(d.MeetingId) && d.EventKind == InvitationEventKind.Invitation)
+                .Select(d => new { d.MeetingId, Owner = d.ParticipantId ?? d.GuestInvitationId, d.CreatedAt })
+                .ToListAsync(ct))
+            .Where(d => d.Owner is not null && d.CreatedAt >= meetings.First(m => m.Meeting.Id == d.MeetingId).Meeting.PlannedStartTime - Window)
+            .Select(d => d.Owner!.Value)
+            .ToHashSet();
         var sent = (await db.EmailMessages.AsNoTracking()
                 .Where(e => e.MeetingId != null && ids.Contains(e.MeetingId.Value) && e.DeduplicationKey.StartsWith("email-starting-soon:"))
                 .Select(e => e.DeduplicationKey).ToListAsync(ct))
@@ -67,7 +78,7 @@ public sealed class MeetingReminderEmails(
             foreach (var p in participants.Where(p => p.MeetingId == meeting.Id))
             {
                 var dedup = $"{key}:{p.Id:D}";
-                if (!sent.Add(dedup)) continue;
+                if (invitedLate.Contains(p.Id) || !sent.Add(dedup)) continue;
                 var role = MeetingInvitationEvents.RoleLabel(p.Role.ToString());
                 Add(meeting, dedup, p.Email, now,
                     Text(p.FullName, meeting, place, button.Url, staff.Contact),
@@ -79,7 +90,7 @@ public sealed class MeetingReminderEmails(
             foreach (var g in guests.Where(g => g.MeetingId == meeting.Id))
             {
                 var dedup = $"{key}:{g.Id:D}";
-                if (sent.Contains(dedup)) continue;
+                if (invitedLate.Contains(g.Id) || sent.Contains(dedup)) continue;
                 // No link, no email: a Guest reminded without a way in only has to dig the invitation out.
                 var link = await guestLinks.PrepareAsync(g.Id, ct);
                 if (link is not { Status: GuestLinkStatus.Ready, Url: { } url }) continue;
