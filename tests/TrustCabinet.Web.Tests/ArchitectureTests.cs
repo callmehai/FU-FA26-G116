@@ -1,0 +1,396 @@
+using System.Reflection;
+using System.Xml.Linq;
+using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Domain.Entities;
+using TrustCabinet.Infrastructure;
+
+namespace TrustCabinet.Web.Tests;
+
+/// <summary>
+/// SCRUM-143: the dependency rules of the four backend projects, A1–A7 of
+/// <c>docs/02-design/11-quy-chuan-clean-architecture.md</c> (rule R13), checked by reflection over the built
+/// assemblies.
+///
+/// The backend is being moved to these rules module by module, so each rule has a list of the types that
+/// still break it, filled at CA-00 with every violation there was. The lists only ever shrink: a subtask
+/// deletes the entries of the module it moves and never adds one, and <see cref="Listed_exceptions_still_break_their_rule"/>
+/// fails when an entry no longer breaks its rule, so a fixed type cannot stay listed and quietly break it again.
+/// A new violation is fixed, not listed.
+///
+/// Entries are full type names in ordinal order. A nested or compiler-generated type (a lambda, an async
+/// method) counts as the top-level type it is written in.
+/// </summary>
+public sealed class ArchitectureTests
+{
+    private const BindingFlags Declared =
+        BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
+    private static readonly Assembly Domain = typeof(Meeting).Assembly;
+    private static readonly Assembly Application = typeof(IUnitOfWork).Assembly;
+    private static readonly Assembly Infrastructure = typeof(TrustCabinetDbContext).Assembly;
+    private static readonly Assembly Web = typeof(Program).Assembly;
+
+    /// <summary>The only packages Application may reference (rule R1).</summary>
+    private static readonly string[] ApplicationPackages =
+    [
+        "Microsoft.Extensions.DependencyInjection.Abstractions",
+        "Microsoft.Extensions.Logging.Abstractions",
+        "Microsoft.Extensions.Options",
+    ];
+
+    /// <summary>The only Web types that may name a type of Infrastructure: the composition root and <c>--migrate</c>.</summary>
+    private static readonly string[] CompositionRoots = ["Program", "TrustCabinet.Web.DatabaseMigrationCommand"];
+
+    // A3 — outside Infrastructure, nothing has a field or a parameter of type TrustCabinetDbContext.
+    private static readonly string[] DbContextOutsideInfrastructure =
+    [
+        "Program",
+        "TrustCabinet.Web.AgendaChangePublisher",
+        "TrustCabinet.Web.AttendanceChangePublisher",
+        "TrustCabinet.Web.MeetingDocumentChangePublisher",
+        "TrustCabinet.Web.NotesChangePublisher",
+        "TrustCabinet.Web.SpeakingChangePublisher",
+        "TrustCabinet.Web.SpeechChangePublisher",
+        "TrustCabinet.Web.VoteChangePublisher",
+    ];
+
+    // A4 — no class of Infrastructure implements an I*Service declared in Domain or Application: a use case lives in Application.
+    private static readonly string[] ServicesInInfrastructure =
+    [
+        "TrustCabinet.Infrastructure.Access.RolePermissionService",
+        "TrustCabinet.Infrastructure.Access.RoleService",
+        "TrustCabinet.Infrastructure.Agenda.AgendaService",
+        "TrustCabinet.Infrastructure.Ai.AiSettingsService",
+        "TrustCabinet.Infrastructure.Attendance.AttendanceService",
+        "TrustCabinet.Infrastructure.Audit.AuditLogQueryService",
+        "TrustCabinet.Infrastructure.Audit.AuditService",
+        "TrustCabinet.Infrastructure.Authentication.AuthenticationService",
+        "TrustCabinet.Infrastructure.CalendarSharing.CalendarSharingService",
+        "TrustCabinet.Infrastructure.CalendarSharing.MeetingSlotService",
+        "TrustCabinet.Infrastructure.CalendarSharing.SharedCalendarService",
+        "TrustCabinet.Infrastructure.Calls.CallRoomService",
+        "TrustCabinet.Infrastructure.Documents.DocumentCommentService",
+        "TrustCabinet.Infrastructure.Documents.MeetingDocumentService",
+        "TrustCabinet.Infrastructure.Documents.PersonalLibraryService",
+        "TrustCabinet.Infrastructure.GuestAccess.GuestAccessService",
+        "TrustCabinet.Infrastructure.Meetings.MeetingLifecycleService",
+        "TrustCabinet.Infrastructure.Meetings.MeetingOverdueService",
+        "TrustCabinet.Infrastructure.Meetings.MeetingService",
+        "TrustCabinet.Infrastructure.Notes.MeetingNoteService",
+        "TrustCabinet.Infrastructure.Notifications.NotificationService",
+        "TrustCabinet.Infrastructure.Participants.ParticipantService",
+        "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
+        "TrustCabinet.Infrastructure.Recordings.RecordingService",
+        "TrustCabinet.Infrastructure.Recordings.RoomTakeService",
+        "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
+        "TrustCabinet.Infrastructure.Reports.ReportService",
+        "TrustCabinet.Infrastructure.Speaking.SpeakingService",
+        "TrustCabinet.Infrastructure.Summaries.MinutesService",
+        "TrustCabinet.Infrastructure.Summaries.SummaryService",
+        "TrustCabinet.Infrastructure.Transcription.TranscriptionService",
+        "TrustCabinet.Infrastructure.Users.UserService",
+        "TrustCabinet.Infrastructure.VoiceId.VoiceCollectionService",
+        "TrustCabinet.Infrastructure.VoiceId.VoiceIdService",
+        "TrustCabinet.Infrastructure.Votes.VoteService",
+    ];
+
+    // A5 — no interface but IUnitOfWork has SaveChangesAsync or InTransactionAsync.
+    private static readonly string[] InterfacesExposingTheUnitOfWork =
+    [
+        "TrustCabinet.Domain.Access.IRolePermissionRepository",
+        "TrustCabinet.Domain.Access.IRoleRepository",
+        "TrustCabinet.Domain.Meetings.IMeetingRepository",
+        "TrustCabinet.Domain.Notifications.INotificationRepository",
+        "TrustCabinet.Domain.Recordings.IRecordingRepository",
+        "TrustCabinet.Domain.Transcription.ITranscriptRepository",
+        "TrustCabinet.Domain.Users.IUserAccountRepository",
+        "TrustCabinet.Domain.VoiceId.IVoiceIdRepository",
+    ];
+
+    // A6 — a Web type has no field or parameter of an I*Repository type.
+    private static readonly string[] WebTypesTakingRepositories =
+    [
+        "TrustCabinet.Web.AgendaChangePublisher",
+        "TrustCabinet.Web.AttendanceChangePublisher",
+        "TrustCabinet.Web.Endpoints.AuthEndpoints",
+        "TrustCabinet.Web.MeetingDocumentChangePublisher",
+        "TrustCabinet.Web.MeetingHub",
+        "TrustCabinet.Web.NotesChangePublisher",
+        "TrustCabinet.Web.NotificationHub",
+        "TrustCabinet.Web.SpeakingChangePublisher",
+        "TrustCabinet.Web.SpeechChangePublisher",
+        "TrustCabinet.Web.VoteChangePublisher",
+    ];
+
+    // A6 — a Web type names no type of Infrastructure, CompositionRoots apart.
+    private static readonly string[] WebTypesNamingInfrastructure =
+    [
+        "TrustCabinet.Web.AgendaChangePublisher",
+        "TrustCabinet.Web.AttendanceChangePublisher",
+        "TrustCabinet.Web.Endpoints.AuthEndpoints",
+        "TrustCabinet.Web.Endpoints.EmailEndpoints",
+        "TrustCabinet.Web.Endpoints.RecordingEndpoints",
+        "TrustCabinet.Web.MeetingDocumentChangePublisher",
+        "TrustCabinet.Web.NotesChangePublisher",
+        "TrustCabinet.Web.SpeakingChangePublisher",
+        "TrustCabinet.Web.SpeechChangePublisher",
+        "TrustCabinet.Web.VoteChangePublisher",
+    ];
+
+    // A7 — a class of Infrastructure that takes TrustCabinetDbContext is a *Repository or a *Query, or sits in
+    // Persistence/ or Seed/, or is TrustCabinetDbContext* or DependencyInjection. The classes below are neither yet:
+    // each moves its use case to Application, or becomes one of those, in the subtask of its module. Empty at CA-20.
+    private static readonly string[] PendingDbContextReaders =
+    [
+        "TrustCabinet.Infrastructure.Access.AdministratorInvariantGuard",
+        "TrustCabinet.Infrastructure.Agenda.AgendaMeetingEnd",
+        "TrustCabinet.Infrastructure.Ai.AiSettingsService",
+        "TrustCabinet.Infrastructure.Ai.LanguageModelProvider",
+        "TrustCabinet.Infrastructure.Attendance.AttendanceService",
+        "TrustCabinet.Infrastructure.Audit.AuditLogQueryService",
+        "TrustCabinet.Infrastructure.Audit.AuditService",
+        "TrustCabinet.Infrastructure.CalendarSharing.CalendarBusyReader",
+        "TrustCabinet.Infrastructure.CalendarSharing.CalendarShareCloser",
+        "TrustCabinet.Infrastructure.CalendarSharing.CalendarSharePeople",
+        "TrustCabinet.Infrastructure.CalendarSharing.CalendarShareStopper",
+        "TrustCabinet.Infrastructure.CalendarSharing.CalendarSharingService",
+        "TrustCabinet.Infrastructure.CalendarSharing.MeetingSlotService",
+        "TrustCabinet.Infrastructure.CalendarSharing.SharedCalendarService",
+        "TrustCabinet.Infrastructure.Documents.DocumentCommentService",
+        "TrustCabinet.Infrastructure.Documents.MeetingDocumentService",
+        "TrustCabinet.Infrastructure.Documents.OrphanFilePurger",
+        "TrustCabinet.Infrastructure.Documents.PersonalLibraryService",
+        "TrustCabinet.Infrastructure.Documents.StoredFileWriter",
+        "TrustCabinet.Infrastructure.Email.EmailQueueProcessor",
+        "TrustCabinet.Infrastructure.Email.MeetingInvitationDispatchProcessor",
+        "TrustCabinet.Infrastructure.Email.MeetingInvitationEvents",
+        "TrustCabinet.Infrastructure.Email.ResendWebhookReceiver",
+        "TrustCabinet.Infrastructure.GuestAccess.GuestAccessService",
+        "TrustCabinet.Infrastructure.GuestAccess.GuestSessionAccess",
+        "TrustCabinet.Infrastructure.Notes.MeetingNoteService",
+        "TrustCabinet.Infrastructure.Participants.ParticipantService",
+        "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
+        "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
+        "TrustCabinet.Infrastructure.Reports.ReportService",
+        "TrustCabinet.Infrastructure.Speaking.SpeakingMeetingEnd",
+        "TrustCabinet.Infrastructure.Speaking.SpeakingRequestCleanup",
+        "TrustCabinet.Infrastructure.Speaking.SpeakingService",
+        "TrustCabinet.Infrastructure.Summaries.MeetingTranscriptReader",
+        "TrustCabinet.Infrastructure.Summaries.MinutesService",
+        "TrustCabinet.Infrastructure.Summaries.SummaryService",
+        "TrustCabinet.Infrastructure.VoiceId.VoiceCollectionService",
+        "TrustCabinet.Infrastructure.Votes.VoteMeetingEnd",
+        "TrustCabinet.Infrastructure.Votes.VoteService",
+    ];
+
+    // A7 — for good: a class that implements one port of Application over the context and has no business branch.
+    // Each entry carries, on its own line, the reason it cannot be a repository or a query.
+    private static readonly string[] AllowedDbContextAdapters =
+    [
+    ];
+
+    /// <summary>
+    /// Types that break a rule inside a method body, with <c>GetRequiredService&lt;T&gt;()</c>, where reflection
+    /// sees them only when the compiler happens to hoist the local into a field. They are let through here by
+    /// hand and left out of the "still breaks its rule" check; CA-18 and CA-20 verify them with <c>git grep</c>.
+    /// </summary>
+    private static readonly string[] HiddenFromReflection =
+    [
+        // A7: ReadAsync resolves TrustCabinetDbContext from a scope it opens.
+        "TrustCabinet.Infrastructure.Agenda.AgendaPresenterNotifier",
+        // A6: the capability filters resolve IUserAccountRepository from HttpContext.RequestServices.
+        "TrustCabinet.Web.Endpoints.CapabilityGate",
+        // A6: ExecuteAsync resolves IUserAccountRepository from the scope of each tick.
+        "TrustCabinet.Web.NotificationWorker",
+    ];
+
+    [Fact]
+    public void A1_Domain_references_only_the_framework()
+        => Assert.Empty(ReferencedOutsideTheFramework(Domain));
+
+    [Fact]
+    public void A2_Application_references_only_Domain_and_its_three_packages()
+    {
+        Assert.Empty(ReferencedOutsideTheFramework(Application).Except([Domain.GetName().Name!, .. ApplicationPackages]));
+
+        // The assembly lists only what the code already uses; the project file is where a package first appears.
+        var project = XDocument.Load(Path.Combine(
+            RepositoryRoot(), "backend", "TrustCabinet.Application", "TrustCabinet.Application.csproj"));
+        Assert.Empty(Includes(project, "PackageReference").Except(ApplicationPackages));
+        Assert.Equal(["TrustCabinet.Domain.csproj"], Includes(project, "ProjectReference").Select(path => path.Split('\\', '/')[^1]));
+    }
+
+    [Fact]
+    public void A3_Only_Infrastructure_takes_the_DbContext()
+        => AssertOnlyListed(DbContextOutsideInfrastructure, BreakingA3());
+
+    [Fact]
+    public void A4_No_use_case_service_is_implemented_in_Infrastructure()
+        => AssertOnlyListed(ServicesInInfrastructure, BreakingA4());
+
+    [Fact]
+    public void A5_Only_the_unit_of_work_saves_and_opens_transactions()
+        => AssertOnlyListed(InterfacesExposingTheUnitOfWork, BreakingA5());
+
+    [Fact]
+    public void A6_Web_takes_no_repository()
+        => AssertOnlyListed(WebTypesTakingRepositories, BreakingA6Repositories());
+
+    [Fact]
+    public void A6_Web_names_Infrastructure_only_in_the_composition_root()
+        => AssertOnlyListed(WebTypesNamingInfrastructure, BreakingA6Infrastructure());
+
+    [Fact]
+    public void A7_In_Infrastructure_only_repositories_queries_and_persistence_take_the_DbContext()
+        => AssertOnlyListed([.. PendingDbContextReaders, .. AllowedDbContextAdapters], BreakingA7());
+
+    [Fact]
+    public void Listed_exceptions_still_break_their_rule()
+    {
+        var fixedSince = new (string Rule, string[] Listed, string[] Breaking)[]
+        {
+            ("A3", DbContextOutsideInfrastructure, BreakingA3()),
+            ("A4", ServicesInInfrastructure, BreakingA4()),
+            ("A5", InterfacesExposingTheUnitOfWork, BreakingA5()),
+            ("A6 repositories", WebTypesTakingRepositories, BreakingA6Repositories()),
+            ("A6 Infrastructure", WebTypesNamingInfrastructure, BreakingA6Infrastructure()),
+            ("A7 pending", PendingDbContextReaders, BreakingA7()),
+            ("A7 allowed", AllowedDbContextAdapters, BreakingA7()),
+        }.SelectMany(rule => rule.Listed.Except(rule.Breaking).Select(type => $"{rule.Rule}: {type}")).ToArray();
+
+        Assert.True(fixedSince.Length == 0,
+            "These types no longer break the rule they are listed under. Delete them from the list:\n"
+            + string.Join("\n", fixedSince));
+    }
+
+    [Fact]
+    public void Exception_lists_are_sorted_and_name_each_type_once()
+    {
+        foreach (var list in new[]
+        {
+            DbContextOutsideInfrastructure, ServicesInInfrastructure, InterfacesExposingTheUnitOfWork, WebTypesTakingRepositories,
+            WebTypesNamingInfrastructure, PendingDbContextReaders, AllowedDbContextAdapters, HiddenFromReflection,
+        })
+        {
+            Assert.Equal(list.Distinct().Order(StringComparer.Ordinal), list);
+        }
+
+        Assert.Empty(PendingDbContextReaders.Intersect(AllowedDbContextAdapters));
+    }
+
+    private static string[] BreakingA3()
+        => new[] { Domain, Application, Web }.SelectMany(OwnTypes)
+            .Where(type => Takes(type).Contains(typeof(TrustCabinetDbContext)))
+            .Select(Owner).Distinct().Order(StringComparer.Ordinal).ToArray();
+
+    private static string[] BreakingA4()
+        => OwnTypes(Infrastructure)
+            .Where(type => type.IsClass && type.GetInterfaces().Any(i => IsContract(i, "Service")))
+            .Select(Owner).Distinct().Order(StringComparer.Ordinal).ToArray();
+
+    private static string[] BreakingA5()
+        => new[] { Domain, Application }.SelectMany(OwnTypes)
+            .Where(type => type.IsInterface && type != typeof(IUnitOfWork)
+                && type.GetMethods().Any(method => method.Name is "SaveChangesAsync" or "InTransactionAsync"))
+            .Select(Owner).Distinct().Order(StringComparer.Ordinal).ToArray();
+
+    private static string[] BreakingA6Repositories()
+        => OwnTypes(Web)
+            .Where(type => Takes(type).Any(taken => IsContract(taken, "Repository")))
+            .Select(Owner).Distinct().Order(StringComparer.Ordinal).ToArray();
+
+    private static string[] BreakingA6Infrastructure()
+        => OwnTypes(Web)
+            .Where(type => Names(type).Any(named => named.Assembly == Infrastructure))
+            .Select(Owner).Distinct().Except(CompositionRoots).Order(StringComparer.Ordinal).ToArray();
+
+    private static string[] BreakingA7()
+        => OwnTypes(Infrastructure)
+            .Where(type => Takes(type).Contains(typeof(TrustCabinetDbContext)))
+            .Select(TopLevel).Distinct()
+            .Where(type => !(type.Name.EndsWith("Repository", StringComparison.Ordinal)
+                || type.Name.EndsWith("Query", StringComparison.Ordinal)
+                || type.Name.StartsWith(nameof(TrustCabinetDbContext), StringComparison.Ordinal)
+                || type == typeof(DependencyInjection)
+                || InNamespace(type, "TrustCabinet.Infrastructure.Persistence")
+                || InNamespace(type, "TrustCabinet.Infrastructure.Seed")))
+            .Select(type => type.FullName!).Order(StringComparer.Ordinal).ToArray();
+
+    private static void AssertOnlyListed(string[] listed, string[] breaking)
+    {
+        var unlisted = breaking.Except(listed).Except(HiddenFromReflection).ToArray();
+
+        Assert.True(unlisted.Length == 0,
+            "These types break a Clean Architecture rule (docs/02-design/11-quy-chuan-clean-architecture.md, R13). "
+            + "Fix them; the exception lists only shrink:\n" + string.Join("\n", unlisted));
+    }
+
+    /// <summary>The types written in this repository: not what a source generator or the compiler adds to the assembly.</summary>
+    private static IEnumerable<Type> OwnTypes(Assembly assembly)
+        => assembly.GetTypes().Where(type =>
+        {
+            var top = TopLevel(type);
+            return !top.Name.StartsWith('<') && (top.Namespace is null || InNamespace(top, "TrustCabinet"));
+        });
+
+    private static Type TopLevel(Type type)
+    {
+        while (type.DeclaringType is { } outer) type = outer;
+        return type;
+    }
+
+    private static string Owner(Type type) => TopLevel(type).FullName!;
+
+    private static bool InNamespace(Type type, string root)
+        => type.Namespace == root || type.Namespace?.StartsWith(root + ".", StringComparison.Ordinal) == true;
+
+    /// <summary>An <c>I…Service</c> or <c>I…Repository</c> interface declared in Domain or Application.</summary>
+    private static bool IsContract(Type type, string suffix)
+        => type.IsInterface && (type.Assembly == Domain || type.Assembly == Application)
+            && type.Name.StartsWith('I') && type.Name.EndsWith(suffix, StringComparison.Ordinal);
+
+    /// <summary>
+    /// What a type is given: the types of its fields and of the parameters of its constructors and methods, the
+    /// arguments of generic ones included. A lambda's captures and an async method's locals are fields of a nested
+    /// compiler-generated type, which is how the handler of an endpoint is seen.
+    /// </summary>
+    private static IEnumerable<Type> Takes(Type type)
+        => type.GetFields(Declared).Select(field => field.FieldType)
+            .Concat(type.GetConstructors(Declared).SelectMany(constructor => constructor.GetParameters()).Select(p => p.ParameterType))
+            .Concat(type.GetMethods(Declared).SelectMany(method => method.GetParameters()).Select(p => p.ParameterType))
+            .SelectMany(Unwrap);
+
+    /// <summary><see cref="Takes"/>, and what it returns, extends and implements.</summary>
+    private static IEnumerable<Type> Names(Type type)
+        => Takes(type).Concat(
+            type.GetMethods(Declared).Select(method => method.ReturnType)
+                .Concat(type.GetInterfaces())
+                .Append(type.BaseType ?? typeof(object))
+                .SelectMany(Unwrap));
+
+    private static IEnumerable<Type> Unwrap(Type type)
+    {
+        if (type.HasElementType) return Unwrap(type.GetElementType()!);
+        return type.IsGenericType ? type.GetGenericArguments().SelectMany(Unwrap).Prepend(type) : [type];
+    }
+
+    /// <summary>Judged by where the assembly loads from, not its name: a NuGet package may be called System.* too.</summary>
+    private static IEnumerable<string> ReferencedOutsideTheFramework(Assembly assembly)
+    {
+        var runtime = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+        return assembly.GetReferencedAssemblies()
+            .Where(reference => Path.GetDirectoryName(Assembly.Load(reference).Location) != runtime)
+            .Select(reference => reference.Name!);
+    }
+
+    private static IEnumerable<string> Includes(XDocument project, string element)
+        => project.Descendants().Where(e => e.Name.LocalName == element).Select(e => (string)e.Attribute("Include")!);
+
+    private static string RepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "TrustCabinet.sln")))
+            directory = directory.Parent;
+        return directory?.FullName ?? throw new DirectoryNotFoundException("TrustCabinet.sln not found above the test output.");
+    }
+}

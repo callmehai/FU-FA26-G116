@@ -8,6 +8,7 @@
 - [`04-luong-nghiep-vu-chinh.md`](04-luong-nghiep-vu-chinh.md) — 4 luồng nghiệp vụ chính BF-01 → BF-04 (bản PO duyệt 09/10/2026)
 - [`08-ke-hoach-phong-hop-truc-tuyen.md`](08-ke-hoach-phong-hop-truc-tuyen.md) — thiết kế giải pháp phòng họp trực tuyến (LiveKit / WebRTC)
 - [`10-scrum97-ke-hoach-backend.md`](10-scrum97-ke-hoach-backend.md) — kế hoạch thực thi UC-73, nguồn yêu cầu, thứ tự validation và ma trận kiểm thử Backend.
+- [`11-quy-chuan-clean-architecture.md`](11-quy-chuan-clean-architecture.md) — quy chuẩn bắt buộc của đợt refactor backend sang bốn project (SCRUM-143): bất biến, quy trình nhánh, luật R1–R15 và các luật A1–A7 của `ArchitectureTests`. Đọc trước khi sửa `backend/` trên nhánh `refactor/clean-architecture`.
 
 Dự kiến có thêm:
 

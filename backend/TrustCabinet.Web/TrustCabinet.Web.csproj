@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TrustCabinet.Infrastructure\TrustCabinet.Infrastructure.csproj" />
+    <ProjectReference Include="..\TrustCabinet.Application\TrustCabinet.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
