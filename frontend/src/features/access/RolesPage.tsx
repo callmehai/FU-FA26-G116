@@ -240,7 +240,7 @@ export function RolesPage() {
           <p className="cell-empty">Đang tải danh sách vai trò…</p>
         ) : (
           <div className="list-panel table-card">
-            <table className="data-table">
+            <table className="data-table roles-table">
               <thead>
                 <tr>
                   <th>Tên vai trò</th>
@@ -257,9 +257,12 @@ export function RolesPage() {
                       {role.isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
                       {role.id === me?.roleId && <Badge tone="blue">Vai trò của bạn</Badge>}
                     </td>
-                    <td className="cell-muted">{role.description ?? <em className="value-empty">Chưa có mô tả</em>}</td>
-                    <td>{role.userCount}</td>
-                    <td>
+                    <td className="cell-muted roles-desc">{role.description ?? <em className="value-empty">Chưa có mô tả</em>}</td>
+                    <td className="roles-count">
+                      {role.userCount}
+                      <span className="roles-count-unit"> tài khoản</span>
+                    </td>
+                    <td className="roles-actions">
                       {!role.isBuiltIn && (
                         <span className="row-actions">
                           <button

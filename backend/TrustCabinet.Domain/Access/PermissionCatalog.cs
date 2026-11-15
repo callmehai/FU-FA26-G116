@@ -42,14 +42,24 @@ public static class PermissionCatalog
         };
 
     /// <summary>
-    /// Every capability the system enforces, in enum order.
+    /// Every capability the system enforces, grouped: each functional group's capabilities sit together, groups in the
+    /// order they first appear in the enum, and within a group in enum order.
     ///
     /// Built from <see cref="Enum.GetValues{TEnum}"/> rather than from the dictionary's keys, so
     /// adding a capability without describing it fails loudly here instead of quietly leaving a
-    /// column off the administrator's screen.
+    /// column off the administrator's screen. Grouped because the matrix draws one heading over each run of a group:
+    /// in plain enum order <see cref="Capability.VoiceCollector"/>, added after <see cref="Capability.AdminUsers"/>,
+    /// split "Cuộc họp" into two headings. The enum itself is not reordered.
     /// </summary>
-    public static IReadOnlyCollection<PermissionDescriptor> All { get; } =
-        [.. Enum.GetValues<Capability>().Select(Describe)];
+    public static IReadOnlyCollection<PermissionDescriptor> All { get; } = Grouped();
+
+    private static PermissionDescriptor[] Grouped()
+    {
+        var all = Enum.GetValues<Capability>().Select(Describe).ToArray();
+        var groups = all.Select(p => p.FunctionalGroup).Distinct().ToList();
+        // OrderBy is stable, so enum order holds inside each group.
+        return [.. all.OrderBy(p => groups.IndexOf(p.FunctionalGroup))];
+    }
 
     public static PermissionDescriptor Describe(Capability capability)
     {
