@@ -2102,6 +2102,10 @@ a.menu-item { text-decoration: none; }
 .matrix-cell-error { background: var(--chip-red-bg); box-shadow: inset 0 0 0 2px var(--danger); }
 .data-table tbody tr.matrix-note-row:hover { background: none; }
 .matrix-note-row td { padding-top: 0; white-space: normal; }
+/* The note spans the whole table, which on a phone is wider than its scrolling card: kept to the card's visible width
+   and pinned to its left edge, the warning or refusal reads in full wherever the card is scrolled (e.g. at Lưu). */
+.matrix-card { container-type: inline-size; }
+.matrix-note-row td > .alert { position: sticky; left: 16px; max-width: calc(100cqi - 32px); }
 .data-table tbody tr.matrix-note-row td { border-bottom: 1px solid var(--line); }
 .matrix-table tr:has(+ .matrix-note-row) td { border-bottom: none; }
 
@@ -3487,16 +3491,18 @@ a.menu-item { text-decoration: none; }
   font-size: 14px;
 }
 
-/* "Chủ toạ mở biểu quyết" (SCRUM-28): floats under the title bar, over the stage, until answered. */
+/* "Chủ toạ mở biểu quyết" (SCRUM-28): floats over the top of the stage until answered. It hangs from the room body,
+   not from the window, so a banner under the title bar (MSG333 reconnecting, start audio, your turn) pushes it down
+   instead of being covered by it. */
 .room-vote-notice {
-  position: fixed;
-  top: 72px;
+  position: absolute;
+  top: 12px;
   left: 50%;
   z-index: 20;
   display: flex;
   align-items: center;
   gap: 10px;
-  width: min(520px, calc(100vw - 32px));
+  width: min(520px, calc(100% - 32px));
   padding: 10px 10px 10px 14px;
   border-radius: var(--radius-lg);
   background: var(--surface);
@@ -3514,7 +3520,7 @@ a.menu-item { text-decoration: none; }
 .room-banner-turn { flex-wrap: wrap; background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
 .room-banner-turn .btn { flex: none; }
 
-.room-body { flex: 1; min-height: 0; display: flex; }
+.room-body { position: relative; flex: 1; min-height: 0; display: flex; }
 .room-stage { flex: 1; min-width: 0; min-height: 0; padding: 16px; display: flex; }
 .room-grid-wrap { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
 .room-pager { flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; }
