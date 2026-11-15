@@ -67,7 +67,6 @@ public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccou
     public async Task AddAsync(User user, CancellationToken ct = default)
         => await db.Users.AddAsync(user, ct);
 
-    public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
 
     public Task DiscardChangesAsync(User user, CancellationToken ct = default)
         // Reload rather than Detach: the caller still holds the reference and reads from it after

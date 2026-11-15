@@ -50,7 +50,27 @@ public sealed class RolePermissionRepository(TrustCabinetDbContext db) : IRolePe
         db.RoleCapabilities.AddRange(added);
     }
 
-    public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
+    /// <summary>
+    /// The label both sides queue behind. Advisory locks are taken on a number, so the name is
+    /// hashed — the string itself is never compared, it only has to be spelled the same way in
+    /// one place, which is why it is a constant and not repeated at each call site.
+    /// </summary>
+    private const string LockName = "admin-users-invariant";
+
+    public async Task LockAdministratorInvariantAsync(CancellationToken ct = default)
+        // pg_advisory_xact_lock, not pg_advisory_lock: the _xact_ form is released when the
+        // transaction ends, however it ends. The session-scoped form would survive a rollback and
+        // leak with the pooled connection, and the next request to borrow it would hold a lock
+        // nobody takes responsibility for releasing.
+        //
+        // hashtext() turns the agreed label into the bigint the lock is actually taken on. It is
+        // not stable across major PostgreSQL versions, which does not matter here: what matters is
+        // that both call sites hash the same string on the same server at the same time.
+        // Parameterised rather than interpolated into the string. LockName is a constant, so there
+        // is nothing to inject today — but a literal in SQL is the kind of thing that later grows
+        // an argument, and ExecuteSqlRawAsync would concatenate it without complaint.
+        => await db.Database.ExecuteSqlRawAsync(
+            "SELECT pg_advisory_xact_lock(hashtext({0}))", [LockName], ct);
 
     public async Task<IReadOnlyCollection<Guid>> FindActiveUserIdsInRoleAsync(
         Guid roleId, CancellationToken ct = default)

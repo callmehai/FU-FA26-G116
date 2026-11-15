@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.Notifications;
+using TrustCabinet.Application.Users;
 
 namespace TrustCabinet.Application;
 
@@ -15,6 +18,9 @@ public static class DependencyInjection
     {
         AddAudit(services);
         AddNotifications(services);
+        AddAuthentication(services);
+        AddAccess(services);
+        AddUsers(services);
         return services;
     }
 
@@ -28,5 +34,26 @@ public static class DependencyInjection
     private static void AddNotifications(IServiceCollection services)
     {
         services.AddScoped<INotificationService, NotificationService>();
+    }
+
+    private static void AddAuthentication(IServiceCollection services)
+    {
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
+    }
+
+    private static void AddAccess(IServiceCollection services)
+    {
+        services.AddScoped<IRolePermissionService, RolePermissionService>();
+        services.AddScoped<IRoleService, RoleService>();
+
+        // One registration for the lock that keeps role-matrix writes and user writes from each removing the
+        // last administrator at the same time: RolePermissionService, RoleService and UserService guard one
+        // invariant between them. See IAdministratorInvariantGuard.
+        services.AddScoped<IAdministratorInvariantGuard, AdministratorInvariantGuard>();
+    }
+
+    private static void AddUsers(IServiceCollection services)
+    {
+        services.AddScoped<IUserService, UserService>();
     }
 }

@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
@@ -15,6 +16,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Web.Tests.Authentication;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Access;
 
@@ -56,6 +58,10 @@ public class RolePermissionEndpointsTests : IDisposable
             {
                 services.RemoveAll<IRolePermissionRepository>();
                 services.AddSingleton<IRolePermissionRepository>(Roles);
+
+                // RolePermissionService saves through the unit of work; here that is the fake's own save.
+                services.RemoveAll<IUnitOfWork>();
+                services.AddScoped<IUnitOfWork>(_ => new TranslatingUnitOfWork(Roles.SaveChangesAsync));
 
                 // The real one opens a transaction and takes an advisory lock, which needs the
                 // PostgreSQL these tests exist to avoid. The lock itself is tested against a real

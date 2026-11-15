@@ -10,7 +10,7 @@ Sequence diagram gốc chia bốn participant: `Login Page` → `:Auth Controlle
 | Participant trong diagram | Code |
 |---|---|
 | `:Auth Controller` | [`backend/TrustCabinet.Web/Endpoints/AuthEndpoints.cs`](../../backend/TrustCabinet.Web/Endpoints/AuthEndpoints.cs) |
-| `:Authentication Service` | [`backend/TrustCabinet.Infrastructure/Authentication/AuthenticationService.cs`](../../backend/TrustCabinet.Infrastructure/Authentication/AuthenticationService.cs) |
+| `:Authentication Service` | [`backend/TrustCabinet.Application/Authentication/AuthenticationService.cs`](../../backend/TrustCabinet.Application/Authentication/AuthenticationService.cs) |
 | `:User Repository` | [`backend/TrustCabinet.Infrastructure/Authentication/UserRepository.cs`](../../backend/TrustCabinet.Infrastructure/Authentication/UserRepository.cs) |
 | `:Google` (UC-02) | [`backend/TrustCabinet.Infrastructure/Authentication/GoogleTokenVerifier.cs`](../../backend/TrustCabinet.Infrastructure/Authentication/GoogleTokenVerifier.cs) |
 | `Database` | bảng `users` và `role_capabilities` |

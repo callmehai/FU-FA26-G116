@@ -9,6 +9,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Web.Tests.Authentication;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Access;
 
@@ -32,7 +33,7 @@ public class RolePermissionServiceTests
     public RolePermissionServiceTests() => _calendarShares = new FakeCalendarShareStopper(_invariant);
 
     private RolePermissionService NewService() => new(
-        _roles, _audit, _publisher, _invariant, _calendarShares,
+        _roles, new TranslatingUnitOfWork(_roles.SaveChangesAsync), _audit, _publisher, _invariant, _calendarShares,
         NullLogger<RolePermissionService>.Instance);
 
     // ------------------------------------------------------ UC-10 · View role & permission matrix

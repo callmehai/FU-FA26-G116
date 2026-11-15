@@ -40,11 +40,12 @@ public interface IRolePermissionRepository
         Guid roleId, IReadOnlyCollection<Capability> capabilities, CancellationToken ct = default);
 
     /// <summary>
-    /// Persists the pending change. Separate from <see cref="ReplaceCapabilitiesAsync"/> so the
-    /// service can decide the transaction boundary, and so a refusal to save is a branch the
-    /// service can answer (MSG18) rather than an exception reaching the endpoint.
+    /// Takes the exclusive lock every write guarded by <see cref="IAdministratorInvariantGuard"/> queues behind:
+    /// one lock on an agreed label, not on rows, held until the current transaction ends however it ends.
+    /// Waits while another transaction holds it. Taking it again in a transaction that already holds it
+    /// returns at once. Needs an open transaction; runs immediately, not staged.
     /// </summary>
-    Task SaveChangesAsync(CancellationToken ct = default);
+    Task LockAdministratorInvariantAsync(CancellationToken ct = default);
 
     /// <summary>
     /// The ids of every active account currently holding <paramref name="roleId"/> — who are told

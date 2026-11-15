@@ -215,6 +215,11 @@ public enum UniqueConflict { Unknown = 0 /* module thêm dần */ }
 - Điểm dịch duy nhất là `EfUnitOfWork` (`ExecuteAsync`, `SaveChangesAsync`). Vì vậy **trong service Application, mọi
   lời gọi repository và query port phải nằm trong delegate của** `ExecuteAsync` (đọc thuần thì `TransactionMode.None`,
   trừ khi code cũ đọc trong transaction). `catch` đặt **ngoài** `ExecuteAsync`; trong delegate không bắt lỗi lưu trữ.
+  Ngoại lệ duy nhất (chốt 15/11/2026 ở CA-04): code cũ bắt lỗi quanh **đúng một lời gọi lưu** nằm giữa một transaction
+  rồi đi tiếp trong transaction đó (đếm lại, nạp lại entity, trả outcome để transaction vẫn commit), ví dụ
+  `RoleService`, `RolePermissionService`, `UserService`. Khi đó `catch` bọc sát `IUnitOfWork.SaveChangesAsync` (cũng là
+  điểm dịch, nên chỉ exception đã dịch tới được đây), giữ nguyên chỗ và thứ tự cũ. Đưa ra ngoài `ExecuteAsync` sẽ làm
+  `catch` bắt cả lần ghi audit sau đó (đang là 500 thành mã `MSGnn`) và đẩy phần đếm lại ra khỏi khoá: đổi hành vi.
 - Ánh xạ từ code cũ: `catch (Exception ex) when (PersistenceError(ex))` → `catch (PersistenceException)`; bắt
   `UniqueViolation` không xét tên constraint → `catch (UniqueConflictException)`; có xét tên constraint →
   `catch (UniqueConflictException e) when (e.Conflict == UniqueConflict.X)`; `ForeignKeyViolation`/`RestrictViolation`

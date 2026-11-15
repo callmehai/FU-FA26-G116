@@ -39,10 +39,4 @@ public interface IRoleRepository
 
     /// <summary>Stages the role for deletion; its capabilities go with it (cascade). Does not save.</summary>
     void Remove(Role role);
-
-    /// <summary>
-    /// Persists what is staged. Separate so the service decides the transaction boundary, and so
-    /// a refused save is a branch it can answer rather than an exception reaching the endpoint.
-    /// </summary>
-    Task SaveChangesAsync(CancellationToken ct = default);
 }

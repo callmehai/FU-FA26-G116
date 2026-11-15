@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
@@ -16,6 +17,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Access;
 
@@ -52,6 +54,10 @@ public class RoleEndpointsTests : IDisposable
             {
                 services.RemoveAll<IRoleRepository>();
                 services.AddSingleton<IRoleRepository>(Roles);
+
+                // RoleService saves through the unit of work; here that is the fake's own save.
+                services.RemoveAll<IUnitOfWork>();
+                services.AddScoped<IUnitOfWork>(_ => new TranslatingUnitOfWork(Roles.SaveChangesAsync));
 
                 services.RemoveAll<IAdministratorInvariantGuard>();
                 services.AddSingleton<IAdministratorInvariantGuard>(Invariant);

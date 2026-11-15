@@ -103,6 +103,9 @@ internal sealed class FakeRolePermissionRepository : IRolePermissionRepository
 
     private (Guid RoleId, List<Capability> Capabilities)? _pending;
 
+    /// <summary>Nothing to lock in memory; the real lock is covered by <c>AdministratorInvariantGuardTests</c>.</summary>
+    public Task LockAdministratorInvariantAsync(CancellationToken ct = default) => Task.CompletedTask;
+
     public Task SaveChangesAsync(CancellationToken ct = default)
     {
         SaveCount++;

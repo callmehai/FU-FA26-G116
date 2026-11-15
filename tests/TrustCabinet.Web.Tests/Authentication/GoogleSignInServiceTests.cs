@@ -6,6 +6,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -27,7 +28,7 @@ public class GoogleSignInServiceTests
     private readonly FakeAuditService _audit = new();
 
     private AuthenticationService NewService() => new(
-        _users, new FakePasswordHasher(), _tokenIssuer, _refreshTokens, _google, _audit,
+        _users, new TranslatingUnitOfWork(), new FakePasswordHasher(), _tokenIssuer, _refreshTokens, _google, _audit,
         NullLogger<AuthenticationService>.Instance);
 
     /// <summary>
