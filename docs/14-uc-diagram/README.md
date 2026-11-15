@@ -30,7 +30,7 @@ FE-12 theo luồng duyệt–ban hành mới (SCRUM-33, 11/11/2026; khớp `Minu
 Thư ký giữ *Generate*, *Edit*, *Submit Meeting Minutes for Approval* (UC-61) và *Correct Issued Meeting Minutes* (UC-83),
 bỏ *Submit … for Signing*, *Sign*, *Finalize*, *Request Revision*;
 Chủ tọa có *Approve and Issue Meeting Minutes* (UC-64), *Return Meeting Minutes for Revision* (UC-65) và UC-83, bỏ *Sign*;
-Người dự họp chỉ còn *View Meeting Minutes*. *View Signature Status & Audit Trail* giữ nguyên (placeholder UC-63, SCRUM-37).
+Người dự họp chỉ còn *View Meeting Minutes*. *View Signature Status & Audit Trail* đã gỡ khỏi cả 6 trang nội bộ (PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng — UC-62/63 xoá hẳn).
 
 Trước đợt này file còn ở baseline 10/10/2026 (70 UC). Đã bổ sung:
 

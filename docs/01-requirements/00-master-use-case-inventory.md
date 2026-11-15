@@ -234,8 +234,6 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-59 | Sinh bản nháp biên bản *(Generate Meeting Minutes)* — một mẫu cố định (Mẫu 1.4 NĐ30), điền từ hồ sơ cuộc họp + dự thảo đã duyệt | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-60 | Chỉnh biên bản *(Edit Meeting Minutes)* — trình soạn HTML (BR-385) có xem trước, chống ghi đè, xuất Word (không tải được khi Mật) | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-61 | Gửi duyệt biên bản *(Submit Meeting Minutes for Approval)* — Thư ký gửi bản nháp hoặc bị trả lại cho Chủ tọa | Secretary; Chair nhận thông báo | Đã đặc tả | `<<extend>>` UC-58 |
-| UC-62 | ~~Ký biên bản *(Sign Meeting Minutes)*~~ — **bỏ** (PO 14/11/2026, SCRUM-37 đóng): không ký số, kể cả mô phỏng | — | Bỏ | `<<extend>>` UC-58 |
-| UC-63 | ~~Xem trạng thái ký & lịch sử *(View Signature Status & Signing History)*~~ — **bỏ** cùng UC-62 (PO 14/11/2026) | — | Bỏ | `<<extend>>` UC-58 |
 | UC-64 | Duyệt và ban hành biên bản *(Approve and Issue Meeting Minutes)* — duyệt là ban hành luôn, ghi nhật ký (BR-446) | **Chair** | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-65 | Trả lại biên bản *(Return Meeting Minutes for Revision)* — kèm lý do, chỉ giữ lý do của lần trả cuối | **Chair** | Đã đặc tả | `<<extend>>` UC-58 |
 | UC-83 | Tạo bản đính chính biên bản *(Correct Issued Meeting Minutes)* — bản mới từ bản đã ban hành, bản cũ giữ nguyên | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-58 |
@@ -378,11 +376,11 @@ Sửa sau ban hành: UC-83 tạo bản đính chính, đi lại UC-61 → UC-64;
 | FE-09 | Meeting Recording | 3 | 8 |
 | FE-10 | Transcription, Speaker Identification & Meeting Summary | 9 | 17 |
 | FE-11 | Voting Management | 7 | 4 |
-| FE-12 | Meeting Minutes & Approval | 9 | — |
+| FE-12 | Meeting Minutes & Approval | 7 | — |
 | FE-13 | Email & In-App Notification | 3 | 2 |
 | FE-14 | Personal Dashboard & Meeting Workspace | 1 | — |
 | FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **83** | **63** |
+| **Tổng** | | **81** | **63** |
 
 # 8. Ngoài phạm vi UC
 

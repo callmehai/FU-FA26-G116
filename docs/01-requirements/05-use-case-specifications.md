@@ -186,8 +186,6 @@
 - [UC-59 — Generate Meeting Minutes](#uc-59--generate-meeting-minutes)
 - [UC-60 — Edit Meeting Minutes](#uc-60--edit-meeting-minutes)
 - [UC-61 — Submit Meeting Minutes for Approval](#uc-61--submit-meeting-minutes-for-approval)
-- [UC-62 — Sign Meeting Minutes](#uc-62--sign-meeting-minutes)
-- [UC-63 — View Signature Status & Signing History](#uc-63--view-signature-status--signing-history)
 - [UC-64 — Approve and Issue Meeting Minutes](#uc-64--approve-and-issue-meeting-minutes)
 - [UC-65 — Return Meeting Minutes for Revision](#uc-65--return-meeting-minutes-for-revision)
 - [UC-83 — Correct Issued Meeting Minutes](#uc-83--correct-issued-meeting-minutes)
@@ -1916,14 +1914,6 @@ _UC gom — đặc tả nằm ở các UC con UC-76a, UC-76b… bên dưới._
 | **Normal Flow** | Submit Meeting Minutes for Approval<br>1. On the Biên bản tab, the actor selects “Gửi duyệt” [Submit for approval] and confirms.<br>2. The system checks the assignment, that the Meeting has Ended, that the latest revision is a draft or was returned, and that it is the copy the actor read. (BR-404, BR-405, BR-407, BR-389)<br>3. The system marks the revision as waiting for approval, records who submitted it and when, and creates the notification for the current Chair in the same save. (BR-388, BR-411)<br>4. The system displays MSG424 – “Minutes submitted to the Chair for approval.” |
 | **Alternative Flows** | AF-1 – Places are still left blank<br>1. At Step 1, the text still holds “……” where the Secretary was to write.<br>2. The screen warns that some places are still blank and asks for confirmation; the server does not block the submission.<br>3. The actor confirms and the flow resumes at Step 2 of the Main Flow.<br>AF-2 – Submit again after the Chair returned the minutes<br>1. At Step 1, the latest revision was returned; the system shows the Chair's reason above the paper. (BR-407)<br>2. The actor corrects the text (UC-60) or submits it unchanged.<br>3. The flow resumes at Step 2 of the Main Flow. |
 | **Exception Flows** | EX-1 – Actor is the current Chair, not the Secretary<br>1. At Step 2, the actor is the current Chair but not the current Secretary. (BR-404)<br>2. The revision stays as it is. The system displays MSG425 – “Only the Secretary may submit the minutes for approval.”<br>3. The use case ends.<br>EX-2 – The Meeting has not ended<br>1. At Step 2, the Meeting is still InProgress. (BR-405)<br>2. The revision stays a draft. The system displays MSG426 – “The minutes can be submitted only after the meeting has ended.”<br>3. The use case ends.<br>EX-3 – The revision was already submitted or issued<br>1. At Step 2, the latest revision is waiting for approval or has been issued. (BR-388)<br>2. Nothing changes. The system displays MSG400 – “The minutes have been submitted or issued and can no longer be changed.”<br>3. The use case ends.<br>EX-4 – Someone saved after the actor read the minutes<br>1. At Step 2, the revision was saved by another person after the actor read it. (BR-389)<br>2. Nothing is submitted. The system displays MSG401 – “The minutes were just changed by someone else. Reload to see the latest version.”<br>3. The flow resumes at Step 1 of the Main Flow.<br>EX-5 – The change cannot be saved<br>1. At Step 3, the system cannot save the new state. (BR-411)<br>2. The revision stays a draft or returned revision and nobody is notified. The system displays MSG404 – “Unable to save the minutes. Please try again.”<br>3. The use case ends.<br>EX-6 – The minutes are not accessible<br>1. At Step 2, the Meeting is unavailable, the actor may no longer read it, or the actor is neither the current Chair nor the current Secretary. (BR-386)<br>2. The system answers as if the minutes did not exist, with no message code, and discloses nothing about them.<br>3. The use case ends. |
-
-### UC-62 – Sign Meeting Minutes
-
-Placeholder only – detailed Use Case Specification will be added later.
-
-### UC-63 – View Signature Status & Signing History
-
-Placeholder only – detailed Use Case Specification will be added later.
 
 ### UC-64 – Approve and Issue Meeting Minutes
 
