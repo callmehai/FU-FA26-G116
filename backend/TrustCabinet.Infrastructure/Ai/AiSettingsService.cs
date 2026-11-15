@@ -105,7 +105,10 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
     public async Task<AiSettingsOutcome> TestAsync(AiSettingsInput input, CancellationToken ct = default)
     {
         if (input.Mode is nameof(AiProviderMode.Local)) return await TestLocalAsync(ct);
-        var errors = Validate(input with { Mode = nameof(AiProviderMode.Api) }, out _, out var baseUrl, out var model, out var key);
+        // Exactly "Local" or "Api", as a save requires: anything else is refused before the API is called.
+        if (input.Mode is not nameof(AiProviderMode.Api))
+            return new(AiSettingsFailure.Invalid, Errors: new Dictionary<string, string[]> { ["mode"] = ["Chọn máy local hoặc API."] });
+        var errors = Validate(input, out _, out var baseUrl, out var model, out var key);
         string? stored = null;
         if (key is null or "")
         {
