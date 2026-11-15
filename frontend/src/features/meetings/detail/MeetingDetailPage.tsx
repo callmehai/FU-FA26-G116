@@ -9,6 +9,7 @@ import { useToast } from '../../../components/toastContext'
 import { isApiError } from '../../../lib/errors'
 import { formatDateTime, formatSchedule } from '../../../lib/format'
 import { useBackTarget, type BackTarget } from '../../../lib/backTarget'
+import { useActiveTabInView } from '../../../lib/useActiveTabInView'
 import { routes } from '../../../lib/routes'
 import {
   CANCELLABLE_STATUSES,
@@ -142,6 +143,7 @@ function MeetingDetail({
   const onRoster = meeting.myMeetingRole !== null
   const tabs = onRoster ? TABS : TABS.filter((t) => t.id !== 'recordings')
   const tab: TabId = tabs.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
+  const tabBar = useActiveTabInView(tab)
   const setTab = (id: TabId) =>
     setParams(
       (p) => {
@@ -392,7 +394,7 @@ function MeetingDetail({
         </section>
       )}
 
-      <div className="tabs" role="tablist" aria-label="Chi tiết cuộc họp">
+      <div className="tabs" role="tablist" aria-label="Chi tiết cuộc họp" ref={tabBar}>
         {tabs.map((t) => (
           <button
             key={t.id}

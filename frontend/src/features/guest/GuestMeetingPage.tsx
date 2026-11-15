@@ -9,6 +9,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatSchedule } from '../../lib/format'
 import { routes } from '../../lib/routes'
+import { useActiveTabInView } from '../../lib/useActiveTabInView'
 import type { InvitationResponseResult } from '../../types/participant'
 import { AgendaPanel } from '../agenda/AgendaPanel'
 import { roomMessage } from '../calls/room/roomSupport'
@@ -45,6 +46,7 @@ export function GuestMeetingPage() {
   const [params, setParams] = useSearchParams()
   // The tab lives in the URL, so the browser's Back from a document returns to the tab it was opened from.
   const tab: TabId = TABS.find((t) => t.id === params.get('tab'))?.id ?? 'agenda'
+  const tabBar = useActiveTabInView(tab)
   const setTab = (id: TabId) =>
     setParams(
       (p) => {
@@ -118,7 +120,7 @@ export function GuestMeetingPage() {
           </section>
         )}
 
-        <div className="tabs" role="tablist" aria-label="Cuộc họp">
+        <div className="tabs" role="tablist" aria-label="Cuộc họp" ref={tabBar}>
           {TABS.map((t) => (
             <button
               key={t.id}
