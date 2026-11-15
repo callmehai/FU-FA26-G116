@@ -64,8 +64,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | Transcript | Transcript của Recording | IMPLEMENTED | Tối đa một cho mỗi Recording. |
 | TranscriptSegment | Đoạn transcript | IMPLEMENTED | Giữ. |
 | TranscriptSpeaker | Một giọng trong bản gỡ băng và người được gán tên (SCRUM-35) | IMPLEMENTED (migration `TranscriptSpeakerGuest`) | `TranscriptId`, `Label` (SPEAKER_00…), `SpeechMs`; máy gợi ý `SuggestedUserId` + `SuggestionScore`, và từ 03/11/2026 (ADR-0045) tự **điền** `AssignedUserId` khi điểm khớp đạt ngưỡng tự gán (mặc định 0,75) và người đó đã đồng ý thông báo 1.2; Thư ký gán hoặc đổi sang `AssignedUserId` **hoặc** `AssignedGuestId` (Khách còn lời mời). `AssignedById` rỗng nghĩa là máy điền, có người là Thư ký điền; cờ `autoAssigned` chỉ có trong phản hồi API, không lưu. Không lưu vector giọng. |
-| MeetingMinutes | Phiên bản biên bản | IMPLEMENTED (migration `MinutesApproval`) | Trạng thái `Draft`/`WaitingApproval`/`Rejected`/`Issued`/`Superseded` theo luồng SCRUM-33 đã chốt: Thư ký gửi duyệt, Chủ tọa duyệt là ban hành, trả lại kèm lý do (`RejectionReason`, tối đa 2.000 ký tự); `SubmittedById`, `ReturnedById`, `ReturnedAt` ghi ai gửi, ai trả lại. Không ghi đè bản đã ban hành: đính chính là revision mới trỏ `SupersedesId` về bản cũ, bản cũ thành `Superseded` khi bản mới ban hành. Không ký số theo PO 14/11/2026 (SCRUM-37 đóng). |
-| MinutesSignature | Chữ ký trên phiên bản biên bản | NEED MIGRATION / RESTRUCTURE | Entity giữ nguyên theo code (bảng còn trong DB); không có yêu cầu migration mới vì luồng ký đã bỏ — BR-166 retired (PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng). |
+| MeetingMinutes | Phiên bản biên bản | IMPLEMENTED (migration `MinutesApproval`) | Trạng thái `Draft`/`WaitingApproval`/`Rejected`/`Issued`/`Superseded` theo luồng SCRUM-33 đã chốt: Thư ký gửi duyệt, Chủ tọa duyệt là ban hành, trả lại kèm lý do (`RejectionReason`, tối đa 2.000 ký tự); `SubmittedById`, `ReturnedById`, `ReturnedAt` ghi ai gửi, ai trả lại. Không ghi đè bản đã ban hành: đính chính là revision mới trỏ `SupersedesId` về bản cũ, bản cũ thành `Superseded` khi bản mới ban hành. Không ký số theo PO 14/11/2026 (SCRUM-37 đóng); bảng `minutes_signatures` đã xoá (migration `DropMinutesSignature`). |
 | MeetingSummary | Dự thảo AI hiện hành của cuộc họp (SCRUM-36, [ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)) | IMPLEMENTED (migration `AiMeetingSummaryJob`) | Tối đa một mỗi Meeting. `Content` là JSON 3 mục I–III và khoảng giờ lời thoại của từng phần. `Status` Queued/Running/Ready/Failed là hàng chờ của máy AI (`RequestedById`, `RequestedAt`, `ErrorMessage`). Duyệt = `ReviewedById`/`ReviewedAt`: trước đó chỉ Chủ toạ, Thư ký thấy; sửa (`EditedById`, `EditedAt`) thì bỏ duyệt. Duyệt và công bố gộp làm một bước, khác dự kiến cũ (Draft/Approved/Published). |
 | AiProviderSetting | Máy AI viết dự thảo do quản trị chọn ([ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md)) | IMPLEMENTED (migration `AiProviderSetting`) | Tối đa một dòng (id cố định). `Mode` Local/Api; `ApiBaseUrl`, `ApiModel`; `ApiKeyCiphertext` là key mã hoá AES-256-GCM (không bao giờ trả về), `ApiKeyHint` 4 ký tự cuối; `UpdatedById`. Chỉ cuộc họp Thường dùng API. |
 | EmailMessage | Bản ghi gửi email/outbox | IMPLEMENTED | Giữ khóa chống trùng và thông tin thử gửi lại; id thư phía Resend và kết quả giao thư từ webhook ([ADR-0031](../05-decisions/0031-gui-email-qua-resend.md)). |
@@ -92,7 +91,7 @@ Các ERD bên dưới mô tả mô hình đích. Bảng trạng thái triển kh
 | Nền tảng và liên lạc | Notification, EmailMessage, AuditLogEntry |
 | Kho tài liệu cá nhân | Folder, Document, StoredFile, MeetingDocument, DocumentComment |
 | Hoạt động trong cuộc họp | SpeakingRequest, MeetingNote, VotingSession, VotingOption, VoteReceipt, VoteChoice |
-| Bản ghi, biên bản và AI sau họp | Recording, Transcript, TranscriptSegment, TranscriptSpeaker, SpeechClip, VoiceConsent, VoiceSample, MeetingMinutes, MinutesSignature, MeetingSummary, AiProviderSetting |
+| Bản ghi, biên bản và AI sau họp | Recording, Transcript, TranscriptSegment, TranscriptSpeaker, SpeechClip, VoiceConsent, VoiceSample, MeetingMinutes, MeetingSummary, AiProviderSetting |
 | Phòng họp trực tuyến | CallSession, CallParticipant, GuestSession |
 | Chia sẻ lịch | CalendarShare |
 
@@ -429,11 +428,9 @@ erDiagram
     User o|--o{ VoiceSample : "collecting as Secretary"
     Meeting o|--o{ VoiceSample : "hosting proxy collection at"
     Meeting ||--o{ MeetingMinutes : "issuing"
-    MeetingMinutes ||--o{ MinutesSignature : "receiving"
     MeetingMinutes ||--o| MeetingMinutes : "superseding"
     Meeting ||--o| MeetingSummary : "generating"
     User ||--o{ Recording : "uploading"
-    User ||--o{ MinutesSignature : "signing"
 
     Recording {
         uuid Id PK
@@ -535,16 +532,6 @@ erDiagram
         string RejectionReason "lý do trả lại, tối đa 2000 ký tự"
         uuid ReturnedById FK "nullable"
         timestamptz ReturnedAt "nullable"
-    }
-    MinutesSignature {
-        uuid Id PK
-        uuid MinutesId FK
-        uuid SignerId FK
-        timestamptz SignedAt
-        string ContentSha256
-        string Signature
-        string PublicKey
-        timestamptz InvalidatedAt "nullable"
     }
     MeetingSummary {
         uuid Id PK
@@ -806,8 +793,6 @@ Ràng buộc và lý do:
 | User | 0..1 → 0..* | VoiceSample | Thu hộ mẫu giọng (Thư ký, SCRUM-152) |
 | Meeting | 0..1 → 0..* | VoiceSample | Nơi thu hộ mẫu giọng (SCRUM-152) |
 | Meeting | 1 → 0..* | MeetingMinutes | Ban hành |
-| MeetingMinutes | 1 → 0..* | MinutesSignature | Nhận chữ ký |
-| User | 1 → 0..* | MinutesSignature | Ký |
 | MeetingMinutes | 0..1 → 0..1 | MeetingMinutes | Thay thế phiên bản trước |
 | Meeting | 1 → 0..1 | MeetingSummary | Tạo tóm tắt |
 | User | 1 → 0..* | Notification | Nhận |
@@ -895,6 +880,7 @@ Ràng buộc và lý do:
 | Tổ chức (`organizations`, `tenants`) | Hệ thống phục vụ **đúng một tổ chức**. Không có bảng tổ chức, không multi-tenant, không vùng lưu trú dữ liệu — xem [ADR-0004](../05-decisions/0004-mot-to-chuc-khong-co-don-vi.md) |
 | Đơn vị / phòng ban (`org_units`) | Cũng theo ADR-0004: không có phân cấp cha–con, không gán người dùng vào đơn vị, không có "đơn vị chủ trì" cuộc họp. Mời họp là mời **từng người**. Có test tự động chặn việc thêm lại cột kiểu này |
 | Hàng đợi job | ASR chạy nền bằng cơ chế đơn giản, không dựng job spine |
+| Chữ ký biên bản (`minutes_signatures`) | PO 14/11/2026 bỏ ký số kể cả mô phỏng (SCRUM-37, BR-166 retired): Chủ toạ duyệt là ban hành. Bảng từng có sẵn từ đầu nhưng chưa bao giờ được ghi; migration `DropMinutesSignature` (PO 15/11/2026) xoá bảng và entity |
 
 Về bản ghi âm: `recordings` có `ConsentObtainedAt`, `ConsentPurpose`, `RetainUntil`, `DeletedAt` —
 bốn cột đó tồn tại để hệ thống **chứng minh được** đã xin đồng ý trước khi ghi, đã nêu mục đích, và

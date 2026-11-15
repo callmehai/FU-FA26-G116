@@ -5,14 +5,15 @@
   mở lại được bằng draw.io).
 
 Từ 15/11/2026 hình được **vẽ lại theo code**, giữ kiểu vẽ của bản trước (bảng trắng viền đen, crow's foot,
-chỗ giao nhau vẽ cầu vượt). Hình có đủ 43 bảng trong `TrustCabinetDbContextModelSnapshot.cs` (thêm `AiProviderSetting`
-06/11/2026, `CalendarShare` 10/11/2026 và hai cột thu hộ `CollectedById`, `MeetingId` của `voice_samples` 12/11/2026):
-37 thực thể và 4 bảng nối của [02-erd.md](../../02-design/02-erd.md) (kể
+chỗ giao nhau vẽ cầu vượt). Hình có đủ 42 bảng trong `TrustCabinetDbContextModelSnapshot.cs` (thêm `AiProviderSetting`
+06/11/2026, `CalendarShare` 10/11/2026 và hai cột thu hộ `CollectedById`, `MeetingId` của `voice_samples` 12/11/2026;
+bỏ `MinutesSignature` 15/11/2026 khi migration `DropMinutesSignature` xoá bảng):
+36 thực thể và 4 bảng nối của [02-erd.md](../../02-design/02-erd.md) (kể
 cả `DocumentReadConfirmation`, bản trước chưa vẽ), cộng 2 bảng kỹ thuật `MeetingInvitationDispatch` và
-`GuestVerificationChallenge`. Hình chưa đưa vào Report 3: §I.3.2 của Report 3 vẫn liệt kê 35 thực thể
+`GuestVerificationChallenge`. Hình chưa đưa vào Report 3: §I.3.2 của Report 3 liệt kê 34 thực thể
 (thiếu `AiProviderSetting` và `CalendarShare`, chờ note BA Final Review của SCRUM-36/SCRUM-142; hai cột thu hộ
-của `voice_samples` đã vào Entity 35). Góc nhìn Chen (không thuộc tính) ở
-[../chen/](../chen/README.md) là mô hình đích 35 thực thể.
+của `voice_samples` đã vào Entity 34). Góc nhìn Chen (không thuộc tính) ở
+[../chen/](../chen/README.md) là mô hình đích 34 thực thể.
 
 ## Cách đọc
 

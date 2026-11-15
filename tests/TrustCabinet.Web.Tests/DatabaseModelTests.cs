@@ -45,7 +45,7 @@ public class DatabaseModelTests
                 "guest_sessions", "guest_verification_challenges",
                 "meeting_document_agenda_items", "meeting_documents", "meeting_guest_invitations", "meeting_invitation_dispatches",
                 "meeting_minutes", "meeting_notes", "meeting_participants",
-                "meeting_status_history", "meeting_summaries", "meetings", "minutes_signatures",
+                "meeting_status_history", "meeting_summaries", "meetings",
                 "notifications", "recordings", "role_capabilities", "roles", "speaking_requests", "speech_clips",
                 "stored_files",
                 "transcript_segments", "transcript_speakers", "transcripts", "users", "voice_consents",

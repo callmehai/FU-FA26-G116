@@ -5,8 +5,8 @@ Hai cách trình bày mô hình dữ liệu của TrustCabinet: `muc-tieu` (dạ
 
 | Thư mục | Nội dung | Dùng ở đâu | Đẩy Drive |
 |---|---|---|---|
-| [muc-tieu/](muc-tieu/README.md) | ERD dạng bảng vẽ lại theo code (15/11/2026): 43 bảng — 37 thực thể, 4 bảng nối, 2 bảng kỹ thuật — có thuộc tính | Đối chiếu thuộc tính với [02-erd.md](../02-design/02-erd.md); Report 3 §I.3.2 vẫn liệt kê 35 thực thể (chờ note SCRUM-36/SCRUM-142) | Có |
-| [chen/](chen/README.md) | ERD mục tiêu dạng Chen, không thuộc tính, 35 thực thể / 59 quan hệ | Góc nhìn thực thể–quan hệ | Có |
+| [muc-tieu/](muc-tieu/README.md) | ERD dạng bảng vẽ lại theo code (15/11/2026): 42 bảng — 36 thực thể, 4 bảng nối, 2 bảng kỹ thuật — có thuộc tính | Đối chiếu thuộc tính với [02-erd.md](../02-design/02-erd.md); Report 3 §I.3.2 liệt kê 34 thực thể (chờ note SCRUM-36/SCRUM-142) | Có |
+| [chen/](chen/README.md) | ERD mục tiêu dạng Chen, không thuộc tính, 34 thực thể / 57 quan hệ | Góc nhìn thực thể–quan hệ | Có |
 
 ## Bản nào là nguồn?
 

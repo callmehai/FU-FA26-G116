@@ -115,7 +115,7 @@ GRID = [
     [None, None, "TranscriptSegment", "Transcript", "CallSession", "CallParticipant", "TranscriptSpeaker", None, None],
     ["MeetingSummary", "EmailMessage", "MeetingInvitationDispatch", "Recording", "SpeakingRequest", "GuestSession", None, "GuestVerificationChallenge", None],
     [None, "MeetingMinutes", "MeetingParticipant", "Meeting", "MeetingNote", "AgendaItem", "MeetingGuestInvitation", "DocumentComment", "MeetingDocumentAgendaItem"],
-    [None, "MinutesSignature", "Notification", "MeetingStatusHistory", "CalendarShare", "SpeechClip", "DocumentReadConfirmation", "MeetingDocument", None],
+    [None, None, "Notification", "MeetingStatusHistory", "CalendarShare", "SpeechClip", "DocumentReadConfirmation", "MeetingDocument", None],
     ["VoiceSample", "RoleCapability", "Role", "User", "VoteReceipt", "Folder", "Document", "VoteDocument", "StoredFile"],
     ["VoiceConsent", None, "AiProviderSetting", "AuditLogEntry", "VoteEligibleVoter", "VotingSession", None, "VotingOption", "VoteChoice"],
 ]
