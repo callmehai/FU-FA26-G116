@@ -1870,7 +1870,7 @@ a.menu-item { text-decoration: none; }
 @media (pointer: coarse) { .dialog-close { top: 10px; right: 10px; width: 40px; height: 40px; } }
 .dialog-body { padding: 20px 24px; overflow-y: auto; }
 .dialog-text { margin: 0; color: var(--ink-soft); }
-.dialog-error { margin-top: 12px; }
+.dialog-error { margin-top: 12px; scroll-margin-bottom: 16px; }
 .dialog-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 24px 20px; border-top: 1px solid var(--line); }
 /* A whole form: wider, its body scrolls between the fixed head and the pinned actions. */
 .dialog-lg { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); }
