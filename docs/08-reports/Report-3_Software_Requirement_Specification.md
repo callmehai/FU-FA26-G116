@@ -71,6 +71,7 @@ Table of Contents
 | 15/11/2026 | M, D | KhanhPG | PO 14–15/11 (SCRUM-37/106): drop minutes signing incl. simulation — remove UC-62/63, retire BR-166; Chair approval issues minutes (UC-64); no feedback-list UC (note 47). |
 | 15/11/2026 | M, D | HaiTV | PO 15/11 (SCRUM-37): drop MinutesSignature from the database (migration DropMinutesSignature); section 3.2 loses Entity 27, Entity 26 rewritten to the approval flow. |
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 50): align Report 3 and API docs with QA-built behavior 15/11 (drop UC-09/UC-69, fix UC/BR/MSG mismatches). |
+| 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop remaining FE-14 mentions; features are Must-have FE-01 to FE-13, Should-have FE-15 to FE-16. |
 
 *A - Added M - Modified D - Deleted
 
@@ -817,7 +818,7 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | UC-85 | Find Meeting Time | Working Calendar & Meeting Time Search | Find common free slots through UC-85a, create a Draft meeting from a slot through UC-85b and view shared calendars through UC-85c; see the detailed UC-85a–UC-85c specifications and ADR-0058. |
 | UC-86 | Collect Voice Samples for Attendees | Transcription, Speaker Identification & Meeting Summary | A Secretary collects voice samples for attendees on the meeting room microphone: view the collection (UC-86a), record a sample (UC-86b), play a collected sample (UC-86c) and delete a collected sample (UC-86d). |
 
-Feature priority. The features are prioritised with the Product Owner: FE-01 to FE-13 are Must-have and FE-14 to FE-16 are Should-have. FE-16 follows ADR-0058: calendar sharing shows busy or free only, and there is no AI assistant.
+Feature priority. The features are prioritised with the Product Owner: FE-01 to FE-13 are Must-have and FE-15 to FE-16 are Should-have. FE-16 follows ADR-0058: calendar sharing shows busy or free only, and there is no AI assistant.
 
 | Feature | Name | Priority |
 | --- | --- | --- |

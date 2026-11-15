@@ -557,7 +557,7 @@ deactivate MeetingPage
 | Thư mục | UC |
 |---|---|
 | [auth/](auth/README.md) | UC-01 → UC-04 |
-| [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08, UC-09 |
+| [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08 |
 | [role-management/](role-management/README.md) | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
 | [meeting-management/](meeting-management/README.md) | UC-14 → UC-22, UC-75 |
 | [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77, UC-82 (sơ bộ) |

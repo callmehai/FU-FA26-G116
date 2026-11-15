@@ -41,9 +41,9 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 | Swimlane | Việc chính |
 |---|---|
-| System Admin | Tạo / quản lý vai trò tuỳ chỉnh (UC-12), cấu hình quyền (UC-11), tạo / cập nhật tài khoản (UC-06), gán vai trò (UC-08), mở khoá tài khoản (UC-09) |
+| System Admin | Tạo / quản lý vai trò tuỳ chỉnh (UC-12), cấu hình quyền (UC-11), tạo / cập nhật tài khoản (UC-06), gán vai trò (UC-08) |
 | User | Mở TrustCabinet, chọn đăng nhập Google hoặc email + mật khẩu, dùng các chức năng được phép |
-| TrustCabinet | Lưu thay đổi và ghi audit log (BR-16); kiểm tra thông tin đăng nhập, liên kết tài khoản, trạng thái active; khoá tài khoản khi sai quá số lần |
+| TrustCabinet | Lưu thay đổi và ghi audit log (BR-16); kiểm tra thông tin đăng nhập, liên kết tài khoản, trạng thái active; quá số lần cho phép trong một phút thì báo lỗi MSG414 |
 | OAuth Provider | Xác minh tài khoản Google và trả danh tính (UC-02) |
 
 **Luồng:**
@@ -51,7 +51,7 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 1. System Admin chuẩn bị vai trò, quyền và tài khoản; mỗi thay đổi được lưu và ghi audit log.
 2. Người dùng mở TrustCabinet và chọn cách đăng nhập.
    - **Email + mật khẩu (UC-01):** sai thông tin → báo lỗi (MSG01, không lộ email có tồn tại hay không — BR-02); sai quá
-     số lần cho phép → hệ thống khoá tài khoản, Admin mở khoá bằng UC-09.
+     số lần cho phép trong một phút → hệ thống báo lỗi MSG414, thử lại sau ít phút.
    - **Google (UC-02):** Google xác minh tài khoản; hệ thống kiểm tra email đã liên kết tài khoản nội bộ (BR-06, không tự
      tạo tài khoản — BR-07).
 3. Tài khoản bị vô hiệu hoá → báo lỗi (BR-03). Hợp lệ → đăng nhập và nạp quyền theo vai trò (BR-08).

@@ -22,6 +22,7 @@ Table of Contents
 | 09/10/2026 | M, D | KhanhPG | Renumber FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or Resolution scope); safeguards, effort and dates preserved. |
 | 13/10/2026 | M | HaiTV | Align the plan with ADR-0018 (immutable files, folders, browser previews) and ADR-0016/17 (Chair-selected voters, Guests vote, no close-Votes requirement). |
 | 30/10/2026 | M | HuyNQ | Fix review findings (v1.2): fifteen features in risk R04, EX means Exception, Cancelled lifecycle added, TBDs closed (ADR-0026/0015), R03 lowered, no 'versioning' in Iteration 2, ToC fixed. |
+| 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 from scope and Iteration 6; account lifecycle ends at deactivation, per-minute sign-in limit kept. |
 
 *A - Added M - Modified D - Deleted
 
@@ -50,7 +51,7 @@ The work to be implemented consists of the fifteen active major features baselin
 
 ●  Meeting governance - FE-11 Voting Management and FE-12 Meeting Minutes & Digital Signing.
 
-●  Communication and visibility - FE-13 Email & In-App Notification, FE-14 Personal Dashboard & Meeting Workspace, FE-15 Reporting & Statistics.
+●  Communication and visibility - FE-13 Email & In-App Notification, FE-15 Reporting & Statistics.
 
 Each feature is elaborated into detailed requirements in Report 3 - Software Requirement Specification during the iteration in which it is built, and is broken down into tasks in the Project Tracking workbook. The mapping between a feature and the iteration that delivers it is given in Section I.3 - Cost & Time Estimations and in Section II.1 - Project Process/Methodology.
 
@@ -135,14 +136,13 @@ Effort is expressed in eight-hour person-days (pds). The 300 pds committed below
 | 5.5 | Report 5.2 and 5.3: Integration Test cases and System Test cases | 5 | 29/11/2026 |
 | 5.6 | Code package & Report 5.1 Unit Test | 5 | 29/11/2026 |
 | 5.7 | Software Package v5.0 (increment 5) | 3 | 29/11/2026 |
-| 6 | Iteration 6: Workspace & Reporting - FE-14, FE-15 (weeks 12-13)30/11/2026 - 13/12/2026 | 40 |  |
-| 6.1 | FE-14 Personal Dashboard & Meeting Workspace | 9 | 13/12/2026 |
-| 6.2 | FE-15 Reporting & Statistics | 9 | 13/12/2026 |
-| 6.3 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 6 | 13/12/2026 |
-| 6.4 | Report 6: Software User Guides (installation guide, user manual) | 6 | 13/12/2026 |
-| 6.5 | Code package & Report 5.1 Unit Test | 4 | 13/12/2026 |
-| 6.6 | Report 2: Project Management Plan v1.4 | 3 | 06/12/2026 |
-| 6.7 | Software Package v6.0 (increment 6 - feature complete) | 3 | 13/12/2026 |
+| 6 | Iteration 6: Reporting - FE-15 (weeks 12-13)30/11/2026 - 13/12/2026 | 40 |  |
+| 6.1 | FE-15 Reporting & Statistics | 9 | 13/12/2026 |
+| 6.2 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 6 | 13/12/2026 |
+| 6.3 | Report 6: Software User Guides (installation guide, user manual) | 6 | 13/12/2026 |
+| 6.4 | Code package & Report 5.1 Unit Test | 4 | 13/12/2026 |
+| 6.5 | Report 2: Project Management Plan v1.4 | 3 | 06/12/2026 |
+| 6.6 | Software Package v6.0 (increment 6 - feature complete) | 3 | 13/12/2026 |
 | 7 | Deployment: Acceptance, Stabilisation & Project Closure (weeks 14-15)<br>14/12/2026 - 27/12/2026 | 40 |  |
 | 7.1 | Report 5.5: Acceptance Test scripts and acceptance test support | 7 | 20/12/2026 |
 | 7.2 | Defect fixing and system stabilisation | 10 | 27/12/2026 |
@@ -190,7 +190,7 @@ Risks are reviewed in the evaluation phase of every iteration. Probability and i
 | R01 | The online meeting room (FE-08) is the team's first piece of real-time media work. Connection establishment, NAT traversal and multi-party audio and video quality may take substantially longer than estimated, putting the single largest work package of the plan at risk. | High | High | Run a feasibility study in the Initial Planning phase before the estimate is committed, and build on a proven open-source media server rather than on raw peer-to-peer connections. FE-08 is the only major feature of Iteration 4 so that the iteration carries slack for it. If the room is not demonstrable at the Iteration 4 evaluation, fall back to the reduced room agreed by the team in advance and recorded in Report 3: audio, screen sharing and chat, with a capped number of participants. |
 | R02 | Speaker-attributed transcription of Vietnamese meeting audio (FE-10) produces output too inaccurate to summarise, making the meeting summary and the minutes built on it unusable. | Medium | High | Evaluate candidate models during the Initial Planning feasibility study against three to five of the team's own recorded meetings, agree an acceptance threshold within the team before implementation starts and record it in Report 3. Keep the transcript editable so that the Secretary can correct speaker labels before the summary is generated, which keeps the feature usable even at imperfect accuracy. FE-09 and FE-10 are scheduled in Iteration 3 rather than late in the project, so that the evaluation phase of that iteration still leaves time to change approach. |
 | R03 | The environment in which the speech-processing and summarisation model runs was open when this plan was first written. The Product Owner decided on 23/10/2026 (ADR-0026) that it runs in-house in a separate CPU-only worker, so the remaining risk is the capacity of the deployment server, which is a 1 GB instance today and will move to a larger one. | Low | High | Move the deployment server to a 4 GB instance, or run the speech worker on a team machine that the server reaches over a private network connection (see the deployment guide). The application keeps working while the worker is off, and the functions that need it report MSG312. Keep transcription and summarisation behind an internal interface so the worker can change host without changing the rest of the system. Update Section II.6.3 when the host is fixed. |
-| R04 | Fifteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-14 and FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
+| R04 | Fourteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
 | R05 | Workload is distributed unevenly, or a member becomes unavailable at a critical point, leaving a module that only one person understands. | Medium | Medium | Give every work package one accountable owner and make sure at least two members have worked on each module, by pairing on the first task of every new module. Log effort per member in Jira and review it in the weekly supervisor meeting. Reassign tasks in the planning phase of the next iteration when the distribution drifts. |
 
 ## II. Management Approach
@@ -281,7 +281,7 @@ Phases of this iteration:
 
 ●  	Planning - Set the iteration goal, select FE-01 to FE-03 from the feature list, break them into Jira tasks with an owner and an estimate, and allocate the work against the capacity in Section I.4.
 
-●  	Requirements - Elaborate FE-01 to FE-03 into detailed requirements: sign-in with email and password and with a Google account linked to an existing internal account; the password policy, session expiry and lockout rules; the account lifecycle from creation through deactivation and unlock; user profile management; and the role-permission matrix for the system actors - System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant and Guest. Recorded as Report 3 - SRS v0.9, together with the overall requirement set.
+●  	Requirements - Elaborate FE-01 to FE-03 into detailed requirements: sign-in with email and password and with a Google account linked to an existing internal account; the password policy, session expiry and lockout rules; the account lifecycle from creation through deactivation; user profile management; and the role-permission matrix for the system actors - System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant and Guest. Recorded as Report 3 - SRS v0.9, together with the overall requirement set.
 
 ●  	Analysis & design - Fix the data model for user, role and permission; design the authentication flow and the audit-log record; and turn the mock-up into the screen set for this iteration.
 
@@ -381,7 +381,7 @@ Phases of this iteration:
 
 Increment delivered: Software Package v5.0 - increment 4 plus in-meeting voting, recorded Chair conclusions and electronically signed meeting minutes. Reports delivered: Report 3 v1.3, Report 4 v1.3, Reports 5.2 and 5.3.
 
-Iteration 6: Workspace & Reporting - FE-14, FE-15 (2 weeks)
+Iteration 6: Reporting - FE-15 (2 weeks)
 
 Time: 30/11/2026 - 13/12/2026
 
@@ -389,13 +389,13 @@ Iteration goal: Make everything already built visible and actionable, and reach 
 
 Phases of this iteration:
 
-●  Planning - Set the iteration goal and select FE-14 and FE-15. Both depend on the earlier increments, which is why they are planned last: there is nothing to display or count until the meeting, audio and governance features exist.
+●  Planning - Set the iteration goal and select FE-15. It depends on the earlier increments, which is why they are planned last: there is nothing to display or count until the meeting, audio and governance features exist.
 
-●  	Requirements - Define the content of the personal workspace and the figures the reports must produce, their breakdowns by project or other applicable reporting scope and their export format. Recorded as the final detailed version of Report 3.
+●  	Requirements - Define the figures the reports must produce, their breakdowns by project or other applicable reporting scope and their export format. Recorded as the final detailed version of Report 3.
 
-●  	Analysis & design - Design the workspace query across meetings, approvals, documents, minutes and votes, and the aggregation behind the reporting figures.
+●  	Analysis & design - Design the aggregation behind the reporting figures.
 
-●  Implementation - Build FE-14 Personal Dashboard & Meeting Workspace and FE-15 Reporting & Statistics, completing the feature set baselined in Report 1.
+●  Implementation - Build FE-15 Reporting & Statistics, completing the feature set baselined in Report 1.
 
 ●  	Testing - Unit and integration tests for the new modules, followed by full system testing of the complete product against the functional requirements (Report 5.3) and the non-functional requirements (Report 5.4), and a regression pass over every previous increment.
 
