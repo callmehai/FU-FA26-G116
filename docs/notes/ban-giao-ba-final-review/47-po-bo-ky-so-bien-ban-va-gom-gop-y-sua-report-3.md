@@ -46,18 +46,25 @@ Quy trình: sửa `Report_3_Software_Requirement_Specification.docx` → `python
 (`python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`,
 kéo theo bản trích UC/BR và `uc-map.html`) → rà `git diff` chỉ nằm trong vùng ký.
 
-- [ ] Gỡ hai dòng UC-62, UC-63 ở bảng danh mục UC, hoặc đánh dấu **Bỏ (PO 14/11/2026)** đồng bộ cách ghi
+- [x] Gỡ hai dòng UC-62, UC-63 ở bảng danh mục UC, hoặc đánh dấu **Bỏ (PO 14/11/2026)** đồng bộ cách ghi
       inventory — hỏi leader một câu trước khi xóa hẳn (bảng danh mục có tiền lệ giữ dòng bỏ).
-- [ ] Gỡ hai mục đặc tả UC-62 (§12.5), UC-63 (§12.6); đánh lại số mục 12.x sau đó nếu còn liên tục.
-- [ ] `BR-166`: đánh dấu **Retired** (giữ số, không tái cấp), ghi câu trỏ thay thế ("Signing dropped PO
+- [x] Gỡ hai mục đặc tả UC-62 (§12.5), UC-63 (§12.6); đánh lại số mục 12.x sau đó nếu còn liên tục.
+- [x] `BR-166`: đánh dấu **Retired** (giữ số, không tái cấp), ghi câu trỏ thay thế ("Signing dropped PO
       14/11/2026; minutes are issued at Chair approval — UC-64"), gỡ UC-62 khỏi Related UC. Không dùng lại
       số BR-166 cho việc khác.
-- [ ] Rà các chỗ họ ký ở §1 (BF-04, entity 27 + enum, ma trận phân quyền, mô tả actor, đặc tả màn hình):
+- [x] Rà các chỗ họ ký ở §1 (BF-04, entity 27 + enum, ma trận phân quyền, mô tả actor, đặc tả màn hình):
       gỡ hoặc viết lại theo "không ký — Chủ tọa duyệt là ban hành". Chỗ nào là màn hình chưa từng có
       (màn ký) thì gỡ cả màn; màn Finalized giữ lại nhưng bỏ câu ký/lịch sử ký.
-- [ ] Rà nhắc "gom góp ý / SCRUM-106": có thì gỡ, không có thì ghi một dòng xác nhận vào Change Log là đã rà.
-- [ ] Thêm một dòng Change Log (ngày sửa, SCRUM-37 + SCRUM-106, nguồn: quyết định Hải 15/11/2026).
-- [ ] Jira: comment kết quả vào **SCRUM-37** (đóng — bỏ ký số kể cả mô phỏng) và **SCRUM-106** (đóng —
+- [x] Rà nhắc "gom góp ý / SCRUM-106": có thì gỡ, không có thì ghi một dòng xác nhận vào Change Log là đã rà.
+- [x] Thêm một dòng Change Log (ngày sửa, SCRUM-37 + SCRUM-106, nguồn: quyết định Hải 15/11/2026).
+- [x] Jira: comment kết quả vào **SCRUM-37** (đóng — bỏ ký số kể cả mô phỏng) và **SCRUM-106** (đóng —
       bỏ gom góp ý); hỏi leader trước nếu hai ticket này do người khác giữ.
 
 Làm **sau note 46** (không tranh DOCX Report 3 với ai). Không đẩy Drive khi chưa được yêu cầu.
+
+## 3. Đóng sổ — vào `main` 15/11/2026
+
+- PR #351 (`d634ecd2`) đã merge: UC-62/63 gỡ hẳn (§12.5/12.6 + bảng danh mục, UC-64→12.5, UC-65→12.6, UC-83→12.7), BR-166 Retired, dọn SM-13/14 + UC diagram + prose + Change Log.
+- PR #352 (`e7c3f295`) đã merge và **thay thế ranh giới "không đụng code" ở §trên**: bảng `minutes_signatures` xoá thật (migration `DropMinutesSignature`, bỏ entity/cấu hình/`DbSet`/`MeetingMinutes.Signatures`), ERD mục tiêu + Chen vẽ lại, Report 3 bỏ Entity 27 + viết lại Entity 26 theo luồng gửi duyệt → Chủ tọa duyệt là ban hành, BF-04 + sơ đồ ngữ cảnh đổi chữ ký thành duyệt.
+- Jira SCRUM-37 + SCRUM-106 đã comment (PO 15/11/2026).
+- Không còn việc BA cho bỏ ký số (xem note 49).

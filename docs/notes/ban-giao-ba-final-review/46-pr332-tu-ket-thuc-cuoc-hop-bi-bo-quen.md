@@ -20,16 +20,16 @@ Làm **sau note 45** (số BR lấy tiếp).
 
 ## 2. Việc BA
 
-- [ ] **BR mới** (số tiếp sau note 45): nội dung §1, gạch ý 1–4. Related UC: UC-22. Nguồn: ADR-0062 / PO 13/11/2026.
+- [x] **BR mới** (số tiếp sau note 45): nội dung §1, gạch ý 1–4. Related UC: UC-22. Nguồn: ADR-0062 / PO 13/11/2026.
       Viết kiểu BR-301 (tiếng Anh, "records System as the actor").
-- [ ] **BR-302**: giữ "Retired", thêm câu trỏ sang BR mới ("replaced by BR-xxx, 24 hours after the planned end").
-- [ ] **UC-22 End Meeting**: **không sửa luồng** (chốt 13/11/2026). Tự kết thúc không có người làm, nên không thêm AF;
+- [x] **BR-302**: giữ "Retired", thêm câu trỏ sang BR mới ("replaced by BR-xxx, 24 hours after the planned end").
+- [x] **UC-22 End Meeting**: **không sửa luồng** (chốt 13/11/2026). Tự kết thúc không có người làm, nên không thêm AF;
       BR mới ghi Related UC: UC-22 là đủ.
-- [ ] Sequence UC22: không đổi. (Tuỳ) một sequence riêng cho việc chạy nền, tác nhân hệ thống, không gắn số UC (như note 39).
-- [ ] State machine [SM-01_Meeting](../../10-statemachine/): chuyển `InProgress → Ended` thêm sự kiện "quá 24 giờ sau giờ kết thúc dự kiến" của hệ thống. Kiểm SM-01 còn nhắc 4 giờ không.
-- [ ] ERD: `MeetingStatusHistory` action thêm `AutoEnd` (enum chuỗi).
-- [ ] Report 3 Change Log.
-- [ ] Jira: comment vào **SCRUM-99 sau khi PR #350 vào `main`**
+- [x] Sequence UC22: không đổi. (Tuỳ) một sequence riêng cho việc chạy nền, tác nhân hệ thống, không gắn số UC (như note 39).
+- [x] State machine [SM-01_Meeting](../../10-statemachine/): chuyển `InProgress → Ended` thêm sự kiện "quá 24 giờ sau giờ kết thúc dự kiến" của hệ thống. Kiểm SM-01 còn nhắc 4 giờ không.
+- [x] ERD: `MeetingStatusHistory` action thêm `AutoEnd` (enum chuỗi).
+- [x] Report 3 Change Log.
+- [x] Jira: comment vào **SCRUM-99 sau khi PR #350 vào `main`**
       (kiểm `git log origin/main` có merge commit rồi mới comment; **giữ `Done`, không đổi trạng thái**).
       Nội dung (tiếng Việt):
 
@@ -55,4 +55,10 @@ bấm cùng lúc" cũng bỏ). Quy tắc nằm ở BR; UC-22 chỉ được BR �
 - **BR-302**: giữ Retired, thêm "Replaced by BR-new-6."
 - **BR-new-6** (Related UC: UC-22): If an In Progress Meeting has not been ended 24 hours after its planned end time — or 24 hours after its actual start, when it started after its planned end — the system ends it the same way as UC-22, records System as the actor with the reason "In progress more than 24 hours past the planned end" in its lifecycle history and the audit log, and notifies no one. (PO 13/11/2026, ADR-0062)
 
-- [ ] Duyệt BR-302 và BR mới (UC-22 không đổi)
+- [x] Duyệt BR-302 và BR mới (UC-22 không đổi)
+
+## 4. Đóng sổ — vào `main` 15/11/2026
+
+- PR #350 (`5c29ece0`) đã merge: BR-460 mới, BR-302 giữ Retired và trỏ sang BR-460, UC-22 không đổi luồng, SM-01 thêm sự kiện hệ thống "24h after planned end or actual start", ERD `MeetingStatusHistory.Action` thêm `AutoEnd`, sequence SYS_AutoEndForgottenMeeting (DRAFT), Change Log.
+- Jira SCRUM-99 đã comment (PO 15/11/2026), ticket giữ `Done`.
+- Không còn việc BA cho PR #332 (xem note 49).

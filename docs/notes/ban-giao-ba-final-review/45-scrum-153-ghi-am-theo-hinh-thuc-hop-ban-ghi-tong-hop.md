@@ -35,46 +35,46 @@ trùng giờ (±2 giây) và trùng ≥ 60% số từ với câu người trực
 
 ### 2.1. UC
 
-- [ ] **UC-44c Upload Meeting Audio File**
-  - [ ] Description, PRE-2: chỉ họp **Trực tiếp** (bỏ Kết hợp); In Progress hoặc Ended.
-  - [ ] EX mới: họp kết hợp → `MSG478`, không lưu tệp.
-  - [ ] Bước chọn tệp/xác nhận: hệ thống nhắc tệp phải ghi bằng đúng micro phòng họp.
+- [x] **UC-44c Upload Meeting Audio File**
+  - [x] Description, PRE-2: chỉ họp **Trực tiếp** (bỏ Kết hợp); In Progress hoặc Ended.
+  - [x] EX mới: họp kết hợp → `MSG478`, không lưu tệp.
+  - [x] Bước chọn tệp/xác nhận: hệ thống nhắc tệp phải ghi bằng đúng micro phòng họp.
 **Bản ghi tổng hợp: không thêm UC (đã chốt 13/11/2026)**, theo cùng quy tắc với note 44 §2.1. Người nghe và người tải
 vẫn là tác nhân của UC-43, mục đích vẫn là nghe hoặc tải bản ghi, luồng nghe/tải y hệt. Chỉ phần danh sách khác (nhãn,
 khi nào xuất hiện), nên phần đó là AF. Việc tự dựng / dựng lại không có người bấm, nên ghi bằng **BR**, không thành UC.
 
-- [ ] **UC-43a View Meeting Recordings** — thêm AF:
+- [x] **UC-43a View Meeting Recordings** — thêm AF:
   > AF-x – Combined recording of a Hybrid Meeting
   > 1. At Step 3, the Meeting is Hybrid, has Ended, is not Secret, and the system has built its combined recording.
   > 2. The system lists the combined recording with the label Combined, together with the other recordings. It has no transcript. (BR mới §2.2)
   > 3. The flow resumes at Step 3 of the Main Flow.
-- [ ] **UC-43b Play**, **UC-43c Download** — chỉ sửa câu ("any recording, including the combined recording"), không thêm AF.
-- [ ] **UC-44e Erase Meeting Recording** — thêm POST: xoá bản tổng hợp thì hệ thống không dựng lại.
-- [ ] **UC-45c Transcribe** — EX mới: bản ghi tổng hợp → `MSG479`, không đưa vào hàng chờ.
-- [ ] Inventory `00-master-use-case-inventory.md`.
+- [x] **UC-43b Play**, **UC-43c Download** — chỉ sửa câu ("any recording, including the combined recording"), không thêm AF.
+- [x] **UC-44e Erase Meeting Recording** — thêm POST: xoá bản tổng hợp thì hệ thống không dựng lại.
+- [x] **UC-45c Transcribe** — EX mới: bản ghi tổng hợp → `MSG479`, không đưa vào hàng chờ.
+- [x] Inventory `00-master-use-case-inventory.md`.
 
 ### 2.2. BR (số tiếp sau note 44)
 
-- [ ] **Sửa BR-340**: viết lại theo bảng §1 (trực tuyến mic từng người; trực tiếp mic phòng; kết hợp mic phòng ghi trực tiếp + mic từng người, không tải tệp).
-- [ ] **Sửa BR-342**: "an audio file may be uploaded" chỉ cho họp Trực tiếp.
-- [ ] BR mới: tệp tải lên ở họp trực tiếp phải ghi bằng đúng micro phòng (hệ thống nhắc, không kiểm được).
-- [ ] BR mới: họp kết hợp Ended → hệ thống tự dựng bản ghi tổng hợp theo giờ thật; câu bị loại không vào; khoảng lặng > 2 giây còn 2 giây; quá 12 giờ không dựng.
-- [ ] BR mới: nguồn đổi thì tự dựng lại; Thư ký xoá thì thôi.
-- [ ] BR mới: bản ghi tổng hợp chỉ để nghe, không chuyển chữ.
-- [ ] (tuỳ) BR bản dự thảo bỏ tiếng vọng loa phòng — hỏi leader có cần đưa vào SRS không.
-- [ ] Kiểm BR-343, BR-347 có cần nhắc bản tổng hợp (cùng mục đích, thời hạn lưu với bản ghi mic phòng).
+- [x] **Sửa BR-340**: viết lại theo bảng §1 (trực tuyến mic từng người; trực tiếp mic phòng; kết hợp mic phòng ghi trực tiếp + mic từng người, không tải tệp).
+- [x] **Sửa BR-342**: "an audio file may be uploaded" chỉ cho họp Trực tiếp.
+- [x] BR mới: tệp tải lên ở họp trực tiếp phải ghi bằng đúng micro phòng (hệ thống nhắc, không kiểm được).
+- [x] BR mới: họp kết hợp Ended → hệ thống tự dựng bản ghi tổng hợp theo giờ thật; câu bị loại không vào; khoảng lặng > 2 giây còn 2 giây; quá 12 giờ không dựng.
+- [x] BR mới: nguồn đổi thì tự dựng lại; Thư ký xoá thì thôi.
+- [x] BR mới: bản ghi tổng hợp chỉ để nghe, không chuyển chữ.
+- ~~(tuỳ) BR bản dự thảo bỏ tiếng vọng loa phòng~~ — **bỏ hẳn, PO 15/11/2026: không đưa vào SRS** (quy tắc giữ ở ADR-0061 điểm 3 + code, xem note 49).
+- [x] Kiểm BR-343, BR-347 có cần nhắc bản tổng hợp (cùng mục đích, thời hạn lưu với bản ghi mic phòng).
 
 ### 2.3. MSG
 
-- [ ] Report 3 §V thêm `MSG478`, `MSG479` (câu ở [danh mục](../../03-api/00-danh-muc-ma-thong-bao.md) dòng 522–523).
+- [x] Report 3 §V thêm `MSG478`, `MSG479` (câu ở [danh mục](../../03-api/00-danh-muc-ma-thong-bao.md) dòng 522–523).
 
 ### 2.4. Sơ đồ
 
-- [ ] Sequence `docs/06-sequencediagram/meeting-recording/UC44c_UploadMeetingAudioFile.txt`: nhánh họp kết hợp `MSG478`.
-- [ ] Sequence `UC43a_ViewMeetingRecordings.txt`: nhánh `opt` bản tổng hợp. `UC45c_TranscribeMeetingRecording.txt`: nhánh `MSG479`. `UC44e`: không dựng lại sau khi xoá.
-- [ ] (tuỳ) Sequence job dựng bản tổng hợp, tác nhân hệ thống, không gắn số UC (như note 39).
-- [ ] Xuất PNG, thêm tab drawio.
-- [ ] ERD: `RecordingSource` thêm giá trị `Combined` (enum lưu chuỗi, không migration).
+- [x] Sequence `docs/06-sequencediagram/meeting-recording/UC44c_UploadMeetingAudioFile.txt`: nhánh họp kết hợp `MSG478`.
+- [x] Sequence `UC43a_ViewMeetingRecordings.txt`: nhánh `opt` bản tổng hợp. `UC45c_TranscribeMeetingRecording.txt`: nhánh `MSG479`. `UC44e`: không dựng lại sau khi xoá.
+- [x] (tuỳ) Sequence job dựng bản tổng hợp, tác nhân hệ thống, không gắn số UC (như note 39).
+- [x] Xuất PNG, thêm tab drawio.
+- [x] ERD: `RecordingSource` thêm giá trị `Combined` (enum lưu chuỗi, không migration).
 
 ### 2.5. Màn hình — PENDING
 
@@ -82,7 +82,7 @@ Nhãn Tổng hợp trong tab Bản ghi, cảnh báo micro phòng trong hộp tho
 
 ### 2.6. Jira
 
-- [ ] Comment SCRUM-153 **sau khi PR #350 vào `main`** (kiểm `git log origin/main` có merge commit rồi mới comment).
+- [x] Comment SCRUM-153 **sau khi PR #350 vào `main`** (kiểm `git log origin/main` có merge commit rồi mới comment).
       Ticket đang `Done` — **giữ nguyên, chỉ comment**, không chuyển trạng thái. Nội dung (tiếng Việt):
 
       > BA Final Review xong (Report 3, PR #350 <merge-commit>): sửa BR-340/342 theo bảng 3 hình thức họp;
@@ -152,6 +152,13 @@ bước → AF; luồng y hệt → chỉ sửa câu; khác tác nhân → UC ri
 - BR-new-2: After a Hybrid Meeting ends, the system builds one combined recording from the room recording and every online sentence, on the real clock; excluded sentences are left out; silences over 2 s are shortened to 2 s; a track over 12 h is not built. Not for Secret Meetings.
 - BR-new-3: When a source changes later, the system builds it again; once the Secretary erases it, never again.
 - BR-new-4: The combined recording is for listening only and is never transcribed.
-- BR-new-5 (Q2): In the AI draft, a room segment said at the same time (±2 s) as an online sentence and sharing at least 60% of its words is treated as the room speaker's echo and left out.
+- ~~BR-new-5 (Q2): In the AI draft, a room segment said at the same time (±2 s) as an online sentence and sharing at least 60% of its words is treated as the room speaker's echo and left out.~~ **Bỏ — PO 15/11/2026 không đưa vào SRS.**
 
-- [ ] Duyệt UC-44c, 43a–c, 44e, 45c và BR mới
+- [x] Duyệt UC-44c, 43a–c, 44e, 45c và BR mới
+
+## 5. Đóng sổ — vào `main` 15/11/2026
+
+- PR #350 (`5c29ece0`) đã merge: UC-44c EX-8 MSG478, UC-43a AF-3 bản ghi tổng hợp, UC-43b/43c sửa câu, UC-44e POST không dựng lại sau xoá, UC-45c EX-4 MSG479, BR-340/342 sửa + BR-455–458 mới, MSG478/479, ERD `RecordingSource.Combined`, sequence UC44c/UC43a/UC45c/UC44e + SYS bản tổng hợp (PNG + tab drawio), Change Log.
+- BR tiếng vọng loa phòng (Q2/BR-new-5): **bỏ hẳn theo PO 15/11/2026**, không đưa vào SRS.
+- Jira SCRUM-153 đã comment (PO 15/11/2026), ticket giữ `Done`.
+- Còn lại: đặc tả màn hình §2.5 (nhãn Tổng hợp, cảnh báo micro phòng) — PENDING, PO cho làm sau (xem note 49).

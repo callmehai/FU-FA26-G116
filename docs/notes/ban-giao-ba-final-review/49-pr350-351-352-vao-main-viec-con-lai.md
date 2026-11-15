@@ -48,11 +48,7 @@ Jira các ticket liên quan đã comment xong, "Đã merge vào main hôm nay".
 
 ## 4. Việc còn lại
 
-- [ ] **Khánh làm tiếp docs thì pull `main` trước** — DOCX Report 3 vừa đổi qua cả ba PR
-  (PR #350 + #351 + #352 đều chạm DOCX và sync lại snapshot + `uc-map.html`).
-  Nhánh `docs/ba-final-review-note47-bo-ky-so` dừng ở `6c334ce2`, **chưa có** commit PR #352 (`724e0cb0`)
-  — trên nhánh này `MinutesSignature.cs` + `MeetingMinutes.Signatures` vẫn còn, chưa có migration Drop.
-  Không sửa DOCX tiếp từ nhánh cũ khi chưa pull/rebase `main`.
+- [x] **Khánh làm tiếp docs thì pull `main` trước** — xong 15/11/2026: đã merge `origin/main` vào nhánh `docs/ba-final-review-note47-bo-ky-so` (merge commit sau `150b73bc`).
 - [ ] **Ai đang có nhánh BE thì pull `main` và chạy lại migration ở máy**
   (có migration mới `DropMinutesSignature`). Không cần backup bảng `minutes_signatures`
   (chưa từng có dữ liệu).
@@ -61,6 +57,5 @@ Jira các ticket liên quan đã comment xong, "Đã merge vào main hôm nay".
 - [ ] Luật tiếng vọng loa phòng: **không** đưa vào Report 3. Giữ ở ADR-0061 + code.
   Không tạo lại BR-459.
 - [ ] Note 48 (dựng máy AI local dự phòng qua Tailscale): việc vận hành, **chưa làm**, không sửa Report 3.
-- [ ] Kiểm lại một lượt trên `main` sau merge: Report 3 không còn UC-62/63, BR-166 Retired,
-  Entity 27 đã bỏ, BF-04 + context diagram đã đổi chữ ký → duyệt, `02-erd` khớp code
-  (không còn `MinutesSignature`).
+- [x] Kiểm lại một lượt trên nhánh sau merge `main` 15/11/2026: Report 3 không còn UC-62/63 (chỉ còn dòng Change Log lịch sử), BR-166 Retired, Entity 27 đã bỏ, BF-04 + context diagram đã đổi chữ ký → duyệt, `02-erd` khớp code (không còn `MinutesSignature`).
+  Phát hiện 1 tồn dư: `software interfaces` còn liệt kê "signing emails" (không có email ký nào trong code) — đã sửa DOCX + sync lại snapshot (1 dòng).
