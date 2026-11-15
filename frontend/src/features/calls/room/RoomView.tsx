@@ -339,16 +339,18 @@ function RoomLayout({
         micOn={isMicrophoneEnabled}
         onMicOn={() => void toggleMic()}
       />
-      <VoteOpenedNotice
-        meetingId={meeting.id}
-        panelOpen={panel === 'votes'}
-        onShow={() => {
-          if (panel === 'chat') setSeenMessages(chat.chatMessages.length)
-          setPanel('votes')
-        }}
-      />
 
       <div className="room-body">
+        {/* Floats over the top of the stage, below whatever banners show (MSG333 reconnecting, start audio, your
+            turn), so it never hides one of them. */}
+        <VoteOpenedNotice
+          meetingId={meeting.id}
+          panelOpen={panel === 'votes'}
+          onShow={() => {
+            if (panel === 'chat') setSeenMessages(chat.chatMessages.length)
+            setPanel('votes')
+          }}
+        />
         <main className="room-stage" aria-label="Người trong phòng">
           {floating.pip ? (
             // As in Meet: while the call lives in the floating window, the stage says so instead of
