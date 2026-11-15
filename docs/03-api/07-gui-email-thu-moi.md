@@ -103,6 +103,16 @@ Thư mã xác minh không có link: trang xác minh tự gửi mã mới mỗi l
 | Phân công trình bày | Khách được gán trình bày | Xác minh email để vào cuộc họp |
 | Mã xác minh vào cuộc họp | Khách | không (mã hiện to) |
 | Đặt lại mật khẩu | người được quản trị viên đặt lại | Đặt mật khẩu mới |
+| Cuộc họp sắp bắt đầu | người được mời đang hoạt động, Khách hiện tại | Vào phòng họp (phòng TrustCabinet) / Xem cuộc họp / Xác minh email để vào cuộc họp (Khách) |
+| Biên bản đã ban hành, bản đính chính đã ban hành | đúng những người nhận chuông "Biên bản đã ban hành", trừ Chủ toạ vừa duyệt | Xem biên bản (mở tab Biên bản) |
+
+**Hai thư thêm theo PO 15/11/2026** (ngoài BR-303 và BR-411 hiện ghi chỉ trong ứng dụng, chờ BA cập nhật):
+- Nhắc họp: `MeetingReminderEmails` chạy cùng nhịp `NotificationWorker` với chuông nhắc, trong 15 phút trước giờ bắt đầu
+  của cuộc họp Đã công bố. Khoá chống trùng `email-starting-soon:{meetingId}:{giờ bắt đầu}:{người}` giữ giờ bắt đầu, nên dời
+  lịch thì nhắc lại theo giờ mới. Khác chuông, thư nhắc tới cả Khách (Khách không có chuông), kèm link xác minh; không tạo
+  được link thì không gửi thư cho Khách đó.
+- Biên bản ban hành: đưa vào hàng đợi trong cùng giao dịch duyệt biên bản, khoá `email-minutes-issued:{minutesId}:{người}`.
+  Thư biên bản họp Mật không nhắc tải Word/PDF vì biên bản Mật chỉ đọc trên màn hình.
 
 Phần `html` dựng lúc đưa thư vào hàng đợi, lưu ở `email_messages.html_body` (migration `EmailHtmlBody`), vì lúc gửi
 không còn đủ dữ kiện để dựng lại. Thư đặt lại mật khẩu và mã OTP vẫn gửi thẳng, không lưu, nên link và mã vẫn không nằm

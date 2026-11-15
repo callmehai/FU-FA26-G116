@@ -21,6 +21,7 @@ public static class EmailServiceCollectionExtensions
 
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<MeetingInvitationDispatchProcessor>();
+        services.AddScoped<TrustCabinet.Domain.Notifications.IMeetingReminderEmails, MeetingReminderEmails>();
         services.AddScoped<EmailQueueProcessor>();
         services.AddScoped<IEmailQueueProcessor>(provider =>
             provider.GetRequiredService<EmailQueueProcessor>());
