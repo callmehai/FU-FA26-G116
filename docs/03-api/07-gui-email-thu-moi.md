@@ -89,7 +89,9 @@ Mỗi thư gửi cả hai phần: `text` (lưu trong `email_messages.body`) và 
 cuộc họp, bảng thông tin, nút hành động kèm đường dẫn ghi nguyên để chép được, chân thư. Chỉ dùng bảng và CSS inline vì
 Gmail, Outlook bỏ thẻ `<style>`, flexbox và SVG; mọi chữ người dùng gõ (tên họp, mô tả, lý do huỷ, tên người) đều được
 escape. Thư cho Khách không có địa điểm và mô tả, nút dẫn tới trang xác minh (UC-04); thư huỷ và thư thu hồi không có
-link; thư dời lịch gạch thời gian cũ cạnh thời gian mới.
+link; thư dời lịch gạch thời gian cũ cạnh thời gian mới. Thư về cuộc họp ghi Chủ toạ và người tổ chức (người tạo cuộc
+họp) để người nhận biết hỏi ai, đọc lúc dựng thư; người trong hệ thống thấy cả email người tổ chức, Khách chỉ thấy tên.
+Thư mã xác minh không có link: trang xác minh tự gửi mã mới mỗi lần mở, link trong thư mã sẽ làm chính mã đó mất hiệu lực.
 
 | Thư | Ai nhận | Nút |
 |---|---|---|
@@ -98,7 +100,7 @@ link; thư dời lịch gạch thời gian cũ cạnh thời gian mới.
 | Cuộc họp đã dời lịch | Khách | Xác minh email để vào cuộc họp |
 | Cuộc họp đã bị huỷ | người đã nhận lời mời, Khách | không |
 | Lời mời đã được thu hồi | người đã nhận lời mời, Khách | không |
-| Phân công trình bày | Khách được gán trình bày | không |
+| Phân công trình bày | Khách được gán trình bày | Xác minh email để vào cuộc họp |
 | Mã xác minh vào cuộc họp | Khách | không (mã hiện to) |
 | Đặt lại mật khẩu | người được quản trị viên đặt lại | Đặt mật khẩu mới |
 

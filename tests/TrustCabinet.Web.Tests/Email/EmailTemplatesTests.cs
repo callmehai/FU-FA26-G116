@@ -15,6 +15,9 @@ public sealed class EmailTemplatesTests
     private const string MeetingLink = "https://hop.example.vn/mgmt/meetings/01a1df5c-7a54-7d3e-8b18-d3e6b04be715";
     private const string GuestLink = "https://hop.example.vn/guest/01a1df5c-81d9-7683-aaa4-5df0fae044ad#token=abc&x=1";
 
+    private static readonly MeetingPeople Staff = new("Trần Văn Bình", "Lê Thị Thu", "thu@example.vn");
+    private static readonly MeetingPeople ForGuest = Staff with { OrganizerEmail = null };
+
     private static InvitationPayload Payload(string? role = "Member", string? reason = null,
         DateTimeOffset? previousStart = null, DateTimeOffset? previousEnd = null)
         => new("Nguyễn Văn An", "an@example.vn", "Rà soát kế hoạch chuyển đổi số quý IV",
@@ -41,19 +44,19 @@ public sealed class EmailTemplatesTests
 
         foreach (var kind in Enum.GetValues<InvitationEventKind>())
         {
-            var html = EmailTemplates.Meeting(kind, payload, MeetingLink, guest: false);
+            var html = EmailTemplates.Meeting(kind, payload, MeetingLink, guest: false, Staff);
             Assert.DoesNotContain("<script>", html);
             Assert.DoesNotContain("<img", html);
             Assert.Contains("Họp &lt;script&gt;", html);
         }
         Assert.Contains("&lt;b&gt;hoãn&lt;/b&gt; &amp; &quot;đổi&quot;",
-            EmailTemplates.Meeting(InvitationEventKind.Cancelled, payload, null, guest: false));
+            EmailTemplates.Meeting(InvitationEventKind.Cancelled, payload, null, guest: false, Staff));
     }
 
     [Fact]
     public void Internal_invitation_names_place_role_and_description_and_links_the_meeting()
     {
-        var html = EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(), MeetingLink, guest: false);
+        var html = EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(), MeetingLink, guest: false, Staff);
 
         Assert.Contains("Phòng họp A, Tầng 5", html);
         Assert.Contains("Thành viên", html);
@@ -63,32 +66,47 @@ public sealed class EmailTemplatesTests
         Assert.Contains("href=\"https://hop.example.vn/docs/q4\"", html);
         Assert.Contains($"href=\"{MeetingLink}\"", html);
         Assert.Contains(".ics", html);
+        Assert.Contains("Trần Văn Bình", html);
+        Assert.Contains("Lê Thị Thu (thu@example.vn)", html);
     }
 
     [Fact]
     public void Guest_invitation_leads_to_verification_and_hides_place_and_description()
     {
-        var html = EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(role: null), GuestLink, guest: true);
+        var html = EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(role: null), GuestLink, guest: true, ForGuest);
 
         Assert.Contains("href=\"https://hop.example.vn/guest/01a1df5c-81d9-7683-aaa4-5df0fae044ad#token=abc&amp;x=1\"", html);
         Assert.Contains("Xác minh email để vào cuộc họp", html);
         Assert.DoesNotContain("Phòng họp A", html);
         Assert.DoesNotContain("Đánh giá tiến độ", html);
         Assert.DoesNotContain("/mgmt/meetings", html);
+        // Whom to ask, by name only.
+        Assert.Contains("Lê Thị Thu", html);
+        Assert.DoesNotContain("thu@example.vn", html);
+    }
+
+    [Fact]
+    public void Guest_presenter_gets_the_same_way_in_as_the_invitation()
+    {
+        var html = EmailTemplates.GuestPresenter("An", "Báo cáo hạ tầng", "Họp quý IV", Start, End, "Online", GuestLink, "Lê Thị Thu");
+
+        Assert.Contains("href=\"https://hop.example.vn/guest/01a1df5c-81d9-7683-aaa4-5df0fae044ad#token=abc&amp;x=1\"", html);
+        Assert.Contains("09:00 – 10:30, Thứ Hai, 16/11/2026", html);
+        Assert.Contains("Lê Thị Thu", html);
     }
 
     [Fact]
     public void Withdrawals_offer_no_way_in()
     {
-        Assert.DoesNotContain("href=", EmailTemplates.Meeting(InvitationEventKind.Cancelled, Payload(reason: "Lãnh đạo đi công tác"), null, false));
-        Assert.DoesNotContain("href=", EmailTemplates.Meeting(InvitationEventKind.Removed, Payload(), null, false));
+        Assert.DoesNotContain("href=", EmailTemplates.Meeting(InvitationEventKind.Cancelled, Payload(reason: "Lãnh đạo đi công tác"), null, false, Staff));
+        Assert.DoesNotContain("href=", EmailTemplates.Meeting(InvitationEventKind.Removed, Payload(), null, false, Staff));
     }
 
     [Fact]
     public void Reschedule_strikes_the_old_time_through()
     {
         var html = EmailTemplates.Meeting(InvitationEventKind.Rescheduled,
-            Payload(role: null, previousStart: Start.AddDays(-1), previousEnd: End.AddDays(-1)), GuestLink, guest: true);
+            Payload(role: null, previousStart: Start.AddDays(-1), previousEnd: End.AddDays(-1)), GuestLink, guest: true, ForGuest);
 
         Assert.Contains("09:00 – 10:30, Chủ Nhật, 15/11/2026", html);
         Assert.Contains("line-through", html);
@@ -121,22 +139,23 @@ public sealed class EmailTemplatesTests
                     + "Bắt đầu: 16/11/2026 09:00 +07:00\nKết thúc: 16/11/2026 10:30 +07:00\nVai trò: Thành viên\n"
                     + $"Địa điểm: Phòng họp A, Tầng 5\n\nXem cuộc họp: {MeetingLink}\n")),
             ("01-moi-hop.html", "Mời họp (người trong hệ thống)",
-                EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(), MeetingLink, false)),
+                EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(), MeetingLink, false, Staff)),
             ("02-moi-hop-khach.html", "Mời họp (Khách)",
-                EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(role: null), GuestLink, true)),
+                EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(role: null), GuestLink, true, ForGuest)),
             ("03-ma-xac-minh.html", "Mã xác minh của Khách",
                 EmailTemplates.GuestCode("Nguyễn Văn An", "Rà soát kế hoạch chuyển đổi số quý IV", "042917", 15)),
             ("04-doi-vai-tro.html", "Đổi vai trò",
-                EmailTemplates.Meeting(InvitationEventKind.RoleChanged, Payload(role: "Secretary"), MeetingLink, false)),
+                EmailTemplates.Meeting(InvitationEventKind.RoleChanged, Payload(role: "Secretary"), MeetingLink, false, Staff)),
             ("05-doi-lich.html", "Dời lịch (Khách)",
                 EmailTemplates.Meeting(InvitationEventKind.Rescheduled,
-                    Payload(role: null, previousStart: Start.AddDays(-1), previousEnd: End.AddDays(-1)), GuestLink, true)),
+                    Payload(role: null, previousStart: Start.AddDays(-1), previousEnd: End.AddDays(-1)), GuestLink, true, ForGuest)),
             ("06-huy-hop.html", "Huỷ họp",
-                EmailTemplates.Meeting(InvitationEventKind.Cancelled, Payload(reason: "Lãnh đạo đi công tác, dời sang tuần sau."), null, false)),
+                EmailTemplates.Meeting(InvitationEventKind.Cancelled, Payload(reason: "Lãnh đạo đi công tác, dời sang tuần sau."), null, false, Staff)),
             ("07-thu-hoi.html", "Thu hồi lời mời",
-                EmailTemplates.Meeting(InvitationEventKind.Removed, Payload(), null, false)),
+                EmailTemplates.Meeting(InvitationEventKind.Removed, Payload(), null, false, Staff)),
             ("08-trinh-bay.html", "Phân công trình bày (Khách)",
-                EmailTemplates.GuestPresenter("Nguyễn Văn An", "Báo cáo tiến độ hạ tầng", "Rà soát kế hoạch chuyển đổi số quý IV", Start)),
+                EmailTemplates.GuestPresenter("Nguyễn Văn An", "Báo cáo tiến độ hạ tầng", "Rà soát kế hoạch chuyển đổi số quý IV",
+                    Start, End, "Hybrid", GuestLink, "Lê Thị Thu")),
             ("09-dat-lai-mat-khau.html", "Đặt lại mật khẩu",
                 EmailTemplates.PasswordReset("Nguyễn Văn An", "https://hop.example.vn/reset-password#token=abc", TimeSpan.FromMinutes(30))),
         };
