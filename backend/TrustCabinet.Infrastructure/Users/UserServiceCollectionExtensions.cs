@@ -11,7 +11,8 @@ namespace TrustCabinet.Infrastructure.Users;
 public static class UserServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers user management (SCRUM-13) and the audit writer it records through.
+    /// Registers user management (SCRUM-13) and the audit log storage it records through; the audit
+    /// services themselves are registered by <c>AddApplication</c>.
     ///
     /// All scoped: each depends on the request's DbContext. <see cref="ICallerContext"/> is not
     /// registered here — it is the web project's to supply, since it reads the HTTP request.
@@ -20,8 +21,8 @@ public static class UserServiceCollectionExtensions
     {
         services.AddScoped<IUserAccountRepository, UserAccountRepository>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IAuditService, AuditService>();
-        services.AddScoped<IAuditLogQueryService, AuditLogQueryService>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IAuditLogQuery, TrustCabinet.Infrastructure.Audit.AuditLogQuery>();
 
         // The lock that keeps user writes and role-matrix writes from each removing the last
         // administrator at the same time. Registered here and in AddTrustCabinetRolePermissions,

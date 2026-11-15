@@ -33,8 +33,6 @@ public interface INotificationRepository
     Task MarkPushedAsync(
         Guid notificationId, DateTimeOffset now, CancellationToken ct = default);
 
-    Task SaveChangesAsync(CancellationToken ct = default);
-
     /// <summary>SCRUM-142: whether the user is the owner or the viewer of the calendar share a notification points to.</summary>
     Task<bool> IsCalendarSharePartyAsync(Guid shareId, Guid userId, CancellationToken ct = default);
 

@@ -97,7 +97,9 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
 - Lớp options là POCO mà service dùng thì chuyển theo service; việc bind cấu hình (`services.Configure<…>`) ở lại
   Infrastructure.
 - Giữ nguyên mức truy cập (`internal` vẫn là `internal`); `TrustCabinet.Application.csproj` khai `InternalsVisibleTo`
-  cho `TrustCabinet.Web.Tests` và `TrustCabinet.Application.Tests`.
+  cho `TrustCabinet.Web.Tests` và `TrustCabinet.Application.Tests`. Từ CA-03 khai thêm cho `TrustCabinet.Infrastructure`,
+  chỉ vì `TrustCabinetDbContext` dùng chung `AuditService.DetailsOptions`. Đây không phải tiền lệ: Infrastructure không
+  dựng hay gọi service `internal` của Application.
 - Logic quyết định (ai được làm gì, trạng thái nào được chuyển, tính toán) ở Application hoặc Domain. Một lớp ở
   Infrastructure còn `if` nghiệp vụ là sai tầng.
 
@@ -248,8 +250,8 @@ bool IsConcurrencyConflict(Exception exception)                       // DbUpdat
 - Tên index vẫn là hằng trong file đang dùng nó; subtask của module chuyển nó vào bảng của translator cùng lúc đổi
   `catch` sang `UniqueConflictException`.
 - Sau CA-01, `using Npgsql` ở Infrastructure chỉ còn trong `Persistence/PersistenceExceptionTranslator.cs`,
-  `Audit/AuditLogQueryService.cs` (dùng `NpgsqlParameter`, `NpgsqlDbType`) và `Migrations/` (file sinh ra). File mới
-  không tự so `SqlState` hay kiểu exception của EF Core/Npgsql.
+  `Audit/AuditLogQuery.cs` (dùng `NpgsqlParameter`, `NpgsqlDbType`; trước CA-03 nằm trong `AuditLogQueryService.cs`) và
+  `Migrations/` (file sinh ra). File mới không tự so `SqlState` hay kiểu exception của EF Core/Npgsql.
 
 `PersistenceExceptionTranslator.Translate(Exception)` trả `PersistenceException?` và phân loại theo đúng thứ tự này
 (test ở `tests/TrustCabinet.Web.Tests/Persistence/PersistenceExceptionTranslatorTests.cs`):

@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using TrustCabinet.Application;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Application.Meetings;
@@ -12,6 +14,7 @@ using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Migrations;
 using TrustCabinet.Infrastructure.Notifications;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Web.Tests.Users;
 
 namespace TrustCabinet.Web.Tests.Notifications;
@@ -47,6 +50,8 @@ public class NotificationWorkerTests
         services.AddDbContext<TrustCabinetDbContext>(options =>
             options.UseInMemoryDatabase(databaseName));
         services.AddScoped<IMeetingRepository, MeetingRepository>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddApplication();
         services.AddTrustCabinetNotifications();
         services.AddSingleton<IUserAccountRepository>(accounts);
         using var provider = services.BuildServiceProvider();

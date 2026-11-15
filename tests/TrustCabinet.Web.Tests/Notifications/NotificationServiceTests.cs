@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Notifications;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Web.Tests.Notifications;
 
@@ -167,7 +169,7 @@ public class NotificationServiceTests
     }
 
     private static NotificationService NewService(TrustCabinetDbContext db)
-        => new(new NotificationRepository(db), new MeetingRepository(db), new FrozenClock());
+        => new(new NotificationRepository(db), new MeetingRepository(db), new EfUnitOfWork(db), new FrozenClock());
 
     private static User NewUser(string email) => new()
     {

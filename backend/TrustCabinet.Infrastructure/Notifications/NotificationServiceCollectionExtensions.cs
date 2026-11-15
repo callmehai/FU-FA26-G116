@@ -8,7 +8,6 @@ public static class NotificationServiceCollectionExtensions
     public static IServiceCollection AddTrustCabinetNotifications(this IServiceCollection services)
     {
         services.AddScoped<INotificationRepository, NotificationRepository>();
-        services.AddScoped<INotificationService, NotificationService>();
         return services;
     }
 }

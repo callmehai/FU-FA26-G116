@@ -1,10 +1,10 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
-using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Entities;
 
-namespace TrustCabinet.Infrastructure.Audit;
+namespace TrustCabinet.Application.Audit;
 
 /// <summary>
 /// Writes audit rows, stamping each with the caller's IP address.
@@ -14,7 +14,8 @@ namespace TrustCabinet.Infrastructure.Audit;
 /// round — a user created with no record of who created them — is the one that destroys the
 /// evidence trail, so the trade goes this way.
 /// </summary>
-public sealed class AuditService(TrustCabinetDbContext db, ICallerContext caller) : IAuditService
+public sealed class AuditService(IAuditLogRepository repository, IUnitOfWork unitOfWork, ICallerContext caller)
+    : IAuditService
 {
     /// <summary>
     /// Writes Vietnamese text as itself rather than as \u escapes.
@@ -38,17 +39,20 @@ public sealed class AuditService(TrustCabinetDbContext db, ICallerContext caller
         object? details = null,
         CancellationToken ct = default)
     {
-        db.AuditLog.Add(new AuditLogEntry
+        await unitOfWork.ExecuteAsync(async token =>
         {
-            ActorId = actorId,
-            Action = action,
-            ObjectType = objectType,
-            ObjectId = objectId,
-            IpAddress = caller.IpAddress,
-            // The column is jsonb and NOT NULL, so "nothing to add" is an empty object, not null.
-            Details = details is null ? "{}" : JsonSerializer.Serialize(details, DetailsOptions),
-        });
+            repository.Add(new AuditLogEntry
+            {
+                ActorId = actorId,
+                Action = action,
+                ObjectType = objectType,
+                ObjectId = objectId,
+                IpAddress = caller.IpAddress,
+                // The column is jsonb and NOT NULL, so "nothing to add" is an empty object, not null.
+                Details = details is null ? "{}" : JsonSerializer.Serialize(details, DetailsOptions),
+            });
 
-        await db.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(token);
+        }, TransactionMode.None, ct);
     }
 }

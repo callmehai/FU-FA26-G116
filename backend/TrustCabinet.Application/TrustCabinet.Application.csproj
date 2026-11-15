@@ -26,6 +26,11 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>TrustCabinet.Application.Tests</_Parameter1>
     </AssemblyAttribute>
+    <!-- TrustCabinetDbContext writes the audit row of a meeting history entry with AuditService.DetailsOptions, the
+         same encoder as AuditService, so that internal member stays internal and readable there. -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>TrustCabinet.Infrastructure</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

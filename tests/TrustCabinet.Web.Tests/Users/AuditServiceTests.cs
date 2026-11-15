@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Audit;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Web.Tests.Users;
 
@@ -35,7 +37,7 @@ public class AuditServiceTests : IDisposable
     {
         var actorId = Guid.CreateVersion7();
         var objectId = Guid.CreateVersion7();
-        var service = new AuditService(_db, new FakeCallerContext("203.0.113.7"));
+        var service = new AuditService(new AuditLogRepository(_db), new EfUnitOfWork(_db), new FakeCallerContext("203.0.113.7"));
 
         await service.RecordAsync(
             AuditActions.UserCreated, AuditActions.UserObjectType, objectId, actorId,
@@ -58,7 +60,7 @@ public class AuditServiceTests : IDisposable
         // System.Text.Json escapes everything outside ASCII by default, which would fill the
         // column with "Tần Chủ Toạ" — evidence nobody can read in a database
         // console.
-        var service = new AuditService(_db, new FakeCallerContext());
+        var service = new AuditService(new AuditLogRepository(_db), new EfUnitOfWork(_db), new FakeCallerContext());
 
         await service.RecordAsync(
             AuditActions.UserCreated, AuditActions.UserObjectType,
@@ -75,7 +77,7 @@ public class AuditServiceTests : IDisposable
     public async Task Record_writes_an_empty_object_when_there_are_no_details()
     {
         // The column is jsonb and NOT NULL: "nothing to add" has to be valid JSON, not null.
-        var service = new AuditService(_db, new FakeCallerContext());
+        var service = new AuditService(new AuditLogRepository(_db), new EfUnitOfWork(_db), new FakeCallerContext());
 
         await service.RecordAsync(
             AuditActions.UserReactivated, AuditActions.UserObjectType,
@@ -88,7 +90,7 @@ public class AuditServiceTests : IDisposable
     public async Task Record_tolerates_having_no_request_in_flight()
     {
         // A background job or a seed run has no caller address; the row still has to be writable.
-        var service = new AuditService(_db, new FakeCallerContext(string.Empty));
+        var service = new AuditService(new AuditLogRepository(_db), new EfUnitOfWork(_db), new FakeCallerContext(string.Empty));
 
         await service.RecordAsync(
             AuditActions.UserUpdated, AuditActions.UserObjectType, Guid.CreateVersion7(), null);
