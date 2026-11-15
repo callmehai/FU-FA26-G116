@@ -39,17 +39,20 @@ public sealed class AuditService(IAuditLogRepository repository, IUnitOfWork uni
         object? details = null,
         CancellationToken ct = default)
     {
-        repository.Add(new AuditLogEntry
+        await unitOfWork.ExecuteAsync(async token =>
         {
-            ActorId = actorId,
-            Action = action,
-            ObjectType = objectType,
-            ObjectId = objectId,
-            IpAddress = caller.IpAddress,
-            // The column is jsonb and NOT NULL, so "nothing to add" is an empty object, not null.
-            Details = details is null ? "{}" : JsonSerializer.Serialize(details, DetailsOptions),
-        });
+            repository.Add(new AuditLogEntry
+            {
+                ActorId = actorId,
+                Action = action,
+                ObjectType = objectType,
+                ObjectId = objectId,
+                IpAddress = caller.IpAddress,
+                // The column is jsonb and NOT NULL, so "nothing to add" is an empty object, not null.
+                Details = details is null ? "{}" : JsonSerializer.Serialize(details, DetailsOptions),
+            });
 
-        await unitOfWork.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(token);
+        }, TransactionMode.None, ct);
     }
 }

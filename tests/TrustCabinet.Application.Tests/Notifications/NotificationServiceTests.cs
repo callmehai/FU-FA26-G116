@@ -26,7 +26,6 @@ public sealed class NotificationServiceTests
         _repository.Upcoming.AddRange([
             new(meetingId, "Giao ban", start, first),
             new(meetingId, "Giao ban", start, second),
-            new(Guid.CreateVersion7(), "Ngoài khung", Now.AddMinutes(16), first),
         ]);
         // The first recipient already has this reminder from an earlier tick.
         _repository.Rows.Add(new Notification
@@ -60,6 +59,7 @@ public sealed class NotificationServiceTests
         var notice = Assert.Single(_repository.Added);
         Assert.Equal($"meeting-started:{historyId:D}:{user:D}", notice.DeduplicationKey);
         Assert.Equal(1, _unitOfWork.Saves);
+        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
     }
 
     [Fact]
@@ -79,6 +79,8 @@ public sealed class NotificationServiceTests
         Assert.Equal(new NotificationTarget("Meeting", meetingId), await _service.GetTargetAsync(user, notification.Id));
         // Someone else's notification does not exist for this caller.
         Assert.Null(await _service.GetTargetAsync(Guid.CreateVersion7(), notification.Id));
+        // Every read goes through the unit of work, which translates a storage failure (R8).
+        Assert.Equal([TransactionMode.None, TransactionMode.None, TransactionMode.None], _unitOfWork.Modes);
     }
 
     [Fact]
@@ -91,6 +93,22 @@ public sealed class NotificationServiceTests
         Assert.Null(await _service.MarkReadAsync(Guid.CreateVersion7(), notification.Id));
         Assert.Equal(Now, (await _service.MarkReadAsync(user, notification.Id))?.ReadAt);
         Assert.Equal(0, await _service.GetUnreadCountAsync(user));
+        Assert.Equal(0, await _service.MarkAllReadAsync(user));
+        Assert.Equal(Enumerable.Repeat(TransactionMode.None, 4), _unitOfWork.Modes);
+    }
+
+    [Fact]
+    public async Task Pushing_reads_pending_rows_and_stamps_them_through_the_unit_of_work()
+    {
+        var notification = new Notification { UserId = Guid.CreateVersion7(), Type = NotificationType.MeetingInvited, Title = "Mời họp" };
+        _repository.Rows.Add(notification);
+
+        Assert.Same(notification, Assert.Single(await _service.PendingPushAsync(100)));
+        await _service.MarkPushedAsync(notification.Id);
+
+        Assert.Equal(Now, notification.PushedAt);
+        Assert.Empty(await _service.PendingPushAsync(100));
+        Assert.Equal(Enumerable.Repeat(TransactionMode.None, 3), _unitOfWork.Modes);
     }
 
     [Fact]
@@ -99,6 +117,7 @@ public sealed class NotificationServiceTests
         _repository.Fail = new PersistenceUnavailableException();
 
         await Assert.ThrowsAsync<PersistenceUnavailableException>(() => _service.ListAsync(Guid.CreateVersion7(), 1, 20));
+        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
 
         _repository.Fail = null;
         _unitOfWork.FailNextSave = new PersistenceUnavailableException();

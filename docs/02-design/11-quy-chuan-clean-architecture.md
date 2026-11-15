@@ -97,7 +97,9 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
 - Lớp options là POCO mà service dùng thì chuyển theo service; việc bind cấu hình (`services.Configure<…>`) ở lại
   Infrastructure.
 - Giữ nguyên mức truy cập (`internal` vẫn là `internal`); `TrustCabinet.Application.csproj` khai `InternalsVisibleTo`
-  cho `TrustCabinet.Web.Tests` và `TrustCabinet.Application.Tests`.
+  cho `TrustCabinet.Web.Tests` và `TrustCabinet.Application.Tests`. Từ CA-03 khai thêm cho `TrustCabinet.Infrastructure`,
+  chỉ vì `TrustCabinetDbContext` dùng chung `AuditService.DetailsOptions`. Đây không phải tiền lệ: Infrastructure không
+  dựng hay gọi service `internal` của Application.
 - Logic quyết định (ai được làm gì, trạng thái nào được chuyển, tính toán) ở Application hoặc Domain. Một lớp ở
   Infrastructure còn `if` nghiệp vụ là sai tầng.
 

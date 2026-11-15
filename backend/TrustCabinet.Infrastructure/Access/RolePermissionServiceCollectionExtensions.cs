@@ -11,7 +11,7 @@ public static class RolePermissionServiceCollectionExtensions
     /// (SCRUM-63, UC-12a … UC-12c).
     ///
     /// Scoped: both depend on the request's DbContext. <c>IAuditService</c> comes from
-    /// <c>AddTrustCabinetUserManagement</c> — registered once there rather than twice, since a
+    /// <c>AddApplication</c> — registered once there rather than twice, since a
     /// second registration of the same scoped service would be the one that wins and nobody would
     /// notice which.
     /// </summary>

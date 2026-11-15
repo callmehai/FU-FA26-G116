@@ -26,6 +26,7 @@ public sealed class AuditServiceTests
         Assert.Equal("""{"FullName":"Trần Chủ Toạ"}""", row.Details);
         // It saves on its own rather than with the caller's unit of work (see AuditService).
         Assert.Equal(1, _unitOfWork.Saves);
+        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
     }
 
     [Fact]

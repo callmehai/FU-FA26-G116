@@ -4,7 +4,10 @@ using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Application.Tests.Fakes;
 
-/// <summary>Notifications in a list. <see cref="Added"/> holds what was staged; nothing here saves.</summary>
+/// <summary>
+/// Notifications in a list. <see cref="Added"/> holds what was staged; nothing here saves. It does not order rows
+/// the way the real repository does, so a test here asserts membership, not order.
+/// </summary>
 public sealed class FakeNotificationRepository : INotificationRepository
 {
     public List<Notification> Rows { get; } = [];
@@ -13,7 +16,7 @@ public sealed class FakeNotificationRepository : INotificationRepository
     public HashSet<(Guid ShareId, Guid UserId)> CalendarShareParties { get; } = [];
     public HashSet<(Guid SampleId, Guid UserId)> OwnVoiceSamples { get; } = [];
 
-    /// <summary>Thrown by every read, in place of answering: a store that cannot be reached.</summary>
+    /// <summary>Thrown by every call but <see cref="Add"/>, in place of answering: a store that cannot be reached.</summary>
     public Exception? Fail { get; set; }
 
     public Task<List<Notification>> FindByRecipientAsync(Guid userId, int page, int pageSize, CancellationToken ct = default)

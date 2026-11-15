@@ -42,8 +42,3 @@ public sealed class FakeAuditLog : IAuditLogRepository, IAuditLogQuery
         return Fail is { } failure ? Task.FromException<T>(failure) : Task.FromResult(answer());
     }
 }
-
-public sealed class FakeCallerContext(string ipAddress = "") : ICallerContext
-{
-    public string IpAddress { get; } = ipAddress;
-}

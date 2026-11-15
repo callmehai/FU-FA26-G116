@@ -15,24 +15,27 @@ public sealed class NotificationService(
     public async Task QueueMeetingStartedAsync(Guid meetingId, string meetingTitle, Guid historyId,
         DateTimeOffset occurredAt, IReadOnlyList<Guid> recipientUserIds, CancellationToken ct = default)
     {
-        foreach (var userId in recipientUserIds.Distinct())
+        await unitOfWork.ExecuteAsync(async token =>
         {
-            repository.Add(new Notification
+            foreach (var userId in recipientUserIds.Distinct())
             {
-                UserId = userId,
-                MeetingId = meetingId,
-                TargetType = "Meeting",
-                TargetId = meetingId,
-                Type = NotificationType.MeetingStarted,
-                Title = "Cuộc họp đã bắt đầu",
-                Body = $"Cuộc họp “{meetingTitle}” đã bắt đầu.",
-                OriginHistoryId = historyId,
-                DeduplicationKey = $"meeting-started:{historyId:D}:{userId:D}",
-                CreatedAt = occurredAt,
-                UpdatedAt = occurredAt,
-            });
-        }
-        if (recipientUserIds.Count > 0) await unitOfWork.SaveChangesAsync(ct);
+                repository.Add(new Notification
+                {
+                    UserId = userId,
+                    MeetingId = meetingId,
+                    TargetType = "Meeting",
+                    TargetId = meetingId,
+                    Type = NotificationType.MeetingStarted,
+                    Title = "Cuộc họp đã bắt đầu",
+                    Body = $"Cuộc họp “{meetingTitle}” đã bắt đầu.",
+                    OriginHistoryId = historyId,
+                    DeduplicationKey = $"meeting-started:{historyId:D}:{userId:D}",
+                    CreatedAt = occurredAt,
+                    UpdatedAt = occurredAt,
+                });
+            }
+            if (recipientUserIds.Count > 0) await unitOfWork.SaveChangesAsync(token);
+        }, TransactionMode.None, ct);
     }
 
     public Task<NotificationPage> ListAsync(
