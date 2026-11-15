@@ -77,6 +77,7 @@ Table of Contents
 | 15/11/2026 | M, A | KhanhPG | SCRUM-153 BA Final Review (note 45, ADR-0061): recording follows the Meeting format — uploads only for In-person Meetings (UC-44c Description and PRE-2, the room-microphone reminder, EX-8 MSG478); a Hybrid Meeting that has ended gains one system-built combined recording (UC-43a Description, source list and AF-3; UC-43b and UC-43c wording; UC-44e POST-4 never builds it again, with the AF-1 retention; UC-45c EX-4 MSG479); BR-340 and BR-342 rewritten, BR-347 covers the combined recording, new BR-455–BR-458 and MSG478–MSG479. |
 | 15/11/2026 | M, A | KhanhPG | PR #332 BA Final Review (note 46, ADR-0062, PO 13/11/2026): a Meeting left In Progress is ended by the system 24 hours after its planned end time — or 24 hours after its actual start when it started after its planned end — the same way as UC-22, with System as the actor and no notification; new BR-460 (Related UC: UC-22; UC-22 flow unchanged); BR-302 stays retired and points to BR-460. |
 | 15/11/2026 | M, D | KhanhPG | PO decision 14–15/11/2026 (SCRUM-37 closed — simulated signing of minutes dropped; SCRUM-106 closed — no Secretary-compiled feedback list): remove UC-62 and UC-63 placeholders and renumber §12 (UC-64→12.5, UC-65→12.6, UC-83→12.7); retire BR-166 (number kept, never reused); remove the signing flow from the permission matrix, actor descriptions and screens (12.2–12.3 removed, Finalized kept without signing/history); SCRUM-106 scan: no UC/BR/MSG in Report 3. (note 47; source: Hải 15/11/2026 + Khánh 15/11/2026) |
+| 15/11/2026 | M, D | HaiTV | PO decision 15/11/2026 (SCRUM-37): the MinutesSignature table is dropped from the database (migration DropMinutesSignature). Section 3.2: Entity 27 MinutesSignature removed and Entities 28–35 renumbered 27–34; Entity 26 MeetingMinutes rewritten to the code: Status Draft, WaitingApproval, Rejected, Issued, Superseded, with the submit, approve and return fields; the signing and sealing fields are gone. |
 
 *A - Added M - Modified D - Deleted
 
@@ -142,7 +143,7 @@ End condition: The meeting has formal minutes that have been approved and issued
 
 #### 3.1 Entity Relationship Diagram
 
-The diagram is drawn from the database model in the code as of 04/11/2026 and shows 41 tables: the 35 entities described in 3.2, the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation, and two technical tables, MeetingInvitationDispatch and GuestVerificationChallenge, which support invitation email delivery and Guest email verification and are not described in 3.2. Vote and Agenda Item each belong directly to Meeting.
+The diagram is drawn from the database model in the code as of 04/11/2026 and shows 41 tables: the 34 entities described in 3.2, MinutesSignature (dropped from the database on 15/11/2026), the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation, and two technical tables, MeetingInvitationDispatch and GuestVerificationChallenge, which support invitation email delivery and Guest email verification and are not described in 3.2. Vote and Agenda Item each belong directly to Meeting.
 
 #### 3.2 Entity Descriptions
 
@@ -560,37 +561,28 @@ AI-generated summary of a meeting, produced from the transcript after the meetin
 
 Entity 26: MeetingMinutes
 
-Formal minutes of a meeting, compiled from the approved summary, decisions and vote results. Each correction creates a new revision; a sealed revision is locked and never edited.
+Formal minutes of a meeting, compiled from the approved summary, decisions and vote results. The Secretary submits a revision, the Chair approves it, which issues it, or returns it with a reason. An issued revision is locked and never edited; a correction is a new revision.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the minutes revision. |
 | 2 | MeetingId | uuid | FK | No | Meeting the minutes belong to (references Meeting). |
 | 3 | RevisionNumber | int | UK | No | Revision number, starting at 1; unique within the meeting. |
-| 4 | SupersedesId | uuid | FK | Yes | Previous revision that this revision replaces (references MeetingMinutes). Null for the first revision. |
+| 4 | SupersedesId | uuid | FK | Yes | Issued revision that this revision corrects (references MeetingMinutes). Null for the first revision. |
 | 5 | Content | string |  | No | Content of the minutes. |
-| 6 | Status | enum |  | No | Signing state of the revision. Values: Draft, PendingSignature, RevisionRequested, Sealed, Superseded. |
-| 7 | CreatedById | uuid | FK | No | User who prepared the revision (references User). |
-| 8 | RevisionNote | string |  | Yes | Explanation of what was changed in this revision. |
-| 9 | SealedById | uuid | FK | Yes | User who sealed the minutes (references User). |
-| 10 | SealedAt | timestamptz |  | Yes | Date and time the minutes were sealed; once set, the revision is locked. |
+| 6 | BuiltFromDraftAt | timestamptz |  | Yes | Last change of the AI draft the content was built from; null when built without one. |
+| 7 | Status | enum |  | No | Approval state of the revision. Values: Draft, WaitingApproval, Rejected, Issued, Superseded. |
+| 8 | CreatedById | uuid | FK | No | User who prepared the revision (references User). |
+| 9 | SubmittedById | uuid | FK | Yes | Secretary who last submitted the revision for approval (references User). |
+| 10 | SubmittedAt | timestamptz |  | Yes | Date and time the revision was last submitted for approval. |
+| 11 | ApprovedById | uuid | FK | Yes | Chair who approved the revision, which issued it (references User). |
+| 12 | ApprovedAt | timestamptz |  | Yes | Date and time the revision was approved. |
+| 13 | RejectionReason | string |  | No | Reason the Chair gave when returning the revision, up to 2,000 characters; empty otherwise. |
+| 14 | ReturnedById | uuid | FK | Yes | Chair who last returned the revision (references User). |
+| 15 | ReturnedAt | timestamptz |  | Yes | Date and time the revision was last returned. |
+| 16 | IssuedAt | timestamptz |  | Yes | Date and time the revision was issued; from then on it is locked. |
 
-Entity 27: MinutesSignature
-
-Digital signature of one signer on a minutes revision. The stored hash proves the content has not changed since signing.
-
-| No | Field | Data Type | Key | Nullable | Description |
-| --- | --- | --- | --- | --- | --- |
-| 1 | Id | uuid | PK | No | Unique identifier of the signature. |
-| 2 | MinutesId | uuid | FK | No | Minutes revision signed (references MeetingMinutes). |
-| 3 | SignerId | uuid | FK | No | User who signed (references User). |
-| 4 | SignedAt | timestamptz |  | No | Date and time of signing. |
-| 5 | ContentSha256 | string |  | No | SHA-256 hash of the minutes content at signing time. |
-| 6 | Signature | string |  | No | Signature value. |
-| 7 | PublicKey | string |  | No | Public key of the signer, used to verify the signature. |
-| 8 | InvalidatedAt | timestamptz |  | Yes | Date and time the signature became invalid, for example when a revision is requested. |
-
-Entity 28: Notification
+Entity 27: Notification
 
 In-app notification delivered to one user; opening it navigates to the related resource.
 
@@ -603,7 +595,7 @@ In-app notification delivered to one user; opening it navigates to the related r
 | 5 | TargetId | uuid |  | No | Identifier of the resource opened from the notification. |
 | 6 | ReadAt | timestamptz |  | Yes | Date and time the notification was read. Null while unread. |
 
-Entity 29: EmailMessage
+Entity 28: EmailMessage
 
 Outgoing email kept in a queue so it can be sent in the background, retried on failure and traced later.
 
@@ -616,7 +608,7 @@ Outgoing email kept in a queue so it can be sent in the background, retried on f
 | 5 | RetryCount | int |  | No | Number of send attempts made. |
 | 6 | CreatedAt | timestamptz |  | No | Date and time the message was queued. |
 
-Entity 30: Folder
+Entity 29: Folder
 
 Folder in a user’s personal library. Folders nest at most five levels; a folder created for a meeting upload keeps a link to that Meeting so later uploads find it after a rename or move.
 
@@ -629,7 +621,7 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 | 5 | MeetingId | uuid | FK | Yes | Meeting this folder was created for when a file was uploaded straight into it (references Meeting); null for folders the user created. |
 | 6 | CreatedAt | timestamptz |  | No | Date and time the folder was created. |
 
-Entity 31: TranscriptSpeaker
+Entity 30: TranscriptSpeaker
 
 One voice of a transcript and the person it belongs to. The machine may suggest a member whose voice sample matches and, from 03/11/2026, fills the name in when the score reaches the auto-assign threshold; the Secretary may change or clear it. A voice belongs to a member or to a Guest with a current invitation. No voice vector is stored.
 
@@ -646,7 +638,7 @@ One voice of a transcript and the person it belongs to. The machine may suggest 
 | 9 | AssignedById | uuid | FK | Yes | Secretary who assigned the name; null when the machine filled it in. |
 | 10 | AssignedAt | timestamptz |  | Yes | Time the name was assigned. |
 
-Entity 32: GuestSession
+Entity 31: GuestSession
 
 Verified session of an external Guest, giving access to one Meeting without an account. A row is itself the evidence that the invited email was verified; one invitation may open several sessions, one per device.
 
@@ -657,7 +649,7 @@ Verified session of an external Guest, giving access to one Meeting without an a
 | 3 | ExpiresAt | timestamptz |  | No | Time the session expires; 12 hours after it was opened. |
 | 4 | RevokedAt | timestamptz |  | Yes | Time the session ended early: the Guest signed out, the invitation was revoked or the Meeting ended. |
 
-Entity 33: SpeechClip
+Entity 32: SpeechClip
 
 One sentence a person said into their own microphone in an online or hybrid Meeting, transcribed as soon as they paused and kept with its audio so the meeting can be heard again sentence by sentence. The speaker is the owner of the microphone: a member of the Meeting or a Guest invited to it, never both. It is personal data and is erased with the Meeting's recordings.
 
@@ -681,7 +673,7 @@ One sentence a person said into their own microphone in an online or hybrid Meet
 | 16 | AudioContentType | string |  | Yes | Media type of the stored audio. |
 | 17 | Peaks | bytea |  | Yes | One loudness value per 100 ms, to draw the waveform without fetching any audio. |
 
-Entity 34: VoiceConsent
+Entity 33: VoiceConsent
 
 A person's consent to Voice ID: the system may keep voice samples and use them to suggest that person's name for a voice. The consent is separate from consent to being recorded, is given by the person themself, and is kept with the notice they read and the purpose they agreed to. A voice used to recognise someone is sensitive personal data.
 
@@ -694,7 +686,7 @@ A person's consent to Voice ID: the system may keep voice samples and use them t
 | 5 | Purpose | string |  | No | Purpose the person agreed to: suggesting their name for a voice in meetings they attend. |
 | 6 | WithdrawnAt | timestamptz |  | Yes | Time the consent was withdrawn; a withdrawn consent is never revived and every sample of that person is erased. |
 
-Entity 35: VoiceSample
+Entity 34: VoiceSample
 
 One enrolment sample of a person's voice, kept only encrypted, used to suggest that person's name for a voice in the meetings they attend. The recording itself is kept too, encrypted, so its owner can hear it back. Erased with every other sample when the person withdraws consent. A sample the person recorded stands alone; a sample a Secretary recorded carries the Meeting where it was recorded and the Secretary who recorded it.
 
