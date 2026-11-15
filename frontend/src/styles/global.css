@@ -327,6 +327,13 @@ code {
 .input-group { display: flex; align-items: center; gap: 4px; }
 .input-group input { flex: 1; min-width: 0; }
 .input-group .btn { margin-left: 4px; }
+/* On a phone the field, show and copy keep the first line and "Tạo mật khẩu" takes the second: beside all three the
+   field was 64px and showed five characters of a generated password (QA FE-02). */
+@media (max-width: 560px) {
+  .input-group { flex-wrap: wrap; }
+  .input-group input { flex-basis: calc(100% - 96px); }
+  .input-group .btn { flex: 1 1 100%; margin-left: 0; }
+}
 
 /* A password input with its show/hide button drawn inside the box, on the right, placed with
    top/right. */
@@ -1316,6 +1323,9 @@ a.menu-item { text-decoration: none; }
 @media (max-width: 1400px) {
   .users-table td.users-login { white-space: normal; }
 }
+/* A long email (or name) with no space in it breaks where it must: it widened the name column until the table scrolled
+   sideways and pushed the actions out of the card at 1440px (QA FE-02). */
+.users-table .person-name, .users-table .cell-sub { overflow-wrap: anywhere; }
 @media (max-width: 720px) {
   .users-table thead, .users-table .users-col, .users-table .row-skeleton td:not(:first-child) { display: none; }
   .users-table tbody tr:not(.row-skeleton) { display: grid; }
@@ -1323,8 +1333,6 @@ a.menu-item { text-decoration: none; }
   .users-table td.col-action { padding: 0 12px 10px 60px; text-align: left; }
   /* A disabled action explains itself in a tooltip, which a touch screen never shows: only what can be done stays. */
   .users-table .row-actions > :disabled { display: none; }
-  .users-table .person-name { overflow-wrap: anywhere; }
-  .users-table .cell-sub { overflow-wrap: anywhere; }
   .users-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 6px; font-size: 13px; }
 }
 

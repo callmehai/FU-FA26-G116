@@ -10,6 +10,7 @@ import { errorMessage, isApiError } from '../../lib/errors'
 import { formatClock, formatDate, formatWeekdayDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import { useSearchBox } from '../../lib/useSearchBox'
+import { latestSearchParams } from '../../lib/latestSearchParams'
 import {
   MEETING_MODE_LABEL,
   MEETING_STATUSES,
@@ -119,10 +120,10 @@ export function MeetingsPage() {
   const update = useCallback(
     (patch: Partial<ListState>) => {
       // Any change of criteria starts again from page 1, unless the change is the page itself.
-      const next = { ...readListState(searchParams), page: 1, ...patch }
+      const next = { ...readListState(latestSearchParams()), page: 1, ...patch }
       setSearchParams(writeListState(next), { replace: true })
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   )
 
   const [search, setSearch] = useSearchBox(state.q, (q) => update({ q }))

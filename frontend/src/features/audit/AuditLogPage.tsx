@@ -11,6 +11,7 @@ import { Select, type SelectOption } from '../../components/Select'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import { useSearchBox } from '../../lib/useSearchBox'
+import { latestSearchParams } from '../../lib/latestSearchParams'
 import type { AuditEventType, AuditLogItem, AuditLogPage } from '../../types/auditLog'
 import { useAccessLost } from '../auth/useAccessLost'
 import { ActorCell, AuditEntrySheet } from './AuditEntrySheet'
@@ -103,8 +104,8 @@ export function AuditLogPage() {
 
   const update = useCallback(
     (patch: Partial<Criteria>) =>
-      setSearchParams(writeCriteria({ ...readCriteria(searchParams), page: 1, ...patch }), { replace: true }),
-    [searchParams, setSearchParams],
+      setSearchParams(writeCriteria({ ...readCriteria(latestSearchParams()), page: 1, ...patch }), { replace: true }),
+    [setSearchParams],
   )
 
   const [search, setSearch] = useSearchBox(criteria.q, (q) => update({ q }))
