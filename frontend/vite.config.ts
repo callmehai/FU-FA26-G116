@@ -8,6 +8,11 @@ const BACKEND = 'http://localhost:5225'
 
 export default defineConfig({
   plugins: [react()],
+  // The pre-bundled dependencies live in this checkout, not in node_modules: a git worktree that links the main
+  // checkout's node_modules would otherwise re-bundle them into the same folder under a dev server that is already
+  // serving them, and that server's pages then load two copies of ProseMirror (the minutes editor fails to open with
+  // "Adding different instances of a keyed plugin").
+  cacheDir: '.vite',
   server: {
     port: 5173,
     proxy: {

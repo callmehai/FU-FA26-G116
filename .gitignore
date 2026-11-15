@@ -487,6 +487,7 @@ backend/TrustCabinet.Web/wwwroot/
 frontend/dist/
 frontend/*.tsbuildinfo
 frontend/node_modules/.vite/
+frontend/.vite/
 
 # Cấu hình Claude Code của riêng từng máy (permission allowlist...).
 # .claude/settings.json dùng chung thì vẫn commit được.
