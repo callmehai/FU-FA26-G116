@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TrustCabinet.Domain.Access;
-using TrustCabinet.Domain.Audit;
-using TrustCabinet.Domain.Users;
+using TrustCabinet.Application.Access;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Audit;
 

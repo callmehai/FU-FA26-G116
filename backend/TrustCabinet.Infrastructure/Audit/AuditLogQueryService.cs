@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using NpgsqlTypes;
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 

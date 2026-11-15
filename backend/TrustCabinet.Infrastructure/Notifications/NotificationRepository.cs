@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Notifications;
 
 namespace TrustCabinet.Infrastructure.Notifications;
 

@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;

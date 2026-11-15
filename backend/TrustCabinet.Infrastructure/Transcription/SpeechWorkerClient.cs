@@ -3,8 +3,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Transcription;
-using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Application.Transcription;
+using TrustCabinet.Application.VoiceId;
 
 namespace TrustCabinet.Infrastructure.Transcription;
 

@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Notes;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Notes;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Infrastructure.Persistence;
 

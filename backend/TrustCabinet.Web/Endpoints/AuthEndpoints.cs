@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Users;
 using TrustCabinet.Infrastructure.Authentication;
 
 namespace TrustCabinet.Web.Endpoints;
@@ -338,7 +338,7 @@ public sealed record SignInResponse(
     DateTimeOffset AccessTokenExpiresAt,
     CurrentUserResponse User)
 {
-    public static SignInResponse From(Domain.Authentication.SignInResult result) => new(
+    public static SignInResponse From(Application.Authentication.SignInResult result) => new(
         result.AccessToken!,
         result.AccessTokenExpiresAt!.Value,
         CurrentUserResponse.From(result.User!, result.Capabilities ?? []));

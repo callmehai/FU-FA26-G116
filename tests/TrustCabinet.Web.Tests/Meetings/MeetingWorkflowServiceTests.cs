@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.Meetings;
 
 namespace TrustCabinet.Web.Tests.Meetings;

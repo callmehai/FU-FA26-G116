@@ -1,5 +1,6 @@
+using TrustCabinet.Application.CalendarSharing;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.CalendarSharing;
-using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Web.Endpoints;
 

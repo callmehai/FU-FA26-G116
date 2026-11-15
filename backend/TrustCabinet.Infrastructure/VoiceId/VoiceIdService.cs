@@ -2,9 +2,11 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Transcription;
+using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure.Persistence;
 

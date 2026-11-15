@@ -1,7 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Web.Endpoints;
 
 namespace TrustCabinet.Web.Tests.Meetings;

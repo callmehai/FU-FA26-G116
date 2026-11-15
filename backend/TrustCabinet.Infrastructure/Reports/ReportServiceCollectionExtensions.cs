@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Reports;
+using TrustCabinet.Application.Reports;
 
 namespace TrustCabinet.Infrastructure.Reports;
 

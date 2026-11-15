@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Calls;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Calls;

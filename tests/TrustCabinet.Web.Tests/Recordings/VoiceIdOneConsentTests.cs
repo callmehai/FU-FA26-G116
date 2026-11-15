@@ -5,11 +5,11 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Transcription;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Transcription;
-using TrustCabinet.Domain.Users;
 using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Web.Tests.Recordings;

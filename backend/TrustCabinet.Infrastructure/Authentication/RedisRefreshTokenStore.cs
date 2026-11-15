@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
 
 namespace TrustCabinet.Infrastructure.Authentication;
 

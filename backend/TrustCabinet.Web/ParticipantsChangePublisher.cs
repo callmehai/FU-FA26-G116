@@ -1,6 +1,6 @@
 using TrustCabinet.Domain.Meetings;
 using Microsoft.AspNetCore.SignalR;
-using TrustCabinet.Domain.Participants;
+using TrustCabinet.Application.Participants;
 
 namespace TrustCabinet.Web;
 

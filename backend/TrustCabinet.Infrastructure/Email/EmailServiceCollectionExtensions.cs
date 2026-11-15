@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using TrustCabinet.Domain.Notifications;
-using TrustCabinet.Domain.Users;
+using TrustCabinet.Application.Notifications;
+using TrustCabinet.Application.Users;
 
 namespace TrustCabinet.Infrastructure.Email;
 

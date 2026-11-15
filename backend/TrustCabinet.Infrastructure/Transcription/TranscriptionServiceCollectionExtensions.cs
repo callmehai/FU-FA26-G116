@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Transcription;
-using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Application.Transcription;
+using TrustCabinet.Application.VoiceId;
 
 namespace TrustCabinet.Infrastructure.Transcription;
 

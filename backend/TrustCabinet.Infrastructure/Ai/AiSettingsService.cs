@@ -3,11 +3,12 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Ai;
+using TrustCabinet.Application.Ai;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Summaries;
 using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Summaries;
 

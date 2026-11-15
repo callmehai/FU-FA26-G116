@@ -1,6 +1,7 @@
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Infrastructure.VoiceId;
 

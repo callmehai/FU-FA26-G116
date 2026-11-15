@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Reports;
+using TrustCabinet.Application.Reports;
 
 namespace TrustCabinet.Web.Endpoints;
 

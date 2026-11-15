@@ -1,8 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TrustCabinet.Application.Attendance;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Attendance;
-using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Web.Endpoints;
 

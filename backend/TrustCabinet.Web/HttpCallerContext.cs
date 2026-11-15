@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Audit;
+using TrustCabinet.Application.Audit;
 
 namespace TrustCabinet.Web;
 

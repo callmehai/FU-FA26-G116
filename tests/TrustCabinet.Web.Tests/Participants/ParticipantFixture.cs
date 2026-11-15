@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
-using TrustCabinet.Domain.Agenda;
-using TrustCabinet.Domain.Attendance;
+using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Attendance;
 using TrustCabinet.Domain.Meetings;
 using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Participants;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Web;
 

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Participants;
 
 namespace TrustCabinet.Infrastructure.GuestAccess;
 

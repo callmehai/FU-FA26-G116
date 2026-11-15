@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TrustCabinet.Application.Agenda;
 using TrustCabinet.Domain.Agenda;
 
 namespace TrustCabinet.Web.Endpoints;

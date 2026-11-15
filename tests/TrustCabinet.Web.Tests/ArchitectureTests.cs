@@ -100,14 +100,14 @@ public sealed class ArchitectureTests
     // A5 — no interface but IUnitOfWork has SaveChangesAsync or InTransactionAsync.
     private static readonly string[] InterfacesExposingTheUnitOfWork =
     [
-        "TrustCabinet.Domain.Access.IRolePermissionRepository",
-        "TrustCabinet.Domain.Access.IRoleRepository",
-        "TrustCabinet.Domain.Meetings.IMeetingRepository",
-        "TrustCabinet.Domain.Notifications.INotificationRepository",
-        "TrustCabinet.Domain.Recordings.IRecordingRepository",
-        "TrustCabinet.Domain.Transcription.ITranscriptRepository",
-        "TrustCabinet.Domain.Users.IUserAccountRepository",
-        "TrustCabinet.Domain.VoiceId.IVoiceIdRepository",
+        "TrustCabinet.Application.Access.IRolePermissionRepository",
+        "TrustCabinet.Application.Access.IRoleRepository",
+        "TrustCabinet.Application.Meetings.IMeetingRepository",
+        "TrustCabinet.Application.Notifications.INotificationRepository",
+        "TrustCabinet.Application.Recordings.IRecordingRepository",
+        "TrustCabinet.Application.Transcription.ITranscriptRepository",
+        "TrustCabinet.Application.Users.IUserAccountRepository",
+        "TrustCabinet.Application.VoiceId.IVoiceIdRepository",
     ];
 
     // A6 — a Web type has no field or parameter of an I*Repository type. CapabilityGate and NotificationWorker
@@ -205,6 +205,25 @@ public sealed class ArchitectureTests
     [Fact]
     public void A1_Domain_references_only_the_framework()
         => Assert.Empty(ReferencedOutsideTheFramework(Domain));
+
+    /// <summary>
+    /// From CA-02 every service, repository and port is declared in Application. <c>IPdfInspector</c> stays because
+    /// <c>DocumentFileRules</c> takes it as a parameter, and Domain cannot reference Application (rule R3).
+    /// </summary>
+    [Fact]
+    public void A1_Domain_declares_no_port_service_or_repository()
+    {
+        var breaking = OwnTypes(Domain)
+            .Where(type => (type.IsInterface && type != typeof(TrustCabinet.Domain.Documents.IPdfInspector))
+                // A generic type's name ends in `n (FooRepository`1); judge the name without it.
+                || type.Name.Split('`')[0].EndsWith("Service", StringComparison.Ordinal)
+                || type.Name.Split('`')[0].EndsWith("Repository", StringComparison.Ordinal))
+            .Select(type => type.FullName!).Order(StringComparer.Ordinal).ToArray();
+
+        Assert.True(breaking.Length == 0,
+            "Domain holds entities, enums, rules and policies only (rule R3). Move these to Application:\n"
+            + string.Join("\n", breaking));
+    }
 
     [Fact]
     public void A2_Application_references_only_Domain_and_its_three_packages()

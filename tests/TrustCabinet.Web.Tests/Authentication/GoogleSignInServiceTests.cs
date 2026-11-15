@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using TrustCabinet.Domain.Access;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Audit;

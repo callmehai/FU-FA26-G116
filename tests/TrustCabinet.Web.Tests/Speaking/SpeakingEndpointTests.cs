@@ -4,11 +4,11 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Calls;
+using TrustCabinet.Application.Calls;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Speaking;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Speaking;
 using TrustCabinet.Web.Tests.Participants;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 

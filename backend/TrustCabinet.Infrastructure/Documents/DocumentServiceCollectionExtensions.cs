@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Documents;
+using TrustCabinet.Application.Documents;
 
 namespace TrustCabinet.Infrastructure.Documents;
 

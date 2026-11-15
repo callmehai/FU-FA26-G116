@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
-using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Application.Agenda;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
 

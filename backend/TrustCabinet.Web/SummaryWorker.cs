@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Summaries;
+using TrustCabinet.Application.Summaries;
 
 namespace TrustCabinet.Web;
 

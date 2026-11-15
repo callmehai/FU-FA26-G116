@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using TrustCabinet.Domain.Agenda;
-using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Votes;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Domain.Votes;
 using TrustCabinet.Infrastructure;
 
 namespace TrustCabinet.Web;

@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Domain.Access;
-using TrustCabinet.Domain.Audit;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Users;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Web.Tests.Users;
 
 namespace TrustCabinet.Web.Tests.Authentication;

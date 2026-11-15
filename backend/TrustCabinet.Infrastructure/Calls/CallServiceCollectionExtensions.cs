@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using TrustCabinet.Domain.Calls;
-using TrustCabinet.Domain.Participants;
+using TrustCabinet.Application.Calls;
+using TrustCabinet.Application.Participants;
 
 namespace TrustCabinet.Infrastructure.Calls;
 

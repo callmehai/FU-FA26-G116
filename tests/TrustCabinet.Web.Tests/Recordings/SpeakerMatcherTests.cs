@@ -1,5 +1,5 @@
-using TrustCabinet.Domain.Transcription;
-using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Application.Transcription;
+using TrustCabinet.Application.VoiceId;
 
 namespace TrustCabinet.Web.Tests.Recordings;
 

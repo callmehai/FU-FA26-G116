@@ -2,7 +2,7 @@ using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Recordings;
+using TrustCabinet.Application.Recordings;
 
 namespace TrustCabinet.Infrastructure.Recordings;
 

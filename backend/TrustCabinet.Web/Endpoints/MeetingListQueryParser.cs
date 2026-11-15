@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Primitives;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Web.Endpoints;
 

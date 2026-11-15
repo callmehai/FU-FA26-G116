@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Notifications;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Infrastructure.Email;
 
 namespace TrustCabinet.Web.Tests.Email;

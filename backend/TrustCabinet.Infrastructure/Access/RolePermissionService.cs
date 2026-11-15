@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Access;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.CalendarSharing;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
-using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Persistence;

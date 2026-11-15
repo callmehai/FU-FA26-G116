@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Votes;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Infrastructure.Votes;
 

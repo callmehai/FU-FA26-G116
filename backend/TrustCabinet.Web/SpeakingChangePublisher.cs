@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
-using TrustCabinet.Domain.Agenda;
-using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Speaking;
+using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Speaking;
 using TrustCabinet.Infrastructure;
 
 namespace TrustCabinet.Web;

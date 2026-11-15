@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
+using TrustCabinet.Application.Access;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;

@@ -2,13 +2,14 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Participants;
+using TrustCabinet.Application.Speaking;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Domain.Speaking;
 using TrustCabinet.Infrastructure.Configurations;
 using TrustCabinet.Infrastructure.Persistence;
 

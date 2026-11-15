@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Net.Http.Headers;
+using TrustCabinet.Application.Recordings;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Recordings;
 

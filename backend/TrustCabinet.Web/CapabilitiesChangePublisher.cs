@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
-using TrustCabinet.Domain.Access;
+using TrustCabinet.Application.Access;
 
 namespace TrustCabinet.Web;
 

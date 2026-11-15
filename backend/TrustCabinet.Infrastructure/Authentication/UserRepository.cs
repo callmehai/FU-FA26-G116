@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 

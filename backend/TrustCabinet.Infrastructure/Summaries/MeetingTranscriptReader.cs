@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;

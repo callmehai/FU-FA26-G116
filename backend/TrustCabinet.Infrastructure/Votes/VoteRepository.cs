@@ -1,8 +1,9 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Participants;
+using TrustCabinet.Application.Votes;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Infrastructure.Votes;

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Calls;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;

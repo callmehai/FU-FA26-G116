@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Calls;
+using TrustCabinet.Application.Calls;
 
 namespace TrustCabinet.Web;
 

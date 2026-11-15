@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Recordings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Recordings;
 
 namespace TrustCabinet.Infrastructure.Recordings;
 

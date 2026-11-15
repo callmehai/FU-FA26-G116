@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using TrustCabinet.Application.Users;
+using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Users;
-using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Web.Tests.Authentication;
 

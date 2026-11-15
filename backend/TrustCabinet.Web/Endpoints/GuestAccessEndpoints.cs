@@ -1,5 +1,5 @@
 using System.Globalization;
-using TrustCabinet.Domain.GuestAccess;
+using TrustCabinet.Application.GuestAccess;
 
 namespace TrustCabinet.Web.Endpoints;
 

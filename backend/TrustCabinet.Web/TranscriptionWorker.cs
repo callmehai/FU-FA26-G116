@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Application.Transcription;
 
 namespace TrustCabinet.Web;
 

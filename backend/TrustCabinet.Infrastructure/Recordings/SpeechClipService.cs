@@ -1,12 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.GuestAccess;
+using TrustCabinet.Application.Recordings;
 using TrustCabinet.Domain.Recordings;
+using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Transcription;
 using TrustCabinet.Infrastructure.Persistence;
 

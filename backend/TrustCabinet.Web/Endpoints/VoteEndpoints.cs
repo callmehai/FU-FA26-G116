@@ -1,7 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TrustCabinet.Application.Participants;
+using TrustCabinet.Application.Votes;
 using TrustCabinet.Domain.Documents;
-using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Web.Endpoints;

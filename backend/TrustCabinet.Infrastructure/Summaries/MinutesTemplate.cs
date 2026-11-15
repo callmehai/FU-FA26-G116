@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using TrustCabinet.Domain.Notes;
-using TrustCabinet.Domain.Summaries;
+using TrustCabinet.Application.Notes;
+using TrustCabinet.Application.Summaries;
 
 namespace TrustCabinet.Infrastructure.Summaries;
 

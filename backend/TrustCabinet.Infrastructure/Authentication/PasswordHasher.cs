@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using TrustCabinet.Domain.Authentication;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Infrastructure.Authentication;

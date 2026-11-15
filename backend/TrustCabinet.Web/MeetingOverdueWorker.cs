@@ -1,4 +1,4 @@
-using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Application.Meetings;
 
 namespace TrustCabinet.Web;
 

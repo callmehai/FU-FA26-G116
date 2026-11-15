@@ -1,5 +1,5 @@
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Agenda;
+using TrustCabinet.Application.Agenda;
 
 namespace TrustCabinet.Infrastructure.Agenda;
 

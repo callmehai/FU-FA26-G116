@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Users;
 
 namespace TrustCabinet.Infrastructure.Users;
 

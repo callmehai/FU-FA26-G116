@@ -1,7 +1,7 @@
 using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Client;
+using TrustCabinet.Application.Votes;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Votes;
 using TrustCabinet.Web.Tests.Participants;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 using static TrustCabinet.Web.Tests.Votes.VoteEndpointTests;

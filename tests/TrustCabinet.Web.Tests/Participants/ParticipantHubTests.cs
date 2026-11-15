@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Domain.Participants;
+using TrustCabinet.Application.Participants;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Participants;

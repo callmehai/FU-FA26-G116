@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Application.Transcription;
 using TrustCabinet.Infrastructure.Transcription;
 
 namespace TrustCabinet.Web.Tests.Recordings;

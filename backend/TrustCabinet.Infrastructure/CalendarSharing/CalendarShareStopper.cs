@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.CalendarSharing;
 using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Enums;
 
