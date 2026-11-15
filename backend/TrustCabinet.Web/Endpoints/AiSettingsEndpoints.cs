@@ -46,7 +46,7 @@ public static class AiSettingsEndpoints
             return Results.Json(new { code, message, errors = result.Errors }, statusCode: status);
         }
         if (result.Test is { } test)
-            return Results.Ok(new { code = Msg412TestPassed, message = $"Kết nối được {test.Model}.", test.Model, test.ElapsedMs });
+            return Results.Ok(new { code = Msg412TestPassed, message = test.Message ?? $"Kết nối được {test.Model}.", test.Model, test.ElapsedMs });
         return successCode is null
             ? Results.Ok(result.Data)
             : Results.Ok(new { code = successCode, message = "Đã lưu cấu hình AI.", settings = result.Data });

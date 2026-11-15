@@ -152,6 +152,8 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
     {
         if (!local.IsConfigured)
             return new(AiSettingsFailure.TestFailed, Message: "Server chưa cấu hình máy local (Ai:BaseUrl, Ai:Model).");
+        if (local is LanguageModelClient { HasBackup: true } machines)
+            return BothMachines(local.Model, await machines.CheckAsync(LocalTestTimeout, ct));
         using var limit = CancellationTokenSource.CreateLinkedTokenSource(ct);
         limit.CancelAfter(LocalTestTimeout);
         var watch = Stopwatch.StartNew();
@@ -169,6 +171,26 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
             return new(AiSettingsFailure.TestFailed,
                 Message: $"Máy local không trả lời sau {(int)LocalTestTimeout.TotalSeconds} giây. Kiểm tra máy còn bật và Tailscale đang kết nối.");
         }
+    }
+
+    /// <summary>
+    /// Both in-house machines in one line. The screen adds the time after the message, so the machine that answered —
+    /// and whose time it is — comes last.
+    /// </summary>
+    internal static AiSettingsOutcome BothMachines(string model, IReadOnlyList<LocalMachineCheck> checks)
+    {
+        var main = checks.Single(c => !c.Backup);
+        var backup = checks.Single(c => c.Backup);
+        return (main.Ok, backup.Ok) switch
+        {
+            (true, true) => new(Test: new AiTestResult(model, main.ElapsedMs,
+                $"Kết nối được {model} trên máy chính và máy dự phòng.")),
+            (true, false) => new(Test: new AiTestResult(model, main.ElapsedMs,
+                $"Máy dự phòng: {backup.Failure} Máy chính kết nối được {model}.")),
+            (false, true) => new(Test: new AiTestResult(model, backup.ElapsedMs,
+                $"Máy chính: {main.Failure} Máy dự phòng sẽ viết thay, kết nối được {model}.")),
+            _ => new(AiSettingsFailure.TestFailed, Message: $"Máy chính: {main.Failure} Máy dự phòng: {backup.Failure}"),
+        };
     }
 
     private async Task<AiSettingsView> ViewAsync(CancellationToken ct)

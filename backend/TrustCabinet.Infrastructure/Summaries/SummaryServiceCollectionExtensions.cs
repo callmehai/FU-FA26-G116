@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Domain.Ai;
 using TrustCabinet.Infrastructure.Ai;
@@ -17,7 +18,14 @@ public static class SummaryServiceCollectionExtensions
     public static IServiceCollection AddTrustCabinetSummaries(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<LanguageModelOptions>(configuration.GetSection(LanguageModelOptions.SectionName));
-        services.AddHttpClient(LanguageModelClient.HttpClientName);
+        // A machine off the tailnet never refuses a connection; give up on it quickly so the backup can take over.
+        services.AddHttpClient(LanguageModelClient.HttpClientName).ConfigurePrimaryHttpMessageHandler(provider =>
+            new SocketsHttpHandler
+            {
+                ConnectTimeout = TimeSpan.FromSeconds(
+                    Math.Max(1, provider.GetRequiredService<IOptions<LanguageModelOptions>>().Value.ConnectTimeoutSeconds)),
+            });
+        services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<ILanguageModel, LanguageModelClient>();
         // ADR-0056: an API for ordinary meetings, set up by an administrator, its key encrypted at rest.
         services.AddHttpClient(LanguageModelProvider.ApiHttpClientName);
