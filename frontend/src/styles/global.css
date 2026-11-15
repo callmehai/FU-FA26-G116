@@ -5357,7 +5357,6 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .shared-busy-short { flex-direction: row; align-items: center; gap: 6px; padding-block: 0; }
 .shared-column-unknown { background-color: var(--surface-alt); }
 .shared-unknown-text { position: absolute; top: 50%; left: 0; right: 0; color: var(--faint-ink); font-size: 13px; text-align: center; transform: translateY(-50%); }
-.shared-skeleton { position: absolute; inset: 8px; height: auto; }
 @media (max-width: 640px) {
   .week-toolbar { flex-wrap: wrap; }
   .week-hours { margin-left: 0; }

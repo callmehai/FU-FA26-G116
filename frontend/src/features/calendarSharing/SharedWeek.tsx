@@ -162,7 +162,23 @@ export function SharedWeek({
       </>
     )
 
-  if (data && data.people.length === 0)
+  // The first load: an empty week grid here flashed before "Chưa ai chia sẻ lịch với bạn." (BA 15/11). The same card
+  // as the empty state, its button held in place unseen, so nothing jumps when the answer is "nobody".
+  if (!data)
+    return (
+      <>
+        {toolbar}
+        <div className="card share-empty" aria-busy="true">
+          <p className="empty-title">Đang tải lịch được chia sẻ…</p>
+          <button type="button" className="btn btn-primary" tabIndex={-1} aria-hidden="true" style={{ visibility: 'hidden' }}>
+            <Icon name="send" size={16} />
+            Xin xem lịch
+          </button>
+        </div>
+      </>
+    )
+
+  if (data.people.length === 0)
     return (
       <>
         {toolbar}
@@ -176,7 +192,7 @@ export function SharedWeek({
       </>
     )
 
-  const people = (data?.people ?? []).map((person, i) => ({
+  const people = data.people.map((person, i) => ({
     person,
     colour: PERSON_COLOURS[i % PERSON_COLOURS.length],
   }))
@@ -285,7 +301,6 @@ export function SharedWeek({
                 aria-label={`${WEEKDAY_SHORT[days.indexOf(d)]} ${d.slice(8, 10)}/${d.slice(5, 7)}`}
                 role="group"
               >
-                {!data && <span className="skeleton shared-skeleton" />}
                 {unknown && <span className="shared-unknown-text">Chưa biết</span>}
                 {layoutDay(blocks).map(({ block, lane, lanes }) => {
                   const range = `${pad(block.from)}–${pad(block.to)}`
