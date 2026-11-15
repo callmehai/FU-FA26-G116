@@ -1,4 +1,4 @@
-import { Extension, Node, type Editor } from '@tiptap/core'
+import { Extension, Node, getHTMLFromFragment, type Editor } from '@tiptap/core'
 import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import type { Node as PmNode } from '@tiptap/pm/model'
@@ -186,6 +186,7 @@ export function minutesExtensions() {
     TableHeader,
     TableCell,
     PageBreak,
+    FittedWidths,
     FindReplace,
   ]
 }
@@ -193,19 +194,41 @@ export function minutesExtensions() {
 /**
  * Column widths are shares of the text width (the page, the Word file and the PDF spread a table over it). Stored in
  * pixels of whatever sheet they were last set on, so on opening they are scaled to this sheet: the table then fills it
- * exactly and dragging a border moves it where the pointer is. Left out of the undo history: it is no edit.
+ * exactly and dragging a border moves it where the pointer is. What was stored is kept beside the scaled widths
+ * (`printColwidth` on a cell, `fitScale` on its table, neither written to the HTML): `minutesHtml` puts it back on
+ * saving, so opening and saving on a narrower sheet, a phone, leaves a table nobody resized as it was.
+ */
+const FittedWidths = Extension.create({
+  name: 'fittedWidths',
+  addGlobalAttributes() {
+    return [
+      { types: ['table'], attributes: { fitScale: { default: null, rendered: false, parseHTML: () => null } } },
+      { types: ['tableCell', 'tableHeader'], attributes: { printColwidth: { default: null, rendered: false, parseHTML: () => null } } },
+    ]
+  },
+})
+
+const isCell = (node: PmNode) => node.type.name === 'tableCell' || node.type.name === 'tableHeader'
+const fitted = (widths: number[], scale: number) => widths.map((w) => Math.max(40, Math.round(w * scale)))
+const sameWidths = (a: number[] | null, b: number[] | null) => !!a && !!b && a.length === b.length && a.every((w, i) => w === b[i])
+
+/**
+ * Scales the tables to the sheet. Run once the sheet is in the page: a sheet not laid out yet has no width, and a
+ * width of NaN would be written into every column. Left out of the undo history: it is no edit.
  */
 export function fitTables(editor: Editor) {
   const sheet = editor.view.dom
   const style = getComputedStyle(sheet)
   const width = sheet.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
-  if (width <= 0) return
+  if (!(width > 0)) return
   const { tr } = editor.state
   editor.state.doc.descendants((table, at) => {
     if (table.type.name !== 'table') return true
+    // Always from the stored widths, so fitting twice is fitting once.
+    const stored = (cell: PmNode) => (cell.attrs.printColwidth ?? cell.attrs.colwidth) as number[] | null
     const widths: number[] = []
     table.firstChild?.forEach((cell) => {
-      const set = cell.attrs.colwidth as number[] | null
+      const set = stored(cell)
       for (let i = 0; i < Number(cell.attrs.colspan ?? 1); i++) widths.push(set?.[i] ?? 0)
     })
     const known = widths.filter((w) => w > 0)
@@ -214,15 +237,47 @@ export function fitTables(editor: Editor) {
     const total = widths.reduce((sum, w) => sum + (w || filler), 0)
     if (Math.abs(total - width) < 2) return false
     const scale = width / total
+    tr.setNodeMarkup(at, undefined, { ...table.attrs, fitScale: scale })
     table.descendants((cell, offset) => {
-      if (cell.type.name !== 'tableCell' && cell.type.name !== 'tableHeader') return true
-      const set = cell.attrs.colwidth as number[] | null
-      if (set) tr.setNodeMarkup(at + 1 + offset, undefined, { ...cell.attrs, colwidth: set.map((w) => Math.max(40, Math.round(w * scale))) })
+      if (!isCell(cell)) return true
+      const set = stored(cell)
+      if (set) tr.setNodeMarkup(at + 1 + offset, undefined, { ...cell.attrs, colwidth: fitted(set, scale), printColwidth: set })
       return false
     })
     return false
   })
   if (tr.docChanged) editor.view.dispatch(tr.setMeta('addToHistory', false))
+}
+
+/**
+ * The editor's HTML with the column widths in the units they were stored in: a table nobody resized gets its stored
+ * widths back exactly; one that was resized here is scaled back from this sheet, keeping the proportions set.
+ */
+export function minutesHtml(editor: Editor): string {
+  const { doc, tr } = editor.state
+  doc.descendants((table, at) => {
+    if (table.type.name !== 'table') return true
+    const scale = table.attrs.fitScale as number | null
+    if (!scale) return false
+    const cells: { pos: number; node: PmNode }[] = []
+    table.descendants((cell, offset) => {
+      if (!isCell(cell)) return true
+      cells.push({ pos: at + 1 + offset, node: cell })
+      return false
+    })
+    const untouched = cells.every(({ node }) => {
+      const stored = node.attrs.printColwidth as number[] | null
+      return stored ? sameWidths(node.attrs.colwidth as number[] | null, fitted(stored, scale)) : node.attrs.colwidth === null
+    })
+    for (const { pos, node } of cells) {
+      const set = node.attrs.colwidth as number[] | null
+      if (!set) continue
+      const colwidth = untouched ? (node.attrs.printColwidth as number[]) : set.map((w) => Math.max(1, Math.round(w / scale)))
+      tr.setNodeMarkup(pos, undefined, { ...node.attrs, colwidth })
+    }
+    return false
+  })
+  return getHTMLFromFragment(tr.doc.content, editor.schema)
 }
 
 // ---- Paragraph commands the toolbar uses ------------------------------------------------------------------------
