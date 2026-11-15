@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 import re
 import shutil
@@ -11,6 +12,10 @@ import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+# Chạy bằng `python scripts/sync_sequence_drawio_png.py` nên thư mục scripts
+# đã nằm trong sys.path — import trực tiếp module dùng chung trong cùng thư mục.
+from compress_png import compress_file
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -134,7 +139,22 @@ def export_page(
         print(result.stdout.strip())
 
 
+def default_originals_dir() -> Path:
+    """Thư mục local giữ bản gốc (gitignore) để sau này dựng báo cáo chuẩn nộp."""
+    env = os.environ.get("DIAGRAM_ORIGINALS_DIR")
+    return Path(env) if env else ROOT / "anh-goc"
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Xuất mọi tab UC ra PNG (bản repo nén nhẹ, bản gốc vào thư mục local).")
+    parser.add_argument("--originals-dir", default=None,
+                        help="Thư mục local giữ bản gốc (mặc định $DIAGRAM_ORIGINALS_DIR hoặc anh-goc/)")
+    parser.add_argument("--no-originals", action="store_true", help="Không lưu bản gốc")
+    parser.add_argument("--no-compress", action="store_true",
+                        help="Giữ nguyên bản xuất trong repo (không nén palette)")
+    args = parser.parse_args()
+    originals_dir = None if args.no_originals else Path(args.originals_dir or default_originals_dir())
+    compress = not args.no_compress
     try:
         pages = get_use_case_pages()
         executable = resolve_drawio()
@@ -147,6 +167,17 @@ def main() -> int:
             for index, (page_index, page_id, page_name) in enumerate(pages, start=1):
                 temp_png = temp_root / f"{page_id}.drawio.png"
                 export_page(executable, page_index, page_name, temp_png)
+                if originals_dir is not None:
+                    mirror = originals_dir / OUTPUT.relative_to(ROOT) / temp_png.name
+                    mirror.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(temp_png, mirror)
+                if compress:
+                    try:
+                        old, new, changed = compress_file(temp_png)
+                    except RuntimeError as exc:
+                        print(f"canh bao: {exc} — giữ nguyên bản xuất")
+                    else:
+                        print(f"  {'nen' if changed else 'giu-nguyen'} {temp_png.name} ({old/1e3:.0f} -> {new/1e3:.0f} KB)")
                 completed.append((temp_png, OUTPUT / temp_png.name))
                 print(f"[{index}/{len(pages)}] {page_name} -> {temp_png.name}")
 
