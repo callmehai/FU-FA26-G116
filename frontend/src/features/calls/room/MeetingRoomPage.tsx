@@ -18,6 +18,7 @@ import { BrandMark } from '../../../components/BrandMark'
 import { useToast } from '../../../components/toastContext'
 import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
+import { routes } from '../../../lib/routes'
 import type { CallRoomState } from '../../../types/call'
 import type { GuestMeeting } from '../../../types/guest'
 import type { Meeting, Sensitivity } from '../../../types/meeting'
@@ -230,8 +231,16 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
 
   if (phase.kind === 'left') {
     const { text, canRejoin } = disconnectMessage(phase.reason)
+    // Taken off the roster (MSG330): the meeting page is a 404 to them now, so the way out is the meeting list.
+    const removed = phase.reason === DisconnectReason.PARTICIPANT_REMOVED
     return (
-      <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!asGuest || canRejoin}>
+      <LobbyMessage
+        meetingId={meeting.id}
+        title={meeting.title}
+        text={text}
+        showHome={!asGuest || canRejoin}
+        toList={removed}
+      >
         {canRejoin && (
           <button type="button" className="btn btn-primary" onClick={() => setPhase({ kind: 'lobby' })}>
             Vào lại
@@ -657,6 +666,7 @@ export function LobbyMessage({
   title,
   text,
   showHome = true,
+  toList = false,
   children,
 }: {
   meetingId: string
@@ -664,9 +674,11 @@ export function LobbyMessage({
   text: string
   /** False when the meeting page is gone too: a guest's, once the meeting ended or the invitation was revoked. */
   showHome?: boolean
+  /** The way back leads to the meeting list instead: a member who may no longer open the meeting page. */
+  toList?: boolean
   children?: ReactNode
 }) {
-  const home = useMeetingHome(meetingId)
+  const meetingHome = useMeetingHome(meetingId)
   return (
     <RoomPage>
       <main className="prejoin-message">
@@ -674,8 +686,8 @@ export function LobbyMessage({
         <p className="prejoin-meeting">{title}</p>
         <div className="prejoin-message-actions">
           {showHome && (
-            <Link className="btn btn-outline" to={home}>
-              Về trang cuộc họp
+            <Link className="btn btn-outline" to={toList ? routes.meetings : meetingHome}>
+              {toList ? 'Về danh sách cuộc họp' : 'Về trang cuộc họp'}
             </Link>
           )}
           {children}

@@ -1978,11 +1978,12 @@ a.menu-item { text-decoration: none; }
 /* ---------- Toasts (components/ToastProvider.tsx) ---------- */
 /* The bottom-right corner is shared: the upload tray sits on --corner-bottom (lifted over the call room's
    controls), the toasts above it (--upload-tray-h, set by UploadTray). The Secretary's recorder card is moved by
-   hand and pushed by neither (RecorderCard). */
+   hand and pushed by neither, but while it sits low in the toasts' column they start above it (--mic-dock-lift, set
+   by RecorderCard), so a notification never hides the card's status and switch. */
 .toast-stack {
   position: fixed;
   right: 16px;
-  bottom: calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px));
+  bottom: max(calc(var(--corner-bottom, 16px) + var(--upload-tray-h, 0px)), var(--mic-dock-lift, 0px));
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -4394,6 +4395,8 @@ audio.recording-player { height: 40px; }
 .mic-notice-error { border-color: var(--edge-red); background: var(--chip-red-bg); color: var(--chip-red-fg); }
 /* The page scrolls past the card, so the last row of a list is never left under it. */
 body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px) + 16px); }
+/* Dragging the card into or out of the toasts' column moves them; they glide rather than jump. */
+body:has(.mic-dock) .toast-stack { transition: bottom 0.2s var(--ease-emphasized); }
 /* A phone keeps the sidebar's rail on the left: the card stays clear of it. */
 @media (max-width: 560px) {
   .mic-card { width: min(320px, calc(100vw - var(--sidebar-width-collapsed) - 24px)); }

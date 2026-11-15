@@ -1090,6 +1090,11 @@ export default {
           c.check('lastPageReached false', await (await client(qa, 'member')).post(confirmAt, { lastPageReached: false }), 400, 'MSG254')
 
           await mrow.getByRole('link', { name: new RegExp(fileName.replace('.', '\\.')) }).click()
+          // BR-290: locked until the reader scrolls to the end of the last page; an A4 page at 100% is taller than the window.
+          const locked = qa.page.getByRole('button', { name: 'Đọc tới trang cuối' })
+          await qa.expect(locked).toBeDisabled({ timeout: 20_000 })
+          await qa.page.locator('.viewer-scroll .pdf-page').first().waitFor()
+          await qa.page.locator('.viewer-scroll').evaluate((el) => el.scrollTo(0, el.scrollHeight))
           const confirm = qa.page.getByRole('button', { name: 'Xác nhận đã đọc' })
           await qa.expect(confirm).toBeEnabled({ timeout: 20_000 })
           await settled(qa)

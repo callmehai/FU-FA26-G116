@@ -128,6 +128,8 @@ function Enrolled({
   const toast = useToast()
   const [recording, setRecording] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
+  // UC-81e step 2: a sample is erased for good, so the person confirms first. Holds its number in the list.
+  const [erasing, setErasing] = useState<{ id: string; n: number } | null>(null)
   const full = profile.samples.length >= profile.maxSamples
   const player = useSamplePlayer()
 
@@ -138,8 +140,9 @@ function Enrolled({
       toast.show(result.message, 'success')
       onChange(result.data)
     } catch (error) {
-      toast.show(errorMessage(error), 'error')
+      // The dialog shows why; the list is read again in case the sample is already gone.
       await onReload()
+      throw error
     }
   }
 
@@ -196,7 +199,7 @@ function Enrolled({
               <button
                 type="button"
                 className="btn btn-ghost btn-icon btn-sm"
-                onClick={() => void remove(sample.id)}
+                onClick={() => setErasing({ id: sample.id, n: index + 1 })}
                 aria-label={`Xoá giọng mẫu ${index + 1}`}
                 data-tooltip="Xoá giọng mẫu"
               >
@@ -233,6 +236,20 @@ function Enrolled({
           }}
           onStale={onReload}
         />
+      )}
+
+      {erasing && (
+        <ConfirmDialog
+          title="Xoá giọng mẫu?"
+          confirmLabel="Xoá"
+          pendingLabel="Đang xoá…"
+          cancelLabel="Giữ lại"
+          tone="danger"
+          onClose={() => setErasing(null)}
+          onConfirm={() => remove(erasing.id)}
+        >
+          <p>Giọng mẫu {erasing.n} bị xoá hẳn, không lấy lại được.</p>
+        </ConfirmDialog>
       )}
 
       {withdrawing && (
