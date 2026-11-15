@@ -2,7 +2,6 @@ using System.Data;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Attendance;
 using TrustCabinet.Domain.Audit;
@@ -11,6 +10,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.GuestAccess;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Attendance;
 
@@ -18,8 +18,6 @@ public sealed class AttendanceService(TrustCabinetDbContext db, AttendanceReposi
     IParticipantRepository participants, IParticipantGuestAccess guests, IAttendanceChangePublisher publisher,
     ICallerContext caller, TimeProvider clock, ILogger<AttendanceService> logger) : IAttendanceService
 {
-    private static bool Persistence(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
-
     private async Task<AttendanceFailure> AccessAsync(ParticipantSnapshot? s, ParticipantActor actor, CancellationToken ct)
     {
         if (actor.Guest is { } g)
@@ -60,7 +58,7 @@ public sealed class AttendanceService(TrustCabinetDbContext db, AttendanceReposi
                 new(actor.Guest is null && actor.UserId is { } id && ParticipantRules.IsSecretary(s.Meeting, id)
                     && s.Meeting.Status == MeetingStatus.InProgress, true), page, rows.Length, query.Page, query.PageSize, totals));
         }
-        catch (Exception ex) when (Persistence(ex) || ex is InvalidDataException)
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is InvalidDataException)
         { logger.LogError(ex, "Attendance read failed for {MeetingId}", meetingId); return new(AttendanceFailure.ReadFailed); }
     }
 
@@ -138,7 +136,7 @@ public sealed class AttendanceService(TrustCabinetDbContext db, AttendanceReposi
             await tx.CommitAsync(ct);
             result = new(Saved: new(meetingId, evidence.Count, saved));
         }
-        catch (Exception ex) when (Persistence(ex) || ex is OverflowException or InvalidDataException)
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is OverflowException or InvalidDataException)
         {
             db.ChangeTracker.Clear();
             logger.LogError(ex, "Attendance save failed for {MeetingId}; re-read after an uncertain commit", meetingId);

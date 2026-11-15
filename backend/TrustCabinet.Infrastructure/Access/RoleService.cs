@@ -2,11 +2,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Access;
 
@@ -215,9 +215,7 @@ public sealed partial class RoleService(
         {
             await roles.SaveChangesAsync(ct);
         }
-        catch (Exception exception) when (
-            HasSqlState(exception, PostgresErrorCodes.ForeignKeyViolation)
-            || HasSqlState(exception, PostgresErrorCodes.RestrictViolation))
+        catch (Exception exception) when (DbErrors.IsReferenceViolation(exception))
         {
             // "Role was assigned to a user account in the meantime": somebody was given the role
             // between the count above and this delete — account creation does not take the guard.
@@ -231,7 +229,7 @@ public sealed partial class RoleService(
 
             return RoleResult.InUse(nowHeldBy);
         }
-        catch (Exception exception) when (exception is DbUpdateException or NpgsqlException)
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
             logger.LogError(exception, "Deleting role {RoleId} failed.", id);
             return RoleResult.Failure(RoleOutcome.SaveFailed);
@@ -262,12 +260,12 @@ public sealed partial class RoleService(
             await roles.SaveChangesAsync(ct);
             return null;
         }
-        catch (Exception exception) when (HasSqlState(exception, PostgresErrorCodes.UniqueViolation))
+        catch (Exception exception) when (DbErrors.IsUniqueViolation(exception))
         {
             logger.LogInformation("Role {Operation} rejected: name already taken (unique index).", operation);
             return RoleOutcome.DuplicateName;
         }
-        catch (DbUpdateConcurrencyException)
+        catch (Exception exception) when (DbErrors.IsConcurrencyConflict(exception))
         {
             // UPDATE matched no row: the role was deleted between reading it and saving the rename
             // (renaming does not take the guard). The diagram's "Role not found" — the client
@@ -275,10 +273,10 @@ public sealed partial class RoleService(
             logger.LogInformation("Role {Operation} rejected: the role no longer exists.", operation);
             return RoleOutcome.NotFound;
         }
-        catch (Exception exception) when (exception is DbUpdateException or NpgsqlException)
+        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
         {
-            // NpgsqlException as well: a dropped connection or a timeout comes straight from the
-            // driver, and those are exactly the failures this branch describes.
+            // A dropped connection or a timeout as well: it comes straight from the driver, and
+            // those are exactly the failures this branch describes.
             logger.LogError(exception, "Role {Operation} failed to save.", operation);
             return RoleOutcome.SaveFailed;
         }
@@ -350,24 +348,6 @@ public sealed partial class RoleService(
 
     private static RoleSummary Summarise(Role role, int userCount)
         => new(role.Id, role.Name, role.Description, role.IsBuiltIn, BuiltInRoles.IsDefault(role.Id), userCount);
-
-    /// <summary>
-    /// Whether the database refused the save with this SQLSTATE. Matched on the code rather than
-    /// the message, which varies with the server's locale; EF wraps the provider exception, so the
-    /// real one is the inner exception.
-    /// </summary>
-    private static bool HasSqlState(Exception exception, string sqlState)
-    {
-        for (Exception? current = exception; current is not null; current = current.InnerException)
-        {
-            if (current is PostgresException postgres && postgres.SqlState == sqlState)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex Whitespace();

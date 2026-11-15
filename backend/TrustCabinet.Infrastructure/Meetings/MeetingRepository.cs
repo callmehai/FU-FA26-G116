@@ -371,6 +371,10 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
     public async Task<T> InTransactionAsync<T>(
         Func<CancellationToken, Task<T>> operation, CancellationToken ct = default)
     {
+        // Called inside a transaction somebody else opened (a unit of work, SCRUM-143): the work joins it, and
+        // whoever opened it commits.
+        if (db.Database.CurrentTransaction is not null) return await operation(ct);
+
         await using var transaction = await db.Database.BeginTransactionAsync(
             IsolationLevel.ReadCommitted, ct);
         var result = await operation(ct);

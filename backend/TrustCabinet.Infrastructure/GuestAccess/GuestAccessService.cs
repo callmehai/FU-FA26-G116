@@ -5,7 +5,6 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
@@ -13,6 +12,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.GuestAccess;
 
@@ -37,7 +37,7 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             return invitation is null ? Invalid
                 : new(Data: new GuestInvitationView(invitation.Id, Meeting(invitation.Meeting), Mask(invitation.Email)));
         }
-        catch (Exception ex) when (IsPersistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Could not read guest invitation {InvitationId}.", invitationId);
             return Unavailable;
@@ -80,7 +80,7 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             await db.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
         }
-        catch (Exception ex) when (IsPersistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Could not save a verification code for guest invitation {InvitationId}.", invitationId);
             return Unavailable;
@@ -101,7 +101,7 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             if (!sent)
             {
                 try { await db.GuestVerificationChallenges.Where(c => c.Id == challenge.Id).ExecuteDeleteAsync(CancellationToken.None); }
-                catch (Exception ex) when (IsPersistence(ex))
+                catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
                 {
                     logger.LogError(ex, "Could not remove an undelivered code of guest invitation {InvitationId}.", invitationId);
                 }
@@ -159,7 +159,7 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             return new(Data: new GuestVerified(credentials.AccessToken(identity, session.ExpiresAt), session.ExpiresAt,
                 invitation.MeetingId, invitation.SelfDeclaredDisplayName is not null));
         }
-        catch (Exception ex) when (IsPersistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Could not verify a code for guest invitation {InvitationId}.", invitationId);
             return Unavailable;
@@ -177,7 +177,7 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             var current = await FindSessionAsync(session, tracked: false, ct);
             return current is null ? Ended : new(Data: View(current));
         }
-        catch (Exception ex) when (IsPersistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Could not read guest session {SessionId}.", session.SessionId);
             return Unavailable;
@@ -214,7 +214,7 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
             await db.SaveChangesAsync(ct);
             return new(Data: View(current));
         }
-        catch (Exception ex) when (IsPersistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Could not save the profile of guest session {SessionId}.", session.SessionId);
             return Unavailable;
@@ -231,7 +231,7 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
                 .ExecuteUpdateAsync(set => set.SetProperty(x => x.RevokedAt, now).SetProperty(x => x.UpdatedAt, now), ct);
             return new();
         }
-        catch (Exception ex) when (IsPersistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Could not end guest session {SessionId}.", session.SessionId);
             return Unavailable;
@@ -286,8 +286,6 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
         if (at <= 0) return "***";
         return $"{address[..(at > 3 ? 2 : 1)]}***{address[at..]}";
     }
-
-    internal static bool IsPersistence(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
 
     private static EmailMessage CodeEmail(MeetingGuestInvitation invitation, string code, int minutes) => new()
     {

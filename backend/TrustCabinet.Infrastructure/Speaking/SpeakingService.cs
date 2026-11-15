@@ -2,7 +2,6 @@ using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -11,6 +10,7 @@ using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Speaking;
 using TrustCabinet.Infrastructure.Configurations;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Speaking;
 
@@ -22,10 +22,6 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
     IParticipantGuestAccess guests, ISpeakingChangePublisher publisher, TimeProvider clock,
     ILogger<SpeakingService> logger) : ISpeakingService
 {
-    // The execution strategy wraps a transient failure in InvalidOperationException, as ParticipantService handles.
-    private static bool Persistence(Exception ex) =>
-        ex is DbUpdateException or NpgsqlException or TimeoutException
-            or InvalidOperationException { InnerException: NpgsqlException or TimeoutException };
     private DateTimeOffset Now => AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
 
     /// <summary>Who the caller is in this meeting, re-read on every request. A Guest needs a live verified session.</summary>
@@ -53,7 +49,7 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
             if (failure != SpeakingFailure.None) return new(failure);
             return new(Data: await QueueAsync(s!, viewer!, ct));
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to read the speaking queue of meeting {MeetingId}", meetingId);
             return new(SpeakingFailure.ReadFailed);
@@ -139,19 +135,19 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
             if (operation == SpeakingOperation.Invite) invited = new(request!.UserId, request.GuestInvitationId);
             change = new(Guid.CreateVersion7(), meetingId, operation.ToString(), request!.Id, now);
         }
-        catch (DbUpdateException ex) when (Violates(ex, SpeakingRequestConfiguration.FloorIndex))
+        catch (Exception ex) when (DbErrors.IsUniqueViolation(ex, SpeakingRequestConfiguration.FloorIndex))
         {
             db.ChangeTracker.Clear();
             return new(SpeakingFailure.FloorTaken);
         }
-        catch (DbUpdateException ex) when (Violates(ex, SpeakingRequestConfiguration.OpenUserIndex)
-            || Violates(ex, SpeakingRequestConfiguration.OpenGuestIndex))
+        catch (Exception ex) when (DbErrors.IsUniqueViolation(ex, SpeakingRequestConfiguration.OpenUserIndex)
+            || DbErrors.IsUniqueViolation(ex, SpeakingRequestConfiguration.OpenGuestIndex))
         {
             // Two presses at once: the database kept the first request, and the hand is raised either way (EX-2).
             db.ChangeTracker.Clear();
             return await ListAsync(meetingId, actor, ct);
         }
-        catch (Exception ex) when (Persistence(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             db.ChangeTracker.Clear();
             logger.LogError(ex, "Failed speaking {Operation} for meeting {MeetingId}", operation, meetingId);
@@ -292,10 +288,6 @@ public sealed class SpeakingService(TrustCabinetDbContext db, IParticipantReposi
         try { await publisher.PublishAsync(change, invited, timeout.Token); }
         catch (Exception ex) { logger.LogWarning(ex, "Speaking change committed; realtime delivery failed for {EventId}", change.EventId); }
     }
-
-    private static bool Violates(DbUpdateException ex, string index)
-        => ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } pg
-            && pg.ConstraintName == index;
 }
 
 /// <summary>

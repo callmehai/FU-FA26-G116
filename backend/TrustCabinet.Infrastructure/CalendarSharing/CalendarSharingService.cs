@@ -1,11 +1,11 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.CalendarSharing;
 
@@ -53,7 +53,7 @@ public sealed class CalendarSharingService(
                 [.. shares.Where(s => s.OwnerId == actorId).Select(View)],
                 [.. shares.Where(s => s.ViewerId == actorId).Select(View)]));
         }
-        catch (Exception error) when (IsDatabaseFailure(error))
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             logger.LogError(error, "Could not read the calendar shares of {UserId}", actorId);
             return new(null, CalendarShareFailure.ReadFailed);
@@ -103,7 +103,7 @@ public sealed class CalendarSharingService(
                 .ToListAsync(ct);
             return new(new ShareCandidatePage(items, total, query.Page, query.PageSize));
         }
-        catch (Exception error) when (IsDatabaseFailure(error))
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             logger.LogError(error, "Could not list calendar share candidates for {UserId}", actorId);
             return new(null, CalendarShareFailure.CandidatesReadFailed);
@@ -445,25 +445,20 @@ public sealed class CalendarSharingService(
             await transaction.CommitAsync(ct);
             return outcome;
         }
-        catch (DbUpdateException error) when (error.InnerException is PostgresException
-        {
-            SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "ux_calendar_shares_open_pair",
-        })
+        catch (Exception error) when (DbErrors.IsUniqueViolation(error, "ux_calendar_shares_open_pair"))
         {
             // Two requests for the same pair at once: the index lets one through (BR-423, EX-2).
             db.ChangeTracker.Clear();
             logger.LogInformation(error, "A calendar share of the same pair was saved first");
             return new(CalendarShareFailure.AlreadyShared);
         }
-        catch (Exception error) when (IsDatabaseFailure(error))
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             db.ChangeTracker.Clear();
             logger.LogError(error, "Could not save the calendar share");
             return new(CalendarShareFailure.SaveFailed);
         }
     }
-
-    private static bool IsDatabaseFailure(Exception error) => error is DbUpdateException or NpgsqlException or TimeoutException;
 
     private static bool Differs<T>(T? sent, T current) where T : struct => sent is { } value && !value.Equals(current);
 

@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Recordings;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Recordings;
 
@@ -20,8 +20,6 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     IRecordingStorage storage, IRecordingPlaybackSigner signer, IAuditService audit, ISpeechChangePublisher publisher,
     TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RecordingService> logger) : IRecordingService
 {
-    private static bool PersistenceError(Exception ex) => ex is DbUpdateException or NpgsqlException or TimeoutException;
-
     public async Task<RecordingOutcome> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
     {
         try
@@ -35,7 +33,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 secretary && RecordingRules.UploadAllowed(meeting.Status) && RecordingRules.TakesUploads(meeting.Mode),
                 items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId)));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to list recordings of {MeetingId}", meetingId);
             return new(RecordingFailure.ReadFailed);
@@ -54,7 +52,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             if (!RecordingRules.TakesUploads(meeting.Mode)) return new(RecordingFailure.HybridLiveOnly);
             return RecordingRules.UploadAllowed(meeting.Status) ? new() : new(RecordingFailure.Locked);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to check recording upload for {MeetingId}", meetingId);
             return new(RecordingFailure.SaveFailed);
@@ -101,7 +99,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             if (kept) await PublishAsync(meetingId, ct);
             return outcome;
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to store recording for {MeetingId}", meetingId);
             return new(RecordingFailure.SaveFailed);
@@ -124,7 +122,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             if (recording.Status != RecordingStatus.Available) return new(RecordingFailure.NotFound);
             return new(Data: signer.Sign(recordingId, clock.GetUtcNow()));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to sign playback for {RecordingId}", recordingId);
             return new(RecordingFailure.ReadFailed);
@@ -146,7 +144,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 new { recording.MeetingId, recording.FileName, recording.ByteSize }, ct);
             return new(Data: signer.Sign(recordingId, clock.GetUtcNow(), download: true));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to sign a download of {RecordingId}", recordingId);
             return new(RecordingFailure.ReadFailed);
@@ -186,7 +184,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
             }
             return outcome;
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to erase recording {RecordingId}", recordingId);
             return new(RecordingFailure.SaveFailed);

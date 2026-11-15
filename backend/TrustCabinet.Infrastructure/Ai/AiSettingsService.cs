@@ -3,12 +3,12 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TrustCabinet.Domain.Ai;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Summaries;
 
 namespace TrustCabinet.Infrastructure.Ai;
@@ -90,7 +90,7 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
                 new { mode = mode.ToString(), apiBaseUrl = baseUrl, apiModel = model, apiKey = keyChange }, ct);
             return new(Data: await ViewAsync(ct));
         }
-        catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (Exception error) when (DbErrors.IsUniqueViolation(error))
         {
             logger.LogWarning(error, "Two first saves of the AI settings at once");
             return new(AiSettingsFailure.SaveFailed);

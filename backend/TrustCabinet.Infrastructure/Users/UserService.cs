@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Authentication;
@@ -10,6 +9,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Users;
 using TrustCabinet.Domain.VoiceId;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Users;
 
@@ -114,7 +114,7 @@ public sealed partial class UserService(
             logger.LogInformation("Create rejected: email already taken (unique index).");
             return UserResult.Failure(UserOutcome.DuplicateEmail);
         }
-        catch (Exception ex) when (IsForeignKeyViolation(ex))
+        catch (Exception ex) when (DbErrors.IsReferenceViolation(ex))
         {
             // The role was deleted between FindRoleAsync above and this insert — creating an
             // account does not take the guard. role_id is the only foreign key this insert sets, so
@@ -773,20 +773,12 @@ public sealed partial class UserService(
     /// <summary>
     /// Whether this save failed because a unique index rejected the row.
     ///
-    /// Matched on PostgreSQL's SQLSTATE 23505 rather than on a message string, which varies with
-    /// the server's locale. EF wraps the provider exception in a DbUpdateException, so the real
-    /// one is the inner exception.
-    ///
     /// <c>users</c> has exactly two unique indexes — email, and the filtered one on
     /// <c>google_subject_id</c> — and nothing in this service writes the second. Should a third
     /// ever appear, narrow this to the constraint name.
     /// </summary>
     private static bool IsDuplicateEmail(Exception exception)
-        => exception is DbUpdateException { InnerException: PostgresException { SqlState: "23505" } };
-
-    /// <summary>SQLSTATE 23503 — matched on the code for the reason <see cref="IsDuplicateEmail"/> gives.</summary>
-    private static bool IsForeignKeyViolation(Exception exception)
-        => exception is DbUpdateException { InnerException: PostgresException { SqlState: "23503" } };
+        => DbErrors.IsUniqueViolation(exception);
 
     private const string RoleNotFound = "Vai trò không tồn tại.";
 }

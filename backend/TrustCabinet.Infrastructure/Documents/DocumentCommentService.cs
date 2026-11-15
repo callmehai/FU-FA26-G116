@@ -7,6 +7,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
@@ -20,8 +21,6 @@ namespace TrustCabinet.Infrastructure.Documents;
 public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCabinetDbContext db, IAgendaGuestAccess guests,
     TimeProvider clock, ILogger<DocumentCommentService> logger) : IDocumentCommentService
 {
-    private static bool PersistenceError(Exception ex) => StoredFileWriter.PersistenceError(ex);
-
     public async Task<CommentOutcome<DocumentCommentThreads>> ListAsync(Guid meetingId, Guid meetingDocumentId,
         ParticipantActor actor, CancellationToken ct = default)
     {
@@ -50,7 +49,7 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
                     r.GuestInvitationId, r.Name, r.CreatedAt, [])).ToList())).ToList();
             return new(Value: new(meetingDocumentId, meeting.Status is not (MeetingStatus.Ended or MeetingStatus.Cancelled), threads));
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to load the comments of document {DocumentId}", meetingDocumentId);
             return new(CommentFailure.ReadFailed);
@@ -115,7 +114,7 @@ public sealed class DocumentCommentService(IMeetingRepository meetings, TrustCab
                 return new(Value: new(comment.Id, text, page, new(actor.UserId, guestId, name, guestId is not null), now, []));
             }, ct);
         }
-        catch (Exception ex) when (PersistenceError(ex))
+        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
         {
             logger.LogError(ex, "Failed to save a comment on document {DocumentId}", meetingDocumentId);
             return new(CommentFailure.SaveFailed);

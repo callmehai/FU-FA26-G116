@@ -4,7 +4,9 @@ using Npgsql;
 using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Infrastructure;
+using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Persistence;
+using TrustCabinet.Infrastructure.VoiceId;
 
 namespace TrustCabinet.Web.Tests.Persistence;
 
@@ -346,6 +348,69 @@ public sealed class EfUnitOfWorkTests : IAsyncLifetime
 
         Assert.True(await db.Roles.AnyAsync(r => r.Id == role.Id));
     }
+
+    // SCRUM-166 (CA-01): the other direction of nesting. A service moved to Application opens the unit of work
+    // and then reaches code that still calls InTransactionAsync on a repository.
+    public static TheoryData<string> OlderRepositories => new() { nameof(MeetingRepository), nameof(VoiceIdRepository) };
+
+    [Theory]
+    [MemberData(nameof(OlderRepositories))]
+    public async Task InTransactionAsync_inside_a_unit_of_work_joins_its_transaction_and_leaves_the_commit_to_it(string repository)
+    {
+        var role = NewRole();
+
+        await _unitOfWork.ExecuteAsync(async ct =>
+        {
+            var outer = _db.Database.CurrentTransaction;
+
+            var result = await InOlderTransactionAsync(repository, token => AddAsync(role, "stored", token));
+
+            Assert.Equal("stored", result);
+            Assert.NotNull(outer);
+            Assert.Same(outer, _db.Database.CurrentTransaction);
+            Assert.False(await IsStoredAsync(role));
+        });
+
+        Assert.Null(_db.Database.CurrentTransaction);
+        Assert.True(await IsStoredAsync(role));
+    }
+
+    [Theory]
+    [MemberData(nameof(OlderRepositories))]
+    public async Task InTransactionAsync_inside_a_unit_of_work_is_rolled_back_with_it(string repository)
+    {
+        var role = NewRole();
+
+        var outcome = await _unitOfWork.ExecuteAsync(
+            _ => InOlderTransactionAsync(repository, token => AddAsync(role, "refused", token)),
+            result => result != "refused");
+
+        Assert.Equal("refused", outcome);
+        Assert.Null(_db.Database.CurrentTransaction);
+        Assert.False(await IsStoredAsync(role));
+    }
+
+    [Theory]
+    [MemberData(nameof(OlderRepositories))]
+    public async Task InTransactionAsync_on_its_own_still_opens_a_transaction_and_commits_it(string repository)
+    {
+        var role = NewRole();
+
+        await InOlderTransactionAsync(repository, async token =>
+        {
+            Assert.NotNull(_db.Database.CurrentTransaction);
+            Assert.Equal("read committed", await CurrentIsolationAsync());
+            return await AddAsync(role, "stored", token);
+        });
+
+        Assert.Null(_db.Database.CurrentTransaction);
+        Assert.True(await IsStoredAsync(role));
+    }
+
+    private Task<T> InOlderTransactionAsync<T>(string repository, Func<CancellationToken, Task<T>> operation)
+        => repository == nameof(MeetingRepository)
+            ? new MeetingRepository(_db).InTransactionAsync(operation)
+            : new VoiceIdRepository(_db).InTransactionAsync(operation, CancellationToken.None);
 
     private async Task<string> AddAsync(Role role, string outcome, CancellationToken ct)
     {

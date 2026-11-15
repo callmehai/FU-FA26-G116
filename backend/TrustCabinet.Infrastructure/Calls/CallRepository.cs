@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Infrastructure.GuestAccess;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Speaking;
 
 namespace TrustCabinet.Infrastructure.Calls;
@@ -99,10 +99,7 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
             await db.SaveChangesAsync(ct);
             return session;
         }
-        catch (DbUpdateException error) when (error.InnerException is PostgresException
-        {
-            SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: ActiveRoomIndex,
-        })
+        catch (Exception error) when (DbErrors.IsUniqueViolation(error, ActiveRoomIndex))
         {
             // Another webhook created it first; use theirs.
             db.Entry(session).State = EntityState.Detached;
@@ -131,10 +128,8 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
         {
             await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException error) when (error.InnerException is PostgresException
-        {
-            SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: OpenUserStintIndex or OpenGuestStintIndex,
-        })
+        catch (Exception error) when (DbErrors.IsUniqueViolation(error, OpenUserStintIndex)
+            || DbErrors.IsUniqueViolation(error, OpenGuestStintIndex))
         {
             // A concurrent webhook or reconciliation opened the same stint first; theirs stands.
             db.Entry(stint).State = EntityState.Detached;

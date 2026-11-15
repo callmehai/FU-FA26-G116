@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.CalendarSharing;
 
@@ -48,7 +48,7 @@ public sealed class MeetingSlotService(
             var finding = MeetingSlotFinder.Find(search, now, persons);
             return new(MeetingSlotFailure.None, Result(search, finding, lookup, shares, actorId));
         }
-        catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException)
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             logger.LogError(error, "Could not search meeting time slots for {UserId}", actorId);
             return new(MeetingSlotFailure.ReadFailed);
@@ -90,7 +90,7 @@ public sealed class MeetingSlotService(
             var (nowBusy, nowUnknown) = MeetingSlotFinder.Check(start, end, bufferMinutes, persons);
             if (nowBusy.Concat(nowUnknown).Any(id => !accepted.Contains(id))) return new(MeetingSlotFailure.SlotTaken);
         }
-        catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException)
+        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
         {
             logger.LogError(error, "Could not recheck a meeting time slot for {UserId}", actorId);
             return new(MeetingSlotFailure.ReadFailed);
