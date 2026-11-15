@@ -114,6 +114,16 @@ public sealed class EmailTemplatesTests
     }
 
     [Fact]
+    public void Secret_minutes_email_promises_no_download()
+    {
+        var secret = EmailTemplates.MinutesIssued("An", "Họp mật", Start, End, End, "Bình", null, MeetingLink, Staff, downloadable: false);
+        var normal = EmailTemplates.MinutesIssued("An", "Họp", Start, End, End, "Bình", null, MeetingLink, Staff, downloadable: true);
+
+        Assert.DoesNotContain("Word", secret);
+        Assert.Contains("Word hoặc PDF", normal);
+    }
+
+    [Fact]
     public void Smtp_sends_the_designed_part_when_there_is_one()
     {
         var queued = new EmailMessage
@@ -156,6 +166,19 @@ public sealed class EmailTemplatesTests
             ("08-trinh-bay.html", "Phân công trình bày (Khách)",
                 EmailTemplates.GuestPresenter("Nguyễn Văn An", "Báo cáo tiến độ hạ tầng", "Rà soát kế hoạch chuyển đổi số quý IV",
                     Start, End, "Hybrid", GuestLink, "Lê Thị Thu")),
+            ("10-nhac-hop.html", "Nhắc họp trước 15 phút",
+                EmailTemplates.Reminder("Nguyễn Văn An", "Rà soát kế hoạch chuyển đổi số quý IV", Start, End, "Hybrid",
+                    "Phòng họp A, Tầng 5 · Phòng họp trực tuyến TrustCabinet", "Thành viên", Staff,
+                    new EmailButton("Vào phòng họp", MeetingLink + "/room"))),
+            ("11-nhac-hop-khach.html", "Nhắc họp trước 15 phút (Khách)",
+                EmailTemplates.Reminder("Nguyễn Văn An", "Rà soát kế hoạch chuyển đổi số quý IV", Start, End, "Hybrid",
+                    null, null, ForGuest, new EmailButton("Xác minh email để vào cuộc họp", GuestLink))),
+            ("12-bien-ban-ban-hanh.html", "Biên bản đã ban hành",
+                EmailTemplates.MinutesIssued("Nguyễn Văn An", "Rà soát kế hoạch chuyển đổi số quý IV", Start, End,
+                    End.AddDays(1), "Trần Văn Bình", null, MeetingLink + "?tab=minutes", Staff, downloadable: true)),
+            ("13-dinh-chinh-ban-hanh.html", "Bản đính chính đã ban hành",
+                EmailTemplates.MinutesIssued("Nguyễn Văn An", "Rà soát kế hoạch chuyển đổi số quý IV", Start, End,
+                    End.AddDays(3), "Trần Văn Bình", 1, MeetingLink + "?tab=minutes", Staff, downloadable: true)),
             ("09-dat-lai-mat-khau.html", "Đặt lại mật khẩu",
                 EmailTemplates.PasswordReset("Nguyễn Văn An", "https://hop.example.vn/reset-password#token=abc", TimeSpan.FromMinutes(30))),
         };

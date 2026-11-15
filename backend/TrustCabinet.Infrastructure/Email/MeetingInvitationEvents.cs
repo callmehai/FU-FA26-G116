@@ -25,15 +25,7 @@ public static class MeetingInvitationEvents
         var ownerId = p?.Id ?? g!.Id;
         var key = kind == InvitationEventKind.Invitation ? p is not null ? InitialKey(p) : g!.InitialInvitationDeliveryKey
             : $"roster:{eventId}:{kind}:{ownerId}";
-        var link = meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet";
-        // A hybrid meeting may have no room yet: then it happens at its link alone.
-        var place = meeting.Mode switch
-        {
-            MeetingMode.Online => link,
-            MeetingMode.Hybrid when meeting.Location.Length > 0 => $"{meeting.Location} · {link}",
-            MeetingMode.Hybrid => link,
-            _ => meeting.Location,
-        };
+        var place = PlaceOf(meeting);
         db.MeetingInvitationDispatches.Add(new()
         {
             EventId = eventId,
@@ -79,6 +71,20 @@ public static class MeetingInvitationEvents
             });
         }
     }
+    /// <summary>Where a meeting happens, as an invitee reads it: the room, the link, or both for a hybrid one.</summary>
+    public static string PlaceOf(Meeting meeting)
+    {
+        var link = meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet";
+        // A hybrid meeting may have no room yet: then it happens at its link alone.
+        return meeting.Mode switch
+        {
+            MeetingMode.Online => link,
+            MeetingMode.Hybrid when meeting.Location.Length > 0 => $"{meeting.Location} · {link}",
+            MeetingMode.Hybrid => link,
+            _ => meeting.Location,
+        };
+    }
+
     public static string Title(InvitationEventKind kind) => kind switch
     {
         InvitationEventKind.Invitation => "Lời mời tham dự cuộc họp",

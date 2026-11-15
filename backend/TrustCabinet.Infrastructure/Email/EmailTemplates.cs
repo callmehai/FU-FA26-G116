@@ -150,4 +150,61 @@ internal static class EmailTemplates
                 + "và vào phòng họp. Hệ thống sẽ gửi một mã 6 số tới email này."),
             Button: link is null ? null : new EmailButton("Xác minh email để vào cuộc họp", link),
             After: [Ask(new MeetingPeople(null, organizer, null))]));
+
+    /// <summary>
+    /// The 15-minute reminder (PO 15/11/2026). <paramref name="place"/> and <paramref name="role"/> are null for a Guest,
+    /// who learns the place only after verifying; <paramref name="link"/> is the room, the meeting page or the Guest's
+    /// verification link.
+    /// </summary>
+    public static string Reminder(string name, string meetingTitle, DateTimeOffset startsAt, DateTimeOffset endsAt, string mode,
+        string? place, string? role, MeetingPeople people, EmailButton button)
+    {
+        var facts = new List<EmailFact>
+        {
+            new("Thời gian", EmailLayout.When(startsAt, endsAt), Strong: true),
+            new("Hình thức", EmailLayout.ModeLabel(mode)),
+        };
+        if (place is { Length: > 0 }) facts.Add(new("Địa điểm", place));
+        if (people.Chair is { } chair) facts.Add(new("Chủ toạ", chair));
+        if (role is not null) facts.Add(new("Vai trò của bạn", role));
+        return EmailLayout.Render(new EmailContent(
+            Preheader: $"Bắt đầu lúc {EmailLayout.At(startsAt)}",
+            Kicker: "Cuộc họp sắp bắt đầu",
+            Heading: meetingTitle,
+            Greeting: $"Xin chào {name},",
+            Lead: [$"Cuộc họp dưới đây bắt đầu lúc {EmailLayout.Time(startsAt)}."],
+            FactsTitle: "Thông tin cuộc họp",
+            Facts: facts,
+            Notice: role is null
+                ? new EmailNotice("Bấm nút dưới đây để xác minh email rồi vào phòng họp. Hệ thống sẽ gửi một mã 6 số tới email này.")
+                : null,
+            Button: button,
+            After: [Ask(people)]));
+    }
+
+    /// <summary>BR-411's bell as an email (PO 15/11/2026): the minutes, or a correction of them, were approved and issued.</summary>
+    public static string MinutesIssued(string name, string meetingTitle, DateTimeOffset startsAt, DateTimeOffset endsAt,
+        DateTimeOffset issuedAt, string approvedBy, int? correction, string link, MeetingPeople people, bool downloadable)
+    {
+        var facts = new List<EmailFact>
+        {
+            new("Cuộc họp", EmailLayout.When(startsAt, endsAt)),
+            new("Ban hành lúc", EmailLayout.At(issuedAt), Strong: true),
+            new("Chủ toạ duyệt", approvedBy),
+        };
+        if (correction is { } number) facts.Add(new("Bản", $"Đính chính lần {number}"));
+        return EmailLayout.Render(new EmailContent(
+            Preheader: $"Chủ toạ {approvedBy} đã duyệt và ban hành.",
+            Kicker: correction is null ? "Biên bản cuộc họp đã ban hành" : "Bản đính chính biên bản đã ban hành",
+            Heading: meetingTitle,
+            Greeting: $"Xin chào {name},",
+            Lead: [correction is null
+                ? "Biên bản cuộc họp dưới đây đã được Chủ toạ duyệt và ban hành."
+                : "Bản đính chính biên bản cuộc họp dưới đây đã được Chủ toạ duyệt và ban hành, thay cho bản trước."],
+            FactsTitle: "Biên bản",
+            Facts: facts,
+            Button: new EmailButton("Xem biên bản", link),
+            // A Secret meeting's minutes are read on screen only.
+            After: downloadable ? ["Trên trang biên bản có thể tải bản Word hoặc PDF.", Ask(people)] : [Ask(people)]));
+    }
 }

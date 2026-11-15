@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
@@ -8,6 +9,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Summaries;
+using TrustCabinet.Infrastructure.Email;
 
 namespace TrustCabinet.Infrastructure.Summaries;
 
@@ -18,7 +20,7 @@ namespace TrustCabinet.Infrastructure.Summaries;
 /// revision (UC-83). Until a revision is issued it is the Chair's and the Secretary's alone (BR-386, BR-412).
 /// </summary>
 public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository meetings, TimeProvider clock,
-    ILogger<MinutesService> logger) : IMinutesService
+    ILogger<MinutesService> logger, IOptions<EmailDeliveryOptions> email) : IMinutesService
 {
     private static readonly TimeZoneInfo Hanoi = SummaryWriter.FindHanoi();
 
@@ -223,11 +225,13 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
                     meetingId = meeting.Id, revisionNumber = row.RevisionNumber, supersedesId = row.SupersedesId,
                 }),
             });
-            Notify(await ReadersAsync(meeting, token), actorId, meeting, row, now, NotificationType.MinutesIssued,
+            var readers = await ReadersAsync(meeting, token);
+            Notify(readers, actorId, meeting, row, now, NotificationType.MinutesIssued,
                 "minutes-issued", "Biên bản đã ban hành",
                 row.SupersedesId is null
                     ? $"Biên bản cuộc họp “{meeting.Title}” đã được ban hành."
                     : $"Bản đính chính biên bản cuộc họp “{meeting.Title}” đã được ban hành.");
+            await QueueIssuedEmailsAsync(readers, actorId, meeting, row, now, token);
             return MinutesFailure.None;
         }, ct);
 
@@ -342,6 +346,43 @@ public sealed class MinutesService(TrustCabinetDbContext db, IMeetingRepository 
             readers.UnionWith(await db.Users.AsNoTracking().Where(u => others.Contains(u.Id) && u.IsActive)
                 .Select(u => u.Id).ToListAsync(ct));
         return readers;
+    }
+
+    /// <summary>
+    /// The same readers as the bell, by email (PO 15/11/2026), queued in the issuing transaction so an issue never loses
+    /// its emails. The Chair who issued gets none, as for the bell.
+    /// </summary>
+    private async Task QueueIssuedEmailsAsync(IEnumerable<Guid> readers, Guid actorId, Meeting meeting, MeetingMinutes row,
+        DateTimeOffset now, CancellationToken ct)
+    {
+        var ids = readers.Where(id => id != actorId).Distinct().ToArray();
+        var people = await db.Users.AsNoTracking().Where(u => ids.Contains(u.Id) && u.IsActive)
+            .Select(u => new { u.Id, u.FullName, u.Email }).ToListAsync(ct);
+        if (people.Count == 0) return;
+        var chair = await db.Users.AsNoTracking().Where(u => u.Id == actorId).Select(u => u.FullName).SingleAsync(ct);
+        var organizer = await db.Users.AsNoTracking().Where(u => u.Id == meeting.CreatedById)
+            .Select(u => new { u.FullName, u.Email }).SingleAsync(ct);
+        var contact = new MeetingPeople(chair, organizer.FullName, organizer.Email);
+        var link = $"{email.Value.ApplicationBaseUrl.TrimEnd('/')}/mgmt/meetings/{meeting.Id:D}?tab=minutes";
+        // RevisionNumber 1 is the first issue; each correction counts up from there.
+        int? correction = row.SupersedesId is null ? null : row.RevisionNumber - 1;
+        var kind = correction is null ? "Biên bản cuộc họp đã ban hành" : "Bản đính chính biên bản đã ban hành";
+        var subject = $"{kind}: {meeting.Title}".Replace('\r', ' ').Replace('\n', ' ');
+        if (subject.Length > 300) subject = subject[..(char.IsHighSurrogate(subject[299]) ? 299 : 300)];
+        foreach (var person in people)
+        {
+            db.EmailMessages.Add(new EmailMessage
+            {
+                DeduplicationKey = $"email-minutes-issued:{row.Id:D}:{person.Id:D}",
+                ToAddress = person.Email, Subject = subject, MeetingId = meeting.Id, CreatedAt = now, UpdatedAt = now,
+                Body = $"Xin chào {person.FullName},\n\n{kind}: \"{meeting.Title}\".\n"
+                    + $"Ban hành lúc: {EmailLayout.At(now)}, Chủ toạ duyệt: {chair}\n\nXem biên bản: {link}\n"
+                    + $"\nNgười tổ chức: {contact.Contact}\n",
+                HtmlBody = EmailTemplates.MinutesIssued(person.FullName, meeting.Title, meeting.PlannedStartTime,
+                    meeting.PlannedEndTime, now, chair, correction, link, contact,
+                    downloadable: meeting.Sensitivity != Sensitivity.Secret),
+            });
+        }
     }
 
     /// <summary>In-app notifications saved with the state change (BR-411); the realtime dispatcher pushes them.</summary>

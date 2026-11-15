@@ -200,6 +200,9 @@ internal static class EmailLayout
         return $"{Clock(local)}, {Day(local)}";
     }
 
+    /// <summary>"09:00" in Hà Nội time.</summary>
+    public static string Time(DateTimeOffset at) => Clock(TimeZoneInfo.ConvertTime(at, Zone));
+
     private static string Clock(DateTimeOffset local) => local.ToString("HH:mm", CultureInfo.InvariantCulture);
 
     private static string Day(DateTimeOffset local)

@@ -111,6 +111,21 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         // Everyone who may read the meeting is told, never the Chair who issued it (BR-411); the outsider is not.
         Assert.Equal(new[] { s.Secretary, s.Member, s.Organizer }.Order().ToArray(),
             await Notified(s.MeetingId, NotificationType.MinutesIssued));
+        // The same readers by email (PO 15/11/2026), each with a button straight to the minutes tab.
+        await using (var db = f.Db())
+        {
+            var readers = await db.Users.Where(u => u.Id == s.Secretary || u.Id == s.Member || u.Id == s.Organizer)
+                .Select(u => u.Email).ToListAsync();
+            var emails = await db.EmailMessages.Where(e => e.MeetingId == s.MeetingId
+                && e.DeduplicationKey.StartsWith("email-minutes-issued:")).ToListAsync();
+            Assert.Equal(readers.Order(StringComparer.OrdinalIgnoreCase), emails.Select(e => e.ToAddress).Order(StringComparer.OrdinalIgnoreCase));
+            Assert.All(emails, e =>
+            {
+                Assert.StartsWith("Biên bản cuộc họp đã ban hành:", e.Subject);
+                Assert.Contains($"/mgmt/meetings/{s.MeetingId:D}?tab=minutes", e.HtmlBody);
+                Assert.Contains($"/mgmt/meetings/{s.MeetingId:D}?tab=minutes", e.Body);
+            });
+        }
 
         foreach (var reader in new[] { member, organizer })
         {
@@ -286,6 +301,14 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
                     && (a.ObjectId == first || a.ObjectId == second)).OrderBy(a => a.OccurredAt).ToListAsync();
             Assert.Equal([first, second], issues.Select(a => a.ObjectId!.Value));
             Assert.All(issues, a => Assert.Equal((s.Chair, AuditActions.MinutesObjectType), (a.ActorId!.Value, a.ObjectType)));
+            // The correction is emailed as one, numbered.
+            var correctionEmails = await db.EmailMessages.Where(e => e.DeduplicationKey.StartsWith($"email-minutes-issued:{second:D}:")).ToListAsync();
+            Assert.NotEmpty(correctionEmails);
+            Assert.All(correctionEmails, e =>
+            {
+                Assert.StartsWith("Bản đính chính biên bản đã ban hành:", e.Subject);
+                Assert.Contains("Đính chính lần 1", e.HtmlBody);
+            });
             var corrected = JsonDocument.Parse(issues[1].Details).RootElement;
             Assert.Equal((s.MeetingId, 2, first), (corrected.GetProperty("meetingId").GetGuid(),
                 corrected.GetProperty("revisionNumber").GetInt32(), corrected.GetProperty("supersedesId").GetGuid()));
