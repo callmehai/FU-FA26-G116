@@ -108,6 +108,9 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         Assert.StartsWith("Cuộc họp đã bị huỷ:", email.Subject);
         Assert.Contains("Lý do huỷ: Lãnh đạo đi công tác", email.Body);
         Assert.DoesNotContain("https://", email.Body);
+        // The designed part says the same, and offers no way into a meeting that will not happen.
+        Assert.Contains("Lãnh đạo đi công tác", email.HtmlBody);
+        Assert.DoesNotContain("href=", email.HtmlBody);
         Assert.Contains("METHOD:CANCEL", email.CalendarAttachment);
         Assert.Contains($"UID:{s.MeetingId:D}@trustcabinet", email.CalendarAttachment);
         Assert.Equal(3, await check.MeetingInvitationDispatches.CountAsync(d =>
@@ -235,6 +238,10 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         var email = await db.EmailMessages.SingleAsync(e => e.MeetingId == s.MeetingId);
         Assert.Contains("Xác minh email", email.Body); Assert.DoesNotContain("/mgmt/meetings", email.Body);
         Assert.DoesNotContain("Địa điểm:", email.Body); Assert.Contains("/guest/verify", email.CalendarAttachment);
+        // A Guest's designed email leads to verification only, and names neither the place nor the description.
+        Assert.Contains("href=\"https://meetings.test/guest/verify?invitation=opaque-test-value\"", email.HtmlBody);
+        Assert.DoesNotContain("/mgmt/meetings", email.HtmlBody); Assert.DoesNotContain("Địa điểm", email.HtmlBody);
+        Assert.DoesNotContain("Mô tả", email.HtmlBody);
     }
 
     [Theory]
@@ -291,6 +298,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         Assert.Equal(1, await Process(removed.Id));
         var email = await db.EmailMessages.SingleAsync(e => e.DeduplicationKey == removed.DeduplicationKey);
         Assert.DoesNotContain("https://", email.Body); Assert.Null(email.CalendarAttachment);
+        Assert.DoesNotContain("href=", email.HtmlBody);
     }
 
     [Theory]
@@ -417,6 +425,10 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         Assert.Contains("dời lịch", email.Subject);
         Assert.Contains("15/10/2026", email.Body);
         Assert.DoesNotContain("Phòng mới", email.Body);
+        // Old time struck through beside the new one.
+        Assert.Contains("Thời gian cũ", email.HtmlBody);
+        Assert.Contains("line-through", email.HtmlBody);
+        Assert.DoesNotContain("Phòng mới", email.HtmlBody);
         Assert.Equal(guest.Email, email.ToAddress);
         Assert.Equal(MeetingOutcome.Success, (await Reschedule(input with { PlannedStartTime = f.Clock.Now.AddDays(2).ToString("O"), PlannedEndTime = f.Clock.Now.AddDays(2).AddHours(1).ToString("O") })).Outcome);
         Assert.Equal(3, await db.MeetingInvitationDispatches.CountAsync(d => d.MeetingId == s.MeetingId));

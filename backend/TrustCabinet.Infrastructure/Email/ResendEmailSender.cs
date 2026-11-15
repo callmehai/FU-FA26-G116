@@ -70,7 +70,7 @@ internal sealed class ResendEmailSender(
         To: [message.ToAddress],
         Subject: message.Subject,
         Text: message.Body,
-        Html: EmailHtml.FromText(message.Body),
+        Html: message.HtmlBody ?? EmailHtml.FromText(message.Body),
         Attachments: string.IsNullOrEmpty(message.CalendarAttachment)
             ? null
             :

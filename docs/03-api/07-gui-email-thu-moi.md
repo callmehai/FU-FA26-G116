@@ -84,11 +84,32 @@ Server gửi qua API của Resend ([ADR-0031](../05-decisions/0031-gui-email-qua
 | `provider_message_id` | id Resend trả về | trống |
 | Kết quả giao thư | Webhook bên dưới | Không biết |
 
-Mỗi thư gửi cả hai phần: `text` (nội dung lưu trong `email_messages.body`) và `html` dựng từ chính nội dung đó lúc gửi
-(`EmailHtml`): tên TrustCabinet ở đầu, mỗi địa chỉ web thành thẻ `<a>` nhưng vẫn ghi nguyên địa chỉ để chép được. Không
-lưu thêm cột nào. Lý do: trình đọc thư không tự nhận link trong văn bản thuần thì Khách phải chép tay link mời dài (E2E
-Khách 12/11/2026, U6). Dấu câu ngay sau địa chỉ (`.`, `)`…) không tính vào link. **Click/open tracking của Resend phải
-tắt** trên domain gửi: link đặt lại mật khẩu và link mời Khách mang token sau `#`, tracking sẽ ghi lại cả URL đó.
+Mỗi thư gửi cả hai phần: `text` (lưu trong `email_messages.body`) và `html`. Phần `html` là mẫu thư thiết kế
+(`EmailTemplates` trên khung `EmailLayout`, theo bản demo email 15/11/2026): tên TrustCabinet ở đầu, loại thư và tên
+cuộc họp, bảng thông tin, nút hành động kèm đường dẫn ghi nguyên để chép được, chân thư. Chỉ dùng bảng và CSS inline vì
+Gmail, Outlook bỏ thẻ `<style>`, flexbox và SVG; mọi chữ người dùng gõ (tên họp, mô tả, lý do huỷ, tên người) đều được
+escape. Thư cho Khách không có địa điểm và mô tả, nút dẫn tới trang xác minh (UC-04); thư huỷ và thư thu hồi không có
+link; thư dời lịch gạch thời gian cũ cạnh thời gian mới.
+
+| Thư | Ai nhận | Nút |
+|---|---|---|
+| Lời mời tham dự | người trong roster, Khách | Xem cuộc họp / Xác minh email để vào cuộc họp |
+| Vai trò đã thay đổi | người trong roster | Xem cuộc họp |
+| Cuộc họp đã dời lịch | Khách | Xác minh email để vào cuộc họp |
+| Cuộc họp đã bị huỷ | người đã nhận lời mời, Khách | không |
+| Lời mời đã được thu hồi | người đã nhận lời mời, Khách | không |
+| Phân công trình bày | Khách được gán trình bày | không |
+| Mã xác minh vào cuộc họp | Khách | không (mã hiện to) |
+| Đặt lại mật khẩu | người được quản trị viên đặt lại | Đặt mật khẩu mới |
+
+Phần `html` dựng lúc đưa thư vào hàng đợi, lưu ở `email_messages.html_body` (migration `EmailHtmlBody`), vì lúc gửi
+không còn đủ dữ kiện để dựng lại. Thư đặt lại mật khẩu và mã OTP vẫn gửi thẳng, không lưu, nên link và mã vẫn không nằm
+trong DB. Dòng cũ có `html_body` rỗng thì gửi phần `html` dựng từ `text` như trước (`EmailHtml`): mỗi địa chỉ web thành
+thẻ `<a>`, vì trình đọc thư không tự nhận link trong văn bản thuần thì Khách phải chép tay link mời dài (E2E Khách
+12/11/2026, U6). Dấu câu ngay sau địa chỉ (`.`, `)`…) không tính vào link. Xem trước mọi mẫu: chạy
+`EMAIL_PREVIEW_DIR=<thư mục> dotnet test --filter EmailTemplatesTests` rồi mở `index.html` trong thư mục đó.
+
+**Click/open tracking của Resend phải tắt** trên domain gửi: link đặt lại mật khẩu và link mời Khách mang token sau `#`, tracking sẽ ghi lại cả URL đó.
 
 ### `POST /api/email/resend/webhook`
 

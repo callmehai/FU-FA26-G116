@@ -362,10 +362,12 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
                 notify: false, historyId, reason);
     }
 
-    public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
+    public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId,
+        (DateTimeOffset Start, DateTimeOffset End) previous, DateTimeOffset now, CancellationToken ct = default)
     {
         foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
-            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId);
+            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId,
+                previous: previous);
     }
 
     public async Task<T> InTransactionAsync<T>(

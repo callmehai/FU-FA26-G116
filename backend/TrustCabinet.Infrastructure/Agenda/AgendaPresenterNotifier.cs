@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Email;
 
 namespace TrustCabinet.Infrastructure.Agenda;
 
@@ -51,6 +52,7 @@ public sealed class AgendaPresenterNotifier(IServiceScopeFactory scopes) : IAgen
             db.EmailMessages.Add(new EmailMessage
             {
                 ToAddress = guest.Email, Subject = title, Body = body, MeetingId = assignment.MeetingId,
+                HtmlBody = EmailTemplates.GuestPresenter(guest.InvitedName, item.Title, meeting.Title, meeting.PlannedStartTime),
                 DeduplicationKey = key, CreatedAt = assignment.OccurredAt, UpdatedAt = assignment.OccurredAt
             });
         }

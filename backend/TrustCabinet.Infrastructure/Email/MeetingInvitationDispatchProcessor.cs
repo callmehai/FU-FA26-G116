@@ -291,6 +291,8 @@ public sealed class MeetingInvitationDispatchProcessor(
             }
             else if (!removal)
             {
+                if (payload.PreviousStartsAt is { } previousStart)
+                    body += $"\nThời gian cũ: {TimeZoneInfo.ConvertTime(previousStart, zone):dd/MM/yyyy HH:mm zzz}";
                 body +=
                     $"\nBắt đầu: {TimeZoneInfo.ConvertTime(payload.StartsAt, zone):dd/MM/yyyy HH:mm zzz}\nKết thúc: {TimeZoneInfo.ConvertTime(payload.EndsAt, zone):dd/MM/yyyy HH:mm zzz}\n";
                 body += $"Vai trò: {MeetingInvitationEvents.RoleLabel(payload.Role)}\n";
@@ -308,6 +310,9 @@ public sealed class MeetingInvitationDispatchProcessor(
                 ToAddress = payload.Email,
                 Subject = subject,
                 Body = body,
+                // Same facts as the text; a withdrawal offers no way in, as in the text.
+                HtmlBody = EmailTemplates.Meeting(dispatch.EventKind, payload, removal || cancellation ? null : link,
+                    guest: dispatch.GuestInvitationId is not null),
                 CreatedAt = now,
                 UpdatedAt = now,
             };
