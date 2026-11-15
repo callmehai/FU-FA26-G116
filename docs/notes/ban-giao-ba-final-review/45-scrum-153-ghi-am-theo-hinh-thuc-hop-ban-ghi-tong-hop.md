@@ -91,15 +91,16 @@ Nhãn Tổng hợp trong tab Bản ghi, cảnh báo micro phòng trong hộp tho
       > (nhắc micro phòng; tự dựng sau Ended theo giờ thật, lặng >2s còn 2s, quá 12h không dựng, không họp
       > Mật; nguồn đổi dựng lại, xoá thì thôi; chỉ nghe không chuyển chữ); MSG478/479; ERD
       > `RecordingSource.Combined`; sequence UC44c/UC43a/UC45c/UC44e (+ nháp SYS bản tổng hợp, DRAFT).
-      > Còn lại: đặc tả màn hình (nhãn Tổng hợp, cảnh báo micro phòng) — PENDING; BR-459 (Q2 tiếng vọng
-      > loa phòng) còn chờ PO duyệt có đưa vào SRS.
+      > Còn lại: đặc tả màn hình (nhãn Tổng hợp, cảnh báo micro phòng) — PENDING, PO 15/11/2026 cho làm sau. Quy tắc
+      > tiếng vọng loa phòng (Q2) **không** đưa vào SRS.
 
 ## 3. Câu hỏi
 
 - ~~Q1: bản tổng hợp là UC-43d hay UC riêng?~~ **Đã chốt 13/11/2026: không thêm UC**, AF ở UC-43a + BR (xem §2.1). Ghi lý
   do vào comment Jira SCRUM-153, vì bot ghi "UC mới".
-- Q2: có đưa quy tắc bỏ tiếng vọng vào BR không? Khuyên **có**, một BR ngắn ở nhóm Minutes (bản dự thảo), vì nó đổi
-  nội dung bản dự thảo người dùng thấy.
+- ~~Q2: có đưa quy tắc bỏ tiếng vọng vào BR không?~~ **PO 15/11/2026: không.** Tiếng vọng loa phòng chưa được đo ở
+  buổi họp kết hợp thật, ngưỡng ±2 giây và 60% là số tự chọn; ghi thành luật SRS chỉ tạo câu hỏi chưa có số liệu để
+  trả lời. Quy tắc vẫn ở ADR-0061 điểm 3 và trong code (`RoomEcho`), không có BR. Dòng nháp BR-459 đã bỏ khỏi Report 3.
 
 ## 4. Dự thảo luồng UC (câu chữ cho Report 3) — chờ duyệt
 
