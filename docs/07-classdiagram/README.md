@@ -517,5 +517,5 @@ bảng quyền cho admin tự tạo. Vấn đề reset quyền được giữ t�
 **JWT và “SessionService”:** service trong diagram có thể diễn tả trách nhiệm kết thúc phiên.
 Implementation hiện tại dùng access JWT và refresh token store phía server; hủy refresh token và
 xóa JWT ở trình duyệt là hai việc khác nhau. Đọc `Domain/Authentication/IRefreshTokenStore.cs`,
-`Infrastructure/Authentication/AuthenticationService.cs` và `Infrastructure/Users/UserService.cs`
+`Application/Authentication/AuthenticationService.cs` và `Application/Users/UserService.cs`
 trước khi đổi collaborator. Không suy ra có session server truyền thống từ tên class thiết kế.

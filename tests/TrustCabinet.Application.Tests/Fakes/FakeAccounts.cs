@@ -104,6 +104,9 @@ public sealed class FakeRefreshTokenStore : IRefreshTokenStore
     public Dictionary<string, Guid> Live { get; } = [];
     public List<Guid> RevokedAll { get; } = [];
 
+    /// <summary>Runs first on every revoke-all, so a test can see what had happened by then.</summary>
+    public Action? OnRevokeAll { get; set; }
+
     public Task StoreAsync(string refreshToken, Guid userId, TimeSpan lifetime, CancellationToken ct = default)
     {
         Live[refreshToken] = userId;
@@ -120,6 +123,7 @@ public sealed class FakeRefreshTokenStore : IRefreshTokenStore
 
     public Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {
+        OnRevokeAll?.Invoke();
         RevokedAll.Add(userId);
         foreach (var token in Live.Where(t => t.Value == userId).Select(t => t.Key).ToList()) Live.Remove(token);
         return Task.CompletedTask;

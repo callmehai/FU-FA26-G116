@@ -33,6 +33,9 @@ public sealed class RolePermissionServiceTests
     [Fact]
     public async Task Update_saves_under_the_lock_commits_then_tells_the_role_holders()
     {
+        var commitsWhenTold = -1;
+        _publisher.OnPublish = () => commitsWhenTold = _unitOfWork.Commits;
+
         var result = await Service().UpdateAsync(BuiltInRoles.Member, [Capability.MeetingCreator], _actorId);
 
         Assert.True(result.Succeeded);
@@ -41,6 +44,7 @@ public sealed class RolePermissionServiceTests
         Assert.Equal([TransactionMode.ReadCommitted], _unitOfWork.Modes);
         Assert.Equal([AuditActions.RolePermissionsUpdated], _audit.Actions);
         Assert.Equal([_member], _publisher.Told);
+        Assert.Equal(1, commitsWhenTold);
     }
 
     [Fact]

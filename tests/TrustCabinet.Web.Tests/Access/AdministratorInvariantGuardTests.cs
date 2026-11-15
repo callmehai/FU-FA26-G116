@@ -138,8 +138,8 @@ public class AdministratorInvariantGuardTests : IAsyncLifetime
     [Fact]
     public async Task A_nested_write_runs_in_the_outer_transaction()
     {
-        // Advisory locks are re-entrant within one session, so a nested call would take the lock
-        // again and commit the outer transaction early on its way out. It has to join instead.
+        // Advisory locks are re-entrant within one session, so a nested call takes the lock again
+        // at no cost; what matters is that it joins rather than committing the outer one early.
         var guard = Guard(_db);
 
         var result = await guard.WriteAsync(async _ =>

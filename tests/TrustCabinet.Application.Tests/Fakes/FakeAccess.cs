@@ -107,8 +107,12 @@ public sealed class FakeCapabilitiesChangePublisher : ICapabilitiesChangePublish
     public List<Guid> Told { get; } = [];
     public Exception? Fail { get; set; }
 
+    /// <summary>Runs first on every publish, so a test can see what had happened by then.</summary>
+    public Action? OnPublish { get; set; }
+
     public Task PublishAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
     {
+        OnPublish?.Invoke();
         if (Fail is { } failure) return Task.FromException(failure);
         Told.AddRange(userIds);
         return Task.CompletedTask;

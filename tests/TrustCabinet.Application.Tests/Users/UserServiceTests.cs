@@ -108,10 +108,13 @@ public sealed class UserServiceTests
     {
         _users.Add("admin@trustcabinet.local", BuiltInRoles.Admin);
         var user = _users.Add("thanhvien@trustcabinet.local", BuiltInRoles.Member);
+        var commitsWhenRevoked = -1;
+        _refreshTokens.OnRevokeAll = () => commitsWhenRevoked = _unitOfWork.Commits;
 
         var result = await Service().ChangeStatusAsync(user.Id, isActive: false, _actorId);
 
         Assert.True(result.Succeeded);
+        Assert.Equal(1, commitsWhenRevoked);
         Assert.False(user.IsActive);
         Assert.Equal(["lock"], _lock.Calls);
         Assert.Equal((1, 1), (_unitOfWork.Saves, _unitOfWork.Commits));
