@@ -33,7 +33,9 @@ cách đọc lại tài khoản người gọi từ database — không tin vào
 
 ### `GET /api/roles/capabilities`
 
-Trả về cả **cột** (danh mục quyền) và **dòng** (quyền của từng vai trò), vì màn hình vẽ một lưới:
+Trả về cả **cột** (danh mục quyền) và **dòng** (quyền của từng vai trò), vì màn hình vẽ một lưới: Các quyền cùng
+`functionalGroup` đứng liền nhau (nhóm theo thứ tự xuất hiện đầu tiên trong enum, trong nhóm theo thứ tự enum), để
+mỗi nhóm chỉ có một tiêu đề trên lưới.
 
 ```json
 {
