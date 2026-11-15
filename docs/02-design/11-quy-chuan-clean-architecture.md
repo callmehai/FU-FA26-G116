@@ -353,6 +353,10 @@ Số mục lúc điền ở CA-00 (đo trên `47d022d9`, Debug và Release cho c
 - Danh sách file đã chuyển (từ đâu sang đâu).
 - Bảng ánh xạ: mỗi lời gọi `db.` cũ → method port mới; mỗi khối transaction cũ → `TransactionMode`; mỗi `catch` lỗi
   Postgres cũ → exception mới.
+- Với mỗi lời gọi `ExecuteAsync` có `commitWhen`: service đó có bị gọi bên trong transaction của nơi khác không, và
+  nếu có thì code cũ ở đúng chỗ đó làm gì. Bên trong transaction đang mở `commitWhen` không được xét (R7, chốt
+  15/11/2026), nên một khối trước đây tự mở transaction vô điều kiện mà nay bị gọi lồng sẽ để nơi gọi commit phần nó
+  đã ghi.
 - Các mục đã xoá khỏi danh sách ngoại lệ của `ArchitectureTests`.
 - Kết quả `dotnet build TrustCabinet.sln -warnaserror` và `dotnet test TrustCabinet.sln`.
 - Chỗ lệch khỏi quy chuẩn (nếu có) và lý do.
