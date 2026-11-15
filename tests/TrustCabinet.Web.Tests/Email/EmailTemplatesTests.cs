@@ -115,6 +115,11 @@ public sealed class EmailTemplatesTests
     {
         var samples = new (string File, string Title, string Html)[]
         {
+            // What an invitation looked like before the templates: its text with links, under the product name.
+            ("00-truoc-moi-hop.html", "Trước: thư mời họp chỉ có chữ",
+                EmailHtml.FromText("Xin chào Nguyễn Văn An,\n\nLời mời tham dự cuộc họp: \"Rà soát kế hoạch chuyển đổi số quý IV\".\n\n"
+                    + "Bắt đầu: 16/11/2026 09:00 +07:00\nKết thúc: 16/11/2026 10:30 +07:00\nVai trò: Thành viên\n"
+                    + $"Địa điểm: Phòng họp A, Tầng 5\n\nXem cuộc họp: {MeetingLink}\n")),
             ("01-moi-hop.html", "Mời họp (người trong hệ thống)",
                 EmailTemplates.Meeting(InvitationEventKind.Invitation, Payload(), MeetingLink, false)),
             ("02-moi-hop-khach.html", "Mời họp (Khách)",
@@ -135,7 +140,7 @@ public sealed class EmailTemplatesTests
             ("09-dat-lai-mat-khau.html", "Đặt lại mật khẩu",
                 EmailTemplates.PasswordReset("Nguyễn Văn An", "https://hop.example.vn/reset-password#token=abc", TimeSpan.FromMinutes(30))),
         };
-        foreach (var sample in samples) Assert.StartsWith("<!doctype html>", sample.Html);
+        foreach (var sample in samples.Skip(1)) Assert.StartsWith("<!doctype html>", sample.Html);
 
         var folder = Environment.GetEnvironmentVariable("EMAIL_PREVIEW_DIR");
         if (string.IsNullOrEmpty(folder)) return;
