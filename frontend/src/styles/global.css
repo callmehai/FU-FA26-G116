@@ -1232,6 +1232,9 @@ a.menu-item { text-decoration: none; }
 .cell-meta { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
 .cell-meta .icon { color: var(--label-ink); }
 .cell-empty { margin: 0; padding: 56px 16px; color: var(--muted-ink); text-align: center; }
+/* An empty or error row's sentence wraps: a table cell keeps one line, and on a phone the sentence ran out of the card
+   and widened the table under it (QA FE-07). */
+.data-table td.cell-empty { white-space: normal; }
 .cell-empty .btn { margin-top: 4px; }
 .cell-error { margin: 0 0 10px; color: var(--danger); }
 .col-action { text-align: right; }
@@ -4750,6 +4753,11 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   /* The name and the actions are what a phone needs: size and usage move under the name, the date goes. */
   .library-table .col-size, .library-table .col-usage, .library-table .col-date { display: none; }
   .library-sub { display: block; }
+  /* Three 40px actions beside the name left it a word or two per line: each row is the name, the actions under it. */
+  .library-table thead { display: none; }
+  .library-table tbody tr:has(> td.col-action) { display: grid; }
+  .library-table tbody tr:has(> td.col-action) td.cell-title { border-bottom: none; padding-bottom: 0; }
+  .library-table tbody tr:has(> td.col-action) td.col-action { padding: 0 12px 8px 46px; text-align: left; }
   .library-actions { flex: 1 1 100%; }
   .library-actions > .btn { flex: 1 1 0; min-width: 0; padding: 0 12px; }
   .library-crumb-root { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
