@@ -297,7 +297,7 @@ export function RolesPage() {
           <p className="cell-empty">Đang tải ma trận phân quyền…</p>
         ) : (
           <>
-            <div className="list-panel table-card">
+            <div className="list-panel table-card matrix-card">
               <table className="data-table matrix-table">
                 <thead>
                   <tr>
