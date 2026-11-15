@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Infrastructure.Audit;
 
 namespace TrustCabinet.Infrastructure;
 

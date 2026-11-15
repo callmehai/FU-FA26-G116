@@ -12,7 +12,7 @@ Sequence diagram chia bốn participant: `Role & Permission Management Page` →
 | `:Role Permission Controller` | [`backend/TrustCabinet.Web/Endpoints/RolePermissionEndpoints.cs`](../../backend/TrustCabinet.Web/Endpoints/RolePermissionEndpoints.cs) |
 | `:Role Permission Service` | [`backend/TrustCabinet.Infrastructure/Access/RolePermissionService.cs`](../../backend/TrustCabinet.Infrastructure/Access/RolePermissionService.cs) |
 | `:Role Permission Repository` | [`backend/TrustCabinet.Infrastructure/Access/RolePermissionRepository.cs`](../../backend/TrustCabinet.Infrastructure/Access/RolePermissionRepository.cs) |
-| `:Audit Service` | [`backend/TrustCabinet.Infrastructure/Audit/AuditService.cs`](../../backend/TrustCabinet.Infrastructure/Audit/AuditService.cs) |
+| `:Audit Service` | [`backend/TrustCabinet.Application/Audit/AuditService.cs`](../../backend/TrustCabinet.Application/Audit/AuditService.cs) |
 | `Database` | bảng `role_capabilities` và `audit_log` |
 
 Class diagram: [`feature-03-role-management-class-diagram.drawio.png`](../07-classdiagram/feature-03-role-management-class-diagram.drawio.png).

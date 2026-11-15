@@ -123,8 +123,6 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
         await db.SaveChangesAsync(ct);
     }
 
-    public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
-
     public Task<bool> IsCalendarSharePartyAsync(Guid shareId, Guid userId, CancellationToken ct = default)
         => db.CalendarShares.AnyAsync(s => s.Id == shareId && (s.OwnerId == userId || s.ViewerId == userId), ct);
 

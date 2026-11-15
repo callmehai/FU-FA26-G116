@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Audit;
+using TrustCabinet.Application.Audit;
 
 namespace TrustCabinet.Web.Tests.Audit;
 

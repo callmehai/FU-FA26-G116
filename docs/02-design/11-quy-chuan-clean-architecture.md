@@ -248,8 +248,8 @@ bool IsConcurrencyConflict(Exception exception)                       // DbUpdat
 - Tên index vẫn là hằng trong file đang dùng nó; subtask của module chuyển nó vào bảng của translator cùng lúc đổi
   `catch` sang `UniqueConflictException`.
 - Sau CA-01, `using Npgsql` ở Infrastructure chỉ còn trong `Persistence/PersistenceExceptionTranslator.cs`,
-  `Audit/AuditLogQueryService.cs` (dùng `NpgsqlParameter`, `NpgsqlDbType`) và `Migrations/` (file sinh ra). File mới
-  không tự so `SqlState` hay kiểu exception của EF Core/Npgsql.
+  `Audit/AuditLogQuery.cs` (dùng `NpgsqlParameter`, `NpgsqlDbType`; trước CA-03 nằm trong `AuditLogQueryService.cs`) và
+  `Migrations/` (file sinh ra). File mới không tự so `SqlState` hay kiểu exception của EF Core/Npgsql.
 
 `PersistenceExceptionTranslator.Translate(Exception)` trả `PersistenceException?` và phân loại theo đúng thứ tự này
 (test ở `tests/TrustCabinet.Web.Tests/Persistence/PersistenceExceptionTranslatorTests.cs`):
