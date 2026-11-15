@@ -1,9 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Users;
-using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Audit;
 
 namespace TrustCabinet.Infrastructure.Users;
@@ -11,7 +8,7 @@ namespace TrustCabinet.Infrastructure.Users;
 public static class UserServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers user management (SCRUM-13) and the audit log storage it records through; the audit
+    /// Registers the storage of user management (SCRUM-13) and of the audit log it records through; the
     /// services themselves are registered by <c>AddApplication</c>.
     ///
     /// All scoped: each depends on the request's DbContext. <see cref="ICallerContext"/> is not
@@ -20,15 +17,8 @@ public static class UserServiceCollectionExtensions
     public static IServiceCollection AddTrustCabinetUserManagement(this IServiceCollection services)
     {
         services.AddScoped<IUserAccountRepository, UserAccountRepository>();
-        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAuditLogQuery, TrustCabinet.Infrastructure.Audit.AuditLogQuery>();
-
-        // The lock that keeps user writes and role-matrix writes from each removing the last
-        // administrator at the same time. Registered here and in AddTrustCabinetRolePermissions,
-        // both with TryAdd, because either feature can be registered without the other and both
-        // need it — see IAdministratorInvariantGuard.
-        services.TryAddScoped<IAdministratorInvariantGuard, AdministratorInvariantGuard>();
 
         return services;
     }

@@ -6,6 +6,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Authentication;
 
@@ -26,7 +27,7 @@ public class AuthenticationServiceTests
     private readonly FakeAuditService _audit = new();
 
     private AuthenticationService NewService() => new(
-        _users, _passwordHasher, _tokenIssuer, _refreshTokens, _google, _audit,
+        _users, new TranslatingUnitOfWork(), _passwordHasher, _tokenIssuer, _refreshTokens, _google, _audit,
         NullLogger<AuthenticationService>.Instance);
 
     // ------------------------------------------------------------------- BR-444, audit log
@@ -301,7 +302,7 @@ public class AuthenticationServiceTests
         _users.WithUser(user);
 
         var service = new AuthenticationService(
-            _users, new PasswordHasher(), _tokenIssuer, _refreshTokens, _google, new FakeAuditService(),
+            _users, new TranslatingUnitOfWork(), new PasswordHasher(), _tokenIssuer, _refreshTokens, _google, new FakeAuditService(),
             NullLogger<AuthenticationService>.Instance);
 
         var result = await service.SignInAsync(user.Email, "SET-BY-SCRUM-11");

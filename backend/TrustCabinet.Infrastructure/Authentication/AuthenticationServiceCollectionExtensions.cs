@@ -74,9 +74,8 @@ public static class AuthenticationServiceCollectionExtensions
         // UC-07's reset links, in the same Redis.
         services.AddSingleton<IPasswordResetTokenStore, RedisPasswordResetTokenStore>();
 
-        // Scoped: it depends on the repository, which holds the request's DbContext.
+        // Scoped: it holds the request's DbContext. The service itself comes from AddApplication.
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         return services;
     }

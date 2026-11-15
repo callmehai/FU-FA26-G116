@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Access;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Web.Tests.Access;
 
@@ -54,6 +56,9 @@ public class AdministratorInvariantGuardTests : IAsyncLifetime
             .UseSnakeCaseNamingConvention()
             .Options);
 
+    private static AdministratorInvariantGuard Guard(TrustCabinetDbContext db)
+        => new(new EfUnitOfWork(db), new RolePermissionRepository(db));
+
     [Fact]
     public async Task A_second_write_waits_for_the_first_to_commit()
     {
@@ -74,7 +79,7 @@ public class AdministratorInvariantGuardTests : IAsyncLifetime
             }
         }
 
-        var first = new AdministratorInvariantGuard(_db).WriteAsync(async _ =>
+        var first = Guard(_db).WriteAsync(async _ =>
         {
             Record("first entered");
             firstIsInside.SetResult();
@@ -87,7 +92,7 @@ public class AdministratorInvariantGuardTests : IAsyncLifetime
 
         await firstIsInside.Task;
 
-        var second = new AdministratorInvariantGuard(otherDb).WriteAsync(_ =>
+        var second = Guard(otherDb).WriteAsync(_ =>
         {
             Record("second entered");
             return Task.FromResult(0);
@@ -118,10 +123,10 @@ public class AdministratorInvariantGuardTests : IAsyncLifetime
         await using var otherDb = NewContext();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            new AdministratorInvariantGuard(_db).WriteAsync<int>(
+            Guard(_db).WriteAsync<int>(
                 _ => throw new InvalidOperationException("khong luu duoc")));
 
-        var second = new AdministratorInvariantGuard(otherDb)
+        var second = Guard(otherDb)
             .WriteAsync(_ => Task.FromResult(7));
 
         var completed = await Task.WhenAny(second, Task.Delay(TimeSpan.FromSeconds(5)));
@@ -133,9 +138,9 @@ public class AdministratorInvariantGuardTests : IAsyncLifetime
     [Fact]
     public async Task A_nested_write_runs_in_the_outer_transaction()
     {
-        // Advisory locks are re-entrant within one session, so a nested call would take the lock
-        // again and commit the outer transaction early on its way out. It has to join instead.
-        var guard = new AdministratorInvariantGuard(_db);
+        // Advisory locks are re-entrant within one session, so a nested call takes the lock again
+        // at no cost; what matters is that it joins rather than committing the outer one early.
+        var guard = Guard(_db);
 
         var result = await guard.WriteAsync(async _ =>
         {

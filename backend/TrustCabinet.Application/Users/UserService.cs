@@ -1,18 +1,16 @@
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.CalendarSharing;
-using TrustCabinet.Application.Users;
 using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Users;
+namespace TrustCabinet.Application.Users;
 
 /// <summary>
 /// UC-05 … UC-07's <c>:User Service</c>. Every rule about user accounts lives here: validation,
@@ -23,6 +21,7 @@ namespace TrustCabinet.Infrastructure.Users;
 /// </summary>
 public sealed partial class UserService(
     IUserAccountRepository users,
+    IUnitOfWork unitOfWork,
     IPasswordHasher passwordHasher,
     IAuditService audit,
     IRefreshTokenStore refreshTokens,
@@ -48,19 +47,25 @@ public sealed partial class UserService(
     internal static readonly TimeSpan PasswordResetLinkLifetime = TimeSpan.FromMinutes(60);
 
     public async Task<IReadOnlyCollection<UserAccount>> ListAsync(CancellationToken ct = default)
-        => [.. (await users.ListAsync(ct)).Select(UserAccount.From)];
+        => [.. (await unitOfWork.ExecuteAsync(users.ListAsync, TransactionMode.None, ct)).Select(UserAccount.From)];
 
     public async Task<UserResult> GetAsync(Guid id, CancellationToken ct = default)
     {
-        var user = await users.FindByIdAsync(id, ct);
+        var user = await FindByIdAsync(id, ct);
 
         return user is null
             ? UserResult.Failure(UserOutcome.NotFound)
             : UserResult.Success(UserAccount.From(user));
     }
 
-    public async Task<UserResult> CreateAsync(
+    public Task<UserResult> CreateAsync(
         NewUser request, Guid actorId, CancellationToken ct = default)
+        // Not through the guard: a new account cannot take AdminUsers away from anybody.
+        => unitOfWork.ExecuteAsync(
+            token => CreateWithoutTransactionAsync(request, actorId, token), TransactionMode.None, ct);
+
+    private async Task<UserResult> CreateWithoutTransactionAsync(
+        NewUser request, Guid actorId, CancellationToken ct)
     {
         var fullName = request.FullName?.Trim() ?? "";
         var email = request.Email?.Trim() ?? "";
@@ -103,11 +108,17 @@ public sealed partial class UserService(
 
         await users.AddAsync(user, ct);
 
+        // Caught right at the save, as before the move: SaveChangesAsync is a translation point, and catching
+        // outside the unit of work would also catch the audit write after it.
+        //
+        // Any unique violation is the email: <c>users</c> has exactly two unique indexes — email, and the
+        // filtered one on <c>google_subject_id</c> — and nothing in this service writes the second. Should a
+        // third ever appear, give it a UniqueConflict member and narrow the catch to it.
         try
         {
-            await users.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
-        catch (Exception ex) when (IsDuplicateEmail(ex))
+        catch (UniqueConflictException)
         {
             // The race the check above cannot close: both requests saw the email free, one index
             // violation follows. MSG08 is the honest answer — the account was not created because
@@ -115,7 +126,7 @@ public sealed partial class UserService(
             logger.LogInformation("Create rejected: email already taken (unique index).");
             return UserResult.Failure(UserOutcome.DuplicateEmail);
         }
-        catch (Exception ex) when (DbErrors.IsReferenceViolation(ex))
+        catch (ReferenceConflictException)
         {
             // The role was deleted between FindRoleAsync above and this insert — creating an
             // account does not take the guard. role_id is the only foreign key this insert sets, so
@@ -206,11 +217,12 @@ public sealed partial class UserService(
         user.Role = role;
         user.UpdatedAt = DateTimeOffset.UtcNow;
 
+        // Caught right at the save, inside the guarded transaction, as before the move: see CreateAsync.
         try
         {
-            await users.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
-        catch (Exception ex) when (IsDuplicateEmail(ex))
+        catch (UniqueConflictException)
         {
             // The entity is still tracked and still holds the values the database refused. The
             // audit write below runs on the same DbContext, so its SaveChanges would flush them —
@@ -316,7 +328,7 @@ public sealed partial class UserService(
         user.IsActive = isActive;
         user.UpdatedAt = DateTimeOffset.UtcNow;
 
-        await users.SaveChangesAsync(ct);
+        await unitOfWork.SaveChangesAsync(ct);
 
         await audit.RecordAsync(
             isActive ? AuditActions.UserReactivated : AuditActions.UserDeactivated,
@@ -363,7 +375,7 @@ public sealed partial class UserService(
     public async Task<UserResult> RequestPasswordResetAsync(
         Guid id, Guid actorId, CancellationToken ct = default)
     {
-        var user = await users.FindByIdAsync(id, ct);
+        var user = await FindByIdAsync(id, ct);
 
         if (user is null)
         {
@@ -425,7 +437,8 @@ public sealed partial class UserService(
         // Still MSG13: the email did go out, exactly as if the other change had come a moment
         // after it — which the rules already answer by revoking the link. That change has its own
         // audit entry.
-        var currentEmail = await users.FindActiveEmailAsync(user.Id, CancellationToken.None);
+        var currentEmail = await unitOfWork.ExecuteAsync(
+            token => users.FindActiveEmailAsync(user.Id, token), TransactionMode.None, CancellationToken.None);
 
         // Case-insensitive like the citext column: a change of case is the same mailbox.
         if (!string.Equals(currentEmail, sentTo, StringComparison.OrdinalIgnoreCase))
@@ -485,7 +498,7 @@ public sealed partial class UserService(
             return UserResult.Failure(UserOutcome.PasswordResetLinkInvalid);
         }
 
-        var user = await users.FindByIdAsync(ownerId, ct);
+        var user = await FindByIdAsync(ownerId, ct);
 
         // Deactivated after the link was sent: the link dies with the account. Same answer as any
         // dead link — this endpoint is anonymous, and it should not tell a holder of an old link
@@ -517,7 +530,7 @@ public sealed partial class UserService(
         user.PasswordHash = newHash;
         user.UpdatedAt = DateTimeOffset.UtcNow;
 
-        await users.SaveChangesAsync(ct);
+        await unitOfWork.SaveChangesAsync(ct);
 
         // And after it, for a sign-in with the old password — or a refresh already past its
         // consume — that landed between the first revoke and the save. From here on the old
@@ -772,14 +785,11 @@ public sealed partial class UserService(
     private static partial Regex EmailPattern();
 
     /// <summary>
-    /// Whether this save failed because a unique index rejected the row.
-    ///
-    /// <c>users</c> has exactly two unique indexes — email, and the filtered one on
-    /// <c>google_subject_id</c> — and nothing in this service writes the second. Should a third
-    /// ever appear, narrow this to the constraint name.
+    /// The account, read on its own through the unit of work — for the use cases that also reach the token
+    /// stores or the mail server, whose failures stay outside it and reach the caller as they did.
     /// </summary>
-    private static bool IsDuplicateEmail(Exception exception)
-        => DbErrors.IsUniqueViolation(exception);
+    private Task<User?> FindByIdAsync(Guid id, CancellationToken ct)
+        => unitOfWork.ExecuteAsync(token => users.FindByIdAsync(id, token), TransactionMode.None, ct);
 
     private const string RoleNotFound = "Vai trò không tồn tại.";
 }

@@ -1,15 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TrustCabinet.Application.Access;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.CalendarSharing;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Access;
+namespace TrustCabinet.Application.Access;
 
 /// <summary>
 /// UC-10 and UC-11's <c>:Role Permission Service</c> (SCRUM-60). Every rule about the matrix lives
@@ -20,14 +18,17 @@ namespace TrustCabinet.Infrastructure.Access;
 /// </summary>
 public sealed class RolePermissionService(
     IRolePermissionRepository roles,
+    IUnitOfWork unitOfWork,
     IAuditService audit,
     ICapabilitiesChangePublisher capabilitiesChanged,
     IAdministratorInvariantGuard administratorInvariant,
     ICalendarShareStopper calendarShares,
     ILogger<RolePermissionService> logger) : IRolePermissionService
 {
-    public async Task<RolePermissionMatrix> GetMatrixAsync(CancellationToken ct = default)
-        => Build(await roles.ListRolesAsync(ct), await roles.GetMatrixAsync(ct));
+    public Task<RolePermissionMatrix> GetMatrixAsync(CancellationToken ct = default)
+        => unitOfWork.ExecuteAsync(
+            async token => Build(await roles.ListRolesAsync(token), await roles.GetMatrixAsync(token)),
+            TransactionMode.None, ct);
 
     public async Task<RolePermissionResult> UpdateAsync(
         Guid roleId,
@@ -127,11 +128,13 @@ public sealed class RolePermissionService(
 
         await roles.ReplaceCapabilitiesAsync(roleId, requested, ct);
 
+        // Caught right at the save, inside the guarded transaction, as before the move: SaveChangesAsync is a
+        // translation point, and catching outside the unit of work would also swallow the audit write after it.
         try
         {
-            await roles.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
             // MSG18 — the diagram's "Permission configuration cannot be saved". Caught rather
             // than left to surface as a bare 500, because the diagram gives this its own branch

@@ -9,6 +9,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Web.Tests.Users;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Access;
 
@@ -29,7 +30,7 @@ public class RoleServiceTests
     private readonly Guid _actorId = Guid.CreateVersion7();
 
     private RoleService NewService() => new(
-        _roles, _audit, _invariant, NullLogger<RoleService>.Instance);
+        _roles, new TranslatingUnitOfWork(_roles.SaveChangesAsync), _audit, _invariant, NullLogger<RoleService>.Instance);
 
     private Role GivenCustomRole(string name = "Thư ký phó", params Capability[] capabilities)
     {

@@ -60,12 +60,9 @@ public sealed class ArchitectureTests
     // A4 — no class of Infrastructure implements an I*Service declared in Domain or Application: a use case lives in Application.
     private static readonly string[] ServicesInInfrastructure =
     [
-        "TrustCabinet.Infrastructure.Access.RolePermissionService",
-        "TrustCabinet.Infrastructure.Access.RoleService",
         "TrustCabinet.Infrastructure.Agenda.AgendaService",
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
         "TrustCabinet.Infrastructure.Attendance.AttendanceService",
-        "TrustCabinet.Infrastructure.Authentication.AuthenticationService",
         "TrustCabinet.Infrastructure.CalendarSharing.CalendarSharingService",
         "TrustCabinet.Infrastructure.CalendarSharing.MeetingSlotService",
         "TrustCabinet.Infrastructure.CalendarSharing.SharedCalendarService",
@@ -88,7 +85,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",
         "TrustCabinet.Infrastructure.Transcription.TranscriptionService",
-        "TrustCabinet.Infrastructure.Users.UserService",
         "TrustCabinet.Infrastructure.VoiceId.VoiceCollectionService",
         "TrustCabinet.Infrastructure.VoiceId.VoiceIdService",
         "TrustCabinet.Infrastructure.Votes.VoteService",
@@ -97,12 +93,9 @@ public sealed class ArchitectureTests
     // A5 — no interface but IUnitOfWork has SaveChangesAsync or InTransactionAsync.
     private static readonly string[] InterfacesExposingTheUnitOfWork =
     [
-        "TrustCabinet.Application.Access.IRolePermissionRepository",
-        "TrustCabinet.Application.Access.IRoleRepository",
         "TrustCabinet.Application.Meetings.IMeetingRepository",
         "TrustCabinet.Application.Recordings.IRecordingRepository",
         "TrustCabinet.Application.Transcription.ITranscriptRepository",
-        "TrustCabinet.Application.Users.IUserAccountRepository",
         "TrustCabinet.Application.VoiceId.IVoiceIdRepository",
     ];
 
@@ -150,7 +143,6 @@ public sealed class ArchitectureTests
     // AgendaPresenterNotifier resolves the context with GetRequiredService; see the note on WebTypesTakingRepositories.
     private static readonly string[] PendingDbContextReaders =
     [
-        "TrustCabinet.Infrastructure.Access.AdministratorInvariantGuard",
         "TrustCabinet.Infrastructure.Agenda.AgendaMeetingEnd",
         "TrustCabinet.Infrastructure.Agenda.AgendaPresenterNotifier",
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",

@@ -69,5 +69,4 @@ public sealed class RoleRepository(TrustCabinetDbContext db) : IRoleRepository
 
     public void Remove(Role role) => db.Roles.Remove(role);
 
-    public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
 }

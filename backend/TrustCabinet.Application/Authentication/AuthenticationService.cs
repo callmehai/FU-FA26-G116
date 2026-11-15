@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
-using TrustCabinet.Application.Authentication;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
-namespace TrustCabinet.Infrastructure.Authentication;
+namespace TrustCabinet.Application.Authentication;
 
 /// <summary>
 /// UC-01's <c>:Authentication Service</c>. Decides which branch a sign-in attempt takes, and
@@ -23,6 +23,7 @@ namespace TrustCabinet.Infrastructure.Authentication;
 /// </summary>
 public sealed class AuthenticationService(
     IUserRepository users,
+    IUnitOfWork unitOfWork,
     IPasswordHasher passwordHasher,
     ITokenIssuer tokenIssuer,
     IRefreshTokenStore refreshTokens,
@@ -57,7 +58,7 @@ public sealed class AuthenticationService(
             return SignInResult.Failure(SignInOutcome.InvalidCredentials);
         }
 
-        var user = await users.FindByEmailAsync(email.Trim(), ct);
+        var user = await InStoreAsync(token => users.FindByEmailAsync(email.Trim(), token), ct);
 
         // Branch 1 — MSG01. One outcome for "no such email" and for "wrong password": the caller
         // must not be able to tell the two apart (SCRUM-11 acceptance criteria).
@@ -85,7 +86,7 @@ public sealed class AuthenticationService(
         }
 
         // Empty is fine: attending, reading and voting need no capability.
-        var capabilities = await users.GetCapabilitiesAsync(user.RoleId, ct);
+        var capabilities = await InStoreAsync(token => users.GetCapabilitiesAsync(user.RoleId, token), ct);
 
         // Branch 3 — success.
         logger.LogInformation("Sign-in succeeded for account {UserId}.", user.Id);
@@ -106,14 +107,15 @@ public sealed class AuthenticationService(
             return GoogleSignInResult.Failure(GoogleSignInOutcome.InvalidGoogleToken);
         }
 
-        var user = await users.FindByGoogleSubjectIdAsync(identity.Subject, ct);
+        var user = await InStoreAsync(token => users.FindByGoogleSubjectIdAsync(identity.Subject, token), ct);
 
         // Not linked yet: the first Google sign-in of an account an administrator created with
         // this (Google-verified) email links it (ADR-0009). Otherwise nothing ever writes the
         // subject, and every Google sign-in answers MSG05.
         if (user is null)
         {
-            user = await users.LinkGoogleSubjectByEmailAsync(identity.Email, identity.Subject, ct);
+            user = await InStoreAsync(
+                token => users.LinkGoogleSubjectByEmailAsync(identity.Email, identity.Subject, token), ct);
 
             if (user is not null)
             {
@@ -128,7 +130,7 @@ public sealed class AuthenticationService(
             // send them asking for access they already have. Telling the verified owner of the
             // address that an account under it is deactivated leaks nothing. An account already
             // linked to a *different* subject stays MSG05 — this caller is not its owner.
-            else if (await users.FindByEmailAsync(identity.Email, ct)
+            else if (await InStoreAsync(token => users.FindByEmailAsync(identity.Email, token), ct)
                      is { IsActive: false, GoogleSubjectId: null } deactivated)
             {
                 logger.LogInformation(
@@ -157,7 +159,7 @@ public sealed class AuthenticationService(
             return GoogleSignInResult.Failure(GoogleSignInOutcome.AccountDeactivated);
         }
 
-        var capabilities = await users.GetCapabilitiesAsync(user.RoleId, ct);
+        var capabilities = await InStoreAsync(token => users.GetCapabilitiesAsync(user.RoleId, token), ct);
 
         // Branch 4 — success. The same token pair as a password sign-in: how someone proved who
         // they are does not change what their session is.
@@ -196,7 +198,7 @@ public sealed class AuthenticationService(
             return SignInResult.Failure(SignInOutcome.InvalidCredentials);
         }
 
-        var user = await users.FindByIdAsync(owner.Value, ct);
+        var user = await InStoreAsync(token => users.FindByIdAsync(owner.Value, token), ct);
 
         if (user is null)
         {
@@ -215,7 +217,7 @@ public sealed class AuthenticationService(
         }
 
         // Re-read, so a capability change reaches the next access token.
-        var capabilities = await users.GetCapabilitiesAsync(user.RoleId, ct);
+        var capabilities = await InStoreAsync(token => users.GetCapabilitiesAsync(user.RoleId, token), ct);
 
         // Single-use: consuming it here means a replay of the same token finds nothing. Another
         // request may have spent it since the peek — then this one lost the race and is refused.
@@ -245,6 +247,15 @@ public sealed class AuthenticationService(
 
         logger.LogInformation("Sign-out: session of account {UserId} ended.", userId);
     }
+
+    /// <summary>
+    /// One call to the account repository through the unit of work, so a storage failure arrives translated.
+    /// Call by call rather than around a whole method: the token stores and the Google verifier stay outside, and
+    /// their failures reach the caller exactly as they did. The Google link is a single conditional UPDATE that
+    /// runs on its own, so no transaction either.
+    /// </summary>
+    private Task<T> InStoreAsync<T>(Func<CancellationToken, Task<T>> call, CancellationToken ct)
+        => unitOfWork.ExecuteAsync(call, TransactionMode.None, ct);
 
     private const string PasswordMethod = "password";
     private const string GoogleMethod = "google";

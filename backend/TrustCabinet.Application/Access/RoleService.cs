@@ -1,16 +1,14 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TrustCabinet.Application.Access;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Access;
+namespace TrustCabinet.Application.Access;
 
 /// <summary>
 /// UC-12a … UC-12c's <c>:Role Service</c> (SCRUM-63). Every rule about creating, renaming and
@@ -21,6 +19,7 @@ namespace TrustCabinet.Infrastructure.Access;
 /// </summary>
 public sealed partial class RoleService(
     IRoleRepository roles,
+    IUnitOfWork unitOfWork,
     IAuditService audit,
     IAdministratorInvariantGuard administratorInvariant,
     ILogger<RoleService> logger) : IRoleService
@@ -34,7 +33,7 @@ public sealed partial class RoleService(
     private const int MaxDescriptionLength = 256;
 
     public Task<IReadOnlyCollection<RoleSummary>> ListAsync(CancellationToken ct = default)
-        => roles.ListAsync(ct);
+        => unitOfWork.ExecuteAsync(roles.ListAsync, TransactionMode.None, ct);
 
     public async Task<RoleResult> CreateAsync(
         NewRole request, Guid actorId, CancellationToken ct = default)
@@ -106,11 +105,16 @@ public sealed partial class RoleService(
         return RoleResult.Success(Summarise(role, userCount: 0));
     }
 
-    public async Task<RoleResult> UpdateAsync(
+    public Task<RoleResult> UpdateAsync(
         Guid id, RoleEdit request, Guid actorId, CancellationToken ct = default)
-    {
         // Not through the guard: renaming touches neither capabilities nor who holds them, so it
         // cannot affect who can administer.
+        => unitOfWork.ExecuteAsync(
+            token => UpdateWithoutTransactionAsync(id, request, actorId, token), TransactionMode.None, ct);
+
+    private async Task<RoleResult> UpdateWithoutTransactionAsync(
+        Guid id, RoleEdit request, Guid actorId, CancellationToken ct)
+    {
         var role = await roles.FindByIdAsync(id, ct);
 
         if (role is null)
@@ -215,9 +219,9 @@ public sealed partial class RoleService(
 
         try
         {
-            await roles.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
-        catch (Exception exception) when (DbErrors.IsReferenceViolation(exception))
+        catch (ReferenceConflictException)
         {
             // "Role was assigned to a user account in the meantime": somebody was given the role
             // between the count above and this delete — account creation does not take the guard.
@@ -231,7 +235,7 @@ public sealed partial class RoleService(
 
             return RoleResult.InUse(nowHeldBy);
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
             logger.LogError(exception, "Deleting role {RoleId} failed.", id);
             return RoleResult.Failure(RoleOutcome.SaveFailed);
@@ -257,17 +261,19 @@ public sealed partial class RoleService(
     /// </summary>
     private async Task<RoleOutcome?> SaveAsync(string operation, CancellationToken ct)
     {
+        // Caught right at the save, inside the guarded transaction, as before the move: SaveChangesAsync is a
+        // translation point, and catching outside the unit of work would also swallow the audit write after it.
         try
         {
-            await roles.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
             return null;
         }
-        catch (Exception exception) when (DbErrors.IsUniqueViolation(exception))
+        catch (UniqueConflictException)
         {
             logger.LogInformation("Role {Operation} rejected: name already taken (unique index).", operation);
             return RoleOutcome.DuplicateName;
         }
-        catch (Exception exception) when (DbErrors.IsConcurrencyConflict(exception))
+        catch (ConcurrencyConflictException)
         {
             // UPDATE matched no row: the role was deleted between reading it and saving the rename
             // (renaming does not take the guard). The diagram's "Role not found" — the client
@@ -275,7 +281,7 @@ public sealed partial class RoleService(
             logger.LogInformation("Role {Operation} rejected: the role no longer exists.", operation);
             return RoleOutcome.NotFound;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
             // A dropped connection or a timeout as well: it comes straight from the driver, and
             // those are exactly the failures this branch describes.

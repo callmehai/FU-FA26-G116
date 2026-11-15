@@ -6,6 +6,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Web.Tests.Users;
 
@@ -67,10 +68,11 @@ public class RoleRepositoryTests : IAsyncLifetime
     private static RoleService ServiceOver(TrustCabinetDbContext db, IRoleRepository? roles = null)
         => new(
             roles ?? new RoleRepository(db),
+            new EfUnitOfWork(db),
             new FakeAuditService(),
             // The real guard: it opens the transaction the write runs in, and a refused statement
             // inside it must not poison that transaction.
-            new AdministratorInvariantGuard(db),
+            new AdministratorInvariantGuard(new EfUnitOfWork(db), new RolePermissionRepository(db)),
             NullLogger<RoleService>.Instance);
 
     private async Task<User> AddUserAsync(Guid roleId, bool isActive = true)
@@ -293,7 +295,5 @@ public class RoleRepositoryTests : IAsyncLifetime
             => inner.AddAsync(role, capabilities, ct);
 
         public void Remove(Role role) => inner.Remove(role);
-
-        public Task SaveChangesAsync(CancellationToken ct = default) => inner.SaveChangesAsync(ct);
     }
 }

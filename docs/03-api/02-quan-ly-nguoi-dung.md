@@ -25,7 +25,7 @@ Bản vẽ từng use case:
 | Participant trong diagram | Code |
 |---|---|
 | `:User Controller` | [`backend/TrustCabinet.Web/Endpoints/UserEndpoints.cs`](../../backend/TrustCabinet.Web/Endpoints/UserEndpoints.cs) |
-| `:User Service` | [`backend/TrustCabinet.Infrastructure/Users/UserService.cs`](../../backend/TrustCabinet.Infrastructure/Users/UserService.cs) |
+| `:User Service` | [`backend/TrustCabinet.Application/Users/UserService.cs`](../../backend/TrustCabinet.Application/Users/UserService.cs) |
 | `:User Repository` | [`backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs`](../../backend/TrustCabinet.Infrastructure/Users/UserAccountRepository.cs) |
 | `:Audit Service` | [`backend/TrustCabinet.Application/Audit/AuditService.cs`](../../backend/TrustCabinet.Application/Audit/AuditService.cs) |
 | `:Token Service` | `IRefreshTokenStore.RevokeAllForUserAsync` — bản vẽ chỉ có ở UC-06c, code dùng cả ở UC-06b (xem mục 4 bên dưới). Chi tiết: [Vô hiệu hoá phải kết thúc phiên](#vô-hiệu-hoá-phải-kết-thúc-phiên). Bản vẽ trước đây đặt tên là `:Session Service`; đổi thành `:Token Service` vì hệ thống dùng JWT chứ không có session phía server — xem [07-classdiagram/README.md](../07-classdiagram/README.md#phụ-lục--có-dùng-jwt-không-mà-sao-lại-có-session-server) |

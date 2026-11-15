@@ -70,21 +70,22 @@ public interface IUserAccountRepository
     Task<int> CountActiveWithCapabilityAsync(
         Capability capability, Guid exceptId, CancellationToken ct = default);
 
-    Task AddAsync(User user, CancellationToken ct = default);
-
     /// <summary>
-    /// Persists pending changes to entities this repository handed out. There is no
+    /// Stages a new account; <c>IUnitOfWork.SaveChangesAsync</c> writes it. There is no
     /// <c>Update(user)</c>: the entity is tracked, so mutating it and saving is the whole of it.
     /// </summary>
-    Task SaveChangesAsync(CancellationToken ct = default);
+    Task AddAsync(User user, CancellationToken ct = default);
 
     /// <summary>
     /// Throws away the in-memory changes to this entity, restoring it to what the database holds.
     ///
     /// Needed after a rejected save: the entity is still tracked and still carries the values the
     /// database refused, and the audit write that follows runs on the same context — so its
-    /// <see cref="SaveChangesAsync"/> would flush them. Discarding closes that in code rather
+    /// <c>SaveChangesAsync</c> would flush them. Discarding closes that in code rather
     /// than relying on nobody ever saving again.
+    ///
+    /// Not <c>IUnitOfWork.DiscardChanges</c>: that clears the whole change tracker and detaches the entity,
+    /// while this reloads only this one and leaves the caller's reference holding the stored values.
     /// </summary>
     Task DiscardChangesAsync(User user, CancellationToken ct = default);
 }

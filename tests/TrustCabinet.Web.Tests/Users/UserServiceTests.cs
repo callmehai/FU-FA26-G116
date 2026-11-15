@@ -7,6 +7,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Users;
 using TrustCabinet.Web.Tests.Authentication;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Users;
 
@@ -40,6 +41,7 @@ public class UserServiceTests
 
     private UserService NewService() => new(
         _users,
+        new TranslatingUnitOfWork(_users.SaveChangesAsync),
         new FakePasswordHasher(),
         _audit,
         _refreshTokens,
@@ -145,7 +147,7 @@ public class UserServiceTests
         // password would make the assertion meaningless.
         var hasher = new TrustCabinet.Infrastructure.Authentication.PasswordHasher();
         var service = new UserService(
-            _users, hasher, _audit, _refreshTokens, _invariant, _resetTokens, _resetEmail,
+            _users, new TranslatingUnitOfWork(_users.SaveChangesAsync), hasher, _audit, _refreshTokens, _invariant, _resetTokens, _resetEmail,
             _capabilitiesChanged, _voiceId, _calendarShares, NullLogger<UserService>.Instance);
 
         await service.CreateAsync(

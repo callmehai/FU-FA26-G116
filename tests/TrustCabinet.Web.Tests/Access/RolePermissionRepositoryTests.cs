@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using TrustCabinet.Application.Access;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Access;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Web.Tests.Authentication;
 using TrustCabinet.Web.Tests.Users;
@@ -83,11 +85,12 @@ public class RolePermissionRepositoryTests : IAsyncLifetime
     private static RolePermissionService ServiceOver(TrustCabinetDbContext db)
         => new(
             new RolePermissionRepository(db),
+            new EfUnitOfWork(db),
             new FakeAuditService(),
             new FakeCapabilitiesChangePublisher(),
             // The real guard, not the fake: these tests run against a real PostgreSQL, and the
             // lock is the thing under test on the concurrency cases below.
-            new AdministratorInvariantGuard(db),
+            new AdministratorInvariantGuard(new EfUnitOfWork(db), new RolePermissionRepository(db)),
             new FakeCalendarShareStopper(),
             NullLogger<RolePermissionService>.Instance);
 
