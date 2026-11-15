@@ -54,6 +54,9 @@ actor, steps, expected (the exact message text or code when there is one). Cover
   resource the caller may not read; a restricted UI route renders the same "Không tìm thấy trang" as an unknown URL.
 - **the phone** for every UI criterion (`devices: ['desktop', 'phone']`): no sideways page scroll, controls reachable,
   nothing explained only on hover (check-responsive).
+- **steady layout** for every control whose value the user changes (a filter, a tab, a toggle): measure its box for
+  each value and fail if its width changes or the controls after it move. A screenshot per state does not show this;
+  the numbers do (FE-04 AC23b: the meeting list's filters grew and shrank with the picked label, found by BA on 15/11).
 
 Drop criteria the PO dropped (see AGENTS.md "Status") and do not invent rules: a threshold or behaviour that is not
 in the ticket, the UC or a BR is a question for a human, not a criterion.

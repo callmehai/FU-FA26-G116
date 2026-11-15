@@ -373,12 +373,14 @@ export function MeetingsPage() {
               options={STATUS_OPTIONS}
               onChange={(status) => update({ status })}
               label="Trạng thái"
+              steady
             />
             <Select
               value={state.sensitivity}
               options={SENSITIVITY_OPTIONS}
               onChange={(sensitivity) => update({ sensitivity })}
               label="Mức độ"
+              steady
             />
 
             <Select
@@ -386,6 +388,7 @@ export function MeetingsPage() {
               options={WHEN_SELECT_OPTIONS}
               onChange={(when) => update({ when })}
               label="Thời điểm"
+              steady
             />
 
             {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}

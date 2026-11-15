@@ -1075,6 +1075,39 @@ export default {
       },
     },
     {
+      id: 'AC23b',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Danh sách cuộc họp: đổi giá trị bộ lọc không làm ô lọc co giãn hay xô các ô bên cạnh',
+      steps: ['Mở Danh sách cuộc họp', 'Lần lượt chọn từng giá trị của Trạng thái, Mức độ, Thời điểm'],
+      expected:
+        'Mỗi ô lọc giữ một bề rộng với mọi giá trị (rộng bằng nhãn dài nhất); các ô sau nó không dịch chỗ. Khánh báo lỗi 15/11: "Hôm nay" → "Mọi thời điểm" làm ô dài ra',
+      async run(qa) {
+        await qa.goto('/mgmt/meetings')
+        if (qa.device === 'phone') {
+          const toggle = qa.page.getByRole('button', { name: /Bộ lọc/ })
+          if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.tap()
+        }
+        for (const name of ['Trạng thái', 'Mức độ', 'Thời điểm']) {
+          const trigger = qa.page.getByRole('button', { name: new RegExp(`^${name}:`) })
+          await press(qa, trigger)
+          const options = await qa.page.getByRole('listbox', { name }).getByRole('option').allInnerTexts()
+          await qa.page.keyboard.press('Escape')
+          const widths = new Set()
+          for (const option of options) {
+            await press(qa, trigger)
+            await qa.page.getByRole('listbox', { name }).getByRole('option', { name: option.trim(), exact: true }).click()
+            widths.add(Math.round((await trigger.boundingBox()).width))
+          }
+          qa.note(`${name}: ${[...widths].join('/')}px qua ${options.length} giá trị`)
+          qa.expect(widths.size, `${name} changes width: ${[...widths].join('/')}px`).toBe(1)
+        }
+        await settled(qa)
+        await qa.shot('bo-loc-giu-be-rong')
+        await noSidewaysScroll(qa)
+      },
+    },
+    {
       id: 'AC27',
       role: 'secretary',
       devices: ['desktop', 'phone'],
