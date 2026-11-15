@@ -53,6 +53,15 @@ public sealed class FakeUnitOfWorkTests
     }
 
     [Fact]
+    public async Task A_stronger_level_inside_a_weaker_transaction_is_a_programming_error()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _unitOfWork.ExecuteAsync(
+            ct => _unitOfWork.ExecuteAsync(_ => Task.CompletedTask, TransactionMode.RepeatableRead, ct)));
+
+        Assert.Equal((0, 1), (_unitOfWork.Commits, _unitOfWork.Rollbacks));
+    }
+
+    [Fact]
     public async Task No_transaction_means_nothing_to_commit_or_roll_back()
     {
         await _unitOfWork.ExecuteAsync(_ => Task.CompletedTask, TransactionMode.None);

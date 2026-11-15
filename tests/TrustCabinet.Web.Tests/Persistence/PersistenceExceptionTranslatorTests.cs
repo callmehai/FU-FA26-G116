@@ -63,6 +63,9 @@ public sealed class PersistenceExceptionTranslatorTests
         // What EF Core's execution strategy throws for a transient failure it does not retry.
         new InvalidOperationException("transient", new NpgsqlException("connection reset")),
         new InvalidOperationException("transient", new TimeoutException()),
+        // The same, for a serialization failure during a save.
+        new InvalidOperationException("transient",
+            new DbUpdateException("save failed", Postgres(PostgresErrorCodes.SerializationFailure))),
     };
 
     [Theory]
@@ -78,6 +81,8 @@ public sealed class PersistenceExceptionTranslatorTests
         new ArgumentException(),
         new OperationCanceledException(),
         new TaskCanceledException(),
+        // A statement cancelled half way carries the database error it was cancelled with.
+        new OperationCanceledException("cancelled", Postgres(PostgresErrorCodes.UniqueViolation)),
         // Translated already by an inner unit of work: it must not be wrapped a second time.
         new UniqueConflictException(UniqueConflict.Unknown,
             new DbUpdateException("save failed", Postgres(PostgresErrorCodes.UniqueViolation))),

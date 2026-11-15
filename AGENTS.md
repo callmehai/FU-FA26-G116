@@ -173,8 +173,8 @@ is declared by code in the project that emits it —
 `<WarningsNotAsErrors>xUnit1012</WarningsNotAsErrors>`, with a comment saying why — rather than by
 removing the flag.
 
-Tests live under `tests/`, one project per backend project, registered in the `.sln`. Today that is
-`TrustCabinet.Web.Tests`, split by feature: access and capability gate, meetings and workflow, agenda,
+Tests live under `tests/`, one project per backend project, registered in the `.sln`. Nearly all of them are
+in `TrustCabinet.Web.Tests`, split by feature: access and capability gate, meetings and workflow, agenda,
 participants and attendance, documents and comments, voting, the online room and guest access,
 recordings and transcription, notifications, email, plus the model invariants
 (`DatabaseModelTests`) and the message-code catalogue. `/api/health` is the only smoke test and it
@@ -269,14 +269,12 @@ select's popup to the operating system, which ignores the page stylesheet and lo
 mode.
 
 **`Program.cs` will outgrow itself.** As the domain grows, split endpoints into extension methods
-(`MapMeetingEndpoints()`, …). The backend stays at three projects — use cases live in
-`TrustCabinet.Infrastructure` — until `TrustCabinet.Application` is split out right after the supervisor
-review, module by module, per [ADR-0059](docs/05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
-Until then add no package to Domain and no new `TrustCabinetDbContext` reader in Web; remember to add new
-projects to the `.sln`.
+(`MapMeetingEndpoints()`, …). On `main` the backend still has three projects — use cases live in
+`TrustCabinet.Infrastructure` — while `TrustCabinet.Application` is split out module by module, per
+[ADR-0059](docs/05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md). Add no package to
+Domain and no new `TrustCabinetDbContext` reader in Web; remember to add new projects to the `.sln`.
 
-**Clean Architecture refactor in progress (SCRUM-143).** That split has started: the backend is moving to
-four projects, Domain / Application / Infrastructure / Web, one module per subtask `[CA-nn]`. The binding
+**Clean Architecture refactor in progress (SCRUM-143).** The backend is moving to four projects, Domain / Application / Infrastructure / Web, one module per subtask `[CA-nn]`. The binding
 standard is [docs/02-design/11-quy-chuan-clean-architecture.md](docs/02-design/11-quy-chuan-clean-architecture.md)
 — **read it before touching `backend/`**: it fixes where a file goes, how a service reaches storage
 (`IUnitOfWork`, repository and query ports, `PersistenceException` instead of a database exception), and what

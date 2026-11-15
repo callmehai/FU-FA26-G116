@@ -6,11 +6,12 @@ namespace TrustCabinet.Application.Tests.Fakes;
 /// An <see cref="IUnitOfWork"/> with no store behind it: it runs the work at once and counts what the real
 /// one would have done, so a use case test can assert "committed once" or "rolled back and nothing saved".
 /// As with the real one, only the outermost transactional call commits or rolls back; a call made inside it
-/// joins and is counted in <see cref="Modes"/> alone.
+/// joins and is counted in <see cref="Modes"/> alone, and asking there for a stronger level than the outer
+/// one throws.
 /// </summary>
 public sealed class FakeUnitOfWork : IUnitOfWork
 {
-    private int _depth;
+    private TransactionMode? _open;
 
     public int Commits { get; private set; }
     public int Rollbacks { get; private set; }
@@ -34,9 +35,15 @@ public sealed class FakeUnitOfWork : IUnitOfWork
         TransactionMode mode = TransactionMode.ReadCommitted, CancellationToken ct = default)
     {
         Modes.Add(mode);
-        if (mode == TransactionMode.None || _depth > 0) return await work(ct);
+        if (mode == TransactionMode.None) return await work(ct);
+        if (_open is { } open)
+        {
+            if (mode > open)
+                throw new InvalidOperationException($"This work needs a {mode} transaction, but it was called inside one opened as {open}.");
+            return await work(ct);
+        }
 
-        _depth++;
+        _open = mode;
         try
         {
             var result = await work(ct);
@@ -51,7 +58,7 @@ public sealed class FakeUnitOfWork : IUnitOfWork
         }
         finally
         {
-            _depth--;
+            _open = null;
         }
     }
 

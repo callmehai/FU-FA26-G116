@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Entities;
@@ -18,7 +19,9 @@ namespace TrustCabinet.Web.Tests;
 /// A new violation is fixed, not listed.
 ///
 /// Entries are full type names in ordinal order. A nested or compiler-generated type (a lambda, an async
-/// method) counts as the top-level type it is written in.
+/// method) counts as the top-level type it is written in. Reflection reads signatures and fields, not method
+/// bodies, so the half of A6 that R1 words as "no <c>using TrustCabinet.Infrastructure</c>" reads the source
+/// files instead and lists paths.
 /// </summary>
 public sealed class ArchitectureTests
 {
@@ -38,8 +41,8 @@ public sealed class ArchitectureTests
         "Microsoft.Extensions.Options",
     ];
 
-    /// <summary>The only Web types that may name a type of Infrastructure: the composition root and <c>--migrate</c>.</summary>
-    private static readonly string[] CompositionRoots = ["Program", "TrustCabinet.Web.DatabaseMigrationCommand"];
+    /// <summary>The only Web files that may name Infrastructure: the composition root and <c>--migrate</c>.</summary>
+    private static readonly string[] CompositionRoots = ["DatabaseMigrationCommand.cs", "Program.cs"];
 
     // A3 — outside Infrastructure, nothing has a field or a parameter of type TrustCabinetDbContext.
     private static readonly string[] DbContextOutsideInfrastructure =
@@ -107,43 +110,53 @@ public sealed class ArchitectureTests
         "TrustCabinet.Domain.VoiceId.IVoiceIdRepository",
     ];
 
-    // A6 — a Web type has no field or parameter of an I*Repository type.
+    // A6 — a Web type has no field or parameter of an I*Repository type. CapabilityGate and NotificationWorker
+    // resolve theirs with GetRequiredService inside a method: reflection sees them only because the local lives
+    // across an await and so becomes a field. CA-18 and CA-20 confirm with git grep that none is left.
     private static readonly string[] WebTypesTakingRepositories =
     [
         "TrustCabinet.Web.AgendaChangePublisher",
         "TrustCabinet.Web.AttendanceChangePublisher",
         "TrustCabinet.Web.Endpoints.AuthEndpoints",
+        "TrustCabinet.Web.Endpoints.CapabilityGate",
         "TrustCabinet.Web.MeetingDocumentChangePublisher",
         "TrustCabinet.Web.MeetingHub",
         "TrustCabinet.Web.NotesChangePublisher",
         "TrustCabinet.Web.NotificationHub",
+        "TrustCabinet.Web.NotificationWorker",
         "TrustCabinet.Web.SpeakingChangePublisher",
         "TrustCabinet.Web.SpeechChangePublisher",
         "TrustCabinet.Web.VoteChangePublisher",
     ];
 
-    // A6 — a Web type names no type of Infrastructure, CompositionRoots apart.
-    private static readonly string[] WebTypesNamingInfrastructure =
+    // A6 — a Web source file names nothing of TrustCabinet.Infrastructure, CompositionRoots apart. Paths under
+    // backend/TrustCabinet.Web. Read from the source, because a `new`, a constant or a static call leaves no trace
+    // in a signature.
+    private static readonly string[] WebFilesNamingInfrastructure =
     [
-        "TrustCabinet.Web.AgendaChangePublisher",
-        "TrustCabinet.Web.AttendanceChangePublisher",
-        "TrustCabinet.Web.Endpoints.AuthEndpoints",
-        "TrustCabinet.Web.Endpoints.EmailEndpoints",
-        "TrustCabinet.Web.Endpoints.RecordingEndpoints",
-        "TrustCabinet.Web.MeetingDocumentChangePublisher",
-        "TrustCabinet.Web.NotesChangePublisher",
-        "TrustCabinet.Web.SpeakingChangePublisher",
-        "TrustCabinet.Web.SpeechChangePublisher",
-        "TrustCabinet.Web.VoteChangePublisher",
+        "AttendanceChangePublisher.cs",
+        "Endpoints/AuthEndpoints.cs",
+        "Endpoints/EmailEndpoints.cs",
+        "Endpoints/RecordingEndpoints.cs",
+        "Endpoints/UserEndpoints.cs",
+        "MeetingGuestIdentity.cs",
+        "MeetingHub.cs",
+        "NotesChangePublisher.cs",
+        "PdfPageCounter.cs",
+        "SpeakingChangePublisher.cs",
+        "SpeechChangePublisher.cs",
+        "VoteChangePublisher.cs",
     ];
 
     // A7 — a class of Infrastructure that takes TrustCabinetDbContext is a *Repository or a *Query, or sits in
     // Persistence/ or Seed/, or is TrustCabinetDbContext* or DependencyInjection. The classes below are neither yet:
     // each moves its use case to Application, or becomes one of those, in the subtask of its module. Empty at CA-20.
+    // AgendaPresenterNotifier resolves the context with GetRequiredService; see the note on WebTypesTakingRepositories.
     private static readonly string[] PendingDbContextReaders =
     [
         "TrustCabinet.Infrastructure.Access.AdministratorInvariantGuard",
         "TrustCabinet.Infrastructure.Agenda.AgendaMeetingEnd",
+        "TrustCabinet.Infrastructure.Agenda.AgendaPresenterNotifier",
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
         "TrustCabinet.Infrastructure.Ai.LanguageModelProvider",
         "TrustCabinet.Infrastructure.Attendance.AttendanceService",
@@ -189,21 +202,6 @@ public sealed class ArchitectureTests
     [
     ];
 
-    /// <summary>
-    /// Types that break a rule inside a method body, with <c>GetRequiredService&lt;T&gt;()</c>, where reflection
-    /// sees them only when the compiler happens to hoist the local into a field. They are let through here by
-    /// hand and left out of the "still breaks its rule" check; CA-18 and CA-20 verify them with <c>git grep</c>.
-    /// </summary>
-    private static readonly string[] HiddenFromReflection =
-    [
-        // A7: ReadAsync resolves TrustCabinetDbContext from a scope it opens.
-        "TrustCabinet.Infrastructure.Agenda.AgendaPresenterNotifier",
-        // A6: the capability filters resolve IUserAccountRepository from HttpContext.RequestServices.
-        "TrustCabinet.Web.Endpoints.CapabilityGate",
-        // A6: ExecuteAsync resolves IUserAccountRepository from the scope of each tick.
-        "TrustCabinet.Web.NotificationWorker",
-    ];
-
     [Fact]
     public void A1_Domain_references_only_the_framework()
         => Assert.Empty(ReferencedOutsideTheFramework(Domain));
@@ -238,7 +236,7 @@ public sealed class ArchitectureTests
 
     [Fact]
     public void A6_Web_names_Infrastructure_only_in_the_composition_root()
-        => AssertOnlyListed(WebTypesNamingInfrastructure, BreakingA6Infrastructure());
+        => AssertOnlyListed(WebFilesNamingInfrastructure, BreakingA6Infrastructure());
 
     [Fact]
     public void A7_In_Infrastructure_only_repositories_queries_and_persistence_take_the_DbContext()
@@ -253,13 +251,13 @@ public sealed class ArchitectureTests
             ("A4", ServicesInInfrastructure, BreakingA4()),
             ("A5", InterfacesExposingTheUnitOfWork, BreakingA5()),
             ("A6 repositories", WebTypesTakingRepositories, BreakingA6Repositories()),
-            ("A6 Infrastructure", WebTypesNamingInfrastructure, BreakingA6Infrastructure()),
+            ("A6 Infrastructure", WebFilesNamingInfrastructure, BreakingA6Infrastructure()),
             ("A7 pending", PendingDbContextReaders, BreakingA7()),
             ("A7 allowed", AllowedDbContextAdapters, BreakingA7()),
-        }.SelectMany(rule => rule.Listed.Except(rule.Breaking).Select(type => $"{rule.Rule}: {type}")).ToArray();
+        }.SelectMany(rule => rule.Listed.Except(rule.Breaking).Select(entry => $"{rule.Rule}: {entry}")).ToArray();
 
         Assert.True(fixedSince.Length == 0,
-            "These types no longer break the rule they are listed under. Delete them from the list:\n"
+            "These no longer break the rule they are listed under. Delete them from the list:\n"
             + string.Join("\n", fixedSince));
     }
 
@@ -269,7 +267,7 @@ public sealed class ArchitectureTests
         foreach (var list in new[]
         {
             DbContextOutsideInfrastructure, ServicesInInfrastructure, InterfacesExposingTheUnitOfWork, WebTypesTakingRepositories,
-            WebTypesNamingInfrastructure, PendingDbContextReaders, AllowedDbContextAdapters, HiddenFromReflection,
+            WebFilesNamingInfrastructure, PendingDbContextReaders, AllowedDbContextAdapters,
         })
         {
             Assert.Equal(list.Distinct().Order(StringComparer.Ordinal), list);
@@ -300,9 +298,16 @@ public sealed class ArchitectureTests
             .Select(Owner).Distinct().Order(StringComparer.Ordinal).ToArray();
 
     private static string[] BreakingA6Infrastructure()
-        => OwnTypes(Web)
-            .Where(type => Names(type).Any(named => named.Assembly == Infrastructure))
-            .Select(Owner).Distinct().Except(CompositionRoots).Order(StringComparer.Ordinal).ToArray();
+    {
+        var web = Path.Combine(RepositoryRoot(), "backend", "TrustCabinet.Web");
+        return Directory.EnumerateFiles(web, "*.cs", SearchOption.AllDirectories)
+            .Select(file => Path.GetRelativePath(web, file).Replace('\\', '/'))
+            .Where(file => !file.StartsWith("bin/", StringComparison.Ordinal) && !file.StartsWith("obj/", StringComparison.Ordinal))
+            .Except(CompositionRoots)
+            // A using directive or a qualified name; a sentence in a comment that mentions the project is neither.
+            .Where(file => Regex.IsMatch(File.ReadAllText(Path.Combine(web, file)), @"TrustCabinet\.Infrastructure(;|\.\w)"))
+            .Order(StringComparer.Ordinal).ToArray();
+    }
 
     private static string[] BreakingA7()
         => OwnTypes(Infrastructure)
@@ -318,10 +323,10 @@ public sealed class ArchitectureTests
 
     private static void AssertOnlyListed(string[] listed, string[] breaking)
     {
-        var unlisted = breaking.Except(listed).Except(HiddenFromReflection).ToArray();
+        var unlisted = breaking.Except(listed).ToArray();
 
         Assert.True(unlisted.Length == 0,
-            "These types break a Clean Architecture rule (docs/02-design/11-quy-chuan-clean-architecture.md, R13). "
+            "These break a Clean Architecture rule (docs/02-design/11-quy-chuan-clean-architecture.md, R13). "
             + "Fix them; the exception lists only shrink:\n" + string.Join("\n", unlisted));
     }
 
@@ -359,14 +364,6 @@ public sealed class ArchitectureTests
             .Concat(type.GetConstructors(Declared).SelectMany(constructor => constructor.GetParameters()).Select(p => p.ParameterType))
             .Concat(type.GetMethods(Declared).SelectMany(method => method.GetParameters()).Select(p => p.ParameterType))
             .SelectMany(Unwrap);
-
-    /// <summary><see cref="Takes"/>, and what it returns, extends and implements.</summary>
-    private static IEnumerable<Type> Names(Type type)
-        => Takes(type).Concat(
-            type.GetMethods(Declared).Select(method => method.ReturnType)
-                .Concat(type.GetInterfaces())
-                .Append(type.BaseType ?? typeof(object))
-                .SelectMany(Unwrap));
 
     private static IEnumerable<Type> Unwrap(Type type)
     {

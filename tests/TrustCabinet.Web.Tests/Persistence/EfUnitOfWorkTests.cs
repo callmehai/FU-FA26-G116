@@ -95,6 +95,20 @@ public sealed class EfUnitOfWorkTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task CommitWhen_that_throws_rolls_back_and_leaves_no_transaction_open()
+    {
+        var role = NewRole();
+        var failure = new InvalidOperationException("The outcome could not be judged.");
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() => _unitOfWork.ExecuteAsync<string>(
+            ct => AddAsync(role, "stored", ct), _ => throw failure));
+
+        Assert.Same(failure, thrown);
+        Assert.Null(_db.Database.CurrentTransaction);
+        Assert.False(await IsStoredAsync(role));
+    }
+
+    [Fact]
     public async Task Work_joins_a_transaction_opened_by_older_code_and_leaves_the_commit_to_it()
     {
         var role = NewRole();
@@ -166,7 +180,8 @@ public sealed class EfUnitOfWorkTests : IAsyncLifetime
     [Fact]
     public async Task Asking_for_a_stronger_level_than_the_open_transaction_is_a_programming_error()
     {
-        await using var outer = await _db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        // No level given, as the older code begins its transactions: PostgreSQL then opens read committed.
+        await using var outer = await _db.Database.BeginTransactionAsync();
         var ran = false;
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => _unitOfWork.ExecuteAsync(_ =>
@@ -179,14 +194,17 @@ public sealed class EfUnitOfWorkTests : IAsyncLifetime
         Assert.False(ran);
     }
 
-    [Fact]
-    public async Task Asking_for_a_weaker_level_than_the_open_transaction_joins_it()
+    [Theory]
+    [InlineData(IsolationLevel.RepeatableRead, TransactionMode.ReadCommitted, "repeatable read")]
+    [InlineData(IsolationLevel.Serializable, TransactionMode.RepeatableRead, "serializable")]
+    public async Task Asking_for_a_weaker_level_than_the_open_transaction_joins_it(
+        IsolationLevel open, TransactionMode asked, string expected)
     {
-        await using var outer = await _db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead);
+        await using var outer = await _db.Database.BeginTransactionAsync(open);
 
-        var level = await _unitOfWork.ExecuteAsync(_ => CurrentIsolationAsync(), TransactionMode.ReadCommitted);
+        var level = await _unitOfWork.ExecuteAsync(_ => CurrentIsolationAsync(), asked);
 
-        Assert.Equal("repeatable read", level);
+        Assert.Equal(expected, level);
     }
 
     [Fact]
@@ -242,6 +260,32 @@ public sealed class EfUnitOfWorkTests : IAsyncLifetime
         role.Description = "changed after the row was gone";
 
         await Assert.ThrowsAsync<ConcurrencyConflictException>(() => _unitOfWork.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task A_serialization_failure_while_saving_becomes_persistence_unavailable()
+    {
+        // PostgreSQL refuses to write a row that someone else changed after this transaction's snapshot (40001). It
+        // is transient, so EF Core's strategy wraps the failed save once more before it gets here.
+        var role = NewRole();
+        await _unitOfWork.ExecuteAsync(ct => AddAsync(role, "stored", ct));
+        _unitOfWork.DiscardChanges();
+
+        var failure = await Assert.ThrowsAsync<PersistenceUnavailableException>(() => _unitOfWork.ExecuteAsync(async ct =>
+        {
+            var mine = await _db.Roles.SingleAsync(r => r.Id == role.Id, ct);
+            await using (var other = NewContext())
+            {
+                await other.Roles.Where(r => r.Id == role.Id)
+                    .ExecuteUpdateAsync(set => set.SetProperty(r => r.Description, "theirs"), ct);
+            }
+
+            mine.Description = "mine";
+            await _unitOfWork.SaveChangesAsync(ct);
+        }, TransactionMode.RepeatableRead));
+
+        Assert.Contains(Chain(failure), inner => inner is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure });
+        Assert.Null(_db.Database.CurrentTransaction);
     }
 
     [Fact]
@@ -315,6 +359,11 @@ public sealed class EfUnitOfWorkTests : IAsyncLifetime
     {
         await using var other = NewContext();
         return await other.Roles.AnyAsync(r => r.Id == role.Id);
+    }
+
+    private static IEnumerable<Exception> Chain(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException) yield return current;
     }
 
     private Task<string> CurrentIsolationAsync()

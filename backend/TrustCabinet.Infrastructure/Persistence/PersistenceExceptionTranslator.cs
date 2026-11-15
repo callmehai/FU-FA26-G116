@@ -45,9 +45,10 @@ internal static class PersistenceExceptionTranslator
             }
         }
 
-        // The last form is what EF Core's execution strategy throws for a transient failure it does not retry.
+        // The last form is what EF Core's execution strategy throws for a transient failure it does not retry: a lost
+        // connection, or a serialization failure, which reaches it inside a DbUpdateException when it happens in a save.
         return exception is DbUpdateException or NpgsqlException or TimeoutException
-            or InvalidOperationException { InnerException: NpgsqlException or TimeoutException }
+            or InvalidOperationException { InnerException: DbUpdateException or NpgsqlException or TimeoutException }
             ? new PersistenceUnavailableException(exception)
             : null;
     }

@@ -171,13 +171,24 @@ Cài đặt là [`Infrastructure/Persistence/EfUnitOfWork.cs`](../../backend/Tru
 - Nhận ra transaction đang mở bằng `db.Database.CurrentTransaction`, nên nhập được vào transaction do code cũ mở bằng
   `BeginTransactionAsync`. Mức đang mở đọc từ `GetDbTransaction().IsolationLevel`; thứ tự mạnh dần là
   `ReadCommitted` < `RepeatableRead` (và `Snapshot`) < `Serializable`.
-- Khi nhập vào transaction đang mở, `commitWhen` **không được xét**: chủ của transaction đó quyết định commit hay
-  rollback. Vì vậy `commitWhen` chỉ có nghĩa ở lời gọi ngoài cùng.
+- Khi nhập vào transaction đang mở, và với `TransactionMode.None`, `commitWhen` **không được xét**: chủ của
+  transaction đó quyết định commit hay rollback. Vì vậy `commitWhen` chỉ có nghĩa ở lời gọi ngoài cùng. Đây là đúng
+  hành vi của khối cũ kiểu `owned = CurrentTransaction is null ? Begin… : null` (ví dụ `CallRepository`): khi được gọi
+  bên trong transaction của nơi khác, nó thoát ra mà không commit và để nơi gọi quyết định.
+- Lồng nhau chỉ theo một chiều. Code cũ mở transaction rồi gọi unit of work thì nhập được. Chiều ngược lại, unit of
+  work bọc ngoài một đoạn code cũ gọi `BeginTransactionAsync` mà không kiểm `CurrentTransaction`, thì đoạn cũ ném
+  "The connection is already in a transaction". CA-01 sửa `MeetingRepository.InTransactionAsync`; chỗ khác được xử lý
+  ở subtask chuyển module đó, hoặc bằng port mỏng theo R9.
+- Sau rollback, change tracker vẫn giữ những gì `work` đã xếp hàng; lần `SaveChangesAsync` sau sẽ ghi lại chúng. Muốn
+  thử lại từ dữ liệu đã lưu thì gọi `DiscardChanges()`, như code cũ gọi `ChangeTracker.Clear()`.
+- Lệnh ghi thẳng (SQL thô, `ExecuteUpdateAsync`) thất bại trong transaction làm PostgreSQL huỷ cả transaction đó
+  (mọi lệnh sau trả `25P02`). `SaveChangesAsync` thất bại thì không, vì EF Core tự đặt savepoint.
 - Transaction mới mở qua `db.Database.CreateExecutionStrategy()`. Dự án không bật retry, nên strategy không chạy lại
-  `work`; lỗi tạm thời nó bọc trong `InvalidOperationException` được dịch thành `PersistenceUnavailableException`.
+  `work`; lỗi tạm thời (mất kết nối, serialization failure `40001` ở `RepeatableRead`) nó bọc trong
+  `InvalidOperationException` được dịch thành `PersistenceUnavailableException`.
 - Provider không phải relational (EF InMemory trong `NotificationServiceTests`, `NotificationEndpointsTests`,
   `NotificationWorkerTests`, `EmailDeliveryTests`, `MeetingRepositoryTests`) không có transaction và từ chối mở: với
-  provider đó mọi `TransactionMode` chỉ chạy `work`, vẫn dịch lỗi.
+  provider đó mọi `TransactionMode` chỉ chạy `work`, vẫn dịch lỗi. Test trên provider đó không kiểm được rollback.
 
 ### R8. Lỗi lưu trữ
 
@@ -219,11 +230,17 @@ public enum UniqueConflict { Unknown = 0 /* module thêm dần */ }
    `UniqueConflictException` (tra bảng theo `ConstraintName`, không có thì `Unknown`); 23503 hoặc 23001 →
    `ReferenceConflictException`.
 4. `DbUpdateException`, `NpgsqlException` (gồm mọi `PostgresException` còn lại), `TimeoutException`, hoặc
-   `InvalidOperationException` có `InnerException` là `NpgsqlException`/`TimeoutException` →
-   `PersistenceUnavailableException`.
+   `InvalidOperationException` có `InnerException` là `DbUpdateException`/`NpgsqlException`/`TimeoutException` →
+   `PersistenceUnavailableException`. `DbUpdateException` ở vế cuối là phần thêm so với ticket: lỗi tạm thời xảy ra
+   trong `SaveChanges` tới đây dưới dạng `InvalidOperationException` → `DbUpdateException` → `PostgresException`, thiếu
+   nó thì service đã chuyển trả 500.
 5. Còn lại → `null`: không phải lỗi lưu trữ.
 
 Bảng index hiện rỗng, nên mọi vi phạm unique là `Unknown` cho tới khi module đầu tiên thêm dòng.
+
+Translator xét kiểu exception, không xét nó đến từ đâu: một `TimeoutException` do chính `work` ném (kể cả timeout của
+Redis) cũng thành `PersistenceUnavailableException`, giống các bộ lọc `PersistenceError` cũ. `HttpRequestException` và
+`IOException` thì đi thẳng.
 
 ### R9. Giai đoạn chuyển tiếp
 
@@ -287,8 +304,9 @@ các mục của module mình; không subtask nào được thêm mục.**
   nằm trong `Persistence/`, `Seed/`, hoặc là `TrustCabinetDbContext*`, `DependencyInjection`. Lớp khác phải nằm ở mảng
   `PendingDbContextReaders` (phải rỗng ở CA-20) hoặc `AllowedDbContextAdapters` (vĩnh viễn, mỗi mục một dòng lý do;
   chỉ cho lớp cài đặt một port của Application và không có nhánh nghiệp vụ).
-- Reflection không thấy `GetRequiredService<T>()` trong thân method (`CapabilityGate`, `NotificationWorker`,
-  `AgendaPresenterNotifier`): các lớp đó ghi tay vào mảng ngoại lệ kèm comment, và CA-18, CA-20 kiểm bằng `git grep`.
+- Reflection không đọc thân method, nơi `CapabilityGate`, `NotificationWorker`, `AgendaPresenterNotifier` gọi
+  `GetRequiredService<T>()`: các lớp đó có mục trong mảng của luật mình kèm comment, và CA-18, CA-20 kiểm bằng
+  `git grep` (chi tiết ở phần cách đo bên dưới).
 
 Cách `ArchitectureTests` đo, để subtask sau đọc kết quả cho đúng:
 
@@ -297,11 +315,23 @@ Cách `ArchitectureTests` đo, để subtask sau đọc kết quả cho đúng:
   của type lồng do compiler sinh, nên handler của endpoint cũng được thấy.
 - Type lồng và type compiler sinh được tính cho type cấp ngoài cùng mà nó được viết trong đó; mảng ngoại lệ ghi tên
   type cấp ngoài cùng. Type do source generator thêm vào assembly (ngoài namespace `TrustCabinet`) không được xét.
-- A6 có hai mảng: `WebTypesTakingRepositories` và `WebTypesNamingInfrastructure`. "Dùng type của Infrastructure" tính
-  thêm kiểu trả về, lớp cha và interface. Lời gọi trong thân method (`new`, method static, extension method) reflection
-  không thấy; CA-18 và CA-20 kiểm bằng `git grep "using TrustCabinet.Infrastructure" backend/TrustCabinet.Web`.
-- Ba lớp ghi tay nằm ở mảng `HiddenFromReflection`. Mảng này được cộng vào ngoại lệ của mọi luật và **không** qua test
-  "mục không còn vi phạm thì phải xoá", vì reflection chỉ thấy chúng khi compiler tình cờ nâng biến cục bộ thành field.
+- A6 có hai mảng. `WebTypesTakingRepositories` đo bằng reflection như trên. `WebFilesNamingInfrastructure` đọc **mã
+  nguồn**: file `.cs` dưới `backend/TrustCabinet.Web` có `using TrustCabinet.Infrastructure…` hoặc tên đầy đủ
+  `TrustCabinet.Infrastructure.X`, trừ `Program.cs` và `DatabaseMigrationCommand.cs`; mục là đường dẫn tính từ thư mục
+  đó. Lý do: `new PdfPigInspector()`, hằng số hay lời gọi static không để lại dấu trong chữ ký nên reflection bỏ sót
+  (`PdfPageCounter.cs`, `MeetingGuestIdentity.cs`, `UserEndpoints.cs`).
+- `CapabilityGate`, `NotificationWorker` và `AgendaPresenterNotifier` lấy repository hoặc `DbContext` bằng
+  `GetRequiredService<T>()` trong thân method. Reflection vẫn thấy chúng ở cả Debug lẫn Release, vì biến cục bộ sống qua
+  một `await` nên thành field; chúng nằm trong mảng của đúng luật mình (A6, A7), không có mảng ghi tay riêng. Nếu một
+  lần sửa làm reflection hết thấy mà lời gọi vẫn còn thì mục đó bị buộc xoá trong khi vi phạm chưa hết, nên CA-18 và
+  CA-20 vẫn kiểm bằng `git grep "GetRequiredService<\(TrustCabinetDbContext\|I[A-Za-z]*Repository\)>" backend`.
+- Giới hạn đã biết của luật xét theo tên, để CA-18 và CA-20 biết `git grep` phải phủ gì:
+  - A4 không thấy service có interface `I*Service` khai trong Infrastructure.
+  - A5 chỉ xét hai tên `SaveChangesAsync` và `InTransactionAsync`; `ITranscriptRepository.DiscardChanges` và
+    `IUserAccountRepository.DiscardChangesAsync` đang có và không bị bắt.
+  - A7 cho qua mọi lớp tên `*Repository`/`*Query`, có nhánh nghiệp vụ hay không; phần đó reviewer kiểm theo R4.
+  - Mảng tính theo type cấp ngoài cùng (hoặc theo file): `Program` đã có mục cho `/api/health`, nên một lambda mới
+    trong `Program.cs` nhận `DbContext` không làm test đỏ.
 
 Số mục lúc điền ở CA-00 (đo trên `47d022d9`, Debug và Release cho cùng danh sách):
 
@@ -310,15 +340,13 @@ Số mục lúc điền ở CA-00 (đo trên `47d022d9`, Debug và Release cho c
 | `DbContextOutsideInfrastructure` | A3 | 8: `Program` (lambda `/api/health`) và 7 publisher |
 | `ServicesInInfrastructure` | A4 | 35 |
 | `InterfacesExposingTheUnitOfWork` | A5 | 8 |
-| `WebTypesTakingRepositories` | A6 | 10 |
-| `WebTypesNamingInfrastructure` | A6 | 10 |
-| `PendingDbContextReaders` | A7 | 39 |
+| `WebTypesTakingRepositories` | A6 | 12 |
+| `WebFilesNamingInfrastructure` | A6 | 12 file |
+| `PendingDbContextReaders` | A7 | 40 |
 | `AllowedDbContextAdapters` | A7 | 0 |
-| `HiddenFromReflection` | A6, A7 | 3 |
 
-`PendingDbContextReaders` khác bảng §3.1 của note ở hai lớp: có thêm `SpeakingRequestCleanup` (helper static nhận
-`TrustCabinetDbContext`, note chưa liệt kê), còn `AgendaPresenterNotifier` nằm ở `HiddenFromReflection`. Tính cả hai
-mảng là 40 lớp phải xử lý trước CA-20.
+`PendingDbContextReaders` có 40 lớp, hơn bảng §3.1 của note một lớp: `SpeakingRequestCleanup` (helper static nhận
+`TrustCabinetDbContext`, note chưa liệt kê).
 
 ### R14. Mỗi PR phải có
 
