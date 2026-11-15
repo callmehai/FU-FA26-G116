@@ -73,6 +73,21 @@ Markdown snapshot của Report 1–7.
      app (app chưa verify sẽ hiện cảnh báo và giới hạn 100 user — đủ cho nhu cầu nội bộ).
 
 
+## Viết dòng Change Log
+
+Bảng Change Log của mỗi report trả lời "đợt này làm gì, vì quyết định nào" — không phải git log.
+Chi tiết UC/BR/MSG nào đổi đã có trong bản trích và `uc-map.html`, không kể lại trong log.
+
+- **Một ticket (hoặc một PR không ticket) = một dòng**, ghi khi merge vào `main`, không ghi theo từng vòng review.
+  Cùng ngày, cùng tác giả, cùng chủ đề thì gộp thành một dòng.
+- **Mẫu:** `[Ticket/PR] Việc làm — kết quả. (nguồn: note/ADR/PO ngày)`. Ví dụ:
+  `SCRUM-152 (note 44, ADR-0060): the Secretary collects Voice ID samples for attendees (new UC-86a–d, BR-448–454, MSG473–477); one consent covers both sample sets.`
+- **Dưới ~250 ký tự một dòng**, một câu chuyện duy nhất: quyết định gì, đổi gì ở mức tính năng, kết quả.
+  Không liệt kê từng bước AF/EX, từng số UC con, tên endpoint hay tên quyền nội bộ.
+- **Tiếng Anh**, thống nhất với ngôn ngữ report. Không lẫn câu tiếng Việt trong dòng tiếng Anh.
+- Phạm vi ID (UC/BR/MSG) chỉ ghi dạng khoảng (`BR-448–454`), giữ số hiệu để tra cứu, không diễn giải từng số.
+- Không sửa dòng lịch sử cũ để "viết lại cho hay" — dòng đã ghi là chứng cứ thời điểm. Chỉ gộp/sửa khi cả bảng đang được refactor có chủ đích như đợt 15/11/2026 (64 → 56 dòng, Report 3).
+
 ## Style UC Specification
 
 - Với UC trong Report 3, dùng UC-23a thuộc FE-05 làm mẫu: giữ bố cục bảng hiện tại; các nhãn
