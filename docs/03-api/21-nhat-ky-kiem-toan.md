@@ -123,6 +123,12 @@ khoá nào là hệ thống. Chỗ ghi mới dùng `guestInvitationId`.
 | `meeting.<thao tác>` | BR-445 | Người chuyển trạng thái, hệ thống khi tự huỷ / `Meeting` | `historyId`, `fromStatus`, `toStatus`, `reason`, người duyệt / người tổ chức cũ và mới nếu có |
 | `minutes.issued` | BR-446 | Chủ toạ / `MeetingMinutes` | `meetingId`, `revisionNumber`, `supersedesId` (bản đính chính) |
 
+Ghi từ trước SCRUM-16 và cũng hiện trong màn nhật ký (`AuditEventCatalog`):
+
+| Mã | Tên trên màn | Người thực hiện / đối tượng | `details` |
+|---|---|---|---|
+| `call.guest_admitted` | Khách vào phòng họp | Khách / `GuestSession` (SCRUM-59, UC-37 bước 5) | `meetingId`, `invitationId`, `displayName`, `recordingNoticeAcknowledged` (luôn `true`); IP của request ở cột riêng |
+
 `meeting.<thao tác>` là một trong `meeting.created`, `submitted_for_approval`, `approved`, `rejected`,
 `returned_to_draft`, `published`, `organizer_transferred`, `rescheduled`, `started`, `ended`, `cancelled`,
 `auto_cancelled`, `status_changed`. Dòng này do `TrustCabinetDbContext` tự thêm cho **mỗi** dòng

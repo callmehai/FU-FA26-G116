@@ -20,7 +20,7 @@ import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
 import type { CallRoomState } from '../../../types/call'
 import type { GuestMeeting } from '../../../types/guest'
-import type { Meeting } from '../../../types/meeting'
+import type { Meeting, Sensitivity } from '../../../types/meeting'
 import { useAccessLost } from '../../auth/useAccessLost'
 import { useAuth } from '../../auth/useAuth'
 import { guestName, useGuest, useMeetingHome } from '../../guest/guestContext'
@@ -42,6 +42,20 @@ import {
 /** What being recorded means for the person about to join, behind the lobby notice's (i). */
 const RECORDING_DETAIL =
   'Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình.'
+
+/**
+ * ADR-0056: where the words go when the AI drafts the minutes. Only a Normal meeting's transcript (text, never audio) may
+ * go to an outside AI service; Internal and Secret ones stay on the team's own machine. A guest is not told the
+ * meeting's sensitivity, and the PO chose to leave the AI out of their notice (2026-11-14).
+ */
+function recordingDetail(sensitivity: Sensitivity | null) {
+  if (!sensitivity) return RECORDING_DETAIL
+  const ai =
+    sensitivity === 'Normal'
+      ? 'Để viết dự thảo biên bản, lời thoại (chữ, không có tiếng) có thể được gửi tới dịch vụ AI bên ngoài.'
+      : 'Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.'
+  return `${RECORDING_DETAIL} ${ai}`
+}
 
 type Phase = { kind: 'lobby' } | { kind: 'inRoom' } | { kind: 'left'; reason: DisconnectReason | undefined }
 
@@ -163,14 +177,21 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   const navigate = useNavigate()
   const home = useMeetingHome(meeting.id)
   const recheckGuest = useGuest()?.recheck
+  // A guest's meeting page closes with the meeting (UC-04 EX-1), so a room that is over has nowhere to send them back.
+  const asGuest = recheckGuest !== undefined
 
   useEffect(() => {
     function onDisconnected(reason?: DisconnectReason) {
       if (leavingRef.current) return
       setPhase({ kind: 'left', reason })
-      // Put out by the server: for a guest that is a revoked invitation or a lapsed session, and the guest page
-      // then replaces the room with its closed screen, taking the meeting off the screen.
-      if (reason === DisconnectReason.PARTICIPANT_REMOVED) recheckGuest?.()
+      // Put out by the server — for a guest a revoked invitation or a lapsed session — or the meeting ended: the guest
+      // page then replaces the room with its closed screen, taking the meeting off the screen.
+      if (
+        reason === DisconnectReason.PARTICIPANT_REMOVED ||
+        reason === DisconnectReason.ROOM_DELETED ||
+        reason === DisconnectReason.ROOM_CLOSED
+      )
+        recheckGuest?.()
     }
     room.on(RoomEvent.Disconnected, onDisconnected)
     return () => {
@@ -195,7 +216,8 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
       Cancelled: roomMessage.cancelled,
       Open: '',
     }[call.status]
-    return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} />
+    const over = call.status === 'Ended' || call.status === 'Cancelled'
+    return <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!(asGuest && over)} />
   }
 
   if (!call.available) {
@@ -209,7 +231,7 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   if (phase.kind === 'left') {
     const { text, canRejoin } = disconnectMessage(phase.reason)
     return (
-      <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text}>
+      <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!asGuest || canRejoin}>
         {canRejoin && (
           <button type="button" className="btn btn-primary" onClick={() => setPhase({ kind: 'lobby' })}>
             Vào lại
@@ -434,7 +456,7 @@ function PreJoin({
               />
               <span>
                 Tôi biết cuộc họp được ghi âm để lập biên bản, tự xoá sau {retentionDays} ngày
-                <InfoTip text={RECORDING_DETAIL} />
+                <InfoTip text={recordingDetail(sensitivity)} />
               </span>
             </label>
           ) : (
@@ -442,7 +464,7 @@ function PreJoin({
               <p className="prejoin-recording">
                 <Icon name="warning" size={16} />
                 Cuộc họp được ghi âm để lập biên bản · tự xoá sau {retentionDays} ngày
-                <InfoTip text={RECORDING_DETAIL} />
+                <InfoTip text={recordingDetail(sensitivity)} />
               </p>
             )
           )}
@@ -634,11 +656,14 @@ export function LobbyMessage({
   meetingId,
   title,
   text,
+  showHome = true,
   children,
 }: {
   meetingId: string
   title: string
   text: string
+  /** False when the meeting page is gone too: a guest's, once the meeting ended or the invitation was revoked. */
+  showHome?: boolean
   children?: ReactNode
 }) {
   const home = useMeetingHome(meetingId)
@@ -648,9 +673,11 @@ export function LobbyMessage({
         <h1>{text}</h1>
         <p className="prejoin-meeting">{title}</p>
         <div className="prejoin-message-actions">
-          <Link className="btn btn-outline" to={home}>
-            Về trang cuộc họp
-          </Link>
+          {showHome && (
+            <Link className="btn btn-outline" to={home}>
+              Về trang cuộc họp
+            </Link>
+          )}
           {children}
         </div>
       </main>

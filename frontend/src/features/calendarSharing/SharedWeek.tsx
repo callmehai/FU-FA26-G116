@@ -4,8 +4,7 @@ import { Icon } from '../../components/Icon'
 import { InfoTip } from '../../components/InfoTip'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { errorMessage } from '../../lib/errors'
-import type { SharedWeek as Week, SharedWeekDay, SharedWeekPerson } from '../../types/calendarSharing'
-import { Person } from '../participants/Person'
+import type { SharedWeek as Week, SharedWeekPerson } from '../../types/calendarSharing'
 import { usePhone } from '../calendar/usePhone'
 import { LEVEL_LABEL, MSG439_STOPPED, addDaysTo, periodText, vietnamToday } from './shareFormat'
 
@@ -30,50 +29,50 @@ function mondayOf(day: string) {
   return addDaysTo(day, weekday === 0 ? -6 : 1 - weekday)
 }
 
-/**
- * One person's day as a bar from the start to the end of the working day: busy stretches in the person's colour, the
- * rest free. A day outside the share is hatched "Chưa biết" — never drawn as free (BR-415).
- */
-function DayBar({
-  day,
-  colour,
-  span,
-}: {
-  day: SharedWeekDay | undefined
+interface Block {
+  person: SharedWeekPerson
   colour: string
-  span: { from: number; to: number }
-}) {
-  if (!day || !day.known)
-    return (
-      <div className="week-bar week-bar-unknown" data-tooltip="Ngoài thời gian chia sẻ: không biết bận hay rảnh">
-        Chưa biết
-      </div>
-    )
-  const length = span.to - span.from
-  const text = day.busy.map((b) => `${clock(b.start)}–${clock(b.end)}`).join(', ')
-  return (
-    <div className="week-bar week-bar-hours" role="img" aria-label={day.busy.length ? `Bận ${text}` : 'Rảnh cả ngày'}>
-      {day.busy.map((b) => {
-        const left = ((minutes(clock(b.start)) - span.from) / length) * 100
-        const width = ((minutes(clock(b.end)) - minutes(clock(b.start))) / length) * 100
-        return (
-          <span
-            key={b.start}
-            className="week-busy"
-            style={{ left: `${left}%`, width: `${width}%`, background: `var(${colour})` }}
-            data-tooltip={`Bận ${clock(b.start)}–${clock(b.end)}`}
-          />
-        )
-      })}
-    </div>
-  )
+  from: number
+  to: number
 }
 
 /**
- * UC-85c — busy hours of everyone who shared with the caller, one week (Mon–Fri, the working day), one row a person.
- * Rows rather than AI-eCabinet's day columns: each person's own row has room to say "Chưa biết" for a day outside the
- * share, and to stay listed as "Đã dừng" when a share stopped, without ever looking free. No meeting is named (BR-427).
- * On a phone one day shows at a time, with the busy times written under each bar, since a tap gives no tooltip.
+ * Busy blocks of one day laid out as a meeting calendar does: blocks that overlap share the column side by side, each
+ * a lane, so two people busy at once both show. Greedy lanes per cluster of overlapping blocks.
+ */
+function layoutDay(blocks: Block[]) {
+  const sorted = [...blocks].sort((a, b) => a.from - b.from || b.to - a.to)
+  const placed: { block: Block; lane: number; lanes: number }[] = []
+  let cluster: { block: Block; lane: number; lanes: number }[] = []
+  let clusterEnd = -1
+  let laneEnds: number[] = []
+  const close = () => {
+    for (const item of cluster) item.lanes = laneEnds.length
+    placed.push(...cluster)
+    cluster = []
+    laneEnds = []
+  }
+  for (const block of sorted) {
+    if (block.from >= clusterEnd) close()
+    let lane = laneEnds.findIndex((end) => end <= block.from)
+    if (lane === -1) lane = laneEnds.push(block.to) - 1
+    else laneEnds[lane] = block.to
+    cluster.push({ block, lane, lanes: 0 })
+    clusterEnd = Math.max(clusterEnd, block.to)
+  }
+  close()
+  return placed
+}
+
+const HOUR_PX = 56
+
+/**
+ * UC-85c — busy hours of everyone who shared with the caller, one week (Mon–Fri, the working day), as AI-eCabinet's
+ * shared week: the working hours down the side, a column a day, each busy stretch a block in its person's colour with
+ * the name and time written in it, so free time is the empty space and people busy at once sit side by side. People
+ * are chips above the grid, each one shown or hidden by a tap, and say their level and end date, or "Đã dừng" for a
+ * stopped share. A day outside someone's share is "Chưa biết" under that day, never drawn as free (BR-415). No
+ * meeting is named (BR-427). On a phone one day shows at a time.
  */
 export function SharedWeek({
   week,
@@ -91,6 +90,7 @@ export function SharedWeek({
   const [loading, setLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
   const [dayIndex, setDayIndex] = useState(() => Math.min(4, Math.max(0, new Date().getDay() - 1)))
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set())
   const latest = useRef(0)
 
   useEffect(() => {
@@ -176,10 +176,57 @@ export function SharedWeek({
       </>
     )
 
+  const people = (data?.people ?? []).map((person, i) => ({
+    person,
+    colour: PERSON_COLOURS[i % PERSON_COLOURS.length],
+  }))
+  const shown = people.filter(({ person }) => person.status === 'Effective' && !hidden.has(person.shareId))
+  const hours = Array.from({ length: Math.ceil((span.to - span.from) / 60) }, (_, i) => span.from + i * 60)
+  const height = ((span.to - span.from) / 60) * HOUR_PX
+  const top = (m: number) => ((m - span.from) / 60) * HOUR_PX
+  const toggle = (shareId: string) =>
+    setHidden((set) => {
+      const next = new Set(set)
+      if (next.has(shareId)) next.delete(shareId)
+      else next.add(shareId)
+      return next
+    })
+
   const shownDays = phone ? [days[dayIndex]] : days
   return (
     <>
       {toolbar}
+      {data && (
+        <div className="shared-people" role="group" aria-label="Người chia sẻ">
+          {people.map(({ person, colour }) => {
+            const stopped = person.status === 'Stopped'
+            const on = !stopped && !hidden.has(person.shareId)
+            return (
+              <button
+                key={person.shareId}
+                type="button"
+                className={`chip-toggle shared-person${stopped ? ' shared-person-stopped' : ''}`}
+                aria-pressed={on}
+                disabled={stopped}
+                onClick={() => toggle(person.shareId)}
+              >
+                <span
+                  className="week-swatch"
+                  style={{ background: on ? `var(${colour})` : 'var(--line)' }}
+                  aria-hidden="true"
+                />
+                <span className="shared-person-name">{person.owner.fullName}</span>
+                <span className="shared-person-meta">
+                  {stopped
+                    ? 'Đã dừng'
+                    : `${LEVEL_LABEL[person.level]} · đến ${person.endDate.slice(8, 10)}/${person.endDate.slice(5, 7)}`}
+                </span>
+              </button>
+            )
+          })}
+          {people.some(({ person }) => person.status === 'Stopped') && <InfoTip text={MSG439_STOPPED} />}
+        </div>
+      )}
       {phone && (
         <SegmentedControl
           label="Ngày trong tuần"
@@ -188,103 +235,93 @@ export function SharedWeek({
           onChange={(v) => setDayIndex(Number(v))}
         />
       )}
-      <div className="card week-card" aria-busy={loading}>
-        <table className={`week-table${loading && data ? ' data-table-stale' : ''}`}>
-          <thead>
-            <tr>
-              <th className="week-person-col">Người chia sẻ</th>
-              {shownDays.map((d) => (
-                <th key={d} className={d === vietnamToday() ? 'week-today' : undefined}>
-                  {WEEKDAY_SHORT[days.indexOf(d)]}{' '}
-                  <span className="week-date">
-                    {d.slice(8, 10)}/{d.slice(5, 7)}
+      <div className={`card shared-grid${loading && data ? ' data-table-stale' : ''}`} aria-busy={loading}>
+        <div className="shared-grid-head" style={{ gridTemplateColumns: `48px repeat(${shownDays.length}, minmax(0, 1fr))` }}>
+          <span />
+          {shownDays.map((d) => {
+            const unknown = shown.filter(({ person }) => !person.days.find((x) => x.date === d)?.known)
+            return (
+              <div key={d} className={d === vietnamToday() ? 'shared-day shared-day-today' : 'shared-day'}>
+                <span className="shared-day-name">
+                  {WEEKDAY_SHORT[days.indexOf(d)]} {d.slice(8, 10)}/{d.slice(5, 7)}
+                </span>
+                {unknown.length > 0 && (
+                  <span
+                    className="shared-day-unknown"
+                    data-tooltip={`Ngoài thời gian chia sẻ: ${unknown.map(({ person }) => person.owner.fullName).join(', ')}`}
+                  >
+                    Chưa biết: {unknown.map(({ person }) => person.owner.fullName).join(', ')}
                   </span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {!data
-              ? [0, 1, 2].map((i) => (
-                  <tr key={i}>
-                    <td colSpan={shownDays.length + 1}>
-                      <span className="skeleton" />
-                    </td>
-                  </tr>
-                ))
-              : data.people.map((person, i) => (
-                  <PersonRow
-                    key={person.shareId}
-                    person={person}
-                    colour={PERSON_COLOURS[i % PERSON_COLOURS.length]}
-                    days={shownDays}
-                    span={span}
-                    phone={phone}
-                  />
-                ))}
-          </tbody>
-        </table>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <div className="shared-grid-body" style={{ gridTemplateColumns: `48px repeat(${shownDays.length}, minmax(0, 1fr))` }}>
+          <div className="shared-hours" style={{ height }}>
+            {hours.map((m) => (
+              <span key={m} style={{ top: top(m) }}>
+                {String(m / 60).padStart(2, '0')}:00
+              </span>
+            ))}
+          </div>
+          {shownDays.map((d) => {
+            const blocks = shown.flatMap(({ person, colour }) =>
+              (person.days.find((x) => x.date === d && x.known)?.busy ?? []).map((b) => ({
+                person,
+                colour,
+                from: minutes(clock(b.start)),
+                to: minutes(clock(b.end)),
+              })),
+            )
+            // Nobody shown shares this day: it is unknown, not free, so it is never left white (BR-415).
+            const unknown =
+              shown.length > 0 && shown.every(({ person }) => !person.days.find((x) => x.date === d)?.known)
+            return (
+              <div
+                key={d}
+                className={unknown ? 'shared-column shared-column-unknown' : 'shared-column'}
+                style={{ height, backgroundSize: `100% ${HOUR_PX}px` }}
+                aria-label={`${WEEKDAY_SHORT[days.indexOf(d)]} ${d.slice(8, 10)}/${d.slice(5, 7)}`}
+                role="group"
+              >
+                {!data && <span className="skeleton shared-skeleton" />}
+                {unknown && <span className="shared-unknown-text">Chưa biết</span>}
+                {layoutDay(blocks).map(({ block, lane, lanes }) => {
+                  const range = `${pad(block.from)}–${pad(block.to)}`
+                  const tall = block.to - block.from >= 45
+                  return (
+                    <div
+                      key={`${block.person.shareId}-${block.from}`}
+                      className={`shared-busy${tall ? '' : ' shared-busy-short'}`}
+                      role="img"
+                      aria-label={`${block.person.owner.fullName} bận ${range}`}
+                      data-tooltip={`${block.person.owner.fullName} · bận ${range}`}
+                      style={{
+                        top: top(block.from) + 1,
+                        height: Math.max(18, top(block.to) - top(block.from) - 2),
+                        left: `calc(${(lane / lanes) * 100}% + 2px)`,
+                        width: `calc(${100 / lanes}% - 4px)`,
+                        borderColor: `var(${block.colour})`,
+                        color: `var(${block.colour})`,
+                        background: `color-mix(in srgb, var(${block.colour}) 12%, var(--surface))`,
+                      }}
+                    >
+                      <b>{block.person.owner.fullName}</b>
+                      <span>{range}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
       </div>
     </>
   )
 }
 
-function PersonRow({
-  person,
-  colour,
-  days,
-  span,
-  phone,
-}: {
-  person: SharedWeekPerson
-  colour: string
-  days: string[]
-  span: { from: number; to: number }
-  phone: boolean
-}) {
-  const stopped = person.status === 'Stopped'
-  return (
-    <tr className={stopped ? 'week-row-stopped' : undefined}>
-      <th scope="row" className="week-person-col">
-        <span className="week-person">
-          <span
-            className="week-swatch"
-            style={{ background: stopped ? 'var(--line)' : `var(${colour})` }}
-            aria-hidden="true"
-          />
-          <Person name={person.owner.fullName} email={null} />
-        </span>
-        <span className="week-person-meta">
-          {stopped ? (
-            <>
-              Đã dừng <InfoTip text={MSG439_STOPPED} />
-            </>
-          ) : (
-            `${LEVEL_LABEL[person.level]} · đến ${person.endDate.slice(8, 10)}/${person.endDate.slice(5, 7)}`
-          )}
-        </span>
-      </th>
-      {stopped ? (
-        <td colSpan={days.length}>
-          <div className="week-bar week-bar-unknown">Không còn xem được</div>
-        </td>
-      ) : (
-        days.map((d) => {
-          const day = person.days.find((x) => x.date === d)
-          return (
-            <td key={d}>
-              <DayBar day={day} colour={colour} span={span} />
-              {phone && day?.known && (
-                <span className="week-busy-text">
-                  {day.busy.length
-                    ? day.busy.map((b) => `${clock(b.start)}–${clock(b.end)}`).join(', ')
-                    : 'Rảnh cả ngày'}
-                </span>
-              )}
-            </td>
-          )
-        })
-      )}
-    </tr>
-  )
+/** Minutes of the day → "HH:MM". */
+function pad(m: number) {
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
 }

@@ -61,6 +61,12 @@ Chỉ đọc. FE gọi khi mở link để hiện tên cuộc họp và email b�
 }
 ```
 
+| HTTP | Tình huống |
+|---|---|
+| 200 | Như trên |
+| 404 `MSG371` | EX-1 |
+| 503 `MSG374` | Không đọc được lời mời (lỗi database, EX-3) |
+
 ### 3.2 `POST /api/guest-access/invitations/{invitationId}/code` — gửi / gửi lại mã
 
 Tạo mã 6 chữ số, gửi ngay tới **email được mời** (BR-153), không qua hàng đợi email và không lưu mã
@@ -83,13 +89,15 @@ Body `{ "token": "…", "code": "123456" }`. Chỉ mã mới nhất của lời 
 | HTTP | Tình huống |
 |---|---|
 | 200 | `{ "accessToken", "expiresAt", "meetingId", "profileCompleted": false }` — mã bị tiêu thụ, phiên mới được tạo |
-| 400 `MSG126` | Mã sai, hết hạn, đã dùng, chưa từng gửi, hoặc không phải 6 chữ số (EX-2). Mã sai (đủ 6 chữ số) làm tăng số lần sai, trừ khi đó là mã vừa bị thay bằng mã mới (Khách nhập mã cũ trước khi thư mới tới): vẫn `MSG126` nhưng không tính là lần sai |
+| 400 `MSG126` | Mã sai, hết hạn, đã dùng, chưa từng gửi, hoặc không phải 6 chữ số (EX-2). Mã sai (đủ 6 chữ số) làm tăng số lần sai, trừ khi đó là mã vừa bị thay bằng mã mới (Khách nhập mã cũ trước khi thư mới tới): vẫn `MSG126` nhưng không tính là lần sai. Khi còn mã đang hiệu lực, body có thêm `remainingAttempts` (số lần còn được thử sau lần này; lần sai cuối cùng khoá mã bằng `MSG372`): `{ "code": "MSG126", "message", "remainingAttempts": 3 }`; mã hết hạn, đã dùng hoặc chưa từng gửi thì không có trường này |
 | 400 `MSG372` | Mã đã bị khoá vì sai đủ 5 lần: lần sai thứ 5 và mọi lần nhập sau đó, kể cả mã đúng hay chuỗi không phải 6 chữ số. Phải gửi mã mới |
 | 404 `MSG371` | EX-1, kể cả khi lời mời bị thu hồi giữa lúc gửi mã và xác minh |
 | 503 `MSG374` | Không lưu được kết quả xác minh (EX-3); không có phiên nào được tạo |
 
 Tiêu thụ mã chạy trong transaction có khoá dòng lời mời: hai request cùng mã đúng thì chỉ một nhận
-token, request kia nhận `MSG126`.
+token, request kia nhận `MSG126`. Cùng transaction đó ghi một dòng `audit_log` `guest.verified` (BR-444,
+`object_type = GuestSession`, `object_id` = phiên mới, `details`: `meetingId`, `guestInvitationId`, không có
+`actor_id`), xem [nhật ký kiểm toán](21-nhat-ky-kiem-toan.md#nhận-diện-khách).
 
 ## 4. Endpoint của phiên Khách
 
@@ -145,6 +153,7 @@ JWT ký cùng khoá, issuer, audience với token nội bộ:
 |---|---|
 | `sub` | `guest:{sessionId}` — không parse được thành Guid nên mọi endpoint nội bộ (`RequireActiveUser`, `RequireCapability`, `/api/auth/me`, hub thông báo) đều từ chối |
 | `guest_meeting`, `guest_invitation`, `guest_session` | ba Guid của `MeetingGuestSession` |
+| `jti` | Guid v7 mới cho mỗi token |
 | `exp` | đúng `expires_at` của phiên (≤ 12 giờ) |
 
 Không có claim `cap`, `email`, `name`. `IMeetingGuestIdentityResolver` (Web) chỉ đọc các claim này
@@ -156,7 +165,9 @@ Khách dùng token này cho: `GET /api/meetings/{id}/agenda`, các GET của th�
 (`/participant-context`, `/participants`, `/invitation-response`), `PUT /invitation-response` (UC-29),
 `GET /attendance`, hub `/hubs/meetings`, phòng họp trực tuyến `GET /call`, `POST /call/join` (SCRUM-59,
 [contract](09-phong-hop-truc-tuyen.md#khách-scrum-59)), và micro của chính Khách trong phòng: gửi, đọc, nghe lại và
-xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051)). Tài liệu và biểu quyết của Khách: xem §9. Mọi endpoint khác trả `403` (endpoint cố định) hoặc `404`
+xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-cuoc-hop.md#khách-scrum-129-adr-0051)), `…/speaking-requests`
+(xem hàng đợi; giơ/hạ tay, bắt đầu/kết thúc lượt của mình khi ở trong phòng, [contract](20-dang-ky-phat-bieu.md)) và góp ý tài liệu `…/documents/{id}/comments` (đọc và gửi,
+[contract](11-tai-lieu-cuoc-hop.md#khách-góp-ý)). Tài liệu và biểu quyết của Khách: xem §9. Mọi endpoint khác trả `403` (endpoint cố định) hoặc `404`
 (tài nguyên cụ thể) như người không có quyền.
 
 ## 6. Lưu trữ
@@ -166,6 +177,7 @@ xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-c
 | `guest_verification_challenges` | `invitation_id`, `code_hash`, `expires_at`, `failed_attempts`, `consumed_at` | HMAC-SHA256 của mã, không lưu mã thô. Xoá theo lời mời; mã tạo quá 24 giờ (đã hết hạn, ngoài cửa sổ giới hạn 20 mã) bị xoá ở lần gửi mã kế tiếp của lời mời đó |
 | `guest_sessions` | `invitation_id`, `expires_at`, `revoked_at` | Một dòng mỗi lần xác minh thành công; `id` là `SessionId` ổn định khi reconnect. Giữ lại sau khi hết hạn: đây là bằng chứng Khách đã xác minh email (không chứa dữ liệu cá nhân ngoài id và thời điểm) |
 | `meeting_guest_invitations` | thêm `self_declared_display_name`, `self_declared_job_title` | Nullable; tách khỏi `invited_name`/`email` |
+| `audit_log` | `action = guest.verified`, `object_type = GuestSession` | Một dòng mỗi lần xác minh thành công (§3.3, BR-444); vào phòng họp ghi thêm `call.guest_admitted` ([phòng họp](09-phong-hop-truc-tuyen.md#khách-scrum-59)) |
 
 Không ghi mã OTP, link token hay access token vào log, audit hay `email_messages`. Link mời nằm trong
 `email_messages` của thư mời như mọi link khác (quyền đọc bảng giới hạn như outbox hiện có).
@@ -201,7 +213,13 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
   chính Khách. Cuộc họp Mật (`canDownload = false`)
   không có nút "Tải về". Tab Thành phần tham dự không hiện email: BE trả `email = null` cho mọi dòng trừ dòng của
   chính Khách, và tìm kiếm của Khách không so email (PO 01/11/2026).
-- "Thoát" gặp `401`/`404` (phiên đã hết) vẫn xoá token và về màn đã thoát.
+- Mã sai (`MSG126`): 6 ô được xoá, con trỏ về ô 1; khi `remainingAttempts` ≤ 2 (từ lần sai thứ 3) câu lỗi ghi thêm
+  "Còn N lần thử.". Form tên ghi "Tên hiển thị sẽ không thể thay đổi sau bước này." (tên khai một lần, `MSG381`).
+- "Thoát" gặp `401`/`404` (phiên đã hết) vẫn xoá token và về màn đã thoát. Các tab khác của cùng trình duyệt dùng chung
+  `localStorage`: lần kiểm lại phiên kế tiếp thấy token đã bị xoá thì cũng hiện màn đã thoát, không tự gửi mã mới; token
+  chỉ hết hạn (còn trong `localStorage`) thì về màn nhập mã kèm `MSG378`. Thoát ghi cờ `signedOut` vào
+  `localStorage` (xác minh lần sau xoá cờ): chỉ khi có cờ tab kia mới hiện màn đã thoát; mất token mà không có cờ (tab
+  khác vừa thấy cuộc họp kết thúc) thì mở lại lời mời, ra màn kết thúc hoặc màn nhập mã.
 - Phòng họp trực tuyến của Khách (SCRUM-127): `/guest/{invitationId}/room`, xem
   [09-phong-hop-truc-tuyen.md](09-phong-hop-truc-tuyen.md#hợp-đồng-tích-hợp-fe).
 - Trang kiểm lại `GET /session` mỗi 20 giây, khi tab được focus và sau mọi `404` của panel. `404` thì bỏ toàn bộ dữ liệu
@@ -218,4 +236,3 @@ Không ghi mã OTP, link token hay access token vào log, audit hay `email_messa
   ([contract phòng họp](09-phong-hop-truc-tuyen.md#khách-scrum-59)). Đọc và tải tài liệu cuộc họp
   đã mở cho Khách ở SCRUM-123 ([contract tài liệu](11-tai-lieu-cuoc-hop.md#khách-đọc-tài-liệu-scrum-123)); biểu quyết
   của Khách theo [contract biểu quyết](15-bieu-quyet.md).
-- Khoá tên hiển thị sau lần khai đầu: tạm chưa làm (31/10/2026); Khách khai lại thì ghi đè (§4.2).

@@ -22,6 +22,8 @@ export interface ApiErrorBody {
   errors?: Record<string, string>
   /** How long to wait before asking again, for a 429 (UC-04's MSG373 / MSG379). */
   retryAfterSeconds?: number
+  /** With UC-04's MSG126: wrong codes the current code still takes before it locks (MSG372). */
+  remainingAttempts?: number
 }
 
 /** A non-2xx response from the backend. Keeps the status and, when there was one, the body. */

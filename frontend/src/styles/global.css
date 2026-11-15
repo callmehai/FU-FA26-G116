@@ -40,7 +40,9 @@
   --gold: #c99a2e;
   --gold-soft: #e3c06a;
   --focus: #2f6feb;
-  --focus-ring: #2f6feb66;
+  /* A focused or open field (input, Select, date): one thin border in the brand colour, as a chosen
+     option card draws it — no halo around it (BA, 12/11/2026). Buttons keep the --focus outline. */
+  --focus-line: var(--brand);
   /* A heads-up sign (the lobby's "this meeting is recorded"): a yellow triangle, outlined dark so it stands out on
      white. Yellow alone is too faint to read as an icon. */
   --warning-fill: #fcc419;
@@ -285,14 +287,15 @@ code {
 
 /* ---------- Press feedback ----------
    Hover alone says "this is clickable"; a click also has to show it landed, or repeated clicks
-   (generate password, retry) look like nothing happened. The shrink is a keyframe animation that
-   lib/pressFeedback.ts starts on press, not a transition on :active — a trackpad tap releases
-   too fast for :active to ever be seen. */
+   (generate password, retry) look like nothing happened. The feedback is a brief darken, the same
+   for every button kind: a keyframe animation that lib/pressFeedback.ts starts on press, not a
+   transition on :active — a trackpad tap releases too fast for :active to ever be seen. It does
+   not shrink or move the button: the earlier scale(.95) read as a bounce (BA, 12/11/2026). */
 .btn, .icon-button, .select-trigger, .menu-item, .select-option, .toast-close {
   transition: background-color .15s, border-color .15s, box-shadow .15s;
 }
 
-@keyframes press { 40% { transform: scale(.95); } }
+@keyframes press { from { filter: brightness(.92); } }
 
 /* A finger needs 40px: fields and buttons grow on a touch screen — the small ones too (SCRUM-151).
    Page buttons, a dialog's close and the quick-choice chips grow beside their own rules, further down. */
@@ -303,9 +306,9 @@ code {
   .select-option { min-height: 40px; }
   .icon-button-sm { width: 40px; height: 40px; }
 }
-.is-pressed { animation: press .18s ease-out; }
+.press-flash { animation: press .12s ease-out; }
 
-.btn-primary:active:not(:disabled) { background: var(--brand-ink); box-shadow: inset 0 1px 2px #0003; }
+.btn-primary:active:not(:disabled) { background: var(--brand-ink); }
 .btn-danger:active:not(:disabled) { background: color-mix(in srgb, var(--danger) 22%, var(--surface)); }
 :is(.btn-ghost, .btn-outline, .icon-button, .menu-item, .select-option):active:not(:disabled) { background: var(--line); }
 :is(.sidebar-item, .sidebar-subitem):active { background: var(--sidebar-active); }
@@ -325,8 +328,8 @@ code {
 .input-group input { flex: 1; min-width: 0; }
 .input-group .btn { margin-left: 4px; }
 
-/* A password input with its show/hide button drawn inside the box, on the right. Positioned with
-   top/right, not transform — the press animation already owns transform. */
+/* A password input with its show/hide button drawn inside the box, on the right, placed with
+   top/right. */
 .input-reveal { position: relative; display: flex; }
 .input-reveal input { flex: 1; min-width: 0; padding-right: 40px; }
 .input-reveal .icon-button {
@@ -357,8 +360,7 @@ input:disabled, textarea:disabled { background: var(--surface-alt); color: var(-
 
 input:focus-visible, textarea:focus-visible {
   outline: none;
-  border-color: var(--focus);
-  box-shadow: 0 0 0 3px var(--focus-ring);
+  border-color: var(--focus-line);
 }
 
 input[type='checkbox'] {
@@ -371,6 +373,8 @@ input[type='checkbox'] {
 }
 
 input[aria-invalid='true'] { border-color: var(--danger); }
+/* Focused while in error: the red border stays and thickens, so focus still shows without a halo. */
+input[aria-invalid='true']:focus-visible { box-shadow: inset 0 0 0 1px var(--danger); }
 
 .field-error { color: var(--danger); font-size: 13px; }
 .field-hint { margin: 0; color: var(--muted-ink); font-size: 13px; }
@@ -414,7 +418,7 @@ input[aria-invalid='true'] { border-color: var(--danger); }
   cursor: pointer;
 }
 
-.select-trigger[aria-expanded='true'] { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+.select-trigger:focus-visible, .select-trigger[aria-expanded='true'] { outline: none; border-color: var(--focus-line); }
 .select-trigger .icon { color: var(--label-ink); }
 .select-placeholder { color: var(--muted-ink); }
 .select-trigger[aria-expanded='true'] .icon { transform: rotate(180deg); }
@@ -1012,6 +1016,8 @@ a.menu-item { text-decoration: none; }
   font-weight: 600;
 }
 .back-link:hover { color: var(--brand); }
+/* 32px is short for a finger: the document viewer's "‹ Tài liệu" on a phone. */
+@media (pointer: coarse) { .back-link { height: 40px; } }
 
 .page-header {
   display: flex;
@@ -1546,6 +1552,12 @@ a.menu-item { text-decoration: none; }
 .tab:hover { color: var(--ink); }
 .tab-active, .tab-active:hover { color: var(--brand); box-shadow: inset 0 -3px 0 var(--brand); }
 .tab:focus-visible { outline-offset: -2px; }
+/* A phone (after .tab, which it overrides): tighter tabs, so the next one is cut through its words under the fade rather than off screen
+   altogether, which read as a row with nothing more to scroll to (the guest page's fourth tab at 390px). */
+@media (max-width: 560px) {
+  .tabs { gap: 0; }
+  .tab { padding: 0 10px; }
+}
 .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 7px; border-radius: 10px; background: #eef1f5; color: var(--ink-soft); font-size: 12px; font-weight: 700; }
 .tab-active .tab-count { background: var(--brand-wash); color: var(--brand); }
 
@@ -1995,6 +2007,8 @@ a.menu-item { text-decoration: none; }
   line-height: 1;
   cursor: pointer;
 }
+/* The × was 23×20 on a phone; the margin keeps the toast as tall as before. */
+@media (pointer: coarse) { .toast-close { min-width: 40px; min-height: 40px; margin: -10px -12px -10px 0; } }
 
 /* ---------- Role ↔ capability matrix ---------- */
 /* Two header rows: the functional group, underlined across its columns, then the capability
@@ -2137,7 +2151,7 @@ a.menu-item { text-decoration: none; }
 .date-range-box { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .date-range-dash { color: var(--muted-ink); }
 .date-range .date-field-box { width: 146px; }
-.date-range-active input { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus-ring); }
+.date-range-active input { border-color: var(--focus-line); }
 @media (max-width: 720px) {
   .date-range .date-field-box { flex: 1 1 0; width: auto; min-width: 0; }
   /* Two dates share a 390px line: room for "dd/mm/yyyy" beside the calendar button. */
@@ -2147,6 +2161,13 @@ a.menu-item { text-decoration: none; }
 .date-pick-selected .date-pick-num { background: var(--brand); color: #fff; font-weight: 600; }
 .date-pick-day.date-pick-selected:hover .date-pick-num { background: var(--brand-ink); }
 .time-field-menu { max-height: 264px; font-variant-numeric: tabular-nums; }
+.time-columns { display: flex; gap: 4px; max-height: none; overflow: visible; font-variant-numeric: tabular-nums; }
+.time-column { width: 64px; max-height: 264px; margin: 0; padding: 0; overflow-y: auto; list-style: none; overscroll-behavior: contain; scrollbar-width: thin; }
+.time-column + .time-column { padding-left: 4px; border-left: 1px solid var(--line-soft); }
+.time-column-option { display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 6px; cursor: pointer; }
+.time-column-option:hover { background: var(--brand-wash); }
+.time-column-option[aria-selected='true'] { background: var(--brand); color: #fff; font-weight: 600; }
+@media (pointer: coarse) { .time-column-option { height: 40px; } }
 .date-pick-swatch-today { box-shadow: inset 0 0 0 2px var(--gold); }
 .date-pick-swatch-viewed { border-radius: 3px; background: var(--brand-wash); box-shadow: inset 0 0 0 1px var(--edge-blue); }
 .calendar-toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
@@ -2472,7 +2493,7 @@ a.menu-item { text-decoration: none; }
   -webkit-line-clamp: 3;
   outline: none;
 }
-.overview-head h2:focus-visible { border-radius: 4px; box-shadow: var(--focus-ring); }
+.overview-head h2:focus-visible { border-radius: 4px; outline: 2px solid var(--focus); outline-offset: 2px; }
 .overview-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 20px 16px; font-size: 13.5px; }
 .overview-facts { display: flex; flex-direction: column; gap: 10px; margin: 0; }
 .overview-row { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 12px; }
@@ -3273,9 +3294,10 @@ a.menu-item { text-decoration: none; }
 .prejoin-sample-action:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* A dialog opened from the lobby (the voice sample) reads as any form, not centred like the lobby. */
 .prejoin-side dialog { text-align: start; }
-/* A guest confirms the notice before joining (SCRUM-59): the whole line is the checkbox's label, 40px tall to tap. */
-.prejoin-consent { align-items: center; min-height: 40px; color: var(--ink); text-align: left; cursor: pointer; }
-.prejoin-consent input[type='checkbox'] { flex: none; width: 18px; height: 18px; }
+/* A guest confirms the notice before joining (SCRUM-59): the whole line is the checkbox's label, 40px tall to tap.
+   Flex, unlike the members' notice above: the box beside one block of text, the second line under the first. */
+.prejoin-consent { display: flex; gap: 8px; align-items: center; min-height: 40px; color: var(--ink); text-align: left; text-wrap: pretty; cursor: pointer; }
+.prejoin-consent input[type='checkbox'] { flex: none; width: 18px; height: 18px; margin: 0; }
 .prejoin-join {
   position: relative;
   width: 240px;
@@ -3442,6 +3464,10 @@ a.menu-item { text-decoration: none; }
 .room-vote-notice strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .room-vote-notice .btn { flex: none; }
 
+/* "Đến lượt bạn phát biểu" (SCRUM-27): an invitation to act, so blue rather than the amber of a warning. */
+.room-banner-turn { flex-wrap: wrap; background: var(--chip-blue-bg); color: var(--chip-blue-fg); }
+.room-banner-turn .btn { flex: none; }
+
 .room-body { flex: 1; min-height: 0; display: flex; }
 .room-stage { flex: 1; min-width: 0; min-height: 0; padding: 16px; display: flex; }
 .room-grid-wrap { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -3552,6 +3578,52 @@ a.menu-item { text-decoration: none; }
 .room-person-mic.is-muted { color: var(--danger); }
 .room-speaking-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--speaking); flex: none; }
 
+/* The caller's own raised hand on their tile (SCRUM-27, UC-79 step 2). */
+.room-tile-hand {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--brand);
+}
+
+/* Register to Speak (SCRUM-27): one line per raised hand, in the room's 360px panel and on the page's side card. */
+.room-panel-body.speaking-panel { overflow-y: auto; }
+/* One column no wider than the panel, so a long name is cut instead of pushing "Mời" past the edge. */
+.speaking-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.speaking-row { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.speaking-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.speaking-row.is-mine .speaking-name { font-weight: 600; }
+.speaking-place {
+  flex: none;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 12px;
+  background: var(--chip-slate-bg);
+  color: var(--chip-slate-fg);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+}
+.speaking-actions { flex: none; display: inline-flex; align-items: center; gap: 2px; }
+.speaking-actions .btn { margin-left: 4px; }
+.speaking-mine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.speaking-mine > span:first-child:not(.status), .speaking-mine > strong { flex: 1; min-width: 0; display: inline-flex; align-items: center; gap: 6px; }
+.speaking-mine > .status { flex: none; margin-right: auto; }
+.speaking-raise { align-self: flex-start; }
+.speaking-note { margin: 0; color: var(--muted-ink); font-size: 13px; }
+.speaking-empty { display: flex; align-items: center; gap: 8px; color: var(--muted-ink); font-size: 13px; }
+.speaking-empty p { margin: 0; }
+.speaking-skeleton { width: 100%; height: 32px; }
+
 .room-chat-note { margin: 0; color: var(--muted-ink); font-size: 12px; }
 .room-chat-list { flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0; display: grid; align-content: start; gap: 12px; }
 .room-chat-empty { color: var(--muted-ink); font-size: 14px; font-style: italic; }
@@ -3570,7 +3642,7 @@ a.menu-item { text-decoration: none; }
   font-size: 14px;
   color: var(--ink);
 }
-.room-chat-form textarea:focus { outline: 2px solid var(--focus-ring); border-color: var(--focus); }
+.room-chat-form textarea:focus { outline: none; border-color: var(--focus-line); }
 .room-chat-actions { display: flex; justify-content: space-between; align-items: center; }
 
 .room-controls {
@@ -3937,14 +4009,19 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
   /* Phones have no floating window (Document Picture-in-Picture is desktop-only). */
   .room-control-pip { display: none; }
   .room-controls-main { --panel-pad: 8px; --tray-gap: 8px; margin-bottom: 11px; border-radius: 20px; }
-  .room-controls-row { gap: 6px; }
+  .room-controls-row { gap: 4px; }
   body:has(.room-controls-main.is-open) { --corner-bottom: 164px; }
   .room-control, .room-split > .room-control, .room-control-off, .room-control-side { width: 42px; height: 42px; }
   .room-control-leave { width: 54px; }
   /* Five panels do not fit beside the call controls: all but "Người dự" and "Chat" go behind ⋯. */
   .room-controls-side .room-control-tucked { display: none; }
   .room-more { display: flex; }
-  .room-split-more { width: 26px; height: 42px; }
+  /* Wider for a finger (E2E U9: 26px). 34px is what fits at 390px beside the other controls, paid for by the row's
+     tighter gap; a full 40px would push "Chat" into the gutter. */
+  .room-split-more { width: 34px; height: 42px; }
+  /* SCRUM-27: a sixth call control would push "Chat" off a 390px screen. As in Meet on a phone, the hand goes behind
+     ⋯ → "Phát biểu", whose panel raises and lowers it; the turn banner still starts the turn in one tap. */
+  .room-control-hand { display: none; }
 }
 
 /* SCRUM-29 — recordings panel. One line per recording; who, purpose and erase date sit in the tooltip. */
@@ -4206,6 +4283,8 @@ audio.recording-player { height: 40px; }
   border-radius: var(--radius); background: transparent; color: var(--muted-ink); box-shadow: none;
 }
 .select-trigger.select-icon:hover, .select-trigger.select-icon[aria-expanded="true"] { background: var(--brand-wash); color: var(--brand); }
+/* Borderless, so no border to colour: keyboard focus falls back to the buttons' outline. */
+.select-trigger.select-icon:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 @media (hover: none) {
   .tl-tools { opacity: 1; }
   /* A finger-sized target that keeps the line its height: the extra reaches into the space around it. */
@@ -4371,6 +4450,9 @@ body:has(.mic-dock) .content { --content-pad-bottom: calc(var(--mic-dock-h, 0px)
 .speaker-row .select-trigger { width: auto; max-width: 100%; }
 .speaker-row .select-trigger:not(.select-empty) { border-color: transparent; background: transparent; box-shadow: none; }
 .speaker-row .select-trigger:not(.select-empty):hover { background: var(--surface-alt); }
+/* Borderless at rest, so focus (and an open menu) draws the one thin border every field shows. */
+.speaker-row .select-trigger:is(:focus-visible, [aria-expanded='true']),
+.tl-name-pick .select-trigger:focus-visible { border-color: var(--focus-line); }
 .speaker-row .select-value, .speaker-row .select-placeholder { min-width: 0; }
 /* A person's name is never cut (PO 03/11/2026): where it does not fit, the speaking time moves below it, and a name
    longer than the whole row wraps rather than ending in "…". */
@@ -5183,36 +5265,109 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .week-nav { display: flex; gap: 4px; }
 .week-title { margin: 0; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .week-hours { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
-.week-card { flex: none; padding: 0; overflow-x: auto; }
-.week-table { width: 100%; min-width: 760px; border-collapse: collapse; table-layout: fixed; }
-.week-table th, .week-table td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: middle; }
-.week-table tbody tr:last-child > * { border-bottom: 0; }
-.week-table thead th { background: var(--surface-alt); color: var(--muted-ink); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
-.week-table thead th.week-today { color: var(--brand); }
-.week-date { font-weight: 500; text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
-.week-person-col { width: 220px; }
-.week-table tbody th { font-weight: 400; }
-.week-person { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.week-person .avatar { width: 28px; height: 28px; font-size: 11px; }
 .week-swatch { flex: none; width: 10px; height: 10px; border-radius: 3px; }
-.week-person-meta { display: flex; align-items: center; gap: 4px; margin: 2px 0 0 18px; color: var(--muted-ink); font-size: 12.5px; }
-.week-bar { position: relative; height: 22px; border-radius: 6px; background: var(--surface-alt); box-shadow: inset 0 0 0 1px var(--line-soft); overflow: hidden; }
-/* A faint line each hour of the 9-hour day, so a block's time can be read off the bar. */
-.week-bar-hours { background-image: repeating-linear-gradient(90deg, transparent 0 calc(100% / 9 - 1px), var(--line-soft) calc(100% / 9 - 1px) calc(100% / 9)); }
-.week-busy { position: absolute; top: 0; bottom: 0; min-width: 3px; border-radius: 4px; }
-.week-bar-unknown {
-  display: flex; align-items: center; justify-content: center;
-  background: repeating-linear-gradient(135deg, var(--surface-alt) 0 6px, var(--surface) 6px 12px);
-  color: var(--faint-ink); font-size: 12px;
-}
-.week-row-stopped .person { opacity: .6; }
-.week-busy-text { display: block; margin-top: 6px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+/* UC-85c as AI-eCabinet's shared week: people as chips over a grid of working hours, a column a day. */
+.shared-people { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.shared-person { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; }
+.shared-person-name { min-width: 0; overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.shared-person-meta { color: var(--muted-ink); font-size: 12px; font-weight: 400; white-space: nowrap; }
+/* Shown or hidden, not a selection: the person's colour carries it, so no brand fill as other chip toggles have. */
+.shared-person[aria-pressed='true'] { border-color: var(--line); background: var(--surface); color: var(--ink); font-weight: 400; }
+.shared-person[aria-pressed='false']:not(:disabled) .shared-person-name { color: var(--muted-ink); font-weight: 500; text-decoration: line-through; }
+.shared-person-stopped { opacity: .6; }
+.shared-grid { flex: none; padding: 0; overflow: hidden; }
+.shared-grid-head, .shared-grid-body { display: grid; }
+.shared-grid-head { border-bottom: 1px solid var(--line); background: var(--surface-alt); }
+.shared-day { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 8px 10px; border-left: 1px solid var(--line-soft); }
+.shared-day-name { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.shared-day-today .shared-day-name { color: var(--brand); }
+.shared-day-unknown { overflow: hidden; color: var(--faint-ink); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.shared-grid-body { padding-bottom: 8px; }
+.shared-hours { position: relative; }
+.shared-hours span { position: absolute; right: 8px; color: var(--muted-ink); font-size: 12px; font-variant-numeric: tabular-nums; transform: translateY(-50%); }
+.shared-hours span:first-child { transform: none; }
+/* An hour line every 56px (HOUR_PX), so a block's time reads off the grid. */
+.shared-column { position: relative; border-left: 1px solid var(--line-soft); background-image: linear-gradient(var(--line-soft) 1px, transparent 1px); }
+.shared-busy { position: absolute; display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 3px 6px; overflow: hidden; border: 1px solid; border-radius: 6px; font-size: 12px; line-height: 16px; }
+.shared-busy b { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.shared-busy span { overflow: hidden; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
+.shared-busy-short { flex-direction: row; align-items: center; gap: 6px; padding-block: 0; }
+.shared-column-unknown { background-color: var(--surface-alt); }
+.shared-unknown-text { position: absolute; top: 50%; left: 0; right: 0; color: var(--faint-ink); font-size: 13px; text-align: center; transform: translateY(-50%); }
+.shared-skeleton { position: absolute; inset: 8px; height: auto; }
 @media (max-width: 640px) {
   .week-toolbar { flex-wrap: wrap; }
   .week-hours { margin-left: 0; }
-  .week-table { min-width: 0; }
-  .week-person-col { width: 46%; }
-  /* The colour swatch already tells people apart; the avatar would squeeze the name to a word a line. */
-  .week-person .avatar { display: none; }
-  .week-person-meta { margin-left: 18px; }
+  .shared-person { min-height: 40px; }
+}
+
+/* SCRUM-137 — Tìm giờ họp (UC-85a, UC-85b), wireframe v12 16.7–16.10, laid out after AI-eCabinet's page: the search
+   conditions in a column on the left, the people and the slots in the main area. */
+.find-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-bottom: 16px; }
+.find-tabs .segmented { width: min(100%, 360px); }
+/* Both tabs stay mounted; the hidden one must not take part in the page's flex column. */
+.find-tab-panel { display: flex; flex: none; flex-direction: column; min-width: 0; }
+.find-tab-panel[hidden] { display: none; }
+.find-layout { display: grid; flex: none; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; align-items: start; }
+.find-settings { display: flex; flex-direction: column; gap: 16px; padding: 18px; position: sticky; top: 16px; }
+.find-settings fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.find-pair-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 4px; color: var(--muted-ink); }
+.find-pair-row > * { min-width: 0; }
+.find-pair-row > label.visually-hidden { position: absolute; }
+.find-days { display: flex; flex-wrap: wrap; gap: 6px; }
+.find-days .chip-toggle { min-width: 38px; height: 32px; padding: 0 8px; }
+.find-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.find-label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; line-height: 1; }
+.find-submit { width: 100%; justify-content: center; }
+.find-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.find-main > * { flex: none; }
+.find-people { display: flex; flex-direction: column; gap: 12px; padding: 18px; }
+.find-people .search { width: 100%; }
+.find-quick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.find-quick-label { color: var(--muted-ink); font-size: 13px; }
+.find-quick .chip-toggle { display: inline-flex; align-items: center; gap: 4px; }
+.find-person-state { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.find-count { margin: 0; font-weight: 600; }
+.find-count-note { color: var(--muted-ink); font-weight: 400; }
+.find-results { display: flex; flex-direction: column; gap: 12px; }
+.find-results > * { flex: none; }
+.find-day { padding: 0; overflow: hidden; }
+.find-day-title { margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); font-size: 14px; font-weight: 600; }
+.find-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+.find-chip { display: inline-flex; align-items: center; gap: 6px; min-width: 64px; height: 34px; justify-content: center; font-variant-numeric: tabular-nums; }
+.find-chip-count { color: var(--chip-amber-fg); font-size: 12px; font-weight: 500; }
+.find-chip[aria-pressed='true'] .find-chip-count { color: #fff; }
+.find-detail { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px 14px; border-top: 1px solid var(--line-soft); background: var(--surface-alt); }
+.find-detail-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.find-detail-people { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; }
+.find-detail-people li { display: inline-flex; align-items: center; gap: 6px; }
+.find-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 40px 20px; text-align: center; color: var(--muted-ink); }
+.find-empty .empty-title { margin: 6px 0 0; }
+.find-empty-text { max-width: 560px; margin: 0; font-size: 14px; }
+.find-summary { display: flex; flex-direction: column; gap: 6px; padding: 16px; }
+.find-summary-sub { margin-bottom: 4px; color: var(--muted-ink); font-size: 13px; }
+.find-locked { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-alt); }
+.find-locked-note { margin-left: auto; color: var(--muted-ink); font-size: 13px; }
+.find-role { flex: none; min-width: 84px; color: var(--muted-ink); font-size: 13px; text-align: right; }
+.find-role-chair { color: var(--brand); font-weight: 600; }
+.find-move { display: inline-flex; flex: none; width: 72px; gap: 2px; }
+
+@media (max-width: 960px) {
+  .find-layout { grid-template-columns: minmax(0, 1fr); }
+  .find-settings { position: static; }
+}
+@media (max-width: 640px) {
+  .find-tabs .segmented { width: 100%; }
+  .find-people, .find-settings { padding: 14px; }
+  .find-person-state { justify-content: flex-start; }
+  /* Name and remove on one line, the share state under them: three items in a row squeezed the name to a letter a line. */
+  .find-people-list .roster-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 8px; }
+  .find-people-list .roster-row-main { grid-column: 1; grid-row: 1; }
+  .find-people-list .roster-row > .icon-button { grid-column: 2; grid-row: 1; }
+  .find-people-list .find-person-state { grid-column: 1 / -1; grid-row: 2; }
+  .find-chip { height: 40px; min-width: 72px; }
+  .find-days .chip-toggle { height: 40px; min-width: 40px; }
+  .find-collapse { justify-self: start; }
+  .find-detail-head .btn { width: 100%; justify-content: center; }
+  .find-locked-note { margin-left: 0; }
 }

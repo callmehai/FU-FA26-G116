@@ -66,7 +66,7 @@ internal sealed class SmtpEmailSender(
         message.From.Add(from);
         message.To.Add(MailboxAddress.Parse(queued.ToAddress));
 
-        var body = new BodyBuilder { TextBody = queued.Body };
+        var body = new BodyBuilder { TextBody = queued.Body, HtmlBody = EmailHtml.FromText(queued.Body) };
         if (!string.IsNullOrEmpty(queued.CalendarAttachment))
         {
             var calendar = new MimePart("text", "calendar")

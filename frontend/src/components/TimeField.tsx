@@ -4,6 +4,8 @@ import { Icon } from './Icon'
 import { useAnchoredPopover, useOutsidePress } from './useAnchoredPopover'
 
 const STEP = 15
+const HOURS = Array.from({ length: 24 }, (_, h) => h)
+const MINUTES = Array.from({ length: 12 }, (_, i) => i * 5)
 const pad = (n: number) => String(n).padStart(2, '0')
 const toText = (minutes: number) => `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`
 const toMinutes = (time: string) => {
@@ -24,6 +26,9 @@ function lengthLabel(minutes: number) {
  * `<input type="time">`, which follows the browser's language: on an English Chrome it asked for
  * AM/PM in a Vietnamese form. Given `from` (the start, on the same day), the list begins after it
  * and says how long the meeting would last, as Google Calendar's end-time list does.
+ *
+ * With `columns`, the list is two columns — the hour, then the minute every 5 — as a phone's clock picker: an hour
+ * is picked and the minute after it, without scrolling past 96 rows. Still the 24-hour clock, never AM/PM.
  */
 export function TimeField({
   id,
@@ -33,6 +38,7 @@ export function TimeField({
   from,
   invalid = false,
   disabled = false,
+  columns = false,
 }: {
   id?: string
   name?: string
@@ -42,6 +48,8 @@ export function TimeField({
   from?: string
   invalid?: boolean
   disabled?: boolean
+  /** Pick the hour and the minute in two columns instead of one list every 15 minutes. */
+  columns?: boolean
 }) {
   const generatedId = useId()
   const inputId = id ?? generatedId
@@ -56,6 +64,7 @@ export function TimeField({
   const boxRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const columnsRef = useRef<HTMLDivElement>(null)
   // The pointer moved the highlight: the row is already in view, and scrolling it would put another row under
   // the pointer, which moves the highlight again — the list ran away on its own.
   const byPointer = useRef(false)
@@ -73,7 +82,17 @@ export function TimeField({
 
   const close = useCallback(() => setOpen(false), [])
   useOutsidePress(open, rootRef, close)
-  useAnchoredPopover(open, boxRef, listRef)
+  useAnchoredPopover(open && !columns, boxRef, listRef)
+  useAnchoredPopover(open && columns, boxRef, columnsRef, { matchWidth: false })
+
+  // The picked hour and minute at the top of their columns as the picker opens, as a phone's clock picker.
+  useLayoutEffect(() => {
+    if (!open || !columns) return
+    for (const column of columnsRef.current?.querySelectorAll('ul') ?? []) {
+      const picked = column.querySelector<HTMLElement>('[aria-selected="true"]')
+      column.scrollTop = picked ? picked.offsetTop - 4 : 0
+    }
+  }, [open, columns])
 
   // Bring the highlighted row into the middle of the list, as the list first opens and as it moves.
   useLayoutEffect(() => {
@@ -115,12 +134,32 @@ export function TimeField({
     else setDraft(value)
   }
 
+  /** In columns mode: a new hour keeps the minute (00 if none), a new minute keeps the hour (08 if none). */
+  function pickColumn(part: 'hour' | 'minute', n: number) {
+    const current = toMinutes(value)
+    const hour = part === 'hour' ? n : current === null ? 8 : Math.floor(current / 60)
+    const minute = part === 'minute' ? n : current === null ? 0 : current % 60
+    const time = toText(hour * 60 + minute)
+    setDraft(time)
+    if (time !== value) onChange(time)
+    // The minute is the last choice, as on the native picker; after the hour the minute is still to come.
+    if (part === 'minute') setOpen(false)
+  }
+
   function onKeyDown(event: React.KeyboardEvent) {
     switch (event.key) {
       case 'ArrowDown':
       case 'ArrowUp': {
         event.preventDefault()
         if (!open) return show()
+        if (columns) {
+          // Five minutes at a time, within the day.
+          const current = toMinutes(value) ?? 8 * 60
+          const next = Math.min(24 * 60 - 5, Math.max(0, current + (event.key === 'ArrowDown' ? 5 : -5)))
+          setDraft(toText(next))
+          onChange(toText(next))
+          return
+        }
         const step = event.key === 'ArrowDown' ? 1 : -1
         setBrowsing(true)
         setHighlighted((i) => Math.min(options.length - 1, Math.max(0, i + step)))
@@ -162,7 +201,7 @@ export function TimeField({
           aria-expanded={open}
           aria-controls={listId}
           aria-autocomplete="none"
-          aria-activedescendant={open ? `${listId}-${highlighted}` : undefined}
+          aria-activedescendant={open && !columns ? `${listId}-${highlighted}` : undefined}
           disabled={disabled}
           onChange={(e) => {
             setDraft(e.target.value)
@@ -192,7 +231,32 @@ export function TimeField({
         </button>
       </div>
 
-      {open && (
+      {open && columns && (
+        <div ref={columnsRef} id={listId} className="select-menu time-columns" popover="manual">
+          {(['hour', 'minute'] as const).map((part) => {
+            const current = toMinutes(value)
+            const picked = current === null ? null : part === 'hour' ? Math.floor(current / 60) : current % 60
+            return (
+              <ul key={part} role="listbox" aria-label={part === 'hour' ? 'Giờ' : 'Phút'} className="time-column">
+                {(part === 'hour' ? HOURS : MINUTES).map((n) => (
+                  <li
+                    key={n}
+                    role="option"
+                    aria-selected={n === picked}
+                    className="time-column-option"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => pickColumn(part, n)}
+                  >
+                    {pad(n)}
+                  </li>
+                ))}
+              </ul>
+            )
+          })}
+        </div>
+      )}
+
+      {open && !columns && (
         <ul ref={listRef} id={listId} className="select-menu time-field-menu" role="listbox" popover="manual">
           {options.map((minutes, index) => {
             const time = toText(minutes)

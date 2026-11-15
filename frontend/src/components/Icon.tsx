@@ -1,5 +1,6 @@
 import {
   ChartColumn,
+  Hand,
   NotebookPen,
   ArrowDown,
   History,
@@ -22,6 +23,7 @@ import {
   Bell,
   Building2,
   CalendarCheck,
+  CalendarSearch,
   CalendarDays,
   CalendarX,
   Check,
@@ -142,6 +144,7 @@ const ICONS = {
   calendar: CalendarDays,
   // The meeting list's count cards, as AI-eCabinet's: today, published (the invitations are out).
   calendarCheck: CalendarCheck,
+  calendarSearch: CalendarSearch,
   megaphone: Megaphone,
   // SCRUM-109: the per-mic transcript, a line of words per sentence.
   captions: Captions,
@@ -296,6 +299,8 @@ const ICONS = {
   notes: NotebookPen,
   // SCRUM-38: the meeting report in the sidebar.
   chart: ChartColumn,
+  // SCRUM-27: a raised hand, in the call controls and the speaking queue.
+  hand: Hand,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

@@ -104,14 +104,19 @@ export function VotingPanel({
     )
   }
 
-  const { votes, permissions } = data
+  const { permissions } = data
+  // The open vote first, so the one to cast is not below the results of the closed ones (a 360px room panel
+  // scrolled past them all); the rest keep the server's order.
+  const votes = [...data.votes].sort((a, b) => Number(b.status === 'Open') - Number(a.status === 'Open'))
   // A vote that waits on the caller — open, or closed without the Chair's conclusion — starts opened, also
-  // when it gets there while the panel is on screen; one the caller opened or closed by hand stays so.
+  // when it gets there while the panel is on screen; one the caller opened or closed by hand stays so until
+  // the vote moves on (opened, closed), when it starts over: a ballot cast keeps the vote open only while it runs.
   const waitsOnMe = (vote: VoteSummary) => vote.status === 'Open' || vote.actions.canRecordConclusion
-  const isOpen = (vote: VoteSummary) => toggled.get(vote.id) ?? waitsOnMe(vote)
-  const toggle = (vote: VoteSummary) => setToggled((map) => new Map(map).set(vote.id, !isOpen(vote)))
+  const toggleKey = (vote: Pick<VoteSummary, 'id' | 'status'>) => `${vote.id}:${vote.status}`
+  const isOpen = (vote: VoteSummary) => toggled.get(toggleKey(vote)) ?? waitsOnMe(vote)
+  const toggle = (vote: VoteSummary) => setToggled((map) => new Map(map).set(toggleKey(vote), !isOpen(vote)))
   // What the caller just did stays in view, though the vote no longer waits on them.
-  const keepOpen = (id: string) => setToggled((map) => new Map(map).set(id, true))
+  const keepOpen = (vote: Pick<VoteSummary, 'id' | 'status'>) => setToggled((map) => new Map(map).set(toggleKey(vote), true))
 
   return wrap(
     <section className={room ? 'vote-panel vote-panel-room' : 'list-panel vote-panel'} aria-label="Biểu quyết">
@@ -161,11 +166,11 @@ export function VotingPanel({
               onOpen={() => setOpen({ kind: 'open', vote })}
               onClose={() => setOpen({ kind: 'close', vote })}
               onCast={(optionId) => {
-                keepOpen(vote.id)
+                keepOpen(vote)
                 return run(() => castBallot(meetingId, vote.id, optionId))
               }}
               onConclude={(value, note) => {
-                keepOpen(vote.id)
+                keepOpen(vote)
                 return run(() => recordVoteConclusion(meetingId, vote.id, value, note))
               }}
               onAttach={
@@ -176,7 +181,7 @@ export function VotingPanel({
               onDetach={
                 meeting && !room
                   ? (doc) => {
-                      keepOpen(vote.id)
+                      keepOpen(vote)
                       setOpen({ kind: 'detach', vote, doc })
                     }
                   : undefined
@@ -193,7 +198,7 @@ export function VotingPanel({
           source={open.source}
           onClose={() => setOpen(null)}
           onAdded={(message) => {
-            keepOpen(open.vote.id)
+            keepOpen(open.vote)
             setOpen(null)
             toast.show(message)
             void reload()
@@ -281,7 +286,8 @@ export function VotingPanel({
           pendingLabel="Đang đóng…"
           onConfirm={async () => {
             try {
-              keepOpen(open.vote.id)
+              // Its result stays in view once closed.
+              keepOpen({ id: open.vote.id, status: 'Closed' })
               saved(await closeVote(meetingId, open.vote.id))
             } catch (err) {
               stale()

@@ -17,6 +17,7 @@ public static class GuestAccessEndpoints
     private const string Msg378SessionEnded = "MSG378";
     private const string Msg379DailyLimit = "MSG379";
     private const string Msg381ProfileLocked = "MSG381";
+    private const string InvalidCodeMessage = "Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.";
 
     internal sealed record LinkBody(string? Token);
     internal sealed record VerifyBody(string? Token, string? Code);
@@ -76,7 +77,10 @@ public static class GuestAccessEndpoints
             case GuestAccessFailure.InvalidInvitation:
                 return Error(404, Msg371InvitationInvalid, "Lời mời không còn hiệu lực. Vui lòng liên hệ Thư ký cuộc họp.");
             case GuestAccessFailure.InvalidCode:
-                return Error(400, Msg126InvalidCode, "Không xác minh được lời mời. Vui lòng kiểm tra mã và thử lại.");
+                return result.RemainingAttempts is { } remaining
+                    ? Results.Json(new { code = Msg126InvalidCode, message = InvalidCodeMessage, remainingAttempts = remaining },
+                        statusCode: 400)
+                    : Error(400, Msg126InvalidCode, InvalidCodeMessage);
             case GuestAccessFailure.CodeLocked:
                 return Error(400, Msg372CodeLocked, "Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới.");
             case GuestAccessFailure.TooSoon:

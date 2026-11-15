@@ -134,9 +134,12 @@ public sealed class GuestVerificationTests(GuestAccessFixture f) : IClassFixture
         using var client = f.Host.CreateClient();
         var code = await f.SendCode(client, s);
 
-        await Expect(await Verify(client, s, "12a456"), 400, "MSG126");
-        for (var attempt = 1; attempt <= 4; attempt++) await Expect(await Verify(client, s, Wrong(code)), 400, "MSG126");
-        await Expect(await Verify(client, s, Wrong(code)), 400, "MSG372");
+        // Not a guess, so not counted; each refusal says how many tries the code has left (E2E U10).
+        Assert.Equal(5, (await Expect(await Verify(client, s, "12a456"), 400, "MSG126")).GetProperty("remainingAttempts").GetInt32());
+        for (var attempt = 1; attempt <= 4; attempt++)
+            Assert.Equal(5 - attempt, (await Expect(await Verify(client, s, Wrong(code)), 400, "MSG126"))
+                .GetProperty("remainingAttempts").GetInt32());
+        Assert.False((await Expect(await Verify(client, s, Wrong(code)), 400, "MSG372")).TryGetProperty("remainingAttempts", out _));
         await Expect(await Verify(client, s, code), 400, "MSG372");
         await using (var db = f.Db())
             Assert.Equal(5, (await db.GuestVerificationChallenges.SingleAsync(c => c.InvitationId == s.InvitationId)).FailedAttempts);

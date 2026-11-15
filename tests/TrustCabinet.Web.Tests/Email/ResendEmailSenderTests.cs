@@ -55,6 +55,7 @@ public sealed class ResendEmailSenderTests
         Assert.Equal("thanhvien@example.com", root.GetProperty("to")[0].GetString());
         Assert.Equal("Thư mời họp", root.GetProperty("subject").GetString());
         Assert.Equal("Nội dung", root.GetProperty("text").GetString());
+        Assert.Contains("Nội dung", root.GetProperty("html").GetString());
         var attachment = root.GetProperty("attachments")[0];
         Assert.Equal("thu-moi-hop.ics", attachment.GetProperty("filename").GetString());
         Assert.StartsWith("text/calendar", attachment.GetProperty("content_type").GetString());

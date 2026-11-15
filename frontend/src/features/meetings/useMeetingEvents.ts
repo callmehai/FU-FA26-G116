@@ -6,6 +6,7 @@ import type { DocumentsChangedEvent } from '../../types/document'
 import type { NotesChange } from '../../types/note'
 import type { AgendaChangedEvent } from '../../types/meeting'
 import type { ParticipantsChangedEvent } from '../../types/participant'
+import type { SpeakingChangedEvent } from '../../types/speaking'
 import type { SpeechChangedEvent } from '../../types/speech'
 import type { VoteChangedEvent } from '../../types/vote'
 
@@ -21,6 +22,8 @@ import type { VoteChangedEvent } from '../../types/vote'
  * can tell everyone. `voteListChanged` is every vote change but a ballot or a conclusion: what a list of the votes and
  * their documents shows (UC-32a AF-1) does not move with each ballot, and a meeting of N voters sends N of them.
  * `notesChanged` (SCRUM-30) reaches only the Chair and the Secretary: a note was saved in another window.
+ * `speakingChanged` (SCRUM-27) is any change to the queue of raised hands; `speakingInvited` reaches only the person
+ * the Chair just invited, with the same event id, so the room can tell them it is their turn.
  */
 export type MeetingEvent =
   | 'participantsChanged'
@@ -35,6 +38,8 @@ export type MeetingEvent =
   | 'voteOpened'
   | 'voteListChanged'
   | 'notesChanged'
+  | 'speakingChanged'
+  | 'speakingInvited'
 
 interface Listener {
   events: readonly MeetingEvent[]
@@ -107,6 +112,15 @@ function open(meetingId: string): Channel {
     if (event.changeType === 'Opened') notify('voteOpened')
     if (event.changeType !== 'BallotCast' && event.changeType !== 'ConclusionRecorded') notify('voteListChanged')
   })
+  // Both carry the same event id, so each is told apart in `seen` by its name.
+  for (const name of ['speakingChanged', 'speakingInvited'] as const) {
+    connection.on(name, (event: SpeakingChangedEvent) => {
+      const key = `${name}:${event.eventId}`
+      if (event.meetingId.toLowerCase() !== meetingId.toLowerCase() || seen.has(key)) return
+      seen.add(key)
+      notify(name)
+    })
+  }
   connection.onreconnected(() => void join().then(() => notify()))
   connection.onclose(() => {
     if (!closed) schedule()
