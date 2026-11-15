@@ -23,7 +23,8 @@
 ## 4. Report 3 còn sót (vào PR thứ hai, không vào #367)
 
 - Câu `Feature priority ... FE-14 to FE-16 are Should-have` → `FE-15 to FE-16 are Should-have` (dòng khoảng 820 bản Markdown sinh ra; sửa trong DOCX rồi sync).
-- Hai tiêu đề FE-14 trống trong bản trích `05-use-case-specifications.md` (dòng 200 và 2008, không còn UC nào dưới đó): xử lý khi sửa DOCX — hoặc bảng ánh xạ đã hết FE-14 thì sync + prune sẽ rụng theo.
+- Hai tiêu đề FE-14 trống trong bản trích `05-use-case-specifications.md` (dòng 200 và 2008, không còn UC nào dưới đó): script sync không tự xoá mục FE mồ côi nên xoá trực tiếp 2 heading rỗng rồi chạy `--check` (`UP TO DATE`).
+- Review bổ sung 15/11 (5 chỗ đúng là lỗi, đã sửa): NFR `Account lockout` → `Sign-in rate limiting` theo code (5 lần/email + 60 lần/IP mỗi 60 giây, 429 MSG414, không khoá tài khoản); mô tả actor System Admin bỏ `unlock`; NFR `Audit logging` bỏ `lockout and unlock`; NFR `Configurability` bỏ `lockout threshold and duration`; ma trận phân quyền xoá hàng `Dashboard` + footnote ¹² bỏ `own dashboard`. NFR mới nhắc MSG414 nên thêm dòng MSG414 vào bảng V.2 (dòng 478) cho `check_docx` qua.
 
 ## 5. Không đụng
 
