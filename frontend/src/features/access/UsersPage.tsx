@@ -297,12 +297,14 @@ export function UsersPage() {
             options={roleFilterOptions}
             onChange={(value) => setFilter('role', value)}
             label="Lọc theo vai trò"
+            steady
           />
           <Select
             value={statusFilter}
             options={STATUS_FILTER_OPTIONS}
             onChange={(value) => setFilter('status', value)}
             label="Lọc theo trạng thái"
+            steady
           />
         </div>
 

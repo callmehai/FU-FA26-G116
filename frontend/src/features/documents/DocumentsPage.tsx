@@ -226,6 +226,7 @@ export function DocumentsPage() {
             options={TYPE_OPTIONS}
             onChange={(value) => update({ type: value })}
             label="Lọc theo loại tệp"
+            steady
           />
           {view && (
             <span className={usedRatio >= 1 ? 'library-quota is-over' : 'library-quota'}>
