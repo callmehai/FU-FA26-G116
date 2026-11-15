@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
+using TrustCabinet.Application;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Infrastructure.Agenda;
@@ -42,6 +43,8 @@ if (args is [DatabaseMigrationCommand.Argument, .. var migrationArguments])
 
 var builder = WebApplication.CreateBuilder(args);
 
+// SCRUM-143: the use case services, filled in module by module while they move out of Infrastructure.
+builder.Services.AddApplication();
 builder.Services.AddTrustCabinetDatabase(builder.Configuration);
 builder.Services.AddTrustCabinetAuthentication(builder.Configuration);
 builder.Services.AddTrustCabinetUserManagement();

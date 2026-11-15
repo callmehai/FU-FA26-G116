@@ -95,6 +95,7 @@ Keep English technical terms as-is inside Vietnamese text (*endpoint*, *migratio
 
 ```
 backend/TrustCabinet.Domain/         entities and enums — no EF Core dependency
+backend/TrustCabinet.Application/    use case services, DTOs and ports — references Domain only; being filled by SCRUM-143
 backend/TrustCabinet.Infrastructure/ DbContext, entity configurations, migrations, seed
 backend/TrustCabinet.Web/    ASP.NET Core 10 (Minimal API)
   Program.cs                 the whole pipeline and every endpoint currently lives here
@@ -107,6 +108,8 @@ frontend/                    React 19 + Vite + TypeScript, split by feature
   src/api/                   HTTP layer (client.ts) plus one file per endpoint group
   src/types/                 shared types, mirroring backend response shapes
   src/styles/global.css      design tokens + all styling
+tests/TrustCabinet.Web.Tests/         integration tests on a real PostgreSQL, plus the source-reading tests
+tests/TrustCabinet.Application.Tests/ use case unit tests with hand-written fakes — no database
 docs/                        capstone documentation — see docs/README.md
 deploy/                      shared test server on AWS Lightsail (Docker Compose + Caddy), auto-deployed by .github/workflows/deploy.yml — see deploy/README.md
 Dockerfile                   one image: frontend build + backend, used by deploy/
@@ -170,13 +173,14 @@ is declared by code in the project that emits it —
 `<WarningsNotAsErrors>xUnit1012</WarningsNotAsErrors>`, with a comment saying why — rather than by
 removing the flag.
 
-Tests live under `tests/`, one project per backend project, registered in the `.sln`. Today that is
-`TrustCabinet.Web.Tests`, split by feature: access and capability gate, meetings and workflow, agenda,
+Tests live under `tests/`, one project per backend project, registered in the `.sln`. Nearly all of them are
+in `TrustCabinet.Web.Tests`, split by feature: access and capability gate, meetings and workflow, agenda,
 participants and attendance, documents and comments, voting, the online room and guest access,
 recordings and transcription, notifications, email, plus the model invariants
 (`DatabaseModelTests`) and the message-code catalogue. `/api/health` is the only smoke test and it
 is there to prove the app boots in memory and CI can run tests at all — keep it, and cover each new
-endpoint with a test of its own rather than relying on it.
+endpoint with a test of its own rather than relying on it. `TrustCabinet.Application.Tests` (SCRUM-143)
+references Application and Domain only, so the use case tests in it run without PostgreSQL.
 
 ## Conventions
 
@@ -265,11 +269,21 @@ select's popup to the operating system, which ignores the page stylesheet and lo
 mode.
 
 **`Program.cs` will outgrow itself.** As the domain grows, split endpoints into extension methods
-(`MapMeetingEndpoints()`, …). The backend stays at three projects — use cases live in
-`TrustCabinet.Infrastructure` — until `TrustCabinet.Application` is split out right after the supervisor
-review, module by module, per [ADR-0059](docs/05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
-Until then add no package to Domain and no new `TrustCabinetDbContext` reader in Web; remember to add new
-projects to the `.sln`.
+(`MapMeetingEndpoints()`, …). On `main` the backend still has three projects — use cases live in
+`TrustCabinet.Infrastructure` — while `TrustCabinet.Application` is split out module by module, per
+[ADR-0059](docs/05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md). Add no package to
+Domain and no new `TrustCabinetDbContext` reader in Web; remember to add new projects to the `.sln`.
+
+**Clean Architecture refactor in progress (SCRUM-143).** The backend is moving to four projects, Domain / Application / Infrastructure / Web, one module per subtask `[CA-nn]`. The binding
+standard is [docs/02-design/11-quy-chuan-clean-architecture.md](docs/02-design/11-quy-chuan-clean-architecture.md)
+— **read it before touching `backend/`**: it fixes where a file goes, how a service reaches storage
+(`IUnitOfWork`, repository and query ports, `PersistenceException` instead of a database exception), and what
+may not change (no endpoint, `MSGnn`, schema or behaviour change; no edited assertion in an existing test). The
+work lives on the integration branch `refactor/clean-architecture`; a subtask branches from it as
+`refactor/ca-<nn>-<slug>` and its PR targets `refactor/clean-architecture`, never `main`, which receives the
+branch once, at CA-20. `ArchitectureTests` holds the rules and, per rule, the list of types that still break
+it: delete the entries of the module you move, never add one. Where the standard does not cover a case, stop
+and comment on the subtask rather than improvising.
 
 ## Documentation
 

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Infrastructure;
@@ -34,6 +36,10 @@ public static class DependencyInjection
             // emit SELECT ... FROM "Meetings" everywhere and hand-written SQL would need the
             // quotes too. snake_case keeps the database idiomatic and the SQL readable.
             .UseSnakeCaseNamingConvention());
+
+        // SCRUM-143: transactions and the translation of storage failures for the use cases in Application. It wraps
+        // the same scoped context the repositories of the request use.
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
         return services;
     }
