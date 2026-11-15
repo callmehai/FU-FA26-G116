@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Calls;
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.Calls;

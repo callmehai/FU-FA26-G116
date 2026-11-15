@@ -12,6 +12,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.Transcription;
+using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.VoiceId;
 

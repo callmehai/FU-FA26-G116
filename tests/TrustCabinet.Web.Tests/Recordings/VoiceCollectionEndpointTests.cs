@@ -13,6 +13,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Web.Tests.Recordings;
 

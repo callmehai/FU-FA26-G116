@@ -81,10 +81,3 @@ public interface ISummaryService
     Task<bool> ProcessNextAsync(CancellationToken ct = default);
     Task<int> RequeueInterruptedAsync(CancellationToken ct = default);
 }
-
-public static class SummaryLimits
-{
-    public const int Objectives = 2000;
-    public const int Discussion = 12000;
-    public const int Conclusions = 8000;
-}

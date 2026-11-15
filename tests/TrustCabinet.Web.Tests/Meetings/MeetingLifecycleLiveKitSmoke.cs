@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Calls;
+using TrustCabinet.Domain.Calls;
 using TrustCabinet.Infrastructure.Calls;
 
 namespace TrustCabinet.Web.Tests.Meetings;

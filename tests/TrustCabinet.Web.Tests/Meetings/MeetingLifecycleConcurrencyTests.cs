@@ -2,8 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using TrustCabinet.Application.Calls;
 using TrustCabinet.Application.Meetings;
+using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Web.Tests.Meetings;

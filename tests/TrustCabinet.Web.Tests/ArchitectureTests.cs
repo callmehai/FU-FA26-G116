@@ -215,8 +215,9 @@ public sealed class ArchitectureTests
     {
         var breaking = OwnTypes(Domain)
             .Where(type => (type.IsInterface && type != typeof(TrustCabinet.Domain.Documents.IPdfInspector))
-                || type.Name.EndsWith("Service", StringComparison.Ordinal)
-                || type.Name.EndsWith("Repository", StringComparison.Ordinal))
+                // A generic type's name ends in `n (FooRepository`1); judge the name without it.
+                || type.Name.Split('`')[0].EndsWith("Service", StringComparison.Ordinal)
+                || type.Name.Split('`')[0].EndsWith("Repository", StringComparison.Ordinal))
             .Select(type => type.FullName!).Order(StringComparer.Ordinal).ToArray();
 
         Assert.True(breaking.Length == 0,

@@ -2,6 +2,7 @@ using Microsoft.Net.Http.Headers;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.VoiceId;
 
 namespace TrustCabinet.Web.Endpoints;
 

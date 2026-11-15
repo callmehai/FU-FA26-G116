@@ -7,6 +7,7 @@ using TrustCabinet.Application.Transcription;
 using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.VoiceId;
 using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.VoiceId;

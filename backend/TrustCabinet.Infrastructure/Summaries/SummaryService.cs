@@ -12,6 +12,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Domain.Summaries;
 
 namespace TrustCabinet.Infrastructure.Summaries;
 

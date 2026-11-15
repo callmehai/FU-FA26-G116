@@ -9,6 +9,7 @@ using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.Calls;
 using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Access;
+using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;

@@ -20,7 +20,7 @@ Phạm vi đã chốt ngày 13/10/2026: SCRUM-25 chuẩn bị phần đọc Agen
 | Thành phần | Vị trí contract | Trách nhiệm |
 |---|---|---|
 | `IMeetingGuestIdentityResolver.Resolve(ClaimsPrincipal)` | `backend/TrustCabinet.Web/MeetingGuestIdentity.cs` | Map principal **đã được authentication middleware xác thực** thành `MeetingGuestSession(MeetingId, InvitationId, SessionId)`. Đây chỉ là identity, chưa cấp quyền đọc. |
-| `IAgendaGuestAccess.CanReadAsync(session, ct)` | `backend/TrustCabinet.Domain/Agenda/AgendaGuestAccess.cs` | Đọc lại invitation và session hiện tại; trả true chỉ khi tất cả điều kiện dưới đây đúng. |
+| `IAgendaGuestAccess.CanReadAsync(session, ct)` | `backend/TrustCabinet.Application/Agenda/AgendaGuestAccess.cs` | Đọc lại invitation và session hiện tại; trả true chỉ khi tất cả điều kiện dưới đây đúng. |
 | `IAgendaGuestAccess.ListReadersAsync(meetingId, ct)` | Cùng interface | Trả các identity session hiện còn quyền trong đúng meeting, dựa trên cùng rule với CanReadAsync, dùng query theo tập hợp để tránh N+1. Không trả tên/email/token. |
 
 Identity sử dụng ba GUID không rỗng, không phải schema bắt buộc của database UC-04. `SessionId` phân biệt từng phiên truy cập đã xác minh, giữ ổn định khi reconnect; không dùng connection ID làm session. Gia hạn/cấp phiên mới không hồi sinh session đã hết hạn/thu hồi. Không dùng tên tự khai làm khóa.

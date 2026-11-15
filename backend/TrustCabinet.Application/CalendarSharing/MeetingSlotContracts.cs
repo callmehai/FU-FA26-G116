@@ -3,14 +3,6 @@ using TrustCabinet.Domain.CalendarSharing;
 
 namespace TrustCabinet.Application.CalendarSharing;
 
-/// <summary>How a person of the search is counted: the finder's own calendar, a shared one, or none (BR-416).</summary>
-public static class SlotPersonStatus
-{
-    public const string Own = "Own";
-    public const string Shared = "Shared";
-    public const string NotShared = "NotShared";
-}
-
 /// <summary>
 /// A person of the search as the finder may see them: a name from the finder's own invite list and the share the finder
 /// is one side of — nothing about any meeting (BR-427).

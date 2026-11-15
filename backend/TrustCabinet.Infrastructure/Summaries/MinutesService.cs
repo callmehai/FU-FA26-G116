@@ -8,6 +8,7 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
+using TrustCabinet.Domain.Summaries;
 using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Infrastructure.Summaries;

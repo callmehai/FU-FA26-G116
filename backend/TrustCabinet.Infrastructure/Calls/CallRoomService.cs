@@ -6,6 +6,7 @@ using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Calls;
 using TrustCabinet.Application.Speaking;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Recordings;

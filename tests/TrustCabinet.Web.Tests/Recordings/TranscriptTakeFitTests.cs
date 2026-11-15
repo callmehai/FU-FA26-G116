@@ -1,5 +1,5 @@
-using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Transcription;
 
 namespace TrustCabinet.Web.Tests.Recordings;
 

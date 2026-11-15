@@ -18,6 +18,7 @@ using TrustCabinet.Infrastructure;
 
 using TrustCabinet.Web.Tests.Agenda;
 using TrustCabinet.Application.Calls;
+using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Meetings;
 using System.Data.Common;
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Calls;
+using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Web.Tests.Meetings;

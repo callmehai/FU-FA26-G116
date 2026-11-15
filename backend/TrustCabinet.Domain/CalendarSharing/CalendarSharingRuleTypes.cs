@@ -64,3 +64,11 @@ public enum SlotResultKind
 }
 
 public sealed record SlotFinding(SlotResultKind Kind, IReadOnlyList<FoundSlot> Slots, bool Truncated);
+
+/// <summary>How a person of the search is counted: the finder's own calendar, a shared one, or none (BR-416).</summary>
+public static class SlotPersonStatus
+{
+    public const string Own = "Own";
+    public const string Shared = "Shared";
+    public const string NotShared = "NotShared";
+}

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Summaries;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Summaries;
