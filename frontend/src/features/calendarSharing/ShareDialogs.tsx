@@ -109,13 +109,16 @@ function PersonPick({
   value,
   onChange,
   onRefused,
+  initialQuery = '',
 }: {
   purpose: 'request' | 'direct'
   value: ShareCandidate | null
   onChange: (person: ShareCandidate) => void
   onRefused: (error: unknown) => void
+  /** Starts the search with this text, e.g. the email of a person the dialog was opened for. */
+  initialQuery?: string
 }) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery)
   const [page, setPage] = useState<{ items: ShareCandidate[]; total: number } | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const name = useId()
@@ -257,13 +260,18 @@ export function NewShareDialog({
   mode,
   onClose,
   onDone,
+  initialPerson,
 }: {
   mode: 'request' | 'direct'
   onClose: () => void
   onDone: (outcome: ShareOutcome) => void
+  /** Opened for one person (SCRUM-137: "Yêu cầu chia sẻ lịch" on the find-a-time page): picked and searched for. */
+  initialPerson?: { id: string; fullName: string; email: string }
 }) {
   const today = vietnamToday()
-  const [person, setPerson] = useState<ShareCandidate | null>(null)
+  const [person, setPerson] = useState<ShareCandidate | null>(() =>
+    initialPerson ? { ...initialPerson, hasOpenShare: false } : null,
+  )
   const [level, setLevel] = useState<ShareLevel>('Level1')
   const [range, setRange] = useState<DayRange>({ from: today, to: addDaysTo(today, 29) })
   const { pending, error, run } = useSubmit(onDone)
@@ -304,6 +312,7 @@ export function NewShareDialog({
       <div className="form-stack">
         <PersonPick
           purpose={mode}
+          initialQuery={initialPerson?.email}
           value={person}
           onChange={setPerson}
           onRefused={(err) => onDone({ kind: 'stale', error: err })}

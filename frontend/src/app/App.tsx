@@ -29,6 +29,7 @@ const ResetPasswordPage = lazy(() =>
 const CalendarSharingPage = lazy(() =>
   import('../features/calendarSharing/CalendarSharingPage').then((m) => ({ default: m.CalendarSharingPage })),
 )
+const FindTimePage = lazy(() => import('../features/findTime/FindTimePage').then((m) => ({ default: m.FindTimePage })))
 const CalendarPage = lazy(() =>
   import('../features/calendar/CalendarPage').then((m) => ({ default: m.CalendarPage })),
 )
@@ -104,6 +105,14 @@ export function App() {
             <Route path={routes.calendar} element={<CalendarPage />} />
             {/* Open to everyone: one's own calendar is shared from here; the server gates the rest (SCRUM-142). */}
             <Route path={routes.calendarSharing} element={<CalendarSharingPage />} />
+            <Route
+              path={routes.findTime}
+              element={
+                <RequireCapability cap="MeetingCreator">
+                  <FindTimePage />
+                </RequireCapability>
+              }
+            />
             <Route path={routes.documents} element={<DocumentsPage />} />
             <Route path={routes.myVoice} element={<VoicePage />} />
             <Route path={routes.reports} element={<ReportsPage />} />

@@ -278,6 +278,8 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
             invitedName = "Khách",
             email = "guest@example.test"
         }), 201, "MSG96");
+        // The same code as for a member, in the words of an invitation that goes out by email (E2E U15).
+        Assert.Equal("Đã mời khách. Thư mời sẽ được gửi tới email của khách.", json.GetProperty("message").GetString());
         var id = json.GetProperty("createdIds")[0].GetGuid();
         using var guest = f.Guest(s.MeetingId, id); using var unverified = f.Guest(s.MeetingId, id, verified: false);
         using var expired = f.Guest(s.MeetingId, id, expired: true); using var mixed = f.Guest(s.MeetingId, id, user: s.Secretary);
@@ -285,7 +287,8 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
         foreach (var denied in new[] { unverified, expired, mixed }) Assert.Equal(HttpStatusCode.NotFound, (await denied.GetAsync(s.Url + "/participants")).StatusCode);
         await Code(await Write(guest, s.Url + "/invitation-response", HttpMethod.Put, new { response = "Accepted" }), 200, "MSG105");
         Assert.Equal(HttpStatusCode.Forbidden, (await Write(guest, s.Url + "/participants", HttpMethod.Post, new { userIds = new[] { s.Outsider }, role = "Secretary" })).StatusCode);
-        await Code(await Write(secretary, s.Url + $"/guest-invitations/{id}", HttpMethod.Delete, etag: await Tag(secretary, s.Url)), 200, "MSG103");
+        var revoked = await Code(await Write(secretary, s.Url + $"/guest-invitations/{id}", HttpMethod.Delete, etag: await Tag(secretary, s.Url)), 200, "MSG103");
+        Assert.Equal("Đã thu hồi lời mời khách.", revoked.GetProperty("message").GetString());
         Assert.Equal(HttpStatusCode.NotFound, (await guest.GetAsync(s.Url + "/invitation-response")).StatusCode);
         await using var db = f.Db(); Assert.Equal(InvitationResponse.Accepted, (await db.MeetingGuestInvitations.FindAsync(id))!.Response);
         Assert.False(await db.Users.AnyAsync(u => u.Email == "guest@example.test"));

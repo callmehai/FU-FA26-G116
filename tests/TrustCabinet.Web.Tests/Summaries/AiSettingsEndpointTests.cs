@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Summaries;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Summaries;
@@ -232,6 +233,37 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
         var broken = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", Api(key: null)), 502, "MSG413");
         Assert.Equal("API AI trả lỗi 500.", broken.GetProperty("message").GetString());
         f.Api.Reset();
+    }
+
+    [Fact]
+    public async Task Testing_the_in_house_model_calls_it_as_drafts_do_and_never_the_api()
+    {
+        using var admin = await AdminWithRole();
+        var local = new { mode = "Local", apiBaseUrl = "", apiModel = "", apiKey = (string?)null };
+        f.Api.Reset();
+        try
+        {
+            var passed = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", local), 200, "MSG412");
+            Assert.Equal("fake-llm@test", passed.GetProperty("model").GetString());
+            Assert.Empty(f.Api.Requests);
+            await using (var db = f.Db()) Assert.False(await db.AiProviderSettings.AnyAsync());
+
+            // The machine is off or off the tailnet: its own reason, as a draft would get it.
+            f.Model.Failure = new LanguageModelException("Không kết nối được máy AI local.");
+            var down = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", local), 502, "MSG413");
+            Assert.Equal("Không kết nối được máy AI local.", down.GetProperty("message").GetString());
+
+            f.Model.Failure = null;
+            f.Model.Configured = false;
+            var unset = await AssertCode(await admin.PostAsJsonAsync(Url + "/test", local), 502, "MSG413");
+            Assert.Contains("chưa cấu hình máy local", unset.GetProperty("message").GetString());
+            Assert.Empty(f.Api.Requests);
+        }
+        finally
+        {
+            f.Model.Failure = null;
+            f.Model.Configured = true;
+        }
     }
 
     [Fact]

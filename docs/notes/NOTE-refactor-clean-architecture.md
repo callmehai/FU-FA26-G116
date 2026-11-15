@@ -1,6 +1,7 @@
 # Refactor backend sang Clean Architecture
 
-- **Ngày:** 08/11/2026
+- **Ngày:** 08/11/2026; **cập nhật 14/11/2026**: đo lại số liệu, thêm bảng lớp đang đọc `DbContext` (§3.1),
+  bổ sung 3 module lộ trình cũ bỏ sót (CalendarSharing, Speaking, Reports) vào giai đoạn 2
 - **Trạng thái:** đã chốt thời điểm ở [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md)
   (09/11/2026): giữ ba project đến buổi báo cáo giảng viên 13/11/2026, bắt đầu giai đoạn 0 ngay sau đó.
   Tạo ticket Jira cho từng giai đoạn khi bắt đầu.
@@ -12,16 +13,17 @@
 Backend hiện có ba project: `Web` → `Infrastructure` → `Domain`. Không có tầng Application. Vì vậy logic
 nghiệp vụ (use case) đang nằm trong Infrastructure và dính chặt vào EF Core/PostgreSQL.
 
-Số liệu đo trên nhánh `docs/dac-ta-so-bo-scrum-137-142` ngày 08/11/2026:
+Số liệu đo lại trên nhánh `docs/guest-e2e-docs` (`2620854b`) ngày 14/11/2026 bằng `grep`, nên là số xấp xỉ;
+số trong ngoặc là lần đo đầu trên nhánh `docs/dac-ta-so-bo-scrum-137-142` ngày 08/11/2026:
 
 | Vấn đề | Bằng chứng |
 |---|---|
-| Use case nằm trong Infrastructure | Khoảng 9.800 dòng trong các file `*Service.cs` ở `TrustCabinet.Infrastructure/` (`MeetingService` 858 dòng, `ParticipantService` 1.119 dòng, `UserService` 776 dòng, `VoteService` 552 dòng…) |
-| Service gọi thẳng `DbContext` | `VoteService`, `ParticipantService`, `MeetingDocumentService`, `PersonalLibraryService`, `SummaryService`, `MinutesService`, `GuestAccessService`, `AttendanceService`, `MeetingNoteService`, `SpeechClipService`, `DocumentCommentService`, `AiSettingsService` inject `TrustCabinetDbContext` |
-| Service biết chi tiết của Postgres | Kể cả service không inject `DbContext` vẫn `using Npgsql` và `Microsoft.EntityFrameworkCore`, bắt `DbUpdateException`/`PostgresException` theo `SqlState` (`23505`, `23503`), so tên unique index (`"ix_voting_sessions_meeting_id"`) |
-| Domain chứa thứ của Application | Domain có 73 interface (service và repository) và 194 record DTO (`*Contracts.cs`). Interface repository để lộ cơ chế lưu trữ: `SaveChangesAsync`, `InTransactionAsync`, `FindOwnedForUpdateAsync` |
+| Use case nằm trong Infrastructure | 12.188 dòng (9.800) trong 35 file `*Service.cs` ở `TrustCabinet.Infrastructure/`; lớn nhất: `ParticipantService` 1.116 dòng, `MeetingService` 868, `UserService` 792, `SpeechClipService` 674, `VoteService` 552, `TranscriptionService` 511, `CalendarSharingService` 506 |
+| Lớp gọi thẳng `DbContext` | 39 lớp trong Infrastructure (12 service được liệt kê lúc đầu) ngoài repository, seed và `DbContext` nhận `TrustCabinetDbContext` qua constructor, tham số method static hoặc `GetRequiredService`; khoảng 380 lời gọi `db.` cần chuyển vào repository hoặc query port. Danh sách đầy đủ ở §3.1 |
+| Service biết chi tiết của Postgres | 47 file ngoài repository/seed/migration vẫn `using Npgsql` hoặc `Microsoft.EntityFrameworkCore`, bắt `DbUpdateException`/`PostgresException` theo `SqlState` (`23505`, `23503`), so tên unique index (`"ix_voting_sessions_meeting_id"`) |
+| Domain chứa thứ của Application | Domain có 86 interface (73) gồm service, repository và port, và 218 record DTO (194) trong `*Contracts.cs`. Interface repository để lộ cơ chế lưu trữ: `SaveChangesAsync`, `InTransactionAsync`, `FindOwnedForUpdateAsync` |
 | Domain phụ thuộc thư viện ngoài | `TrustCabinet.Domain.csproj` reference `PdfPig` (dùng trong `Documents/DocumentFileRules.cs`) — **đã sửa ở SCRUM-144** (`0eae63bd`): đọc PDF qua `IPdfInspector`, `DomainDependencyTests` chặn package quay lại |
-| Web đi tắt qua Application | `MeetingHub`, `AgendaChangePublisher`, `MeetingDocumentChangePublisher`, `VoteChangePublisher`, `AttendanceChangePublisher`, `NotesChangePublisher`, `SpeechChangePublisher` dùng thẳng `TrustCabinetDbContext`; endpoint inject repository (`IMeetingRepository` 8 chỗ, `IUserAccountRepository`, `IParticipantRepository`) |
+| Web đi tắt qua Application | 7 publisher dùng thẳng `TrustCabinetDbContext`: `AgendaChangePublisher`, `MeetingDocumentChangePublisher` (cùng nằm trong `MeetingHub.cs`), `VoteChangePublisher`, `AttendanceChangePublisher`, `NotesChangePublisher`, `SpeechChangePublisher`, `SpeakingChangePublisher`; `/api/health` gọi `db.Database.CanConnectAsync`. Repository còn bị inject ở `MeetingHub` (`IMeetingRepository`), `NotificationHub`, `NotificationWorker`, `AuthEndpoints` và `CapabilityGate` (`IUserAccountRepository`). Endpoint trong `Endpoints/` đã thôi inject `IMeetingRepository` (lần đo đầu: 8 chỗ) |
 
 Hệ quả:
 
@@ -168,6 +170,46 @@ public sealed class VoteService(IVoteRepository votes, IUnitOfWork unitOfWork, I
 | `Infrastructure/**/*ServiceCollectionExtensions.cs` | tách thành `Application/DependencyInjection.cs` (`AddApplication()`) và `Infrastructure/DependencyInjection.cs` (`AddInfrastructure()`) |
 | `Web/MeetingHub.cs`, `Web/*ChangePublisher.cs` dùng `DbContext` | tính nhóm người nhận qua một port Application (`IMeetingAudienceQuery`); publisher chỉ còn gửi SignalR |
 
+### 3.1 Lớp đang đọc `TrustCabinetDbContext` ngoài tầng lưu trữ
+
+Đo ngày 14/11/2026. Không tính repository, `TrustCabinetDbContext`, `TrustCabinetDbContextFactory`,
+`DependencyInjection` (migrate và seed lúc khởi động) và `Seed/`. Cột `db.` là số dòng gọi `db.` trong file, chỉ để
+ước độ nặng. Mỗi lớp ở Infrastructure, khi tới module của nó, hoặc chuyển phần nghiệp vụ sang Application, hoặc ở
+lại Infrastructure dưới dạng cài đặt một port (repository, query port, adapter) theo bảng §3. Các lớp ở Web là danh
+sách ngoại lệ ban đầu của `ArchitectureTests` cho quy tắc "không đọc `DbContext` ngoài Infrastructure".
+
+| Module | Lớp | `db.` | Giai đoạn |
+|---|---|---|---|
+| Audit | `AuditService`, `AuditLogQueryService` | 2, 4 | 2.1 |
+| Access | `AdministratorInvariantGuard` | 3 | 2.2 |
+| CalendarSharing | `CalendarSharingService`, `SharedCalendarService`, `MeetingSlotService`, `CalendarBusyReader`, `CalendarShareCloser`, `CalendarShareStopper`, `CalendarSharePeople` (static) | 26, 3, 4, 1, 1, 1, 4 | **2.4 (mới)** |
+| Agenda | `AgendaMeetingEnd` (nằm trong `AgendaRepository.cs`), `AgendaPresenterNotifier` (lấy `DbContext` bằng `GetRequiredService`) | 1, 10 | 2.5 |
+| Participants | `ParticipantService` | 27 | 2.5 |
+| Attendance | `AttendanceService` | 8 | 2.5 |
+| GuestAccess | `GuestAccessService`, `GuestSessionAccess` | 17, 1 | 2.5 |
+| Reports | `ReportService` | 4 | **2.6 (mới)** |
+| Documents | `MeetingDocumentService`, `DocumentCommentService`, `PersonalLibraryService`, `StoredFileWriter`, `OrphanFilePurger` | 23, 8, 30, 7, 4 | 2.7 |
+| Notes | `MeetingNoteService` | 9 | 2.7 |
+| Votes | `VoteService`, `VoteMeetingEnd` | 27, 4 | 2.8 |
+| Speaking | `SpeakingService`, `SpeakingMeetingEnd` | 21 (cả file) | **2.9 (mới)** |
+| Recordings | `CombinedRecordingService`, `SpeechClipService` | 11, 18 | 2.9 |
+| VoiceId | `VoiceCollectionService` | 9 | 2.9 |
+| Ai | `AiSettingsService`, `LanguageModelProvider` | 5, 1 | 2.10 |
+| Summaries | `SummaryService`, `MinutesService`, `MeetingTranscriptReader` | 25, 23, 5 | 2.10 |
+| Email | `EmailQueueProcessor`, `MeetingInvitationDispatchProcessor`, `ResendWebhookReceiver`, `MeetingInvitationEvents` (static) | 7, 15, 1, 2 | 2.11 |
+| Web | `AgendaChangePublisher`, `MeetingDocumentChangePublisher`, `NotesChangePublisher`, `SpeechChangePublisher`, `SpeakingChangePublisher`, `AttendanceChangePublisher`, `VoteChangePublisher`; endpoint `/api/health` | 0–1 mỗi lớp | 3 |
+
+Mười service vừa dùng repository vừa gọi `db.`: `VoteService`, `SummaryService`, `MinutesService`,
+`MeetingDocumentService`, `SpeakingService`, `SpeechClipService`, `MeetingNoteService`, `VoiceCollectionService`,
+`AttendanceService`, `DocumentCommentService`. Phần gọi `db.` ở đó chủ yếu là transaction và isolation level,
+`ChangeTracker.Clear()` khi retry, khoá dòng bằng `FOR SHARE`/`FOR UPDATE`, và truy vấn đọc dùng một lần trên nhiều
+bảng. Ba việc đầu chuyển sang `IUnitOfWork` và method repository có tên nghiệp vụ (mẫu sẵn có:
+`VoteRepository.LockMeetingAsync`), việc cuối chuyển sang query port.
+
+`MinutesService` ghi thẳng `db.Notifications` và `db.AuditLog`, `CalendarSharingService` ghi thẳng
+`db.Notifications`, dù đã có `NotificationRepository` và `AuditService`. Khi chuyển module, kiểm tra việc đó có cố ý để ghi trong cùng một
+`SaveChanges` hay không; nếu có thì `IUnitOfWork` phải giữ được điều đó.
+
 ## 4. Kế hoạch theo giai đoạn
 
 Mỗi giai đoạn là một hoặc vài PR nhỏ. Sau mỗi PR, `main` phải build được, test xanh, chạy được.
@@ -175,7 +217,7 @@ Không làm big-bang: các feature SCRUM-33/37 vẫn đang vào song song.
 
 **Giai đoạn 0: khung và rào chắn** (1 PR)
 
-1. Viết ADR-0059 ghi nhận quyết định Clean Architecture.
+1. Viết ADR-0059 ghi nhận quyết định Clean Architecture (đã có, 09/11/2026, trạng thái *Đề xuất*).
 2. Tạo `TrustCabinet.Application`, thêm vào `TrustCabinet.sln`. `Infrastructure` và `Web` reference nó.
 3. Thêm `IUnitOfWork`, `TransactionMode`, các exception lưu trữ và enum `UniqueConflict`. Infrastructure cài
    `EfUnitOfWork` và `PersistenceExceptionTranslator`.
@@ -183,7 +225,9 @@ Không làm big-bang: các feature SCRUM-33/37 vẫn đang vào song song.
    (`Assembly.GetReferencedAssemblies()` và quét kiểu tham số constructor), không thêm package. Test kiểm tra:
    - Domain không reference assembly nào ngoài BCL;
    - Application không reference Infrastructure, EF Core, Npgsql, ASP.NET Core hay các SDK ngoài;
-   - không lớp nào ngoài Infrastructure nhận `TrustCabinetDbContext` trong constructor;
+   - không lớp nào ngoài Infrastructure nhận `TrustCabinetDbContext` trong constructor **hoặc tham số method**,
+     kể cả method do compiler sinh cho lambda endpoint (để bắt `/api/health`) và helper static như
+     `AgendaChangePublisher.ReaderGroupsAsync`;
    - không lớp nào trong Infrastructure cài đặt `I*Service`.
 
    Lúc đầu test có **danh sách ngoại lệ** gồm các lớp hiện tại. Danh sách chỉ được rút ngắn, không được thêm;
@@ -201,12 +245,22 @@ Không làm big-bang: các feature SCRUM-33/37 vẫn đang vào song song.
 1. Notifications, Audit
 2. Authentication, Access (Role, RolePermission, `AdministratorInvariantGuard`), Users
 3. Meetings (`MeetingService`, `MeetingLifecycleService`, `MeetingOverdueService`, kèm `IMeetingListQuery`)
-4. Agenda, Participants, Attendance, GuestAccess
-5. Documents (MeetingDocument, PersonalLibrary, DocumentComment, `StoredFileWriter`, `OrphanFilePurger`), Notes
-6. Votes
-7. Calls, Recordings, RoomTake, SpeechClip, Transcription, VoiceId
-8. Ai, Summaries, Minutes
-9. Email (tách nghiệp vụ dispatch khỏi sender)
+4. **CalendarSharing** (thêm 14/11/2026): `CalendarSharingService`, `SharedCalendarService`, `MeetingSlotService`,
+   `CalendarBusyReader`, `CalendarShareCloser`, `CalendarShareStopper`, `CalendarSharePeople`. Đặt sau Meetings vì
+   tìm giờ họp đọc lịch bận từ cuộc họp và tạo nháp cuộc họp từ khung giờ; dùng Notifications/Audit đã chuyển ở bước 1.
+   `CalendarSharePeople.LockAndLoadAsync` và `LockAsync` khoá dòng, chuyển thành method repository giữ nguyên hành vi khoá.
+5. Agenda, Participants, Attendance, GuestAccess
+6. **Reports** (thêm 14/11/2026): `ReportService`, chỉ đọc `Meetings` và `MeetingGuestInvitations`, nên thành
+   một query port. Đặt sau GuestAccess.
+7. Documents (MeetingDocument, PersonalLibrary, DocumentComment, `StoredFileWriter`, `OrphanFilePurger`), Notes
+8. Votes
+9. Calls, **Speaking** (thêm 14/11/2026: `SpeakingService`, `SpeakingMeetingEnd`, dùng transaction và đọc
+   `CallParticipants`, `AgendaItems`), Recordings, RoomTake, SpeechClip, Transcription, VoiceId
+10. Ai, Summaries, Minutes
+11. Email (tách nghiệp vụ dispatch khỏi sender)
+
+Ba module CalendarSharing, Reports, Speaking (khoảng 1.780 dòng) vào code từ 08/11 đến 10/11/2026, cùng ngày hoặc
+sau lần viết note đầu, nên chưa có trong thứ tự module ở mục 4 của ADR-0059. Thiếu chúng thì giai đoạn 4 không đạt được.
 
 Checklist cho mỗi module:
 
@@ -220,8 +274,12 @@ Checklist cho mỗi module:
 
 **Giai đoạn 3: dọn tầng Web** (1–2 PR)
 
-- `MeetingHub` và các `*ChangePublisher` không dùng `TrustCabinetDbContext` nữa.
-- Endpoint không inject repository, chỉ gọi service Application.
+- 7 publisher ở §3.1 (gồm `SpeakingChangePublisher`) không dùng `TrustCabinetDbContext` nữa; `MeetingHub` thôi
+  inject `IMeetingRepository`.
+- `NotificationHub`, `NotificationWorker`, `AuthEndpoints`, `CapabilityGate` thôi inject `IUserAccountRepository`;
+  endpoint chỉ gọi service Application.
+- `/api/health` kiểm tra DB qua một port (ví dụ `IDatabaseProbe`) do Infrastructure cài đặt, vẫn trả 503 khi DB
+  không kết nối được, vì deploy dựa vào đó để rollback (ADR-0047).
 - `Program.cs` chỉ còn `AddApplication()` và `AddInfrastructure(configuration)`.
 
 **Giai đoạn 4: đóng lại** (1 PR)
@@ -241,7 +299,7 @@ Checklist cho mỗi module:
 | Đổi hành vi transaction (serializable, retry, `FOR UPDATE`) | `EfUnitOfWork` giữ đúng `TransactionMode` từng service đang dùng; method repository có khoá vẫn khoá như cũ, chỉ đổi tên (ví dụ `LockForChangeAsync`) và ghi rõ hành vi khoá trong XML doc |
 | Mất phân biệt lỗi (trùng, hết kết nối, xung đột) dẫn tới sai `MSGnn` | Translator ánh xạ đủ các trường hợp đang bắt hôm nay; test integration hiện có (Postgres thật) là lưới an toàn, không sửa assertion |
 | Conflict với các PR feature đang mở | Làm theo module; trước khi động vào module nào thì báo nhóm, và merge PR refactor module đó trong ngày |
-| 83 file test đang `using TrustCabinet.Infrastructure…` | Giai đoạn 1 đổi namespace hàng loạt; test integration vẫn khởi động app qua `WebApplicationFactory` nên ít phải sửa |
+| 88 file test đang `using TrustCabinet.Infrastructure…` và 152 file `using TrustCabinet.Domain…` (đo 14/11/2026) | Giai đoạn 1 đổi namespace hàng loạt; test integration vẫn khởi động app qua `WebApplicationFactory` nên ít phải sửa |
 | N+1 hoặc chậm hơn khi bỏ truy vấn EF viết thẳng trong service | Truy vấn nặng chuyển nguyên khối vào query port của Infrastructure, không tách thành nhiều lần gọi repository |
 | CI `-warnaserror` | Chạy `dotnet build TrustCabinet.sln -warnaserror` trước khi push mỗi PR |
 
@@ -257,3 +315,5 @@ Checklist cho mỗi module:
 1. Có đồng ý làm theo lộ trình trên không, và ai phụ trách từng module ở giai đoạn 2.
 2. Giữ `I*Service` cho mọi service (để fake trong test endpoint) hay bỏ interface với service chỉ có một cài đặt.
 3. Thời điểm bắt đầu: trước hay sau khi SCRUM-33/37 (gửi duyệt, ban hành, ký biên bản) vào `main`.
+4. Thêm CalendarSharing, Reports, Speaking vào thứ tự module ở ADR-0059: sửa ADR khi nó còn *Đề xuất*, hay ghi
+   vào ADR thay thế viết ở giai đoạn 4.

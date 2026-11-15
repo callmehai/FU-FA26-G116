@@ -345,9 +345,16 @@ Return, activation, `alt` và self-call kiểm quyền không sinh operation; ki
   Diagram vẽ kèm chú thích. **NEEDS REVIEW (BE):** bỏ hai giá trị bằng migration hay giữ cho dữ liệu cũ.
 - **`MeetingSummary`** có entity và bảng `meeting_summaries` nhưng không có service, endpoint hay màn hình (UC-47 → UC-51 là Placeholder,
   plan 19 D3): **không vẽ**.
-- **Guest không được ghi theo micro và không đọc được bản ghi** (D6, BR-370 — **NEEDS REVIEW PO**): mọi route `recordings`,
-  `speech-clips`, `transcript*` chặn bằng `RequireActiveUser` (tài khoản nội bộ đang hoạt động), `RecordingRules.canListen` đòi có tên
-  trong thành phần. Lời Guest chỉ vào bản ghi qua mic phòng (họp Hybrid); họp Online có Guest thì lời Guest không có trong bản ghi.
+- **Guest được ghi theo micro của chính mình từ SCRUM-129** ([ADR-0051](../05-decisions/0051-khach-ghi-theo-micro-cua-minh.md)):
+  `…/speech-clips` nhận token Khách (gửi, đọc, nghe lại, xoá câu của mình, chỉ khi phiên đã xác nhận thông báo ghi âm, `MSG380`);
+  `recordings` và `transcript*` vẫn chặn Khách bằng `RequireActiveUser`, nên Khách không đọc được bản ghi hay bản gỡ băng.
+  Ghi chú D6 cũ ("Guest không được ghi theo micro") đã hết đúng; diagram FE-09/FE-10 chưa vẽ lại nhánh Khách.
+- **Truy cập Khách không có repository** (FE-01, UC-04, vẽ lại 13/11/2026 theo E2E Khách D16): `GuestAccessService` dùng thẳng
+  `TrustCabinetDbContext`; diagram vẽ `<<repository>> GuestAccessRepository` thay cho một interface không tồn tại. Sáu thao tác
+  của controller/service khớp `IGuestAccessService` (`Open`, `SendCode`, `Verify`, `GetSession`, `SaveProfile`, `SignOut`), tra theo
+  `invitationId` + `linkToken`; ba entity `MeetingGuestInvitation`, `GuestVerificationChallenge`, `GuestSession`. Không vẽ các lớp
+  kỹ thuật `GuestCredentials`, `GuestSessionAccess`, `GuestInvitationLinkProvider`, `GuestTokenIdentityResolver`. FE-08 (phòng họp
+  trực tuyến, SCRUM-59) chưa có class diagram.
 - **Câu nói không có repository:** `SpeechClipService` dùng thẳng `TrustCabinetDbContext.SpeechClips`; diagram vẽ `<<repository>>`
   `TrustCabinetDbContext.SpeechClips` thay cho một interface không tồn tại.
 - **Không có hồ sơ giọng gộp:** mỗi `VoiceSample` một đặc trưng mã hoá; `SpeakerMatcher.suggest` lấy mẫu giống nhất của từng người.
@@ -452,7 +459,7 @@ message khi sửa thiết kế. Tất cả feature còn `NEEDS REVIEW` theo bả
 | UC-01 / FE-01 | [UC01_SignIn.txt](../06-sequencediagram/auth/UC01_SignIn.txt) | `AuthenticationService → signIn` | Trùng tên; DCD-02 |
 | UC-02 / FE-01 | [UC02_SignInWithGoogle.txt](../06-sequencediagram/auth/UC02_SignInWithGoogle.txt) | `AuthenticationService → signInWithGoogle` | Trùng tên; DCD-03 |
 | UC-03 / FE-01 | [UC03_SignOut.txt](../06-sequencediagram/auth/UC03_SignOut.txt) | `AuthenticatedPage → signOut / removeJwtToken` | ≈ UI event; DCD-04 |
-| UC-04 / FE-01 | [UC04_AccessMeetingViaGuestInvitation.txt](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt) | `GuestAccessService → checkInvitationAndAccess / verifyCode / completeGuestAccess` | ≈ luồng truy cập Guest |
+| UC-04 / FE-01 | [UC04_AccessMeetingViaGuestInvitation.txt](../06-sequencediagram/auth/UC04_AccessMeetingViaGuestInvitation.txt) | `GuestAccessService → open / sendCode / verify / saveProfile / signOut` | Trùng tên với sequence sau E2E 12/11/2026 |
 | UC-05 / FE-02 | [UC05_ViewUserAccount.txt](../06-sequencediagram/user-management/UC05_ViewUserAccount.txt) | `UserService → getUserAccounts / getUser` | ≈ đọc tài khoản; DCD-02 |
 | UC-06a / FE-02 | [UC06a_CreateUserAccount.txt](../06-sequencediagram/user-management/UC06a_CreateUserAccount.txt) | `UserService → createUser` | ≈ tạo; audit |
 | UC-06b / FE-02 | [UC06b_UpdateUserAccount.txt](../06-sequencediagram/user-management/UC06b_UpdateUserAccount.txt) | `UserService → updateUser` | ≈ sửa; DCD-05 |

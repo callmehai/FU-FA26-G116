@@ -42,7 +42,7 @@ Các trạng thái dưới đây nói về code/schema hiện tại. `NOT IMPLEM
 | Meeting | Hồ sơ, lịch và vòng đời cuộc họp (một cuộc họp = một buổi họp) | IMPLEMENTED | Đã có `PlannedStartTime`, `PlannedEndTime`, `ActualStartedAt`, `ActualEndedAt`, `OnlineLink`; đã bỏ `Sessions`, `MinutesIssued`, `Archived` (migration `MeetingOwnsScheduleDropSessions`, ADR-0013). |
 | MeetingStatusHistory | Bằng chứng chuyển trạng thái | NEED MIGRATION / RESTRUCTURE | Giữ append-only; đồng bộ vòng đời đích. |
 | MeetingParticipant | Phân công người tham dự nội bộ | NEED MIGRATION / RESTRUCTURE | Bỏ Guest; hỗ trợ phân công Current/Removed và lưu lịch sử. |
-| MeetingGuestInvitation | Lời mời khách ngoài theo cuộc họp | NOT IMPLEMENTED | Thêm entity riêng; khách không phải User/người tham dự nội bộ. |
+| MeetingGuestInvitation | Lời mời khách ngoài theo cuộc họp | IMPLEMENTED (SCRUM-20, tên tự khai SCRUM-116) | Entity riêng; khách không phải User/người tham dự nội bộ. Không lưu token (link token suy ra bằng HMAC từ id lời mời), không có hạn riêng; "đã xác minh" là một dòng `GuestSession`. |
 | AgendaItem | Mục nghị sự của cuộc họp | IMPLEMENTED (SCRUM-98) | MeetingId; Pending/InProgress/Done; presenter Internal/Guest; kết luận và author/time; bỏ duration, giữ tên lịch sử. |
 | Notification | Thông báo của User | IMPLEMENTED | Giữ User bắt buộc, Meeting tùy chọn. |
 | Document | Một dòng trong kho cá nhân, trỏ tới một StoredFile | IMPLEMENTED (SCRUM-107) | OwnerId, FolderId, StoredFileId, FileName (ADR-0018); không còn Category (PO bỏ "Phân loại" 22/10/2026). |
@@ -171,15 +171,19 @@ erDiagram
     MeetingGuestInvitation {
         uuid Id PK
         uuid MeetingId FK
-        string GuestName
-        string GuestEmail
-        string InvitationResponse
+        string InvitedName
+        string Email
+        uuid InvitedById FK
+        string SensitivityAtInvitation
+        string Response
         timestamptz RespondedAt
-        string InvitationStatus
-        string TokenHash
-        timestamptz ExpiresAt
-        timestamptz VerifiedAt
-        timestamptz RevokedAt
+        timestamptz RevokedAt "null khi còn hiệu lực"
+        uuid RevokedById FK "nullable"
+        string Attendance
+        uuid AttendanceRecordedById FK "nullable"
+        timestamptz AttendanceRecordedAt
+        string SelfDeclaredDisplayName "nullable; khai một lần (BR-180)"
+        string SelfDeclaredJobTitle "nullable"
         timestamptz CreatedAt
     }
 ```
@@ -188,7 +192,7 @@ erDiagram
 hai là thực tế có mặt hay không. Nhận lời rồi không đến là chuyện bình thường; điểm danh trong biên bản và báo cáo dùng `Attendance`.
 Không có quorum (ADR-0014), và phản hồi lời mời chỉ còn Accepted/Declined — không uỷ quyền phản hồi (BR-105).
 
-Guest không có User account, system Role hoặc internal MeetingRole; quyền Guest theo Member và có thể được cấp bổ sung trong Meeting và chỉ trong meeting được mời. Email phải được xác minh trước khi thiết lập guest session.
+Guest không có User account, system Role hoặc internal MeetingRole; quyền Guest theo Member, không có quyền cấp bổ sung (PO 20/10/2026), và chỉ trong meeting được mời. Email phải được xác minh trước khi thiết lập guest session: xác minh thành công tạo một dòng `GuestSession`, lời mời không lưu token hay thời điểm xác minh.
 
 ## 2. Nghị sự và tài liệu
 
@@ -814,9 +818,9 @@ Ràng buộc và lý do:
 2. `ActualStartedAt`/`ActualEndedAt` do hệ thống ghi khi Start Meeting (Published → InProgress) và End Meeting (InProgress → Ended). Sau `Published` chỉ Organizer được dời `PlannedStartTime`, `PlannedEndTime`, `Location`, `OnlineLink`; mỗi lần dời phải thông báo người được mời (BR-75, BR-76, BR-158).
 3. Mỗi AgendaItem thuộc đúng một Meeting; chỉ sắp xếp lại trong Meeting đó; mỗi Meeting có tối đa một AgendaItem InProgress. Trạng thái đích: Pending → InProgress → Done. Kết thúc Meeting tự hoàn tất mục đang chạy trong cùng transaction (BR-159).
 4. Mỗi participant nội bộ có đúng một MeetingRole: Chair, Secretary hoặc Member. MeetingRole độc lập với system Role.
-5. Guest bên ngoài không có User account hay system Role; quyền Guest theo Member và có thể được cấp bổ sung trong Meeting và chỉ áp dụng trong Meeting được mời. Phải xác minh email trước khi thiết lập guest session.
+5. Guest bên ngoài không có User account hay system Role; quyền Guest theo Member, không có quyền cấp bổ sung (PO 20/10/2026), và chỉ áp dụng trong Meeting được mời. Phải xác minh email trước khi thiết lập guest session.
 6. Mỗi cặp (MeetingId, UserId) có tối đa một phân công Current. Khuyến nghị dùng unique index có điều kiện trên `(meeting_id, user_id)` khi trạng thái phân công là Current. Giữ bằng chứng Removed/lịch sử khi cần truy vết.
-7. Mỗi cặp (MeetingId, GuestEmail) có tối đa một lời mời Guest còn hiệu lực. Không mời email Guest nếu email đó đã thuộc một participant nội bộ hiện hành trong cùng Meeting.
+7. Mỗi cặp (MeetingId, Email) có tối đa một lời mời Guest còn hiệu lực. Không mời email Guest nếu email đó đã thuộc một participant nội bộ hiện hành trong cùng Meeting.
 8. Để công bố hoặc bắt đầu Meeting, phải có đúng một Chair và ít nhất một Secretary đang được phân công hiện hành, đồng thời tài khoản của họ còn hoạt động (BR-124, BR-125, BR-127).
 9. Phản hồi lời mời chỉ là Accepted hoặc Declined; không có uỷ quyền phản hồi (BR-105). Điểm danh chỉ Present/Absent; chưa ghi nhận giữ null, không coi là Absent.
 10. MeetingDocument tham chiếu một StoredFile bất biến; mỗi StoredFile có tối đa một MeetingDocument đang hiệu lực (`RemovedAt` null) trong mỗi Meeting. Một tài liệu gắn được nhiều mục nghị sự của cùng Meeting qua MeetingDocumentAgendaItem (BR-277, BR-278). Không thêm, gỡ hay đổi liên kết được khi Meeting đã kết thúc (BR-185, ADR-0020).

@@ -21,7 +21,7 @@ import { RsvpButtons, RsvpChip } from '../participants/Rsvp'
 import { VotingPanel } from '../votes/VotingPanel'
 import { guestName, useGuest } from './guestContext'
 import type { GuestOutletContext } from './GuestPage'
-import { dropGuestSession, readGuestEntry } from './guestStore'
+import { readGuestEntry, signOutGuestSession } from './guestStore'
 import { useGuestCall } from './useGuestCall'
 
 const TABS = [
@@ -56,6 +56,13 @@ export function GuestMeetingPage() {
   const invitation = useMyInvitation(meeting.id)
   // SCRUM-59: the call room, as for a member; until it opens the page says why, and asks again on its own.
   const call = useGuestCall(meeting.id).call
+  // The room opens when the meeting starts: read the session now, so the status badge turns with the join button
+  // instead of at the next 20-second re-check.
+  const { recheck } = guest
+  const started = call?.status === 'Open' && meeting.status !== 'InProgress'
+  useEffect(() => {
+    if (started) recheck()
+  }, [started, recheck])
   const roomNote =
     call?.status === 'NotStarted'
       ? roomMessage.notStarted
@@ -181,7 +188,7 @@ function GuestBar() {
         return toast.show(errorMessage(err), 'error')
       }
     }
-    dropGuestSession(invitationId)
+    signOutGuestSession(invitationId)
     signedOut()
   }
 

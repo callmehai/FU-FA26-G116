@@ -72,7 +72,12 @@ Body: `{ mode, apiBaseUrl, apiModel, apiKey }`.
 - `apiModel`: không khoảng trắng, tối đa 100 ký tự; bắt buộc khi `Api`.
 - `apiKey`: `null` giữ key đã lưu, `""` xoá key, chuỗi khác (8–500 ký tự, không khoảng trắng) thay key. Chọn `Api` thì
   phải có key (mới hoặc đã lưu) và không được xoá.
-- Gọi thử dùng key trong body, không có thì dùng key đã lưu; gửi một câu ngắn, chờ tối đa 1 phút.
+- Gọi thử với `mode` là `Api` dùng key trong body, không có thì dùng key đã lưu; gửi một câu ngắn, chờ tối đa 1 phút.
+- Gọi thử với `mode` là `Local` gọi máy local mà server đang cấu hình (`Ai:BaseUrl`, qua Tailscale), đúng đường dự thảo
+  của cuộc họp Nội bộ, Mật, Tối mật đi; bỏ qua các trường API trong body; chờ tối đa 90 giây. Server chưa cấu hình máy
+  local, máy tắt hay ra khỏi Tailscale đều là `502 MSG413` kèm lý do. Màn Cấu hình AI có một nút **Thử kết nối** ở
+  chân form, thử đúng thứ của tab đang chọn: tab Máy local thử máy local, tab API thử API. Đang dùng API mà muốn kiểm máy
+  local trước buổi họp thì chọn tab Máy local rồi bấm thử; chọn tab không lưu gì.
 
 ## Lỗi
 

@@ -154,8 +154,10 @@ phương án đã loại.
   người ([ADR-0004](docs/05-decisions/0004-mot-to-chuc-khong-co-don-vi.md)).
 - **Trợ lý AI hỏi–đáp** của AI-eCabinet (tìm người, tìm giờ và tạo cuộc họp bằng chat). Tìm giờ họp và chia sẻ
   lịch thì có, không qua AI ([ADR-0058](docs/05-decisions/0058-chia-se-lich-va-tim-gio-hop.md)).
-- Ký số bằng USB token / HSM thật, triển khai mạng cô lập, tích hợp hệ thống văn bản điều hành bên
-  ngoài.
+- Ký số biên bản, kể cả bản mô phỏng (PO bỏ ngày 14/11/2026): Chủ toạ duyệt là biên bản được ban hành. Ký bằng USB
+  token / HSM thật, triển khai mạng cô lập, tích hợp hệ thống văn bản điều hành bên ngoài cũng không làm.
+- Thư ký gom góp ý trên tài liệu thành danh sách để đưa vào nghị sự (PO bỏ ngày 14/11/2026). Bình luận trên tài liệu
+  cuộc họp thì có.
 
 ## Tài liệu
 
