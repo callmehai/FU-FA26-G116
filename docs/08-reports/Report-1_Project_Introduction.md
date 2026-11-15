@@ -16,15 +16,15 @@ Table of Contents
 | --- | --- | --- | --- |
 | 18/09/2026 | A | KhanhPG | Add Overview, Product Background, Existing Systems |
 | 19/09/2026 | A, M | LocHD | Add Project Scope & Limitations; align Project Purpose, Existing Solutions summary and Proposed Solution with the project scope |
-| 27/09/2026 | M | KhanhPG | Update Fellow section and Project Purpose section, Product background section |
+| 27/09/2026 | M | KhanhPG | Update the Fellow, Project Purpose and Product Background sections. |
 | 27/09/2026 | M, D | LocHD | Remove FE-12 Task & Action Item Lifecycle Management and renumber FE-13 to FE-15 as FE-12 to FE-14 |
 | 27/09/2026 | M | LocHD | Update stakeholder roles: Tran Viet Hai becomes Team Leader and Frontend Lead; Pham Gia Khanh becomes Business Analyst |
-| 05/10/2026 | M, D | KhanhPG | Remove Department & Team Management; split Meeting & Schedule Management into FE-04 Meeting Management, FE-05 Meeting Session Management, FE-06 Agenda Management, and FE-07 Meeting Participant Management; renumber the remaining feature baseline to FE-08 through FE-16. |
-| 05/10/2026 | M | KhanhPG | Synchronize the PO-confirmed Master UC baseline: add a personal document library and two-source meeting-document flow, make the Secretary responsible for meeting-audio upload, and align attendance, summary generation/regeneration, document comments, audit-log viewing and minutes-revision scope. |
-| 08/10/2026 | M, D | KhanhPG | Remove FE-04; consolidate Meeting and former Meeting Session scope in FE-05. Attach Agenda, Vote and Resolution directly to Meeting and align Meeting Minutes. |
-| 09/10/2026 | M, D | KhanhPG | renumber active features FE-01 to FE-15; limit voting to InProgress Meetings and Chair conclusions; remove time-boxed voting, quorum and separate Resolution scope; align supporting interfaces and audio privacy safeguards. Preserve the committed schedule and effort. |
-| 13/10/2026 | M | HaiTV | FE-07: documents are not versioned; library and meetings reference one immutable file; Chair and Secretary add or remove meeting documents; library folders; browser-side preview (ADR-0018). FE-11: the Chair selects eligible voter roles; verified Guests vote; ending the Meeting does not require closing Votes (ADR-0016, ADR-0017). |
-| 03/11/2026 | M, D | KhanhPG | Remove the personal email addresses and mobile numbers of the project stakeholders from the public report; the stakeholder table keeps full name and role only. |
+| 05/10/2026 | M, D | KhanhPG | Remove Department & Team Management; split Meeting & Schedule Management into FE-04 Meeting, FE-05 Meeting Session, FE-06 Agenda and FE-07 Participant Management; renumber the rest to FE-08–FE-16. |
+| 05/10/2026 | M | KhanhPG | Sync the PO-confirmed Master UC baseline: personal document library, two-source meeting documents, Secretary uploads meeting audio; attendance, summaries, comments, audit log and minutes-revision scope. |
+| 08/10/2026 | M, D | KhanhPG | Remove FE-04; consolidate Meeting and former Meeting Session scope in FE-05; Agenda, Vote and Resolution attach to Meeting. |
+| 09/10/2026 | M, D | KhanhPG | Renumber active features FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or separate Resolution scope); audio safeguards kept; schedule and effort preserved. |
+| 13/10/2026 | M | HaiTV | FE-07: no document versions, one immutable file, Chair/Secretary manage meeting documents, library folders, browser previews (ADR-0018). FE-11: Chair-selected voters, Guests vote, ending a Meeting needs no closed Votes (ADR-0016/17). |
+| 03/11/2026 | M, D | KhanhPG | Remove stakeholder emails and phone numbers from the public report; keep names and roles only. |
 
 *A - Added M - Modified D - Deleted
 

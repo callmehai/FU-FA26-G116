@@ -40,51 +40,51 @@ có sẵn. Khác tác nhân chính → **UC riêng**. Luồng y hệt, chỉ kh�
 - Phía Thư ký: **UC mới UC-86**. Mục đích giống UC-81c (có giọng mẫu) nhưng tác nhân là Thư ký, có điều kiện riêng
   (quyền, đúng Thư ký của cuộc họp, hình thức họp, trạng thái), màn khác, mã khác. Không gộp được làm AF của UC-81c.
 
-- [ ] **UC-81a View My Voice ID** — thêm **AF-2** (luồng khác thật: tab riêng, cột khác, không có nút thu, mở từ thông báo):
+- [x] **UC-81a View My Voice ID** — thêm **AF-2** (luồng khác thật: tab riêng, cột khác, không có nút thu, mở từ thông báo):
   > AF-2 – View samples recorded by a Secretary
   > 1. At Step 3, the actor opens the Recorded by Secretary tab, or opens My voice from the notification that a Secretary recorded a sample.
   > 2. The system shows the samples that Secretaries recorded for the actor on the meeting room microphone, each with its Meeting, the Secretary who recorded it, its length and date, and how many of the 5 allowed samples are used. The actor cannot record a sample in this tab. (BR-448, BR-452)
   > 3. The flow resumes at Step 3 of the Main Flow.
   - Bước 3 Main Flow: "the list of voice samples" → "the voice samples the actor recorded".
-- [ ] **UC-81b Give Voice ID Consent** — Description, bước 1: thông báo **1.3** nói Thư ký cuộc họp mình dự có thể thu giọng mẫu bằng micro phòng. AF-1 "Accept new terms" có sẵn, giữ; chỉ thêm ý "after accepting, a Secretary can record samples for the actor" (BR-449).
-- [ ] **UC-81c Record Voice Sample** — chỉ sửa câu: "while fewer than 5 samples exist" → "fewer than 5 samples **the actor recorded**; samples recorded by a Secretary are counted separately" (BR-448).
-- [ ] **UC-81d Play Voice Sample** — chỉ sửa câu, **không thêm AF** (luồng y hệt): Description "own voice samples, recorded by himself or herself or by a Secretary"; bước 1 "next to a voice sample in either tab".
-- [ ] **UC-81e Delete Voice Sample** — chỉ sửa câu như 81d; thêm POST: mẫu do Thư ký thu bị xoá thì Thư ký không còn thấy, và chỗ trống được tính lại.
-- [ ] **UC-81f Withdraw Voice ID Consent** — xoá **cả hai bộ** mẫu (BR-454 hoặc sửa BR rút đồng ý cũ).
-- [ ] **UC mới cho Thư ký — UC-86 Collect Voice Samples for Attendees** (UC-86 chưa dùng), cùng FE với UC-81:
-  - [ ] UC-86a View Voice Collection: danh sách người trong cuộc họp, đã đồng ý chưa, số mẫu thu hộ/5, mẫu thu ở cuộc họp này.
-  - [ ] UC-86b Record Voice Sample for Attendee: `MSG473`; EX `MSG475` (chưa đồng ý 1.3), `MSG476` (đủ 5), `MSG477` (sai trạng thái), lỗi chất lượng/định dạng dùng lại `MSG309`, `MSG292`, `MSG312`.
-  - [ ] UC-86c Play Collected Voice Sample: có nhật ký mỗi lần nghe.
-  - [ ] UC-86d Delete Collected Voice Sample: `MSG474`.
+- [x] **UC-81b Give Voice ID Consent** — Description, bước 1: thông báo **1.3** nói Thư ký cuộc họp mình dự có thể thu giọng mẫu bằng micro phòng. AF-1 "Accept new terms" có sẵn, giữ; chỉ thêm ý "after accepting, a Secretary can record samples for the actor" (BR-449).
+- [x] **UC-81c Record Voice Sample** — chỉ sửa câu: "while fewer than 5 samples exist" → "fewer than 5 samples **the actor recorded**; samples recorded by a Secretary are counted separately" (BR-448).
+- [x] **UC-81d Play Voice Sample** — chỉ sửa câu, **không thêm AF** (luồng y hệt): Description "own voice samples, recorded by himself or herself or by a Secretary"; bước 1 "next to a voice sample in either tab".
+- [x] **UC-81e Delete Voice Sample** — chỉ sửa câu như 81d; thêm POST: mẫu do Thư ký thu bị xoá thì Thư ký không còn thấy, và chỗ trống được tính lại.
+- [x] **UC-81f Withdraw Voice ID Consent** — xoá **cả hai bộ** mẫu (BR-454 hoặc sửa BR rút đồng ý cũ).
+- [x] **UC mới cho Thư ký — UC-86 Collect Voice Samples for Attendees** (UC-86 chưa dùng), cùng FE với UC-81:
+  - [x] UC-86a View Voice Collection: danh sách người trong cuộc họp, đã đồng ý chưa, số mẫu thu hộ/5, mẫu thu ở cuộc họp này.
+  - [x] UC-86b Record Voice Sample for Attendee: `MSG473`; EX `MSG475` (chưa đồng ý 1.3), `MSG476` (đủ 5), `MSG477` (sai trạng thái), lỗi chất lượng/định dạng dùng lại `MSG309`, `MSG292`, `MSG312`.
+  - [x] UC-86c Play Collected Voice Sample: có nhật ký mỗi lần nghe.
+  - [x] UC-86d Delete Collected Voice Sample: `MSG474`.
   - PRE chung: có quyền Thu giọng mẫu hộ, là Thư ký hiện tại, họp trực tiếp/kết hợp, không Mật, chưa huỷ.
   - UC-86b dẫn lại kiểm tra chất lượng của UC-81c (BR-363), không chép lại luồng.
-- [ ] Cập nhật `docs/01-requirements/00-master-use-case-inventory.md` (UC-86a–d; mô tả UC-81 có mẫu thu hộ).
+- [x] Cập nhật `docs/01-requirements/00-master-use-case-inventory.md` (UC-86a–d; mô tả UC-81 có mẫu thu hộ).
 
 ### 2.2. BR (số dự kiến, lấy tiếp từ BR-447; note 45, 46 lấy số sau)
 
-- [ ] BR-448 — R1 hai bộ mẫu, một đồng ý, mỗi bộ tối đa 5.
-- [ ] BR-449 — R2 thông báo 1.3 và đồng ý lại một lần; Thư ký không đồng ý thay được.
-- [ ] BR-450 — R3 + R4 quyền Thu giọng mẫu hộ, chỉ Thư ký hiện tại của chính cuộc họp.
-- [ ] BR-451 — R5 hình thức họp, mức mật, trạng thái.
-- [ ] BR-452 — R6 + R8 mẫu thuộc về người được thu; ai thấy gì.
-- [ ] BR-453 — R7 thông báo mỗi lần thu, nhật ký mỗi lần nghe/thu/xoá.
-- [ ] BR-454 — R9 rút đồng ý hoặc vô hiệu hoá tài khoản xoá cả hai bộ (hoặc sửa thẳng BR cũ, khi đó không cần số mới).
-- [ ] Sửa BR Voice ID cũ có câu "rút đồng ý xoá mọi mẫu" thành "cả hai bộ" (R9); sửa BR giới hạn 5 mẫu thành "mỗi bộ".
+- [x] BR-448 — R1 hai bộ mẫu, một đồng ý, mỗi bộ tối đa 5.
+- [x] BR-449 — R2 thông báo 1.3 và đồng ý lại một lần; Thư ký không đồng ý thay được.
+- [x] BR-450 — R3 + R4 quyền Thu giọng mẫu hộ, chỉ Thư ký hiện tại của chính cuộc họp.
+- [x] BR-451 — R5 hình thức họp, mức mật, trạng thái.
+- [x] BR-452 — R6 + R8 mẫu thuộc về người được thu; ai thấy gì.
+- [x] BR-453 — R7 thông báo mỗi lần thu, nhật ký mỗi lần nghe/thu/xoá.
+- [x] BR-454 — R9 rút đồng ý hoặc vô hiệu hoá tài khoản xoá cả hai bộ (hoặc sửa thẳng BR cũ, khi đó không cần số mới).
+- [x] Sửa BR Voice ID cũ có câu "rút đồng ý xoá mọi mẫu" thành "cả hai bộ" (R9); sửa BR giới hạn 5 mẫu thành "mỗi bộ".
 
 ### 2.3. MSG (Report 3 §V)
 
-- [ ] Thêm `MSG473`–`MSG477`, câu theo [danh mục](../../03-api/00-danh-muc-ma-thong-bao.md) dòng 589–593.
-- [ ] `MSG471`, `MSG472`: nếu Report 3 đã có thì đánh dấu **ngừng dùng**, không tái cấp; chưa có thì không thêm.
+- [x] Thêm `MSG473`–`MSG477`, câu theo [danh mục](../../03-api/00-danh-muc-ma-thong-bao.md) dòng 589–593.
+- [x] `MSG471`, `MSG472`: nếu Report 3 đã có thì đánh dấu **ngừng dùng**, không tái cấp; chưa có thì không thêm.
 
 ### 2.4. Ma trận phân quyền (Report 3 §I.4.4)
 
-- [ ] Thêm cột/dòng **"Thu giọng mẫu hộ"**: Thư ký có sẵn, vai trò khác không.
+- [x] Thêm cột/dòng **"Thu giọng mẫu hộ"**: Thư ký có sẵn, vai trò khác không.
 
 ### 2.5. Sơ đồ
 
-- [ ] Sequence: sửa `UC81a` (nhánh `alt` AF-2), `UC81b` (thông báo 1.3), `UC81f` (xoá hai bộ) trong `docs/06-sequencediagram/transcription-voice-id/`; `UC81d`, `UC81e` không đổi luồng. Thêm `UC86a`–`UC86d`. Xuất PNG, thêm tab drawio.
-- [ ] Sơ đồ use case FE Voice ID: thêm UC-86 cho Thư ký.
-- [ ] ERD [02-erd.md](../../02-design/02-erd.md) §7: `voice_samples` thêm `collected_by_id`, `meeting_id` (cả hai null = mẫu tự thu, cả hai có = mẫu thu hộ); `voice_consents` vẫn một dòng hiệu lực mỗi người. Vẽ lại ERD mục tiêu.
+- [x] Sequence: sửa `UC81a` (nhánh `alt` AF-2), `UC81b` (thông báo 1.3), `UC81f` (xoá hai bộ) trong `docs/06-sequencediagram/transcription-voice-id/`; `UC81d`, `UC81e` không đổi luồng. Thêm `UC86a`–`UC86d`. Xuất PNG, thêm tab drawio.
+- [x] Sơ đồ use case FE Voice ID: thêm UC-86 cho Thư ký.
+- [x] ERD [02-erd.md](../../02-design/02-erd.md) §7: `voice_samples` thêm `collected_by_id`, `meeting_id` (cả hai null = mẫu tự thu, cả hai có = mẫu thu hộ); `voice_consents` vẫn một dòng hiệu lực mỗi người. Vẽ lại ERD mục tiêu.
 
 ### 2.6. Màn hình — PENDING
 
@@ -92,7 +92,7 @@ Giọng nói của tôi (tab Thư ký thu, `/mgmt/my-voice?tab=proxy`), hộp th
 
 ### 2.7. Jira
 
-- [ ] Comment SCRUM-152 **sau khi PR #350 vào `main`** (kiểm `git log origin/main` có merge commit rồi mới comment).
+- [x] Comment SCRUM-152 **sau khi PR #350 vào `main`** (kiểm `git log origin/main` có merge commit rồi mới comment).
       Ticket đang `Done` — **giữ nguyên, chỉ comment**, không chuyển trạng thái. Nội dung (tiếng Việt):
 
       > BA Final Review xong (Report 3, PR #350 <merge-commit>): UC-81a thêm AF-2 (tab Thư ký thu hộ) + sửa
@@ -218,4 +218,10 @@ Chung cho UC-86a–86d:
 - **EX-1** như UC-86c. **EX-2** cannot delete → MSG315 *(kiểm lại code trả mã nào trước khi chép)*.
 - Ghi chú: xoá được cả khi cuộc họp đã Ended (không cần PRE trạng thái).
 
-- [ ] Duyệt UC-81a–81f và UC-86a–86d
+- [x] Duyệt UC-81a–81f và UC-86a–86d
+
+## 5. Đóng sổ — vào `main` 15/11/2026
+
+- PR #350 (`5c29ece0`) đã merge: UC-81a AF-2 + sửa câu 81b–81f, UC-86a–86d, BR-448–454, MSG473–477 (MSG471/472 chưa từng có trong Report 3 nên không thêm), ma trận phân quyền thêm "Thu giọng mẫu hộ", sequence UC81a/b/f + UC86a–d (PNG + tab drawio), ERD `voice_samples` (`CollectedById`, `MeetingId`), inventory, Change Log.
+- Jira SCRUM-152 đã comment (PO 15/11/2026), ticket giữ `Done`.
+- Còn lại: đặc tả màn hình §2.6 (tab Thư ký thu, hộp thoại thu hộ) — PENDING, PO cho làm sau (xem note 49).

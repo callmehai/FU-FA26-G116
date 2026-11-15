@@ -16,12 +16,12 @@ Table of Contents
 | --- | --- | --- | --- |
 | 19/09/2026 | A | LocHD | Add Project Overview and Management Approach - initial version 1.0 |
 | 27/09/2026 | M, D | LocHD | Remove FE-12 Task & Action Item Lifecycle Management and renumber FE-13 to FE-15 as FE-12 to FE-14 |
-| 05/10/2026 | M, D | KhanhPG | Synchronize the project plan with the revised FE-01 to FE-16 baseline: remove Department & Team Management, split the former Meeting & Schedule Management scope into FE-04 through FE-07, and renumber all later features consistently with Reports 1 and 3. |
-| 05/10/2026 | M | KhanhPG | Synchronize the project plan with the PO-confirmed Master UC baseline: broaden FE-08 to include a personal document library and document reuse in meetings; make Secretary the meeting-audio uploader; align attendance, summary generation, audit viewing, document comments and minutes revision with Reports 1 and 3. |
-| 08/10/2026 | M, D | KhanhPG | Align planning baseline: FE-04 removed, FE-05 becomes Meeting Management; schedule and voting are meeting-level, with one minutes workflow per Meeting. Preserve committed effort and dates. |
-| 09/10/2026 | M, D | KhanhPG | Renumber active features FE-01 to FE-15; limit voting to InProgress Meetings and Chair conclusions; remove time-boxed voting, quorum and separate Resolution scope; align supporting interfaces and audio privacy safeguards. Preserve the committed schedule and effort. |
-| 13/10/2026 | M | HaiTV | Align iteration plan with ADR-0018 (no document versions; library and meetings reference one immutable file; library folders; browser-side preview) and with ADR-0016/ADR-0017 for voting (the Chair selects eligible voter roles; verified Guests vote; ending the Meeting does not require closing Votes). |
-| 30/10/2026 | M | HuyNQ | Project Management Plan v1.2: Fix review findings - Fifteen features in risk R04, EX defined as Exception as in Report 3, add Cancelled to the Meeting lifecycle, close the [TBD] items (AI model environment per ADR-0026, deployment server per ADR-0015), rewrite the R03 mitigation and lower its probability to Low now that the model host is decided, remove "versioning" from Iteration 2 (ADR-0018), align the Report 3 baseline reference with its 29/10/2026 Change Log, and fix the Table of Contents (add Definition and Acronyms, point I. Project Overview to its own heading). |
+| 05/10/2026 | M, D | KhanhPG | Sync the plan with the revised FE-01–FE-16 baseline (FE-04–FE-07 split); consistent with Reports 1 and 3. |
+| 05/10/2026 | M | KhanhPG | Sync with the PO-confirmed Master UC baseline: personal library and document reuse, Secretary audio upload; attendance, summaries, audit, comments and minutes revision. |
+| 08/10/2026 | M, D | KhanhPG | Align baseline: FE-04 removed, FE-05 is Meeting Management; meeting-level schedule and voting, one minutes workflow per Meeting. |
+| 09/10/2026 | M, D | KhanhPG | Renumber FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or Resolution scope); safeguards, effort and dates preserved. |
+| 13/10/2026 | M | HaiTV | Align the plan with ADR-0018 (immutable files, folders, browser previews) and ADR-0016/17 (Chair-selected voters, Guests vote, no close-Votes requirement). |
+| 30/10/2026 | M | HuyNQ | Fix review findings (v1.2): fifteen features in risk R04, EX means Exception, Cancelled lifecycle added, TBDs closed (ADR-0026/0015), R03 lowered, no 'versioning' in Iteration 2, ToC fixed. |
 
 *A - Added M - Modified D - Deleted
 
