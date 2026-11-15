@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { deleteVoiceSample } from '../../api/voice'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage } from '../../lib/errors'
@@ -26,6 +28,8 @@ export function ProxyTab({
   const toast = useToast()
   const proxy = profile.proxy
   const player = useSamplePlayer()
+  // UC-81e step 2: a sample is erased for good, so the person confirms first.
+  const [erasing, setErasing] = useState<string | null>(null)
 
   const remove = async (sampleId: string) => {
     player.stop()
@@ -34,8 +38,9 @@ export function ProxyTab({
       toast.show(result.message, 'success')
       onChange(result.data)
     } catch (error) {
-      toast.show(errorMessage(error), 'error')
+      // The dialog shows why; the list is read again in case the sample is already gone.
       await onReload()
+      throw error
     }
   }
 
@@ -89,7 +94,7 @@ export function ProxyTab({
               <button
                 type="button"
                 className="btn btn-ghost btn-icon btn-sm"
-                onClick={() => void remove(sample.id)}
+                onClick={() => setErasing(sample.id)}
                 aria-label={`Xoá mẫu thu hộ ${index + 1}`}
                 data-tooltip="Xoá mẫu"
               >
@@ -98,6 +103,20 @@ export function ProxyTab({
             </li>
           ))}
         </ol>
+      )}
+
+      {erasing && (
+        <ConfirmDialog
+          title="Xoá mẫu thu hộ?"
+          confirmLabel="Xoá"
+          pendingLabel="Đang xoá…"
+          cancelLabel="Giữ lại"
+          tone="danger"
+          onClose={() => setErasing(null)}
+          onConfirm={() => remove(erasing)}
+        >
+          <p>Mẫu này bị xoá hẳn, không lấy lại được.</p>
+        </ConfirmDialog>
       )}
     </section>
   )
