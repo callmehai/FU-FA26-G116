@@ -8,7 +8,7 @@ participant ":Voice ID Repository" as VoiceRepository
 participant ":Audit Service" as AuditService
 database ":Database" as Database
 
-Actor->VoicePage: Tick the separate Voice ID consent after reading the notice,\nor choose Accept new terms - AF-1
+Actor->VoicePage: Tick the separate Voice ID consent after reading notice version 1.3,\nwhich names Secretary proxy collection, or choose Accept new terms - AF-1 (BR-449)
 activate VoicePage
 VoicePage->VoiceController: Give consent to the notice version read
 activate VoiceController
@@ -31,7 +31,7 @@ else Notice version is current
     deactivate VoiceRepository
 
     alt Consent given to an older notice version - AF-1
-        VoiceService->VoiceRepository: Renew the consent in place to the current notice version and purpose;\nthe voice samples are kept (BR-362)
+        VoiceService->VoiceRepository: Renew the consent in place to notice version 1.3 and purpose;\nthe voice samples are kept; from then on a Secretary may also record samples for the actor (BR-362, BR-449)
         activate VoiceRepository
         VoiceRepository->Database: Update consent
         activate Database
@@ -44,7 +44,7 @@ else Notice version is current
         AuditService-->VoiceService: Entry saved
         deactivate AuditService
     else No consent yet
-        VoiceService->VoiceRepository: Add a consent of its own, separate from recording consent, with the time,\nnotice version and purpose (BR-361, BR-362)
+        VoiceService->VoiceRepository: Add a consent of its own, separate from recording consent, with the time,\nnotice version 1.3 and purpose including Secretary proxy collection (BR-361, BR-362, BR-449)
         activate VoiceRepository
         VoiceRepository->Database: Insert consent
         activate Database

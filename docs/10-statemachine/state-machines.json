@@ -36,7 +36,7 @@
       [
         "InProgress",
         "Ended",
-        "Chair ends\nor System ends\n[4h after planned end]"
+        "Chair ends\nor System ends\n[24h after planned end\nor actual start, if later]"
       ],
       [
         "WaitingApproval",
@@ -90,7 +90,7 @@
       ]
     ],
     "initial": "Organizer creates meeting",
-    "source": "UC14–22; BR35,38–40,124–127,130–132,158–159; UC75; BR297–302",
+    "source": "UC14–22; BR35,38–40,124–127,130–132,158–159; UC75; BR297–302; BR460 (auto-end, ADR-0062)",
     "provisional": false,
     "positions": {
       "Rejected": [

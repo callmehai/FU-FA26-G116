@@ -1475,7 +1475,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-      </root>
+      <mxCell id="uc-collect-voice-samples" parent="1" style="ellipse;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;strokeColor=#333333;fillColor=#ffffff;" value="Collect Voice Samples for Attendees" vertex="1"><mxGeometry height="52.64" width="210" x="330" y="1718" as="geometry" /></mxCell><mxCell id="assoc-collect-voice-samples" parent="1" source="actor" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1;endArrow=none;startArrow=none;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="uc-collect-voice-samples" value="" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell></root>
     </mxGraphModel>
   </diagram>
   <diagram id="participant" name="Participant">

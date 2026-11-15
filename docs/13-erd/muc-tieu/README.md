@@ -4,11 +4,14 @@
 - [trustcabinet-erd-muc-tieu.drawio.png](trustcabinet-erd-muc-tieu.drawio.png) — ảnh xuất (có nhúng XML,
   mở lại được bằng draw.io).
 
-Từ 04/11/2026 hình được **vẽ lại theo code**, giữ kiểu vẽ của bản trước (bảng trắng viền đen, crow's foot,
-chỗ giao nhau vẽ cầu vượt). Hình có đủ 41 bảng trong `TrustCabinetDbContextModelSnapshot.cs` (đến migration
-`GuestSpeechClips`, 03/11/2026): 35 thực thể và 4 bảng nối của [02-erd.md](../../02-design/02-erd.md) (kể
+Từ 15/11/2026 hình được **vẽ lại theo code**, giữ kiểu vẽ của bản trước (bảng trắng viền đen, crow's foot,
+chỗ giao nhau vẽ cầu vượt). Hình có đủ 43 bảng trong `TrustCabinetDbContextModelSnapshot.cs` (thêm `AiProviderSetting`
+06/11/2026, `CalendarShare` 10/11/2026 và hai cột thu hộ `CollectedById`, `MeetingId` của `voice_samples` 12/11/2026):
+37 thực thể và 4 bảng nối của [02-erd.md](../../02-design/02-erd.md) (kể
 cả `DocumentReadConfirmation`, bản trước chưa vẽ), cộng 2 bảng kỹ thuật `MeetingInvitationDispatch` và
-`GuestVerificationChallenge`. Hình dùng trong Report 3 §I.3.2. Góc nhìn Chen (không thuộc tính) ở
+`GuestVerificationChallenge`. Hình chưa đưa vào Report 3: §I.3.2 của Report 3 vẫn liệt kê 35 thực thể
+(thiếu `AiProviderSetting` và `CalendarShare`, chờ note BA Final Review của SCRUM-36/SCRUM-142; hai cột thu hộ
+của `voice_samples` đã vào Entity 35). Góc nhìn Chen (không thuộc tính) ở
 [../chen/](../chen/README.md) là mô hình đích 35 thực thể.
 
 ## Cách đọc
