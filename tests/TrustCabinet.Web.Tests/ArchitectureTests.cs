@@ -61,12 +61,10 @@ public sealed class ArchitectureTests
     private static readonly string[] ServicesInInfrastructure =
     [
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
-        "TrustCabinet.Infrastructure.Calls.CallRoomService",
         "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
         "TrustCabinet.Infrastructure.Recordings.RecordingService",
         "TrustCabinet.Infrastructure.Recordings.RoomTakeService",
         "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
-        "TrustCabinet.Infrastructure.Speaking.SpeakingService",
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",
         "TrustCabinet.Infrastructure.Transcription.TranscriptionService",
@@ -110,7 +108,6 @@ public sealed class ArchitectureTests
         "AttendanceChangePublisher.cs",
         "Endpoints/AuthEndpoints.cs",
         "Endpoints/EmailEndpoints.cs",
-        "Endpoints/RecordingEndpoints.cs",
         "Endpoints/UserEndpoints.cs",
         "MeetingGuestIdentity.cs",
         "MeetingHub.cs",
@@ -134,9 +131,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Email.ResendWebhookReceiver",
         "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
         "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
-        "TrustCabinet.Infrastructure.Speaking.SpeakingMeetingEnd",
-        "TrustCabinet.Infrastructure.Speaking.SpeakingRequestCleanup",
-        "TrustCabinet.Infrastructure.Speaking.SpeakingService",
         "TrustCabinet.Infrastructure.Summaries.MeetingTranscriptReader",
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",
@@ -152,8 +146,6 @@ public sealed class ArchitectureTests
         // The live guest-session check behind every guest read (agenda, roster, attendance, hub, call room,
         // documents): it only composes the current-session query with the meeting, with no branch of its own.
         "TrustCabinet.Infrastructure.GuestAccess.GuestSessionAccess",
-        // Closes the removed readers' speaking requests through the Speaking helper, which CA-13 owns.
-        "TrustCabinet.Infrastructure.Speaking.SpeakingRequestCloser",
     ];
 
     [Fact]

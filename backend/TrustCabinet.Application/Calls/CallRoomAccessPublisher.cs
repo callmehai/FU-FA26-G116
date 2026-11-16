@@ -1,7 +1,6 @@
-using TrustCabinet.Application.Calls;
 using TrustCabinet.Application.Participants;
 
-namespace TrustCabinet.Infrastructure.Calls;
+namespace TrustCabinet.Application.Calls;
 
 /// <summary>
 /// SCRUM-59: when a guest invitation is revoked or a participant removed, reconcile that meeting's room at once,

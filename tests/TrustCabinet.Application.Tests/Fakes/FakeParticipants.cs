@@ -25,6 +25,9 @@ public sealed class FakeParticipantRepository : IParticipantRepository
     /// <summary>Accounts locked by <see cref="LockUserAsync"/> and <see cref="LockUsersAsync"/>, in order.</summary>
     public List<Guid> LockedUsers { get; } = [];
 
+    /// <summary>Meeting loads and account locks in the one order they ran, so a test can assert the lock order.</summary>
+    public List<string> Steps { get; } = [];
+
     /// <summary>Per-account active state returned by <see cref="LockUsersAsync"/>; missing ids are active.</summary>
     public Dictionary<Guid, bool> LockedUsersActive { get; } = [];
 
@@ -51,12 +54,14 @@ public sealed class FakeParticipantRepository : IParticipantRepository
     public Task<ParticipantSnapshot?> LoadAsync(Guid meetingId, bool forUpdate, CancellationToken ct)
     {
         Loads.Add((meetingId, forUpdate));
+        Steps.Add(forUpdate ? "lock-meeting" : "load-meeting");
         return Read(() => Snapshots.GetValueOrDefault(meetingId));
     }
 
     public Task LockUserAsync(Guid userId, CancellationToken ct)
     {
         LockedUsers.Add(userId);
+        Steps.Add("lock-user");
         return Fail is { } failure ? Task.FromException(failure) : Task.CompletedTask;
     }
 

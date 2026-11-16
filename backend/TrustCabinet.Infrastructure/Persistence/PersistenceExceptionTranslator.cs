@@ -24,6 +24,9 @@ internal static class PersistenceExceptionTranslator
         ["ix_document_read_confirmations_meeting_document_id_user_id"] = UniqueConflict.DocumentAlreadyConfirmed,
         // PostgreSQL cuts identifiers at 63 bytes.
         ["ix_document_read_confirmations_meeting_document_id_guest_invit"] = UniqueConflict.DocumentAlreadyConfirmed,
+        ["ux_speaking_requests_floor"] = UniqueConflict.SpeakingFloorTaken,
+        ["ux_speaking_requests_open_user"] = UniqueConflict.SpeakingRequestAlreadyOpen,
+        ["ux_speaking_requests_open_guest"] = UniqueConflict.SpeakingRequestAlreadyOpen,
     };
 
     /// <summary>

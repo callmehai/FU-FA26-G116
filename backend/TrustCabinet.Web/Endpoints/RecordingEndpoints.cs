@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Recordings;
 
 namespace TrustCabinet.Web.Endpoints;
 

@@ -6,6 +6,7 @@ using TrustCabinet.Application.Attendance;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.CalendarSharing;
+using TrustCabinet.Application.Calls;
 using TrustCabinet.Application.Documents;
 using TrustCabinet.Application.GuestAccess;
 using TrustCabinet.Application.Meetings;
@@ -13,6 +14,7 @@ using TrustCabinet.Application.Notes;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Reports;
+using TrustCabinet.Application.Speaking;
 using TrustCabinet.Application.Users;
 using TrustCabinet.Application.Votes;
 
@@ -42,6 +44,8 @@ public static class DependencyInjection
         AddDocuments(services);
         AddNotes(services);
         AddVotes(services);
+        AddCalls(services);
+        AddSpeaking(services);
         return services;
     }
 
@@ -154,5 +158,18 @@ public static class DependencyInjection
     {
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IVoteMeetingEnd, VoteMeetingEnd>();
+    }
+
+    private static void AddCalls(IServiceCollection services)
+    {
+        services.AddScoped<ICallRoomService, CallRoomService>();
+        // In place of the no-op Participants registers, whichever of the two is added first.
+        services.Replace(ServiceDescriptor.Scoped<IMeetingParticipantAccessPublisher, CallRoomAccessPublisher>());
+    }
+
+    private static void AddSpeaking(IServiceCollection services)
+    {
+        services.AddScoped<ISpeakingService, SpeakingService>();
+        services.AddScoped<ISpeakingMeetingEnd, SpeakingMeetingEnd>();
     }
 }
