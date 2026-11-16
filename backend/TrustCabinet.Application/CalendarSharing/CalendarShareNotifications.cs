@@ -2,7 +2,7 @@ using System.Globalization;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
-namespace TrustCabinet.Infrastructure.CalendarSharing;
+namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
 /// The in-app notification of each calendar-share step (BR-426). Only names, the level and the dates — never anything

@@ -9,4 +9,7 @@ public enum UniqueConflict
 {
     /// <summary>A duplicate no use case tells apart from the others.</summary>
     Unknown = 0,
+
+    /// <summary>BR-423: a pair, in one direction, already has an open (Pending or Effective) calendar share.</summary>
+    CalendarShareOpenPair = 1,
 }

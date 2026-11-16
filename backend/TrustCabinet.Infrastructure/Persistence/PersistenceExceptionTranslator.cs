@@ -15,7 +15,10 @@ internal static class PersistenceExceptionTranslator
     /// only where its use case answers differently for that index; every other duplicate is
     /// <see cref="UniqueConflict.Unknown"/>.
     /// </summary>
-    private static readonly Dictionary<string, UniqueConflict> UniqueIndexes = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, UniqueConflict> UniqueIndexes = new(StringComparer.Ordinal)
+    {
+        ["ux_calendar_shares_open_pair"] = UniqueConflict.CalendarShareOpenPair,
+    };
 
     /// <summary>
     /// The storage exception <paramref name="exception"/> stands for, carrying it as the inner exception, or

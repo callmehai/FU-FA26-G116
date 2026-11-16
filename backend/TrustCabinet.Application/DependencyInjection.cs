@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.CalendarSharing;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Users;
@@ -23,6 +24,7 @@ public static class DependencyInjection
         AddAccess(services);
         AddUsers(services);
         AddMeetings(services);
+        AddCalendarSharing(services);
         return services;
     }
 
@@ -65,5 +67,15 @@ public static class DependencyInjection
         services.AddScoped<IMeetingService, MeetingService>();
         services.AddScoped<IMeetingLifecycleService, MeetingLifecycleService>();
         services.AddScoped<IMeetingOverdueService, MeetingOverdueService>();
+    }
+
+    private static void AddCalendarSharing(IServiceCollection services)
+    {
+        services.AddScoped<CalendarShareCloser>();
+        services.AddScoped<CalendarBusyReader>();
+        services.AddScoped<ICalendarSharingService, CalendarSharingService>();
+        services.AddScoped<ICalendarShareStopper, CalendarShareStopper>();
+        services.AddScoped<ISharedCalendarService, SharedCalendarService>();
+        services.AddScoped<IMeetingSlotService, MeetingSlotService>();
     }
 }

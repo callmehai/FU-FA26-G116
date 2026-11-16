@@ -1,15 +1,13 @@
-using System.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
-using TrustCabinet.Application.CalendarSharing;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.CalendarSharing;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.CalendarSharing;
+namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
 /// SCRUM-142 — UC-84a → UC-84f: request, share directly, answer, change, withdraw, end and list calendar shares. Each write
@@ -17,7 +15,9 @@ namespace TrustCabinet.Infrastructure.CalendarSharing;
 /// transaction, so a save that fails tells nobody (EX "cannot be saved").
 /// </summary>
 public sealed class CalendarSharingService(
-    TrustCabinetDbContext db,
+    ICalendarShareRepository calendarShares,
+    INotificationRepository notifications,
+    IUnitOfWork unitOfWork,
     IAuditService audit,
     CalendarShareCloser closer,
     TimeProvider clock,
@@ -34,30 +34,26 @@ public sealed class CalendarSharingService(
     {
         try
         {
-            var today = Today;
-            var organizer = await IsOrganizerAsync(actorId, ct);
-            var shares = await db.CalendarShares.AsNoTracking()
-                .Include(s => s.Owner).Include(s => s.Viewer)
-                .Where(s => (s.OwnerId == actorId || (organizer && s.ViewerId == actorId)) && s.EndDate >= today)
-                .OrderByDescending(s => s.CreatedAt).ThenByDescending(s => s.Id)
-                .ToListAsync(ct);
-            // Whose viewer still holds MeetingCreator, for the Pending rows only: a request whose viewer lost it can only be
-            // declined (BR-430), so its row offers no Accept.
-            var pendingViewers = shares.Where(s => s.Status == CalendarShareStatus.Pending).Select(s => s.ViewerId).Distinct()
-                .ToArray();
-            var organizers = (await db.Users.AsNoTracking()
-                .Where(u => pendingViewers.Contains(u.Id)
-                    && db.RoleCapabilities.Any(rc => rc.RoleId == u.RoleId && rc.Capability == Capability.MeetingCreator))
-                .Select(u => u.Id).ToListAsync(ct)).ToHashSet();
-            ShareView View(CalendarShare s) => CalendarShareViews.From(s, Person(s.Owner), Person(s.Viewer), actorId, today,
-                SenderDeactivated(s, s.Owner.IsActive, s.Viewer.IsActive), organizers.Contains(s.ViewerId));
-            return new(new ShareLists(
-                [.. shares.Where(s => s.OwnerId == actorId).Select(View)],
-                [.. shares.Where(s => s.ViewerId == actorId).Select(View)]));
+            return await unitOfWork.ExecuteAsync<CalendarShareRead<ShareLists>>(async token =>
+            {
+                var today = Today;
+                var organizer = await calendarShares.IsOrganizerAsync(actorId, token);
+                var shares = await calendarShares.FindListedAsync(actorId, organizer, today, token);
+                // Whose viewer still holds MeetingCreator, for the Pending rows only: a request whose viewer lost it can only be
+                // declined (BR-430), so its row offers no Accept.
+                var pendingViewers = shares.Where(s => s.Status == CalendarShareStatus.Pending).Select(s => s.ViewerId).Distinct()
+                    .ToArray();
+                var organizers = (await calendarShares.FindMeetingCreatorIdsAsync(pendingViewers, token)).ToHashSet();
+                ShareView View(CalendarShare s) => CalendarShareViews.From(s, Person(s.Owner), Person(s.Viewer), actorId, today,
+                    SenderDeactivated(s, s.Owner.IsActive, s.Viewer.IsActive), organizers.Contains(s.ViewerId));
+                return new(new ShareLists(
+                    [.. shares.Where(s => s.OwnerId == actorId).Select(View)],
+                    [.. shares.Where(s => s.ViewerId == actorId).Select(View)]));
+            }, TransactionMode.None, ct);
         }
-        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
+        catch (PersistenceException error)
         {
-            logger.LogError(error, "Could not read the calendar shares of {UserId}", actorId);
+            logger.LogError(error.InnerException ?? error, "Could not read the calendar shares of {UserId}", actorId);
             return new(null, CalendarShareFailure.ReadFailed);
         }
     }
@@ -68,46 +64,20 @@ public sealed class CalendarSharingService(
     {
         try
         {
-            var people = db.Users.AsNoTracking().Where(u => u.IsActive && u.Id != actorId);
-            if (query.Purpose == CandidatePurpose.Request)
+            return await unitOfWork.ExecuteAsync<CalendarShareRead<ShareCandidatePage>>(async token =>
             {
-                // UC-84a: only a Meeting Organizer asks (BR-430); any active internal account owns a calendar.
-                if (!await IsOrganizerAsync(actorId, ct)) return new(null, CalendarShareFailure.NotOrganizer);
-            }
-            else
-            {
-                // UC-84b: only a Meeting Organizer can receive a share (BR-430).
-                people = people.Where(u => db.RoleCapabilities.Any(rc => rc.RoleId == u.RoleId
-                    && rc.Capability == Capability.MeetingCreator));
-            }
+                if (query.Purpose == CandidatePurpose.Request)
+                {
+                    // UC-84a: only a Meeting Organizer asks (BR-430); any active internal account owns a calendar.
+                    if (!await calendarShares.IsOrganizerAsync(actorId, token)) return new(null, CalendarShareFailure.NotOrganizer);
+                }
 
-            if (query.Q?.Trim() is { Length: > 0 } search)
-            {
-                var pattern = $"%{search.Replace("\\", "\\\\", StringComparison.Ordinal)
-                    .Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal)}%";
-                people = people.Where(u => EF.Functions.ILike(u.FullName, pattern, "\\")
-                    || EF.Functions.ILike(u.Email, pattern, "\\"));
-            }
-
-            var today = Today;
-            var total = await people.CountAsync(ct);
-            var request = query.Purpose == CandidatePurpose.Request;
-            var items = await people
-                .OrderBy(u => u.FullName).ThenBy(u => u.Id)
-                .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
-                .Select(u => new ShareCandidate(u.Id, u.FullName, u.Email,
-                    // The same direction as the share about to be sent: the candidate owns it for a request, views it for
-                    // a direct share. A share past its end date no longer counts (BR-425).
-                    db.CalendarShares.Any(s => (request ? s.OwnerId == u.Id && s.ViewerId == actorId
-                            : s.OwnerId == actorId && s.ViewerId == u.Id)
-                        && (s.Status == CalendarShareStatus.Pending || s.Status == CalendarShareStatus.Effective)
-                        && s.EndDate >= today)))
-                .ToListAsync(ct);
-            return new(new ShareCandidatePage(items, total, query.Page, query.PageSize));
+                return new(await calendarShares.FindCandidatesAsync(actorId, query, Today, token));
+            }, TransactionMode.None, ct);
         }
-        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
+        catch (PersistenceException error)
         {
-            logger.LogError(error, "Could not list calendar share candidates for {UserId}", actorId);
+            logger.LogError(error.InnerException ?? error, "Could not list calendar share candidates for {UserId}", actorId);
             return new(null, CalendarShareFailure.CandidatesReadFailed);
         }
     }
@@ -116,7 +86,7 @@ public sealed class CalendarSharingService(
         CancellationToken ct = default)
         => WriteAsync(async token =>
         {
-            var people = await CalendarSharePeople.LoadAsync(db, [actorId, ownerId ?? Guid.Empty], token);
+            var people = await calendarShares.LoadPeopleAsync([actorId, ownerId ?? Guid.Empty], token);
             if (!people.TryGetValue(actorId, out var viewer) || !viewer.IsActive || !viewer.IsOrganizer)
                 return new(CalendarShareFailure.NotOrganizer);
             // EX-4: yourself, an unknown id and a locked account all look the same — nothing about an account is disclosed.
@@ -126,7 +96,7 @@ public sealed class CalendarSharingService(
             var today = Today;
             var now = clock.GetUtcNow();
             await CloseAfterEndDateForPairAsync(id, actorId, today, now, token);
-            if (await HasOpenShareAsync(id, actorId, token)) return new(CalendarShareFailure.AlreadyShared);
+            if (await calendarShares.HasOpenShareAsync(id, actorId, token)) return new(CalendarShareFailure.AlreadyShared);
             if (!CalendarShareRules.TryParseLevel(values.Level, out var level)
                 || values.StartDate is not { } start || values.EndDate is not { } end
                 || !CalendarShareRules.ValidNewRange(start, end, today))
@@ -137,8 +107,8 @@ public sealed class CalendarSharingService(
                 OwnerId = id, ViewerId = actorId, InitiatedBy = CalendarShareInitiator.Viewer, Level = level,
                 StartDate = start, EndDate = end, Status = CalendarShareStatus.Pending, CreatedAt = now, UpdatedAt = now,
             };
-            db.CalendarShares.Add(share);
-            db.Notifications.Add(CalendarShareNotifications.Requested(share, viewer.FullName, now));
+            calendarShares.Add(share);
+            notifications.Add(CalendarShareNotifications.Requested(share, viewer.FullName, now));
             await audit.RecordAsync(AuditActions.CalendarShareRequested, AuditActions.CalendarShareObjectType, share.Id,
                 actorId, CalendarShareAudit.Details(share), token);
             return Done(CalendarShareSuccess.Requested, share, owner, viewer, actorId, today);
@@ -149,7 +119,7 @@ public sealed class CalendarSharingService(
         DateOnly? endDate, CancellationToken ct = default)
         => WriteAsync(async token =>
         {
-            var people = await CalendarSharePeople.LoadAsync(db, [actorId, viewerId ?? Guid.Empty], token);
+            var people = await calendarShares.LoadPeopleAsync([actorId, viewerId ?? Guid.Empty], token);
             if (!people.TryGetValue(actorId, out var owner) || !owner.IsActive) return new(CalendarShareFailure.NotFound);
             if (viewerId is not { } id || id == actorId || !people.TryGetValue(id, out var viewer) || !viewer.IsActive
                 || !viewer.IsOrganizer)
@@ -158,7 +128,7 @@ public sealed class CalendarSharingService(
             var today = Today;
             var now = clock.GetUtcNow();
             await CloseAfterEndDateForPairAsync(actorId, id, today, now, token);
-            if (await HasOpenShareAsync(actorId, id, token)) return new(CalendarShareFailure.AlreadyShared);
+            if (await calendarShares.HasOpenShareAsync(actorId, id, token)) return new(CalendarShareFailure.AlreadyShared);
             if (startDate is not { } start || endDate is not { } end || !CalendarShareRules.ValidNewRange(start, end, today))
                 return new(CalendarShareFailure.InvalidValues);
 
@@ -168,8 +138,8 @@ public sealed class CalendarSharingService(
                 Level = CalendarShareLevel.Level1, StartDate = start, EndDate = end, Status = CalendarShareStatus.Pending,
                 CreatedAt = now, UpdatedAt = now,
             };
-            db.CalendarShares.Add(share);
-            db.Notifications.Add(CalendarShareNotifications.Received(share, owner.FullName, now));
+            calendarShares.Add(share);
+            notifications.Add(CalendarShareNotifications.Received(share, owner.FullName, now));
             await audit.RecordAsync(AuditActions.CalendarShareShared, AuditActions.CalendarShareObjectType, share.Id,
                 actorId, CalendarShareAudit.Details(share), token);
             return Done(CalendarShareSuccess.Shared, share, owner, viewer, actorId, today);
@@ -194,7 +164,7 @@ public sealed class CalendarSharingService(
             // accounts until this commits and read them again, so a deactivation or role change running at the same time
             // either waits for this share and stops it, or is seen here and refuses it.
             if (share.Status == CalendarShareStatus.Pending)
-                people = await CalendarSharePeople.LockAndLoadAsync(db, [share.OwnerId, share.ViewerId], token);
+                people = await calendarShares.LockPeopleAsync([share.OwnerId, share.ViewerId], token);
             var owner = people[share.OwnerId];
             var viewer = people[share.ViewerId];
             if (share.Status == CalendarShareStatus.Pending)
@@ -226,7 +196,7 @@ public sealed class CalendarSharingService(
                 share.Status = CalendarShareStatus.Effective;
                 share.DecidedAt = now;
                 share.UpdatedAt = now;
-                db.Notifications.Add(CalendarShareNotifications.Accepted(share, CalendarShareRules.Sender(share),
+                notifications.Add(CalendarShareNotifications.Accepted(share, CalendarShareRules.Sender(share),
                     people[actorId].FullName, now));
                 await audit.RecordAsync(AuditActions.CalendarShareAccepted, AuditActions.CalendarShareObjectType, share.Id,
                     actorId, new
@@ -248,7 +218,7 @@ public sealed class CalendarSharingService(
             share.EndDate = share.PendingEndDate.Value;
             share.ClearPendingChange();
             share.UpdatedAt = now;
-            db.Notifications.Add(CalendarShareNotifications.Updated(share, owner.FullName, now));
+            notifications.Add(CalendarShareNotifications.Updated(share, owner.FullName, now));
             await audit.RecordAsync(AuditActions.CalendarShareChangeAccepted, AuditActions.CalendarShareObjectType,
                 share.Id, actorId,
                 new { share.OwnerId, share.ViewerId, Before = before, After = CalendarShareAudit.Snapshot(share) }, token);
@@ -268,7 +238,7 @@ public sealed class CalendarSharingService(
             {
                 CalendarShareCloser.Close(share, CalendarShareStatus.Declined, actorId, now);
                 share.DecidedAt = now;
-                db.Notifications.Add(CalendarShareNotifications.Declined(share, CalendarShareRules.Sender(share),
+                notifications.Add(CalendarShareNotifications.Declined(share, CalendarShareRules.Sender(share),
                     people[actorId].FullName, now));
                 await audit.RecordAsync(AuditActions.CalendarShareDeclined, AuditActions.CalendarShareObjectType, share.Id,
                     actorId, CalendarShareAudit.Details(share), token);
@@ -278,7 +248,7 @@ public sealed class CalendarSharingService(
             var declined = new { Level = share.PendingLevel.ToString(), EndDate = share.PendingEndDate };
             share.ClearPendingChange();
             share.UpdatedAt = now;
-            db.Notifications.Add(CalendarShareNotifications.ChangeDeclined(share, owner.FullName, now));
+            notifications.Add(CalendarShareNotifications.ChangeDeclined(share, owner.FullName, now));
             await audit.RecordAsync(AuditActions.CalendarShareChangeDeclined, AuditActions.CalendarShareObjectType,
                 share.Id, actorId, new { share.OwnerId, share.ViewerId, Declined = declined }, token);
             return Done(CalendarShareSuccess.ChangeDeclined, share, owner, viewer, actorId, today);
@@ -313,7 +283,7 @@ public sealed class CalendarSharingService(
                 share.PendingEndDate = end;
                 share.PendingRequestedAt = now;
                 share.UpdatedAt = now;
-                db.Notifications.Add(CalendarShareNotifications.ChangeRequested(share, viewer.FullName, now));
+                notifications.Add(CalendarShareNotifications.ChangeRequested(share, viewer.FullName, now));
                 await audit.RecordAsync(AuditActions.CalendarShareChangeRequested, AuditActions.CalendarShareObjectType,
                     share.Id, actorId, new
                     {
@@ -333,7 +303,7 @@ public sealed class CalendarSharingService(
             share.StartDate = ownerStart;
             share.EndDate = ownerEnd;
             share.UpdatedAt = now;
-            db.Notifications.Add(CalendarShareNotifications.Updated(share, owner.FullName, now));
+            notifications.Add(CalendarShareNotifications.Updated(share, owner.FullName, now));
             await audit.RecordAsync(AuditActions.CalendarShareUpdated, AuditActions.CalendarShareObjectType, share.Id,
                 actorId, new { share.OwnerId, share.ViewerId, Before = before, After = CalendarShareAudit.Snapshot(share) },
                 token);
@@ -350,7 +320,7 @@ public sealed class CalendarSharingService(
             if (share.Status == CalendarShareStatus.Pending && CalendarShareRules.Sender(share) == actorId)
             {
                 CalendarShareCloser.Close(share, CalendarShareStatus.Withdrawn, actorId, now);
-                db.Notifications.Add(CalendarShareNotifications.Withdrawn(share, other, people[actorId].FullName, now));
+                notifications.Add(CalendarShareNotifications.Withdrawn(share, other, people[actorId].FullName, now));
                 await audit.RecordAsync(AuditActions.CalendarShareWithdrawn, AuditActions.CalendarShareObjectType, share.Id,
                     actorId, CalendarShareAudit.Details(share), token);
                 return Done(CalendarShareSuccess.Withdrawn, share, owner, viewer, actorId, today);
@@ -361,7 +331,7 @@ public sealed class CalendarSharingService(
                 var withdrawn = new { Level = share.PendingLevel.ToString(), EndDate = share.PendingEndDate };
                 share.ClearPendingChange();
                 share.UpdatedAt = now;
-                db.Notifications.Add(CalendarShareNotifications.Withdrawn(share, other, people[actorId].FullName, now));
+                notifications.Add(CalendarShareNotifications.Withdrawn(share, other, people[actorId].FullName, now));
                 await audit.RecordAsync(AuditActions.CalendarShareChangeWithdrawn, AuditActions.CalendarShareObjectType,
                     share.Id, actorId, new { share.OwnerId, share.ViewerId, Withdrawn = withdrawn }, token);
                 return Done(CalendarShareSuccess.Withdrawn, share, owner, viewer, actorId, today);
@@ -377,7 +347,7 @@ public sealed class CalendarSharingService(
             if (share.Status != CalendarShareStatus.Effective) return new(CalendarShareFailure.NotAllowed);
             var other = share.OwnerId == actorId ? share.ViewerId : share.OwnerId;
             CalendarShareCloser.Close(share, CalendarShareStatus.Ended, actorId, now);
-            db.Notifications.Add(CalendarShareNotifications.Ended(share, other, people[actorId].FullName, now));
+            notifications.Add(CalendarShareNotifications.Ended(share, other, people[actorId].FullName, now));
             await audit.RecordAsync(AuditActions.CalendarShareEnded, AuditActions.CalendarShareObjectType, share.Id,
                 actorId, CalendarShareAudit.Details(share), token);
             return Done(CalendarShareSuccess.Ended, share, people[share.OwnerId], people[share.ViewerId], actorId, today);
@@ -393,9 +363,9 @@ public sealed class CalendarSharingService(
     private Task<CalendarShareOutcome> ActOnAsync(Guid actorId, Guid shareId, ShareAction action, CancellationToken ct)
         => WriteAsync(async token =>
         {
-            var share = await CalendarSharePeople.LockAsync(db, shareId, token);
+            var share = await calendarShares.LockAsync(shareId, token);
             if (share is null || !CalendarShareRules.IsParty(share, actorId)) return new(CalendarShareFailure.NotFound);
-            var people = await CalendarSharePeople.LoadAsync(db, [share.OwnerId, share.ViewerId], token);
+            var people = await calendarShares.LoadPeopleAsync([share.OwnerId, share.ViewerId], token);
             var today = Today;
             var now = clock.GetUtcNow();
             // BR-425: past its end date the share — and anything waiting on it — has ended; nothing is written.
@@ -420,44 +390,28 @@ public sealed class CalendarSharingService(
     private async Task CloseAfterEndDateForPairAsync(Guid ownerId, Guid viewerId, DateOnly today, DateTimeOffset now,
         CancellationToken ct)
     {
-        var lapsed = await db.CalendarShares.FromSqlInterpolated($"""
-            SELECT * FROM calendar_shares
-            WHERE owner_id = {ownerId} AND viewer_id = {viewerId}
-              AND status IN ('Pending', 'Effective') AND end_date < {today}
-            FOR UPDATE
-            """).ToListAsync(ct);
+        var lapsed = await calendarShares.LockLapsedOpenAsync(ownerId, viewerId, today, ct);
         foreach (var share in lapsed) await closer.CloseAfterEndDateAsync(share, now, ct);
     }
-
-    private Task<bool> HasOpenShareAsync(Guid ownerId, Guid viewerId, CancellationToken ct)
-        => db.CalendarShares.AnyAsync(s => s.OwnerId == ownerId && s.ViewerId == viewerId
-            && (s.Status == CalendarShareStatus.Pending || s.Status == CalendarShareStatus.Effective), ct);
-
-    private Task<bool> IsOrganizerAsync(Guid userId, CancellationToken ct)
-        => db.Users.AnyAsync(u => u.Id == userId && u.IsActive
-            && db.RoleCapabilities.Any(rc => rc.RoleId == u.RoleId && rc.Capability == Capability.MeetingCreator), ct);
 
     private async Task<CalendarShareOutcome> WriteAsync(Func<CancellationToken, Task<CalendarShareOutcome>> write,
         CancellationToken ct)
     {
         try
         {
-            await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-            var outcome = await write(ct);
-            await transaction.CommitAsync(ct);
-            return outcome;
+            return await unitOfWork.ExecuteAsync(write, TransactionMode.ReadCommitted, ct);
         }
-        catch (Exception error) when (DbErrors.IsUniqueViolation(error, "ux_calendar_shares_open_pair"))
+        catch (UniqueConflictException error) when (error.Conflict == UniqueConflict.CalendarShareOpenPair)
         {
             // Two requests for the same pair at once: the index lets one through (BR-423, EX-2).
-            db.ChangeTracker.Clear();
-            logger.LogInformation(error, "A calendar share of the same pair was saved first");
+            unitOfWork.DiscardChanges();
+            logger.LogInformation(error.InnerException ?? error, "A calendar share of the same pair was saved first");
             return new(CalendarShareFailure.AlreadyShared);
         }
-        catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
+        catch (PersistenceException error)
         {
-            db.ChangeTracker.Clear();
-            logger.LogError(error, "Could not save the calendar share");
+            unitOfWork.DiscardChanges();
+            logger.LogError(error.InnerException ?? error, "Could not save the calendar share");
             return new(CalendarShareFailure.SaveFailed);
         }
     }

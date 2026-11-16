@@ -136,9 +136,16 @@ public sealed class FakeAuditService : IAuditService
 {
     public List<string> Actions { get; } = [];
 
+    /// <summary>
+    /// Thrown by every record, in place of saving. The real one saves whatever the use case staged, so this is where
+    /// a refused insert of that staged row surfaces.
+    /// </summary>
+    public Exception? Fail { get; set; }
+
     public Task RecordAsync(string action, string objectType, Guid? objectId, Guid? actorId, object? details = null,
         CancellationToken ct = default)
     {
+        if (Fail is { } failure) return Task.FromException(failure);
         Actions.Add(action);
         return Task.CompletedTask;
     }

@@ -282,7 +282,8 @@ bool IsConcurrencyConflict(Exception exception)                       // DbUpdat
    nó thì service đã chuyển trả 500.
 5. Còn lại → `null`: không phải lỗi lưu trữ.
 
-Bảng index hiện rỗng, nên mọi vi phạm unique là `Unknown` cho tới khi module đầu tiên thêm dòng.
+Bảng index có một dòng từ CA-06: `ux_calendar_shares_open_pair` → `UniqueConflict.CalendarShareOpenPair` (BR-423,
+`MSG449`). Mọi vi phạm unique khác là `Unknown` cho tới khi module của nó thêm dòng.
 
 Translator xét kiểu exception, không xét nó đến từ đâu: một `TimeoutException` do chính `work` ném (kể cả timeout của
 Redis) cũng thành `PersistenceUnavailableException`, giống các bộ lọc `PersistenceError` cũ. `HttpRequestException` và

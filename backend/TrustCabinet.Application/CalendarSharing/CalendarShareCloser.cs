@@ -1,22 +1,24 @@
 using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
-namespace TrustCabinet.Infrastructure.CalendarSharing;
+namespace TrustCabinet.Application.CalendarSharing;
 
 /// <summary>
 /// The ways the system closes a share without anyone asking for it. The caller owns the transaction;
 /// <see cref="IAuditService"/> saves, so the share, its notifications and the audit row are written together.
 /// </summary>
-public sealed class CalendarShareCloser(TrustCabinetDbContext db, IAuditService audit)
+public sealed class CalendarShareCloser(INotificationRepository notifications, IAuditService audit)
 {
     /// <summary>BR-424: an Effective share stops for good; both sides are told (BR-426).</summary>
     public async Task StopAsync(CalendarShare share, string ownerName, string viewerName, Guid? actorId,
         CalendarShareStopReason reason, DateTimeOffset now, CancellationToken ct)
     {
         Close(share, CalendarShareStatus.Stopped, actorId, now);
-        db.Notifications.AddRange(CalendarShareNotifications.Stopped(share, ownerName, viewerName, now));
+        foreach (var notification in CalendarShareNotifications.Stopped(share, ownerName, viewerName, now))
+            notifications.Add(notification);
         await audit.RecordAsync(AuditActions.CalendarShareStopped, AuditActions.CalendarShareObjectType, share.Id, actorId,
             new
             {
