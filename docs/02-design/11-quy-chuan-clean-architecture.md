@@ -168,7 +168,8 @@ public interface IUnitOfWork
   `AgendaMeetingEnd`, `VoteMeetingEnd`, `SpeakingMeetingEnd`) thì khác: `ExecuteAsync` ở mức có transaction sẽ tự mở
   transaction thay vì ném lỗi. Chốt ở CA-07 (16/11/2026, comment trên SCRUM-172): guard chuyển vào method khoá của
   repository (ném `InvalidOperationException` khi chưa có transaction, XML doc ghi rõ), service bọc
-  `ExecuteAsync(…, TransactionMode.None)`.
+  `ExecuteAsync(…, TransactionMode.None)`. Lớp không gọi method khoá nào (`VoteMeetingEnd`, CA-12: nơi gọi đã giữ khoá
+  meeting) thì guard vào method repository nó gọi đầu tiên (`IVoteRepository.ListDraftsAsync`), cùng thông báo cũ.
 - Việc sau commit (phát SignalR, gửi email, xoá file) vẫn đặt **sau** khi `ExecuteAsync` trả về, đúng thứ tự cũ.
 
 Cài đặt là [`Infrastructure/Persistence/EfUnitOfWork.cs`](../../backend/TrustCabinet.Infrastructure/Persistence/EfUnitOfWork.cs),
@@ -288,7 +289,10 @@ bool IsConcurrencyConflict(Exception exception)                       // DbUpdat
 5. Còn lại → `null`: không phải lỗi lưu trữ.
 
 Bảng index có một dòng từ CA-06: `ux_calendar_shares_open_pair` → `UniqueConflict.CalendarShareOpenPair` (BR-423,
-`MSG449`). Mọi vi phạm unique khác là `Unknown` cho tới khi module của nó thêm dòng.
+`MSG449`). CA-12 thêm năm dòng của Votes: `ix_voting_sessions_meeting_id` → `OpenVoteInMeeting`; hai index của
+`vote_receipts` (người dùng, khách mời) → `BallotAlreadyCast`; hai index của `document_read_confirmations` →
+`DocumentAlreadyConfirmed` (tên index khách mời bị PostgreSQL cắt ở 63 byte). Mọi vi phạm unique khác là `Unknown` cho
+tới khi module của nó thêm dòng.
 
 Translator xét kiểu exception, không xét nó đến từ đâu: một `TimeoutException` do chính `work` ném (kể cả timeout của
 Redis) cũng thành `PersistenceUnavailableException`, giống các bộ lọc `PersistenceError` cũ. `HttpRequestException` và
