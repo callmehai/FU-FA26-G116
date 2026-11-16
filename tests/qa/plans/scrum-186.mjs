@@ -49,8 +49,8 @@ async function openPage(qa) {
 async function fillApi(qa, { url, model, key }) {
   await modeGroup(qa).getByRole('radio', { name: 'API' }).check()
   if (url !== undefined) await qa.page.getByLabel('Địa chỉ API').fill(url)
-  if (model !== undefined) await qa.page.getByLabel('Model').fill(model)
-  if (key !== undefined) await qa.page.getByLabel('Key').fill(key)
+  if (model !== undefined) await qa.page.getByLabel('Mô hình').fill(model)
+  if (key !== undefined) await qa.page.getByLabel('Khoá API').fill(key)
 }
 
 const DENIED = ['chair', 'secretary', 'member']
@@ -67,7 +67,7 @@ export default {
       title: 'Quản trị mở Cấu hình AI: thấy cấu hình đang dùng, key chỉ hiện 4 ký tự cuối, Lưu tắt khi chưa đổi gì',
       steps: ['Đăng nhập quantri@', 'Mở Cấu hình AI (/mgmt/admin/ai)'],
       expected:
-        'Chọn "Máy local" / "API", tên model máy local và trạng thái cấu hình, dòng "Đang dùng …"; ô Key trống, gợi ý "Đã lưu ••••" + 4 ký tự cuối; nút Lưu bị tắt; không cuộn ngang; nút cao ≥ 40px trên điện thoại',
+        'Chọn "Máy local" / "API", tên model máy local và trạng thái cấu hình, dòng "Đang dùng …"; ô Khoá API trống, gợi ý "Đã lưu ••••" + 4 ký tự cuối; nút Lưu bị tắt; không cuộn ngang; nút cao ≥ 40px trên điện thoại',
       async run(qa) {
         const before = await stored(qa)
         if (qa.device === 'desktop') {
@@ -87,12 +87,12 @@ export default {
         await qa.expect(qa.page.getByText('Đang dùng', { exact: false }).first()).toBeVisible()
         await qa.expect(qa.page.getByRole('button', { name: 'Lưu' })).toBeDisabled()
         if (before.mode === 'Api') {
-          const key = qa.page.getByLabel('Key')
+          const key = qa.page.getByLabel('Khoá API')
           await qa.expect(key).toHaveValue('')
           await qa.expect(key).toHaveAttribute('type', 'password')
           if (before.hasApiKey) await qa.expect(key).toHaveAttribute('placeholder', `Đã lưu ••••${before.apiKeyHint}`)
           await qa.expect(qa.page.getByLabel('Địa chỉ API')).toHaveValue(before.apiBaseUrl)
-          await qa.expect(qa.page.getByLabel('Model')).toHaveValue(before.apiModel)
+          await qa.expect(qa.page.getByLabel('Mô hình')).toHaveValue(before.apiModel)
         }
         await qa.shot('cau-hinh-ai', { fullPage: true })
         await noSidewaysScroll(qa)
@@ -181,7 +181,7 @@ export default {
       devices: ['desktop', 'phone'],
       title: 'Thử API thiếu model và key có khoảng trắng: báo lỗi theo từng ô, không gọi ra ngoài, không lưu',
       steps: ['Mở Cấu hình AI, tab API', 'Xoá Model, Key: "qa key co khoang trang"', 'Bấm Thử kết nối'],
-      expected: '400 MSG409 "Cấu hình AI không hợp lệ.", ô Model và ô Key đỏ kèm lý do; cấu hình đã lưu không đổi',
+      expected: '400 MSG409 "Cấu hình AI không hợp lệ.", ô Mô hình và ô Khoá API đỏ kèm lý do; cấu hình đã lưu không đổi',
       async run(qa) {
         const before = await stored(qa)
         await openPage(qa)
@@ -196,14 +196,14 @@ export default {
           qa.expect.arrayContaining(['apimodel', 'apikey']),
         )
         await qa.expect(testResult(qa)).toHaveText(/Cấu hình AI không hợp lệ\./)
-        await qa.expect(qa.page.getByLabel('Model')).toHaveAttribute('aria-invalid', 'true')
-        await qa.expect(qa.page.getByLabel('Key')).toHaveAttribute('aria-invalid', 'true')
+        await qa.expect(qa.page.getByLabel('Mô hình')).toHaveAttribute('aria-invalid', 'true')
+        await qa.expect(qa.page.getByLabel('Khoá API')).toHaveAttribute('aria-invalid', 'true')
         await qa.shot('thieu-model-key-khoang-trang', { fullPage: true })
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
         // Typing into a field clears its error.
-        await qa.page.getByLabel('Model').fill('qa-model')
-        await qa.expect(qa.page.getByLabel('Model')).toHaveAttribute('aria-invalid', 'false')
+        await qa.page.getByLabel('Mô hình').fill('qa-model')
+        await qa.expect(qa.page.getByLabel('Mô hình')).toHaveAttribute('aria-invalid', 'false')
         qa.expect(await stored(qa)).toEqual(before)
       },
     },

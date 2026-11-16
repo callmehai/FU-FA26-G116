@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { listRoles } from '../../api/roles'
 import { changeUserStatus, getUser, listUsers, requestPasswordReset } from '../../api/users'
@@ -6,12 +6,14 @@ import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
+import { Pagination } from '../../components/Pagination'
 import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { avatarColors, initials } from '../../lib/avatar'
 import { formatDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
+import { tipIfClipped } from '../../lib/tipIfClipped'
 import { useSearchBox } from '../../lib/useSearchBox'
 import type { RoleRecord } from '../../types/role'
 import type { UserAccount, UserMutationResponse } from '../../types/user'
@@ -22,7 +24,7 @@ import { latestSearchParams } from '../../lib/latestSearchParams'
 
 type RoleFilter = string | 'all'
 type StatusFilter = 'all' | 'active' | 'inactive'
-type FilterKey = 'q' | 'role' | 'status'
+type FilterKey = 'q' | 'role' | 'status' | 'page' | 'pageSize'
 
 const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: 'all', label: 'Mọi trạng thái' },
@@ -31,6 +33,8 @@ const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
 ]
 
 const COLUMN_COUNT = 6
+const PAGE_SIZES = [20, 50, 100] as const
+const DEFAULT_PAGE_SIZE = 20
 const SKELETON_ROWS = 6
 
 function avatarStyle(name: string) {
@@ -82,6 +86,9 @@ export function UsersPage() {
   const roleFilter: RoleFilter = roleParam && roles?.some((role) => role.id === roleParam) ? roleParam : 'all'
   const statusParam = searchParams.get('status')
   const statusFilter: StatusFilter = statusParam === 'active' || statusParam === 'inactive' ? statusParam : 'all'
+  const pageParam = Number(searchParams.get('page'))
+  const pageSizeParam = Number(searchParams.get('pageSize'))
+  const pageSize = (PAGE_SIZES as readonly number[]).includes(pageSizeParam) ? pageSizeParam : DEFAULT_PAGE_SIZE
 
   // Replace rather than push: typing a search should not leave a Back step per keystroke.
   const setFilter = useCallback(
@@ -91,6 +98,9 @@ export function UsersPage() {
           const next = latestSearchParams()
           if (value && value !== 'all') next.set(key, value)
           else next.delete(key)
+          // A new criterion starts again from the first page; only paging itself keeps the page.
+          if (key !== 'page') next.delete('page')
+          if (key === 'pageSize' && value === String(DEFAULT_PAGE_SIZE)) next.delete('pageSize')
           return next
         },
         { replace: true },
@@ -152,6 +162,25 @@ export function UsersPage() {
         (!needle || fold(u.fullName).includes(needle) || fold(u.email).includes(needle)),
     )
   }, [users, search, roleFilter, statusFilter])
+
+  // Every account comes in one response (about a hundred), so the pages are cut here; a page past the end — a stale
+  // link, or a search that left fewer rows — shows the last one.
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const page = Number.isInteger(pageParam) && pageParam >= 1 ? Math.min(pageParam, totalPages) : 1
+  const pageRows = visible.slice((page - 1) * pageSize, page * pageSize)
+  const filtered = Boolean(search.trim()) || roleFilter !== 'all' || statusFilter !== 'all'
+
+  function clearFilters() {
+    setSearch('')
+    setSearchParams(
+      () => {
+        const next = latestSearchParams()
+        for (const key of ['q', 'role', 'status', 'page']) next.delete(key)
+        return next
+      },
+      { replace: true },
+    )
+  }
 
   const handleGone = useCallback(() => {
     setFormTarget(null)
@@ -265,7 +294,7 @@ export function UsersPage() {
   return (
     <>
       <PageHeader
-        title="Người dùng & Quyền"
+        title="Người dùng"
         description={users ? `${users.length} tài khoản, ${activeCount} đang hoạt động` : undefined}
         action={
           <button
@@ -312,12 +341,13 @@ export function UsersPage() {
           <table className="data-table users-table">
             <thead>
               <tr>
+                {/* Fixed widths: the columns stay put whichever rows a filter leaves (frontend-ui-design, steady layout). */}
                 <th>Họ tên</th>
-                <th>Vai trò</th>
-                <th>Đăng nhập</th>
-                <th>Trạng thái</th>
-                <th>Ngày tạo</th>
-                <th className="col-action">Thao tác</th>
+                <th className="users-col-role">Vai trò</th>
+                <th className="users-col-login">Đăng nhập</th>
+                <th className="users-col-status">Trạng thái</th>
+                <th className="users-col-date">Ngày tạo</th>
+                <th className="col-action users-col-action">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -344,11 +374,21 @@ export function UsersPage() {
               ) : visible.length === 0 ? (
                 <tr>
                   <td colSpan={COLUMN_COUNT} className="cell-empty">
-                    {users.length === 0 ? 'Chưa có tài khoản nào.' : 'Không có tài khoản nào khớp bộ lọc.'}
+                    {users.length === 0 || !filtered ? (
+                      'Chưa có tài khoản nào.'
+                    ) : (
+                      <>
+                        <p className="empty-title">Không có tài khoản nào khớp bộ lọc.</p>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={clearFilters}>
+                          <Icon name="x" size={16} />
+                          Xoá bộ lọc
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ) : (
-                visible.map((u) => {
+                pageRows.map((u) => {
                   const isSelf = u.id === me?.id
                   const resetUnavailable = resetUnavailableReason(u)
                   return (
@@ -358,38 +398,49 @@ export function UsersPage() {
                           <span className="avatar" style={avatarStyle(u.fullName)} aria-hidden="true">
                             {initials(u.fullName)}
                           </span>
-                          <span>
+                          <span className="users-person">
+                            {/* One line each: a long name or email ends in "…" and reads whole in its tooltip. A phone
+                                has no tooltip, so there both wrap — the email before an "@" or a ".", not mid-word. */}
                             <span className="person-name">
-                              {u.fullName}
-                              {isSelf && (
-                                <>
-                                  {' '}
-                                  <Badge tone="blue">Bạn</Badge>
-                                </>
-                              )}
+                              <span className="users-clip" onPointerOver={tipIfClipped}>
+                                {u.fullName}
+                              </span>
+                              {isSelf && <Badge tone="blue">Bạn</Badge>}
                             </span>
-                            <span className="cell-sub">{u.email}</span>
+                            <span className="cell-sub users-clip" onPointerOver={tipIfClipped}>
+                              {u.email.split(/(?=[@.])/).map((part, i) => (
+                                <Fragment key={i}>
+                                  {i > 0 && <wbr />}
+                                  {part}
+                                </Fragment>
+                              ))}
+                            </span>
                             {/* On a phone the role and status columns go: their facts move under the email. */}
                             <span className="users-inline">
                               <Badge tone="slate">{u.roleName}</Badge>
-                              {!u.isActive && <span className="user-disabled">Đã vô hiệu hoá</span>}
+                              {!u.isActive && <Badge tone="amber">Đã vô hiệu hoá</Badge>}
                             </span>
                           </span>
                         </span>
                       </td>
-                      <td className="users-col">
+                      <td className="users-col users-role">
                         <Badge tone="slate">{u.roleName}</Badge>
                       </td>
                       <td className="cell-muted users-col users-login">
                         {[u.hasPassword && 'Mật khẩu', u.hasGoogleLink && 'Google'].filter(Boolean).join(', ')}
                       </td>
                       <td className="users-col">
-                        {/* The normal case is plain text; only the exception stands out. */}
-                        {u.isActive ? 'Hoạt động' : <span className="user-disabled">Đã vô hiệu hoá</span>}
+                        {/* A chip, as on every other list; the exception carries the warm colour. */}
+                        {u.isActive ? (
+                          <Badge tone="emerald">Hoạt động</Badge>
+                        ) : (
+                          <Badge tone="amber">Đã vô hiệu hoá</Badge>
+                        )}
                       </td>
-                      <td className="cell-muted users-col">{formatDate(u.createdAt)}</td>
+                      <td className="cell-muted users-col users-date">{formatDate(u.createdAt)}</td>
                       <td className="col-action">
-                        <span className="row-actions">
+                        {/* On a phone each action says what it does: a touch screen never shows the tooltips. */}
+                        <span className="row-actions row-actions-labelled">
                           <button
                             type="button"
                             className="icon-button icon-button-sm"
@@ -398,6 +449,7 @@ export function UsersPage() {
                             aria-label={`Sửa tài khoản ${u.fullName}`}
                           >
                             <Icon name="pencil" size={16} />
+                            <span className="row-action-label">Sửa</span>
                           </button>
                           <button
                             type="button"
@@ -414,6 +466,7 @@ export function UsersPage() {
                             aria-label={`${u.isActive ? 'Vô hiệu hoá' : 'Kích hoạt lại'} tài khoản ${u.fullName}`}
                           >
                             <Icon name={u.isActive ? 'lock' : 'unlock'} size={16} />
+                            <span className="row-action-label">{u.isActive ? 'Vô hiệu hoá' : 'Kích hoạt lại'}</span>
                           </button>
                           <button
                             type="button"
@@ -424,6 +477,7 @@ export function UsersPage() {
                             aria-label={`Gửi liên kết đặt lại mật khẩu cho ${u.fullName}`}
                           >
                             <Icon name="key" size={16} />
+                            <span className="row-action-label">Đặt lại mật khẩu</span>
                           </button>
                           {/* SCRUM-113: an active person's library stays theirs; a deactivated one's is read here. */}
                           {u.isActive ? (
@@ -444,6 +498,7 @@ export function UsersPage() {
                               aria-label={`Xem kho tài liệu của ${u.fullName}`}
                             >
                               <Icon name="folder" size={16} />
+                              <span className="row-action-label">Xem kho</span>
                             </Link>
                           )}
                         </span>
@@ -455,6 +510,19 @@ export function UsersPage() {
             </tbody>
           </table>
         </div>
+
+        {users && visible.length > 0 && !loadError && (
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalCount={visible.length}
+            totalPages={totalPages}
+            pageSizes={PAGE_SIZES}
+            itemLabel="tài khoản"
+            onPageChange={(next) => setFilter('page', next > 1 ? String(next) : '')}
+            onPageSizeChange={(size) => setFilter('pageSize', String(size))}
+          />
+        )}
       </div>
 
       {formTarget && (
@@ -479,9 +547,8 @@ export function UsersPage() {
             onConfirm={() => changeStatus(statusTarget)}
             onClose={() => setStatusTarget(null)}
           >
-            Vô hiệu hoá tài khoản của <b>{statusTarget.fullName}</b>? Người này bị đăng xuất khỏi mọi thiết bị
-            và không đăng nhập được cho tới khi được kích hoạt lại. Lịch sử cuộc họp của họ vẫn được giữ
-            nguyên.
+            Vô hiệu hoá tài khoản của <b>{statusTarget.fullName}</b>? Người này bị đăng xuất khỏi mọi thiết bị và không
+            đăng nhập được cho tới khi được kích hoạt lại. Lịch sử cuộc họp của họ vẫn được giữ nguyên.
           </ConfirmDialog>
         ) : (
           <ConfirmDialog
@@ -491,8 +558,8 @@ export function UsersPage() {
             onConfirm={() => changeStatus(statusTarget)}
             onClose={() => setStatusTarget(null)}
           >
-            Kích hoạt lại tài khoản của <b>{statusTarget.fullName}</b>? Người này sẽ đăng nhập lại được với
-            vai trò hiện có.
+            Kích hoạt lại tài khoản của <b>{statusTarget.fullName}</b>? Người này sẽ đăng nhập lại được với vai trò hiện
+            có.
           </ConfirmDialog>
         ))}
 
@@ -513,9 +580,9 @@ export function UsersPage() {
           onConfirm={() => sendPasswordReset(resetTarget)}
           onClose={() => setResetTarget(null)}
         >
-          Gửi liên kết đặt lại mật khẩu tới <b>{resetTarget.email}</b>? Liên kết dùng được một lần trong 60 phút; liên
-          kết gửi trước đó (nếu có) sẽ hết hiệu lực. Mật khẩu hiện tại vẫn dùng được cho tới khi {resetTarget.fullName}{' '}
-          đặt mật khẩu mới.
+          Gửi liên kết đặt lại mật khẩu tới <b className="wrap-anywhere">{resetTarget.email}</b>? Liên kết dùng được một
+          lần trong 60 phút; liên kết gửi trước đó (nếu có) sẽ hết hiệu lực. Mật khẩu hiện tại vẫn dùng được cho tới khi{' '}
+          {resetTarget.fullName} đặt mật khẩu mới.
           {resetTarget.id === me?.id &&
             ' Đây là tài khoản của bạn: khi đặt mật khẩu mới qua liên kết, mọi phiên đăng nhập của bạn sẽ kết thúc.'}
         </ConfirmDialog>

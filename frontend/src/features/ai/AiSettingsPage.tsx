@@ -188,7 +188,7 @@ export function AiSettingsPage() {
                 {errors.apiBaseUrl && <small className="field-error">{errors.apiBaseUrl}</small>}
               </label>
               <label className="field">
-                <span className={api ? 'field-required' : undefined}>Model</span>
+                <span className={api ? 'field-required' : undefined}>Mô hình</span>
                 <input
                   value={model}
                   placeholder="deepseek-v4.1-flash"
@@ -204,12 +204,12 @@ export function AiSettingsPage() {
                 {errors.apiModel && <small className="field-error">{errors.apiModel}</small>}
               </label>
               <label className="field">
-                <span className={api && !settings.hasApiKey ? 'field-required' : undefined}>Key</span>
+                <span className={api && !settings.hasApiKey ? 'field-required' : undefined}>Khoá API</span>
                 <span className="ai-settings-key">
                   <input
                     type="password"
                     value={key}
-                    placeholder={settings.hasApiKey ? `Đã lưu ••••${settings.apiKeyHint}` : 'Dán key'}
+                    placeholder={settings.hasApiKey ? `Đã lưu ••••${settings.apiKeyHint}` : 'Dán khoá API'}
                     onChange={(e) => {
                       setKey(e.target.value)
                       clear('apiKey')
@@ -240,9 +240,10 @@ export function AiSettingsPage() {
               </small>
             ) : (
               <small className="field-hint">
+                {/* The "·" stays with what it follows, so a wrapped line never starts with it (audit UI-A23). */}
                 Đang dùng <strong>{inUse}</strong>
                 {settings.updatedAt &&
-                  ` · ${settings.updatedByName ? `${settings.updatedByName} · ` : ''}${formatDateTime(settings.updatedAt)}`}
+                  `\u00a0· ${settings.updatedByName ? `${settings.updatedByName}\u00a0· ` : ''}${formatDateTime(settings.updatedAt)}`}
               </small>
             )}
             <div className="form-actions">

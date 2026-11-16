@@ -103,9 +103,10 @@ const toast = (qa, text) => qa.page.getByRole('status').getByText(text)
 async function openUsers(qa, search) {
   const response = qa.page.waitForResponse((r) => r.url().endsWith('/api/users') && r.request().method() === 'GET')
   response.catch(() => undefined)
-  await qa.goto(search ? `${USERS_PATH}?${search}` : USERS_PATH)
+  // 100 rows a page (the largest choice), so every QA account sits on the first page of the local data.
+  await qa.goto(`${USERS_PATH}?pageSize=100${search ? `&${search}` : ''}`)
   const body = await (await response).json()
-  await qa.expect(qa.page.getByRole('heading', { name: 'Người dùng & Quyền' })).toBeVisible()
+  await qa.expect(qa.page.getByRole('heading', { name: 'Người dùng', exact: true })).toBeVisible()
   await qa.expect(qa.page.locator('tbody tr.row-skeleton')).toHaveCount(0)
   return body
 }
@@ -142,8 +143,8 @@ export default {
       id: 'AC1',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Quản trị mở Người dùng & Quyền: mọi tài khoản hiện đúng họ tên, email, vai trò, trạng thái, theo thứ tự backend (UC-05)',
-      steps: ['Đăng nhập quantri@ (có AdminUsers)', 'Bấm "Người dùng & Quyền" ở sidebar (máy tính) hoặc mở /mgmt/admin/users'],
+      title: 'Quản trị mở Người dùng: mọi tài khoản hiện đúng họ tên, email, vai trò, trạng thái, theo thứ tự backend (UC-05)',
+      steps: ['Đăng nhập quantri@ (có AdminUsers)', 'Bấm "Người dùng" ở sidebar (máy tính) hoặc mở /mgmt/admin/users'],
       expected:
         'Bảng có đúng số dòng như GET /api/users trang nhận, cùng thứ tự (BR-167); dòng đầu trang nói "N tài khoản, M đang hoạt động"; mỗi dòng có họ tên, email, vai trò, trạng thái; không lộ mật khẩu hay mã băm (BR-10); điện thoại: không cuộn ngang, vai trò hiện dưới email, nút thao tác trong màn hình',
       async run(qa) {
@@ -153,7 +154,7 @@ export default {
         let users
         if (qa.device === 'desktop') {
           await qa.goto('/calendar')
-          const link = qa.page.getByRole('link', { name: 'Người dùng & Quyền' })
+          const link = qa.page.getByRole('link', { name: 'Người dùng', exact: true })
           if (!(await link.isVisible())) await qa.page.getByRole('button', { name: 'Quản trị' }).click()
           const response = qa.page.waitForResponse((r) => r.url().endsWith('/api/users') && r.request().method() === 'GET')
           response.catch(() => undefined)
@@ -169,9 +170,15 @@ export default {
         }
         const active = users.filter((u) => u.isActive).length
         await qa.expect(qa.page.getByText(`${users.length} tài khoản, ${active} đang hoạt động`)).toBeVisible()
-        await qa.expect(qa.page.locator('tbody tr')).toHaveCount(users.length)
+        // The list pages in the browser (all accounts come in one response): 20 rows by default, in the backend's order.
+        const firstPage = users.slice(0, 20)
+        await qa.expect(qa.page.locator('tbody tr')).toHaveCount(firstPage.length)
         const emails = await qa.page.locator('tbody tr .cell-sub').allInnerTexts()
-        qa.expect(emails, 'rows are not in the order the backend sent').toEqual(users.map((u) => u.email))
+        qa.expect(emails, 'rows are not in the order the backend sent').toEqual(firstPage.map((u) => u.email))
+        if (users.length > 20) {
+          await qa.expect(qa.page.getByRole('navigation', { name: 'Phân trang' })).toContainText(`trong ${users.length.toLocaleString('vi-VN')} tài khoản`)
+        }
+        users = await openUsers(qa)
         if (qa.device === 'desktop') {
           for (const col of ['Họ tên', 'Vai trò', 'Đăng nhập', 'Trạng thái', 'Ngày tạo', 'Thao tác']) {
             await qa.expect(qa.page.getByRole('columnheader', { name: col })).toBeVisible()
@@ -201,11 +208,6 @@ export default {
         await qa.shot('dong-qa-a')
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
-        if (users.length > 50) {
-          qa.note(
-            `Danh sách ${users.length} tài khoản hiện trên một trang, không có phân trang: UC-05 bước 5 và BR-11 nói có phân trang, API doc nói cố ý không phân trang — chưa thấy ghi trong SCRUM-13.`,
-          )
-        }
       },
     },
     {
@@ -908,13 +910,13 @@ export default {
       id: `AC${18 + i}`,
       role,
       devices: role === 'member' ? ['desktop', 'phone'] : ['desktop'],
-      title: `${{ chair: 'Chủ toạ', secretary: 'Thư ký', member: 'Thành viên' }[role]} không có AdminUsers: không thấy mục Người dùng & Quyền, mở URL thấy 404, mọi API /api/users trả 403`,
+      title: `${{ chair: 'Chủ toạ', secretary: 'Thư ký', member: 'Thành viên' }[role]} không có AdminUsers: không thấy mục Người dùng, mở URL thấy 404, mọi API /api/users trả 403`,
       steps: [
         `Đăng nhập ${role} (kiểm capability trước)`,
         'Xem sidebar; mở /mgmt/admin/users',
         'GET/POST /api/users, GET/PUT /api/users/{A}, PUT …/status, POST …/password-reset',
       ],
-      expected: 'Không có mục "Người dùng & Quyền"; "Không tìm thấy trang"; mọi lời gọi 403 (endpoint cố định, AGENTS.md); A không đổi',
+      expected: 'Không có mục "Người dùng"; "Không tìm thấy trang"; mọi lời gọi 403 (endpoint cố định, AGENTS.md); A không đổi',
       async run(qa) {
         const { roleName, capabilities } = await qa.capabilities()
         if (capabilities.includes('AdminUsers')) {
@@ -923,7 +925,7 @@ export default {
         const admin = await qa.api('admin')
         const a = await ensureUser(qa, admin, 'a')
         await qa.goto('/calendar')
-        await qa.expect(qa.page.getByRole('link', { name: 'Người dùng & Quyền' })).toHaveCount(0)
+        await qa.expect(qa.page.getByRole('link', { name: 'Người dùng', exact: true })).toHaveCount(0)
         await qa.goto(USERS_PATH)
         await qa.expect(qa.page.getByRole('heading', { name: 'Không tìm thấy trang' })).toBeVisible()
         await qa.shot('404')
