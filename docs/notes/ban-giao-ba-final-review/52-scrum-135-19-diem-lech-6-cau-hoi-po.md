@@ -37,14 +37,14 @@
 - [ ] **Điểm 18 (SCRUM-35):** banner extract còn "DOCX cập nhật 24/10/2026", nội dung đã có UC-84/85 tháng 11 — cập nhật ngày banner (cosmetic, làm kèm lần sync tới).
 - [ ] **Điểm 19:** `docs/06-sequencediagram/README.md:579` còn coi UC-09 là "thiết kế đích" (UC-09 đã bỏ hẳn); UC-34b/BR-334/335 viết "locked account" trong khi code là "deactivated" (`PersonalLibraryEndpoints.cs:8`).
 
-## 5. Sáu câu hỏi chờ PO/BA (chi tiết)
+## 5. Sáu câu hỏi chờ PO/BA — PO chốt 16/11/2026, đã sửa trên nhánh này
 
-1. **BR-09 (cửa sổ token sau đăng xuất):** BR-09 (`06-business-rules.md:33`) đòi sau sign-out không còn quyền nào; code logout chỉ hủy refresh token (`AuthEndpoints.cs:158-163`), access JWT còn xài được tới hết hạn (≤ 15 phút, `AuthenticationOptions.cs`). Tài liệu API (`01-xac-thuc.md`) đã mô tả đúng code. PO chọn: (a) chấp nhận cửa sổ ≤ 15 phút → sửa BR-09 theo code; (b) đòi thu hồi access token thật → việc BE lớn (blacklist/versioning), mở ticket riêng.
-2. **BR-04 (wording sau SCRUM-63):** BR-04 đòi "active role/permission" để đăng nhập; sau SCRUM-63 mọi vai trò kể cả 0 capability đều đăng nhập được (`01-xac-thuc.md:123-124` tự ghi "Chờ BA sửa đặc tả UC-01"). BA chốt lại wording BR-04/BR-06 + UC-01/UC-02.
-3. **`actions.canCast`:** `15-bieu-quyet.md` §8 FE tự khóa nút khi `readConfirmedAt:null`, nhưng §2/§5 vẫn liệt kê `409/MSG252` như điều kiện bỏ phiếu. PO chốt: BE tính "chưa đọc" vào `canCast:false`, hay giữ FE tự khóa như hiện tại.
-4. **Q1/Q2 note 40 (UC-17):** dropdown Trạng thái có giữ "Hôm nay" không (Q1); vẽ lại wireframe 4.3 (Q2). Chưa có thì điểm 12 chỉ sửa được chữ DOCX.
-5. **BR-371 (OTP khách):** gửi lại mã cách nhau ≥ 1 phút, tối đa 20 mã/24h — docs còn "NEEDS REVIEW PO". PO chốt số.
-6. **Chặn 50 người trong phòng (BR-336/UC-37 EX-7):** docs mô tả chặn và ghi "chưa gán MSG"; backend không thực thi (rào thực tế nằm ở LiveKit ngoài repo). PO chốt: ai chặn, có cần MSG mới không, hay bỏ mốc 50 khỏi docs.
+1. **BR-09 (cửa sổ token sau đăng xuất):** PO chọn (a) chấp nhận cửa sổ ≤ 15 phút → sửa BR-09 theo code. Fix: BR-09 — đăng xuất chỉ hủy refresh token của phiên đó, access token đã cấp còn hiệu lực tới hết hạn (tối đa 15 phút); `docs/03-api/01-xac-thuc.md` giữ nguyên (đã mô tả đúng code).
+2. **BR-04 (wording sau SCRUM-63):** mọi vai trò kể cả 0 capability đều đăng nhập được. Fix: BR-04/BR-06 (bỏ đòi "active role/permission", vai trò 0 quyền là cấu hình hợp lệ) + UC-01/UC-02 PRE-1 (ghi rõ mọi vai trò đăng nhập được); `docs/03-api/01-xac-thuc.md` bỏ câu "Chờ BA sửa đặc tả UC-01", thay bằng ghi nhận PO chốt 16/11/2026.
+3. **`actions.canCast`:** PO chốt giữ cả hai lớp — FE tự khóa khi chưa đọc (`readConfirmedAt:null`), server vẫn chặn `409/MSG252` nếu gọi thẳng. Fix: `docs/03-api/15-bieu-quyet.md` §"Bỏ phiếu khi biểu quyết có tài liệu" — GIỮ `MSG252`, ghi rõ `canCast` chỉ tính trạng thái + vai trò, không tính việc đọc tài liệu. Không đụng mã MSG khác.
+4. **Q1/Q2 note 40 (UC-17):** PO chốt Q1 theo code — chọn trạng thái ở dropdown Trạng thái thì GIỮ Thời điểm = Hôm nay (chỉ thẻ/link mới bỏ lọc ngày). Fix: text màn 4.3 trong DOCX — "Hôm nay" nằm ở ô Thời điểm (mở màn preset Today), không ở ô Trạng thái; message empty-state "Hôm nay không có cuộc họp nào." + nút "Xem mọi cuộc họp". Q2 (vẽ lại wireframe 4.3, cần chụp server test) KHÔNG thuộc scope này — không đụng PNG.
+5. **BR-371 (OTP khách):** PO chốt số đúng như code — gửi lại cách nhau ≥ 1 phút, tối đa 20 mã/24 giờ. Fix: BR-371 rationale bỏ mọi chữ "NEEDS REVIEW PO / chờ PO", thay bằng ghi nhận PO 16/11/2026. UC-04 EX-5/EX-6 đã đúng, không sửa.
+6. **Chặn 50 người trong phòng (BR-336/UC-37 EX-7):** PO chốt LiveKit trên server chặn (cấu hình 50 người/phòng, `deploy/livekit.yaml` `max_participants: 50`), backend không kiểm. Không cấp mã MSG mới; người thứ 51 thấy thông báo như lỗi kết nối. Fix: BR-336 (ghi rõ LiveKit chặn, backend không kiểm, Enforced By → LiveKit room service) + UC-37 PRE-4/EX-7 (EX-7 thấy lỗi như EX-5/MSG118, không mã mới).
 
 ## 6. Đóng ticket (DEVELOPMENT_WORKFLOW §2.2)
 
