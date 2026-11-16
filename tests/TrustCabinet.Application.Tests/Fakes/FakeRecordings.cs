@@ -1,0 +1,241 @@
+using TrustCabinet.Application.Recordings;
+using TrustCabinet.Application.Transcription;
+using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
+
+namespace TrustCabinet.Application.Tests.Fakes;
+
+/// <summary>
+/// Recordings in a list. Rows read under their lock are in <see cref="Locked"/>; nothing here saves. Members no test
+/// needs yet throw.
+/// </summary>
+public sealed class FakeRecordingRepository : IRecordingRepository
+{
+    public List<Recording> Recordings { get; } = [];
+    public List<Guid> Locked { get; } = [];
+    public List<Guid> TranscriptsDeleted { get; } = [];
+    public List<Guid> CombinableMeetings { get; } = [];
+
+    public Task<IReadOnlyList<Recording>> ListAsync(Guid meetingId, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<Recording>>(Recordings.Where(r => r.MeetingId == meetingId)
+            .OrderByDescending(r => r.CreatedAt).ToArray());
+
+    public Task<Recording?> FindAsync(Guid recordingId, bool forUpdate, CancellationToken ct)
+    {
+        if (forUpdate) Locked.Add(recordingId);
+        return Task.FromResult(Recordings.SingleOrDefault(r => r.Id == recordingId));
+    }
+
+    public Task<IReadOnlyList<Guid>> ListExpiredAsync(DateTimeOffset now, int take, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<Guid>>(Recordings
+            .Where(r => r.Status != RecordingStatus.Deleted && r.RetainUntil < now).Select(r => r.Id).Take(take).ToArray());
+
+    public Task<Recording?> FindRoomRecordingAsync(Guid meetingId, bool forUpdate, CancellationToken ct)
+    {
+        var room = Recordings.Where(r => r.MeetingId == meetingId && RecordingRules.IsRoomMic(r)
+            && r.Status == RecordingStatus.Available).MaxBy(r => r.CreatedAt);
+        if (room is not null && forUpdate) Locked.Add(room.Id);
+        return Task.FromResult(room);
+    }
+
+    public void Add(Recording recording) => Recordings.Add(recording);
+
+    public void Remove(Recording recording) => Recordings.Remove(recording);
+
+    public Task DeleteTranscriptAsync(Guid recordingId, CancellationToken ct)
+    {
+        TranscriptsDeleted.Add(recordingId);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<Guid>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<Guid>>(CombinableMeetings);
+
+    public Task<IReadOnlyList<Recording>> ListByMeetingAsync(Guid meetingId, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<Recording>>(Recordings.Where(r => r.MeetingId == meetingId).ToArray());
+
+    public Task<Recording?> LockAsync(Guid recordingId, CancellationToken ct) => FindAsync(recordingId, true, ct);
+
+    public Task<IReadOnlyList<Guid>> ListIdleTakesAsync(DateTimeOffset before, int take, CancellationToken ct) => throw new NotSupportedException();
+}
+
+/// <summary>
+/// The sentences as their rows (<see cref="Rows"/>); a sentence staged with <see cref="Add"/> is read back as one, or,
+/// with <see cref="ConcurrentCopy"/> set, the copy another request stored first is. Guests admitted and notices
+/// confirmed are by session id.
+/// </summary>
+public sealed class FakeSpeechClipRepository : ISpeechClipRepository
+{
+    public List<ClipRow> Rows { get; } = [];
+
+    /// <summary>The id the speaker's browser gave each row's sentence.</summary>
+    public Dictionary<Guid, Guid> ClientIds { get; } = [];
+    public List<SpeechClip> Added { get; } = [];
+    public List<SpeechClip> Clips { get; } = [];
+    public HashSet<Guid> AdmittedSessions { get; } = [];
+    public HashSet<Guid> ConfirmedNotices { get; } = [];
+    public List<CombinedClip> Mixable { get; } = [];
+    public DateTimeOffset? LastChange { get; set; }
+
+    /// <summary>What the next <see cref="Add"/> leaves behind in its place: the same sentence, sent twice at once.</summary>
+    public ClipRow? ConcurrentCopy { get; set; }
+
+    public Task<IReadOnlyList<ClipRow>> ListRowsAsync(Guid meetingId, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<ClipRow>>(Rows);
+
+    public Task<ClipRow?> FindRowByClientIdAsync(Guid meetingId, Guid? speakerId, Guid? guestInvitationId, Guid clientClipId,
+        CancellationToken ct)
+        => Task.FromResult(Rows.SingleOrDefault(r => r.SpeakerId == (speakerId ?? guestInvitationId)
+            && ClientIds.GetValueOrDefault(r.Id) == clientClipId));
+
+    public Task<SpeechClip?> FindAsync(Guid clipId, CancellationToken ct) => Task.FromResult(Clips.SingleOrDefault(c => c.Id == clipId));
+
+    public Task<bool> IsGuestSessionAdmittedAsync(Guid sessionId, Guid invitationId, Guid meetingId, DateTimeOffset now,
+        CancellationToken ct) => Task.FromResult(AdmittedSessions.Contains(sessionId));
+
+    public Task<bool> HasGuestConfirmedNoticeAsync(Guid sessionId, CancellationToken ct)
+        => Task.FromResult(ConfirmedNotices.Contains(sessionId));
+
+    public Task<IReadOnlyList<string>> ListAudioCreatedBeforeAsync(DateTimeOffset cutoff, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<string>>(Clips.Where(c => c.CreatedAt < cutoff && c.AudioPath != null)
+            .Select(c => c.AudioPath!).ToArray());
+
+    public Task<int> DeleteCreatedBeforeAsync(DateTimeOffset cutoff, CancellationToken ct)
+        => Task.FromResult(Clips.RemoveAll(c => c.CreatedAt < cutoff));
+
+    public Task<IReadOnlyList<CombinedClip>> ListMixableAsync(Guid meetingId, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<CombinedClip>>(Mixable);
+
+    public Task<DateTimeOffset?> FindLastChangeAsync(Guid meetingId, CancellationToken ct) => Task.FromResult(LastChange);
+
+    public void Add(SpeechClip clip)
+    {
+        Added.Add(clip);
+        var row = ConcurrentCopy ?? new ClipRow(clip.Id, clip.SpeakerId ?? clip.GuestInvitationId ?? Guid.Empty, "Thành viên",
+            clip.StartedAt, clip.DurationMs, clip.Text, clip.UpdatedAt, clip.EditedAt, null, clip.Segments, clip.ExcludedAt,
+            clip.ExclusionReason, null, clip.AudioPath != null, clip.Peaks, clip.GuestInvitationId != null);
+        Rows.Add(row);
+        ClientIds[row.Id] = clip.ClientClipId;
+    }
+
+    public void Remove(SpeechClip clip) => Clips.Remove(clip);
+
+    public Task<IReadOnlyList<ClipRow>> ListRowsChangedSinceAsync(Guid meetingId, DateTimeOffset after, CancellationToken ct) => throw new NotSupportedException();
+    public Task<IReadOnlyList<ClipRow>> ListRowsStartedBetweenAsync(Guid meetingId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct) => throw new NotSupportedException();
+    public Task<IReadOnlyList<ClipRow>> ListGuestRowsAsync(Guid meetingId, Guid invitationId, DateTimeOffset? since, CancellationToken ct) => throw new NotSupportedException();
+    public Task<SpeechClip?> FindGuestClipAsync(Guid clipId, Guid meetingId, Guid invitationId, CancellationToken ct) => throw new NotSupportedException();
+    public Task<bool> HasGuestAudioAsync(Guid clipId, Guid meetingId, Guid invitationId, CancellationToken ct) => throw new NotSupportedException();
+    public Task<ClipPlayback?> FindPlaybackAsync(Guid clipId, CancellationToken ct) => throw new NotSupportedException();
+    public Task<SpeechClipAudio?> FindAudioAsync(Guid clipId, CancellationToken ct) => throw new NotSupportedException();
+}
+
+/// <summary>Files in memory, by path. Deleted paths are kept in order in <see cref="Deleted"/>.</summary>
+public sealed class FakeRecordingStorage : IRecordingStorage
+{
+    private int _next;
+
+    public Dictionary<string, byte[]> Files { get; } = [];
+    public List<string> Deleted { get; } = [];
+
+    public async Task<(string StoragePath, long ByteSize)> SaveAsync(Stream content, string extension, long maxBytes, CancellationToken ct)
+    {
+        var path = Create(extension);
+        using var copy = new MemoryStream();
+        await content.CopyToAsync(copy, ct);
+        Files[path] = copy.ToArray();
+        return (path, Files[path].Length);
+    }
+
+    public string Create(string extension)
+    {
+        var path = $"file-{++_next}{extension}";
+        Files[path] = [];
+        return path;
+    }
+
+    public async Task<long> WriteAtAsync(string storagePath, long offset, Stream content, long maxBytes, CancellationToken ct)
+    {
+        using var copy = new MemoryStream();
+        await content.CopyToAsync(copy, ct);
+        var file = Files[storagePath];
+        var written = (int)Math.Min(copy.Length, maxBytes);
+        if (file.Length < offset + written) Array.Resize(ref file, (int)offset + written);
+        copy.ToArray().AsSpan(0, written).CopyTo(file.AsSpan((int)offset));
+        Files[storagePath] = file;
+        return written;
+    }
+
+    public void Truncate(string storagePath, long length)
+    {
+        var file = Files[storagePath];
+        Array.Resize(ref file, (int)length);
+        Files[storagePath] = file;
+    }
+
+    public void SealWav(string storagePath) { }
+
+    public Stream OpenRead(string storagePath) => new MemoryStream(Files[storagePath], writable: false);
+
+    public void Delete(string storagePath)
+    {
+        Files.Remove(storagePath);
+        Deleted.Add(storagePath);
+    }
+
+    public Task<string> ConcatAsync(string first, string second, long skip, CancellationToken ct) => throw new NotSupportedException();
+    public Task<string> CutAsync(string source, long from, long length, CancellationToken ct) => throw new NotSupportedException();
+}
+
+/// <summary>What was told to the meeting, with how many commits the unit of work had made by then.</summary>
+public sealed class FakeSpeechChangePublisher(FakeUnitOfWork unitOfWork) : ISpeechChangePublisher
+{
+    public List<(SpeechChange Change, int CommitsBefore)> Published { get; } = [];
+
+    public Task PublishAsync(SpeechChange change, CancellationToken ct)
+    {
+        Published.Add((change, unitOfWork.Commits));
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>Signs every link as <c>signed/{id}</c>; checks nothing.</summary>
+public sealed class FakeRecordingSigner : IRecordingPlaybackSigner, ISpeechClipAudioSigner
+{
+    public RecordingPlayback Sign(Guid recordingId, DateTimeOffset now, bool download = false) => new($"signed/{recordingId}", now);
+    public RecordingPlayback Sign(Guid clipId, DateTimeOffset now) => new($"signed/{clipId}", now);
+    public bool Verify(Guid recordingId, long expires, string signature, DateTimeOffset now, bool download = false) => throw new NotSupportedException();
+    public bool Verify(Guid clipId, long expires, string signature, DateTimeOffset now) => throw new NotSupportedException();
+}
+
+/// <summary>Hears <see cref="Text"/> in every sentence.</summary>
+public sealed class FakeSpeechEngine : ISpeechEngine
+{
+    public string Text { get; set; } = "Xin chào";
+    public bool IsConfigured => true;
+
+    public Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct)
+        => Task.FromResult(new SpeechTranscription(1000, "vi", "test", "test", [new SpeechSegment(0, 1000, null, Text)], []));
+}
+
+/// <summary>Transcripts, for the room mic's takes. What is staged is in <see cref="Added"/>; no test reads one yet.</summary>
+public sealed class FakeTranscriptRepository : ITranscriptRepository
+{
+    public List<Transcript> Added { get; } = [];
+
+    public void Add(Transcript transcript) => Added.Add(transcript);
+
+    public Task<Transcript?> FindByRecordingAsync(Guid recordingId, bool tracked, CancellationToken ct) => throw new NotSupportedException();
+    public Task<TranscriptSegment?> FindSegmentAsync(Guid segmentId, CancellationToken ct) => throw new NotSupportedException();
+    public Task<Guid?> FindSegmentRecordingAsync(Guid segmentId, CancellationToken ct) => throw new NotSupportedException();
+    public Task<Guid?> ClaimNextAsync(DateTimeOffset now, CancellationToken ct) => throw new NotSupportedException();
+    public Task<int> RequeueProcessingAsync(DateTimeOffset now, CancellationToken ct) => throw new NotSupportedException();
+    public Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct) => throw new NotSupportedException();
+    public Task ReloadAsync(Transcript transcript, CancellationToken ct) => throw new NotSupportedException();
+    public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct) => throw new NotSupportedException();
+    public Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct) => throw new NotSupportedException();
+    public void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers) => throw new NotSupportedException();
+    public void AddSegments(IEnumerable<TranscriptSegment> segments) => throw new NotSupportedException();
+    public Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct) => throw new NotSupportedException();
+    public void DiscardChanges() => throw new NotSupportedException();
+    public Task SaveChangesAsync(CancellationToken ct) => throw new NotSupportedException();
+}

@@ -119,7 +119,21 @@ public interface IRecordingRepository
     void Remove(Recording recording);
     /// <summary>Deletes the transcript made from the recording, segments included.</summary>
     Task DeleteTranscriptAsync(Guid recordingId, CancellationToken ct);
-    Task SaveChangesAsync(CancellationToken ct);
+
+    /// <summary>
+    /// The hybrid meetings, not secret, that ended between <paramref name="since"/> and <paramref name="settled"/>, oldest
+    /// end first: those whose combined recording may be due (ADR-0062). One query.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since, CancellationToken ct);
+
+    /// <summary>Every recording of the meeting, erased ones included, untracked and unordered, without its maker or transcript. One query.</summary>
+    Task<IReadOnlyList<Recording>> ListByMeetingAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>
+    /// Takes an exclusive lock on the recording's row, then reads it tracked, without its maker; null when there is
+    /// none. Needs the caller's transaction for the lock to last.
+    /// </summary>
+    Task<Recording?> LockAsync(Guid recordingId, CancellationToken ct);
 }
 
 /// <summary>Where the audio bytes live. Paths are relative to the store's root and never come from the client.</summary>

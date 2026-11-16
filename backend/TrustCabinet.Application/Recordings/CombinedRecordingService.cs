@@ -1,13 +1,12 @@
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Application.Recordings;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
-namespace TrustCabinet.Infrastructure.Recordings;
+namespace TrustCabinet.Application.Recordings;
 
 /// <summary>
 /// ADR-0062 — after a hybrid meeting ends, the server lays its room recording and every online attendee's sentences on
@@ -21,7 +20,8 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// Mixed in blocks of ten seconds, so a meeting of hours never sits in memory: the room recording is read where the
 /// block needs it, and a sentence (a minute at most) is loaded when the block reaches it and dropped once passed.
 /// </summary>
-public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordingStorage storage, ISpeechChangePublisher publisher,
+public sealed class CombinedRecordingService(IRecordingRepository recordingRows, ISpeechClipRepository clipRows,
+    IUnitOfWork unitOfWork, IRecordingStorage storage, ISpeechChangePublisher publisher,
     TimeProvider clock, IOptions<RecordingOptions> options, ILogger<CombinedRecordingService> logger) : ICombinedRecordingService
 {
     private const int BlockSamples = CombinedRecordingRules.SampleRate * 10;
@@ -31,25 +31,21 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
 
     private sealed record RoomPart(DateTimeOffset StartedAt, long DurationMs, string StoragePath, long OffsetMs);
 
-    private sealed record Clip(DateTimeOffset StartedAt, long DurationMs, string AudioPath);
-
     /// <param name="Changed">The last change to any source. The combined row's UpdatedAt holds the one it was built from,
     /// not when it was built: a source that changes while it is being mixed is then still newer, and gets its rebuild.</param>
     private sealed record Plan(Guid MeetingId, Guid? ExistingId, DateTimeOffset Changed, IReadOnlyList<RoomPart> Room,
-        IReadOnlyList<Clip> Clips, Recording Template);
+        IReadOnlyList<CombinedClip> Clips, Recording Template);
 
     public async Task<bool> BuildNextAsync(CancellationToken ct = default)
     {
         var now = clock.GetUtcNow();
         var settled = now - CombinedRecordingRules.Settle;
         var since = now - CombinedRecordingRules.Window;
-        var meetings = await db.Meetings.AsNoTracking()
-            .Where(m => m.Mode == MeetingMode.Hybrid && m.Status == MeetingStatus.Ended && m.Sensitivity != Sensitivity.Secret
-                && m.ActualEndedAt != null && m.ActualEndedAt < settled && m.ActualEndedAt > since)
-            .OrderBy(m => m.ActualEndedAt).Select(m => m.Id).ToListAsync(ct);
+        var meetings = await unitOfWork.ExecuteAsync(token => recordingRows.ListCombinableMeetingsAsync(settled, since, token),
+            TransactionMode.None, ct);
         foreach (var meetingId in meetings)
         {
-            var plan = await PlanAsync(meetingId, settled, ct);
+            var plan = await unitOfWork.ExecuteAsync(token => PlanAsync(meetingId, settled, token), TransactionMode.None, ct);
             if (plan is null) continue;
             if (Failed.TryGetValue(meetingId, out var failedAt) && failedAt >= plan.Changed) continue;
             try
@@ -59,7 +55,9 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
-                logger.LogError(ex, "Could not build the combined recording of meeting {MeetingId}", meetingId);
+                // A storage failure is logged as the database's own exception, as before the move (rule R8).
+                logger.LogError(ex is PersistenceException { InnerException: { } inner } ? inner : ex,
+                    "Could not build the combined recording of meeting {MeetingId}", meetingId);
                 Failed[meetingId] = plan.Changed;
             }
             return true;
@@ -70,7 +68,7 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
     /// <summary>What to mix for this meeting, or null when there is nothing to (re)build yet.</summary>
     private async Task<Plan?> PlanAsync(Guid meetingId, DateTimeOffset settled, CancellationToken ct)
     {
-        var recordings = await db.Recordings.AsNoTracking().Where(r => r.MeetingId == meetingId).ToListAsync(ct);
+        var recordings = await recordingRows.ListByMeetingAsync(meetingId, ct);
         // A room take still streaming will be appended to the room recording: wait for it.
         if (recordings.Any(r => r.Source == RecordingSource.BrowserCapture && r.Status == RecordingStatus.Pending)) return null;
         var existing = recordings.Where(r => r.Source == RecordingSource.Combined)
@@ -78,15 +76,11 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
         if (existing is { Status: RecordingStatus.Deleted }) return null;
 
         var rooms = recordings.Where(RecordingRules.IsRoomMic).Where(r => r.Status == RecordingStatus.Available).ToList();
-        var clips = await db.SpeechClips.AsNoTracking()
-            .Where(c => c.MeetingId == meetingId && c.AudioPath != null && c.ExcludedAt == null && c.DurationMs > 0)
-            .OrderBy(c => c.StartedAt)
-            .Select(c => new Clip(c.StartedAt, c.DurationMs, c.AudioPath!))
-            .ToListAsync(ct);
+        var clips = await clipRows.ListMixableAsync(meetingId, ct);
         // Only a meeting heard both in the room and online: either alone already plays as one track.
         if (rooms.Count == 0 || clips.Count == 0) return null;
 
-        var clipChanged = await db.SpeechClips.Where(c => c.MeetingId == meetingId).MaxAsync(c => (DateTimeOffset?)c.UpdatedAt, ct);
+        var clipChanged = await clipRows.FindLastChangeAsync(meetingId, ct);
         var roomChanged = recordings.Where(r => r.Source != RecordingSource.Combined).Max(r => r.UpdatedAt);
         var changed = clipChanged is { } c2 && c2 > roomChanged ? c2 : roomChanged;
         if (changed > settled) return null;
@@ -125,14 +119,12 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
         var byteSize = RecordingRules.WavHeaderBytes + total * 2;
         var durationMs = track.TotalMs;
         string? replaced = null;
-        var kept = await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        var kept = await unitOfWork.ExecuteAsync(async token =>
         {
-            await using var transaction = await db.Database.BeginTransactionAsync(ct);
             Recording? row = null;
             if (plan.ExistingId is { } id)
             {
-                await db.Recordings.FromSqlInterpolated($"SELECT * FROM recordings WHERE id = {id} FOR UPDATE").AsNoTracking().ToListAsync(ct);
-                row = await db.Recordings.SingleOrDefaultAsync(r => r.Id == id, ct);
+                row = await recordingRows.LockAsync(id, token);
                 // Erased while it was being mixed: the Secretary's choice stands.
                 if (row is null || row.Status == RecordingStatus.Deleted) return false;
                 replaced = row.StoragePath;
@@ -144,7 +136,7 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
             }
             else
             {
-                db.Recordings.Add(new Recording
+                recordingRows.Add(new Recording
                 {
                     MeetingId = plan.MeetingId, Source = RecordingSource.Combined, Status = RecordingStatus.Available,
                     FileName = CombinedRecordingRules.FileName(origin), StoragePath = path, ContentType = "audio/wav",
@@ -154,11 +146,10 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
                     CreatedAt = now, UpdatedAt = plan.Changed,
                 });
             }
-            await db.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
+            await unitOfWork.SaveChangesAsync(token);
             return true;
-        });
-        db.ChangeTracker.Clear();
+        }, commitWhen: stored => stored, TransactionMode.ReadCommitted, ct);
+        unitOfWork.DiscardChanges();
         if (!kept)
         {
             storage.Delete(path);
@@ -229,7 +220,7 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
     }
 
     /// <summary>One sentence's samples; null (left out) when its audio is gone or is not 16 kHz mono PCM.</summary>
-    private async Task<short[]?> LoadClipAsync(Clip clip, CancellationToken ct)
+    private async Task<short[]?> LoadClipAsync(CombinedClip clip, CancellationToken ct)
     {
         try
         {

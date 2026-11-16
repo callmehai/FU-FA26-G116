@@ -13,6 +13,7 @@ using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notes;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Participants;
+using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Reports;
 using TrustCabinet.Application.Speaking;
 using TrustCabinet.Application.Users;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         AddVotes(services);
         AddCalls(services);
         AddSpeaking(services);
+        AddRecordings(services);
         return services;
     }
 
@@ -171,5 +173,18 @@ public static class DependencyInjection
     {
         services.AddScoped<ISpeakingService, SpeakingService>();
         services.AddScoped<ISpeakingMeetingEnd, SpeakingMeetingEnd>();
+    }
+
+    /// <summary>
+    /// <see cref="RecordingOptions"/>, the storage and the signers are the infrastructure project's to supply.
+    /// <see cref="SpeechClipGate"/> is one for the whole server: it limits the sentences sent to the speech worker.
+    /// </summary>
+    private static void AddRecordings(IServiceCollection services)
+    {
+        services.AddScoped<IRecordingService, RecordingService>();
+        services.AddScoped<IRoomTakeService, RoomTakeService>();
+        services.AddScoped<ICombinedRecordingService, CombinedRecordingService>();
+        services.AddSingleton<SpeechClipGate>();
+        services.AddScoped<ISpeechClipService, SpeechClipService>();
     }
 }

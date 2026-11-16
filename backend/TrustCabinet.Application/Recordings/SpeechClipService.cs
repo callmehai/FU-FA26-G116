@@ -1,20 +1,17 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Infrastructure.GuestAccess;
-using TrustCabinet.Application.Recordings;
 using TrustCabinet.Domain.Recordings;
 using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Transcription;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Recordings;
+namespace TrustCabinet.Application.Recordings;
 
 /// <summary>
 /// How many sentences go to the speech worker at once, across the whole server. The worker runs on a couple of CPU
@@ -34,7 +31,8 @@ public sealed class SpeechClipGate
 /// was said and who said it — the owner of the mic, never a guess — and all of it goes when the recordings'
 /// retention period ends. A guest's mic is captured the same way (SCRUM-129, ADR-0051), through their session.
 /// </summary>
-public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetDbContext db, ISpeechEngine engine,
+public sealed class SpeechClipService(IMeetingRepository meetings, ISpeechClipRepository clips, IUnitOfWork unitOfWork,
+    ISpeechEngine engine,
     SpeechClipGate gate, ISpeechChangePublisher publisher, IAuditService audit, TimeProvider clock,
     IOptions<RecordingOptions> options, IRecordingStorage storage, ISpeechClipAudioSigner signer,
     ILogger<SpeechClipService> logger) : ISpeechClipService
@@ -44,19 +42,19 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         try
         {
             var now = clock.GetUtcNow();
-            var (meeting, failure) = await ListenableMeetingAsync(meetingId, actorId, ct);
+            var (meeting, failure) = await ReadAsync(token => ListenableMeetingAsync(meetingId, actorId, token), ct);
             if (meeting is null) return new(failure);
             var secretary = RecordingRules.IsSecretary(meeting, actorId);
             var officer = SpeechClipRules.RunsRecord(meeting, actorId);
-            var rows = await ReadWithNeighboursAsync(meetingId, since, ct);
+            var rows = await ReadAsync(token => ReadWithNeighboursAsync(meetingId, since, token), ct);
             var marks = SpeechClipFold.Fold([.. rows.All.Select(FoldOf)]);
             var byId = rows.All.ToDictionary(r => r.Id);
             var items = rows.Shown.Select(r => View(r, marks.GetValueOrDefault(r.Id), byId, actorId, secretary, officer)).ToList();
             return new(Data: new SpeechClipList(meetingId, SpeechClipRules.Capturing(meeting), secretary, now, items, officer, RecordingRules.Export(meeting, actorId) == RecordingFailure.None, options.Value.RetentionDays));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to list speech clips of {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to list speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.ReadFailed);
         }
     }
@@ -65,7 +63,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     {
         try
         {
-            var (meeting, failure) = await ListenableMeetingAsync(meetingId, actorId, ct);
+            var (meeting, failure) = await ReadAsync(token => ListenableMeetingAsync(meetingId, actorId, token), ct);
             if (meeting is null) return new(failure);
             switch (RecordingRules.Export(meeting, actorId))
             {
@@ -73,7 +71,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 case RecordingFailure.SecretMeeting: return new(SpeechClipFailure.SecretMeeting);
             }
             // What the record holds: a sentence taken out of it is not exported, an overheard copy still is until then.
-            var rows = (await RowsAsync(db.SpeechClips.AsNoTracking().Where(c => c.MeetingId == meetingId), ct))
+            var rows = (await ReadAsync(token => clips.ListRowsAsync(meetingId, token), ct))
                 .Where(r => r.ExcludedAt is null).ToList();
             var now = clock.GetUtcNow();
             var started = meeting.ActualStartedAt ?? rows.FirstOrDefault()?.StartedAt ?? now;
@@ -83,9 +81,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 new { sentences = rows.Count }, ct);
             return new(Data: new ExportedText(TranscriptText.FileName(started), text));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to export the speech clips of {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to export the speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.ReadFailed);
         }
     }
@@ -94,13 +92,13 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     {
         try
         {
-            var (meeting, failure) = await ListenableMeetingAsync(meetingId, actorId, ct);
+            var (meeting, failure) = await ReadAsync(token => ListenableMeetingAsync(meetingId, actorId, token), ct);
             if (meeting is null) return new(failure);
             return SpeechClipRules.Accepts(meeting, clock.GetUtcNow()) ? new() : new(SpeechClipFailure.NotCapturing);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to check speech capture for {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to check speech capture for {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
         }
     }
@@ -133,12 +131,12 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             var allowed = await check(ct);
             if (allowed.Failure != SpeechClipFailure.None) return allowed;
             // A retry of a sentence already stored (its response was lost): answer as before, transcribe nothing.
-            existing = await FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, ct);
+            existing = await ReadAsync(token => FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, token), ct);
             if (existing is not null) return new(Data: existing);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to read speech clips of {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to read speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
         }
 
@@ -153,7 +151,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         try
         {
             var now = clock.GetUtcNow();
-            var clip = await meetings.InTransactionAsync(async token =>
+            var clip = await unitOfWork.ExecuteAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(meetingId, false, token);
                 if (meeting is null || !await stillAccepts(meeting, now, token)) return null;
@@ -167,24 +165,24 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                     AudioPath = audioPath, AudioContentType = audioPath is null ? null : upload.ContentType,
                     Peaks = audioPath is null ? null : SpeechClipPeaks.FromWav(upload.Audio),
                 };
-                db.SpeechClips.Add(row);
-                await db.SaveChangesAsync(token);
+                clips.Add(row);
+                await unitOfWork.SaveChangesAsync(token);
                 return row;
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             if (clip is null) return new(SpeechClipFailure.NotCapturing);
             kept = true;
             await PublishAsync(meetingId, "ClipAdded", ct);
-            return new(Data: await FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, ct));
+            return new(Data: await ReadAsync(token => FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, token), ct));
         }
-        catch (Exception ex) when (DbErrors.IsUniqueViolation(ex))
+        catch (UniqueConflictException)
         {
             // The same sentence sent twice at once: the other request stored it.
-            db.ChangeTracker.Clear();
-            return new(Data: await FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, ct));
+            unitOfWork.DiscardChanges();
+            return new(Data: await ReadAsync(token => FindByClientIdAsync(meetingId, speaker, upload.ClientClipId, token), ct));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to store a speech clip of {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to store a speech clip of {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
         }
         finally
@@ -217,9 +215,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 return new();
             }, "ClipEdited", ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to edit speech clip {ClipId}", clipId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to edit speech clip {ClipId}", clipId);
             return new(SpeechClipFailure.SaveFailed);
         }
     }
@@ -239,7 +237,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                     return new(SpeechClipFailure.Forbidden);
                 await audit.RecordAsync(AuditActions.SpeechClipDeleted, AuditActions.SpeechClipObjectType, clip.Id, actorId,
                     new { clip.MeetingId, clip.SpeakerId, clip.GuestInvitationId, byOwner = clip.SpeakerId == actorId }, token);
-                db.SpeechClips.Remove(clip);
+                clips.Remove(clip);
                 audioPath = clip.AudioPath;
                 return new();
             }, "ClipDeleted", ct);
@@ -247,9 +245,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
             if (outcome.Failure == SpeechClipFailure.None) DeleteAudio(audioPath);
             return outcome;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to delete speech clip {ClipId}", clipId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to delete speech clip {ClipId}", clipId);
             return new(SpeechClipFailure.SaveFailed);
         }
     }
@@ -284,9 +282,9 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
                 return new(Data: excluded);
             }, "ClipEdited", ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to change the exclusion of speech clip {ClipId}", clipId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to change the exclusion of speech clip {ClipId}", clipId);
             return new(SpeechClipFailure.SaveFailed);
         }
     }
@@ -301,25 +299,23 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         try
         {
             var now = clock.GetUtcNow();
-            if (!await GuestAdmittedAsync(guest, meetingId, ct)) return new(SpeechClipFailure.NotFound);
-            var meeting = await meetings.FindWorkflowAsync(meetingId, false, ct);
+            if (!await ReadAsync(token => GuestAdmittedAsync(guest, meetingId, token), ct)) return new(SpeechClipFailure.NotFound);
+            var meeting = await ReadAsync(token => meetings.FindWorkflowAsync(meetingId, false, token), ct);
             if (meeting is null) return new(SpeechClipFailure.NotFound);
-            var clips = db.SpeechClips.AsNoTracking().Where(c => c.MeetingId == meetingId && c.GuestInvitationId == guest.InvitationId);
-            if (since is { } after) clips = clips.Where(c => c.UpdatedAt > after);
             // No leak marks: they name other people's sentences, which a guest does not read.
-            var items = (await RowsAsync(clips, ct)).Select(r =>
+            var items = (await ReadAsync(token => clips.ListGuestRowsAsync(meetingId, guest.InvitationId, since, token), ct)).Select(r =>
             {
                 var excluded = r.ExcludedAt is not null;
                 return new SpeechClipView(r.Id, r.SpeakerId, r.SpeakerName, r.StartedAt, r.DurationMs, excluded ? "" : r.Text,
                     r.UpdatedAt, r.EditedAt, null, true, excluded, HasAudio: r.HasAudio && !excluded,
                     Peaks: excluded ? null : r.Peaks, SpeakerIsGuest: true);
             }).ToList();
-            var capturing = SpeechClipRules.AcceptsGuest(meeting) && await GuestNoticeConfirmedAsync(guest, ct);
+            var capturing = SpeechClipRules.AcceptsGuest(meeting) && await ReadAsync(token => GuestNoticeConfirmedAsync(guest, token), ct);
             return new(Data: new SpeechClipList(meetingId, capturing, false, now, items, RetentionDays: options.Value.RetentionDays));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to list a guest's speech clips of {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to list a guest's speech clips of {MeetingId}", meetingId);
             return new(SpeechClipFailure.ReadFailed);
         }
     }
@@ -328,16 +324,16 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     {
         try
         {
-            if (!await GuestAdmittedAsync(guest, meetingId, ct)) return new(SpeechClipFailure.NotFound);
-            var meeting = await meetings.FindWorkflowAsync(meetingId, false, ct);
+            if (!await ReadAsync(token => GuestAdmittedAsync(guest, meetingId, token), ct)) return new(SpeechClipFailure.NotFound);
+            var meeting = await ReadAsync(token => meetings.FindWorkflowAsync(meetingId, false, token), ct);
             if (meeting is null) return new(SpeechClipFailure.NotFound);
             if (!SpeechClipRules.AcceptsGuest(meeting)) return new(SpeechClipFailure.NotCapturing);
             // Never recorded before being told: the call room's pre-join notice is what the guest consented to.
-            return await GuestNoticeConfirmedAsync(guest, ct) ? new() : new(SpeechClipFailure.NoticeRequired);
+            return await ReadAsync(token => GuestNoticeConfirmedAsync(guest, token), ct) ? new() : new(SpeechClipFailure.NoticeRequired);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to check a guest's speech capture for {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to check a guest's speech capture for {MeetingId}", meetingId);
             return new(SpeechClipFailure.SaveFailed);
         }
     }
@@ -356,28 +352,27 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         try
         {
             string? audioPath = null;
-            var outcome = await meetings.InTransactionAsync(async token =>
+            var outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 if (!await GuestAdmittedAsync(guest, guest.MeetingId, token)) return new SpeechClipOutcome(SpeechClipFailure.NotFound);
                 // Someone else's sentence does not exist for a guest.
-                var clip = await db.SpeechClips.SingleOrDefaultAsync(c => c.Id == clipId && c.MeetingId == guest.MeetingId
-                    && c.GuestInvitationId == guest.InvitationId, token);
+                var clip = await clips.FindGuestClipAsync(clipId, guest.MeetingId, guest.InvitationId, token);
                 if (clip is null) return new(SpeechClipFailure.NotFound);
                 await audit.RecordAsync(AuditActions.SpeechClipDeleted, AuditActions.SpeechClipObjectType, clip.Id, actorId: null,
                     new { clip.MeetingId, clip.GuestInvitationId, guestSessionId = guest.SessionId, byOwner = true }, token);
-                db.SpeechClips.Remove(clip);
-                await db.SaveChangesAsync(token);
+                clips.Remove(clip);
+                await unitOfWork.SaveChangesAsync(token);
                 audioPath = clip.AudioPath;
                 return new();
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             if (outcome.Failure != SpeechClipFailure.None) return outcome;
             DeleteAudio(audioPath);
             await PublishAsync(guest.MeetingId, "ClipDeleted", ct);
             return outcome;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to delete speech clip {ClipId} for a guest", clipId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to delete speech clip {ClipId} for a guest", clipId);
             return new(SpeechClipFailure.SaveFailed);
         }
     }
@@ -386,14 +381,13 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     {
         try
         {
-            if (!await GuestAdmittedAsync(guest, guest.MeetingId, ct)) return new(SpeechClipFailure.NotFound);
-            var heard = await db.SpeechClips.AsNoTracking().AnyAsync(c => c.Id == clipId && c.MeetingId == guest.MeetingId
-                && c.GuestInvitationId == guest.InvitationId && c.AudioPath != null && c.ExcludedAt == null, ct);
+            if (!await ReadAsync(token => GuestAdmittedAsync(guest, guest.MeetingId, token), ct)) return new(SpeechClipFailure.NotFound);
+            var heard = await ReadAsync(token => clips.HasGuestAudioAsync(clipId, guest.MeetingId, guest.InvitationId, token), ct);
             return heard ? new(Data: signer.Sign(clipId, clock.GetUtcNow())) : new(SpeechClipFailure.NotFound);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to sign playback for speech clip {ClipId} for a guest", clipId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to sign playback for speech clip {ClipId} for a guest", clipId);
             return new(SpeechClipFailure.ReadFailed);
         }
     }
@@ -403,24 +397,24 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     /// this meeting while it is open, and named (UC-04 step 5). A token for another meeting never gets this far.
     /// </summary>
     private async Task<bool> GuestAdmittedAsync(MeetingGuestSession guest, Guid meetingId, CancellationToken ct)
-        => guest.IsValid && guest.MeetingId == meetingId && await GuestSessionRepository.CurrentSessions(db, clock.GetUtcNow())
-            .AnyAsync(x => x.Id == guest.SessionId && x.InvitationId == guest.InvitationId
-                && x.Invitation.MeetingId == meetingId && x.Invitation.SelfDeclaredDisplayName != null, ct);
+        => guest.IsValid && guest.MeetingId == meetingId
+            && await clips.IsGuestSessionAdmittedAsync(guest.SessionId, guest.InvitationId, meetingId, clock.GetUtcNow(), ct);
 
     /// <summary>
     /// The evidence the call room keeps when a guest confirms the recording notice before joining (SCRUM-59): without
     /// it, this session never saw the notice and nothing it sends is recorded.
     /// </summary>
     private Task<bool> GuestNoticeConfirmedAsync(MeetingGuestSession guest, CancellationToken ct)
-        => db.AuditLog.AsNoTracking().AnyAsync(a => a.ObjectType == AuditActions.GuestSessionObjectType
-            && a.ObjectId == guest.SessionId && a.Action == AuditActions.CallGuestAdmitted, ct);
+        => clips.HasGuestConfirmedNoticeAsync(guest.SessionId, ct);
 
     public async Task<int> EraseExpiredAsync(CancellationToken ct = default)
     {
         var cutoff = clock.GetUtcNow().AddDays(-options.Value.RetentionDays);
-        var expired = db.SpeechClips.Where(c => c.CreatedAt < cutoff);
-        var files = await expired.Where(c => c.AudioPath != null).Select(c => c.AudioPath!).ToListAsync(ct);
-        var erased = await expired.ExecuteDeleteAsync(ct);
+        var (files, erased) = await unitOfWork.ExecuteAsync(async token =>
+        {
+            var audio = await clips.ListAudioCreatedBeforeAsync(cutoff, token);
+            return (audio, await clips.DeleteCreatedBeforeAsync(cutoff, token));
+        }, TransactionMode.None, ct);
         foreach (var file in files) DeleteAudio(file);
         return erased;
     }
@@ -429,26 +423,24 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     {
         try
         {
-            var clip = await db.SpeechClips.AsNoTracking().Where(c => c.Id == clipId)
-                .Select(c => new { c.MeetingId, c.AudioPath, c.ExcludedAt }).SingleOrDefaultAsync(ct);
+            var clip = await ReadAsync(token => clips.FindPlaybackAsync(clipId, token), ct);
             if (clip is null) return new(SpeechClipFailure.NotFound);
-            var (meeting, failure) = await ListenableMeetingAsync(clip.MeetingId, actorId, ct);
+            var (meeting, failure) = await ReadAsync(token => ListenableMeetingAsync(clip.MeetingId, actorId, token), ct);
             if (meeting is null) return new(failure);
             // An excluded sentence is heard by whoever still reads its words; to everyone else it does not exist.
             if (clip.AudioPath is null || (clip.ExcludedAt is not null && !SpeechClipRules.RunsRecord(meeting, actorId)))
                 return new(SpeechClipFailure.NotFound);
             return new(Data: signer.Sign(clipId, clock.GetUtcNow()));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to sign playback for speech clip {ClipId}", clipId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to sign playback for speech clip {ClipId}", clipId);
             return new(SpeechClipFailure.ReadFailed);
         }
     }
 
     public Task<SpeechClipAudio?> FindAudioAsync(Guid clipId, CancellationToken ct = default)
-        => db.SpeechClips.AsNoTracking().Where(c => c.Id == clipId && c.AudioPath != null)
-            .Select(c => new SpeechClipAudio(c.AudioPath!, c.AudioContentType ?? "audio/wav")).SingleOrDefaultAsync(ct);
+        => ReadAsync(token => clips.FindAudioAsync(clipId, token), ct);
 
     /// <summary>
     /// Keeps the sentence's audio beside its words. A full or failing disk loses only the audio: the words are what
@@ -531,29 +523,26 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         CancellationToken ct)
     {
         Guid? meetingId = null;
-        var outcome = await meetings.InTransactionAsync(async token =>
+        var outcome = await unitOfWork.ExecuteAsync(async token =>
         {
             if (!await meetings.IsUserActiveAsync(actorId, token)) return new SpeechClipOutcome(SpeechClipFailure.Inactive);
-            var clip = await db.SpeechClips.SingleOrDefaultAsync(c => c.Id == clipId, token);
+            var clip = await clips.FindAsync(clipId, token);
             if (clip is null) return new(SpeechClipFailure.NotFound);
             var meeting = await meetings.FindWorkflowAsync(clip.MeetingId, false, token);
             if (meeting is null || !RecordingRules.CanListen(meeting, actorId)) return new(SpeechClipFailure.NotFound);
             var result = await change(clip, meeting, clock.GetUtcNow(), token);
             if (result.Failure != SpeechClipFailure.None) return result;
-            await db.SaveChangesAsync(token);
+            await unitOfWork.SaveChangesAsync(token);
             meetingId = meeting.Id;
             return result;
-        }, ct);
+        }, TransactionMode.ReadCommitted, ct);
         if (meetingId is { } id) await PublishAsync(id, changeType, ct);
         return outcome;
     }
 
     private async Task<SpeechClipView?> FindByClientIdAsync(Guid meetingId, Speaker speaker, Guid clientClipId, CancellationToken ct)
     {
-        var clips = db.SpeechClips.AsNoTracking().Where(c => c.MeetingId == meetingId && c.ClientClipId == clientClipId);
-        clips = speaker.UserId is { } user ? clips.Where(c => c.SpeakerId == user)
-            : clips.Where(c => c.GuestInvitationId == speaker.GuestInvitationId);
-        var row = (await RowsAsync(clips, ct)).SingleOrDefault();
+        var row = await clips.FindRowByClientIdAsync(meetingId, speaker.UserId, speaker.GuestInvitationId, clientClipId, ct);
         if (row is null) return null;
         // A retry answers as the list does for its sender: an excluded sentence keeps its words from them.
         var excluded = row.ExcludedAt is not null;
@@ -569,15 +558,6 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         public static Speaker Guest(Guid invitationId) => new(null, invitationId);
     }
 
-    /// <summary>
-    /// One sentence with what the list and the fold need of it. <c>SpeakerId</c> tells speakers apart: a member's user
-    /// id, or a guest's invitation id (<c>Guest</c>); a guest is named as the transcripts name them.
-    /// </summary>
-    private sealed record ClipRow(Guid Id, Guid SpeakerId, string SpeakerName, DateTimeOffset StartedAt, long DurationMs,
-        string Text, DateTimeOffset UpdatedAt, DateTimeOffset? EditedAt, string? EditedByName, List<SpeechClipSegment>? Segments,
-        DateTimeOffset? ExcludedAt, SpeechClipExclusion? ExclusionReason, string? ExcludedByName, bool HasAudio, byte[]? Peaks,
-        bool Guest);
-
     /// <summary>A guest's line in the exported text says so, as the transcript on screen does.</summary>
     private static string Labelled(ClipRow r) => r.Guest ? $"{r.SpeakerName} (Khách)" : r.SpeakerName;
 
@@ -590,34 +570,23 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     /// </summary>
     private async Task<ClipRows> ReadWithNeighboursAsync(Guid meetingId, DateTimeOffset? since, CancellationToken ct)
     {
-        var clips = db.SpeechClips.AsNoTracking().Where(c => c.MeetingId == meetingId);
         if (since is not { } after)
         {
-            var all = await RowsAsync(clips, ct);
+            var all = await clips.ListRowsAsync(meetingId, ct);
             return new(all, all);
         }
-        var changed = await RowsAsync(clips.Where(c => c.UpdatedAt > after), ct);
+        var changed = await clips.ListRowsChangedSinceAsync(meetingId, after, ct);
         if (changed.Count == 0) return new([], []);
         // Neighbours within the fold's clock lag of a changed sentence; a sentence lasts a minute at most.
         var reach = TimeSpan.FromMilliseconds(SpeechClipFold.LagMs + SpeechClipRules.MaxDurationMs);
         var from = changed.Min(c => c.StartedAt) - reach;
         var to = changed.Max(c => c.StartedAt.AddMilliseconds(c.DurationMs)) + reach;
-        var window = await RowsAsync(clips.Where(c => c.StartedAt >= from && c.StartedAt <= to), ct);
+        var window = await clips.ListRowsStartedBetweenAsync(meetingId, from, to, ct);
         var lag = TimeSpan.FromMilliseconds(SpeechClipFold.LagMs);
         var shown = window.Where(r => changed.Any(c => r.StartedAt <= c.StartedAt.AddMilliseconds(c.DurationMs) + lag
             && c.StartedAt <= r.StartedAt.AddMilliseconds(r.DurationMs) + lag)).ToList();
         return new(window, shown);
     }
-
-    private static async Task<List<ClipRow>> RowsAsync(IQueryable<SpeechClip> clips, CancellationToken ct)
-        => await clips.OrderBy(c => c.StartedAt).ThenBy(c => c.CreatedAt)
-            .Select(c => new ClipRow(c.Id, c.SpeakerId ?? c.GuestInvitationId ?? Guid.Empty,
-                c.Speaker != null ? c.Speaker.FullName
-                    : c.GuestInvitation!.SelfDeclaredDisplayName ?? c.GuestInvitation.InvitedName,
-                c.StartedAt, c.DurationMs, c.Text, c.UpdatedAt,
-                c.EditedAt, c.EditedBy == null ? null : c.EditedBy.FullName, c.Segments, c.ExcludedAt, c.ExclusionReason,
-                c.ExcludedBy == null ? null : c.ExcludedBy.FullName, c.AudioPath != null, c.Peaks, c.GuestInvitationId != null))
-            .ToListAsync(ct);
 
     private static FoldClip FoldOf(ClipRow r) => new(r.Id, r.SpeakerId, r.StartedAt.ToUnixTimeMilliseconds(), r.DurationMs,
         r.Text, r.Segments ?? [], r.ExcludedAt is not null, r.EditedAt is not null);
@@ -649,6 +618,10 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
         }
         return new(source.Id, source.SpeakerId, source.SpeakerName, mark.LeakOf is not null, words);
     }
+
+    /// <summary>A read outside any transaction, its storage failure translated (rule R8).</summary>
+    private Task<T> ReadAsync<T>(Func<CancellationToken, Task<T>> work, CancellationToken ct)
+        => unitOfWork.ExecuteAsync(work, TransactionMode.None, ct);
 
     private async Task<(Meeting? Meeting, SpeechClipFailure Failure)> ListenableMeetingAsync(Guid meetingId, Guid actorId,
         CancellationToken ct)

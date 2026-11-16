@@ -1,15 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Meetings;
-using TrustCabinet.Application.Recordings;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Recordings;
+namespace TrustCabinet.Application.Recordings;
 
 /// <summary>
 /// SCRUM-29 — recordings of a sitting. A recording is personal data of everyone who spoke (Luật BVDLCN 91/2025/QH15,
@@ -17,7 +15,7 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// confirmed before the file is kept, the purpose is stored with it, and it is erased on request or when its
 /// retention period ends — the row stays as evidence that it existed and was erased.
 /// </summary>
-public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepository recordings,
+public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepository recordings, IUnitOfWork unitOfWork,
     IRecordingStorage storage, IRecordingPlaybackSigner signer, IAuditService audit, ISpeechChangePublisher publisher,
     TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RecordingService> logger) : IRecordingService
 {
@@ -25,18 +23,18 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     {
         try
         {
-            var (meeting, failure) = await ReadableMeetingAsync(meetingId, actorId, ct);
+            var (meeting, failure) = await ReadAsync(token => ReadableMeetingAsync(meetingId, actorId, token), ct);
             if (meeting is null) return new(failure);
             var secretary = RecordingRules.IsSecretary(meeting, actorId);
             var export = RecordingRules.Export(meeting, actorId) == RecordingFailure.None;
-            var items = await recordings.ListAsync(meetingId, ct);
+            var items = await ReadAsync(token => recordings.ListAsync(meetingId, token), ct);
             return new(Data: new RecordingList(meetingId,
                 secretary && RecordingRules.UploadAllowed(meeting.Status) && RecordingRules.TakesUploads(meeting.Mode),
                 items.Select(r => View(r, secretary, export)).ToArray(), RecordingRules.CanRecord(meeting, actorId)));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to list recordings of {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to list recordings of {MeetingId}", meetingId);
             return new(RecordingFailure.ReadFailed);
         }
     }
@@ -46,16 +44,16 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     {
         try
         {
-            var (meeting, failure) = await ReadableMeetingAsync(meetingId, actorId, ct);
+            var (meeting, failure) = await ReadAsync(token => ReadableMeetingAsync(meetingId, actorId, token), ct);
             if (meeting is null) return new(failure);
             if (!RecordingRules.IsSecretary(meeting, actorId)) return new(RecordingFailure.Forbidden);
             if (!RecordingRules.HasRoom(meeting.Mode)) return new(RecordingFailure.NoRoom);
             if (!RecordingRules.TakesUploads(meeting.Mode)) return new(RecordingFailure.HybridLiveOnly);
             return RecordingRules.UploadAllowed(meeting.Status) ? new() : new(RecordingFailure.Locked);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to check recording upload for {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to check recording upload for {MeetingId}", meetingId);
             return new(RecordingFailure.SaveFailed);
         }
     }
@@ -65,7 +63,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         var kept = false;
         try
         {
-            var outcome = await meetings.InTransactionAsync(async token =>
+            var outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(meetingId, true, token);
                 if (!await meetings.IsUserActiveAsync(actorId, token)) return new RecordingOutcome(RecordingFailure.Inactive);
@@ -93,16 +91,16 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 await audit.RecordAsync(AuditActions.RecordingUploaded, AuditActions.RecordingObjectType, recording.Id, actorId,
                     new { meetingId, upload.FileName, upload.ByteSize, source = upload.Source.ToString(), purpose,
                         retainUntil = recording.RetainUntil }, token);
-                await recordings.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 return new RecordingOutcome(RecordingId: recording.Id);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             kept = outcome.Failure == RecordingFailure.None;
             if (kept) await PublishAsync(meetingId, ct);
             return outcome;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to store recording for {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to store recording for {MeetingId}", meetingId);
             return new(RecordingFailure.SaveFailed);
         }
         finally
@@ -116,16 +114,16 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     {
         try
         {
-            var recording = await recordings.FindAsync(recordingId, false, ct);
+            var recording = await ReadAsync(token => recordings.FindAsync(recordingId, false, token), ct);
             if (recording is null) return new(RecordingFailure.NotFound);
-            var (meeting, failure) = await ReadableMeetingAsync(recording.MeetingId, actorId, ct);
+            var (meeting, failure) = await ReadAsync(token => ReadableMeetingAsync(recording.MeetingId, actorId, token), ct);
             if (meeting is null) return new(failure);
             if (recording.Status != RecordingStatus.Available) return new(RecordingFailure.NotFound);
             return new(Data: signer.Sign(recordingId, clock.GetUtcNow()));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to sign playback for {RecordingId}", recordingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to sign playback for {RecordingId}", recordingId);
             return new(RecordingFailure.ReadFailed);
         }
     }
@@ -134,9 +132,9 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     {
         try
         {
-            var recording = await recordings.FindAsync(recordingId, false, ct);
+            var recording = await ReadAsync(token => recordings.FindAsync(recordingId, false, token), ct);
             if (recording is null) return new(RecordingFailure.NotFound);
-            var (meeting, failure) = await ReadableMeetingAsync(recording.MeetingId, actorId, ct);
+            var (meeting, failure) = await ReadAsync(token => ReadableMeetingAsync(recording.MeetingId, actorId, token), ct);
             if (meeting is null) return new(failure);
             if (recording.Status != RecordingStatus.Available) return new(RecordingFailure.NotFound);
             if (RecordingRules.Export(meeting, actorId) is not RecordingFailure.None and var refused) return new(refused);
@@ -145,16 +143,16 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 new { recording.MeetingId, recording.FileName, recording.ByteSize }, ct);
             return new(Data: signer.Sign(recordingId, clock.GetUtcNow(), download: true));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to sign a download of {RecordingId}", recordingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to sign a download of {RecordingId}", recordingId);
             return new(RecordingFailure.ReadFailed);
         }
     }
 
     public async Task<StoredRecordingFile?> FindPlayableAsync(Guid recordingId, CancellationToken ct = default)
     {
-        var recording = await recordings.FindAsync(recordingId, false, ct);
+        var recording = await ReadAsync(token => recordings.FindAsync(recordingId, false, token), ct);
         return recording is { Status: RecordingStatus.Available }
             ? new(recording.StoragePath, recording.ContentType, recording.FileName) : null;
     }
@@ -164,7 +162,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         try
         {
             string? path = null;
-            var outcome = await meetings.InTransactionAsync(async token =>
+            var outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 var recording = await recordings.FindAsync(recordingId, true, token);
                 if (recording is null) return new RecordingOutcome(RecordingFailure.NotFound);
@@ -177,17 +175,17 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 if (recording.Status == RecordingStatus.Pending) return new(RecordingFailure.TakeOpen);
                 path = await MarkErasedAsync(recording, actorId, "request", token);
                 return new RecordingOutcome(RecordingId: recording.Id);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             if (path is not null)
             {
                 DeleteQuietly(path);
-                if (await recordings.FindAsync(recordingId, false, ct) is { } erased) await PublishAsync(erased.MeetingId, ct);
+                if (await ReadAsync(token => recordings.FindAsync(recordingId, false, token), ct) is { } erased) await PublishAsync(erased.MeetingId, ct);
             }
             return outcome;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to erase recording {RecordingId}", recordingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to erase recording {RecordingId}", recordingId);
             return new(RecordingFailure.SaveFailed);
         }
     }
@@ -195,16 +193,16 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     public async Task<int> EraseExpiredAsync(CancellationToken ct = default)
     {
         var erased = 0;
-        foreach (var id in await recordings.ListExpiredAsync(clock.GetUtcNow(), 50, ct))
+        foreach (var id in await ReadAsync(token => recordings.ListExpiredAsync(clock.GetUtcNow(), 50, token), ct))
         {
             string? path = null;
-            await meetings.InTransactionAsync(async token =>
+            await unitOfWork.ExecuteAsync(async token =>
             {
                 var recording = await recordings.FindAsync(id, true, token);
                 if (recording is { Status: not RecordingStatus.Deleted, RetainUntil: { } until } && until < clock.GetUtcNow())
                     path = await MarkErasedAsync(recording, null, "retention", token);
                 return 0;
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             if (path is null) continue;
             DeleteQuietly(path);
             erased++;
@@ -227,9 +225,13 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         await recordings.DeleteTranscriptAsync(recording.Id, ct);
         await audit.RecordAsync(AuditActions.RecordingErased, AuditActions.RecordingObjectType, recording.Id, actorId,
             new { recording.MeetingId, recording.FileName, reason }, ct);
-        await recordings.SaveChangesAsync(ct);
+        await unitOfWork.SaveChangesAsync(ct);
         return path;
     }
+
+    /// <summary>A read outside any transaction, its storage failure translated (rule R8).</summary>
+    private Task<T> ReadAsync<T>(Func<CancellationToken, Task<T>> work, CancellationToken ct)
+        => unitOfWork.ExecuteAsync(work, TransactionMode.None, ct);
 
     private async Task<(Meeting? Meeting, RecordingFailure Failure)> ReadableMeetingAsync(Guid meetingId, Guid actorId,
         CancellationToken ct)

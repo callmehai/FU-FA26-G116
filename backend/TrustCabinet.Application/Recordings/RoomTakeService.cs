@@ -1,17 +1,15 @@
 using System.Globalization;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Meetings;
-using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Recordings;
+namespace TrustCabinet.Application.Recordings;
 
 /// <summary>
 /// ADR-0041 — the room mic, as in AI-eCabinet. While it is on, the Secretary's browser streams the room as 16 kHz PCM
@@ -22,7 +20,7 @@ namespace TrustCabinet.Infrastructure.Recordings;
 /// The take is personal data from its first byte: the participants are told before the meeting's first take, the
 /// purpose and retention date are those of the recording it goes into, and a take the mic heard nothing in is dropped.
 /// </summary>
-public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepository recordings,
+public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepository recordings, IUnitOfWork unitOfWork,
     ITranscriptRepository transcripts, IRecordingStorage storage, IAuditService audit, ISpeechChangePublisher publisher,
     TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RoomTakeService> logger) : IRoomTakeService
 {
@@ -36,7 +34,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
         var kept = false;
         try
         {
-            var outcome = await meetings.InTransactionAsync(async token =>
+            var outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 // The meeting's row lock puts one take's opening after another's, and after a take being saved.
                 var meeting = await meetings.FindWorkflowAsync(meetingId, true, token);
@@ -71,21 +69,21 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 recordings.Add(take);
                 await audit.RecordAsync(AuditActions.RecordingTakeStarted, AuditActions.RecordingObjectType, take.Id, actorId,
                     new { meetingId, purpose, firstTake = room is null }, token);
-                await recordings.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 return new RecordingOutcome(Data: new RoomTakeOpened(take.Id, options.Value.RoomPartBytes, MaxBytes),
                     RecordingId: take.Id);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             kept = outcome.Failure == RecordingFailure.None;
             if (kept) await PublishAsync(meetingId, ct);
             return outcome;
         }
-        catch (Exception ex) when (DbErrors.IsUniqueViolation(ex))
+        catch (UniqueConflictException)
         {
             return new(RecordingFailure.TakeOpen);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is IOException)
+        catch (Exception ex) when (ex is PersistenceException or IOException)
         {
-            logger.LogError(ex, "Failed to open a room-mic take for {MeetingId}", meetingId);
+            logger.LogError(Original(ex), "Failed to open a room-mic take for {MeetingId}", meetingId);
             return new(RecordingFailure.SaveFailed);
         }
         finally
@@ -106,7 +104,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             return new(RecordingFailure.BadPart);
         try
         {
-            return await meetings.InTransactionAsync(async token =>
+            return await unitOfWork.ExecuteAsync(async token =>
             {
                 var take = await recordings.FindAsync(recordingId, true, token);
                 if (!await meetings.IsUserActiveAsync(actorId, token)) return new RecordingOutcome(RecordingFailure.Inactive);
@@ -123,13 +121,13 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 take.ByteSize = final ? offset + read : Math.Max(take.ByteSize, offset + read);
                 take.DurationMs = RecordingRules.PcmMs(take.ByteSize);
                 take.UpdatedAt = clock.GetUtcNow();
-                await recordings.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 return new RecordingOutcome(RecordingId: take.Id);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is IOException)
+        catch (Exception ex) when (ex is PersistenceException or IOException)
         {
-            logger.LogError(ex, "Failed to write part {Part} of take {RecordingId}", part, recordingId);
+            logger.LogError(Original(ex), "Failed to write part {Part} of take {RecordingId}", part, recordingId);
             return new(RecordingFailure.SaveFailed);
         }
     }
@@ -138,9 +136,9 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
     {
         try
         {
-            var found = await recordings.FindAsync(recordingId, false, ct);
+            var found = await unitOfWork.ExecuteAsync(token => recordings.FindAsync(recordingId, false, token), TransactionMode.None, ct);
             if (found is null) return new(RecordingFailure.NotFound);
-            var (outcome, obsolete) = await meetings.InTransactionAsync(async token =>
+            var (outcome, obsolete) = await unitOfWork.ExecuteAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(found.MeetingId, true, token);
                 if (!await meetings.IsUserActiveAsync(actorId, token)) return (new RecordingOutcome(RecordingFailure.Inactive), Array.Empty<string>());
@@ -154,14 +152,14 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                     return (new RecordingOutcome(Data: new RoomTakeSaved(take.Id, false), RecordingId: take.Id), []);
                 if (take.Status != RecordingStatus.Pending) return (new(RecordingFailure.TakeClosed), []);
                 return await SaveAsync(take, actorId, token);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             foreach (var path in obsolete) DeleteQuietly(path);
             if (outcome.Failure == RecordingFailure.None) await PublishAsync(found.MeetingId, ct);
             return outcome;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is IOException)
+        catch (Exception ex) when (ex is PersistenceException or IOException)
         {
-            logger.LogError(ex, "Failed to save take {RecordingId}", recordingId);
+            logger.LogError(Original(ex), "Failed to save take {RecordingId}", recordingId);
             return new(RecordingFailure.SaveFailed);
         }
     }
@@ -170,18 +168,18 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
     {
         var saved = 0;
         var before = clock.GetUtcNow().AddHours(-options.Value.IdleTakeHours);
-        foreach (var id in await recordings.ListIdleTakesAsync(before, 20, ct))
+        foreach (var id in await unitOfWork.ExecuteAsync(token => recordings.ListIdleTakesAsync(before, 20, token), TransactionMode.None, ct))
         {
-            var found = await recordings.FindAsync(id, false, ct);
+            var found = await unitOfWork.ExecuteAsync(token => recordings.FindAsync(id, false, token), TransactionMode.None, ct);
             if (found is null) continue;
-            var (_, obsolete) = await meetings.InTransactionAsync(async token =>
+            var (_, obsolete) = await unitOfWork.ExecuteAsync(async token =>
             {
                 _ = await meetings.FindWorkflowAsync(found.MeetingId, true, token);
                 var take = await recordings.FindAsync(id, true, token);
                 if (take is not { Status: RecordingStatus.Pending } || take.UpdatedAt >= before)
                     return (new RecordingOutcome(), Array.Empty<string>());
                 return await SaveAsync(take, null, token);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             foreach (var path in obsolete) DeleteQuietly(path);
             await PublishAsync(found.MeetingId, ct);
             saved++;
@@ -207,7 +205,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             recordings.Remove(take);
             await audit.RecordAsync(AuditActions.RecordingTakeSaved, AuditActions.RecordingObjectType, take.Id, actorId,
                 new { take.MeetingId, kept = false }, ct);
-            await recordings.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
             return (new(Data: new RoomTakeSaved(null, false)), [take.StoragePath]);
         }
         storage.Truncate(take.StoragePath, take.ByteSize);
@@ -225,7 +223,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             transcripts.Add(new Transcript { RecordingId = take.Id, CreatedAt = now, UpdatedAt = now });
             await audit.RecordAsync(AuditActions.RecordingTakeSaved, AuditActions.RecordingObjectType, take.Id, actorId,
                 new { take.MeetingId, kept = true, takeMs }, ct);
-            await recordings.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
             return (new(Data: new RoomTakeSaved(take.Id, false), RecordingId: take.Id), []);
         }
 
@@ -252,7 +250,7 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             recordings.Remove(take);
             await audit.RecordAsync(AuditActions.RecordingTakeSaved, AuditActions.RecordingObjectType, room.Id, actorId,
                 new { take.MeetingId, kept = true, appended = true, takeId = take.Id, takeMs, totalMs = room.DurationMs }, ct);
-            await recordings.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
             return (new(Data: new RoomTakeSaved(room.Id, true), RecordingId: room.Id), [previous, take.StoragePath]);
         }
         catch
@@ -268,9 +266,9 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
         var committed = false;
         try
         {
-            var found = await recordings.FindAsync(recordingId, false, ct);
+            var found = await unitOfWork.ExecuteAsync(token => recordings.FindAsync(recordingId, false, token), TransactionMode.None, ct);
             if (found is null) return new(RecordingFailure.NotFound);
-            var (outcome, previous) = await meetings.InTransactionAsync(async token =>
+            var (outcome, previous) = await unitOfWork.ExecuteAsync(async token =>
             {
                 // The meeting row lock, as for saving a take: a take is never appended while another is cut out.
                 var meeting = await meetings.FindWorkflowAsync(found.MeetingId, true, token);
@@ -300,17 +298,17 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
                 var lines = transcript is null ? 0 : CutTranscript(transcript, gone, now);
                 await audit.RecordAsync(AuditActions.RecordingTakeDeleted, AuditActions.RecordingObjectType, recording.Id, actorId,
                     new { recording.MeetingId, take, gone.StartedAt, gone.DurationMs, lines, totalMs = recording.DurationMs }, token);
-                await recordings.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 return (new RecordingOutcome(RecordingId: recording.Id), old);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             committed = true;
             if (previous is not null) DeleteQuietly(previous);
             if (outcome.Failure == RecordingFailure.None) await PublishAsync(found.MeetingId, ct);
             return outcome;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex) || ex is IOException)
+        catch (Exception ex) when (ex is PersistenceException or IOException)
         {
-            logger.LogError(ex, "Failed to erase take {Take} of {RecordingId}", take, recordingId);
+            logger.LogError(Original(ex), "Failed to erase take {Take} of {RecordingId}", take, recordingId);
             return new(RecordingFailure.SaveFailed);
         }
         finally
@@ -372,6 +370,9 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             logger.LogWarning(ex, "Could not publish recordings change for {MeetingId}", meetingId);
         }
     }
+
+    /// <summary>What a failure is logged as: the database's own exception, as before the move (rule R8).</summary>
+    private static Exception Original(Exception ex) => ex is PersistenceException { InnerException: { } inner } ? inner : ex;
 
     private void DeleteQuietly(string path)
     {
