@@ -128,6 +128,8 @@ Các mã `MSG328`–`MSG343` và `MSG350` **FE tự hiển thị**, API không t
   `CLIENT_INITIATED` → `MSG328` (vào lại được); `DUPLICATE_IDENTITY` → `MSG329` (vào
   lại được); `PARTICIPANT_REMOVED` → `MSG330` (không vào lại); `ROOM_DELETED`/`ROOM_CLOSED` →
   `MSG331` (không vào lại); còn lại → `MSG332` (vào lại được). Đang kết nối lại thì dải báo `MSG333`.
+  Bấm Vào phòng mà không kết nối được (chưa từng vào) thì không phải "mất" kết nối: màn chờ ở lại, báo
+  `MSG480` dưới nút Vào phòng, bấm lại để thử.
 - **Một tài khoản một kết nối (BR-328).** LiveKit đóng kết nối cũ khi cùng `identity` vào phòng lần
   nữa; tab cũ hiện `MSG329`.
 - **Chat (UC-42, BR-327).** Text stream của LiveKit, tối đa 1.000 ký tự, không đi qua API và không

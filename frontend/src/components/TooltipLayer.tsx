@@ -23,6 +23,9 @@ export function TooltipLayer() {
     if (!tip) return
     let timer: number | undefined
     let target: HTMLElement | null = null
+    // The element just pressed: it has done its job (opened a card or a panel), so moving the pointer inside it
+    // does not bring its tooltip back over what it opened. Cleared once the pointer leaves it.
+    let pressed: HTMLElement | null = null
 
     function hide() {
       window.clearTimeout(timer)
@@ -61,7 +64,8 @@ export function TooltipLayer() {
       const el = (event.target as Element | null)?.closest<HTMLElement>('[data-tooltip]') ?? null
       if (el === target) return
       hide()
-      if (!el) return
+      // The press also focused it: that focus is no request for its tooltip either.
+      if (!el || el === pressed) return
       target = el
       // Keyboard focus is deliberate: no wait.
       const delay = event.type === 'focusin' ? 0 : DELAY_MS
@@ -70,6 +74,7 @@ export function TooltipLayer() {
 
     function onOut(event: Event) {
       const next = (event as PointerEvent | FocusEvent).relatedTarget as Element | null
+      if (event.type === 'pointerout' && pressed && !(next && pressed.contains(next))) pressed = null
       if (target && next && target.contains(next)) return
       hide()
     }
@@ -87,7 +92,12 @@ export function TooltipLayer() {
     document.addEventListener('pointerout', onOut)
     document.addEventListener('focusin', onOver)
     document.addEventListener('focusout', onOut)
-    document.addEventListener('pointerdown', hide)
+    function onDown(event: Event) {
+      hide()
+      pressed = (event.target as Element | null)?.closest<HTMLElement>('[data-tooltip]') ?? null
+    }
+
+    document.addEventListener('pointerdown', onDown)
     document.addEventListener('keydown', hide)
     document.addEventListener(SHOW_TOOLTIP, onShow)
     window.addEventListener('scroll', hide, true)
@@ -98,7 +108,7 @@ export function TooltipLayer() {
       document.removeEventListener('pointerout', onOut)
       document.removeEventListener('focusin', onOver)
       document.removeEventListener('focusout', onOut)
-      document.removeEventListener('pointerdown', hide)
+      document.removeEventListener('pointerdown', onDown)
       document.removeEventListener('keydown', hide)
       window.removeEventListener('scroll', hide, true)
     }

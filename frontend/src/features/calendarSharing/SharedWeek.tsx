@@ -117,22 +117,25 @@ export function SharedWeek({
 
   const toolbar = (
     <div className="toolbar week-toolbar">
-      <button type="button" className="btn btn-outline" onClick={() => onWeek(vietnamToday())} disabled={thisWeek}>
-        Tuần này
+      {/* The same controls as "Lịch làm việc": a disabled "Tuần này" looked broken, borderless arrows looked like text. */}
+      <button type="button" className="btn btn-outline" onClick={() => !thisWeek && onWeek(vietnamToday())}>
+        Hôm nay
       </button>
-      <div className="week-nav">
+      <div className="button-pair">
         <button
           type="button"
-          className="icon-button"
+          className="btn btn-outline"
           aria-label="Tuần trước"
+          data-tooltip="Tuần trước"
           onClick={() => onWeek(addDaysTo(monday, -7))}
         >
           <Icon name="chevronLeft" size={18} />
         </button>
         <button
           type="button"
-          className="icon-button"
+          className="btn btn-outline"
           aria-label="Tuần sau"
+          data-tooltip="Tuần sau"
           onClick={() => onWeek(addDaysTo(monday, 7))}
         >
           <Icon name="chevronRight" size={18} />

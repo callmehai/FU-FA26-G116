@@ -241,12 +241,12 @@ async function expectCardMatches(qa, seen, key) {
   return shown
 }
 
-/** The "Họp hôm nay" sub line matches the InProgress count the page received. */
+/** The "Họp hôm nay" sub line matches today's InProgress count the page received. */
 async function expectLiveLine(qa, seen) {
   const sub = (await card(qa, 'today').locator('.stat-sub').innerText()).trim()
   const lives = (seen.cards.live ?? []).map((x) => x.total)
   qa.expect(lives.length, 'no InProgress count request seen').toBeGreaterThan(0)
-  const expected = lives.map((n) => (n > 0 ? `${n.toLocaleString('vi-VN')} phiên đang diễn ra` : 'Không có phiên đang diễn ra'))
+  const expected = lives.map((n) => (n > 0 ? `${n.toLocaleString('vi-VN')} đang diễn ra` : 'Chưa có cuộc họp đang diễn ra'))
   qa.expect(expected, `sub line "${sub}"`).toContain(sub)
 }
 
@@ -311,7 +311,7 @@ export default {
       title: 'Thư ký mở danh sách: thẻ "Họp hôm nay" được chọn, bốn thẻ có số đúng với API, danh sách hôm nay có cuộc họp tối nay',
       steps: ['Đăng nhập thuky@ (MeetingCreator), mở /mgmt/meetings không tham số'],
       expected:
-        'Bốn thẻ Họp hôm nay, Đã công bố, Cần xử lý, Bản nháp; mỗi số bằng totalCount API trả cho chính trang đó; dòng phụ "N phiên đang diễn ra" bằng số InProgress; "Họp hôm nay" được chọn, danh sách có đúng số cuộc họp của thẻ, gồm "[QA] FE-14 họp tối nay" và "… họp khuya … chờ duyệt"; không cuộn ngang',
+        'Bốn thẻ Họp hôm nay, Đã công bố, Cần xử lý, Bản nháp; mỗi số bằng totalCount API trả cho chính trang đó; dòng phụ "N đang diễn ra" bằng số InProgress hôm nay; "Họp hôm nay" được chọn, danh sách có đúng số cuộc họp của thẻ, gồm "[QA] FE-14 họp tối nay" và "… họp khuya … chờ duyệt"; không cuộn ngang',
       async run(qa) {
         await requireHas(qa, 'secretary', 'MeetingCreator')
         await prepareAll(qa)
@@ -508,14 +508,14 @@ export default {
       devices: ['desktop', 'phone'],
       title: 'Một ô đếm không tải được: ô đó báo "Không tải được số lượng", không hiện số sai; các ô khác vẫn có số',
       steps: ['Đăng nhập thanhvien@', 'Cho request đếm "Đã công bố" trả 500, mở danh sách'],
-      expected: 'Ô Đã công bố hiện "—" và "Không tải được số lượng" (không hiện 0); Họp hôm nay, Cần xử lý vẫn có số; không hiện mã MSG thô',
+      expected: 'Ô Đã công bố không hiện số (không "—", không 0) và báo "Không tải được số lượng"; Họp hôm nay, Cần xử lý vẫn có số; không hiện mã MSG thô',
       async run(qa) {
         await qa.page.route(
           (url) => url.pathname === '/api/meetings' && url.searchParams.get('pageSize') === '1' && url.searchParams.get('status') === 'Published',
           (route) => route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ code: 'MSG00', message: 'QA: lỗi giả lập' }) }),
         )
         const seen = await openList(qa)
-        await qa.expect(card(qa, 'published').locator('.stat-value')).toHaveText('—')
+        await qa.expect(card(qa, 'published').locator('.stat-value')).toHaveCount(0)
         await qa.expect(card(qa, 'published').locator('.stat-sub')).toHaveText('Không tải được số lượng')
         for (const key of ['today', 'todo']) await expectCardMatches(qa, seen, key)
         await settled(qa)

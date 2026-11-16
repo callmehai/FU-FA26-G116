@@ -26,7 +26,8 @@ export const GROUP_LABEL: Record<StatusGroup, string> = {
   approved: 'Đã duyệt',
   published: 'Đã công bố',
   live: 'Đang diễn ra',
-  ended: 'Đã kết thúc',
+  // A draft looks like an ended meeting on the grid and sits in its group, so the chip names both.
+  ended: 'Đã kết thúc, nháp',
   rejected: 'Bị từ chối',
   cancelled: 'Đã huỷ',
 }
