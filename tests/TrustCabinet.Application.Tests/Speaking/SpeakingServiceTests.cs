@@ -112,7 +112,7 @@ public sealed class SpeakingServiceTests
         var raised = Assert.Single(_requests.Added);
         Assert.Equal((4, SpeakingRequestStatus.Queued, _requests.CurrentAgendaItemId), (raised.QueuePosition, raised.Status, raised.AgendaItemId));
         // The meeting row first, then the caller's account, as before.
-        Assert.Equal([(_meeting.Id, true)], _participants.Loads);
+        Assert.Equal(["lock-meeting", "lock-user"], _participants.Steps);
         Assert.Equal([_member], _participants.LockedUsers);
         Assert.Equal([TransactionMode.ReadCommitted], _unitOfWork.Modes);
         Assert.Equal((1, 1, 0), (_unitOfWork.Saves, _unitOfWork.Commits, _unitOfWork.Rollbacks));
@@ -192,6 +192,40 @@ public sealed class SpeakingServiceTests
         Assert.Equal(SpeakingFailure.None, (await Mutate(second.Id, _chair, SpeakingOperation.MoveUp)).Failure);
         Assert.Equal((2, 1), (first.QueuePosition, second.QueuePosition));
         Assert.Equal("MoveUp", Assert.Single(_publisher.Published).Change.ChangeType);
+    }
+
+    [Theory]
+    [InlineData(SpeakingOperation.Lower, SpeakingRequestStatus.Queued, SpeakingRequestStatus.Cancelled, false)]
+    [InlineData(SpeakingOperation.Start, SpeakingRequestStatus.Invited, SpeakingRequestStatus.Speaking, false)]
+    [InlineData(SpeakingOperation.Finish, SpeakingRequestStatus.Speaking, SpeakingRequestStatus.Finished, false)]
+    [InlineData(SpeakingOperation.Finish, SpeakingRequestStatus.Speaking, SpeakingRequestStatus.Finished, true)]
+    [InlineData(SpeakingOperation.Decline, SpeakingRequestStatus.Queued, SpeakingRequestStatus.Cancelled, true)]
+    public async Task Each_change_to_a_request_sends_one_event_after_the_commit(SpeakingOperation operation,
+        SpeakingRequestStatus from, SpeakingRequestStatus to, bool byChair)
+    {
+        var request = Request(_member, from, 1);
+        _requests.InRoom.Add(_member);
+
+        var outcome = await Mutate(request.Id, byChair ? _chair : _member, operation);
+
+        Assert.Equal(SpeakingFailure.None, outcome.Failure);
+        Assert.Equal(to, request.Status);
+        var (change, _, commits) = Assert.Single(_publisher.Published);
+        Assert.Equal((operation.ToString(), request.Id, 1), (change.ChangeType, change.RequestId, commits));
+    }
+
+    [Fact]
+    public async Task Moving_down_swaps_with_the_next_and_the_last_one_sends_nothing()
+    {
+        var first = Request(_member, SpeakingRequestStatus.Queued, 1);
+        var second = Request(_other, SpeakingRequestStatus.Queued, 2);
+
+        Assert.Equal(SpeakingFailure.None, (await Mutate(second.Id, _chair, SpeakingOperation.MoveDown)).Failure);
+        Assert.Empty(_publisher.Published);
+
+        Assert.Equal(SpeakingFailure.None, (await Mutate(first.Id, _chair, SpeakingOperation.MoveDown)).Failure);
+        Assert.Equal((2, 1), (first.QueuePosition, second.QueuePosition));
+        Assert.Equal("MoveDown", Assert.Single(_publisher.Published).Change.ChangeType);
     }
 
     [Fact]

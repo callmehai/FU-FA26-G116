@@ -108,7 +108,6 @@ public sealed class ArchitectureTests
         "AttendanceChangePublisher.cs",
         "Endpoints/AuthEndpoints.cs",
         "Endpoints/EmailEndpoints.cs",
-        "Endpoints/RecordingEndpoints.cs",
         "Endpoints/UserEndpoints.cs",
         "MeetingGuestIdentity.cs",
         "MeetingHub.cs",
