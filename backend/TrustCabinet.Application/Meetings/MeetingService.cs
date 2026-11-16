@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -11,6 +12,7 @@ namespace TrustCabinet.Application.Meetings;
 /// <summary>Meeting rules and persistence orchestration across creation, listing and lifecycle workflows.</summary>
 public sealed class MeetingService(
     IMeetingRepository meetings,
+    IMeetingInvitationStager invitations,
     IUnitOfWork unitOfWork,
     ILogger<MeetingService> logger,
     TimeProvider? timeProvider = null) : IMeetingService
@@ -317,7 +319,7 @@ public sealed class MeetingService(
         };
         meeting.StatusHistory.Add(history);
         await meetings.AddHistoryAsync(history, ct);
-        await meetings.StageGuestRescheduleInvitationsAsync(meeting, history.Id, now, ct);
+        await invitations.StageGuestRescheduleInvitationsAsync(meeting, history.Id, now, ct);
         // The organizer who moved it is not told of their own change, as for Publish.
         await meetings.AddNotificationsAsync(
             MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants)
@@ -686,7 +688,7 @@ public sealed class MeetingService(
                         now,
                         history.Id)).ToArray();
                     await meetings.AddNotificationsAsync(notifications, token);
-                    await meetings.StagePublicationInvitationsAsync(meeting, now, token);
+                    await invitations.StagePublicationInvitationsAsync(meeting, now, token);
                 }
                 else if (command.Action == MeetingTransitionAction.Cancel)
                 {
@@ -694,7 +696,7 @@ public sealed class MeetingService(
                     {
                         // Everyone it was announced to hears it, with the reason (BR-300). Staged in this
                         // transaction and delivered afterwards, so a delivery failure cannot undo the cancellation.
-                        await meetings.StageCancellationAsync(meeting, history.Id, actorId, command.Reason!, now, token);
+                        await invitations.StageCancellationAsync(meeting, history.Id, actorId, command.Reason!, now, token);
                     }
                     else if (fromStatus == MeetingStatus.WaitingApproval && meeting.AssignedApproverId is { } approverId)
                     {

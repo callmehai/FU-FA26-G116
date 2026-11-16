@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text;
 
-namespace TrustCabinet.Infrastructure.Email;
+namespace TrustCabinet.Application.Email;
 
-internal static class CalendarInvitationBuilder
+public static class CalendarInvitationBuilder
 {
     public static string Build(
         Guid meetingId,

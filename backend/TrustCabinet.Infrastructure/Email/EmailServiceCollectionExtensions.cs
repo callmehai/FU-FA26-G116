@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using TrustCabinet.Application.Notifications;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Users;
 
 namespace TrustCabinet.Infrastructure.Email;
@@ -20,10 +20,8 @@ public static class EmailServiceCollectionExtensions
             .ValidateOnStart();
 
         services.TryAddSingleton(TimeProvider.System);
-        services.AddScoped<MeetingInvitationDispatchProcessor>();
-        services.AddScoped<EmailQueueProcessor>();
-        services.AddScoped<IEmailQueueProcessor>(provider =>
-            provider.GetRequiredService<EmailQueueProcessor>());
+        services.AddScoped<IEmailMessageRepository, EmailMessageRepository>();
+        services.AddScoped<IMeetingInvitationDispatchRepository, MeetingInvitationDispatchRepository>();
         services.AddHttpClient(ResendEmailSender.HttpClientName);
         services.AddSingleton<SmtpEmailSender>();
         services.AddSingleton<ResendEmailSender>();
@@ -33,7 +31,6 @@ public static class EmailServiceCollectionExtensions
                 ? provider.GetRequiredService<ResendEmailSender>()
                 : provider.GetRequiredService<SmtpEmailSender>());
         services.AddSingleton<IPasswordResetEmailSender, PasswordResetEmailSender>();
-        services.AddScoped<IEmailWebhookReceiver, ResendWebhookReceiver>();
 
         var delivery = configuration.GetSection(EmailDeliveryOptions.SectionName).Get<EmailDeliveryOptions>();
         if (delivery?.Enabled == true)

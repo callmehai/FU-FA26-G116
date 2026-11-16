@@ -89,7 +89,6 @@ public sealed class ArchitectureTests
     [
         "AttendanceChangePublisher.cs",
         "Endpoints/AuthEndpoints.cs",
-        "Endpoints/EmailEndpoints.cs",
         "Endpoints/UserEndpoints.cs",
         "MeetingGuestIdentity.cs",
         "MeetingHub.cs",
@@ -101,22 +100,16 @@ public sealed class ArchitectureTests
     ];
 
     // A7 — a class of Infrastructure that takes TrustCabinetDbContext is a *Repository or a *Query, or sits in
-    // Persistence/ or Seed/, or is TrustCabinetDbContext* or DependencyInjection. The classes below are neither yet:
-    // each moves its use case to Application, or becomes one of those, in the subtask of its module. Empty at CA-20.
+    // Persistence/ or Seed/, or is TrustCabinetDbContext* or DependencyInjection. Emptied by CA-17, the last module
+    // subtask; it stays so the rule keeps its exception list shape until CA-20.
     private static readonly string[] PendingDbContextReaders =
     [
-        "TrustCabinet.Infrastructure.Email.EmailQueueProcessor",
-        "TrustCabinet.Infrastructure.Email.MeetingInvitationDispatchProcessor",
-        "TrustCabinet.Infrastructure.Email.MeetingInvitationEvents",
-        "TrustCabinet.Infrastructure.Email.ResendWebhookReceiver",
     ];
 
     // A7 — for good: a class that implements one port of Application over the context and has no business branch.
     // Each entry carries, on its own line, the reason it cannot be a repository or a query.
     private static readonly string[] AllowedDbContextAdapters =
     [
-        // Stages the roster notice through the Email helper, which CA-17 owns.
-        "TrustCabinet.Infrastructure.Email.MeetingInvitationStager",
         // The live guest-session check behind every guest read (agenda, roster, attendance, hub, call room,
         // documents): it only composes the current-session query with the meeting, with no branch of its own.
         "TrustCabinet.Infrastructure.GuestAccess.GuestSessionAccess",

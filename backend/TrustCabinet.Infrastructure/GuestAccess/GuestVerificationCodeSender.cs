@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.GuestAccess;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Infrastructure.Email;

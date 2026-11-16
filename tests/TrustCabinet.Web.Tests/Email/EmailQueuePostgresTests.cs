@@ -4,10 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Web.Tests.Email;
 
@@ -323,7 +325,8 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
         int processingLeaseSeconds = 120,
         string[]? undeliverableDomains = null)
         => new(
-            db,
+            new EmailMessageRepository(db),
+            new EfUnitOfWork(db),
             sender,
             Options.Create(new EmailDeliveryOptions
             {
@@ -338,7 +341,8 @@ public sealed class EmailQueuePostgresTests : IAsyncLifetime
             NullLogger<EmailQueueProcessor>.Instance);
 
     private static ResendWebhookReceiver WebhookReceiver(TrustCabinetDbContext db) => new(
-        db,
+        new EmailMessageRepository(db),
+        new EfUnitOfWork(db),
         Options.Create(new EmailDeliveryOptions
         {
             Resend = new ResendOptions { WebhookSecret = ResendWebhookReceiverTests.Secret },

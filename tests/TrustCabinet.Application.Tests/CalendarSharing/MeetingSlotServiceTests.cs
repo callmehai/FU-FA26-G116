@@ -33,7 +33,7 @@ public sealed class MeetingSlotServiceTests
     private MeetingSlotService Service()
     {
         var clock = new FixedClock(Now);
-        var meetings = new MeetingService(_meetings, _unitOfWork, NullLogger<MeetingService>.Instance, clock);
+        var meetings = new MeetingService(_meetings, new FakeMeetingInvitationStager(), _unitOfWork, NullLogger<MeetingService>.Instance, clock);
         return new(_shares, _unitOfWork, new CalendarBusyReader(_busy, clock), meetings, clock,
             NullLogger<MeetingSlotService>.Instance);
     }

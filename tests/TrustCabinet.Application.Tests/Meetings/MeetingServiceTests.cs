@@ -17,7 +17,7 @@ public sealed class MeetingServiceTests
     private readonly Guid _organizer = Guid.CreateVersion7();
     private readonly Guid _approver = Guid.CreateVersion7();
 
-    private MeetingService Service() => new(_meetings, _unitOfWork, NullLogger<MeetingService>.Instance, new FixedClock(Now));
+    private MeetingService Service() => new(_meetings, new FakeMeetingInvitationStager(), _unitOfWork, NullLogger<MeetingService>.Instance, new FixedClock(Now));
 
     private Meeting GivenWaitingApproval()
     {

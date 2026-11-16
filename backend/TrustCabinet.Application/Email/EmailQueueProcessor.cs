@@ -1,12 +1,12 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
-namespace TrustCabinet.Infrastructure.Email;
+namespace TrustCabinet.Application.Email;
 
-internal enum EmailProcessingOutcome
+public enum EmailProcessingOutcome
 {
     NoWork,
     Sent,
@@ -15,15 +15,16 @@ internal enum EmailProcessingOutcome
     LeaseLost,
 }
 
-internal sealed record EmailProcessingResult(EmailProcessingOutcome Outcome, int AttemptCount = 0);
+public sealed record EmailProcessingResult(EmailProcessingOutcome Outcome, int AttemptCount = 0);
 
-internal interface IEmailQueueProcessor
+public interface IEmailQueueProcessor
 {
     Task<EmailProcessingResult> ProcessNextAsync(CancellationToken ct = default);
 }
 
 internal sealed class EmailQueueProcessor(
-    TrustCabinetDbContext db,
+    IEmailMessageRepository messages,
+    IUnitOfWork unitOfWork,
     IEmailSender sender,
     IOptions<EmailDeliveryOptions> options,
     TimeProvider time,
@@ -162,67 +163,31 @@ internal sealed class EmailQueueProcessor(
     {
         var now = time.GetUtcNow();
         var leaseToken = Guid.NewGuid();
-        if (!string.Equals(
-                db.Database.ProviderName,
-                "Npgsql.EntityFrameworkCore.PostgreSQL",
-                StringComparison.Ordinal))
+
+        await unitOfWork.ExecuteAsync(
+            token => messages.MarkExhaustedAsFailedAsync(options.Value.MaxAttempts, now, token),
+            TransactionMode.None, ct);
+
+        var message = await unitOfWork.ExecuteAsync(async token =>
         {
-            throw new NotSupportedException(
-                "The durable email queue requires PostgreSQL.");
-        }
+            var message = await messages.LockNextDueAsync(options.Value.MaxAttempts, now, token);
 
-        await MarkExhaustedMessagesFailedAsync(now, ct);
+            if (message is not null)
+            {
+                Claim(message, leaseToken, now);
+                await unitOfWork.SaveChangesAsync(token);
+            }
 
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var candidates = await db.EmailMessages
-            .FromSqlInterpolated($"""
-                SELECT *
-                FROM email_messages
-                WHERE attempt_count < {options.Value.MaxAttempts}
-                  AND (
-                    (status = 'Queued'
-                        AND (next_attempt_at IS NULL OR next_attempt_at <= {now}))
-                    OR (status = 'Processing' AND lease_expires_at <= {now})
-                  )
-                ORDER BY created_at, id
-                FOR UPDATE SKIP LOCKED
-                LIMIT 1
-                """)
-            .ToListAsync(ct);
-        var message = candidates.SingleOrDefault();
+            return message;
+        }, TransactionMode.ReadCommitted, ct);
 
         if (message is not null)
         {
-            Claim(message, leaseToken, now);
-            await db.SaveChangesAsync(ct);
-        }
-
-        await transaction.CommitAsync(ct);
-
-        if (message is not null)
-        {
-            db.Entry(message).State = EntityState.Detached;
+            messages.Detach(message);
         }
 
         return message;
     }
-
-    private Task<int> MarkExhaustedMessagesFailedAsync(DateTimeOffset now, CancellationToken ct)
-        => db.EmailMessages
-            .Where(item => item.AttemptCount >= options.Value.MaxAttempts
-                && (item.Status == EmailStatus.Queued
-                    || (item.Status == EmailStatus.Processing && item.LeaseExpiresAt <= now)))
-            .ExecuteUpdateAsync(
-                setters => setters
-                    .SetProperty(item => item.Status, EmailStatus.Failed)
-                    .SetProperty(
-                        item => item.LastError,
-                        "Email reached the maximum attempt count before delivery was confirmed.")
-                    .SetProperty(item => item.NextAttemptAt, (DateTimeOffset?)null)
-                    .SetProperty(item => item.LeaseToken, (Guid?)null)
-                    .SetProperty(item => item.LeaseExpiresAt, (DateTimeOffset?)null)
-                    .SetProperty(item => item.UpdatedAt, now),
-                ct);
 
     private void Claim(EmailMessage message, Guid leaseToken, DateTimeOffset now)
     {
@@ -241,18 +206,9 @@ internal sealed class EmailQueueProcessor(
         DateTimeOffset sentAt,
         CancellationToken ct)
     {
-        var updated = await ClaimedMessage(id, leaseToken)
-            .ExecuteUpdateAsync(
-                setters => setters
-                    .SetProperty(item => item.Status, EmailStatus.Sent)
-                    .SetProperty(item => item.SentAt, sentAt)
-                    .SetProperty(item => item.ProviderMessageId, providerMessageId)
-                    .SetProperty(item => item.LastError, string.Empty)
-                    .SetProperty(item => item.NextAttemptAt, (DateTimeOffset?)null)
-                    .SetProperty(item => item.LeaseToken, (Guid?)null)
-                    .SetProperty(item => item.LeaseExpiresAt, (DateTimeOffset?)null)
-                    .SetProperty(item => item.UpdatedAt, sentAt),
-                ct);
+        var updated = await unitOfWork.ExecuteAsync(
+            token => messages.MarkSentAsync(id, leaseToken, providerMessageId, sentAt, token),
+            TransactionMode.None, ct);
         return updated == 1;
     }
 
@@ -266,24 +222,11 @@ internal sealed class EmailQueueProcessor(
         CancellationToken ct)
     {
         var status = exhausted ? EmailStatus.Failed : EmailStatus.Queued;
-        var updated = await ClaimedMessage(id, leaseToken)
-            .ExecuteUpdateAsync(
-                setters => setters
-                    .SetProperty(item => item.Status, status)
-                    .SetProperty(item => item.LastError, error)
-                    .SetProperty(item => item.NextAttemptAt, nextAttemptAt)
-                    .SetProperty(item => item.LeaseToken, (Guid?)null)
-                    .SetProperty(item => item.LeaseExpiresAt, (DateTimeOffset?)null)
-                    .SetProperty(item => item.UpdatedAt, failedAt),
-                ct);
+        var updated = await unitOfWork.ExecuteAsync(
+            token => messages.MarkAttemptFailedAsync(id, leaseToken, status, error, nextAttemptAt, failedAt, token),
+            TransactionMode.None, ct);
         return updated == 1;
     }
-
-    private IQueryable<EmailMessage> ClaimedMessage(Guid id, Guid leaseToken)
-        => db.EmailMessages.Where(item =>
-            item.Id == id
-            && item.Status == EmailStatus.Processing
-            && item.LeaseToken == leaseToken);
 
     private EmailProcessingResult LeaseLost(EmailMessage message)
     {

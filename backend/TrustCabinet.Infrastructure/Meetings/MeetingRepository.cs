@@ -339,30 +339,4 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         db.Meetings.Add(meeting);
         return Task.CompletedTask;
     }
-
-    public async Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
-    {
-        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
-            Email.MeetingInvitationEvents.Stage(db, meeting, participant, null, InvitationEventKind.Invitation, now, notify: false);
-        foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
-            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Invitation, now, notify: false);
-    }
-
-    public async Task StageCancellationAsync(
-        Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default)
-    {
-        // The organizer who cancelled needs no bell for it, but still gets the email like every invitee.
-        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
-            Email.MeetingInvitationEvents.Stage(db, meeting, participant, null, InvitationEventKind.Cancelled, now,
-                notify: participant.UserId != actorId, historyId, reason);
-        foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
-            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Cancelled, now,
-                notify: false, historyId, reason);
-    }
-
-    public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
-    {
-        foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
-            Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId);
-    }
 }

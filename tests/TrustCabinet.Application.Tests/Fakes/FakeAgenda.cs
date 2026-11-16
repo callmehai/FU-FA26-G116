@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Agenda;
-using TrustCabinet.Application.Email;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
@@ -126,18 +125,6 @@ public sealed class FakeAgendaEffects(FakeUnitOfWork unitOfWork) : IAgendaChange
 
     public Task<IReadOnlyList<MeetingGuestSession>> ListReadersAsync(Guid meetingId, CancellationToken ct)
         => throw new NotSupportedException();
-}
-
-/// <summary>Queued emails in a list. <see cref="Added"/> holds what was staged; nothing here saves.</summary>
-public sealed class FakeEmailMessageRepository : IEmailMessageRepository
-{
-    public List<EmailMessage> Rows { get; } = [];
-    public List<EmailMessage> Added { get; } = [];
-
-    public Task<bool> ExistsWithDeduplicationKeyAsync(string deduplicationKey, CancellationToken ct = default)
-        => Task.FromResult(Rows.Any(e => e.DeduplicationKey == deduplicationKey));
-
-    public void Add(EmailMessage message) => Added.Add(message);
 }
 
 /// <summary>

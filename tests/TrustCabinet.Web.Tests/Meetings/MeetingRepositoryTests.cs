@@ -1,25 +1,27 @@
-using Microsoft.EntityFrameworkCore;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json;
 using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.Email;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Application.Notifications;
 using TrustCabinet.Infrastructure;
-using TrustCabinet.Infrastructure.Meetings;
-using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Notifications;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Web.Tests.Meetings;
@@ -135,13 +137,13 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     private MeetingService NewService(TrustCabinetDbContext? db = null, bool smtpEnabled = true)
     {
         var context = db ?? _db;
-        return new MeetingService(new MeetingRepository(context), new EfUnitOfWork(context), NullLogger<MeetingService>.Instance);
+        return new MeetingService(new MeetingRepository(context), new MeetingInvitationEvents(new MeetingInvitationDispatchRepository(context), new NotificationRepository(context)), new EfUnitOfWork(context), NullLogger<MeetingService>.Instance);
     }
 
     private async Task MaterializeInvitations(Guid meetingId, bool smtpEnabled = true)
     {
         await using var db = NewContext();
-        var processor = new MeetingInvitationDispatchProcessor(db, Options.Create(new EmailDeliveryOptions
+        var processor = new MeetingInvitationDispatchProcessor(new MeetingInvitationDispatchRepository(db), new EmailMessageRepository(db), new EfUnitOfWork(db), Options.Create(new EmailDeliveryOptions
         {
             ApplicationBaseUrl = "https://hop.example.vn",
             Smtp = new() { Enabled = smtpEnabled, FromAddress = "no-reply@example.vn" }
@@ -825,7 +827,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
 
         await using var workerDb = NewContext();
         var sender = new RecordingInvitationSender();
-        var processor = new EmailQueueProcessor(workerDb, sender, Options.Create(new EmailDeliveryOptions()),
+        var processor = new EmailQueueProcessor(new EmailMessageRepository(workerDb), new EfUnitOfWork(workerDb), sender, Options.Create(new EmailDeliveryOptions()),
             TimeProvider.System, NullLogger<EmailQueueProcessor>.Instance);
         for (var index = 0; index < 3; index++)
             Assert.Equal(EmailProcessingOutcome.Sent, (await processor.ProcessNextAsync()).Outcome);

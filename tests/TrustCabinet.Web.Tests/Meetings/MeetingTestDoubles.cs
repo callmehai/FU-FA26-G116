@@ -1,4 +1,5 @@
 using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Entities;
@@ -42,7 +43,11 @@ internal sealed class FakeMeetingUnitOfWork(FakeMeetingRepository meetings) : IU
     }
 }
 
-internal sealed class FakeMeetingRepository : IMeetingRepository
+/// <summary>
+/// Also the meeting service's invitation stager, so the staged invitations land in the lists these tests read and are
+/// restored with the rest of the fake when its transaction rolls back.
+/// </summary>
+internal sealed class FakeMeetingRepository : IMeetingRepository, IMeetingInvitationStager
 {
     private readonly List<Meeting> _pendingAdds = [];
     private readonly List<Notification> _pendingNotifications = [];
@@ -68,6 +73,11 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         StagedCancellations.Add((meeting.Id, historyId, reason));
         return Task.CompletedTask;
     }
+    public Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
+        => Task.CompletedTask;
+    public void Stage(Meeting meeting, MeetingParticipant? participant, MeetingGuestInvitation? guest,
+        InvitationEventKind kind, DateTimeOffset now, bool notify, Guid? sourceEventId = null, string? reason = null)
+        => throw new NotSupportedException();
     public Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<User>>(userIds.Select(id => new User { Id = id, FullName = "Selected user", Email = $"{id}@test.local", IsActive = !InactiveUserIds.Contains(id) }).ToArray());
 

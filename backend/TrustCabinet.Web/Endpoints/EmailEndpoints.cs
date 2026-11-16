@@ -1,4 +1,4 @@
-using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Application.Email;
 
 namespace TrustCabinet.Web.Endpoints;
 

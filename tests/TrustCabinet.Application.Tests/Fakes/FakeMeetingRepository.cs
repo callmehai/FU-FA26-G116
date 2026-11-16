@@ -109,5 +109,4 @@ public sealed class FakeMeetingRepository : IMeetingRepository
     public Task<Meeting?> FindOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default) => throw new NotSupportedException();
     public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default) => throw new NotSupportedException();
     public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
-    public Task StageCancellationAsync(Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default) => throw new NotSupportedException();
 }

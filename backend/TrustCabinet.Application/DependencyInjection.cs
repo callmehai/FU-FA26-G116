@@ -9,6 +9,7 @@ using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.CalendarSharing;
 using TrustCabinet.Application.Calls;
 using TrustCabinet.Application.Documents;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.GuestAccess;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notes;
@@ -56,6 +57,7 @@ public static class DependencyInjection
         AddVoiceId(services);
         AddAi(services);
         AddSummaries(services);
+        AddEmail(services);
         return services;
     }
 
@@ -228,5 +230,19 @@ public static class DependencyInjection
         services.AddScoped<MeetingTranscriptReader>();
         services.AddScoped<ISummaryService, SummaryService>();
         services.AddScoped<IMinutesService, MinutesService>();
+    }
+
+    /// <summary>
+    /// <see cref="EmailDeliveryOptions"/>, the transports behind <see cref="IEmailSender"/>, the delivery worker and the
+    /// repositories are the infrastructure project's to supply.
+    /// </summary>
+    private static void AddEmail(IServiceCollection services)
+    {
+        services.AddScoped<IMeetingInvitationStager, MeetingInvitationEvents>();
+        services.AddScoped<MeetingInvitationDispatchProcessor>();
+        services.AddScoped<EmailQueueProcessor>();
+        services.AddScoped<IEmailQueueProcessor>(provider =>
+            provider.GetRequiredService<EmailQueueProcessor>());
+        services.AddScoped<IEmailWebhookReceiver, ResendWebhookReceiver>();
     }
 }

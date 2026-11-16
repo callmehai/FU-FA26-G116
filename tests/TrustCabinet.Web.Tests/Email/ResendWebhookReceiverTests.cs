@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Email;
 

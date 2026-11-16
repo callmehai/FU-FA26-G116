@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Infrastructure.Email;
 

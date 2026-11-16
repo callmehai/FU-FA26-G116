@@ -55,7 +55,7 @@ public sealed class MeetingEndpointsTests : IDisposable
                 services.RemoveAll<IMeetingRepository>();
                 services.AddSingleton<IMeetingRepository>(Meetings);
                 services.RemoveAll<IMeetingService>();
-                services.AddScoped<IMeetingService>(provider => new MeetingService(Meetings, new FakeMeetingUnitOfWork(Meetings),
+                services.AddScoped<IMeetingService>(provider => new MeetingService(Meetings, Meetings, new FakeMeetingUnitOfWork(Meetings),
                     provider.GetRequiredService<ILogger<MeetingService>>(), provider.GetService<TimeProvider>()));
             });
         }
