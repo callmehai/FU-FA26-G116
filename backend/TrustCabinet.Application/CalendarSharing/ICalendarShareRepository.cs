@@ -53,7 +53,8 @@ public interface ICalendarShareRepository
 
     /// <summary>
     /// The pair's open shares (Pending or Effective) past their end date (BR-425), tracked, each row under an exclusive
-    /// lock until the transaction ends. Call it inside a transaction.
+    /// lock until the transaction ends, taken in no particular order (the pair's rows are only locked here and by
+    /// <see cref="LockAsync"/>, one at a time). Call it inside a transaction.
     /// </summary>
     Task<List<CalendarShare>> LockLapsedOpenAsync(Guid ownerId, Guid viewerId, DateOnly today,
         CancellationToken ct = default);
