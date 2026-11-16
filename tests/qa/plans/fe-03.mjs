@@ -992,5 +992,40 @@ export default {
         qa.expect(still, 'the audit entry disappeared').toBe(true)
       },
     },
+    {
+      id: 'AC20b',
+      role: 'admin',
+      devices: ['desktop', 'phone'],
+      title: 'Nhật ký: đổi Người thực hiện hay Loại sự kiện không làm ô lọc co giãn hay xô các ô bên cạnh',
+      steps: ['Mở Nhật ký hệ thống', 'Lần lượt chọn các giá trị của Người thực hiện và Loại sự kiện'],
+      expected:
+        'Mỗi ô lọc giữ một bề rộng với mọi giá trị (tối đa 240px trên máy tính, tên dài cắt bằng "…"; cả hàng trên điện thoại). Huy báo lỗi 16/11: ô ngắn dài theo lựa chọn',
+      async run(qa) {
+        await qa.goto(AUDIT_PATH)
+        if (qa.device === 'phone') {
+          const toggle = qa.page.getByRole('button', { name: /Bộ lọc/ })
+          if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click()
+        }
+        for (const name of ['Người thực hiện', 'Loại sự kiện']) {
+          const trigger = qa.page.getByRole('button', { name: new RegExp(`^${name}:`) })
+          await trigger.click()
+          const options = qa.page.getByRole('listbox', { name }).getByRole('option')
+          // Every person and every event is a lot of clicks; the first 15 hold the short "Mọi …" and long names alike.
+          const count = Math.min(await options.count(), 15)
+          await qa.page.keyboard.press('Escape')
+          const widths = new Set()
+          for (let i = 0; i < count; i++) {
+            await trigger.click()
+            await qa.page.getByRole('listbox', { name }).getByRole('option').nth(i).click()
+            widths.add(Math.round((await trigger.boundingBox()).width))
+          }
+          qa.note(`${name}: ${[...widths].join('/')}px qua ${count} giá trị`)
+          qa.expect(widths.size, `${name} changes width: ${[...widths].join('/')}px`).toBe(1)
+        }
+        await settled(qa)
+        await qa.shot('bo-loc-giu-be-rong')
+        await noSidewaysScroll(qa)
+      },
+    },
   ],
 }

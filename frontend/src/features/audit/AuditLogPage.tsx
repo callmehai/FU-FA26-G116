@@ -334,12 +334,14 @@ export function AuditLogPage() {
               options={actorOptions}
               onChange={(actor) => update({ actor })}
               label="Người thực hiện"
+              steady
             />
             <Select
               value={criteria.action}
               options={eventOptions}
               onChange={(action) => update({ action })}
               label="Loại sự kiện"
+              steady
             />
             {filtered && (
               <button
