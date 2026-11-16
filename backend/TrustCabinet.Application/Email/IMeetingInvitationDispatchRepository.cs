@@ -12,7 +12,7 @@ public interface IMeetingInvitationDispatchRepository
     /// <summary>Stages the dispatch; it is written by the next <c>SaveChangesAsync</c>.</summary>
     void Add(MeetingInvitationDispatch dispatch);
 
-    /// <summary>The Guests of the meeting whose invitation is not revoked, for update.</summary>
+    /// <summary>The Guests of the meeting whose invitation is not revoked, tracked (no row lock).</summary>
     Task<MeetingGuestInvitation[]> ListActiveGuestInvitationsAsync(Guid meetingId, CancellationToken ct = default);
 
     /// <summary>The ids of up to <paramref name="take"/> pending or blocked dispatches that are due, oldest first.</summary>
@@ -37,6 +37,7 @@ public interface IMeetingInvitationDispatchRepository
     /// <summary>Whether the meeting has ended or been cancelled.</summary>
     Task<bool> IsMeetingClosedAsync(Guid? meetingId, CancellationToken ct = default);
 
+    /// <summary>The meeting's status; the meeting must exist.</summary>
     Task<MeetingStatus> GetMeetingStatusAsync(Guid? meetingId, CancellationToken ct = default);
 
     /// <summary>The delivery key the participant's first invitation went out under, if recorded.</summary>

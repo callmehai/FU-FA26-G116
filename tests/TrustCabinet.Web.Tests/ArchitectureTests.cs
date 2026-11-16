@@ -100,8 +100,8 @@ public sealed class ArchitectureTests
     ];
 
     // A7 — a class of Infrastructure that takes TrustCabinetDbContext is a *Repository or a *Query, or sits in
-    // Persistence/ or Seed/, or is TrustCabinetDbContext* or DependencyInjection. The classes below are neither yet:
-    // each moves its use case to Application, or becomes one of those, in the subtask of its module. Empty at CA-20.
+    // Persistence/ or Seed/, or is TrustCabinetDbContext* or DependencyInjection. Emptied by CA-17, the last module
+    // subtask; it stays so the rule keeps its exception list shape until CA-20.
     private static readonly string[] PendingDbContextReaders =
     [
     ];

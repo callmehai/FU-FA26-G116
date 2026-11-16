@@ -102,6 +102,52 @@ public sealed class MeetingInvitationDispatchProcessorTests
     }
 
     [Fact]
+    public async Task A_dispatch_no_longer_due_under_the_lock_is_left_alone_and_not_committed()
+    {
+        var dispatch = Dispatch();
+        // Another worker settled it between the first read and the lock.
+        _dispatches.Locked = new MeetingInvitationDispatch
+        {
+            MeetingId = dispatch.MeetingId,
+            State = InvitationDispatchState.Materialized,
+            DeduplicationKey = dispatch.DeduplicationKey,
+        };
+
+        Assert.Equal(0, await Processor().ProcessAsync(dispatch.Id, default));
+
+        Assert.Empty(_emails.Added);
+        Assert.Equal((0, 0, 1), (_unitOfWork.Saves, _unitOfWork.Commits, _unitOfWork.Rollbacks));
+    }
+
+    [Fact]
+    public async Task An_email_already_queued_under_the_key_is_linked_instead_of_queued_again()
+    {
+        var dispatch = Dispatch();
+        var queued = new EmailMessage { DeduplicationKey = dispatch.DeduplicationKey, ToAddress = "a@example.vn", Subject = "x" };
+        _emails.Rows.Add(queued);
+
+        Assert.Equal(0, await Processor().ProcessAsync(dispatch.Id, default));
+
+        Assert.Empty(_emails.Added);
+        Assert.Equal(InvitationDispatchState.Materialized, dispatch.State);
+        Assert.Equal(queued.Id, dispatch.EmailMessageId);
+        Assert.Equal((1, 1), (_unitOfWork.Saves, _unitOfWork.Commits));
+    }
+
+    [Fact]
+    public async Task A_withdrawal_of_an_invitation_that_went_out_is_sent_without_a_link()
+    {
+        var dispatch = Dispatch(InvitationEventKind.Removed);
+        _dispatches.InvitationMaterialized = true;
+
+        Assert.Equal(1, await Processor().ProcessAsync(dispatch.Id, default));
+
+        var email = Assert.Single(_emails.Added);
+        Assert.DoesNotContain("https://", email.Body, StringComparison.Ordinal);
+        Assert.Null(email.CalendarAttachment);
+    }
+
+    [Fact]
     public async Task A_guest_invitation_waits_while_the_link_provider_is_unavailable()
     {
         var dispatch = Dispatch(guest: true);

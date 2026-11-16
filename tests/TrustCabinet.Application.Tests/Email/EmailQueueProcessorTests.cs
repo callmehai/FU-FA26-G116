@@ -14,7 +14,9 @@ public sealed class EmailQueueProcessorTests
 
     private readonly FakeEmailMessageRepository _messages = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
-    private readonly FakeEmailSender _sender = new();
+    private readonly FakeEmailSender _sender;
+
+    public EmailQueueProcessorTests() => _sender = new(_unitOfWork);
 
     private EmailQueueProcessor Processor(int maxAttempts = 3, string[]? undeliverable = null) => new(
         _messages, _unitOfWork, _sender,
@@ -49,6 +51,7 @@ public sealed class EmailQueueProcessorTests
 
         Assert.Equal(new EmailProcessingResult(EmailProcessingOutcome.Sent, 1), result);
         Assert.Same(message, Assert.Single(_sender.Sent));
+        Assert.False(_sender.SentInTransaction);
         Assert.Equal(EmailStatus.Sent, message.Status);
         Assert.Equal("provider-1", message.ProviderMessageId);
         Assert.Null(message.LeaseToken);

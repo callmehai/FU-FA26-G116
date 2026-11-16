@@ -176,13 +176,17 @@ public sealed class FakeMeetingInvitationDispatchRepository : IMeetingInvitation
 }
 
 /// <summary>Records what it was asked to send; <see cref="Fail"/> is thrown in place of sending.</summary>
-internal sealed class FakeEmailSender : IEmailSender
+internal sealed class FakeEmailSender(FakeUnitOfWork? unitOfWork = null) : IEmailSender
 {
     public List<EmailMessage> Sent { get; } = [];
     public Exception? Fail { get; set; }
 
+    /// <summary>Whether any send ran while the unit of work held a transaction open.</summary>
+    public bool SentInTransaction { get; private set; }
+
     public Task<string?> SendAsync(EmailMessage message, CancellationToken ct = default)
     {
+        SentInTransaction |= unitOfWork?.InTransaction == true;
         if (Fail is { } failure) throw failure;
         Sent.Add(message);
         return Task.FromResult<string?>("provider-1");
