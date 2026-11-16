@@ -18,7 +18,7 @@ public sealed class RoomTakeServiceTests
     private readonly FakeRecordingRepository _recordings = new();
     private readonly FakeTranscriptRepository _transcripts = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
-    private readonly FakeRecordingStorage _storage = new();
+    private readonly FakeRecordingStorage _storage;
     private readonly FakeAuditService _audit = new();
     private readonly FakeSpeechChangePublisher _publisher;
     private readonly RecordingTestMeeting _meeting;
@@ -26,6 +26,7 @@ public sealed class RoomTakeServiceTests
     public RoomTakeServiceTests()
     {
         _publisher = new(_unitOfWork);
+        _storage = new(_unitOfWork);
         _meeting = new(_meetings, MeetingMode.Hybrid, Now);
     }
 
@@ -111,6 +112,7 @@ public sealed class RoomTakeServiceTests
         Assert.Equal([TransactionMode.None, TransactionMode.ReadCommitted], _unitOfWork.Modes);
         Assert.Equal(1, _unitOfWork.Commits);
         Assert.Equal([take.StoragePath], _storage.Deleted);
+        Assert.Equal([1], _storage.CommitsAtDelete);
         Assert.Equal(1, Assert.Single(_publisher.Published).CommitsBefore);
     }
 }

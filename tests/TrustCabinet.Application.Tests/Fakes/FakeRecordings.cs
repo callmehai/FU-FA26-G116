@@ -54,7 +54,15 @@ public sealed class FakeRecordingRepository : IRecordingRepository
     public Task<IReadOnlyList<Recording>> ListByMeetingAsync(Guid meetingId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<Recording>>(Recordings.Where(r => r.MeetingId == meetingId).ToArray());
 
-    public Task<Recording?> LockAsync(Guid recordingId, CancellationToken ct) => FindAsync(recordingId, true, ct);
+    /// <summary>Runs on the row <see cref="LockAsync"/> returns: a change another request made just before the lock.</summary>
+    public Action<Recording>? BeforeLock { get; set; }
+
+    public async Task<Recording?> LockAsync(Guid recordingId, CancellationToken ct)
+    {
+        var row = await FindAsync(recordingId, true, ct);
+        if (row is not null) BeforeLock?.Invoke(row);
+        return row;
+    }
 
     public Task<IReadOnlyList<Guid>> ListIdleTakesAsync(DateTimeOffset before, int take, CancellationToken ct) => throw new NotSupportedException();
 }
@@ -129,13 +137,17 @@ public sealed class FakeSpeechClipRepository : ISpeechClipRepository
     public Task<SpeechClipAudio?> FindAudioAsync(Guid clipId, CancellationToken ct) => throw new NotSupportedException();
 }
 
-/// <summary>Files in memory, by path. Deleted paths are kept in order in <see cref="Deleted"/>.</summary>
-public sealed class FakeRecordingStorage : IRecordingStorage
+/// <summary>
+/// Files in memory, by path. Deleted paths are kept in order in <see cref="Deleted"/>, with how many commits the unit of
+/// work had made by then in <see cref="CommitsAtDelete"/>: a file is deleted only once its row's change has committed.
+/// </summary>
+public sealed class FakeRecordingStorage(FakeUnitOfWork? unitOfWork = null) : IRecordingStorage
 {
     private int _next;
 
     public Dictionary<string, byte[]> Files { get; } = [];
     public List<string> Deleted { get; } = [];
+    public List<int> CommitsAtDelete { get; } = [];
 
     public async Task<(string StoragePath, long ByteSize)> SaveAsync(Stream content, string extension, long maxBytes, CancellationToken ct)
     {
@@ -180,6 +192,7 @@ public sealed class FakeRecordingStorage : IRecordingStorage
     {
         Files.Remove(storagePath);
         Deleted.Add(storagePath);
+        CommitsAtDelete.Add(unitOfWork?.Commits ?? 0);
     }
 
     public Task<string> ConcatAsync(string first, string second, long skip, CancellationToken ct) => throw new NotSupportedException();

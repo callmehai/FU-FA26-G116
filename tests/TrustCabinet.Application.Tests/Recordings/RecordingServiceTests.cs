@@ -17,7 +17,7 @@ public sealed class RecordingServiceTests
     private readonly FakeMeetingRepository _meetings = new();
     private readonly FakeRecordingRepository _recordings = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
-    private readonly FakeRecordingStorage _storage = new();
+    private readonly FakeRecordingStorage _storage;
     private readonly FakeAuditService _audit = new();
     private readonly FakeSpeechChangePublisher _publisher;
     private readonly RecordingTestMeeting _meeting;
@@ -25,6 +25,7 @@ public sealed class RecordingServiceTests
     public RecordingServiceTests()
     {
         _publisher = new(_unitOfWork);
+        _storage = new(_unitOfWork);
         _meeting = new(_meetings, MeetingMode.InPerson, Now);
     }
 
@@ -103,6 +104,7 @@ public sealed class RecordingServiceTests
         Assert.Equal([TransactionMode.None, TransactionMode.ReadCommitted], _unitOfWork.Modes);
         Assert.Equal(1, _unitOfWork.Commits);
         Assert.Equal([recording.StoragePath], _storage.Deleted);
+        Assert.Equal([1], _storage.CommitsAtDelete);
     }
 
     [Fact]

@@ -78,6 +78,29 @@ public sealed class CombinedRecordingServiceTests
     }
 
     [Fact]
+    public async Task A_combined_recording_erased_while_it_was_mixed_stays_erased_and_the_new_mix_is_deleted()
+    {
+        var existing = new Recording
+        {
+            MeetingId = _meetingId, Source = RecordingSource.Combined, Status = RecordingStatus.Available,
+            FileName = "ban-ghi-tong-hop.wav", ContentType = "audio/wav", StoragePath = _storage.Create(".wav"),
+            CreatedAt = Now.AddHours(-3), UpdatedAt = Now.AddHours(-3),
+        };
+        _recordings.Recordings.Add(existing);
+        _recordings.BeforeLock = row => row.Status = RecordingStatus.Deleted;
+
+        Assert.True(await Service().BuildNextAsync());
+
+        Assert.Equal([existing.Id], _recordings.Locked);
+        Assert.Equal((0, 1, 0), (_unitOfWork.Commits, _unitOfWork.Rollbacks, _unitOfWork.Saves));
+        Assert.Equal(existing.StoragePath, Assert.Single(_recordings.Recordings, r => r.Source == RecordingSource.Combined).StoragePath);
+        var mixed = Assert.Single(_storage.Deleted);
+        Assert.NotEqual(existing.StoragePath, mixed);
+        Assert.True(_storage.Files.ContainsKey(existing.StoragePath));
+        Assert.Empty(_publisher.Published);
+    }
+
+    [Fact]
     public async Task A_storage_failure_rolls_the_build_back_and_announces_nothing()
     {
         _unitOfWork.FailNextSave = new PersistenceUnavailableException();
