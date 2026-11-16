@@ -61,7 +61,7 @@ export function SlotSettingsPanel({
 
       <fieldset className="field find-pair" aria-label="Khoảng ngày">
         <span>Khoảng ngày</span>
-        <div className="find-pair-row">
+        <div className="find-pair-row find-pair-dates">
           <label htmlFor={`${id}-from`} className="visually-hidden">Từ ngày</label>
           <DateField id={`${id}-from`} value={value.from} onChange={(v) => set('from', v)} invalid={!!errors.fromDate} />
           <Icon name="arrowRight" size={16} />
@@ -128,11 +128,11 @@ export function SlotSettingsPanel({
       <div className="find-two">
         <div className="field" data-field="bufferMinutes">
           <span className="find-label">
-            Cách cuộc họp khác
+            Cách họp khác
             <InfoTip text="Khung đề xuất cách mọi giờ bận ít nhất chừng này, cả trước lẫn sau." />
           </span>
           <Select
-            label="Cách cuộc họp khác"
+            label="Cách họp khác"
             value={String(value.buffer)}
             options={BUFFER_OPTIONS}
             onChange={(v) => set('buffer', Number(v))}
@@ -141,11 +141,11 @@ export function SlotSettingsPanel({
         </div>
         <div className="field" data-field="stepMinutes">
           <span className="find-label">
-            Làm tròn giờ bắt đầu
+            Làm tròn giờ
             <InfoTip text="Giờ bắt đầu đề xuất rơi vào các mốc này, tính từ 00:00." />
           </span>
           <Select
-            label="Làm tròn giờ bắt đầu"
+            label="Làm tròn giờ"
             value={String(value.step)}
             options={STEP_OPTIONS}
             onChange={(v) => set('step', Number(v))}

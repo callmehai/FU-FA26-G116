@@ -110,11 +110,14 @@ function PersonPick({
   onChange,
   onRefused,
   initialQuery = '',
+  error,
 }: {
   purpose: 'request' | 'direct'
   value: ShareCandidate | null
   onChange: (person: ShareCandidate) => void
   onRefused: (error: unknown) => void
+  /** "Chọn một người.", after submitting with nobody picked. */
+  error?: string
   /** Starts the search with this text, e.g. the email of a person the dialog was opened for. */
   initialQuery?: string
 }) {
@@ -199,6 +202,7 @@ function PersonPick({
           Hiện {page.items.length}/{page.total} người. Gõ tên hoặc email để tìm người khác.
         </small>
       )}
+      {error && <small className="field-error">{error}</small>}
     </div>
   )
 }
@@ -278,8 +282,11 @@ export function NewShareDialog({
   const rules: RangeRules = { minStart: today, today }
   const problem = rangeError(range.from, range.to, rules)
   const close = () => !pending && onClose()
+  // The button stays on: a press with nobody picked says what is missing, under the list, instead of a dead button.
+  const [missing, setMissing] = useState(false)
 
   function submit() {
+    if (!person) setMissing(true)
     if (!person || problem) return
     void run(() =>
       mode === 'request'
@@ -300,7 +307,7 @@ export function NewShareDialog({
       footer={
         <Footer
           pending={pending}
-          disabled={!person || !!problem}
+          disabled={!!problem}
           label={mode === 'request' ? 'Gửi yêu cầu' : 'Chia sẻ'}
           pendingLabel="Đang gửi…"
           icon="send"
@@ -314,8 +321,12 @@ export function NewShareDialog({
           purpose={mode}
           initialQuery={initialPerson?.email}
           value={person}
-          onChange={setPerson}
+          onChange={(next) => {
+            setPerson(next)
+            setMissing(false)
+          }}
           onRefused={(err) => onDone({ kind: 'stale', error: err })}
+          error={missing ? 'Chọn một người.' : undefined}
         />
         {mode === 'request' && <LevelPick value={level} onChange={setLevel} />}
         <RangePick value={range} onChange={setRange} error={problem} />

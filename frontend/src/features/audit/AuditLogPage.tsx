@@ -4,6 +4,7 @@ import { listAuditEventTypes, listAuditLog } from '../../api/auditLog'
 import { listUsers } from '../../api/users'
 import { Badge } from '../../components/Badge'
 import { DateRangeField } from '../../components/DateRangeField'
+import { ClearFiltersButton } from '../../components/ClearFiltersButton'
 import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
 import { Pagination } from '../../components/Pagination'
@@ -343,17 +344,7 @@ export function AuditLogPage() {
               label="Loại sự kiện"
               steady
             />
-            {filtered && (
-              <button
-                type="button"
-                className="icon-button"
-                onClick={clearFilters}
-                data-tooltip="Xoá bộ lọc"
-                aria-label="Xoá bộ lọc"
-              >
-                <Icon name="x" size={16} />
-              </button>
-            )}
+            <ClearFiltersButton shown={filtered} onClear={clearFilters} />
           </div>
           {invalidRange && (
             <p className="field-error audit-range-error" role="alert">

@@ -1053,6 +1053,9 @@ a.menu-item { text-decoration: none; }
    992px, which put a 1200px window on two rows), then two columns, tighter under 728px. */
 .stat-cards { flex: none; margin-bottom: 16px; container-type: inline-size; }
 .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+/* Three cards (no "Bản nháp" or "Cần xử lý" for the role) share the row evenly, leaving no empty slot. */
+.stat-cards-3 .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stat-error { margin: 8px 0 0; color: var(--muted-ink); font-size: 13px; }
 
 .stat-card {
   display: flex;
@@ -1105,6 +1108,16 @@ a.menu-item { text-decoration: none; }
   .stat-value { font-size: 26px; }
   .stat-sub { white-space: normal; }
 }
+/* A phone: the cards are filters with a number, the line under it goes, so the list starts in the first screen. */
+@container (max-width: 520px) {
+  .stat-cards-3 .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .stat-card { padding: 10px 12px; }
+  .stat-value { font-size: 22px; line-height: 28px; }
+  .stat-value-slot { height: 28px; }
+  .stat-sub, .stat-sub-slot { display: none; }
+  .stat-cards-3 .stat-label { white-space: normal; }
+  .stat-cards-3 .stat-label .icon { display: none; }
+}
 
 /* ---------- Toolbar ---------- */
 .toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
@@ -1127,6 +1140,8 @@ a.menu-item { text-decoration: none; }
 
 /* Filters that fold behind "Bộ lọc (n)" on a phone (AI-eCabinet); on a wider screen they sit in the row. */
 .toolbar-filters { display: contents; }
+/* "Xoá bộ lọc" (ClearFiltersButton) holds its place while there is nothing to clear, so the row never shifts. */
+.clear-filters[data-hidden] { visibility: hidden; }
 .filters-toggle { display: none; }
 .filters-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; }
 @media (max-width: 720px) {
@@ -1134,6 +1149,7 @@ a.menu-item { text-decoration: none; }
   .filters-toggle { display: inline-flex; height: var(--control-height); color: var(--brand); -webkit-tap-highlight-color: transparent; }
   .filters-toggle[aria-expanded='true'] { border-color: var(--brand-wash-line); background: var(--brand-wash); }
   .toolbar-filters { display: none; }
+  .clear-filters[data-hidden] { display: none; }
   .toolbar-filters-open { display: flex; flex: 1 1 100%; flex-wrap: wrap; gap: 8px; }
 }
 /* A phone: the toggle keeps its icon and count, so the search beside it has room for its hint (SCRUM-151). */
@@ -1300,8 +1316,7 @@ a.menu-item { text-decoration: none; }
   .meetings-table tbody tr:not(.row-skeleton) td { padding: 0; border: none; }
   .meetings-table td.cell-status { order: 1; }
   .meetings-table td.cell-level { order: 2; }
-  .meetings-table td.cell-place { order: 3; min-width: 0; }
-  .meetings-table td.cell-place::before { content: '· '; }
+  .meetings-table td.cell-place { order: 3; min-width: 0; white-space: nowrap; }
   .meetings-table td.cell-title { flex: 1 1 100%; order: 4; overflow-wrap: anywhere; }
   .meetings-table td.cell-schedule { flex: 1 1 100%; order: 5; white-space: normal; }
   .meetings-table td.cell-schedule .cell-sub { display: inline; margin-left: 8px; }
@@ -1964,9 +1979,10 @@ a.menu-item { text-decoration: none; }
 .form-time-label { color: var(--muted-ink); font-size: 13px; }
 .form-length-note { align-self: center; margin-left: 4px; color: var(--muted-ink); font-size: 13px; }
 .form-lengths { display: flex; flex-wrap: wrap; gap: 6px; }
-/* A quick choice under a field ("1 giờ"): a small toggle, solid while it is what the field holds. */
+/* A quick choice under a field ("1 giờ"): a toggle as tall as a button (34px, ADR-0043), solid while it is what the
+   field holds. */
 .chip-toggle {
-  height: 28px;
+  height: 34px;
   padding: 0 12px;
   border: 1px solid var(--control-line);
   border-radius: var(--radius);
@@ -2287,6 +2303,9 @@ a.menu-item { text-decoration: none; }
 .calendar-today .calendar-date { padding: 0 10px; border-radius: 12px; background: var(--brand); color: #fff; font-size: 16px; }
 
 .calendar-hours { position: relative; color: var(--label-ink); font-size: 12px; }
+/* On a phone the days scroll sideways under the hour column and the corner, which stay put. */
+.calendar-corner, .calendar-hours { position: sticky; left: 0; z-index: 3; background: var(--surface); }
+.calendar-corner { z-index: 4; background: var(--surface-head); }
 .calendar-hours span { position: absolute; right: 8px; }
 .calendar-hours .calendar-now-label {
   right: 4px;
@@ -2305,7 +2324,7 @@ a.menu-item { text-decoration: none; }
 .calendar-column {
   position: relative;
   border-left: 1px solid var(--line-soft);
-  background-image: repeating-linear-gradient(to bottom, #e9ecf1 0, #e9ecf1 1px, transparent 1px, transparent 56px);
+  background-image: repeating-linear-gradient(to bottom, #e9ecf1 0, #e9ecf1 1px, transparent 1px, transparent var(--hour, 56px));
 }
 .calendar-column-today { background-color: #f7fafe; }
 .calendar-now-line { position: absolute; right: 0; left: 0; z-index: 1; height: 2px; background: var(--danger); }
@@ -2370,6 +2389,14 @@ a.menu-item { text-decoration: none; }
 .cal-more { position: absolute; right: 9px; z-index: 2; height: 22px; padding: 0 7px; border: 1px solid var(--brand); border-radius: 4px; background: var(--surface); color: var(--brand); font: inherit; font-size: 12px; font-weight: 700; line-height: 20px; cursor: pointer; }
 .cal-more:hover { background: var(--brand-wash); }
 .cal-event.cal-event-crowded { padding-right: 52px; }
+/* A two-line tile: the time line makes room for the "+N", the title below gets the tile's whole width. */
+.cal-event.cal-event-crowded:not(.cal-event-short) { padding-right: 10px; }
+.cal-event-crowded:not(.cal-event-short) .cal-event-time { padding-right: 42px; }
+.cal-event-mid .cal-event-title { display: block; text-overflow: ellipsis; white-space: nowrap; }
+/* The "+N" chip stays small to the eye; on a touch screen its hit area grows to 40px. */
+@media (pointer: coarse) {
+  .cal-more::after { content: ''; position: absolute; inset: -9px -6px; }
+}
 .cal-event-go .cal-event-title { -webkit-line-clamp: 1; }
 .cal-event-go .cal-event-place { display: none; }
 .cal-go {
@@ -2473,6 +2500,20 @@ a.menu-item { text-decoration: none; }
 .month-more:hover { background: var(--brand-wash); }
 /* A narrow column keeps the count only; the tooltip and aria-label still say what it is. */
 @media (max-width: 1400px) { .month-more-word { display: none; } }
+/* A phone fits all seven days across (CalendarPage): each cell is its number over its count of meetings. */
+@media (max-width: 640px) {
+  .month { min-width: 0; }
+  .month-weekday { padding: 8px 0; text-align: center; }
+  .month-cell { align-items: center; padding: 4px 0; }
+  .month-cell-head { flex-direction: column; gap: 2px; }
+  .month-day { align-self: center; min-width: 32px; height: 32px; padding: 0; border-radius: 16px; }
+  .month-more { min-width: 32px; height: 26px; padding: 0 6px; border-radius: 13px; background: var(--brand-wash); font-size: 12px; font-variant-numeric: tabular-nums; }
+  /* 40px to a finger, the cell's whole width. */
+  .month-more { position: relative; }
+  .month-more::after { content: ''; position: absolute; inset: -7px -4px; }
+  /* The counts carry no status colour, so the legend would explain nothing here. */
+  .month-scroll + .calendar-legend { display: none; }
+}
 
 /* "Bộ lọc" (SCRUM-47): a non-modal panel under its button, chips that toggle at once. */
 .cal-filter { position: relative; }
@@ -2527,6 +2568,9 @@ a.menu-item { text-decoration: none; }
 .cal-dot-blue { background: var(--dot-blue); }
 .cal-dot-live { background: var(--live); }
 .cal-filter-foot { display: flex; justify-content: space-between; margin: 0 -16px; padding: 12px 16px 0; border-top: 1px solid var(--line-soft); }
+/* A phone's bottom sheet (CalendarFilter): anchored under its button the panel ran off the screen's left edge. */
+.cal-filter-sheet { position: static; width: 100%; max-height: 82dvh; overflow-y: auto; border: 0; border-radius: 16px 16px 0 0; }
+@media (pointer: coarse) { .cal-pick { height: 40px; border-radius: 20px; } }
 
 /* ---------- Calendar quick look (features/calendar/MeetingOverview.tsx) ----------
    AI-eCabinet's overview: a 420px card beside the tile, its body scrolling between a fixed head and
@@ -2573,9 +2617,10 @@ a.menu-item { text-decoration: none; }
 .overview-note { margin: 0 0 12px; color: var(--muted-ink); }
 .overview-desc {
   display: -webkit-box;
-  margin: 14px 0 0;
+  margin: 0;
   overflow: hidden;
   color: var(--ink-soft);
+  font-weight: 400;
   line-height: 1.55;
   white-space: pre-wrap;
   -webkit-box-orient: vertical;
@@ -5363,6 +5408,11 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .share-count { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--surface-alt); color: var(--muted-ink); font-size: 12px; font-weight: 600; text-align: center; }
 .share-skeleton { display: flex; flex-direction: column; gap: 18px; padding: 20px 16px; }
 .share-empty-line { margin: 0; padding: 28px 16px; color: var(--muted-ink); text-align: center; }
+/* History folds under the open shares (CalendarSharingPage), so the count in the heading is what the list shows. */
+.share-closed-toggle { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 40px; padding: 8px 16px; border: 0; border-top: 1px solid var(--line-soft); background: none; color: var(--brand); font: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer; }
+.share-closed-toggle:hover { background: var(--surface-alt); }
+.share-list + .share-closed-toggle { border-top: 1px solid var(--line-soft); }
+.share-closed-toggle:first-child { border-top: 0; }
 .share-list { margin: 0; padding: 0; list-style: none; }
 .share-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; scroll-margin: 80px; }
 .share-row + .share-row { border-top: 1px solid var(--line-soft); }
@@ -5370,7 +5420,9 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 /* Opened from a notification: the row is marked by its background, not by a coloured edge. */
 .share-row-focus { background: var(--brand-wash); }
 /* The whole email: a tap opens no tooltip, so it wraps at its @ and dots (Person) instead of ending in "…". */
-.share-row .person-text .cell-sub { overflow: visible; white-space: normal; text-overflow: clip; }
+.share-row .person-text .cell-sub { overflow: visible; white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
+/* The break points Person puts in the email; hidden elsewhere, so a phone's email ran under the "…" button. */
+.share-row .person-text wbr { display: inline; }
 .share-row-main { display: flex; flex: 1; flex-direction: column; gap: 6px; min-width: 0; }
 .share-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-left: 44px; font-size: 13px; }
 .share-level { color: var(--ink); font-weight: 500; }
@@ -5395,7 +5447,6 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 }
 
 .week-toolbar { flex-wrap: nowrap; }
-.week-nav { display: flex; gap: 4px; }
 .week-title { margin: 0; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .week-hours { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
 .week-swatch { flex: none; width: 10px; height: 10px; border-radius: 3px; }
@@ -5447,9 +5498,9 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .find-pair-row > * { min-width: 0; }
 .find-pair-row > label.visually-hidden { position: absolute; }
 .find-days { display: flex; flex-wrap: wrap; gap: 6px; }
-.find-days .chip-toggle { min-width: 38px; height: 32px; padding: 0 8px; }
+.find-days .chip-toggle { min-width: 38px; padding: 0 8px; }
 .find-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
-.find-label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; line-height: 1; }
+.find-label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap; }
 .find-submit { width: 100%; justify-content: center; }
 .find-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .find-main > * { flex: none; }
@@ -5459,7 +5510,7 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .find-quick-label { color: var(--muted-ink); font-size: 13px; }
 .find-quick .chip-toggle { display: inline-flex; align-items: center; gap: 4px; }
 .find-person-state { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
-.find-count { margin: 0; font-weight: 600; }
+.find-count { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; font-weight: 600; }
 .find-count-note { color: var(--muted-ink); font-weight: 400; }
 .find-results { display: flex; flex-direction: column; gap: 12px; }
 .find-results > * { flex: none; }
@@ -5478,6 +5529,9 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .find-empty-text { max-width: 560px; margin: 0; font-size: 14px; }
 .find-summary { display: flex; flex-direction: column; gap: 6px; padding: 16px; }
 .find-summary-sub { margin-bottom: 4px; color: var(--muted-ink); font-size: 13px; }
+.find-summary-part { white-space: nowrap; }
+/* Scrolled to on a phone; clear of the content's top edge. */
+.find-scroll-target { scroll-margin-top: 16px; }
 .find-locked { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-alt); }
 .find-locked-note { margin-left: auto; color: var(--muted-ink); font-size: 13px; }
 .find-role { flex: none; min-width: 84px; color: var(--muted-ink); font-size: 13px; text-align: right; }
@@ -5499,6 +5553,10 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .find-people-list .find-person-state { grid-column: 1 / -1; grid-row: 2; }
   .find-chip { height: 40px; min-width: 72px; }
   .find-days .chip-toggle { height: 40px; min-width: 40px; }
+  /* A phone's card has ~256px: two dates side by side cut off their year, so each takes the line. */
+  .find-pair-dates { grid-template-columns: minmax(0, 1fr); }
+  .find-pair-dates > .icon { display: none; }
+  .find-two { grid-template-columns: minmax(0, 1fr); }
   .find-collapse { justify-self: start; }
   .find-detail-head .btn { width: 100%; justify-content: center; }
   .find-locked-note { margin-left: 0; }

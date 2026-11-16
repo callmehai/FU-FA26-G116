@@ -17,6 +17,7 @@ import { MeetingOverview } from './MeetingOverview'
 import { MoreMeetings } from './MoreMeetings'
 import { NO_FILTER, matchesFilter, readFilter, writeFilter, type CalendarFilterValue } from './filter'
 import { useSchedule, type Schedule, type ScheduleEntry } from './useSchedule'
+import { usePhone } from './usePhone'
 import {
   WEEKDAYS,
   startOfWeek,
@@ -37,11 +38,18 @@ import {
 /** The grid covers the whole day; it opens scrolled to the part that matters (see WeekGrid). */
 const HOURS_PER_DAY = 24
 const HOUR_HEIGHT = 56
-const GRID_HEIGHT = HOURS_PER_DAY * HOUR_HEIGHT
+/** Taller on a phone, so a 30-minute meeting is a 40px touch target (ADR-0043). */
+const PHONE_HOUR_HEIGHT = 80
 /** Where an empty week, or a week whose first meeting starts early, opens. */
 const WORKDAY_START_HOUR = 8
 /** A meeting shorter than this would not fit its own time line. */
 const MIN_EVENT_HEIGHT = 30
+/** From this height a tile has its time on one line and its title on the next; below it, one line holds both. */
+const TWO_LINE_HEIGHT = 44
+/** From this height the title may take two lines and the place shows under it. */
+const TALL_HEIGHT = 72
+/** The hour column's width, which stays put while the days scroll sideways on a phone. */
+const HOURS_WIDTH = 60
 /** The "Vào phòng họp" button inside a live tile's foot (global.css: .cal-go), this far above the tile's bottom edge;
  *  a long tile carries it this far down. */
 const GO_HEIGHT = 24
@@ -56,6 +64,9 @@ const NOW_LABEL_HALF = 11
 const MONTH_EVENT_ROW = 27
 /** What a month cell spends before its first meeting: padding and the day-number line. */
 const MONTH_CELL_CHROME = 40
+
+/** The month grid's column heads on a phone. */
+const SHORT_WEEKDAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 
 type Span = 'work' | 'full' | 'month'
 const SPAN_OPTIONS: { value: Span; label: string }[] = [
@@ -392,7 +403,10 @@ function WeekGrid({
   onMore: OpenMore
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
-  const nowTop = minutesOfDay(now) * (HOUR_HEIGHT / 60)
+  const phone = usePhone()
+  const hourHeight = phone ? PHONE_HOUR_HEIGHT : HOUR_HEIGHT
+  const gridHeight = HOURS_PER_DAY * hourHeight
+  const nowTop = minutesOfDay(now) * (hourHeight / 60)
   const showsToday = days.some((d) => sameDay(d, now))
   const hours = Array.from({ length: HOURS_PER_DAY }, (_, i) => i)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -404,37 +418,51 @@ function WeekGrid({
   const anchorMinutes = showsToday
     ? minutesOfDay(now)
     : Math.min(WORKDAY_START_HOUR * 60, firstStart ? minutesOfDay(firstStart) : Infinity)
-  const weekKey = days[0].toISOString()
+  // On a phone only a day or two fit across: open on today, else on the week's first meeting.
+  const anchorDay = showsToday ? days.findIndex((d) => sameDay(d, now)) : days.findIndex((d) => sameDay(d, firstStart ?? days[0]))
+  const weekKey = `${days[0].toISOString()}-${days.length}-${hourHeight}`
   const scrolledFor = useRef<string | null>(null)
   useLayoutEffect(() => {
     const el = scrollRef.current
     if (!el || schedule.kind === 'loading' || scrolledFor.current === weekKey) return
     scrolledFor.current = weekKey
     const head = el.querySelector<HTMLElement>('.calendar-day')?.offsetHeight ?? 0
-    const target = anchorMinutes * (HOUR_HEIGHT / 60)
+    const target = anchorMinutes * (hourHeight / 60)
     el.scrollTop = Math.max(0, target - (showsToday ? (el.clientHeight - head) / 3 : 16))
-  }, [weekKey, schedule.kind, anchorMinutes, showsToday])
+    const column = el.querySelectorAll<HTMLElement>('.calendar-day')[Math.max(0, anchorDay)]
+    // Measured against the frame: the sticky heads are their own offsetParent's, not the frame's.
+    el.scrollLeft = column
+      ? el.scrollLeft + column.getBoundingClientRect().left - el.getBoundingClientRect().left - HOURS_WIDTH
+      : 0
+  }, [weekKey, schedule.kind, anchorMinutes, showsToday, hourHeight, anchorDay])
 
   return (
     <div className="calendar" aria-busy={schedule.kind === 'loading'}>
       <div className="calendar-scroll" ref={scrollRef}>
-        <div className="calendar-grid" style={{ gridTemplateColumns: `60px repeat(${days.length}, minmax(0, 1fr))` }}>
+        <div
+          className="calendar-grid"
+          style={{
+            gridTemplateColumns: `${HOURS_WIDTH}px repeat(${days.length}, minmax(0, 1fr))`,
+            ['--hour' as string]: `${hourHeight}px`,
+          }}
+        >
           <div className="calendar-corner" />
           {days.map((day) => (
             <DayHead key={day.toISOString()} day={day} today={sameDay(day, now)} />
           ))}
 
-          <div className="calendar-hours" style={{ height: GRID_HEIGHT }}>
+          <div className="calendar-hours" style={{ height: gridHeight }}>
             {/* An hour label the current-time badge would sit on is left out, as on Google Calendar. */}
             {hours
-              .filter((h) => !showsToday || !overlapsNowLabel(h * HOUR_HEIGHT + HOUR_LABEL_TOP, nowTop))
+              .filter((h) => !showsToday || !overlapsNowLabel(h * hourHeight + HOUR_LABEL_TOP, nowTop))
               .map((h) => (
-                <span key={h} style={{ top: h * HOUR_HEIGHT + HOUR_LABEL_TOP }}>
+                <span key={h} style={{ top: h * hourHeight + HOUR_LABEL_TOP }}>
                   {String(h).padStart(2, '0')}:00
                 </span>
               ))}
             {showsToday && (
-              <span className="calendar-now-label" style={{ top: nowTop - NOW_LABEL_HALF }}>
+              // Kept under the day headings just after midnight, where centring it on its line would hide its top.
+              <span className="calendar-now-label" style={{ top: Math.max(0, nowTop - NOW_LABEL_HALF) }}>
                 {formatClock(now)}
               </span>
             )}
@@ -446,12 +474,13 @@ function WeekGrid({
               <div
                 key={day.toISOString()}
                 className={today ? 'calendar-column calendar-column-today' : 'calendar-column'}
-                style={{ height: GRID_HEIGHT }}
+                style={{ height: gridHeight }}
               >
                 {events.map(({ entry, hidden }) => (
                   <GridEvent
                     key={entry.meeting.id}
                     entry={entry}
+                    hourHeight={hourHeight}
                     hidden={hidden}
                     onOpen={onOpen}
                     onMore={(anchor, keyboard) => onMore(`week-${entry.meeting.id}`, hidden, anchor, keyboard)}
@@ -474,22 +503,27 @@ function overlapsNowLabel(labelTop: number, nowTop: number) {
 
 function GridEvent({
   entry,
+  hourHeight,
   hidden,
   onOpen,
   onMore,
 }: {
   entry: ScheduleEntry
+  hourHeight: number
   /** Meetings overlapping this one, behind the "+N" in its top-right corner. */
   hidden: ScheduleEntry[]
   onOpen: OpenOverview
   onMore: (anchor: HTMLElement, keyboard: boolean) => void
 }) {
-  const top = minutesOfDay(entry.start) * (HOUR_HEIGHT / 60)
+  const top = minutesOfDay(entry.start) * (hourHeight / 60)
   // A meeting running past midnight stops at the bottom of its own day.
-  const bottom = sameDay(entry.start, entry.end) ? minutesOfDay(entry.end) * (HOUR_HEIGHT / 60) : GRID_HEIGHT
+  const bottom = sameDay(entry.start, entry.end)
+    ? minutesOfDay(entry.end) * (hourHeight / 60)
+    : HOURS_PER_DAY * hourHeight
   const height = Math.max(MIN_EVENT_HEIGHT, bottom - top)
   const { meeting } = entry
-  const tall = height >= 72
+  const short = height < TWO_LINE_HEIGHT
+  const tall = height >= TALL_HEIGHT
   // A running call room gets a "Vào phòng họp" band across the foot of its tile, where there is room.
   const goIn = meeting.status === 'InProgress' && meeting.mode !== 'InPerson' && height >= 56
   // Back from the meeting lands on this week, in this view.
@@ -503,13 +537,13 @@ function GridEvent({
         state={back}
         onClick={tileClick(entry, onOpen)}
         data-cal-trigger=""
-        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${tall ? '' : ' cal-event-short'}${hidden.length ? ' cal-event-crowded' : ''}${goIn ? ' cal-event-go' : ''}${meeting.status === 'Cancelled' ? ' cal-cancelled' : ''}`}
+        className={`cal-event cal-event-${STATUS_TONE[meeting.status]}${short ? ' cal-event-short' : tall ? '' : ' cal-event-mid'}${hidden.length ? ' cal-event-crowded' : ''}${goIn ? ' cal-event-go' : ''}${meeting.status === 'Cancelled' ? ' cal-cancelled' : ''}`}
         style={{ top, height }}
         data-tooltip={`${meeting.title}\n${timeRange(entry)}`}
       >
         <span className="cal-event-time">
           {/* A one-line tile keeps the room for the title: its start only, the range is in the tooltip. */}
-          {tall ? timeRange(entry) : formatClock(entry.start)}
+          {short ? formatClock(entry.start) : timeRange(entry)}
           {meeting.sensitivity === 'Secret' && (
             <span className="cal-event-secret">
               <Icon name="lock" size={11} />
@@ -570,6 +604,9 @@ function MonthGrid({
   onMore: OpenMore
 }) {
   const entries = schedule.kind === 'loaded' ? schedule.entries : []
+  // A phone's seven columns are ~40px wide, too narrow for a meeting line: each day shows how many it has,
+  // and that count opens the day's list.
+  const phone = usePhone()
   // The weeks share the frame's height, five or six alike, so the grid never scrolls; each cell
   // lists as many meetings as its height holds and folds the rest into "+N".
   const gridRef = useRef<HTMLDivElement>(null)
@@ -597,14 +634,14 @@ function MonthGrid({
         >
           {days.slice(0, 7).map((day) => (
             <div key={day.getDay()} className="month-weekday">
-              {WEEKDAYS[day.getDay()]}
+              {phone ? SHORT_WEEKDAYS[day.getDay()] : WEEKDAYS[day.getDay()]}
             </div>
           ))}
           {days.map((day) => {
             const today = sameDay(day, now)
             const weekday = day.getDay()
             const dayEntries = entries.filter((e) => sameDay(e.start, day))
-            const shown = dayEntries.slice(0, fit)
+            const shown = phone ? [] : dayEntries.slice(0, fit)
             const hidden = dayEntries.length - shown.length
             const cls = [
               'month-cell',
@@ -641,9 +678,9 @@ function MonthGrid({
                       }
                       data-cal-trigger=""
                       aria-haspopup="dialog"
-                      aria-label={`${hidden} cuộc họp nữa ngày ${formatDay(day)}: xem danh sách`}
+                      aria-label={`${hidden} cuộc họp${phone ? '' : ' nữa'} ngày ${formatDay(day)}: xem danh sách`}
                     >
-                      +{hidden}
+                      {phone ? hidden : `+${hidden}`}
                       <span className="month-more-word"> cuộc họp</span>
                     </button>
                   )}
@@ -821,8 +858,8 @@ function Legend() {
       <span className="legend-blue">Đã công bố</span>
       <span className="legend-emerald">Đã duyệt</span>
       <span className="legend-amber">Chờ duyệt</span>
-      <span className="legend-slate">Nháp</span>
-      <span className="legend-ended">Đã kết thúc</span>
+      {/* Drawn alike and filtered together (filter.ts), so one swatch names both. */}
+      <span className="legend-ended">Đã kết thúc, nháp</span>
       <span className="legend-red">Bị từ chối</span>
       <span className="legend-ended legend-struck">Đã huỷ</span>
     </div>
