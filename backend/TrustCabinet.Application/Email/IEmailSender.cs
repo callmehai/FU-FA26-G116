@@ -1,6 +1,6 @@
 using TrustCabinet.Domain.Entities;
 
-namespace TrustCabinet.Infrastructure.Email;
+namespace TrustCabinet.Application.Email;
 
 internal interface IEmailSender
 {

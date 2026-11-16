@@ -3,6 +3,7 @@ using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Infrastructure.Email;

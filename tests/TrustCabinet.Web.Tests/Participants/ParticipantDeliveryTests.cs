@@ -1,17 +1,20 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.DependencyInjection;
+using TrustCabinet.Application.Email;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Application.Participants;
-using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Notifications;
+using TrustCabinet.Infrastructure.Persistence;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Participants;
@@ -37,7 +40,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
     private async Task<int> Process(Guid id, Links? links = null)
     {
         await using var db = f.Db();
-        return await new MeetingInvitationDispatchProcessor(db, Options.Create(_options), f.Clock, links ?? new(),
+        return await new MeetingInvitationDispatchProcessor(new MeetingInvitationDispatchRepository(db), new EmailMessageRepository(db), new EfUnitOfWork(db), Options.Create(_options), f.Clock, links ?? new(),
             NullLogger<MeetingInvitationDispatchProcessor>.Instance).ProcessAsync(id, default);
     }
     private async Task<Guid> AddGuest(ParticipantFixture.Scenario s)
@@ -92,7 +95,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
             var meeting = await db.Meetings.Include(m => m.Participants).ThenInclude(p => p.User)
                 .SingleAsync(m => m.Id == s.MeetingId);
             meeting.Status = MeetingStatus.Cancelled;
-            await new MeetingRepository(db).StageCancellationAsync(meeting, historyId, s.Organizer, "Lãnh đạo đi công tác", f.Clock.Now);
+            await new MeetingInvitationEvents(new MeetingInvitationDispatchRepository(db), new NotificationRepository(db)).StageCancellationAsync(meeting, historyId, s.Organizer, "Lãnh đạo đi công tác", f.Clock.Now);
             await db.SaveChangesAsync();
         }
 
@@ -193,7 +196,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         async Task<int> Run()
         {
             await using var context = f.Db();
-            return await new MeetingInvitationDispatchProcessor(context, Options.Create(_options), f.Clock, links,
+            return await new MeetingInvitationDispatchProcessor(new MeetingInvitationDispatchRepository(context), new EmailMessageRepository(context), new EfUnitOfWork(context), Options.Create(_options), f.Clock, links,
                 NullLogger<MeetingInvitationDispatchProcessor>.Instance).ProcessAsync(id, default);
         }
         Assert.Equal(1, (await Task.WhenAll(Run(), Run())).Sum());
@@ -327,7 +330,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
         await Code(await Write(secretary, s.Url + "/participants", HttpMethod.Post,
             new { userIds = new[] { s.Outsider }, role = "Member" }, await Tag(secretary, s.Url)), 201, "MSG96");
         await using var db = f.Db();
-        var processor = new MeetingInvitationDispatchProcessor(db, Options.Create(_options), f.Clock,
+        var processor = new MeetingInvitationDispatchProcessor(new MeetingInvitationDispatchRepository(db), new EmailMessageRepository(db), new EfUnitOfWork(db), Options.Create(_options), f.Clock,
             new Links { ProbeFailure = new InvalidOperationException("private-provider-detail") },
             NullLogger<MeetingInvitationDispatchProcessor>.Instance);
         await processor.ProcessNextAsync(default);
@@ -362,7 +365,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
             await using var tx = await db.Database.BeginTransactionAsync();
             var repo = new MeetingRepository(db); var meeting = (await repo.FindWorkflowAsync(s.MeetingId, true))!;
             meeting.Status = MeetingStatus.Published;
-            await repo.StagePublicationInvitationsAsync(meeting, f.Clock.Now); await db.SaveChangesAsync();
+            await new MeetingInvitationEvents(new MeetingInvitationDispatchRepository(db), new NotificationRepository(db)).StagePublicationInvitationsAsync(meeting, f.Clock.Now); await db.SaveChangesAsync();
             var events = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == s.MeetingId).ToArrayAsync();
             Assert.Equal(4, events.Length);
             Assert.DoesNotContain("Permissions", events.Single(d => d.ParticipantId == s.MemberAssignment).PayloadJson, StringComparison.Ordinal);
@@ -440,7 +443,7 @@ public sealed class ParticipantDeliveryTests(ParticipantFixture f) : IClassFixtu
             f.Failure.MeetingId = s.MeetingId;
             try
             {
-                Assert.Equal(0, await new MeetingInvitationDispatchProcessor(db, Options.Create(_options), f.Clock, links,
+                Assert.Equal(0, await new MeetingInvitationDispatchProcessor(new MeetingInvitationDispatchRepository(db), new EmailMessageRepository(db), new EfUnitOfWork(db), Options.Create(_options), f.Clock, links,
                     NullLogger<MeetingInvitationDispatchProcessor>.Instance).ProcessAsync(id, default));
             }
             finally { f.Failure.Reset(); }

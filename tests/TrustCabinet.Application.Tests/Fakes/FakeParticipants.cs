@@ -204,14 +204,35 @@ public sealed class FakeParticipantEffects(FakeUnitOfWork unitOfWork) : IPartici
     }
 }
 
-/// <summary>Staged roster notices in order, as (meeting, participant, guest, kind, notify).</summary>
+/// <summary>
+/// Staged roster notices in order, as (meeting, participant, guest, kind, notify); the meeting-wide stagings in
+/// <see cref="StagedMeetings"/>, as (meeting, kind).
+/// </summary>
 public sealed class FakeMeetingInvitationStager : IMeetingInvitationStager
 {
     public List<(Guid MeetingId, Guid? ParticipantId, Guid? GuestId, InvitationEventKind Kind, bool Notify)> Staged { get; } = [];
+    public List<(Guid MeetingId, InvitationEventKind Kind)> StagedMeetings { get; } = [];
 
     public void Stage(Meeting meeting, MeetingParticipant? participant, MeetingGuestInvitation? guest,
-        InvitationEventKind kind, DateTimeOffset now, bool notify)
+        InvitationEventKind kind, DateTimeOffset now, bool notify, Guid? sourceEventId = null, string? reason = null)
         => Staged.Add((meeting.Id, participant?.Id, guest?.Id, kind, notify));
+
+    public Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
+        => Record(meeting, InvitationEventKind.Invitation);
+
+    public Task StageCancellationAsync(
+        Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default)
+        => Record(meeting, InvitationEventKind.Cancelled);
+
+    public Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now,
+        CancellationToken ct = default)
+        => Record(meeting, InvitationEventKind.Rescheduled);
+
+    private Task Record(Meeting meeting, InvitationEventKind kind)
+    {
+        StagedMeetings.Add((meeting.Id, kind));
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>Closed speaking requests in order; <see cref="Result"/> is the closed count every call answers.</summary>

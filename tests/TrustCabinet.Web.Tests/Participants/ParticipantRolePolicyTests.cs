@@ -3,10 +3,13 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Notifications;
 using TrustCabinet.Infrastructure.Persistence;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 
@@ -230,7 +233,7 @@ public sealed class ParticipantRolePolicyTests(ParticipantFixture f) : IClassFix
             _ => [new(s.Chair, "Chair"), new(s.Member, "Member")]
         };
         var title = Guid.NewGuid().ToString();
-        var service = new MeetingService(new MeetingRepository(db), new EfUnitOfWork(db), NullLogger<MeetingService>.Instance, f.Clock);
+        var service = new MeetingService(new MeetingRepository(db), new MeetingInvitationEvents(new MeetingInvitationDispatchRepository(db), new NotificationRepository(db)), new EfUnitOfWork(db), NullLogger<MeetingService>.Instance, f.Clock);
         var result = await service.CreateAsync(new(title, "2099-01-01T10:00:00Z", "2099-01-01T11:00:00Z",
             "InPerson", "Room", null, "Internal", "Test"), s.Organizer, seeds);
         if (kind != "valid")

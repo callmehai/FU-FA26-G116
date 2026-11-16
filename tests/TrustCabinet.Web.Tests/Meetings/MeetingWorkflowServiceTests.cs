@@ -12,7 +12,7 @@ public sealed class MeetingWorkflowServiceTests
     private readonly Guid _organizerId = Guid.CreateVersion7();
     private readonly Guid _approverId = Guid.CreateVersion7();
 
-    private MeetingService NewService() => new(_repository, new FakeMeetingUnitOfWork(_repository), NullLogger<MeetingService>.Instance);
+    private MeetingService NewService() => new(_repository, _repository, new FakeMeetingUnitOfWork(_repository), NullLogger<MeetingService>.Instance);
 
     private Meeting GivenMeeting(MeetingStatus status = MeetingStatus.Draft)
     {

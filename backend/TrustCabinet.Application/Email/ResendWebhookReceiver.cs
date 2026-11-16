@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Enums;
 
-namespace TrustCabinet.Infrastructure.Email;
+namespace TrustCabinet.Application.Email;
 
 public enum EmailWebhookOutcome
 {
@@ -30,7 +30,8 @@ public interface IEmailWebhookReceiver
 /// is anonymous at the HTTP layer; Resend proves itself with a Svix signature over the raw body.
 /// </summary>
 internal sealed class ResendWebhookReceiver(
-    TrustCabinetDbContext db,
+    IEmailMessageRepository messages,
+    IUnitOfWork unitOfWork,
     IOptions<EmailDeliveryOptions> options,
     TimeProvider time,
     ILogger<ResendWebhookReceiver> logger) : IEmailWebhookReceiver
@@ -70,18 +71,10 @@ internal sealed class ResendWebhookReceiver(
 
         // A report older than the one already stored arrived late (retries are not ordered) and is dropped, so a
         // delayed "delivery_delayed" never hides the "delivered" that followed it.
-        var updated = await db.EmailMessages
-            .Where(m => (m.ProviderMessageId == report.EmailId
-                    || (report.RowId != null && m.Id == report.RowId))
-                && (m.DeliveryStateAt == null || m.DeliveryStateAt <= report.OccurredAt))
-            .ExecuteUpdateAsync(
-                setters => setters
-                    .SetProperty(m => m.DeliveryState, report.State)
-                    .SetProperty(m => m.DeliveryStateAt, report.OccurredAt)
-                    .SetProperty(m => m.DeliveryDetail, report.Detail)
-                    .SetProperty(m => m.ProviderMessageId, report.EmailId)
-                    .SetProperty(m => m.UpdatedAt, time.GetUtcNow()),
-                ct);
+        var updated = await unitOfWork.ExecuteAsync(
+            token => messages.RecordDeliveryReportAsync(
+                report.EmailId, report.RowId, report.State, report.OccurredAt, report.Detail, time.GetUtcNow(), token),
+            TransactionMode.None, ct);
 
         if (updated == 0)
         {

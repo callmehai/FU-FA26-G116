@@ -1,6 +1,7 @@
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Entities;
 

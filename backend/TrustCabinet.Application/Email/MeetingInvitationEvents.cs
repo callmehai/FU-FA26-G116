@@ -1,20 +1,53 @@
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
 
-namespace TrustCabinet.Infrastructure.Email;
+namespace TrustCabinet.Application.Email;
 
 /// <param name="Reason">Why the meeting was cancelled; only on a <see cref="InvitationEventKind.Cancelled"/> event (BR-300).</param>
 public sealed record InvitationPayload(string Name, string Email, string MeetingTitle, string Description,
     DateTimeOffset StartsAt, DateTimeOffset EndsAt, string Place, string Mode, string? Role, string? Reason = null);
 
-public static class MeetingInvitationEvents
+/// <summary>
+/// Decides which invitation dispatches and in-app notices a roster or meeting change queues, and what they say. They are
+/// staged in the caller's unit of work and written by its save.
+/// </summary>
+public sealed class MeetingInvitationEvents(
+    IMeetingInvitationDispatchRepository dispatches,
+    INotificationRepository notifications) : IMeetingInvitationStager
 {
     public static string InitialKey(MeetingParticipant p) => p.InitialInvitationDeliveryKey ?? $"meeting:{p.MeetingId}:published:{p.UserId}";
 
-    public static void Stage(TrustCabinetDbContext db, Meeting meeting, MeetingParticipant? p, MeetingGuestInvitation? g,
+    public async Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
+    {
+        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
+            Stage(meeting, participant, null, InvitationEventKind.Invitation, now, notify: false);
+        foreach (var guest in await dispatches.ListActiveGuestInvitationsAsync(meeting.Id, ct))
+            Stage(meeting, null, guest, InvitationEventKind.Invitation, now, notify: false);
+    }
+
+    public async Task StageCancellationAsync(
+        Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default)
+    {
+        // The organizer who cancelled needs no bell for it, but still gets the email like every invitee.
+        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
+            Stage(meeting, participant, null, InvitationEventKind.Cancelled, now,
+                notify: participant.UserId != actorId, historyId, reason);
+        foreach (var guest in await dispatches.ListActiveGuestInvitationsAsync(meeting.Id, ct))
+            Stage(meeting, null, guest, InvitationEventKind.Cancelled, now,
+                notify: false, historyId, reason);
+    }
+
+    public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
+    {
+        foreach (var guest in await dispatches.ListActiveGuestInvitationsAsync(meeting.Id, ct))
+            Stage(meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId);
+    }
+
+    public void Stage(Meeting meeting, MeetingParticipant? p, MeetingGuestInvitation? g,
         InvitationEventKind kind, DateTimeOffset now, bool notify, Guid? sourceEventId = null, string? reason = null)
     {
         var eventId = sourceEventId ?? Guid.CreateVersion7();
@@ -30,7 +63,7 @@ public static class MeetingInvitationEvents
             MeetingMode.Hybrid => link,
             _ => meeting.Location,
         };
-        db.MeetingInvitationDispatches.Add(new()
+        dispatches.Add(new()
         {
             EventId = eventId,
             MeetingId = meeting.Id,
@@ -47,7 +80,7 @@ public static class MeetingInvitationEvents
         if (notify && p is not null)
         {
             var removed = kind == InvitationEventKind.Removed;
-            db.Notifications.Add(new()
+            notifications.Add(new()
             {
                 UserId = p.UserId,
                 MeetingId = meeting.Id,

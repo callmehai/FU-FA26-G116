@@ -315,6 +315,10 @@ Redis) cũng thành `PersistenceUnavailableException`, giống các bộ lọc `
   (`MeetingInvitationEvents.Stage`, `SpeakingRequestCleanup.CloseOpenAsync`, lớp cụ thể `CalendarShareStopper`…): tạo
   một port tên nghiệp vụ ở `Application/<module sở hữu helper>/`, cài đặt ở Infrastructure bằng một lớp mỏng gọi lại
   helper cũ, **không sửa helper**. Subtask của module sở hữu sẽ thay lớp mỏng đó.
+  CA-17 (module cuối) đã thay lớp mỏng cuối cùng, `MeetingInvitationStager`: `MeetingInvitationEvents` sang
+  `Application/Email/` và tự cài `IMeetingInvitationStager`, ghi qua `IMeetingInvitationDispatchRepository` và
+  `INotificationRepository`; ba method `Stage…Async` rời `IMeetingRepository` sang port đó. `IEmailMessageRepository` của
+  CA-07 được giữ và mở rộng cho hàng đợi và webhook. Từ CA-17 không còn lớp mỏng R9 nào.
 - `SaveChangesAsync` và `InTransactionAsync` trên interface repository: service đã chuyển không gọi nữa. Method bị xoá
   khỏi interface ở subtask chuyển consumer cuối cùng (kiểm bằng `git grep`).
 

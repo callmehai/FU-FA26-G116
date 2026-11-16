@@ -3,13 +3,25 @@ using TrustCabinet.Domain.Entities;
 namespace TrustCabinet.Application.Email;
 
 /// <summary>
-/// Stages an invitation dispatch (and, unless the actor acted on themselves, the in-app notice) for a roster
-/// change. Runs inside the caller's unit of work; the caller saves. A thin adapter over the Email module's
-/// helper (rule R9): the Email module itself moves at CA-17 (SCRUM-182), which may replace this port.
+/// Stages the invitation dispatches (and the in-app notices that go with them) for a roster or meeting change. Runs
+/// inside the caller's unit of work; the caller saves, so they are written with the change itself.
 /// </summary>
 public interface IMeetingInvitationStager
 {
     /// <param name="notify">Whether to also queue the in-app notice for the participant.</param>
+    /// <param name="sourceEventId">The event the dispatch belongs to; a new one when null.</param>
+    /// <param name="reason">Why the meeting was cancelled; only on a cancellation (BR-300).</param>
     void Stage(Meeting meeting, MeetingParticipant? participant, MeetingGuestInvitation? guest,
-        InvitationEventKind kind, DateTimeOffset now, bool notify);
+        InvitationEventKind kind, DateTimeOffset now, bool notify, Guid? sourceEventId = null, string? reason = null);
+
+    /// <summary>Invites every participant of the published meeting, and every Guest whose invitation stands.</summary>
+    Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default);
+
+    /// <summary>Emails every invitee and Guest of a Published meeting that it was cancelled, with the reason (BR-300).</summary>
+    Task StageCancellationAsync(
+        Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default);
+
+    /// <summary>Sends every Guest whose invitation stands the meeting's new time.</summary>
+    Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now,
+        CancellationToken ct = default);
 }

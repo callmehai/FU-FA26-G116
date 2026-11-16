@@ -1,12 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Agenda;
-using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Notes;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Email;
 
 namespace TrustCabinet.Infrastructure.Agenda;
 
@@ -107,9 +105,6 @@ public static class AgendaServiceCollectionExtensions
     {
         services.AddScoped<IAgendaRepository, AgendaRepository>();
         services.AddScoped<IAgendaDocumentRepository, AgendaDocumentRepository>();
-        // The presenter notice is the only use case moved to Application that queues an email; CA-17 (SCRUM-182)
-        // moves the Email module and its registrations.
-        services.AddScoped<IEmailMessageRepository, EmailMessageRepository>();
         return services;
     }
 }

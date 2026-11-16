@@ -48,14 +48,4 @@ public interface IMeetingRepository
     Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default);
 
     Task AddAsync(Meeting meeting, CancellationToken ct = default);
-
-    Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
-        => Task.CompletedTask;
-
-    /// <summary>Emails every invitee and Guest of a Published meeting that it was cancelled, with the reason (BR-300).</summary>
-    Task StageCancellationAsync(
-        Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default);
-
-    Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
-        => Task.CompletedTask;
 }

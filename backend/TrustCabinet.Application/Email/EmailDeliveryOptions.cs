@@ -1,4 +1,4 @@
-namespace TrustCabinet.Infrastructure.Email;
+namespace TrustCabinet.Application.Email;
 
 public sealed class EmailDeliveryOptions
 {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Infrastructure.Email;
 
 namespace TrustCabinet.Web.Tests.Email;
