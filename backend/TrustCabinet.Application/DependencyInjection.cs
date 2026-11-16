@@ -2,11 +2,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Attendance;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.CalendarSharing;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Users;
 
 namespace TrustCabinet.Application;
@@ -28,6 +30,8 @@ public static class DependencyInjection
         AddMeetings(services);
         AddCalendarSharing(services);
         AddAgenda(services);
+        AddParticipants(services);
+        AddAttendance(services);
         return services;
     }
 
@@ -92,5 +96,23 @@ public static class DependencyInjection
         services.AddScoped<IAgendaPresenterNotifier, AgendaPresenterNotifier>();
         services.AddScoped<IAgendaMeetingEnd, AgendaMeetingEnd>();
         services.TryAddScoped<IAgendaGuestAccess, UnavailableAgendaGuestAccess>();
+    }
+
+    /// <summary>
+    /// The guest session adapter (CA-09) replaces <see cref="UnavailableParticipantGuestAccess"/> with
+    /// <c>Replace</c>, and the authoritative link provider and access publisher do the same for their
+    /// null objects, so all three stay a <c>TryAdd</c>.
+    /// </summary>
+    private static void AddParticipants(IServiceCollection services)
+    {
+        services.AddScoped<IParticipantService, ParticipantService>();
+        services.TryAddScoped<IParticipantGuestAccess, UnavailableParticipantGuestAccess>();
+        services.TryAddScoped<IGuestInvitationLinkProvider, UnavailableGuestInvitationLinkProvider>();
+        services.TryAddScoped<IMeetingParticipantAccessPublisher, UnavailableMeetingParticipantAccessPublisher>();
+    }
+
+    private static void AddAttendance(IServiceCollection services)
+    {
+        services.AddScoped<IAttendanceService, AttendanceService>();
     }
 }

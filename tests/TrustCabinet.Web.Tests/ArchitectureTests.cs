@@ -61,14 +61,12 @@ public sealed class ArchitectureTests
     private static readonly string[] ServicesInInfrastructure =
     [
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
-        "TrustCabinet.Infrastructure.Attendance.AttendanceService",
         "TrustCabinet.Infrastructure.Calls.CallRoomService",
         "TrustCabinet.Infrastructure.Documents.DocumentCommentService",
         "TrustCabinet.Infrastructure.Documents.MeetingDocumentService",
         "TrustCabinet.Infrastructure.Documents.PersonalLibraryService",
         "TrustCabinet.Infrastructure.GuestAccess.GuestAccessService",
         "TrustCabinet.Infrastructure.Notes.MeetingNoteService",
-        "TrustCabinet.Infrastructure.Participants.ParticipantService",
         "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
         "TrustCabinet.Infrastructure.Recordings.RecordingService",
         "TrustCabinet.Infrastructure.Recordings.RoomTakeService",
@@ -137,7 +135,6 @@ public sealed class ArchitectureTests
     [
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
         "TrustCabinet.Infrastructure.Ai.LanguageModelProvider",
-        "TrustCabinet.Infrastructure.Attendance.AttendanceService",
         "TrustCabinet.Infrastructure.Documents.DocumentCommentService",
         "TrustCabinet.Infrastructure.Documents.MeetingDocumentService",
         "TrustCabinet.Infrastructure.Documents.OrphanFilePurger",
@@ -150,7 +147,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.GuestAccess.GuestAccessService",
         "TrustCabinet.Infrastructure.GuestAccess.GuestSessionAccess",
         "TrustCabinet.Infrastructure.Notes.MeetingNoteService",
-        "TrustCabinet.Infrastructure.Participants.ParticipantService",
         "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
         "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
         "TrustCabinet.Infrastructure.Reports.ReportService",
@@ -169,6 +165,10 @@ public sealed class ArchitectureTests
     // Each entry carries, on its own line, the reason it cannot be a repository or a query.
     private static readonly string[] AllowedDbContextAdapters =
     [
+        // Stages the roster notice through the Email helper, which CA-17 owns.
+        "TrustCabinet.Infrastructure.Email.MeetingInvitationStager",
+        // Closes the removed readers' speaking requests through the Speaking helper, which CA-13 owns.
+        "TrustCabinet.Infrastructure.Speaking.SpeakingRequestCloser",
     ];
 
     [Fact]

@@ -1,3 +1,4 @@
+using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -69,6 +70,74 @@ public sealed record ParticipantSnapshot(Meeting Meeting, IReadOnlyList<MeetingG
 public interface IParticipantRepository
 {
     Task<ParticipantSnapshot?> LoadAsync(Guid meetingId, bool forUpdate, CancellationToken ct);
+
+    /// <summary>
+    /// Takes a shared lock on the one account row until the current transaction ends, so it cannot change
+    /// e-mail or active state between validation and save. Runs immediately, not staged.
+    /// </summary>
+    Task LockUserAsync(Guid userId, CancellationToken ct);
+
+    /// <summary>
+    /// Takes a shared lock on the account rows, in stable id order, until the current transaction ends, and
+    /// returns them untracked: fresh rows are authoritative for account state and never overwrite tracked
+    /// users. Runs immediately, not staged. One query.
+    /// </summary>
+    Task<IReadOnlyList<User>> LockUsersAsync(Guid[] userIds, CancellationToken ct);
+
+    /// <summary>
+    /// Active accounts not yet in the meeting: not currently assigned, and (when <paramref name="snapshot"/>
+    /// is set) with no active guest invitation on the same e-mail. Two queries: a count, then one page,
+    /// both untracked and ordered by name.
+    /// </summary>
+    Task<(int Total, IReadOnlyList<ParticipantOption> Items)> ListInvitationOptionsAsync(
+        ParticipantSnapshot? snapshot, ParticipantQuery query, CancellationToken ct);
+
+    /// <summary>Ids of the candidate readers whose accounts are still active. One untracked query.</summary>
+    Task<IReadOnlyList<Guid>> ListActiveReaderIdsAsync(Guid[] candidateUserIds, CancellationToken ct);
+
+    /// <summary>
+    /// Agenda items still presented by the removed member (by account) or the revoked guest (by invitation),
+    /// tracked for clearing. One query.
+    /// </summary>
+    Task<IReadOnlyList<AgendaItem>> ListPresentedItemsAsync(
+        Guid meetingId, Guid? presenterUserId, Guid? presenterGuestInvitationId, CancellationToken ct);
+
+    /// <summary>Whether an active guest invitation of the meeting already uses one of the e-mails. One query.</summary>
+    Task<bool> ExistsActiveGuestWithEmailsAsync(Guid meetingId, string[] emails, CancellationToken ct);
+
+    /// <summary>Whether an active guest invitation of the meeting already uses the e-mail. One query.</summary>
+    Task<bool> ExistsActiveGuestWithEmailAsync(Guid meetingId, string email, CancellationToken ct);
+
+    /// <summary>Whether a current participant of the meeting is registered under the e-mail. One query.</summary>
+    Task<bool> ExistsCurrentParticipantWithEmailAsync(Guid meetingId, string email, CancellationToken ct);
+
+    /// <summary>
+    /// Stages the participant, pointing it at its account: the already-tracked instance when the unit of work
+    /// holds it, else the locked row attached without inserting it. Written by the next
+    /// <c>IUnitOfWork.SaveChangesAsync</c>.
+    /// </summary>
+    void Add(MeetingParticipant participant, User account);
+
+    /// <summary>Stages the row; it is written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
+    void Add(MeetingGuestInvitation guest);
+
+    /// <summary>
+    /// Guest invitations of the meeting held by this unit of work, including rows added but not yet saved,
+    /// for the audit evidence. No query.
+    /// </summary>
+    Task<IReadOnlyList<MeetingGuestInvitation>> ListStagedGuestsAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>The meeting's open vote, if any, tracked. One query.</summary>
+    Task<VotingSession?> FindOpenVoteAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>Whether the vote already holds a receipt from the e-mail, through its invitation. One query.</summary>
+    Task<bool> ExistsVoteReceiptWithEmailAsync(Guid votingSessionId, string email, CancellationToken ct);
+
+    /// <summary>
+    /// The vote's eligible voter row matching the e-mail, through its invitation, tracked for moving to the
+    /// new invitation; null when the e-mail was never eligible. One query.
+    /// </summary>
+    Task<VoteEligibleVoter?> FindEligibleVoterByEmailAsync(Guid votingSessionId, string email, CancellationToken ct);
 }
 
 public sealed record ParticipantsChange(Guid EventId, Guid MeetingId, string Revision, DateTimeOffset OccurredAt);

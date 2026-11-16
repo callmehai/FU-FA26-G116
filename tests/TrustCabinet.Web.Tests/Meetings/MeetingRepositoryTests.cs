@@ -10,6 +10,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Application.Meetings;
@@ -144,7 +145,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         {
             ApplicationBaseUrl = "https://hop.example.vn",
             Smtp = new() { Enabled = smtpEnabled, FromAddress = "no-reply@example.vn" }
-        }), TimeProvider.System, new TrustCabinet.Infrastructure.Participants.UnavailableGuestInvitationLinkProvider(),
+        }), TimeProvider.System, new UnavailableGuestInvitationLinkProvider(),
             NullLogger<MeetingInvitationDispatchProcessor>.Instance);
         var intents = await db.MeetingInvitationDispatches.Where(d => d.MeetingId == meetingId).Select(d => d.Id).ToArrayAsync();
         Assert.NotEmpty(intents);

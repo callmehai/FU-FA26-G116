@@ -1,7 +1,9 @@
-using TrustCabinet.Domain.Meetings;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Participants;
+using TrustCabinet.Application.Speaking;
+using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.Speaking;
 
 namespace TrustCabinet.Infrastructure.Participants;
 
@@ -10,27 +12,10 @@ public static class ParticipantServiceCollectionExtensions
     public static IServiceCollection AddTrustCabinetParticipants(this IServiceCollection services)
     {
         services.AddScoped<IParticipantRepository, ParticipantRepository>();
-        services.AddScoped<IParticipantService, ParticipantService>();
-        services.TryAddScoped<IParticipantGuestAccess, UnavailableParticipantGuestAccess>();
-        services.TryAddScoped<IGuestInvitationLinkProvider, UnavailableGuestInvitationLinkProvider>();
-        services.TryAddScoped<IMeetingParticipantAccessPublisher, UnavailableMeetingParticipantAccessPublisher>();
+        // The roster notice and the speaking cleanup are owned by modules that move later (Email at CA-17,
+        // Speaking at CA-13); these thin adapters call their helpers unchanged (rule R9).
+        services.AddScoped<IMeetingInvitationStager, MeetingInvitationStager>();
+        services.AddScoped<ISpeakingRequestCloser, SpeakingRequestCloser>();
         return services;
     }
-}
-
-public sealed class UnavailableParticipantGuestAccess : IParticipantGuestAccess
-{
-    public Task<bool> CanAccessAsync(MeetingGuestSession session, CancellationToken ct) => Task.FromResult(false);
-    public Task<IReadOnlyDictionary<Guid, GuestDisplayProfile>> GetProfilesAsync(Guid meetingId, IReadOnlyCollection<Guid> invitationIds, CancellationToken ct)
-        => Task.FromResult<IReadOnlyDictionary<Guid, GuestDisplayProfile>>(new Dictionary<Guid, GuestDisplayProfile>());
-}
-public sealed class UnavailableGuestInvitationLinkProvider : IGuestInvitationLinkProvider
-{
-    public Task<bool> IsAvailableAsync(CancellationToken ct) => Task.FromResult(false);
-    public Task<GuestInvitationLink> PrepareAsync(Guid invitationId, CancellationToken ct) => Task.FromResult(new GuestInvitationLink(GuestLinkStatus.Unavailable));
-}
-public sealed class UnavailableMeetingParticipantAccessPublisher : IMeetingParticipantAccessPublisher
-{
-    // Replaced by the call room's publisher (SCRUM-59); left for hosts without it. Never part of authorization.
-    public Task PublishAsync(MeetingAccessChange change, CancellationToken ct) => Task.CompletedTask;
 }
