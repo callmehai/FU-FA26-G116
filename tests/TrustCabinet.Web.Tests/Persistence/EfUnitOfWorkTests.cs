@@ -6,7 +6,6 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Persistence;
-using TrustCabinet.Infrastructure.VoiceId;
 
 namespace TrustCabinet.Web.Tests.Persistence;
 
@@ -350,8 +349,9 @@ public sealed class EfUnitOfWorkTests : IAsyncLifetime
     }
 
     // SCRUM-166 (CA-01): the other direction of nesting. A service moved to Application opens the unit of work
-    // and then reaches code that still calls InTransactionAsync on a repository.
-    public static TheoryData<string> OlderRepositories => new() { nameof(MeetingRepository), nameof(VoiceIdRepository) };
+    // and then reaches code that still calls InTransactionAsync on a repository. VoiceIdRepository's went with its
+    // last caller in SCRUM-180 (CA-15).
+    public static TheoryData<string> OlderRepositories => new() { nameof(MeetingRepository) };
 
     [Theory]
     [MemberData(nameof(OlderRepositories))]
@@ -410,7 +410,7 @@ public sealed class EfUnitOfWorkTests : IAsyncLifetime
     private Task<T> InOlderTransactionAsync<T>(string repository, Func<CancellationToken, Task<T>> operation)
         => repository == nameof(MeetingRepository)
             ? new MeetingRepository(_db).InTransactionAsync(operation)
-            : new VoiceIdRepository(_db).InTransactionAsync(operation, CancellationToken.None);
+            : throw new ArgumentOutOfRangeException(nameof(repository));
 
     private async Task<string> AddAsync(Role role, string outcome, CancellationToken ct)
     {

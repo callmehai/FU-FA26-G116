@@ -63,17 +63,12 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",
-        "TrustCabinet.Infrastructure.Transcription.TranscriptionService",
-        "TrustCabinet.Infrastructure.VoiceId.VoiceCollectionService",
-        "TrustCabinet.Infrastructure.VoiceId.VoiceIdService",
     ];
 
     // A5 — no interface but IUnitOfWork has SaveChangesAsync or InTransactionAsync.
     private static readonly string[] InterfacesExposingTheUnitOfWork =
     [
         "TrustCabinet.Application.Meetings.IMeetingRepository",
-        "TrustCabinet.Application.Transcription.ITranscriptRepository",
-        "TrustCabinet.Application.VoiceId.IVoiceIdRepository",
     ];
 
     // A6 — a Web type has no field or parameter of an I*Repository type. CapabilityGate and NotificationWorker
@@ -127,7 +122,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Summaries.MeetingTranscriptReader",
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",
-        "TrustCabinet.Infrastructure.VoiceId.VoiceCollectionService",
     ];
 
     // A7 — for good: a class that implements one port of Application over the context and has no business branch.

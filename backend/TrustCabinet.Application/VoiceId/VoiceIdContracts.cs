@@ -117,12 +117,25 @@ public interface IVoiceIdRepository
     Task<int> DeleteSamplesAsync(Guid consentId, CancellationToken ct);
     /// <summary>Clears machine suggestions that point at this person; names a secretary assigned stay.</summary>
     Task<int> ClearSuggestionsAsync(Guid userId, DateTimeOffset now, CancellationToken ct);
+    /// <summary>ADR-0060: the standing consents of these people, by notice version, read without tracking.</summary>
+    Task<IReadOnlyList<VoiceConsentNotice>> ListConsentNoticesAsync(Guid[] userIds, CancellationToken ct);
+    /// <summary>ADR-0060: the samples Secretaries took for these people, in any meeting, without the voice itself.</summary>
+    Task<IReadOnlyList<CollectedSampleRow>> ListCollectedSamplesAsync(Guid[] userIds, CancellationToken ct);
+    /// <summary>ADR-0060: a sample a Secretary took in this meeting; null for one taken elsewhere or by its owner.</summary>
+    Task<VoiceSample?> FindCollectedSampleAsync(Guid meetingId, Guid sampleId, bool tracked, CancellationToken ct);
+    /// <summary>The meeting with its participants and their accounts, untracked, for collecting samples in it.</summary>
+    Task<Meeting?> FindMeetingWithPeopleAsync(Guid meetingId, CancellationToken ct);
     void Add(VoiceConsent consent);
     void Add(VoiceSample sample);
     void Remove(VoiceSample sample);
-    Task SaveChangesAsync(CancellationToken ct);
-    Task<T> InTransactionAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct);
 }
+
+/// <summary>A person's standing Voice ID consent and the notice they agreed to.</summary>
+public sealed record VoiceConsentNotice(Guid UserId, string NoticeVersion);
+
+/// <summary>A sample a Secretary took for a person (ADR-0060), as the collection screen lists it.</summary>
+public sealed record CollectedSampleRow(Guid Id, Guid UserId, Guid? MeetingId, DateTimeOffset CreatedAt, long SpeechMs,
+    string CollectedByName);
 
 /// <summary>Encrypts an embedding at rest, bound to its owner, its sample id and its model; and the sample's audio.</summary>
 public interface IVoiceprintProtector

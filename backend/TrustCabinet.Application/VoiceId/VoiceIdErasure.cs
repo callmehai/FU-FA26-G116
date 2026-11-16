@@ -1,16 +1,16 @@
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
-using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 
-namespace TrustCabinet.Infrastructure.VoiceId;
+namespace TrustCabinet.Application.VoiceId;
 
 /// <summary>
 /// SCRUM-35 — the one way a person's Voice ID ends, whoever ends it. Takes the consent row for update, the lock a new
 /// sample and a running transcription's matching also take, so nothing about the person is stored after it. One consent
 /// covers both sets of samples, so both go: the ones the person recorded and the ones Secretaries recorded (ADR-0060).
 /// </summary>
-public sealed class VoiceIdErasure(IVoiceIdRepository repository, IAuditService audit, TimeProvider clock) : IVoiceIdErasure
+public sealed class VoiceIdErasure(IVoiceIdRepository repository, IUnitOfWork unitOfWork, IAuditService audit, TimeProvider clock) : IVoiceIdErasure
 {
     public async Task<bool> EndAsync(Guid userId, Guid actorId, VoiceIdEndReason reason, CancellationToken ct)
     {
@@ -27,7 +27,7 @@ public sealed class VoiceIdErasure(IVoiceIdRepository repository, IAuditService 
                 reason = reason == VoiceIdEndReason.AccountDeactivated ? "accountDeactivated" : "withdrawn",
                 userId, erasedSamples = erased, clearedSuggestions = suggestions,
             }, ct);
-        await repository.SaveChangesAsync(ct);
+        await unitOfWork.SaveChangesAsync(ct);
         return true;
     }
 }
