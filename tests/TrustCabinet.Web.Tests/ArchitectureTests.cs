@@ -61,19 +61,11 @@ public sealed class ArchitectureTests
     private static readonly string[] ServicesInInfrastructure =
     [
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
-        "TrustCabinet.Infrastructure.Attendance.AttendanceService",
         "TrustCabinet.Infrastructure.Calls.CallRoomService",
-        "TrustCabinet.Infrastructure.Documents.DocumentCommentService",
-        "TrustCabinet.Infrastructure.Documents.MeetingDocumentService",
-        "TrustCabinet.Infrastructure.Documents.PersonalLibraryService",
-        "TrustCabinet.Infrastructure.GuestAccess.GuestAccessService",
-        "TrustCabinet.Infrastructure.Notes.MeetingNoteService",
-        "TrustCabinet.Infrastructure.Participants.ParticipantService",
         "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
         "TrustCabinet.Infrastructure.Recordings.RecordingService",
         "TrustCabinet.Infrastructure.Recordings.RoomTakeService",
         "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
-        "TrustCabinet.Infrastructure.Reports.ReportService",
         "TrustCabinet.Infrastructure.Speaking.SpeakingService",
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",
@@ -137,23 +129,12 @@ public sealed class ArchitectureTests
     [
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
         "TrustCabinet.Infrastructure.Ai.LanguageModelProvider",
-        "TrustCabinet.Infrastructure.Attendance.AttendanceService",
-        "TrustCabinet.Infrastructure.Documents.DocumentCommentService",
-        "TrustCabinet.Infrastructure.Documents.MeetingDocumentService",
-        "TrustCabinet.Infrastructure.Documents.OrphanFilePurger",
-        "TrustCabinet.Infrastructure.Documents.PersonalLibraryService",
-        "TrustCabinet.Infrastructure.Documents.StoredFileWriter",
         "TrustCabinet.Infrastructure.Email.EmailQueueProcessor",
         "TrustCabinet.Infrastructure.Email.MeetingInvitationDispatchProcessor",
         "TrustCabinet.Infrastructure.Email.MeetingInvitationEvents",
         "TrustCabinet.Infrastructure.Email.ResendWebhookReceiver",
-        "TrustCabinet.Infrastructure.GuestAccess.GuestAccessService",
-        "TrustCabinet.Infrastructure.GuestAccess.GuestSessionAccess",
-        "TrustCabinet.Infrastructure.Notes.MeetingNoteService",
-        "TrustCabinet.Infrastructure.Participants.ParticipantService",
         "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
         "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
-        "TrustCabinet.Infrastructure.Reports.ReportService",
         "TrustCabinet.Infrastructure.Speaking.SpeakingMeetingEnd",
         "TrustCabinet.Infrastructure.Speaking.SpeakingRequestCleanup",
         "TrustCabinet.Infrastructure.Speaking.SpeakingService",
@@ -169,6 +150,13 @@ public sealed class ArchitectureTests
     // Each entry carries, on its own line, the reason it cannot be a repository or a query.
     private static readonly string[] AllowedDbContextAdapters =
     [
+        // Stages the roster notice through the Email helper, which CA-17 owns.
+        "TrustCabinet.Infrastructure.Email.MeetingInvitationStager",
+        // The live guest-session check behind every guest read (agenda, roster, attendance, hub, call room,
+        // documents): it only composes the current-session query with the meeting, with no branch of its own.
+        "TrustCabinet.Infrastructure.GuestAccess.GuestSessionAccess",
+        // Closes the removed readers' speaking requests through the Speaking helper, which CA-13 owns.
+        "TrustCabinet.Infrastructure.Speaking.SpeakingRequestCloser",
     ];
 
     [Fact]

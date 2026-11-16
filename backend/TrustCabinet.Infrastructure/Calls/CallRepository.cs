@@ -70,7 +70,7 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
 
     /// <summary>The same sessions the guest's agenda and roster reads accept (GuestSessionAccess): current, and named.</summary>
     private IQueryable<GuestSession> AdmittedGuests(Guid meetingId)
-        => GuestAccessService.CurrentSessions(db, (clock ?? TimeProvider.System).GetUtcNow())
+        => GuestSessionRepository.CurrentSessions(db, (clock ?? TimeProvider.System).GetUtcNow())
             .Where(x => x.Invitation.MeetingId == meetingId && x.Invitation.SelfDeclaredDisplayName != null);
 
     public Task<CallSession?> FindActiveRoomSessionAsync(Guid meetingId, CancellationToken ct = default)

@@ -1,9 +1,8 @@
-using System.Data;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Agenda;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Application.Audit;
@@ -11,19 +10,23 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Application.Email;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Participants;
-using TrustCabinet.Domain.Participants;
-using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Application.Speaking;
 using TrustCabinet.Domain.GuestAccess;
-using TrustCabinet.Infrastructure.Persistence;
-using TrustCabinet.Infrastructure.Speaking;
+using TrustCabinet.Domain.Participants;
 
-namespace TrustCabinet.Infrastructure.Participants;
+namespace TrustCabinet.Application.Participants;
 
 public sealed partial class ParticipantService(
-    TrustCabinetDbContext db,
     IParticipantRepository repository,
+    IMeetingRepository meetings,
     IParticipantGuestAccess guestAccess,
+    IMeetingInvitationStager stager,
+    ISpeakingRequestCloser speaking,
+    IAuditLogRepository audit,
+    IUnitOfWork unitOfWork,
     IMeetingParticipantAccessPublisher accessPublisher,
     ICallerContext caller,
     TimeProvider clock,
@@ -115,7 +118,7 @@ public sealed partial class ParticipantService(
         }
         if (
             actor.UserId is not { } id
-            || !await db.Users.AnyAsync(u => u.Id == id && u.IsActive, ct)
+            || !await meetings.IsUserActiveAsync(id, ct)
         )
             return ParticipantFailure.Inactive;
         return s is not null && MeetingReadPolicy.CanRead(s.Meeting, id)
@@ -133,156 +136,155 @@ public sealed partial class ParticipantService(
     {
         try
         {
-            await using var tx = await db.Database.BeginTransactionAsync(
-                IsolationLevel.RepeatableRead,
-                ct
-            );
-            var s = await repository.LoadAsync(meetingId, false, ct);
-            var failure = await AccessAsync(s, actor, ct);
-            if (failure != ParticipantFailure.None)
-                return new(failure);
-            var snapshot = s!;
-            var m = snapshot.Meeting;
-            var permissions = Permissions(snapshot, actor);
-            if (operation == ParticipantOperation.ChairHandoverCandidates)
+            return await unitOfWork.ExecuteAsync(async token =>
             {
-                var handoverAccess = HandoverAccess(snapshot, actor);
-                if (handoverAccess != ParticipantFailure.None)
-                    return new(handoverAccess);
-            }
-            if (operation == ParticipantOperation.Options && !permissions.CanManageParticipants)
-                return new(
-                    actor.UserId is { } user && ParticipantRules.IsManager(m, user)
-                        ? ParticipantFailure.Locked
-                        : ParticipantFailure.Forbidden
+                var s = await repository.LoadAsync(meetingId, false, token);
+                var failure = await AccessAsync(s, actor, token);
+                if (failure != ParticipantFailure.None)
+                    return new ParticipantResult(failure);
+                var snapshot = s!;
+                var m = snapshot.Meeting;
+                var permissions = Permissions(snapshot, actor);
+                if (operation == ParticipantOperation.ChairHandoverCandidates)
+                {
+                    var handoverAccess = HandoverAccess(snapshot, actor);
+                    if (handoverAccess != ParticipantFailure.None)
+                        return new(handoverAccess);
+                }
+                if (operation == ParticipantOperation.Options && !permissions.CanManageParticipants)
+                    return new(
+                        actor.UserId is { } user && ParticipantRules.IsManager(m, user)
+                            ? ParticipantFailure.Locked
+                            : ParticipantFailure.Forbidden
+                    );
+                if (
+                    query.Invalid
+                    || query.Page < 1
+                    || query.PageSize is < 1 or > 100
+                    || query.Search?.Length > 200
+                )
+                    return new(ParticipantFailure.InvalidRequest);
+                if (operation == ParticipantOperation.Context)
+                    return new(
+                        Data: new ParticipantContext(
+                            meetingId,
+                            m.Status.ToString(),
+                            Revision(m),
+                            actor.Guest is not null ? "Guest" : Own(snapshot, actor)?.Role.ToString(),
+                            permissions
+                        ),
+                        Revision: m.ParticipantsRevision
+                    );
+                if (operation == ParticipantOperation.OwnResponse)
+                {
+                    if (!ParticipantRules.Published(m.Status))
+                        return new(ParticipantFailure.NotFound);
+                    var own = Own(snapshot, actor);
+                    var guest = actor.Guest is { } g
+                        ? snapshot.Guests.Single(x => x.Id == g.InvitationId)
+                        : null;
+                    return own is not null
+                            ? new(
+                                Data: new InvitationResponseView(
+                                    own.Id,
+                                    "Internal",
+                                    own.Response.ToString(),
+                                    own.RespondedAt,
+                                    permissions.CanRespond
+                                )
+                            )
+                        : guest is not null
+                            ? new(
+                                Data: new InvitationResponseView(
+                                    guest.Id,
+                                    "Guest",
+                                    guest.Response.ToString(),
+                                    guest.RespondedAt,
+                                    permissions.CanRespond
+                                )
+                            )
+                        : new(ParticipantFailure.NotFound);
+                }
+                if (operation == ParticipantOperation.Options)
+                    return await OptionsAsync(snapshot, query, token);
+                if (operation == ParticipantOperation.ChairHandoverCandidates)
+                    return ChairCandidates(snapshot, actor, query);
+                var profiles = await guestAccess.GetProfilesAsync(
+                    meetingId,
+                    snapshot.Guests.Select(g => g.Id).ToArray(),
+                    token
                 );
-            if (
-                query.Invalid
-                || query.Page < 1
-                || query.PageSize is < 1 or > 100
-                || query.Search?.Length > 200
-            )
-                return new(ParticipantFailure.InvalidRequest);
-            if (operation == ParticipantOperation.Context)
+                // A Guest sees names, not addresses: only their own email reaches them (PO 01/11/2026, SCRUM-116).
+                var viewerGuest = actor.Guest?.InvitationId;
+                var internalRows = m
+                    .Participants.Where(ParticipantRules.Current)
+                    .Select(p => new ParticipantRow(
+                        p.Id,
+                        "Internal",
+                        p.User.FullName,
+                        viewerGuest is null ? p.User.Email : null,
+                        p.Role.ToString(),
+                        p.UserId,
+                        p.User.IsActive,
+                        null,
+                        null,
+                        null,
+                        p.Response.ToString(),
+                        p.RespondedAt
+                    ));
+                var guestRows = snapshot.Guests.Select(g =>
+                {
+                    profiles.TryGetValue(g.Id, out var profile);
+                    return new ParticipantRow(
+                        g.Id,
+                        "Guest",
+                        profile?.DisplayName ?? g.InvitedName,
+                        viewerGuest is null || viewerGuest == g.Id ? g.Email : null,
+                        null,
+                        null,
+                        null,
+                        g.InvitedName,
+                        profile?.DisplayName,
+                        profile?.JobTitle,
+                        g.Response.ToString(),
+                        g.RespondedAt
+                    );
+                });
+                var rows = internalRows
+                    .Concat(guestRows)
+                    .OrderBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(r => r.Kind)
+                    .ThenBy(r => r.Id)
+                    .ToArray();
+                var offset = (long)(query.Page - 1) * query.PageSize;
+                var search = query.Search?.Trim();
+                if (!string.IsNullOrEmpty(search))
+                    rows = rows.Where(r =>
+                            r.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase)
+                            || (viewerGuest is null && r.Email!.Contains(search, StringComparison.OrdinalIgnoreCase))
+                            || (
+                                r.InvitedName?.Contains(search, StringComparison.OrdinalIgnoreCase)
+                                ?? false
+                            )
+                        )
+                        .ToArray();
                 return new(
-                    Data: new ParticipantContext(
-                        meetingId,
-                        m.Status.ToString(),
-                        Revision(m),
-                        actor.Guest is not null ? "Guest" : Own(snapshot, actor)?.Role.ToString(),
-                        permissions
+                    Data: new ParticipantPage(
+                        offset >= rows.Length
+                            ? []
+                            : rows.Skip((int)offset).Take(query.PageSize).ToArray(),
+                        rows.Length,
+                        query.Page,
+                        query.PageSize,
+                        Revision(m)
                     ),
                     Revision: m.ParticipantsRevision
-                );
-            if (operation == ParticipantOperation.OwnResponse)
-            {
-                if (!ParticipantRules.Published(m.Status))
-                    return new(ParticipantFailure.NotFound);
-                var own = Own(snapshot, actor);
-                var guest = actor.Guest is { } g
-                    ? snapshot.Guests.Single(x => x.Id == g.InvitationId)
-                    : null;
-                return own is not null
-                        ? new(
-                            Data: new InvitationResponseView(
-                                own.Id,
-                                "Internal",
-                                own.Response.ToString(),
-                                own.RespondedAt,
-                                permissions.CanRespond
-                            )
-                        )
-                    : guest is not null
-                        ? new(
-                            Data: new InvitationResponseView(
-                                guest.Id,
-                                "Guest",
-                                guest.Response.ToString(),
-                                guest.RespondedAt,
-                                permissions.CanRespond
-                            )
-                        )
-                    : new(ParticipantFailure.NotFound);
-            }
-            if (operation == ParticipantOperation.Options)
-                return await OptionsAsync(snapshot, query, ct);
-            if (operation == ParticipantOperation.ChairHandoverCandidates)
-                return ChairCandidates(snapshot, actor, query);
-            var profiles = await guestAccess.GetProfilesAsync(
-                meetingId,
-                snapshot.Guests.Select(g => g.Id).ToArray(),
-                ct
-            );
-            // A Guest sees names, not addresses: only their own email reaches them (PO 01/11/2026, SCRUM-116).
-            var viewerGuest = actor.Guest?.InvitationId;
-            var internalRows = m
-                .Participants.Where(ParticipantRules.Current)
-                .Select(p => new ParticipantRow(
-                    p.Id,
-                    "Internal",
-                    p.User.FullName,
-                    viewerGuest is null ? p.User.Email : null,
-                    p.Role.ToString(),
-                    p.UserId,
-                    p.User.IsActive,
-                    null,
-                    null,
-                    null,
-                    p.Response.ToString(),
-                    p.RespondedAt
-                ));
-            var guestRows = snapshot.Guests.Select(g =>
-            {
-                profiles.TryGetValue(g.Id, out var profile);
-                return new ParticipantRow(
-                    g.Id,
-                    "Guest",
-                    profile?.DisplayName ?? g.InvitedName,
-                    viewerGuest is null || viewerGuest == g.Id ? g.Email : null,
-                    null,
-                    null,
-                    null,
-                    g.InvitedName,
-                    profile?.DisplayName,
-                    profile?.JobTitle,
-                    g.Response.ToString(),
-                    g.RespondedAt
-                );
-            });
-            var rows = internalRows
-                .Concat(guestRows)
-                .OrderBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(r => r.Kind)
-                .ThenBy(r => r.Id)
-                .ToArray();
-            var offset = (long)(query.Page - 1) * query.PageSize;
-            var search = query.Search?.Trim();
-            if (!string.IsNullOrEmpty(search))
-                rows = rows.Where(r =>
-                        r.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase)
-                        || (viewerGuest is null && r.Email!.Contains(search, StringComparison.OrdinalIgnoreCase))
-                        || (
-                            r.InvitedName?.Contains(search, StringComparison.OrdinalIgnoreCase)
-                            ?? false
-                        )
-                    )
-                    .ToArray();
-            return new(
-                Data: new ParticipantPage(
-                    offset >= rows.Length
-                        ? []
-                        : rows.Skip((int)offset).Take(query.PageSize).ToArray(),
-                    rows.Length,
-                    query.Page,
-                    query.PageSize,
-                    Revision(m)
-                ),
-                Revision: m.ParticipantsRevision
-            );
+                    );
+            }, TransactionMode.RepeatableRead, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Participant read failed for {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Participant read failed for {MeetingId}", meetingId);
             return new(ParticipantFailure.ReadFailed);
         }
     }
@@ -301,15 +303,12 @@ public sealed partial class ParticipantService(
             return new(ParticipantFailure.InvalidRequest);
         try
         {
-            await using var tx = await db.Database.BeginTransactionAsync(
-                IsolationLevel.RepeatableRead,
-                ct
-            );
-            return await OptionsAsync(null, query, ct);
+            return await unitOfWork.ExecuteAsync(
+                token => OptionsAsync(null, query, token), TransactionMode.RepeatableRead, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Participant creation options read failed");
+            logger.LogError(ex.InnerException ?? ex, "Participant creation options read failed");
             return new(ParticipantFailure.ReadFailed);
         }
     }
@@ -320,48 +319,7 @@ public sealed partial class ParticipantService(
         CancellationToken ct
     )
     {
-        var users = db.Users.AsNoTracking().Where(u => u.IsActive);
-        if (s is not null)
-        {
-            var excluded = s
-                .Meeting.Participants.Where(ParticipantRules.Current)
-                .Select(p => p.UserId)
-                .ToArray();
-            var meetingId = s.Meeting.Id;
-            users = users.Where(u =>
-                !excluded.Contains(u.Id)
-                && !db.MeetingGuestInvitations.Any(g =>
-                    g.MeetingId == meetingId && g.RevokedAt == null && g.Email == u.Email
-                )
-            );
-        }
-        if (!string.IsNullOrWhiteSpace(query.Search))
-        {
-            var pattern =
-                "%"
-                + query
-                    .Search.Trim()
-                    .Replace("\\", "\\\\", StringComparison.Ordinal)
-                    .Replace("%", "\\%", StringComparison.Ordinal)
-                    .Replace("_", "\\_", StringComparison.Ordinal)
-                + "%";
-            users = users.Where(u =>
-                EF.Functions.ILike(u.FullName, pattern, "\\")
-                || EF.Functions.ILike(u.Email, pattern, "\\")
-            );
-        }
-        var total = await users.CountAsync(ct);
-        var offset = (long)(query.Page - 1) * query.PageSize;
-        var items =
-            offset >= total
-                ? []
-                : await users
-                    .OrderBy(u => u.FullName)
-                    .ThenBy(u => u.Id)
-                    .Skip((int)offset)
-                    .Take(query.PageSize)
-                    .Select(u => new ParticipantOption(u.Id, u.FullName, u.Email))
-                    .ToArrayAsync(ct);
+        var (total, items) = await repository.ListInvitationOptionsAsync(s, query, ct);
         if (s is null)
             return new(
                 Data: new ParticipantCreationOptions(
@@ -402,194 +360,187 @@ public sealed partial class ParticipantService(
         HashSet<MeetingGuestSession> guestReaders = [];
         try
         {
-            await using var tx = await db.Database.BeginTransactionAsync(
-                IsolationLevel.ReadCommitted,
-                ct
-            );
-            var s = await repository.LoadAsync(meetingId, true, ct);
-            if (actor.UserId is { } actorId)
-                await db
-                    .Users.FromSqlInterpolated(
-                        $"SELECT * FROM users WHERE id = {actorId} FOR SHARE"
-                    )
-                    .AsNoTracking()
-                    .ToArrayAsync(ct);
-            var access = await AccessAsync(s, actor, ct);
-            if (access != ParticipantFailure.None)
-                return new(access);
-            var snapshot = s!;
-            var m = snapshot.Meeting;
-            var response = operation == ParticipantOperation.Respond;
-            Dictionary<Guid, User>? lockedUsers = null;
-            if (response)
+            result = await unitOfWork.ExecuteAsync(async token =>
             {
-                if (Own(snapshot, actor) is null && actor.Guest is null)
-                    return new(ParticipantFailure.NotFound);
-                if (!ParticipantRules.Respondable(m.Status))
-                    return new(ParticipantFailure.CannotRespond);
-            }
-            else if (operation == ParticipantOperation.HandOverChair)
-            {
-                var handoverAccess = HandoverAccess(snapshot, actor);
-                if (handoverAccess != ParticipantFailure.None)
-                    return new(handoverAccess);
-            }
-            else
-            {
-                if (actor.Guest is not null || actor.UserId is not { } id)
-                    return new(ParticipantFailure.Forbidden);
-                var authorized = ParticipantRules.IsManager(m, id);
-                if (!authorized)
-                    return new(ParticipantFailure.Forbidden);
-                if (!ParticipantRules.Editable(m.Status))
-                    return new(ParticipantFailure.Locked);
-            }
-            if (input.ParseFailure != ParticipantFailure.None)
-                return new(input.ParseFailure);
-            if (!response && input.Revision is null)
-                return new(ParticipantFailure.InvalidRequest);
-            if (operation == ParticipantOperation.HandOverChair)
-            {
-                if (input.NewChairParticipantId is null || input.NewChairParticipantId == Guid.Empty || !input.Confirmed)
-                    return new(ParticipantFailure.InvalidRole);
-                lockedUsers = await LockCurrentUsersAsync(snapshot, ct);
-                var recipient = m.Participants.SingleOrDefault(p => p.Id == input.NewChairParticipantId);
-                if (recipient is null || recipient.UserId == actor.UserId
-                    || !EligibleChairRecipient(recipient, lockedUsers.TryGetValue(recipient.UserId, out var user) && user.IsActive))
-                    return new(ParticipantFailure.InvalidChairRecipient);
-                var outgoing = Own(snapshot, actor)!;
-                input = input with
+                var s = await repository.LoadAsync(meetingId, true, token);
+                if (actor.UserId is { } actorId)
+                    await repository.LockUserAsync(actorId, token);
+                var access = await AccessAsync(s, actor, token);
+                if (access != ParticipantFailure.None)
+                    return new ParticipantResult(access);
+                var snapshot = s!;
+                var m = snapshot.Meeting;
+                var response = operation == ParticipantOperation.Respond;
+                Dictionary<Guid, User>? lockedUsers = null;
+                if (response)
                 {
-                    Changes = [new(outgoing.Id, nameof(MeetingRole.Member)), new(recipient.Id, nameof(MeetingRole.Chair))],
-                    ChairReplacement = new(outgoing.Id, recipient.Id, true),
-                };
-            }
-            if (!response && input.Revision != m.ParticipantsRevision)
-                return new(ParticipantFailure.Stale);
-            var now = AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
-            var before = Evidence(snapshot);
-            readers.UnionWith(await ReadersAsync(m, ct));
-            guestReaders.UnionWith(await GuestReadersAsync(m, ct));
-            result = operation switch
-            {
-                ParticipantOperation.AddInternal => await AddInternalAsync(
-                    snapshot,
-                    actor.UserId!.Value,
-                    input,
-                    now,
-                    ct
-                ),
-                ParticipantOperation.AddGuest => await AddGuestAsync(
-                    snapshot,
-                    actor.UserId!.Value,
-                    input,
-                    now,
-                    ct
-                ),
-                ParticipantOperation.ChangeAssignments or ParticipantOperation.HandOverChair => await ChangeAsync(
-                    snapshot,
-                    actor.UserId!.Value,
-                    input,
-                    now,
-                    ct,
-                    lockedUsers
-                ),
-                ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest => Remove(
-                    snapshot,
-                    targetId,
-                    actor.UserId!.Value,
-                    operation,
-                    now
-                ),
-                ParticipantOperation.Respond => Respond(snapshot, actor, input, now),
-                _ => new(ParticipantFailure.InvalidRequest),
-            };
-            if (
-                result.Failure != ParticipantFailure.None
-                || result.Success == ParticipantSuccess.NoChanges
-            )
-                return result with { Revision = response ? null : m.ParticipantsRevision };
-            if (operation is ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest)
-            {
-                var userId = operation == ParticipantOperation.RemoveInternal
-                    ? snapshot.Meeting.Participants.Single(p => p.Id == targetId).UserId : (Guid?)null;
-                var affected = await db.AgendaItems.Where(i => i.MeetingId == meetingId
-                    && (userId != null ? i.PresenterId == userId : i.PresenterGuestInvitationId == targetId)).ToListAsync(ct);
-                foreach (var item in affected)
-                {
-                    item.PresenterId = null;
-                    item.PresenterGuestInvitationId = null;
-                    item.LegacyPresenterName = "";
-                    item.UpdatedAt = now;
+                    if (Own(snapshot, actor) is null && actor.Guest is null)
+                        return new ParticipantResult(ParticipantFailure.NotFound);
+                    if (!ParticipantRules.Respondable(m.Status))
+                        return new ParticipantResult(ParticipantFailure.CannotRespond);
                 }
-                if (affected.Count > 0)
-                    agendaChange = new(Guid.CreateVersion7(), meetingId, "PresenterCleared", null, null, now);
-                // Someone no longer in the meeting is not waiting to speak (BR-337). A member who keeps another
-                // assignment keeps the raised hand. Readers refetch the queue on participantsChanged.
-                if (userId is null || !snapshot.Meeting.Participants.Any(p => p.UserId == userId && p.Id != targetId
-                        && ParticipantRules.Current(p)))
-                    await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, userId,
-                        userId is null ? [targetId!.Value] : null, now, now, ct);
-            }
-            if (!response)
-                m.ParticipantsRevision = checked(m.ParticipantsRevision + 1);
-            var after = Evidence(snapshot);
-            var changedIds = before
-                .Keys.Union(after.Keys)
-                .Where(id => before.GetValueOrDefault(id) != after.GetValueOrDefault(id))
-                .ToArray();
-            db.AuditLog.Add(
-                new AuditLogEntry
+                else if (operation == ParticipantOperation.HandOverChair)
                 {
-                    ActorId = actor.UserId,
-                    Action = AuditActions.MeetingParticipants(operation),
-                    ObjectType = AuditActions.MeetingObjectType,
-                    ObjectId = meetingId,
-                    IpAddress = caller.IpAddress,
-                    Details = JsonSerializer.Serialize(
-                        new
-                        {
-                            guest = actor.Guest,
-                            changes = changedIds.Select(id => new
-                            {
-                                id,
-                                before = before.TryGetValue(id, out var old)
-                                    ? JsonSerializer.Deserialize<JsonElement>(old)
-                                    : (JsonElement?)null,
-                                after = after.TryGetValue(id, out var current)
-                                    ? JsonSerializer.Deserialize<JsonElement>(current)
-                                    : (JsonElement?)null,
-                            }),
-                        }
+                    var handoverAccess = HandoverAccess(snapshot, actor);
+                    if (handoverAccess != ParticipantFailure.None)
+                        return new ParticipantResult(handoverAccess);
+                }
+                else
+                {
+                    if (actor.Guest is not null || actor.UserId is not { } id)
+                        return new ParticipantResult(ParticipantFailure.Forbidden);
+                    var authorized = ParticipantRules.IsManager(m, id);
+                    if (!authorized)
+                        return new ParticipantResult(ParticipantFailure.Forbidden);
+                    if (!ParticipantRules.Editable(m.Status))
+                        return new ParticipantResult(ParticipantFailure.Locked);
+                }
+                if (input.ParseFailure != ParticipantFailure.None)
+                    return new ParticipantResult(input.ParseFailure);
+                if (!response && input.Revision is null)
+                    return new ParticipantResult(ParticipantFailure.InvalidRequest);
+                if (operation == ParticipantOperation.HandOverChair)
+                {
+                    if (input.NewChairParticipantId is null || input.NewChairParticipantId == Guid.Empty || !input.Confirmed)
+                        return new ParticipantResult(ParticipantFailure.InvalidRole);
+                    lockedUsers = await LockCurrentUsersAsync(snapshot, token);
+                    var recipient = m.Participants.SingleOrDefault(p => p.Id == input.NewChairParticipantId);
+                    if (recipient is null || recipient.UserId == actor.UserId
+                        || !EligibleChairRecipient(recipient, lockedUsers.TryGetValue(recipient.UserId, out var user) && user.IsActive))
+                        return new ParticipantResult(ParticipantFailure.InvalidChairRecipient);
+                    var outgoing = Own(snapshot, actor)!;
+                    input = input with
+                    {
+                        Changes = [new(outgoing.Id, nameof(MeetingRole.Member)), new(recipient.Id, nameof(MeetingRole.Chair))],
+                        ChairReplacement = new(outgoing.Id, recipient.Id, true),
+                    };
+                }
+                if (!response && input.Revision != m.ParticipantsRevision)
+                    return new ParticipantResult(ParticipantFailure.Stale);
+                var now = AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
+                var before = await EvidenceAsync(snapshot, token);
+                readers.UnionWith(await ReadersAsync(m, token));
+                guestReaders.UnionWith(await GuestReadersAsync(m, token));
+                result = operation switch
+                {
+                    ParticipantOperation.AddInternal => await AddInternalAsync(
+                        snapshot,
+                        actor.UserId!.Value,
+                        input,
+                        now,
+                        token
                     ),
-                    OccurredAt = now,
-                    CreatedAt = now,
-                    UpdatedAt = now,
+                    ParticipantOperation.AddGuest => await AddGuestAsync(
+                        snapshot,
+                        actor.UserId!.Value,
+                        input,
+                        now,
+                        token
+                    ),
+                    ParticipantOperation.ChangeAssignments or ParticipantOperation.HandOverChair => await ChangeAsync(
+                        snapshot,
+                        actor.UserId!.Value,
+                        input,
+                        now,
+                        token,
+                        lockedUsers
+                    ),
+                    ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest => Remove(
+                        snapshot,
+                        targetId,
+                        actor.UserId!.Value,
+                        operation,
+                        now
+                    ),
+                    ParticipantOperation.Respond => Respond(snapshot, actor, input, now),
+                    _ => new ParticipantResult(ParticipantFailure.InvalidRequest),
+                };
+                if (
+                    result.Failure != ParticipantFailure.None
+                    || result.Success == ParticipantSuccess.NoChanges
+                )
+                    return result with { Revision = response ? null : m.ParticipantsRevision };
+                if (operation is ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest)
+                {
+                    var userId = operation == ParticipantOperation.RemoveInternal
+                        ? snapshot.Meeting.Participants.Single(p => p.Id == targetId).UserId : (Guid?)null;
+                    var affected = await repository.ListPresentedItemsAsync(meetingId, userId, targetId, token);
+                    foreach (var item in affected)
+                    {
+                        item.PresenterId = null;
+                        item.PresenterGuestInvitationId = null;
+                        item.LegacyPresenterName = "";
+                        item.UpdatedAt = now;
+                    }
+                    if (affected.Count > 0)
+                        agendaChange = new(Guid.CreateVersion7(), meetingId, "PresenterCleared", null, null, now);
+                    // Someone no longer in the meeting is not waiting to speak (BR-337). A member who keeps another
+                    // assignment keeps the raised hand. Readers refetch the queue on participantsChanged.
+                    if (userId is null || !snapshot.Meeting.Participants.Any(p => p.UserId == userId && p.Id != targetId
+                            && ParticipantRules.Current(p)))
+                        await speaking.CloseOpenAsync(meetingId, userId,
+                            userId is null ? [targetId!.Value] : null, now, now, token);
                 }
-            );
-            await db.SaveChangesAsync(ct);
-            readers.UnionWith(await ReadersAsync(m, ct));
-            guestReaders.UnionWith(await GuestReadersAsync(m, ct));
-            await tx.CommitAsync(ct);
-            changeEvent = new(Guid.CreateVersion7(), meetingId, Revision(m), now);
-            if (
-                operation is ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest
-            )
-                accessChange = new(
-                    meetingId,
-                    operation == ParticipantOperation.RevokeGuest
-                        ? targetId!.Value
-                        : snapshot.Meeting.Participants.Single(p => p.Id == targetId).UserId,
-                    operation == ParticipantOperation.RevokeGuest,
-                    Guid.CreateVersion7()
+                if (!response)
+                    m.ParticipantsRevision = checked(m.ParticipantsRevision + 1);
+                var after = await EvidenceAsync(snapshot, token);
+                var changedIds = before
+                    .Keys.Union(after.Keys)
+                    .Where(id => before.GetValueOrDefault(id) != after.GetValueOrDefault(id))
+                    .ToArray();
+                audit.Add(
+                    new AuditLogEntry
+                    {
+                        ActorId = actor.UserId,
+                        Action = AuditActions.MeetingParticipants(operation),
+                        ObjectType = AuditActions.MeetingObjectType,
+                        ObjectId = meetingId,
+                        IpAddress = caller.IpAddress,
+                        Details = JsonSerializer.Serialize(
+                            new
+                            {
+                                guest = actor.Guest,
+                                changes = changedIds.Select(id => new
+                                {
+                                    id,
+                                    before = before.TryGetValue(id, out var old)
+                                        ? JsonSerializer.Deserialize<JsonElement>(old)
+                                        : (JsonElement?)null,
+                                    after = after.TryGetValue(id, out var current)
+                                        ? JsonSerializer.Deserialize<JsonElement>(current)
+                                        : (JsonElement?)null,
+                                }),
+                            }
+                        ),
+                        OccurredAt = now,
+                        CreatedAt = now,
+                        UpdatedAt = now,
+                    }
                 );
-            result = result with { Revision = response ? null : m.ParticipantsRevision };
+                await unitOfWork.SaveChangesAsync(token);
+                readers.UnionWith(await ReadersAsync(m, token));
+                guestReaders.UnionWith(await GuestReadersAsync(m, token));
+                changeEvent = new(Guid.CreateVersion7(), meetingId, Revision(m), now);
+                if (
+                    operation is ParticipantOperation.RemoveInternal or ParticipantOperation.RevokeGuest
+                )
+                    accessChange = new(
+                        meetingId,
+                        operation == ParticipantOperation.RevokeGuest
+                            ? targetId!.Value
+                            : snapshot.Meeting.Participants.Single(p => p.Id == targetId).UserId,
+                        operation == ParticipantOperation.RevokeGuest,
+                        Guid.CreateVersion7()
+                    );
+                result = result with { Revision = response ? null : m.ParticipantsRevision };
+                return result;
+            }, TransactionMode.ReadCommitted, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            db.ChangeTracker.Clear();
+            unitOfWork.DiscardChanges();
             logger.LogError(
-                ex,
+                ex.InnerException ?? ex,
                 "Participant mutation {Operation} failed for {MeetingId}",
                 operation,
                 meetingId
@@ -635,7 +586,7 @@ public sealed partial class ParticipantService(
         return result;
     }
 
-    private async Task<Guid[]> ReadersAsync(Meeting meeting, CancellationToken ct)
+    private async Task<IReadOnlyList<Guid>> ReadersAsync(Meeting meeting, CancellationToken ct)
     {
         var candidates = meeting
             .Participants.Select(p => p.UserId)
@@ -644,11 +595,7 @@ public sealed partial class ParticipantService(
             .Distinct()
             .Where(id => MeetingReadPolicy.CanRead(meeting, id))
             .ToArray();
-        return await db
-            .Users.AsNoTracking()
-            .Where(u => candidates.Contains(u.Id) && u.IsActive)
-            .Select(u => u.Id)
-            .ToArrayAsync(ct);
+        return await repository.ListActiveReaderIdsAsync(candidates, ct);
     }
 
     private async Task<IReadOnlyList<MeetingGuestSession>> GuestReadersAsync(
@@ -661,7 +608,7 @@ public sealed partial class ParticipantService(
                 .ToArray()
             : [];
 
-    private Dictionary<Guid, string> Evidence(ParticipantSnapshot s)
+    private async Task<Dictionary<Guid, string>> EvidenceAsync(ParticipantSnapshot s, CancellationToken ct)
     {
         var rows = s.Meeting.Participants.ToDictionary(
             p => p.Id,
@@ -682,7 +629,7 @@ public sealed partial class ParticipantService(
                     }
                 )
         );
-        foreach (var g in db.MeetingGuestInvitations.Local.Where(g => g.MeetingId == s.Meeting.Id))
+        foreach (var g in await repository.ListStagedGuestsAsync(s.Meeting.Id, ct))
             rows[g.Id] = JsonSerializer.Serialize(
                 new
                 {
@@ -718,13 +665,8 @@ public sealed partial class ParticipantService(
         if (!ParticipantRules.TryRole(input.Role, out var role))
             return Invalid("role", "Chọn Chủ toạ, Thư ký hoặc Thành viên.");
         // Locks prevent a selected account from changing email/active state between validation and save.
-        var users = await db
-            .Users.FromSqlInterpolated(
-                $"SELECT * FROM users WHERE id = ANY({ids.Order().ToArray()}) ORDER BY id FOR SHARE"
-            )
-            .AsNoTracking()
-            .ToArrayAsync(ct);
-        if (users.Length != ids.Length || users.Any(u => !u.IsActive))
+        var users = await repository.LockUsersAsync(ids.Order().ToArray(), ct);
+        if (users.Count != ids.Length || users.Any(u => !u.IsActive))
             return Invalid("userIds", "Người được chọn không tồn tại hoặc đã ngừng hoạt động.");
         var existing = s
             .Meeting.Participants.Where(ParticipantRules.Current)
@@ -733,12 +675,7 @@ public sealed partial class ParticipantService(
         if (existing.Length > 0)
             return Invalid("userIds", "Người được chọn đã có trong danh sách thành phần.");
         var emails = users.Select(u => u.Email).ToArray();
-        if (
-            await db.MeetingGuestInvitations.AnyAsync(
-                g => g.MeetingId == s.Meeting.Id && g.RevokedAt == null && emails.Contains(g.Email),
-                ct
-            )
-        )
+        if (await repository.ExistsActiveGuestWithEmailsAsync(s.Meeting.Id, emails, ct))
             return Invalid("userIds", "Người được chọn đã được mời với tư cách Khách.");
         if (
             !ParticipantRules.ValidRoles(
@@ -749,38 +686,27 @@ public sealed partial class ParticipantService(
             )
         )
             return new(ParticipantFailure.RequiredRoles);
-        var created = new List<Guid>();
-        var trackedUsers = db.Users.Local.ToDictionary(u => u.Id);
-        var detectChanges = db.ChangeTracker.AutoDetectChangesEnabled;
-        // Batch inserts do not need a full graph scan for every outbox payload or user lookup.
-        db.ChangeTracker.AutoDetectChangesEnabled = false;
-        try
+        var staged = users.Select(user =>
         {
-            foreach (var user in users)
+            var p = new MeetingParticipant
             {
-                var p = new MeetingParticipant
-                {
-                    MeetingId = s.Meeting.Id,
-                    UserId = user.Id,
-                    Role = role,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                };
-                p.InitialInvitationDeliveryKey = $"participant:{p.Id}:invited";
-                db.MeetingParticipants.Add(p);
-                if (!s.Meeting.Participants.Contains(p))
-                    s.Meeting.Participants.Add(p);
-                // Use the tracked instance already loaded by EF, or attach the account without inserting it.
-                p.User = trackedUsers.GetValueOrDefault(user.Id) ?? user;
-                if (db.Entry(p.User).State == EntityState.Detached)
-                    db.Attach(p.User);
-                Stage(s.Meeting, p, null, InvitationEventKind.Invitation, actor, now);
-                created.Add(p.Id);
-            }
-        }
-        finally
+                MeetingId = s.Meeting.Id,
+                UserId = user.Id,
+                Role = role,
+                CreatedAt = now,
+                UpdatedAt = now,
+            };
+            p.InitialInvitationDeliveryKey = $"participant:{p.Id}:invited";
+            return (Participant: p, Account: user);
+        }).ToArray();
+        repository.AddMany(staged);
+        var created = new List<Guid>();
+        foreach (var (p, _) in staged)
         {
-            db.ChangeTracker.AutoDetectChangesEnabled = detectChanges;
+            if (!s.Meeting.Participants.Contains(p))
+                s.Meeting.Participants.Add(p);
+            Stage(s.Meeting, p, null, InvitationEventKind.Invitation, actor, now);
+            created.Add(p.Id);
         }
         return new(Data: new { createdIds = created }, Success: ParticipantSuccess.Created);
     }
@@ -804,24 +730,10 @@ public sealed partial class ParticipantService(
             .Select(p => p.UserId)
             .Order()
             .ToArray();
-        await db
-            .Users.FromSqlInterpolated(
-                $"SELECT * FROM users WHERE id = ANY({userIds}) ORDER BY id FOR SHARE"
-            )
-            .AsNoTracking()
-            .ToArrayAsync(ct);
+        await repository.LockUsersAsync(userIds, ct);
         if (
-            await db.MeetingGuestInvitations.AnyAsync(
-                g => g.MeetingId == s.Meeting.Id && g.RevokedAt == null && g.Email == email,
-                ct
-            )
-            || await db.MeetingParticipants.AnyAsync(
-                p =>
-                    p.MeetingId == s.Meeting.Id
-                    && p.AssignmentStatus == AssignmentStatus.Current
-                    && p.User.Email == email,
-                ct
-            )
+            await repository.ExistsActiveGuestWithEmailAsync(s.Meeting.Id, email, ct)
+            || await repository.ExistsCurrentParticipantWithEmailAsync(s.Meeting.Id, email, ct)
         )
             return Invalid("email", "Email đã có trong danh sách thành phần hiện tại.");
         var guest = new MeetingGuestInvitation
@@ -835,12 +747,11 @@ public sealed partial class ParticipantService(
             UpdatedAt = now,
         };
         guest.InitialInvitationDeliveryKey = $"guest:{guest.Id}:invited";
-        db.MeetingGuestInvitations.Add(guest);
+        repository.Add(guest);
         // The voter list was fixed when the vote opened, for Guests as for everyone (BR-190; PO 08/11/2026 withdrew the
         // Guest exception of 30/10/2026): a new invitation never joins it. The meeting lock held here serializes with
         // opening and closing, so the vote cannot change state under this write.
-        var openVote = await db.VotingSessions.SingleOrDefaultAsync(
-            v => v.MeetingId == s.Meeting.Id && v.Status == VotingStatus.Open, ct);
+        var openVote = await repository.FindOpenVoteAsync(s.Meeting.Id, ct);
         if (openVote is not null)
             await KeepOpenVotePlaceAsync(openVote, guest, now, ct);
         Stage(s.Meeting, null, guest, InvitationEventKind.Invitation, actor, now);
@@ -864,23 +775,19 @@ public sealed partial class ParticipantService(
         CancellationToken ct
     )
     {
-        if (await db.VoteReceipts.AnyAsync(
-                r => r.VotingSessionId == vote.Id && r.GuestInvitation!.Email == guest.Email, ct))
+        if (await repository.ExistsVoteReceiptWithEmailAsync(vote.Id, guest.Email, ct))
             return;
-        var earlier = await db.VoteEligibleVoters.FirstOrDefaultAsync(
-            e => e.VotingSessionId == vote.Id && e.GuestInvitation!.Email == guest.Email, ct);
+        var earlier = await repository.FindEligibleVoterByEmailAsync(vote.Id, guest.Email, ct);
         if (earlier is null) return;
         earlier.GuestInvitation = guest;
         earlier.UpdatedAt = now;
     }
 
-    private Task<Dictionary<Guid, User>> LockCurrentUsersAsync(ParticipantSnapshot s, CancellationToken ct)
+    private async Task<Dictionary<Guid, User>> LockCurrentUsersAsync(ParticipantSnapshot s, CancellationToken ct)
     {
         // Fresh untracked rows are authoritative for account state; never overwrite tracked users.
         var userIds = s.Meeting.Participants.Where(ParticipantRules.Current).Select(p => p.UserId).Distinct().Order().ToArray();
-        return db.Users.FromSqlInterpolated(
-                $"SELECT * FROM users WHERE id = ANY({userIds}) ORDER BY id FOR SHARE")
-            .AsNoTracking().ToDictionaryAsync(u => u.Id, ct);
+        return (await repository.LockUsersAsync(userIds, ct)).ToDictionary(u => u.Id);
     }
 
     private async Task<ParticipantResult> ChangeAsync(
@@ -979,7 +886,7 @@ public sealed partial class ParticipantService(
         if (replacing)
         {
             oldChair!.Role = MeetingRole.Member;
-            await db.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
         foreach (var c in affected)
         {
@@ -1107,7 +1014,7 @@ public sealed partial class ParticipantService(
         // Nobody is told in-app about their own action, e.g. the Chair who handed over the role
         // and so became a Member. The email still goes out: it keeps their calendar in step.
         if (ParticipantRules.Respondable(meeting.Status))
-            MeetingInvitationEvents.Stage(db, meeting, p, g, kind, now, notify: p?.UserId != actor);
+            stager.Stage(meeting, p, g, kind, now, notify: p?.UserId != actor);
     }
 
     [GeneratedRegex(@"^[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+$", RegexOptions.CultureInvariant)]

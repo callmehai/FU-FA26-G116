@@ -1,0 +1,131 @@
+using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.GuestAccess;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Participants;
+using TrustCabinet.Domain.Documents;
+using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.GuestAccess;
+using TrustCabinet.Domain.Meetings;
+
+namespace TrustCabinet.Application.Documents;
+
+/// <summary>
+/// UC-35 (SCRUM-23): comments on a meeting's copy of a document, so the same file in two meetings has two
+/// separate discussions. Anyone who can view the meeting may read and write them (BR-249, BR-275) until it
+/// ends (BR-282) or is cancelled; a removed document's comments stay in the database but are no longer shown (BR-284).
+/// A verified guest reads and writes as a Participant does (BR-181), under their invitation (ADR-0016), while their
+/// UC-04 session is current, rechecked on every call: a revoked invitation stops the next comment.
+/// </summary>
+public sealed class DocumentCommentService(IMeetingRepository meetings, IDocumentCommentRepository comments,
+    IGuestSessionRepository sessions, IAgendaGuestAccess guests, IUnitOfWork unitOfWork, TimeProvider clock,
+    ILogger<DocumentCommentService> logger) : IDocumentCommentService
+{
+    public async Task<CommentOutcome<DocumentCommentThreads>> ListAsync(Guid meetingId, Guid meetingDocumentId,
+        ParticipantActor actor, CancellationToken ct = default)
+    {
+        try
+        {
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                var meeting = await FindReadableAsync(meetingId, actor, token);
+                if (meeting is null
+                    || !await comments.IsAttachedAsync(meetingId, meetingDocumentId, MeetingDocumentService.SeesDrafts(meeting, actor), token))
+                    return new CommentOutcome<DocumentCommentThreads>(CommentFailure.NotFound);
+
+                var rows = await comments.ListAsync(meetingDocumentId, token);
+                DocumentCommentRow Row(Guid id, string body, int? page, Guid? author, Guid? guest, string name,
+                    DateTimeOffset at, IReadOnlyList<DocumentCommentRow> replies)
+                    => new(id, body, page, new(author, guest, name, guest is not null), at, replies);
+                var threads = rows.Where(r => r.ParentCommentId is null).Select(top => Row(top.Id, top.Body, top.PageNumber,
+                    top.AuthorId, top.GuestInvitationId, top.Name, top.CreatedAt,
+                    rows.Where(r => r.ParentCommentId == top.Id).Select(r => Row(r.Id, r.Body, r.PageNumber, r.AuthorId,
+                        r.GuestInvitationId, r.Name, r.CreatedAt, [])).ToList())).ToList();
+                return new CommentOutcome<DocumentCommentThreads>(Value: new(meetingDocumentId, meeting.Status is not (MeetingStatus.Ended or MeetingStatus.Cancelled), threads));
+            }, TransactionMode.None, ct);
+        }
+        catch (PersistenceException ex)
+        {
+            logger.LogError(ex.InnerException ?? ex, "Failed to load the comments of document {DocumentId}", meetingDocumentId);
+            return new(CommentFailure.ReadFailed);
+        }
+    }
+
+    public async Task<CommentOutcome<DocumentCommentRow>> AddAsync(Guid meetingId, Guid meetingDocumentId,
+        ParticipantActor actor, string? body, int? pageNumber, Guid? parentCommentId, CancellationToken ct = default)
+    {
+        var text = body?.Trim();
+        if (string.IsNullOrEmpty(text)) return new(CommentFailure.Blank);
+        if (text.Length > DocumentFileRules.MaxCommentLength) return new(CommentFailure.TooLong);
+
+        try
+        {
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                // A share lock on the meeting row, so a comment sent as the meeting ends or is cancelled is refused
+                // rather than slipped in after it (BR-282), while comments do not queue behind one another.
+                await comments.LockMeetingSharedAsync(meetingId, token);
+                // Likewise the guest's session row, so a comment sent as the guest signs out lands before it or not at all.
+                if (actor.Guest is { } session)
+                    await sessions.LockSessionSharedAsync(session.SessionId, token);
+                // A guest whose meeting just ended has lost it altogether (BR-181), so MSG156 rather than MSG251.
+                var meeting = await FindReadableAsync(meetingId, actor, token);
+                if (meeting is null) return new CommentOutcome<DocumentCommentRow>(CommentFailure.NotFound);
+                var document = await comments.FindPageInfoAsync(meetingId, meetingDocumentId,
+                    MeetingDocumentService.SeesDrafts(meeting, actor), token);
+                // Removed, of another meeting, or only on a draft vote the actor may not see: the same answer (BR-211, BR-253).
+                if (document is null) return new CommentOutcome<DocumentCommentRow>(CommentFailure.NotFound);
+                if (meeting.Status == MeetingStatus.Ended) return new CommentOutcome<DocumentCommentRow>(CommentFailure.Ended);
+                if (meeting.Status == MeetingStatus.Cancelled) return new CommentOutcome<DocumentCommentRow>(CommentFailure.Cancelled);
+
+                Guid? threadId = null;
+                if (parentCommentId is { } parentId)
+                {
+                    // A reply to a reply joins the same thread: one level deep (BR-317).
+                    var parent = await comments.FindParentAsync(parentId, meetingDocumentId, token);
+                    if (parent is null) return new CommentOutcome<DocumentCommentRow>(CommentFailure.NotFound);
+                    threadId = parent.Value.ParentCommentId ?? parent.Value.Id;
+                }
+
+                // A page belongs to a top-level comment on a PDF, within the pages it has (BR-248).
+                var page = threadId is null && document.ContentType == DocumentFileRules.PdfContentType
+                    && pageNumber >= 1 && (document.PageCount is null || pageNumber <= document.PageCount) ? pageNumber : null;
+                var now = clock.GetUtcNow();
+                var guestId = actor.Guest?.InvitationId;
+                var comment = new DocumentComment { MeetingDocumentId = meetingDocumentId, ParentCommentId = threadId,
+                    AuthorId = actor.UserId, GuestInvitationId = guestId, Body = text, PageNumber = page, CreatedAt = now,
+                    UpdatedAt = now };
+                comments.Add(comment);
+                await unitOfWork.SaveChangesAsync(token);
+                var name = guestId is { } invitation
+                    ? await comments.FindGuestDisplayNameAsync(invitation, token)
+                    : await meetings.FindUserDisplayNameAsync(actor.UserId!.Value, token) ?? "";
+                return new CommentOutcome<DocumentCommentRow>(Value: new(comment.Id, text, page, new(actor.UserId, guestId, name, guestId is not null), now, []));
+            }, TransactionMode.ReadCommitted, ct);
+        }
+        catch (PersistenceException ex)
+        {
+            logger.LogError(ex.InnerException ?? ex, "Failed to save a comment on document {DocumentId}", meetingDocumentId);
+            return new(CommentFailure.SaveFailed);
+        }
+    }
+
+    /// <summary>
+    /// The meeting when <paramref name="actor"/> may read it now, by the documents' own rule (MeetingDocumentService):
+    /// an internal user by <see cref="MeetingReadPolicy"/>, a guest only through a current session of this very
+    /// meeting while it is Published or InProgress.
+    /// </summary>
+    private async Task<Meeting?> FindReadableAsync(Guid meetingId, ParticipantActor actor, CancellationToken ct)
+    {
+        if (actor.Guest is { } guest)
+        {
+            if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct)) return null;
+            var guestMeeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+            return guestMeeting is not null && GuestAccessRules.MeetingOpen(guestMeeting.Status) ? guestMeeting : null;
+        }
+        var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
+        return meeting is not null && actor.UserId is { } userId && MeetingReadPolicy.CanRead(meeting, userId) ? meeting : null;
+    }
+}

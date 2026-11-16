@@ -1,13 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
-using TrustCabinet.Application.Reports;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Participants;
 
-namespace TrustCabinet.Infrastructure.Reports;
+namespace TrustCabinet.Application.Reports;
 
 /// <summary>
 /// SCRUM-38 — the meeting report (UC-70a) and its Excel export (UC-70b). Every figure is computed in the database over
@@ -15,8 +13,8 @@ namespace TrustCabinet.Infrastructure.Reports;
 /// counted (BR-432) — for a System Admin as for anyone else. Only counts and per-meeting numbers leave the database:
 /// never an id or a title (BR-437).
 /// </summary>
-public sealed class ReportService(TrustCabinetDbContext db, IAuditService audit, TimeProvider clock,
-    ILogger<ReportService> logger) : IReportService
+public sealed class ReportService(IMeetingReportQuery reports, IMeetingReportRenderer renderer, IAuditService audit,
+    IUnitOfWork unitOfWork, TimeProvider clock, ILogger<ReportService> logger) : IReportService
 {
     public async Task<ReportOutcome> GetMeetingReportAsync(Guid actorId, string? from, string? to, CancellationToken ct = default)
     {
@@ -24,11 +22,12 @@ public sealed class ReportService(TrustCabinetDbContext db, IAuditService audit,
         if (ReportPeriod.Parse(from, to, now) is not { } period) return new(ReportFailure.InvalidPeriod);
         try
         {
-            return new(Report: await BuildAsync(actorId, period, now, ct));
+            return new(Report: await unitOfWork.ExecuteAsync(token => BuildAsync(actorId, period, now, token),
+                TransactionMode.None, ct));
         }
-        catch (Exception error) when (error is not OperationCanceledException)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
-            logger.LogError(error, "Could not read the meeting report {From}–{To}", period.From, period.To);
+            logger.LogError((e as PersistenceException)?.InnerException ?? e, "Could not read the meeting report {From}–{To}", period.From, period.To);
             return new(ReportFailure.ReadFailed);
         }
     }
@@ -39,17 +38,18 @@ public sealed class ReportService(TrustCabinetDbContext db, IAuditService audit,
         if (ReportPeriod.Parse(from, to, now) is not { } period) return new(ReportFailure.InvalidPeriod);
         try
         {
-            var report = await BuildAsync(actorId, period, now, ct);
-            var bytes = MeetingReportXlsx.Build(report);
+            var report = await unitOfWork.ExecuteAsync(token => BuildAsync(actorId, period, now, token),
+                TransactionMode.None, ct);
+            var bytes = renderer.Build(report);
             // BR-438: no record, no file — the figures leave the system only with a trace of who took them.
             await audit.RecordAsync(AuditActions.ReportExported, AuditActions.ReportObjectType, null, actorId,
                 new { report = "meetings", from = period.From, to = period.To }, ct);
             return new(File: new ReportFile($"bao-cao-cuoc-hop_{period.From}_{period.To}.xlsx", bytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
         }
-        catch (Exception error) when (error is not OperationCanceledException)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
-            logger.LogError(error, "Could not export the meeting report {From}–{To}", period.From, period.To);
+            logger.LogError((e as PersistenceException)?.InnerException ?? e, "Could not export the meeting report {From}–{To}", period.From, period.To);
             return new(ReportFailure.ExportFailed);
         }
     }
@@ -59,38 +59,11 @@ public sealed class ReportService(TrustCabinetDbContext db, IAuditService audit,
         // Npgsql writes timestamptz parameters only in UTC.
         var start = period.Start.ToUniversalTime();
         var end = period.End.ToUniversalTime();
-        var readable = db.Meetings.AsNoTracking()
-            .Where(MeetingReadPolicy.ForUser(actorId))
-            .Where(m => m.PlannedStartTime >= start && m.PlannedStartTime < end);
-
         // BR-434: one GROUP BY over month (Vietnam time), status and sensitivity; the three tables are sums of it.
-        var groups = await readable
-            .Select(m => new { Local = m.PlannedStartTime.AddHours(7), m.Status, m.Sensitivity })
-            .GroupBy(m => new { m.Local.Year, m.Local.Month, m.Status, m.Sensitivity })
-            .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Status, g.Key.Sensitivity, Count = g.Count() })
-            .ToListAsync(ct);
+        var groups = await reports.ListGroupsAsync(actorId, start, end, ct);
 
         // BR-435, BR-436 and the duration (PO 09/11/2026, Q2): per Ended meeting, the numbers its averages need — nothing that names the meeting.
-        var ended = await readable
-            .Where(m => m.Status == MeetingStatus.Ended)
-            .Select(m => new
-            {
-                InternalInvitees = m.Participants.AsQueryable().Count(ParticipantRules.CurrentExpression),
-                InternalPresent = m.Participants.AsQueryable().Where(ParticipantRules.CurrentExpression)
-                    .Count(p => p.Attendance == AttendanceStatus.Present),
-                InternalMarked = m.Participants.AsQueryable().Where(ParticipantRules.CurrentExpression)
-                    .Count(p => p.Attendance == AttendanceStatus.Present || p.Attendance == AttendanceStatus.Absent),
-                GuestInvitees = db.MeetingGuestInvitations.Count(g => g.MeetingId == m.Id && g.RevokedAt == null),
-                GuestPresent = db.MeetingGuestInvitations.Count(g => g.MeetingId == m.Id && g.RevokedAt == null
-                    && g.Attendance == AttendanceStatus.Present),
-                GuestMarked = db.MeetingGuestInvitations.Count(g => g.MeetingId == m.Id && g.RevokedAt == null
-                    && (g.Attendance == AttendanceStatus.Present || g.Attendance == AttendanceStatus.Absent)),
-                m.ActualStartedAt,
-                m.ActualEndedAt,
-                // The first issue: a correction issued later does not restart the clock.
-                FirstIssuedAt = m.Minutes.Where(x => x.IssuedAt != null).Min(x => x.IssuedAt),
-            })
-            .ToListAsync(ct);
+        var ended = await reports.ListEndedRowsAsync(actorId, start, end, ct);
 
         var rates = ended
             .Where(m => m.InternalMarked + m.GuestMarked > 0 && m.InternalInvitees + m.GuestInvitees > 0)

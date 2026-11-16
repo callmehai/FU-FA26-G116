@@ -63,6 +63,39 @@ public interface IMeetingNoteService
         CancellationToken ct = default);
 }
 
+/// <summary>SCRUM-30, UC-82 — the Secretary's running notes as the use case reads and writes them.</summary>
+public interface IMeetingNoteRepository
+{
+    /// <summary>The meeting's notes by the given authors, oldest position first, with their author.</summary>
+    Task<IReadOnlyList<MeetingNote>> ListAsync(Guid meetingId, HashSet<Guid> authorIds, CancellationToken ct);
+
+    /// <summary>The meeting's item in progress; null when none is.</summary>
+    Task<Guid?> FindCurrentItemAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>Whether the meeting's minutes draft exists (the cut-off of BR-310, BR-396).</summary>
+    Task<bool> HasMinutesAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>Whether the agenda item is part of the meeting.</summary>
+    Task<bool> AgendaItemExistsAsync(Guid meetingId, Guid agendaItemId, CancellationToken ct);
+
+    /// <summary>The caller's note id; null when the caller has never saved one here.</summary>
+    Task<Guid?> FindIdAsync(Guid meetingId, Guid? agendaItemId, Guid authorId, CancellationToken ct);
+
+    /// <summary>Stages the note; written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
+    void Add(MeetingNote note);
+
+    /// <summary>
+    /// Overwrites the note read at <paramref name="from"/> (BR-399: a save from another window that landed
+    /// after it was read makes it stale, never overwritten). Returns the rows written. Runs immediately,
+    /// not staged.
+    /// </summary>
+    Task<int> TryUpdateAsync(Guid id, DateTimeOffset from, DateTimeOffset to, string body, DateTimeOffset now,
+        CancellationToken ct);
+
+    /// <summary>The saved note with its author, read back under the meeting lock; throws when it does not exist.</summary>
+    Task<MeetingNote> GetAsync(Guid meetingId, Guid? agendaItemId, Guid authorId, CancellationToken ct);
+}
+
 public static class MeetingNoteRules
 {
     /// <summary>BR-400.</summary>

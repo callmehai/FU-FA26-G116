@@ -12,7 +12,6 @@ using TrustCabinet.Infrastructure.Authentication;
 using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.GuestAccess;
 using TrustCabinet.Infrastructure.Meetings;
-using TrustCabinet.Infrastructure.Participants;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Participants;

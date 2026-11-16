@@ -1,5 +1,6 @@
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Attendance;
+using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Application.Attendance;
 
@@ -21,6 +22,27 @@ public interface IAttendanceService
 {
     Task<AttendanceResult> ReadAsync(Guid meetingId, ParticipantActor actor, AttendanceQuery query, CancellationToken ct);
     Task<AttendanceResult> SaveAsync(Guid meetingId, ParticipantActor actor, AttendanceInput input, CancellationToken ct);
+}
+public interface IAttendanceRepository
+{
+    /// <summary>
+    /// Takes an exclusive lock on the one meeting row until the current transaction ends. Runs immediately,
+    /// not staged.
+    /// </summary>
+    Task LockMeetingAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>
+    /// Loads the internal and guest attendance targets tracked, only after acquiring their row locks. Both
+    /// queries use the same stable order. Runs immediately, not staged.
+    /// </summary>
+    Task<(MeetingParticipant[] Internal, MeetingGuestInvitation[] Guests)> LockTargetsAsync(
+        Guid meetingId, Guid[] internalIds, Guid[] guestIds, CancellationToken ct);
+
+    /// <summary>Whether the account exists and is active. One query.</summary>
+    Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct);
+
+    /// <summary>Display names of the attendance recorders, by account id. One untracked query.</summary>
+    Task<IReadOnlyDictionary<Guid, AttendanceRecorder>> FindRecordersAsync(Guid[] userIds, CancellationToken ct);
 }
 public interface IAttendanceChangePublisher
 {

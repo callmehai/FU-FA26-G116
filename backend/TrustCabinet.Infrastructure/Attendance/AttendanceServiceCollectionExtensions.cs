@@ -7,8 +7,7 @@ public static class AttendanceServiceCollectionExtensions
 {
     public static IServiceCollection AddTrustCabinetAttendance(this IServiceCollection services)
     {
-        services.AddScoped<AttendanceRepository>();
-        services.AddScoped<IAttendanceService, AttendanceService>();
+        services.AddScoped<IAttendanceRepository, AttendanceRepository>();
         return services;
     }
 }

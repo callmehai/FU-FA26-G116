@@ -9,7 +9,6 @@ using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Infrastructure.Participants;
 using TrustCabinet.Web.Tests.Participants;
 using static TrustCabinet.Web.Tests.Attendance.AttendanceEndpointTests;
 using static TrustCabinet.Web.Tests.Participants.ParticipantEndpointTests;

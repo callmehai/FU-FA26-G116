@@ -1,16 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
-using TrustCabinet.Application.Documents;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Domain.Enums;
-using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Domain.Participants;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Documents;
+namespace TrustCabinet.Application.Documents;
 
 /// <summary>
 /// The personal library (ADR-0006, ADR-0018): folders (UC-72a–d, SCRUM-110) and documents (UC-34, UC-36,
@@ -18,46 +13,42 @@ namespace TrustCabinet.Infrastructure.Documents;
 /// (BR-242). Every change runs under a per-owner lock, so two moves at once cannot build a cycle or a sixth
 /// level, and two uploads at once cannot both slip under the quota.
 /// </summary>
-public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileWriter writer, IFileStorage storage,
-    IAuditService audit, TimeProvider clock, ILogger<PersonalLibraryService> logger) : IPersonalLibraryService
+public sealed class PersonalLibraryService(IPersonalLibraryRepository library, StoredFileWriter writer,
+    IFileStorage storage, IAuditService audit, IUnitOfWork unitOfWork, TimeProvider clock,
+    ILogger<PersonalLibraryService> logger) : IPersonalLibraryService
 {
     public async Task<LibraryOutcome<LibraryView>> ViewAsync(Guid readerId, Guid ownerId, Guid? folderId,
         string? search, string? fileType, Guid? meetingId = null, CancellationToken ct = default)
     {
         try
         {
-            if (!await MayReadAsync(readerId, ownerId, ct)) return new(LibraryFailure.NotFound);
-            if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, ct))
-                return new(LibraryFailure.NotFound);
-            // SCRUM-124: only who may add to the meeting (its current Chair or Secretary, BR-184) learns what is in
-            // it. A Member must not, since a document on a draft vote is hidden from them (BR-253).
-            if (meetingId is { } asked && !await db.MeetingParticipants.Where(ParticipantRules.ActiveExpression)
-                    .AnyAsync(p => p.MeetingId == asked && p.UserId == readerId
-                        && (p.Role == MeetingRole.Chair || p.Role == MeetingRole.Secretary), ct))
-                meetingId = null;
-            (IQueryable<Guid> Files, HashSet<Guid> Folders)? hidden = readerId == ownerId ? null : await HiddenFromAsync(ownerId, ct);
-            if (folderId is { } at && hidden is not null && hidden.Value.Folders.Contains(at)) return new(LibraryFailure.NotFound);
-            if (readerId != ownerId)
-                await audit.RecordAsync(AuditActions.PersonalLibraryRead, AuditActions.UserObjectType, ownerId, readerId,
-                    new { folderId }, ct);
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                if (!await MayReadAsync(readerId, ownerId, token)) return new LibraryOutcome<LibraryView>(LibraryFailure.NotFound);
+                if (folderId is { } id && !await library.FolderExistsAsync(ownerId, id, token))
+                    return new LibraryOutcome<LibraryView>(LibraryFailure.NotFound);
+                // SCRUM-124: only who may add to the meeting (its current Chair or Secretary, BR-184) learns what is in
+                // it. A Member must not, since a document on a draft vote is hidden from them (BR-253).
+                if (meetingId is { } asked && !await library.IsMeetingManagerAsync(asked, readerId, token))
+                    meetingId = null;
+                HashSet<Guid>? hidden = readerId == ownerId ? null : await HiddenFromAsync(ownerId, token);
+                if (folderId is { } at && hidden is not null && hidden.Contains(at)) return new LibraryOutcome<LibraryView>(LibraryFailure.NotFound);
+                if (readerId != ownerId)
+                    await audit.RecordAsync(AuditActions.PersonalLibraryRead, AuditActions.UserObjectType, ownerId, readerId,
+                        new { folderId }, token);
 
-            var folders = (await db.Folders.AsNoTracking().Where(f => f.OwnerId == ownerId)
-                .OrderBy(f => f.Name).ThenBy(f => f.Id)
-                .Select(f => new LibraryFolder(f.Id, f.Name, f.ParentId, f.MeetingId, f.CreatedAt)).ToListAsync(ct))
-                .Where(f => hidden is null || !hidden.Value.Folders.Contains(f.Id)).ToList();
-            var query = db.Documents.AsNoTracking().Where(d => d.OwnerId == ownerId && d.FolderId == folderId);
-            if (hidden is { Files: var hiddenFiles }) query = query.Where(d => !hiddenFiles.Contains(d.StoredFileId));
-            // AF-1: a name search and a file-type filter within the location.
-            if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(d => EF.Functions.ILike(d.FileName, "%" + EscapeLike(search.Trim()) + "%", "\\"));
-            if (ContentTypeOf(fileType) is { } contentType) query = query.Where(d => d.StoredFile.ContentType == contentType);
-            var documents = await Project(query.OrderBy(d => d.FileName).ThenBy(d => d.Id), readerId, meetingId)
-                .ToListAsync(ct);
-            return new(Value: new(folderId, folders, documents, await writer.UsedBytesAsync(ct), writer.LimitBytes));
+                var folders = (await library.ListFoldersAsync(ownerId, token))
+                    .Where(f => hidden is null || !hidden.Contains(f.Id))
+                    .Select(f => new LibraryFolder(f.Id, f.Name, f.ParentId, f.MeetingId, f.CreatedAt)).ToList();
+                var documents = await library.ListDocumentsAsync(readerId, ownerId, folderId, search,
+                    ContentTypeOf(fileType), meetingId, readerId != ownerId, token);
+                return new LibraryOutcome<LibraryView>(Value: new(folderId, folders, documents,
+                    await writer.UsedBytesAsync(token), writer.LimitBytes));
+            }, TransactionMode.None, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to load the personal library of {OwnerId}", ownerId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to load the personal library of {OwnerId}", ownerId);
             return new(LibraryFailure.SaveFailed);
         }
     }
@@ -68,19 +59,16 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         AttachedDocumentFile? file;
         try
         {
-            if (!await MayReadAsync(readerId, ownerId, ct)) return new(DocumentReadFailure.NotFound);
-            var query = db.Documents.AsNoTracking().Where(d => d.Id == documentId && d.OwnerId == ownerId);
-            if (readerId != ownerId)
+            file = await unitOfWork.ExecuteAsync(async token =>
             {
-                var (files, folders) = await HiddenFromAsync(ownerId, ct);
-                query = query.Where(d => !files.Contains(d.StoredFileId) && (d.FolderId == null || !folders.Contains(d.FolderId.Value)));
-            }
-            file = await query.Select(d => new AttachedDocumentFile(d.FileName, d.StoredFile.StorageKey, d.StoredFile.ContentType,
-                    d.StoredFile.ByteSize)).SingleOrDefaultAsync(ct);
+                if (!await MayReadAsync(readerId, ownerId, token)) return (AttachedDocumentFile?)null;
+                HashSet<Guid>? hidden = readerId == ownerId ? null : await HiddenFromAsync(ownerId, token);
+                return await library.FindLibraryFileAsync(ownerId, documentId, hidden, token);
+            }, TransactionMode.None, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to look up library document {DocumentId}", documentId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to look up library document {DocumentId}", documentId);
             return new(DocumentReadFailure.ReadFailed);
         }
         if (file is null) return new(DocumentReadFailure.NotFound);
@@ -108,8 +96,8 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             catch (Exception ex)
             {
                 await content.DisposeAsync();
-                if (!DbErrors.IsPersistenceFailure(ex)) throw;
-                logger.LogError(ex, "Failed to audit the read of library document {DocumentId}", documentId);
+                if (ex is not PersistenceException persistence) throw;
+                logger.LogError(persistence.InnerException ?? ex, "Failed to audit the read of library document {DocumentId}", documentId);
                 return new(DocumentReadFailure.ReadFailed);
             }
         }
@@ -127,8 +115,8 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             // Duplicate names are allowed (BR-221).
             var now = clock.GetUtcNow();
             var folder = new Folder { OwnerId = ownerId, ParentId = parentId, Name = value!, CreatedAt = now, UpdatedAt = now };
-            db.Folders.Add(folder);
-            await db.SaveChangesAsync(token);
+            library.AddFolder(folder);
+            await unitOfWork.SaveChangesAsync(token);
             return new(Value: ToRow(folder));
         }, ct);
 
@@ -139,10 +127,10 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             if (!folders.ContainsKey(folderId)) return new(LibraryFailure.NotFound);
             var (failure, value) = FolderName(name);
             if (failure != LibraryFailure.None) return new(failure);
-            var folder = await db.Folders.SingleAsync(f => f.Id == folderId, token);
+            var folder = await library.FindFolderAsync(folderId, token);
             folder.Name = value!;
             folder.UpdatedAt = clock.GetUtcNow();
-            await db.SaveChangesAsync(token);
+            await unitOfWork.SaveChangesAsync(token);
             return new(Value: ToRow(folder));
         }, ct);
 
@@ -158,10 +146,10 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             // The whole subtree moves along, so its deepest folder must stay within level five (BR-191).
             if (Depth(folders, parentId) + Height(folders, folderId) > DocumentFileRules.MaxFolderDepth)
                 return new(LibraryFailure.TooDeep);
-            var folder = await db.Folders.SingleAsync(f => f.Id == folderId, token);
+            var folder = await library.FindFolderAsync(folderId, token);
             folder.ParentId = parentId;
             folder.UpdatedAt = clock.GetUtcNow();
-            await db.SaveChangesAsync(token);
+            await unitOfWork.SaveChangesAsync(token);
             return new(Value: ToRow(folder));
         }, ct);
 
@@ -170,10 +158,10 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         {
             if (!folders.ContainsKey(folderId)) return new(LibraryFailure.NotFound);
             // Only an empty folder (BR-223); the Restrict foreign keys are the backstop.
-            if (folders.ContainsValue(folderId) || await db.Documents.AnyAsync(d => d.FolderId == folderId, token))
+            if (folders.ContainsValue(folderId) || await library.HasDocumentsAsync(folderId, token))
                 return new(LibraryFailure.NotEmpty);
             // A meeting's upload folder too: the next upload to that meeting makes a new one (BR-228).
-            await db.Folders.Where(f => f.Id == folderId).ExecuteDeleteAsync(token);
+            await library.DeleteFolderAsync(folderId, token);
             return new(Value: true);
         }, ct)).Failure;
 
@@ -181,12 +169,13 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
     {
         try
         {
-            if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, ct))
+            if (folderId is { } id && !await unitOfWork.ExecuteAsync(token => library.FolderExistsAsync(ownerId, id, token),
+                TransactionMode.None, ct))
                 return LibraryFailure.DestinationNotFound;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to check the upload destination of {OwnerId}", ownerId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to check the upload destination of {OwnerId}", ownerId);
             return LibraryFailure.SaveFailed;
         }
         if (writer.IsConfigured) return LibraryFailure.None;
@@ -200,14 +189,14 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         => await writer.WriteAsync<LibraryOutcome<IReadOnlyList<LibraryDocument>>>(ownerId, files,
             async (stored, now, token) =>
             {
-                await LockLibraryAsync(ownerId, token);
-                if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, token))
+                await library.LockLibraryAsync(ownerId, token);
+                if (folderId is { } id && !await library.FolderExistsAsync(ownerId, id, token))
                     return new(LibraryFailure.DestinationNotFound);
                 // Original names; the same name or bytes twice is still two documents (BR-229).
                 var added = stored.Select(file => new Document { OwnerId = ownerId, FolderId = folderId,
                     StoredFileId = file.Id, FileName = file.OriginalFileName, CreatedAt = now, UpdatedAt = now }).ToList();
-                db.Documents.AddRange(added);
-                await db.SaveChangesAsync(token);
+                library.AddDocuments(added);
+                await unitOfWork.SaveChangesAsync(token);
                 return new(Value: added.Zip(stored, (d, f) => new LibraryDocument(d.Id, d.FileName, f.ContentType,
                     f.ByteSize, f.PageCount, d.FolderId, d.CreatedAt, 0)).ToList());
             }, outcome => outcome.Failure == LibraryFailure.None, new(LibraryFailure.SaveFailed),
@@ -231,7 +220,7 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         CancellationToken ct = default)
         => ChangeDocumentAsync(ownerId, documentId, "move", async (document, token) =>
         {
-            if (folderId is { } id && !await db.Folders.AnyAsync(f => f.Id == id && f.OwnerId == ownerId, token))
+            if (folderId is { } id && !await library.FolderExistsAsync(ownerId, id, token))
                 return LibraryFailure.DestinationNotFound;
             // Only the library row moves; meetings using the file are untouched (BR-245).
             document.FolderId = folderId;
@@ -243,13 +232,13 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         {
             // Only the library row: the meeting copies keep pointing at the stored file (their DocumentId goes
             // null), and the purge deletes the bytes once nothing uses them (BR-186, BR-213, BR-232).
-            var deleted = await db.Documents.Where(d => d.Id == documentId && d.OwnerId == ownerId).ExecuteDeleteAsync(token);
+            var deleted = await library.DeleteDocumentAsync(ownerId, documentId, token);
             return deleted == 0 ? new(LibraryFailure.NotFound) : new(Value: true);
         }, ct)).Failure;
 
     /// <summary>The owner, or an administrator once the owner's account is deactivated (PO 27/10/2026).</summary>
     private async Task<bool> MayReadAsync(Guid readerId, Guid ownerId, CancellationToken ct)
-        => readerId == ownerId || await db.Users.AnyAsync(u => u.Id == ownerId && !u.IsActive, ct);
+        => readerId == ownerId || await library.IsDeactivatedAsync(ownerId, ct);
 
     /// <summary>
     /// What an administrator reading someone else's library must not see: the files of any Secret
@@ -257,15 +246,9 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
     /// Even when the administrator may view the meeting: there it opens under the meeting's own rules (BR-188 no
     /// download, BR-211 removed, the audit row), and the library must not become a way round them.
     /// </summary>
-    private async Task<(IQueryable<Guid> Files, HashSet<Guid> Folders)> HiddenFromAsync(Guid ownerId, CancellationToken ct)
+    private async Task<HashSet<Guid>> HiddenFromAsync(Guid ownerId, CancellationToken ct)
     {
-        var restricted = db.Meetings.Where(m => m.Sensitivity == Sensitivity.Secret)
-            .Select(m => m.Id);
-        var files = db.MeetingDocuments.Where(d => restricted.Contains(d.MeetingId)).Select(d => d.StoredFileId);
-        var folders = await db.Folders.Where(f => f.OwnerId == ownerId).Select(f => new
-        {
-            f.Id, f.ParentId, Hidden = f.MeetingId != null && restricted.Contains(f.MeetingId.Value),
-        }).ToListAsync(ct);
+        var folders = await library.ListFolderFlagsAsync(ownerId, ct);
         var hidden = folders.Where(f => f.Hidden).Select(f => f.Id).ToHashSet();
         // A subfolder goes with its hidden parent, however deep.
         bool grew;
@@ -275,34 +258,20 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             foreach (var folder in folders)
                 if (folder.ParentId is { } parent && hidden.Contains(parent)) grew |= hidden.Add(folder.Id);
         } while (grew);
-        return (files, hidden);
-    }
-
-    private IQueryable<LibraryDocument> Project(IQueryable<Document> query, Guid readerId, Guid? meetingId = null)
-    {
-        var readable = db.Meetings.Where(MeetingReadPolicy.ForUser(readerId));
-        return query.Select(d => new LibraryDocument(d.Id, d.FileName, d.StoredFile.ContentType, d.StoredFile.ByteSize,
-            d.StoredFile.PageCount, d.FolderId, d.CreatedAt,
-            // "Used in n meetings", counting only meetings the reader may view (BR-251).
-            readable.Count(m => m.Documents.Any(md => md.DocumentId == d.Id && md.RemovedAt == null)),
-            // The same file test that answers MSG165 (BR-193), and only for a meeting the reader may view, so the
-            // flag says nothing about a meeting they cannot see.
-            meetingId != null && readable.Any(m => m.Id == meetingId
-                && m.Documents.Any(md => md.StoredFileId == d.StoredFileId && md.RemovedAt == null))));
+        return hidden;
     }
 
     private async Task<LibraryOutcome<LibraryDocument>> ChangeDocumentAsync(Guid ownerId, Guid documentId, string what,
         Func<Document, CancellationToken, Task<LibraryFailure>> change, CancellationToken ct)
         => await InLibraryLockAsync<LibraryDocument>(ownerId, $"{what} a document", async (_, token) =>
         {
-            var document = await db.Documents.Include(d => d.StoredFile)
-                .SingleOrDefaultAsync(d => d.Id == documentId && d.OwnerId == ownerId, token);
+            var document = await library.FindDocumentAsync(ownerId, documentId, token);
             if (document is null) return new(LibraryFailure.NotFound);
             var failure = await change(document, token);
             if (failure != LibraryFailure.None) return new(failure);
             document.UpdatedAt = clock.GetUtcNow();
-            await db.SaveChangesAsync(token);
-            return new(Value: await Project(db.Documents.Where(d => d.Id == documentId), ownerId).SingleAsync(token));
+            await unitOfWork.SaveChangesAsync(token);
+            return new(Value: await library.GetDocumentRowAsync(documentId, ownerId, token));
         }, ct);
 
     /// <summary>
@@ -314,31 +283,20 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
     {
         try
         {
-            await using var transaction = await db.Database.BeginTransactionAsync(ct);
-            await LockLibraryAsync(ownerId, ct);
-            // ponytail: the whole folder list per change; a library has tens of folders, not thousands.
-            var folders = await db.Folders.Where(f => f.OwnerId == ownerId)
-                .ToDictionaryAsync(f => f.Id, f => f.ParentId, ct);
-            var outcome = await change(folders, ct);
-            if (outcome.Failure == LibraryFailure.None) await transaction.CommitAsync(ct);
-            return outcome;
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                await library.LockLibraryAsync(ownerId, token);
+                // ponytail: the whole folder list per change; a library has tens of folders, not thousands.
+                var folders = await library.ListFolderParentsAsync(ownerId, token);
+                return await change(folders, token);
+            }, TransactionMode.ReadCommitted, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to {What} in the personal library of {OwnerId}", what, ownerId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to {What} in the personal library of {OwnerId}", what, ownerId);
             return new(LibraryFailure.SaveFailed);
         }
     }
-
-    private Task LockLibraryAsync(Guid ownerId, CancellationToken ct) => LockLibraryAsync(db, ownerId, ct);
-
-    /// <summary>
-    /// Serialises the owner's library changes until the transaction ends. An upload into a meeting takes it after the
-    /// meeting lock; nothing takes the meeting lock after this one.
-    /// </summary>
-    internal static Task LockLibraryAsync(TrustCabinetDbContext db, Guid ownerId, CancellationToken ct)
-        => db.Database.ExecuteSqlInterpolatedAsync(
-            $"SELECT pg_advisory_xact_lock(hashtextextended({"library:" + ownerId}, 0))", ct);
 
     /// <summary>Level of a folder: 1 at the library root, 0 for the root itself.</summary>
     private static int Depth(Dictionary<Guid, Guid?> folders, Guid? folderId)
@@ -366,9 +324,6 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         "docx" => DocumentFileRules.DocxContentType,
         _ => null,
     };
-
-    private static string EscapeLike(string value)
-        => value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 
     private static LibraryFolder ToRow(Folder f) => new(f.Id, f.Name, f.ParentId, f.MeetingId, f.CreatedAt);
 }

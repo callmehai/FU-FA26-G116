@@ -2,11 +2,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Attendance;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.CalendarSharing;
+using TrustCabinet.Application.Documents;
+using TrustCabinet.Application.GuestAccess;
 using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Notes;
 using TrustCabinet.Application.Notifications;
+using TrustCabinet.Application.Participants;
+using TrustCabinet.Application.Reports;
 using TrustCabinet.Application.Users;
 
 namespace TrustCabinet.Application;
@@ -28,6 +34,12 @@ public static class DependencyInjection
         AddMeetings(services);
         AddCalendarSharing(services);
         AddAgenda(services);
+        AddParticipants(services);
+        AddAttendance(services);
+        AddGuestAccess(services);
+        AddReports(services);
+        AddDocuments(services);
+        AddNotes(services);
         return services;
     }
 
@@ -92,5 +104,47 @@ public static class DependencyInjection
         services.AddScoped<IAgendaPresenterNotifier, AgendaPresenterNotifier>();
         services.AddScoped<IAgendaMeetingEnd, AgendaMeetingEnd>();
         services.TryAddScoped<IAgendaGuestAccess, UnavailableAgendaGuestAccess>();
+    }
+
+    /// <summary>
+    /// The guest session adapter (CA-09) replaces <see cref="UnavailableParticipantGuestAccess"/> with
+    /// <c>Replace</c>, and the authoritative link provider and access publisher do the same for their
+    /// null objects, so all three stay a <c>TryAdd</c>.
+    /// </summary>
+    private static void AddParticipants(IServiceCollection services)
+    {
+        services.AddScoped<IParticipantService, ParticipantService>();
+        services.TryAddScoped<IParticipantGuestAccess, UnavailableParticipantGuestAccess>();
+        services.TryAddScoped<IGuestInvitationLinkProvider, UnavailableGuestInvitationLinkProvider>();
+        services.TryAddScoped<IMeetingParticipantAccessPublisher, UnavailableMeetingParticipantAccessPublisher>();
+    }
+
+    private static void AddAttendance(IServiceCollection services)
+    {
+        services.AddScoped<IAttendanceService, AttendanceService>();
+    }
+
+    private static void AddGuestAccess(IServiceCollection services)
+    {
+        services.AddScoped<IGuestAccessService, GuestAccessService>();
+    }
+
+    private static void AddReports(IServiceCollection services)
+    {
+        services.AddScoped<IReportService, ReportService>();
+    }
+
+    private static void AddDocuments(IServiceCollection services)
+    {
+        services.AddScoped<IMeetingDocumentService, MeetingDocumentService>();
+        services.AddScoped<IMeetingDocumentAttacher, MeetingDocumentAttacher>();
+        services.AddScoped<StoredFileWriter>();
+        services.AddScoped<IPersonalLibraryService, PersonalLibraryService>();
+        services.AddScoped<IDocumentCommentService, DocumentCommentService>();
+    }
+
+    private static void AddNotes(IServiceCollection services)
+    {
+        services.AddScoped<IMeetingNoteService, MeetingNoteService>();
     }
 }

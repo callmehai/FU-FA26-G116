@@ -1,13 +1,10 @@
-using System.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Application.Documents;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Documents;
+namespace TrustCabinet.Application.Documents;
 
 /// <summary>
 /// The write order every upload shares (ADR-0024 §4): the <see cref="StoredFile"/> rows on their own, then the
@@ -17,11 +14,9 @@ namespace TrustCabinet.Infrastructure.Documents;
 /// The rows also reserve their room in the system's storage limit (ADR-0034): written under one lock for the
 /// whole system, only while the files still fit, and released again when the upload fails.
 /// </summary>
-public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage storage, TimeProvider clock,
-    IOptions<FileStorageOptions> options, ILogger<StoredFileWriter> logger)
+public sealed class StoredFileWriter(IStoredFileRepository storedFiles, IFileStorage storage, IUnitOfWork unitOfWork,
+    TimeProvider clock, IOptions<FileStorageOptions> options, ILogger<StoredFileWriter> logger)
 {
-    private const string StorageLock = "stored-files";
-
     public bool IsConfigured => storage.IsConfigured;
 
     /// <summary>What every stored document together may take (<c>FileStorage:MaxTotalGigabytes</c>).</summary>
@@ -32,7 +27,7 @@ public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage stor
     /// since an unreferenced file takes room until the orphan purge deletes it.
     /// </summary>
     public Task<long> UsedBytesAsync(CancellationToken ct)
-        => db.StoredFiles.Where(f => f.PurgedAt == null).SumAsync(f => f.ByteSize, ct);
+        => unitOfWork.ExecuteAsync(token => storedFiles.UsedBytesAsync(token), TransactionMode.None, ct);
 
     /// <summary>
     /// <paramref name="commit"/> runs in the transaction with the new rows and the upload time; it is committed
@@ -62,17 +57,19 @@ public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage stor
         // They are written under one lock for the whole system, so two uploads cannot both take the last room.
         try
         {
-            await using var reserve = await db.Database.BeginTransactionAsync(ct);
-            await db.Database.ExecuteSqlInterpolatedAsync(
-                $"SELECT pg_advisory_xact_lock(hashtextextended({StorageLock}, 0))", ct);
-            if (await UsedBytesAsync(ct) + stored.Sum(f => f.ByteSize) > LimitBytes) return full;
-            db.StoredFiles.AddRange(stored);
-            await db.SaveChangesAsync(ct);
-            await reserve.CommitAsync(ct);
+            var reserved = await unitOfWork.ExecuteAsync(async token =>
+            {
+                await storedFiles.LockStorageAsync(token);
+                if (await storedFiles.UsedBytesAsync(token) + stored.Sum(f => f.ByteSize) > LimitBytes) return false;
+                storedFiles.AddStoredFiles(stored);
+                await unitOfWork.SaveChangesAsync(token);
+                return true;
+            }, TransactionMode.ReadCommitted, ct);
+            if (!reserved) return full;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to record uploaded files of {ActorId}", actorId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to record uploaded files of {ActorId}", actorId);
             return failed;
         }
 
@@ -103,16 +100,15 @@ public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage stor
         {
             // Not cancellable: the objects are already up, and an abandoned request must still end
             // in either committed rows or deleted objects, never in between.
-            await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, CancellationToken.None);
-            outcome = await commit(stored, now, CancellationToken.None);
-            if (committed(outcome)) await transaction.CommitAsync(CancellationToken.None);
+            outcome = await unitOfWork.ExecuteAsync(token => commit(stored, now, token), result => committed(result),
+                TransactionMode.ReadCommitted, CancellationToken.None);
         }
         catch (Exception ex)
         {
             // Any failure here, not only a database one: the purge would get them, but not for a day.
             await ReleaseAsync(stored, written);
-            if (!DbErrors.IsPersistenceFailure(ex)) throw;
-            logger.LogError(ex, "Failed to save uploaded files of {ActorId}", actorId);
+            if (ex is not PersistenceException persistence) throw;
+            logger.LogError(persistence.InnerException ?? ex, "Failed to save uploaded files of {ActorId}", actorId);
             return failed;
         }
 
@@ -141,12 +137,12 @@ public sealed class StoredFileWriter(TrustCabinetDbContext db, IFileStorage stor
         var now = clock.GetUtcNow();
         try
         {
-            await db.StoredFiles.Where(f => gone.Contains(f.Id))
-                .ExecuteUpdateAsync(u => u.SetProperty(f => f.PurgedAt, now), CancellationToken.None);
+            await unitOfWork.ExecuteAsync(token => storedFiles.StampPurgedAsync(gone, now, token),
+                TransactionMode.None, CancellationToken.None);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogWarning(ex, "Could not release the storage of a failed upload");
+            logger.LogWarning(ex.InnerException ?? ex, "Could not release the storage of a failed upload");
         }
     }
 }

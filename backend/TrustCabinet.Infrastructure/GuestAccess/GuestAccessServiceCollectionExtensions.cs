@@ -20,7 +20,9 @@ public static class GuestAccessServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddSingleton<GuestCredentials>();
-        services.AddScoped<IGuestAccessService, GuestAccessService>();
+        services.AddSingleton<IGuestCredentials>(p => p.GetRequiredService<GuestCredentials>());
+        services.AddScoped<IGuestSessionRepository, GuestSessionRepository>();
+        services.AddScoped<IGuestVerificationCodeSender, GuestVerificationCodeSender>();
         services.Replace(ServiceDescriptor.Scoped<IGuestInvitationLinkProvider, GuestInvitationLinkProvider>());
         services.AddScoped<GuestSessionAccess>();
         services.Replace(ServiceDescriptor.Scoped<IAgendaGuestAccess>(p => p.GetRequiredService<GuestSessionAccess>()));

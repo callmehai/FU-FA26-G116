@@ -1,49 +1,44 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Meetings;
-using TrustCabinet.Application.Notes;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Notes;
+namespace TrustCabinet.Application.Notes;
 
 /// <summary>
 /// SCRUM-30, UC-82 — the Secretary types running notes during the sitting, one per agenda item and one for the meeting
 /// as a whole; the Chair reads them; nobody else learns they exist (BR-395). The minutes draft reads them (BR-402).
 /// </summary>
-public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingRepository meetings,
-    INotesChangePublisher publisher, TimeProvider clock, ILogger<MeetingNoteService> logger) : IMeetingNoteService
+public sealed class MeetingNoteService(IMeetingNoteRepository notes, IMeetingRepository meetings,
+    INotesChangePublisher publisher, IUnitOfWork unitOfWork, TimeProvider clock,
+    ILogger<MeetingNoteService> logger) : IMeetingNoteService
 {
     public async Task<NoteOutcome> GetAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
     {
         try
         {
-            var (meeting, failure) = await ReadableAsync(meetingId, actorId, false, ct);
-            if (meeting is null) return new(failure);
-            // EX-8: a reader who is neither Chair nor Secretary is answered as if there were no notes.
-            if (!ParticipantRules.IsManager(meeting, actorId)) return new(NoteFailure.NotFound);
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                var (meeting, failure) = await ReadableAsync(meetingId, actorId, false, token);
+                if (meeting is null) return new NoteOutcome(failure);
+                // EX-8: a reader who is neither Chair nor Secretary is answered as if there were no notes.
+                if (!ParticipantRules.IsManager(meeting, actorId)) return new NoteOutcome(NoteFailure.NotFound);
 
-            var secretaries = Secretaries(meeting);
-            var notes = await db.MeetingNotes.AsNoTracking().Include(n => n.Author)
-                .Where(n => n.MeetingId == meetingId && secretaries.Contains(n.AuthorId))
-                .OrderBy(n => n.AgendaItem == null ? 0 : n.AgendaItem.Position)
-                .ThenBy(n => n.Author.FullName)
-                .ToListAsync(ct);
-            var current = await db.AgendaItems.AsNoTracking()
-                .Where(a => a.MeetingId == meetingId && a.Status == AgendaItemStatus.InProgress)
-                .Select(a => (Guid?)a.Id).FirstOrDefaultAsync(ct);
-            var canWrite = secretaries.Contains(actorId)
-                && MeetingNoteRules.AcceptsNotes(meeting.Status, await HasMinutesAsync(meetingId, ct));
-            return new(State: new(notes.Select(MeetingNoteRules.View).ToList(), current, canWrite,
-                meeting.Sensitivity == Sensitivity.Secret));
+                var secretaries = Secretaries(meeting);
+                var rows = await notes.ListAsync(meetingId, secretaries, token);
+                var current = await notes.FindCurrentItemAsync(meetingId, token);
+                var canWrite = secretaries.Contains(actorId)
+                    && MeetingNoteRules.AcceptsNotes(meeting.Status, await notes.HasMinutesAsync(meetingId, token));
+                return new NoteOutcome(State: new(rows.Select(MeetingNoteRules.View).ToList(), current, canWrite,
+                    meeting.Sensitivity == Sensitivity.Secret));
+            }, TransactionMode.None, ct);
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
-            logger.LogError(error, "Could not read the notes of meeting {MeetingId}", meetingId);
+            logger.LogError((error as PersistenceException)?.InnerException ?? error, "Could not read the notes of meeting {MeetingId}", meetingId);
             return new(NoteFailure.ReadFailed);
         }
     }
@@ -56,17 +51,17 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
         {
             // The meeting row is locked for the whole save, as deleting an agenda item and building the minutes lock it:
             // a note is saved either before those (and folded or written into the minutes) or after (and refused).
-            outcome = await meetings.InTransactionAsync(token => SaveLockedAsync(meetingId, actorId, agendaItemId, body,
-                loadedAt, token), ct);
+            outcome = await unitOfWork.ExecuteAsync(token => SaveLockedAsync(meetingId, actorId, agendaItemId, body,
+                loadedAt, token), TransactionMode.ReadCommitted, ct);
         }
-        catch (Exception error) when (DbErrors.IsReferenceViolation(error))
+        catch (ReferenceConflictException error)
         {
-            logger.LogInformation(error, "Agenda item {ItemId} went away while its note was saved", agendaItemId);
+            logger.LogInformation(error.InnerException ?? error, "Agenda item {ItemId} went away while its note was saved", agendaItemId);
             return new(NoteFailure.ItemGone);
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
-            logger.LogError(error, "Could not save a note in meeting {MeetingId}", meetingId);
+            logger.LogError((error as PersistenceException)?.InnerException ?? error, "Could not save a note in meeting {MeetingId}", meetingId);
             return new(NoteFailure.SaveFailed);
         }
         if (outcome.Note is not { } saved) return outcome;
@@ -92,23 +87,21 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
         // EX-1: a reader of the meeting who is not its current Secretary — the Chair, or a Secretary replaced while
         // typing — is told so (MSG416), and the panel keeps the text to copy. Nothing about the notes is disclosed.
         if (!Secretaries(meeting).Contains(actorId)) return new(NoteFailure.Forbidden);
-        if (!MeetingNoteRules.AcceptsNotes(meeting.Status, await HasMinutesAsync(meetingId, ct))) return new(NoteFailure.Closed);
-        if (agendaItemId is { } itemId && !await db.AgendaItems.AnyAsync(a => a.Id == itemId && a.MeetingId == meetingId, ct))
+        if (!MeetingNoteRules.AcceptsNotes(meeting.Status, await notes.HasMinutesAsync(meetingId, ct))) return new(NoteFailure.Closed);
+        if (agendaItemId is { } itemId && !await notes.AgendaItemExistsAsync(meetingId, itemId, ct))
             return new(NoteFailure.ItemGone);
         var text = (body ?? "").Replace("\r\n", "\n", StringComparison.Ordinal);
         if (text.Length > MeetingNoteRules.MaxLength) return new(NoteFailure.TooLong);
 
-        var existing = await db.MeetingNotes.AsNoTracking()
-            .Where(n => n.MeetingId == meetingId && n.AgendaItemId == agendaItemId && n.AuthorId == actorId)
-            .Select(n => new { n.Id }).FirstOrDefaultAsync(ct);
+        var existing = await notes.FindIdAsync(meetingId, agendaItemId, actorId, ct);
         var now = clock.GetUtcNow();
         if (existing is null)
         {
             // A note the caller has never seen saved. If it read one, that note has gone since: its copy is stale.
             if (loadedAt is not null) return new(NoteFailure.Stale);
-            db.MeetingNotes.Add(new MeetingNote { MeetingId = meetingId, AgendaItemId = agendaItemId, AuthorId = actorId,
+            notes.Add(new MeetingNote { MeetingId = meetingId, AgendaItemId = agendaItemId, AuthorId = actorId,
                 Body = text, CreatedAt = now, UpdatedAt = now });
-            await db.SaveChangesAsync(ct);
+            await unitOfWork.SaveChangesAsync(ct);
         }
         else
         {
@@ -117,14 +110,11 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
             if (loadedAt is null) return new(NoteFailure.Stale);
             var from = loadedAt.Value.AddMilliseconds(-1);
             var to = loadedAt.Value.AddMilliseconds(1);
-            var rows = await db.MeetingNotes
-                .Where(n => n.Id == existing.Id && n.UpdatedAt >= from && n.UpdatedAt <= to)
-                .ExecuteUpdateAsync(n => n.SetProperty(x => x.Body, text).SetProperty(x => x.UpdatedAt, now), ct);
+            var rows = await notes.TryUpdateAsync(existing.Value, from, to, text, now, ct);
             if (rows == 0) return new(NoteFailure.Stale);
         }
         // Read back under the same lock: no other save of this meeting can land in between.
-        var saved = await db.MeetingNotes.AsNoTracking().Include(n => n.Author)
-            .FirstAsync(n => n.MeetingId == meetingId && n.AgendaItemId == agendaItemId && n.AuthorId == actorId, ct);
+        var saved = await notes.GetAsync(meetingId, agendaItemId, actorId, ct);
         return new(Note: MeetingNoteRules.View(saved));
     }
 
@@ -133,9 +123,6 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
         .Where(p => p.MeetingId == meeting.Id && p.Role == MeetingRole.Secretary && ParticipantRules.Active(p))
         .Select(p => p.UserId).ToHashSet();
 
-    private Task<bool> HasMinutesAsync(Guid meetingId, CancellationToken ct)
-        => db.MeetingMinutes.AnyAsync(m => m.MeetingId == meetingId, ct);
-
     private async Task<(Meeting? Meeting, NoteFailure Failure)> ReadableAsync(Guid meetingId, Guid actorId, bool forUpdate,
         CancellationToken ct)
     {
@@ -143,14 +130,5 @@ public sealed class MeetingNoteService(TrustCabinetDbContext db, IMeetingReposit
         var meeting = await meetings.FindWorkflowAsync(meetingId, forUpdate, ct);
         if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return (null, NoteFailure.NotFound);
         return (meeting, NoteFailure.None);
-    }
-}
-
-public static class MeetingNoteServiceCollectionExtensions
-{
-    public static IServiceCollection AddTrustCabinetMeetingNotes(this IServiceCollection services)
-    {
-        services.AddScoped<IMeetingNoteService, MeetingNoteService>();
-        return services;
     }
 }
