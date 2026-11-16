@@ -25,9 +25,9 @@ public sealed class ReportService(IMeetingReportQuery reports, IMeetingReportRen
             return new(Report: await unitOfWork.ExecuteAsync(token => BuildAsync(actorId, period, now, token),
                 TransactionMode.None, ct));
         }
-        catch (PersistenceException error)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
-            logger.LogError(error.InnerException ?? error, "Could not read the meeting report {From}–{To}", period.From, period.To);
+            logger.LogError((e as PersistenceException)?.InnerException ?? e, "Could not read the meeting report {From}–{To}", period.From, period.To);
             return new(ReportFailure.ReadFailed);
         }
     }
@@ -47,9 +47,9 @@ public sealed class ReportService(IMeetingReportQuery reports, IMeetingReportRen
             return new(File: new ReportFile($"bao-cao-cuoc-hop_{period.From}_{period.To}.xlsx", bytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
         }
-        catch (PersistenceException error)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
-            logger.LogError(error.InnerException ?? error, "Could not export the meeting report {From}–{To}", period.From, period.To);
+            logger.LogError((e as PersistenceException)?.InnerException ?? e, "Could not export the meeting report {From}–{To}", period.From, period.To);
             return new(ReportFailure.ExportFailed);
         }
     }
