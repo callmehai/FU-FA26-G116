@@ -94,6 +94,17 @@ public sealed class PersistenceExceptionTranslatorTests
     public void What_is_not_a_storage_failure_or_is_translated_already_is_left_alone(Exception failure)
         => Assert.Null(PersistenceExceptionTranslator.Translate(failure));
 
+    /// <summary>SCRUM-171 (CA-06): the table names the index whose duplicate the calendar-share writes answer with MSG449.</summary>
+    [Fact]
+    public void The_open_pair_index_of_calendar_shares_is_in_the_table()
+    {
+        var wrapped = new DbUpdateException("save failed",
+            Postgres(PostgresErrorCodes.UniqueViolation, "ux_calendar_shares_open_pair"));
+
+        Assert.Equal(UniqueConflict.CalendarShareOpenPair,
+            Assert.IsType<UniqueConflictException>(PersistenceExceptionTranslator.Translate(wrapped)).Conflict);
+    }
+
     private static PostgresException Postgres(string sqlState, string? constraint = null)
         => new("rejected", "ERROR", "ERROR", sqlState, constraintName: constraint);
 }
