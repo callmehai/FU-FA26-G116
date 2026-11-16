@@ -576,4 +576,4 @@ Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file .txt>` — ra
 
 Mọi script xuất ảnh đều sinh 2 dạng: bản gốc đầy đủ độ phân giải vào thư mục local `anh-goc/` (đã gitignore, giữ cấu trúc cây như `docs/`, để sau này dựng báo cáo chuẩn nộp) và bản nén palette 256 màu trong `docs/` để repo nhẹ. Đổi thư mục gốc bằng `--originals-dir <đường dẫn>` hoặc biến môi trường `DIAGRAM_ORIGINALS_DIR`; `--no-compress` giữ nguyên bản xuất trong repo, `--no-originals` tắt lưu bản gốc.
 
-UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.
+UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; audit-read endpoint chưa có code. UC-09 (Mở khoá tài khoản) đã bị PO bỏ hẳn ngày 15/11/2026 — không khoá tài khoản khi nhập sai mật khẩu, chỉ còn giới hạn số lần đăng nhập theo phút (MSG414); source + PNG cũ của UC-09 chỉ còn giá trị lịch sử, không phải thiết kế đích. Không tự cấp message codes mới.

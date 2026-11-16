@@ -1,6 +1,6 @@
 # ADR-0032: Trạng thái Cancelled, huỷ cuộc họp và tự huỷ khi quá hạn
 
-- **Trạng thái:** Đề xuất — SCRUM-99, PO 27/10/2026
+- **Trạng thái:** Đã chấp nhận — SCRUM-99, PO 27/10/2026 (đã triển khai)
 - **Ngày:** 2026-10-27
 - **Người quyết định:** PO (Hải)
 

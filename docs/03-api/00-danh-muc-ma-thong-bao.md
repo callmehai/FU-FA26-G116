@@ -1084,7 +1084,7 @@ Các mã dưới đây cấp cho đặc tả ngày 14/10/2026; trạng thái the
 | `MSG204` | UC-35 / EX-4 · Đã triển khai SCRUM-23 | Unable to load the document comments. Please try again. |
 | `MSG346` | UC-33a, UC-33b, UC-36, PO 27/10/2026 (hạn mức 10 GB của cả hệ thống, ADR-0034) · Đã triển khai SCRUM-111; đặc tả đã bổ sung (BA 27/10/2026) | The system's document storage is full. No documents were uploaded. Please contact an administrator. |
 | `MSG347` | UC-71b (tên phải giữ phần đuôi của tệp) · Đã triển khai SCRUM-111; đặc tả đã bổ sung (BA 27/10/2026) | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
-| `MSG348` | UC-72a, UC-72b, UC-35 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23, chờ BA bổ sung đặc tả | The text is longer than allowed. |
+| `MSG348` | UC-72a, UC-72b, UC-35 (độ dài tối đa) · Đã triển khai SCRUM-110, SCRUM-23 | The text is longer than allowed. |
 
 
 ### Biểu quyết — FE-11 (UC-52a, UC-52b, UC-53–UC-57)
