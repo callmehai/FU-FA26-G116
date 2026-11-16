@@ -271,7 +271,8 @@ public sealed class AgendaService(IMeetingRepository meetings, IUnitOfWork unitO
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
             try { await notifier.NotifyAsync(assignment, timeout.Token); }
-            catch (Exception ex) { logger.LogWarning(ex, "Agenda committed; presenter notification failed for {EventId} {MeetingId} {AgendaItemId}", assignment.EventId, meetingId, assignment.AgendaItemId); }
+            // The notifier's unit of work translates store errors; log the original, as before the move (R8).
+            catch (Exception ex) { logger.LogWarning((ex as PersistenceException)?.InnerException ?? ex, "Agenda committed; presenter notification failed for {EventId} {MeetingId} {AgendaItemId}", assignment.EventId, meetingId, assignment.AgendaItemId); }
         }
         return outcome;
     }
