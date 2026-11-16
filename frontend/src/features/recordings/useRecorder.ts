@@ -41,7 +41,8 @@ function micErrorMessage(error: unknown) {
     if (error.name === 'NotFoundError') return 'Không tìm thấy micro trên máy này.'
     if (error.name === 'NotReadableError') return 'Micro đang bị ứng dụng khác dùng.'
   }
-  return 'Không mở được micro.'
+  // Anything else (a headless or locked-down browser among them) is most often still the permission: say where it is.
+  return 'Không mở được micro. Kiểm tra quyền micro ở biểu tượng ổ khoá cạnh thanh địa chỉ, rồi thử lại.'
 }
 
 /** The microphone on its own: the meeting page, where everyone sits in one room around the Secretary's laptop. */

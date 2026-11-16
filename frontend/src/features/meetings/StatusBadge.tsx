@@ -28,14 +28,23 @@ export function StatusBadge({
   status,
   label,
   plain = false,
+  flat = false,
 }: {
   status: MeetingStatus
   label?: string
   plain?: boolean
+  /**
+   * Draws "Đang diễn ra" as icon and text like every other state. For a list of states rather than of meetings —
+   * the report's counts — where nothing is live and a solid label would read as a button.
+   */
+  flat?: boolean
 }) {
+  const icon = flat && status === 'InProgress' ? 'broadcast' : STATUS_ICON[status]
   return (
-    <span className={`status status-${STATUS_TONE[status]}${status === 'Cancelled' ? ' status-cancelled' : ''}${plain ? ' status-plain' : ''}`}>
-      {!plain && STATUS_ICON[status] && <Icon name={STATUS_ICON[status]} size={14} />}
+    <span
+      className={`status status-${STATUS_TONE[status]}${status === 'Cancelled' ? ' status-cancelled' : ''}${plain ? ' status-plain' : ''}${flat ? ' status-flat' : ''}`}
+    >
+      {!plain && icon && <Icon name={icon} size={14} />}
       {label ?? MEETING_STATUS_LABEL[status]}
     </span>
   )
