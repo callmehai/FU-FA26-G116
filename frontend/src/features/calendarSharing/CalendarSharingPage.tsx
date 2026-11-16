@@ -292,11 +292,14 @@ function ShareSection({
   action: { label: string; icon: 'calendarCheck' | 'send'; onClick: () => void }
   onIntent: (intent: RowIntent) => void
 }) {
-  const live = shares.filter((s) => !isClosed(s))
-  const closed = shares.filter(isClosed)
-  const open = live.length
   // The ended ones (withdrawn, declined, stopped) are history: folded under the open ones, unless a notification
-  // pointed at one of them.
+  // pointed at one of them. Only those already ended when the page loaded fold away; a share the user ends here stays
+  // in its place, so they see what their action did.
+  const [endedBefore, setEndedBefore] = useState<ReadonlySet<string> | null>(null)
+  if (!loading && endedBefore === null) setEndedBefore(new Set(shares.filter(isClosed).map((s) => s.id)))
+  const live = shares.filter((s) => !isClosed(s) || !endedBefore?.has(s.id))
+  const closed = shares.filter((s) => isClosed(s) && endedBefore?.has(s.id))
+  const open = shares.filter((s) => !isClosed(s)).length
   const [showClosed, setShowClosed] = useState(false)
   const closedShown = showClosed || closed.some((s) => s.id === focusId)
   const rows = closedShown ? [...live, ...closed] : live

@@ -1022,6 +1022,9 @@ export default {
         const s = (await shares(qa, 'member')).find((x) => x.id === shareId)
         qa.expect(s).toMatchObject({ status: 'Stopped', actions: [] })
         await qa.goto('/calendar/sharing')
+        // A share that had already ended when the page opened is folded under "Chia sẻ đã kết thúc (N)".
+        const fold = qa.page.getByRole('button', { name: /^Chia sẻ đã kết thúc/ })
+        for (const b of await fold.all()) if ((await b.getAttribute('aria-expanded')) === 'false') await b.click()
         const line = qa.page.locator(`#share-${shareId}`)
         await qa.expect(line.getByText('Đã dừng')).toBeVisible()
         await qa.expect(line.getByRole('button', { name: /Đồng ý|Từ chối|Thao tác khác/ })).toHaveCount(0)
