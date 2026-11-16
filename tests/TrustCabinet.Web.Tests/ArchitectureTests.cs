@@ -61,10 +61,6 @@ public sealed class ArchitectureTests
     private static readonly string[] ServicesInInfrastructure =
     [
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
-        "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
-        "TrustCabinet.Infrastructure.Recordings.RecordingService",
-        "TrustCabinet.Infrastructure.Recordings.RoomTakeService",
-        "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",
         "TrustCabinet.Infrastructure.Transcription.TranscriptionService",
@@ -76,7 +72,6 @@ public sealed class ArchitectureTests
     private static readonly string[] InterfacesExposingTheUnitOfWork =
     [
         "TrustCabinet.Application.Meetings.IMeetingRepository",
-        "TrustCabinet.Application.Recordings.IRecordingRepository",
         "TrustCabinet.Application.Transcription.ITranscriptRepository",
         "TrustCabinet.Application.VoiceId.IVoiceIdRepository",
     ];
@@ -129,8 +124,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Email.MeetingInvitationDispatchProcessor",
         "TrustCabinet.Infrastructure.Email.MeetingInvitationEvents",
         "TrustCabinet.Infrastructure.Email.ResendWebhookReceiver",
-        "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
-        "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
         "TrustCabinet.Infrastructure.Summaries.MeetingTranscriptReader",
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",

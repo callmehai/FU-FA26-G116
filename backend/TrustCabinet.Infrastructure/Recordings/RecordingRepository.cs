@@ -50,5 +50,19 @@ public sealed class RecordingRepository(TrustCabinetDbContext db) : IRecordingRe
     public Task DeleteTranscriptAsync(Guid recordingId, CancellationToken ct)
         => db.Transcripts.Where(t => t.RecordingId == recordingId).ExecuteDeleteAsync(ct);
 
-    public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
+    public async Task<IReadOnlyList<Guid>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since,
+        CancellationToken ct)
+        => await db.Meetings.AsNoTracking()
+            .Where(m => m.Mode == MeetingMode.Hybrid && m.Status == MeetingStatus.Ended && m.Sensitivity != Sensitivity.Secret
+                && m.ActualEndedAt != null && m.ActualEndedAt < settled && m.ActualEndedAt > since)
+            .OrderBy(m => m.ActualEndedAt).Select(m => m.Id).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Recording>> ListByMeetingAsync(Guid meetingId, CancellationToken ct)
+        => await db.Recordings.AsNoTracking().Where(r => r.MeetingId == meetingId).ToListAsync(ct);
+
+    public async Task<Recording?> LockAsync(Guid recordingId, CancellationToken ct)
+    {
+        await db.Recordings.FromSqlInterpolated($"SELECT * FROM recordings WHERE id = {recordingId} FOR UPDATE").AsNoTracking().ToListAsync(ct);
+        return await db.Recordings.SingleOrDefaultAsync(r => r.Id == recordingId, ct);
+    }
 }
