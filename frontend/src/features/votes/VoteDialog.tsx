@@ -174,7 +174,7 @@ export function VoteDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending !== null}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending !== null}>
             Huỷ
           </button>
           <button

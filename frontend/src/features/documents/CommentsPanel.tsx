@@ -299,7 +299,7 @@ function Composer({
           </label>
         )}
         <span className="field-counter">
-          {body.length}/{MAX_LENGTH}
+          {body.length.toLocaleString('vi-VN')}/{MAX_LENGTH.toLocaleString('vi-VN')}
         </span>
         <button type="submit" className="btn btn-primary btn-sm" disabled={blank || pending}>
           {pending ? 'Đang gửi…' : replyTo ? 'Gửi trả lời' : 'Gửi góp ý'}

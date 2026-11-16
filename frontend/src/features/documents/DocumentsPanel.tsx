@@ -138,7 +138,17 @@ function PageList({
   onStale: () => void
 }) {
   const toast = useToast()
-  const [group, setGroup] = useState<Group>('agenda')
+  // Opens on the first group that holds something, so a meeting whose documents are all on votes or general
+  // does not open on an empty group and read as having none.
+  const [group, setGroup] = useState<Group>(() =>
+    data.agendaItems.some((item) => item.documents.length > 0)
+      ? 'agenda'
+      : data.votes.some((vote) => vote.documents.length > 0)
+        ? 'votes'
+        : data.general.length > 0
+          ? 'general'
+          : 'agenda',
+  )
   /** The add dialog: for the general group (`item` absent) or one agenda item. */
   const [adding, setAdding] = useState<{ item?: DocumentsAgendaItem; number?: number } | null>(null)
   const [removing, setRemoving] = useState<{ doc: MeetingDocument; item?: DocumentsAgendaItem } | null>(null)
@@ -176,7 +186,7 @@ function PageList({
       <div className="card documents-card">
         {group === 'agenda' ? (
           data.agendaItems.length === 0 ? (
-            <p className="documents-empty">Cuộc họp chưa có mục nghị sự.</p>
+            <p className="documents-empty">Cuộc họp chưa có nội dung.</p>
           ) : (
             data.agendaItems.map((item, i) => (
               <AgendaGroup

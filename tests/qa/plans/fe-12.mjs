@@ -800,7 +800,7 @@ export default {
         'API: GET …/minutes, GET /api/minutes/{id}, GET …/summary',
       ],
       expected:
-        'Thẻ Biên bản: "Chưa có biên bản ban hành.", không tờ biên bản, không nút nào; thẻ Dự thảo: "Chưa có dự thảo đã duyệt.", không nút; API minutes null, history [], GET bản đó 404 không mã; summary null, canManage false',
+        'Thẻ Biên bản: "Chưa có biên bản ban hành.", không tờ biên bản, không nút nào; không có thẻ Dự thảo (chưa có dự thảo đã duyệt); API minutes null, history [], GET bản đó 404 không mã; summary null, canManage false',
       async run(qa) {
         const m = await fresh(qa, 'api-approval', 'Ended', 'API duyệt')
         const cur = await driveTo(qa, m.id, 'WaitingApproval')
@@ -809,8 +809,7 @@ export default {
         await qa.expect(paper(qa)).toHaveCount(0)
         await qa.expect(card(qa).getByRole('button')).toHaveCount(0)
         for (const label of ['Bản nháp', 'Chờ duyệt', 'Bị trả lại']) await qa.expect(badge(qa, label)).toHaveCount(0)
-        await qa.expect(draftCard(qa).getByText('Chưa có dự thảo đã duyệt.')).toBeVisible()
-        await qa.expect(draftCard(qa).getByRole('button')).toHaveCount(0)
+        await qa.expect(draftCard(qa)).toHaveCount(0)
         await snap(qa, 'thanh-vien-chua-thay-gi')
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
@@ -1117,12 +1116,11 @@ export default {
       title: 'Thẻ Dự thảo nội dung: Thành viên không thấy dự thảo chưa duyệt và không có nút; Thư ký thấy nút và mức sẵn sàng (không bấm trên họp Thường)',
       steps: ['thanhvien@ mở tab Biên bản của cuộc họp Thường đã kết thúc', 'Đăng nhập lại thuky@, mở cùng tab'],
       expected:
-        'Thành viên: "Chưa có dự thảo đã duyệt.", không nút; Thư ký: nút "Tạo dự thảo" bật (máy AI sẵn sàng), dòng "Chưa có dự thảo. Bấm “Tạo dự thảo”…", ghi chú "Chưa có lời thoại nào…"',
+        'Thành viên: không có thẻ Dự thảo (chưa có dự thảo đã duyệt); Thư ký: nút "Tạo dự thảo" bật (máy AI sẵn sàng), dòng "Chưa có dự thảo. Bấm “Tạo dự thảo”…", ghi chú "Chưa có lời thoại nào…"',
       async run(qa) {
         const m = await fresh(qa, 'api-draft', 'Ended', 'API bản nháp')
         await openMinutes(qa, m)
-        await qa.expect(draftCard(qa).getByText('Chưa có dự thảo đã duyệt.')).toBeVisible()
-        await qa.expect(draftCard(qa).getByRole('button')).toHaveCount(0)
+        await qa.expect(draftCard(qa)).toHaveCount(0)
         await snap(qa, 'thanh-vien-the-du-thao')
         await qa.signIn('secretary')
         await openMinutes(qa, m)

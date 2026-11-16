@@ -1595,6 +1595,8 @@ a.menu-item { text-decoration: none; }
 }
 
 .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); gap: 16px; align-items: start; }
+/* The tab's column: the facts card re-flows by its own width, which the sidebar and the status column set, not the window's. */
+.detail-grid > section { container: detail-main / inline-size; }
 
 .field-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 24px; }
 .field-item { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; min-width: 0; }
@@ -1633,11 +1635,20 @@ a.menu-item { text-decoration: none; }
 .record-fact-wide > dd { grid-column: 2 / -1; grid-row: inherit; padding-top: 10px; font-weight: 400; }
 .detail-skeleton-fact .skeleton:first-child { width: 72px; height: 10px; }
 .detail-skeleton-fact .skeleton:last-child { width: 70%; height: 14px; }
-/* Narrow: one column of pairs, the right side after the left. */
-@media (max-width: 1100px) {
+/* Narrow: one column of pairs, the right side after the left — as soon as two pairs side by side would
+   break "Chủ Nhật, 31/01/2027, 10:00–11:00" over lines (the card is under ~800px at a 1440px window). */
+@container detail-main (max-width: 799px) {
   .record-overview { grid-template-columns: max-content minmax(0, 1fr); gap: 18px 16px; padding: 20px; }
   .record-overview > .record-fact > * { grid-row: auto !important; grid-column: auto; padding-left: 0; }
   .record-fact-wide > dd { grid-column: auto; }
+}
+/* A phone: the label over its value, so the value has the card's whole width instead of what a label column leaves. */
+@container detail-main (max-width: 480px) {
+  .record-overview { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .record-overview > .record-fact > dd { padding-bottom: 12px; }
+  .record-overview > .record-fact:last-child > dd { padding-bottom: 0; }
+  .record-fact-wide > dt { padding-top: 0; }
+  .record-fact-wide > dd { padding-top: 0; }
 }
 .detail-skeleton-field { gap: 10px; }
 .detail-skeleton-field .skeleton:first-child { width: 40%; height: 10px; }
@@ -2738,9 +2749,6 @@ a.menu-item { text-decoration: none; }
 .person-text { display: flex; flex-direction: column; min-width: 0; }
 .person-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .person-text > .person-name { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
-/* Person marks where an email may wrap; Chrome breaks at a <wbr> even under nowrap, so the marks count
-   only where the email is allowed to wrap (the narrow roster). */
-.person-text wbr { display: none; }
 
 /* "Bạn có tham dự cuộc họp này?" — the two answers, and the answer once given. */
 .rsvp-buttons { display: inline-flex; flex-wrap: wrap; gap: 8px; }
@@ -2764,13 +2772,24 @@ a.menu-item { text-decoration: none; }
   /* As AI-eCabinet's narrow roster: the person takes the first line, and the line under it — the
      attendance, then the chips — starts where the name does (36px avatar + 12px gap), so the chips
      line up from row to row instead of trailing each email. */
-  .participants-panel .participant-cell { gap: 6px 8px; padding-left: 48px; }
+  .participants-panel .participant-cell { gap: 6px; padding-left: 48px; }
   .participants-panel .participant-cell > .person { flex-basis: calc(100% + 48px); margin-left: -48px; }
   /* The name is what people read: it wraps rather than ending in "…" (a touch screen has no tooltip).
      So does the email, before the "@" and "." Person marks (SCRUM-151), not mid-word; only a part
      wider than the line still breaks where it must. */
-  .participants-panel .person-name, .participants-panel .person .cell-sub { white-space: normal; overflow-wrap: anywhere; }
-  .participants-panel .person .cell-sub wbr { display: inline; }
+  .participants-panel .person-name { white-space: normal; overflow-wrap: anywhere; }
+  /* The email is secondary: one line ending in "…", so a long address does not stack three lines high. */
+  .participants-panel .person .cell-sub { white-space: nowrap; }
+  /* The row actions leave the table's last column, which kept ~90px empty on the Chair's row too, and
+     float at the row's top right; only the name line stops short of them, and the attendance and chips
+     under it get the whole width. */
+  .participants-panel th.col-action { display: none; }
+  .participants-panel tbody tr { position: relative; }
+  .participants-panel td.col-action { position: absolute; top: 4px; right: 4px; padding: 4px; border: none; }
+  .participants-panel td.col-action:empty { display: none; }
+  .participants-panel tr:has(td.col-action .icon-button) .participant-cell > .person { padding-right: 84px; }
+  /* The search shares its line with the two invite buttons instead of leaving them alone on a second row. */
+  .participants-panel .toolbar .search-flex { flex: 1 1 0; min-width: 0; }
 }
 .participants-alert { margin: 12px 16px 0; }
 
@@ -2844,6 +2863,8 @@ a.menu-item { text-decoration: none; }
 .dialog-form { display: flex; flex-direction: column; gap: 16px; }
 .pick-list { display: flex; flex-direction: column; height: 280px; margin-top: 8px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); }
 .pick-list[aria-busy='true'] { opacity: .6; }
+/* A phone: the list gives up height so the dialog itself does not scroll too — one scroll, not two nested. */
+@media (max-width: 480px) { .pick-list { height: clamp(176px, calc(100dvh - 620px), 280px); } }
 .pick-row { display: flex; flex: none; align-items: center; gap: 12px; padding: 8px 12px; cursor: pointer; }
 .pick-row + .pick-row { border-top: 1px solid var(--line-soft); }
 .pick-row:hover { background: var(--surface-alt); }
@@ -3010,6 +3031,9 @@ a.menu-item { text-decoration: none; }
    carries the live green edge and its turnout bar. The same panel sits in the call room at 360px. */
 .vote-panel { container-type: inline-size; }
 .vote-toolbar { flex-wrap: nowrap; }
+/* The page: the add button above the card, as on the Nội dung and Tài liệu tabs. */
+.vote-page { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.vote-page > .vote-toolbar { margin: 0; }
 .vote-alert { margin: 12px 16px 0; }
 .vote-panel .vote-empty { margin: 12px 16px 16px; }
 .vote-panel-room .vote-empty { margin: 0; }
@@ -3060,7 +3084,7 @@ a.menu-item { text-decoration: none; }
 .vote-state { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--muted-ink); }
 .vote-state-done { color: var(--chip-emerald-fg); font-weight: 600; }
 .vote-ballot { display: flex; flex-direction: column; gap: 10px; }
-.vote-choices { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.vote-choices { position: relative; display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
 .vote-choice {
   display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px;
   border: 1px solid var(--control-line); border-radius: var(--radius); cursor: pointer;
@@ -3157,6 +3181,13 @@ a.menu-item { text-decoration: none; }
 @container (min-width: 641px) and (max-width: 959px) {
   /* Between a phone and the wide columns the bar is tight: "Đã kết luận" keeps its icon, its words go to the tooltip. */
   .agenda-sheet .agenda-concluded-text { display: none; }
+  /* The state and the count keep fixed cells, so a row without a state does not slide its presenter and count
+     right by the missing chip's width; the presenter stays its own width, leaving the title the room. */
+  .agenda-sheet .agenda-cell-status { display: inline-flex; width: 92px; }
+  .agenda-sheet-concluded .agenda-cell-concluded { display: inline-flex; width: 32px; }
+  .agenda-sheet .agenda-docs-count { min-width: 84px; }
+  .agenda-sheet-steps .agenda-actions > .btn { min-width: 100px; justify-content: center; }
+  .agenda-sheet-steps .agenda-step-slot { display: block; flex: none; width: 100px; }
 }
 @container (max-width: 640px) {
   .agenda-boxes { grid-template-columns: minmax(0, 1fr); }
@@ -4117,6 +4148,12 @@ audio.recording-player { height: 40px; }
   .recording-icon { display: none; }
   .recording-player { grid-column: 1 / -1; }
   .recording-actions .btn-icon.btn-sm { width: 40px; height: 40px; }
+  /* The name beside the actions wraps (a touch screen has no tooltip for the rest), and the facts under it
+     take the whole row instead of the column the actions leave. */
+  .recording-main { display: contents; }
+  .recording-name { grid-row: 1; grid-column: 1; overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+  .recording-meta { grid-row: 2; grid-column: 1 / -1; }
+  .recording-actions { grid-row: 1; grid-column: 2; }
 }
 
 /* SCRUM-31 — transcript under the player: time · speaker · text, the segment being heard highlighted. */
@@ -4192,9 +4229,11 @@ audio.recording-player { height: 40px; }
 /* SCRUM-109 — the Bản ghi tab: the per-mic record of those who joined from afar, then the room's recordings. */
 .recordings-tab { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .speech-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+/* Nothing to show (no clips, not per mic): no empty slot, so the Bản ghi card lines up with the side column. */
+.speech-panel:empty { display: none; }
 /* The player above a record (AI-eCabinet's TimelinePlayer): time, seek bar or waveform, back and ahead 5 s, play,
    speed, volume. Shared by the per-mic record and a room recording. */
-.player-bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px 16px; min-width: 0; margin: 0; padding: 8px 12px 8px 16px; border: 0; border-radius: var(--radius-lg); background: var(--surface-alt); }
+.player-bar { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px 16px; min-width: 0; margin: 0; padding: 8px 12px 8px 16px; border: 0; border-radius: var(--radius-lg); background: var(--surface-alt); }
 .player-time { min-width: var(--time-width); color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .player-time strong { color: var(--ink); font-weight: 600; }
 .player-seek { position: relative; display: flex; align-items: center; height: 22px; min-width: 0; }
@@ -5158,6 +5197,9 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .minutes-toolbar { flex-direction: column; align-items: stretch; gap: 4px; padding: 4px; }
   .minutes-toolbar-tools { flex: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
   .minutes-toolbar-tools::-webkit-scrollbar { display: none; }
+  /* Its right edge fades to say the strip scrolls on (as the tabs do, SCRUM-151); the end padding keeps the
+     last tool, once scrolled to, out from under the fade. */
+  .minutes-toolbar-tools { padding-right: 32px; mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
   .minutes-toolbar-group { flex: none; }
   /* What a thumb reaches for first leads the strip: marks, alignment, lists; history and the style menus follow. */
   .minutes-toolbar-tools { gap: 2px 10px; }
@@ -5171,7 +5213,7 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .minutes-toolbar-group[data-group='insert'] { order: 7; }
   .minutes-toolbar-group[data-group='tools'] { order: 8; }
   .minutes-toolbar .icon-button-sm { width: 40px; height: 40px; }
-  .minutes-toolbar .icon-button.tool-menu-trigger { width: auto; }
+  .minutes-toolbar .icon-button.tool-menu-trigger { width: auto; min-width: 40px; }
   .minutes-toolbar-block { width: 140px; }
   .minutes-toolbar-size { width: 72px; }
   .minutes-toolbar-actions { justify-content: flex-end; }

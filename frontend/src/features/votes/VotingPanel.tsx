@@ -98,8 +98,13 @@ export function VotingPanel({
             Thử lại
           </button>
         </div>
-      ) : (
+      ) : room ? (
         <VoteSkeleton />
+      ) : (
+        // Shaped like the loaded tab: the same white card around the bars, so nothing jumps into a frame.
+        <section className="list-panel vote-panel">
+          <VoteSkeleton />
+        </section>
       ),
     )
   }
@@ -118,20 +123,24 @@ export function VotingPanel({
   // What the caller just did stays in view, though the vote no longer waits on them.
   const keepOpen = (vote: Pick<VoteSummary, 'id' | 'status'>) => setToggled((map) => new Map(map).set(toggleKey(vote), true))
 
-  return wrap(
+  // As the Nội dung and Tài liệu tabs place their add button: on the page above the card, a filled 34px
+  // button; in the room's narrow panel, the small outline one at the top of the list.
+  const toolbar = permissions.canManageDraft && (
+    <div className="toolbar vote-toolbar">
+      <button
+        type="button"
+        className={room ? 'btn btn-outline btn-sm toolbar-end' : 'btn btn-primary toolbar-end'}
+        onClick={() => setOpen({ kind: 'edit', voteId: null })}
+      >
+        <Icon name="plus" size={16} />
+        Tạo biểu quyết
+      </button>
+    </div>
+  )
+
+  const panel = (
     <section className={room ? 'vote-panel vote-panel-room' : 'list-panel vote-panel'} aria-label="Biểu quyết">
-      {permissions.canManageDraft && (
-        <div className="toolbar vote-toolbar">
-          <button
-            type="button"
-            className="btn btn-outline btn-sm toolbar-end"
-            onClick={() => setOpen({ kind: 'edit', voteId: null })}
-          >
-            <Icon name="plus" size={16} />
-            Tạo biểu quyết
-          </button>
-        </div>
-      )}
+      {room && toolbar}
 
       {state.kind === 'error' && (
         <div className="alert alert-error vote-alert" role="alert">
@@ -300,7 +309,18 @@ export function VotingPanel({
           <CloseQuestion vote={votes.find((v) => v.id === open.vote.id) ?? open.vote} />
         </ConfirmDialog>
       )}
-    </section>,
+    </section>
+  )
+
+  return wrap(
+    room ? (
+      panel
+    ) : (
+      <div className="vote-page">
+        {toolbar}
+        {panel}
+      </div>
+    ),
   )
 }
 
@@ -824,12 +844,14 @@ function ConclusionForm({
   const [value, setValue] = useState<VoteConclusionValue | ''>('')
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
+  // The button stays live and says what is missing, rather than greying out with no reason given.
+  const [missing, setMissing] = useState(false)
   return (
     <form
       className="vote-box vote-conclusion-form"
       onSubmit={async (event) => {
         event.preventDefault()
-        if (!value) return
+        if (!value) return setMissing(true)
         setSaving(true)
         await onConclude(value, note.trim())
         setSaving(false)
@@ -844,9 +866,13 @@ function ConclusionForm({
           { value: 'NotPassed', label: 'Không thông qua', short: 'Không qua' },
           { value: 'Deferred', label: 'Hoãn' },
         ]}
-        onChange={setValue}
+        onChange={(next) => {
+          setValue(next)
+          setMissing(false)
+        }}
         disabled={saving}
       />
+      {missing && <small className="field-error">Chọn kết luận.</small>}
       <label className="field">
         <span>Ghi chú</span>
         <textarea
@@ -864,7 +890,7 @@ function ConclusionForm({
         </span>
       </label>
       <div className="vote-form-actions">
-        <button type="submit" className="btn btn-primary btn-sm" disabled={!value || saving}>
+        <button type="submit" className="btn btn-primary" disabled={saving}>
           {saving ? 'Đang ghi…' : 'Ghi kết luận'}
         </button>
       </div>
