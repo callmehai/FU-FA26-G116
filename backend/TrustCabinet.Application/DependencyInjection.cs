@@ -16,7 +16,9 @@ using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Reports;
 using TrustCabinet.Application.Speaking;
+using TrustCabinet.Application.Transcription;
 using TrustCabinet.Application.Users;
+using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Application.Votes;
 
 namespace TrustCabinet.Application;
@@ -48,6 +50,8 @@ public static class DependencyInjection
         AddCalls(services);
         AddSpeaking(services);
         AddRecordings(services);
+        AddTranscription(services);
+        AddVoiceId(services);
         return services;
     }
 
@@ -186,5 +190,21 @@ public static class DependencyInjection
         services.AddScoped<ICombinedRecordingService, CombinedRecordingService>();
         services.AddSingleton<SpeechClipGate>();
         services.AddScoped<ISpeechClipService, SpeechClipService>();
+    }
+
+    /// <summary>The speech worker client and the transcript repository are the infrastructure project's to supply.</summary>
+    private static void AddTranscription(IServiceCollection services)
+    {
+        services.AddScoped<ITranscriptionService, TranscriptionService>();
+    }
+
+    /// <summary>
+    /// <see cref="VoiceIdOptions"/>, the voiceprint protector and the repository are the infrastructure project's to supply.
+    /// </summary>
+    private static void AddVoiceId(IServiceCollection services)
+    {
+        services.AddScoped<IVoiceIdErasure, VoiceIdErasure>();
+        services.AddScoped<IVoiceIdService, VoiceIdService>();
+        services.AddScoped<IVoiceCollectionService, VoiceCollectionService>();
     }
 }

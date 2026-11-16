@@ -190,8 +190,9 @@ Cài đặt là [`Infrastructure/Persistence/EfUnitOfWork.cs`](../../backend/Tru
   work bọc ngoài một đoạn code cũ gọi `BeginTransactionAsync` mà không kiểm `CurrentTransaction`, thì đoạn cũ ném
   "The connection is already in a transaction". CA-01 đã sửa `MeetingRepository.InTransactionAsync` và
   `VoiceIdRepository.InTransactionAsync`: đang có transaction thì chạy `operation` trong transaction đó và không
-  commit, chưa có thì mở và commit như cũ (test ở `EfUnitOfWorkTests`). Chỗ khác được xử lý ở subtask chuyển module
-  đó, hoặc bằng port mỏng theo R9.
+  commit, chưa có thì mở và commit như cũ (test ở `EfUnitOfWorkTests`). `VoiceIdRepository.InTransactionAsync` đã bị
+  xoá ở CA-15 cùng consumer cuối của nó, theory trong `EfUnitOfWorkTests` chỉ còn dòng `MeetingRepository`. Chỗ
+  khác được xử lý ở subtask chuyển module đó, hoặc bằng port mỏng theo R9.
 - Sau rollback, change tracker vẫn giữ những gì `work` đã xếp hàng; lần `SaveChangesAsync` sau sẽ ghi lại chúng. Muốn
   thử lại từ dữ liệu đã lưu thì gọi `DiscardChanges()`, như code cũ gọi `ChangeTracker.Clear()`.
 - Lệnh ghi thẳng (SQL thô, `ExecuteUpdateAsync`) thất bại trong transaction làm PostgreSQL huỷ cả transaction đó

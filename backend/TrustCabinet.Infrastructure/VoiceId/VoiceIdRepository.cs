@@ -1,4 +1,3 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Entities;
@@ -56,20 +55,28 @@ public sealed class VoiceIdRepository(TrustCabinetDbContext db) : IVoiceIdReposi
             .ExecuteUpdateAsync(u => u.SetProperty(s => s.SuggestedUserId, (Guid?)null).SetProperty(s => s.SuggestionScore, (double?)null), ct);
     }
 
+    public async Task<IReadOnlyList<VoiceConsentNotice>> ListConsentNoticesAsync(Guid[] userIds, CancellationToken ct)
+        => (await db.VoiceConsents.AsNoTracking()
+                .Where(c => userIds.Contains(c.UserId) && c.WithdrawnAt == null)
+                .Select(c => new { c.UserId, c.NoticeVersion }).ToListAsync(ct))
+            .Select(c => new VoiceConsentNotice(c.UserId, c.NoticeVersion)).ToList();
+
+    public async Task<IReadOnlyList<CollectedSampleRow>> ListCollectedSamplesAsync(Guid[] userIds, CancellationToken ct)
+        => await db.VoiceSamples.AsNoTracking()
+            .Where(s => userIds.Contains(s.UserId) && s.CollectedById != null)
+            .Select(s => new CollectedSampleRow(s.Id, s.UserId, s.MeetingId, s.CreatedAt, s.SpeechMs, s.CollectedBy!.FullName))
+            .ToListAsync(ct);
+
+    public Task<VoiceSample?> FindCollectedSampleAsync(Guid meetingId, Guid sampleId, bool tracked, CancellationToken ct)
+        => (tracked ? db.VoiceSamples : db.VoiceSamples.AsNoTracking())
+            .SingleOrDefaultAsync(s => s.Id == sampleId && s.MeetingId == meetingId && s.CollectedById != null, ct);
+
+    public Task<Meeting?> FindMeetingWithPeopleAsync(Guid meetingId, CancellationToken ct)
+        => db.Meetings.AsNoTracking().AsSplitQuery()
+            .Include(m => m.Participants).ThenInclude(p => p.User)
+            .SingleOrDefaultAsync(m => m.Id == meetingId, ct);
+
     public void Add(VoiceConsent consent) => db.VoiceConsents.Add(consent);
     public void Add(VoiceSample sample) => db.VoiceSamples.Add(sample);
     public void Remove(VoiceSample sample) => db.VoiceSamples.Remove(sample);
-    public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
-
-    public async Task<T> InTransactionAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct)
-    {
-        // Called inside a transaction somebody else opened (a unit of work, SCRUM-143): the work joins it, and
-        // whoever opened it commits.
-        if (db.Database.CurrentTransaction is not null) return await operation(ct);
-
-        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        var result = await operation(ct);
-        await transaction.CommitAsync(ct);
-        return result;
-    }
 }

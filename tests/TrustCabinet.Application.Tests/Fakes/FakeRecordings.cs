@@ -220,35 +220,83 @@ public sealed class FakeRecordingSigner : IRecordingPlaybackSigner, ISpeechClipA
     public bool Verify(Guid clipId, long expires, string signature, DateTimeOffset now) => throw new NotSupportedException();
 }
 
-/// <summary>Hears <see cref="Text"/> in every sentence.</summary>
+/// <summary>Hears <see cref="Text"/> in every sentence, or answers <see cref="Result"/> when a test sets it.</summary>
 public sealed class FakeSpeechEngine : ISpeechEngine
 {
     public string Text { get; set; } = "Xin chào";
+    public SpeechTranscription? Result { get; set; }
+    /// <summary>Thrown in place of answering: a worker that failed.</summary>
+    public Exception? Fail { get; set; }
     public bool IsConfigured => true;
 
     public Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct)
-        => Task.FromResult(new SpeechTranscription(1000, "vi", "test", "test", [new SpeechSegment(0, 1000, null, Text)], []));
+        => Fail is { } failure ? Task.FromException<SpeechTranscription>(failure)
+            : Task.FromResult(Result ?? new SpeechTranscription(1000, "vi", "test", "test", [new SpeechSegment(0, 1000, null, Text)], []));
 }
 
-/// <summary>Transcripts, for the room mic's takes. What is staged is in <see cref="Added"/>; no test reads one yet.</summary>
+/// <summary>
+/// Transcripts in <see cref="Transcripts"/>, their segments and voices held on them; a new transcript staged by
+/// <see cref="Add"/> is in <see cref="Added"/>. Nothing here saves, and <see cref="ReloadAsync"/> reads nothing again.
+/// </summary>
 public sealed class FakeTranscriptRepository : ITranscriptRepository
 {
+    public List<Transcript> Transcripts { get; } = [];
     public List<Transcript> Added { get; } = [];
+    public List<TranscriptPerson> Guests { get; } = [];
 
     public void Add(Transcript transcript) => Added.Add(transcript);
 
-    public Task<Transcript?> FindByRecordingAsync(Guid recordingId, bool tracked, CancellationToken ct) => throw new NotSupportedException();
-    public Task<TranscriptSegment?> FindSegmentAsync(Guid segmentId, CancellationToken ct) => throw new NotSupportedException();
-    public Task<Guid?> FindSegmentRecordingAsync(Guid segmentId, CancellationToken ct) => throw new NotSupportedException();
-    public Task<Guid?> ClaimNextAsync(DateTimeOffset now, CancellationToken ct) => throw new NotSupportedException();
-    public Task<int> RequeueProcessingAsync(DateTimeOffset now, CancellationToken ct) => throw new NotSupportedException();
-    public Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct) => throw new NotSupportedException();
-    public Task ReloadAsync(Transcript transcript, CancellationToken ct) => throw new NotSupportedException();
-    public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct) => throw new NotSupportedException();
-    public Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct) => throw new NotSupportedException();
-    public void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers) => throw new NotSupportedException();
-    public void AddSegments(IEnumerable<TranscriptSegment> segments) => throw new NotSupportedException();
-    public Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct) => throw new NotSupportedException();
-    public void DiscardChanges() => throw new NotSupportedException();
-    public Task SaveChangesAsync(CancellationToken ct) => throw new NotSupportedException();
+    public Task<Transcript?> FindByRecordingAsync(Guid recordingId, bool tracked, CancellationToken ct)
+        => Task.FromResult(Transcripts.SingleOrDefault(t => t.RecordingId == recordingId));
+
+    public Task<TranscriptSegment?> FindSegmentAsync(Guid segmentId, CancellationToken ct)
+        => Task.FromResult(Transcripts.SelectMany(t => t.Segments).SingleOrDefault(s => s.Id == segmentId));
+
+    public Task<Guid?> FindSegmentRecordingAsync(Guid segmentId, CancellationToken ct)
+        => Task.FromResult(Transcripts.SingleOrDefault(t => t.Segments.Any(s => s.Id == segmentId))?.RecordingId);
+
+    public Task<Guid?> ClaimNextAsync(DateTimeOffset now, CancellationToken ct)
+    {
+        var next = Transcripts.Where(t => t.Status == TranscriptStatus.Pending).MinBy(t => t.CreatedAt);
+        if (next is null) return Task.FromResult<Guid?>(null);
+        next.Status = TranscriptStatus.Processing;
+        return Task.FromResult<Guid?>(next.Id);
+    }
+
+    public Task<int> RequeueProcessingAsync(DateTimeOffset now, CancellationToken ct)
+    {
+        var running = Transcripts.Where(t => t.Status == TranscriptStatus.Processing).ToList();
+        running.ForEach(t => t.Status = TranscriptStatus.Pending);
+        return Task.FromResult(running.Count);
+    }
+
+    public Task<Transcript?> FindForProcessingAsync(Guid transcriptId, CancellationToken ct)
+        => Task.FromResult(Transcripts.SingleOrDefault(t => t.Id == transcriptId));
+
+    public Task ReloadAsync(Transcript transcript, CancellationToken ct) => Task.CompletedTask;
+
+    public Task DeleteSegmentsAsync(Guid transcriptId, CancellationToken ct)
+    {
+        Transcripts.Single(t => t.Id == transcriptId).Segments.Clear();
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteSpeakersAsync(Guid transcriptId, CancellationToken ct)
+    {
+        Transcripts.Single(t => t.Id == transcriptId).Speakers.Clear();
+        return Task.CompletedTask;
+    }
+
+    public void AddSpeakers(IEnumerable<TranscriptSpeaker> speakers)
+    {
+        foreach (var speaker in speakers) Transcripts.Single(t => t.Id == speaker.TranscriptId).Speakers.Add(speaker);
+    }
+
+    public void AddSegments(IEnumerable<TranscriptSegment> segments)
+    {
+        foreach (var segment in segments) Transcripts.Single(t => t.Id == segment.TranscriptId).Segments.Add(segment);
+    }
+
+    public Task<IReadOnlyList<TranscriptPerson>> ListGuestsAsync(Guid meetingId, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<TranscriptPerson>>(Guests);
 }

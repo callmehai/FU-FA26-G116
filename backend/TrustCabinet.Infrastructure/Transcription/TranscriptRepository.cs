@@ -61,8 +61,4 @@ public sealed class TranscriptRepository(TrustCabinetDbContext db) : ITranscript
         => (await db.MeetingGuestInvitations.AsNoTracking().Where(g => g.MeetingId == meetingId && g.RevokedAt == null)
                 .Select(g => new { g.Id, Name = g.SelfDeclaredDisplayName ?? g.InvitedName }).ToListAsync(ct))
             .Select(g => new TranscriptPerson(g.Id, g.Name, Guest: true)).ToList();
-
-    public void DiscardChanges() => db.ChangeTracker.Clear();
-
-    public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
 }

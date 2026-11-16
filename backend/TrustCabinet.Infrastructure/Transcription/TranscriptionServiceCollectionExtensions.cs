@@ -20,7 +20,6 @@ public static class TranscriptionServiceCollectionExtensions
         services.AddSingleton<ISpeechEngine>(provider => provider.GetRequiredService<SpeechWorkerClient>());
         services.AddSingleton<IVoiceEmbedder>(provider => provider.GetRequiredService<SpeechWorkerClient>());
         services.AddScoped<ITranscriptRepository, TranscriptRepository>();
-        services.AddScoped<ITranscriptionService, TranscriptionService>();
         return services;
     }
 }

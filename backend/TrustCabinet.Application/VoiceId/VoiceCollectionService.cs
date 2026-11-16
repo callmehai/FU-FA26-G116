@@ -1,18 +1,17 @@
 using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Transcription;
-using TrustCabinet.Application.VoiceId;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Domain.VoiceId;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.VoiceId;
+namespace TrustCabinet.Application.VoiceId;
 
 /// <summary>
 /// ADR-0060 — the Secretary of an in-person or hybrid meeting records Voice ID samples for its people on the room's mic.
@@ -27,8 +26,9 @@ namespace TrustCabinet.Infrastructure.VoiceId;
 /// A sample is bound to the person and encrypted exactly as one they took themself; the Secretary sees, hears and deletes
 /// only the samples taken in their meeting, each play is audited, and the person is told each time one is taken.
 /// </summary>
-public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRepository repository, IVoiceEmbedder embedder,
-    IVoiceprintProtector protector, IAuditService audit, TimeProvider clock, ILogger<VoiceCollectionService> logger)
+public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotificationRepository notifications,
+    IUnitOfWork unitOfWork, IVoiceEmbedder embedder, IVoiceprintProtector protector, IAuditService audit, TimeProvider clock,
+    ILogger<VoiceCollectionService> logger)
     : IVoiceCollectionService
 {
     private const string NotificationTargetType = "VoiceSample";
@@ -40,35 +40,33 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
     {
         try
         {
-            var meeting = await ManagedAsync(meetingId, actorId, ct);
-            if (meeting is null) return new(VoiceFailure.NotFound);
-            var people = meeting.Participants.Where(ParticipantRules.Active)
-                .GroupBy(p => p.UserId).Select(g => g.OrderBy(p => p.Role).First()).ToArray();
-            var ids = people.Select(p => p.UserId).ToArray();
-            var consented = (await db.VoiceConsents.AsNoTracking()
-                    .Where(c => ids.Contains(c.UserId) && c.WithdrawnAt == null)
-                    .Select(c => new { c.UserId, c.NoticeVersion }).ToListAsync(ct))
-                .Where(c => VoiceIdRules.AllowsCollection(c.NoticeVersion)).Select(c => c.UserId).ToHashSet();
-            var samples = await db.VoiceSamples.AsNoTracking()
-                .Where(s => ids.Contains(s.UserId) && s.CollectedById != null)
-                .Select(s => new { s.Id, s.UserId, s.MeetingId, s.CreatedAt, s.SpeechMs, CollectedByName = s.CollectedBy!.FullName })
-                .ToListAsync(ct);
-            var list = people
-                .OrderBy(p => p.Role).ThenBy(p => p.User.FullName, StringComparer.CurrentCulture)
-                .Select(p =>
-                {
-                    var own = samples.Where(s => s.UserId == p.UserId).ToArray();
-                    return new VoiceCollectionPerson(p.UserId, p.User.FullName, p.Role.ToString(), consented.Contains(p.UserId),
-                        own.Length,
-                        [.. own.Where(s => s.MeetingId == meetingId).OrderBy(s => s.CreatedAt)
-                            .Select(s => new CollectedSampleView(s.Id, s.CreatedAt, s.SpeechMs, s.CollectedByName))]);
-                })
-                .ToArray();
-            return new(Data: new VoiceCollectionView(CanCollect(meeting.Status), VoiceIdRules.MaxSamples, list));
+            return await ReadAsync(async token =>
+            {
+                var meeting = await ManagedAsync(meetingId, actorId, token);
+                if (meeting is null) return new VoiceOutcome(VoiceFailure.NotFound);
+                var people = meeting.Participants.Where(ParticipantRules.Active)
+                    .GroupBy(p => p.UserId).Select(g => g.OrderBy(p => p.Role).First()).ToArray();
+                var ids = people.Select(p => p.UserId).ToArray();
+                var consented = (await repository.ListConsentNoticesAsync(ids, token))
+                    .Where(c => VoiceIdRules.AllowsCollection(c.NoticeVersion)).Select(c => c.UserId).ToHashSet();
+                var samples = await repository.ListCollectedSamplesAsync(ids, token);
+                var list = people
+                    .OrderBy(p => p.Role).ThenBy(p => p.User.FullName, StringComparer.CurrentCulture)
+                    .Select(p =>
+                    {
+                        var own = samples.Where(s => s.UserId == p.UserId).ToArray();
+                        return new VoiceCollectionPerson(p.UserId, p.User.FullName, p.Role.ToString(), consented.Contains(p.UserId),
+                            own.Length,
+                            [.. own.Where(s => s.MeetingId == meetingId).OrderBy(s => s.CreatedAt)
+                                .Select(s => new CollectedSampleView(s.Id, s.CreatedAt, s.SpeechMs, s.CollectedByName))]);
+                    })
+                    .ToArray();
+                return new(Data: new VoiceCollectionView(CanCollect(meeting.Status), VoiceIdRules.MaxSamples, list));
+            }, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to read voice collection of meeting {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to read voice collection of meeting {MeetingId}", meetingId);
             return new(VoiceFailure.ReadFailed);
         }
     }
@@ -79,21 +77,21 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
         Meeting? meeting;
         try
         {
-            meeting = await ManagedAsync(meetingId, actorId, ct);
+            meeting = await ReadAsync(token => ManagedAsync(meetingId, actorId, token), ct);
             if (meeting is null) return new(VoiceFailure.NotFound);
             if (!CanCollect(meeting.Status)) return new(VoiceFailure.NotCollectable);
             // Only a person of this meeting, with an account: a guest has no Voice ID to keep a sample under.
             if (!meeting.Participants.Any(p => p.UserId == userId && ParticipantRules.Active(p))) return new(VoiceFailure.NotFound);
             // Checked before the audio goes to the worker, then again under the lock before anything is kept.
-            if (await repository.FindActiveConsentAsync(userId, false, ct) is not { } given
+            if (await ReadAsync(token => repository.FindActiveConsentAsync(userId, false, token), ct) is not { } given
                 || !VoiceIdRules.AllowsCollection(given.NoticeVersion))
                 return new(VoiceFailure.NoConsent);
-            if ((await repository.ListProxySamplesAsync(userId, ct)).Count >= VoiceIdRules.MaxSamples)
+            if ((await ReadAsync(token => repository.ListProxySamplesAsync(userId, token), ct)).Count >= VoiceIdRules.MaxSamples)
                 return new(VoiceFailure.LimitReached);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to read voice collection of meeting {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to read voice collection of meeting {MeetingId}", meetingId);
             return new(VoiceFailure.SaveFailed);
         }
 
@@ -121,7 +119,7 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
 
         try
         {
-            return await repository.InTransactionAsync(async token =>
+            return await unitOfWork.ExecuteAsync(async token =>
             {
                 // The same row lock a withdrawal takes: a sample is never kept after the person said no.
                 var consent = await repository.FindActiveConsentAsync(userId, true, token);
@@ -146,7 +144,7 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
                 };
                 repository.Add(sample);
                 var secretary = current.Participants.First(p => p.UserId == actorId).User.FullName;
-                db.Notifications.Add(new Notification
+                notifications.Add(new Notification
                 {
                     Id = Guid.CreateVersion7(), UserId = userId, Type = NotificationType.VoiceSampleCollected,
                     Title = "Thư ký đã thu giọng mẫu của bạn",
@@ -156,22 +154,21 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
                 });
                 await audit.RecordAsync(AuditActions.VoiceSampleAdded, AuditActions.VoiceSampleObjectType, id, actorId,
                     new { scope = "proxy", userId, meetingId, embedding.Model, embedding.SpeechMs }, token);
-                await repository.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 return new VoiceOutcome(Data: new CollectedSampleView(id, now, embedding.SpeechMs, secretary));
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to store a voice sample collected in meeting {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to store a voice sample collected in meeting {MeetingId}", meetingId);
             return new(VoiceFailure.SaveFailed);
         }
     }
 
     public async Task<VoiceSampleAudio?> AudioAsync(Guid meetingId, Guid actorId, Guid sampleId, CancellationToken ct = default)
     {
-        if (await ManagedAsync(meetingId, actorId, ct) is null) return null;
-        var sample = await db.VoiceSamples.AsNoTracking()
-            .SingleOrDefaultAsync(s => s.Id == sampleId && s.MeetingId == meetingId && s.CollectedById != null, ct);
+        var sample = await ReadAsync(async token => await ManagedAsync(meetingId, actorId, token) is null ? null
+            : await repository.FindCollectedSampleAsync(meetingId, sampleId, false, token), ct);
         if (sample?.AudioCiphertext is null || sample.AudioContentType is null) return null;
         byte[] bytes;
         try
@@ -186,7 +183,7 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
         // Someone else's biometric sample heard: on the record before a byte leaves.
         await audit.RecordAsync(AuditActions.VoiceSamplePlayed, AuditActions.VoiceSampleObjectType, sampleId, actorId,
             new { userId = sample.UserId, meetingId }, ct);
-        await db.SaveChangesAsync(ct);
+        await unitOfWork.SaveChangesAsync(ct);
         return new(bytes, sample.AudioContentType);
     }
 
@@ -194,20 +191,22 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
     {
         try
         {
-            if (await ManagedAsync(meetingId, actorId, ct) is null) return new(VoiceFailure.NotFound);
-            var sample = await db.VoiceSamples
-                .SingleOrDefaultAsync(s => s.Id == sampleId && s.MeetingId == meetingId && s.CollectedById != null, ct);
-            // A sample taken in another meeting, or the person's own, is answered exactly like one that does not exist.
-            if (sample is null) return new(VoiceFailure.NotFound);
-            db.VoiceSamples.Remove(sample);
-            await audit.RecordAsync(AuditActions.VoiceSampleDeleted, AuditActions.VoiceSampleObjectType, sampleId, actorId,
-                new { scope = "proxy", sample.UserId, meetingId, sample.CollectedById }, ct);
-            await db.SaveChangesAsync(ct);
-            return new(Data: new { id = sampleId });
+            return await ReadAsync(async token =>
+            {
+                if (await ManagedAsync(meetingId, actorId, token) is null) return new VoiceOutcome(VoiceFailure.NotFound);
+                var sample = await repository.FindCollectedSampleAsync(meetingId, sampleId, true, token);
+                // A sample taken in another meeting, or the person's own, is answered exactly like one that does not exist.
+                if (sample is null) return new(VoiceFailure.NotFound);
+                repository.Remove(sample);
+                await audit.RecordAsync(AuditActions.VoiceSampleDeleted, AuditActions.VoiceSampleObjectType, sampleId, actorId,
+                    new { scope = "proxy", sample.UserId, meetingId, sample.CollectedById }, token);
+                await unitOfWork.SaveChangesAsync(token);
+                return new(Data: new { id = sampleId });
+            }, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to delete voice sample {SampleId}", sampleId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to delete voice sample {SampleId}", sampleId);
             return new(VoiceFailure.SaveFailed);
         }
     }
@@ -218,14 +217,19 @@ public sealed class VoiceCollectionService(TrustCabinetDbContext db, IVoiceIdRep
     /// </summary>
     private async Task<Meeting?> ManagedAsync(Guid meetingId, Guid actorId, CancellationToken ct)
     {
-        var meeting = await db.Meetings.AsNoTracking().AsSplitQuery()
-            .Include(m => m.Participants).ThenInclude(p => p.User)
-            .SingleOrDefaultAsync(m => m.Id == meetingId, ct);
+        var meeting = await repository.FindMeetingWithPeopleAsync(meetingId, ct);
         if (meeting is null || meeting.Sensitivity == Sensitivity.Secret || !RecordingRules.HasRoom(meeting.Mode)
             || meeting.Status is MeetingStatus.Cancelled || !ParticipantRules.IsSecretary(meeting, actorId))
             return null;
         return meeting;
     }
+
+    /// <summary>
+    /// Storage calls outside a transaction (reads, and the few writes that never had one): run as they are, only their
+    /// failures translated.
+    /// </summary>
+    private Task<T> ReadAsync<T>(Func<CancellationToken, Task<T>> work, CancellationToken ct)
+        => unitOfWork.ExecuteAsync(work, TransactionMode.None, ct);
 
     private static string Clip(string body) => body.Length <= 2000 ? body : body[..2000];
 }

@@ -16,9 +16,6 @@ public static class VoiceIdServiceCollectionExtensions
             provider.GetRequiredService<IOptions<VoiceIdOptions>>().Value.EncryptionKey,
             Encoding.UTF8.GetBytes(configuration["Authentication:SigningKey"] ?? "")));
         services.AddScoped<IVoiceIdRepository, VoiceIdRepository>();
-        services.AddScoped<IVoiceIdErasure, VoiceIdErasure>();
-        services.AddScoped<IVoiceIdService, VoiceIdService>();
-        services.AddScoped<IVoiceCollectionService, VoiceCollectionService>();
         return services;
     }
 }
