@@ -6,8 +6,10 @@ using TrustCabinet.Application.Attendance;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.CalendarSharing;
+using TrustCabinet.Application.Documents;
 using TrustCabinet.Application.GuestAccess;
 using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Notes;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Reports;
@@ -36,6 +38,8 @@ public static class DependencyInjection
         AddAttendance(services);
         AddGuestAccess(services);
         AddReports(services);
+        AddDocuments(services);
+        AddNotes(services);
         return services;
     }
 
@@ -128,5 +132,19 @@ public static class DependencyInjection
     private static void AddReports(IServiceCollection services)
     {
         services.AddScoped<IReportService, ReportService>();
+    }
+
+    private static void AddDocuments(IServiceCollection services)
+    {
+        services.AddScoped<IMeetingDocumentService, MeetingDocumentService>();
+        services.AddScoped<IMeetingDocumentAttacher, MeetingDocumentAttacher>();
+        services.AddScoped<StoredFileWriter>();
+        services.AddScoped<IPersonalLibraryService, PersonalLibraryService>();
+        services.AddScoped<IDocumentCommentService, DocumentCommentService>();
+    }
+
+    private static void AddNotes(IServiceCollection services)
+    {
+        services.AddScoped<IMeetingNoteService, MeetingNoteService>();
     }
 }

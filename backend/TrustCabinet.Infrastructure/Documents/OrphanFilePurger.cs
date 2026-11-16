@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Documents;
 
 namespace TrustCabinet.Infrastructure.Documents;
@@ -16,8 +16,9 @@ namespace TrustCabinet.Infrastructure.Documents;
 /// only the grace period keeps them safe, and it is never under an hour. If the upload never
 /// commits, they are orphans like any other.
 /// </summary>
-public sealed class OrphanFilePurger(TrustCabinetDbContext db, IFileStorage storage, TimeProvider clock,
-    IOptions<FileStorageOptions> options, ILogger<OrphanFilePurger> logger)
+public sealed class OrphanFilePurger(IStoredFileRepository files, IFileStorage storage, IUnitOfWork unitOfWork,
+    TimeProvider clock, IOptions<FileStorageOptions> options, ILogger<OrphanFilePurger> logger)
+    : IOrphanFilePurger
 {
     private const int BatchSize = 100;
 
@@ -33,13 +34,8 @@ public sealed class OrphanFilePurger(TrustCabinetDbContext db, IFileStorage stor
         var purged = 0;
         while (true)
         {
-            var orphans = await db.StoredFiles.AsNoTracking()
-                .Where(f => f.PurgedAt == null && f.UploadedAt < cutoff && !failed.Contains(f.Id)
-                    && !db.Documents.Any(d => d.StoredFileId == f.Id)
-                    && !db.MeetingDocuments.Any(d => d.StoredFileId == f.Id && d.RemovedAt == null))
-                .OrderBy(f => f.UploadedAt).Take(BatchSize)
-                .Select(f => new { f.Id, f.StorageKey })
-                .ToListAsync(ct);
+            var orphans = await unitOfWork.ExecuteAsync(
+                token => files.ListOrphansAsync(cutoff, failed, BatchSize, token), TransactionMode.None, ct);
             if (orphans.Count == 0) return purged;
 
             foreach (var orphan in orphans)
@@ -53,14 +49,14 @@ public sealed class OrphanFilePurger(TrustCabinetDbContext db, IFileStorage stor
                     failed.Add(orphan.Id);
                     continue;
                 }
-                purged += await db.StoredFiles.Where(f => f.Id == orphan.Id && f.PurgedAt == null)
-                    .ExecuteUpdateAsync(s => s.SetProperty(f => f.PurgedAt, now).SetProperty(f => f.UpdatedAt, now), ct);
+                purged += await unitOfWork.ExecuteAsync(token => files.TryStampPurgedAsync(orphan.Id, now, token),
+                    TransactionMode.None, ct);
             }
         }
     }
 }
 
-/// <summary>Runs <see cref="OrphanFilePurger"/> at start-up and then every interval, while a store is configured.</summary>
+/// <summary>Runs <see cref="IOrphanFilePurger"/> at start-up and then every interval, while a store is configured.</summary>
 public sealed class OrphanFilePurgeWorker(IServiceScopeFactory scopes, IFileStorage storage,
     IOptions<FileStorageOptions> options, ILogger<OrphanFilePurgeWorker> logger) : BackgroundService
 {
@@ -74,7 +70,7 @@ public sealed class OrphanFilePurgeWorker(IServiceScopeFactory scopes, IFileStor
             try
             {
                 await using var scope = scopes.CreateAsyncScope();
-                var purged = await scope.ServiceProvider.GetRequiredService<OrphanFilePurger>().PurgeAsync(stoppingToken);
+                var purged = await scope.ServiceProvider.GetRequiredService<IOrphanFilePurger>().PurgeAsync(stoppingToken);
                 if (purged > 0) logger.LogInformation("Purged {Count} orphaned stored files", purged);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

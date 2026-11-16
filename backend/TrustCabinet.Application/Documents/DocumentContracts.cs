@@ -1,5 +1,6 @@
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Documents;
+using TrustCabinet.Domain.Entities;
 
 namespace TrustCabinet.Application.Documents;
 
@@ -130,7 +131,14 @@ public interface IMeetingDocumentRepository
 
     void AddStoredFiles(IEnumerable<Domain.Entities.StoredFile> files);
 
+    /// <summary>Stages the new library row and its meeting row; written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
     void AddUpload(Domain.Entities.Document document, Domain.Entities.MeetingDocument meetingDocument);
+
+    /// <summary>
+    /// Stages the new meeting row for an existing library document (no byte is copied); written by the next
+    /// <c>IUnitOfWork.SaveChangesAsync</c>.
+    /// </summary>
+    void AddMeetingDocument(Domain.Entities.MeetingDocument meetingDocument);
 
     /// <summary>Removed documents excluded (BR-211); <see cref="MeetingDocumentList.Votes"/> left empty.</summary>
     Task<MeetingDocumentList> ListAsync(Guid meetingId, CancellationToken ct);
@@ -147,5 +155,125 @@ public interface IMeetingDocumentRepository
     /// <paramref name="includeDrafts"/>, reached only through draft votes (BR-253).
     /// </summary>
     Task<AttachedDocumentFile?> FindAttachedFileAsync(Guid meetingId, Guid meetingDocumentId, bool includeDrafts,
+        CancellationToken ct);
+
+    /// <summary>
+    /// The meeting document still in the meeting, tracked with its agenda links, for a removal that keeps the
+    /// row as history (BR-197, BR-281, BR-284); null when removed or of another meeting (BR-211).
+    /// </summary>
+    Task<MeetingDocument?> FindForRemoveAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct);
+
+    /// <summary>Stages the removal of agenda links; written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
+    void RemoveAgendaItemLinks(IEnumerable<MeetingDocumentAgendaItem> links);
+
+    /// <summary>Whether the document is still attached to the meeting (BR-211).</summary>
+    Task<bool> ExistsAsync(Guid meetingId, Guid meetingDocumentId, CancellationToken ct);
+
+    /// <summary>Whether the agenda item is part of the meeting (BR-278).</summary>
+    Task<bool> AgendaItemExistsAsync(Guid meetingId, Guid agendaItemId, CancellationToken ct);
+
+    /// <summary>Each requested document still in the meeting, with whether it already links the agenda item.</summary>
+    Task<IReadOnlyList<MeetingDocumentLinkState>> FindLinkStatesAsync(Guid meetingId, Guid agendaItemId,
+        Guid[] documentIds, CancellationToken ct);
+
+    /// <summary>Stages agenda links; written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
+    void AddAgendaItemLinks(IEnumerable<MeetingDocumentAgendaItem> links);
+
+    /// <summary>The one link to drop (UC-33d); null when the document was never linked to the item.</summary>
+    Task<MeetingDocumentAgendaItem?> FindAgendaItemLinkAsync(Guid meetingDocumentId, Guid agendaItemId,
+        CancellationToken ct);
+
+    /// <summary>Stages the removal of the link; written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
+    void RemoveAgendaItemLink(MeetingDocumentAgendaItem link);
+
+    /// <summary>The actor's library documents, tracked with their stored file (BR-209).</summary>
+    Task<IReadOnlyList<Document>> FindLibraryDocumentsAsync(Guid ownerId, Guid[] documentIds, CancellationToken ct);
+
+    /// <summary>Every unremoved meeting document that points at one of the files.</summary>
+    Task<IReadOnlyList<MeetingDocumentFileState>> FindMeetingFilesAsync(Guid meetingId, Guid[] storedFileIds,
+        Guid? agendaItemId, Guid? voteId, CancellationToken ct);
+
+    /// <summary>Stages vote links; written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
+    void AddVoteDocuments(IEnumerable<VoteDocument> links);
+}
+
+/// <summary>One meeting document of an attach request, with whether it already links the agenda item.</summary>
+public sealed record MeetingDocumentLinkState(Guid Id, bool Linked);
+
+/// <summary>One file already in the meeting, with whether it already links the item or the vote.</summary>
+public sealed record MeetingDocumentFileState(Guid Id, Guid StoredFileId, bool Linked);
+
+/// <summary>The stored files as the uploads and the orphan purge read and stamp them (ADR-0024 §4, ADR-0034, BR-213).</summary>
+public interface IStoredFileRepository
+{
+    /// <summary>
+    /// What every stored document together takes: every file not purged yet, whether anything still points at it
+    /// (an unreferenced file takes room until the orphan purge deletes it).
+    /// </summary>
+    Task<long> UsedBytesAsync(CancellationToken ct);
+
+    /// <summary>Stages the reserved rows; written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
+    void AddStoredFiles(IEnumerable<Domain.Entities.StoredFile> files);
+
+    /// <summary>
+    /// Takes the advisory lock for the whole system until the current transaction ends, so two uploads cannot
+    /// both take the last room of the storage limit (ADR-0034). Locks no row.
+    /// </summary>
+    Task LockStorageAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Stamps the rows purged (BR-213, BR-286): they stop taking room in the storage limit at once.
+    /// Runs immediately, not staged.
+    /// </summary>
+    Task<int> StampPurgedAsync(Guid[] ids, DateTimeOffset now, CancellationToken ct);
+
+    /// <summary>
+    /// Stamps the one orphan purged, when it is still unstamped. Runs immediately, not staged.
+    /// </summary>
+    Task<int> TryStampPurgedAsync(Guid id, DateTimeOffset now, CancellationToken ct);
+
+    /// <summary>
+    /// The oldest unreferenced files past <paramref name="cutoff"/>, skipping <paramref name="exclude"/>
+    /// (whose delete failed earlier in this run), at most <paramref name="take"/>: a file no library row and
+    /// no active meeting document points at any more.
+    /// </summary>
+    Task<IReadOnlyList<StoredFileRef>> ListOrphansAsync(DateTimeOffset cutoff, IReadOnlyList<Guid> exclude, int take,
+        CancellationToken ct);
+}
+
+/// <summary>One unreferenced file past its grace period (BR-213).</summary>
+public sealed record StoredFileRef(Guid Id, string StorageKey);
+
+/// <summary>BR-213: deletes the object of every unreferenced stored file past its grace period, then stamps it.</summary>
+public interface IOrphanFilePurger
+{
+    Task<int> PurgeAsync(CancellationToken ct);
+}
+
+/// <summary>
+/// The two ways files become meeting documents, shared by meetings (UC-33a, UC-33b AF-1, UC-76a AF-1) and votes
+/// (UC-76a AF-2): the library documents (no byte is copied, ADR-0018) and the uploads (a library document in
+/// the meeting's upload folder and a meeting document per stored file, BR-210). Runs inside the caller's
+/// transaction: the caller saves and commits.
+/// </summary>
+public interface IMeetingDocumentAttacher
+{
+    /// <summary>
+    /// UC-33a, UC-33b AF-2 and UC-76a AF-2: the actor's own library documents (BR-209) become meeting documents
+    /// under their current name (BR-276) — linked to <paramref name="agendaItemId"/> or attached to
+    /// <paramref name="voteId"/> when given. A file already in the meeting is refused for the general group
+    /// (BR-193); for an item or a vote its meeting document is linked instead, unless it already is.
+    /// </summary>
+    Task<(DocumentUploadFailure Failure, IReadOnlyList<UploadedMeetingDocument> Added)> AddLibraryDocumentsAsync(
+        Domain.Entities.Meeting meeting, Guid actorId, IReadOnlyList<Guid> documentIds, DateTimeOffset now,
+        Guid? agendaItemId, Guid? voteId, CancellationToken ct);
+
+    /// <summary>
+    /// UC-33a AF-1, UC-33b AF-1 and UC-76a AF-1: a library document in the meeting's upload folder and a meeting
+    /// document per stored file, both pointing at it (BR-210) — linked to <paramref name="agendaItemId"/> or
+    /// attached to <paramref name="voteId"/> when given.
+    /// </summary>
+    Task<IReadOnlyList<UploadedMeetingDocument>> AddUploadsAsync(Domain.Entities.Meeting meeting, Guid actorId,
+        Domain.Entities.StoredFile[] stored, DateTimeOffset now, Guid? agendaItemId, Guid? voteId,
         CancellationToken ct);
 }

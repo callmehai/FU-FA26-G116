@@ -11,7 +11,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Documents;
+using TrustCabinet.Application.Documents;
 using TrustCabinet.Web.Tests.Agenda;
 
 namespace TrustCabinet.Web.Tests.Documents;

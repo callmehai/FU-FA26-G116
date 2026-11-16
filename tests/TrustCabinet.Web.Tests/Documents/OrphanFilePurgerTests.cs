@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Documents;
 using TrustCabinet.Domain.Documents;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Infrastructure.Documents;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Web.Tests.Documents;
 
@@ -111,8 +113,9 @@ public sealed class OrphanFilePurgerTests(DocumentFixture fixture) : IAsyncLifet
         Assert.Equal(Now, (await fixture.Db().StoredFiles.SingleAsync(f => f.Id == abandoned.Id)).PurgedAt);
     }
 
-    private OrphanFilePurger Purger(Infrastructure.TrustCabinetDbContext db, int graceHours = 24) => new(db,
-        fixture.Storage, new FixedClock(), Options.Create(new FileStorageOptions { OrphanGracePeriodHours = graceHours }),
+    private OrphanFilePurger Purger(Infrastructure.TrustCabinetDbContext db, int graceHours = 24) => new(
+        new StoredFileRepository(db), fixture.Storage, new EfUnitOfWork(db), new FixedClock(),
+        Options.Create(new FileStorageOptions { OrphanGracePeriodHours = graceHours }),
         NullLogger<OrphanFilePurger>.Instance);
 
     private static StoredFile File(Guid uploader, DateTimeOffset uploadedAt)

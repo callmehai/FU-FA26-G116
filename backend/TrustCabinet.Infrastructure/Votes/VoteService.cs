@@ -10,7 +10,6 @@ using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Votes;
 using TrustCabinet.Domain.Votes;
-using TrustCabinet.Infrastructure.Documents;
 using TrustCabinet.Domain.GuestAccess;
 using TrustCabinet.Infrastructure.Persistence;
 
@@ -22,8 +21,9 @@ namespace TrustCabinet.Infrastructure.Votes;
 /// Contract in docs/03-api/15-bieu-quyet.md.
 /// </summary>
 public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, IParticipantRepository participants,
-    IParticipantGuestAccess guests, IMeetingDocumentRepository documents, StoredFileWriter writer,
-    IVoteChangePublisher publisher, TimeProvider clock, ILogger<VoteService> logger) : IVoteService
+    IParticipantGuestAccess guests, IMeetingDocumentAttacher attacher,
+    StoredFileWriter writer, IVoteChangePublisher publisher, TimeProvider clock, ILogger<VoteService> logger)
+    : IVoteService
 {
     private const string OpenVoteIndex = "ix_voting_sessions_meeting_id";
     private static readonly string[] ReceiptIndexes =
@@ -239,7 +239,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             if (failure != VoteFailure.None) return new VoteOutcome(failure);
             if (!VoteRules.CanManageDraft(s!.Meeting, viewer!) || vote!.Status != VotingStatus.Draft)
                 return new VoteOutcome(VoteFailure.DraftDenied);
-            var added = await MeetingDocumentService.AddUploadsAsync(db, documents, s.Meeting, uploader, stored, now,
+            var added = await attacher.AddUploadsAsync(s.Meeting, uploader, stored, now,
                 null, voteId, token);
             await db.SaveChangesAsync(token);
             return new VoteOutcome(Data: added, VoteId: voteId);
@@ -332,7 +332,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
     {
         if (!VoteRules.CanManageDraft(meeting, viewer) || vote.Status != VotingStatus.Draft) return new(VoteFailure.DraftDenied);
         if (input.ParseFailure != VoteFailure.None) return new(input.ParseFailure);
-        var failure = await MeetingDocumentService.AddLibraryDocumentsAsync(db, meeting, viewer.UserId!.Value,
+        var (failure, added) = await attacher.AddLibraryDocumentsAsync(meeting, viewer.UserId!.Value,
             input.DocumentIds ?? [], now, null, vote.Id, ct);
         if (failure != DocumentUploadFailure.None)
             return new(failure switch
@@ -341,9 +341,6 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
                 DocumentUploadFailure.AlreadyLinked => VoteFailure.DocumentAlreadyAttached,
                 _ => VoteFailure.SaveFailed
             });
-        var added = db.ChangeTracker.Entries<MeetingDocument>().Where(e => e.State == EntityState.Added).Select(e => e.Entity)
-            .Select(d => new UploadedMeetingDocument(d.Id, d.FileName, d.StoredFile.ContentType, d.StoredFile.ByteSize,
-                d.StoredFile.PageCount)).ToList();
         return new(Data: added, VoteId: vote.Id);
     }
 
