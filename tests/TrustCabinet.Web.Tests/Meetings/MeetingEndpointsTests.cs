@@ -14,7 +14,6 @@ using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Web.Endpoints;
 using TrustCabinet.Web.Tests.Authentication;

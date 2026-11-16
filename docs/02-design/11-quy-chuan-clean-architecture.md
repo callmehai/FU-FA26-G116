@@ -226,10 +226,14 @@ public enum UniqueConflict { Unknown = 0 /* module thêm dần */ }
   `catch (UniqueConflictException e) when (e.Conflict == UniqueConflict.X)`; `ForeignKeyViolation`/`RestrictViolation`
   → `catch (ReferenceConflictException)`; `DbUpdateConcurrencyException` → `catch (ConcurrencyConflictException)`.
   Giữ nguyên thứ tự các khối `catch` và mã trả về.
-- Khối `catch` có ghi log thì log **exception gốc**, `exception.InnerException ?? exception`, không log exception đã
-  dịch (chốt 16/11/2026 ở CA-05). Log khi đó giống hệt trước khi chuyển, và test cũ khẳng định đúng instance được log
-  (`MeetingServiceTests.List_maps_a_database_failure_to_read_failed`, `Assert.Same`) vẫn xanh mà không sửa assertion.
-  Fake ném exception đã dịch không bọc gì thì `?? exception` log chính nó.
+- Từ CA-05 (chốt 16/11/2026): khối `catch` có ghi log thì log **exception gốc**, `exception.InnerException ??
+  exception`, không log exception đã dịch. Như vậy log giữ như trước khi chuyển, và test cũ khẳng định đúng instance
+  được log (`MeetingServiceTests.List_maps_a_database_failure_to_read_failed`, `Assert.Same`) vẫn xanh mà không sửa
+  assertion. Fake ném exception đã dịch không bọc gì thì `?? exception` log chính nó. Một chỗ vẫn khác: lỗi tạm thời
+  trong transaction mới mở đi qua execution strategy (R7), nên `InnerException` là `InvalidOperationException` bọc lỗi
+  của driver, không phải lỗi trần như khi `InTransactionAsync` cũ tự mở transaction. Code đã merge trước CA-05
+  (`RoleService`, `AuditLogQueryService`) còn log exception đã dịch; không có test nào khẳng định điều đó, và subtask
+  sau không sửa chúng "tiện tay" (R15).
 - Chỉ thêm thành viên `UniqueConflict` khi code cũ phân biệt theo tên constraint. Thêm thành viên và dòng trong bảng
   của translator trong cùng PR.
 - Code còn ở Infrastructure (repository, adapter, service chưa chuyển) dùng `DbErrors` (CA-01), lớp này nhận ra cả

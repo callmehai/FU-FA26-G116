@@ -4,6 +4,7 @@ using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Tests.Fakes;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Meetings;
 
 namespace TrustCabinet.Application.Tests.Meetings;
 
@@ -83,6 +84,56 @@ public sealed class MeetingServiceTests
 
         Assert.Equal(MeetingWorkflowOutcome.SaveFailed, result.Outcome);
         Assert.Equal((0, 0, 1), (_unitOfWork.Saves, _unitOfWork.Commits, _unitOfWork.Rollbacks));
+    }
+
+    private static MeetingInput Input(string title) => new(
+        title, Now.AddDays(2).ToString("O"), Now.AddDays(2).AddHours(1).ToString("O"), null, null, null, null, null);
+
+    [Fact]
+    public async Task Create_locks_the_invitees_and_adds_the_meeting_in_one_committed_transaction()
+    {
+        var chair = Guid.CreateVersion7();
+        var member = Guid.CreateVersion7();
+
+        var result = await Service().CreateAsync(Input("Họp giao ban"), _organizer,
+            [new ParticipantSeed(chair, nameof(MeetingRole.Chair)), new ParticipantSeed(member, nameof(MeetingRole.Member))]);
+
+        Assert.Equal(MeetingOutcome.Success, result.Outcome);
+        Assert.Equal([chair, member], _meetings.LockedUsers);
+        Assert.Equal(2, Assert.Single(_meetings.Added).Participants.Count);
+        Assert.Equal([TransactionMode.ReadCommitted], _unitOfWork.Modes);
+        Assert.Equal((1, 1), (_unitOfWork.Saves, _unitOfWork.Commits));
+    }
+
+    [Fact]
+    public async Task Update_locks_the_meeting_and_saves_in_one_committed_transaction()
+    {
+        var meeting = new Meeting
+        {
+            Title = "Họp cũ", Status = MeetingStatus.Draft, CreatedById = _organizer,
+            PlannedStartTime = Now.AddDays(1), PlannedEndTime = Now.AddDays(1).AddHours(1),
+        };
+        _meetings.Meetings.Add(meeting);
+
+        var result = await Service().UpdateAsync(meeting.Id, Input("Họp mới"), _organizer);
+
+        Assert.Equal(MeetingOutcome.Success, result.Outcome);
+        Assert.Equal("Họp mới", meeting.Title);
+        Assert.Equal([meeting.Id], _meetings.Locked);
+        Assert.Equal([TransactionMode.ReadCommitted], _unitOfWork.Modes);
+        Assert.Equal((1, 1), (_unitOfWork.Saves, _unitOfWork.Commits));
+    }
+
+    [Fact]
+    public async Task History_is_read_inside_a_transaction_as_before()
+    {
+        var meeting = GivenWaitingApproval();
+
+        var result = await Service().GetHistoryAsync(meeting.Id, _organizer, page: 1, pageSize: 20);
+
+        Assert.Equal(MeetingWorkflowOutcome.Success, result.Outcome);
+        Assert.Equal([TransactionMode.ReadCommitted], _unitOfWork.Modes);
+        Assert.Equal(0, _unitOfWork.Saves);
     }
 
     [Fact]

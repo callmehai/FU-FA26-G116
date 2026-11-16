@@ -29,6 +29,11 @@ public sealed class FakeMeetingRepository : IMeetingRepository
 
     public List<Notification> Notifications { get; } = [];
 
+    public List<Meeting> Added { get; } = [];
+
+    /// <summary>Users read under a shared lock, in order.</summary>
+    public List<Guid> LockedUsers { get; } = [];
+
     public Task<Meeting?> FindAccessibleAsync(Guid id, Guid actorId, CancellationToken ct = default)
         => Task.FromResult(Accessible.Contains((id, actorId)) ? new Meeting { Id = id, Title = "Họp" } : null);
 
@@ -78,14 +83,28 @@ public sealed class FakeMeetingRepository : IMeetingRepository
         return Task.CompletedTask;
     }
 
+    public Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default)
+    {
+        LockedUsers.AddRange(userIds);
+        return Task.FromResult<IReadOnlyList<User>>(userIds
+            .Select(id => new User { Id = id, FullName = "Thành viên", Email = $"{id}@trustcabinet.local", IsActive = true })
+            .ToArray());
+    }
+
+    public Task AddAsync(Meeting meeting, CancellationToken ct = default)
+    {
+        Added.Add(meeting);
+        return Task.CompletedTask;
+    }
+
+    public Task<MeetingHistoryPage?> FindHistoryPageAsync(Guid meetingId, int page, int pageSize, CancellationToken ct = default)
+        => Task.FromResult<MeetingHistoryPage?>(new MeetingHistoryPage([], page, pageSize, 0));
+
     public Task<MeetingListPage> FindAuthorizedPageAsync(Guid actorId, MeetingListQuery query, CancellationToken ct = default) => throw new NotSupportedException();
     public Task<Meeting?> FindOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default) => throw new NotSupportedException();
     public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default) => throw new NotSupportedException();
     public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
-    public Task<MeetingHistoryPage?> FindHistoryPageAsync(Guid meetingId, int page, int pageSize, CancellationToken ct = default) => throw new NotSupportedException();
     public Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default) => throw new NotSupportedException();
-    public Task<IReadOnlyList<User>> LockParticipantUsersAsync(Guid[] userIds, CancellationToken ct = default) => throw new NotSupportedException();
-    public Task AddAsync(Meeting meeting, CancellationToken ct = default) => throw new NotSupportedException();
     public Task SaveChangesAsync(CancellationToken ct = default) => throw new NotSupportedException();
     public Task StageCancellationAsync(Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default) => throw new NotSupportedException();
     public Task<T> InTransactionAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct = default) => throw new NotSupportedException();

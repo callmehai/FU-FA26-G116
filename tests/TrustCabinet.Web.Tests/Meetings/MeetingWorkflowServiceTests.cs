@@ -3,7 +3,6 @@ using Npgsql;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Meetings;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
