@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Application.Access;
+using TrustCabinet.Application.Agenda;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.CalendarSharing;
@@ -25,6 +27,7 @@ public static class DependencyInjection
         AddUsers(services);
         AddMeetings(services);
         AddCalendarSharing(services);
+        AddAgenda(services);
         return services;
     }
 
@@ -77,5 +80,17 @@ public static class DependencyInjection
         services.AddScoped<ICalendarShareStopper, CalendarShareStopper>();
         services.AddScoped<ISharedCalendarService, SharedCalendarService>();
         services.AddScoped<IMeetingSlotService, MeetingSlotService>();
+    }
+
+    /// <summary>
+    /// <see cref="UnavailableAgendaGuestAccess"/> fails closed until the guest access module replaces it with the
+    /// real adapter, which it does with <c>Replace</c>, so it stays a <c>TryAdd</c>.
+    /// </summary>
+    private static void AddAgenda(IServiceCollection services)
+    {
+        services.AddScoped<IAgendaService, AgendaService>();
+        services.AddScoped<IAgendaPresenterNotifier, AgendaPresenterNotifier>();
+        services.AddScoped<IAgendaMeetingEnd, AgendaMeetingEnd>();
+        services.TryAddScoped<IAgendaGuestAccess, UnavailableAgendaGuestAccess>();
     }
 }

@@ -164,6 +164,11 @@ public interface IUnitOfWork
   `BeginTransactionAsync(IsolationLevel.RepeatableRead)` → `RepeatableRead`; đoạn
   `if (db.Database.CurrentTransaction is null) …` → một lời gọi `ExecuteAsync` (tự nhập vào transaction đang mở).
   Không có chỗ nào dùng `Serializable`; không thêm.
+- Guard kiểu `if (db.Database.CurrentTransaction is null) throw …` (lớp **đòi** transaction của nơi gọi, như
+  `AgendaMeetingEnd`, `VoteMeetingEnd`, `SpeakingMeetingEnd`) thì khác: `ExecuteAsync` ở mức có transaction sẽ tự mở
+  transaction thay vì ném lỗi. Chốt ở CA-07 (16/11/2026, comment trên SCRUM-172): guard chuyển vào method khoá của
+  repository (ném `InvalidOperationException` khi chưa có transaction, XML doc ghi rõ), service bọc
+  `ExecuteAsync(…, TransactionMode.None)`.
 - Việc sau commit (phát SignalR, gửi email, xoá file) vẫn đặt **sau** khi `ExecuteAsync` trả về, đúng thứ tự cũ.
 
 Cài đặt là [`Infrastructure/Persistence/EfUnitOfWork.cs`](../../backend/TrustCabinet.Infrastructure/Persistence/EfUnitOfWork.cs),
@@ -351,7 +356,7 @@ các mục của module mình; không subtask nào được thêm mục.**
   nằm trong `Persistence/`, `Seed/`, hoặc là `TrustCabinetDbContext*`, `DependencyInjection`. Lớp khác phải nằm ở mảng
   `PendingDbContextReaders` (phải rỗng ở CA-20) hoặc `AllowedDbContextAdapters` (vĩnh viễn, mỗi mục một dòng lý do;
   chỉ cho lớp cài đặt một port của Application và không có nhánh nghiệp vụ).
-- Reflection không đọc thân method, nơi `CapabilityGate`, `NotificationWorker`, `AgendaPresenterNotifier` gọi
+- Reflection không đọc thân method, nơi `CapabilityGate`, `NotificationWorker` gọi
   `GetRequiredService<T>()`: các lớp đó có mục trong mảng của luật mình kèm comment, và CA-18, CA-20 kiểm bằng
   `git grep` (chi tiết ở phần cách đo bên dưới).
 
@@ -367,11 +372,13 @@ Cách `ArchitectureTests` đo, để subtask sau đọc kết quả cho đúng:
   `TrustCabinet.Infrastructure.X`, trừ `Program.cs` và `DatabaseMigrationCommand.cs`; mục là đường dẫn tính từ thư mục
   đó. Lý do: `new PdfPigInspector()`, hằng số hay lời gọi static không để lại dấu trong chữ ký nên reflection bỏ sót
   (`PdfPageCounter.cs`, `MeetingGuestIdentity.cs`, `UserEndpoints.cs`).
-- `CapabilityGate`, `NotificationWorker` và `AgendaPresenterNotifier` lấy repository hoặc `DbContext` bằng
-  `GetRequiredService<T>()` trong thân method. Reflection vẫn thấy chúng ở cả Debug lẫn Release, vì biến cục bộ sống qua
-  một `await` nên thành field; chúng nằm trong mảng của đúng luật mình (A6, A7), không có mảng ghi tay riêng. Nếu một
+- `CapabilityGate` và `NotificationWorker` lấy repository hoặc `DbContext` bằng `GetRequiredService<T>()` trong
+  thân method. (`AgendaPresenterNotifier` từng ở đây; từ CA-07 nó nằm ở Application và lấy `IUnitOfWork` cùng
+  repository trong scope riêng, việc Application được phép.) Reflection vẫn thấy chúng ở cả Debug lẫn Release, vì biến
+  cục bộ sống qua một `await` nên thành field; chúng nằm trong mảng của đúng luật mình (A6, A7), không có mảng ghi tay riêng. Nếu một
   lần sửa làm reflection hết thấy mà lời gọi vẫn còn thì mục đó bị buộc xoá trong khi vi phạm chưa hết, nên CA-18 và
-  CA-20 vẫn kiểm bằng `git grep "GetRequiredService<\(TrustCabinetDbContext\|I[A-Za-z]*Repository\)>" backend`.
+  CA-20 vẫn kiểm bằng `git grep "GetRequiredService<\(TrustCabinetDbContext\|I[A-Za-z]*Repository\)>"
+  backend/TrustCabinet.Web backend/TrustCabinet.Infrastructure` (Application được lấy repository).
 - Giới hạn đã biết của luật xét theo tên, để CA-18 và CA-20 biết `git grep` phải phủ gì:
   - A4 không thấy service có interface `I*Service` khai trong Infrastructure.
   - A5 chỉ xét hai tên `SaveChangesAsync` và `InTransactionAsync`; `ITranscriptRepository.DiscardChanges` và

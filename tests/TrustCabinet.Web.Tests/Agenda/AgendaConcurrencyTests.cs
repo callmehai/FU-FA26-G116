@@ -2,9 +2,11 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using TrustCabinet.Application.Agenda;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Agenda;
+using TrustCabinet.Infrastructure.Persistence;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Agenda;
@@ -143,7 +145,7 @@ public sealed class AgendaConcurrencyTests(AgendaFixture fixture) : IClassFixtur
         await AssertCode(await client.PostAsync(s.Url + $"/{s.Items[0]}/current", null), 200, "MSG64");
         await using (var db = fixture.Db())
         {
-            var helper = new AgendaMeetingEnd(db);
+            var helper = new AgendaMeetingEnd(new AgendaRepository(db), new EfUnitOfWork(db));
             await Assert.ThrowsAsync<InvalidOperationException>(() => helper.PrepareAsync(s.MeetingId, fixture.Clock.Now));
             await using var transaction = await db.Database.BeginTransactionAsync();
             var change = await helper.PrepareAsync(s.MeetingId, fixture.Clock.Now.AddSeconds(7));
@@ -159,7 +161,7 @@ public sealed class AgendaConcurrencyTests(AgendaFixture fixture) : IClassFixtur
         Assert.Equal(AgendaItemStatus.InProgress, (await check.AgendaItems.SingleAsync(i => i.Id == s.Items[0])).Status);
         Assert.Equal(MeetingStatus.InProgress, (await check.Meetings.SingleAsync(m => m.Id == s.MeetingId)).Status);
         await using var committed = await check.Database.BeginTransactionAsync();
-        var completed = await new AgendaMeetingEnd(check).PrepareAsync(s.MeetingId, fixture.Clock.Now.AddSeconds(7));
+        var completed = await new AgendaMeetingEnd(new AgendaRepository(check), new EfUnitOfWork(check)).PrepareAsync(s.MeetingId, fixture.Clock.Now.AddSeconds(7));
         Assert.NotNull(completed);
         await check.SaveChangesAsync();
         await committed.CommitAsync();

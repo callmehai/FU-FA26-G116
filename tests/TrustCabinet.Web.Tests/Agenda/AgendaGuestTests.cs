@@ -16,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Application.Agenda;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Agenda;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
 namespace TrustCabinet.Web.Tests.Agenda;

@@ -92,6 +92,9 @@ public sealed class NotificationRepository(TrustCabinetDbContext db) : INotifica
                 participant.UserId))
             .ToListAsync(ct);
 
+    public Task<bool> ExistsWithDeduplicationKeyAsync(string deduplicationKey, CancellationToken ct = default)
+        => db.Notifications.AnyAsync(n => n.DeduplicationKey == deduplicationKey, ct);
+
     public Task<List<string?>> FindReminderKeysAsync(Guid[] meetingIds,
         CancellationToken ct = default)
         => db.Notifications.AsNoTracking()

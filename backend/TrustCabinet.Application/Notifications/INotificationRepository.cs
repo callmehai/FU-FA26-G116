@@ -22,6 +22,9 @@ public interface INotificationRepository
 
     void Add(Notification notification);
 
+    /// <summary>Whether a notification with this deduplication key has already been queued, for anyone.</summary>
+    Task<bool> ExistsWithDeduplicationKeyAsync(string deduplicationKey, CancellationToken ct = default);
+
     Task<List<UpcomingMeetingRecipient>> FindUpcomingMeetingRecipientsAsync(
         DateTimeOffset now, DateTimeOffset cutoff, CancellationToken ct = default);
 

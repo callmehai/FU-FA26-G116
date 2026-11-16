@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Notes;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Email;
 
 namespace TrustCabinet.Infrastructure.Agenda;
 
@@ -47,6 +48,31 @@ public sealed class AgendaRepository(TrustCabinetDbContext db) : IAgendaReposito
         }
         db.AgendaItems.Remove(item);
     }
+
+    public async Task<Meeting?> LockMeetingAsync(Guid meetingId, CancellationToken ct)
+    {
+        if (db.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("Locking the meeting requires the caller's meeting transaction.");
+        return (await db.Meetings.FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {meetingId} FOR UPDATE")
+            .AsNoTracking().ToListAsync(ct)).SingleOrDefault();
+    }
+
+    public Task<AgendaItem?> FindCurrentAsync(Guid meetingId, CancellationToken ct)
+        => db.AgendaItems.SingleOrDefaultAsync(i => i.MeetingId == meetingId
+            && i.Status == AgendaItemStatus.InProgress, ct);
+
+    public Task<AgendaItem?> FindAsync(Guid meetingId, Guid itemId, CancellationToken ct)
+        => db.AgendaItems.AsNoTracking().SingleOrDefaultAsync(i => i.Id == itemId
+            && i.MeetingId == meetingId, ct);
+
+    public async Task<IReadOnlyList<MeetingParticipant>> ListParticipationsAsync(Guid meetingId, Guid userId,
+        CancellationToken ct)
+        => await db.MeetingParticipants.Include(p => p.User)
+            .Where(p => p.MeetingId == meetingId && p.UserId == userId).ToListAsync(ct);
+
+    public Task<MeetingGuestInvitation?> FindCurrentGuestAsync(Guid meetingId, Guid invitationId, CancellationToken ct)
+        => db.MeetingGuestInvitations.AsNoTracking().SingleOrDefaultAsync(g =>
+            g.Id == invitationId && g.MeetingId == meetingId && g.RevokedAt == null, ct);
 }
 
 /// <summary>
@@ -75,34 +101,15 @@ public sealed class AgendaDocumentRepository(TrustCabinetDbContext db) : IAgenda
     }
 }
 
-public sealed class AgendaMeetingEnd(TrustCabinetDbContext db) : IAgendaMeetingEnd
-{
-    public async Task<AgendaChange?> PrepareAsync(Guid meetingId, DateTimeOffset endedAt, CancellationToken ct = default)
-    {
-        if (db.Database.CurrentTransaction is null)
-            throw new InvalidOperationException("Agenda completion requires the caller's meeting transaction and lock.");
-        // Reacquiring an already held row lock is harmless and protects accidental callers as well.
-        await db.Meetings.FromSqlInterpolated($"SELECT * FROM meetings WHERE id = {meetingId} FOR UPDATE")
-            .AsNoTracking().ToListAsync(ct);
-        var item = await db.AgendaItems.SingleOrDefaultAsync(i => i.MeetingId == meetingId
-            && i.Status == AgendaItemStatus.InProgress, ct);
-        if (item is null) return null;
-        if (!AgendaExecution.TryComplete(item, endedAt))
-            throw new InvalidAgendaExecutionException();
-        return new(Guid.CreateVersion7(), meetingId, "MeetingEnded", item.Id, item.Title, item.ActualEndedAt!.Value);
-    }
-}
-
 public static class AgendaServiceCollectionExtensions
 {
     public static IServiceCollection AddTrustCabinetAgenda(this IServiceCollection services)
     {
         services.AddScoped<IAgendaRepository, AgendaRepository>();
         services.AddScoped<IAgendaDocumentRepository, AgendaDocumentRepository>();
-        services.AddScoped<IAgendaService, AgendaService>();
-        services.AddScoped<IAgendaPresenterNotifier, AgendaPresenterNotifier>();
-        services.AddScoped<IAgendaMeetingEnd, AgendaMeetingEnd>();
-        services.TryAddScoped<IAgendaGuestAccess, UnavailableAgendaGuestAccess>();
+        // The presenter notice is the only use case moved to Application that queues an email; CA-17 (SCRUM-182)
+        // moves the Email module and its registrations.
+        services.AddScoped<IEmailMessageRepository, EmailMessageRepository>();
         return services;
     }
 }

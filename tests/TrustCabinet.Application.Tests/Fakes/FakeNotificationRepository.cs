@@ -48,6 +48,9 @@ public sealed class FakeNotificationRepository : INotificationRepository
 
     public void Add(Notification notification) => Added.Add(notification);
 
+    public Task<bool> ExistsWithDeduplicationKeyAsync(string deduplicationKey, CancellationToken ct = default)
+        => Read(() => Rows.Any(n => n.DeduplicationKey == deduplicationKey));
+
     public Task<List<UpcomingMeetingRecipient>> FindUpcomingMeetingRecipientsAsync(
         DateTimeOffset now, DateTimeOffset cutoff, CancellationToken ct = default)
         => Read(() => Upcoming.Where(u => u.PlannedStartTime > now && u.PlannedStartTime <= cutoff).ToList());
