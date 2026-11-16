@@ -403,7 +403,7 @@ public sealed class SpeechClipService(IMeetingRepository meetings, TrustCabinetD
     /// this meeting while it is open, and named (UC-04 step 5). A token for another meeting never gets this far.
     /// </summary>
     private async Task<bool> GuestAdmittedAsync(MeetingGuestSession guest, Guid meetingId, CancellationToken ct)
-        => guest.IsValid && guest.MeetingId == meetingId && await GuestAccessService.CurrentSessions(db, clock.GetUtcNow())
+        => guest.IsValid && guest.MeetingId == meetingId && await GuestSessionRepository.CurrentSessions(db, clock.GetUtcNow())
             .AnyAsync(x => x.Id == guest.SessionId && x.InvitationId == guest.InvitationId
                 && x.Invitation.MeetingId == meetingId && x.Invitation.SelfDeclaredDisplayName != null, ct);
 

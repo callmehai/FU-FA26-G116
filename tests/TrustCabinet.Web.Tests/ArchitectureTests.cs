@@ -65,7 +65,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Documents.DocumentCommentService",
         "TrustCabinet.Infrastructure.Documents.MeetingDocumentService",
         "TrustCabinet.Infrastructure.Documents.PersonalLibraryService",
-        "TrustCabinet.Infrastructure.GuestAccess.GuestAccessService",
         "TrustCabinet.Infrastructure.Notes.MeetingNoteService",
         "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
         "TrustCabinet.Infrastructure.Recordings.RecordingService",
@@ -144,8 +143,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Email.MeetingInvitationDispatchProcessor",
         "TrustCabinet.Infrastructure.Email.MeetingInvitationEvents",
         "TrustCabinet.Infrastructure.Email.ResendWebhookReceiver",
-        "TrustCabinet.Infrastructure.GuestAccess.GuestAccessService",
-        "TrustCabinet.Infrastructure.GuestAccess.GuestSessionAccess",
         "TrustCabinet.Infrastructure.Notes.MeetingNoteService",
         "TrustCabinet.Infrastructure.Recordings.CombinedRecordingService",
         "TrustCabinet.Infrastructure.Recordings.SpeechClipService",
@@ -167,6 +164,9 @@ public sealed class ArchitectureTests
     [
         // Stages the roster notice through the Email helper, which CA-17 owns.
         "TrustCabinet.Infrastructure.Email.MeetingInvitationStager",
+        // The live guest-session check behind every guest read (agenda, roster, attendance, hub, call room,
+        // documents): it only composes the current-session query with the meeting, with no branch of its own.
+        "TrustCabinet.Infrastructure.GuestAccess.GuestSessionAccess",
         // Closes the removed readers' speaking requests through the Speaking helper, which CA-13 owns.
         "TrustCabinet.Infrastructure.Speaking.SpeakingRequestCloser",
     ];

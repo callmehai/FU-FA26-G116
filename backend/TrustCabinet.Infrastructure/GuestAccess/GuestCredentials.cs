@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TrustCabinet.Application.GuestAccess;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Infrastructure.Authentication;
 
@@ -13,7 +14,7 @@ namespace TrustCabinet.Infrastructure.GuestAccess;
 /// The secrets behind guest links and codes. Each key is derived from the token signing key under its
 /// own label, so a deployment needs no new secret and a link token can never double as a code hash.
 /// </summary>
-public sealed class GuestCredentials(IOptions<AuthenticationOptions> options)
+public sealed class GuestCredentials(IOptions<AuthenticationOptions> options) : IGuestCredentials
 {
     private readonly AuthenticationOptions _token = options.Value;
     private readonly byte[] _linkKey = Derive(options.Value.SigningKey, "trustcabinet:guest-invitation-link");

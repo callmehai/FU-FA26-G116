@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TrustCabinet.Infrastructure.GuestAccess;
+namespace TrustCabinet.Application.GuestAccess;
 
 /// <summary>UC-04 limits, bound from <c>GuestAccess</c>. Values settled 30/10/2026 (SCRUM-117).</summary>
 public sealed class GuestAccessOptions

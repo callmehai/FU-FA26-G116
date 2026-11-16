@@ -6,6 +6,7 @@ using TrustCabinet.Application.Attendance;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.CalendarSharing;
+using TrustCabinet.Application.GuestAccess;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Participants;
@@ -32,6 +33,7 @@ public static class DependencyInjection
         AddAgenda(services);
         AddParticipants(services);
         AddAttendance(services);
+        AddGuestAccess(services);
         return services;
     }
 
@@ -114,5 +116,10 @@ public static class DependencyInjection
     private static void AddAttendance(IServiceCollection services)
     {
         services.AddScoped<IAttendanceService, AttendanceService>();
+    }
+
+    private static void AddGuestAccess(IServiceCollection services)
+    {
+        services.AddScoped<IGuestAccessService, GuestAccessService>();
     }
 }

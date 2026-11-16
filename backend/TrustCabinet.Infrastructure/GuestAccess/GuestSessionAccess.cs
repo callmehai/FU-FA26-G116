@@ -30,5 +30,5 @@ internal sealed class GuestSessionAccess(TrustCabinetDbContext db, TimeProvider 
 
     /// <summary>Current sessions of the meeting whose guest finished UC-04 step 5 (the display name).</summary>
     private IQueryable<GuestSession> Admitted(Guid meetingId)
-        => GuestAccessService.CurrentSessions(db, clock.GetUtcNow()).Where(x => x.Invitation.MeetingId == meetingId && x.Invitation.SelfDeclaredDisplayName != null);
+        => GuestSessionRepository.CurrentSessions(db, clock.GetUtcNow()).Where(x => x.Invitation.MeetingId == meetingId && x.Invitation.SelfDeclaredDisplayName != null);
 }
