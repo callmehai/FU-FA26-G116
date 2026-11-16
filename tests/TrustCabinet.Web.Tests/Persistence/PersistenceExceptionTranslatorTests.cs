@@ -105,6 +105,20 @@ public sealed class PersistenceExceptionTranslatorTests
             Assert.IsType<UniqueConflictException>(PersistenceExceptionTranslator.Translate(wrapped)).Conflict);
     }
 
+    /// <summary>SCRUM-177 (CA-12): the indexes whose duplicates the vote writes answer with their own outcome.</summary>
+    [Theory]
+    [InlineData("ix_voting_sessions_meeting_id", UniqueConflict.OpenVoteInMeeting)]
+    [InlineData("ix_vote_receipts_voting_session_id_voter_id", UniqueConflict.BallotAlreadyCast)]
+    [InlineData("ix_vote_receipts_voting_session_id_guest_invitation_id", UniqueConflict.BallotAlreadyCast)]
+    [InlineData("ix_document_read_confirmations_meeting_document_id_user_id", UniqueConflict.DocumentAlreadyConfirmed)]
+    [InlineData("ix_document_read_confirmations_meeting_document_id_guest_invit", UniqueConflict.DocumentAlreadyConfirmed)]
+    public void The_vote_indexes_are_in_the_table(string index, UniqueConflict conflict)
+    {
+        var wrapped = new DbUpdateException("save failed", Postgres(PostgresErrorCodes.UniqueViolation, index));
+
+        Assert.Equal(conflict, Assert.IsType<UniqueConflictException>(PersistenceExceptionTranslator.Translate(wrapped)).Conflict);
+    }
+
     private static PostgresException Postgres(string sqlState, string? constraint = null)
         => new("rejected", "ERROR", "ERROR", sqlState, constraintName: constraint);
 }

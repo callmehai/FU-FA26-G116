@@ -72,7 +72,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Transcription.TranscriptionService",
         "TrustCabinet.Infrastructure.VoiceId.VoiceCollectionService",
         "TrustCabinet.Infrastructure.VoiceId.VoiceIdService",
-        "TrustCabinet.Infrastructure.Votes.VoteService",
     ];
 
     // A5 — no interface but IUnitOfWork has SaveChangesAsync or InTransactionAsync.
@@ -142,8 +141,6 @@ public sealed class ArchitectureTests
         "TrustCabinet.Infrastructure.Summaries.MinutesService",
         "TrustCabinet.Infrastructure.Summaries.SummaryService",
         "TrustCabinet.Infrastructure.VoiceId.VoiceCollectionService",
-        "TrustCabinet.Infrastructure.Votes.VoteMeetingEnd",
-        "TrustCabinet.Infrastructure.Votes.VoteService",
     ];
 
     // A7 — for good: a class that implements one port of Application over the context and has no business branch.

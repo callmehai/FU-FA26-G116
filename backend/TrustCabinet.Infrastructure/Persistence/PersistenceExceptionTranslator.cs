@@ -18,6 +18,12 @@ internal static class PersistenceExceptionTranslator
     private static readonly Dictionary<string, UniqueConflict> UniqueIndexes = new(StringComparer.Ordinal)
     {
         ["ux_calendar_shares_open_pair"] = UniqueConflict.CalendarShareOpenPair,
+        ["ix_voting_sessions_meeting_id"] = UniqueConflict.OpenVoteInMeeting,
+        ["ix_vote_receipts_voting_session_id_voter_id"] = UniqueConflict.BallotAlreadyCast,
+        ["ix_vote_receipts_voting_session_id_guest_invitation_id"] = UniqueConflict.BallotAlreadyCast,
+        ["ix_document_read_confirmations_meeting_document_id_user_id"] = UniqueConflict.DocumentAlreadyConfirmed,
+        // PostgreSQL cuts identifiers at 63 bytes.
+        ["ix_document_read_confirmations_meeting_document_id_guest_invit"] = UniqueConflict.DocumentAlreadyConfirmed,
     };
 
     /// <summary>

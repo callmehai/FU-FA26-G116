@@ -8,13 +8,7 @@ using TrustCabinet.Domain.Votes;
 
 namespace TrustCabinet.Infrastructure.Votes;
 
-/// <summary>A vote as the list and the detail show it, with the caller's own standing in it.</summary>
-public sealed record VoteRow(Guid Id, string Title, string Description, VotingStatus Status, bool IsAnonymous,
-    List<MeetingRole> EligibleRoles, DateTimeOffset? OpenedAt, DateTimeOffset? ClosedAt, int EligibleCount,
-    int ReceiptCount, int DocumentCount, bool IsEligible, bool HasVoted, VoteConclusion? Conclusion,
-    string ConclusionNote, Guid? ConcludedById, string? ConcludedByName, DateTimeOffset? ConcludedAt);
-
-public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAccess guests)
+public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAccess guests) : IVoteRepository
 {
     /// <summary>
     /// Every vote write takes the meeting row first, so it serializes with ending the meeting and with roster
@@ -163,6 +157,44 @@ public sealed class VoteRepository(TrustCabinetDbContext db, IParticipantGuestAc
             .OrderBy(v => v.DisplayName, StringComparer.OrdinalIgnoreCase).ThenBy(v => v.Id).ToArray();
         return new(ballots, tally, voters);
     }
+
+    public Task<bool> IsActiveUserAsync(Guid userId, CancellationToken ct)
+        => db.Users.AnyAsync(u => u.Id == userId && u.IsActive, ct);
+
+    public Task<int> CountMeetingDocumentsAsync(Guid meetingId, Guid[] meetingDocumentIds, CancellationToken ct)
+        => db.MeetingDocuments.CountAsync(d => meetingDocumentIds.Contains(d.Id) && d.MeetingId == meetingId && d.RemovedAt == null, ct);
+
+    public Task<VoteDocument?> FindDocumentLinkAsync(Guid voteId, Guid? meetingDocumentId, CancellationToken ct)
+        => db.VoteDocuments.SingleOrDefaultAsync(l => l.VotingSessionId == voteId
+            && l.MeetingDocumentId == meetingDocumentId && l.MeetingDocument.RemovedAt == null, ct);
+
+    public async Task<IReadOnlyList<VoteDraft>> ListDraftsAsync(Guid meetingId, CancellationToken ct)
+    {
+        if (db.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("Deleting drafts at meeting end requires the caller's meeting transaction and lock.");
+        var drafts = await db.VotingSessions
+            .Where(v => v.MeetingId == meetingId && v.Status == VotingStatus.Draft)
+            .OrderBy(v => v.CreatedAt).ThenBy(v => v.Id)
+            .Select(v => new
+            {
+                Vote = v,
+                Options = v.Options.OrderBy(o => o.Position).Select(o => o.Label).ToArray(),
+                Documents = v.Documents.Select(d => d.MeetingDocumentId).ToArray()
+            })
+            .ToListAsync(ct);
+        return drafts.Select(d => new VoteDraft(d.Vote, d.Options, d.Documents)).ToArray();
+    }
+
+    public void Add(VotingSession vote) => db.VotingSessions.Add(vote);
+    public void Remove(VotingSession vote) => db.VotingSessions.Remove(vote);
+    public void Add(VotingOption option) => db.VotingOptions.Add(option);
+    public void RemoveOptions(IEnumerable<VotingOption> options) => db.VotingOptions.RemoveRange(options);
+    public void AddEligibleVoters(IEnumerable<VoteEligibleVoter> voters) => db.VoteEligibleVoters.AddRange(voters);
+    public void Add(VoteReceipt receipt) => db.VoteReceipts.Add(receipt);
+    public void Add(VoteChoice choice) => db.VoteChoices.Add(choice);
+    public void AddDocumentLinks(IEnumerable<VoteDocument> links) => db.VoteDocuments.AddRange(links);
+    public void Remove(VoteDocument link) => db.VoteDocuments.Remove(link);
+    public void Add(DocumentReadConfirmation confirmation) => db.DocumentReadConfirmations.Add(confirmation);
 
     private static Expression<Func<VotingSession, VoteRow>> Row(VoteViewer viewer)
     {

@@ -7,9 +7,7 @@ public static class VoteServiceCollectionExtensions
 {
     public static IServiceCollection AddTrustCabinetVotes(this IServiceCollection services)
     {
-        services.AddScoped<VoteRepository>();
-        services.AddScoped<IVoteService, VoteService>();
-        services.AddScoped<IVoteMeetingEnd, VoteMeetingEnd>();
+        services.AddScoped<IVoteRepository, VoteRepository>();
         return services;
     }
 }

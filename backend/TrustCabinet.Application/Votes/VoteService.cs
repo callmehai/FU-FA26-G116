@@ -1,6 +1,5 @@
-using System.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Application.Documents;
 using TrustCabinet.Domain.Documents;
@@ -8,33 +7,22 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Application.Participants;
-using TrustCabinet.Application.Votes;
 using TrustCabinet.Domain.Votes;
 using TrustCabinet.Domain.GuestAccess;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Votes;
+namespace TrustCabinet.Application.Votes;
 
 /// <summary>
 /// Votes taken during a meeting (FE-11, SCRUM-28): drafts, opening, ballots, closing and the Chair's conclusion; and
 /// the documents voters must read first (SCRUM-96): attaching and detaching them, and confirming they were read.
 /// Contract in docs/03-api/15-bieu-quyet.md.
 /// </summary>
-public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, IParticipantRepository participants,
+public sealed class VoteService(IVoteRepository votes, IParticipantRepository participants,
     IParticipantGuestAccess guests, IMeetingDocumentAttacher attacher,
-    StoredFileWriter writer, IVoteChangePublisher publisher, TimeProvider clock, ILogger<VoteService> logger)
+    StoredFileWriter writer, IVoteChangePublisher publisher, IUnitOfWork unitOfWork, TimeProvider clock,
+    ILogger<VoteService> logger)
     : IVoteService
 {
-    private const string OpenVoteIndex = "ix_voting_sessions_meeting_id";
-    private static readonly string[] ReceiptIndexes =
-        ["ix_vote_receipts_voting_session_id_voter_id", "ix_vote_receipts_voting_session_id_guest_invitation_id"];
-    private static readonly string[] ReadConfirmationIndexes =
-    [
-        "ix_document_read_confirmations_meeting_document_id_user_id",
-        // PostgreSQL cuts identifiers at 63 bytes.
-        "ix_document_read_confirmations_meeting_document_id_guest_invit"
-    ];
-
     private DateTimeOffset Now => AgendaExecution.UtcMicroseconds(clock.GetUtcNow());
 
     /// <summary>
@@ -49,7 +37,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
                 && GuestAccessRules.MeetingOpen(s.Meeting.Status) && s.Guests.Any(x => x.Id == g.InvitationId)
                 && await guests.CanAccessAsync(g, ct)
                 ? (VoteFailure.None, new(null, g.InvitationId)) : (VoteFailure.NotFound, null);
-        if (actor.UserId is not { } id || !await db.Users.AnyAsync(u => u.Id == id && u.IsActive, ct))
+        if (actor.UserId is not { } id || !await votes.IsActiveUserAsync(id, ct))
             return (VoteFailure.Inactive, null);
         return s is not null && MeetingReadPolicy.CanRead(s.Meeting, id)
             ? (VoteFailure.None, new(id, null)) : (VoteFailure.NotFound, null);
@@ -59,21 +47,23 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
     {
         try
         {
-            await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
-            var s = await participants.LoadAsync(meetingId, false, ct);
-            var (failure, viewer) = await AccessAsync(s, actor, ct);
-            if (failure != VoteFailure.None) return new(failure);
-            var meeting = s!.Meeting;
-            var rows = await votes.ListAsync(meetingId, VoteRules.IsManager(meeting, viewer!), viewer!, ct);
-            var anyOpen = rows.Any(r => r.Status == VotingStatus.Open);
-            return new(Data: new VoteListSnapshot(meetingId, meeting.Status.ToString(), clock.GetUtcNow(),
-                VoteRules.Permissions(meeting, viewer!), rows.Select(r => new VoteSummary(r.Id, r.Title, r.Status.ToString(),
-                    r.IsAnonymous, Roles(r), r.OpenedAt, r.ClosedAt, r.EligibleCount, r.ReceiptCount, r.HasVoted,
-                    Conclusion(r), r.DocumentCount, Actions(meeting, viewer!, r, anyOpen))).ToArray()));
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                var s = await participants.LoadAsync(meetingId, false, token);
+                var (failure, viewer) = await AccessAsync(s, actor, token);
+                if (failure != VoteFailure.None) return new VoteOutcome(failure);
+                var meeting = s!.Meeting;
+                var rows = await votes.ListAsync(meetingId, VoteRules.IsManager(meeting, viewer!), viewer!, token);
+                var anyOpen = rows.Any(r => r.Status == VotingStatus.Open);
+                return new VoteOutcome(Data: new VoteListSnapshot(meetingId, meeting.Status.ToString(), clock.GetUtcNow(),
+                    VoteRules.Permissions(meeting, viewer!), rows.Select(r => new VoteSummary(r.Id, r.Title, r.Status.ToString(),
+                        r.IsAnonymous, Roles(r), r.OpenedAt, r.ClosedAt, r.EligibleCount, r.ReceiptCount, r.HasVoted,
+                        Conclusion(r), r.DocumentCount, Actions(meeting, viewer!, r, anyOpen))).ToArray()));
+            }, TransactionMode.RepeatableRead, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to read votes of meeting {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to read votes of meeting {MeetingId}", meetingId);
             return new(VoteFailure.ListReadFailed);
         }
     }
@@ -82,29 +72,31 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
     {
         try
         {
-            await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
-            var s = await participants.LoadAsync(meetingId, false, ct);
-            var (failure, viewer) = await AccessAsync(s, actor, ct);
-            if (failure != VoteFailure.None) return new(failure);
-            var meeting = s!.Meeting;
-            var r = await votes.FindAsync(meetingId, voteId, viewer!, ct);
-            // A draft the caller may not see answers exactly like a vote that does not exist (BR-253).
-            if (r is null || (r.Status == VotingStatus.Draft && !VoteRules.IsManager(meeting, viewer!)))
-                return new(VoteFailure.NotFound);
-            var options = await votes.OptionsAsync(voteId, ct);
-            var anotherOpen = r.Status == VotingStatus.Draft && await votes.AnotherOpenAsync(meetingId, voteId, ct);
-            // While open, only turnout is shown — never results per option (BR-260).
-            var result = r.Status == VotingStatus.Closed ? await votes.ResultAsync(meetingId, voteId, r.IsAnonymous, ct) : null;
-            var attached = await votes.DocumentsAsync(voteId, viewer!, ct);
-            return new(Data: new VoteDetail(meetingId, meeting.Status.ToString(), clock.GetUtcNow(), r.Id, r.Title,
-                r.Description, r.Status.ToString(), r.IsAnonymous, Roles(r),
-                options.Select(o => new VoteOptionView(o.Id, o.Position, o.Label)).ToArray(), r.OpenedAt, r.ClosedAt,
-                r.EligibleCount, r.ReceiptCount, r.IsEligible, r.HasVoted, Conclusion(r), r.DocumentCount, attached, result,
-                Actions(meeting, viewer!, r, anotherOpen)));
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                var s = await participants.LoadAsync(meetingId, false, token);
+                var (failure, viewer) = await AccessAsync(s, actor, token);
+                if (failure != VoteFailure.None) return new VoteOutcome(failure);
+                var meeting = s!.Meeting;
+                var r = await votes.FindAsync(meetingId, voteId, viewer!, token);
+                // A draft the caller may not see answers exactly like a vote that does not exist (BR-253).
+                if (r is null || (r.Status == VotingStatus.Draft && !VoteRules.IsManager(meeting, viewer!)))
+                    return new VoteOutcome(VoteFailure.NotFound);
+                var options = await votes.OptionsAsync(voteId, token);
+                var anotherOpen = r.Status == VotingStatus.Draft && await votes.AnotherOpenAsync(meetingId, voteId, token);
+                // While open, only turnout is shown — never results per option (BR-260).
+                var result = r.Status == VotingStatus.Closed ? await votes.ResultAsync(meetingId, voteId, r.IsAnonymous, token) : null;
+                var attached = await votes.DocumentsAsync(voteId, viewer!, token);
+                return new VoteOutcome(Data: new VoteDetail(meetingId, meeting.Status.ToString(), clock.GetUtcNow(), r.Id, r.Title,
+                    r.Description, r.Status.ToString(), r.IsAnonymous, Roles(r),
+                    options.Select(o => new VoteOptionView(o.Id, o.Position, o.Label)).ToArray(), r.OpenedAt, r.ClosedAt,
+                    r.EligibleCount, r.ReceiptCount, r.IsEligible, r.HasVoted, Conclusion(r), r.DocumentCount, attached, result,
+                    Actions(meeting, viewer!, r, anotherOpen)));
+            }, TransactionMode.RepeatableRead, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to read vote {VoteId} of meeting {MeetingId}", voteId, meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to read vote {VoteId} of meeting {MeetingId}", voteId, meetingId);
             return new(VoteFailure.DetailReadFailed);
         }
     }
@@ -113,33 +105,42 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         VoteInput input, CancellationToken ct = default)
     {
         var cast = operation == VoteOperation.Cast;
-        VoteChange? change = null;
+        VoteChange change;
         var managersOnly = false;
         VoteOutcome outcome;
+        VotingSession? vote = null;
+        DateTimeOffset now = default;
         try
         {
-            await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-            var (failure, s, viewer, vote) = await LockAsync(meetingId, voteId, actor, cast, ct);
-            if (failure != VoteFailure.None) return new(failure);
-            var meeting = s!.Meeting;
-            var now = Now;
-            if (operation == VoteOperation.Create) (outcome, vote) = await CreateAsync(s, viewer!, input, now, ct);
-            else outcome = operation switch
+            // A failure returns before SaveChanges and is rolled back, as the old block left its transaction
+            // uncommitted; only a success is saved and committed.
+            outcome = await unitOfWork.ExecuteAsync(async token =>
             {
-                VoteOperation.Update => await UpdateAsync(s, viewer!, vote!, input, now, ct),
-                VoteOperation.Delete => Delete(meeting, viewer!, vote!),
-                VoteOperation.Open => await OpenAsync(s, viewer!, vote!, now, ct),
-                VoteOperation.Cast => await CastAsync(meeting, viewer!, vote!, input, now, ct),
-                VoteOperation.Close => await CloseAsync(meeting, viewer!, vote!, now, ct),
-                VoteOperation.AttachDocuments => await AttachAsync(meeting, viewer!, vote!, input, ct),
-                VoteOperation.AttachFromLibrary => await AttachFromLibraryAsync(meeting, viewer!, vote!, input, now, ct),
-                VoteOperation.DetachDocument => await DetachAsync(meeting, viewer!, vote!, input, ct),
-                _ => Conclude(meeting, viewer!, vote!, input, now)
-            };
-            if (outcome.Failure != VoteFailure.None) return outcome;
+                var (failure, s, viewer, locked) = await LockAsync(meetingId, voteId, actor, cast, token);
+                if (failure != VoteFailure.None) return new VoteOutcome(failure);
+                vote = locked;
+                var meeting = s!.Meeting;
+                now = Now;
+                VoteOutcome result;
+                if (operation == VoteOperation.Create) (result, vote) = await CreateAsync(s, viewer!, input, now, token);
+                else result = operation switch
+                {
+                    VoteOperation.Update => await UpdateAsync(s, viewer!, vote!, input, now, token),
+                    VoteOperation.Delete => Delete(meeting, viewer!, vote!),
+                    VoteOperation.Open => await OpenAsync(s, viewer!, vote!, now, token),
+                    VoteOperation.Cast => await CastAsync(meeting, viewer!, vote!, input, now, token),
+                    VoteOperation.Close => await CloseAsync(meeting, viewer!, vote!, now, token),
+                    VoteOperation.AttachDocuments => await AttachAsync(meeting, viewer!, vote!, input, token),
+                    VoteOperation.AttachFromLibrary => await AttachFromLibraryAsync(meeting, viewer!, vote!, input, now, token),
+                    VoteOperation.DetachDocument => await DetachAsync(meeting, viewer!, vote!, input, token),
+                    _ => Conclude(meeting, viewer!, vote!, input, now)
+                };
+                if (result.Failure != VoteFailure.None) return result;
 
-            await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
+                await unitOfWork.SaveChangesAsync(token);
+                return result;
+            }, result => result.Failure == VoteFailure.None, TransactionMode.ReadCommitted, ct);
+            if (outcome.Failure != VoteFailure.None) return outcome;
             var opened = operation == VoteOperation.Open
                 || (operation is VoteOperation.Create or VoteOperation.Update && input.OpenImmediately);
             // Drafts and their documents are seen by the Chair and Secretary only (BR-253).
@@ -154,21 +155,21 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
             };
             change = new(Guid.CreateVersion7(), meetingId, vote!.Id, changeType, opened ? vote.Title : null, now);
         }
-        catch (Exception ex) when (DbErrors.IsUniqueViolation(ex, OpenVoteIndex))
+        catch (UniqueConflictException e) when (e.Conflict == UniqueConflict.OpenVoteInMeeting)
         {
-            db.ChangeTracker.Clear();
+            unitOfWork.DiscardChanges();
             return new(VoteFailure.AnotherOpen);
         }
-        catch (Exception ex) when (ReceiptIndexes.Any(index => DbErrors.IsUniqueViolation(ex, index)))
+        catch (UniqueConflictException e) when (e.Conflict == UniqueConflict.BallotAlreadyCast)
         {
             // Two simultaneous ballots by the same person: the database kept the first (BR-258).
-            db.ChangeTracker.Clear();
+            unitOfWork.DiscardChanges();
             return new(VoteFailure.AlreadyCast);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            db.ChangeTracker.Clear();
-            logger.LogError(ex, "Failed vote {Operation} for meeting {MeetingId}", operation, meetingId);
+            unitOfWork.DiscardChanges();
+            logger.LogError(ex.InnerException ?? ex, "Failed vote {Operation} for meeting {MeetingId}", operation, meetingId);
             return new(VoteFailure.SaveFailed);
         }
         await PublishAsync(change, managersOnly);
@@ -207,18 +208,23 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
     {
         try
         {
-            await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
-            var s = await participants.LoadAsync(meetingId, false, ct);
-            var (failure, viewer) = await AccessAsync(s, actor, ct);
-            if (failure != VoteFailure.None) return new(failure);
-            var r = await votes.FindAsync(meetingId, voteId, viewer!, ct);
-            if (r is null || (r.Status == VotingStatus.Draft && !VoteRules.IsManager(s!.Meeting, viewer!)))
-                return new(VoteFailure.NotFound);
-            if (!VoteRules.CanManageDraft(s!.Meeting, viewer!) || r.Status != VotingStatus.Draft) return new(VoteFailure.DraftDenied);
+            var denied = await unitOfWork.ExecuteAsync(async token =>
+            {
+                var s = await participants.LoadAsync(meetingId, false, token);
+                var (failure, viewer) = await AccessAsync(s, actor, token);
+                if (failure != VoteFailure.None) return new VoteOutcome(failure);
+                var r = await votes.FindAsync(meetingId, voteId, viewer!, token);
+                if (r is null || (r.Status == VotingStatus.Draft && !VoteRules.IsManager(s!.Meeting, viewer!)))
+                    return new VoteOutcome(VoteFailure.NotFound);
+                if (!VoteRules.CanManageDraft(s!.Meeting, viewer!) || r.Status != VotingStatus.Draft)
+                    return new VoteOutcome(VoteFailure.DraftDenied);
+                return new VoteOutcome();
+            }, TransactionMode.RepeatableRead, ct);
+            if (denied.Failure != VoteFailure.None) return denied;
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to check document upload to vote {VoteId} of meeting {MeetingId}", voteId, meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to check document upload to vote {VoteId} of meeting {MeetingId}", voteId, meetingId);
             return new(VoteFailure.SaveFailed);
         }
         if (writer.IsConfigured) return new();
@@ -241,7 +247,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
                 return new VoteOutcome(VoteFailure.DraftDenied);
             var added = await attacher.AddUploadsAsync(s.Meeting, uploader, stored, now,
                 null, voteId, token);
-            await db.SaveChangesAsync(token);
+            await unitOfWork.SaveChangesAsync(token);
             return new VoteOutcome(Data: added, VoteId: voteId);
         }, o => o.Failure == VoteFailure.None, new(VoteFailure.SaveFailed), new(VoteFailure.StorageFull), ct);
         if (outcome.Failure == VoteFailure.None)
@@ -255,51 +261,54 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         VoteViewer? viewer = null;
         try
         {
-            await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-            // Shares the meeting lock as a ballot does: closing the vote or removing the document waits for this.
-            await votes.LockMeetingAsync(meetingId, true, ct);
-            if (actor.UserId is { } userId) await votes.ShareUserAsync(userId, ct);
-            var s = await participants.LoadAsync(meetingId, false, ct);
-            (var failure, viewer) = await AccessAsync(s, actor, ct);
-            if (failure == VoteFailure.Inactive) return new(failure);
-            // A meeting the caller cannot see, a removed document and one no visible vote links all answer alike.
-            if (failure != VoteFailure.None
-                || !await votes.IsVisibleVoteDocumentAsync(meetingId, meetingDocumentId, VoteRules.IsManager(s!.Meeting, viewer!), ct))
-                return new(VoteFailure.DocumentUnavailable);
-            // Only a voter of an Open vote that links the document confirms it, in UC-55's order: not on the fixed list,
-            // then no longer accepting ballots. A confirmation nobody's ballot waits for is not recorded.
-            var (eligible, open) = await votes.ReadRequirementAsync(meetingDocumentId, viewer!, ct);
-            if (!eligible) return new(VoteFailure.NotEligible);
-            if (!open || s.Meeting.Status != MeetingStatus.InProgress) return new(VoteFailure.NotAccepting);
-            // Confirmed once, for every vote that links the document, and never withdrawn (UC-74 AF-1, BR-291).
-            if (await votes.FindReadConfirmationAsync(meetingDocumentId, viewer!, ct) is { } existing)
-                return new(Data: new DocumentReadView(meetingDocumentId, existing.ConfirmedAt, true));
-            if (input.ParseFailure is VoteFailure.UnsupportedMedia or VoteFailure.TooLarge) return new(input.ParseFailure);
-            // The server records the reader's word, nothing more: only the viewer knows the last page was reached, and
-            // nothing here can prove the document was read (BR-290). It is not a security check.
-            if (input.LastPageReached != true) return new(VoteFailure.LastPageNotReached);
-            var now = Now;
-            // Nothing here points at a ballot, so it cannot reveal a secret choice (BR-293).
-            db.DocumentReadConfirmations.Add(new DocumentReadConfirmation
+            // Nothing is staged before the early returns, so committing them writes nothing.
+            return await unitOfWork.ExecuteAsync(async token =>
             {
-                MeetingDocumentId = meetingDocumentId, UserId = viewer!.UserId, GuestInvitationId = viewer.GuestInvitationId,
-                ConfirmedAt = now, CreatedAt = now, UpdatedAt = now
-            });
-            await db.SaveChangesAsync(ct);
-            await tx.CommitAsync(ct);
-            return new(Data: new DocumentReadView(meetingDocumentId, now, false));
+                // Shares the meeting lock as a ballot does: closing the vote or removing the document waits for this.
+                await votes.LockMeetingAsync(meetingId, true, token);
+                if (actor.UserId is { } userId) await votes.ShareUserAsync(userId, token);
+                var s = await participants.LoadAsync(meetingId, false, token);
+                (var failure, viewer) = await AccessAsync(s, actor, token);
+                if (failure == VoteFailure.Inactive) return new VoteOutcome(failure);
+                // A meeting the caller cannot see, a removed document and one no visible vote links all answer alike.
+                if (failure != VoteFailure.None
+                    || !await votes.IsVisibleVoteDocumentAsync(meetingId, meetingDocumentId, VoteRules.IsManager(s!.Meeting, viewer!), token))
+                    return new VoteOutcome(VoteFailure.DocumentUnavailable);
+                // Only a voter of an Open vote that links the document confirms it, in UC-55's order: not on the fixed list,
+                // then no longer accepting ballots. A confirmation nobody's ballot waits for is not recorded.
+                var (eligible, open) = await votes.ReadRequirementAsync(meetingDocumentId, viewer!, token);
+                if (!eligible) return new VoteOutcome(VoteFailure.NotEligible);
+                if (!open || s.Meeting.Status != MeetingStatus.InProgress) return new VoteOutcome(VoteFailure.NotAccepting);
+                // Confirmed once, for every vote that links the document, and never withdrawn (UC-74 AF-1, BR-291).
+                if (await votes.FindReadConfirmationAsync(meetingDocumentId, viewer!, token) is { } existing)
+                    return new VoteOutcome(Data: new DocumentReadView(meetingDocumentId, existing.ConfirmedAt, true));
+                if (input.ParseFailure is VoteFailure.UnsupportedMedia or VoteFailure.TooLarge) return new VoteOutcome(input.ParseFailure);
+                // The server records the reader's word, nothing more: only the viewer knows the last page was reached, and
+                // nothing here can prove the document was read (BR-290). It is not a security check.
+                if (input.LastPageReached != true) return new VoteOutcome(VoteFailure.LastPageNotReached);
+                var now = Now;
+                // Nothing here points at a ballot, so it cannot reveal a secret choice (BR-293).
+                votes.Add(new DocumentReadConfirmation
+                {
+                    MeetingDocumentId = meetingDocumentId, UserId = viewer!.UserId, GuestInvitationId = viewer.GuestInvitationId,
+                    ConfirmedAt = now, CreatedAt = now, UpdatedAt = now
+                });
+                await unitOfWork.SaveChangesAsync(token);
+                return new VoteOutcome(Data: new DocumentReadView(meetingDocumentId, now, false));
+            }, TransactionMode.ReadCommitted, ct);
         }
-        catch (Exception ex) when (ReadConfirmationIndexes.Any(index => DbErrors.IsUniqueViolation(ex, index)))
+        catch (UniqueConflictException e) when (e.Conflict == UniqueConflict.DocumentAlreadyConfirmed)
         {
             // The same person ticked twice at once: the first confirmation stands.
-            db.ChangeTracker.Clear();
-            var existing = await votes.FindReadConfirmationAsync(meetingDocumentId, viewer!, ct);
+            unitOfWork.DiscardChanges();
+            var existing = await unitOfWork.ExecuteAsync(
+                token => votes.FindReadConfirmationAsync(meetingDocumentId, viewer!, token), TransactionMode.None, ct);
             return new(Data: new DocumentReadView(meetingDocumentId, existing!.ConfirmedAt, true));
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            db.ChangeTracker.Clear();
-            logger.LogError(ex, "Failed to confirm reading document {DocumentId} of meeting {MeetingId}", meetingDocumentId, meetingId);
+            unitOfWork.DiscardChanges();
+            logger.LogError(ex.InnerException ?? ex, "Failed to confirm reading document {DocumentId} of meeting {MeetingId}", meetingDocumentId, meetingId);
             return new(VoteFailure.SaveFailed);
         }
     }
@@ -314,12 +323,12 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         if (!VoteRules.CanManageDraft(meeting, viewer) || vote.Status != VotingStatus.Draft) return new(VoteFailure.DraftDenied);
         if (input.ParseFailure != VoteFailure.None) return new(input.ParseFailure);
         var ids = (input.DocumentIds ?? []).Distinct().ToArray();
-        var found = await db.MeetingDocuments.CountAsync(d => ids.Contains(d.Id) && d.MeetingId == meeting.Id && d.RemovedAt == null, ct);
+        var found = await votes.CountMeetingDocumentsAsync(meeting.Id, ids, ct);
         // None selected, or one removed or of another meeting: the same answer (BR-211).
         if (ids.Length == 0 || found != ids.Length) return new(VoteFailure.DocumentNotInMeeting);
         var attached = await votes.AttachedDocumentIdsAsync(vote.Id, ct);
         if (ids.Any(attached.Contains)) return new(VoteFailure.DocumentAlreadyAttached);
-        db.VoteDocuments.AddRange(ids.Select(id => new VoteDocument { VotingSessionId = vote.Id, MeetingDocumentId = id }));
+        votes.AddDocumentLinks(ids.Select(id => new VoteDocument { VotingSessionId = vote.Id, MeetingDocumentId = id }));
         return new(Data: Array.Empty<UploadedMeetingDocument>(), VoteId: vote.Id);
     }
 
@@ -349,10 +358,9 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         CancellationToken ct)
     {
         if (!VoteRules.CanManageDraft(meeting, viewer) || vote.Status != VotingStatus.Draft) return new(VoteFailure.DraftDenied);
-        var link = await db.VoteDocuments.SingleOrDefaultAsync(l => l.VotingSessionId == vote.Id
-            && l.MeetingDocumentId == input.MeetingDocumentId && l.MeetingDocument.RemovedAt == null, ct);
+        var link = await votes.FindDocumentLinkAsync(vote.Id, input.MeetingDocumentId, ct);
         if (link is null) return new(VoteFailure.DocumentNotAttached);
-        db.VoteDocuments.Remove(link);
+        votes.Remove(link);
         return new(VoteId: vote.Id);
     }
 
@@ -374,7 +382,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         };
         foreach (var (label, index) in input.Options!.Select((label, index) => (label!, index)))
             vote.Options.Add(new VotingOption { VotingSessionId = vote.Id, Position = index + 1, Label = label, CreatedAt = now, UpdatedAt = now });
-        db.VotingSessions.Add(vote);
+        votes.Add(vote);
         // Opening from the form saves nothing at all when it fails — no draft is left behind (UC-53 AF-3).
         if (input.OpenImmediately && await OpenNowAsync(s, vote, now, ct) is var opened and not VoteFailure.None)
             return (new(opened), null);
@@ -404,14 +412,14 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         for (var index = 0; index < labels.Length; index++)
         {
             if (index >= existing.Count)
-                db.VotingOptions.Add(new VotingOption { VotingSessionId = vote.Id, Position = index + 1, Label = labels[index], CreatedAt = now, UpdatedAt = now });
+                votes.Add(new VotingOption { VotingSessionId = vote.Id, Position = index + 1, Label = labels[index], CreatedAt = now, UpdatedAt = now });
             else if (existing[index].Label != labels[index])
             {
                 existing[index].Label = labels[index];
                 existing[index].UpdatedAt = now;
             }
         }
-        db.VotingOptions.RemoveRange(existing.Skip(labels.Length));
+        votes.RemoveOptions(existing.Skip(labels.Length));
         // Opening from the edit form keeps the edits only if the vote opens; otherwise the saved draft stays as it
         // was (UC-54 AF-1), because nothing is saved when this returns a failure.
         if (input.OpenImmediately && await OpenNowAsync(s, vote, now, ct) is var opened and not VoteFailure.None)
@@ -435,7 +443,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
     {
         // Only a draft: an Open or Closed vote is evidence and is never deleted (BR-189).
         if (!VoteRules.CanManageDraft(meeting, viewer) || vote.Status != VotingStatus.Draft) return new(VoteFailure.DraftDenied);
-        db.VotingSessions.Remove(vote);
+        votes.Remove(vote);
         return new(VoteId: vote.Id);
     }
 
@@ -463,7 +471,7 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         vote.OpenedAt = now;
         vote.EligibleCount = users.Count + invitations.Length;
         vote.UpdatedAt = now;
-        db.VoteEligibleVoters.AddRange(users.Select(id => new VoteEligibleVoter { VotingSessionId = vote.Id, UserId = id, CreatedAt = now, UpdatedAt = now })
+        votes.AddEligibleVoters(users.Select(id => new VoteEligibleVoter { VotingSessionId = vote.Id, UserId = id, CreatedAt = now, UpdatedAt = now })
             .Concat(invitations.Select(id => new VoteEligibleVoter { VotingSessionId = vote.Id, GuestInvitationId = id, CreatedAt = now, UpdatedAt = now })));
         return VoteFailure.None;
     }
@@ -481,14 +489,14 @@ public sealed class VoteService(TrustCabinetDbContext db, VoteRepository votes, 
         if (input.ParseFailure != VoteFailure.None) return new(input.ParseFailure);
         if (input.OptionId is not { } optionId || optionId == Guid.Empty) return new(VoteFailure.OptionMissing);
         if (vote.Options.All(o => o.Id != optionId)) return new(VoteFailure.OptionUnavailable);
-        db.VoteReceipts.Add(new VoteReceipt
+        votes.Add(new VoteReceipt
         {
             VotingSessionId = vote.Id, VoterId = viewer.UserId, GuestInvitationId = viewer.GuestInvitationId,
             CastAt = now, CreatedAt = now, UpdatedAt = now
         });
         // A secret ballot is only counted; nothing is stored that says what this voter chose (BR-259).
         if (!vote.IsAnonymous)
-            db.VoteChoices.Add(new VoteChoice
+            votes.Add(new VoteChoice
             {
                 VotingSessionId = vote.Id, VotingOptionId = optionId, VoterId = viewer.UserId,
                 GuestInvitationId = viewer.GuestInvitationId, CreatedAt = now, UpdatedAt = now

@@ -14,6 +14,7 @@ using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Reports;
 using TrustCabinet.Application.Users;
+using TrustCabinet.Application.Votes;
 
 namespace TrustCabinet.Application;
 
@@ -40,6 +41,7 @@ public static class DependencyInjection
         AddReports(services);
         AddDocuments(services);
         AddNotes(services);
+        AddVotes(services);
         return services;
     }
 
@@ -146,5 +148,11 @@ public static class DependencyInjection
     private static void AddNotes(IServiceCollection services)
     {
         services.AddScoped<IMeetingNoteService, MeetingNoteService>();
+    }
+
+    private static void AddVotes(IServiceCollection services)
+    {
+        services.AddScoped<IVoteService, VoteService>();
+        services.AddScoped<IVoteMeetingEnd, VoteMeetingEnd>();
     }
 }
