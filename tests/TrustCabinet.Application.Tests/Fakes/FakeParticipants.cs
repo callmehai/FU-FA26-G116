@@ -106,6 +106,12 @@ public sealed class FakeParticipantRepository : IParticipantRepository
         AddedParticipants.Add(participant);
     }
 
+    public void AddMany(IReadOnlyList<(MeetingParticipant Participant, User Account)> items)
+    {
+        foreach (var (participant, account) in items)
+            Add(participant, account);
+    }
+
     public void Add(MeetingGuestInvitation guest) => AddedGuests.Add(guest);
 
     public Task<IReadOnlyList<MeetingGuestInvitation>> ListStagedGuestsAsync(Guid meetingId, CancellationToken ct)

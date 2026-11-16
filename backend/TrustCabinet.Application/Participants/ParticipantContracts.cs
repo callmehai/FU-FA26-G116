@@ -118,6 +118,13 @@ public interface IParticipantRepository
     /// </summary>
     void Add(MeetingParticipant participant, User account);
 
+    /// <summary>
+    /// Stages participants in bulk, pointing each at its account: the already-tracked instance when the unit
+    /// of work holds it, else the locked row attached without inserting it. Written by the next
+    /// <c>IUnitOfWork.SaveChangesAsync</c>. Batch inserts do not need a full graph scan for every row.
+    /// </summary>
+    void AddMany(IReadOnlyList<(MeetingParticipant Participant, User Account)> items);
+
     /// <summary>Stages the row; it is written by the next <c>IUnitOfWork.SaveChangesAsync</c>.</summary>
     void Add(MeetingGuestInvitation guest);
 

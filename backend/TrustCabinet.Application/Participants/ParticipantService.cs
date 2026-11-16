@@ -686,8 +686,7 @@ public sealed partial class ParticipantService(
             )
         )
             return new(ParticipantFailure.RequiredRoles);
-        var created = new List<Guid>();
-        foreach (var user in users)
+        var staged = users.Select(user =>
         {
             var p = new MeetingParticipant
             {
@@ -698,7 +697,12 @@ public sealed partial class ParticipantService(
                 UpdatedAt = now,
             };
             p.InitialInvitationDeliveryKey = $"participant:{p.Id}:invited";
-            repository.Add(p, user);
+            return (Participant: p, Account: user);
+        }).ToArray();
+        repository.AddMany(staged);
+        var created = new List<Guid>();
+        foreach (var (p, _) in staged)
+        {
             if (!s.Meeting.Participants.Contains(p))
                 s.Meeting.Participants.Add(p);
             Stage(s.Meeting, p, null, InvitationEventKind.Invitation, actor, now);
