@@ -792,9 +792,9 @@ Bố cục theo màn "Sẵn sàng tham gia?" của Google Meet (đo trên Meet, 
 | `PermissionDenied` | `Trình duyệt đang chặn micro/camera. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang. Bạn vẫn có thể vào phòng để nghe.` |
 | `NotFound` | `Không tìm thấy micro/camera trên máy này.` |
 | `DeviceInUse` | `Micro/camera đang được ứng dụng khác dùng (Zoom, Teams…). Đóng ứng dụng đó rồi thử lại.` |
-| `Other` | `Không mở được micro/camera. Bạn vẫn có thể vào phòng để nghe.` |
+| `Other` | `Không mở được micro/camera. Kiểm tra quyền ở biểu tượng ổ khoá cạnh thanh địa chỉ. Bạn vẫn có thể vào phòng để nghe.` |
 
-  Bị chặn mic **vẫn cho vào phòng** (chỉ nghe).
+  Bị chặn mic **vẫn cho vào phòng** (chỉ nghe). Câu "Bạn vẫn có thể vào phòng để nghe." chỉ đi với micro; micro và camera hỏng cùng một kiểu thì màn chờ báo một lần ("micro và camera").
 - Nút "Vào phòng" disabled khi đang gọi API, nhãn "Đang vào phòng…".
 
 ### 6.5 Trong phòng

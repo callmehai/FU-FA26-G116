@@ -507,6 +507,10 @@ function RowAction({
       onClick={onClick}
     >
       <Icon name={icon} size={16} />
+      {/* A phone has no hover for the tooltip: the word shows beside the icon there. */}
+      <span className="library-action-label" aria-hidden="true">
+        {label.replace('…', '')}
+      </span>
     </button>
   )
 }

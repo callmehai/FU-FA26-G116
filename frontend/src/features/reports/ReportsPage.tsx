@@ -15,6 +15,7 @@ import {
   MSG463_INVALID_PERIOD,
   MSG466_NOTHING_READABLE,
   defaultPeriod,
+  followPeriod,
   formatHours,
   formatMinutes,
   formatRate,
@@ -74,9 +75,10 @@ export function ReportsPage() {
     })
   }, [from, to, valid, attempt])
 
+  // Picking one end never leaves an invalid period (BR-433): the other end follows, so the figures stay on screen.
   const choose = (next: { from?: string; to?: string }) => {
     setServerPeriodError(null)
-    setParams({ from: next.from ?? from, to: next.to ?? to }, { replace: true })
+    setParams(followPeriod(from, to, next), { replace: true })
   }
 
   const retry = useCallback(() => {
@@ -282,7 +284,7 @@ function ReportFigures({ report, stale }: { report: MeetingReport; stale: boolea
                 {report.byStatus.map((s) => (
                   <tr key={s.status}>
                     <td>
-                      <StatusBadge status={s.status} />
+                      <StatusBadge status={s.status} flat />
                     </td>
                     <td className={s.count === 0 ? 'cell-num cell-zero' : 'cell-num'}>{s.count}</td>
                   </tr>
