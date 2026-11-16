@@ -177,11 +177,14 @@ public sealed class VoteServiceTests
     {
         var vote = SeedVote(VotingStatus.Open);
         _votes.Result = new VoteResult(1, [], []);
+        int? commitsAtRead = null;
+        _votes.OnResult = () => commitsAtRead = _unitOfWork.Commits;
 
         var outcome = await Service().MutateAsync(_meeting, vote.Id, new ParticipantActor(_chair), VoteOperation.Close, new());
 
         Assert.Equal(VoteFailure.None, outcome.Failure);
         Assert.Same(_votes.Result, outcome.Data);
+        Assert.Equal(0, commitsAtRead);
         Assert.Equal((VotingStatus.Closed, Now), (vote.Status, vote.ClosedAt!.Value));
         Assert.Equal(1, _unitOfWork.Commits);
     }
@@ -223,7 +226,10 @@ public sealed class VoteServiceTests
             new VoteInput(OptionId: vote.Options.First().Id));
 
         Assert.Equal(VoteFailure.AlreadyCast, outcome.Failure);
-        Assert.Equal(1, _unitOfWork.Discards);
+        // The tally was bumped at once, before the save: only the rollback takes it back.
+        Assert.Single(_votes.CountedBallots);
+        Assert.Equal((1, 0, 1), (_unitOfWork.Discards, _unitOfWork.Commits, _unitOfWork.Rollbacks));
+        Assert.Empty(_publisher.Published);
     }
 
     [Fact]

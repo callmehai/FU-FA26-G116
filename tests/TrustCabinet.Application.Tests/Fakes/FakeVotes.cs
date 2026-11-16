@@ -86,7 +86,15 @@ public sealed class FakeVoteRepository : IVoteRepository
             return 1;
         });
 
-    public Task<VoteResult> ResultAsync(Guid meetingId, Guid voteId, bool isAnonymous, CancellationToken ct) => Read(() => Result);
+    /// <summary>Runs when the tally is read, so a test can see whether that was before or after the commit.</summary>
+    public Action? OnResult { get; set; }
+
+    public Task<VoteResult> ResultAsync(Guid meetingId, Guid voteId, bool isAnonymous, CancellationToken ct)
+        => Read(() =>
+        {
+            OnResult?.Invoke();
+            return Result;
+        });
 
     public Task<bool> IsActiveUserAsync(Guid userId, CancellationToken ct) => Read(() => ActiveUsers.Contains(userId));
 

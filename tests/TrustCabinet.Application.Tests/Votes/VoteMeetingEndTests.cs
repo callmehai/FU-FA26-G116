@@ -57,10 +57,24 @@ public sealed class VoteMeetingEndTests
     {
         Draft("Biểu quyết");
 
-        await Service().DeleteDraftsAsync(_meeting, null, EndedAt);
+        // The meeting's own transaction, as MeetingLifecycleService opens it, is the only one committed.
+        await _unitOfWork.ExecuteAsync(token => Service().DeleteDraftsAsync(_meeting, null, EndedAt, token),
+            TransactionMode.ReadCommitted);
 
-        Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
-        Assert.Equal((0, 0, 0), (_unitOfWork.Saves, _unitOfWork.Commits, _unitOfWork.Rollbacks));
+        Assert.Equal([TransactionMode.ReadCommitted, TransactionMode.None], _unitOfWork.Modes);
+        Assert.Equal((0, 1, 0), (_unitOfWork.Saves, _unitOfWork.Commits, _unitOfWork.Rollbacks));
+    }
+
+    [Fact]
+    public async Task A_storage_failure_reaches_the_caller_and_nothing_is_staged()
+    {
+        Draft("Biểu quyết");
+        _votes.Fail = new PersistenceUnavailableException();
+
+        await Assert.ThrowsAsync<PersistenceUnavailableException>(() => Service().DeleteDraftsAsync(_meeting, null, EndedAt));
+
+        Assert.Empty(_votes.Removed);
+        Assert.Empty(_audit.Rows);
     }
 
     [Fact]
