@@ -152,7 +152,7 @@ thứ Hai trước đó); sai định dạng → `400` không body. Đọc lỗi
 - Mỗi chủ lịch một dòng: chia sẻ mới nhất có `status` `Effective` hoặc `Stopped` và chưa quá ngày kết thúc. `Stopped` → `days = []`.
 - Thứ Hai → thứ Sáu; ngày ngoài khoảng chia sẻ → `known = false` ("chưa biết", không phải rảnh, BR-415).
 - Giờ bận (BR-419, BR-420): chỉ phân công hiện hành Chủ toạ / Thư ký / Thành viên chưa từ chối (Chủ toạ luôn tính); họp Chờ duyệt, Đã duyệt,
-  Đã công bố, Đang họp, Đã kết thúc (đến giờ kết thúc thật). Mốc lọc theo §3. Các khoảng chồng/chạm nhau đã gộp và cắt vào 08:00–17:00.
+  Đã công bố, Đang họp (từ lúc bắt đầu thật, dài bằng thời lượng dự kiến, ít nhất đến bây giờ), Đã kết thúc (đến giờ kết thúc thật). Mốc lọc theo §3. Các khoảng chồng/chạm nhau đã gộp và cắt vào 08:00–17:00.
 - Không bao giờ có tên, địa điểm, người dự hay mức mật của cuộc họp (BR-427).
 
 ## 5. Thông báo
