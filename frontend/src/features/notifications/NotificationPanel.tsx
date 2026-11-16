@@ -85,6 +85,9 @@ export function NotificationPanel({ id, onClose }: { id: string; onClose: () => 
         >
           <Icon name="checkCheck" size={16} />
           <span className="notif-mark-all-label">{markingAll ? 'Đang đánh dấu…' : 'Đánh dấu tất cả đã đọc'}</span>
+          <span className="notif-mark-all-short" aria-hidden="true">
+            Đọc hết
+          </span>
         </button>
       </div>
 

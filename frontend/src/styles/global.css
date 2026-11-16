@@ -348,6 +348,11 @@ code {
   color: var(--muted-ink);
 }
 .input-reveal .icon-button:hover:not(:disabled) { color: var(--ink); }
+/* A finger needs 40px: the button takes the box's full height at its right end (audit UI-A14). */
+@media (pointer: coarse) {
+  .input-reveal input { padding-right: 44px; }
+  .input-reveal .icon-button { top: 0; right: 0; width: 40px; height: 40px; }
+}
 
 input, textarea {
   height: var(--control-height);
@@ -793,6 +798,7 @@ input[aria-invalid='true']:focus-visible { box-shadow: inset 0 0 0 1px var(--dan
 }
 
 .menu-item:hover { background: var(--surface-alt); }
+@media (pointer: coarse) { .menu-item { min-height: 40px; } }
 .menu-item.active { color: var(--brand); font-weight: 600; }
 a.menu-item { text-decoration: none; }
 
@@ -807,10 +813,12 @@ a.menu-item { text-decoration: none; }
 .notif-bell:focus-visible { outline-color: #fff; }
 .notif-bell > span:first-child { display: inline-flex; }
 
+/* Anchored at the bell's top-right corner and running right from there (Material's badge), so "99+" covers only that
+   corner and the bell stays recognisable (audit UI-A5). It may pass the 40px button: the sidebar has room. */
 .notif-badge {
   position: absolute;
   top: 2px;
-  right: 1px;
+  left: 22px;
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
@@ -947,6 +955,13 @@ a.menu-item { text-decoration: none; }
   .notif-mark { opacity: 1; }
   .notif-dot { display: none; }
 }
+/* A finger needs 40px (ADR-0043): the row's button and the header's action grow; the text keeps clear of the button. */
+@media (pointer: coarse) {
+  .notif-mark { top: 2px; right: 2px; width: 40px; height: 40px; }
+  .notif-open { padding-right: 48px; }
+  .notif-mark-all { height: 40px; }
+}
+.notif-mark-all-short { display: none; }
 
 .notif-skeleton { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; padding: 12px 16px; }
 .notif-skeleton .notif-icon { background: var(--surface-alt); }
@@ -989,9 +1004,11 @@ a.menu-item { text-decoration: none; }
 /* On a phone the bell sits too far right for a 400px panel to open under it: span the screen. */
 @media (max-width: 480px) {
   .notif-panel { right: 8px; width: auto; }
-  /* The title keeps its line; the action keeps its icon, its tooltip and its accessible name. */
-  .notif-mark-all { width: 36px; padding: 0; justify-content: center; }
+  /* The title keeps its line; the action keeps a short word beside its icon ("Đọc hết") — a touch screen shows no
+     tooltip — and its full name for screen readers. */
+  .notif-mark-all { padding: 0 10px; }
   .notif-mark-all-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .notif-mark-all-short { display: inline; }
 }
 
 /* ---------- Content ----------
@@ -1261,7 +1278,12 @@ a.menu-item { text-decoration: none; }
 .data-table th.col-action { text-align: right; }
 
 .row-inactive td { color: var(--muted-ink); }
-.user-disabled { color: var(--ink); font-weight: 600; }
+/* A label with its (i) right after it, in a form field. */
+.field-label-tip { display: inline-flex; align-items: center; gap: 2px; font-size: 14px; font-weight: 500; line-height: 1; }
+/* A long unbroken value (an email) inside a sentence wraps where it must rather than run out of its box. */
+.wrap-anywhere { overflow-wrap: anywhere; }
+/* An empty or "no match" row is a message, not a row to point at. */
+.data-table tbody tr:has(> td.cell-empty):hover { background: none; }
 /* A row that opens its record. The title stays a real link for keyboard and middle-click. */
 .row-link { cursor: pointer; }
 .row-link .cell-title a:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
@@ -1341,26 +1363,62 @@ a.menu-item { text-decoration: none; }
 /* User management on a phone: four 40px actions leave a name no room beside them, so each row becomes the
    person (role and status under the email) over the actions, and the columns those facts came from go. */
 .users-inline { display: none; }
-/* Four row actions since SCRUM-113: at a 1200px window "Mật khẩu, Google" wraps rather than push them out of the card. */
-@media (max-width: 1400px) {
-  .users-table td.users-login { white-space: normal; }
+/* Fixed columns: picking a filter no longer moves them, and the name column takes what is left. Every row is one line —
+   a long name or email ends in "…" (its tooltip has the rest), a long custom role too (audit UI-A8, A21). */
+.users-table { table-layout: fixed; }
+.users-table th.users-col-role { width: 160px; }
+.users-table th.users-col-login { width: 144px; }
+.users-table th.users-col-status { width: 144px; }
+.users-table th.users-col-date { width: 116px; }
+.users-table th.users-col-action { width: 172px; }
+.users-person { display: flex; flex-direction: column; min-width: 0; }
+.users-table .person-name { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.users-table .person-name .badge { flex: none; height: 20px; }
+.users-clip { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A <wbr> breaks even a nowrap line: the email's break points count only on a phone. */
+.users-clip wbr { display: none; }
+.users-table td.users-role { overflow: hidden; }
+.users-table td.users-role .badge { display: inline-block; max-width: 100%; overflow: hidden; line-height: 24px; text-overflow: ellipsis; }
+/* At a 1200px window six columns leave a name ~170px: the creation date, the least looked-for, goes as on a phone. */
+@media (max-width: 1280px) {
+  .users-table .users-col-date, .users-table td.users-date { display: none; }
 }
-/* A long email (or name) with no space in it breaks where it must: it widened the name column until the table scrolled
-   sideways and pushed the actions out of the card at 1440px (QA FE-02). */
-.users-table .person-name, .users-table .cell-sub { overflow-wrap: anywhere; }
+/* Row actions that name themselves where there is no hover (check-responsive §3.4): the label sits beside the icon. */
+.row-action-label { display: none; }
 @media (max-width: 720px) {
+  .users-table { table-layout: auto; }
   .users-table thead, .users-table .users-col, .users-table .row-skeleton td:not(:first-child) { display: none; }
-  .users-table tbody tr:not(.row-skeleton) { display: grid; }
+  .users-table tbody tr:not(.row-skeleton) { display: grid; grid-template-columns: minmax(0, 1fr); }
   .users-table td.cell-title { border-bottom: none; padding-bottom: 4px; }
   .users-table td.col-action { padding: 0 12px 10px 60px; text-align: left; }
   /* A disabled action explains itself in a tooltip, which a touch screen never shows: only what can be done stays. */
   .users-table .row-actions > :disabled { display: none; }
   .users-inline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 6px; font-size: 13px; }
+  .users-table .users-clip { white-space: normal; overflow-wrap: anywhere; }
+  .users-table .users-clip wbr { display: inline; }
+  .row-actions-labelled { flex-wrap: wrap; gap: 4px 8px; white-space: normal; }
+  .row-actions-labelled > .icon-button { width: auto; height: 40px; gap: 6px; padding: 0 10px 0 8px; color: var(--ink-soft); font-size: 13px; font-weight: 500; text-decoration: none; box-shadow: inset 0 0 0 1px var(--line); }
+  .row-actions-labelled .row-action-label { display: inline; }
 }
 
 /* System audit log (SCRUM-16, screen 3.3). */
 /* Its filters list every person and event, so they keep one width (steady) up to a cap and cut a long name with "…". */
 .audit-toolbar .toolbar-filters .select { max-width: 240px; }
+/* Up to a 1360px window the search, the period and both lists must still share one line (frontend-ui-design §4): the
+   day boxes keep just room for "dd/mm/yyyy", the lists give way first and cut a long name with "…" (audit UI-A2). */
+@media (min-width: 721px) and (max-width: 1360px) {
+  .audit-toolbar .search-flex { flex-basis: 140px; }
+  .audit-toolbar .date-range .date-field-box { width: 136px; }
+  .audit-toolbar .date-range .date-field-box input { padding-right: 34px; padding-left: 10px; }
+  .audit-toolbar .toolbar-filters .select { flex: 0 1 176px; min-width: 120px; max-width: 176px; }
+}
+/* The event chip and the object's name keep one line each, cut with "…" (the row opens the sheet with both whole; the
+   chip also has its tooltip), so the IP and the eye button stay inside the card at a 1200px window (UI-A3). */
+.audit-table td.audit-event .badge { display: inline-block; max-width: 240px; overflow: hidden; line-height: 24px; text-overflow: ellipsis; vertical-align: middle; }
+@media (max-width: 1360px) {
+  .audit-table td.audit-event .badge { max-width: 144px; }
+  .audit-table td.audit-object .cell-sub, .audit-table td.audit-actor .cell-sub { max-width: 156px; overflow: hidden; text-overflow: ellipsis; }
+}
 .audit-range-error { flex: 1 1 100%; margin: -4px 0 0; }
 .audit-time { font-variant-numeric: tabular-nums; }
 .audit-ip { font-variant-numeric: tabular-nums; }
@@ -1372,6 +1430,10 @@ a.menu-item { text-decoration: none; }
 .audit-facts { display: flex; flex-direction: column; gap: 12px; margin: 0; }
 .audit-facts > div { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 12px; }
 .audit-facts dt { color: var(--muted-ink); overflow-wrap: anywhere; }
+/* A phone: the label sits over its value, which then has the sheet's whole width (an email no longer breaks mid-word). */
+@media (max-width: 560px) {
+  .audit-facts > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
 .audit-facts dd { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 0; overflow-wrap: anywhere; }
 .audit-code { color: var(--muted-ink); font-size: 12px; overflow-wrap: anywhere; }
 .audit-details-title { margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid var(--line-soft); font-size: 14px; }
@@ -1381,6 +1443,9 @@ a.menu-item { text-decoration: none; }
   /* Without min-width: 0 the panel takes the two date inputs' natural width and runs off the screen. */
   .audit-toolbar .toolbar-filters-open { min-width: 0; }
   .audit-toolbar .date-range { flex: 1 1 100%; }
+  /* Two boxes side by side read as a period without the dash; its room lets "dd/mm/yyyy" show whole (UI-A20). */
+  .audit-toolbar .date-range-dash { display: none; }
+  .audit-toolbar .date-range .date-field-box input { padding-right: 40px; padding-left: 8px; }
   .audit-toolbar .toolbar-filters .select { flex: 1 1 100%; min-width: 0; max-width: none; }
   /* Each entry becomes a card: event and time, then who, then on what. The IP is in the sheet. */
   .audit-table thead, .audit-table td.audit-ip, .audit-table .row-skeleton td:not(:first-child) { display: none; }
@@ -1388,13 +1453,19 @@ a.menu-item { text-decoration: none; }
   .audit-table tbody tr:not(.row-skeleton) td { padding: 0; border: none; }
   /* Only the first line shares its row with the eye button. */
   .audit-table td.audit-event { order: 1; max-width: calc(100% - 48px); white-space: normal; }
+  .audit-table td.audit-event .badge { max-width: none; height: auto; white-space: normal; }
   .audit-table td.audit-time { order: 2; color: var(--muted-ink); font-size: 13px; }
   .audit-table td.audit-actor { flex: 1 1 100%; order: 3; }
   .audit-table td.audit-object { flex: 1 1 100%; order: 4; white-space: normal; color: var(--muted-ink); font-size: 13px; }
   .audit-table td.audit-object .cell-sub { display: inline; margin-left: 6px; }
   .audit-table td.col-action { position: absolute; top: 8px; right: 8px; }
   .audit-table .person-name, .audit-table .cell-sub { overflow-wrap: anywhere; }
+  .audit-table td .cell-sub wbr { display: inline; }
+  /* The time shares the first line with the chip; it stops short of the eye button in the corner. */
+  .audit-table td.audit-time { margin-right: 40px; }
 }
+/* A <wbr> breaks even a one-line cell: the email's break points count only on a phone. */
+.audit-table .cell-sub wbr { display: none; }
 @media (pointer: coarse) {
   .audit-table .icon-button-sm { width: 40px; height: 40px; }
 }
@@ -1591,6 +1662,8 @@ a.menu-item { text-decoration: none; }
 @media (max-width: 560px) {
   .tabs { gap: 0; }
   .tab { padding: 0 10px; }
+  /* The words a tab can lose on a phone ("Ma trận phân quyền" → "Ma trận"); screen readers still hear them. */
+  .tab-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 7px; border-radius: 10px; background: #eef1f5; color: var(--ink-soft); font-size: 12px; font-weight: 700; }
 .tab-active .tab-count { background: var(--brand-wash); color: var(--brand); }
@@ -1861,9 +1934,11 @@ a.menu-item { text-decoration: none; }
 .role-capabilities { min-width: 0; margin: 0; padding: 0; border: 0; }
 .role-capabilities legend { margin-bottom: 8px; font-size: 14px; font-weight: 500; }
 .role-capability-options { display: flex; flex-direction: column; gap: 10px; }
-.role-capability-options label { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 4px 8px; align-items: start; font-size: 14px; }
-.role-capability-options input { grid-row: span 2; margin: 2px 0 0; }
-.role-capability-options small { grid-column: 2; color: var(--muted-ink); font-size: 13px; }
+/* One line per capability; what it allows is behind its (i), as in the matrix. 40px rows on a touch screen. */
+.role-capability-options { gap: 2px; }
+.role-capability-options label { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; align-items: center; min-height: 32px; font-size: 14px; cursor: pointer; }
+.role-capability-options input { margin: 0; }
+@media (pointer: coarse) { .role-capability-options label { min-height: 40px; } }
 
 /* ---------- Tooltip (components/TooltipLayer.tsx) ----------
    One label in the top layer for whatever carries data-tooltip: above it, or below near the top. */
@@ -1882,6 +1957,8 @@ a.menu-item { text-decoration: none; }
   font-weight: 500;
   line-height: 1.35;
   white-space: pre-line;
+  /* A long email or file name has no space to wrap at: it breaks where it must instead of running off the label. */
+  overflow-wrap: anywhere;
   pointer-events: none;
 }
 
@@ -2107,27 +2184,16 @@ a.menu-item { text-decoration: none; }
 /* A rule where each functional group starts, down through the body — and one before the actions. */
 .matrix-table .matrix-group-start,
 .matrix-table .col-action { border-left: 1px solid var(--line); }
-/* Reserve room for Hoàn tác / Lưu (about 172px plus the cell's padding), so no column moves when a row becomes
-   dirty and the buttons appear. */
-/* Its heading centred over the centred buttons, like the capability headings over their checkboxes: only the role
-   names read from the left. */
+/* Reserve room for the undo icon and Lưu (about 104px plus the cell's padding), so no column moves when a row becomes
+   dirty and the buttons appear — no wider: an empty 200px column read as a missing feature (audit UI-A22). */
 .matrix-table .col-action,
-.matrix-table th.col-action { width: 200px; min-width: 200px; text-align: center; }
+.matrix-table th.col-action { width: 128px; min-width: 128px; text-align: center; }
+.matrix-table .row-actions { gap: 4px; }
 .matrix-table td { height: 53px; }
 /* A long name wraps (even inside a long word); a chip never breaks across lines. */
 .matrix-table td.cell-title { white-space: normal; overflow-wrap: anywhere; }
 .matrix-table td.cell-title .badge { white-space: nowrap; }
-/* On a phone the matrix scrolls inside its card, so the role names stay pinned on the left: every checkbox keeps its
-   row's name beside it. The column narrows to leave room for the checkboxes, and its chips go (the list tab shows
-   them): "Vai trò của bạn" alone is wider than the column. */
-@media (max-width: 720px) {
-  .matrix-table th.matrix-role,
-  .matrix-table td.cell-title { position: sticky; left: 0; z-index: 1; width: 112px; min-width: 112px; max-width: 112px; box-shadow: inset -1px 0 0 var(--line); }
-  .matrix-table td.cell-title { background: var(--surface); }
-  .data-table.matrix-table tbody tr:hover td.cell-title { background: #f6f8fb; }
-  .matrix-table td.cell-title .badge { display: none; }
-  .matrix-table th.matrix-cap { min-width: 88px; }
-}
+.matrix-cap-name { display: none; }
 /* The label fills the cell, so the whole cell is the click target, not just the 16px box. */
 .matrix-table td.matrix-cell { position: relative; padding: 0; text-align: center; }
 .matrix-hit { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -2137,12 +2203,33 @@ a.menu-item { text-decoration: none; }
 .matrix-cell-error { background: var(--chip-red-bg); box-shadow: inset 0 0 0 2px var(--danger); }
 .data-table tbody tr.matrix-note-row:hover { background: none; }
 .matrix-note-row td { padding-top: 0; white-space: normal; }
-/* The note spans the whole table, which on a phone is wider than its scrolling card: kept to the card's visible width
+/* The note spans the whole table, which at a narrow window can be wider than its scrolling card: kept to the card's visible width
    and pinned to its left edge, the warning or refusal reads in full wherever the card is scrolled (e.g. at Lưu). */
 .matrix-card { container-type: inline-size; }
 .matrix-note-row td > .alert { position: sticky; left: 16px; max-width: calc(100cqi - 32px); }
 .data-table tbody tr.matrix-note-row td { border-bottom: 1px solid var(--line); }
 .matrix-table tr:has(+ .matrix-note-row) td { border-bottom: none; }
+/* On a phone five columns do not fit: each role becomes a card — its name and chips, then one 44px line per capability
+   with the checkbox and the capability's name, then Hoàn tác / Lưu (audit UI-A7). */
+@media (max-width: 720px) {
+  .matrix-table thead { display: none; }
+  .matrix-table, .matrix-table tbody { display: block; }
+  .matrix-table tbody tr { display: flex; flex-direction: column; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .matrix-table tbody tr:last-child { border-bottom: none; }
+  .data-table.matrix-table tbody tr:hover { background: none; }
+  .matrix-table tbody td { height: auto; padding: 0; border: none; }
+  .matrix-table td.cell-title { width: auto; min-width: 0; padding: 6px 16px 4px; }
+  .matrix-table .matrix-group-start, .matrix-table .col-action { border-left: none; }
+  .matrix-table td.matrix-cell { text-align: left; }
+  .matrix-hit { position: static; justify-content: flex-start; gap: 10px; min-height: 44px; padding: 0 16px; color: var(--ink); font-size: 14px; }
+  .matrix-cap-name { display: inline; }
+  .matrix-table td.col-action { width: auto; min-width: 0; padding: 4px 16px 4px; text-align: left; }
+  .matrix-table td.col-action:empty { display: none; }
+  .matrix-table .matrix-undo { width: auto; padding: 0 12px 0 10px; gap: 6px; box-shadow: inset 0 0 0 1px var(--line); }
+  .matrix-table .matrix-undo .row-action-label { display: inline; font-size: 13px; font-weight: 500; }
+  .matrix-table tr.matrix-note-row { padding: 0 16px 8px; }
+  .matrix-note-row td > .alert { position: static; max-width: none; }
+}
 
 /* ---------- Calendar (features/calendar) ---------- */
 .calendar-toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
@@ -5308,6 +5395,8 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .ai-settings-key input { flex: 1; min-width: 0; }
 .ai-settings-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .ai-settings-foot .form-actions { margin-left: auto; }
+/* What is in use reads as one unit: "deepseek-v4.1-flash" never splits at its hyphen. */
+.ai-settings-foot .field-hint strong { white-space: nowrap; }
 .ai-settings .alert { display: flex; align-items: center; gap: 8px; }
 .alert-success { background: var(--chip-emerald-bg); color: var(--chip-emerald-fg); }
 /* The form differs from what the server uses: said where the Lưu button is, until it is pressed. */

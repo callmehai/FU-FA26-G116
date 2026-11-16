@@ -11,6 +11,7 @@ import { Pagination } from '../../components/Pagination'
 import { Select, type SelectOption } from '../../components/Select'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
+import { tipIfClipped } from '../../lib/tipIfClipped'
 import { useSearchBox } from '../../lib/useSearchBox'
 import { latestSearchParams } from '../../lib/latestSearchParams'
 import type { AuditEventType, AuditLogItem, AuditLogPage } from '../../types/auditLog'
@@ -270,7 +271,10 @@ export function AuditLogPage() {
           <td className="cell-title audit-actor">
             <ActorCell actor={item.actor} />
           </td>
-          <td className="audit-event">
+          <td
+            className="audit-event"
+            onPointerOver={(e) => tipIfClipped({ currentTarget: e.currentTarget.firstElementChild as HTMLElement })}
+          >
             <Badge tone={alert ? 'red' : 'slate'}>{item.actionLabel}</Badge>
           </td>
           <td className="audit-object">
@@ -312,7 +316,7 @@ export function AuditLogPage() {
               value={search}
               maxLength={100}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo đối tượng…"
+              placeholder="Tìm đối tượng…"
               aria-label="Tìm theo đối tượng: tên, mã hoặc chi tiết"
             />
           </label>

@@ -55,6 +55,12 @@ export function TooltipLayer() {
     }
 
     function onOver(event: Event) {
+      // A finger has no hover: a tap fires pointerover, then focuses the button. Neither may raise the label, which
+      // would then float over whatever the tap opened (the notification panel, the account menu). A focus that came
+      // from a press is not keyboard focus either — only :focus-visible is; the mouse already had its hover.
+      if (event instanceof PointerEvent && event.pointerType === 'touch') return
+      if (event.type === 'focusin' && !(event.target instanceof Element && event.target.matches(':focus-visible')))
+        return
       const el = (event.target as Element | null)?.closest<HTMLElement>('[data-tooltip]') ?? null
       if (el === target) return
       hide()
@@ -62,7 +68,7 @@ export function TooltipLayer() {
       if (!el || el === pressed) return
       target = el
       // Keyboard focus is deliberate: no wait.
-      const delay = event.type === 'focusin' && el.matches(':focus-visible') ? 0 : DELAY_MS
+      const delay = event.type === 'focusin' ? 0 : DELAY_MS
       timer = window.setTimeout(() => target === el && show(el), delay)
     }
 
