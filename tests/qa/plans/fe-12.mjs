@@ -258,13 +258,16 @@ async function press(qa, locator) {
   else await locator.click()
 }
 
-/** Opens the meeting's "Biên bản" tab and waits for both cards to load. */
-async function openMinutes(qa, meeting) {
+/**
+ * Opens the meeting's "Biên bản" tab and waits for its cards to load. A Member sees the draft card only once a draft is
+ * approved, so for a Member it waits only for the minutes card; a criterion that expects the draft card checks it.
+ */
+async function openMinutes(qa, meeting, { draft = qa.role !== 'member' } = {}) {
   await qa.goto(`/mgmt/meetings/${meeting.id}?tab=minutes`)
   await qa.expect(qa.page.getByRole('heading', { level: 1, name: meeting.title })).toBeVisible()
   await qa.expect(card(qa)).toBeVisible()
   await qa.expect(card(qa)).not.toHaveAttribute('aria-busy', 'true')
-  await qa.expect(draftCard(qa)).toBeVisible()
+  if (draft) await qa.expect(draftCard(qa)).toBeVisible()
 }
 
 /**
