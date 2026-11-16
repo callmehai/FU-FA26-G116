@@ -7,7 +7,7 @@ using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Calls;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Infrastructure.Calls;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Calls;
 
@@ -23,7 +23,7 @@ public sealed class GuestCallRoomServiceTests
 
     public GuestCallRoomServiceTests() => _guest = new(_meetingId, Guid.CreateVersion7(), Guid.CreateVersion7());
 
-    private CallRoomService Service => new(_calls, _liveKit, Options.Create(_options), _audit, NullLogger<CallRoomService>.Instance);
+    private CallRoomService Service => new(_calls, new TranslatingUnitOfWork(), _liveKit, Options.Create(_options), _audit, NullLogger<CallRoomService>.Instance);
 
     private string Room => CallRoomNames.ForMeeting(_meetingId);
 

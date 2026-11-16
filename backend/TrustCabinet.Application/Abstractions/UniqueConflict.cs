@@ -21,4 +21,10 @@ public enum UniqueConflict
 
     /// <summary>BR-291: the reader (user or guest invitation) already confirmed reading this meeting document.</summary>
     DocumentAlreadyConfirmed = 4,
+
+    /// <summary>BR-339: someone in the meeting is already invited to speak or speaking.</summary>
+    SpeakingFloorTaken = 5,
+
+    /// <summary>UC-79 EX-2: the person (user or guest invitation) already has an open speaking request.</summary>
+    SpeakingRequestAlreadyOpen = 6,
 }

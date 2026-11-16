@@ -162,7 +162,7 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
                 invitations = [invitation];
             // The turn ends when they left, not when the webhook or the reconciliation got here (BR-339).
             if (member.UserId is not null || invitations is not null)
-                closedHands = await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, member.UserId, invitations,
+                closedHands = await new SpeakingRequestRepository(db).CloseOpenAsync(meetingId, member.UserId, invitations,
                     AgendaExecution.UtcMicroseconds(leftAt), Now, ct);
         }
 
@@ -229,7 +229,7 @@ public sealed class CallRepository(TrustCabinetDbContext db, TimeProvider? clock
         session.UpdatedAt = DateTimeOffset.UtcNow;
         // Nobody is left in the room, so nobody is waiting to speak or speaking (BR-337).
         var closedHands = tx.MeetingId is { } meetingId
-            ? await SpeakingRequestCleanup.CloseOpenAsync(db, meetingId, null, null,
+            ? await new SpeakingRequestRepository(db).CloseOpenAsync(meetingId, null, null,
                 AgendaExecution.UtcMicroseconds(effectiveEnd), Now, ct)
             : 0;
         await db.SaveChangesAsync(ct);

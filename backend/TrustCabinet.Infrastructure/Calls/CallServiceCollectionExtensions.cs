@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Application.Calls;
-using TrustCabinet.Application.Participants;
 
 namespace TrustCabinet.Infrastructure.Calls;
 
@@ -19,9 +17,6 @@ public static class CallServiceCollectionExtensions
         services.AddHttpClient(LiveKitGateway.HttpClientName, client => client.Timeout = TimeSpan.FromSeconds(5));
         services.AddSingleton<ILiveKitGateway, LiveKitGateway>();
         services.AddScoped<ICallRepository, CallRepository>();
-        services.AddScoped<ICallRoomService, CallRoomService>();
-        // In place of the no-op Participants registers, whichever of the two is added first.
-        services.Replace(ServiceDescriptor.Scoped<IMeetingParticipantAccessPublisher, CallRoomAccessPublisher>());
         return services;
     }
 }

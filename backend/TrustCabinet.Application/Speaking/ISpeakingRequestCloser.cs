@@ -2,8 +2,8 @@ namespace TrustCabinet.Application.Speaking;
 
 /// <summary>
 /// Closes the open speaking requests of people who are no longer there (BR-337). Runs inside the caller's
-/// transaction; the caller saves. A thin adapter over the Speaking module's helper (rule R9): the Speaking
-/// module itself moves at CA-13 (SCRUM-178), which owns this port from then on.
+/// transaction; the caller saves. Implemented by the speaking request repository since CA-13 (SCRUM-178), so the
+/// Participants module needs no more of the Speaking module than this.
 /// </summary>
 public interface ISpeakingRequestCloser
 {

@@ -170,6 +170,9 @@ public interface IUnitOfWork
   repository (ném `InvalidOperationException` khi chưa có transaction, XML doc ghi rõ), service bọc
   `ExecuteAsync(…, TransactionMode.None)`. Lớp không gọi method khoá nào (`VoteMeetingEnd`, CA-12: nơi gọi đã giữ khoá
   meeting) thì guard vào method repository nó gọi đầu tiên (`IVoteRepository.ListDraftsAsync`), cùng thông báo cũ.
+  `SpeakingMeetingEnd` (CA-13) cũng không gọi method khoá nào, và method nó gọi, `CloseOpenAsync`, còn được
+  `ParticipantService` và `CallRepository` dùng; guard không đặt vào method dùng chung đó mà vào method riêng
+  `ISpeakingRequestRepository.CloseAllOpenAsync` (gọi lại `CloseOpenAsync`), cùng thông báo cũ.
 - Việc sau commit (phát SignalR, gửi email, xoá file) vẫn đặt **sau** khi `ExecuteAsync` trả về, đúng thứ tự cũ.
 
 Cài đặt là [`Infrastructure/Persistence/EfUnitOfWork.cs`](../../backend/TrustCabinet.Infrastructure/Persistence/EfUnitOfWork.cs),
@@ -291,8 +294,11 @@ bool IsConcurrencyConflict(Exception exception)                       // DbUpdat
 Bảng index có một dòng từ CA-06: `ux_calendar_shares_open_pair` → `UniqueConflict.CalendarShareOpenPair` (BR-423,
 `MSG449`). CA-12 thêm năm dòng của Votes: `ix_voting_sessions_meeting_id` → `OpenVoteInMeeting`; hai index của
 `vote_receipts` (người dùng, khách mời) → `BallotAlreadyCast`; hai index của `document_read_confirmations` →
-`DocumentAlreadyConfirmed` (tên index khách mời bị PostgreSQL cắt ở 63 byte). Mọi vi phạm unique khác là `Unknown` cho
-tới khi module của nó thêm dòng.
+`DocumentAlreadyConfirmed` (tên index khách mời bị PostgreSQL cắt ở 63 byte). CA-13 thêm ba dòng của Speaking:
+`ux_speaking_requests_floor` → `SpeakingFloorTaken`; `ux_speaking_requests_open_user` và
+`ux_speaking_requests_open_guest` → `SpeakingRequestAlreadyOpen`. Ba index của `CallRepository` không lên bảng: repository
+tự xử lý chúng qua `DbErrors`, service không phân biệt. Mọi vi phạm unique khác là `Unknown` cho tới khi module của
+nó thêm dòng.
 
 Translator xét kiểu exception, không xét nó đến từ đâu: một `TimeoutException` do chính `work` ném (kể cả timeout của
 Redis) cũng thành `PersistenceUnavailableException`, giống các bộ lọc `PersistenceError` cũ. `HttpRequestException` và

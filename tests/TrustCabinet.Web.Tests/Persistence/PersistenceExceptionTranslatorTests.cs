@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Infrastructure.Configurations;
 using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Web.Tests.Persistence;
@@ -113,6 +114,17 @@ public sealed class PersistenceExceptionTranslatorTests
     [InlineData("ix_document_read_confirmations_meeting_document_id_user_id", UniqueConflict.DocumentAlreadyConfirmed)]
     [InlineData("ix_document_read_confirmations_meeting_document_id_guest_invit", UniqueConflict.DocumentAlreadyConfirmed)]
     public void The_vote_indexes_are_in_the_table(string index, UniqueConflict conflict)
+    {
+        var wrapped = new DbUpdateException("save failed", Postgres(PostgresErrorCodes.UniqueViolation, index));
+
+        Assert.Equal(conflict, Assert.IsType<UniqueConflictException>(PersistenceExceptionTranslator.Translate(wrapped)).Conflict);
+    }
+
+    [Theory]
+    [InlineData(SpeakingRequestConfiguration.FloorIndex, UniqueConflict.SpeakingFloorTaken)]
+    [InlineData(SpeakingRequestConfiguration.OpenUserIndex, UniqueConflict.SpeakingRequestAlreadyOpen)]
+    [InlineData(SpeakingRequestConfiguration.OpenGuestIndex, UniqueConflict.SpeakingRequestAlreadyOpen)]
+    public void The_speaking_indexes_are_in_the_table(string index, UniqueConflict conflict)
     {
         var wrapped = new DbUpdateException("save failed", Postgres(PostgresErrorCodes.UniqueViolation, index));
 
