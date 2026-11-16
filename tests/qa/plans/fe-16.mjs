@@ -805,7 +805,8 @@ export default {
         await section(qa, 'Lịch được chia sẻ với tôi').getByRole('button', { name: 'Xin xem lịch' }).click()
         const dialog = qa.page.getByRole('dialog', { name: 'Xin xem lịch' })
         await qa.expect(dialog).toBeVisible()
-        await dialog.getByRole('searchbox').fill('chutoa')
+        // The full email: a bare "chutoa" also matches QA accounts such as qa-fe06-chutoa-khoa@ on a shared database.
+        await dialog.getByRole('searchbox').fill(EMAIL.chair)
         await qa.expect(dialog.getByText('Không có ai khớp.')).toBeVisible()
         await dialog.getByRole('searchbox').fill('quantri')
         await dialog.locator('label.pick-row').filter({ hasText: EMAIL.admin }).getByRole('radio').check()
