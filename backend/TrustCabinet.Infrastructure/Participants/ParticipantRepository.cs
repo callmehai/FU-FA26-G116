@@ -120,6 +120,29 @@ public sealed class ParticipantRepository(TrustCabinetDbContext db) : IParticipa
             db.Attach(participant.User);
     }
 
+    public void AddMany(IReadOnlyList<(MeetingParticipant Participant, User Account)> items)
+    {
+        var trackedUsers = db.Users.Local.ToDictionary(u => u.Id);
+        var detectChanges = db.ChangeTracker.AutoDetectChangesEnabled;
+        // Batch inserts do not need a full graph scan for every outbox payload or user lookup.
+        db.ChangeTracker.AutoDetectChangesEnabled = false;
+        try
+        {
+            foreach (var (participant, account) in items)
+            {
+                db.MeetingParticipants.Add(participant);
+                // Use the tracked instance already loaded by EF, or attach the account without inserting it.
+                participant.User = trackedUsers.GetValueOrDefault(account.Id) ?? account;
+                if (db.Entry(participant.User).State == EntityState.Detached)
+                    db.Attach(participant.User);
+            }
+        }
+        finally
+        {
+            db.ChangeTracker.AutoDetectChangesEnabled = detectChanges;
+        }
+    }
+
     public void Add(MeetingGuestInvitation guest) => db.MeetingGuestInvitations.Add(guest);
 
     public Task<IReadOnlyList<MeetingGuestInvitation>> ListStagedGuestsAsync(Guid meetingId, CancellationToken ct)
