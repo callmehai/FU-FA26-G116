@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
+using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Users;
 
@@ -21,6 +22,7 @@ public static class DependencyInjection
         AddAuthentication(services);
         AddAccess(services);
         AddUsers(services);
+        AddMeetings(services);
         return services;
     }
 
@@ -55,5 +57,13 @@ public static class DependencyInjection
     private static void AddUsers(IServiceCollection services)
     {
         services.AddScoped<IUserService, UserService>();
+    }
+
+    /// <summary><see cref="MeetingOverdueOptions"/> is bound by the infrastructure project, which reads configuration.</summary>
+    private static void AddMeetings(IServiceCollection services)
+    {
+        services.AddScoped<IMeetingService, MeetingService>();
+        services.AddScoped<IMeetingLifecycleService, MeetingLifecycleService>();
+        services.AddScoped<IMeetingOverdueService, MeetingOverdueService>();
     }
 }

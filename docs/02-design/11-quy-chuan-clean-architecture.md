@@ -226,6 +226,10 @@ public enum UniqueConflict { Unknown = 0 /* module thêm dần */ }
   `catch (UniqueConflictException e) when (e.Conflict == UniqueConflict.X)`; `ForeignKeyViolation`/`RestrictViolation`
   → `catch (ReferenceConflictException)`; `DbUpdateConcurrencyException` → `catch (ConcurrencyConflictException)`.
   Giữ nguyên thứ tự các khối `catch` và mã trả về.
+- Khối `catch` có ghi log thì log **exception gốc**, `exception.InnerException ?? exception`, không log exception đã
+  dịch (chốt 16/11/2026 ở CA-05). Log khi đó giống hệt trước khi chuyển, và test cũ khẳng định đúng instance được log
+  (`MeetingServiceTests.List_maps_a_database_failure_to_read_failed`, `Assert.Same`) vẫn xanh mà không sửa assertion.
+  Fake ném exception đã dịch không bọc gì thì `?? exception` log chính nó.
 - Chỉ thêm thành viên `UniqueConflict` khi code cũ phân biệt theo tên constraint. Thêm thành viên và dòng trong bảng
   của translator trong cùng PR.
 - Code còn ở Infrastructure (repository, adapter, service chưa chuyển) dùng `DbErrors` (CA-01), lớp này nhận ra cả

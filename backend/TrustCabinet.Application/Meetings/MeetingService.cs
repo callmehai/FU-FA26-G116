@@ -1,18 +1,17 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Meetings;
+namespace TrustCabinet.Application.Meetings;
 
 /// <summary>Meeting rules and persistence orchestration across creation, listing and lifecycle workflows.</summary>
 public sealed class MeetingService(
     IMeetingRepository meetings,
+    IUnitOfWork unitOfWork,
     ILogger<MeetingService> logger,
     TimeProvider? timeProvider = null) : IMeetingService
 {
@@ -59,7 +58,7 @@ public sealed class MeetingService(
 
         try
         {
-            return await meetings.InTransactionAsync(async token =>
+            return await unitOfWork.ExecuteAsync(async token =>
             {
                 var rosterErrors = new Dictionary<string, string>();
                 if (participants is null || participants.Count is < 1 or > 100)
@@ -99,17 +98,17 @@ public sealed class MeetingService(
                     meeting.Participants.Add(participant);
                 }
                 await meetings.AddAsync(meeting, token);
-                await meetings.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 return MeetingResult.Success(MeetingDetails.From(meeting, actorId));
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not create a meeting for actor {ActorId}.", actorId);
+            logger.LogError(exception.InnerException ?? exception, "Could not create a meeting for actor {ActorId}.", actorId);
             return MeetingResult.Failure(MeetingOutcome.SaveFailed);
         }
     }
@@ -119,7 +118,8 @@ public sealed class MeetingService(
     {
         try
         {
-            var meeting = await meetings.FindAccessibleAsync(id, actorId, ct);
+            var meeting = await unitOfWork.ExecuteAsync(
+                token => meetings.FindAccessibleAsync(id, actorId, token), TransactionMode.None, ct);
             return meeting is null
                 ? MeetingResult.Failure(MeetingOutcome.NotFound)
                 : MeetingResult.Success(MeetingDetails.From(meeting, actorId));
@@ -128,9 +128,9 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not read meeting {MeetingId} for actor {ActorId}.", id, actorId);
+            logger.LogError(exception.InnerException ?? exception, "Could not read meeting {MeetingId} for actor {ActorId}.", id, actorId);
             return MeetingResult.Failure(MeetingOutcome.ReadFailed);
         }
     }
@@ -140,16 +140,17 @@ public sealed class MeetingService(
     {
         try
         {
-            return MeetingListResult.Success(await meetings.FindAuthorizedPageAsync(
-                actorId, query.Timing is null ? query : query with { Now = UtcNow }, ct));
+            var page = query.Timing is null ? query : query with { Now = UtcNow };
+            return MeetingListResult.Success(await unitOfWork.ExecuteAsync(
+                token => meetings.FindAuthorizedPageAsync(actorId, page, token), TransactionMode.None, ct));
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not list meetings for actor {ActorId}.", actorId);
+            logger.LogError(exception.InnerException ?? exception, "Could not list meetings for actor {ActorId}.", actorId);
             return MeetingListResult.ReadFailed();
         }
     }
@@ -159,16 +160,17 @@ public sealed class MeetingService(
     {
         try
         {
-            var approvers = await meetings.ListEligibleApproversAsync(ct);
+            var approvers = await unitOfWork.ExecuteAsync(
+                meetings.ListEligibleApproversAsync, TransactionMode.None, ct);
             return MeetingApproverListResult.Success(approvers);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not list eligible meeting approvers.");
+            logger.LogError(exception.InnerException ?? exception, "Could not list eligible meeting approvers.");
             return MeetingApproverListResult.ReadFailed();
         }
     }
@@ -178,7 +180,8 @@ public sealed class MeetingService(
     {
         try
         {
-            var meeting = await meetings.FindOwnedAsync(id, actorId, ct);
+            var meeting = await unitOfWork.ExecuteAsync(
+                token => meetings.FindOwnedAsync(id, actorId, token), TransactionMode.None, ct);
             if (meeting is null)
             {
                 return MeetingResult.Failure(MeetingOutcome.NotFound);
@@ -192,9 +195,9 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not check whether meeting {MeetingId} can be updated by actor {ActorId}.", id, actorId);
+            logger.LogError(exception.InnerException ?? exception, "Could not check whether meeting {MeetingId} can be updated by actor {ActorId}.", id, actorId);
             return MeetingResult.Failure(MeetingOutcome.ReadFailed);
         }
     }
@@ -211,9 +214,9 @@ public sealed class MeetingService(
     {
         try
         {
-            return await meetings.InTransactionAsync(async token =>
+            return await unitOfWork.ExecuteAsync(async token =>
             {
-                var meeting = await meetings.FindOwnedForUpdateAsync(id, actorId, token);
+                var meeting = await meetings.LockOwnedAsync(id, actorId, token);
                 if (meeting is null)
                 {
                     return MeetingResult.Failure(MeetingOutcome.NotFound);
@@ -242,19 +245,19 @@ public sealed class MeetingService(
                 if (HasChanges(meeting, normalized))
                 {
                     Apply(meeting, normalized, now);
-                    await meetings.SaveChangesAsync(token);
+                    await unitOfWork.SaveChangesAsync(token);
                 }
 
                 return MeetingResult.Success(MeetingDetails.From(meeting, actorId));
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not update meeting {MeetingId} for actor {ActorId}.", id, actorId);
+            logger.LogError(exception.InnerException ?? exception, "Could not update meeting {MeetingId} for actor {ActorId}.", id, actorId);
             return MeetingResult.Failure(MeetingOutcome.SaveFailed);
         }
     }
@@ -329,7 +332,7 @@ public sealed class MeetingService(
                     history.Id))
                 .ToArray(),
             ct);
-        await meetings.SaveChangesAsync(ct);
+        await unitOfWork.SaveChangesAsync(ct);
         return MeetingResult.Success(MeetingDetails.From(meeting, actorId), rescheduled: true);
     }
 
@@ -369,39 +372,42 @@ public sealed class MeetingService(
     {
         try
         {
-            var meeting = await meetings.FindWorkflowAsync(id, ct: ct);
-            if (meeting is null)
+            return await unitOfWork.ExecuteAsync(async token =>
             {
-                return ReadinessFailure(MeetingWorkflowOutcome.NotFound, id);
-            }
+                var meeting = await meetings.FindWorkflowAsync(id, ct: token);
+                if (meeting is null)
+                {
+                    return ReadinessFailure(MeetingWorkflowOutcome.NotFound, id);
+                }
 
-            if (!MeetingReadPolicy.CanRead(meeting, actorId))
-            {
-                return ReadinessFailure(MeetingWorkflowOutcome.NotFound, id);
-            }
+                if (!MeetingReadPolicy.CanRead(meeting, actorId))
+                {
+                    return ReadinessFailure(MeetingWorkflowOutcome.NotFound, id);
+                }
 
-            if (meeting.CreatedById != actorId
-                || !await meetings.IsActiveUserWithCapabilityAsync(actorId, Capability.MeetingCreator, ct))
-            {
-                return ReadinessFailure(MeetingWorkflowOutcome.Forbidden, id, meeting.Status);
-            }
+                if (meeting.CreatedById != actorId
+                    || !await meetings.IsActiveUserWithCapabilityAsync(actorId, Capability.MeetingCreator, token))
+                {
+                    return ReadinessFailure(MeetingWorkflowOutcome.Forbidden, id, meeting.Status);
+                }
 
-            if (meeting.Status is not (MeetingStatus.Draft or MeetingStatus.Rejected))
-            {
-                return ReadinessFailure(MeetingWorkflowOutcome.StatusConflict, id, meeting.Status);
-            }
+                if (meeting.Status is not (MeetingStatus.Draft or MeetingStatus.Rejected))
+                {
+                    return ReadinessFailure(MeetingWorkflowOutcome.StatusConflict, id, meeting.Status);
+                }
 
-            var errors = MeetingSubmissionReadinessRules.Validate(meeting);
-            return new MeetingSubmissionReadiness(
-                MeetingWorkflowOutcome.Success, id, meeting.Status, errors);
+                var errors = MeetingSubmissionReadinessRules.Validate(meeting);
+                return new MeetingSubmissionReadiness(
+                    MeetingWorkflowOutcome.Success, id, meeting.Status, errors);
+            }, TransactionMode.None, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not read submission readiness for meeting {MeetingId}.", id);
+            logger.LogError(exception.InnerException ?? exception, "Could not read submission readiness for meeting {MeetingId}.", id);
             return ReadinessFailure(MeetingWorkflowOutcome.ReadFailed, id);
         }
     }
@@ -447,7 +453,7 @@ public sealed class MeetingService(
 
         try
         {
-            var result = await meetings.InTransactionAsync(async token =>
+            var result = await unitOfWork.ExecuteAsync(async token =>
             {
                 var transfersOrganizer = command.Action == MeetingTransitionAction.TransferOrganizer;
                 // Recovery authorization is independent of ordinary meeting visibility. Check the
@@ -705,14 +711,14 @@ public sealed class MeetingService(
                     }
                 }
 
-                await meetings.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 var actorName = await meetings.FindUserDisplayNameAsync(actorId, token) ?? string.Empty;
                 var historyRecord = ToHistoryRecord(history, actorName);
                 // Recovery permission does not grant access to meeting contents.
                 return transfersOrganizer
                     ? MeetingWorkflowResult.OrganizerTransferred(historyRecord)
                     : MeetingWorkflowResult.Success(MeetingDetails.From(meeting, actorId), historyRecord);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
 
             return result;
         }
@@ -720,9 +726,9 @@ public sealed class MeetingService(
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not perform {Action} for meeting {MeetingId}.", command.Action, id);
+            logger.LogError(exception.InnerException ?? exception, "Could not perform {Action} for meeting {MeetingId}.", command.Action, id);
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.SaveFailed);
         }
     }
@@ -737,7 +743,7 @@ public sealed class MeetingService(
 
         try
         {
-            return await meetings.InTransactionAsync(async token =>
+            return await unitOfWork.ExecuteAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(id, forUpdate: false, token);
                 if (meeting is null || !MeetingReadPolicy.CanReadHistory(meeting, actorId))
@@ -769,15 +775,15 @@ public sealed class MeetingService(
                 }
 
                 return MeetingHistoryResult.Success(history);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
-        catch (Exception exception) when (DbErrors.IsPersistenceFailure(exception))
+        catch (PersistenceException exception)
         {
-            logger.LogError(exception, "Could not read lifecycle history for meeting {MeetingId}.", id);
+            logger.LogError(exception.InnerException ?? exception, "Could not read lifecycle history for meeting {MeetingId}.", id);
             return MeetingHistoryResult.Failure(MeetingWorkflowOutcome.ReadFailed);
         }
     }

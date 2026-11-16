@@ -136,7 +136,7 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
             .AsNoTracking()
             .SingleOrDefaultAsync(m => m.Id == id && m.CreatedById == creatorId, ct);
 
-    public async Task<Meeting?> FindOwnedForUpdateAsync(
+    public async Task<Meeting?> LockOwnedAsync(
         Guid id, Guid creatorId, CancellationToken ct = default)
     {
         // Issue the lock as a parameterized PostgreSQL query. Materialize it without composing
