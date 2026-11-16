@@ -59,6 +59,26 @@ public interface IAgendaRepository
     /// the text survives and the meeting-wide note stays one per author (BR-397, BR-398).
     /// </summary>
     Task RemoveAsync(AgendaItem item, DateTimeOffset now, CancellationToken ct);
+
+    /// <summary>
+    /// Takes an exclusive lock on the one meeting row until the current transaction ends, and returns that meeting
+    /// untracked and without its relations; null, and no lock, when there is none. Locks no other row. Throws
+    /// <see cref="InvalidOperationException"/> when no transaction is open: the lock would be released at once, so
+    /// the caller has not taken the meeting's lock it relies on.
+    /// </summary>
+    Task<Meeting?> LockMeetingAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>The meeting's item in progress, tracked; null when none is.</summary>
+    Task<AgendaItem?> FindCurrentAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>One item of the meeting, untracked and without its relations; null when the meeting has no such item.</summary>
+    Task<AgendaItem?> FindAsync(Guid meetingId, Guid itemId, CancellationToken ct);
+
+    /// <summary>The user's rows in the meeting's participant list, one per role, tracked, with their account.</summary>
+    Task<IReadOnlyList<MeetingParticipant>> ListParticipationsAsync(Guid meetingId, Guid userId, CancellationToken ct);
+
+    /// <summary>The meeting's guest invitation, untracked, when it exists and has not been revoked.</summary>
+    Task<MeetingGuestInvitation?> FindCurrentGuestAsync(Guid meetingId, Guid invitationId, CancellationToken ct);
 }
 
 public interface IAgendaDocumentRepository

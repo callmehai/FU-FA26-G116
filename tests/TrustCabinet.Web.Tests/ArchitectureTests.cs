@@ -60,7 +60,6 @@ public sealed class ArchitectureTests
     // A4 — no class of Infrastructure implements an I*Service declared in Domain or Application: a use case lives in Application.
     private static readonly string[] ServicesInInfrastructure =
     [
-        "TrustCabinet.Infrastructure.Agenda.AgendaService",
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
         "TrustCabinet.Infrastructure.Attendance.AttendanceService",
         "TrustCabinet.Infrastructure.Calls.CallRoomService",
@@ -134,11 +133,8 @@ public sealed class ArchitectureTests
     // A7 — a class of Infrastructure that takes TrustCabinetDbContext is a *Repository or a *Query, or sits in
     // Persistence/ or Seed/, or is TrustCabinetDbContext* or DependencyInjection. The classes below are neither yet:
     // each moves its use case to Application, or becomes one of those, in the subtask of its module. Empty at CA-20.
-    // AgendaPresenterNotifier resolves the context with GetRequiredService; see the note on WebTypesTakingRepositories.
     private static readonly string[] PendingDbContextReaders =
     [
-        "TrustCabinet.Infrastructure.Agenda.AgendaMeetingEnd",
-        "TrustCabinet.Infrastructure.Agenda.AgendaPresenterNotifier",
         "TrustCabinet.Infrastructure.Ai.AiSettingsService",
         "TrustCabinet.Infrastructure.Ai.LanguageModelProvider",
         "TrustCabinet.Infrastructure.Attendance.AttendanceService",

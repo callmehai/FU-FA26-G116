@@ -1,17 +1,15 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.GuestAccess;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Agenda;
+namespace TrustCabinet.Application.Agenda;
 
-public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository agenda,
+public sealed class AgendaService(IMeetingRepository meetings, IUnitOfWork unitOfWork, IAgendaRepository agenda,
     IAgendaDocumentRepository documents, IAgendaChangePublisher publisher, TimeProvider clock,
     ILogger<AgendaService> logger, IAgendaGuestAccess guests, IAgendaPresenterNotifier notifier) : IAgendaService
 {
@@ -26,16 +24,19 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
     {
         try
         {
-            if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, ct))
-                return new(AgendaFailure.NotFound);
-            var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
-            if (meeting is null || !GuestAccessRules.MeetingOpen(meeting.Status))
-                return new(AgendaFailure.NotFound);
-            return await SnapshotAsync(meeting, null, false, ct);
+            return await unitOfWork.ExecuteAsync(async token =>
+            {
+                if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, token))
+                    return new AgendaOutcome(AgendaFailure.NotFound);
+                var meeting = await meetings.FindWorkflowAsync(meetingId, ct: token);
+                if (meeting is null || !GuestAccessRules.MeetingOpen(meeting.Status))
+                    return new(AgendaFailure.NotFound);
+                return await SnapshotAsync(meeting, null, false, token);
+            }, TransactionMode.None, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to read guest agenda {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to read guest agenda {MeetingId}", meetingId);
             return new(AgendaFailure.ReadFailed);
         }
     }
@@ -44,26 +45,29 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
     {
         try
         {
-            if (!await meetings.IsUserActiveAsync(actorId, ct)) return new(AgendaFailure.Inactive);
-            var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
-            if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(AgendaFailure.NotFound);
-            var planner = AgendaRules.IsPlanner(meeting, actorId);
-            var planning = planner && AgendaRules.PlanningAllowed(meeting.Status);
-            if (options)
+            return await unitOfWork.ExecuteAsync(async token =>
             {
-                if (!planner) return new(AgendaFailure.Forbidden);
-                if (!planning) return new(AgendaFailure.Locked);
-                return new(Data: new AgendaEditorOptions(meeting.Participants
-                    .Where(p => p.MeetingId == meeting.Id && p.Role != MeetingRole.Guest && AgendaRules.CurrentParticipant(p))
-                    .Select(p => new AgendaPresenter(p.UserId, "Internal", p.User.FullName)).DistinctBy(p => p.Id)
-                    .Concat((await agenda.CurrentGuestsAsync(meetingId, ct)).Select(g => new AgendaPresenter(g.Id, "Guest", g.InvitedName)))
-                    .OrderBy(p => p.FullName).ThenBy(p => p.Id).ToArray(), await documents.ListAsync(meetingId, ct)));
-            }
-            return await SnapshotAsync(meeting, actorId, planning, ct);
+                if (!await meetings.IsUserActiveAsync(actorId, token)) return new AgendaOutcome(AgendaFailure.Inactive);
+                var meeting = await meetings.FindWorkflowAsync(meetingId, ct: token);
+                if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId)) return new(AgendaFailure.NotFound);
+                var planner = AgendaRules.IsPlanner(meeting, actorId);
+                var planning = planner && AgendaRules.PlanningAllowed(meeting.Status);
+                if (options)
+                {
+                    if (!planner) return new(AgendaFailure.Forbidden);
+                    if (!planning) return new(AgendaFailure.Locked);
+                    return new(Data: new AgendaEditorOptions(meeting.Participants
+                        .Where(p => p.MeetingId == meeting.Id && p.Role != MeetingRole.Guest && AgendaRules.CurrentParticipant(p))
+                        .Select(p => new AgendaPresenter(p.UserId, "Internal", p.User.FullName)).DistinctBy(p => p.Id)
+                        .Concat((await agenda.CurrentGuestsAsync(meetingId, token)).Select(g => new AgendaPresenter(g.Id, "Guest", g.InvitedName)))
+                        .OrderBy(p => p.FullName).ThenBy(p => p.Id).ToArray(), await documents.ListAsync(meetingId, token)));
+                }
+                return await SnapshotAsync(meeting, actorId, planning, token);
+            }, TransactionMode.None, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed to read agenda {MeetingId}", meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed to read agenda {MeetingId}", meetingId);
             return new(AgendaFailure.ReadFailed);
         }
     }
@@ -120,7 +124,7 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
         AgendaOutcome outcome;
         try
         {
-            outcome = await meetings.InTransactionAsync(async token =>
+            outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(meetingId, true, token);
                 if (!await meetings.IsUserActiveAsync(actorId, token)) return new AgendaOutcome(AgendaFailure.Inactive);
@@ -242,17 +246,17 @@ public sealed class AgendaService(IMeetingRepository meetings, IAgendaRepository
 
                 if (changed)
                 {
-                    await meetings.SaveChangesAsync(token);
+                    await unitOfWork.SaveChangesAsync(token);
                     var changeType = operation switch { AgendaOperation.Create => "Created", AgendaOperation.Update => "Updated",
                         AgendaOperation.Delete => "Deleted", AgendaOperation.Reorder => "Reordered", AgendaOperation.Start => "Started", AgendaOperation.RecordConclusion => "ConclusionUpdated", _ => "Completed" };
                     change = new(Guid.CreateVersion7(), meetingId, changeType, item?.Id, item?.Title, now);
                 }
                 return new(ItemId: item?.Id);
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
-        catch (Exception ex) when (DbErrors.IsPersistenceFailure(ex))
+        catch (PersistenceException ex)
         {
-            logger.LogError(ex, "Failed agenda {Operation} for meeting {MeetingId}", operation, meetingId);
+            logger.LogError(ex.InnerException ?? ex, "Failed agenda {Operation} for meeting {MeetingId}", operation, meetingId);
             return new(AgendaFailure.SaveFailed);
         }
         // A committed write must remain successful even when the client disconnects or push fails.

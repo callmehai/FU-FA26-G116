@@ -9,6 +9,7 @@ using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Infrastructure.Agenda;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Seed;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 
@@ -183,7 +184,7 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
         await using (var db = fixture.Db())
         {
             await using var transaction = await db.Database.BeginTransactionAsync();
-            Assert.Null(await new AgendaMeetingEnd(db).PrepareAsync(s.MeetingId, fixture.Clock.Now));
+            Assert.Null(await new AgendaMeetingEnd(new AgendaRepository(db), new EfUnitOfWork(db)).PrepareAsync(s.MeetingId, fixture.Clock.Now));
             await transaction.CommitAsync();
             var item = await db.AgendaItems.SingleAsync(i => i.Id == s.Items[0]);
             item.Status = AgendaItemStatus.InProgress;
@@ -245,7 +246,7 @@ public sealed class AgendaAdditionalTests(AgendaFixture fixture) : IClassFixture
         await using (var db = fixture.Db())
         {
             await using var transaction = await db.Database.BeginTransactionAsync();
-            var change = await new AgendaMeetingEnd(db).PrepareAsync(s.MeetingId, fixture.Clock.Now.AddMinutes(1));
+            var change = await new AgendaMeetingEnd(new AgendaRepository(db), new EfUnitOfWork(db)).PrepareAsync(s.MeetingId, fixture.Clock.Now.AddMinutes(1));
             Assert.NotNull(change);
             var meeting = await db.Meetings.SingleAsync(m => m.Id == s.MeetingId);
             meeting.Status = MeetingStatus.Ended;

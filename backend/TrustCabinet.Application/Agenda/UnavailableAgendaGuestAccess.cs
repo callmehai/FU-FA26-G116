@@ -1,7 +1,6 @@
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Application.Agenda;
 
-namespace TrustCabinet.Infrastructure.Agenda;
+namespace TrustCabinet.Application.Agenda;
 
 /// <summary>Fail closed until UC-04 registers its authoritative invitation/session adapter.</summary>
 public sealed class UnavailableAgendaGuestAccess : IAgendaGuestAccess

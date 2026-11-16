@@ -68,6 +68,12 @@ public sealed class FakeMeetingRepository : IMeetingRepository
     public Task<bool> IsActiveUserWithCapabilityAsync(Guid userId, Capability capability, CancellationToken ct = default)
         => Task.FromResult(Capabilities.Contains((userId, capability)));
 
+    /// <summary>Users whose account is active.</summary>
+    public HashSet<Guid> ActiveUsers { get; } = [];
+
+    public Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult(ActiveUsers.Contains(userId));
+
     public Task<string?> FindUserDisplayNameAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult<string?>("Người thực hiện");
 
@@ -104,7 +110,6 @@ public sealed class FakeMeetingRepository : IMeetingRepository
     public Task<Meeting?> FindOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default) => throw new NotSupportedException();
     public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default) => throw new NotSupportedException();
     public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
-    public Task<bool> IsUserActiveAsync(Guid userId, CancellationToken ct = default) => throw new NotSupportedException();
     public Task SaveChangesAsync(CancellationToken ct = default) => throw new NotSupportedException();
     public Task StageCancellationAsync(Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default) => throw new NotSupportedException();
     public Task<T> InTransactionAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct = default) => throw new NotSupportedException();
