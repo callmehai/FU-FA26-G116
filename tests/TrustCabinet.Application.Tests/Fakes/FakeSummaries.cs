@@ -175,8 +175,12 @@ public sealed class FakeMeetingMinutesRepository : IMeetingMinutesRepository
     public Task<Guid?> FindMeetingIdAsync(Guid minutesId, CancellationToken ct)
         => Task.FromResult(Rows.SingleOrDefault(m => m.Id == minutesId)?.MeetingId);
 
+    /// <summary>Runs as each revision lock is taken, to see what the caller already holds.</summary>
+    public Action? BeforeLock { get; set; }
+
     public Task<MeetingMinutes?> LockAsync(Guid minutesId, CancellationToken ct)
     {
+        BeforeLock?.Invoke();
         Locked.Add(minutesId);
         return FindAsync(minutesId, ct);
     }

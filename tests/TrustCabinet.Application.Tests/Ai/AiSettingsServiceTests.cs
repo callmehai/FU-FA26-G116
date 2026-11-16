@@ -133,4 +133,16 @@ public sealed class AiSettingsServiceTests
         Assert.True(api.Remote);
         Assert.Equal(Key, Assert.Single(_apis.Created).ApiKey);
     }
+
+    [Fact]
+    public async Task A_stored_key_that_no_longer_decrypts_keeps_ordinary_meetings_on_the_in_house_model()
+    {
+        await Service().UpdateAsync(Api(), _admin);
+        _protector.Broken = true;
+        var provider = new LanguageModelProvider(_settings, _unitOfWork, _local, _protector, _apis,
+            Options.Create(new LanguageModelOptions()), NullLogger<LanguageModelProvider>.Instance);
+
+        Assert.Same(_local, await provider.ForAsync(Sensitivity.Normal, default));
+        Assert.Empty(_apis.Created);
+    }
 }

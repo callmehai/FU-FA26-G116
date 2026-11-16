@@ -120,6 +120,19 @@ public sealed class MinutesServiceTests
     }
 
     [Fact]
+    public async Task The_revision_is_locked_inside_the_transaction_after_the_meeting_row()
+    {
+        var row = Revision(MinutesStatus.WaitingApproval);
+        var held = new List<(bool MeetingLocked, bool InTransaction)>();
+        _minutes.BeforeLock = () => held.Add((_meetings.Locked.Contains(_meeting), _unitOfWork.InTransaction));
+
+        await Service().ApproveAsync(row.Id, _chair, row.UpdatedAt);
+
+        Assert.Equal([(true, true)], held);
+        Assert.Equal(TransactionMode.ReadCommitted, Assert.Single(_unitOfWork.Modes, m => m != TransactionMode.None));
+    }
+
+    [Fact]
     public async Task The_chair_does_not_send_the_minutes_for_approval()
     {
         var row = Revision(MinutesStatus.Draft);
