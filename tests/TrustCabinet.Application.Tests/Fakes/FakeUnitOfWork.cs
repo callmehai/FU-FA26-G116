@@ -18,6 +18,9 @@ public sealed class FakeUnitOfWork : IUnitOfWork
     public int Saves { get; private set; }
     public int Discards { get; private set; }
 
+    /// <summary>Whether a transactional call is running now, as the real one has a transaction open.</summary>
+    public bool InTransaction => _open is not null;
+
     /// <summary>The mode of every <c>ExecuteAsync</c> call, in the order they were made.</summary>
     public List<TransactionMode> Modes { get; } = [];
 

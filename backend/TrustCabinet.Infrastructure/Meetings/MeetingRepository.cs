@@ -1,4 +1,3 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
@@ -341,8 +340,6 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
         return Task.CompletedTask;
     }
 
-    public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
-
     public async Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
     {
         foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
@@ -367,19 +364,5 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
     {
         foreach (var guest in await db.MeetingGuestInvitations.Where(g => g.MeetingId == meeting.Id && g.RevokedAt == null).ToArrayAsync(ct))
             Email.MeetingInvitationEvents.Stage(db, meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId);
-    }
-
-    public async Task<T> InTransactionAsync<T>(
-        Func<CancellationToken, Task<T>> operation, CancellationToken ct = default)
-    {
-        // Called inside a transaction somebody else opened (a unit of work, SCRUM-143): the work joins it, and
-        // whoever opened it commits.
-        if (db.Database.CurrentTransaction is not null) return await operation(ct);
-
-        await using var transaction = await db.Database.BeginTransactionAsync(
-            IsolationLevel.ReadCommitted, ct);
-        var result = await operation(ct);
-        await transaction.CommitAsync(ct);
-        return result;
     }
 }

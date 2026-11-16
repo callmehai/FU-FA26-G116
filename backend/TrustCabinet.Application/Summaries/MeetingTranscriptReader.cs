@@ -1,60 +1,34 @@
-using Microsoft.EntityFrameworkCore;
-using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Entities;
-using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;
 
-namespace TrustCabinet.Infrastructure.Summaries;
+namespace TrustCabinet.Application.Summaries;
 
 /// <summary>
 /// Everything said in a meeting as one timeline, for the summary (SCRUM-36): the sentences of each person's mic
 /// (SCRUM-109) and the segments of the room mic or an uploaded file (SCRUM-31). Excluded sentences stay out (BR-358).
 /// Numbers read aloud arrive as digits (<see cref="SpokenNumbers"/>). In a hybrid meeting the room mic's copy of an
-/// online attendee's words, heard through the room's speakers, is left out: their own mic has them (ADR-0061).
+/// online attendee's words, heard through the room's speakers, is left out: their own mic has them (ADR-0061). Called
+/// inside the caller's unit of work, which translates a storage failure.
 /// </summary>
-public sealed class MeetingTranscriptReader(TrustCabinetDbContext db)
+public sealed class MeetingTranscriptReader(IMeetingTranscriptQuery query)
 {
     public async Task<IReadOnlyList<TranscriptLine>> ReadAsync(Guid meetingId, CancellationToken ct)
     {
         var lines = new List<TranscriptLine>();
-        var hybrid = await db.Meetings.AnyAsync(m => m.Id == meetingId && m.Mode == MeetingMode.Hybrid, ct);
+        var hybrid = await query.IsHybridAsync(meetingId, ct);
 
-        var clips = await db.SpeechClips.AsNoTracking()
-            .Where(c => c.MeetingId == meetingId && c.ExcludedAt == null && c.Text != "")
-            .Select(c => new
-            {
-                c.Id, c.StartedAt, c.DurationMs, c.Text,
-                Speaker = c.Speaker != null ? c.Speaker.FullName
-                    : c.GuestInvitation != null ? c.GuestInvitation.SelfDeclaredDisplayName ?? c.GuestInvitation.InvitedName : null,
-            })
-            .ToListAsync(ct);
+        var clips = await query.ListClipsAsync(meetingId, ct);
         lines.AddRange(clips.Select(c => new TranscriptLine(TranscriptLine.ClipRef(c.Id), c.StartedAt, c.Speaker ?? "Người nói",
             SpokenNumbers.Normalise(c.Text.Trim()))));
         RoomEcho.Span[] online = hybrid
             ? [.. clips.Select(c => new RoomEcho.Span(c.StartedAt, c.StartedAt.AddMilliseconds(c.DurationMs), c.Text))]
             : [];
 
-        var recordings = await db.Recordings.AsNoTracking()
-            .Where(r => r.MeetingId == meetingId && r.Status == RecordingStatus.Available && r.DeletedAt == null
-                && r.Transcript != null && r.Transcript.Status == TranscriptStatus.Completed)
-            .Select(r => new { r.Id, r.Takes, r.CreatedAt, TranscriptId = r.Transcript!.Id })
-            .ToListAsync(ct);
+        var recordings = await query.ListRecordingsAsync(meetingId, ct);
         foreach (var recording in recordings)
         {
-            var speakers = await db.TranscriptSpeakers.AsNoTracking()
-                .Where(s => s.TranscriptId == recording.TranscriptId)
-                .Select(s => new
-                {
-                    s.Label,
-                    Name = s.AssignedUser != null ? s.AssignedUser.FullName
-                        : s.AssignedGuest != null ? s.AssignedGuest.SelfDeclaredDisplayName ?? s.AssignedGuest.InvitedName : null,
-                })
-                .ToDictionaryAsync(s => s.Label, s => s.Name, ct);
-            var segments = await db.TranscriptSegments.AsNoTracking()
-                .Where(s => s.TranscriptId == recording.TranscriptId && s.Text != "")
-                .OrderBy(s => s.Position)
-                .Select(s => new { s.Id, s.StartMs, s.EndMs, s.Text, s.SpeakerLabel })
-                .ToListAsync(ct);
+            var speakers = await query.ListSpeakerNamesAsync(recording.TranscriptId, ct);
+            var segments = await query.ListSegmentsAsync(recording.TranscriptId, ct);
             foreach (var segment in segments)
             {
                 var at = WallClock(recording.Takes, recording.CreatedAt, segment.StartMs);

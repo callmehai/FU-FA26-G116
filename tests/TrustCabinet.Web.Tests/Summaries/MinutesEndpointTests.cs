@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Infrastructure.Summaries;
 using UglyToad.PdfPig;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;

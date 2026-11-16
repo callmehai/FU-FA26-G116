@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Ai;
 using TrustCabinet.Application.Attendance;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
@@ -16,6 +17,7 @@ using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Reports;
 using TrustCabinet.Application.Speaking;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Application.Transcription;
 using TrustCabinet.Application.Users;
 using TrustCabinet.Application.VoiceId;
@@ -52,6 +54,8 @@ public static class DependencyInjection
         AddRecordings(services);
         AddTranscription(services);
         AddVoiceId(services);
+        AddAi(services);
+        AddSummaries(services);
         return services;
     }
 
@@ -206,5 +210,23 @@ public static class DependencyInjection
         services.AddScoped<IVoiceIdErasure, VoiceIdErasure>();
         services.AddScoped<IVoiceIdService, VoiceIdService>();
         services.AddScoped<IVoiceCollectionService, VoiceCollectionService>();
+    }
+
+    /// <summary>The key protector, the API client factory and the repository are the infrastructure project's to supply.</summary>
+    private static void AddAi(IServiceCollection services)
+    {
+        services.AddScoped<ILanguageModelProvider, LanguageModelProvider>();
+        services.AddScoped<IAiSettingsService, AiSettingsService>();
+    }
+
+    /// <summary>
+    /// <see cref="LanguageModelOptions"/>, the in-house model, the minutes renderer, the repositories and the queries are the
+    /// infrastructure project's to supply.
+    /// </summary>
+    private static void AddSummaries(IServiceCollection services)
+    {
+        services.AddScoped<MeetingTranscriptReader>();
+        services.AddScoped<ISummaryService, SummaryService>();
+        services.AddScoped<IMinutesService, MinutesService>();
     }
 }

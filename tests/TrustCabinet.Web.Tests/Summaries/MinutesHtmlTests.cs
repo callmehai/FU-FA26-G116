@@ -1,3 +1,4 @@
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Infrastructure.Summaries;
 
 namespace TrustCabinet.Web.Tests.Summaries;

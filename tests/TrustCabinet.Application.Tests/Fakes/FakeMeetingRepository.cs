@@ -7,10 +7,9 @@ namespace TrustCabinet.Application.Tests.Fakes;
 
 /// <summary>
 /// Meetings held in <see cref="Meetings"/>; who may open one by <see cref="FindAccessibleAsync"/> from
-/// <see cref="Accessible"/>. What the services stage is recorded. <c>SaveChangesAsync</c> and
-/// <c>InTransactionAsync</c> throw: a service moved to Application saves and opens transactions through
-/// <see cref="FakeUnitOfWork"/>. Every other member throws until a test needs it: fill it in then, rather than
-/// returning a guess.
+/// <see cref="Accessible"/>. What the services stage is recorded; a service moved to Application saves and opens
+/// transactions through <see cref="FakeUnitOfWork"/>. Every other member throws until a test needs it: fill it in
+/// then, rather than returning a guess.
 /// </summary>
 public sealed class FakeMeetingRepository : IMeetingRepository
 {
@@ -110,7 +109,5 @@ public sealed class FakeMeetingRepository : IMeetingRepository
     public Task<Meeting?> FindOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default) => throw new NotSupportedException();
     public Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default) => throw new NotSupportedException();
     public Task<bool> IsEligibleApproverAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
-    public Task SaveChangesAsync(CancellationToken ct = default) => throw new NotSupportedException();
     public Task StageCancellationAsync(Meeting meeting, Guid historyId, Guid actorId, string reason, DateTimeOffset now, CancellationToken ct = default) => throw new NotSupportedException();
-    public Task<T> InTransactionAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken ct = default) => throw new NotSupportedException();
 }

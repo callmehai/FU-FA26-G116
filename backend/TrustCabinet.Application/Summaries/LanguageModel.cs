@@ -1,3 +1,5 @@
+using TrustCabinet.Domain.Entities;
+
 namespace TrustCabinet.Application.Summaries;
 
 /// <summary>
@@ -10,6 +12,9 @@ public interface ILanguageModel
 
     /// <summary>The model's name, kept with what it wrote so a summary can be judged against how it was made.</summary>
     string Model { get; }
+
+    /// <summary>A hosted API (ADR-0056) rather than the in-house model: the draft then uses the hosted harness.</summary>
+    bool Remote => false;
 
     /// <summary>One chat turn; the answer is plain text, as AI-eCabinet asks of its model (JSON makes small models worse).</summary>
     Task<string> CompleteAsync(string system, string user, CancellationToken ct);
@@ -26,4 +31,31 @@ public sealed record TranscriptLine(string Ref, DateTimeOffset At, string Speake
 {
     public static string ClipRef(Guid id) => $"c:{id}";
     public static string SegmentRef(Guid id) => $"s:{id}";
+}
+
+/// <summary>A sentence of someone's mic, untracked, with the name of who said it when known.</summary>
+public sealed record SpokenClip(Guid Id, DateTimeOffset StartedAt, long DurationMs, string Text, string? Speaker);
+
+/// <summary>An available recording whose transcript is completed.</summary>
+public sealed record TranscribedRecording(Guid Id, List<RecordingTake>? Takes, DateTimeOffset CreatedAt, Guid TranscriptId);
+
+/// <summary>A non-empty segment of a transcript.</summary>
+public sealed record SpokenSegment(Guid Id, long StartMs, long EndMs, string Text, string SpeakerLabel);
+
+/// <summary>What <see cref="MeetingTranscriptReader"/> reads, untracked.</summary>
+public interface IMeetingTranscriptQuery
+{
+    Task<bool> IsHybridAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>The meeting's sentences that are not excluded and have text, in no order.</summary>
+    Task<IReadOnlyList<SpokenClip>> ListClipsAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>The meeting's available, not deleted recordings with a completed transcript.</summary>
+    Task<IReadOnlyList<TranscribedRecording>> ListRecordingsAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>Each voice label of a transcript and the name of the person or Guest it was assigned to, if any.</summary>
+    Task<IReadOnlyDictionary<string, string?>> ListSpeakerNamesAsync(Guid transcriptId, CancellationToken ct);
+
+    /// <summary>The transcript's segments with text, in order.</summary>
+    Task<IReadOnlyList<SpokenSegment>> ListSegmentsAsync(Guid transcriptId, CancellationToken ct);
 }

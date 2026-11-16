@@ -1,7 +1,7 @@
 using System.Text;
 using TrustCabinet.Application.Summaries;
 
-namespace TrustCabinet.Infrastructure.Summaries;
+namespace TrustCabinet.Application.Summaries;
 
 /// <summary>
 /// ADR-0056 — the writer's harness for a hosted model (DeepSeek V4.1 Flash reads a million tokens). The in-house path,

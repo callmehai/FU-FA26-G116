@@ -1,29 +1,29 @@
 using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Application.Ai;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Summaries;
 
-namespace TrustCabinet.Infrastructure.Ai;
+namespace TrustCabinet.Application.Ai;
 
 /// <summary>
 /// ADR-0056 — the API an administrator chose writes the drafts of ordinary meetings; every other meeting, and every
 /// meeting while the in-house model is chosen, stays on the in-house model (ADR-0054). The transcript of a meeting
 /// marked Internal or Secret never leaves the server's own network.
 /// </summary>
-public sealed class LanguageModelProvider(TrustCabinetDbContext db, ILanguageModel local, AiKeyProtector protector,
-    IHttpClientFactory clients, IOptions<LanguageModelOptions> options, ILogger<LanguageModelProvider> logger)
+public sealed class LanguageModelProvider(IAiProviderSettingRepository settings, IUnitOfWork unitOfWork, ILanguageModel local,
+    IAiKeyProtector protector, IApiLanguageModelFactory apis, IOptions<LanguageModelOptions> options,
+    ILogger<LanguageModelProvider> logger)
     : ILanguageModelProvider
 {
+    /// <summary>The named HTTP client the infrastructure project calls the API through.</summary>
     public const string ApiHttpClientName = "ai-api";
 
     public async Task<ILanguageModel> ForAsync(Sensitivity sensitivity, CancellationToken ct)
     {
         if (sensitivity != Sensitivity.Normal) return local;
-        var setting = await db.AiProviderSettings.AsNoTracking().FirstOrDefaultAsync(ct);
+        var setting = await unitOfWork.ExecuteAsync(settings.FindCurrentAsync, TransactionMode.None, ct);
         if (setting is not { Mode: AiProviderMode.Api, ApiKeyCiphertext: { } ciphertext }) return local;
         string key;
         try
@@ -40,7 +40,7 @@ public sealed class LanguageModelProvider(TrustCabinetDbContext db, ILanguageMod
             options.Value.ApiReasoningEffort);
     }
 
-    internal OpenAiCompatibleModel Api(string baseUrl, string model, string key, int timeoutMinutes, int maxTokens,
+    internal ILanguageModel Api(string baseUrl, string model, string key, int timeoutMinutes, int maxTokens,
         string reasoningEffort)
-        => new(clients, ApiHttpClientName, baseUrl, model, key, timeoutMinutes, maxTokens, remote: true, reasoningEffort);
+        => apis.Create(baseUrl, model, key, timeoutMinutes, maxTokens, reasoningEffort);
 }

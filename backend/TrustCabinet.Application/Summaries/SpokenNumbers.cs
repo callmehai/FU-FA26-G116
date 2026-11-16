@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace TrustCabinet.Infrastructure.Summaries;
+namespace TrustCabinet.Application.Summaries;
 
 /// <summary>
 /// Turns numbers read aloud in a transcript into digits before the model sees them: "mười tám trên hai mươi" becomes

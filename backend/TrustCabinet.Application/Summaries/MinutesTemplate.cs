@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using TrustCabinet.Application.Notes;
 using TrustCabinet.Application.Summaries;
 
-namespace TrustCabinet.Infrastructure.Summaries;
+namespace TrustCabinet.Application.Summaries;
 
 public sealed record MinutesPersonLine(string Name, string Role, bool Away);
 

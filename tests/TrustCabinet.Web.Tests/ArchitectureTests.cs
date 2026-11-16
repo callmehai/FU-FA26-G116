@@ -58,18 +58,10 @@ public sealed class ArchitectureTests
     ];
 
     // A4 — no class of Infrastructure implements an I*Service declared in Domain or Application: a use case lives in Application.
-    private static readonly string[] ServicesInInfrastructure =
-    [
-        "TrustCabinet.Infrastructure.Ai.AiSettingsService",
-        "TrustCabinet.Infrastructure.Summaries.MinutesService",
-        "TrustCabinet.Infrastructure.Summaries.SummaryService",
-    ];
+    private static readonly string[] ServicesInInfrastructure = [];
 
     // A5 — no interface but IUnitOfWork has SaveChangesAsync or InTransactionAsync.
-    private static readonly string[] InterfacesExposingTheUnitOfWork =
-    [
-        "TrustCabinet.Application.Meetings.IMeetingRepository",
-    ];
+    private static readonly string[] InterfacesExposingTheUnitOfWork = [];
 
     // A6 — a Web type has no field or parameter of an I*Repository type. CapabilityGate and NotificationWorker
     // resolve theirs with GetRequiredService inside a method: reflection sees them only because the local lives
@@ -113,15 +105,10 @@ public sealed class ArchitectureTests
     // each moves its use case to Application, or becomes one of those, in the subtask of its module. Empty at CA-20.
     private static readonly string[] PendingDbContextReaders =
     [
-        "TrustCabinet.Infrastructure.Ai.AiSettingsService",
-        "TrustCabinet.Infrastructure.Ai.LanguageModelProvider",
         "TrustCabinet.Infrastructure.Email.EmailQueueProcessor",
         "TrustCabinet.Infrastructure.Email.MeetingInvitationDispatchProcessor",
         "TrustCabinet.Infrastructure.Email.MeetingInvitationEvents",
         "TrustCabinet.Infrastructure.Email.ResendWebhookReceiver",
-        "TrustCabinet.Infrastructure.Summaries.MeetingTranscriptReader",
-        "TrustCabinet.Infrastructure.Summaries.MinutesService",
-        "TrustCabinet.Infrastructure.Summaries.SummaryService",
     ];
 
     // A7 — for good: a class that implements one port of Application over the context and has no business branch.

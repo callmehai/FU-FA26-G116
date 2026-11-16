@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Application.Notes;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Infrastructure.Summaries;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
 

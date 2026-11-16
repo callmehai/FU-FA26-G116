@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using TrustCabinet.Application.Ai;
 
 namespace TrustCabinet.Infrastructure.Ai;
 
@@ -9,7 +10,7 @@ namespace TrustCabinet.Infrastructure.Ai;
 /// only, as the Voice ID protector does; changing either makes the stored API key unreadable, and the administrator
 /// enters it again.
 /// </summary>
-public sealed class AiKeyProtector
+public sealed class AiKeyProtector : IAiKeyProtector
 {
     private const int NonceSize = 12;
     private const int TagSize = 16;
