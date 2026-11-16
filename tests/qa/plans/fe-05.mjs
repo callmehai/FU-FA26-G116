@@ -314,7 +314,7 @@ export default {
       title: 'Hộp thoại thêm mục: bỏ trống nội dung thì báo lỗi tại ô và không tạo gì; đóng khi đã nhập thì hỏi bỏ thay đổi',
       steps: ['Mở "Thêm nội dung" trên cuộc họp Nháp', 'Bấm "Lưu" khi ô nội dung trống', 'Nhập ghi chú rồi bấm "Huỷ"'],
       expected:
-        'Ô nội dung báo "Vui lòng nhập nội dung cần bàn." (aria-invalid), không có POST, số mục không đổi; Huỷ khi đã nhập mở "Bỏ thay đổi chưa lưu?"',
+        'Ô nội dung báo "Nhập nội dung cần bàn." (aria-invalid), không có POST, số mục không đổi; Huỷ khi đã nhập mở "Bỏ thay đổi chưa lưu?"',
       async run(qa) {
         const m = await reused(qa, 'Draft')
         const before = (await snapshot(qa, 'secretary', m.id)).items.length
@@ -326,7 +326,7 @@ export default {
         await qa.expect(form).toBeVisible()
         await qa.expect(form.getByRole('button', { name: 'Lưu' })).toBeEnabled()
         await form.getByRole('button', { name: 'Lưu' }).click()
-        await qa.expect(form.getByText('Vui lòng nhập nội dung cần bàn.')).toBeVisible()
+        await qa.expect(form.getByText('Nhập nội dung cần bàn.')).toBeVisible()
         await qa.expect(form.getByPlaceholder('VD: Dự toán ngân sách năm 2027')).toHaveAttribute('aria-invalid', 'true')
         await settled(qa)
         await qa.shot('loi-thieu-noi-dung')
