@@ -8,13 +8,16 @@
 > Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
 > các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
 
-SCRUM-15 không thêm endpoint nào cho người dùng; endpoint duy nhất là webhook Resend gọi để báo kết quả giao thư (xem [Gửi qua Resend](#gửi-qua-resend-và-kết-quả-giao-thư--adr-0031)). Luồng công bố của SCRUM-19 gọi
-`IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi transaction đã commit
-meeting sang `Published`. Khi bật SMTP, mỗi thành phần tham dự tạo một dòng
-`email_messages` ở trạng thái `Queued`; request công bố chỉ ghi queue và không chờ SMTP. Chỉ tài khoản
-đang hoạt động mới được nhận thư; producer không lọc `Response` của participant. `deduplication_key`
-có unique index; thư mời công bố dùng `meeting:{meetingId}:published:{userId}`.
-Gọi lại cùng sự kiện không tạo thư trùng, nhưng một sự kiện
+SCRUM-15 không thêm endpoint nào cho người dùng; endpoint duy nhất là webhook Resend gọi để báo kết quả giao thư (xem [Gửi qua Resend](#gửi-qua-resend-và-kết-quả-giao-thư--adr-0031)). Luồng công bố của SCRUM-19 (và các mutation roster: dời lịch, huỷ, thu hồi, đổi vai trò) gọi
+`MeetingInvitationEvents.Stage(...)` ghi một dòng `meeting_invitation_dispatches` ở trạng thái
+`Pending` cùng domain transaction với thay đổi meeting/roster — kể cả khi transport tắt. Sau commit,
+`MeetingInvitationDispatchProcessor` của `EmailDeliveryWorker` materialize từng dispatch thành một dòng
+`email_messages` ở trạng thái `Queued` (render sẵn Subject/Body/html/`.ics` cùng `DeduplicationKey`), rồi
+`EmailQueueProcessor` gửi từng thư; request công bố chỉ ghi dispatch và không chờ SMTP. Chỉ assignment
+hiện tại còn hiệu lực mới thành thư: internal theo `ParticipantRules.ActiveExpression` (tài khoản đang
+hoạt động), Khách theo lời mời chưa bị thu hồi; legacy Guest/Delegated không còn là current assignment
+nên không nhận. `deduplication_key` có unique index; thư mời công bố dùng `meeting:{meetingId}:published:{userId}`.
+Gọi lại cùng sự kiện không tạo thư trùng (dispatch đã `Materialized` thì bỏ qua), nhưng một sự kiện
 đổi lịch, hủy họp hoặc phát hành biên bản sau này vẫn có thể tạo thư mới cho cùng người nhận.
 
 Phần FE cần tích hợp được tóm tắt riêng tại
@@ -61,14 +64,18 @@ khởi tạo queue có ranh giới riêng. Thứ tự bắt buộc:
 
 1. Khóa và kiểm tra meeting đang ở `Approved`.
 2. Chuyển sang `Published`, thêm `MeetingStatusHistory` bất biến.
-3. Tạo notifications, SaveChanges và commit transaction publication.
-4. Gọi `QueueForPublishedMeetingAsync(meetingId)`; producer đọc meeting/participants, render và lưu
-   Subject/Body/`.ics` cùng DeduplicationKey khi SMTP được bật.
-5. Worker chỉ gửi nội dung đã lưu; không render lại từ meeting/participant hiện tại.
+3. Tạo notifications và gọi `MeetingInvitationEvents.Stage(...)` cho từng recipient, SaveChanges và
+   commit transaction publication — dispatch nằm cùng transaction với status/history/notification.
+4. Sau commit, khi transport được bật: `MeetingInvitationDispatchProcessor` materialize từng dispatch
+   thành `email_messages` (Subject/Body/html/`.ics` cùng DeduplicationKey); `EmailQueueProcessor`
+   chỉ gửi nội dung đã lưu, không render lại từ meeting/participant hiện tại.
+5. Thư nhắc họp do `MeetingReminderEmails.QueueDueAsync` xếp cùng nhịp chuông nhắc trong ứng dụng
+   (trong 15 phút trước giờ bắt đầu), không qua dispatch công bố.
 
-Nếu lưu publication lỗi thì rollback status/history/notification và trả `MSG47`. Nếu bước queue lỗi
-sau commit thì giữ Published, trả `MSG45`, ghi log và để worker đối soát thử lại. Deduplication key
-giữ retry idempotent và không tạo thêm publication history. Không gọi queue trước khi trạng thái
+Nếu lưu publication lỗi thì rollback status/history/notification/dispatch và trả `MSG47`. Lỗi
+materialize/gửi sau commit thì giữ Published, trả `MSG45`, ghi log; dispatch ở lại `Pending` hoặc
+`BlockedDependency` để worker thử lại. Deduplication key
+giữ retry idempotent và không tạo thêm publication history. Không materialize/gửi trước khi trạng thái
 `Published` được commit, và không gọi SMTP trực tiếp từ request.
 
 ## Gửi qua Resend và kết quả giao thư — ADR-0031
@@ -215,8 +222,8 @@ dotnet user-secrets set "Email:Smtp:FromAddress" "no-reply@example.vn" --project
 Production dùng các biến môi trường tương ứng, ví dụ
 `Email__Smtp__Password` và `Email__ApplicationBaseUrl`. Khi `Enabled` là `false`, worker không được
 khởi động và lần công bố meeting không tạo dòng email mới; các dòng đã có trong queue vẫn được giữ
-trong database. Khi bật SMTP, lỗi producer hoặc lưu queue không rollback publication; worker thử
-khởi tạo lại từ meeting Published và request Publish vẫn trả `200 MSG45`.
+trong database. Khi bật SMTP, lỗi materialize/gửi sau commit không rollback publication; dispatch
+ở lại hàng đợi để worker thử lại và request Publish vẫn trả `200 MSG45`.
 
 Giới hạn cấu hình: `MaxAttempts` từ 1–20; retry/polling từ 1–3.600 giây; lease từ 10–3.600 giây;
 timeout SMTP và deadline toàn bộ lần gửi từ 1–300 giây. `ProcessingLeaseSeconds` phải dài hơn
