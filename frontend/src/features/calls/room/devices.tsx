@@ -146,7 +146,8 @@ export function DevicePicker({
       <div className="room-select">
         <button type="button" className="room-select-trigger" disabled aria-label={`${title}: ${reason}`}>
           <Icon name={icon} size={18} />
-          <span className="room-select-value">{reason}</span>
+          {/* The pill is too narrow for why: the lobby's notice says it; the pill only that it cannot be used. */}
+          <span className="room-select-value">{settled ? 'Chưa dùng được' : title}</span>
         </button>
       </div>
     )

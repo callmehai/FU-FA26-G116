@@ -1525,6 +1525,8 @@ a.menu-item { text-decoration: none; }
 /* A history row's event ("Gửi duyệt") is a label, not the meeting's state: the text alone, even
    when it led to the live state. */
 .status-plain, .status-plain.status-live { padding: 0; background: none; color: var(--ink); font-size: inherit; font-weight: 600; }
+/* A count of states (the report) has no live meeting to find: "Đang diễn ra" is icon and text like the others. */
+.status-flat.status-live { --status-icon: var(--live); padding: 0; background: none; color: var(--live); font-size: inherit; }
 
 .level {
   display: inline-flex;
@@ -2794,7 +2796,7 @@ a.menu-item { text-decoration: none; }
 .participants-alert { margin: 12px 16px 0; }
 
 /* The (i) of an explanation (InfoTip, ADR-0052): muted until pointed at, sized to the text it sits in.
-   On a touch screen its hit area grows to 40px without moving the line. */
+   On a touch screen it grows to 40px without moving the line. */
 .info-tip {
   position: relative;
   display: inline-flex;
@@ -2814,8 +2816,12 @@ a.menu-item { text-decoration: none; }
 }
 .info-tip:hover { color: var(--brand); }
 .info-tip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+/* A touch screen gets a real 40px button (ADR-0043), not a pseudo-element over an 18px one: the margins pull the
+   box back to 18px of layout, so the line, the (i)'s place and its look stay as on a desktop. */
 @media (pointer: coarse) {
-  .info-tip::after { content: ''; position: absolute; inset: -11px; }
+  .info-tip { width: 40px; height: 40px; margin: -11px -11px -11px -7px; vertical-align: middle; }
+  /* Last on its line: the box ends where the line does rather than past it. */
+  .library-quota .info-tip { margin-right: 0; }
 }
 
 .role-chip { display: inline-flex; flex: none; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--radius-chip); font-size: 12px; font-weight: 600; white-space: nowrap; }
@@ -4179,6 +4185,8 @@ audio.recording-player { height: 40px; }
 .voice-skeleton { height: 220px; }
 .voice-renew { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
 .voice-renew p { flex: 1 1 280px; margin: 0; }
+.voice-renew-change { display: list-item; margin: 0 0 6px 20px; list-style: disc; }
+.voice-renew-keep { display: block; margin-top: 10px; color: var(--muted-ink); }
 .voice-notice { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; }
 .voice-status { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .voice-count { margin-left: auto; color: var(--muted-ink); font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -4195,7 +4203,7 @@ audio.recording-player { height: 40px; }
 .voice-review { display: grid; gap: 8px; margin: 12px 0 0; }
 .voice-review .field-hint { margin: 0; }
 .voice-review audio { width: 100%; }
-.voice-recording { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.voice-recording { display: flex; align-items: center; gap: 8px; min-height: 21px; margin: 12px 0 0; color: var(--chip-red-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
 /* ADR-0060 — a sample a Secretary took names its meeting, which may be long: it shortens rather than push the row. */
 .voice-sample-name a { color: inherit; }
 /* The Secretary's list of the meeting's people: one line each — who, then the count and Thu, or "Chưa đồng ý". */
@@ -4793,6 +4801,15 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .library-name-col { display: flex; flex-direction: column; min-width: 0; }
 .library-name-text { min-width: 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
 .library-table .col-size, .library-table .col-usage, .library-table .col-date { white-space: nowrap; }
+/* Fixed widths: every folder lays its columns out alike, so moving between folders does not shift them. */
+@media (min-width: 721px) {
+  .library-table { table-layout: fixed; }
+  .library-table .col-size { width: 168px; }
+  .library-table .col-usage { width: 128px; }
+  .library-table .col-date { width: 120px; }
+  .library-table .col-action { width: 176px; }
+}
+.library-action-label { display: none; }
 .library-quota { display: inline-flex; flex: none; align-items: center; gap: 8px; margin-left: auto; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .library-quota-bar { display: block; width: 72px; height: 6px; overflow: hidden; border-radius: 3px; background: var(--line); }
 .library-quota-bar i { display: block; height: 100%; background: var(--brand); }
@@ -4814,7 +4831,14 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .library-table tbody tr:has(> td.col-action) td.col-action { padding: 0 12px 8px 46px; text-align: left; }
   .library-actions { flex: 1 1 100%; }
   .library-actions > .btn { flex: 1 1 0; min-width: 0; padding: 0 12px; }
-  .library-crumb-root { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* No hover on a phone: each action shows its word under the icon. */
+  .library-table .row-actions { gap: 8px; }
+  .library-table .row-actions .icon-button { flex-direction: column; gap: 2px; width: auto; min-width: 48px; height: 48px; padding: 0 6px; color: var(--ink-soft); font-size: 12px; line-height: 16px; }
+  .library-action-label { display: inline; }
+  /* The page title names the open folder, so the trail stops at its parent; each step is a 40px target. */
+  .library-trail { gap: 0 2px; margin-bottom: 4px; }
+  .library-trail .library-crumb-wrap:last-child { display: none; }
+  .library-crumb { min-height: 40px; }
   .library-quota { margin-left: 0; }
 }
 
@@ -4831,6 +4855,8 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   background: var(--surface);
 }
 .viewer-back { flex: none; align-self: center; margin: 0; white-space: nowrap; }
+/* As tall as the 34px buttons beside it in the viewer's header; a touch screen keeps the back link's 40px. */
+@media not (pointer: coarse) { .viewer-back { height: 34px; } }
 .viewer-title { flex: none; max-width: 40%; min-width: 0; margin: 0; overflow: hidden; font-size: 16px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 /* The meeting's name gives way first: the file's name is what the reader looks for. */
 .viewer-meeting { flex: 0 1000 auto; min-width: 0; overflow: hidden; color: var(--muted-ink); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
@@ -5293,7 +5319,7 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .report-table .cell-num { text-align: right; font-variant-numeric: tabular-nums; }
 .report-table .cell-zero { color: var(--faint-ink); }
 .report-table td.report-metric { width: 55%; white-space: normal; }
-.report-metric .info-tip { margin-left: 4px; vertical-align: middle; }
+.report-metric .info-tip { vertical-align: middle; }
 .report-table td.report-value { white-space: normal; }
 .report-value strong { color: var(--ink); font-weight: 600; white-space: nowrap; }
 .report-basis { display: inline-block; margin-left: 8px; color: var(--muted-ink); font-size: 13px; white-space: nowrap; }
@@ -5477,3 +5503,7 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .find-detail-head .btn { width: 100%; justify-content: center; }
   .find-locked-note { margin-left: 0; }
 }
+
+/* The guest page's way out for a member who opened a guest link: one line, the link a 40px target. */
+.guest-gate-alt { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 0; color: var(--muted-ink); font-size: 14px; }
+.guest-gate-alt a { display: inline-flex; align-items: center; min-height: 40px; color: var(--brand); font-weight: 600; }
