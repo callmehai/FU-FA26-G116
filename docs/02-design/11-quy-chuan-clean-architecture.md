@@ -100,6 +100,11 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
   cho `TrustCabinet.Web.Tests` và `TrustCabinet.Application.Tests`. Từ CA-03 khai thêm cho `TrustCabinet.Infrastructure`,
   chỉ vì `TrustCabinetDbContext` dùng chung `AuditService.DetailsOptions`. Đây không phải tiền lệ: Infrastructure không
   dựng hay gọi service `internal` của Application.
+- Port mà Infrastructure phải cài hoặc gọi thì là `public`, dù trước khi chuyển là `internal` (chốt 16/11/2026 ở CA-17,
+  SCRUM-182): `IEmailSender`, `PermanentEmailFailureException`, `IEmailQueueProcessor`, `EmailProcessingResult`,
+  `EmailProcessingOutcome`, `CalendarInvitationBuilder`. Đây là ngoại lệ duy nhất của "giữ nguyên mức truy cập"; nhờ
+  vậy `InternalsVisibleTo` cho Infrastructure vẫn chỉ phục vụ `AuditService.DetailsOptions`. Lớp cài đặt
+  (`EmailQueueProcessor`, `ResendWebhookReceiver`) vẫn `internal`.
 - Logic quyết định (ai được làm gì, trạng thái nào được chuyển, tính toán) ở Application hoặc Domain. Một lớp ở
   Infrastructure còn `if` nghiệp vụ là sai tầng.
 

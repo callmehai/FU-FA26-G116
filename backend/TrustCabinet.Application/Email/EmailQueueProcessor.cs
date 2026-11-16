@@ -6,7 +6,7 @@ using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Application.Email;
 
-internal enum EmailProcessingOutcome
+public enum EmailProcessingOutcome
 {
     NoWork,
     Sent,
@@ -15,9 +15,9 @@ internal enum EmailProcessingOutcome
     LeaseLost,
 }
 
-internal sealed record EmailProcessingResult(EmailProcessingOutcome Outcome, int AttemptCount = 0);
+public sealed record EmailProcessingResult(EmailProcessingOutcome Outcome, int AttemptCount = 0);
 
-internal interface IEmailQueueProcessor
+public interface IEmailQueueProcessor
 {
     Task<EmailProcessingResult> ProcessNextAsync(CancellationToken ct = default);
 }
