@@ -10,6 +10,7 @@ using TrustCabinet.Application.GuestAccess;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Participants;
+using TrustCabinet.Application.Reports;
 using TrustCabinet.Application.Users;
 
 namespace TrustCabinet.Application;
@@ -34,6 +35,7 @@ public static class DependencyInjection
         AddParticipants(services);
         AddAttendance(services);
         AddGuestAccess(services);
+        AddReports(services);
         return services;
     }
 
@@ -121,5 +123,10 @@ public static class DependencyInjection
     private static void AddGuestAccess(IServiceCollection services)
     {
         services.AddScoped<IGuestAccessService, GuestAccessService>();
+    }
+
+    private static void AddReports(IServiceCollection services)
+    {
+        services.AddScoped<IReportService, ReportService>();
     }
 }
