@@ -72,7 +72,7 @@ public sealed class SummaryFixture : IAsyncLifetime
                 services.RemoveAll<ILanguageModel>();
                 services.AddSingleton<ILanguageModel>(fixture.Model);
                 // ADR-0056: the API an administrator may choose answers from the test, never from the network.
-                services.AddHttpClient(TrustCabinet.Infrastructure.Ai.LanguageModelProvider.ApiHttpClientName)
+                services.AddHttpClient(TrustCabinet.Application.Ai.LanguageModelProvider.ApiHttpClientName)
                     .ConfigurePrimaryHttpMessageHandler(() => new FakeApi.Handler(fixture.Api));
             });
         }

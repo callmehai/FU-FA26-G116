@@ -1,3 +1,5 @@
+using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Summaries;
 
 namespace TrustCabinet.Application.Summaries;
@@ -111,3 +113,95 @@ public enum MinutesExportFormat
 }
 
 public sealed record MinutesFile(string FileName, byte[] Bytes, string ContentType);
+
+/// <summary>The revisions of each meeting's minutes, <c>meeting_minutes</c>.</summary>
+public interface IMeetingMinutesRepository
+{
+    /// <summary>The meeting's highest revision, tracked; null when the meeting has no minutes.</summary>
+    Task<MeetingMinutes?> FindLatestAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>One revision, untracked; null when there is none.</summary>
+    Task<MeetingMinutes?> FindAsync(Guid minutesId, CancellationToken ct);
+
+    /// <summary>One revision, tracked; throws when there is none.</summary>
+    Task<MeetingMinutes> GetAsync(Guid minutesId, CancellationToken ct);
+
+    /// <summary>One revision untracked, with its author, submitter, approver and returner; null when there is none.</summary>
+    Task<MeetingMinutes?> FindWithPeopleAsync(Guid minutesId, CancellationToken ct);
+
+    /// <summary>The meeting a revision belongs to, untracked; null when there is no such revision.</summary>
+    Task<Guid?> FindMeetingIdAsync(Guid minutesId, CancellationToken ct);
+
+    /// <summary>
+    /// Takes an exclusive lock on the one revision row until the current transaction ends, then returns it tracked; null,
+    /// and no lock, when there is none. Callers lock the meeting row first.
+    /// </summary>
+    Task<MeetingMinutes?> LockAsync(Guid minutesId, CancellationToken ct);
+
+    /// <summary>Whether the meeting has a revision numbered above <paramref name="revisionNumber"/>.</summary>
+    Task<bool> HasLaterRevisionAsync(Guid meetingId, int revisionNumber, CancellationToken ct);
+
+    /// <summary>
+    /// The meeting's revisions, newest first, untracked: all of them for one of the two officers
+    /// (<paramref name="manages"/>), only the Issued and Superseded ones for anyone else (BR-412).
+    /// </summary>
+    Task<IReadOnlyList<MinutesRevisionRow>> ListRevisionsAsync(Guid meetingId, bool manages, CancellationToken ct);
+
+    /// <summary>
+    /// Stores the content when the revision is a Draft or Rejected and was last saved between <paramref name="from"/> and
+    /// <paramref name="to"/>. Runs immediately, not staged; returns the rows changed (0 when someone saved it since).
+    /// </summary>
+    Task<int> SaveContentAsync(Guid minutesId, string content, DateTimeOffset from, DateTimeOffset to, DateTimeOffset now,
+        CancellationToken ct);
+
+    void Add(MeetingMinutes minutes);
+}
+
+public sealed record MinutesRevisionRow(Guid Id, int RevisionNumber, MinutesStatus Status, DateTimeOffset? IssuedAt);
+
+/// <summary>A current participant as the minutes list them.</summary>
+public sealed record MinutesAttendee(MeetingRole Role, AttendanceStatus Attendance, string FullName);
+
+/// <summary>A Guest whose invitation stands, under the name they gave or were invited by.</summary>
+public sealed record MinutesGuest(string Name, AttendanceStatus Attendance);
+
+/// <summary>What the minutes read of a meeting's people and notes, untracked.</summary>
+public interface IMinutesSourceQuery
+{
+    /// <summary>The current participants, by role and then name.</summary>
+    Task<IReadOnlyList<MinutesAttendee>> ListAttendeesAsync(Guid meetingId, CancellationToken ct);
+
+    Task<IReadOnlyList<MinutesGuest>> ListGuestsAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>The non-empty notes of these authors, oldest first.</summary>
+    Task<IReadOnlyList<MinutesNote>> ListNotesAsync(Guid meetingId, IReadOnlyCollection<Guid> authorIds, CancellationToken ct);
+
+    /// <summary>Which of these users are active.</summary>
+    Task<IReadOnlyList<Guid>> ListActiveUsersAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
+}
+
+/// <summary>
+/// The minutes' HTML allow-list (ADR-0055) and the Word and PDF files drawn from it; the parser and the PDF engine are
+/// the infrastructure project's.
+/// </summary>
+public interface IMinutesRenderer
+{
+    /// <summary>Line-marked text, as the template writes it, as HTML.</summary>
+    string FromLines(string lineText);
+
+    /// <summary>Nested deeper than any document the editor writes; refused before it is walked.</summary>
+    bool TooDeep(string html);
+
+    /// <summary>Only the allow-list of the HTML.</summary>
+    string Sanitize(string html);
+
+    /// <summary>Whether the document has any text, not only empty paragraphs.</summary>
+    bool HasText(string html);
+
+    /// <summary>Stored content as the page shows it: sanitized HTML, or line-marked text converted.</summary>
+    string Normalize(string content);
+
+    byte[] BuildPdf(string content);
+
+    byte[] BuildDocx(string content);
+}

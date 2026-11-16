@@ -1,27 +1,24 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Application.Ai;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Persistence;
-using TrustCabinet.Infrastructure.Summaries;
 
-namespace TrustCabinet.Infrastructure.Ai;
+namespace TrustCabinet.Application.Ai;
 
 /// <summary>
 /// ADR-0056 — the administrator's "Máy AI" screen: the in-house model or an API for ordinary meetings, the API's address,
 /// model and key. The key goes in and is never read back out: the screen only learns whether one is stored and its last
 /// four characters.
 /// </summary>
-public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector protector, IHttpClientFactory clients,
-    IOptions<LanguageModelOptions> options, ILanguageModel local, IAuditService audit, TimeProvider clock,
-    ILogger<AiSettingsService> logger)
+public sealed class AiSettingsService(IAiProviderSettingRepository settings, IUnitOfWork unitOfWork, IAiKeyProtector protector,
+    IApiLanguageModelFactory apis, IOptions<LanguageModelOptions> options, ILanguageModel local, IAuditService audit,
+    TimeProvider clock, ILogger<AiSettingsService> logger)
     : IAiSettingsService
 {
     /// <summary>
@@ -37,11 +34,11 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
     {
         try
         {
-            return new(Data: await ViewAsync(ct));
+            return new(Data: await unitOfWork.ExecuteAsync(ViewAsync, TransactionMode.None, ct));
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
-            logger.LogError(error, "Could not read the AI settings");
+            logger.LogError((error as PersistenceException)?.InnerException ?? error, "Could not read the AI settings");
             return new(AiSettingsFailure.ReadFailed);
         }
     }
@@ -50,55 +47,58 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
     {
         try
         {
-            var row = await db.AiProviderSettings.FirstOrDefaultAsync(s => s.Id == SettingId, ct);
-            var errors = Validate(input, out var mode, out var baseUrl, out var model, out var key);
-            if (mode == AiProviderMode.Api && key is null && row?.ApiKeyCiphertext is null)
-                errors.TryAdd("apiKey", ["Nhập key của API."]);
-            if (mode == AiProviderMode.Api && key == "")
-                errors.TryAdd("apiKey", ["Đang dùng API thì không xoá key được."]);
-            if (errors.Count > 0) return new(AiSettingsFailure.Invalid, Errors: errors.ToDictionary(e => e.Key, e => e.Value));
+            return await unitOfWork.ExecuteAsync<AiSettingsOutcome>(async token =>
+            {
+                var row = await settings.FindAsync(SettingId, true, token);
+                var errors = Validate(input, out var mode, out var baseUrl, out var model, out var key);
+                if (mode == AiProviderMode.Api && key is null && row?.ApiKeyCiphertext is null)
+                    errors.TryAdd("apiKey", ["Nhập key của API."]);
+                if (mode == AiProviderMode.Api && key == "")
+                    errors.TryAdd("apiKey", ["Đang dùng API thì không xoá key được."]);
+                if (errors.Count > 0) return new(AiSettingsFailure.Invalid, Errors: errors.ToDictionary(e => e.Key, e => e.Value));
 
-            var now = clock.GetUtcNow();
-            if (row is null)
-            {
-                row = new AiProviderSetting { Id = SettingId, CreatedAt = now };
-                db.AiProviderSettings.Add(row);
-            }
-            row.Mode = mode;
-            row.ApiBaseUrl = baseUrl;
-            row.ApiModel = model;
-            var keyChange = key switch
-            {
-                null => "kept",
-                "" => "removed",
-                _ => "replaced",
-            };
-            if (key == "")
-            {
-                row.ApiKeyCiphertext = null;
-                row.ApiKeyHint = "";
-            }
-            else if (key is not null)
-            {
-                row.ApiKeyCiphertext = protector.Protect(key, SettingId);
-                row.ApiKeyHint = key[^4..];
-            }
-            row.UpdatedById = actorId;
-            row.UpdatedAt = now;
-            await db.SaveChangesAsync(ct);
-            // Where drafts go, and whether the key changed; never the key itself.
-            await audit.RecordAsync(AuditActions.AiSettingsUpdated, nameof(AiProviderSetting), SettingId, actorId,
-                new { mode = mode.ToString(), apiBaseUrl = baseUrl, apiModel = model, apiKey = keyChange }, ct);
-            return new(Data: await ViewAsync(ct));
+                var now = clock.GetUtcNow();
+                if (row is null)
+                {
+                    row = new AiProviderSetting { Id = SettingId, CreatedAt = now };
+                    settings.Add(row);
+                }
+                row.Mode = mode;
+                row.ApiBaseUrl = baseUrl;
+                row.ApiModel = model;
+                var keyChange = key switch
+                {
+                    null => "kept",
+                    "" => "removed",
+                    _ => "replaced",
+                };
+                if (key == "")
+                {
+                    row.ApiKeyCiphertext = null;
+                    row.ApiKeyHint = "";
+                }
+                else if (key is not null)
+                {
+                    row.ApiKeyCiphertext = protector.Protect(key, SettingId);
+                    row.ApiKeyHint = key[^4..];
+                }
+                row.UpdatedById = actorId;
+                row.UpdatedAt = now;
+                await unitOfWork.SaveChangesAsync(token);
+                // Where drafts go, and whether the key changed; never the key itself.
+                await audit.RecordAsync(AuditActions.AiSettingsUpdated, nameof(AiProviderSetting), SettingId, actorId,
+                    new { mode = mode.ToString(), apiBaseUrl = baseUrl, apiModel = model, apiKey = keyChange }, token);
+                return new(Data: await ViewAsync(token));
+            }, TransactionMode.None, ct);
         }
-        catch (Exception error) when (DbErrors.IsUniqueViolation(error))
+        catch (UniqueConflictException error)
         {
-            logger.LogWarning(error, "Two first saves of the AI settings at once");
+            logger.LogWarning(error.InnerException ?? error, "Two first saves of the AI settings at once");
             return new(AiSettingsFailure.SaveFailed);
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
-            logger.LogError(error, "Could not save the AI settings");
+            logger.LogError((error as PersistenceException)?.InnerException ?? error, "Could not save the AI settings");
             return new(AiSettingsFailure.SaveFailed);
         }
     }
@@ -110,7 +110,7 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
         string? stored = null;
         if (key is null or "")
         {
-            var row = await db.AiProviderSettings.AsNoTracking().FirstOrDefaultAsync(s => s.Id == SettingId, ct);
+            var row = await unitOfWork.ExecuteAsync(token => settings.FindAsync(SettingId, false, token), TransactionMode.None, ct);
             if (row?.ApiKeyCiphertext is { } ciphertext)
             {
                 try
@@ -126,8 +126,7 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
         }
         if (errors.Count > 0) return new(AiSettingsFailure.Invalid, Errors: errors.ToDictionary(e => e.Key, e => e.Value));
 
-        var api = new OpenAiCompatibleModel(clients, LanguageModelProvider.ApiHttpClientName, baseUrl, model,
-            string.IsNullOrEmpty(key) ? stored! : key, timeoutMinutes: 1, maxTokens: 1024, remote: true,
+        var api = apis.Create(baseUrl, model, string.IsNullOrEmpty(key) ? stored! : key, timeoutMinutes: 1, maxTokens: 1024,
             options.Value.ApiReasoningEffort);
         var watch = Stopwatch.StartNew();
         try
@@ -172,10 +171,7 @@ public sealed class AiSettingsService(TrustCabinetDbContext db, AiKeyProtector p
     private async Task<AiSettingsView> ViewAsync(CancellationToken ct)
     {
         var local = options.Value;
-        var row = await db.AiProviderSettings.AsNoTracking().Where(s => s.Id == SettingId)
-            .Select(s => new { s.Mode, s.ApiBaseUrl, s.ApiModel, HasKey = s.ApiKeyCiphertext != null, s.ApiKeyHint, s.UpdatedAt,
-                UpdatedBy = s.UpdatedBy != null ? s.UpdatedBy.FullName : null })
-            .FirstOrDefaultAsync(ct);
+        var row = await settings.FindViewAsync(SettingId, ct);
         return row is null
             ? new(nameof(AiProviderMode.Local), "", "", false, "", local.Model, local.IsConfigured, null, null)
             : new(row.Mode.ToString(), row.ApiBaseUrl, row.ApiModel, row.HasKey, row.ApiKeyHint, local.Model, local.IsConfigured,

@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using TrustCabinet.Application.Summaries;
 
-namespace TrustCabinet.Infrastructure.Summaries;
+namespace TrustCabinet.Application.Summaries;
 
 /// <summary>What the writer needs to know about one agenda item.</summary>
 public sealed record AgendaFacts(Guid Id, string Title, string? Presenter, string? Conclusion,

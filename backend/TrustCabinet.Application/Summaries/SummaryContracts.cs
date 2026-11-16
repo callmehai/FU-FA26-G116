@@ -1,3 +1,6 @@
+using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
+
 namespace TrustCabinet.Application.Summaries;
 
 /// <summary>
@@ -80,4 +83,72 @@ public interface ISummaryService
     /// <summary>Writes the oldest queued draft; false when there was none.</summary>
     Task<bool> ProcessNextAsync(CancellationToken ct = default);
     Task<int> RequeueInterruptedAsync(CancellationToken ct = default);
+}
+
+/// <summary>The AI draft of each meeting: at most one row a meeting, <c>meeting_summaries</c>.</summary>
+public interface IMeetingSummaryRepository
+{
+    /// <summary>The meeting's row, tracked when <paramref name="tracked"/>; null when there is none.</summary>
+    Task<MeetingSummary?> FindByMeetingAsync(Guid meetingId, bool tracked, CancellationToken ct);
+
+    /// <summary>The meeting's row untracked, with who asked for, reviewed and edited it; null when there is none.</summary>
+    Task<MeetingSummary?> FindWithPeopleAsync(Guid meetingId, CancellationToken ct);
+
+    void Add(MeetingSummary summary);
+
+    /// <summary>
+    /// Stores the Chair's or the Secretary's corrections and clears the review, unless the row is Queued or Running.
+    /// Runs immediately, not staged; returns the rows changed (0 when the AI writes it again).
+    /// </summary>
+    Task<int> SaveEditAsync(Guid id, string content, Guid actorId, DateTimeOffset now, CancellationToken ct);
+
+    /// <summary>Marks the draft reviewed, unless the row is Queued or Running. Runs immediately, not staged; returns the rows changed.</summary>
+    Task<int> MarkReviewedAsync(Guid id, Guid actorId, DateTimeOffset now, CancellationToken ct);
+
+    /// <summary>The oldest Queued draft, untracked; null when none waits.</summary>
+    Task<QueuedSummary?> FindNextQueuedAsync(CancellationToken ct);
+
+    /// <summary>Turns the row from Queued to Running, so only one worker writes it. Runs immediately, not staged; returns the rows changed.</summary>
+    Task<int> ClaimAsync(Guid id, DateTimeOffset now, CancellationToken ct);
+
+    /// <summary>
+    /// Replaces the draft whole and marks it Ready, clearing the review and the edit. Runs immediately, not staged; returns
+    /// the rows changed.
+    /// </summary>
+    Task<int> StoreDraftAsync(Guid id, string content, string model, DateTimeOffset generatedAt, DateTimeOffset now,
+        CancellationToken ct);
+
+    /// <summary>Marks the row Failed with the message for the Secretary. Runs immediately, not staged; returns the rows changed.</summary>
+    Task<int> MarkFailedAsync(Guid id, string error, DateTimeOffset now, CancellationToken ct);
+
+    /// <summary>Turns every Running row back to Queued, after a restart. Runs immediately, not staged; returns the rows changed.</summary>
+    Task<int> RequeueRunningAsync(CancellationToken ct);
+}
+
+public sealed record QueuedSummary(Guid Id, Guid MeetingId);
+
+/// <summary>A closed vote as the draft and the minutes write it: counts per option and the Chair's conclusion, never ballots.</summary>
+public sealed record ClosedVote(string Title, bool IsAnonymous, VoteConclusion? Conclusion, string ConclusionNote,
+    IReadOnlyList<ClosedVoteOption> Options);
+
+public sealed record ClosedVoteOption(string Label, int BallotCount);
+
+/// <summary>What the AI draft and the minutes read of a meeting's records, untracked.</summary>
+public interface ISummarySourceQuery
+{
+    Task<string> FindTitleAsync(Guid meetingId, CancellationToken ct);
+
+    Task<Sensitivity> FindSensitivityAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>The agenda in order, with each item's presenter, conclusion and actual times.</summary>
+    Task<IReadOnlyList<AgendaFacts>> ListAgendaAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>The names of the documents not removed, oldest first.</summary>
+    Task<IReadOnlyList<string>> ListDocumentNamesAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>The closed votes in the order they closed, each option's count in the option's order.</summary>
+    Task<IReadOnlyList<ClosedVote>> ListClosedVotesAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>AI-eCabinet's minutes readiness: what a draft asked for now would draw on, and what it would miss.</summary>
+    Task<SummaryReadiness> ReadinessAsync(Guid meetingId, CancellationToken ct);
 }

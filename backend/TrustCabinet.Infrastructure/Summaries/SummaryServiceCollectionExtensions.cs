@@ -21,14 +21,17 @@ public static class SummaryServiceCollectionExtensions
         services.AddSingleton<ILanguageModel, LanguageModelClient>();
         // ADR-0056: an API for ordinary meetings, set up by an administrator, its key encrypted at rest.
         services.AddHttpClient(LanguageModelProvider.ApiHttpClientName);
-        services.AddSingleton(provider => new AiKeyProtector(
+        services.AddSingleton<IAiKeyProtector>(provider => new AiKeyProtector(
             provider.GetRequiredService<IOptions<LanguageModelOptions>>().Value.EncryptionKey,
             Encoding.UTF8.GetBytes(configuration["Authentication:SigningKey"] ?? "")));
-        services.AddScoped<ILanguageModelProvider, LanguageModelProvider>();
-        services.AddScoped<IAiSettingsService, AiSettingsService>();
-        services.AddScoped<MeetingTranscriptReader>();
-        services.AddScoped<ISummaryService, SummaryService>();
-        services.AddScoped<IMinutesService, MinutesService>();
+        services.AddSingleton<IApiLanguageModelFactory, ApiLanguageModelFactory>();
+        services.AddScoped<IAiProviderSettingRepository, AiProviderSettingRepository>();
+        services.AddScoped<IMeetingTranscriptQuery, MeetingTranscriptQuery>();
+        services.AddScoped<IMeetingSummaryRepository, MeetingSummaryRepository>();
+        services.AddScoped<ISummarySourceQuery, SummarySourceQuery>();
+        services.AddScoped<IMeetingMinutesRepository, MeetingMinutesRepository>();
+        services.AddScoped<IMinutesSourceQuery, MinutesSourceQuery>();
+        services.AddSingleton<IMinutesRenderer, MinutesRenderer>();
         return services;
     }
 }

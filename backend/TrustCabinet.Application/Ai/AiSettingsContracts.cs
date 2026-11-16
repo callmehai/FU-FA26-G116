@@ -1,4 +1,5 @@
 using TrustCabinet.Application.Summaries;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Application.Ai;
@@ -59,3 +60,39 @@ public interface IAiSettingsService
     /// <summary>One short call to the API as the form stands (the stored key when the form gives none), saving nothing.</summary>
     Task<AiSettingsOutcome> TestAsync(AiSettingsInput input, CancellationToken ct = default);
 }
+
+/// <summary>Encrypts the AI API key at rest, bound to the settings row it belongs to (ADR-0056).</summary>
+public interface IAiKeyProtector
+{
+    byte[] Protect(string apiKey, Guid settingId);
+
+    /// <summary>Throws <see cref="System.Security.Cryptography.CryptographicException"/> when the key cannot be read back.</summary>
+    string Unprotect(byte[] ciphertext, Guid settingId);
+}
+
+/// <summary>Builds the client of an OpenAI-compatible API an administrator chose (ADR-0056); nothing is sent until it is called.</summary>
+public interface IApiLanguageModelFactory
+{
+    /// <summary>A model whose <see cref="ILanguageModel.Remote"/> is true.</summary>
+    ILanguageModel Create(string baseUrl, string model, string apiKey, int timeoutMinutes, int maxTokens,
+        string? reasoningEffort);
+}
+
+/// <summary>The administrator's choice of model: at most one row, <c>ai_provider_settings</c>.</summary>
+public interface IAiProviderSettingRepository
+{
+    /// <summary>The row with this id, tracked when <paramref name="tracked"/>; null when there is none.</summary>
+    Task<AiProviderSetting?> FindAsync(Guid id, bool tracked, CancellationToken ct);
+
+    /// <summary>The one row whatever its id, untracked; null when there is none.</summary>
+    Task<AiProviderSetting?> FindCurrentAsync(CancellationToken ct);
+
+    /// <summary>What the screen shows of the row with this id, never the key; null when there is none.</summary>
+    Task<AiSettingsRow?> FindViewAsync(Guid id, CancellationToken ct);
+
+    void Add(AiProviderSetting setting);
+}
+
+/// <summary>The stored settings as <see cref="IAiProviderSettingRepository.FindViewAsync"/> reads them.</summary>
+public sealed record AiSettingsRow(AiProviderMode Mode, string ApiBaseUrl, string ApiModel, bool HasKey, string ApiKeyHint,
+    DateTimeOffset UpdatedAt, string? UpdatedBy);
