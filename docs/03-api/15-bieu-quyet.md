@@ -365,7 +365,9 @@ Guest dùng được (phiên khách còn hiệu lực). Response có `Cache-Cont
 - Chi tiết (`GET …/votes/{voteId}`) có thêm `documents: [{ id, fileName, contentType, byteSize, pageCount,
   readConfirmedAt }]` — `id` là MeetingDocument ID, `readConfirmedAt` theo người gọi, `null` = chưa đọc. `documentCount`
   (danh sách và chi tiết) chỉ đếm tài liệu còn trong cuộc họp.
-- `actions.canCast` **không** xét việc đọc tài liệu: FE khoá nút "Gửi phiếu" khi còn `readConfirmedAt: null`.
+- `actions.canCast` chỉ tính trạng thái + vai trò, **không** tính việc đọc tài liệu. Hai lớp bảo vệ song
+  song (PO chốt 16/11/2026, note 52): FE tự khoá nút "Gửi phiếu" khi còn `readConfirmedAt: null`; gọi thẳng
+  mà chưa đọc hết tài liệu vẫn bị server chặn `409/MSG252` (thứ tự kiểm tra ở §8 bước 4 và UC-55 EX-8).
 
 ### Tài liệu của biểu quyết ở tab Tài liệu
 
