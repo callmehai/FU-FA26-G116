@@ -15,9 +15,6 @@ public static class MeetingServiceCollectionExtensions
             .ValidateOnStart();
         services.AddSingleton<TimeProvider>(TimeProvider.System);
         services.AddScoped<IMeetingRepository, MeetingRepository>();
-        services.AddScoped<IMeetingService, MeetingService>();
-        services.AddScoped<IMeetingLifecycleService, MeetingLifecycleService>();
-        services.AddScoped<IMeetingOverdueService, MeetingOverdueService>();
         return services;
     }
 }

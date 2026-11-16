@@ -17,6 +17,7 @@ using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Persistence;
 using TrustCabinet.Infrastructure.Email;
 using TrustCabinet.Infrastructure.Seed;
 
@@ -133,7 +134,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
     private MeetingService NewService(TrustCabinetDbContext? db = null, bool smtpEnabled = true)
     {
         var context = db ?? _db;
-        return new MeetingService(new MeetingRepository(context), NullLogger<MeetingService>.Instance);
+        return new MeetingService(new MeetingRepository(context), new EfUnitOfWork(context), NullLogger<MeetingService>.Instance);
     }
 
     private async Task MaterializeInvitations(Guid meetingId, bool smtpEnabled = true)
@@ -1596,6 +1597,7 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         _db.ChangeTracker.Clear();
         var service = new MeetingOverdueService(
             new MeetingRepository(_db),
+            new EfUnitOfWork(_db),
             null!,
             Microsoft.Extensions.Options.Options.Create(new MeetingOverdueOptions()),
             new FixedClock(now),

@@ -1,13 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Application.Meetings;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Meetings;
+namespace TrustCabinet.Application.Meetings;
 
 public sealed class MeetingOverdueOptions
 {
@@ -33,6 +31,7 @@ public sealed class MeetingOverdueOptions
 /// </summary>
 public sealed class MeetingOverdueService(
     IMeetingRepository meetings,
+    IUnitOfWork unitOfWork,
     IMeetingLifecycleService lifecycle,
     IOptions<MeetingOverdueOptions> options,
     TimeProvider clock,
@@ -52,7 +51,8 @@ public sealed class MeetingOverdueService(
         var cutoff = clock.GetUtcNow() - TimeSpan.FromHours(hours);
         var ended = 0;
         // Each meeting in its own transaction inside the lifecycle service, which logs its own failures.
-        foreach (var id in await meetings.ListOverrunAsync(cutoff, BatchSize, ct))
+        foreach (var id in await unitOfWork.ExecuteAsync(
+                     token => meetings.ListOverrunAsync(cutoff, BatchSize, token), TransactionMode.None, ct))
             if (await lifecycle.EndOverrunAsync(id, cutoff, EndReason(hours), ct)) ended++;
         return ended;
     }
@@ -62,15 +62,16 @@ public sealed class MeetingOverdueService(
         var delay = TimeSpan.FromHours(options.Value.AutoCancelAfterHours);
         var cutoff = clock.GetUtcNow() - delay;
         var cancelled = 0;
-        foreach (var id in await meetings.ListOverdueAsync(cutoff, BatchSize, ct))
+        foreach (var id in await unitOfWork.ExecuteAsync(
+                     token => meetings.ListOverdueAsync(cutoff, BatchSize, token), TransactionMode.None, ct))
         {
             try
             {
                 if (await CancelAsync(id, delay, ct)) cancelled++;
             }
-            catch (Exception error) when (DbErrors.IsPersistenceFailure(error))
+            catch (PersistenceException error)
             {
-                logger.LogError(error, "Could not cancel overdue meeting {MeetingId}.", id);
+                logger.LogError(error.InnerException ?? error, "Could not cancel overdue meeting {MeetingId}.", id);
             }
         }
 
@@ -78,7 +79,7 @@ public sealed class MeetingOverdueService(
     }
 
     private Task<bool> CancelAsync(Guid id, TimeSpan delay, CancellationToken ct)
-        => meetings.InTransactionAsync(async token =>
+        => unitOfWork.ExecuteAsync(async token =>
         {
             var meeting = await meetings.FindWorkflowAsync(id, forUpdate: true, token);
             var now = clock.GetUtcNow();
@@ -128,10 +129,10 @@ public sealed class MeetingOverdueService(
                 CreatedAt = now,
                 UpdatedAt = now,
             }], token);
-            await meetings.SaveChangesAsync(token);
+            await unitOfWork.SaveChangesAsync(token);
             logger.LogInformation("Cancelled overdue meeting {MeetingId} (was {Status}).", meeting.Id, fromStatus);
             return true;
-        }, ct);
+        }, TransactionMode.ReadCommitted, ct);
 
     private static string Limit(string value)
         => value.Length <= 2000 ? value : value[..(char.IsHighSurrogate(value[1999]) ? 1999 : 2000)];

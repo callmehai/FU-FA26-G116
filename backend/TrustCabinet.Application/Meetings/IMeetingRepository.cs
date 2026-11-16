@@ -12,7 +12,12 @@ public interface IMeetingRepository
 
     Task<Meeting?> FindOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default);
 
-    Task<Meeting?> FindOwnedForUpdateAsync(Guid id, Guid creatorId, CancellationToken ct = default);
+    /// <summary>
+    /// Takes an exclusive lock on the one meeting row, when <paramref name="creatorId"/> created it, until the
+    /// current transaction ends; then loads that meeting tracked, with its participants and their accounts. Takes
+    /// no lock on the participant or user rows. Null, and no lock, when no such meeting exists.
+    /// </summary>
+    Task<Meeting?> LockOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default);
 
     Task<IReadOnlyList<MeetingApproverOption>> ListEligibleApproversAsync(CancellationToken ct = default);
 

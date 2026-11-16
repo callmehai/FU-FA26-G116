@@ -1,10 +1,46 @@
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
+using TrustCabinet.Web.Tests.Persistence;
 
 namespace TrustCabinet.Web.Tests.Meetings;
+
+/// <summary>
+/// The unit of work over <see cref="FakeMeetingRepository"/>, so the meeting services keep the behaviour these tests
+/// were written against: a transaction is the fake's snapshot-and-restore <c>InTransactionAsync</c>, a save is the
+/// fake's save, and storage failures are translated as <c>EfUnitOfWork</c> translates them.
+/// </summary>
+internal sealed class FakeMeetingUnitOfWork(FakeMeetingRepository meetings) : IUnitOfWork
+{
+    private readonly TranslatingUnitOfWork _translating = new(meetings.SaveChangesAsync);
+
+    public Task<T> ExecuteAsync<T>(Func<CancellationToken, Task<T>> work,
+        TransactionMode mode = TransactionMode.ReadCommitted, CancellationToken ct = default)
+        => ExecuteAsync(work, static _ => true, mode, ct);
+
+    public Task<T> ExecuteAsync<T>(Func<CancellationToken, Task<T>> work, Func<T, bool> commitWhen,
+        TransactionMode mode = TransactionMode.ReadCommitted, CancellationToken ct = default)
+        => _translating.ExecuteAsync(
+            token => mode == TransactionMode.None ? work(token) : meetings.InTransactionAsync(work, token),
+            commitWhen, mode, ct);
+
+    public Task ExecuteAsync(Func<CancellationToken, Task> work,
+        TransactionMode mode = TransactionMode.ReadCommitted, CancellationToken ct = default)
+        => ExecuteAsync(async token =>
+        {
+            await work(token);
+            return true;
+        }, mode, ct);
+
+    public Task SaveChangesAsync(CancellationToken ct = default) => _translating.SaveChangesAsync(ct);
+
+    public void DiscardChanges()
+    {
+    }
+}
 
 internal sealed class FakeMeetingRepository : IMeetingRepository
 {
@@ -135,7 +171,7 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
             && MeetingReadPolicy.CanRead(m, actorId)));
     }
 
-    public Task<Meeting?> FindOwnedForUpdateAsync(Guid id, Guid creatorId, CancellationToken ct = default)
+    public Task<Meeting?> LockOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default)
         => Task.FromResult(Meetings.SingleOrDefault(m => m.Id == id && m.CreatedById == creatorId));
 
     public Task<Meeting?> FindOwnedAsync(Guid id, Guid creatorId, CancellationToken ct = default)

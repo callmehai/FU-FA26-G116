@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
@@ -13,7 +14,6 @@ using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Meetings;
 using TrustCabinet.Infrastructure.Seed;
 using TrustCabinet.Web.Endpoints;
 using TrustCabinet.Web.Tests.Authentication;
@@ -55,7 +55,8 @@ public sealed class MeetingEndpointsTests : IDisposable
                 services.RemoveAll<IMeetingRepository>();
                 services.AddSingleton<IMeetingRepository>(Meetings);
                 services.RemoveAll<IMeetingService>();
-                services.AddScoped<IMeetingService, MeetingService>();
+                services.AddScoped<IMeetingService>(provider => new MeetingService(Meetings, new FakeMeetingUnitOfWork(Meetings),
+                    provider.GetRequiredService<ILogger<MeetingService>>(), provider.GetService<TimeProvider>()));
             });
         }
 

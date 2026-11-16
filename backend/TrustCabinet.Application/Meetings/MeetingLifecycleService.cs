@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Agenda;
 using TrustCabinet.Application.Calls;
-using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Speaking;
 using TrustCabinet.Application.Votes;
@@ -11,9 +10,8 @@ using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Domain.Participants;
-using TrustCabinet.Infrastructure.Persistence;
 
-namespace TrustCabinet.Infrastructure.Meetings;
+namespace TrustCabinet.Application.Meetings;
 
 /// <summary>
 /// Serializes Chair lifecycle commands with roster, scheduling and agenda mutations, and ends meetings left running as the
@@ -21,6 +19,7 @@ namespace TrustCabinet.Infrastructure.Meetings;
 /// </summary>
 public sealed class MeetingLifecycleService(
     IMeetingRepository meetings,
+    IUnitOfWork unitOfWork,
     IAgendaMeetingEnd agendaEnd,
     ISpeakingMeetingEnd speakingEnd,
     IAgendaChangePublisher publisher,
@@ -44,7 +43,7 @@ public sealed class MeetingLifecycleService(
         MeetingWorkflowResult result;
         try
         {
-            result = await meetings.InTransactionAsync(async token =>
+            result = await unitOfWork.ExecuteAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(meetingId, forUpdate: true, token);
                 if (meeting is null || !MeetingReadPolicy.CanRead(meeting, actorId))
@@ -84,17 +83,17 @@ public sealed class MeetingLifecycleService(
                 };
                 meeting.StatusHistory.Add(history);
                 await meetings.AddHistoryAsync(history, token);
-                await meetings.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 var actorName = active.First(p => p.UserId == actorId && p.Role == MeetingRole.Chair).User.FullName;
                 return MeetingWorkflowResult.Success(MeetingDetails.From(meeting, actorId),
                     new MeetingHistoryRecord(history.Id, meetingId, history.Action, from, meeting.Status,
                         actorId, actorName, now, null, null));
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (Exception error) when (DbErrors.IsPersistenceFailure(error) || error is InvalidAgendaExecutionException)
+        catch (Exception error) when (error is PersistenceException or InvalidAgendaExecutionException)
         {
-            logger.LogError(error, "Could not perform {Action} for meeting {MeetingId}.", command.Action, meetingId);
+            logger.LogError(error.InnerException ?? error, "Could not perform {Action} for meeting {MeetingId}.", command.Action, meetingId);
             return MeetingWorkflowResult.Failure(MeetingWorkflowOutcome.SaveFailed);
         }
 
@@ -121,7 +120,7 @@ public sealed class MeetingLifecycleService(
         var historyId = Guid.Empty;
         try
         {
-            var ended = await meetings.InTransactionAsync(async token =>
+            var ended = await unitOfWork.ExecuteAsync(async token =>
             {
                 var meeting = await meetings.FindWorkflowAsync(meetingId, forUpdate: true, token);
                 if (meeting is null || !MeetingRules.IsOverrun(meeting, cutoff)) return false;
@@ -138,16 +137,16 @@ public sealed class MeetingLifecycleService(
                 };
                 meeting.StatusHistory.Add(history);
                 await meetings.AddHistoryAsync(history, token);
-                await meetings.SaveChangesAsync(token);
+                await unitOfWork.SaveChangesAsync(token);
                 historyId = history.Id;
                 return true;
-            }, ct);
+            }, TransactionMode.ReadCommitted, ct);
             if (!ended) return false;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (Exception error) when (DbErrors.IsPersistenceFailure(error) || error is InvalidAgendaExecutionException)
+        catch (Exception error) when (error is PersistenceException or InvalidAgendaExecutionException)
         {
-            logger.LogError(error, "Could not end overrunning meeting {MeetingId}.", meetingId);
+            logger.LogError(error.InnerException ?? error, "Could not end overrunning meeting {MeetingId}.", meetingId);
             return false;
         }
 

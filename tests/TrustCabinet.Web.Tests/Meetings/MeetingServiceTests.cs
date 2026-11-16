@@ -5,7 +5,6 @@ using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Meetings;
-using TrustCabinet.Infrastructure.Meetings;
 
 namespace TrustCabinet.Web.Tests.Meetings;
 
@@ -38,7 +37,7 @@ public class MeetingServiceTests
     private readonly Guid _otherActorId = Guid.CreateVersion7();
 
     private MeetingService NewService()
-        => new(_repository, NullLogger<MeetingService>.Instance);
+        => new(_repository, new FakeMeetingUnitOfWork(_repository), NullLogger<MeetingService>.Instance);
 
     private static readonly DateTimeOffset FutureStart =
         new(DateTimeOffset.UtcNow.Date.AddDays(7).AddHours(2), TimeSpan.Zero);
@@ -502,7 +501,7 @@ public class MeetingServiceTests
             null, null, null, null, null, 1, 20,
             MeetingSortBy.CreatedAt, MeetingSortDirection.Desc);
 
-        var result = await new MeetingService(_repository, logger).ListAsync(query, _actorId);
+        var result = await new MeetingService(_repository, new FakeMeetingUnitOfWork(_repository), logger).ListAsync(query, _actorId);
 
         Assert.Equal(MeetingOutcome.ReadFailed, result.Outcome);
         Assert.Null(result.Page);
