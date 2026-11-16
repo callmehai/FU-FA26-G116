@@ -249,9 +249,15 @@ public sealed class FakePersonalLibraryRepository : IPersonalLibraryRepository
         => Task.FromResult<IReadOnlyList<Folder>>(Read("folders",
             () => Folders.Values.Where(f => f.OwnerId == ownerId).OrderBy(f => f.Name).ThenBy(f => f.Id).ToList()));
 
+    /// <summary>Whether hiding Secret files was asked, in call order.</summary>
+    public List<bool> DocumentHideFlags { get; } = [];
+
     public Task<IReadOnlyList<LibraryDocument>> ListDocumentsAsync(Guid readerId, Guid ownerId, Guid? folderId,
-        string? search, string? contentType, Guid? meetingId, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<LibraryDocument>>(Read("documents", () => DocumentRows.ToList()));
+        string? search, string? contentType, Guid? meetingId, bool hideSecretFiles, CancellationToken ct)
+    {
+        DocumentHideFlags.Add(hideSecretFiles);
+        return Task.FromResult<IReadOnlyList<LibraryDocument>>(Read("documents", () => DocumentRows.ToList()));
+    }
 
     public Task<AttachedDocumentFile?> FindLibraryFileAsync(Guid ownerId, Guid documentId,
         HashSet<Guid>? hiddenFolderIds, CancellationToken ct)

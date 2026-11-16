@@ -41,7 +41,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
                     .Where(f => hidden is null || !hidden.Contains(f.Id))
                     .Select(f => new LibraryFolder(f.Id, f.Name, f.ParentId, f.MeetingId, f.CreatedAt)).ToList();
                 var documents = await library.ListDocumentsAsync(readerId, ownerId, folderId, search,
-                    ContentTypeOf(fileType), meetingId, token);
+                    ContentTypeOf(fileType), meetingId, readerId != ownerId, token);
                 return new LibraryOutcome<LibraryView>(Value: new(folderId, folders, documents,
                     await writer.UsedBytesAsync(token), writer.LimitBytes));
             }, TransactionMode.None, ct);
@@ -289,7 +289,7 @@ public sealed class PersonalLibraryService(IPersonalLibraryRepository library, S
                 // ponytail: the whole folder list per change; a library has tens of folders, not thousands.
                 var folders = await library.ListFolderParentsAsync(ownerId, token);
                 return await change(folders, token);
-            }, outcome => outcome.Failure == LibraryFailure.None, TransactionMode.ReadCommitted, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
         catch (PersistenceException ex)
         {

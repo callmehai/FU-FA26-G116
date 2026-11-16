@@ -285,7 +285,7 @@ public sealed class MeetingDocumentService(IMeetingRepository meetings, IMeeting
                 if (failure != DocumentUploadFailure.None) return new DocumentUploadOutcome(failure);
                 await unitOfWork.SaveChangesAsync(token);
                 return new DocumentUploadOutcome(Documents: added);
-            }, outcome => outcome.Failure == DocumentUploadFailure.None, TransactionMode.ReadCommitted, ct);
+            }, TransactionMode.ReadCommitted, ct);
         }
         catch (PersistenceException ex)
         {

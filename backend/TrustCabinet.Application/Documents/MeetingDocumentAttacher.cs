@@ -38,6 +38,9 @@ public sealed class MeetingDocumentAttacher(IMeetingDocumentRepository documents
             }
         }
 
+        // Links for the files already in the meeting are staged first, as before the move.
+        if (links.Count > 0) documents.AddAgendaItemLinks(links);
+        if (voteLinks.Count > 0) documents.AddVoteDocuments(voteLinks);
         var added = new List<UploadedMeetingDocument>();
         foreach (var document in rows.Where(d => inMeeting.All(m => m.StoredFileId != d.StoredFileId)))
         {
@@ -51,8 +54,6 @@ public sealed class MeetingDocumentAttacher(IMeetingDocumentRepository documents
             added.Add(new(meetingDocument.Id, document.FileName, document.StoredFile.ContentType,
                 document.StoredFile.ByteSize, document.StoredFile.PageCount));
         }
-        if (links.Count > 0) documents.AddAgendaItemLinks(links);
-        if (voteLinks.Count > 0) documents.AddVoteDocuments(voteLinks);
         return (DocumentUploadFailure.None, added);
     }
 

@@ -59,10 +59,11 @@ public sealed class PersonalLibraryRepository(TrustCabinetDbContext db) : IPerso
             .OrderBy(f => f.Name).ThenBy(f => f.Id).ToListAsync(ct);
 
     public async Task<IReadOnlyList<LibraryDocument>> ListDocumentsAsync(Guid readerId, Guid ownerId,
-        Guid? folderId, string? search, string? contentType, Guid? meetingId, CancellationToken ct)
+        Guid? folderId, string? search, string? contentType, Guid? meetingId, bool hideSecretFiles,
+        CancellationToken ct)
     {
         var query = db.Documents.AsNoTracking().Where(d => d.OwnerId == ownerId && d.FolderId == folderId);
-        if (readerId != ownerId)
+        if (hideSecretFiles)
         {
             var restricted = db.Meetings.Where(m => m.Sensitivity == Sensitivity.Secret).Select(m => m.Id);
             var hiddenFiles = db.MeetingDocuments.Where(d => restricted.Contains(d.MeetingId))

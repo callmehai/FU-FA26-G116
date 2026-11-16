@@ -149,10 +149,11 @@ public interface IPersonalLibraryRepository
     /// <summary>
     /// The documents at the location, oldest name first, each with its meeting count among the meetings the
     /// reader may view (BR-251) and whether its file is already in the asked meeting (BR-193, SCRUM-124).
-    /// Another reader than the owner is not shown the files of Secret meetings (BR-188).
+    /// When <paramref name="hideSecretFiles"/> is set, the files of Secret meetings are not shown (BR-188);
+    /// the service decides, the repository only filters.
     /// </summary>
     Task<IReadOnlyList<LibraryDocument>> ListDocumentsAsync(Guid readerId, Guid ownerId, Guid? folderId,
-        string? search, string? contentType, Guid? meetingId, CancellationToken ct);
+        string? search, string? contentType, Guid? meetingId, bool hideSecretFiles, CancellationToken ct);
 
     /// <summary>
     /// The document's stored file, enough to stream it. Null when missing, someone else's, or hidden from

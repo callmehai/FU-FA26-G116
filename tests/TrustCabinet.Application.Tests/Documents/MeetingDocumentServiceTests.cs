@@ -134,6 +134,6 @@ public sealed class MeetingDocumentServiceTests
 
         Assert.Equal(DocumentUploadFailure.NotInMeeting, outcome.Failure);
         Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Equal(1, _unitOfWork.Rollbacks);
+        Assert.Equal(1, _unitOfWork.Commits);
     }
 }

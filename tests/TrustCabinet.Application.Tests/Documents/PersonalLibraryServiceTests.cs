@@ -91,6 +91,6 @@ public sealed class PersonalLibraryServiceTests
 
         Assert.Equal(LibraryFailure.TooDeep, outcome.Failure);
         Assert.Equal(0, _unitOfWork.Saves);
-        Assert.Equal(1, _unitOfWork.Rollbacks);
+        Assert.Equal(1, _unitOfWork.Commits);
     }
 }
