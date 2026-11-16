@@ -13,7 +13,7 @@ const LOOKS: Record<StatCard, { label: string; icon: IconName }> = {
   draft: { label: 'Bản nháp', icon: 'pencil' },
 }
 
-/** What each card counts, plus the meetings under way that "Họp hôm nay" mentions under its number. */
+/** What each card counts, plus today's meetings under way that "Họp hôm nay" mentions under its number. */
 type Counted = StatCard | 'live'
 type Count = number | 'error' | undefined
 
@@ -27,11 +27,15 @@ type Count = number | 'error' | undefined
 export function MeetingStats({
   active,
   showDrafts,
+  canApprove,
   reloadKey,
   onSelect,
 }: {
   active: StatCard | null
+  /** May create meetings: has drafts, and publishes their own approved meetings. */
   showDrafts: boolean
+  /** May approve meetings assigned to them. */
+  canApprove: boolean
   /** Changes when the page's "Thử lại" is pressed, so the counts are read again with the list. */
   reloadKey: number
   /** A card, or null to leave the one that is on. */
@@ -49,7 +53,8 @@ export function MeetingStats({
         card,
         statQuery(card, now),
       ]),
-      ['live', statQuery({ status: 'InProgress', when: '', scope: '' }, now)],
+      // Today's, as the card's own number: a meeting left running on another day is not "họp hôm nay".
+      ['live', statQuery({ status: 'InProgress', when: 'today', scope: '' }, now)],
     ]
     for (const [key, query] of counted) {
       void listMeetings(query).then(
@@ -70,20 +75,29 @@ export function MeetingStats({
   const live = counts.live
   const todaySub: ReactNode =
     typeof live === 'number' && live > 0 ? (
-      <span className="stat-live">{live.toLocaleString('vi-VN')} phiên đang diễn ra</span>
+      <span className="stat-live">{live.toLocaleString('vi-VN')} đang diễn ra</span>
     ) : (
-      'Không có phiên đang diễn ra'
+      'Chưa có cuộc họp đang diễn ra'
     )
   const subs: Record<StatCard, ReactNode> = {
     today: todaySub,
     published: 'Đã gửi giấy mời',
-    todo: 'Chờ bạn duyệt, công bố',
+    // What waits on this user: approving needs MeetingApprover, publishing one's own meeting MeetingCreator.
+    todo:
+      canApprove && !showDrafts
+        ? 'Chờ bạn duyệt'
+        : showDrafts && !canApprove
+          ? 'Chờ bạn công bố'
+          : 'Chờ bạn duyệt, công bố',
     draft: 'Chưa gửi duyệt',
   }
+  // A card that could not count shows no number. When none could, one line says so for the row instead of the
+  // same sentence on every card.
+  const allFailed = cards.every((card) => counts[card] === 'error')
 
   return (
     <section
-      className="stat-cards"
+      className={cards.length === 3 ? 'stat-cards stat-cards-3' : 'stat-cards'}
       aria-label="Thống kê cuộc họp"
       aria-busy={cards.some((card) => counts[card] === undefined) || live === undefined}
     >
@@ -92,7 +106,7 @@ export function MeetingStats({
           const look = LOOKS[card]
           const pressed = active === card
           // "Họp hôm nay" waits for its sub line too, so the card does not change once shown.
-          const count = card === 'today' && live === undefined ? undefined : counts[card]
+          const count = card === 'today' && live === undefined && counts.today !== 'error' ? undefined : counts[card]
           return (
             <button
               key={card}
@@ -114,16 +128,24 @@ export function MeetingStats({
                     <span className="skeleton stat-sub-skeleton" />
                   </span>
                 </>
+              ) : count === 'error' ? (
+                !allFailed && (
+                  <>
+                    <span className="stat-value-slot" aria-hidden="true" />
+                    <span className="stat-sub">Không tải được số lượng</span>
+                  </>
+                )
               ) : (
                 <>
-                  <span className="stat-value">{count === 'error' ? '—' : count.toLocaleString('vi-VN')}</span>
-                  <span className="stat-sub">{count === 'error' ? 'Không tải được số lượng' : subs[card]}</span>
+                  <span className="stat-value">{count.toLocaleString('vi-VN')}</span>
+                  <span className="stat-sub">{subs[card]}</span>
                 </>
               )}
             </button>
           )
         })}
       </div>
+      {allFailed && <p className="stat-error">Không tải được số lượng cuộc họp.</p>}
     </section>
   )
 }

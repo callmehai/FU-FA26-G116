@@ -24,7 +24,6 @@ import {
   defaultSettings,
   minutesLabel,
   settingsDetail,
-  settingsSummary,
   toRequest,
   validateSettings,
   type SettingsErrors,
@@ -188,6 +187,8 @@ export function FindTimePage() {
 
   const me: Invitee | null = user ? { id: user.id, fullName: user.fullName, email: user.email } : null
   const done = search.kind === 'done' ? search : null
+  // A new key per search, so a phone scrolls each new answer into view (SlotResults' scrollOnShow).
+  const resultsKey = done ? JSON.stringify(done.request) + String(done.result.days.length) : ''
   const peopleById = new Map((done?.result.people ?? []).map((p) => [p.id, p]))
 
   const settingsPanel = (
@@ -230,7 +231,17 @@ export function FindTimePage() {
               <b>
                 {invitees.length} người, {minutesLabel(settings.duration)}
               </b>
-              <span className="find-summary-sub">{settingsDetail(settings)}</span>
+              {/* Each part stays whole: a phone broke "08:00–17:00" across two lines. */}
+              <span className="find-summary-sub">
+                {settingsDetail(settings)
+                  .split(', ')
+                  .map((part, i) => (
+                    <span key={i} className="find-summary-part">
+                      {i > 0 && ', '}
+                      {part}
+                    </span>
+                  ))}
+              </span>
               <button type="button" className="btn btn-outline" onClick={() => setEditing(true)}>
                 <Icon name="settings" size={16} />
                 Sửa điều kiện
@@ -282,8 +293,8 @@ export function FindTimePage() {
             {search.kind === 'idle' && (
               <div className="card find-empty">
                 <Icon name="calendarSearch" size={24} />
+                {/* The conditions are on screen beside it (or summed up above it on a phone): no need to repeat them. */}
                 <p className="empty-title">Chọn người dự rồi bấm Tìm giờ</p>
-                <p className="find-empty-text">Mặc định: {settingsSummary(settings)}, tránh giờ nghỉ trưa, cách cuộc họp khác 30 phút.</p>
               </div>
             )}
             {search.kind === 'loading' && <p className="find-count card-pending">Đang tìm khung giờ…</p>}
@@ -300,6 +311,8 @@ export function FindTimePage() {
             )}
             {done && (
               <SlotResults
+                key={resultsKey}
+                scrollOnShow={phone}
                 result={done.result}
                 range={{ from: done.request.fromDate, to: done.request.toDate }}
                 selected={selected}

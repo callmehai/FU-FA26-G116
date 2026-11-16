@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { listMeetings } from '../../api/meetings'
+import { ClearFiltersButton } from '../../components/ClearFiltersButton'
 import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
 import { Pagination } from '../../components/Pagination'
@@ -165,7 +166,7 @@ export function MeetingsPage() {
 
   function sortBy(column: MeetingSortBy) {
     const sortDir = state.sortBy === column ? (state.sortDir === 'asc' ? 'desc' : 'asc') : defaultDirection(column)
-    update({ sortBy: column, sortDir })
+    update({ sortBy: column, sortDir, sortSet: true })
   }
 
   function clearFilters() {
@@ -348,7 +349,13 @@ export function MeetingsPage() {
         }
       />
 
-      <MeetingStats active={activeStat(state)} showDrafts={canCreate} reloadKey={attempt} onSelect={pickStat} />
+      <MeetingStats
+        active={activeStat(state)}
+        showDrafts={canCreate}
+        canApprove={can('MeetingApprover')}
+        reloadKey={attempt}
+        onSelect={pickStat}
+      />
 
       <div className="list-panel list-page list-fill">
         <div className="toolbar">
@@ -400,17 +407,7 @@ export function MeetingsPage() {
             />
 
             {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
-            {showClear && (
-              <button
-                type="button"
-                className="icon-button"
-                onClick={clearFilters}
-                data-tooltip="Xoá bộ lọc"
-                aria-label="Xoá bộ lọc"
-              >
-                <Icon name="x" size={16} />
-              </button>
-            )}
+            <ClearFiltersButton shown={showClear} onClear={clearFilters} />
           </div>
 
         </div>
