@@ -147,6 +147,51 @@ public sealed class TranscriptionServiceTests
         Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
     }
 
+    private (Transcript Transcript, TranscriptSegment Segment, TranscriptSpeaker Voice) Spoken()
+    {
+        var transcript = Queued(TranscriptStatus.Completed);
+        var segment = new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 1, StartMs = 0, EndMs = 1000, Text = "Xin chào", SpeakerLabel = "SPEAKER_00",
+        };
+        var voice = new TranscriptSpeaker { TranscriptId = transcript.Id, Label = "SPEAKER_00", SpeechMs = 1000 };
+        transcript.Segments.Add(segment);
+        transcript.Speakers.Add(voice);
+        return (transcript, segment, voice);
+    }
+
+    [Fact]
+    public async Task Naming_a_voice_runs_under_the_recording_lock_in_one_transaction()
+    {
+        var (_, _, voice) = Spoken();
+
+        var outcome = await Service().AssignSpeakerAsync(_recording.Id, "SPEAKER_00", _meeting.Member, null, _meeting.Secretary);
+
+        Assert.Equal(TranscriptFailure.None, outcome.Failure);
+        Assert.Equal((_meeting.Member, _meeting.Secretary), (voice.AssignedUserId, voice.AssignedById));
+        Assert.Equal([_recording.Id], _recordings.Locked);
+        Assert.Equal([TransactionMode.ReadCommitted], _unitOfWork.Modes);
+        Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
+        Assert.Equal([AuditActions.TranscriptSpeakerAssigned], _audit.Actions);
+    }
+
+    [Fact]
+    public async Task Moving_a_line_to_a_person_gives_them_a_new_voice_under_the_recording_lock_in_one_transaction()
+    {
+        var (transcript, segment, voice) = Spoken();
+
+        var outcome = await Service().AssignSegmentSpeakerAsync(segment.Id, _meeting.Member, null, null, _meeting.Secretary);
+
+        Assert.Equal(TranscriptFailure.None, outcome.Failure);
+        var created = Assert.Single(transcript.Speakers, s => s.Label != "SPEAKER_00");
+        Assert.Equal(("SPEAKER_01", _meeting.Member, 1000L), (created.Label, created.AssignedUserId, created.SpeechMs));
+        Assert.Equal((created.Label, 0L), (segment.SpeakerLabel, voice.SpeechMs));
+        Assert.Equal([_recording.Id], _recordings.Locked);
+        Assert.Equal([TransactionMode.None, TransactionMode.ReadCommitted], _unitOfWork.Modes);
+        Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
+        Assert.Equal([AuditActions.TranscriptSegmentSpeakerAssigned], _audit.Actions);
+    }
+
     [Fact]
     public async Task The_result_for_a_recording_erased_meanwhile_is_not_written()
     {

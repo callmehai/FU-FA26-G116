@@ -224,7 +224,10 @@ public sealed class VoiceCollectionService(IVoiceIdRepository repository, INotif
         return meeting;
     }
 
-    /// <summary>Storage calls outside a transaction: run as they are, only their failures translated.</summary>
+    /// <summary>
+    /// Storage calls outside a transaction (reads, and the few writes that never had one): run as they are, only their
+    /// failures translated.
+    /// </summary>
     private Task<T> ReadAsync<T>(Func<CancellationToken, Task<T>> work, CancellationToken ct)
         => unitOfWork.ExecuteAsync(work, TransactionMode.None, ct);
 
