@@ -163,7 +163,12 @@ export default {
           users = await (await response).json()
           await qa.expect(qa.page.locator('tbody tr.row-skeleton')).toHaveCount(0)
         } else {
-          users = await openUsers(qa)
+          // The default page size (20), as a person opening the list sees it.
+          const response = qa.page.waitForResponse((r) => r.url().endsWith('/api/users') && r.request().method() === 'GET')
+          response.catch(() => undefined)
+          await qa.goto(USERS_PATH)
+          users = await (await response).json()
+          await qa.expect(qa.page.locator('tbody tr.row-skeleton')).toHaveCount(0)
         }
         for (const u of users) {
           qa.expect(Object.keys(u).filter((k) => /hash|subject|token/i.test(k) || /^password$/i.test(k)), 'credential field on the wire').toEqual([])
@@ -291,7 +296,7 @@ export default {
           const dialog = qa.page.getByRole('dialog', { name: 'Tạo tài khoản' })
           await qa.expect(dialog).toBeVisible()
           await dialog.getByLabel('Họ tên').fill(fullName)
-          await dialog.getByLabel('Email').fill(email)
+          await dialog.getByRole('textbox', { name: /^Email/ }).fill(email)
           await dialog.getByRole('button', { name: 'Tạo mật khẩu' }).click()
           const password = await dialog.getByLabel('Mật khẩu', { exact: true }).inputValue()
           qa.expect(password.length, 'generated password is shorter than 12').toBeGreaterThanOrEqual(12)
@@ -333,7 +338,7 @@ export default {
         'API: POST /api/users thiếu hết; POST trùng email',
       ],
       expected:
-        'Ba lỗi dưới ô: "Họ tên không được để trống.", "Email không hợp lệ.", "Mật khẩu phải có ít nhất 12 ký tự."; trùng email: "Email đã được sử dụng." dưới ô Email, hộp thoại còn mở; API 400 MSG09 kèm errors theo field, 409 MSG08; số tài khoản không đổi; điện thoại: hộp thoại vừa màn hình, nút bấm được',
+        'Ba lỗi dưới ô: "Họ tên không được để trống.", "Email không được để trống.", "Mật khẩu phải có ít nhất 12 ký tự."; trùng email: "Email đã được sử dụng." dưới ô Email, hộp thoại còn mở; API 400 MSG09 kèm errors theo field, 409 MSG08; số tài khoản không đổi; điện thoại: hộp thoại vừa màn hình, nút bấm được',
       async run(qa) {
         const api = await qa.api()
         await ensureUser(qa, api, 'a')
@@ -342,12 +347,12 @@ export default {
         const dialog = qa.page.getByRole('dialog', { name: 'Tạo tài khoản' })
         await dialog.getByRole('button', { name: 'Tạo tài khoản' }).click()
         await qa.expect(dialog.getByText('Họ tên không được để trống.')).toBeVisible()
-        await qa.expect(dialog.getByText('Email không hợp lệ.')).toBeVisible()
+        await qa.expect(dialog.getByText('Email không được để trống.')).toBeVisible()
         await qa.expect(dialog.getByText('Mật khẩu phải có ít nhất 12 ký tự.')).toBeVisible()
         await qa.shot('loi-tung-o')
 
         await dialog.getByLabel('Họ tên').fill(qa.name(`FE-02 Trùng ${RUN}`))
-        await dialog.getByLabel('Email').fill(QA_USERS.a.email.toUpperCase())
+        await dialog.getByRole('textbox', { name: /^Email/ }).fill(QA_USERS.a.email.toUpperCase())
         await dialog.getByLabel('Mật khẩu', { exact: true }).fill('MotHaiBaBon@12')
         const posted = qa.page.waitForResponse((r) => r.url().endsWith('/api/users') && r.request().method() === 'POST')
         await dialog.getByRole('button', { name: 'Tạo tài khoản' }).click()
@@ -414,7 +419,7 @@ export default {
           await row.getByRole('button', { name: `Sửa tài khoản ${a.fullName}` }).click()
           const dialog = qa.page.getByRole('dialog', { name: 'Sửa tài khoản' })
           await qa.expect(dialog.getByLabel('Họ tên')).toHaveValue(a.fullName)
-          await qa.expect(dialog.getByLabel('Email')).toHaveValue(QA_USERS.a.email)
+          await qa.expect(dialog.getByRole('textbox', { name: /^Email/ })).toHaveValue(QA_USERS.a.email)
           await qa.expect(dialog.getByRole('button', { name: `Vai trò: ${ROLE.member.name}` })).toBeVisible()
           await qa.expect(dialog.getByLabel('Mật khẩu', { exact: true })).toHaveCount(0)
           await qa.shot('form-sua')
@@ -423,13 +428,13 @@ export default {
           await dialog.getByRole('button', { name: 'Lưu thay đổi' }).click()
           await qa.expect(dialog.getByText('Họ tên không được để trống.')).toBeVisible()
           await dialog.getByLabel('Họ tên').fill(renamed)
-          await dialog.getByLabel('Email').fill('chutoa@trustcabinet.local')
+          await dialog.getByRole('textbox', { name: /^Email/ }).fill('chutoa@trustcabinet.local')
           await qa.expect(dialog.getByText('Đổi email sẽ đăng xuất người này khỏi mọi thiết bị.')).toBeVisible()
           await dialog.getByRole('button', { name: 'Lưu thay đổi' }).click()
           await qa.expect(dialog.getByText('Email đã được sử dụng.')).toBeVisible()
           await qa.shot('email-trung')
 
-          await dialog.getByLabel('Email').fill(QA_USERS.a.email)
+          await dialog.getByRole('textbox', { name: /^Email/ }).fill(QA_USERS.a.email)
           await dialog.getByRole('button', { name: 'Lưu thay đổi' }).click()
           await qa.expect(toast(qa, 'Cập nhật tài khoản thành công.')).toBeVisible()
           await qa.expect(dialog).toBeHidden()
