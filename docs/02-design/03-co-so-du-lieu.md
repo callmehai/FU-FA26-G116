@@ -320,13 +320,17 @@ Ai từng làm SQL Server rất dễ vấp:
 
 | Project | Chứa gì |
 |---|---|
-| `TrustCabinet.Domain` | Entity và enum. Không tham chiếu EF Core, không biết gì về database |
-| `TrustCabinet.Infrastructure` | `DbContext`, cấu hình bảng, migration, seed |
-| `TrustCabinet.Web` | API. Tham chiếu Infrastructure, gọi `AddTrustCabinetDatabase()` |
+| `TrustCabinet.Domain` | Entity, enum, rule và policy. Không tham chiếu project hay package nào, không biết gì về database |
+| `TrustCabinet.Application` | Service use case, DTO và port: interface repository, query, adapter và `IUnitOfWork`. Chỉ tham chiếu Domain, không biết EF Core |
+| `TrustCabinet.Infrastructure` | `DbContext`, cấu hình bảng, migration, seed; repository và query cài port của Application; `EfUnitOfWork` và bộ dịch lỗi PostgreSQL trong `Persistence/` |
+| `TrustCabinet.Web` | API, hub, worker. Gọi Application; chỉ `Program.cs` (gọi `AddApplication()` rồi `AddTrustCabinetDatabase()`) và `DatabaseMigrationCommand.cs` dùng Infrastructure |
 
-Domain tách khỏi EF để quy tắc nghiệp vụ về sau không bị buộc vào một ORM cụ thể. Nếu lớp nghiệp vụ
-lớn thêm thì tách tiếp `TrustCabinet.Application` như README đã dự tính. Thời điểm và lộ trình tách:
-[ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
+Domain và Application tách khỏi EF để quy tắc nghiệp vụ không bị buộc vào một ORM cụ thể và unit test được không cần
+PostgreSQL. Service ghi và đọc trong `IUnitOfWork.ExecuteAsync`; chỉ `Persistence/PersistenceExceptionTranslator` biết
+`SqlState` và tên index, rồi dịch thành `UniqueConflictException`, `ReferenceConflictException`,
+`ConcurrencyConflictException` hoặc `PersistenceUnavailableException`. Quyết định ở
+[ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md), quy chuẩn ở
+[11-quy-chuan-clean-architecture.md](11-quy-chuan-clean-architecture.md).
 
 ## Migration Agenda SCRUM-98
 

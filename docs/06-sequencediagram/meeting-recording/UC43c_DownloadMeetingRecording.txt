@@ -9,6 +9,7 @@ participant ":Recording Repository" as RecordingRepository
 participant ":Audit Service" as AuditService
 participant ":Playback Link Signer" as Signer
 participant ":Recording Storage" as RecordingStorage
+participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
 Actor->RecordingsTab: Download an available room recording
@@ -51,10 +52,12 @@ else Meeting is Secret - EX-2
 else Download allowed
     RecordingService->AuditService: Record the download with the actor and time (BR-351)
     activate AuditService
-    AuditService->Database: Insert audit entry
+    AuditService->AuditLogRepository: add(audit entry)
+    AuditLogRepository->Database: Insert audit entry
     activate Database
-    Database-->AuditService: Entry saved
+    Database-->AuditLogRepository: Entry saved
     deactivate Database
+    AuditLogRepository-->AuditService: Entry saved
     AuditService-->RecordingService: Entry saved
     deactivate AuditService
     RecordingService->Signer: Sign a short-lived download link, separate from playback links

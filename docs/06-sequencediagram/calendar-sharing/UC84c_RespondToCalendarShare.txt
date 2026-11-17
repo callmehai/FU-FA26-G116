@@ -7,6 +7,7 @@ control ":Calendar Sharing Service" as SharingService
 participant ":User Repository" as UserRepository
 participant ":Calendar Share Repository" as ShareRepository
 participant ":Notification Service" as NotificationService
+participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 AskedSide->SharingPage: Answer the calendar share request
@@ -89,10 +90,12 @@ else Actor is the asked side
                     else Share is Effective
                         SharingService->NotificationService: Notify the sender the share is effective (BR-426)
                         activate NotificationService
-                        NotificationService->Database: Record sender notification
+                        NotificationService->NotificationRepository: add(notification)
+                        NotificationRepository->Database: Record sender notification
                         activate Database
-                        Database-->NotificationService: Notification recorded
+                        Database-->NotificationRepository: Notification recorded
                         deactivate Database
+                        NotificationRepository-->NotificationService: Notification recorded
                         NotificationService-->SharingService: Sender notified
                         deactivate NotificationService
                         SharingService-->SharingController: Effective share
@@ -122,10 +125,12 @@ else Actor is the asked side
             else Share is closed
                 SharingService->NotificationService: Notify the sender the request was declined (BR-426)
                 activate NotificationService
-                NotificationService->Database: Record sender notification
+                NotificationService->NotificationRepository: add(notification)
+                NotificationRepository->Database: Record sender notification
                 activate Database
-                Database-->NotificationService: Notification recorded
+                Database-->NotificationRepository: Notification recorded
                 deactivate Database
+                NotificationRepository-->NotificationService: Notification recorded
                 NotificationService-->SharingService: Sender notified
                 deactivate NotificationService
                 SharingService-->SharingController: Closed share
@@ -161,10 +166,12 @@ else Actor is the asked side
                 else Change is applied
                     SharingService->NotificationService: Notify the viewer the share was updated (BR-426)
                     activate NotificationService
-                    NotificationService->Database: Record viewer notification
+                    NotificationService->NotificationRepository: add(notification)
+                    NotificationRepository->Database: Record viewer notification
                     activate Database
-                    Database-->NotificationService: Notification recorded
+                    Database-->NotificationRepository: Notification recorded
                     deactivate Database
+                    NotificationRepository-->NotificationService: Notification recorded
                     NotificationService-->SharingService: Viewer notified
                     deactivate NotificationService
                     SharingService-->SharingController: Updated share
@@ -193,10 +200,12 @@ else Actor is the asked side
             else Change is declined
                 SharingService->NotificationService: Notify the viewer the change was declined (BR-426)
                 activate NotificationService
-                NotificationService->Database: Record viewer notification
+                NotificationService->NotificationRepository: add(notification)
+                NotificationRepository->Database: Record viewer notification
                 activate Database
-                Database-->NotificationService: Notification recorded
+                Database-->NotificationRepository: Notification recorded
                 deactivate Database
+                NotificationRepository-->NotificationService: Notification recorded
                 NotificationService-->SharingService: Viewer notified
                 deactivate NotificationService
                 SharingService-->SharingController: Unchanged share

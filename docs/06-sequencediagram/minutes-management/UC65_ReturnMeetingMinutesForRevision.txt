@@ -5,6 +5,7 @@ boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
 participant ":Notification Service" as NotificationService
+participant ":Minutes Repository" as MinutesRepository
 database ":Database" as Database
 
 Actor->MinutesCard: Confirm Return with the reason
@@ -13,10 +14,12 @@ MinutesCard->MinutesEndpoints: reject(minutesId, reason, updatedAt)
 activate MinutesEndpoints
 MinutesEndpoints->MinutesService: ReturnAsync(minutesId, actorId, reason, updatedAt)
 activate MinutesService
-MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
+MinutesService->MinutesRepository: lock the Meeting and the revision
+MinutesRepository->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
 activate Database
-Database-->MinutesService: Meeting and revision / None
+Database-->MinutesRepository: Meeting and revision / None
 deactivate Database
+MinutesRepository-->MinutesService: Meeting and revision / None
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-5
     MinutesService-->MinutesEndpoints: Not found
@@ -42,10 +45,12 @@ else Actor is the current Chair
         MinutesEndpoints-->MinutesCard: 400 MSG431
         MinutesCard-->Actor: MSG431 - Enter a reason for returning the minutes, up to 2,000 characters.
     else Return valid
-        MinutesService->Database: Set Rejected (returned), the reason, who returned it and when (BR-407);\nthe reason of an earlier return is replaced, together with the Secretary's\nnotification, in one save (BR-411)
+        MinutesService->MinutesRepository: save the returned revision with the Secretary's notification
+        MinutesRepository->Database: Set Rejected (returned), the reason, who returned it and when (BR-407);\nthe reason of an earlier return is replaced, together with the Secretary's\nnotification, in one save (BR-411)
         activate Database
-        Database-->MinutesService: Saved / Failed
+        Database-->MinutesRepository: Saved / Failed
         deactivate Database
+        MinutesRepository-->MinutesService: Saved / Failed
 
         alt Saved
             MinutesService->NotificationService: The notification is saved with the state; the dispatcher pushes it

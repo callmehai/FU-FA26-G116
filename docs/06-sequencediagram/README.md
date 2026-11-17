@@ -112,8 +112,17 @@ database ":Database" as Database
   `:Document Controller` / `:Folder Controller` — **không** đặt lifeline kiểu `Endpoints`,
   `Minimal API`, tên file C# hay route group
 - Service: bắt đầu bằng `:`, cùng miền với Controller (`:Meeting Document Service`, …)
-- Repository / Policy / Object Storage: `participant`, bắt đầu bằng `:`
+- Repository / Query / Policy / Object Storage: `participant`, bắt đầu bằng `:`. Tên theo port trong
+  `TrustCabinet.Application`, bỏ tiền tố `I` và tách chữ: `IAuditLogRepository` → `:Audit Log Repository`,
+  `IAuditLogQuery` → `:Audit Log Query`, `IMeetingMinutesRepository` → `:Minutes Repository`.
 - Database: `database ":Database"`
+
+**Service không gọi thẳng Database.** Từ refactor bốn project ([ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md))
+service ở Application chỉ đọc ghi qua port, nên mọi message tới `:Database` xuất phát từ một lifeline Repository hoặc
+Query. Message Service → Repository dùng tên thao tác miền (theo method của port, bỏ `Async`); Repository → Database
+mô tả việc đọc ghi ở mức nghiệp vụ. Không vẽ `IUnitOfWork`, `DbContext` hay transaction; câu "in one save" hoặc
+"FOR UPDATE" ở message tới Database đủ diễn đạt việc ghi chung một lần hay khoá dòng. Kiểm bằng
+`grep -rnE "^\s*\w*Service\w*\s*-+>>?\s*Database\b" --include=*.txt docs/06-sequencediagram` — phải không có kết quả.
 
 Khi as-built theo code: **đúng luồng nghiệp vụ và nhánh MSG/BR**, không mirror HTTP path,
 status code (`404 MSG…`), tên method `*Async`, hay hub SignalR lên sơ đồ (§10). Boundary →

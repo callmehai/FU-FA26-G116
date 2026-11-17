@@ -5,6 +5,7 @@ boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
 participant ":Meeting Repository" as MeetingRepository
+participant ":Minutes Repository" as MinutesRepository
 database ":Database" as Database
 
 Actor->MinutesCard: Open the Biên bản tab, or choose a revision from the list
@@ -30,10 +31,12 @@ else Actor may read the Meeting
     MinutesService->MinutesService: Check whether the actor is the current Chair or Secretary (BR-386)
 
     alt Actor is the current Chair or Secretary
-        MinutesService->Database: Retrieve the latest revision, or the chosen revision, with\nwho created, submitted, approved and returned it, when, and the reason\nof the latest return (BR-407)
+        MinutesService->MinutesRepository: listRevisions(meetingId, manages), findWithPeople(minutesId)
+        MinutesRepository->Database: Retrieve the latest revision, or the chosen revision, with\nwho created, submitted, approved and returned it, when, and the reason\nof the latest return (BR-407)
         activate Database
-        Database-->MinutesService: Minutes / None
+        Database-->MinutesRepository: Minutes / None
         deactivate Database
+        MinutesRepository-->MinutesService: Minutes / None
 
         alt A revision exists - the draft or returned revision, or a waiting one
             MinutesService-->MinutesEndpoints: 200 MinutesState with the revision and every revision in history
@@ -45,10 +48,12 @@ else Actor may read the Meeting
             MinutesCard-->Actor: Empty state and the control to build one (UC-59)
         end
     else Actor is anyone else who may read the Meeting
-        MinutesService->Database: Retrieve the latest Issued revision, and the revisions\nin history that are Issued or Superseded only (BR-412)
+        MinutesService->MinutesRepository: listRevisions(meetingId, manages = false), findWithPeople(minutesId)
+        MinutesRepository->Database: Retrieve the latest Issued revision, and the revisions\nin history that are Issued or Superseded only (BR-412)
         activate Database
-        Database-->MinutesService: Minutes / None, filtered history
+        Database-->MinutesRepository: Minutes / None, filtered history
         deactivate Database
+        MinutesRepository-->MinutesService: Minutes / None, filtered history
 
         alt An Issued revision exists
             MinutesService-->MinutesEndpoints: 200 MinutesState with the Issued revision\nand the filtered history

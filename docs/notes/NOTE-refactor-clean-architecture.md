@@ -2,9 +2,12 @@
 
 - **Ngày:** 08/11/2026; **cập nhật 14/11/2026**: đo lại số liệu, thêm bảng lớp đang đọc `DbContext` (§3.1),
   bổ sung 3 module lộ trình cũ bỏ sót (CalendarSharing, Speaking, Reports) vào giai đoạn 2
-- **Trạng thái:** đã chốt thời điểm ở [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md)
-  (09/11/2026): giữ ba project đến buổi báo cáo giảng viên 13/11/2026, bắt đầu giai đoạn 0 ngay sau đó.
-  Tạo ticket Jira cho từng giai đoạn khi bắt đầu.
+- **Trạng thái:** **đã thực hiện** 15/11 → 17/11/2026 (SCRUM-143, subtask CA-00 → CA-18b, PR #349, #365, #369, #372,
+  #374, #378, #379, #380, #384, #387 → #392, #401, #402; tài liệu ở CA-19, SCRUM-184). Kết quả và chỗ làm khác note
+  này ghi ở [ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md), thay
+  [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md); quy chuẩn đã dùng ở
+  [11-quy-chuan-clean-architecture.md](../02-design/11-quy-chuan-clean-architecture.md). Phần dưới giữ nguyên làm
+  phân tích ban đầu; số liệu là của 14/11/2026.
 - **Phạm vi:** chỉ `backend/` và `tests/`. Không đổi endpoint, response, mã `MSGnn`, schema hay migration.
   FE không bị ảnh hưởng.
 

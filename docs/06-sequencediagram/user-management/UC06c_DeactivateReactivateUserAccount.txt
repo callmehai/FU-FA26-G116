@@ -11,6 +11,8 @@ participant ":Voice ID Repository" as VoiceIdRepository
 participant ":Calendar Share Repository" as ShareRepository
 control ":Notification Service" as NotificationService
 control ":Audit Service" as AuditService
+participant ":Audit Log Repository" as AuditLogRepository
+participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 Admin->UserPage: Select user account and status action
@@ -63,10 +65,12 @@ else Status change is allowed
         deactivate VoiceIdRepository
         VoiceIdService->AuditService: Record Voice ID end (BR-372)
         activate AuditService
-        AuditService->Database: Store audit record
+        AuditService->AuditLogRepository: add(audit entry)
+        AuditLogRepository->Database: Store audit record
         activate Database
-        Database-->AuditService: Audit record created
+        Database-->AuditLogRepository: Audit record created
         deactivate Database
+        AuditLogRepository-->AuditService: Audit record created
         AuditService-->VoiceIdService: Recorded
         deactivate AuditService
         VoiceIdService-->UserService: Voice ID ended
@@ -74,10 +78,12 @@ else Status change is allowed
 
         UserService->AuditService: Record account deactivation
         activate AuditService
-        AuditService->Database: Store audit record
+        AuditService->AuditLogRepository: add(audit entry)
+        AuditLogRepository->Database: Store audit record
         activate Database
-        Database-->AuditService: Audit record created
+        Database-->AuditLogRepository: Audit record created
         deactivate Database
+        AuditLogRepository-->AuditService: Audit record created
         AuditService-->UserService: Deactivation recorded
         deactivate AuditService
 
@@ -93,19 +99,23 @@ else Status change is allowed
         opt At least one share was stopped
             UserService->AuditService: Record each stopped share (BR-426)
             activate AuditService
-            AuditService->Database: Store audit records
+            AuditService->AuditLogRepository: add(audit entries)
+            AuditLogRepository->Database: Store audit records
             activate Database
-            Database-->AuditService: Audit records created
+            Database-->AuditLogRepository: Audit records created
             deactivate Database
+            AuditLogRepository-->AuditService: Audit records created
             AuditService-->UserService: Stops recorded
             deactivate AuditService
 
             UserService->NotificationService: Notify both sides of each stopped share (BR-426)
             activate NotificationService
-            NotificationService->Database: Record notifications
+            NotificationService->NotificationRepository: add(notifications)
+            NotificationRepository->Database: Record notifications
             activate Database
-            Database-->NotificationService: Notifications recorded
+            Database-->NotificationRepository: Notifications recorded
             deactivate Database
+            NotificationRepository-->NotificationService: Notifications recorded
             NotificationService-->UserService: Notifications sent
             deactivate NotificationService
         end
@@ -127,10 +137,12 @@ else Status change is allowed
 
         UserService->AuditService: Record account reactivation
         activate AuditService
-        AuditService->Database: Store audit record
+        AuditService->AuditLogRepository: add(audit entry)
+        AuditLogRepository->Database: Store audit record
         activate Database
-        Database-->AuditService: Audit record created
+        Database-->AuditLogRepository: Audit record created
         deactivate Database
+        AuditLogRepository-->AuditService: Audit record created
         AuditService-->UserService: Reactivation recorded
         deactivate AuditService
 

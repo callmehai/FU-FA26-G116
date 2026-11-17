@@ -9,6 +9,7 @@ participant ":Role Repository" as RoleRepository
 participant ":Calendar Share Repository" as ShareRepository
 control ":Notification Service" as NotificationService
 participant ":Audit Log Repository" as AuditLogRepository
+participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 Admin->UserPage: Confirm system role assignment
@@ -108,10 +109,12 @@ else Selected role is available
 
                 UserService->NotificationService: Notify both sides of each stopped share (BR-426)
                 activate NotificationService
-                NotificationService->Database: Record notifications
+                NotificationService->NotificationRepository: add(notifications)
+                NotificationRepository->Database: Record notifications
                 activate Database
-                Database-->NotificationService: Notifications recorded
+                Database-->NotificationRepository: Notifications recorded
                 deactivate Database
+                NotificationRepository-->NotificationService: Notifications recorded
                 NotificationService-->UserService: Notifications sent
                 deactivate NotificationService
             end

@@ -7,6 +7,8 @@ control ":Minutes Service" as MinutesService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Minutes Template" as MinutesTemplate
 participant ":Summary Service" as SummaryService
+participant ":Minutes Repository" as MinutesRepository
+participant ":Minutes Source Query" as MinutesSourceQuery
 database ":Database" as Database
 
 Actor->MinutesCard: Select Create minutes, or Fill from meeting data
@@ -50,10 +52,12 @@ else Actor may build
         MinutesCard-->Actor: Warn that every correction will be replaced (BR-388)
         Actor->MinutesCard: Confirm
     end
-    MinutesService->Database: Retrieve participants, guests, attendance, agenda and closed votes
+    MinutesService->MinutesSourceQuery: listAttendees(meetingId), listGuests(meetingId), agenda and closed votes
+    MinutesSourceQuery->Database: Retrieve participants, guests, attendance, agenda and closed votes
     activate Database
-    Database-->MinutesService: Meeting records
+    Database-->MinutesSourceQuery: Meeting records
     deactivate Database
+    MinutesSourceQuery-->MinutesService: Meeting records
     MinutesService->SummaryService: Read the current AI draft (reviewed or not)
     activate SummaryService
     SummaryService-->MinutesService: Sections I-III / None
@@ -66,10 +70,12 @@ else Actor may build
         MinutesTemplate-->MinutesService: Minutes with the agenda and the Chair's conclusions, and "......" to fill (BR-382)
     end
     deactivate MinutesTemplate
-    MinutesService->Database: Save the revision with its revision number, in the same save\nas the locked Meeting row
+    MinutesService->MinutesRepository: add(revision)
+    MinutesRepository->Database: Save the revision with its revision number, in the same save\nas the locked Meeting row
     activate Database
-    Database-->MinutesService: Saved / Failed
+    Database-->MinutesRepository: Saved / Failed
     deactivate Database
+    MinutesRepository-->MinutesService: Saved / Failed
 
     alt Saved - AF-1 when this is the first draft
         MinutesService-->MinutesEndpoints: State

@@ -308,7 +308,7 @@ Quan hệ theo cấu hình EF: `Meeting 1 — 0..* Recording`; `Recording 1 ◆�
 
 | Sequence (message tới receiver) | Class → operation |
 |---|---|
-| UC-39a AF-2 `canCapture`, `add` | `ISpeechClipService.canCapture`, `add`; `IMeetingRepository.findWorkflow`; `SpeechClipRules.accepts`, `RecordingRules.canListen`; `ISpeechEngine.transcribe` (một câu); `IRecordingStorage.save`; `SpeechClips` (DbSet) thêm câu; `ISpeechChangePublisher.publish` |
+| UC-39a AF-2 `canCapture`, `add` | `ISpeechClipService.canCapture`, `add`; `IMeetingRepository.findWorkflow`; `SpeechClipRules.accepts`, `RecordingRules.canListen`; `ISpeechEngine.transcribe` (một câu); `IRecordingStorage.save`; `ISpeechClipRepository.add` thêm câu; `ISpeechChangePublisher.publish` |
 | UC-43a `list` (câu), `list` (bản ghi) | `ISpeechClipService.list`; `IRecordingService.list`; `IMeetingRepository.findWorkflow`; `IRecordingRepository.list`; `RecordingRules.isSecretary`, `uploadAllowed`, `hasRoom`, `canRecord`, `export` |
 | UC-43b `playback` | `IRecordingService.playback` + `IRecordingPlaybackSigner.sign`; `ISpeechClipService.playback` + `ISpeechClipAudioSigner.sign`; tải âm thanh: `findPlayable` / `findAudio` + `IRecordingStorage.openRead` |
 | UC-43c `download` | `IRecordingService.download`; `RecordingRules.export`; `IAuditService.record`; `IRecordingPlaybackSigner.sign(download = true)` |
@@ -317,7 +317,7 @@ Quan hệ theo cấu hình EF: `Meeting 1 — 0..* Recording`; `Recording 1 ◆�
 | UC-44c `canUpload`, `add` | `IRecordingService.canUpload`, `add`; `IRecordingStorage.save`, `delete`; `RecordingRules.validate`; `IRecordingRepository.add`; `IAuditService.record` |
 | UC-44d `deleteTake` | `IRoomTakeService.deleteTake`; `IRecordingStorage.cut`, `sealWav`, `delete`; `ITranscriptRepository.findByRecording`; `IAuditService.record` |
 | UC-44e `erase` | `IRecordingService.erase` (hệ thống: `eraseExpired`); `IRecordingRepository.deleteTranscript`, `saveChanges`; `IRecordingStorage.delete`; `IAuditService.record` |
-| UC-80 `delete` | `ISpeechClipService.delete`; `SpeechClips` (DbSet) xoá câu; `IRecordingStorage.delete`; `IAuditService.record` |
+| UC-80 `delete` | `ISpeechClipService.delete`; `ISpeechClipRepository.find`, `remove` xoá câu; `IRecordingStorage.delete`; `IAuditService.record` |
 | UC-45a `get` | `ITranscriptionService.get`; `IRecordingRepository.find`; `ITranscriptRepository.findByRecording`; `SpeakerMatcher.sameAs` (chỉ Thư ký) |
 | UC-45b `export` | `ITranscriptionService.export`; `ISpeechClipService.export`; `RecordingRules.export`; `IAuditService.record` |
 | UC-45c `retry` | `ITranscriptionService.retry`; `ITranscriptRepository.findByRecording`, `add`, `saveChanges`; `IAuditService.record` (chạy lại bản đã xong) |
@@ -333,7 +333,7 @@ Quan hệ theo cấu hình EF: `Meeting 1 — 0..* Recording`; `Recording 1 ◆�
 | UC-81e `deleteSample` | `IVoiceIdService.deleteSample`; `IVoiceIdRepository.listSamples`, `remove`; `IAuditService.record` |
 | UC-81f `withdraw` | `IVoiceIdService.withdraw`; `IVoiceIdRepository.inTransaction`, `deleteSamples`, `clearSuggestions`; `IAuditService.record` |
 
-Lifeline sequence → class: `:Meeting Repository` → `IMeetingRepository`; `:Speech Clip Repository` → `TrustCabinetDbContext.SpeechClips`;
+Lifeline sequence → class: `:Meeting Repository` → `IMeetingRepository`; `:Speech Clip Repository` → `ISpeechClipRepository`;
 `:Playback Link Signer` → `IRecordingPlaybackSigner` / `ISpeechClipAudioSigner`; `:Speech Recognition Service` → `ISpeechEngine`
 (gỡ băng) / `IVoiceEmbedder` (giọng mẫu), cùng cài đặt `SpeechWorkerClient`; `:Speaker Matcher` → `SpeakerMatcher`.
 Return, activation, `alt` và self-call kiểm quyền không sinh operation; kiểm quyền nằm ở `RecordingRules` / `SpeechClipRules`.
@@ -355,8 +355,9 @@ Return, activation, `alt` và self-call kiểm quyền không sinh operation; ki
   `invitationId` + `linkToken`; ba entity `MeetingGuestInvitation`, `GuestVerificationChallenge`, `GuestSession`. Không vẽ các lớp
   kỹ thuật `GuestCredentials`, `GuestSessionAccess`, `GuestInvitationLinkProvider`, `GuestTokenIdentityResolver`. FE-08 (phòng họp
   trực tuyến, SCRUM-59) chưa có class diagram.
-- **Câu nói không có repository:** `SpeechClipService` dùng thẳng `TrustCabinetDbContext.SpeechClips`; diagram vẽ `<<repository>>`
-  `TrustCabinetDbContext.SpeechClips` thay cho một interface không tồn tại.
+- **Câu nói có repository từ CA-14 (SCRUM-179):** `SpeechClipService` (nay ở `TrustCabinet.Application`) đọc ghi qua
+  `ISpeechClipRepository`, cài bằng `SpeechClipRepository` ở Infrastructure; diagram vẽ `<<repository>> ISpeechClipRepository`
+  (sửa 17/11/2026, §6i). Trước đó service dùng thẳng `TrustCabinetDbContext.SpeechClips`.
 - **Không có hồ sơ giọng gộp:** mỗi `VoiceSample` một đặc trưng mã hoá; `SpeakerMatcher.suggest` lấy mẫu giống nhất của từng người.
   Xoá một mẫu (UC-81e) không tính lại gì — bản nháp trước ghi "recalculate composite voiceprint" là sai.
 - **Đặc trưng giọng của cuộc họp không lưu:** `SpeechSpeaker.Embedding` chỉ dùng trong `processNext` rồi bỏ; chỉ
@@ -386,6 +387,28 @@ BA Final Review SCRUM-16 (PR #311, note 42). Sửa **cục bộ** source
 - XML hợp lệ, ID duy nhất, mọi cạnh còn `source`/`target` hợp lệ; PNG xuất lại bằng draw.io desktop `--scale 2` và đã
   mở xem: hai lớp mới không bị cắt chữ, cạnh mới không chồng lên cạnh khác.
 - Dòng 176 (FE-07, `AuditLogRepository` phục vụ BR-318) **giữ nguyên** — đó là feature khác, không phải UC-13.
+
+## 6i. Backend bốn project — CA-19 (SCRUM-184) · 17/11/2026
+
+Sau refactor Clean Architecture ([ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md)) tên lớp,
+interface và method không đổi (quy chuẩn R2), nên các sơ đồ thiết kế FE-01 → FE-06, FE-11, FE-13 giữ nguyên; DCD theo
+feature không ghi project hay namespace và không vẽ `IUnitOfWork`. Đối chiếu ba sơ đồ as-built với
+`refactor/clean-architecture` `e2c23dd0`:
+
+- **FE-09:** lớp `clipStore` `<<repository>> TrustCabinetDbContext.SpeechClips` (`DbSet<SpeechClip>, no repository interface`)
+  đổi thành `<<repository>> ISpeechClipRepository` với 10 thao tác mà `SpeechClipService` dùng trên các luồng của FE-09:
+  `listRows`, `listRowsChangedSince`, `findRowByClientId`, `find`, `findPlayback`, `findAudio`, `listAudioCreatedBefore`,
+  `deleteCreatedBefore`, `add`, `remove`. Giữ ID `clipStore` và hai cạnh `e27_clipSvc_clipStore` (service dùng),
+  `e31_clipStore_clip` (lưu `SpeechClip`); hộp rộng 390, cao 262 để không đè `RecordingRules` và hành lang cạnh
+  `e35_meeting_clip` ở y = 1630. Các thao tác cho Khách (`listGuestRows`, `findGuestClip`…) và bản ghi tổng hợp
+  (`listMixable`, `findLastChange`) không vẽ, cùng lý do nhánh Khách chưa vẽ ở §6g. PNG xuất lại scale 1 với
+  `--disable-gpu --disable-software-rasterizer`; `validate.py`: 0 lỗi, 10 cảnh báo như bản trước khi sửa.
+- **FE-10:** mọi interface trên hình (`IRecordingRepository`, `ITranscriptRepository`, `IVoiceIdRepository`, `ISpeechEngine`,
+  `IVoiceEmbedder`, `IVoiceprintProtector`…) vẫn đúng tên trong Application; không sửa. Port mới sau 30/10
+  (`IVoiceCollectionService`, `IVoiceIdErasure`, `ICombinedRecordingService`) thuộc tính năng ADR-0060/ADR-0061, không phải
+  refactor; để cho lần đối chiếu feature sau.
+- **FE-07:** vẫn vẽ tên logic (`DocumentService`, `DocumentRepository`, `FolderRepository`…) như trước refactor; refactor
+  không đổi tên nào trong đó, nên không sửa ở CA-19.
 
 ## 7. Rà soát hiện trạng · 14/10/2026
 

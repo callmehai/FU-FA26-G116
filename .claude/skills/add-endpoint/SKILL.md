@@ -14,7 +14,8 @@ An endpoint is never one file. Work through every step; skipping one is what bre
 4. Find a neighbouring endpoint (for example under `backend/TrustCabinet.Web`) and copy its shape, including how it checks capabilities. Do not invent a new authorization mechanism.
 
 ## Backend
-- Declare the route in `Program.cs`, or in an extension method such as `MapXxxEndpoints()` if the file already splits that way.
+- Declare the route in `backend/TrustCabinet.Web/Endpoints/<Group>Endpoints.cs` (`MapXxxEndpoints()`, mapped from `Program.cs`). The handler only does HTTP: read the request, take the caller, call one service, map its outcome to a status and `MSGnn`.
+- Put the use case in `backend/TrustCabinet.Application/<Module>/` (service + `I*Service`, registered in `AddApplication()`). It reaches storage through a repository or query port declared in Application and implemented in `backend/TrustCabinet.Infrastructure/<Module>/` (registered in `AddTrustCabinetDatabase()`), inside `IUnitOfWork.ExecuteAsync`, catching `PersistenceException`. Follow `docs/02-design/11-quy-chuan-clean-architecture.md`; `ArchitectureTests` fails on a dependency that points the wrong way.
 - **Authorize server-side on every endpoint.** The UI (`RequireCapability`, sidebar) is never the security boundary.
 - **List endpoints filter rows server-side.** A record the caller may not see must never reach the browser.
 - Status codes:

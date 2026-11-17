@@ -6,6 +6,7 @@ control ":Notes Controller" as NotesController
 control ":Notes Service" as NotesService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Meeting Hub" as MeetingHub
+participant ":Meeting Note Repository" as MeetingNoteRepository
 database ":Database" as Database
 
 Actor->NotesPanel: Type in the note of the current agenda item (BR-397, BR-401)
@@ -54,10 +55,12 @@ else Online, shortly after typing stops
             NotesController-->NotesPanel: 400 MSG419
             NotesPanel-->Actor: MSG419 - The note is too long. A note can hold up to 20,000 characters.
         else Save valid
-            NotesService->Database: Insert or update the actor's note of that item,\nonly if it was not saved since it was read (BR-398, BR-399)
+            NotesService->MeetingNoteRepository: add(note), or tryUpdate(noteId, readFrom, readTo, body, now)
+            MeetingNoteRepository->Database: Insert or update the actor's note of that item,\nonly if it was not saved since it was read (BR-398, BR-399)
             activate Database
-            Database-->NotesService: Saved / No row (stale)
+            Database-->MeetingNoteRepository: Saved / No row (stale)
             deactivate Database
+            MeetingNoteRepository-->NotesService: Saved / No row (stale)
 
             alt Saved
                 NotesService->MeetingHub: notesChanged(meetingId, agendaItemId, updatedAt)

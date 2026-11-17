@@ -7,6 +7,7 @@ control ":Summary Service" as SummaryService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Transcript Reader" as TranscriptReader
 participant ":AI Client" as AiClient
+participant ":Meeting Summary Repository" as MeetingSummaryRepository
 database ":Database" as Database
 participant ":AI Server" as AiServer
 
@@ -55,10 +56,12 @@ else A draft is already being written - EX-3
     SummaryController-->DraftCard: MSG387 - The AI is writing the draft, please wait.
     DraftCard-->Actor: MSG387 - The AI is writing the draft, please wait.
 else Request accepted
-    SummaryService->Database: Set the draft Queued, keep its text, record who asked and when
+    SummaryService->MeetingSummaryRepository: findByMeeting(meetingId, tracked), add(draft) when there is none
+    MeetingSummaryRepository->Database: Set the draft Queued, keep its text, record who asked and when
     activate Database
-    Database-->SummaryService: Saved
+    Database-->MeetingSummaryRepository: Saved
     deactivate Database
+    MeetingSummaryRepository-->SummaryService: Saved
     SummaryService-->SummaryController: State
     deactivate SummaryService
     SummaryController-->DraftCard: 202 MSG384 - The request was sent. The draft appears when the AI has written it.
@@ -67,10 +70,12 @@ else Request accepted
 end
 
 opt Background worker - SummaryWorker
-    SummaryService->Database: Claim the oldest Queued draft and mark it Running
+    SummaryService->MeetingSummaryRepository: findNextQueued(), claim(id, now)
+    MeetingSummaryRepository->Database: Claim the oldest Queued draft and mark it Running
     activate Database
-    Database-->SummaryService: Claimed
+    Database-->MeetingSummaryRepository: Claimed
     deactivate Database
+    MeetingSummaryRepository-->SummaryService: Claimed
     SummaryService->TranscriptReader: Read the transcript, leaving out excluded sentences
     activate TranscriptReader
     TranscriptReader-->SummaryService: Lines with speaker and time
@@ -96,20 +101,26 @@ opt Background worker - SummaryWorker
     deactivate AiClient
     SummaryService->SummaryService: Copy each closed vote from the data, never through the model (BR-378)
     alt Draft written
-        SummaryService->Database: Store Ready with the text, model and time; clear review and corrections
+        SummaryService->MeetingSummaryRepository: storeDraft(id, text, model, readAt, now)
+        MeetingSummaryRepository->Database: Store Ready with the text, model and time; clear review and corrections
         activate Database
-        Database-->SummaryService: Saved
+        Database-->MeetingSummaryRepository: Saved
         deactivate Database
+        MeetingSummaryRepository-->SummaryService: Saved
     else The draft cannot be stored - EX-5
-        SummaryService->Database: Mark Failed with the reason
+        SummaryService->MeetingSummaryRepository: markFailed(id, reason, now)
+        MeetingSummaryRepository->Database: Mark Failed with the reason
         activate Database
-        Database-->SummaryService: Saved
+        Database-->MeetingSummaryRepository: Saved
         deactivate Database
+        MeetingSummaryRepository-->SummaryService: Saved
     else The AI server fails - EX-6
-        SummaryService->Database: Mark Failed with the reason the Secretary can act on
+        SummaryService->MeetingSummaryRepository: markFailed(id, reason, now)
+        MeetingSummaryRepository->Database: Mark Failed with the reason the Secretary can act on
         activate Database
-        Database-->SummaryService: Saved
+        Database-->MeetingSummaryRepository: Saved
         deactivate Database
+        MeetingSummaryRepository-->SummaryService: Saved
     end
 end
 

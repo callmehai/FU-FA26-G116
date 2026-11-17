@@ -8,6 +8,7 @@ control ":Calendar Sharing Service" as SharingService
 participant ":User Repository" as UserRepository
 participant ":Calendar Share Repository" as ShareRepository
 participant ":Notification Service" as NotificationService
+participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 Owner->SharingPage: Open the Chia sẻ lịch page
@@ -124,10 +125,12 @@ else Recipient is verified
             else Share is Pending
                 SharingService->NotificationService: Notify the recipient of the direct share (BR-426)
                 activate NotificationService
-                NotificationService->Database: Record recipient notification
+                NotificationService->NotificationRepository: add(notification)
+                NotificationRepository->Database: Record recipient notification
                 activate Database
-                Database-->NotificationService: Notification recorded
+                Database-->NotificationRepository: Notification recorded
                 deactivate Database
+                NotificationRepository-->NotificationService: Notification recorded
                 NotificationService-->SharingService: Recipient notified
                 deactivate NotificationService
                 SharingService-->SharingController: Pending share

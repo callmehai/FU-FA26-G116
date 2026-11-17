@@ -6,6 +6,7 @@ control ":Role Controller" as RoleController
 control ":Role Service" as RoleService
 participant ":Role Repository" as RoleRepository
 control ":Audit Service" as AuditService
+participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
 Admin->RolePage: Submit updated role name and description
@@ -59,8 +60,10 @@ else Custom role
             else Role saved
                 RoleService->AuditService: Record role update (before / after)
                 activate AuditService
-                AuditService->Database: Save audit log
-                Database-->AuditService: Audit log saved
+                AuditService->AuditLogRepository: add(audit entry)
+                AuditLogRepository->Database: Save audit log
+                Database-->AuditLogRepository: Audit log saved
+                AuditLogRepository-->AuditService: Audit log saved
                 AuditService-->RoleService: Audit recorded
                 RoleService-->RoleController: Role updated successfully
                 RoleController-->RolePage: MSG22 - Role updated successfully
