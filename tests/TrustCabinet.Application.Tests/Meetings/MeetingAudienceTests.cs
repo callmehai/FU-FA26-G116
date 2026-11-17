@@ -34,7 +34,7 @@ public sealed class MeetingAudienceTests
 
         var readers = await Audience().ReadersAsync(meeting.Id, CancellationToken.None);
 
-        Assert.Equal([meeting.CreatedById, member], readers.UserIds.Order());
+        Assert.Equal(new[] { meeting.CreatedById, member }.Order(), readers.UserIds.Order());
         // The read policy decides who is even asked about: a removed participant is no reader, active or not.
         Assert.DoesNotContain(removed, Assert.Single(_query.Asked));
         Assert.Contains(deactivated, _query.Asked[0]);
@@ -92,12 +92,15 @@ public sealed class MeetingAudienceTests
         var meeting = GivenMeeting(MeetingStatus.Ended);
         var member = Participant(meeting, MeetingRole.Member);
         var deactivated = Participant(meeting, MeetingRole.Member);
-        _query.Active.UnionWith([meeting.CreatedById, member]);
+        var removed = Participant(meeting, MeetingRole.Member, removed: true);
+        _query.Active.UnionWith([meeting.CreatedById, member, removed]);
 
         var listeners = await Audience().ListenersAsync(meeting.Id, CancellationToken.None);
 
         Assert.Equal([member], listeners);
         Assert.Contains(deactivated, Assert.Single(_query.Asked));
+        // The workflow load keeps removed participants: the listen rule, not the query, leaves them out.
+        Assert.DoesNotContain(removed, _query.Asked[0]);
     }
 
     [Fact]
@@ -111,15 +114,56 @@ public sealed class MeetingAudienceTests
         var rosterRefuses = Session(meeting.Id, invitations[1].Id);
         var agendaRefuses = Session(meeting.Id, invitations[2].Id);
         var notInvited = Session(meeting.Id);
-        _guests.Readers.AddRange([allowed, rosterRefuses, agendaRefuses, notInvited]);
-        _guests.CanAccess.UnionWith([allowed.SessionId, agendaRefuses.SessionId, notInvited.SessionId]);
-        _guests.CanRead.UnionWith([allowed.SessionId, rosterRefuses.SessionId, notInvited.SessionId]);
+        var ofAnotherMeeting = new MeetingGuestSession(Guid.CreateVersion7(), invitations[0].Id, Guid.CreateVersion7());
+        var malformed = new MeetingGuestSession(meeting.Id, invitations[0].Id, Guid.Empty);
+        _guests.Readers.AddRange([allowed, allowed, rosterRefuses, agendaRefuses, notInvited, ofAnotherMeeting, malformed]);
+        _guests.CanAccess.UnionWith([allowed.SessionId, agendaRefuses.SessionId, notInvited.SessionId,
+            ofAnotherMeeting.SessionId, malformed.SessionId]);
+        _guests.CanRead.UnionWith([allowed.SessionId, rosterRefuses.SessionId, notInvited.SessionId,
+            ofAnotherMeeting.SessionId, malformed.SessionId]);
 
         var readers = await Audience().AttendanceReadersAsync(meeting.Id, CancellationToken.None);
 
         Assert.Equal([meeting.CreatedById], readers.UserIds);
         Assert.Equal([allowed], readers.Guests);
         Assert.Equal([(meeting.Id, false)], _participants.Loads);
+    }
+
+    [Fact]
+    public async Task Attendance_of_a_meeting_closed_to_guests_reaches_only_its_internal_readers()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Ended);
+        var approver = Guid.CreateVersion7();
+        meeting.AssignedApproverId = approver;
+        var invitation = Invitation(meeting);
+        _participants.Snapshots[meeting.Id] = new ParticipantSnapshot(meeting, [invitation]);
+        var session = Session(meeting.Id, invitation.Id);
+        _guests.Readers.Add(session);
+        _guests.CanAccess.Add(session.SessionId);
+        _guests.CanRead.Add(session.SessionId);
+        _query.Active.UnionWith([meeting.CreatedById, approver]);
+
+        var readers = await Audience().AttendanceReadersAsync(meeting.Id, CancellationToken.None);
+
+        Assert.Equal(new[] { meeting.CreatedById, approver }.Order(), readers.UserIds.Order());
+        Assert.Empty(readers.Guests);
+        Assert.Equal(0, _guests.Listed);
+    }
+
+    [Fact]
+    public async Task Attendance_of_a_draft_does_not_reach_its_approver()
+    {
+        var meeting = GivenMeeting(MeetingStatus.Draft);
+        var approver = Guid.CreateVersion7();
+        meeting.AssignedApproverId = approver;
+        _participants.Snapshots[meeting.Id] = new ParticipantSnapshot(meeting, []);
+        _query.Active.UnionWith([meeting.CreatedById, approver]);
+
+        var readers = await Audience().AttendanceReadersAsync(meeting.Id, CancellationToken.None);
+
+        // The read policy hides a draft from its approver (only the creator reads it), so they are not even asked about.
+        Assert.Equal([meeting.CreatedById], readers.UserIds);
+        Assert.DoesNotContain(approver, Assert.Single(_query.Asked));
     }
 
     [Fact]
