@@ -28,13 +28,15 @@ export const roomMessage = {
   closed: 'Cuộc họp đã kết thúc, phòng họp đã đóng.', // MSG331
   cancelled: 'Cuộc họp đã huỷ nên phòng họp không mở.', // MSG350
   lost: 'Mất kết nối tới phòng họp.', // MSG332
+  unreachable: 'Không kết nối được tới phòng họp. Vui lòng thử lại.', // MSG480
   reconnecting: 'Mất kết nối, đang kết nối lại…', // MSG333
   deviceBlocked: (device: Device) =>
-    `Trình duyệt đang chặn ${device}. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang. Bạn vẫn có thể vào phòng để nghe.`, // MSG334
+    `Trình duyệt đang chặn ${device}. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang.${stillJoin(device)}`, // MSG334
   deviceMissing: (device: Device) => `Không tìm thấy ${device} trên máy này.`, // MSG335
   deviceInUse: (device: Device) =>
-    `${device === 'micro' ? 'Micro' : 'Camera'} đang được ứng dụng khác dùng (Zoom, Teams…). Đóng ứng dụng đó rồi thử lại.`, // MSG336
-  deviceFailed: (device: Device) => `Không mở được ${device}. Bạn vẫn có thể vào phòng để nghe.`, // MSG337
+    `${device.charAt(0).toUpperCase()}${device.slice(1)} đang được ứng dụng khác dùng (Zoom, Teams…). Đóng ứng dụng đó rồi thử lại.`, // MSG336
+  deviceFailed: (device: Device) =>
+    `Không mở được ${device}. Kiểm tra quyền ở biểu tượng ổ khoá cạnh thanh địa chỉ.${stillJoin(device)}`, // MSG337
   audioBlocked: 'Trình duyệt đang chặn phát âm thanh.', // MSG338
   mutedByChair: 'Chủ toạ đã tắt micro của bạn. Bạn có thể bật lại khi cần phát biểu.', // MSG339
   shareTakenOver: (name: string) => `${name} bắt đầu trình bày, phần chia sẻ của bạn đã dừng.`, // MSG340
@@ -43,7 +45,13 @@ export const roomMessage = {
   chatFailed: 'Không gửi được tin nhắn. Vui lòng thử lại.', // MSG343
 }
 
-type Device = 'micro' | 'camera'
+/** One device, or both when they failed the same way: the lobby then says it once. */
+type Device = 'micro' | 'camera' | 'micro và camera'
+
+/** Without a microphone a person can still listen; a camera alone does not stop that, so it is not said. */
+function stillJoin(device: Device) {
+  return device === 'camera' ? '' : ' Bạn vẫn có thể vào phòng để nghe.'
+}
 
 /** The meeting role the backend put in the participant's metadata, if any. */
 export function meetingRoleOf(participant: Participant): MeetingRole | undefined {
@@ -72,9 +80,14 @@ export function disconnectMessage(reason: DisconnectReason | undefined): { text:
   }
 }
 
+/** How opening a microphone or camera failed; anything unrecognised is `Other`. */
+export function deviceFailure(error: unknown): MediaDeviceFailure {
+  return MediaDeviceFailure.getFailure(error) ?? MediaDeviceFailure.Other
+}
+
 /** What went wrong with a microphone or camera, and whether the user can still listen. */
-export function deviceErrorMessage(error: unknown, device: Device): string {
-  switch (MediaDeviceFailure.getFailure(error)) {
+export function deviceFailureMessage(failure: MediaDeviceFailure, device: Device): string {
+  switch (failure) {
     case MediaDeviceFailure.PermissionDenied:
       return roomMessage.deviceBlocked(device)
     case MediaDeviceFailure.NotFound:
@@ -84,6 +97,17 @@ export function deviceErrorMessage(error: unknown, device: Device): string {
     default:
       return roomMessage.deviceFailed(device)
   }
+}
+
+export function deviceErrorMessage(error: unknown, device: Device): string {
+  return deviceFailureMessage(deviceFailure(error), device)
+}
+
+/** The lobby's one notice for both devices: a single sentence when they failed alike, else one for each. */
+export function devicesNotice(mic: MediaDeviceFailure | null, camera: MediaDeviceFailure | null): string | null {
+  if (mic && camera && mic === camera) return deviceFailureMessage(mic, 'micro và camera')
+  const lines = [mic && deviceFailureMessage(mic, 'micro'), camera && deviceFailureMessage(camera, 'camera')]
+  return lines.filter(Boolean).join(' ') || null
 }
 
 export type DeviceOption = { id: string; label: string; isDefault: boolean }

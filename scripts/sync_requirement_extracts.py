@@ -17,6 +17,14 @@ them:
 Run:
     python scripts/sync_requirement_extracts.py --check   # list what is out of sync
     python scripts/sync_requirement_extracts.py           # rewrite the two extracts
+
+A UC that the report no longer contains (e.g. UC-62/UC-63 dropped by the PO)
+is reported as `not in report: <UC>` and is NEVER deleted by a plain sync —
+the snapshot README forbids hand edits, and silent deletion would hide a
+report/extract mismatch. To remove such UCs after confirming the report is
+the source of truth, first dry-run with `--check`, then confirm explicitly:
+
+    python scripts/sync_requirement_extracts.py --prune-missing
 """
 
 from __future__ import annotations
@@ -160,7 +168,7 @@ def rebuild_toc(lines: list[str], blocks: list[tuple[int, int, str, str]]) -> li
     return lines[:toc_start] + toc + ["---", ""] + lines[first_fe:]
 
 
-def sync_use_cases(check: bool) -> int:
+def sync_use_cases(check: bool, prune_missing: bool = False) -> int:
     report_lines = REPORT.read_text(encoding="utf-8").splitlines()
     order, report_fields = parse_report(report_lines)
     lines = SPEC.read_text(encoding="utf-8").splitlines()
@@ -189,6 +197,22 @@ def sync_use_cases(check: bool) -> int:
         print(item)
     if check:
         return 1 if drift else 0
+
+    # 0. Prune UCs the report no longer contains — ONLY the ones listed above
+    # as "not in report", and only with the explicit --prune-missing flag
+    # (the --check run is the dry-run). A plain sync never deletes.
+    if prune_missing:
+        for uc in sorted(present - set(report_ids)):
+            block = next(block for block in blocks if block[2] == uc)
+            print(f"prune: {uc}")
+            del lines[block[0]:block[1]]
+            blocks = parse_spec(lines)
+        # A deleted block took its trailing blank lines with it; keep one
+        # blank line before any heading that now directly follows text.
+        for index, line in enumerate(lines):
+            if UC_HEADING.match(line) and index > 0 and lines[index - 1].strip():
+                lines[index:index] = [""]
+                blocks = parse_spec(lines)
 
     # 1. Replace the table of every UC the report specifies.
     for uc, _title, _fe in order:
@@ -353,9 +377,16 @@ def sync_rules(check: bool) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="report drift without writing")
-    check = parser.parse_args().check
-    status = sync_use_cases(check) | sync_rules(check)
-    if check and not status:
+    parser.add_argument(
+        "--prune-missing",
+        action="store_true",
+        help="delete extract UC blocks the report no longer has (dry-run first with --check)",
+    )
+    args = parser.parse_args()
+    if args.prune_missing and args.check:
+        parser.error("--prune-missing writes files and cannot be combined with --check")
+    status = sync_use_cases(args.check, args.prune_missing) | sync_rules(args.check)
+    if args.check and not status:
         print("UP TO DATE: both extracts match Report 3.")
     return status
 

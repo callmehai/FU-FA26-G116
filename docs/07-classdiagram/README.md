@@ -13,7 +13,7 @@ trích xuất nguyên trạng các class C# đã triển khai.
 | Feature | Source / PNG | UC trong phạm vi |
 |---|---|---|
 | FE-01 Authentication | [drawio](feature-01-auth-class-diagram.drawio) · [PNG](feature-01-auth-class-diagram.drawio.png) | UC-01–UC-04 |
-| FE-02 User Management | [drawio](feature-02-user-management-class-diagram.drawio) · [PNG](feature-02-user-management-class-diagram.drawio.png) | UC-05, UC-06a/b/c, UC-07–UC-09 |
+| FE-02 User Management | [drawio](feature-02-user-management-class-diagram.drawio) · [PNG](feature-02-user-management-class-diagram.drawio.png) | UC-05, UC-06a/b/c, UC-07, UC-08 |
 | FE-03 Role Management | [drawio](feature-03-role-management-class-diagram.drawio) · [PNG](feature-03-role-management-class-diagram.drawio.png) | UC-10, UC-11, UC-12a/b/c, UC-13 |
 | FE-04 Meeting Management | [drawio](feature-04-meeting-management-class-diagram.drawio) · [PNG](feature-04-meeting-management-class-diagram.drawio.png) | UC-14–UC-22, UC-75 |
 | FE-05 Agenda Management | [drawio](feature-05-agenda-management-class-diagram.drawio) · [PNG](feature-05-agenda-management-class-diagram.drawio.png) | UC-23a/b/c/d, UC-24–UC-26, UC-77 |
@@ -444,7 +444,7 @@ luận implementation đã vi phạm yêu cầu hay yêu cầu BA sửa trước
 | DCD-10 | Role sequence: UC10 có title UC-08, UC11 title UC-10, UC12a title UC-11, UC12b title UC-12a, UC12c title UC-12b. Notification UC66/67a/67b/68 có title UC-17/18/19/20. File và inventory đã theo số mới. | **SOURCE_CONFLICT:** sửa title trong nguồn sequence và đồng bộ ảnh/tab trong task sequence; lần này không sửa các source đó. |
 | DCD-11 | FE-04 `meeting.actualStartTime/actualEndTime: DateTime` là non-null; Report 3 Entity 4 và `Domain/Entities/Meeting.cs` dùng ActualStartedAt/ActualEndedAt nullable. Method dùng AgendaItem nhưng không có định nghĩa type trong view. | **NEEDS REVIEW:** thống nhất alias/nullability; dẫn nguồn cho type được lược khỏi view. Không đưa MeetingSession trở lại. |
 | DCD-12 | FE-06 `guest` chưa có Attendance, AttendanceRecordedById/At; `participant` cũng thiếu recorder/time. Report 3 Entity 7/8 và UC31 yêu cầu lưu attendance cho cả internal/Guest kèm Secretary và thời điểm. Entity 7a MeetingParticipantPermission đã có trong snapshot nhưng DCD chưa mô tả type hay nơi lưu grant bổ sung. | **NEEDS REVIEW:** làm rõ projection và persistence responsibility cho attendance/grants. Ma trận PermissionCode chưa chốt nên không tự thiết kế enum/schema mới. |
-| DCD-13 | FE-13 `c6` có recipientUserId/kind/actionUrl; Entity 28 Report 3 dùng UserId/MeetingId/TargetType/TargetId/ReadAt; `Domain/Entities/Notification.cs` có Type, Title, Body, TargetId nullable và không có ActionUrl persisted. UC68 sequence còn “linked meeting or task”, trái ranh giới scope. | **SOURCE_CONFLICT:** phân biệt domain field với response/computed URL; loại task tracking khi chỉnh sequence theo nguồn đã chốt. |
+| DCD-13 | FE-13 `c6` có recipientUserId/kind/actionUrl; Entity 27 Report 3 dùng UserId/MeetingId/TargetType/TargetId/ReadAt; `Domain/Entities/Notification.cs` có Type, Title, Body, TargetId nullable và không có ActionUrl persisted. UC68 sequence còn “linked meeting or task”, trái ranh giới scope. | **SOURCE_CONFLICT:** phân biệt domain field với response/computed URL; loại task tracking khi chỉnh sequence theo nguồn đã chốt. |
 
 ### UC → Sequence → Class → Operation
 
@@ -466,7 +466,6 @@ message khi sửa thiết kế. Tất cả feature còn `NEEDS REVIEW` theo bả
 | UC-06c / FE-02 | [UC06c_DeactivateReactivateUserAccount.txt](../06-sequencediagram/user-management/UC06c_DeactivateReactivateUserAccount.txt) | `UserService → changeStatus; SessionService → endActiveSessions` | ≈ đổi trạng thái; DCD-02/05 |
 | UC-07 / FE-02 | [UC07_ResetUserPassword.txt](../06-sequencediagram/user-management/UC07_ResetUserPassword.txt) | `UserService → requestPasswordReset` | Trùng tên; token store/email/audit có collaborator |
 | UC-08 / FE-02 | [UC08_AssignSystemRoleToUser.txt](../06-sequencediagram/user-management/UC08_AssignSystemRoleToUser.txt) | `UserService → assignSystemRole` | Trùng tên; DCD-05 |
-| UC-09 / FE-02 | [UC09_UnlockUserAccount.txt](../06-sequencediagram/user-management/UC09_UnlockUserAccount.txt) | `UserService → unlockUserAccount; UserAccountRepository → findById` | Trùng tên; lock/audit có collaborator |
 | UC-10 / FE-03 | [UC10_ViewRolePermissionMatrix.txt](../06-sequencediagram/role-management/UC10_ViewRolePermissionMatrix.txt) | `RolePermissionService → getRolePermissionMatrix` | ≈ đọc; DCD-10 |
 | UC-11 / FE-03 | [UC11_ConfigureRolePermissions.txt](../06-sequencediagram/role-management/UC11_ConfigureRolePermissions.txt) | `RolePermissionService → updateRolePermissions` | ≈ sửa; DCD-08/10 |
 | UC-12a / FE-03 | [UC12a_CreateRole.txt](../06-sequencediagram/role-management/UC12a_CreateRole.txt) | `RoleService → createRole` | ≈ tạo; DCD-10 |

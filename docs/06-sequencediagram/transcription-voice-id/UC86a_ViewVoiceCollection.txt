@@ -1,0 +1,76 @@
+title UC-86a - View Voice Collection
+
+actor "Secretary" as Secretary
+boundary "Meeting Detail Page" as MeetingPage
+control ":Voice Collection Controller" as CollectionController
+control ":Voice Collection Service" as CollectionService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Voice ID Repository" as VoiceRepository
+database ":Database" as Database
+
+Secretary->MeetingPage: Open the Recordings tab to view voice collection
+activate MeetingPage
+
+MeetingPage->CollectionController: Get the voice collection of the Meeting
+activate CollectionController
+
+CollectionController->CollectionService: list(meetingId, actorId)
+activate CollectionService
+
+CollectionService->MeetingRepository: Get the Meeting with its current Secretary and active roster (BR-450, BR-451)
+activate MeetingRepository
+MeetingRepository->Database: Retrieve meeting with participants
+activate Database
+Database-->MeetingRepository: Meeting with participants / Not found
+deactivate Database
+MeetingRepository-->CollectionService: Meeting with participants / Not found
+deactivate MeetingRepository
+
+alt No access - EX-1
+    CollectionService-->CollectionController: Forbidden / Not found
+    deactivate CollectionService
+
+    CollectionController-->MeetingPage: Return failure
+    deactivate CollectionController
+
+    alt Caller lacks the Collect voice samples permission
+        MeetingPage-->Secretary: 403 Forbidden (BR-450)
+    else Caller is not the current Secretary, or the Meeting is not In-person or Hybrid,\nis Secret or is Cancelled
+        MeetingPage-->Secretary: Show the Meeting as not found (BR-450, BR-451)
+    end
+
+else Access granted
+    CollectionService->VoiceRepository: Get consents to notice 1.3 or later and Secretary-recorded samples of the roster
+    activate VoiceRepository
+    VoiceRepository->Database: Retrieve standing consents and proxy samples
+    activate Database
+    Database-->VoiceRepository: Consents and samples / Load failed
+    deactivate Database
+    VoiceRepository-->CollectionService: Consents and samples / Load failed
+    deactivate VoiceRepository
+
+    alt Voice collection cannot be loaded - EX-2
+        CollectionService-->CollectionController: Read failed
+        deactivate CollectionService
+
+        CollectionController-->MeetingPage: Return failure
+        deactivate CollectionController
+
+        MeetingPage-->Secretary: Show the voice collection as unavailable
+
+    else Voice collection loaded
+        CollectionService-->CollectionController: Each internal person on the current roster, Guests not listed,\nwith consent state, proxy sample count out of 5 and samples taken at this Meeting (BR-448, BR-449)
+        deactivate CollectionService
+
+        CollectionController-->MeetingPage: Voice collection
+        deactivate CollectionController
+
+        alt Meeting is not Published or In Progress - AF-1
+            MeetingPage-->Secretary: Show the roster without Record; samples can be recorded\nonly while the Meeting is Published or In Progress (BR-451)
+        else Meeting can be recorded now
+            MeetingPage-->Secretary: Show the roster with Record while fewer than 5 proxy samples (BR-448, BR-451)
+        end
+    end
+end
+
+deactivate MeetingPage

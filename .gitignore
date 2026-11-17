@@ -487,6 +487,7 @@ backend/TrustCabinet.Web/wwwroot/
 frontend/dist/
 frontend/*.tsbuildinfo
 frontend/node_modules/.vite/
+frontend/.vite/
 
 # Cấu hình Claude Code của riêng từng máy (permission allowlist...).
 # .claude/settings.json dùng chung thì vẫn commit được.
@@ -505,3 +506,7 @@ workers/speech/models/
 
 # ACCE sample workbooks: another team's data, read-only reference, never committed
 docs/08-reports/sample/
+
+# Bản gốc ảnh sơ đồ do script xuất ra (đầy đủ độ phân giải, phục vụ dựng báo cáo chuẩn nộp).
+# Chỉ bản nén palette nằm trong docs/ mới vào git.
+anh-goc/

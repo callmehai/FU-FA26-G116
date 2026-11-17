@@ -28,9 +28,31 @@ public class PermissionCatalogTests
     public void Code_is_the_enum_name_so_the_api_and_the_table_agree()
     {
         // The code is the identity — what the PUT sends and what role_capabilities stores. A
-        // prettified code would be a value neither side could look up.
-        var codes = PermissionCatalog.All.Select(p => p.Code).ToArray();
+        // prettified code would be a value neither side could look up. (Order is the next test's business.)
+        var codes = PermissionCatalog.All.Select(p => p.Code).Order().ToArray();
 
-        Assert.Equal(Enum.GetValues<Capability>().Select(c => c.ToString()).ToArray(), codes);
+        Assert.Equal(Enum.GetValues<Capability>().Select(c => c.ToString()).Order().ToArray(), codes);
+    }
+
+    [Fact]
+    public void Each_functional_group_is_one_run_of_columns()
+    {
+        // The matrix draws one heading over each run of a group. "Thu giọng mẫu hộ" was added to the enum after
+        // "Quản trị người dùng", so "Cuộc họp" headed two runs until the catalogue kept each group together (QA FE-03).
+        var groups = PermissionCatalog.All.Select(p => p.FunctionalGroup).ToArray();
+        var runs = groups.Where((group, i) => i == 0 || group != groups[i - 1]).ToArray();
+
+        Assert.Equal(groups.Distinct().ToArray(), runs);
+    }
+
+    [Fact]
+    public void Within_a_group_capabilities_keep_enum_order()
+    {
+        // Grouping must not shuffle a group's own columns: the first-added capability stays first.
+        foreach (var group in PermissionCatalog.All.GroupBy(p => p.FunctionalGroup))
+        {
+            var codes = group.Select(p => Enum.Parse<Capability>(p.Code)).ToArray();
+            Assert.Equal(codes.Order().ToArray(), codes);
+        }
     }
 }

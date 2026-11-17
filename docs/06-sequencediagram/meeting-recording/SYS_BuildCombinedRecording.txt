@@ -1,0 +1,74 @@
+title SYS - Build Combined Recording of a Hybrid Meeting (System, DRAFT awaiting approval - no UC number)
+
+actor "System" as System
+control ":Combined Recording Worker" as Worker
+control ":Combined Recording Service" as CombinedService
+participant ":Recording Repository" as RecordingRepository
+participant ":Speech Clip Repository" as ClipRepository
+participant ":Recording Storage" as RecordingStorage
+participant ":Speech Change Publisher" as Publisher
+database ":Database" as Database
+
+System->Worker: Sweep every 30 seconds for a Hybrid Meeting waiting for its combined recording
+activate Worker
+Worker->CombinedService: buildNext()
+activate CombinedService
+CombinedService->RecordingRepository: Get Ended Hybrid Meetings settled for one minute and changed within 8 days
+activate RecordingRepository
+RecordingRepository->Database: Retrieve candidate Ended Hybrid Meetings
+activate Database
+Database-->RecordingRepository: Candidate Meetings / None
+deactivate Database
+RecordingRepository-->CombinedService: Candidate Meetings / None
+deactivate RecordingRepository
+
+alt No Meeting needs its combined recording
+    CombinedService-->Worker: Nothing to do
+else A Meeting needs its combined recording
+    CombinedService->RecordingRepository: Get the Meeting recordings
+    activate RecordingRepository
+    RecordingRepository->Database: Retrieve recordings
+    activate Database
+    Database-->RecordingRepository: Recordings
+    deactivate Database
+    RecordingRepository-->CombinedService: Recordings
+    deactivate RecordingRepository
+    CombinedService->ClipRepository: Get the Meeting online sentences with audio that are not excluded
+    activate ClipRepository
+    ClipRepository->Database: Retrieve kept sentences in spoken order
+    activate Database
+    Database-->ClipRepository: Sentences
+    deactivate Database
+    ClipRepository-->CombinedService: Sentences
+    deactivate ClipRepository
+
+    alt Take still streaming, source too new, erased, or one-sided - nothing to build yet
+        CombinedService-->Worker: Nothing to do
+    else Sources settled and both room and online sound exist
+        CombinedService->CombinedService: Lay room takes and online sentences on the real clock,\ncut silence over 2 seconds to 2 seconds (BR-456)
+        alt Combined track is longer than 12 hours
+            CombinedService-->Worker: Not built
+        else Combined track fits
+            CombinedService->RecordingStorage: Mix room and online sound into one WAV file
+            activate RecordingStorage
+            RecordingStorage-->CombinedService: Combined file
+            deactivate RecordingStorage
+            CombinedService->RecordingRepository: Add or replace the Available Combined recording\nwith the same purpose and retention as the room recording (BR-347, BR-456)
+            activate RecordingRepository
+            RecordingRepository->Database: Insert or update Combined recording
+            activate Database
+            Database-->RecordingRepository: Recording saved
+            deactivate Database
+            RecordingRepository-->CombinedService: Recording saved
+            deactivate RecordingRepository
+            CombinedService->Publisher: Tell everyone in the Meeting that the recordings changed
+            activate Publisher
+            Publisher-->CombinedService: Change published
+            deactivate Publisher
+            CombinedService-->Worker: Combined recording built or rebuilt
+        end
+    end
+end
+
+deactivate CombinedService
+deactivate Worker

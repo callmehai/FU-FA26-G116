@@ -1,7 +1,9 @@
+import { Fragment } from 'react'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
 import { avatarColors, initials } from '../../lib/avatar'
 import type { AuditActor, AuditLogItem } from '../../types/auditLog'
+import { detailLabel, detailValue } from './detailLabels'
 import { objectTypeLabel } from './objectTypes'
 
 /** BR-441: an account, a Guest by the invitation's name, or the system. */
@@ -28,7 +30,17 @@ export function ActorCell({ actor }: { actor: AuditActor }) {
           {name}
           {actor.kind === 'guest' && <span className="person-self">Khách</span>}
         </span>
-        {actor.email && <span className="cell-sub">{actor.email}</span>}
+        {/* On a phone the email wraps before an "@" or a "." rather than mid-word. */}
+        {actor.email && (
+          <span className="cell-sub">
+            {actor.email.split(/(?=[@.])/).map((part, i) => (
+              <Fragment key={i}>
+                {i > 0 && <wbr />}
+                {part}
+              </Fragment>
+            ))}
+          </span>
+        )}
       </span>
     </span>
   )
@@ -97,9 +109,9 @@ export function AuditEntrySheet({ item, onClose }: { item: AuditLogItem; onClose
         <dl className="audit-facts audit-details">
           {details.map(([key, value]) => (
             <div key={key}>
-              <dt>{key}</dt>
+              <dt>{detailLabel(key)}</dt>
               <dd>
-                <DetailValue value={value} />
+                <DetailValue field={key} value={value} />
               </dd>
             </div>
           ))}
@@ -109,8 +121,10 @@ export function AuditEntrySheet({ item, onClose }: { item: AuditLogItem; onClose
   )
 }
 
-function DetailValue({ value }: { value: unknown }) {
+function DetailValue({ field, value }: { field: string; value: unknown }) {
   if (value === null || value === undefined || value === '') return <span className="audit-none">Chưa có</span>
   if (typeof value === 'object') return <pre className="audit-json">{JSON.stringify(value, null, 2)}</pre>
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+    return <span className="audit-value">{detailValue(field, value)}</span>
   return <span className="audit-value">{String(value)}</span>
 }

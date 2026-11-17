@@ -49,6 +49,28 @@ export function periodValid(from: string, to: string) {
   return months >= 1 && months <= MAX_MONTHS
 }
 
+/**
+ * The period after the viewer picks one end: the other end moves only as far as BR-433 needs — up to the picked
+ * month when the ends cross, and to 24 months away when the period grows past that.
+ */
+export function followPeriod(
+  from: string,
+  to: string,
+  next: { from?: string; to?: string },
+): { from: string; to: string } {
+  if (next.from) {
+    const start = index(next.from)
+    const end = Math.min(Math.max(index(to), start), start + MAX_MONTHS - 1)
+    return { from: next.from, to: fromIndex(end) }
+  }
+  if (next.to) {
+    const end = index(next.to)
+    const start = Math.max(Math.min(index(from), end), end - MAX_MONTHS + 1)
+    return { from: fromIndex(start), to: next.to }
+  }
+  return { from, to }
+}
+
 /** "2026-01" as people read it: 01/2026. */
 export const monthLabel = (month: string) => `${month.slice(5, 7)}/${month.slice(0, 4)}`
 

@@ -36,7 +36,7 @@
       [
         "InProgress",
         "Ended",
-        "Chair ends\nor System ends\n[4h after planned end]"
+        "Chair ends\nor System ends\n[24h after planned end\nor actual start, if later]"
       ],
       [
         "WaitingApproval",
@@ -90,7 +90,7 @@
       ]
     ],
     "initial": "Organizer creates meeting",
-    "source": "UC14–22; BR35,38–40,124–127,130–132,158–159; UC75; BR297–302",
+    "source": "UC14–22; BR35,38–40,124–127,130–132,158–159; UC75; BR297–302; BR460 (auto-end, ADR-0062)",
     "provisional": false,
     "positions": {
       "Rejected": [
@@ -729,74 +729,46 @@
   },
   {
     "id": "SM-13_Minutes",
-    "title": "Minutes Revision State Machine (Draft)",
+    "title": "Minutes Revision State Machine",
     "states": [
       "Draft",
-      "PendingSignature",
-      "Sealed",
-      "Superseded",
-      "RevisionRequested"
+      "WaitingApproval",
+      "Rejected",
+      "Issued",
+      "Superseded"
     ],
     "edges": [
       [
         "Draft",
-        "PendingSignature",
-        "Secretary submits for signing\n[submission requirements met]"
+        "WaitingApproval",
+        "Secretary submits for approval\n[meeting Ended]"
       ],
       [
-        "PendingSignature",
-        "Sealed",
-        "Secretary seals\n[all required signers signed]"
+        "WaitingApproval",
+        "Issued",
+        "Chair approves\n/ issues minutes"
       ],
       [
-        "PendingSignature",
-        "RevisionRequested",
-        "Signer requests revision\n/ invalidate prior signatures"
+        "WaitingApproval",
+        "Rejected",
+        "Chair returns\n[reason provided]"
       ],
       [
-        "RevisionRequested",
-        "PendingSignature",
-        "Secretary resubmits revision"
+        "Rejected",
+        "WaitingApproval",
+        "Secretary resubmits"
       ],
       [
-        "Sealed",
+        "Issued",
         "Superseded",
-        "Seal replacement revision",
-        "proposal"
+        "Correction issued as new revision\n[UC-83]"
       ]
     ],
-    "initial": "Secretary creates revision\n[meeting Ended]",
-    "source": "Report 3 Entity22 and screen 12.1–12.4; BR166",
+    "initial": "Secretary creates draft\n[meeting Ended]",
+    "source": "UC59–61, UC64–65, UC83; BR404–413",
     "provisional": false,
     "final_states": [
       "Superseded"
-    ]
-  },
-  {
-    "id": "SM-14_MinutesSignature",
-    "title": "Minutes Signature State Machine",
-    "states": [
-      "Waiting",
-      "Signed",
-      "Invalidated"
-    ],
-    "edges": [
-      [
-        "Waiting",
-        "Signed",
-        "Signer signs\n[minutes PendingSignature]"
-      ],
-      [
-        "Signed",
-        "Invalidated",
-        "Revision requested or content changed\n[minutes not Sealed]"
-      ]
-    ],
-    "initial": "Start signing cycle",
-    "source": "BR166; Report 3 screen 12.2–12.3; NFR Integrity",
-    "provisional": false,
-    "final_states": [
-      "Invalidated"
     ]
   },
   {

@@ -66,7 +66,8 @@ Chưa lưu lần nào thì `mode` là `Local`, các trường API rỗng, `updat
 
 Body: `{ mode, apiBaseUrl, apiModel, apiKey }`.
 
-- `mode`: `Local` hoặc `Api` (đúng chữ hoa thường).
+- `mode`: `Local` hoặc `Api` (đúng chữ hoa thường). Giá trị khác, kể cả `api` hay `LOCAL`, là `400 MSG409` với
+  `errors.mode`, khi lưu cũng như khi gọi thử (gọi thử không gọi ra ngoài).
 - `apiBaseUrl`: `https://…`, tối đa 500 ký tự, không chứa user/password; bắt buộc khi `mode` là `Api`. Chọn `Local` thì
   địa chỉ và model vẫn được giữ cho lần sau.
 - `apiModel`: không khoảng trắng, tối đa 100 ký tự; bắt buộc khi `Api`.
@@ -78,6 +79,10 @@ Body: `{ mode, apiBaseUrl, apiModel, apiKey }`.
   local, máy tắt hay ra khỏi Tailscale đều là `502 MSG413` kèm lý do. Màn Cấu hình AI có một nút **Thử kết nối** ở
   chân form, thử đúng thứ của tab đang chọn: tab Máy local thử máy local, tab API thử API. Đang dùng API mà muốn kiểm máy
   local trước buổi họp thì chọn tab Máy local rồi bấm thử; chọn tab không lưu gì.
+- Server có thêm máy dự phòng (`Ai:BackupBaseUrl`, [ADR-0063](../05-decisions/0063-may-ai-du-phong.md)) thì gọi thử
+  `Local` hỏi cả hai máy cùng lúc và `message` nói rõ từng máy. Một trong hai trả lời là `200 MSG412`, `elapsedMs` là
+  thời gian của máy viết dự thảo (máy chính nếu nó trả lời, không thì máy dự phòng); cả hai không trả lời là
+  `502 MSG413` kèm lý do của từng máy.
 
 ## Lỗi
 

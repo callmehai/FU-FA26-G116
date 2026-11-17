@@ -137,7 +137,7 @@ export function OverviewContent({
         <dl className="overview-facts">
           <Row label="Thời gian">
             <b className="overview-time">
-              {formatClock(item.plannedStartTime)}–{formatClock(item.plannedEndTime)}
+              {formatClock(item.plannedStartTime)} – {formatClock(item.plannedEndTime)}
             </b>
             <span className="overview-muted">{formatWeekdayDate(item.plannedStartTime)}</span>
           </Row>
@@ -167,9 +167,13 @@ export function OverviewContent({
               <span className="skeleton overview-skeleton" />
             )}
           </Row>
+          {/* Labelled like every other fact: on its own it read as a stray line under the Chair. */}
+          {meeting?.description && (
+            <Row label="Nội dung">
+              <span className="overview-desc">{meeting.description}</span>
+            </Row>
+          )}
         </dl>
-
-        {meeting?.description && <p className="overview-desc">{meeting.description}</p>}
 
         {state.kind === 'loading' && (
           <div className="overview-people" aria-hidden="true">

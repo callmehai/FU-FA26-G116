@@ -557,7 +557,7 @@ deactivate MeetingPage
 | Thư mục | UC |
 |---|---|
 | [auth/](auth/README.md) | UC-01 → UC-04 |
-| [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08, UC-09 |
+| [user-management/](user-management/README.md) | UC-05, UC-06a → UC-06c, UC-07, UC-08 |
 | [role-management/](role-management/README.md) | UC-10, UC-11, UC-12a → UC-12c, UC-13 |
 | [meeting-management/](meeting-management/README.md) | UC-14 → UC-22, UC-75 |
 | [agenda-management/](agenda-management/README.md) | UC-23a → UC-23d, UC-24 → UC-26, UC-77, UC-82 (sơ bộ) |
@@ -574,4 +574,6 @@ deactivate MeetingPage
 
 Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file .txt>` — ra cả ảnh sequencediagram.org cạnh `.txt` (cần truy cập `sequencediagram.org`) lẫn `drawio-png/`; chỉ truyền file đã sửa. Không chạy `sync_sequence_drawio_png.py` cho toàn bộ (draw.io CLI cắt nửa dưới sơ đồ rất dài như UC-84b — xem README của [`calendar-sharing/`](calendar-sharing/README.md)).
 
-UC09 và UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; unlock/lock store và audit-read endpoint chưa có code. Không tự cấp message codes mới. Quy tắc lưu lock/audit nguyên tử trong UC09 là đề xuất kỹ thuật để giữ audit evidence nhất quán khi update thất bại.
+Mọi script xuất ảnh đều sinh 2 dạng: bản gốc đầy đủ độ phân giải vào thư mục local `anh-goc/` (đã gitignore, giữ cấu trúc cây như `docs/`, để sau này dựng báo cáo chuẩn nộp) và bản nén palette 256 màu trong `docs/` để repo nhẹ. Đổi thư mục gốc bằng `--originals-dir <đường dẫn>` hoặc biến môi trường `DIAGRAM_ORIGINALS_DIR`; `--no-compress` giữ nguyên bản xuất trong repo, `--no-originals` tắt lưu bản gốc.
+
+UC13 bổ sung ngày 13/10/2026: source + PNG theo đặc tả hiện hành. Đây là thiết kế đích; audit-read endpoint chưa có code. UC-09 (Mở khoá tài khoản) đã bị PO bỏ hẳn ngày 15/11/2026 — không khoá tài khoản khi nhập sai mật khẩu, chỉ còn giới hạn số lần đăng nhập theo phút (MSG414); source + PNG cũ của UC-09 chỉ còn giá trị lịch sử, không phải thiết kế đích. Không tự cấp message codes mới.

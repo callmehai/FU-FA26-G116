@@ -4,13 +4,16 @@ import { listAuditEventTypes, listAuditLog } from '../../api/auditLog'
 import { listUsers } from '../../api/users'
 import { Badge } from '../../components/Badge'
 import { DateRangeField } from '../../components/DateRangeField'
+import { ClearFiltersButton } from '../../components/ClearFiltersButton'
 import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
 import { Pagination } from '../../components/Pagination'
 import { Select, type SelectOption } from '../../components/Select'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
+import { tipIfClipped } from '../../lib/tipIfClipped'
 import { useSearchBox } from '../../lib/useSearchBox'
+import { latestSearchParams } from '../../lib/latestSearchParams'
 import type { AuditEventType, AuditLogItem, AuditLogPage } from '../../types/auditLog'
 import { useAccessLost } from '../auth/useAccessLost'
 import { ActorCell, AuditEntrySheet } from './AuditEntrySheet'
@@ -103,8 +106,8 @@ export function AuditLogPage() {
 
   const update = useCallback(
     (patch: Partial<Criteria>) =>
-      setSearchParams(writeCriteria({ ...readCriteria(searchParams), page: 1, ...patch }), { replace: true }),
-    [searchParams, setSearchParams],
+      setSearchParams(writeCriteria({ ...readCriteria(latestSearchParams()), page: 1, ...patch }), { replace: true }),
+    [setSearchParams],
   )
 
   const [search, setSearch] = useSearchBox(criteria.q, (q) => update({ q }))
@@ -268,7 +271,10 @@ export function AuditLogPage() {
           <td className="cell-title audit-actor">
             <ActorCell actor={item.actor} />
           </td>
-          <td className="audit-event">
+          <td
+            className="audit-event"
+            onPointerOver={(e) => tipIfClipped({ currentTarget: e.currentTarget.firstElementChild as HTMLElement })}
+          >
             <Badge tone={alert ? 'red' : 'slate'}>{item.actionLabel}</Badge>
           </td>
           <td className="audit-object">
@@ -310,7 +316,7 @@ export function AuditLogPage() {
               value={search}
               maxLength={100}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo đối tượng…"
+              placeholder="Tìm đối tượng…"
               aria-label="Tìm theo đối tượng: tên, mã hoặc chi tiết"
             />
           </label>
@@ -333,24 +339,16 @@ export function AuditLogPage() {
               options={actorOptions}
               onChange={(actor) => update({ actor })}
               label="Người thực hiện"
+              steady
             />
             <Select
               value={criteria.action}
               options={eventOptions}
               onChange={(action) => update({ action })}
               label="Loại sự kiện"
+              steady
             />
-            {filtered && (
-              <button
-                type="button"
-                className="icon-button"
-                onClick={clearFilters}
-                data-tooltip="Xoá bộ lọc"
-                aria-label="Xoá bộ lọc"
-              >
-                <Icon name="x" size={16} />
-              </button>
-            )}
+            <ClearFiltersButton shown={filtered} onClear={clearFilters} />
           </div>
           {invalidRange && (
             <p className="field-error audit-range-error" role="alert">

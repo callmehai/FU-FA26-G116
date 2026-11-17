@@ -705,6 +705,11 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("delivery_state_at");
 
+                    b.Property<string>("HtmlBody")
+                        .HasMaxLength(500000)
+                        .HasColumnType("character varying(500000)")
+                        .HasColumnName("html_body");
+
                     b.Property<string>("LastError")
                         .IsRequired()
                         .HasMaxLength(2000)
@@ -1811,64 +1816,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasDatabaseName("ix_meeting_summaries_status_requested_at");
 
                     b.ToTable("meeting_summaries", (string)null);
-                });
-
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.MinutesSignature", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("ContentSha256")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("content_sha256");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid>("MinutesId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("minutes_id");
-
-                    b.Property<string>("PublicKey")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("public_key");
-
-                    b.Property<string>("Signature")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("signature");
-
-                    b.Property<DateTimeOffset>("SignedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("signed_at");
-
-                    b.Property<Guid>("SignerId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("signer_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_minutes_signatures");
-
-                    b.HasIndex("SignerId")
-                        .HasDatabaseName("ix_minutes_signatures_signer_id");
-
-                    b.HasIndex("MinutesId", "SignerId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_minutes_signatures_minutes_id_signer_id");
-
-                    b.ToTable("minutes_signatures", (string)null);
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Notification", b =>
@@ -3792,27 +3739,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("ReviewedBy");
                 });
 
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.MinutesSignature", b =>
-                {
-                    b.HasOne("TrustCabinet.Domain.Entities.MeetingMinutes", "Minutes")
-                        .WithMany("Signatures")
-                        .HasForeignKey("MinutesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_minutes_signatures_meeting_minutes_minutes_id");
-
-                    b.HasOne("TrustCabinet.Domain.Entities.User", "Signer")
-                        .WithMany()
-                        .HasForeignKey("SignerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_minutes_signatures_users_signer_id");
-
-                    b.Navigation("Minutes");
-
-                    b.Navigation("Signer");
-                });
-
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Notification", b =>
                 {
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
@@ -4301,11 +4227,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                     b.Navigation("ReadConfirmations");
 
                     b.Navigation("VoteLinks");
-                });
-
-            modelBuilder.Entity("TrustCabinet.Domain.Entities.MeetingMinutes", b =>
-                {
-                    b.Navigation("Signatures");
                 });
 
             modelBuilder.Entity("TrustCabinet.Domain.Entities.Recording", b =>

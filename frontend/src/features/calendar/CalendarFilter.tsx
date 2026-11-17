@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icon } from '../../components/Icon'
 import { SENSITIVITIES, SENSITIVITY_LABEL, type Sensitivity } from '../../types/meeting'
 import {
@@ -15,6 +15,7 @@ import {
   type StatusGroup,
 } from './filter'
 import type { ScheduleEntry } from './useSchedule'
+import { useMedia, usePhone } from './usePhone'
 
 const PANEL_ID = 'calendar-filter'
 
@@ -39,6 +40,10 @@ export function CalendarFilter({
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const active = activeGroups(value)
+  // On a phone the panel is a bottom sheet: anchored under the button it ran off the screen's left edge.
+  const phone = usePhone()
+  // The label shows from 1400px up; a tooltip would only repeat it.
+  const labelled = !useMedia('(max-width: 1400px)')
 
   useEffect(() => {
     if (!open) return
@@ -78,7 +83,7 @@ export function CalendarFilter({
         aria-controls={open ? PANEL_ID : undefined}
         // The label hides on narrow windows (global.css), so the name lives here.
         aria-label={active > 0 ? `Bộ lọc, ${active} bộ lọc khác mặc định` : 'Bộ lọc'}
-        data-tooltip="Bộ lọc"
+        data-tooltip={labelled || open ? undefined : 'Bộ lọc'}
         onClick={() => setOpen(!open)}
       >
         <Icon name="filter" size={18} />
@@ -91,79 +96,95 @@ export function CalendarFilter({
       </button>
 
       {open && (
-        <div className="cal-filter-panel" id={PANEL_ID} role="group" aria-label="Bộ lọc lịch">
-          <fieldset className="cal-filter-group">
-            <legend>Trạng thái</legend>
-            <div className="cal-filter-chips">
-              {GROUPS.map((group) => {
-                const on = value.groups.includes(group)
-                const count = byGroup.get(group) ?? 0
-                return (
-                  <button
-                    key={group}
-                    type="button"
-                    className="cal-pick"
-                    aria-pressed={on}
-                    disabled={!!entries && count === 0 && !on}
-                    data-tooltip={group === 'ended' ? 'Gồm cả cuộc họp nháp' : undefined}
-                    onClick={() => onChange({ ...value, groups: toggleGroup(value.groups, group) })}
-                  >
-                    <span className={`cal-dot cal-dot-${GROUP_TONE[group]}`} aria-hidden="true" />
-                    {GROUP_LABEL[group]}
-                    {entries && <span className="cal-pick-count">{count}</span>}
-                  </button>
-                )
-              })}
-            </div>
-          </fieldset>
+        <FilterSheet phone={phone} onClose={() => setOpen(false)}>
+          <div
+            className={phone ? 'cal-filter-panel cal-filter-sheet' : 'cal-filter-panel'}
+            id={PANEL_ID}
+            role="group"
+            aria-label="Bộ lọc lịch"
+          >
+            <fieldset className="cal-filter-group">
+              <legend>Trạng thái</legend>
+              <div className="cal-filter-chips">
+                {GROUPS.map((group) => {
+                  const on = value.groups.includes(group)
+                  const count = byGroup.get(group) ?? 0
+                  return (
+                    <button
+                      key={group}
+                      type="button"
+                      className="cal-pick"
+                      aria-pressed={on}
+                      disabled={!!entries && count === 0 && !on}
+                      onClick={() => onChange({ ...value, groups: toggleGroup(value.groups, group) })}
+                    >
+                      <span className={`cal-dot cal-dot-${GROUP_TONE[group]}`} aria-hidden="true" />
+                      {GROUP_LABEL[group]}
+                      {entries && <span className="cal-pick-count">{count}</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </fieldset>
 
-          <fieldset className="cal-filter-group">
-            <legend>Mức độ</legend>
-            <div className="cal-filter-chips">
-              {SENSITIVITIES.map((sensitivity) => {
-                const on = value.sensitivity === sensitivity
-                const count = bySensitivity.get(sensitivity) ?? 0
-                return (
-                  <button
-                    key={sensitivity}
-                    type="button"
-                    className="cal-pick"
-                    aria-pressed={on}
-                    disabled={!!entries && count === 0 && !on}
-                    onClick={() => onChange({ ...value, sensitivity: on ? null : sensitivity })}
-                  >
-                    {SENSITIVITY_LABEL[sensitivity]}
-                    {entries && <span className="cal-pick-count">{count}</span>}
-                  </button>
-                )
-              })}
-            </div>
-          </fieldset>
+            <fieldset className="cal-filter-group">
+              <legend>Mức độ</legend>
+              <div className="cal-filter-chips">
+                {SENSITIVITIES.map((sensitivity) => {
+                  const on = value.sensitivity === sensitivity
+                  const count = bySensitivity.get(sensitivity) ?? 0
+                  return (
+                    <button
+                      key={sensitivity}
+                      type="button"
+                      className="cal-pick"
+                      aria-pressed={on}
+                      disabled={!!entries && count === 0 && !on}
+                      onClick={() => onChange({ ...value, sensitivity: on ? null : sensitivity })}
+                    >
+                      {SENSITIVITY_LABEL[sensitivity]}
+                      {entries && <span className="cal-pick-count">{count}</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </fieldset>
 
-          <div className="cal-filter-foot">
-            <button
-              type="button"
-              className="btn btn-outline"
-              disabled={active === 0}
-              onClick={() => onChange(DEFAULT_FILTER)}
-            >
-              <Icon name="undo" size={16} />
-              Đặt lại
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => {
-                setOpen(false)
-                buttonRef.current?.focus()
-              }}
-            >
-              <Icon name="check" size={16} />
-              Xong
-            </button>
+            <div className="cal-filter-foot">
+              <button
+                type="button"
+                className="btn btn-outline"
+                disabled={active === 0}
+                onClick={() => onChange(DEFAULT_FILTER)}
+              >
+                <Icon name="undo" size={16} />
+                Đặt lại
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setOpen(false)
+                  buttonRef.current?.focus()
+                }}
+              >
+                <Icon name="check" size={16} />
+                Xong
+              </button>
+            </div>
           </div>
-        </div>
+        </FilterSheet>
       )}
+    </div>
+  )
+}
+
+/** A phone's bottom sheet over a scrim, as the calendar's quick look (CalendarPopover); a press on the scrim closes it. */
+function FilterSheet({ phone, onClose, children }: { phone: boolean; onClose: () => void; children: ReactNode }) {
+  if (!phone) return children
+  return (
+    <div className="overview-scrim" onPointerDown={(event) => event.target === event.currentTarget && onClose()}>
+      {children}
     </div>
   )
 }

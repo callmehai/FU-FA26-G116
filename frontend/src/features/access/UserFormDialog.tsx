@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { createUser, getUser, updateUser } from '../../api/users'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import { Select } from '../../components/Select'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -15,6 +17,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 type Field = 'fullName' | 'email' | 'password' | 'roleId'
 type FieldErrors = Partial<Record<Field, string>>
+/** The order the fields appear in, for focusing the first one in error. */
+const FIELD_ORDER: Field[] = ['fullName', 'email', 'password', 'roleId']
 
 export type UserFormTarget = { mode: 'create' } | { mode: 'edit'; id: string }
 
@@ -54,9 +58,10 @@ export function UserFormDialog({
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [roleId, setRoleId] = useState(
-    roles.find((role) => role.isDefault)?.id ?? '',
-  )
+  const defaultRoleId = roles.find((role) => role.isDefault)?.id ?? ''
+  const [roleId, setRoleId] = useState(defaultRoleId)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
@@ -125,7 +130,8 @@ export function UserFormDialog({
   function validate(): FieldErrors {
     const errors: FieldErrors = {}
     if (!fullName.trim()) errors.fullName = 'Họ tên không được để trống.'
-    if (!EMAIL_PATTERN.test(email.trim())) errors.email = 'Email không hợp lệ.'
+    if (!email.trim()) errors.email = 'Email không được để trống.'
+    else if (!EMAIL_PATTERN.test(email.trim())) errors.email = 'Email không hợp lệ.'
     if (!editing && password.length < MIN_PASSWORD_LENGTH) {
       errors.password = `Mật khẩu phải có ít nhất ${MIN_PASSWORD_LENGTH} ký tự.`
     }
@@ -138,7 +144,7 @@ export function UserFormDialog({
     const errors = validate()
     setFieldErrors(errors)
     setFormError(null)
-    if (Object.keys(errors).length > 0) return
+    if (Object.keys(errors).length > 0) return focusFirstInvalid(errors)
 
     setPending(true)
     try {
@@ -154,8 +160,10 @@ export function UserFormDialog({
         const serverErrors = (err.body?.errors ?? {}) as FieldErrors
         setFieldErrors(serverErrors)
         if (Object.keys(serverErrors).length === 0) setFormError(errorMessage(err))
+        else focusFirstInvalid(serverErrors)
       } else if (isApiError(err, 409, 'MSG08')) {
         setFieldErrors({ email: errorMessage(err) })
+        focusFirstInvalid({ email: 'x' })
       } else if (isApiError(err, 409, 'MSG12')) {
         // On this endpoint MSG12 has one cause: the role change would leave nobody holding AdminUsers.
         setFormError('Không thể đổi vai trò: sau thao tác này sẽ không còn tài khoản quản trị nào đang hoạt động.')
@@ -165,8 +173,24 @@ export function UserFormDialog({
     }
   }
 
+  /** The first field in error takes the focus, so the keyboard lands where the fix goes (frontend-ui-design §2). */
+  function focusFirstInvalid(errors: FieldErrors) {
+    const first = FIELD_ORDER.find((field) => errors[field])
+    if (!first) return
+    formRef.current
+      ?.querySelector<HTMLElement>(`[data-field="${first}"], [data-field-group="${first}"] .select-trigger`)
+      ?.focus()
+  }
+
+  // Anything typed that saving would keep: closing then asks first, so Escape or a stray click loses nothing.
+  const dirty = editing
+    ? original !== null && (fullName !== original.fullName || email !== original.email || roleId !== original.roleId)
+    : fullName.trim() !== '' || email.trim() !== '' || password !== '' || roleId !== defaultRoleId
+
   const close = () => {
-    if (!pending) onClose()
+    if (pending) return
+    if (dirty) setConfirmDiscard(true)
+    else onClose()
   }
 
   // The backend ends the account's sessions on an email change (UserService.UpdateAsync).
@@ -178,14 +202,11 @@ export function UserFormDialog({
     <Dialog
       title={editing ? 'Sửa tài khoản' : 'Tạo tài khoản'}
       description={
-        editing ? (
-          original && (
-            <>
-              Chỉnh sửa thông tin của <b>{original.fullName}</b>.
-            </>
-          )
-        ) : (
-          'Tài khoản mới ở trạng thái hoạt động và đăng nhập được ngay bằng email và mật khẩu này. Nếu email là tài khoản Google, người dùng cũng đăng nhập được bằng Google.'
+        editing &&
+        original && (
+          <>
+            Chỉnh sửa thông tin của <b>{original.fullName}</b>.
+          </>
         )
       }
       onClose={close}
@@ -210,11 +231,7 @@ export function UserFormDialog({
         loadError ? (
           <div className="alert alert-error" role="alert">
             <p>{loadError}</p>
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              onClick={retryLoad}
-            >
+            <button type="button" className="btn btn-outline btn-sm" onClick={retryLoad}>
               <Icon name="refresh" size={16} />
               Thử lại
             </button>
@@ -223,7 +240,7 @@ export function UserFormDialog({
           <p className="cell-muted">Đang tải thông tin tài khoản…</p>
         )
       ) : (
-        <form id={formId} className="form-grid" onSubmit={handleSubmit} noValidate>
+        <form id={formId} ref={formRef} className="form-grid" onSubmit={handleSubmit} noValidate>
           {formError && (
             <p className="alert alert-error span-2" role="alert">
               {formError}
@@ -239,14 +256,27 @@ export function UserFormDialog({
                 clearError('fullName')
               }}
               aria-invalid={!!fieldErrors.fullName}
+              data-field="fullName"
               autoFocus
             />
             {fieldErrors.fullName && <small className="field-error">{fieldErrors.fullName}</small>}
           </label>
 
-          <label className="field span-2">
-            <span className="field-required">Email</span>
+          <div className="field span-2">
+            <span className="field-label-tip">
+              <label className="field-required" htmlFor="user-form-email">
+                Email
+              </label>
+              <InfoTip
+                text={
+                  editing
+                    ? 'Đổi email đăng xuất người này khỏi mọi thiết bị, và không đổi tài khoản Google đã liên kết.'
+                    : 'Tài khoản hoạt động ngay, đăng nhập bằng email và mật khẩu này. Nếu email là tài khoản Google, người dùng cũng đăng nhập được bằng Google.'
+                }
+              />
+            </span>
             <input
+              id="user-form-email"
               type="email"
               value={email}
               onChange={(e) => {
@@ -254,10 +284,11 @@ export function UserFormDialog({
                 clearError('email')
               }}
               aria-invalid={!!fieldErrors.email}
+              data-field="email"
               autoComplete="off"
             />
             {fieldErrors.email && <small className="field-error">{fieldErrors.email}</small>}
-          </label>
+          </div>
 
           {!editing && (
             <div className="field span-2">
@@ -274,6 +305,7 @@ export function UserFormDialog({
                     clearError('password')
                   }}
                   aria-invalid={!!fieldErrors.password}
+                  data-field="password"
                   autoComplete="new-password"
                   spellCheck={false}
                 />
@@ -305,14 +337,14 @@ export function UserFormDialog({
                 <small className="field-error">{fieldErrors.password}</small>
               ) : (
                 <small className="field-hint">
-                  Tối thiểu {MIN_PASSWORD_LENGTH} ký tự. Gửi mật khẩu cho người dùng qua kênh riêng, không qua nhóm
-                  chat chung.
+                  Tối thiểu {MIN_PASSWORD_LENGTH} ký tự.
+                  <InfoTip text="Gửi mật khẩu cho người dùng qua kênh riêng, không qua nhóm chat chung." />
                 </small>
               )}
             </div>
           )}
 
-          <div className="field span-2">
+          <div className="field span-2" data-field-group="roleId">
             <span className="field-required">Vai trò</span>
             <Select
               value={roleId}
@@ -328,11 +360,14 @@ export function UserFormDialog({
 
           {original && (
             <p className="field-hint span-2">
-              Đăng nhập bằng: {signInMethods(original)}.{' '}
-              {original.hasGoogleLink
-                ? 'Đổi email không đổi tài khoản Google đã liên kết.'
-                : 'Lần đầu người này đăng nhập bằng Google với đúng email trên, tài khoản sẽ tự liên kết.'}{' '}
-              Đổi mật khẩu không thực hiện ở đây.
+              Đăng nhập bằng: {signInMethods(original)}
+              <InfoTip
+                text={`${
+                  original.hasGoogleLink
+                    ? 'Đổi email không đổi tài khoản Google đã liên kết.'
+                    : 'Lần đầu người này đăng nhập bằng Google với đúng email trên, tài khoản sẽ tự liên kết.'
+                } Mật khẩu không đổi ở đây: dùng nút Gửi liên kết đặt lại mật khẩu trong danh sách.`}
+              />
             </p>
           )}
 
@@ -345,6 +380,20 @@ export function UserFormDialog({
             </p>
           )}
         </form>
+      )}
+
+      {confirmDiscard && (
+        <ConfirmDialog
+          title="Bỏ thay đổi chưa lưu?"
+          tone="danger"
+          confirmLabel="Bỏ thay đổi"
+          cancelLabel="Tiếp tục sửa"
+          pendingLabel="Đang đóng…"
+          onConfirm={async () => onClose()}
+          onClose={() => setConfirmDiscard(false)}
+        >
+          Những gì bạn vừa nhập sẽ không được lưu.
+        </ConfirmDialog>
       )}
     </Dialog>
   )

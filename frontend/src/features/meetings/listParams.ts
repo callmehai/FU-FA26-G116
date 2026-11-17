@@ -35,6 +35,8 @@ export interface ListState {
   pageSize: number
   sortBy: MeetingSortBy
   sortDir: SortDirection
+  /** The user picked the order (a header click), so it is kept in the URL; otherwise it follows the view. */
+  sortSet: boolean
 }
 
 /**
@@ -72,6 +74,17 @@ export const DEFAULT_STATE: ListState = {
   pageSize: 20,
   sortBy: 'plannedStartTime',
   sortDir: 'desc',
+  sortSet: false,
+}
+
+/**
+ * The order a view opens in. Today's meetings and "Cần xử lý" are worked through from the soonest, so their times
+ * run forward (09:00 before 15:30, the approval due in two days before one in February); any other list shows the
+ * newest first.
+ */
+function naturalDirection(state: Pick<ListState, 'sortBy' | 'when' | 'scope'>): SortDirection {
+  if (state.sortBy === 'plannedStartTime' && (state.when === 'today' || state.scope === 'todo')) return 'asc'
+  return defaultDirection(state.sortBy)
 }
 
 /** A plain list is today's; a status or "Cần xử lý" is shown at any time, as its card counts it. */
@@ -90,8 +103,8 @@ export function readListState(params: URLSearchParams): ListState {
   const status = oneOf(params.get('status'), MEETING_STATUSES) ?? ''
   const scope = oneOf(params.get('scope'), SCOPES) ?? ''
   const when = params.get('when')
-
-  return {
+  const picked = oneOf(params.get('sortDir'), ['asc', 'desc'] as const)
+  const state: Omit<ListState, 'sortDir'> = {
     q: params.get('q') ?? '',
     status,
     sensitivity: oneOf(params.get('sensitivity'), SENSITIVITIES) ?? '',
@@ -100,8 +113,9 @@ export function readListState(params: URLSearchParams): ListState {
     page: Number.isInteger(page) && page >= 1 ? page : 1,
     pageSize: (PAGE_SIZES as readonly number[]).includes(pageSize) ? pageSize : DEFAULT_STATE.pageSize,
     sortBy,
-    sortDir: oneOf(params.get('sortDir'), ['asc', 'desc'] as const) ?? defaultDirection(sortBy),
+    sortSet: picked !== undefined,
   }
+  return { ...state, sortDir: picked ?? naturalDirection(state) }
 }
 
 /** Only what differs from the default goes into the URL, so a plain list keeps a plain address. */
@@ -113,7 +127,7 @@ export function writeListState(state: ListState): URLSearchParams {
   if (state.sensitivity) params.set('sensitivity', state.sensitivity)
   if (state.when !== defaultWhen(state.status, state.scope)) params.set('when', state.when || ANY_TIME)
   if (state.scope) params.set('scope', state.scope)
-  if (state.sortBy !== DEFAULT_STATE.sortBy || state.sortDir !== DEFAULT_STATE.sortDir) {
+  if (state.sortSet || state.sortBy !== DEFAULT_STATE.sortBy) {
     params.set('sortBy', state.sortBy)
     params.set('sortDir', state.sortDir)
   }
@@ -129,7 +143,14 @@ export function hasFilters(state: ListState) {
 
 /** "Bỏ lọc": every meeting, keeping how the user sorts and pages. */
 export function clearedState(state: ListState): ListState {
-  return { ...DEFAULT_STATE, when: '', pageSize: state.pageSize, sortBy: state.sortBy, sortDir: state.sortDir }
+  return {
+    ...DEFAULT_STATE,
+    when: '',
+    pageSize: state.pageSize,
+    sortBy: state.sortBy,
+    sortDir: state.sortDir,
+    sortSet: state.sortSet,
+  }
 }
 
 /**
@@ -179,9 +200,13 @@ const STAT_CRITERIA: Record<StatCard, StatCriteria> = {
   draft: { status: 'Draft', when: '', scope: '' },
 }
 
-/** A card's list: its criteria alone — the search and the other filters go, so the list matches the number. */
+/**
+ * A card's list: its criteria alone — the search and the other filters go, so the list matches the number — in
+ * the order that card opens in.
+ */
 export function statState(card: StatCard, state: ListState): ListState {
-  return { ...clearedState(state), ...STAT_CRITERIA[card] }
+  const criteria = { ...clearedState(state), ...STAT_CRITERIA[card], sortBy: DEFAULT_STATE.sortBy, sortSet: false }
+  return { ...criteria, sortDir: naturalDirection(criteria) }
 }
 
 /** The request behind a card's number: one row, only its total is read. */

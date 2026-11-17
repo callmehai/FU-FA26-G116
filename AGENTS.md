@@ -18,8 +18,10 @@ and the draft minutes from the one fixed template (SCRUM-32, UC-58–UC-60) run 
 ([ADR-0054](docs/05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md)), and sending the minutes for approval,
 approving (which issues them), returning and correcting them (SCRUM-33, UC-61, UC-64, UC-65, UC-83) are built too.
 Signing the minutes, even a simulated signature (SCRUM-37, UC-62–UC-63), and the Secretary's list of document
-comments (SCRUM-106) were dropped by the PO on 2026-11-14 — do not build them. Register to Speak (SCRUM-27, UC-79)
-has its backend but no screen yet. Check the code before assuming a feature exists.
+comments (SCRUM-106) were dropped by the PO on 2026-11-14 — do not build them, nor the personal dashboard and
+meeting workspace (UC-69) or locking an account after wrong passwords (UC-09), dropped on 2026-11-15; the per-minute
+sign-in limit (MSG414) stays. Register to Speak (SCRUM-27, UC-79) is built: raising a hand in the online room, the
+Phát biểu panel and the chair's Mời. Check the code before assuming a feature exists.
 
 The EF Core model covers the whole backlog: access, meetings, agenda, documents, voting, recordings,
 transcripts, minutes, notifications, audit and calls.
@@ -44,6 +46,10 @@ scan for, with the rest in tooltips, and [sloplint](.claude/skills/sloplint/SKIL
 (phòng chống AI slop) for catching the generated look — gradients, glows, endless motion, KPI
 tiles, eyebrows, side stripes and the other tells catalogued from published research and the big
 design systems. Claude Code loads them as skills; any other agent reads the files directly.
+**QA** follows [qa-ticket](.claude/skills/qa-ticket/SKILL.md): an independent tester turns a ticket, its UC
+specification and business rules into acceptance criteria and a role × action table, and runs them on the running
+app with the runner in [tests/qa/](tests/qa/README.md) — one fresh browser per criterion and device, evidence
+screenshots, a `[qa-bot]` Jira comment. Plans in `tests/qa/plans/` stay in the repo as the regression suite.
 **Skill location:** the project skills live in `.claude/skills/` (canonical — Claude Code loads
 them) and are mirrored verbatim into `.agents/skills/`, which other agents load from; edit the
 canonical copy and mirror it in the same change (`SkillMirrorTests` fails CI otherwise). `.agents/skills/` additionally holds the two

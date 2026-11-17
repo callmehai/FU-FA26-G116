@@ -162,6 +162,8 @@ function SummaryCard({
 
   const { summary, canManage, aiReady, readiness } = state.data
   const draft = summary?.draft ?? null
+  // Someone who only reads has nothing to do with a draft that is not there yet: no card that only says so.
+  if (!canManage && !draft) return null
   const running = summary?.status === 'Queued' || summary?.status === 'Running'
   const canAsk = canManage && (meeting.status === 'InProgress' || meeting.status === 'Ended')
   // The Dự thảo is a snapshot of the transcript: a line corrected, left out or named since leaves it behind (eCab).
@@ -291,11 +293,9 @@ function SummaryCard({
 
       {!draft && !running && summary?.status !== 'Failed' && (
         <p className="field-hint minutes-empty">
-          {canManage
-            ? canAsk
-              ? 'Chưa có dự thảo. Bấm “Tạo dự thảo” để AI tóm tắt chương trình, biểu quyết và lời thoại.'
-              : 'Tạo dự thảo khi cuộc họp đã bắt đầu.'
-            : 'Chưa có dự thảo đã duyệt.'}
+          {canAsk
+            ? 'Chưa có dự thảo. Bấm “Tạo dự thảo” để AI tóm tắt chương trình, biểu quyết và lời thoại.'
+            : 'Tạo dự thảo khi cuộc họp đã bắt đầu.'}
         </p>
       )}
 
@@ -596,12 +596,17 @@ function MinutesCard({
   }
 
   const status = minutes ? MINUTES_STATUS[minutes.status] : null
+  // A correction still being written or reviewed says so: "Bản nháp" alone read as if nothing had been issued.
+  const correcting =
+    !!minutes && minutes.revisionNumber > 1 && minutes.status !== 'Issued' && minutes.status !== 'Superseded'
 
   return (
     <section className="card minutes-card" aria-label="Biên bản">
       <header className="minutes-card-head">
         <h2>Biên bản</h2>
-        {status && <Badge tone={status.tone}>{status.label}</Badge>}
+        {status && (
+          <Badge tone={status.tone}>{correcting ? `Đính chính · ${status.label.toLowerCase()}` : status.label}</Badge>
+        )}
         {draft === null && (
           <div className="row-actions minutes-card-actions">
             {minutes && history.length > 1 && (

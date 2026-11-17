@@ -59,6 +59,4 @@ public class MeetingMinutes : Entity
     /// When it was issued. The content is locked by <see cref="Status"/>: only a Draft or a Rejected revision is edited.
     /// </summary>
     public DateTimeOffset? IssuedAt { get; set; }
-
-    public ICollection<MinutesSignature> Signatures { get; set; } = [];
 }

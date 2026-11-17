@@ -111,9 +111,9 @@ phải Guid (`/api/roles/Chair`) không khớp route → `404`.
 | Method | Path | Việc |
 |---|---|---|
 | `GET` | `/api/roles` | Liệt kê vai trò |
-| `POST` | `/api/roles` | Tạo vai trò (UC-11) |
-| `PUT` | `/api/roles/{id}` | Đổi tên / mô tả (UC-12a) |
-| `DELETE` | `/api/roles/{id}` | Xoá (UC-12b) |
+| `POST` | `/api/roles` | Tạo vai trò (UC-12a) |
+| `PUT` | `/api/roles/{id}` | Đổi tên / mô tả (UC-12b) |
+| `DELETE` | `/api/roles/{id}` | Xoá (UC-12c) |
 
 ### 4.1 `GET /api/roles`
 
@@ -162,7 +162,7 @@ Thành công: `201`, `Location: /api/roles/{id}`:
 { "name": "Phó thư ký", "description": null }
 ```
 
-Thứ tự kiểm theo sequence diagram UC-12a:
+Thứ tự kiểm theo sequence diagram UC-12b:
 
 1. Không tồn tại → `404`
 2. Vai trò mặc định → `MSG24` (trước cả validate: không có gì để sửa trong form)
@@ -179,7 +179,7 @@ không chạm quyền, không chạm người.
 
 ### 4.4 `DELETE /api/roles/{id}`
 
-Thứ tự theo UC-12b, chạy trong guard:
+Thứ tự theo UC-12c, chạy trong guard:
 
 1. Không tồn tại → `404`
 2. Vai trò mặc định → `MSG24`
@@ -260,7 +260,7 @@ thì FK từ chối (`23503`) và API trả `MSG09` `errors.roleId` như vai tr�
 ## 7. Đăng nhập và phiên
 
 - **Tạo / đổi tên / xoá không kết thúc phiên của ai.** `/api/auth/me` trả tên mới ở lần FE đọc lại.
-- Sửa quyền của vai trò vẫn kết thúc phiên người giữ nó, như `SCRUM-60`.
+- Sửa quyền của vai trò **không** kết thúc phiên người giữ nó (BR-313): quyền mới áp dụng từ hành động tiếp theo, hệ thống báo cho người giữ vai trò, không phải đăng nhập lại.
 - **Đã bỏ nhánh `MSG04` của UC-01 (và `MSG05` của UC-02) — số cũ, trước khi đánh lại mã chung** theo đề xuất: mọi vai trò không có quyền
   nào đều đăng nhập được như `Member`. Refresh cũng không còn cắt phiên vì "hết quyền" — token mới
   đơn giản không mang quyền nào. **Chờ BA sửa UC-01/UC-02** (mục 10). Nếu BA muốn giữ, cần định
@@ -300,7 +300,7 @@ thực hiện theo luồng ở mục 9 trước khi ticket được đánh dấu
 
 ## 10. Câu hỏi mở cho BA
 
-1. Chốt số UC (hiện dùng UC-11/12/13 theo sequence diagram) và mã `MSG19`–`MSG25`.
+1. ~~Chốt số UC (hiện dùng UC-11/12/13 theo sequence diagram) và mã `MSG19`–`MSG25`.~~ Đã chốt theo đặc tả (SCRUM-207): UC-11 là cấu hình quyền, UC-12a là tạo, UC-12b là sửa, UC-12c là xoá, UC-13 là xem nhật ký (khớp inventory + sequence UC12a/b/c).
 2. **Bỏ `MSG04` của UC-01 / `MSG05` của UC-02 (số cũ)** — xem ghi chú dưới. **Code đã bỏ**; cần BA quyết giữ
    hay bỏ và sửa đặc tả UC-01/UC-02 theo.
 3. ~~Nhánh "Unable to create/update/delete role" dùng chung `MSG18` hay có mã riêng.~~ Đã chốt: mã riêng `MSG26`–`MSG28`.
@@ -371,7 +371,7 @@ Nếu các điểm trên đã ổn định trong môi trường tích hợp thì
 
 ### Cần BA chốt
 
-- Chốt số UC (hiện tài liệu dùng UC-11/12/13) và dải mã `MSG19`–`MSG25`.
+- ~~Chốt số UC (hiện tài liệu dùng UC-11/12/13) và dải mã `MSG19`–`MSG25`.~~ Đã chốt theo đặc tả (SCRUM-207): UC-11 cấu hình quyền, UC-12a tạo, UC-12b sửa, UC-12c xoá.
 - Chốt bỏ hay giữ nhánh đăng nhập khi vai trò không có capability nào (`MSG04` UC-01 / `MSG05`
   UC-02, số cũ). Code hiện đã bỏ nhánh này; nếu chấp nhận thì cập nhật đặc tả UC-01/UC-02.
 - ~~Chốt dùng chung `MSG18` cho lỗi tạo/sửa/xoá hay cần mã riêng.~~ Đã chốt: `MSG26`–`MSG28`.

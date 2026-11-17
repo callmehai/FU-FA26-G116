@@ -8,13 +8,16 @@
 > Số UC đã đổi theo baseline 70 UC ([bảng đổi số](../01-requirements/00-master-use-case-inventory.md#5-bảng-đổi-số-uc-cũ--mới));
 > các mã `BR-54` → `BR-61` nhắc trong file là số BR cũ đã ngừng dùng ([danh mục BR](../01-requirements/06-business-rules.md)).
 
-SCRUM-15 không thêm endpoint nào cho người dùng; endpoint duy nhất là webhook Resend gọi để báo kết quả giao thư (xem [Gửi qua Resend](#gửi-qua-resend-và-kết-quả-giao-thư--adr-0031)). Luồng công bố của SCRUM-19 gọi
-`IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi transaction đã commit
-meeting sang `Published`. Khi bật SMTP, mỗi thành phần tham dự tạo một dòng
-`email_messages` ở trạng thái `Queued`; request công bố chỉ ghi queue và không chờ SMTP. Chỉ tài khoản
-đang hoạt động mới được nhận thư; producer không lọc `Response` của participant. `deduplication_key`
-có unique index; thư mời công bố dùng `meeting:{meetingId}:published:{userId}`.
-Gọi lại cùng sự kiện không tạo thư trùng, nhưng một sự kiện
+SCRUM-15 không thêm endpoint nào cho người dùng; endpoint duy nhất là webhook Resend gọi để báo kết quả giao thư (xem [Gửi qua Resend](#gửi-qua-resend-và-kết-quả-giao-thư--adr-0031)). Luồng công bố của SCRUM-19 (và các mutation roster: dời lịch, huỷ, thu hồi, đổi vai trò) gọi
+`MeetingInvitationEvents.Stage(...)` ghi một dòng `meeting_invitation_dispatches` ở trạng thái
+`Pending` cùng domain transaction với thay đổi meeting/roster — kể cả khi transport tắt. Sau commit,
+`MeetingInvitationDispatchProcessor` của `EmailDeliveryWorker` materialize từng dispatch thành một dòng
+`email_messages` ở trạng thái `Queued` (render sẵn Subject/Body/html/`.ics` cùng `DeduplicationKey`), rồi
+`EmailQueueProcessor` gửi từng thư; request công bố chỉ ghi dispatch và không chờ SMTP. Chỉ assignment
+hiện tại còn hiệu lực mới thành thư: internal theo `ParticipantRules.ActiveExpression` (tài khoản đang
+hoạt động), Khách theo lời mời chưa bị thu hồi; legacy Guest/Delegated không còn là current assignment
+nên không nhận. `deduplication_key` có unique index; thư mời công bố dùng `meeting:{meetingId}:published:{userId}`.
+Gọi lại cùng sự kiện không tạo thư trùng (dispatch đã `Materialized` thì bỏ qua), nhưng một sự kiện
 đổi lịch, hủy họp hoặc phát hành biên bản sau này vẫn có thể tạo thư mới cho cùng người nhận.
 
 Phần FE cần tích hợp được tóm tắt riêng tại
@@ -51,8 +54,8 @@ SMTP được kết nối bằng MailKit và không phụ thuộc Gmail hay mộ
 Mỗi thư Publish gồm nội dung tiếng Việt, thông tin Meeting, địa điểm/hình thức và đường dẫn trực tiếp
 tới `/mgmt/meetings/{id}`. Thư ghi giờ bắt đầu/kết thúc theo giờ Việt Nam và đính kèm `thu-moi-hop.ics`
 (`DTSTART`/`DTEND` từ `plannedStartTime`/`plannedEndTime`). Họp trực tuyến ghi link, hoặc "Phòng họp trực
-tuyến TrustCabinet" khi không có link. Dời lịch chưa gửi email cập nhật; người được mời nhận thông báo
-trong ứng dụng.
+tuyến TrustCabinet" khi không có link. Dời lịch gửi thư "Cuộc họp đã dời lịch" (bảng dưới) kèm chuông trong ứng
+dụng. Thư huỷ đính kèm `huy-hop.ics` (`METHOD:CANCEL`) để trình lịch gỡ sự kiện.
 
 ## Điểm tích hợp với SCRUM-19
 
@@ -61,14 +64,18 @@ khởi tạo queue có ranh giới riêng. Thứ tự bắt buộc:
 
 1. Khóa và kiểm tra meeting đang ở `Approved`.
 2. Chuyển sang `Published`, thêm `MeetingStatusHistory` bất biến.
-3. Tạo notifications, SaveChanges và commit transaction publication.
-4. Gọi `QueueForPublishedMeetingAsync(meetingId)`; producer đọc meeting/participants, render và lưu
-   Subject/Body/`.ics` cùng DeduplicationKey khi SMTP được bật.
-5. Worker chỉ gửi nội dung đã lưu; không render lại từ meeting/participant hiện tại.
+3. Tạo notifications và gọi `MeetingInvitationEvents.Stage(...)` cho từng recipient, SaveChanges và
+   commit transaction publication — dispatch nằm cùng transaction với status/history/notification.
+4. Sau commit, khi transport được bật: `MeetingInvitationDispatchProcessor` materialize từng dispatch
+   thành `email_messages` (Subject/Body/html/`.ics` cùng DeduplicationKey); `EmailQueueProcessor`
+   chỉ gửi nội dung đã lưu, không render lại từ meeting/participant hiện tại.
+5. Thư nhắc họp do `MeetingReminderEmails.QueueDueAsync` xếp cùng nhịp chuông nhắc trong ứng dụng
+   (trong 15 phút trước giờ bắt đầu), không qua dispatch công bố.
 
-Nếu lưu publication lỗi thì rollback status/history/notification và trả `MSG47`. Nếu bước queue lỗi
-sau commit thì giữ Published, trả `MSG45`, ghi log và để worker đối soát thử lại. Deduplication key
-giữ retry idempotent và không tạo thêm publication history. Không gọi queue trước khi trạng thái
+Nếu lưu publication lỗi thì rollback status/history/notification/dispatch và trả `MSG47`. Lỗi
+materialize/gửi sau commit thì giữ Published, trả `MSG45`, ghi log; dispatch ở lại `Pending` hoặc
+`BlockedDependency` để worker thử lại. Deduplication key
+giữ retry idempotent và không tạo thêm publication history. Không materialize/gửi trước khi trạng thái
 `Published` được commit, và không gọi SMTP trực tiếp từ request.
 
 ## Gửi qua Resend và kết quả giao thư — ADR-0031
@@ -84,11 +91,47 @@ Server gửi qua API của Resend ([ADR-0031](../05-decisions/0031-gui-email-qua
 | `provider_message_id` | id Resend trả về | trống |
 | Kết quả giao thư | Webhook bên dưới | Không biết |
 
-Mỗi thư gửi cả hai phần: `text` (nội dung lưu trong `email_messages.body`) và `html` dựng từ chính nội dung đó lúc gửi
-(`EmailHtml`): tên TrustCabinet ở đầu, mỗi địa chỉ web thành thẻ `<a>` nhưng vẫn ghi nguyên địa chỉ để chép được. Không
-lưu thêm cột nào. Lý do: trình đọc thư không tự nhận link trong văn bản thuần thì Khách phải chép tay link mời dài (E2E
-Khách 12/11/2026, U6). Dấu câu ngay sau địa chỉ (`.`, `)`…) không tính vào link. **Click/open tracking của Resend phải
-tắt** trên domain gửi: link đặt lại mật khẩu và link mời Khách mang token sau `#`, tracking sẽ ghi lại cả URL đó.
+Mỗi thư gửi cả hai phần: `text` (lưu trong `email_messages.body`) và `html`. Phần `html` là mẫu thư thiết kế
+(`EmailTemplates` trên khung `EmailLayout`, theo bản demo email 15/11/2026): tên TrustCabinet ở đầu, loại thư và tên
+cuộc họp, bảng thông tin, nút hành động kèm đường dẫn ghi nguyên để chép được, chân thư. Chỉ dùng bảng và CSS inline vì
+Gmail, Outlook bỏ thẻ `<style>`, flexbox và SVG; mọi chữ người dùng gõ (tên họp, mô tả, lý do huỷ, tên người) đều được
+escape. Thư cho Khách không có địa điểm và mô tả, nút dẫn tới trang xác minh (UC-04); thư huỷ và thư thu hồi không có
+link; thư dời lịch gạch thời gian cũ cạnh thời gian mới. Thư về cuộc họp ghi Chủ toạ và người tổ chức (người tạo cuộc
+họp) để người nhận biết hỏi ai, đọc lúc dựng thư; người trong hệ thống thấy cả email người tổ chức, Khách chỉ thấy tên.
+Thư mã xác minh không có link: trang xác minh tự gửi mã mới mỗi lần mở, link trong thư mã sẽ làm chính mã đó mất hiệu lực.
+
+| Thư | Ai nhận | Nút |
+|---|---|---|
+| Lời mời tham dự | người trong roster, Khách | Xem cuộc họp / Xác minh email để vào cuộc họp |
+| Vai trò đã thay đổi | người trong roster | Xem cuộc họp |
+| Cuộc họp đã dời lịch | người trong roster (cả người tổ chức vừa dời), Khách | Xem cuộc họp / Xác minh email để vào cuộc họp |
+| Cuộc họp đã bị huỷ | người đã nhận lời mời, Khách | không |
+| Lời mời đã được thu hồi | người đã nhận lời mời, Khách | không |
+| Phân công trình bày | Khách được gán trình bày | Xác minh email để vào cuộc họp |
+| Mã xác minh vào cuộc họp | Khách | không (mã hiện to) |
+| Đặt lại mật khẩu | người được quản trị viên đặt lại | Đặt mật khẩu mới |
+| Cuộc họp sắp bắt đầu | người được mời đang hoạt động, Khách hiện tại | Vào phòng họp (phòng TrustCabinet) / Xem cuộc họp / Xác minh email để vào cuộc họp (Khách) |
+| Biên bản đã ban hành, bản đính chính đã ban hành | đúng những người nhận chuông "Biên bản đã ban hành", trừ Chủ toạ vừa duyệt | Xem biên bản (mở tab Biên bản) |
+
+**Thêm theo PO 15/11/2026** (ngoài BR-303, BR-411 và quy tắc dời lịch hiện ghi chỉ trong ứng dụng, chờ BA cập nhật):
+- Dời lịch: trước chỉ Khách nhận email, người nội bộ chỉ có chuông. Giờ mọi người trong roster nhận email, gạch thời gian
+  cũ cạnh thời gian mới; chuông vẫn không gửi cho người tổ chức vừa dời.
+- Nhắc họp: `MeetingReminderEmails` chạy cùng nhịp `NotificationWorker` với chuông nhắc, trong 15 phút trước giờ bắt đầu
+  của cuộc họp Đã công bố. Khoá chống trùng `email-starting-soon:{meetingId}:{giờ bắt đầu}:{người}` giữ giờ bắt đầu, nên dời
+  lịch thì nhắc lại theo giờ mới. Khác chuông, thư nhắc tới cả Khách (Khách không có chuông), kèm link xác minh; không tạo
+  được link thì không gửi thư cho Khách đó. Ai được mời trong chính 15 phút đó (thư mời tạo sau giờ bắt đầu trừ 15 phút)
+  thì không nhận thư nhắc, vì thư mời vừa tới đã ghi giờ họp; chuông nhắc vẫn có.
+- Biên bản ban hành: đưa vào hàng đợi trong cùng giao dịch duyệt biên bản, khoá `email-minutes-issued:{minutesId}:{người}`.
+  Thư biên bản họp Mật không nhắc tải Word/PDF vì biên bản Mật chỉ đọc trên màn hình.
+
+Phần `html` dựng lúc đưa thư vào hàng đợi, lưu ở `email_messages.html_body` (migration `EmailHtmlBody`), vì lúc gửi
+không còn đủ dữ kiện để dựng lại. Thư đặt lại mật khẩu và mã OTP vẫn gửi thẳng, không lưu, nên link và mã vẫn không nằm
+trong DB. Dòng cũ có `html_body` rỗng thì gửi phần `html` dựng từ `text` như trước (`EmailHtml`): mỗi địa chỉ web thành
+thẻ `<a>`, vì trình đọc thư không tự nhận link trong văn bản thuần thì Khách phải chép tay link mời dài (E2E Khách
+12/11/2026, U6). Dấu câu ngay sau địa chỉ (`.`, `)`…) không tính vào link. Xem trước mọi mẫu: chạy
+`EMAIL_PREVIEW_DIR=<thư mục> dotnet test --filter EmailTemplatesTests` rồi mở `index.html` trong thư mục đó.
+
+**Click/open tracking của Resend phải tắt** trên domain gửi: link đặt lại mật khẩu và link mời Khách mang token sau `#`, tracking sẽ ghi lại cả URL đó.
 
 ### `POST /api/email/resend/webhook`
 
@@ -179,8 +222,8 @@ dotnet user-secrets set "Email:Smtp:FromAddress" "no-reply@example.vn" --project
 Production dùng các biến môi trường tương ứng, ví dụ
 `Email__Smtp__Password` và `Email__ApplicationBaseUrl`. Khi `Enabled` là `false`, worker không được
 khởi động và lần công bố meeting không tạo dòng email mới; các dòng đã có trong queue vẫn được giữ
-trong database. Khi bật SMTP, lỗi producer hoặc lưu queue không rollback publication; worker thử
-khởi tạo lại từ meeting Published và request Publish vẫn trả `200 MSG45`.
+trong database. Khi bật SMTP, lỗi materialize/gửi sau commit không rollback publication; dispatch
+ở lại hàng đợi để worker thử lại và request Publish vẫn trả `200 MSG45`.
 
 Giới hạn cấu hình: `MaxAttempts` từ 1–20; retry/polling từ 1–3.600 giây; lease từ 10–3.600 giây;
 timeout SMTP và deadline toàn bộ lần gửi từ 1–300 giây. `ProcessingLeaseSeconds` phải dài hơn

@@ -22,6 +22,12 @@ public class EmailMessage : Entity
 
     public string Body { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The designed HTML part, built from the same facts as <see cref="Body"/> when the email is queued. Null on rows
+    /// queued before the templates existed; those are sent with HTML made from the text.
+    /// </summary>
+    public string? HtmlBody { get; set; }
+
     /// <summary>The calendar invitation (.ics) sent with a meeting invitation, when there is one.</summary>
     public string? CalendarAttachment { get; set; }
 

@@ -26,15 +26,15 @@ deactivate VoiceRepository
 alt Consent was already withdrawn
     VoiceService->VoiceService: Nothing to change
 else Consent stands
-    VoiceService->VoiceRepository: In one step: delete every voice sample of the actor, clear every speaker\nsuggestion pointing to the actor, keep names a Secretary assigned,\nand mark the consent withdrawn (BR-365)
+    VoiceService->VoiceRepository: In one step: delete every voice sample of the actor, both those the actor recorded\nand those Secretaries recorded, clear every speaker suggestion pointing to the actor,\nkeep names a Secretary assigned, and mark the consent withdrawn (BR-365, BR-454)
     activate VoiceRepository
     VoiceRepository->Database: Delete samples, clear suggestions, update consent
     activate Database
     Database-->VoiceRepository: Changes saved / Save failed
     deactivate Database
-    VoiceRepository-->VoiceService: Samples deleted, suggestions cleared / Save failed
+    VoiceRepository-->VoiceService: Both sample sets deleted, suggestions cleared / Save failed
     deactivate VoiceRepository
-    VoiceService->AuditService: Record the withdrawal with the number of samples and suggestions erased
+    VoiceService->AuditService: Record the withdrawal with the number of samples of both sets\nand suggestions erased
     activate AuditService
     AuditService-->VoiceService: Entry saved
     deactivate AuditService

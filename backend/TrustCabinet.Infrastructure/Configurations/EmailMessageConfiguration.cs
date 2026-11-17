@@ -15,6 +15,8 @@ public class EmailMessageConfiguration : IEntityTypeConfiguration<EmailMessage>
             .IsRequired();
         builder.Property(e => e.Subject).HasMaxLength(300).IsRequired();
         builder.Property(e => e.Body).HasMaxLength(50000);
+        // About ten times the text: inline styles on every cell, and the text is escaped.
+        builder.Property(e => e.HtmlBody).HasMaxLength(500000);
         builder.Property(e => e.LastError).HasMaxLength(2000);
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(e => e.ProviderMessageId).HasMaxLength(128);

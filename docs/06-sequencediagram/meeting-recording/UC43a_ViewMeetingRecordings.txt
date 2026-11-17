@@ -81,13 +81,16 @@ else Actor may listen
             RecordingController-->RecordingsTab: MSG297 - Unable to load meeting recordings.
             RecordingsTab-->Actor: MSG297 - Unable to load meeting recordings.
         else Recordings loaded
-            RecordingService->RecordingService: Decide what the actor may do: record the room and upload\nonly for the current Secretary of an In-person or Hybrid Meeting,\ndownload only for the current Chair or Secretary (BR-340, BR-341, BR-342, BR-351)
+            RecordingService->RecordingService: Decide what the actor may do: record the room\nonly for the current Secretary of an In-person or Hybrid Meeting, upload\nonly for the current Secretary of an In-person Meeting, and download\nonly for the current Chair or Secretary (BR-340, BR-341, BR-342, BR-351)
+            opt Meeting is Hybrid, has Ended, is not Secret, and its combined recording is built - AF-3
+                RecordingService->RecordingService: Include the combined recording with the Combined label;\nit has no transcript and offers no transcription (BR-456, BR-458)
+            end
             RecordingService-->RecordingController: Recordings with status, source, takes, retention date\nand transcript status
             RecordingController-->RecordingsTab: Recordings with status, source, takes, retention date\nand transcript status
             alt Meeting is Online - AF-1
                 RecordingsTab-->Actor: Show the speech timeline only, without room recording or upload controls
             else Meeting is In-person or Hybrid
-                RecordingsTab-->Actor: Show the speech timeline and the room recordings,\nwith a Recording badge while a room take is open
+                RecordingsTab-->Actor: Show the speech timeline and the room recordings,\nwith the Combined label when the combined recording is built,\nand a Recording badge while a room take is open
             end
         end
         deactivate RecordingService

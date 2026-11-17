@@ -302,5 +302,6 @@ internal sealed class GuestAccessService(TrustCabinetDbContext db, GuestCredenti
 
             Mã có hiệu lực trong {minutes} phút và chỉ dùng được một lần. Nếu bạn không yêu cầu mã này, hãy bỏ qua email.
             """,
+        HtmlBody = EmailTemplates.GuestCode(invitation.InvitedName, invitation.Meeting.Title, code, minutes),
     };
 }

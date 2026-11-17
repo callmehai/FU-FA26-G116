@@ -1,0 +1,12 @@
+{
+  "name": "trustcabinet-qa",
+  "private": true,
+  "type": "module",
+  "description": "Acceptance QA runner: drives the real app per acceptance criterion and role, keeps the evidence (see README.md and .claude/skills/qa-ticket).",
+  "scripts": {
+    "qa": "node run.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

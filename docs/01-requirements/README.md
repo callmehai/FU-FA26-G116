@@ -32,7 +32,7 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
   Conclusion) đã có đặc tả và sequence diagram (`UC73_HandOverChair` → `UC77_RecordAgendaItemConclusion`);
   UC-37 → UC-42, UC-39d và UC-78 (phòng họp trực tuyến) đã đặc tả ngày 25/10/2026; UC-79 (đăng ký phát biểu, yêu cầu chưa cài) thêm ngày 29/10/2026;
   **UC-47–UC-50 (dự thảo AI) và UC-58–UC-60 (bản nháp biên bản) đặc tả ngày 05/11/2026 theo PR #260**; UC-51 và
-  UC-61–UC-65 (công bố tóm tắt, ký biên bản) còn placeholder vì chưa có code.
+  UC-61, UC-64, UC-65 (gửi duyệt, duyệt, trả lại biên bản) đã đặc tả theo SCRUM-33; UC-62/63 (ký biên bản) đã bỏ theo PO 14/11/2026.
 - [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **347 BR đang dùng**
   trong dải BR-01 → BR-394 (BR-313/BR-314 theo SCRUM-105, BR-320/BR-321 PO duyệt 20–21/10/2026, BR-323 → BR-332, BR-336 → BR-339
   rà soát phòng họp trực tuyến 25/10/2026 và UC-79 29/10/2026 (BR-322 là của main: không nhận thông báo về hành động của mình); đợt BA Final Review 24/10/2026 sửa

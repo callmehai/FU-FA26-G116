@@ -117,9 +117,10 @@ trong bảng đệm. Xem [bàn giao tích hợp](06-scrum19-ban-giao-tich-hop.md
 - `Email:Smtp:Enabled` là `true` trước khi backend khởi động.
 - Người tham dự có địa chỉ email thật và hợp lệ.
 - Máy cho phép kết nối outbound tới SMTP host/port.
-- Luồng công bố của SCRUM-19 gọi
-  `IMeetingInvitationQueue.QueueForPublishedMeetingAsync(meetingId)` sau khi transaction chuyển
-  meeting sang `Published` đã commit; worker tự đối soát để thử lại nếu bước khởi tạo job lỗi.
+- Luồng công bố của SCRUM-19 (và các mutation roster) gọi `MeetingInvitationEvents.Stage(...)`
+  ghi `MeetingInvitationDispatch` cùng transaction với thay đổi sang `Published` đã commit; sau đó
+  `MeetingInvitationDispatchProcessor` materialize thành `email_messages` rồi `EmailQueueProcessor`
+  gửi. Dispatch ở lại `Pending`/`BlockedDependency` để worker thử lại nếu bước materialize/gửi lỗi.
 
 Nếu SCRUM-19 chưa tích hợp thì worker vẫn chạy nhưng không có job mới để gửi.
 

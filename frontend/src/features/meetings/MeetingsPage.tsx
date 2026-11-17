@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { listMeetings } from '../../api/meetings'
+import { ClearFiltersButton } from '../../components/ClearFiltersButton'
 import { Icon } from '../../components/Icon'
 import { PageHeader } from '../../components/PageHeader'
 import { Pagination } from '../../components/Pagination'
 import { Select } from '../../components/Select'
 import { backState } from '../../lib/backTarget'
 import { errorMessage, isApiError } from '../../lib/errors'
-import { formatClock, formatDate, formatWeekdayDate } from '../../lib/format'
+import { formatClock, formatDate, formatDateRange, formatWeekdayDate } from '../../lib/format'
 import { routes } from '../../lib/routes'
 import { useSearchBox } from '../../lib/useSearchBox'
+import { latestSearchParams } from '../../lib/latestSearchParams'
 import {
   MEETING_MODE_LABEL,
   MEETING_STATUSES,
@@ -119,10 +121,10 @@ export function MeetingsPage() {
   const update = useCallback(
     (patch: Partial<ListState>) => {
       // Any change of criteria starts again from page 1, unless the change is the page itself.
-      const next = { ...readListState(searchParams), page: 1, ...patch }
+      const next = { ...readListState(latestSearchParams()), page: 1, ...patch }
       setSearchParams(writeListState(next), { replace: true })
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   )
 
   const [search, setSearch] = useSearchBox(state.q, (q) => update({ q }))
@@ -164,7 +166,7 @@ export function MeetingsPage() {
 
   function sortBy(column: MeetingSortBy) {
     const sortDir = state.sortBy === column ? (state.sortDir === 'asc' ? 'desc' : 'asc') : defaultDirection(column)
-    update({ sortBy: column, sortDir })
+    update({ sortBy: column, sortDir, sortSet: true })
   }
 
   function clearFilters() {
@@ -283,9 +285,17 @@ export function MeetingsPage() {
             {formatClock(m.plannedStartTime)} – {formatClock(m.plannedEndTime)}
           </b>
           <span className="cell-sub">
-            {formatDate(m.plannedStartTime) === formatDate(m.plannedEndTime)
-              ? formatWeekdayDate(m.plannedStartTime)
-              : `${formatDate(m.plannedStartTime)} – ${formatDate(m.plannedEndTime)}`}
+            {formatDate(m.plannedStartTime) === formatDate(m.plannedEndTime) ? (
+              formatWeekdayDate(m.plannedStartTime)
+            ) : formatDate(m.plannedStartTime).slice(6) === formatDate(m.plannedEndTime).slice(6) ? (
+              formatDateRange(m.plannedStartTime, m.plannedEndTime)
+            ) : (
+              // Across a new year both dates are written in full, wider than the column: one per line.
+              <>
+                {formatDate(m.plannedStartTime)} –<br />
+                {formatDate(m.plannedEndTime)}
+              </>
+            )}
           </span>
         </td>
         <td className="cell-muted cell-place">{MEETING_MODE_LABEL[m.mode]}</td>
@@ -339,7 +349,13 @@ export function MeetingsPage() {
         }
       />
 
-      <MeetingStats active={activeStat(state)} showDrafts={canCreate} reloadKey={attempt} onSelect={pickStat} />
+      <MeetingStats
+        active={activeStat(state)}
+        showDrafts={canCreate}
+        canApprove={can('MeetingApprover')}
+        reloadKey={attempt}
+        onSelect={pickStat}
+      />
 
       <div className="list-panel list-page list-fill">
         <div className="toolbar">
@@ -372,12 +388,14 @@ export function MeetingsPage() {
               options={STATUS_OPTIONS}
               onChange={(status) => update({ status })}
               label="Trạng thái"
+              steady
             />
             <Select
               value={state.sensitivity}
               options={SENSITIVITY_OPTIONS}
               onChange={(sensitivity) => update({ sensitivity })}
               label="Mức độ"
+              steady
             />
 
             <Select
@@ -385,20 +403,11 @@ export function MeetingsPage() {
               options={WHEN_SELECT_OPTIONS}
               onChange={(when) => update({ when })}
               label="Thời điểm"
+              steady
             />
 
             {/* Icon-only so the toolbar stays on one line; the empty state carries the labelled button. */}
-            {showClear && (
-              <button
-                type="button"
-                className="icon-button"
-                onClick={clearFilters}
-                data-tooltip="Xoá bộ lọc"
-                aria-label="Xoá bộ lọc"
-              >
-                <Icon name="x" size={16} />
-              </button>
-            )}
+            <ClearFiltersButton shown={showClear} onClear={clearFilters} />
           </div>
 
         </div>

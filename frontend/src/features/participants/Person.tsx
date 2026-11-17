@@ -1,4 +1,3 @@
-import { Fragment } from 'react'
 import { avatarColors, initials } from '../../lib/avatar'
 
 /**
@@ -18,17 +17,7 @@ export function Person({ name, email, self = false }: { name: string; email: str
           {name}
           {self && <span className="person-self">(Tôi)</span>}
         </span>
-        {/* A narrow roster wraps the email before an "@" or a "." rather than mid-word (SCRUM-151). */}
-        {email && (
-          <span className="cell-sub">
-            {email.split(/(?=[@.])/).map((part, i) => (
-              <Fragment key={i}>
-                {i > 0 && <wbr />}
-                {part}
-              </Fragment>
-            ))}
-          </span>
-        )}
+        {email && <span className="cell-sub">{email}</span>}
       </span>
     </span>
   )
