@@ -46,6 +46,9 @@ public interface IMeetingRepository
 
     Task SaveChangesAsync(CancellationToken ct = default);
 
+    /// <summary>Forgets every entity this unit of work tracks, so a write that failed half way is not saved later.</summary>
+    void DiscardChanges();
+
     Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
         => Task.CompletedTask;
 

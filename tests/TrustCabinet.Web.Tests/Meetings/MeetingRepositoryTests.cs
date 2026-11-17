@@ -1627,6 +1627,62 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Equal(cancelled.CancellationReason, item.CancellationReason);
     }
 
+    [Fact]
+    public async Task Overdue_sweep_does_not_save_a_failed_cancellation_with_the_next_meeting()
+    {
+        var now = new DateTimeOffset(2026, 10, 27, 10, 0, 0, TimeSpan.Zero);
+        var failing = ListMeeting("Lưu lỗi", MeetingStatus.Published, now.AddHours(-30));
+        var next = ListMeeting("Kế tiếp", MeetingStatus.Published, now.AddHours(-26));
+        _db.Meetings.AddRange(failing, next);
+        await _db.SaveChangesAsync();
+        var failure = new FailFirstSave();
+        await using var db = new TrustCabinetDbContext(new DbContextOptionsBuilder<TrustCabinetDbContext>()
+            .UseNpgsql(_connectionString)
+            .UseSnakeCaseNamingConvention()
+            .AddInterceptors(failure)
+            .Options);
+        var service = new MeetingOverdueService(
+            new MeetingRepository(db),
+            null!,
+            Microsoft.Extensions.Options.Options.Create(new MeetingOverdueOptions()),
+            new FixedClock(now),
+            NullLogger<MeetingOverdueService>.Instance);
+
+        // The oldest meeting's save fails; the next one is cancelled on the same context (SCRUM-210).
+        Assert.Equal(1, await service.CancelOverdueAsync());
+
+        await using var check = NewContext();
+        var failed = await check.Meetings.AsNoTracking().SingleAsync(m => m.Id == failing.Id);
+        Assert.Equal(MeetingStatus.Published, failed.Status);
+        Assert.Null(failed.CancelledAt);
+        Assert.False(await check.MeetingStatusHistory.AnyAsync(h => h.MeetingId == failing.Id));
+        Assert.False(await check.Notifications.AnyAsync(n => n.MeetingId == failing.Id));
+        var cancelled = await check.Meetings.AsNoTracking().SingleAsync(m => m.Id == next.Id);
+        Assert.Equal(MeetingStatus.Cancelled, cancelled.Status);
+        var history = await check.MeetingStatusHistory.AsNoTracking().SingleAsync(h => h.MeetingId == next.Id);
+        Assert.Equal(MeetingHistoryAction.AutoCancel, history.Action);
+        Assert.Single(await check.Notifications.AsNoTracking().Where(n => n.MeetingId == next.Id).ToListAsync());
+
+        // Left to the next sweep, which cancels it once.
+        Assert.Equal(1, await service.CancelOverdueAsync());
+        Assert.Equal(MeetingStatus.Cancelled, (await check.Meetings.AsNoTracking().SingleAsync(m => m.Id == failing.Id)).Status);
+        Assert.Single(await check.MeetingStatusHistory.AsNoTracking().Where(h => h.MeetingId == failing.Id).ToListAsync());
+    }
+
+    private sealed class FailFirstSave : Microsoft.EntityFrameworkCore.Diagnostics.SaveChangesInterceptor
+    {
+        private bool _failed;
+
+        public override ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>> SavingChangesAsync(
+            Microsoft.EntityFrameworkCore.Diagnostics.DbContextEventData eventData,
+            Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            if (_failed) return ValueTask.FromResult(result);
+            _failed = true;
+            throw new DbUpdateException("Injected persistence failure.");
+        }
+    }
+
     private sealed class FixedClock(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;

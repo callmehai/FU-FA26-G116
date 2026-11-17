@@ -167,6 +167,28 @@ public sealed class CombinedRecordingTests(RecordingFixture fixture) : IClassFix
     }
 
     [Fact]
+    public async Task A_save_that_fails_leaves_no_new_wav_behind()
+    {
+        // Whatever other tests left buildable goes first, so the one failing save below is this meeting's.
+        await BuildAll();
+        var (s, _, _) = await Arrange();
+        var files = fixture.StoredFileCount();
+        fixture.Failures.FailNextSaves = 1;
+        try
+        {
+            await BuildAll();
+        }
+        finally
+        {
+            fixture.Failures.FailNextSaves = 0;
+        }
+
+        // The mix was written, then the row could not be saved: the voice data goes with the failure (SCRUM-211).
+        Assert.Null(await Combined(s.MeetingId));
+        Assert.Equal(files, fixture.StoredFileCount());
+    }
+
+    [Fact]
     public async Task Nothing_is_built_too_early_or_for_another_kind_of_meeting_or_over_an_erasure()
     {
         // In person: one source, the room, already one track.

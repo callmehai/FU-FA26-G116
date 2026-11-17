@@ -342,6 +342,8 @@ public sealed class MeetingRepository(TrustCabinetDbContext db) : IMeetingReposi
 
     public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);
 
+    public void DiscardChanges() => db.ChangeTracker.Clear();
+
     public async Task StagePublicationInvitationsAsync(Meeting meeting, DateTimeOffset now, CancellationToken ct = default)
     {
         foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
