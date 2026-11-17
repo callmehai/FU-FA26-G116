@@ -147,6 +147,9 @@ public sealed class MeetingLifecycleService(
         catch (Exception error) when (error is PersistenceException or InvalidAgendaExecutionException)
         {
             logger.LogError(error.InnerException ?? error, "Could not end overrunning meeting {MeetingId}.", meetingId);
+            // The sweep ends every meeting through one shared change tracker, and the rollback leaves this meeting's
+            // queued end there (rule R7); without this the next meeting's save would write it after all.
+            unitOfWork.DiscardChanges();
             return false;
         }
 

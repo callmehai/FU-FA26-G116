@@ -78,6 +78,35 @@ public sealed partial class MeetingLifecycleTests
     }
 
     [Fact]
+    public async Task A_failed_system_end_is_not_saved_with_the_next_meeting()
+    {
+        // SCRUM-212: the sweep ends every meeting in one scope, so through one change tracker. The first save fails
+        // and rolls back; its queued end must not ride along on the second meeting's save.
+        var failed = await SeedRunning(MeetingMode.InPerson, endedHoursAgo: 40, startedHoursAgo: 41);
+        var next = await SeedRunning(MeetingMode.InPerson, endedHoursAgo: 40, startedHoursAgo: 41);
+        var cutoff = fixture.Clock.Now.AddHours(-24);
+
+        await using var scope = fixture.Host.Services.CreateAsyncScope();
+        var lifecycle = scope.ServiceProvider.GetRequiredService<IMeetingLifecycleService>();
+        fixture.SaveFailure.Enabled = true;
+        try { Assert.False(await lifecycle.EndOverrunAsync(failed.MeetingId, cutoff, "Quá giờ")); }
+        finally { fixture.SaveFailure.Enabled = false; }
+        Assert.True(await lifecycle.EndOverrunAsync(next.MeetingId, cutoff, "Quá giờ"));
+
+        await using var check = fixture.Db();
+        var meetings = await check.Meetings.AsNoTracking()
+            .Where(m => m.Id == failed.MeetingId || m.Id == next.MeetingId)
+            .ToDictionaryAsync(m => m.Id);
+        Assert.Equal(MeetingStatus.InProgress, meetings[failed.MeetingId].Status);
+        Assert.Null(meetings[failed.MeetingId].ActualEndedAt);
+        Assert.Equal(MeetingStatus.Ended, meetings[next.MeetingId].Status);
+        var history = await check.MeetingStatusHistory.AsNoTracking()
+            .Where(h => h.MeetingId == failed.MeetingId || h.MeetingId == next.MeetingId).ToArrayAsync();
+        var row = Assert.Single(history);
+        Assert.Equal((next.MeetingId, MeetingHistoryAction.AutoEnd), (row.MeetingId, row.Action));
+    }
+
+    [Fact]
     public async Task System_end_yields_to_a_chair_who_already_ended_the_meeting()
     {
         var s = await SeedRunning(MeetingMode.InPerson, endedHoursAgo: 40, startedHoursAgo: 41);
