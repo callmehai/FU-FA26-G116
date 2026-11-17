@@ -125,39 +125,50 @@ public sealed class CombinedRecordingService(TrustCabinetDbContext db, IRecordin
         var byteSize = RecordingRules.WavHeaderBytes + total * 2;
         var durationMs = track.TotalMs;
         string? replaced = null;
-        var kept = await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        bool kept;
+        // The new WAV is voice data that no row points at until this commits: if the save throws, nothing would ever
+        // find it again (not the retention purge, not an erasure), so it goes with the failure.
+        try
         {
-            await using var transaction = await db.Database.BeginTransactionAsync(ct);
-            Recording? row = null;
-            if (plan.ExistingId is { } id)
+            kept = await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
-                await db.Recordings.FromSqlInterpolated($"SELECT * FROM recordings WHERE id = {id} FOR UPDATE").AsNoTracking().ToListAsync(ct);
-                row = await db.Recordings.SingleOrDefaultAsync(r => r.Id == id, ct);
-                // Erased while it was being mixed: the Secretary's choice stands.
-                if (row is null || row.Status == RecordingStatus.Deleted) return false;
-                replaced = row.StoragePath;
-                row.StoragePath = path;
-                row.ByteSize = byteSize;
-                row.DurationMs = durationMs;
-                row.Status = RecordingStatus.Available;
-                row.UpdatedAt = plan.Changed;
-            }
-            else
-            {
-                db.Recordings.Add(new Recording
+                await using var transaction = await db.Database.BeginTransactionAsync(ct);
+                Recording? row = null;
+                if (plan.ExistingId is { } id)
                 {
-                    MeetingId = plan.MeetingId, Source = RecordingSource.Combined, Status = RecordingStatus.Available,
-                    FileName = CombinedRecordingRules.FileName(origin), StoragePath = path, ContentType = "audio/wav",
-                    ByteSize = byteSize, DurationMs = durationMs,
-                    ConsentObtainedAt = plan.Template.ConsentObtainedAt, ConsentPurpose = plan.Template.ConsentPurpose,
-                    RetainUntil = now.AddDays(options.Value.RetentionDays), CreatedById = plan.Template.CreatedById,
-                    CreatedAt = now, UpdatedAt = plan.Changed,
-                });
-            }
-            await db.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
-            return true;
-        });
+                    await db.Recordings.FromSqlInterpolated($"SELECT * FROM recordings WHERE id = {id} FOR UPDATE").AsNoTracking().ToListAsync(ct);
+                    row = await db.Recordings.SingleOrDefaultAsync(r => r.Id == id, ct);
+                    // Erased while it was being mixed: the Secretary's choice stands.
+                    if (row is null || row.Status == RecordingStatus.Deleted) return false;
+                    replaced = row.StoragePath;
+                    row.StoragePath = path;
+                    row.ByteSize = byteSize;
+                    row.DurationMs = durationMs;
+                    row.Status = RecordingStatus.Available;
+                    row.UpdatedAt = plan.Changed;
+                }
+                else
+                {
+                    db.Recordings.Add(new Recording
+                    {
+                        MeetingId = plan.MeetingId, Source = RecordingSource.Combined, Status = RecordingStatus.Available,
+                        FileName = CombinedRecordingRules.FileName(origin), StoragePath = path, ContentType = "audio/wav",
+                        ByteSize = byteSize, DurationMs = durationMs,
+                        ConsentObtainedAt = plan.Template.ConsentObtainedAt, ConsentPurpose = plan.Template.ConsentPurpose,
+                        RetainUntil = now.AddDays(options.Value.RetentionDays), CreatedById = plan.Template.CreatedById,
+                        CreatedAt = now, UpdatedAt = plan.Changed,
+                    });
+                }
+                await db.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
+                return true;
+            });
+        }
+        catch
+        {
+            storage.Delete(path);
+            throw;
+        }
         db.ChangeTracker.Clear();
         if (!kept)
         {
