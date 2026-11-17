@@ -1,5 +1,3 @@
-using TrustCabinet.Domain.Access;
-
 namespace TrustCabinet.Application.Access;
 
 /// <summary>

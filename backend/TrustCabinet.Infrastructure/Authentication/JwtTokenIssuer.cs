@@ -16,9 +16,6 @@ namespace TrustCabinet.Infrastructure.Authentication;
 /// </summary>
 public sealed class JwtTokenIssuer(IOptions<AuthenticationOptions> options) : ITokenIssuer
 {
-    /// <summary>Claim carrying one <see cref="Capability"/>. Repeated once per capability.</summary>
-    public const string CapabilityClaim = ITokenIssuer.CapabilityClaim;
-
     private readonly AuthenticationOptions _options = options.Value;
 
     public TimeSpan AccessTokenLifetime => TimeSpan.FromMinutes(_options.AccessTokenMinutes);
@@ -43,7 +40,7 @@ public sealed class JwtTokenIssuer(IOptions<AuthenticationOptions> options) : IT
 
         // One claim per capability rather than a comma-joined string, so [Authorize] policies can
         // match a single value without parsing.
-        claims.AddRange(capabilities.Select(c => new Claim(CapabilityClaim, c.ToString())));
+        claims.AddRange(capabilities.Select(c => new Claim(ITokenIssuer.CapabilityClaim, c.ToString())));
 
         var credentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey)),

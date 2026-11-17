@@ -1,3 +1,4 @@
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Summaries;
 
 namespace TrustCabinet.Web;
@@ -18,7 +19,7 @@ public sealed class SummaryWorker(IServiceScopeFactory scopes, ILogger<SummaryWo
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
-            logger.LogError(error, "Could not requeue interrupted AI drafts");
+            logger.LogError(Original(error), "Could not requeue interrupted AI drafts");
         }
 
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(3));
@@ -40,9 +41,16 @@ public sealed class SummaryWorker(IServiceScopeFactory scopes, ILogger<SummaryWo
             }
             catch (Exception error)
             {
-                logger.LogError(error, "AI draft run failed");
+                logger.LogError(Original(error), "AI draft run failed");
             }
         }
         while (await timer.WaitForNextTickAsync(stoppingToken));
     }
+
+    /// <summary>
+    /// The exception to log: a storage failure as the database raised it, as before the service moved to Application
+    /// (rule R8), and anything else as it is.
+    /// </summary>
+    private static Exception Original(Exception error)
+        => error is PersistenceException { InnerException: { } inner } ? inner : error;
 }

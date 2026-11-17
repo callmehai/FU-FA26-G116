@@ -88,7 +88,9 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
   `AuditEventCatalog`, `MeetingSlotFinder`, `SpeechClipFold`…).
 - Sang Application: mọi interface service, repository, port; DTO request/response; kiểu outcome/result của use case.
 - Kiểu nào bị một entity, enum, rule hay policy ở Domain tham chiếu thì **ở lại Domain** (tách khỏi file
-  `*Contracts.cs` nếu cần), vì Domain không được tham chiếu Application. Danh sách đã biết ở CA-02.
+  `*Contracts.cs` nếu cần), vì Domain không được tham chiếu Application. Danh sách đã biết ở CA-02. CA-20 tách
+  `RolePermissionMatrix.cs`: `PermissionDescriptor` ở lại Domain (`PermissionCatalog` dùng), `RolePermissionMatrix` và
+  `RolePermissions` (kết quả đọc của UC-10, Domain không dùng) sang `Application/Access/`.
 - Không viết lại entity thành aggregate DDD, không thêm value object mới.
 
 ### R4. Service ở Application
@@ -141,8 +143,12 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
   `IUserAccountRepository`: `FindByIdAsync` trả entity `User` có tracking và `Include(Role)`. Port do chính
   `UserAccountRepository` cài, DI chuyển tiếp sang `IUserAccountRepository` đang đăng ký, nên truy vấn và tracking
   giữ nguyên (gate vẫn để `User` của caller được theo dõi trong context của request như cũ), và test thay
-  `IUserAccountRepository` bằng fake thì gate đọc cùng fake đó. Port gọi thẳng từ Web, không qua `IUnitOfWork`, nên
-  lỗi lưu trữ tới `CapabilityGate` ở dạng gốc như trước.
+  `IUserAccountRepository` bằng fake thì gate đọc cùng fake đó. Port gọi thẳng từ Web, không qua `IUnitOfWork`, nên từ
+  CA-20 (SCRUM-185) DI bọc nó trong `Infrastructure/Users/TranslatedCallerAccountQuery`: lỗi lưu trữ ra khỏi port đã dịch
+  (R8), `CapabilityGate` bắt `PersistenceException` thay cho `DbUpdateException`/`NpgsqlException`/`TimeoutException` và
+  log `InnerException ?? exception`, Web không còn `using` EF Core hay Npgsql. Cùng điều kiện thì cùng mã trả về, trừ lỗi
+  tạm thời bị bọc `InvalidOperationException`: trước ra 500, nay ra phản hồi lỗi lưu trữ của endpoint, đúng ngoại lệ ở
+  mục 1.
 
 ### R6. Mô hình tracking
 
@@ -244,7 +250,8 @@ public enum UniqueConflict { Unknown = 0 /* module thêm dần */ }
 
 - Chỉ `Infrastructure/Persistence/PersistenceExceptionTranslator` biết `SqlState` và tên index. Nó có một bảng
   `tên index → UniqueConflict`. Exception gốc giữ ở `InnerException`. `OperationCanceledException` không bị dịch.
-- Điểm dịch duy nhất là `EfUnitOfWork` (`ExecuteAsync`, `SaveChangesAsync`). Vì vậy **trong service Application, mọi
+- Điểm dịch là `EfUnitOfWork` (`ExecuteAsync`, `SaveChangesAsync`), cộng một chỗ cho port Web gọi ngoài unit of work:
+  `TranslatedCallerAccountQuery` (R5). Vì vậy **trong service Application, mọi
   lời gọi repository và query port phải nằm trong delegate của** `ExecuteAsync` (đọc thuần thì `TransactionMode.None`,
   trừ khi code cũ đọc trong transaction). `catch` đặt **ngoài** `ExecuteAsync`; trong delegate không bắt lỗi lưu trữ.
   Ngoại lệ duy nhất (chốt 15/11/2026 ở CA-04): code cũ bắt lỗi quanh **đúng một lời gọi lưu** nằm giữa một khối
@@ -403,7 +410,9 @@ Cách `ArchitectureTests` đo, để subtask sau đọc kết quả cho đúng:
 - A6 có hai mảng. `WebTypesTakingRepositories` đo bằng reflection như trên. `WebFilesNamingInfrastructure` đọc **mã
   nguồn**: file `.cs` dưới `backend/TrustCabinet.Web` có `using TrustCabinet.Infrastructure…` hoặc tên đầy đủ
   `TrustCabinet.Infrastructure.X`, trừ `Program.cs` và `DatabaseMigrationCommand.cs`; mục là đường dẫn tính từ thư mục
-  đó. Lý do: `new PdfPigInspector()`, hằng số hay lời gọi static không để lại dấu trong chữ ký nên reflection bỏ sót
+  đó. Từ CA-20 bắt cả tên viết thiếu tiền tố (`Infrastructure.Authentication.X`), vì namespace của Web nằm dưới
+  `TrustCabinet` nên dạng đó cũng biên dịch được (CA-18 gặp một chỗ); theory
+  `A6_reading_the_source_spots_Infrastructure_with_or_without_its_prefix` giữ mẫu đúng/sai của regex. Lý do: `new PdfPigInspector()`, hằng số hay lời gọi static không để lại dấu trong chữ ký nên reflection bỏ sót
   (`PdfPageCounter.cs`, `MeetingGuestIdentity.cs`, `UserEndpoints.cs`).
 - `CapabilityGate` và `NotificationWorker` lấy repository hoặc `DbContext` bằng `GetRequiredService<T>()` trong
   thân method. (`AgendaPresenterNotifier` từng ở đây; từ CA-07 nó nằm ở Application và lấy `IUnitOfWork` cùng

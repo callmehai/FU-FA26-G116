@@ -9,8 +9,9 @@ namespace TrustCabinet.Application.Users;
 /// not the access token, the authority on both.
 ///
 /// The same two reads as <see cref="IUserAccountRepository"/>, served by the same class, so the gate and the account
-/// screens always see one account. Storage errors come back untranslated: the gate maps the driver's own exceptions to
-/// each endpoint's database-failure response.
+/// screens always see one account. A storage failure comes back as a <see cref="Abstractions.PersistenceException"/>,
+/// which the gate maps to each endpoint's database-failure response; this port is called outside
+/// <see cref="Abstractions.IUnitOfWork"/>, so its implementation translates by itself.
 /// </summary>
 public interface ICallerAccountQuery
 {
