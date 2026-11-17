@@ -111,4 +111,18 @@ public sealed class CombinedRecordingServiceTests
         Assert.Equal(0, _unitOfWork.Discards);
         Assert.Empty(_publisher.Published);
     }
+
+    [Fact]
+    public async Task A_storage_failure_deletes_the_new_mix_so_no_voice_file_is_left_without_a_row()
+    {
+        // SCRUM-211: the room recording and the online sentence are the only files before the build.
+        var sources = _storage.Files.Keys.ToHashSet();
+        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
+
+        Assert.True(await Service().BuildNextAsync());
+
+        var mixed = Assert.Single(_storage.Deleted);
+        Assert.DoesNotContain(mixed, sources);
+        Assert.Equal(sources, _storage.Files.Keys.ToHashSet());
+    }
 }

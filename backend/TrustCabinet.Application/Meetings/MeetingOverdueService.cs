@@ -72,6 +72,9 @@ public sealed class MeetingOverdueService(
             catch (PersistenceException error)
             {
                 logger.LogError(error.InnerException ?? error, "Could not cancel overdue meeting {MeetingId}.", id);
+                // The rollback leaves this meeting's queued changes in the shared change tracker (rule R7); without
+                // this the next meeting's save would write them after all.
+                unitOfWork.DiscardChanges();
             }
         }
 
