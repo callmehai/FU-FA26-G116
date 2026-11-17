@@ -119,36 +119,46 @@ public sealed class CombinedRecordingService(IRecordingRepository recordingRows,
         var byteSize = RecordingRules.WavHeaderBytes + total * 2;
         var durationMs = track.TotalMs;
         string? replaced = null;
-        var kept = await unitOfWork.ExecuteAsync(async token =>
+        bool kept;
+        try
         {
-            Recording? row = null;
-            if (plan.ExistingId is { } id)
+            kept = await unitOfWork.ExecuteAsync(async token =>
             {
-                row = await recordingRows.LockAsync(id, token);
-                // Erased while it was being mixed: the Secretary's choice stands.
-                if (row is null || row.Status == RecordingStatus.Deleted) return false;
-                replaced = row.StoragePath;
-                row.StoragePath = path;
-                row.ByteSize = byteSize;
-                row.DurationMs = durationMs;
-                row.Status = RecordingStatus.Available;
-                row.UpdatedAt = plan.Changed;
-            }
-            else
-            {
-                recordingRows.Add(new Recording
+                Recording? row = null;
+                if (plan.ExistingId is { } id)
                 {
-                    MeetingId = plan.MeetingId, Source = RecordingSource.Combined, Status = RecordingStatus.Available,
-                    FileName = CombinedRecordingRules.FileName(origin), StoragePath = path, ContentType = "audio/wav",
-                    ByteSize = byteSize, DurationMs = durationMs,
-                    ConsentObtainedAt = plan.Template.ConsentObtainedAt, ConsentPurpose = plan.Template.ConsentPurpose,
-                    RetainUntil = now.AddDays(options.Value.RetentionDays), CreatedById = plan.Template.CreatedById,
-                    CreatedAt = now, UpdatedAt = plan.Changed,
-                });
-            }
-            await unitOfWork.SaveChangesAsync(token);
-            return true;
-        }, commitWhen: stored => stored, TransactionMode.ReadCommitted, ct);
+                    row = await recordingRows.LockAsync(id, token);
+                    // Erased while it was being mixed: the Secretary's choice stands.
+                    if (row is null || row.Status == RecordingStatus.Deleted) return false;
+                    replaced = row.StoragePath;
+                    row.StoragePath = path;
+                    row.ByteSize = byteSize;
+                    row.DurationMs = durationMs;
+                    row.Status = RecordingStatus.Available;
+                    row.UpdatedAt = plan.Changed;
+                }
+                else
+                {
+                    recordingRows.Add(new Recording
+                    {
+                        MeetingId = plan.MeetingId, Source = RecordingSource.Combined, Status = RecordingStatus.Available,
+                        FileName = CombinedRecordingRules.FileName(origin), StoragePath = path, ContentType = "audio/wav",
+                        ByteSize = byteSize, DurationMs = durationMs,
+                        ConsentObtainedAt = plan.Template.ConsentObtainedAt, ConsentPurpose = plan.Template.ConsentPurpose,
+                        RetainUntil = now.AddDays(options.Value.RetentionDays), CreatedById = plan.Template.CreatedById,
+                        CreatedAt = now, UpdatedAt = plan.Changed,
+                    });
+                }
+                await unitOfWork.SaveChangesAsync(token);
+                return true;
+            }, commitWhen: stored => stored, TransactionMode.ReadCommitted, ct);
+        }
+        catch
+        {
+            // Rolled back: no row points at the new mix, and nothing else would ever find it (personal data).
+            storage.Delete(path);
+            throw;
+        }
         unitOfWork.DiscardChanges();
         if (!kept)
         {

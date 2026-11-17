@@ -83,6 +83,8 @@ public sealed class MeetingOverdueServiceTests
         Assert.Equal([first.Id, second.Id], _meetings.Locked);
         Assert.Equal(MeetingStatus.Cancelled, second.Status);
         Assert.Equal((1, 1, 1), (_unitOfWork.Saves, _unitOfWork.Commits, _unitOfWork.Rollbacks));
+        // SCRUM-210: the failed meeting's queued changes are dropped before the next one is saved.
+        Assert.Equal(1, _unitOfWork.Discards);
     }
 
     [Fact]

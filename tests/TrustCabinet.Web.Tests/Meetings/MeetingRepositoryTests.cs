@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -1631,6 +1632,59 @@ public sealed class MeetingRepositoryTests : IAsyncLifetime
         Assert.Null(item.ActorId);
         Assert.Equal(MeetingHistoryRecord.SystemActorName, item.ActorName);
         Assert.Equal(cancelled.CancellationReason, item.CancellationReason);
+    }
+
+    [Fact]
+    public async Task Overdue_sweep_does_not_save_a_failed_meeting_with_the_next_one()
+    {
+        // SCRUM-210: every meeting of the sweep shares one context. The first save fails and rolls back; its queued
+        // cancellation must not ride along on the second meeting's save.
+        var now = new DateTimeOffset(2026, 10, 27, 10, 0, 0, TimeSpan.Zero);
+        var failed = ListMeeting("Lưu lỗi", MeetingStatus.Published, now.AddHours(-30));
+        var next = ListMeeting("Kế tiếp", MeetingStatus.Published, now.AddHours(-26));
+        _db.Meetings.AddRange(failed, next);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        await using var sweep = new TrustCabinetDbContext(
+            new DbContextOptionsBuilder<TrustCabinetDbContext>()
+                .UseNpgsql(_connectionString)
+                .UseSnakeCaseNamingConvention()
+                .AddInterceptors(new FailFirstSave())
+                .Options);
+        var service = new MeetingOverdueService(
+            new MeetingRepository(sweep),
+            new EfUnitOfWork(sweep),
+            null!,
+            Microsoft.Extensions.Options.Options.Create(new MeetingOverdueOptions()),
+            new FixedClock(now),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<MeetingOverdueService>.Instance);
+
+        Assert.Equal(1, await service.CancelOverdueAsync());
+
+        var statuses = await _db.Meetings.AsNoTracking().ToDictionaryAsync(m => m.Id, m => m.Status);
+        Assert.Equal(MeetingStatus.Published, statuses[failed.Id]);
+        Assert.Equal(MeetingStatus.Cancelled, statuses[next.Id]);
+        Assert.False(await _db.MeetingStatusHistory.AnyAsync(h => h.MeetingId == failed.Id));
+        Assert.False(await _db.Notifications.AnyAsync(n => n.MeetingId == failed.Id));
+        Assert.Equal(next.Id, (await _db.MeetingStatusHistory.AsNoTracking().SingleAsync()).MeetingId);
+        Assert.Equal(next.Id, (await _db.Notifications.AsNoTracking().SingleAsync()).MeetingId);
+    }
+
+    /// <summary>Fails the first save of its context the way a dropped write does, and lets every later one through.</summary>
+    private sealed class FailFirstSave : SaveChangesInterceptor
+    {
+        private bool _failed;
+
+        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData eventData,
+            InterceptionResult<int> result,
+            CancellationToken cancellationToken = default)
+        {
+            if (_failed) return base.SavingChangesAsync(eventData, result, cancellationToken);
+            _failed = true;
+            throw new DbUpdateException("Simulated write failure.");
+        }
     }
 
     private sealed class FixedClock(DateTimeOffset now) : TimeProvider
