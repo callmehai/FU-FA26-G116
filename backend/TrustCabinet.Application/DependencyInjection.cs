@@ -100,6 +100,7 @@ public static class DependencyInjection
         services.AddScoped<IMeetingService, MeetingService>();
         services.AddScoped<IMeetingLifecycleService, MeetingLifecycleService>();
         services.AddScoped<IMeetingOverdueService, MeetingOverdueService>();
+        services.AddScoped<MeetingAudience>();
     }
 
     private static void AddCalendarSharing(IServiceCollection services)

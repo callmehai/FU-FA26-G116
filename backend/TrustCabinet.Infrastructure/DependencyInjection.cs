@@ -2,13 +2,80 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Infrastructure.Access;
+using TrustCabinet.Infrastructure.Agenda;
+using TrustCabinet.Infrastructure.Attendance;
+using TrustCabinet.Infrastructure.Authentication;
+using TrustCabinet.Infrastructure.CalendarSharing;
+using TrustCabinet.Infrastructure.Calls;
+using TrustCabinet.Infrastructure.Documents;
+using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.GuestAccess;
+using TrustCabinet.Infrastructure.Meetings;
+using TrustCabinet.Infrastructure.Notes;
+using TrustCabinet.Infrastructure.Notifications;
+using TrustCabinet.Infrastructure.Participants;
 using TrustCabinet.Infrastructure.Persistence;
+using TrustCabinet.Infrastructure.Recordings;
+using TrustCabinet.Infrastructure.Reports;
+using TrustCabinet.Infrastructure.Speaking;
+using TrustCabinet.Infrastructure.Summaries;
+using TrustCabinet.Infrastructure.Transcription;
+using TrustCabinet.Infrastructure.Users;
+using TrustCabinet.Infrastructure.VoiceId;
+using TrustCabinet.Infrastructure.Votes;
 using TrustCabinet.Infrastructure.Seed;
 
 namespace TrustCabinet.Infrastructure;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Registers everything this project provides: the database, then each module's repositories, queries, adapters,
+    /// options and its own background workers. The order matters where a later call replaces an earlier one (guest
+    /// access replaces the fail-closed guest adapters <c>AddApplication</c> registered), so keep it.
+    /// </summary>
+    /// <param name="contentRootPath">The web host's content root, under which recordings are stored by default.</param>
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services, IConfiguration configuration, string contentRootPath)
+    {
+        services.AddTrustCabinetDatabase(configuration);
+        services.AddTrustCabinetAuthentication(configuration);
+        services.AddTrustCabinetUserManagement();
+        services.AddTrustCabinetRolePermissions();
+        services.AddTrustCabinetMeetings(configuration);
+        services.AddTrustCabinetAgenda();
+        services.AddTrustCabinetParticipants();
+        services.AddTrustCabinetAttendance();
+        services.AddTrustCabinetVotes();
+        // SCRUM-38: the meeting report and its Excel export.
+        services.AddTrustCabinetReports();
+        // SCRUM-116: UC-04 guest access; replaces the fail-closed guest adapters.
+        services.AddTrustCabinetGuestAccess(configuration);
+        // SCRUM-27: raised hands and the Chair's queue of speakers (UC-79).
+        services.AddTrustCabinetSpeaking();
+        // SCRUM-30: the Secretary's running notes.
+        services.AddTrustCabinetMeetingNotes();
+        services.AddTrustCabinetNotifications();
+        services.AddTrustCabinetEmailDelivery(configuration);
+        // SCRUM-39: meeting call room on LiveKit (ADR-0010). Starts without LiveKit configured; the call endpoints
+        // then answer 503.
+        services.AddTrustCabinetCalls(configuration);
+        // SCRUM-107: meeting documents, bytes on Cloudflare R2 (ADR-0024). Starts without a store configured; uploads
+        // then answer 503/MSG166.
+        services.AddTrustCabinetDocuments(configuration);
+        // SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.
+        services.AddTrustCabinetRecordings(configuration, contentRootPath);
+        // SCRUM-142: calendar sharing (UC-84a → UC-84f, UC-85c).
+        services.AddTrustCabinetCalendarSharing();
+        // SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.
+        services.AddTrustCabinetTranscription(configuration);
+        services.AddTrustCabinetSummaries(configuration);
+        // SCRUM-35: Voice ID — consent, encrypted enrolment samples, speaker suggestions in transcripts.
+        services.AddTrustCabinetVoiceId(configuration);
+        return services;
+    }
+
     /// <summary>
     /// Registers the database. The connection string comes from configuration under
     /// ConnectionStrings:TrustCabinet — from appsettings in development, from user-secrets or an
@@ -40,6 +107,7 @@ public static class DependencyInjection
         // SCRUM-143: transactions and the translation of storage failures for the use cases in Application. It wraps
         // the same scoped context the repositories of the request use.
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+        services.AddScoped<IDatabaseProbe, DatabaseProbe>();
 
         return services;
     }

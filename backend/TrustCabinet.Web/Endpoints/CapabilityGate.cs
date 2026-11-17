@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Enums;
 
@@ -57,7 +58,7 @@ public static class CapabilityGate
                 options.AddPolicy(
                     PolicyFor(capability),
                     policy => policy.RequireClaim(
-                        Infrastructure.Authentication.JwtTokenIssuer.CapabilityClaim,
+                        ITokenIssuer.CapabilityClaim,
                         capability.ToString()));
             }
         });
@@ -171,7 +172,7 @@ public static class CapabilityGate
         }
 
         var ct = context.HttpContext.RequestAborted;
-        var users = context.HttpContext.RequestServices.GetRequiredService<IUserAccountRepository>();
+        var users = context.HttpContext.RequestServices.GetRequiredService<ICallerAccountQuery>();
         var caller = await users.FindByIdAsync(callerId.Value, ct);
 
         if (caller is null || !caller.IsActive)
@@ -190,7 +191,7 @@ public static class CapabilityGate
             return false;
         }
 
-        var users = context.HttpContext.RequestServices.GetRequiredService<IUserAccountRepository>();
+        var users = context.HttpContext.RequestServices.GetRequiredService<ICallerAccountQuery>();
         var caller = await users.FindByIdAsync(callerId.Value, context.HttpContext.RequestAborted);
         return caller is not null && caller.IsActive;
     }

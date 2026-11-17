@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TrustCabinet.Infrastructure.Authentication;
+namespace TrustCabinet.Application.Authentication;
 
 /// <summary>
 /// Google sign-in settings, bound from the <c>Authentication:Google</c> configuration section.

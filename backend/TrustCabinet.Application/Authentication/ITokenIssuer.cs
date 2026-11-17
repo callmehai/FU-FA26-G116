@@ -6,6 +6,9 @@ namespace TrustCabinet.Application.Authentication;
 /// <summary>Issues the access token (AT) and the refresh token (RT) for a signed-in account.</summary>
 public interface ITokenIssuer
 {
+    /// <summary>Claim carrying one <see cref="Capability"/>. Repeated once per capability.</summary>
+    const string CapabilityClaim = "cap";
+
     /// <summary>
     /// A signed JWT carrying the user's id, email, role and capabilities, valid for
     /// <see cref="AccessTokenLifetime"/>. Capabilities travel inside the token so an endpoint can

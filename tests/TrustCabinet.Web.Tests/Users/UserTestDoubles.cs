@@ -16,7 +16,7 @@ namespace TrustCabinet.Web.Tests.Users;
 /// <c>AuthenticationTestDoubles</c>: no mocking library, and each fake records enough for an
 /// assertion to be about real behaviour rather than about a call having been made.
 /// </summary>
-internal sealed class FakeUserAccountRepository : IUserAccountRepository
+internal sealed class FakeUserAccountRepository : IUserAccountRepository, ICallerAccountQuery
 {
     private readonly List<User> _users = [];
 

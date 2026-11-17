@@ -54,6 +54,7 @@ public class NotificationWorkerTests
         services.AddApplication();
         services.AddTrustCabinetNotifications();
         services.AddSingleton<IUserAccountRepository>(accounts);
+        services.AddSingleton<ICallerAccountQuery>(accounts);
         using var provider = services.BuildServiceProvider();
         var notification = new Notification
         {
