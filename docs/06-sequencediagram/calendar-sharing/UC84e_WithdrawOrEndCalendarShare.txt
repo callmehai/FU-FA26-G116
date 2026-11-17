@@ -7,6 +7,7 @@ control ":Calendar Sharing Controller" as SharingController
 control ":Calendar Sharing Service" as SharingService
 participant ":Calendar Share Repository" as ShareRepository
 participant ":Notification Service" as NotificationService
+participant ":Notification Repository" as NotificationRepository
 database ":Database" as Database
 
 Viewer->SharingPage: Withdraw the pending request
@@ -59,10 +60,12 @@ else Actor is one of the two people
         else Request is closed
             SharingService->NotificationService: Notify the other side the request was withdrawn (BR-426)
             activate NotificationService
-            NotificationService->Database: Record notification
+            NotificationService->NotificationRepository: add(notification)
+            NotificationRepository->Database: Record notification
             activate Database
-            Database-->NotificationService: Notification recorded
+            Database-->NotificationRepository: Notification recorded
             deactivate Database
+            NotificationRepository-->NotificationService: Notification recorded
             NotificationService-->SharingService: Other side notified
             deactivate NotificationService
             SharingService-->SharingController: Closed request
@@ -90,10 +93,12 @@ else Actor is one of the two people
         else Share is ended
             SharingService->NotificationService: Notify the other side the sharing ended (BR-426)
             activate NotificationService
-            NotificationService->Database: Record notification
+            NotificationService->NotificationRepository: add(notification)
+            NotificationRepository->Database: Record notification
             activate Database
-            Database-->NotificationService: Notification recorded
+            Database-->NotificationRepository: Notification recorded
             deactivate Database
+            NotificationRepository-->NotificationService: Notification recorded
             NotificationService-->SharingService: Other side notified
             deactivate NotificationService
             SharingService-->SharingController: Ended share

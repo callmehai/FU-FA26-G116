@@ -4,6 +4,7 @@ actor "System Admin" as Admin
 boundary "Audit Log Page" as AuditLogPage
 control ":Audit Log Endpoints" as AuditLogEndpoints
 control ":Audit Log Query Service" as AuditLogQueryService
+participant ":Audit Log Query" as AuditLogQuery
 database ":Database" as Database
 
 Admin->AuditLogPage: Open Nhật ký hệ thống with a period, filters and page
@@ -26,20 +27,24 @@ else The permission is held
     else The criteria are valid
         AuditLogEndpoints->AuditLogQueryService: getPage(query)
         activate AuditLogQueryService
-        AuditLogQueryService->Database: Retrieve the matching audit entries and their total,\nnewest first, one page (BR-11, BR-31, BR-442)
+        AuditLogQueryService->AuditLogQuery: count(query), findPage(query, skip)
+        AuditLogQuery->Database: Retrieve the matching audit entries and their total,\nnewest first, one page (BR-11, BR-31, BR-442)
         activate Database
-        Database-->AuditLogQueryService: Entries and total / Read failure
+        Database-->AuditLogQuery: Entries and total / Read failure
         deactivate Database
+        AuditLogQuery-->AuditLogQueryService: Entries and total / Read failure
 
         alt The entries cannot be read - EX-2
             AuditLogQueryService-->AuditLogEndpoints: Read failed
             AuditLogEndpoints-->AuditLogPage: 500 MSG470 - Unable to load the audit log. Please try again.
             AuditLogPage-->Admin: MSG470 - Unable to load the audit log. Please try again.
         else Entries read
-            AuditLogQueryService->Database: Retrieve the names and emails of the accounts\nand Guest invitations named by the entries
+            AuditLogQueryService->AuditLogQuery: findNames(user ids, role ids, invitation ids)
+            AuditLogQuery->Database: Retrieve the names and emails of the accounts\nand Guest invitations named by the entries
             activate Database
-            Database-->AuditLogQueryService: Names and emails
+            Database-->AuditLogQuery: Names and emails
             deactivate Database
+            AuditLogQuery-->AuditLogQueryService: Names and emails
             AuditLogQueryService->AuditLogQueryService: Name each actor as a user account, a Guest\nor the system (BR-441), and each event with its Vietnamese label
             AuditLogQueryService-->AuditLogEndpoints: Page of entries with time, actor, event, object,\nIP address and recorded details (BR-441, BR-443)
             AuditLogEndpoints-->AuditLogPage: 200 page of audit entries

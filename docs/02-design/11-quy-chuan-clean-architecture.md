@@ -4,14 +4,18 @@
   (SCRUM-165 → SCRUM-185)
 - **Nguồn:** mục 2, 3, 4 của SCRUM-143 (viết 14/11/2026), chép vào repo ở CA-00 (SCRUM-165) kèm chữ ký thật của
   các lớp nền tảng vừa tạo
-- **Liên quan:** [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md),
+- **Trạng thái:** quy chuẩn thường trực của backend từ 17/11/2026
+  ([ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md)). Code backend mới làm theo mục 3; mục 2 và
+  mục 4 là lịch sử của đợt refactor.
+- **Liên quan:** [ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md) (thay
+  [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md)),
   note [Refactor backend sang Clean Architecture](../notes/NOTE-refactor-clean-architecture.md)
 
 **File này là nguồn chuẩn.** Nếu ticket và file lệch nhau thì theo file. Muốn đổi quy chuẩn thì mở PR sửa file
 này, không tự diễn giải trong code. Các subtask có thể do nhiều người hoặc nhiều phiên AI agent khác nhau làm, nên
 mọi subtask làm đúng theo mục 3, không tự chọn cách khác.
 
-Đích đến là bốn project:
+Backend gồm bốn project:
 
 ```
 TrustCabinet.Domain          entity, enum, rule, policy thuần. Không tham chiếu project hay package nào.
@@ -323,20 +327,13 @@ Translator xét kiểu exception, không xét nó đến từ đâu: một `Time
 Redis) cũng thành `PersistenceUnavailableException`, giống các bộ lọc `PersistenceError` cũ. `HttpRequestException` và
 `IOException` thì đi thẳng.
 
-### R9. Giai đoạn chuyển tiếp
+### R9. Giai đoạn chuyển tiếp (đã kết thúc)
 
-- Service chưa chuyển vẫn chạy như cũ. Service đã chuyển và chưa chuyển dùng chung `DbContext`, nên transaction lồng
-  nhau hoạt động nhờ R7.
-- Service đang chuyển mà cần một helper static nhận `TrustCabinetDbContext` của **module chưa chuyển**
-  (`MeetingInvitationEvents.Stage`, `SpeakingRequestCleanup.CloseOpenAsync`, lớp cụ thể `CalendarShareStopper`…): tạo
-  một port tên nghiệp vụ ở `Application/<module sở hữu helper>/`, cài đặt ở Infrastructure bằng một lớp mỏng gọi lại
-  helper cũ, **không sửa helper**. Subtask của module sở hữu sẽ thay lớp mỏng đó.
-  CA-17 (module cuối) đã thay lớp mỏng cuối cùng, `MeetingInvitationStager`: `MeetingInvitationEvents` sang
-  `Application/Email/` và tự cài `IMeetingInvitationStager`, ghi qua `IMeetingInvitationDispatchRepository` và
-  `INotificationRepository`; ba method `Stage…Async` rời `IMeetingRepository` sang port đó. `IEmailMessageRepository` của
-  CA-07 được giữ và mở rộng cho hàng đợi và webhook. Từ CA-17 không còn lớp mỏng R9 nào.
-- `SaveChangesAsync` và `InTransactionAsync` trên interface repository: service đã chuyển không gọi nữa. Method bị xoá
-  khỏi interface ở subtask chuyển consumer cuối cùng (kiểm bằng `git grep`).
+Giai đoạn service đã chuyển và chưa chuyển chạy chung kết thúc ở CA-17 (SCRUM-182), khi lớp mỏng cuối cùng,
+`MeetingInvitationStager`, được thay; CA-18 dọn nốt tầng Web. Không còn service nào ở Infrastructure, không còn
+`SaveChangesAsync` hay `InTransactionAsync` trên interface repository (A4, A5 rỗng). Code mới không tạo lớp mỏng gọi
+helper nhận `TrustCabinetDbContext`: logic thuộc service ở Application, truy cập dữ liệu thuộc repository hoặc query của
+module sở hữu (R5).
 
 ### R10. DI
 

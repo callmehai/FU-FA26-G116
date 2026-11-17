@@ -1,9 +1,11 @@
 # 15 · Package Diagram
 
-Package diagram của TrustCabinet, vẽ theo **code hiện có** trên `main` (09/11/2026, `0eae63bd`), không
-phải thiết kế mục tiêu. Backend là ba project `Web` → `Infrastructure` → `Domain`, chưa có tầng
-Application; lý do và kế hoạch tách nằm ở [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
-Phụ thuộc lấy từ chính source:
+Package diagram của TrustCabinet, vẽ theo **code hiện có** trên `refactor/clean-architecture` (17/11/2026, `e2c23dd0`),
+không phải thiết kế mục tiêu. Backend là bốn project: `Web` và `Infrastructure` cùng tham chiếu `Application`,
+`Application` tham chiếu `Domain` ([ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md), quy
+chuẩn ở [11-quy-chuan-clean-architecture.md](../02-design/11-quy-chuan-clean-architecture.md)). Bản ba project trước đó
+(09/11/2026, `0eae63bd`, [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md)) nằm
+trong lịch sử git. Phụ thuộc lấy từ chính source:
 
 - backend và tests: `ProjectReference` trong `.csproj` và các dòng `using TrustCabinet.*` theo
   namespace (bỏ qua `bin/`, `obj/`, `Migrations/`);
@@ -14,8 +16,9 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
 
 | Góc nhìn | Nội dung | Source / Ảnh |
 |---|---|---|
-| Tổng quan | `frontend/src` theo lớp, ba project backend, project test và phụ thuộc giữa chúng | [drawio](package-tong-quan.drawio) · [PNG](package-tong-quan.png) |
-| Backend | Package con của `TrustCabinet.Web`, `.Infrastructure`, `.Domain`; class ở namespace gốc của Web và Infrastructure; mọi phụ thuộc trong Web, trong Infrastructure và từ Web sang Infrastructure | [drawio](package-backend.drawio) · [PNG](package-backend.png) |
+| Tổng quan | `frontend/src` theo lớp, bốn project backend, hai project test và phụ thuộc giữa chúng | [drawio](package-tong-quan.drawio) · [PNG](package-tong-quan.png) |
+| Backend | Package con của `TrustCabinet.Web`, `.Application`, `.Infrastructure`, `.Domain`; class ở namespace gốc của Web, Application và Infrastructure; phụ thuộc trong Web, trong Infrastructure, `«import»` giữa bốn project | [drawio](package-backend.drawio) · [PNG](package-backend.png) |
+| Application | Phụ thuộc giữa các module trong `TrustCabinet.Application` | [drawio](package-application.drawio) · [PNG](package-application.png) |
 | Domain | Phụ thuộc giữa các package nghiệp vụ trong `TrustCabinet.Domain` | [drawio](package-domain.drawio) · [PNG](package-domain.png) |
 | Frontend | `frontend/src` với 19 feature trong `features/` | [drawio](package-frontend.drawio) · [PNG](package-frontend.png) |
 
@@ -23,12 +26,14 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
 
 - Mũi tên nét đứt đầu mở là phụ thuộc UML. `«import»` = `ProjectReference`; `«use»` = dùng trực
   tiếp namespace của project khác mà không tham chiếu project đó (ví dụ Web → Domain đi qua
-  Infrastructure); `«use» HTTP · SignalR` = `api/` gọi `/api` và `/hubs` của backend.
+  Application); `«use» HTTP · SignalR` = `api/` gọi `/api` và `/hubs` của backend.
 - Mũi tên không nhãn là phụ thuộc giữa các package trong cùng một project/thư mục.
 - Mũi tên gắn vào khung một package bao gồm mọi package con bên trong.
 - Package vẽ ngoài package chứa nó thì ghi tên đầy đủ `chứa::tên` (ví dụ `backend::TrustCabinet.Web`
   trên trang Frontend).
 - Mũi tên kết thúc ở thân package, không cắm vào tab.
+- Hai mũi tên phải cắt nhau thì chỗ cắt vẽ nét nhảy (cung), để không đọc nhầm thành rẽ nhánh: trang Application
+  (3 chỗ) và trang Tổng quan (2 chỗ, ở các mũi tên từ project test).
 
 ## Phụ thuộc không vẽ thành mũi tên
 
@@ -40,70 +45,125 @@ liệt kê đủ ở đây.
 
 | Tới | Package dùng |
 |---|---|
-| `Entities` | Access, Agenda, Authentication, Calls, Documents, Meetings, Notes, Notifications, Participants, Recordings, Transcription, Users, VoiceId, Votes |
-| `Enums` | Access, Agenda, Ai, Attendance, Authentication, Calls, Documents, Entities, GuestAccess, Meetings, Notes, Participants, Recordings, Users, Votes |
+| `Entities` | Agenda, CalendarSharing, Documents, Meetings, Participants, Recordings, Transcription, Votes |
+| `Enums` | Access, Agenda, Attendance, Audit, CalendarSharing, Documents, Entities, GuestAccess, Meetings, Participants, Recordings, Votes |
 
-`Audit`, `Summaries` và `Enums` không phụ thuộc package nào.
+`Calls`, `Summaries`, `VoiceId` và `Enums` không phụ thuộc package nào. `Entities` chứa `Common` (lớp gốc `Entity`).
+Ai, Authentication, Notes, Notifications và Users không còn package Domain: chúng chỉ có interface và DTO, nay ở
+Application (CA-02).
 
-**Trang Backend — Infrastructure → Domain** (ngoài `Entities`, `Enums`, mà gần như package nào cũng dùng):
+**Trang Application — phụ thuộc tới năm module dùng chung:**
+
+| Tới | Module dùng |
+|---|---|
+| `Abstractions` | cả 23 module |
+| `Audit` | Access, Ai, Attendance, Authentication, CalendarSharing, Calls, Documents, GuestAccess, Participants, Recordings, Reports, Summaries, Transcription, Users, VoiceId, Votes |
+| `Meetings` | Agenda, CalendarSharing, Documents, Notes, Notifications, Participants, Recordings, Summaries, Transcription |
+| `Participants` | Agenda, Attendance, Calls, Documents, Email, Meetings, Speaking, Votes |
+| `Notifications` | Agenda, CalendarSharing, Email, Meetings, Summaries, VoiceId |
+
+Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đứng riêng trên hình. Class
+`DependencyInjection` (`AddApplication()`) ở namespace gốc dùng cả 23 module.
+
+**Trang Backend — Application → Domain** (ngoài `Entities`, `Enums`):
+
+| Module Application | Package Domain |
+|---|---|
+| Access | Access, Audit |
+| Agenda | Agenda, GuestAccess, Meetings |
+| Ai, Authentication, Users | Audit |
+| Attendance | Agenda, Attendance, Audit, GuestAccess, Meetings, Participants |
+| Audit | Audit |
+| CalendarSharing | Audit, CalendarSharing, Meetings, Participants |
+| Calls | Audit, Calls, Meetings |
+| Documents | Audit, Documents, GuestAccess, Meetings, Participants |
+| Email | Meetings, Participants |
+| GuestAccess | Audit, Documents, Meetings |
+| Meetings | Access, Agenda, GuestAccess, Meetings, Participants |
+| Notes | Meetings, Participants |
+| Participants | Agenda, Audit, GuestAccess, Meetings, Participants |
+| Recordings | Audit, Meetings, Participants, Recordings, Transcription |
+| Reports | Audit, Meetings |
+| Speaking | Agenda, GuestAccess, Meetings, Participants |
+| Summaries | Audit, Meetings, Participants, Summaries |
+| Transcription | Audit, Participants, Transcription, VoiceId |
+| VoiceId | Audit, Participants, VoiceId |
+| Votes | Agenda, Audit, Documents, GuestAccess, Meetings, Votes |
+
+`Abstractions` và `Notifications` không dùng package Domain nào ngoài `Entities`, `Enums`.
+
+**Trang Backend — Infrastructure → Application:** mỗi package cài port của module cùng tên, cộng thêm:
+
+| Package Infrastructure | Module Application |
+|---|---|
+| Agenda | Agenda, Notes |
+| Ai, Summaries | Ai, Summaries |
+| Documents | Abstractions, Documents, Meetings |
+| Email | Email, Notifications, Users |
+| GuestAccess | Agenda, Email, GuestAccess, Participants |
+| Persistence | Abstractions (`IUnitOfWork`, exception lưu trữ) |
+| Speaking, Votes | Participants và module cùng tên |
+| Transcription | Transcription, VoiceId |
+| Users | Audit, Users |
+| `DependencyInjection` | Abstractions |
+| `TrustCabinetDbContext` | Audit |
+
+`Configurations`, `Migrations`, `Seed`, `TrustCabinetDbContextFactory` không dùng Application.
+
+**Trang Backend — Infrastructure → Domain** (ngoài `Entities`, `Enums`):
 
 | Package Infrastructure | Package Domain |
 |---|---|
-| Access | Access, Audit |
-| Agenda | Agenda, GuestAccess, Meetings, Notes |
-| Ai | Ai, Audit, Summaries |
-| Attendance | Agenda, Attendance, Audit, GuestAccess, Meetings, Participants |
-| Audit | Audit |
-| Authentication | Audit, Authentication |
-| Calls | Audit, Calls, Participants |
+| Access | Access |
+| Agenda | Agenda |
+| Audit, Recordings, `TrustCabinetDbContext` | Audit |
+| CalendarSharing | CalendarSharing, Participants |
+| Calls | Agenda, Participants |
 | Configurations | Attendance, Participants, Recordings, Summaries |
-| Documents | Agenda, Audit, Documents, GuestAccess, Meetings, Participants |
-| Email | Notifications, Participants, Users |
-| GuestAccess | Agenda, Documents, GuestAccess, Meetings, Participants |
-| Meetings | Access, Agenda, Calls, Meetings, Notifications, Participants |
-| Notes | Meetings, Notes, Participants |
-| Notifications | Meetings, Notifications |
-| Participants | Agenda, Audit, GuestAccess, Meetings, Participants |
-| Recordings | Audit, Meetings, Recordings, Transcription |
+| Documents | Documents, Meetings, Participants |
+| Email | Participants |
+| GuestAccess | GuestAccess, Meetings |
+| Meetings, Reports | Meetings, Participants |
+| Participants | Agenda, Participants |
 | Seed | Access, Documents |
-| Summaries | Ai, Audit, Meetings, Notes, Participants, Summaries |
-| Transcription | Audit, Meetings, Participants, Recordings, Transcription, VoiceId |
-| Users | Access, Audit, Authentication, Users, VoiceId |
-| VoiceId | Audit, Transcription, VoiceId |
-| Votes | Agenda, Documents, GuestAccess, Meetings, Participants, Votes |
+| Summaries | Audit, Participants |
+| Votes | Votes |
 
-**Trang Backend — Web → Domain:**
+**Trang Backend — Web → Application và Web → Domain:**
 
-| Web | Package Domain |
-|---|---|
-| `Endpoints` | mọi package trừ `Audit` |
-| `AttendanceChangePublisher` | Agenda, Attendance, GuestAccess, Meetings, Participants |
-| `CallRoomJanitor` | Calls |
-| `CapabilitiesChangePublisher` | Access |
-| `HttpCallerContext` | Audit |
-| `MeetingGuestIdentity` | Agenda, Meetings |
-| `MeetingHub` | Agenda, GuestAccess, Meetings |
-| `MeetingOverdueWorker` | Meetings |
-| `NotesChangePublisher` | Meetings, Notes |
-| `NotificationHub` | Users |
-| `NotificationWorker` | Notifications, Users |
-| `ParticipantsChangePublisher` | Meetings, Participants |
-| `PdfPageCounter` | Documents |
-| `Program` | Agenda, Audit, Enums |
-| `RecordingRetentionWorker` | Recordings |
-| `SpeechChangePublisher` | Meetings, Recordings |
-| `SummaryWorker` | Summaries |
-| `TranscriptionWorker` | Transcription |
-| `VoteChangePublisher` | Agenda, Meetings, Participants, Votes |
+| Web | Module Application | Package Domain |
+|---|---|---|
+| `Endpoints` | cả 23 module trừ `Abstractions` | Access, Agenda, Attendance, Audit, CalendarSharing, Documents, Entities, Enums, Meetings, Participants, Recordings, Transcription, VoiceId, Votes |
+| `AttendanceChangePublisher` | Attendance, Meetings | — |
+| `CallRoomJanitor` | Calls | — |
+| `CapabilitiesChangePublisher` | Access | — |
+| `CombinedRecordingWorker`, `RecordingRetentionWorker` | Recordings | — |
+| `HttpCallerContext` | Audit | — |
+| `MeetingGuestIdentity` | Agenda, GuestAccess | Meetings |
+| `MeetingHub` | Agenda, Meetings | Meetings |
+| `MeetingOverdueWorker` | Meetings | — |
+| `NotesChangePublisher` | Meetings, Notes | — |
+| `NotificationHub` | Users | — |
+| `NotificationWorker` | Notifications, Users | — |
+| `ParticipantsChangePublisher` | Participants | Meetings |
+| `PdfPageCounter` | — | Documents |
+| `Program` | `DependencyInjection` (gốc), Abstractions, Agenda, Audit | — |
+| `SpeakingChangePublisher` | Agenda, Meetings, Speaking | — |
+| `SpeechChangePublisher` | Meetings, Recordings | — |
+| `SummaryWorker` | Summaries | — |
+| `TranscriptionWorker` | Transcription | — |
+| `VoteChangePublisher` | Meetings, Votes | — |
 
-**Trang Backend — trong Infrastructure và từ `Program`:**
+**Trang Backend — Web → Infrastructure:** chỉ hai class, đúng luật R1/A6 của quy chuẩn. `Program` dùng
+`DependencyInjection` (`AddTrustCabinetDatabase()`) và hai package Authentication, Documents; `DatabaseMigrationCommand`
+dùng `DependencyInjection` (`MigrateForDeploymentAsync`, mũi tên duy nhất vẽ từ Web sang Infrastructure).
 
-- `Program` dùng `DependencyInjection`, `TrustCabinetDbContext` và 18 package Infrastructure: Access,
-  Agenda, Attendance, Authentication, Calls, Documents, Email, GuestAccess, Meetings, Notes,
-  Notifications, Participants, Recordings, Summaries, Transcription, Users, VoiceId, Votes.
-- Mọi package nghiệp vụ trong Infrastructure (trừ `Configurations`) dùng `TrustCabinetDbContext`, cùng
-  `DependencyInjection` và `TrustCabinetDbContextFactory`. `TrustCabinetDbContext` áp mọi lớp trong
-  `Configurations`; `Migrations` sinh từ nó.
+**Trang Backend — trong Infrastructure:** `DependencyInjection` dùng mọi package trừ Ai, Configurations, Migrations
+(chỉ vẽ mũi tên tới `Seed`). Mọi package nghiệp vụ dùng `TrustCabinetDbContext` ở namespace cha; `TrustCabinetDbContext`
+áp mọi lớp trong `Configurations`; `Migrations` sinh từ nó.
+
+**Trang Tổng quan:** `TrustCabinet.Web.Tests` tham chiếu Web và dùng namespace của ba project còn lại;
+`TrustCabinet.Application.Tests` tham chiếu Application và Domain (hai `ProjectReference`).
 
 **Trang Frontend** không vẽ phụ thuộc giữa các feature với nhau (`meetings`, `calls` dùng gần như mọi
 feature khác; mọi feature dùng `auth`). `main.tsx` và `styles/` (CSS) không có trên hình.

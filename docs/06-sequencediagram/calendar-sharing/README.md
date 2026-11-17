@@ -32,6 +32,10 @@ Ngoại lệ hai tương tác Actor → Boundary: UC-84a/UC-84b tải danh sách
 server, BR-430, `MSG448`/`MSG467`) trước nút gửi, nên có hai tương tác như UC-04; UC-84f chỉ xem hai danh sách, không có
 danh sách người, nên phần tải này không dồn sang đó. Chi tiết xem [README cha](../README.md) §2.1.
 
+## Cập nhật theo kiến trúc
+
+- **17/11/2026 — CA-19 (SCRUM-184):** service không còn gọi thẳng `:Database` (backend bốn project, [ADR-0064](../../05-decisions/0064-backend-bon-project-clean-architecture.md)); chèn lifeline `:Notification Repository` (`INotificationRepository.add`) giữa `:Notification Service` và `:Database` ở UC-84a → UC-84e. Message tới `:Database` giữ nguyên nội dung; luồng, nhánh `MSG`/`BR` và actor không đổi.
+
 ## Xuất ảnh
 
 Một lệnh xuất đủ **hai** ảnh của mỗi sơ đồ — truyền mã UC hoặc đường dẫn `.txt` đã sửa, từ thư mục gốc repository:

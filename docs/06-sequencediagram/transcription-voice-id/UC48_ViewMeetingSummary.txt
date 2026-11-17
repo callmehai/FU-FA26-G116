@@ -5,6 +5,7 @@ boundary "Draft Card (Biên bản tab)" as DraftCard
 control ":Summary Controller" as SummaryController
 control ":Summary Service" as SummaryService
 participant ":Meeting Repository" as MeetingRepository
+participant ":Meeting Summary Repository" as MeetingSummaryRepository
 database ":Database" as Database
 
 Actor->DraftCard: Open the Biên bản tab
@@ -27,10 +28,12 @@ alt The Meeting is not accessible - EX-2
     SummaryController-->DraftCard: 404
     DraftCard-->Actor: The Meeting is not available
 else The actor may read the Meeting
-    SummaryService->Database: Retrieve the draft
+    SummaryService->MeetingSummaryRepository: findWithPeople(meetingId)
+    MeetingSummaryRepository->Database: Retrieve the draft
     activate Database
-    Database-->SummaryService: Draft / None
+    Database-->MeetingSummaryRepository: Draft / None
     deactivate Database
+    MeetingSummaryRepository-->SummaryService: Draft / None
     SummaryService->SummaryService: Check whether the actor is the current Chair or Secretary (BR-374)
     alt Actor is the current Chair or Secretary
         SummaryService-->SummaryController: 200 SummaryState with the draft and readiness

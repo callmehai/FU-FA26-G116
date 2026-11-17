@@ -57,6 +57,10 @@ Quy ước riêng của nhóm này:
   tìm thấy"); UC-45c người không phải Thư ký (MSG295); UC-46b, UC-46c lỗi lưu (MSG304). BA bổ sung EX vào đặc tả hoặc bỏ nhánh khi duyệt.
 - `ref` sang UC khác viết thành self-message `ref UC-…` để file draw.io cũng hiện.
 
+## Cập nhật theo kiến trúc
+
+- **17/11/2026 — CA-19 (SCRUM-184):** service không còn gọi thẳng `:Database` (backend bốn project, [ADR-0064](../../05-decisions/0064-backend-bon-project-clean-architecture.md)); chèn lifeline `:Meeting Summary Repository` (`IMeetingSummaryRepository`) ở UC-47 → UC-50: `findByMeeting`, `findWithPeople`, `findNextQueued`, `claim`, `storeDraft`, `markFailed`, `saveEdit`, `markReviewed`. Message tới `:Database` giữ nguyên nội dung; luồng, nhánh `MSG`/`BR` và actor không đổi.
+
 ## Xuất ảnh
 
 ```bash

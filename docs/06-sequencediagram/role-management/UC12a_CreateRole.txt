@@ -6,6 +6,7 @@ control ":Role Controller" as RoleController
 control ":Role Service" as RoleService
 participant ":Role Repository" as RoleRepository
 control ":Audit Service" as AuditService
+participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
 Admin->RolePage: Submit new role (name, description, permissions)
@@ -42,8 +43,10 @@ else Valid role information
         else Role saved
             RoleService->AuditService: Record role creation
             activate AuditService
-            AuditService->Database: Save audit log
-            Database-->AuditService: Audit log saved
+            AuditService->AuditLogRepository: add(audit entry)
+            AuditLogRepository->Database: Save audit log
+            Database-->AuditLogRepository: Audit log saved
+            AuditLogRepository-->AuditService: Audit log saved
             AuditService-->RoleService: Audit recorded
             RoleService-->RoleController: Role created successfully
             RoleController-->RolePage: MSG19 - Role created successfully

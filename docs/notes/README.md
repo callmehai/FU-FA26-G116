@@ -16,7 +16,7 @@ UC Specification, Business Rules hoặc ADR đã chốt.
   nhập, chuyển trạng thái cuộc họp, ban hành biên bản. FE đã làm cùng ngày (màn `/mgmt/admin/audit-log`); còn đặc tả
   màn 3.3.
 
-- [Refactor backend sang Clean Architecture](NOTE-refactor-clean-architecture.md) — 08/11/2026, cập nhật 14/11/2026; thời điểm chốt ở ADR-0059 (tách sau buổi báo cáo giảng viên 13/11/2026);
+- [Refactor backend sang Clean Architecture](NOTE-refactor-clean-architecture.md) — 08/11/2026, cập nhật 14/11/2026; **đã thực hiện** 15/11 → 17/11/2026 (SCRUM-143, CA-00 → CA-18b, PR #349 → #402), kết quả ở ADR-0064 (thay ADR-0059);
   hiện trạng (use case nằm trong Infrastructure, dính EF/Npgsql), kiến trúc đích Domain / Application / Infrastructure / Web,
   port `IUnitOfWork` và exception lưu trữ, `ArchitectureTests`, bảng 39 lớp Infrastructure và 7 publisher Web đang đọc `DbContext`,
   lộ trình 5 giai đoạn theo module (thêm CalendarSharing, Reports, Speaking), rủi ro, 4 câu hỏi cần chốt.

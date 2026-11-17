@@ -1,15 +1,17 @@
 # 16 · Kiến trúc phần mềm
 
 Sơ đồ kiến trúc tổng thể của TrustCabinet (Report 4, mục I.1 Software Architecture), vẽ theo **code
-và cấu hình triển khai hiện có** (09/11/2026), không phải thiết kế mục tiêu. Application Tier là ba
-project `Web` → `Infrastructure` → `Domain`: service nghiệp vụ nằm trong Infrastructure cạnh EF Core,
-và hub, publisher ở Web đọc thẳng `TrustCabinetDbContext`. Chưa có tầng Application riêng; lý do và
-kế hoạch tách ở [ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md).
+và cấu hình triển khai hiện có** (17/11/2026, `refactor/clean-architecture` `e2c23dd0`), không phải thiết kế mục
+tiêu. Application Tier là bốn project ([ADR-0064](../05-decisions/0064-backend-bon-project-clean-architecture.md)):
+`Web` (xác thực, endpoint, hub, publisher, worker) gọi Service Layer ở `Application`; service đọc ghi qua **Ports**
+khai ở `Application`; `Infrastructure` cài các port đó bằng repository/query trên EF Core và bằng các adapter tích hợp;
+`Domain` là entity, enum và rule. Bản ba project trước đó (09/11/2026,
+[ADR-0059](../05-decisions/0059-giu-ba-project-backend-tach-application-sau-bao-cao.md)) nằm trong lịch sử git.
 Nguồn của từng thành phần:
 
 - tầng client: `frontend/src` và `frontend/package.json`;
-- tầng ứng dụng: `backend/TrustCabinet.Web/Program.cs` (xác thực JWT, endpoint, hub, worker), các
-  service và adapter trong `backend/TrustCabinet.Infrastructure`;
+- tầng ứng dụng: `backend/TrustCabinet.Web/Program.cs` (xác thực JWT, endpoint, hub, worker), service và port trong
+  `backend/TrustCabinet.Application`, repository, query và adapter trong `backend/TrustCabinet.Infrastructure`;
 - reverse proxy, dữ liệu và dịch vụ ngoài: `deploy/docker-compose.yml`, `deploy/Caddyfile`,
   `docker-compose.yml` ở gốc repo và `workers/speech`.
 
@@ -23,6 +25,15 @@ Nguồn của từng thành phần:
   Data Tier, External Services. Caddy nằm giữa client và ứng dụng.
 - Mũi tên liền là chiều gọi hoặc chiều dữ liệu; hai đầu là trao đổi hai chiều (WebRTC, email gửi đi
   và webhook báo trạng thái gửi). Mũi tên nét đứt `maps to` là ánh xạ entity, không phải lời gọi.
+- Mũi tên nét đứt đầu tam giác rỗng `implements` là cài đặt interface: Repository Layer và Integration adapters (ở
+  `TrustCabinet.Infrastructure`) cài Ports của Application. Service Layer chỉ gọi Ports, không gọi thẳng adapter
+  hay EF Core.
+- Change Publishers ↔ Service Layer hai đầu: service phát sự kiện qua port publisher, publisher hỏi
+  `MeetingAudience` (Application) ai được nhận. SignalR Hubs cũng hỏi `MeetingAudience` (`reads audience`) thay cho
+  đọc database.
+- Background Workers: bảy worker ở Web chạy việc qua Service Layer; `Email delivery` (`EmailDeliveryWorker`) và
+  `OrphanFilePurge` (`OrphanFilePurgeWorker`) là hai worker ở Infrastructure, chạy qua port của Application
+  (`IEmailQueueProcessor`, `IStoredFileRepository`, `IFileStorage`, `IUnitOfWork`). Hình gộp chín worker vào một hộp.
 - Phòng họp đi hai đường: signalling `/rtc` qua Caddy (`deploy/Caddyfile`), media WebRTC đi thẳng tới LiveKit
   qua cổng ICE 7881/TCP và 7882/UDP (`deploy/docker-compose.yml`).
 - Hình vẽ server test: Caddy chỉ có ở đó. Khi dev, Vite proxy `/api` và `/hubs` thay Caddy, file

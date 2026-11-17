@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Claude Code" scale="1" border="0">
   <diagram id="pkg-overview" name="Tổng quan">
-    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1970" pageHeight="520" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2210" pageHeight="520" background="#ffffff" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -26,22 +26,28 @@
           <mxGeometry x="750" y="310" width="140" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p1-be" parent="1" style="shape=folder;tabWidth=85;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="backend" vertex="1">
-          <mxGeometry x="1140" y="40" width="330" height="440" as="geometry" />
+          <mxGeometry x="1140" y="40" width="600" height="440" as="geometry" />
         </mxCell>
         <mxCell id="p1-web" parent="p1-be" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Web" vertex="1">
-          <mxGeometry x="70" y="60" width="220" height="70" as="geometry" />
+          <mxGeometry x="190" y="60" width="220" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p1-infra" parent="p1-be" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Infrastructure" vertex="1">
-          <mxGeometry x="70" y="200" width="220" height="70" as="geometry" />
+          <mxGeometry x="40" y="200" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-application" parent="p1-be" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Application" vertex="1">
+          <mxGeometry x="340" y="200" width="220" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p1-domain" parent="p1-be" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Domain" vertex="1">
-          <mxGeometry x="70" y="340" width="220" height="70" as="geometry" />
+          <mxGeometry x="190" y="340" width="220" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p1-ts" parent="1" style="shape=folder;tabWidth=67;tabHeight=26;tabPosition=left;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=1;fontStyle=1;fontSize=14;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="tests" vertex="1">
-          <mxGeometry x="1600" y="40" width="330" height="440" as="geometry" />
+          <mxGeometry x="1840" y="40" width="330" height="440" as="geometry" />
         </mxCell>
         <mxCell id="p1-tests" parent="p1-ts" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Web.Tests" vertex="1">
-          <mxGeometry x="55" y="200" width="220" height="70" as="geometry" />
+          <mxGeometry x="40" y="200" width="250" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-apptests" parent="p1-ts" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="TrustCabinet.Application.Tests" vertex="1">
+          <mxGeometry x="40" y="340" width="250" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p1-e-app-features" parent="1" source="p1-app" target="p1-features" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0.1714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.8;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
           <mxGeometry relative="1" as="geometry">
@@ -123,39 +129,71 @@
           <mxGeometry relative="1" as="geometry">
           </mxGeometry>
         </mxCell>
-        <mxCell id="p1-e-web-infra" parent="1" source="p1-web" target="p1-infra" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+        <mxCell id="p1-e-web-infra" parent="1" source="p1-web" target="p1-infra" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.2;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.8818;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
           <mxGeometry relative="1" as="geometry">
           </mxGeometry>
         </mxCell>
-        <mxCell id="p1-e-infra-domain" parent="1" source="p1-infra" target="p1-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+        <mxCell id="p1-e-apptests-domain" parent="1" source="p1-apptests" target="p1-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.7143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.7143;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-e-apptests-application" parent="1" source="p1-apptests" target="p1-application" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.2;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.7857;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1800" y="394" />
+              <mxPoint x="1800" y="295" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-e-tests-application" parent="1" source="p1-tests" target="p1-application" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.3143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.3143;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-e-application-domain" parent="1" source="p1-application" target="p1-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.1182;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.8;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-e-infra-application" parent="1" source="p1-infra" target="p1-application" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-e-web-application" parent="1" source="p1-web" target="p1-application" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.8;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.1182;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-e-infra-domain" parent="1" source="p1-infra" target="p1-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.8818;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
           <mxGeometry relative="1" as="geometry">
           </mxGeometry>
         </mxCell>
         <mxCell id="p1-e-web-domain" parent="1" source="p1-web" target="p1-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.8;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1175" y="156" />
-              <mxPoint x="1175" y="415" />
+              <mxPoint x="1160" y="156" />
+              <mxPoint x="1160" y="415" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="p1-e-tests-web" parent="1" source="p1-tests" target="p1-web" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.2143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
+        <mxCell id="p1-e-tests-web" parent="1" source="p1-tests" target="p1-web" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.1429;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1510" y="255" />
-              <mxPoint x="1510" y="135" />
+              <mxPoint x="1770" y="250" />
+              <mxPoint x="1770" y="135" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="p1-e-tests-infra" parent="1" source="p1-tests" target="p1-infra" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
-          <mxGeometry x="-0.24" relative="1" as="geometry">
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="p1-e-tests-domain" parent="1" source="p1-tests" target="p1-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.7857;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
+        <mxCell id="p1-e-tests-infra" parent="1" source="p1-tests" target="p1-infra" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;jumpStyle=arc;jumpSize=10;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0.1714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.3182;entryY=0.1714;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1540" y="295" />
-              <mxPoint x="1540" y="415" />
+              <mxPoint x="2005" y="80" />
+              <mxPoint x="1250" y="80" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-e-tests-domain" parent="1" source="p1-tests" target="p1-domain" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;jumpStyle=arc;jumpSize=10;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.8571;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.4286;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1715" y="300" />
+              <mxPoint x="1715" y="410" />
             </Array>
           </mxGeometry>
         </mxCell>

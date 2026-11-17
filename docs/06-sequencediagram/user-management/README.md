@@ -17,3 +17,7 @@ message phải khớp [danh mục System Messages](../../03-api/00-danh-muc-ma-t
 
 Sau khi sửa source, xuất lại ảnh bằng `node scripts/export-diagrams.js docs/06-sequencediagram/user-management`.
 Cập nhật đúng tab UC trong file draw.io gộp theo hướng dẫn ở README chung.
+
+## Cập nhật theo kiến trúc
+
+- **17/11/2026 — CA-19 (SCRUM-184):** service không còn gọi thẳng `:Database` (backend bốn project, [ADR-0064](../../05-decisions/0064-backend-bon-project-clean-architecture.md)); chèn lifeline `:Audit Log Repository` (UC-06a/b/c, UC-07) và `:Notification Repository` (UC-06c, UC-08). Message tới `:Database` giữ nguyên nội dung; luồng, nhánh `MSG`/`BR` và actor không đổi.

@@ -18,6 +18,10 @@ các UC con.
   `:Report Controller` / `:Report Service` ứng với `ReportEndpoints` / `ReportService`; `:Meeting Repository` là truy
   vấn EF Core ngay trong `ReportService`, `:Audit Service` là `IAuditService`.
 
+## Cập nhật theo kiến trúc
+
+- **17/11/2026 — CA-19 (SCRUM-184):** service không còn gọi thẳng `:Database` (backend bốn project, [ADR-0064](../../05-decisions/0064-backend-bon-project-clean-architecture.md)); chèn lifeline `:Audit Log Repository` giữa `:Audit Service` và `:Database` ở UC-70b. Message tới `:Database` giữ nguyên nội dung; luồng, nhánh `MSG`/`BR` và actor không đổi.
+
 ## Xuất ảnh
 
 Từ thư mục gốc repository, sau khi sửa `.txt` — chỉ truyền file đã sửa:

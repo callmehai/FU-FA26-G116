@@ -5,6 +5,8 @@ boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
 participant ":Notification Service" as NotificationService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Minutes Repository" as MinutesRepository
 database ":Database" as Database
 
 Actor->MinutesCard: Confirm Approve and Issue
@@ -13,10 +15,18 @@ MinutesCard->MinutesEndpoints: approve(minutesId, updatedAt)
 activate MinutesEndpoints
 MinutesEndpoints->MinutesService: ApproveAsync(minutesId, actorId, updatedAt)
 activate MinutesService
-MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
+MinutesService->MeetingRepository: findWorkflow(meetingId, forUpdate)
+MeetingRepository->Database: Lock the Meeting and retrieve it (FOR UPDATE)
 activate Database
-Database-->MinutesService: Meeting and revision / None
+Database-->MeetingRepository: Meeting / None
 deactivate Database
+MeetingRepository-->MinutesService: Meeting / None
+MinutesService->MinutesRepository: lock(minutesId)
+MinutesRepository->Database: Lock the revision and retrieve it (FOR UPDATE)
+activate Database
+Database-->MinutesRepository: Revision / None
+deactivate Database
+MinutesRepository-->MinutesService: Revision / None
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-5
     MinutesService-->MinutesEndpoints: Not found
@@ -38,16 +48,20 @@ else Actor is the current Chair
         MinutesEndpoints-->MinutesCard: 409 MSG401
         MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else Approval valid
-        MinutesService->Database: Set Issued, who approved and when (BR-408);\nthe Meeting status is not changed
+        MinutesService->MinutesRepository: mark the revision Issued
+        MinutesRepository->Database: Set Issued, who approved and when (BR-408);\nthe Meeting status is not changed
 
         opt The revision corrects an earlier issued one - AF-1
-            MinutesService->Database: Set the earlier revision Superseded (BR-409)
+            MinutesService->MinutesRepository: get(earlier revision id), mark it Superseded
+            MinutesRepository->Database: Set the earlier revision Superseded (BR-409)
         end
 
-        MinutesService->Database: Insert the audit entry of the issue with who issued it (BR-446),\ntogether with the notification for everyone who may read the issued minutes except\nthe Chair and never a Guest, in one save (BR-411, BR-412)
+        MinutesService->MinutesRepository: save the issued revision with its audit entry and notifications
+        MinutesRepository->Database: Insert the audit entry of the issue with who issued it (BR-446),\ntogether with the notification for everyone who may read the issued minutes except\nthe Chair and never a Guest, in one save (BR-411, BR-412)
         activate Database
-        Database-->MinutesService: Saved / Failed
+        Database-->MinutesRepository: Saved / Failed
         deactivate Database
+        MinutesRepository-->MinutesService: Saved / Failed
 
         alt Saved
             MinutesService->NotificationService: The notification is saved with the issue; the dispatcher pushes it

@@ -6,6 +6,7 @@ control ":Report Controller" as ReportController
 control ":Report Service" as ReportService
 participant ":Meeting Repository" as MeetingRepository
 participant ":Audit Service" as AuditService
+participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
 Actor->ReportsPage: Export to Excel for the chosen period
@@ -38,10 +39,12 @@ else The period is valid
         ReportService->ReportService: Build the Excel file with the same figures as the page,\nincluding the three average rows (attendance rate, meeting duration in minutes, minutes turnaround),\nno meeting title, participant or content (BR-437, BR-438)
         ReportService->AuditService: Record the export with the actor and the period (BR-438)
         activate AuditService
-        AuditService->Database: Insert audit entry
+        AuditService->AuditLogRepository: add(audit entry)
+        AuditLogRepository->Database: Insert audit entry
         activate Database
-        Database-->AuditService: Saved / Write failure
+        Database-->AuditLogRepository: Saved / Write failure
         deactivate Database
+        AuditLogRepository-->AuditService: Saved / Write failure
         AuditService-->ReportService: Recorded / Write failure
         deactivate AuditService
 

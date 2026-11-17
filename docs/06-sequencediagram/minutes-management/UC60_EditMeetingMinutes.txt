@@ -7,6 +7,7 @@ control ":Minutes Service" as MinutesService
 participant ":Minutes Word File" as MinutesDocx
 participant ":Minutes PDF File" as MinutesPdf
 participant ":Meeting Repository" as MeetingRepository
+participant ":Minutes Repository" as MinutesRepository
 database ":Database" as Database
 
 Actor->MinutesCard: Select Edit
@@ -18,10 +19,12 @@ MinutesCard->MinutesEndpoints: save(minutesId, content, updatedAt)
 activate MinutesEndpoints
 MinutesEndpoints->MinutesService: saveAsync(minutesId, actorId, content, updatedAt)
 activate MinutesService
-MinutesService->Database: Retrieve the revision
+MinutesService->MinutesRepository: find(minutesId)
+MinutesRepository->Database: Retrieve the revision
 activate Database
-Database-->MinutesService: Minutes / None
+Database-->MinutesRepository: Minutes / None
 deactivate Database
+MinutesRepository-->MinutesService: Minutes / None
 MinutesService->MeetingRepository: Get the Meeting
 activate MeetingRepository
 MeetingRepository->Database: Retrieve Meeting
@@ -53,10 +56,12 @@ else Actor may edit
         MinutesEndpoints-->MinutesCard: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
         MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else Save valid
-        MinutesService->Database: Update the filtered content and the save time, only if it was not saved since it was read
+        MinutesService->MinutesRepository: saveContent(minutesId, filtered content, readFrom, readTo, now)
+        MinutesRepository->Database: Update the filtered content and the save time, only if it was not saved since it was read
         activate Database
-        Database-->MinutesService: Updated / No row (stale)
+        Database-->MinutesRepository: Updated / No row (stale)
         deactivate Database
+        MinutesRepository-->MinutesService: Updated / No row (stale)
 
         alt Updated
             MinutesService-->MinutesEndpoints: State and the filtered content
@@ -83,10 +88,12 @@ opt Download the minutes as Word or PDF - AF-1, AF-2
     activate MinutesEndpoints
     MinutesEndpoints->MinutesService: exportAsync(minutesId, actorId, format)
     activate MinutesService
-    MinutesService->Database: Retrieve the revision
+    MinutesService->MinutesRepository: find(minutesId)
+    MinutesRepository->Database: Retrieve the revision
     activate Database
-    Database-->MinutesService: Minutes / None
+    Database-->MinutesRepository: Minutes / None
     deactivate Database
+    MinutesRepository-->MinutesService: Minutes / None
     MinutesService->MeetingRepository: Get the Meeting
     activate MeetingRepository
     MeetingRepository-->MinutesService: Meeting with its sensitivity

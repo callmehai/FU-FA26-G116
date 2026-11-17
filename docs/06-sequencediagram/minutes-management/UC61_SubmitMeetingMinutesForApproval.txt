@@ -5,6 +5,8 @@ boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
 participant ":Notification Service" as NotificationService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Minutes Repository" as MinutesRepository
 database ":Database" as Database
 
 Actor->MinutesCard: Confirm Submit for Approval
@@ -13,10 +15,18 @@ MinutesCard->MinutesEndpoints: submit(minutesId, updatedAt)
 activate MinutesEndpoints
 MinutesEndpoints->MinutesService: SubmitAsync(minutesId, actorId, updatedAt)
 activate MinutesService
-MinutesService->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
+MinutesService->MeetingRepository: findWorkflow(meetingId, forUpdate)
+MeetingRepository->Database: Lock the Meeting and retrieve it (FOR UPDATE)
 activate Database
-Database-->MinutesService: Meeting and revision / None
+Database-->MeetingRepository: Meeting / None
 deactivate Database
+MeetingRepository-->MinutesService: Meeting / None
+MinutesService->MinutesRepository: lock(minutesId)
+MinutesRepository->Database: Lock the revision and retrieve it (FOR UPDATE)
+activate Database
+Database-->MinutesRepository: Revision / None
+deactivate Database
+MinutesRepository-->MinutesService: Revision / None
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-6
     MinutesService-->MinutesEndpoints: Not found
@@ -42,10 +52,12 @@ else Actor is the current Secretary
         MinutesEndpoints-->MinutesCard: 409 MSG401
         MinutesCard-->Actor: MSG401 - The minutes were just changed by someone else. Reload to see the latest version.
     else Submission valid
-        MinutesService->Database: Set WaitingApproval, who submitted and when, together with\nthe Chair's notification, in one save (BR-388, BR-411)
+        MinutesService->MinutesRepository: save the submitted revision with the Chair's notification
+        MinutesRepository->Database: Set WaitingApproval, who submitted and when, together with\nthe Chair's notification, in one save (BR-388, BR-411)
         activate Database
-        Database-->MinutesService: Saved / Failed
+        Database-->MinutesRepository: Saved / Failed
         deactivate Database
+        MinutesRepository-->MinutesService: Saved / Failed
 
         alt Saved
             MinutesService->NotificationService: The notification is saved with the state; the dispatcher pushes it

@@ -18,3 +18,7 @@ kết luận cho mục `InProgress`/`Done` tới khi sinh nháp biên bản (UC-
 [UC82_TakeMeetingNotes.txt](UC82_TakeMeetingNotes.txt). Đặc tả, BR-395 → BR-403 (đề xuất) và mã `MSG415`–`MSG423`
 nằm ở [note đặc tả sơ bộ](../../notes/NOTE-dac-ta-so-bo-scrum-30.md), chưa vào Report 3. Chưa xuất PNG và chưa có tab
 draw.io. Lifeline `:Notes Controller` / `:Notes Service` là tên dự kiến.
+
+## Cập nhật theo kiến trúc
+
+- **17/11/2026 — CA-19 (SCRUM-184):** service không còn gọi thẳng `:Database` (backend bốn project, [ADR-0064](../../05-decisions/0064-backend-bon-project-clean-architecture.md)); chèn lifeline `:Meeting Note Repository` (`IMeetingNoteRepository`: `add` hoặc `tryUpdate`) ở UC-82. Message tới `:Database` giữ nguyên nội dung; luồng, nhánh `MSG`/`BR` và actor không đổi.

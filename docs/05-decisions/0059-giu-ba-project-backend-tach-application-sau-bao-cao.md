@@ -1,6 +1,6 @@
 # ADR-0059: Backend giữ ba project Web → Infrastructure → Domain; tách tầng Application sau buổi báo cáo giảng viên
 
-- **Trạng thái:** Đề xuất
+- **Trạng thái:** Thay thế bởi [ADR-0064](0064-backend-bon-project-clean-architecture.md) (17/11/2026)
 - **Ngày:** 2026-11-09
 - **Người quyết định:** nhóm BE, Khánh ghi
 - **Liên quan:** SCRUM-143 (refactor Clean Architecture), SCRUM-144 (bỏ PdfPig khỏi Domain, `0eae63bd`),
