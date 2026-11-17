@@ -71,6 +71,7 @@ else Recording can be erased (already erased: same answer, nothing changes)
         activate RecordingStorage
         RecordingStorage-->RecordingService: File deleted
         deactivate RecordingStorage
+        RecordingService->RecordingService: Never build it again: an erased combined recording\nstays erased even when its sources change later (BR-457)
         RecordingService->Publisher: Tell everyone in the Meeting that the recordings changed
         activate Publisher
         Publisher-->RecordingService: Change published

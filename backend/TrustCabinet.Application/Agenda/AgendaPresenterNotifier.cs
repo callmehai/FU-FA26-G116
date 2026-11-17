@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Notifications;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -51,9 +52,19 @@ public sealed class AgendaPresenterNotifier(IServiceScopeFactory scopes) : IAgen
             {
                 var guest = await agenda.FindCurrentGuestAsync(assignment.MeetingId, recipient.Value, token);
                 if (guest is null || await emails.ExistsWithDeduplicationKeyAsync(key, token)) return;
+                // The same way in as the invitation, so the Guest need not dig the earlier email out to get there.
+                var linkProvider = scope.ServiceProvider.GetService<IGuestInvitationLinkProvider>();
+                var link = linkProvider is null ? null : await linkProvider.PrepareAsync(guest.Id, token);
+                var url = link is { Status: GuestLinkStatus.Ready, Url: { } ready } ? ready : null;
+                var organizer = await agenda.GetUserFullNameAsync(meeting.CreatedById, token);
                 emails.Add(new EmailMessage
                 {
-                    ToAddress = guest.Email, Subject = title, Body = body, MeetingId = assignment.MeetingId,
+                    ToAddress = guest.Email, Subject = title, MeetingId = assignment.MeetingId,
+                    Body = $"Xin chào {guest.InvitedName},\n\n{body}\n"
+                        + (url is null ? "" : $"\nXác minh email để vào cuộc họp: {url}\n")
+                        + $"\nNgười tổ chức: {organizer}\n",
+                    HtmlBody = EmailTemplates.GuestPresenter(guest.InvitedName, item.Title, meeting.Title,
+                        meeting.PlannedStartTime, meeting.PlannedEndTime, meeting.Mode.ToString(), url, organizer),
                     DeduplicationKey = key, CreatedAt = assignment.OccurredAt, UpdatedAt = assignment.OccurredAt
                 });
             }

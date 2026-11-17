@@ -31,4 +31,17 @@ public sealed class MinutesSourceQuery(TrustCabinetDbContext db) : IMinutesSourc
     public async Task<IReadOnlyList<Guid>> ListActiveUsersAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct)
         => await db.Users.AsNoTracking().Where(u => userIds.Contains(u.Id) && u.IsActive)
             .Select(u => u.Id).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<MinutesEmailRecipient>> ListEmailRecipientsAsync(Guid[] readerIds, CancellationToken ct)
+        => (await db.Users.AsNoTracking().Where(u => readerIds.Contains(u.Id) && u.IsActive)
+                .Select(u => new { u.Id, u.FullName, u.Email }).ToListAsync(ct))
+            .Select(p => new MinutesEmailRecipient(p.Id, p.FullName, p.Email)).ToList();
+
+    public async Task<MinutesIssuedNames> GetIssuedEmailNamesAsync(Guid chairId, Guid organizerId, CancellationToken ct)
+    {
+        var chair = await db.Users.AsNoTracking().Where(u => u.Id == chairId).Select(u => u.FullName).SingleAsync(ct);
+        var organizer = await db.Users.AsNoTracking().Where(u => u.Id == organizerId)
+            .Select(u => new { u.FullName, u.Email }).SingleAsync(ct);
+        return new MinutesIssuedNames(chair, organizer.FullName, organizer.Email);
+    }
 }

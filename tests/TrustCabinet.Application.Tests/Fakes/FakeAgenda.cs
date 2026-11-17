@@ -71,6 +71,11 @@ public sealed class FakeAgendaRepository : IAgendaRepository
     public Task<MeetingGuestInvitation?> FindCurrentGuestAsync(Guid meetingId, Guid invitationId, CancellationToken ct)
         => Read(() => Guests.SingleOrDefault(g => g.Id == invitationId && g.MeetingId == meetingId && g.RevokedAt == null));
 
+    /// <summary>The name <see cref="GetUserFullNameAsync"/> answers for any account.</summary>
+    public string UserFullName { get; set; } = "Trần Tổ Chức";
+
+    public Task<string> GetUserFullNameAsync(Guid userId, CancellationToken ct) => Read(() => UserFullName);
+
     private Task<T> Read<T>(Func<T> answer) => Fail is { } failure ? Task.FromException<T>(failure) : Task.FromResult(answer());
 }
 

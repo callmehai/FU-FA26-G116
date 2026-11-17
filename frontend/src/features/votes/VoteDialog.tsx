@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError } from '../../api/client'
 import { createVote, getVote, updateVote } from '../../api/votes'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
@@ -70,6 +70,12 @@ export function VoteDialog({
   const [loadError, setLoadError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string | null>(null)
+  // The message sits under the last field: on a phone the form is taller than the dialog, so a refusal from the server
+  // (another vote already open, MSG219) landed out of sight and the button seemed to do nothing (QA FE-11).
+  const formErrorRef = useRef<HTMLParagraphElement>(null)
+  useEffect(() => {
+    if (formError) formErrorRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [formError])
   const [pending, setPending] = useState<'draft' | 'open' | null>(null)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
 
@@ -168,7 +174,7 @@ export function VoteDialog({
       onClose={close}
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={close} disabled={pending !== null}>
+          <button type="button" className="btn btn-outline" onClick={close} disabled={pending !== null}>
             Huỷ
           </button>
           <button
@@ -323,7 +329,7 @@ export function VoteDialog({
           </label>
 
           {formError && (
-            <p className="alert alert-error dialog-error" role="alert">
+            <p ref={formErrorRef} className="alert alert-error dialog-error" role="alert">
               {formError}
             </p>
           )}

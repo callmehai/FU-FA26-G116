@@ -47,6 +47,22 @@ public sealed class EmailDeliveryTests
 
 
     [Fact]
+    public void A_cancellation_calendar_is_named_as_one()
+    {
+        var calendar = CalendarInvitationBuilder.Build(Guid.CreateVersion7(), "Cuộc họp", "", "Phòng A", Now, Now.AddHours(1),
+            "Nguyễn Văn A", "attendee@example.vn", "https://hop.example.vn/meeting", "Ban tổ chức", "organizer@example.vn", Now,
+            cancelled: true);
+        var queued = QueuedMessage("recipient@example.vn", Now);
+        queued.CalendarAttachment = calendar;
+
+        var part = Assert.Single(SmtpEmailSender.BuildMessage(queued, DeliveryOptions().Smtp).BodyParts.OfType<MimePart>(),
+            p => p.ContentType.MimeType == "text/calendar");
+
+        Assert.Equal("CANCEL", part.ContentType.Parameters["method"]);
+        Assert.Equal("huy-hop.ics", part.FileName);
+    }
+
+    [Fact]
     public void Calendar_parameter_names_are_quoted_and_rfc_6868_encoded()
     {
         var calendar = CalendarInvitationBuilder.Build(

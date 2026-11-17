@@ -14,7 +14,7 @@
   không bao giờ được đọc (BR-414, BR-417).
 - Lịch của chính người gọi chỉ tính khi `includeMe = true`, và khi đó tính **mọi mức**, kể cả Mật (BR-416, BR-418).
 - Tính bận (BR-419, BR-420): chỉ phân công hiện hành Chủ toạ / Thư ký / Thành viên chưa từ chối (Chủ toạ luôn tính); họp Chờ duyệt,
-  Đã duyệt, Đã công bố, Đang họp (ít nhất đến bây giờ), Đã kết thúc (đến giờ kết thúc thật). Nháp, Bị từ chối, Đã huỷ không tính.
+  Đã duyệt, Đã công bố, Đang họp (từ lúc bắt đầu thật, dài bằng thời lượng dự kiến, và ít nhất đến bây giờ — họp sớm thì bận hôm nay chứ không bận tới ngày dự kiến), Đã kết thúc (đến giờ kết thúc thật). Nháp, Bị từ chối, Đã huỷ không tính.
 - Không bao giờ trả tên, địa điểm, người dự, mức mật hay id của cuộc họp nào (BR-427). Tên/email chỉ của người trong danh sách mời.
 - Mọi ngày `YYYY-MM-DD`, mọi giờ theo lịch Việt Nam (`Asia/Ho_Chi_Minh`); thời điểm trả về là ISO 8601 có `+07:00`.
 - Lỗi có dạng `{ "code": "MSGnn", "message": "…", "errors": { "<tên trường>": "<câu>" } | null }`.

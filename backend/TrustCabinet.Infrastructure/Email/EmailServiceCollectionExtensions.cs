@@ -22,6 +22,7 @@ public static class EmailServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<IEmailMessageRepository, EmailMessageRepository>();
         services.AddScoped<IMeetingInvitationDispatchRepository, MeetingInvitationDispatchRepository>();
+        services.AddScoped<IMeetingReminderQuery, MeetingReminderQuery>();
         services.AddHttpClient(ResendEmailSender.HttpClientName);
         services.AddSingleton<SmtpEmailSender>();
         services.AddSingleton<ResendEmailSender>();

@@ -23,9 +23,9 @@ public sealed class AiSettingsServiceTests
     private readonly FakeAuditService _audit = new();
     private readonly Guid _admin = Guid.CreateVersion7();
 
-    private AiSettingsService Service() => new(_settings, _unitOfWork, _protector, _apis,
-        Options.Create(new LanguageModelOptions { BaseUrl = "http://ai.local:11434/v1", Model = "qwen-local" }), _local, _audit,
-        new FixedClock(Now), NullLogger<AiSettingsService>.Instance);
+    private AiSettingsService Service(ILanguageModel? local = null) => new(_settings, _unitOfWork, _protector, _apis,
+        Options.Create(new LanguageModelOptions { BaseUrl = "http://ai.local:11434/v1", Model = "qwen-local" }), local ?? _local,
+        _audit, new FixedClock(Now), NullLogger<AiSettingsService>.Instance);
 
     private static AiSettingsInput Api(string? key = Key) => new("Api", "https://api.example.vn/v1", "deepseek-v4", key);
 
@@ -144,5 +144,46 @@ public sealed class AiSettingsServiceTests
 
         Assert.Same(_local, await provider.ForAsync(Sensitivity.Normal, default));
         Assert.Empty(_apis.Created);
+    }
+
+    [Fact]
+    public async Task Testing_the_local_model_with_a_backup_asks_both_machines_and_says_which_answered()
+    {
+        var machines = new TwoMachines(new LocalMachineCheck(false, 0, "Không kết nối được."), new LocalMachineCheck(true, 420, null));
+
+        var outcome = await Service(machines).TestAsync(new AiSettingsInput("Local", null, null, null));
+
+        Assert.Equal(AiSettingsFailure.None, outcome.Failure);
+        Assert.Equal(420, outcome.Test!.ElapsedMs);
+        Assert.Equal("Máy chính: Không kết nối được. Máy dự phòng sẽ viết thay, kết nối được qwen-local.", outcome.Test.Message);
+        Assert.Equal(1, machines.Checks);
+    }
+
+    [Fact]
+    public async Task Testing_the_local_model_fails_only_when_neither_machine_answers()
+    {
+        var machines = new TwoMachines(new LocalMachineCheck(false, 0, "Hết thời gian."), new LocalMachineCheck(true, 0, "Tắt máy."));
+
+        var outcome = await Service(machines).TestAsync(new AiSettingsInput("Local", null, null, null));
+
+        Assert.Equal(AiSettingsFailure.TestFailed, outcome.Failure);
+        Assert.Equal("Máy chính: Hết thời gian. Máy dự phòng: Tắt máy.", outcome.Message);
+    }
+
+    /// <summary>The in-house model with a backup machine, each answering "Thử kết nối" as given.</summary>
+    private sealed class TwoMachines(LocalMachineCheck main, LocalMachineCheck backup) : ILanguageModel, ILocalModelMachines
+    {
+        public int Checks { get; private set; }
+        public bool IsConfigured => true;
+        public string Model => "qwen-local";
+        public bool HasBackup => true;
+
+        public Task<string> CompleteAsync(string system, string user, CancellationToken ct) => Task.FromResult("ok");
+
+        public Task<IReadOnlyList<LocalMachineCheck>> CheckAsync(TimeSpan timeout, CancellationToken ct)
+        {
+            Checks++;
+            return Task.FromResult<IReadOnlyList<LocalMachineCheck>>([main, backup]);
+        }
     }
 }

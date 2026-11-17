@@ -49,11 +49,11 @@
         <mxCell id="UG4R0wm3pkHBrdGmvdg_-1" edge="1" parent="tc" source="t3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.468;entryY=0.007;entryDx=0;entryDy=0;entryPerimeter=0;" target="a1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="t10" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save Signature &amp; Audit Trail" vertex="1">
+        <mxCell id="t10" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Save Approval &amp; Audit Trail" vertex="1">
           <mxGeometry height="50" width="170" x="99" y="1777" as="geometry" />
         </mxCell>
         <mxCell id="t12" parent="tc" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Lock &amp; Store Official Minutes" vertex="1">
-          <mxGeometry height="50" width="170" x="91" y="2098" as="geometry" />
+          <mxGeometry height="50" width="170" x="99" y="2098" as="geometry" />
         </mxCell>
         <mxCell id="sec" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Secretary" vertex="1">
           <mxGeometry height="2370" width="440" x="700" y="20" as="geometry" />
@@ -84,13 +84,10 @@
             <mxPoint x="120" y="1045" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="s9" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Finalize &amp; Seal Minutes" vertex="1">
-          <mxGeometry height="50" width="170" x="35" y="2008" as="geometry" />
-        </mxCell>
         <mxCell id="g3" parent="sgn" style="rhombus;spacingLeft=16;spacingRight=16;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=11;" value="Minutes Acceptable?" vertex="1">
           <mxGeometry height="76" width="160" x="40" y="1635" as="geometry" />
         </mxCell>
-        <mxCell id="g4" parent="sgn" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Sign Minutes" vertex="1">
+        <mxCell id="g4" parent="sgn" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Approve &amp; Issue Minutes" vertex="1">
           <mxGeometry height="50" width="170" x="235" y="1648" as="geometry" />
         </mxCell>
         <mxCell id="u1" parent="au" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Access Meeting Records" vertex="1">
@@ -99,7 +96,7 @@
         <mxCell id="e21" edge="1" parent="sec" source="g3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="g4" value="Yes">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e22" edge="1" parent="sec" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" source="g3" target="s7" value="No">
+        <mxCell id="e22" edge="1" parent="sec" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" source="g3" target="s7" value="No – return with reason">
           <mxGeometry relative="1" x="-0.8394" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -116,10 +113,10 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="UG4R0wm3pkHBrdGmvdg_-4" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Request Signing Minutes" vertex="1">
+        <mxCell id="UG4R0wm3pkHBrdGmvdg_-4" parent="sec" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;" value="Submit Minutes for Approval" vertex="1">
           <mxGeometry height="50" width="170" x="32" y="1518" as="geometry" />
         </mxCell>
-        <mxCell id="sgn" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Chair / Designated Signers" vertex="1">
+        <mxCell id="sgn" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Chair" vertex="1">
           <mxGeometry height="2370" width="440" x="1140" y="20" as="geometry" />
         </mxCell>
         <mxCell id="au" parent="1" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=none;strokeColor=#000000;fontColor=#000000;fontStyle=0;fontSize=13;whiteSpace=wrap;" value="Authorized User" vertex="1">
@@ -170,12 +167,7 @@
         <mxCell id="e25" edge="1" parent="1" source="g4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="t10" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e26" edge="1" parent="1" source="t10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="s9" value="">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="379.9999999999998" y="1925" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e29" edge="1" parent="1" source="s9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="t12" value="">
+        <mxCell id="e26" edge="1" parent="1" source="t10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="t12" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e30" edge="1" parent="1" source="t12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#000000;fontColor=#000000;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="u1" value="">

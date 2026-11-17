@@ -35,7 +35,9 @@ public static class CalendarBusyRules
 
     /// <summary>
     /// When a meeting keeps its people busy, or null when it does not (BR-420). An ended meeting until it actually ended;
-    /// one still running at least until now; any other until its planned end.
+    /// one still running for its planned length from when it really started, and at least until now; any other until
+    /// its planned end. A meeting started early — next month's, opened today — is busy today, not from today until next
+    /// month.
     /// </summary>
     public static BusyInterval? Interval(MeetingStatus status, DateTimeOffset plannedStart, DateTimeOffset plannedEnd,
         DateTimeOffset? actualStart, DateTimeOffset? actualEnd, DateTimeOffset now)
@@ -45,7 +47,7 @@ public static class CalendarBusyRules
         var end = status switch
         {
             MeetingStatus.Ended => actualEnd ?? plannedEnd,
-            MeetingStatus.InProgress => plannedEnd > now ? plannedEnd : now,
+            MeetingStatus.InProgress => start + (plannedEnd - plannedStart) is var due && due > now ? due : now,
             _ => plannedEnd,
         };
         return end > start ? new BusyInterval(start, end) : null;

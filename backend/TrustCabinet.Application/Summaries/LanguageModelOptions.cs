@@ -47,5 +47,25 @@ public sealed class LanguageModelOptions
     /// <summary>Agenda items written at the same time through an API. One writes them in turn.</summary>
     public int ApiParallelism { get; set; } = 3;
 
+    /// <summary>
+    /// A second machine running the same model, tried when <see cref="BaseUrl"/> cannot be reached, so a draft for an
+    /// Internal or Secret meeting is still written when the main machine is off. Empty means none.
+    /// </summary>
+    public string BackupBaseUrl { get; set; } = "";
+
+    /// <summary>
+    /// How long to wait for a machine to accept the connection. A machine that is off the tailnet never refuses: without
+    /// this the draft would wait its whole timeout before the backup is tried. A running Ollama accepts at once.
+    /// </summary>
+    public int ConnectTimeoutSeconds { get; set; } = 10;
+
     public bool IsConfigured => Uri.TryCreate(BaseUrl, UriKind.Absolute, out _) && Model.Length > 0;
+
+    public bool HasBackup => IsConfigured && Uri.TryCreate(BackupBaseUrl, UriKind.Absolute, out _);
+}
+
+/// <summary>One machine's answer to "Thử kết nối": how long it took, or why it gave none.</summary>
+public sealed record LocalMachineCheck(bool Backup, long ElapsedMs, string? Failure)
+{
+    public bool Ok => Failure is null;
 }

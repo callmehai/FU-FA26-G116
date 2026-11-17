@@ -205,6 +205,9 @@ public sealed class AgendaPoRequirementsTests(AgendaFixture fixture) : IClassFix
             Assert.Equal(guest.Email, e.ToAddress); Assert.Null(e.CalendarAttachment); Assert.Equal(EmailStatus.Queued, e.Status);
             // The guest learns which meeting, not just which item.
             Assert.Contains(meetingTitle, e.Body);
+            // And the same way in as the invitation, so the earlier email need not be dug out.
+            Assert.Contains($"/guest/{guest.Id:D}#token=", e.Body);
+            Assert.Contains($"/guest/{guest.Id:D}#token=", e.HtmlBody);
         });
     }
 

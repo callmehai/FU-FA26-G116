@@ -1,5 +1,7 @@
 import { Badge, type BadgeTone } from '../../components/Badge'
+import { useEffect, useRef } from 'react'
 import { Icon } from '../../components/Icon'
+import { InfoTip } from '../../components/InfoTip'
 import type { Slot, SlotSearchResult } from '../../types/meetingSlots'
 import { clockOf, dayLabel, slotKey } from './slotRules'
 
@@ -20,7 +22,10 @@ export function SlotResults({
   selected,
   onSelect,
   onDraft,
+  scrollOnShow = false,
 }: {
+  /** A phone: the answer appears under the conditions and the people, out of sight, so it is scrolled to. */
+  scrollOnShow?: boolean
   result: SlotSearchResult
   /** The searched dates, to tell "the shares do not reach these days" from "everyone is busy". */
   range: { from: string; to: string }
@@ -31,6 +36,10 @@ export function SlotResults({
   const counted = result.people.filter((p) => p.status !== 'NotShared')
   const notShared = result.people.filter((p) => p.status === 'NotShared')
   const total = result.days.reduce((n, d) => n + d.slots.length, 0)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (scrollOnShow) ref.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }, [scrollOnShow])
   const mostFree = result.code === 'MSG445'
   const notSharedText =
     notShared.length > 0
@@ -41,7 +50,7 @@ export function SlotResults({
     const shared = result.people.filter((p) => p.status === 'Shared')
     const reaches = shared.some((p) => p.startDate! <= range.to && p.endDate! >= range.from)
     return (
-      <div className="card find-empty" role="status">
+      <div ref={ref} className="card find-empty find-scroll-target" role="status">
         <Icon name="calendarSearch" size={24} />
         {counted.length === 0 ? (
           <>
@@ -67,7 +76,7 @@ export function SlotResults({
   }
 
   return (
-    <div className="find-results">
+    <div ref={ref} className="find-results find-scroll-target">
       {(mostFree || notSharedText) && (
         <p className="alert alert-warning" role="status">
           {[mostFree ? result.message : null, notSharedText].filter(Boolean).join(' ')}
@@ -75,6 +84,7 @@ export function SlotResults({
       )}
       <p className="find-count">
         {total} khung giờ {mostFree ? 'nhiều người rảnh nhất' : 'phù hợp'}
+        {mostFree && <InfoTip text="Số trên mỗi giờ: người rảnh / người được tính lịch." />}
         {result.truncated && <span className="find-count-note"> · chỉ hiện {total} khung đầu, thu hẹp khoảng ngày để xem thêm</span>}
       </p>
       {result.days.map((day) => {

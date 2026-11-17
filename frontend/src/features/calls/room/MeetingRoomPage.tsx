@@ -4,6 +4,7 @@ import {
   DisconnectReason,
   type LocalAudioTrack,
   type LocalVideoTrack,
+  type MediaDeviceFailure,
   Room,
   RoomEvent,
   createLocalAudioTrack,
@@ -18,6 +19,7 @@ import { BrandMark } from '../../../components/BrandMark'
 import { useToast } from '../../../components/toastContext'
 import { avatarColors, initials } from '../../../lib/avatar'
 import { errorMessage, isApiError } from '../../../lib/errors'
+import { routes } from '../../../lib/routes'
 import type { CallRoomState } from '../../../types/call'
 import type { GuestMeeting } from '../../../types/guest'
 import type { Meeting, Sensitivity } from '../../../types/meeting'
@@ -33,6 +35,8 @@ import { RoomView } from './RoomView'
 import {
   ROOM_OPTIONS,
   deviceErrorMessage,
+  deviceFailure,
+  devicesNotice,
   deviceOptions,
   disconnectMessage,
   noDeviceReason,
@@ -174,6 +178,7 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   const [room] = useState(() => new Room(ROOM_OPTIONS))
   const [phase, setPhase] = useState<Phase>({ kind: 'lobby' })
   const leavingRef = useRef(false)
+  const connectedRef = useRef(false)
   const navigate = useNavigate()
   const home = useMeetingHome(meeting.id)
   const recheckGuest = useGuest()?.recheck
@@ -182,7 +187,8 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
 
   useEffect(() => {
     function onDisconnected(reason?: DisconnectReason) {
-      if (leavingRef.current) return
+      // A connection that never opened is the lobby's to report (MSG480), not a lost one (MSG332).
+      if (leavingRef.current || !connectedRef.current) return
       setPhase({ kind: 'left', reason })
       // Put out by the server — for a guest a revoked invitation or a lapsed session — or the meeting ended: the guest
       // page then replaces the room with its closed screen, taking the meeting off the screen.
@@ -230,10 +236,25 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
 
   if (phase.kind === 'left') {
     const { text, canRejoin } = disconnectMessage(phase.reason)
+    // Taken off the roster (MSG330): the meeting page is a 404 to them now, so the way out is the meeting list.
+    const removed = phase.reason === DisconnectReason.PARTICIPANT_REMOVED
     return (
-      <LobbyMessage meetingId={meeting.id} title={meeting.title} text={text} showHome={!asGuest || canRejoin}>
+      <LobbyMessage
+        meetingId={meeting.id}
+        title={meeting.title}
+        text={text}
+        showHome={!asGuest || canRejoin}
+        toList={removed}
+      >
         {canRejoin && (
-          <button type="button" className="btn btn-primary" onClick={() => setPhase({ kind: 'lobby' })}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => {
+              connectedRef.current = false
+              setPhase({ kind: 'lobby' })
+            }}
+          >
             Vào lại
           </button>
         )}
@@ -241,7 +262,17 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
     )
   }
 
-  return <PreJoin room={room} meeting={meeting} call={call} onJoined={() => setPhase({ kind: 'inRoom' })} />
+  return (
+    <PreJoin
+      room={room}
+      meeting={meeting}
+      call={call}
+      onJoined={() => {
+        connectedRef.current = true
+        setPhase({ kind: 'inRoom' })
+      }}
+    />
+  )
 }
 
 /**
@@ -284,12 +315,12 @@ function PreJoin({
   const [acknowledged, setAcknowledged] = useState(false)
   const [prefs, setPrefs] = useState(loadPrefs)
   const [micAllowed, setMicAllowed] = useState(false)
-  const [micError, setMicError] = useState<string | null>(null)
+  const [micFailure, setMicFailure] = useState<MediaDeviceFailure | null>(null)
   const [joinError, setJoinError] = useState<string | null>(null)
   const [joining, setJoining] = useState(false)
   const toast = useToast()
   const handleAccessLost = useAccessLost()
-  const micOn = prefs.mic && !micError
+  const micOn = prefs.mic && !micFailure
   // Labels only come once a permission is granted, so the lists are read again then.
   const { devices, reload: reloadDevices } = useDeviceList(micAllowed)
   const ofKind = (kind: MediaDeviceKind) => devices.filter((d) => d.kind === kind)
@@ -299,7 +330,7 @@ function PreJoin({
   const {
     attachVideo,
     ready: previewReady,
-    error: previewError,
+    failure: previewFailure,
     release: releasePreview,
   } = useCameraPreview(prefs.cam, camId, reloadDevices)
   const { track: micTrack, release: releaseMic } = useMicPreview(micOn && micAllowed, micId)
@@ -314,7 +345,7 @@ function PreJoin({
     // Asking for the device list asks for permission too, so a refusal shows up here, before joining.
     Room.getLocalDevices('audioinput')
       .then(() => !cancelled && setMicAllowed(true))
-      .catch((err: unknown) => !cancelled && setMicError(deviceErrorMessage(err, 'micro')))
+      .catch((err: unknown) => !cancelled && setMicFailure(deviceFailure(err)))
     return () => {
       cancelled = true
     }
@@ -333,7 +364,13 @@ function PreJoin({
       // The previews hold the camera and microphone; release them so publishing can open them again.
       releasePreview()
       releaseMic()
-      await room.connect(ticket.serverUrl, ticket.token)
+      try {
+        await room.connect(ticket.serverUrl, ticket.token)
+      } catch {
+        // Never in, so nothing was lost: the lobby stays, says so, and "Vào phòng" tries again.
+        setJoinError(roomMessage.unreachable)
+        return
+      }
       onJoined()
       if (speakerId && CAN_PICK_SPEAKER) {
         await room.switchActiveDevice('audiooutput', speakerId).catch(() => undefined)
@@ -345,7 +382,7 @@ function PreJoin({
           toast.show(deviceErrorMessage(err, 'micro'), 'error')
         }
       }
-      if (prefs.cam && !previewError) {
+      if (prefs.cam && !previewFailure) {
         try {
           await room.localParticipant.setCameraEnabled(true, camId ? { deviceId: camId } : undefined)
         } catch (err) {
@@ -360,7 +397,9 @@ function PreJoin({
     }
   }
 
-  const camOn = prefs.cam && !previewError
+  const camOn = prefs.cam && !previewFailure
+  // Micro and camera refused alike (a blocked site) are said once, not in two near-identical notices.
+  const deviceNotice = devicesNotice(micFailure, prefs.cam ? (previewFailure ?? null) : null)
   const sensitivity = 'sensitivity' in meeting ? meeting.sensitivity : null
   const restricted = sensitivity === 'Secret'
   const labelOf = (id: string) => devices.find((d) => d.deviceId === id)?.label ?? ''
@@ -387,7 +426,7 @@ function PreJoin({
                 className={`prejoin-toggle${micOn ? '' : ' is-off'}`}
                 aria-label={micOn ? 'Tắt micro' : 'Bật micro'}
                 title={micOn ? 'Tắt micro' : 'Bật micro'}
-                disabled={Boolean(micError)}
+                disabled={Boolean(micFailure)}
                 onClick={() => update({ ...prefs, mic: !prefs.mic })}
               >
                 <Icon name={micOn ? 'mic' : 'micOff'} />
@@ -471,14 +510,9 @@ function PreJoin({
           {/* A member about to be recorded can leave a voice sample here; a guest has no Voice ID. */}
           {!guest && <VoiceShortcut />}
 
-          {micError && (
+          {deviceNotice && (
             <div className="alert alert-warning" role="status">
-              <p>{micError}</p>
-            </div>
-          )}
-          {prefs.cam && previewError && (
-            <div className="alert alert-warning" role="status">
-              <p>{previewError}</p>
+              <p>{deviceNotice}</p>
             </div>
           )}
           {joinError && (
@@ -575,11 +609,13 @@ function useMicPreview(enabled: boolean, deviceId: string) {
  * Results are keyed by device, so a stale track or error from a previous choice is never shown.
  */
 function useCameraPreview(enabled: boolean, deviceId: string, onOpened?: () => void) {
-  const [result, setResult] = useState<{ key: string; track?: LocalVideoTrack; error?: string }>({ key: '' })
+  const [result, setResult] = useState<{ key: string; track?: LocalVideoTrack; failure?: MediaDeviceFailure }>({
+    key: '',
+  })
   const [video, setVideo] = useState<HTMLVideoElement | null>(null)
   const key = enabled ? `on:${deviceId}` : 'off'
   const track = result.key === key ? result.track : undefined
-  const error = result.key === key ? result.error : undefined
+  const failure = result.key === key ? result.failure : undefined
 
   useEffect(() => {
     if (!enabled) return
@@ -594,7 +630,7 @@ function useCameraPreview(enabled: boolean, deviceId: string, onOpened?: () => v
         onOpened?.()
       })
       .catch((err: unknown) => {
-        if (!cancelled) setResult({ key: `on:${deviceId}`, error: deviceErrorMessage(err, 'camera') })
+        if (!cancelled) setResult({ key: `on:${deviceId}`, failure: deviceFailure(err) })
       })
     return () => {
       cancelled = true
@@ -610,7 +646,7 @@ function useCameraPreview(enabled: boolean, deviceId: string, onOpened?: () => v
     }
   }, [track, video])
 
-  return { attachVideo: setVideo, ready: track !== undefined, error, release: () => track?.stop() }
+  return { attachVideo: setVideo, ready: track !== undefined, failure, release: () => track?.stop() }
 }
 
 /**
@@ -657,6 +693,7 @@ export function LobbyMessage({
   title,
   text,
   showHome = true,
+  toList = false,
   children,
 }: {
   meetingId: string
@@ -664,9 +701,11 @@ export function LobbyMessage({
   text: string
   /** False when the meeting page is gone too: a guest's, once the meeting ended or the invitation was revoked. */
   showHome?: boolean
+  /** The way back leads to the meeting list instead: a member who may no longer open the meeting page. */
+  toList?: boolean
   children?: ReactNode
 }) {
-  const home = useMeetingHome(meetingId)
+  const meetingHome = useMeetingHome(meetingId)
   return (
     <RoomPage>
       <main className="prejoin-message">
@@ -674,8 +713,8 @@ export function LobbyMessage({
         <p className="prejoin-meeting">{title}</p>
         <div className="prejoin-message-actions">
           {showHome && (
-            <Link className="btn btn-outline" to={home}>
-              Về trang cuộc họp
+            <Link className="btn btn-outline" to={toList ? routes.meetings : meetingHome}>
+              {toList ? 'Về danh sách cuộc họp' : 'Về trang cuộc họp'}
             </Link>
           )}
           {children}

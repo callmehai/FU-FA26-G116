@@ -178,7 +178,22 @@ public interface IMinutesSourceQuery
 
     /// <summary>Which of these users are active.</summary>
     Task<IReadOnlyList<Guid>> ListActiveUsersAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
+
+    /// <summary>The active accounts among <paramref name="readerIds"/>, whom the "minutes issued" email goes to.</summary>
+    Task<IReadOnlyList<MinutesEmailRecipient>> ListEmailRecipientsAsync(Guid[] readerIds, CancellationToken ct);
+
+    /// <summary>
+    /// Whom the "minutes issued" email names: the Chair who issued it, then the organizer with their address. Both
+    /// accounts must exist; one read each, in that order.
+    /// </summary>
+    Task<MinutesIssuedNames> GetIssuedEmailNamesAsync(Guid chairId, Guid organizerId, CancellationToken ct);
 }
+
+/// <summary>One active reader the "minutes issued" email is addressed to.</summary>
+public sealed record MinutesEmailRecipient(Guid Id, string FullName, string Email);
+
+/// <summary>The people a "minutes issued" email names.</summary>
+public sealed record MinutesIssuedNames(string Chair, string Organizer, string OrganizerEmail);
 
 /// <summary>
 /// The minutes' HTML allow-list (ADR-0055) and the Word and PDF files drawn from it; the parser and the PDF engine are

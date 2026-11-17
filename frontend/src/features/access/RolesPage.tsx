@@ -213,7 +213,8 @@ export function RolesPage() {
           className={`tab${activeTab === 'roles' ? ' tab-active' : ''}`}
           onClick={() => setActiveTab('roles')}
         >
-          Danh sách vai trò
+          {/* A phone keeps the first word of each tab, so both fit without a cut (audit UI-A6). */}
+          <span>Danh sách<span className="tab-long"> vai trò</span></span>
           {roles && <span className="tab-count">{roles.length}</span>}
         </button>
         <button
@@ -223,7 +224,7 @@ export function RolesPage() {
           className={`tab${activeTab === 'matrix' ? ' tab-active' : ''}`}
           onClick={() => setActiveTab('matrix')}
         >
-          Ma trận phân quyền
+          <span>Ma trận<span className="tab-long"> phân quyền</span></span>
         </button>
       </div>
 
@@ -240,7 +241,7 @@ export function RolesPage() {
           <p className="cell-empty">Đang tải danh sách vai trò…</p>
         ) : (
           <div className="list-panel table-card">
-            <table className="data-table">
+            <table className="data-table roles-table">
               <thead>
                 <tr>
                   <th>Tên vai trò</th>
@@ -257,9 +258,12 @@ export function RolesPage() {
                       {role.isBuiltIn && <Badge tone="outline">Mặc định</Badge>}{' '}
                       {role.id === me?.roleId && <Badge tone="blue">Vai trò của bạn</Badge>}
                     </td>
-                    <td className="cell-muted">{role.description ?? <em className="value-empty">Chưa có mô tả</em>}</td>
-                    <td>{role.userCount}</td>
-                    <td>
+                    <td className="cell-muted roles-desc">{role.description ?? <em className="value-empty">Chưa có mô tả</em>}</td>
+                    <td className="roles-count">
+                      {role.userCount}
+                      <span className="roles-count-unit"> tài khoản</span>
+                    </td>
+                    <td className="roles-actions">
                       {!role.isBuiltIn && (
                         <span className="row-actions">
                           <button
@@ -294,7 +298,7 @@ export function RolesPage() {
           <p className="cell-empty">Đang tải ma trận phân quyền…</p>
         ) : (
           <>
-            <div className="list-panel table-card">
+            <div className="list-panel table-card matrix-card">
               <table className="data-table matrix-table">
                 <thead>
                   <tr>
@@ -304,7 +308,9 @@ export function RolesPage() {
                         {group.name}
                       </th>
                     ))}
-                    <th rowSpan={2} className="col-action">Thao tác</th>
+                    <th rowSpan={2} className="col-action">
+                      <span className="visually-hidden">Thao tác</span>
+                    </th>
                   </tr>
                   <tr>
                     {columns.map((column) => (
@@ -346,6 +352,10 @@ export function RolesPage() {
                                   onChange={() => toggle(id, column.code)}
                                   aria-label={`${name} — ${column.name}`}
                                 />
+                                {/* A phone shows each role as a card of named switches, so the name rides along. */}
+                                <span className="matrix-cap-name" aria-hidden="true">
+                                  {column.name}
+                                </span>
                               </label>
                             </td>
                           )
@@ -353,9 +363,16 @@ export function RolesPage() {
                         <td className="col-action">
                           {dirty && (
                             <span className="row-actions">
-                              <button type="button" className="btn btn-outline btn-sm" onClick={() => discard(id)} disabled={saving !== null}>
+                              <button
+                                type="button"
+                                className="icon-button icon-button-sm matrix-undo"
+                                onClick={() => discard(id)}
+                                disabled={saving !== null}
+                                data-tooltip="Hoàn tác"
+                                aria-label={`Hoàn tác thay đổi của ${name}`}
+                              >
                                 <Icon name="undo" size={16} />
-                                Hoàn tác
+                                <span className="row-action-label">Hoàn tác</span>
                               </button>
                               <button type="button" className="btn btn-primary btn-sm" onClick={() => void save(id)} disabled={saving !== null}>
                                 <Icon name="check" size={16} />

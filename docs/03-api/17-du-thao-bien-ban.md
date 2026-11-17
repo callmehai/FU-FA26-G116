@@ -164,7 +164,7 @@ rồi đổi sang HTML lúc tạo.
 ## Duyệt và ban hành — SCRUM-33
 
 Theo [đặc tả sơ bộ](../notes/NOTE-dac-ta-so-bo-scrum-33.md): một người duyệt, duyệt là ban hành luôn, không tách bước ký.
-Cuộc họp giữ `Ended` suốt luồng này. Ký số là việc của SCRUM-37.
+Cuộc họp giữ `Ended` suốt luồng này. Không ký số: PO bỏ hẳn ngày 14/11/2026 (SCRUM-37 đóng), bảng chữ ký đã xoá ngày 15/11/2026.
 
 | Method | Đường dẫn | Ai | Kết quả |
 |---|---|---|---|

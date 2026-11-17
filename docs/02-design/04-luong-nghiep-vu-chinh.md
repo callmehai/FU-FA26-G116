@@ -20,7 +20,7 @@ BF-02 Meeting Preparation, Approval & Participant Coordination
 BF-03 Meeting Execution & Decision Making
    → Published → InProgress → Ended (agenda, biểu quyết, kết luận đã ghi)
 BF-04 Post-Meeting Processing & Formal Records
-   → Audio → Transcript → Tóm tắt → Biên bản → Ký → Niêm phong
+   → Audio → Transcript → Tóm tắt → Biên bản → Duyệt và ban hành
 ```
 
 Ba quyết định PO 09/10/2026 định hình các luồng này:
@@ -41,9 +41,9 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 
 | Swimlane | Việc chính |
 |---|---|
-| System Admin | Tạo / quản lý vai trò tuỳ chỉnh (UC-12), cấu hình quyền (UC-11), tạo / cập nhật tài khoản (UC-06), gán vai trò (UC-08), mở khoá tài khoản (UC-09) |
+| System Admin | Tạo / quản lý vai trò tuỳ chỉnh (UC-12), cấu hình quyền (UC-11), tạo / cập nhật tài khoản (UC-06), gán vai trò (UC-08) |
 | User | Mở TrustCabinet, chọn đăng nhập Google hoặc email + mật khẩu, dùng các chức năng được phép |
-| TrustCabinet | Lưu thay đổi và ghi audit log (BR-16); kiểm tra thông tin đăng nhập, liên kết tài khoản, trạng thái active; khoá tài khoản khi sai quá số lần |
+| TrustCabinet | Lưu thay đổi và ghi audit log (BR-16); kiểm tra thông tin đăng nhập, liên kết tài khoản, trạng thái active; quá số lần cho phép trong một phút thì báo lỗi MSG414 |
 | OAuth Provider | Xác minh tài khoản Google và trả danh tính (UC-02) |
 
 **Luồng:**
@@ -51,7 +51,7 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 1. System Admin chuẩn bị vai trò, quyền và tài khoản; mỗi thay đổi được lưu và ghi audit log.
 2. Người dùng mở TrustCabinet và chọn cách đăng nhập.
    - **Email + mật khẩu (UC-01):** sai thông tin → báo lỗi (MSG01, không lộ email có tồn tại hay không — BR-02); sai quá
-     số lần cho phép → hệ thống khoá tài khoản, Admin mở khoá bằng UC-09.
+     số lần cho phép trong một phút → hệ thống báo lỗi MSG414, thử lại sau ít phút.
    - **Google (UC-02):** Google xác minh tài khoản; hệ thống kiểm tra email đã liên kết tài khoản nội bộ (BR-06, không tự
      tạo tài khoản — BR-07).
 3. Tài khoản bị vô hiệu hoá → báo lỗi (BR-03). Hợp lệ → đăng nhập và nạp quyền theo vai trò (BR-08).
@@ -142,14 +142,14 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
 # 5. BF-04 – Post-Meeting Processing & Formal Records
 
 **Trigger:** cuộc họp đã `Ended` và cần xử lý hồ sơ sau họp.
-**Kết thúc:** biên bản đã ký, hoàn tất và niêm phong; hồ sơ cuộc họp tra cứu được theo quyền.
+**Kết thúc:** biên bản đã được Chủ tọa duyệt và ban hành; hồ sơ cuộc họp tra cứu được theo quyền.
 
 | Swimlane | Việc chính |
 |---|---|
-| TrustCabinet | Nhắc Thư ký upload audio; kiểm tra file; lưu vào thư viện media và xếp hàng xử lý; chép lời; lưu chữ ký và lịch sử; khoá và lưu biên bản chính thức |
+| TrustCabinet | Nhắc Thư ký upload audio; kiểm tra file; lưu vào thư viện media và xếp hàng xử lý; chép lời; khoá và lưu biên bản đã ban hành |
 | AI Provider | Sinh tóm tắt; sinh biên bản |
-| Secretary | Upload audio, sửa transcript, yêu cầu sinh và sửa tóm tắt, yêu cầu sinh và sửa biên bản, gửi ký, niêm phong |
-| Chair / Designated Signers | Người ký duy nhất của biên bản: xem, ký hoặc trả lại để sửa |
+| Secretary | Upload audio, sửa transcript, yêu cầu sinh và sửa tóm tắt, yêu cầu sinh và sửa biên bản, gửi duyệt biên bản |
+| Chair | Chủ tọa: duyệt và ban hành biên bản, hoặc trả lại để sửa |
 | Authorized User | Tra cứu hồ sơ cuộc họp |
 
 **Luồng:**
@@ -164,12 +164,11 @@ Ba quyết định PO 09/10/2026 định hình các luồng này:
    bố tóm tắt riêng — tóm tắt đi thẳng vào biên bản.
 5. **Biên bản (UC-59, UC-60):** Thư ký yêu cầu sinh biên bản; AI sinh bản nháp từ thông tin cuộc họp, tóm tắt và kết quả
    biểu quyết. Thư ký rà và sửa.
-6. **Ký (UC-61 → UC-63, UC-65):** Thư ký gửi ký. Biên bản **chỉ có một người ký**.
-   - Chấp nhận → ký; hệ thống lưu chữ ký và lịch sử.
-   - Không chấp nhận → trả về Thư ký sửa rồi gửi ký lại. Lúc này chưa có chữ ký nào, nên không có bước huỷ chữ ký.
-7. **Niêm phong (UC-64):** người ký đã ký → Thư ký hoàn tất; hệ thống khoá và lưu biên bản chính thức. Chỉ Thư ký được
-   niêm phong.
-8. **Tra cứu (UC-58, UC-63, UC-70):** người có quyền xem hồ sơ cuộc họp, lịch sử ký, báo cáo thống kê.
+6. **Duyệt và ban hành (UC-61 → UC-64, UC-65):** Thư ký gửi duyệt. Chủ tọa duyệt là ban hành luôn
+(BR-446); không duyệt thì trả lại kèm lý do cho Thư ký sửa rồi gửi lại. Không có bước ký hay niêm phong
+(PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng).
+7. **Đính chính (UC-83):** sửa sau ban hành thì tạo bản đính chính mới đi lại UC-61 → UC-64; bản cũ thành `Superseded`.
+8. **Tra cứu (UC-58, UC-70):** người có quyền xem hồ sơ cuộc họp, báo cáo thống kê.
 
 ---
 
@@ -183,7 +182,7 @@ BF-01 ──(tài khoản, vai trò)──> BF-02 ──(Published, lời mời)
 
 - BF-02 có vòng duyệt lặp tới khi `Approved`, và nhánh dời lịch sau khi `Published`.
 - BF-03 lặp theo từng mục agenda; biểu quyết là nhánh tuỳ chọn trong vòng lặp.
-- BF-04 có hai vòng lặp: chép lời lỗi → thử lại; người ký trả biên bản → Thư ký sửa → gửi ký lại.
+- BF-04 có hai vòng lặp: chép lời lỗi → thử lại; Chủ tọa trả biên bản → Thư ký sửa → gửi duyệt lại.
 
 # 7. Quy tắc khi vẽ / sửa swimlane
 

@@ -58,7 +58,7 @@ nếu code chưa thực hiện.
 | `NotificationRepository` có các thao tác theo recipient và notification ID. | Repository luôn ghép `notificationId` với `userId`, có thêm total count, truy vấn reminder, deduplication và hàng đợi realtime. | Bảo vệ ownership ngay trong query, hỗ trợ phân trang, retry an toàn và không tạo trùng notification. `MarkAllUnreadAsReadAsync` trả số dòng đã đổi thay vì `void`. |
 | `Notification` có `notificationId`, `recipientUserId`, `kind`, target, `actionUrl`, `readAt`, `createdAt`. | `Id`, `UserId`, `Type` dùng enum, `TargetType`, `TargetId`, `ReadAt`, `CreatedAt`; có thêm `Body`, `MeetingId`, `UpdatedAt`, `DeduplicationKey`, `PushedAt`. `ActionUrl` chỉ có trong response và `IsRead` là giá trị suy ra. | Không ghim route UI vào database. `ReadAt` là nguồn sự thật duy nhất; gọi lặp `MarkAsRead` không làm mất thời điểm đọc đầu tiên. |
 | `User` có `username`, `email`, `status` và quan hện 1–n với notification. | Domain dùng `FullName`, `Email`, `IsActive`; FK `Notification.UserId` là `Restrict`. | UML đang dùng tên field không khớp domain model đã chốt; quan hệ người nhận vẫn khớp. |
-| `NotificationPanel` hiển thị danh sách, unread badge, lỗi và thao tác mở/đánh dấu. | `features/notifications/`: `NotificationBell` (nút chuông + badge trên app bar), `NotificationPanel` (danh sách) và `NotificationsProvider` (trạng thái + SignalR client). | Tách thêm provider để badge, danh sách và kết nối hub sống qua việc đổi workspace. Chi tiết ở [Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe). |
+| `NotificationPanel` hiển thị danh sách, unread badge, lỗi và thao tác mở/đánh dấu. | `features/notifications/`: `NotificationBell` (nút chuông + badge ở chân sidebar, `sidebar-foot` trong `AppShell`), `NotificationPanel` (danh sách) và `NotificationsProvider` (trạng thái + SignalR client). | Tách thêm provider để badge, danh sách và kết nối hub sống suốt phiên đăng nhập trong một shell duy nhất (ADR-0012: không có app bar). Chi tiết ở [Hợp đồng tích hợp FE](#hợp-đồng-tích-hợp-fe). |
 
 Các cải tiến kỹ thuật không thể hiện trong class diagram gồm SignalR chỉ gửi đúng
 recipient, kiểm tra lại tài khoản active khi kết nối hub, lưu database trước khi push,
@@ -151,12 +151,14 @@ client bỏ qua nó cũng không có thêm quyền gì, vì server đọc lại 
 
 ## Hợp đồng tích hợp FE
 
-Chuông thông báo nằm trên app bar, dùng chung cho cả hai workspace. Code ở
+Chuông thông báo nằm ở chân sidebar (`sidebar-foot` trong `AppShell.tsx:124-160`, cùng hàng
+với menu tài khoản, hiển thị qua `<NotificationBell/>`), dùng chung cho mọi màn hình trong một
+sidebar dọc duy nhất (ADR-0012: không có app bar). Code ở
 `frontend/src/features/notifications/`, gọi API qua `src/api/notifications.ts` và hub qua
 `src/api/hubs.ts`.
 
 - **Một kết nối cho mỗi phiên đăng nhập.** `NotificationsProvider` nằm trong `RequireAuth`, phía
-  trên shell của cả hai workspace: chuyển giữa Không gian làm việc và Lịch làm việc giữ nguyên kết
+  trên shell duy nhất: chuyển màn hình không mount lại provider nên giữ nguyên kết
   nối, badge và danh sách đã tải. Provider gắn `key` theo user, nên tài khoản khác đăng nhập không
   bao giờ thấy danh sách của tài khoản trước. Mọi route cần đăng nhập phải nằm dưới `RequireAuth`;
   một route nằm ngoài (kể cả route chỉ để chuyển hướng) làm provider mount lại và mở kết nối mới.

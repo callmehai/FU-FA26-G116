@@ -42,6 +42,10 @@ ROOT = Path(__file__).resolve().parents[1]
 COMBINED = ROOT / "docs/06-sequencediagram/TrustCabinet_Sequence_Diagrams.drawio"
 PNG_DIR = ROOT / "docs/06-sequencediagram/drawio-png"
 
+# Chạy bằng `python scripts/txt_to_sequence_drawio_png.py` nên thư mục scripts
+# đã nằm trong sys.path — import trực tiếp module dùng chung trong cùng thư mục.
+from compress_png import compress_file
+
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 PNG_IEND = b"\x00\x00\x00\x00IEND\xaeB`\x82"
 # Ngân sách diện tích ảnh khi chụp bằng trình duyệt: giữ kích thước/dung lượng như các ảnh đã có (trình duyệt
@@ -644,6 +648,27 @@ def export_png(
     return out
 
 
+def default_originals_dir() -> Path:
+    """Thư mục local giữ bản gốc (gitignore) để sau này dựng báo cáo chuẩn nộp."""
+    env = os.environ.get("DIAGRAM_ORIGINALS_DIR")
+    return Path(env) if env else ROOT / "anh-goc"
+
+
+def keep_original(out: Path, originals_dir: Path | None, compress: bool) -> None:
+    """Lưu bản gốc vào thư mục local, rồi nén bản trong repo."""
+    if originals_dir is not None:
+        mirror = originals_dir / out.relative_to(ROOT)
+        mirror.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(out, mirror)
+    if compress:
+        try:
+            old, new, changed = compress_file(out)
+        except RuntimeError as exc:
+            print(f"  canh bao: {exc} — giữ nguyên bản xuất", flush=True)
+            return
+        print(f"  {'nen' if changed else 'giu-nguyen'} {out.name} ({old/1e3:.0f} -> {new/1e3:.0f} KB)", flush=True)
+
+
 def process_one(
     drawio: Path,
     txt_path: Path,
@@ -652,6 +677,8 @@ def process_one(
     scale: float | None,
     work_dir: Path,
     browser: Path | None = None,
+    originals_dir: Path | None = None,
+    compress: bool = True,
 ) -> Path:
     page_id = stem_to_page_id(txt_path.stem)
     print(f"→ {txt_path.name}  ({page_id})", flush=True)
@@ -663,10 +690,12 @@ def process_one(
     out = export_png(drawio, Path(single_path), page_id, chosen_scale, browser)
     width, height = png_size(out)
     print(f"  PNG scale={chosen_scale} {width}x{height} → {out.name} ({out.stat().st_size} bytes)", flush=True)
+    keep_original(out, originals_dir, compress)
     return out
 
 
-def export_tab(drawio: Path, page_id: str, *, scale: float | None, work_dir: Path, browser: Path | None) -> Path:
+def export_tab(drawio: Path, page_id: str, *, scale: float | None, work_dir: Path, browser: Path | None,
+               originals_dir: Path | None = None, compress: bool = True) -> Path:
     """Xuất lại PNG của một tab có sẵn trong file gộp (tab không có .txt, hoặc ảnh cũ hỏng) — không sửa file gộp."""
     print(f"→ tab {page_id}", flush=True)
     root = ET.parse(COMBINED).getroot()
@@ -687,6 +716,7 @@ def export_tab(drawio: Path, page_id: str, *, scale: float | None, work_dir: Pat
     out = export_png(drawio, single, page_id, chosen_scale, browser)
     width, height = png_size(out)
     print(f"  PNG scale={chosen_scale} {width}x{height} → {out.name} ({out.stat().st_size} bytes)", flush=True)
+    keep_original(out, originals_dir, compress)
     return out
 
 
@@ -746,12 +776,30 @@ def main(argv: list[str] | None = None) -> int:
         metavar="PAGE_ID",
         help="Xuất lại PNG từ tab có sẵn trong file gộp (vd. uc14_createmeeting); lặp lại cho nhiều tab",
     )
+    parser.add_argument(
+        "--originals-dir",
+        default=None,
+        help="Thư mục local giữ bản gốc (mặc định $DIAGRAM_ORIGINALS_DIR hoặc anh-goc/); --no-originals để tắt",
+    )
+    parser.add_argument(
+        "--no-originals",
+        action="store_true",
+        help="Không lưu bản gốc (chỉ xuất bản repo)",
+    )
+    parser.add_argument(
+        "--no-compress",
+        action="store_true",
+        help="Giữ nguyên bản xuất trong repo (không nén palette); dùng khi cần ảnh chuẩn nộp",
+    )
     args = parser.parse_args(argv)
 
     drawio = resolve_drawio()
     files = expand_inputs(args.inputs) if args.inputs else []
     if not files and not args.tab:
         raise RuntimeError("Không có file .txt hay --tab nào để xử lý")
+
+    originals_dir = None if args.no_originals else Path(args.originals_dir or default_originals_dir())
+    compress = not args.no_compress
 
     browser = resolve_browser()
     print(f"Draw.io: {drawio}", flush=True)
@@ -775,9 +823,12 @@ def main(argv: list[str] | None = None) -> int:
                 scale=args.scale,
                 work_dir=work,
                 browser=browser,
+                originals_dir=originals_dir,
+                compress=compress,
             )
         for page_id in args.tab:
-            export_tab(drawio, page_id, scale=args.scale, work_dir=work, browser=browser)
+            export_tab(drawio, page_id, scale=args.scale, work_dir=work, browser=browser,
+                       originals_dir=originals_dir, compress=compress)
 
     print("xong", flush=True)
     return 0

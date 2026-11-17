@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Application.Tests.Fakes;
 using TrustCabinet.Domain.Audit;
@@ -21,6 +23,7 @@ public sealed class MinutesServiceTests
     private readonly FakeAuditLog _audit = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly FakeMeetingRepository _meetings = new();
+    private readonly FakeEmailMessageRepository _emails = new();
     private readonly Guid _secretary = Guid.CreateVersion7();
     private readonly Guid _chair = Guid.CreateVersion7();
     private readonly Guid _member = Guid.CreateVersion7();
@@ -46,7 +49,8 @@ public sealed class MinutesServiceTests
     }
 
     private MinutesService Service() => new(_minutes, _sources, _summarySources, _summaries, new FakeMinutesRenderer(),
-        _notifications, _audit, _unitOfWork, _meetings, new FixedClock(Now), NullLogger<MinutesService>.Instance);
+        _notifications, _audit, _unitOfWork, _meetings, new FixedClock(Now), NullLogger<MinutesService>.Instance, _emails,
+        Options.Create(new EmailDeliveryOptions { ApplicationBaseUrl = "https://hop.example.vn" }));
 
     private MeetingMinutes Revision(MinutesStatus status, int number = 1, Guid? supersedes = null)
     {
@@ -158,6 +162,50 @@ public sealed class MinutesServiceTests
         Assert.Equal(AuditActions.MinutesIssued, Assert.Single(_audit.Rows).Action);
         Assert.Equal(new[] { _member, _secretary }.Order(), _notifications.Added.Select(n => n.UserId).Order());
         Assert.Equal(1, _unitOfWork.Saves);
+    }
+
+    [Fact]
+    public async Task Issuing_emails_every_active_reader_but_the_chair_in_the_issuing_transaction()
+    {
+        _sources.ActiveUsers.UnionWith([_secretary, _chair, _member]);
+        var row = Revision(MinutesStatus.WaitingApproval);
+
+        await Service().ApproveAsync(row.Id, _chair, row.UpdatedAt);
+
+        // PO 15/11/2026: the same readers as the bell, the Chair who issued excluded, queued in the issuing transaction.
+        Assert.DoesNotContain(_chair, Assert.Single(_sources.EmailLookups));
+        Assert.Equal(new[] { _member, _secretary }.Order(),
+            _emails.Added.Select(e => Guid.ParseExact(e.ToAddress[..32], "N")).Order());
+        Assert.All(_emails.Added, e =>
+        {
+            Assert.StartsWith("Biên bản cuộc họp đã ban hành: ", e.Subject);
+            Assert.StartsWith($"email-minutes-issued:{row.Id:D}:", e.DeduplicationKey);
+            Assert.Contains($"https://hop.example.vn/mgmt/meetings/{_meeting:D}?tab=minutes", e.Body);
+            Assert.Contains("Nguyễn Chủ Toạ", e.Body);
+            Assert.NotNull(e.HtmlBody);
+        });
+        Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
+    }
+
+    [Fact]
+    public async Task An_issued_correction_is_emailed_as_one_and_no_active_reader_means_no_email()
+    {
+        _sources.ActiveUsers.Add(_member);
+        var issued = Revision(MinutesStatus.Issued);
+        var correction = Revision(MinutesStatus.WaitingApproval, 2, issued.Id);
+
+        await Service().ApproveAsync(correction.Id, _chair, correction.UpdatedAt);
+
+        Assert.StartsWith("Bản đính chính biên bản đã ban hành: ", Assert.Single(_emails.Added).Subject);
+
+        _sources.ActiveUsers.Clear();
+        _emails.Added.Clear();
+        var next = Revision(MinutesStatus.WaitingApproval, 3, correction.Id);
+        await Service().ApproveAsync(next.Id, _chair, next.UpdatedAt);
+
+        Assert.Empty(_emails.Added);
+        // As before the move: with nobody to email, the Chair's and organizer's names are not read.
+        Assert.Equal(1, _sources.NameLookups);
     }
 
     [Fact]

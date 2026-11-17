@@ -104,7 +104,10 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
   SCRUM-182): `IEmailSender`, `PermanentEmailFailureException`, `IEmailQueueProcessor`, `EmailProcessingResult`,
   `EmailProcessingOutcome`, `CalendarInvitationBuilder`. Đây là ngoại lệ duy nhất của "giữ nguyên mức truy cập"; nhờ
   vậy `InternalsVisibleTo` cho Infrastructure vẫn chỉ phục vụ `AuditService.DetailsOptions`. Lớp cài đặt
-  (`EmailQueueProcessor`, `ResendWebhookReceiver`) vẫn `internal`.
+  (`EmailQueueProcessor`, `ResendWebhookReceiver`) vẫn `internal`. CA-18b (SCRUM-209) thêm vào danh sách này hai lớp
+  mẫu thư của `main`, chuyển sang `Application/Email/`: `EmailTemplates` (Infrastructure gọi `PasswordReset`,
+  `GuestCode`) và `EmailHtml` (`SmtpEmailSender`, `ResendEmailSender` gọi `FromText`). Method nào nhận kiểu `internal`
+  (`MeetingPeople`, `EmailButton`) vẫn `internal`, và `EmailLayout` cùng các record của nó vẫn `internal`.
 - Logic quyết định (ai được làm gì, trạng thái nào được chuyển, tính toán) ở Application hoặc Domain. Một lớp ở
   Infrastructure còn `if` nghiệp vụ là sai tầng.
 
@@ -477,6 +480,7 @@ subtask (đổi tên, dọn code, tối ưu truy vấn).
 | CA-16 | SCRUM-181 | Ai, Summaries, Minutes |
 | CA-17 | SCRUM-182 | Email |
 | CA-18 | SCRUM-183 | Dọn tầng Web: hub, publisher, worker, `/api/health`, `Program.cs` |
+| CA-18b | SCRUM-209 | Merge `main` (`9c282599`) vào nhánh refactor; đưa code BE mới của `main` theo quy chuẩn (`MeetingReminderEmails` + `IMeetingReminderQuery`, `ILocalModelMachines`, mẫu thư sang Application) |
 | CA-19 | SCRUM-184 | Tài liệu: package, architecture, class, sequence diagram, Report 4, AGENTS.md, ADR mới |
 | CA-20 | SCRUM-185 | Đóng: danh sách ngoại lệ rỗng, kiểm thử toàn bộ, E2E, merge vào `main` |
 

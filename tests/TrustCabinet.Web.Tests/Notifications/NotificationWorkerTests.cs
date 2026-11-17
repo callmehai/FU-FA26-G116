@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using TrustCabinet.Application;
 using TrustCabinet.Application.Abstractions;
@@ -52,6 +53,9 @@ public class NotificationWorkerTests
         services.AddScoped<IMeetingRepository, MeetingRepository>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddApplication();
+        // The reminder email lives in AddApplication since CA-18b, its storage in the email delivery this container
+        // leaves out: without it, as before, the worker finds no reminder service and only pushes bells.
+        services.RemoveAll<TrustCabinet.Application.Notifications.IMeetingReminderEmails>();
         services.AddTrustCabinetNotifications();
         services.AddSingleton<IUserAccountRepository>(accounts);
         services.AddSingleton<ICallerAccountQuery>(accounts);

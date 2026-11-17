@@ -32,7 +32,8 @@ public sealed record AiSettingsView(
 /// </summary>
 public sealed record AiSettingsInput(string? Mode, string? ApiBaseUrl, string? ApiModel, string? ApiKey);
 
-public sealed record AiTestResult(string Model, long ElapsedMs);
+/// <param name="Message">What to tell the administrator when it says more than "connected", e.g. how the backup machine fared.</param>
+public sealed record AiTestResult(string Model, long ElapsedMs, string? Message = null);
 
 public enum AiSettingsFailure
 {

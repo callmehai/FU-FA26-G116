@@ -71,6 +71,9 @@ public sealed class AgendaRepository(TrustCabinetDbContext db) : IAgendaReposito
     public Task<MeetingGuestInvitation?> FindCurrentGuestAsync(Guid meetingId, Guid invitationId, CancellationToken ct)
         => db.MeetingGuestInvitations.AsNoTracking().SingleOrDefaultAsync(g =>
             g.Id == invitationId && g.MeetingId == meetingId && g.RevokedAt == null, ct);
+
+    public Task<string> GetUserFullNameAsync(Guid userId, CancellationToken ct)
+        => db.Users.Where(u => u.Id == userId).Select(u => u.FullName).SingleAsync(ct);
 }
 
 /// <summary>

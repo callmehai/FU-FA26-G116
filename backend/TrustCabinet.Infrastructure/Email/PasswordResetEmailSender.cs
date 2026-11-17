@@ -36,6 +36,7 @@ internal sealed class PasswordResetEmailSender(
                 ToAddress = toAddress,
                 Subject = "Đặt lại mật khẩu TrustCabinet",
                 Body = BuildBody(fullName, BuildLink(emailOptions.ApplicationBaseUrl, resetToken), validFor),
+                HtmlBody = EmailTemplates.PasswordReset(fullName, BuildLink(emailOptions.ApplicationBaseUrl, resetToken), validFor),
             },
             "password reset",
             ct);

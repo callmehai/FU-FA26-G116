@@ -38,6 +38,18 @@ public sealed class NotificationWorker(
         var service = scope.ServiceProvider.GetRequiredService<INotificationService>();
         var users = scope.ServiceProvider.GetRequiredService<ICallerAccountQuery>();
         await service.QueueStartingSoonAsync(ct);
+        // The reminder email rides the same tick; a failure there must not hold back the bells below.
+        if (scope.ServiceProvider.GetService<IMeetingReminderEmails>() is { } reminderEmails)
+        {
+            try
+            {
+                await reminderEmails.QueueDueAsync(ct);
+            }
+            catch (Exception error) when (!ct.IsCancellationRequested)
+            {
+                logger.LogError(error, "Queueing reminder emails failed");
+            }
+        }
         foreach (var notification in await service.PendingPushAsync(100, ct))
         {
             var recipient = await users.FindByIdAsync(notification.UserId, ct);

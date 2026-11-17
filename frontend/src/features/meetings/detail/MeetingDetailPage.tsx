@@ -9,6 +9,7 @@ import { useToast } from '../../../components/toastContext'
 import { isApiError } from '../../../lib/errors'
 import { formatDateTime, formatSchedule } from '../../../lib/format'
 import { useBackTarget, type BackTarget } from '../../../lib/backTarget'
+import { useActiveTabInView } from '../../../lib/useActiveTabInView'
 import { routes } from '../../../lib/routes'
 import {
   CANCELLABLE_STATUSES,
@@ -142,6 +143,7 @@ function MeetingDetail({
   const onRoster = meeting.myMeetingRole !== null
   const tabs = onRoster ? TABS : TABS.filter((t) => t.id !== 'recordings')
   const tab: TabId = tabs.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
+  const tabBar = useActiveTabInView(tab)
   const setTab = (id: TabId) =>
     setParams(
       (p) => {
@@ -378,7 +380,9 @@ function MeetingDetail({
         />
       )}
 
-      {meeting.canRespond && (
+      {/* Asked only before the meeting starts: once it is running, attendance (check-in) answers the
+          question, and the Secretary running it should not be asked whether they attend. */}
+      {meeting.canRespond && meeting.status !== 'InProgress' && (
         <section className="workflow-bar workflow-blue workflow-bar-compact" aria-labelledby="rsvp-title">
           <span className="workflow-icon" aria-hidden="true">
             <Icon name="calendar" size={18} />
@@ -392,7 +396,7 @@ function MeetingDetail({
         </section>
       )}
 
-      <div className="tabs" role="tablist" aria-label="Chi tiết cuộc họp">
+      <div className="tabs" role="tablist" aria-label="Chi tiết cuộc họp" ref={tabBar}>
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -622,14 +626,17 @@ function DetailSkeleton() {
         ))}
       </div>
       <div className="detail-grid">
-        <div className="card record-overview">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className={`record-fact detail-skeleton-fact record-fact-${i % 2 ? 'right' : 'left'}`} style={{ gridRow: (i >> 1) + 1 }}>
-              <span className="skeleton" />
-              <span className="skeleton" />
-            </div>
-          ))}
-        </div>
+        {/* In a section, as the loaded tab is, so the card re-flows by the same width. */}
+        <section>
+          <div className="card record-overview">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className={`record-fact detail-skeleton-fact record-fact-${i % 2 ? 'right' : 'left'}`} style={{ gridRow: (i >> 1) + 1 }}>
+                <span className="skeleton" />
+                <span className="skeleton" />
+              </div>
+            ))}
+          </div>
+        </section>
         <div className="card detail-skeleton-aside">
           <span className="skeleton" />
           <span className="skeleton" />

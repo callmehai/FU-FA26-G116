@@ -40,6 +40,12 @@ public interface IMeetingInvitationDispatchRepository
     /// <summary>The meeting's status; the meeting must exist.</summary>
     Task<MeetingStatus> GetMeetingStatusAsync(Guid? meetingId, CancellationToken ct = default);
 
+    /// <summary>The full name of the meeting's current, active Chair, or null when it has none.</summary>
+    Task<string?> FindCurrentChairNameAsync(Guid? meetingId, CancellationToken ct = default);
+
+    /// <summary>Who organizes the meeting (its creator), to name in the email; the meeting must exist.</summary>
+    Task<MeetingOrganizer> GetOrganizerAsync(Guid? meetingId, CancellationToken ct = default);
+
     /// <summary>The delivery key the participant's first invitation went out under, if recorded.</summary>
     Task<string?> GetParticipantInitialKeyAsync(Guid participantId, CancellationToken ct = default);
 
@@ -72,3 +78,6 @@ public interface IMeetingInvitationDispatchRepository
     Task<int> RecordFailedAttemptAsync(Guid id, int maxAttempts, DateTimeOffset retryAt, string error,
         DateTimeOffset at, CancellationToken ct = default);
 }
+
+/// <summary>Who organizes a meeting: the name and address an invitation email gives as the contact.</summary>
+public sealed record MeetingOrganizer(string FullName, string Email);

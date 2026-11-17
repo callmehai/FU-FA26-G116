@@ -87,6 +87,7 @@ export function UserLibraryPage() {
   const here = trail.at(-1)
   const loading = view === null || view.folderId !== folderId
   const rows = loading ? null : { subfolders: childrenOf(folders, folderId), documents: view.documents }
+  const empty = rows !== null && rows.subfolders.length === 0 && rows.documents.length === 0
   const ownerName = owner?.fullName
   const rootLabel = ownerName ? `Kho của ${ownerName}` : 'Kho tài liệu'
 
@@ -140,8 +141,9 @@ export function UserLibraryPage() {
         description="Chỉ xem. Mỗi lần mở thư mục hoặc tài liệu đều được ghi vào nhật ký."
       />
 
-      <div className="list-panel list-page list-fill">
-        <div className="table-card table-fill">
+      {/* An empty library is one short card, not a tall white one that looks like a table that failed to load. */}
+      <div className={`list-panel list-page${empty ? '' : ' list-fill'}`}>
+        <div className={`table-card${empty ? '' : ' table-fill'}`}>
           <table className="data-table library-table">
             <thead>
               <tr>

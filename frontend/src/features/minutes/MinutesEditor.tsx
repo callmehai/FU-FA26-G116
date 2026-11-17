@@ -1,7 +1,7 @@
 import { EditorContent, useEditor } from '@tiptap/react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { FindBar } from './editor/FindBar'
-import { fitTables, minutesExtensions } from './editor/schema'
+import { fitTables, minutesExtensions, minutesHtml } from './editor/schema'
 import { Toolbar } from './editor/Toolbar'
 
 /**
@@ -47,9 +47,14 @@ export function MinutesEditor({
         return false
       },
     },
-    onCreate: ({ editor: e }) => fitTables(e),
-    onUpdate: ({ editor: e }) => onChange(e.getHTML(), hasText(e.state.doc.textContent)),
+    onUpdate: ({ editor: e }) => onChange(minutesHtml(e), hasText(e.state.doc.textContent)),
   })
+  // Not on the editor's "create": that can come while the sheet is still outside the page, with no width, and NaN was
+  // then written into every column. Effects run once EditorContent has put the sheet in place. The first editor can
+  // already be destroyed here (useEditor replaces one that took too long to mount); its successor comes through again.
+  useEffect(() => {
+    if (editor && !editor.isDestroyed && editor.view.dom.isConnected) fitTables(editor)
+  }, [editor])
 
   return (
     <div className="minutes-editor-frame">

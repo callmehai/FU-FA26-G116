@@ -292,7 +292,17 @@ function ShareSection({
   action: { label: string; icon: 'calendarCheck' | 'send'; onClick: () => void }
   onIntent: (intent: RowIntent) => void
 }) {
+  // The ended ones (withdrawn, declined, stopped) are history: folded under the open ones, unless a notification
+  // pointed at one of them. Only those already ended when the page loaded fold away; a share the user ends here stays
+  // in its place, so they see what their action did.
+  const [endedBefore, setEndedBefore] = useState<ReadonlySet<string> | null>(null)
+  if (!loading && endedBefore === null) setEndedBefore(new Set(shares.filter(isClosed).map((s) => s.id)))
+  const live = shares.filter((s) => !isClosed(s) || !endedBefore?.has(s.id))
+  const closed = shares.filter((s) => isClosed(s) && endedBefore?.has(s.id))
   const open = shares.filter((s) => !isClosed(s)).length
+  const [showClosed, setShowClosed] = useState(false)
+  const closedShown = showClosed || closed.some((s) => s.id === focusId)
+  const rows = closedShown ? [...live, ...closed] : live
   return (
     <section className="card share-section" aria-labelledby={`share-${as}`}>
       <header className="share-section-head">
@@ -314,11 +324,26 @@ function ShareSection({
       ) : shares.length === 0 ? (
         <p className="share-empty-line">{empty}</p>
       ) : (
-        <ul className="share-list">
-          {shares.map((share) => (
-            <ShareRow key={share.id} share={share} as={as} focused={share.id === focusId} onIntent={onIntent} />
-          ))}
-        </ul>
+        <>
+          {rows.length > 0 && (
+            <ul className="share-list">
+              {rows.map((share) => (
+                <ShareRow key={share.id} share={share} as={as} focused={share.id === focusId} onIntent={onIntent} />
+              ))}
+            </ul>
+          )}
+          {closed.length > 0 && (
+            <button
+              type="button"
+              className="share-closed-toggle"
+              aria-expanded={closedShown}
+              onClick={() => setShowClosed(!closedShown)}
+            >
+              <Icon name={closedShown ? 'chevronUp' : 'chevronDown'} size={16} />
+              {closedShown ? 'Ẩn chia sẻ đã kết thúc' : `Chia sẻ đã kết thúc (${closed.length})`}
+            </button>
+          )}
+        </>
       )}
     </section>
   )

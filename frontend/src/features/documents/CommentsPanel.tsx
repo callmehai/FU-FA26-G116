@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { getDocumentComments, postDocumentComment } from '../../api/documents'
 import { Badge } from '../../components/Badge'
 import { Icon } from '../../components/Icon'
+import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { formatDateTime } from '../../lib/format'
 import type { DocumentComment, DocumentCommentList } from '../../types/document'
@@ -44,6 +45,10 @@ export function CommentsPanel({
   const [loadError, setLoadError] = useState<string | null>(null)
   const [attempt, setAttempt] = useState(0)
   const [replyTo, setReplyTo] = useState<DocumentComment | null>(null)
+  // The list reads oldest first, so a new comment lands at the bottom, often out of sight: once the re-read is in, the
+  // one just posted is scrolled into view (QA FE-07).
+  const [posted, setPosted] = useState<string | null>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const onCountRef = useRef(onCount)
   const onGoneRef = useRef(onGone)
 
@@ -73,6 +78,14 @@ export function CommentsPanel({
 
   const reload = useCallback(() => setAttempt((n) => n + 1), [])
 
+  useEffect(() => {
+    if (!posted || !list) return
+    const found = listRef.current?.querySelector(`[data-comment-id="${posted}"]`)
+    if (!found) return
+    found.scrollIntoView({ block: 'nearest' })
+    setPosted(null)
+  }, [posted, list])
+
   return (
     <aside className="viewer-comments" aria-label="Góp ý">
       <div className="viewer-comments-head">
@@ -97,7 +110,7 @@ export function CommentsPanel({
         </button>
       </div>
 
-      <div className="viewer-comments-list" aria-busy={list === null && !loadError}>
+      <div className="viewer-comments-list" ref={listRef} aria-busy={list === null && !loadError}>
         {loadError ? (
           <div className="alert alert-error" role="alert">
             <p>{loadError}</p>
@@ -153,8 +166,9 @@ export function CommentsPanel({
             currentPage={currentPage}
             replyTo={replyTo}
             onCancelReply={() => setReplyTo(null)}
-            onPosted={() => {
+            onPosted={(id) => {
               setReplyTo(null)
+              setPosted(id)
               reload()
             }}
             onClosed={reload}
@@ -169,7 +183,7 @@ export function CommentsPanel({
 
 function Comment({ comment }: { comment: DocumentComment }) {
   return (
-    <article className="comment">
+    <article className="comment" data-comment-id={comment.id}>
       <header className="comment-head">
         <strong>{comment.author.name}</strong>
         {comment.author.isGuest && <Badge tone="outline">Khách</Badge>}
@@ -198,12 +212,13 @@ function Composer({
   currentPage: number | null
   replyTo: DocumentComment | null
   onCancelReply: () => void
-  onPosted: () => void
+  onPosted: (commentId: string) => void
   /** MSG251/MSG349: the meeting ended or was cancelled while writing; the text stays to copy. */
   onClosed: () => void
   onGone: () => void
 }) {
   const handleAccessLost = useAccessLost()
+  const toast = useToast()
   const [body, setBody] = useState('')
   const [withPage, setWithPage] = useState(true)
   const [pending, setPending] = useState(false)
@@ -217,13 +232,15 @@ function Composer({
     setPending(true)
     setFailure(null)
     try {
-      await postDocumentComment(meetingId, meetingDocumentId, {
+      const saved = await postDocumentComment(meetingId, meetingDocumentId, {
         body: body.trim(),
         pageNumber: page !== null && withPage ? page : null,
         parentCommentId: replyTo?.id ?? null,
       })
       setBody('')
-      onPosted()
+      // MSG199 "Đã gửi góp ý." (UC-35 step 6).
+      toast.show(saved.message)
+      onPosted(saved.comment.id)
     } catch (err) {
       if (handleAccessLost(err)) return
       if (isApiError(err, 404, 'MSG156')) return onGone()
@@ -282,7 +299,7 @@ function Composer({
           </label>
         )}
         <span className="field-counter">
-          {body.length}/{MAX_LENGTH}
+          {body.length.toLocaleString('vi-VN')}/{MAX_LENGTH.toLocaleString('vi-VN')}
         </span>
         <button type="submit" className="btn btn-primary btn-sm" disabled={blank || pending}>
           {pending ? 'Đang gửi…' : replyTo ? 'Gửi trả lời' : 'Gửi góp ý'}

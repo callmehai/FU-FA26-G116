@@ -219,6 +219,26 @@ public sealed class FakeMinutesSourceQuery : IMinutesSourceQuery
     public Task<IReadOnlyList<MinutesNote>> ListNotesAsync(Guid meetingId, IReadOnlyCollection<Guid> authorIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<MinutesNote>>([]);
     public Task<IReadOnlyList<Guid>> ListActiveUsersAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<Guid>>([.. userIds.Where(ActiveUsers.Contains)]);
+
+    /// <summary>The reader ids each "minutes issued" email lookup was asked about, in order.</summary>
+    public List<Guid[]> EmailLookups { get; } = [];
+
+    /// <summary>How many times the Chair's and organizer's names were read.</summary>
+    public int NameLookups { get; private set; }
+
+    /// <summary>The active readers, each named "Người đọc" with an address made from the id.</summary>
+    public Task<IReadOnlyList<MinutesEmailRecipient>> ListEmailRecipientsAsync(Guid[] readerIds, CancellationToken ct)
+    {
+        EmailLookups.Add(readerIds);
+        return Task.FromResult<IReadOnlyList<MinutesEmailRecipient>>(readerIds.Where(ActiveUsers.Contains)
+            .Select(id => new MinutesEmailRecipient(id, "Người đọc", $"{id:N}@example.vn")).ToList());
+    }
+
+    public Task<MinutesIssuedNames> GetIssuedEmailNamesAsync(Guid chairId, Guid organizerId, CancellationToken ct)
+    {
+        NameLookups++;
+        return Task.FromResult(new MinutesIssuedNames("Nguyễn Chủ Toạ", "Trần Tổ Chức", "organizer@example.vn"));
+    }
 }
 
 /// <summary>Leaves the content as it is: the allow-list itself is tested against AngleSharp in the web tests.</summary>

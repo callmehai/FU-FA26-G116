@@ -24,8 +24,10 @@ Quy ước riêng của nhóm này:
 
 - Mọi UC đọc biểu quyết kiểm tra quyền xem qua `:Meeting Access Policy`; Biểu quyết `Draft` chỉ hiện với Chair
   và Secretary hiện hành (BR-253), nên UC-52a lọc ở `:Vote Repository` còn UC-52b trả MSG205 như một Vote không tồn tại.
-- Phiếu tách hai bản ghi: `VoteReceipt` (ai đã bỏ phiếu) và `VoteChoice` (chọn gì). Với biểu quyết kín, `VoteChoice`
-  không có người bỏ phiếu và không liên kết tới `VoteReceipt` (BR-259, UC-55).
+- Phiếu tách hai bản ghi: `VoteReceipt` (ai đã bỏ phiếu) và `VoteChoice` (chọn gì). Với biểu quyết kín,
+  **không ghi dòng nào vào `vote_choices`** — chỉ ghi `VoteReceipt` và tăng `voting_options.ballot_count`
+  trong cùng transaction (BR-259, UC-55; xem docs 15 §7 và `VoteService.cs:495-496`). Kiểm phiếu đọc bộ đếm này;
+  `vote_choices` chỉ còn phiếu công khai, mỗi dòng ghi người chọn.
 - Danh sách người đủ điều kiện, số lượng và danh sách tài liệu được chốt khi mở (UC-54); UC-55, UC-52b chỉ đọc lại.
 - `ref` (UC-53 mở từ form → UC-54, UC-55 xác nhận đã đọc → UC-74) là khung `ref over` trong source `.txt`; trong
   tab draw.io (tạo từ Mermaid, không có ref) thể hiện bằng một self-message `ref ...`.

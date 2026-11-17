@@ -79,6 +79,9 @@ public interface IAgendaRepository
 
     /// <summary>The meeting's guest invitation, untracked, when it exists and has not been revoked.</summary>
     Task<MeetingGuestInvitation?> FindCurrentGuestAsync(Guid meetingId, Guid invitationId, CancellationToken ct);
+
+    /// <summary>The full name of an account that must exist (a meeting's organizer); throws when there is none.</summary>
+    Task<string> GetUserFullNameAsync(Guid userId, CancellationToken ct);
 }
 
 public interface IAgendaDocumentRepository

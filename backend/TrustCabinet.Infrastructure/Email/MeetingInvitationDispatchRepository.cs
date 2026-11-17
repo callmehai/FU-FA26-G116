@@ -83,6 +83,18 @@ public sealed class MeetingInvitationDispatchRepository(TrustCabinetDbContext db
             .Select(m => m.Status)
             .SingleAsync(ct);
 
+    public Task<string?> FindCurrentChairNameAsync(Guid? meetingId, CancellationToken ct = default)
+        => db.MeetingParticipants.Where(ParticipantRules.ActiveExpression)
+            .Where(p => p.MeetingId == meetingId && p.Role == MeetingRole.Chair)
+            .Select(p => (string?)p.User.FullName).FirstOrDefaultAsync(ct);
+
+    public async Task<MeetingOrganizer> GetOrganizerAsync(Guid? meetingId, CancellationToken ct = default)
+    {
+        var organizer = await db.Meetings.Where(m => m.Id == meetingId)
+            .Select(m => new { m.CreatedBy.FullName, m.CreatedBy.Email }).SingleAsync(ct);
+        return new MeetingOrganizer(organizer.FullName, organizer.Email);
+    }
+
     public Task<string?> GetParticipantInitialKeyAsync(Guid participantId, CancellationToken ct = default)
         => db
             .MeetingParticipants.Where(p => p.Id == participantId)

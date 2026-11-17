@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react'
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { setGuestAuth } from '../../api/client'
 import { getGuestSession, openInvitation } from '../../api/guest'
 import { BrandMark } from '../../components/BrandMark'
 import { Icon } from '../../components/Icon'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
+import { routes } from '../../lib/routes'
 import type { GuestInvitation, GuestSession } from '../../types/guest'
 import { GuestContext, type GuestScope } from './guestContext'
 import { GuestProfileForm } from './GuestProfileForm'
@@ -242,7 +243,14 @@ export function GuestPage() {
             title={gate.wasIn ? 'Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi' : 'Không mở được lời mời'}
             tone="alert-warning"
             message={gate.message}
-          />
+          >
+            {/* Not a dead end for someone of the organisation who opened a guest link by mistake. */}
+            {!gate.wasIn && (
+              <p className="guest-gate-alt">
+                Có tài khoản TrustCabinet? <Link to={routes.login}>Đăng nhập</Link>
+              </p>
+            )}
+          </GateMessage>
         ) : null}
       </div>
     </div>

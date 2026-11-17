@@ -492,8 +492,13 @@ Thiếu máy này thì app vẫn chạy; chỉ nút tạo dự thảo báo "Máy
    curl -s http://100.x.y.z:11434/v1/models && cd ~/TrustCabinet && docker compose -f deploy/docker-compose.yml up -d app
    ```
 
-Lời thoại cuộc họp đi từ server sang máy này, nên chỉ dùng máy của nhóm, qua Tailscale. Không trỏ `AI_URL` sang
-dịch vụ AI bên ngoài. Chọn model nào thì chạy bộ đo [`tests/ai/`](../tests/ai/README.md) trước để so.
+3. **Máy dự phòng (tuỳ chọn)**: một máy thứ hai của nhóm làm như bước 1, cùng model, rồi thêm
+   `AI_BACKUP_URL=http://100.a.b.c:11434/v1` vào `deploy/.env` và khởi động lại app như bước 2. Máy chính không nhận
+   kết nối trong 10 giây thì dự thảo chuyển sang máy dự phòng, và 2 phút sau mới hỏi lại máy chính
+   ([ADR-0063](../docs/05-decisions/0063-may-ai-du-phong.md)). Nút "Thử kết nối" ở trang Máy AI báo riêng từng máy.
+
+Lời thoại cuộc họp đi từ server sang máy này, nên chỉ dùng máy của nhóm, qua Tailscale. Không trỏ `AI_URL` hay
+`AI_BACKUP_URL` sang dịch vụ AI bên ngoài. Chọn model nào thì chạy bộ đo [`tests/ai/`](../tests/ai/README.md) trước để so.
 
 ## Sau khi bảo vệ xong
 
