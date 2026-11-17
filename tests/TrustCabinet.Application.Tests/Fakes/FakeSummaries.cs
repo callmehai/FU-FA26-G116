@@ -223,15 +223,21 @@ public sealed class FakeMinutesSourceQuery : IMinutesSourceQuery
     /// <summary>The reader ids each "minutes issued" email lookup was asked about, in order.</summary>
     public List<Guid[]> EmailLookups { get; } = [];
 
+    /// <summary>How many times the Chair's and organizer's names were read.</summary>
+    public int NameLookups { get; private set; }
+
     /// <summary>The active readers, each named "Người đọc" with an address made from the id.</summary>
-    public Task<MinutesIssuedContacts?> LoadIssuedEmailContactsAsync(Guid[] readerIds, Guid chairId, Guid organizerId,
-        CancellationToken ct)
+    public Task<IReadOnlyList<MinutesEmailRecipient>> ListEmailRecipientsAsync(Guid[] readerIds, CancellationToken ct)
     {
         EmailLookups.Add(readerIds);
-        var people = readerIds.Where(ActiveUsers.Contains)
-            .Select(id => new MinutesEmailRecipient(id, "Người đọc", $"{id:N}@example.vn")).ToList();
-        return Task.FromResult(people.Count == 0 ? null
-            : new MinutesIssuedContacts(people, "Nguyễn Chủ Toạ", "Trần Tổ Chức", "organizer@example.vn"));
+        return Task.FromResult<IReadOnlyList<MinutesEmailRecipient>>(readerIds.Where(ActiveUsers.Contains)
+            .Select(id => new MinutesEmailRecipient(id, "Người đọc", $"{id:N}@example.vn")).ToList());
+    }
+
+    public Task<MinutesIssuedNames> GetIssuedEmailNamesAsync(Guid chairId, Guid organizerId, CancellationToken ct)
+    {
+        NameLookups++;
+        return Task.FromResult(new MinutesIssuedNames("Nguyễn Chủ Toạ", "Trần Tổ Chức", "organizer@example.vn"));
     }
 }
 

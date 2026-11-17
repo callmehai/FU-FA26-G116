@@ -365,9 +365,11 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
         DateTimeOffset now, CancellationToken ct)
     {
         var ids = readers.Where(id => id != actorId).Distinct().ToArray();
-        if (await sources.LoadIssuedEmailContactsAsync(ids, actorId, meeting.CreatedById, ct) is not { } contacts) return;
-        var (people, chair) = (contacts.People, contacts.Chair);
-        var contact = new MeetingPeople(chair, contacts.Organizer, contacts.OrganizerEmail);
+        var people = await sources.ListEmailRecipientsAsync(ids, ct);
+        if (people.Count == 0) return;
+        var names = await sources.GetIssuedEmailNamesAsync(actorId, meeting.CreatedById, ct);
+        var chair = names.Chair;
+        var contact = new MeetingPeople(chair, names.Organizer, names.OrganizerEmail);
         var link = $"{email.Value.ApplicationBaseUrl.TrimEnd('/')}/mgmt/meetings/{meeting.Id:D}?tab=minutes";
         // RevisionNumber 1 is the first issue; each correction counts up from there.
         int? correction = row.SupersedesId is null ? null : row.RevisionNumber - 1;

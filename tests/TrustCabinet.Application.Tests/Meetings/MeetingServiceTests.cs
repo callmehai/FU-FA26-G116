@@ -17,7 +17,9 @@ public sealed class MeetingServiceTests
     private readonly Guid _organizer = Guid.CreateVersion7();
     private readonly Guid _approver = Guid.CreateVersion7();
 
-    private MeetingService Service() => new(_meetings, new FakeMeetingInvitationStager(), _unitOfWork, NullLogger<MeetingService>.Instance, new FixedClock(Now));
+    private readonly FakeMeetingInvitationStager _invitations = new();
+
+    private MeetingService Service() => new(_meetings, _invitations, _unitOfWork, NullLogger<MeetingService>.Instance, new FixedClock(Now));
 
     private Meeting GivenWaitingApproval()
     {
@@ -36,6 +38,30 @@ public sealed class MeetingServiceTests
     }
 
     private static MeetingTransitionCommand Approve() => new(MeetingTransitionAction.Approve);
+
+    [Fact]
+    public async Task Rescheduling_a_published_meeting_emails_the_time_it_had_before_the_change()
+    {
+        var oldStart = Now.AddDays(1);
+        var meeting = new Meeting
+        {
+            Title = "Họp giao ban", Status = MeetingStatus.Published, CreatedById = _organizer, Mode = MeetingMode.InPerson,
+            Location = "Phòng 1", Sensitivity = Sensitivity.Normal, Description = "",
+            PlannedStartTime = oldStart, PlannedEndTime = oldStart.AddHours(1),
+        };
+        _meetings.Meetings.Add(meeting);
+        var newStart = Now.AddDays(2);
+        var input = new MeetingInput("Họp giao ban", newStart.ToString("O"), newStart.AddHours(1).ToString("O"), "InPerson",
+            "Phòng 1", null, "Normal", "");
+
+        var result = await Service().UpdateAsync(meeting.Id, _ => Task.FromResult(input), _organizer);
+
+        Assert.Equal(MeetingOutcome.Success, result.Outcome);
+        Assert.Equal(newStart, meeting.PlannedStartTime);
+        var staged = Assert.Single(_invitations.Rescheduled);
+        Assert.Equal((meeting.Id, Assert.Single(_meetings.History).Id), (staged.MeetingId, staged.HistoryId));
+        Assert.Equal((oldStart, oldStart.AddHours(1)), staged.Previous);
+    }
 
     [Fact]
     public async Task Approve_locks_the_meeting_and_saves_history_and_notice_in_one_committed_transaction()

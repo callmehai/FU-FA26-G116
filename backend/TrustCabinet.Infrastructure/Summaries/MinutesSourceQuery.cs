@@ -32,16 +32,16 @@ public sealed class MinutesSourceQuery(TrustCabinetDbContext db) : IMinutesSourc
         => await db.Users.AsNoTracking().Where(u => userIds.Contains(u.Id) && u.IsActive)
             .Select(u => u.Id).ToListAsync(ct);
 
-    public async Task<MinutesIssuedContacts?> LoadIssuedEmailContactsAsync(Guid[] readerIds, Guid chairId, Guid organizerId,
-        CancellationToken ct)
+    public async Task<IReadOnlyList<MinutesEmailRecipient>> ListEmailRecipientsAsync(Guid[] readerIds, CancellationToken ct)
+        => (await db.Users.AsNoTracking().Where(u => readerIds.Contains(u.Id) && u.IsActive)
+                .Select(u => new { u.Id, u.FullName, u.Email }).ToListAsync(ct))
+            .Select(p => new MinutesEmailRecipient(p.Id, p.FullName, p.Email)).ToList();
+
+    public async Task<MinutesIssuedNames> GetIssuedEmailNamesAsync(Guid chairId, Guid organizerId, CancellationToken ct)
     {
-        var people = await db.Users.AsNoTracking().Where(u => readerIds.Contains(u.Id) && u.IsActive)
-            .Select(u => new { u.Id, u.FullName, u.Email }).ToListAsync(ct);
-        if (people.Count == 0) return null;
         var chair = await db.Users.AsNoTracking().Where(u => u.Id == chairId).Select(u => u.FullName).SingleAsync(ct);
         var organizer = await db.Users.AsNoTracking().Where(u => u.Id == organizerId)
             .Select(u => new { u.FullName, u.Email }).SingleAsync(ct);
-        return new MinutesIssuedContacts(people.Select(p => new MinutesEmailRecipient(p.Id, p.FullName, p.Email)).ToList(),
-            chair, organizer.FullName, organizer.Email);
+        return new MinutesIssuedNames(chair, organizer.FullName, organizer.Email);
     }
 }

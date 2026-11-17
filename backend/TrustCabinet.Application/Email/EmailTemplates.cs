@@ -135,7 +135,7 @@ public static class EmailTemplates
 
     /// <summary>BR-307: a Guest assigned to present an agenda item, with the same way in as their invitation.</summary>
     /// <param name="link">The Guest's verification link; null only when it cannot be issued right now.</param>
-    public static string GuestPresenter(string name, string itemTitle, string meetingTitle, DateTimeOffset startsAt,
+    internal static string GuestPresenter(string name, string itemTitle, string meetingTitle, DateTimeOffset startsAt,
         DateTimeOffset endsAt, string mode, string? link, string organizer)
         => EmailLayout.Render(new EmailContent(
             Preheader: $"Mục: {itemTitle} · {EmailLayout.When(startsAt, endsAt)}",

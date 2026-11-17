@@ -165,7 +165,7 @@ public sealed class MinutesServiceTests
     }
 
     [Fact]
-    public async Task Issuing_emails_every_active_reader_but_the_chair_before_the_one_save_of_the_issue()
+    public async Task Issuing_emails_every_active_reader_but_the_chair_in_the_issuing_transaction()
     {
         _sources.ActiveUsers.UnionWith([_secretary, _chair, _member]);
         var row = Revision(MinutesStatus.WaitingApproval);
@@ -204,6 +204,8 @@ public sealed class MinutesServiceTests
         await Service().ApproveAsync(next.Id, _chair, next.UpdatedAt);
 
         Assert.Empty(_emails.Added);
+        // As before the move: with nobody to email, the Chair's and organizer's names are not read.
+        Assert.Equal(1, _sources.NameLookups);
     }
 
     [Fact]
