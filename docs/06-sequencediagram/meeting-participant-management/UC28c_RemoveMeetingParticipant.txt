@@ -22,7 +22,7 @@ Database-->ParticipantRepository: Current information / Read failure
 deactivate Database
 ParticipantRepository-->ParticipantService: Current information / Read failure
 deactivate ParticipantRepository
-ParticipantService->ParticipantService: Verify current Secretary, editable Meeting status, current selected person\nPublished/InProgress retain a Secretary; preparation may temporarily have none;\nOrganizer may recover the missing Secretary; protect current Chair in Published/InProgress (BR-79, BR-80, BR-122, BR-126)
+ParticipantService->ParticipantService: Verify current Secretary, editable Meeting status, current selected person\nPublished/InProgress retain a Secretary; preparation may temporarily have none;\nprotect current Chair in Published/InProgress (BR-79, BR-80, BR-122, BR-126)
 alt Secretary or selected person is no longer current - EX-1
 ParticipantService-->ParticipantController: Request denied; participation and access unchanged
 ParticipantController-->MeetingPage: Request denied; participation and access unchanged

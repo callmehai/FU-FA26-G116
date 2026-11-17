@@ -92,7 +92,7 @@ export function AgendaItemDialog({
     event.preventDefault()
     const title = values.title.trim()
     if (!title) {
-      setFieldErrors({ title: 'Vui lòng nhập nội dung cần bàn.' })
+      setFieldErrors({ title: 'Nhập nội dung cần bàn.' })
       return
     }
     const input: AgendaItemInput = {

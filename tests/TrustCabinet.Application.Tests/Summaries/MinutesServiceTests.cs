@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Application.Email;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Application.Tests.Fakes;
 using TrustCabinet.Domain.Audit;
@@ -21,6 +23,7 @@ public sealed class MinutesServiceTests
     private readonly FakeAuditLog _audit = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly FakeMeetingRepository _meetings = new();
+    private readonly FakeEmailMessageRepository _emails = new();
     private readonly Guid _secretary = Guid.CreateVersion7();
     private readonly Guid _chair = Guid.CreateVersion7();
     private readonly Guid _member = Guid.CreateVersion7();
@@ -46,7 +49,8 @@ public sealed class MinutesServiceTests
     }
 
     private MinutesService Service() => new(_minutes, _sources, _summarySources, _summaries, new FakeMinutesRenderer(),
-        _notifications, _audit, _unitOfWork, _meetings, new FixedClock(Now), NullLogger<MinutesService>.Instance);
+        _notifications, _audit, _unitOfWork, _meetings, new FixedClock(Now), NullLogger<MinutesService>.Instance, _emails,
+        Options.Create(new EmailDeliveryOptions { ApplicationBaseUrl = "https://hop.example.vn" }));
 
     private MeetingMinutes Revision(MinutesStatus status, int number = 1, Guid? supersedes = null)
     {

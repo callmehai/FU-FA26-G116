@@ -54,6 +54,19 @@ public sealed class CalendarBusyRulesTests
     }
 
     [Fact]
+    public void A_meeting_started_early_is_busy_for_its_length_from_when_it_started_not_until_its_planned_day()
+    {
+        // Planned for 09:00–10:00 thirty days from now, opened today at 08:00.
+        var plannedStart = Nine.AddDays(30);
+        var opened = Nine.AddHours(-1);
+        Assert.Equal(new BusyInterval(opened, opened.AddHours(1)), CalendarBusyRules.Interval(MeetingStatus.InProgress,
+            plannedStart, plannedStart.AddHours(1), opened, null, opened.AddMinutes(10)));
+        // Still running two hours later: busy until now.
+        Assert.Equal(new BusyInterval(opened, opened.AddHours(2)), CalendarBusyRules.Interval(MeetingStatus.InProgress,
+            plannedStart, plannedStart.AddHours(1), opened, null, opened.AddHours(2)));
+    }
+
+    [Fact]
     public void Overlapping_and_touching_periods_merge_so_the_count_of_meetings_does_not_show()
     {
         var merged = CalendarBusyRules.Merge(

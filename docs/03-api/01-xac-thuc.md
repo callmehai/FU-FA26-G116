@@ -119,10 +119,9 @@ Các nhánh lỗi đều trả `401` kèm mã thông báo trong [danh mục mã]
 | `MSG02` | Tài khoản đã bị vô hiệu hoá (`users.is_active = false`) | `Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.` |
 | `MSG414` | **429**, vượt giới hạn số lần thử (SCRUM-132) — xem [Giới hạn số lần thử](#giới-hạn-số-lần-thử) | `Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.` |
 
-> **Nhánh "chưa được cấp quyền truy cập hệ thống" đã bỏ từ `SCRUM-63`, không có mã.** Nó từ chối vai trò
-> không có capability nào trừ `Member`; khi vai trò thành dữ liệu (ADR-0008), vai trò tự tạo không
-> có quyền nào là cấu hình hợp lệ, hoạt động y như `Member`. Giờ mọi vai trò không có quyền đều đăng
-> nhập được, token đơn giản không mang capability nào. **Chờ BA sửa đặc tả UC-01.**
+> **Mọi vai trò đều đăng nhập được (SCRUM-63, PO chốt 16/11/2026, note 52).** Nhánh "chưa được cấp quyền
+> truy cập hệ thống" đã bỏ: vai trò không có capability nào là cấu hình hợp lệ, hoạt động y như `Member`.
+> Mọi vai trò không có quyền đều đăng nhập được, token đơn giản không mang capability nào.
 
 Vài điểm cố ý, đừng "sửa" lại:
 

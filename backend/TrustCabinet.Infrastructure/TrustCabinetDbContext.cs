@@ -50,7 +50,6 @@ public class TrustCabinetDbContext(DbContextOptions<TrustCabinetDbContext> optio
     public DbSet<VoiceConsent> VoiceConsents => Set<VoiceConsent>();
     public DbSet<VoiceSample> VoiceSamples => Set<VoiceSample>();
     public DbSet<MeetingMinutes> MeetingMinutes => Set<MeetingMinutes>();
-    public DbSet<MinutesSignature> MinutesSignatures => Set<MinutesSignature>();
     public DbSet<MeetingSummary> MeetingSummaries => Set<MeetingSummary>();
     public DbSet<AiProviderSetting> AiProviderSettings => Set<AiProviderSetting>();
     public DbSet<Notification> Notifications => Set<Notification>();

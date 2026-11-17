@@ -49,6 +49,7 @@ export function Select<T extends string>({
   icon,
   searchable = false,
   searchPlaceholder = 'Tìm…',
+  steady = false,
 }: {
   /** Null while nothing is picked yet: the trigger then shows `placeholder` (or `label`), muted. */
   value: T | null
@@ -70,6 +71,11 @@ export function Select<T extends string>({
   /** A search box at the top of the menu, for a list too long to scroll through. */
   searchable?: boolean
   searchPlaceholder?: string
+  /**
+   * Keeps the trigger as wide as its longest option, so a filter in a toolbar does not grow or shrink — and push the
+   * controls after it — each time another value is picked. For short fixed lists, not lists of people.
+   */
+  steady?: boolean
 }) {
   const generatedId = useId()
   const listId = id ?? generatedId
@@ -216,7 +222,19 @@ export function Select<T extends string>({
             <span className="select-dot" style={{ background: marker ?? selected?.dot }} aria-hidden="true" />
           )}
           {/* Its own box, so a long value ends in "…" instead of being cut mid-letter. */}
-          <span className="select-text">{selected?.label ?? placeholder ?? label}</span>
+          {steady ? (
+            // Every label laid in the same grid cell, hidden: the cell is as wide as the longest of them.
+            <span className="select-steady">
+              <span className="select-text">{selected?.label ?? placeholder ?? label}</span>
+              {options.map((option) => (
+                <span key={option.value} className="select-sizer" aria-hidden="true">
+                  {option.label}
+                </span>
+              ))}
+            </span>
+          ) : (
+            <span className="select-text">{selected?.label ?? placeholder ?? label}</span>
+          )}
         </span>
         <Icon name="chevronDown" size={16} />
           </>

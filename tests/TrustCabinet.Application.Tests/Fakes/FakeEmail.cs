@@ -144,6 +144,17 @@ public sealed class FakeMeetingInvitationDispatchRepository : IMeetingInvitation
     public Task<MeetingStatus> GetMeetingStatusAsync(Guid? meetingId, CancellationToken ct = default)
         => FailStatus is { } failure ? Task.FromException<MeetingStatus>(failure) : Task.FromResult(MeetingStatus);
 
+    /// <summary>The meeting's current Chair, named in every email; null when it has none.</summary>
+    public string? ChairName { get; set; } = "Nguyễn Chủ Toạ";
+
+    public MeetingOrganizer Organizer { get; set; } = new("Trần Tổ Chức", "organizer@example.vn");
+
+    public Task<string?> FindCurrentChairNameAsync(Guid? meetingId, CancellationToken ct = default)
+        => Task.FromResult(ChairName);
+
+    public Task<MeetingOrganizer> GetOrganizerAsync(Guid? meetingId, CancellationToken ct = default)
+        => Task.FromResult(Organizer);
+
     public Task<string?> GetParticipantInitialKeyAsync(Guid participantId, CancellationToken ct = default)
         => Task.FromResult<string?>(null);
 

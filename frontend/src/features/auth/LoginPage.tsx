@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { matchPath, Navigate, useLocation } from 'react-router-dom'
 import { BrandMark } from '../../components/BrandMark'
 import { errorMessage, isApiError } from '../../lib/errors'
@@ -34,6 +34,11 @@ function googleSignInError(error: unknown): LoginError {
   return { message: errorMessage(error) }
 }
 
+/** A shape check only, to save a round trip; the backend decides whether the account exists. */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+type FieldErrors = { email?: string; password?: string }
+
 /** UC-02's outer branch: Google itself failed, so there is no token and nothing reached the backend. */
 const GOOGLE_FAILED: LoginError = { message: 'Đăng nhập bằng Google không thành công.' }
 
@@ -50,6 +55,9 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [pending, setPending] = useState<'password' | 'google' | null>(null)
   const [error, setError] = useState<LoginError | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
 
   const from = (location.state as { from?: { pathname: string; search?: string } } | null)?.from
   // Arriving from a meeting link — the invitation email's, typically (SCRUM-15). Saying so tells the
@@ -73,8 +81,15 @@ export function LoginPage() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!email.trim() || !password) {
-      setError({ message: 'Vui lòng nhập email và mật khẩu.' })
+    // Under each field, the first one focused — as on the reset-password page (frontend-ui-design §2).
+    const errors: FieldErrors = {}
+    if (!email.trim()) errors.email = 'Vui lòng nhập email.'
+    else if (!EMAIL_PATTERN.test(email.trim())) errors.email = 'Email không hợp lệ.'
+    if (!password) errors.password = 'Vui lòng nhập mật khẩu.'
+    setFieldErrors(errors)
+    if (errors.email || errors.password) {
+      setError(null)
+      ;(errors.email ? emailRef : passwordRef).current?.focus()
       return
     }
 
@@ -131,13 +146,24 @@ export function LoginPage() {
           <label className="field">
             <span>Email</span>
             <input
+              ref={emailRef}
               type="email"
               name="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setFieldErrors(({ email: _cleared, ...rest }) => rest)
+              }}
+              aria-invalid={!!fieldErrors.email}
+              aria-describedby={fieldErrors.email ? 'login-email-error' : undefined}
               autoComplete="username"
               autoFocus
             />
+            {fieldErrors.email && (
+              <small id="login-email-error" className="field-error">
+                {fieldErrors.email}
+              </small>
+            )}
           </label>
 
           {/* Not a wrapping <label>: the reveal button inside would become part of its label. */}
@@ -145,16 +171,27 @@ export function LoginPage() {
             <label htmlFor="login-password">Mật khẩu</label>
             <div className="input-reveal">
               <input
+                ref={passwordRef}
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setFieldErrors(({ password: _cleared, ...rest }) => rest)
+                }}
+                aria-invalid={!!fieldErrors.password}
+                aria-describedby={fieldErrors.password ? 'login-password-error' : undefined}
                 autoComplete="current-password"
                 spellCheck={false}
               />
               <RevealToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
             </div>
+            {fieldErrors.password && (
+              <small id="login-password-error" className="field-error">
+                {fieldErrors.password}
+              </small>
+            )}
           </div>
 
           <button className="btn btn-primary btn-block btn-cta" type="submit" disabled={pending !== null}>

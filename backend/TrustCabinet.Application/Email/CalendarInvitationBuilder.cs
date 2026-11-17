@@ -58,6 +58,9 @@ public static class CalendarInvitationBuilder
     public static string MethodOf(string calendar)
         => calendar.Contains("\r\nMETHOD:CANCEL\r\n", StringComparison.Ordinal) ? "CANCEL" : "REQUEST";
 
+    /// <summary>The attachment's name as the reader sees it: a cancellation is not "thư mời họp".</summary>
+    public static string FileNameOf(string calendar) => MethodOf(calendar) == "CANCEL" ? "huy-hop.ics" : "thu-moi-hop.ics";
+
     private static string Utc(DateTimeOffset value)
         => value.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
 

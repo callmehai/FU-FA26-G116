@@ -128,6 +128,8 @@ function Enrolled({
   const toast = useToast()
   const [recording, setRecording] = useState(false)
   const [withdrawing, setWithdrawing] = useState(false)
+  // UC-81e step 2: a sample is erased for good, so the person confirms first. Holds its number in the list.
+  const [erasing, setErasing] = useState<{ id: string; n: number } | null>(null)
   const full = profile.samples.length >= profile.maxSamples
   const player = useSamplePlayer()
 
@@ -138,8 +140,9 @@ function Enrolled({
       toast.show(result.message, 'success')
       onChange(result.data)
     } catch (error) {
-      toast.show(errorMessage(error), 'error')
+      // The dialog shows why; the list is read again in case the sample is already gone.
       await onReload()
+      throw error
     }
   }
 
@@ -182,7 +185,7 @@ function Enrolled({
               {sample.playable && (
                 <button
                   type="button"
-                  className="btn btn-ghost btn-icon btn-sm"
+                  className="btn btn-ghost btn-icon"
                   onClick={() =>
                     void player.toggle(sample.id).catch((error) => toast.show(errorMessage(error), 'error'))
                   }
@@ -195,8 +198,8 @@ function Enrolled({
               )}
               <button
                 type="button"
-                className="btn btn-ghost btn-icon btn-sm"
-                onClick={() => void remove(sample.id)}
+                className="btn btn-ghost btn-icon"
+                onClick={() => setErasing({ id: sample.id, n: index + 1 })}
                 aria-label={`Xoá giọng mẫu ${index + 1}`}
                 data-tooltip="Xoá giọng mẫu"
               >
@@ -235,6 +238,20 @@ function Enrolled({
         />
       )}
 
+      {erasing && (
+        <ConfirmDialog
+          title="Xoá giọng mẫu?"
+          confirmLabel="Xoá"
+          pendingLabel="Đang xoá…"
+          cancelLabel="Giữ lại"
+          tone="danger"
+          onClose={() => setErasing(null)}
+          onConfirm={() => remove(erasing.id)}
+        >
+          <p>Giọng mẫu {erasing.n} bị xoá hẳn, không lấy lại được.</p>
+        </ConfirmDialog>
+      )}
+
       {withdrawing && (
         <ConfirmDialog
           title="Tắt nhận diện giọng nói?"
@@ -268,31 +285,42 @@ function Enrolled({
  */
 function RenewNotice({ profile, onChange }: { profile: VoiceProfile; onChange: (profile: VoiceProfile) => void }) {
   const toast = useToast()
-  const [saving, setSaving] = useState(false)
-  const renew = async () => {
-    setSaving(true)
-    try {
-      const result = await grantVoiceConsent(profile.noticeVersion)
-      toast.show(result.message, 'success')
-      onChange(result.data)
-    } catch (error) {
-      toast.show(errorMessage(error), 'error')
-    } finally {
-      setSaving(false)
-    }
-  }
+  const [reading, setReading] = useState(false)
   const agreed = profile.consent!.noticeVersion
   const changes = [
-    agreed < '1.1' && 'giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại',
-    agreed < '1.2' && 'máy tự điền tên bạn khi giọng khớp rõ, Thư ký vẫn sửa được',
-    agreed < '1.3' && 'Thư ký cuộc họp bạn dự thu được giọng mẫu hộ bằng micro phòng họp',
-  ].filter(Boolean)
+    agreed < '1.1' && 'Giọng mẫu ghi từ nay được lưu cả bản ghi (đã mã hoá) để bạn nghe lại.',
+    agreed < '1.2' && 'Máy tự điền tên bạn khi giọng khớp rõ, Thư ký vẫn sửa được.',
+    agreed < '1.3' && 'Thư ký cuộc họp bạn dự thu được giọng mẫu hộ bằng micro phòng họp.',
+  ].filter((change): change is string => Boolean(change))
+  // One line on the page; what changed is read in full in the dialog, before agreeing to it.
   return (
     <div className="alert alert-info voice-renew">
-      <p>Điều khoản mới: {changes.join('; ')}. Chưa đồng ý thì mọi thứ giữ như cũ.</p>
-      <button type="button" className="btn btn-outline btn-sm" disabled={saving} onClick={() => void renew()}>
-        {saving ? 'Đang lưu…' : 'Đồng ý điều khoản mới'}
+      <p>Điều khoản Voice ID đã thay đổi.</p>
+      <button type="button" className="btn btn-outline" onClick={() => setReading(true)}>
+        Xem và đồng ý
       </button>
+      {reading && (
+        <ConfirmDialog
+          title="Điều khoản Voice ID mới"
+          confirmLabel="Đồng ý điều khoản mới"
+          pendingLabel="Đang lưu…"
+          cancelLabel="Để sau"
+          onClose={() => setReading(false)}
+          onConfirm={async () => {
+            const result = await grantVoiceConsent(profile.noticeVersion)
+            toast.show(result.message, 'success')
+            onChange(result.data)
+          }}
+        >
+          {/* The dialog's body is one paragraph: the changes are list items drawn from spans. */}
+          {changes.map((change) => (
+            <span key={change} className="voice-renew-change">
+              {change}
+            </span>
+          ))}
+          <span className="voice-renew-keep">Chưa đồng ý thì mọi thứ giữ như cũ.</span>
+        </ConfirmDialog>
+      )}
     </div>
   )
 }

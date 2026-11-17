@@ -8,6 +8,8 @@ interface Toast {
 }
 
 const VISIBLE_MS = 4500
+/** A burst (a dozen notifications arriving together) keeps only the newest few on screen; older ones are in the bell. */
+const MAX_SHOWN = 3
 
 /**
  * Short confirmations that an action went through ("Đã lưu"), stacked in a corner and gone after a
@@ -22,7 +24,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const show = useCallback(
     (message: string, tone: ToastTone = 'success') => {
       const id = nextId.current++
-      setToasts((all) => [...all, { id, message, tone }])
+      setToasts((all) => [...all, { id, message, tone }].slice(-MAX_SHOWN))
       window.setTimeout(() => dismiss(id), VISIBLE_MS)
     },
     [dismiss],

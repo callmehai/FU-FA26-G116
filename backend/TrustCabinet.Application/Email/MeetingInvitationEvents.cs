@@ -8,8 +8,11 @@ using TrustCabinet.Domain.Participants;
 namespace TrustCabinet.Application.Email;
 
 /// <param name="Reason">Why the meeting was cancelled; only on a <see cref="InvitationEventKind.Cancelled"/> event (BR-300).</param>
+/// <param name="PreviousStartsAt">The time a reschedule moved the meeting from, so the email can show old and new; null on
+/// every other event and on reschedules staged before it was recorded.</param>
 public sealed record InvitationPayload(string Name, string Email, string MeetingTitle, string Description,
-    DateTimeOffset StartsAt, DateTimeOffset EndsAt, string Place, string Mode, string? Role, string? Reason = null);
+    DateTimeOffset StartsAt, DateTimeOffset EndsAt, string Place, string Mode, string? Role, string? Reason = null,
+    DateTimeOffset? PreviousStartsAt = null, DateTimeOffset? PreviousEndsAt = null);
 
 /// <summary>
 /// Decides which invitation dispatches and in-app notices a roster or meeting change queues, and what they say. They are
@@ -41,28 +44,28 @@ public sealed class MeetingInvitationEvents(
                 notify: false, historyId, reason);
     }
 
-    public async Task StageGuestRescheduleInvitationsAsync(Meeting meeting, Guid historyId, DateTimeOffset now, CancellationToken ct = default)
+    public async Task StageRescheduleInvitationsAsync(Meeting meeting, Guid historyId,
+        (DateTimeOffset Start, DateTimeOffset End) previous, DateTimeOffset now, CancellationToken ct = default)
     {
+        // The bell is added by the caller (not for the organizer who moved it); the email goes to everyone, as a
+        // cancellation does, so the organizer's own calendar is put right too.
+        foreach (var participant in MeetingInvitationRecipientPolicy.SelectSnapshot(meeting.Participants))
+            Stage(meeting, participant, null, InvitationEventKind.Rescheduled, now, notify: false, historyId,
+                previous: previous);
         foreach (var guest in await dispatches.ListActiveGuestInvitationsAsync(meeting.Id, ct))
-            Stage(meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId);
+            Stage(meeting, null, guest, InvitationEventKind.Rescheduled, now, notify: false, historyId,
+                previous: previous);
     }
 
     public void Stage(Meeting meeting, MeetingParticipant? p, MeetingGuestInvitation? g,
-        InvitationEventKind kind, DateTimeOffset now, bool notify, Guid? sourceEventId = null, string? reason = null)
+        InvitationEventKind kind, DateTimeOffset now, bool notify, Guid? sourceEventId = null, string? reason = null,
+        (DateTimeOffset Start, DateTimeOffset End)? previous = null)
     {
         var eventId = sourceEventId ?? Guid.CreateVersion7();
         var ownerId = p?.Id ?? g!.Id;
         var key = kind == InvitationEventKind.Invitation ? p is not null ? InitialKey(p) : g!.InitialInvitationDeliveryKey
             : $"roster:{eventId}:{kind}:{ownerId}";
-        var link = meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet";
-        // A hybrid meeting may have no room yet: then it happens at its link alone.
-        var place = meeting.Mode switch
-        {
-            MeetingMode.Online => link,
-            MeetingMode.Hybrid when meeting.Location.Length > 0 => $"{meeting.Location} · {link}",
-            MeetingMode.Hybrid => link,
-            _ => meeting.Location,
-        };
+        var place = PlaceOf(meeting);
         dispatches.Add(new()
         {
             EventId = eventId,
@@ -75,7 +78,7 @@ public sealed class MeetingInvitationEvents(
             UpdatedAt = now,
             PayloadJson = JsonSerializer.Serialize(new InvitationPayload(p?.User.FullName ?? g!.InvitedName, p?.User.Email ?? g!.Email,
                 meeting.Title, meeting.Description, meeting.PlannedStartTime, meeting.PlannedEndTime, place,
-                meeting.Mode.ToString(), p?.Role.ToString(), reason))
+                meeting.Mode.ToString(), p?.Role.ToString(), reason, previous?.Start, previous?.End))
         });
         if (notify && p is not null)
         {
@@ -108,6 +111,20 @@ public sealed class MeetingInvitationEvents(
             });
         }
     }
+    /// <summary>Where a meeting happens, as an invitee reads it: the room, the link, or both for a hybrid one.</summary>
+    public static string PlaceOf(Meeting meeting)
+    {
+        var link = meeting.OnlineLink ?? "Phòng họp trực tuyến TrustCabinet";
+        // A hybrid meeting may have no room yet: then it happens at its link alone.
+        return meeting.Mode switch
+        {
+            MeetingMode.Online => link,
+            MeetingMode.Hybrid when meeting.Location.Length > 0 => $"{meeting.Location} · {link}",
+            MeetingMode.Hybrid => link,
+            _ => meeting.Location,
+        };
+    }
+
     public static string Title(InvitationEventKind kind) => kind switch
     {
         InvitationEventKind.Invitation => "Lời mời tham dự cuộc họp",

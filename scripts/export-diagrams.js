@@ -1,6 +1,29 @@
 import { chromium } from 'playwright';
+import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+
+function getRepoRoot(defaultRoot) {
+  return path.resolve(defaultRoot, '..', '..');
+}
+
+function parseOptions(args) {
+  // Tách cờ --originals-dir= / --no-originals / --no-compress khỏi danh sách target.
+  const options = { originalsDir: null, noOriginals: false, noCompress: false };
+  const targets = [];
+  for (const arg of args) {
+    if (arg.startsWith('--originals-dir=')) {
+      options.originalsDir = arg.slice('--originals-dir='.length);
+    } else if (arg === '--no-originals') {
+      options.noOriginals = true;
+    } else if (arg === '--no-compress') {
+      options.noCompress = true;
+    } else {
+      targets.push(arg);
+    }
+  }
+  return { options, targets };
+}
 
 function getDefaultRoot() {
   const candidate1 = path.resolve('docs/06-sequencediagram');
@@ -79,10 +102,14 @@ function resolveTargets(args, defaultRoot) {
 }
 
 async function main() {
-  const args = process.argv.slice(2);
+  const { options, targets } = parseOptions(process.argv.slice(2));
   const defaultRoot = getDefaultRoot();
+  const repoRoot = getRepoRoot(defaultRoot);
+  const originalsDir = options.noOriginals
+    ? null
+    : path.resolve(options.originalsDir || process.env.DIAGRAM_ORIGINALS_DIR || path.join(repoRoot, 'anh-goc'));
 
-  if (args.length === 0) {
+  if (targets.length === 0) {
     console.log(`ℹ️ Usage:
   node export-diagrams.js <path-or-file-or-pattern> [...]
   node export-diagrams.js --all
@@ -96,9 +123,9 @@ Examples:
     return;
   }
 
-  const files = resolveTargets(args, defaultRoot);
+  const files = resolveTargets(targets, defaultRoot);
   if (files.length === 0) {
-    console.log(`ℹ️ No .txt diagram files found for arguments: ${args.join(', ')}`);
+    console.log(`ℹ️ No .txt diagram files found for arguments: ${targets.join(', ')}`);
     return;
   }
 
@@ -159,7 +186,25 @@ Examples:
       const buffer = Buffer.from(base64Data, 'base64');
       fs.writeFileSync(pngFile, buffer);
 
-      console.log(`[${i + 1}/${files.length}] ✅ ${relTxt} -> ${relPng} (${(buffer.length / 1024).toFixed(1)} KB)`);
+      // Bản gốc vào thư mục local (gitignore) để sau này dựng báo cáo chuẩn nộp;
+      // bản trong repo nén palette cho nhẹ.
+      if (originalsDir) {
+        const mirror = path.join(originalsDir, path.relative(repoRoot, pngFile));
+        fs.mkdirSync(path.dirname(mirror), { recursive: true });
+        fs.copyFileSync(pngFile, mirror);
+      }
+      if (!options.noCompress) {
+        const py = process.env.PYTHON || 'python';
+        const res = spawnSync(py, [path.join(repoRoot, 'scripts', 'compress_png.py'), pngFile], { encoding: 'utf-8' });
+        if (res.status !== 0) {
+          console.error(`[${i + 1}/${files.length}] ❌ Compress failed for ${relPng}: ${(res.stderr || res.error?.message || '').trim()}`);
+          failCount++;
+          continue;
+        }
+        if (res.stdout.trim()) console.log(`[${i + 1}/${files.length}] ${res.stdout.trim()}`);
+      }
+
+      console.log(`[${i + 1}/${files.length}] ✅ ${relTxt} -> ${relPng} (${(fs.statSync(pngFile).size / 1024).toFixed(1)} KB)`);
       successCount++;
     } catch (err) {
       console.error(`[${i + 1}/${files.length}] ❌ Failed to export ${relTxt}:`, err.message);

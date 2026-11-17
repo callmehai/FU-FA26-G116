@@ -85,16 +85,27 @@ public sealed class MeetingInvitationEventsTests
     }
 
     [Fact]
-    public async Task A_new_time_is_sent_to_the_guests_alone()
+    public async Task A_new_time_is_emailed_to_every_invitee_and_guest_with_the_old_time()
     {
-        Participant();
+        // PO 15/11/2026: internal invitees get the email too, not only the bell (which the caller adds).
+        var member = Participant();
         var guest = Guest();
+        var historyId = Guid.NewGuid();
+        var previous = (Now.AddDays(-1), Now.AddDays(-1).AddHours(1));
 
-        await Events().StageGuestRescheduleInvitationsAsync(_meeting, Guid.NewGuid(), Now);
+        await Events().StageRescheduleInvitationsAsync(_meeting, historyId, previous, Now);
 
-        var dispatch = Assert.Single(_dispatches.Added);
-        Assert.Equal(guest.Id, dispatch.GuestInvitationId);
-        Assert.Equal(InvitationEventKind.Rescheduled, dispatch.EventKind);
+        Assert.Equal(2, _dispatches.Added.Count);
+        Assert.Contains(_dispatches.Added, d => d.ParticipantId == member.Id);
+        Assert.Contains(_dispatches.Added, d => d.GuestInvitationId == guest.Id);
+        Assert.All(_dispatches.Added, d =>
+        {
+            Assert.Equal(InvitationEventKind.Rescheduled, d.EventKind);
+            Assert.Equal(historyId, d.EventId);
+            var payload = JsonSerializer.Deserialize<InvitationPayload>(d.PayloadJson)!;
+            Assert.Equal(previous.Item1, payload.PreviousStartsAt);
+            Assert.Equal(previous.Item2, payload.PreviousEndsAt);
+        });
         Assert.Empty(_notifications.Added);
     }
 

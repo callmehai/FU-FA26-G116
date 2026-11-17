@@ -37,7 +37,7 @@ Nguồn đã đối chiếu: UC-52a/52b, UC-53–UC-57, UC-74, UC-76a/76b; BR-15
 | Bỏ phiếu | Người trong `VoteEligibleVoter` + còn quyền Meeting | InProgress | Open |
 | Đóng phiếu | Chỉ Chair hiện hành | InProgress hoặc Ended | Open |
 | Ghi kết luận | Chỉ Chair hiện hành | InProgress hoặc Ended | Closed, chưa có conclusion |
-| Xác nhận đã đọc (UC-74) | Ai xem được Meeting và tài liệu còn gắn Vote | — | Tài liệu còn là Vote document (Open hoặc Draft đều cho xác nhận khi còn gắn) |
+| Xác nhận đã đọc (UC-74) | Người trong danh sách bỏ phiếu đã chốt của biểu quyết Open gắn tài liệu + còn quyền Meeting | InProgress | Open (tài liệu chỉ gắn nháp: Thành viên/Khách `404/MSG156` do nháp bị ẩn — BR-253; Chủ toạ/Thư ký `409/MSG224` do nháp chưa có danh sách chốt) |
 
 ## 3. Endpoint
 
@@ -71,7 +71,7 @@ trừ khi BE và FE thống nhất lại trong cùng PR.
 {
   "title": "Thông qua kế hoạch Q4",
   "description": "",
-  "options": ["Đồng ý", "Không đồng ý", "Bỏ phiếu trắng"],
+  "options": ["Đồng ý", "Không đồng ý", "Không ý kiến"],
   "isAnonymous": false,
   "eligibleRoles": ["Chair", "Secretary", "Member", "Guest"],
   "openImmediately": false
@@ -123,8 +123,9 @@ nếu áp dụng cùng lần). Tất cả hoặc không (BR-304). Gỡ Vote khô
 { "lastPageReached": true }
 ```
 
-Client chỉ gửi khi đã cuộn tới trang cuối trong viewer (BR-290). Server từ chối nếu
-`lastPageReached !== true` → 400/MSG254. Xác nhận theo (actor, MeetingDocument); dùng chung mọi
+Client chỉ gửi khi đã cuộn tới trang cuối trong viewer (BR-290). Server kiểm tra đã-xác-nhận
+trước (khớp §8 bước 4): đã xác nhận rồi → `200/MSG253`, `alreadyConfirmed: true` kể cả khi lần này gửi
+`lastPageReached: false`; chưa xác nhận mà `lastPageReached !== true` → `400/MSG254`. Xác nhận theo (actor, MeetingDocument); dùng chung mọi
 Vote cùng tài liệu (BR-291); không rút; không liên kết với `VoteChoice` (BR-293).
 
 ### Snapshot danh sách (GET)
@@ -364,7 +365,9 @@ Guest dùng được (phiên khách còn hiệu lực). Response có `Cache-Cont
 - Chi tiết (`GET …/votes/{voteId}`) có thêm `documents: [{ id, fileName, contentType, byteSize, pageCount,
   readConfirmedAt }]` — `id` là MeetingDocument ID, `readConfirmedAt` theo người gọi, `null` = chưa đọc. `documentCount`
   (danh sách và chi tiết) chỉ đếm tài liệu còn trong cuộc họp.
-- `actions.canCast` **không** xét việc đọc tài liệu: FE khoá nút "Gửi phiếu" khi còn `readConfirmedAt: null`.
+- `actions.canCast` chỉ tính trạng thái + vai trò, **không** tính việc đọc tài liệu. Hai lớp bảo vệ song
+  song (PO chốt 16/11/2026, note 52): FE tự khoá nút "Gửi phiếu" khi còn `readConfirmedAt: null`; gọi thẳng
+  mà chưa đọc hết tài liệu vẫn bị server chặn `409/MSG252` (thứ tự kiểm tra ở §8 bước 4 và UC-55 EX-8).
 
 ### Tài liệu của biểu quyết ở tab Tài liệu
 

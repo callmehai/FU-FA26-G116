@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Infrastructure.Ai;
@@ -21,7 +22,8 @@ public sealed class LanguageModelRemoteTests
     {
         ILanguageModel api = new ApiLanguageModelFactory(new NoClients())
             .Create("https://api.example.vn/v1", "deepseek-v4", "sk-test-1234567890", 1, 1024, "none");
-        ILanguageModel local = new LanguageModelClient(new NoClients(), Options.Create(new LanguageModelOptions()));
+        ILanguageModel local = new LanguageModelClient(new NoClients(), Options.Create(new LanguageModelOptions()),
+            TimeProvider.System, NullLogger<LanguageModelClient>.Instance);
 
         Assert.True(api.Remote);
         Assert.False(local.Remote);

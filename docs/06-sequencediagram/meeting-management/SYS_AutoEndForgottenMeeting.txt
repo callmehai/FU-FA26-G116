@@ -1,0 +1,76 @@
+title SYS - Auto-End Forgotten Meeting (System, DRAFT awaiting approval - no UC number)
+
+actor "System" as System
+control ":Meeting Overdue Worker" as Worker
+control ":Meeting Overdue Service" as OverdueService
+control ":Meeting Lifecycle Service" as LifecycleService
+participant ":Meeting Repository" as MeetingRepository
+participant ":Agenda Item Repository" as AgendaItemRepository
+participant ":Online Meeting Room" as MeetingRoom
+database ":Database" as Database
+
+System->Worker: Sweep every 15 minutes for overdue meetings
+activate Worker
+Worker->OverdueService: End meetings left running past the 24-hour grace (BR-460)
+activate OverdueService
+
+OverdueService->MeetingRepository: List InProgress meetings past the grace
+activate MeetingRepository
+MeetingRepository->Database: Retrieve InProgress meetings whose planned end and actual start are 24 hours past
+activate Database
+Database-->MeetingRepository: Overrun meeting ids / None
+deactivate Database
+MeetingRepository-->OverdueService: Overrun meeting ids / None
+deactivate MeetingRepository
+
+alt No meeting left running past the grace
+    OverdueService-->Worker: Nothing to do
+else At least one meeting left running
+    loop Each overrun meeting, in its own transaction
+        OverdueService->LifecycleService: End one overrun meeting
+        activate LifecycleService
+        LifecycleService->MeetingRepository: Re-check the meeting under its row lock (BR-460)
+        activate MeetingRepository
+        MeetingRepository->Database: Retrieve meeting with lock
+        activate Database
+        Database-->MeetingRepository: Meeting
+        deactivate Database
+        MeetingRepository-->LifecycleService: Meeting
+        deactivate MeetingRepository
+
+        alt Meeting already ended or no longer overruns — the Chair's End won
+            LifecycleService-->OverdueService: Not ended
+            deactivate LifecycleService
+        else Meeting still overruns
+            LifecycleService->AgendaItemRepository: Complete the InProgress Agenda Item, if any (BR-159)
+            activate AgendaItemRepository
+            AgendaItemRepository->Database: Save Agenda Item Done with actual end time
+            activate Database
+            Database-->AgendaItemRepository: Agenda Item completed
+            deactivate Database
+            AgendaItemRepository-->LifecycleService: Agenda Item completed
+            deactivate AgendaItemRepository
+
+            LifecycleService->MeetingRepository: In one transaction: delete Draft Votes not yet opened\n(with one audit log entry for each deleted Draft Vote); set Meeting Ended,\nrecord Actual End Time and lifecycle history with action AutoEnd and actor System (BR-189, BR-460)
+            activate MeetingRepository
+            MeetingRepository->Database: Save Meeting and history atomically
+            activate Database
+            Database-->MeetingRepository: Changes committed
+            deactivate Database
+            MeetingRepository-->LifecycleService: Meeting ended
+            deactivate MeetingRepository
+
+            LifecycleService->MeetingRoom: Close the room for Online and Hybrid meetings
+            activate MeetingRoom
+            MeetingRoom-->LifecycleService: Room closed; connected users disconnected
+            deactivate MeetingRoom
+
+            LifecycleService-->OverdueService: Meeting ended
+            deactivate LifecycleService
+        end
+    end
+    OverdueService-->Worker: Overrun meetings ended
+end
+
+deactivate OverdueService
+deactivate Worker

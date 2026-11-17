@@ -209,6 +209,18 @@ public sealed class AiSettingsEndpointTests(SummaryFixture f) : IClassFixture<Su
         // Nothing was saved by the test.
         await using (var db = f.Db()) Assert.False(await db.AiProviderSettings.AnyAsync());
 
+        // A mode other than exactly Local or Api is refused before anything is called, as a save refuses it
+        // (found by the QA run of SCRUM-186: "api" used to be tested as the API).
+        f.Api.Reset();
+        foreach (var wrong in new[] { "api", "LOCAL", "Remote", "" })
+        {
+            var refusedMode = await AssertCode(
+                await admin.PostAsJsonAsync(Url + "/test", new { mode = wrong, apiBaseUrl = "https://api.example.test/v1", apiModel = "m", apiKey = Key }),
+                400, "MSG409");
+            Assert.True(refusedMode.GetProperty("errors").TryGetProperty("mode", out _), wrong);
+        }
+        Assert.Empty(f.Api.Requests);
+
         // No key in the form and none stored.
         await AssertCode(await admin.PostAsJsonAsync(Url + "/test", Api(key: null)), 400, "MSG409");
         await AssertCode(await admin.PutAsJsonAsync(Url, Api()), 200, "MSG408");

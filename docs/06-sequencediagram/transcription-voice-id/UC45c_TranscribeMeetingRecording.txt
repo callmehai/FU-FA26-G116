@@ -43,6 +43,10 @@ else Actor is not the current Secretary
     TranscriptionService-->TranscriptController: MSG295 - Only the meeting Secretary may manage recordings.
     TranscriptController-->TranscriptView: MSG295 - Only the meeting Secretary may manage recordings.
     TranscriptView-->Actor: MSG295 - Only the meeting Secretary may manage recordings.
+else Recording is the combined recording of a Hybrid Meeting - EX-4
+    TranscriptionService-->TranscriptController: MSG479 - The combined recording is for listening only.\nIts speech is already transcribed from the room and each online microphone.
+    TranscriptController-->TranscriptView: MSG479 - The combined recording is for listening only.\nIts speech is already transcribed from the room and each online microphone.
+    TranscriptView-->Actor: MSG479 - The combined recording is for listening only.\nIts speech is already transcribed from the room and each online microphone.
 else Secretary may queue the recording
     TranscriptionService->TranscriptRepository: Get the transcript of the recording
     activate TranscriptRepository

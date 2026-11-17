@@ -71,13 +71,13 @@ internal sealed class ResendEmailSender(
         To: [message.ToAddress],
         Subject: message.Subject,
         Text: message.Body,
-        Html: EmailHtml.FromText(message.Body),
+        Html: message.HtmlBody ?? EmailHtml.FromText(message.Body),
         Attachments: string.IsNullOrEmpty(message.CalendarAttachment)
             ? null
             :
             [
                 new Attachment(
-                    Filename: "thu-moi-hop.ics",
+                    Filename: CalendarInvitationBuilder.FileNameOf(message.CalendarAttachment),
                     Content: Convert.ToBase64String(Encoding.UTF8.GetBytes(message.CalendarAttachment)),
                     ContentType: $"text/calendar; charset=utf-8; method={CalendarInvitationBuilder.MethodOf(message.CalendarAttachment)}"),
             ],

@@ -1,7 +1,7 @@
 # Sequence Diagram — Biên bản (FE-12)
 
 Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho bảy UC của FE-12 đã có code:
-UC-58, UC-59, UC-60, UC-61, UC-64, UC-65 và UC-83. UC-62, UC-63 (ký số mô phỏng, SCRUM-37) chưa có sơ đồ.
+UC-58, UC-59, UC-60, UC-61, UC-64, UC-65 và UC-83. UC-62, UC-63 đã bỏ (PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng) nên không có sơ đồ.
 
 Đặc tả: [05-use-case-specifications.md §FE-12](../../01-requirements/05-use-case-specifications.md). Hợp đồng API
 (`docs/03-api/17-du-thao-bien-ban.md`), ADR-0054/ADR-0055 và ADR-0013 đã có trên `main`. Note BA:

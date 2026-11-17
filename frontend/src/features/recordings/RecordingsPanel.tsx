@@ -152,11 +152,14 @@ export function RecordingsPanel({ meetingId, existingOnly = false }: { meetingId
       {data && kept.length === 0 && (
         <div className="cell-empty">
           <p className="empty-title">Chưa có bản ghi.</p>
-          {canUpload ? (
+          {/* The mic card is in the corner only while the meeting runs (canRecord); before or after it, a file is the
+              only way in. ADR-0061: a hybrid meeting's room is recorded live only, so its words keep their time. */}
+          {data.canRecord && canUpload ? (
             <p className="field-hint">Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.</p>
+          ) : data.canRecord ? (
+            <p className="field-hint">Bật mic phòng ở ô góc màn hình.</p>
           ) : (
-            // ADR-0061: a hybrid meeting's room is recorded live only, so its words keep their time.
-            data.canRecord && <p className="field-hint">Bật mic phòng ở ô góc màn hình.</p>
+            canUpload && <p className="field-hint">Tải tệp ghi sẵn lên.</p>
           )}
         </div>
       )}
@@ -457,7 +460,9 @@ function RecordingRow({ recording, onErase }: { recording: Recording; onErase: (
             />
           </div>
           {recording.source === 'Combined' ? (
-            <p className="field-hint">Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.</p>
+            <p className="field-hint">
+              Mic phòng và mic của từng người họp trực tuyến, ghép theo giờ thật để nghe lại.
+            </p>
           ) : (
             <TranscriptView
               fileName={recording.fileName}

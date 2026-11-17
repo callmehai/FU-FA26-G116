@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Summaries;
 
@@ -9,20 +10,94 @@ namespace TrustCabinet.Infrastructure.Summaries;
 /// <summary>
 /// The in-house model (ADR-0054), as the server is configured (<c>Ai:BaseUrl</c>, <c>Ai:Model</c>). The API an administrator
 /// may set up instead (ADR-0056) is the same kind of endpoint, built by <see cref="Ai.ApiLanguageModelFactory"/>.
+/// With <c>Ai:BackupBaseUrl</c> set, a call the main machine cannot take goes to the backup machine (ADR-0063); after
+/// that the backup is asked first for <see cref="SkipMainFor"/>, so each part of a long draft does not wait for the
+/// main machine's connect timeout again. Both are the team's own machines on the tailnet: the transcript still never
+/// leaves it.
 /// </summary>
-public sealed class LanguageModelClient(IHttpClientFactory clients, IOptions<LanguageModelOptions> options) : ILanguageModel
+public sealed class LanguageModelClient(IHttpClientFactory clients, IOptions<LanguageModelOptions> options,
+    TimeProvider clock, ILogger<LanguageModelClient> logger) : ILanguageModel, ILocalModelMachines
 {
     public const string HttpClientName = "ai";
 
+    internal static readonly TimeSpan SkipMainFor = TimeSpan.FromMinutes(2);
+
+    /// <summary>When the main machine is asked first again, as UTC ticks; 0 when it is up.</summary>
+    private long mainDownUntil;
+
     public bool IsConfigured => options.Value.IsConfigured;
+
+    public bool HasBackup => options.Value.HasBackup;
 
     public string Model => options.Value.Model;
 
-    public Task<string> CompleteAsync(string system, string user, CancellationToken ct)
+    public async Task<string> CompleteAsync(string system, string user, CancellationToken ct)
+    {
+        if (!HasBackup) return await Machine(backup: false).CompleteAsync(system, user, ct);
+        var mainFirst = clock.GetUtcNow().UtcTicks >= Interlocked.Read(ref mainDownUntil);
+        try
+        {
+            return await Machine(backup: !mainFirst).CompleteAsync(system, user, ct);
+        }
+        catch (LanguageModelException first) when (first.Unreachable)
+        {
+            if (mainFirst) MarkMainDown(first);
+            try
+            {
+                var answer = await Machine(backup: mainFirst).CompleteAsync(system, user, ct);
+                if (!mainFirst) Interlocked.Exchange(ref mainDownUntil, 0);
+                return answer;
+            }
+            catch (LanguageModelException second) when (second.Unreachable)
+            {
+                if (!mainFirst) MarkMainDown(second);
+                throw new LanguageModelException(
+                    "Không kết nối được máy AI chính lẫn máy dự phòng. Cả hai có thể đang tắt.", second, unreachable: true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// "Thử kết nối" for the in-house model: each configured machine asked on its own, side by side, so an administrator
+    /// learns before a meeting whether the backup would really take over.
+    /// </summary>
+    public async Task<IReadOnlyList<LocalMachineCheck>> CheckAsync(TimeSpan timeout, CancellationToken ct)
+    {
+        var machines = HasBackup ? new[] { false, true } : [false];
+        return await Task.WhenAll(machines.Select(async backup =>
+        {
+            using var limit = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            limit.CancelAfter(timeout);
+            var started = clock.GetTimestamp();
+            try
+            {
+                await Machine(backup).CompleteAsync("Bạn là trợ lý kiểm tra kết nối.", "Trả lời đúng một từ: OK", limit.Token);
+                return new LocalMachineCheck(backup, (long)clock.GetElapsedTime(started).TotalMilliseconds, null);
+            }
+            catch (LanguageModelException failure)
+            {
+                return new LocalMachineCheck(backup, 0, failure.Message);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                return new LocalMachineCheck(backup, 0,
+                    $"Không trả lời sau {(int)timeout.TotalSeconds} giây. Kiểm tra máy còn bật và Tailscale đang kết nối.");
+            }
+        }));
+    }
+
+    private void MarkMainDown(Exception error)
+    {
+        Interlocked.Exchange(ref mainDownUntil, (clock.GetUtcNow() + SkipMainFor).UtcTicks);
+        logger.LogWarning(error, "The main AI machine cannot be reached; the backup machine takes the drafts for {Minutes} minutes",
+            SkipMainFor.TotalMinutes);
+    }
+
+    private OpenAiCompatibleModel Machine(bool backup)
     {
         var settings = options.Value;
-        return new OpenAiCompatibleModel(clients, HttpClientName, settings.BaseUrl, settings.Model, settings.ApiKey,
-            settings.TimeoutMinutes, settings.MaxTokens, remote: false).CompleteAsync(system, user, ct);
+        return new(clients, HttpClientName, backup ? settings.BackupBaseUrl : settings.BaseUrl, settings.Model,
+            settings.ApiKey, settings.TimeoutMinutes, settings.MaxTokens, remote: false);
     }
 }
 
@@ -135,7 +210,7 @@ public sealed class OpenAiCompatibleModel(IHttpClientFactory clients, string cli
         {
             throw new LanguageModelException(remote
                 ? "Không kết nối được API AI. Kiểm tra địa chỉ API hoặc mạng của server."
-                : "Không kết nối được máy AI. Máy chạy AI có thể đang tắt.", ex);
+                : "Không kết nối được máy AI. Máy chạy AI có thể đang tắt.", ex, unreachable: true);
         }
         using (response)
         {

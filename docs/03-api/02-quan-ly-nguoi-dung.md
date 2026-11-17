@@ -69,9 +69,11 @@ khai báo thì không có cách nào phân biệt "cố tình làm tốt hơn" v
    password reset function" mà không nói khi nào. Nhánh "chưa có mật khẩu" do BA chốt trong
    SCRUM-13 (BA Final Review): UC-07 đặt lại mật khẩu đã có, không phải cách thêm một phương thức
    đăng nhập mới.
-9. **BR-20 và BR-22 (UC-07 bước 4) không được định nghĩa ở đâu trong tài liệu.** Code hiểu "secure
-   password reset request" là: token ngẫu nhiên 256 bit, chỉ lưu bản băm, hiệu lực 60 phút, dùng
-   một lần, mỗi tài khoản chỉ có một liên kết còn hiệu lực (gửi lại thì liên kết cũ chết).
+9. **BR-20 và BR-22 (UC-07 bước 4) nay đã được định nghĩa** trong [danh mục
+   BR](../01-requirements/06-business-rules.md): BR-20 yêu cầu liên kết đặt lại mật khẩu có hiệu lực
+   giới hạn và không tái dùng được sau khi đặt lại thành công; BR-22 chỉ cho đặt lại với tài khoản đủ
+   điều kiện dùng xác thực bằng mật khẩu. Code khớp: token ngẫu nhiên 256 bit, chỉ lưu bản băm, hiệu
+   lực 60 phút, dùng một lần, mỗi tài khoản chỉ có một liên kết còn hiệu lực (gửi lại thì liên kết cũ chết).
 10. **`:Authentication Service` và `:Email Service` của bản vẽ UC-07 không phải hai service riêng.**
     "Create password reset request" là `IPasswordResetTokenStore` (Redis); `:Email Service` gửi
     **đồng bộ** qua SMTP chứ không qua hàng đợi `email_messages` — lý do ở

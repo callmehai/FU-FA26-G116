@@ -96,7 +96,8 @@ nhưng cứ gửi PascalCase cho nhất quán.
 }
 ```
 
-- `capabilities` → **cột** của lưới, kèm nhãn tiếng Việt và `functionalGroup` để gom nhóm cột
+- `capabilities` → **cột** của lưới, kèm nhãn tiếng Việt và `functionalGroup` để gom nhóm cột (các quyền cùng nhóm
+  đã đứng liền nhau)
 - `roles` → **dòng**
 
 Nhãn tiếng Việt nằm ở backend để thêm một quyền mới vào enum thì không cần sửa FE. Nếu bạn tự giữ

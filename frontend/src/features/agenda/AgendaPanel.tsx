@@ -465,6 +465,15 @@ function AgendaRow({
 
       {expanded && (
         <div className="agenda-body" id={bodyId}>
+          {/* The chip's tooltip gives these on a desktop; a touch screen has no hover, so the opened item says them. */}
+          {item.actualStartedAt && (
+            <p className="agenda-times">
+              <Icon name="clock" size={14} />
+              {item.actualEndedAt
+                ? `Bàn từ ${formatClock(item.actualStartedAt)} đến ${formatClock(item.actualEndedAt)}`
+                : `Bàn từ ${formatClock(item.actualStartedAt)}`}
+            </p>
+          )}
           {item.description && <p className="agenda-text agenda-note">{item.description}</p>}
           <div className="agenda-boxes">
             <div className="agenda-box">

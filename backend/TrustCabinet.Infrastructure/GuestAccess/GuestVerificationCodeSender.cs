@@ -36,5 +36,6 @@ internal sealed class GuestVerificationCodeSender(
 
                 Mã có hiệu lực trong {validFor.TotalMinutes:0} phút và chỉ dùng được một lần. Nếu bạn không yêu cầu mã này, hãy bỏ qua email.
                 """,
+            HtmlBody = EmailTemplates.GuestCode(invitedName, meetingTitle, code, (int)validFor.TotalMinutes),
         }, "guest verification", ct);
 }

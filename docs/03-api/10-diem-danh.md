@@ -41,7 +41,7 @@ Query duy nhất: `page` mặc định 1, tối thiểu 1; `pageSize` mặc đ�
 }
 ```
 
-`kind` là Internal hoặc Guest. Guest có role/isActive null, displayName từ profile được adapter trả hoặc fallback InvitedName. Internal inactive vẫn xuất hiện nếu assignment current. Không trả email hay credential. Sắp xếp tên (ordinal ignore-case), kind, ID; tổng tính trên cả roster, không chỉ trang.
+`kind` là Internal hoặc Guest. Guest có role/isActive null, displayName từ profile được adapter trả hoặc fallback InvitedName. Internal inactive vẫn xuất hiện nếu assignment current. Không trả email hay credential. Sắp xếp tên (ordinal ignore-case), kind, ID; tổng tính trên cả roster, không chỉ trang. `totals` chỉ là trường kỹ thuật của API cho BE/test (code `AttendanceService` vẫn trả); Report 3 UC-31/BR-172 không đặc tả tổng và FE không hiển thị tổng (SCRUM-207, đã ghi ở SCRUM-26).
 
 | Dữ liệu lưu | attendance | legacyAttendance | Bộ đếm |
 |---|---|---|---|

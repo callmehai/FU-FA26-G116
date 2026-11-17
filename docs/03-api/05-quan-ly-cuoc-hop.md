@@ -527,8 +527,9 @@ stale content.
 - Nếu PUT trả `409 MSG33`, hiển thị nội dung lỗi và tải lại trạng thái hiện tại trước khi cho sửa tiếp.
 - Sau khi POST hoặc PUT thành công, FE hiển thị message và mở chi tiết `meeting.id`. Danh sách
   SCRUM-18 đã tích hợp lọc, sort và pagination server-side; tiêu chí được giữ trên URL.
-- Màn danh sách mở sẵn bộ lọc **Đang diễn ra** (`status=InProgress`); đường dẫn không có `status`
-  nghĩa là bộ lọc mặc định này, còn `status=all` là bỏ lọc trạng thái. Bộ lọc **Thời điểm** chỉ có
+- Màn danh sách mở sẵn thẻ **Họp hôm nay**: mọi trạng thái, Thời điểm “Hôm nay” (PO chọn khi đổi sang bốn thẻ
+  của AI-eCabinet, PR #287). Đường dẫn không có `status` hay `scope` thì lọc Hôm nay; có `status` hoặc
+  `scope=todo` thì không lọc thời điểm, như thẻ của nó đếm; `status=all` là bỏ lọc trạng thái. Bộ lọc **Thời điểm** chỉ có
   các lựa chọn sẵn như AI-eCabinet: Hôm nay, Tuần này (Thứ Hai–Chủ Nhật) gửi `from`/`to` theo múi
   giờ người xem; Chưa diễn ra, Đã diễn ra gửi `timing`. Không còn ô chọn khoảng ngày.
 - **Bốn thẻ trên danh sách** theo AI-eCabinet, mỗi thẻ là `totalCount` của một request `pageSize=1`

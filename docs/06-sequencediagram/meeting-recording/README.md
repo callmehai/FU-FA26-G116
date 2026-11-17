@@ -17,6 +17,7 @@ Luồng gửi từng câu khi bật mic của mình là một phần của UC-39
 | UC-44d Delete Recording Take | [UC44d_DeleteRecordingTake.txt](UC44d_DeleteRecordingTake.txt) |
 | UC-44e Erase Meeting Recording | [UC44e_EraseMeetingRecording.txt](UC44e_EraseMeetingRecording.txt) |
 | UC-80 Manage My Recorded Speech | [UC80_ManageMyRecordedSpeech.txt](UC80_ManageMyRecordedSpeech.txt) |
+| SYS Build Combined Recording (bản nháp chờ duyệt, không gắn số UC — ngoại lệ theo note 45 §2.4) | [SYS_BuildCombinedRecording.txt](SYS_BuildCombinedRecording.txt) |
 
 Quy ước riêng của nhóm này:
 

@@ -27,7 +27,9 @@ Draft, WaitingApproval, Rejected, Approved, Published ──huỷ (Organizer) / 
 
 Vòng đời PO chốt kết thúc ở `Ended` (quyết định 09/10/2026); `Cancelled` là điểm cuối thứ hai, chỉ tới được trước khi
 bắt đầu (UC-75, SCRUM-99). Trạng thái của biên bản nằm ở `MeetingMinutes.Status`
-(`Draft → PendingSignature → RevisionRequested → Sealed`), không phải trạng thái cuộc họp. **Không có Meeting Session**:
+(`Draft → WaitingApproval → Rejected → Issued`, và `Superseded` cho bản cũ khi bản đính chính mới được ban hành —
+UC-83), không phải trạng thái cuộc họp. Biên bản không có vòng ký: Thư ký gửi duyệt, Chủ tọa duyệt là ban hành
+(PO 14/11/2026 bỏ ký số kể cả mô phỏng, SCRUM-37 đóng). **Không có Meeting Session**:
 một cuộc họp là một buổi họp, tự mang `PlannedStartTime` / `PlannedEndTime` / `ActualStartedAt` / `ActualEndedAt`
 ([ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md)).
 

@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { createRole, updateRole } from '../../api/roles'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Dialog } from '../../components/Dialog'
+import { InfoTip } from '../../components/InfoTip'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { RoleMutationResponse, RoleRecord } from '../../types/role'
 import type { PermissionDescriptor } from '../../types/rolePermission'
@@ -38,9 +40,10 @@ export function RoleFormDialog({
   const [fieldErrors, setFieldErrors] = useState<RoleFieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
 
   function toggle(code: Capability) {
-    setSelected((current) => current.includes(code) ? current.filter((item) => item !== code) : [...current, code])
+    setSelected((current) => (current.includes(code) ? current.filter((item) => item !== code) : [...current, code]))
     setFieldErrors((current) => ({ ...current, capabilities: undefined }))
   }
 
@@ -58,7 +61,11 @@ export function RoleFormDialog({
     const errors = validate()
     setFieldErrors(errors)
     setFormError(null)
-    if (Object.keys(errors).length > 0) return
+    if (Object.keys(errors).length > 0) {
+      // The first field in error takes the focus (frontend-ui-design §2).
+      document.getElementById(errors.name ? 'role-form-name' : 'role-form-description')?.focus()
+      return
+    }
 
     setPending(true)
     try {
@@ -89,15 +96,22 @@ export function RoleFormDialog({
     }
   }
 
+  // Anything typed that saving would keep: closing then asks first, so Escape loses nothing.
+  const dirty =
+    name !== (editing ? target.role.name : '') ||
+    description !== (editing ? (target.role.description ?? '') : '') ||
+    selected.length > 0
   const close = () => {
-    if (!pending) onClose()
+    if (pending) return
+    if (dirty) setConfirmDiscard(true)
+    else onClose()
   }
   const formId = 'role-form'
 
   return (
     <Dialog
       title={editing ? 'Sửa vai trò' : 'Tạo vai trò'}
-      description={editing ? `Cập nhật thông tin của ${target.role.name}.` : 'Tạo nhóm quyền mới cho người dùng.'}
+      description={editing ? `Cập nhật thông tin của ${target.role.name}.` : undefined}
       onClose={close}
       footer={
         <>
@@ -112,10 +126,15 @@ export function RoleFormDialog({
       }
     >
       <form id={formId} className="form-grid" onSubmit={submit} noValidate>
-        {formError && <p className="alert alert-error span-2" role="alert">{formError}</p>}
+        {formError && (
+          <p className="alert alert-error span-2" role="alert">
+            {formError}
+          </p>
+        )}
         <label className="field span-2">
           <span className="field-required">Tên vai trò</span>
           <input
+            id="role-form-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
             aria-invalid={!!fieldErrors.name}
@@ -126,6 +145,7 @@ export function RoleFormDialog({
         <label className="field span-2">
           <span>Mô tả</span>
           <textarea
+            id="role-form-description"
             value={description}
             rows={3}
             onChange={(event) => setDescription(event.target.value)}
@@ -144,17 +164,32 @@ export function RoleFormDialog({
                     checked={selected.includes(capability.code)}
                     onChange={() => toggle(capability.code)}
                   />
-                  <span>{capability.name}</span>
-                  <small>{capability.description}</small>
+                  <span>
+                    {capability.name}
+                    {capability.description && <InfoTip text={capability.description} />}
+                  </span>
                 </label>
               ))}
             </div>
             {fieldErrors.capabilities && <small className="field-error">{fieldErrors.capabilities}</small>}
-            <small className="field-hint">Có thể tạo vai trò chưa được cấp quyền rồi chỉnh ma trận sau.</small>
           </fieldset>
         )}
         {editing && <p className="field-hint span-2">Thay đổi quyền thực hiện trực tiếp trong ma trận phân quyền.</p>}
       </form>
+
+      {confirmDiscard && (
+        <ConfirmDialog
+          title="Bỏ thay đổi chưa lưu?"
+          tone="danger"
+          confirmLabel="Bỏ thay đổi"
+          cancelLabel="Tiếp tục sửa"
+          pendingLabel="Đang đóng…"
+          onConfirm={async () => onClose()}
+          onClose={() => setConfirmDiscard(false)}
+        >
+          Những gì bạn vừa nhập sẽ không được lưu.
+        </ConfirmDialog>
+      )}
     </Dialog>
   )
 }

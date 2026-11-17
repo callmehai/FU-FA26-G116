@@ -219,6 +219,20 @@ public sealed class FakeMinutesSourceQuery : IMinutesSourceQuery
     public Task<IReadOnlyList<MinutesNote>> ListNotesAsync(Guid meetingId, IReadOnlyCollection<Guid> authorIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<MinutesNote>>([]);
     public Task<IReadOnlyList<Guid>> ListActiveUsersAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<Guid>>([.. userIds.Where(ActiveUsers.Contains)]);
+
+    /// <summary>The reader ids each "minutes issued" email lookup was asked about, in order.</summary>
+    public List<Guid[]> EmailLookups { get; } = [];
+
+    /// <summary>The active readers, each named "Người đọc" with an address made from the id.</summary>
+    public Task<MinutesIssuedContacts?> LoadIssuedEmailContactsAsync(Guid[] readerIds, Guid chairId, Guid organizerId,
+        CancellationToken ct)
+    {
+        EmailLookups.Add(readerIds);
+        var people = readerIds.Where(ActiveUsers.Contains)
+            .Select(id => new MinutesEmailRecipient(id, "Người đọc", $"{id:N}@example.vn")).ToList();
+        return Task.FromResult(people.Count == 0 ? null
+            : new MinutesIssuedContacts(people, "Nguyễn Chủ Toạ", "Trần Tổ Chức", "organizer@example.vn"));
+    }
 }
 
 /// <summary>Leaves the content as it is: the allow-list itself is tested against AngleSharp in the web tests.</summary>

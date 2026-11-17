@@ -166,7 +166,7 @@ export function RosterField({
           aria-autocomplete="list"
           aria-invalid={!!error}
           value={query}
-          placeholder="Tìm theo tên hoặc email để thêm người dự họp"
+          placeholder="Tìm tên hoặc email để thêm"
           onChange={(e) => {
             setQuery(e.target.value)
             setHighlighted(0)
