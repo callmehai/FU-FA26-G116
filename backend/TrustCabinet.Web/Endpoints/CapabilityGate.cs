@@ -1,6 +1,5 @@
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Enums;
@@ -91,13 +90,12 @@ public static class CapabilityGate
                 {
                     throw;
                 }
-                catch (Exception exception) when (
-                    databaseFailure is not null
-                    && (exception is DbUpdateException or NpgsqlException or TimeoutException))
+                catch (PersistenceException exception) when (databaseFailure is not null)
                 {
                     context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
                         .CreateLogger(nameof(CapabilityGate))
-                        .LogError(exception, "Could not check capability {Capability} for request.", capability);
+                        .LogError(exception.InnerException ?? exception,
+                            "Could not check capability {Capability} for request.", capability);
                     return databaseFailure;
                 }
 
@@ -143,11 +141,11 @@ public static class CapabilityGate
         {
             throw;
         }
-        catch (Exception exception) when (exception is DbUpdateException or NpgsqlException or TimeoutException)
+        catch (PersistenceException exception)
         {
             context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
                 .CreateLogger(nameof(CapabilityGate))
-                .LogError(exception, "Could not check active account for meeting request.");
+                .LogError(exception.InnerException ?? exception, "Could not check active account for meeting request.");
             return databaseFailure;
         }
 

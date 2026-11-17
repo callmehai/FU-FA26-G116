@@ -200,10 +200,28 @@ public sealed class ArchitectureTests
             .Select(file => Path.GetRelativePath(web, file).Replace('\\', '/'))
             .Where(file => !file.StartsWith("bin/", StringComparison.Ordinal) && !file.StartsWith("obj/", StringComparison.Ordinal))
             .Except(CompositionRoots)
-            // A using directive or a qualified name; a sentence in a comment that mentions the project is neither.
-            .Where(file => Regex.IsMatch(File.ReadAllText(Path.Combine(web, file)), @"TrustCabinet\.Infrastructure(;|\.\w)"))
+            .Where(file => NamesInfrastructure.IsMatch(File.ReadAllText(Path.Combine(web, file))))
             .Order(StringComparer.Ordinal).ToArray();
     }
+
+    /// <summary>
+    /// A using directive or a qualified name of Infrastructure, with or without the <c>TrustCabinet.</c> prefix: Web's
+    /// namespaces sit under <c>TrustCabinet</c>, so <c>Infrastructure.Authentication.X</c> compiles there too (CA-18
+    /// found one). A sentence in a comment that mentions the project is neither.
+    /// </summary>
+    private static readonly Regex NamesInfrastructure = new(@"(?<![\w.])(?:TrustCabinet\.)?Infrastructure(;|\.\w)");
+
+    [Theory]
+    [InlineData("using TrustCabinet.Infrastructure;", true)]
+    [InlineData("using TrustCabinet.Infrastructure.Documents;", true)]
+    [InlineData("var x = global::TrustCabinet.Infrastructure.Users.UserAccountRepository.X;", true)]
+    [InlineData("claims.Add(Infrastructure.Authentication.JwtTokenIssuer.CapabilityClaim);", true)]
+    [InlineData("// Infrastructure registers the repositories.", false)]
+    [InlineData("// the Infrastructure project, then Web.", false)]
+    [InlineData("services.AddInfrastructure(configuration);", false)]
+    [InlineData("var probe = context.Infrastructure.Value;", false)]
+    public void A6_reading_the_source_spots_Infrastructure_with_or_without_its_prefix(string line, bool names)
+        => Assert.Equal(names, NamesInfrastructure.IsMatch(line));
 
     private static string[] BreakingA7()
         => OwnTypes(Infrastructure)

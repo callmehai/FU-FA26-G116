@@ -1835,6 +1835,24 @@ public sealed class MeetingEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Get_approvers_returns_the_contract_503_when_a_transient_failure_comes_wrapped()
+    {
+        // EF Core's execution strategy hands a transient failure over inside an InvalidOperationException. Before
+        // SCRUM-185 the gate only knew the bare driver exceptions, so this one became a 500 (SCRUM-146, CA-01).
+        _factory.Accounts.NextReadThrows = new InvalidOperationException(
+            "An exception has been raised that is likely due to a transient failure.",
+            new Npgsql.NpgsqlException("database unavailable"));
+        using var client = _factory.ClientFor(GivenCreator(), Capability.MeetingCreator);
+
+        var response = await client.GetAsync("/api/meetings/approvers");
+        using var body = await JsonOf(response);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal("MSG130", body.RootElement.GetProperty("code").GetString());
+        Assert.Empty(_factory.Meetings.EligibleApprovers);
+    }
+
+    [Fact]
     public async Task Get_approvers_propagates_request_cancellation_from_capability_lookup()
     {
         _factory.Accounts.WaitForReadCancellation = true;

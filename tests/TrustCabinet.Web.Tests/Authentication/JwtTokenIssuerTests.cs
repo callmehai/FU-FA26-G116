@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Domain.Access;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -58,7 +59,7 @@ public class JwtTokenIssuerTests
             Secretary, [Capability.MeetingCreator, Capability.MinutesEditor]));
 
         var capabilities = token.Claims
-            .Where(c => c.Type == JwtTokenIssuer.CapabilityClaim)
+            .Where(c => c.Type == ITokenIssuer.CapabilityClaim)
             .Select(c => c.Value)
             .ToArray();
 
@@ -72,7 +73,7 @@ public class JwtTokenIssuerTests
     {
         var token = Parse(NewIssuer().CreateAccessToken(Secretary, []));
 
-        Assert.DoesNotContain(token.Claims, c => c.Type == JwtTokenIssuer.CapabilityClaim);
+        Assert.DoesNotContain(token.Claims, c => c.Type == ITokenIssuer.CapabilityClaim);
     }
 
     [Fact]

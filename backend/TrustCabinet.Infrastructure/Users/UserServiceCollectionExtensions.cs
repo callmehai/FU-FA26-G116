@@ -18,8 +18,10 @@ public static class UserServiceCollectionExtensions
     {
         services.AddScoped<IUserAccountRepository, UserAccountRepository>();
         // The caller's own account is read through whatever serves the accounts, so the capability gate never sees
-        // another account store than the user screens (a test that swaps in fake accounts swaps both).
-        services.AddScoped<ICallerAccountQuery>(sp => (ICallerAccountQuery)sp.GetRequiredService<IUserAccountRepository>());
+        // another account store than the user screens (a test that swaps in fake accounts swaps both). The web layer
+        // calls it outside IUnitOfWork, so storage failures are translated here instead (rule R8).
+        services.AddScoped<ICallerAccountQuery>(sp => new TranslatedCallerAccountQuery(
+            (ICallerAccountQuery)sp.GetRequiredService<IUserAccountRepository>()));
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAuditLogQuery, TrustCabinet.Infrastructure.Audit.AuditLogQuery>();
 
