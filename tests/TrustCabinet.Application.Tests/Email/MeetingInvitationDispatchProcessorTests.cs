@@ -65,6 +65,36 @@ public sealed class MeetingInvitationDispatchProcessorTests
     }
 
     [Fact]
+    public async Task A_reschedule_email_shows_the_old_time_and_whom_to_ask()
+    {
+        var dispatch = Dispatch(InvitationEventKind.Rescheduled);
+        dispatch.PayloadJson = JsonSerializer.Serialize(new InvitationPayload("Nguyễn Văn A", "a@example.vn", "Họp giao ban",
+            "Mô tả", Now.AddDays(2), Now.AddDays(2).AddHours(1), "Phòng 1", "InPerson", "Member",
+            PreviousStartsAt: Now.AddDays(1), PreviousEndsAt: Now.AddDays(1).AddHours(1)));
+
+        Assert.Equal(1, await Processor().ProcessAsync(dispatch.Id, default));
+
+        var email = Assert.Single(_emails.Added);
+        Assert.Contains("Thời gian cũ: 17/11/2026 16:00", email.Body, StringComparison.Ordinal);
+        Assert.Contains("Người tổ chức: Trần Tổ Chức (organizer@example.vn)", email.Body, StringComparison.Ordinal);
+        Assert.Contains("line-through", email.HtmlBody);
+        Assert.Contains("Trần Tổ Chức (organizer@example.vn)", email.HtmlBody);
+    }
+
+    [Fact]
+    public async Task A_guest_is_told_whom_to_ask_without_a_staff_address()
+    {
+        var dispatch = Dispatch(guest: true);
+
+        Assert.Equal(1, await Processor().ProcessAsync(dispatch.Id, default));
+
+        var email = Assert.Single(_emails.Added);
+        Assert.Contains("Người tổ chức: Trần Tổ Chức", email.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("organizer@example.vn", email.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("organizer@example.vn", email.HtmlBody, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task An_invitation_to_a_meeting_that_has_ended_is_suppressed()
     {
         var dispatch = Dispatch();

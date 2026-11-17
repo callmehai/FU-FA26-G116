@@ -1,5 +1,6 @@
 using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Agenda;
+using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Tests.Fakes;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -90,6 +91,31 @@ public sealed class AgendaPresenterNotifierTests
         Assert.Equal(("guest@example.com", $"agenda-presenter:{assignment.EventId:D}:{guest.Id:D}"), (email.ToAddress, email.DeduplicationKey));
         Assert.Empty(_notifications.Added);
         Assert.Equal(1, _unitOfWork.Saves);
+    }
+
+    [Fact]
+    public async Task A_guest_presenter_gets_the_way_in_and_the_organizer_s_name()
+    {
+        var guest = new MeetingGuestInvitation { MeetingId = _meeting.Id, InvitedName = "Khách", Email = "guest@example.com" };
+        _agenda.Guests.Add(guest);
+        _item.PresenterId = null;
+        _item.PresenterGuestInvitationId = guest.Id;
+        var scopes = new FakeServiceScopeFactory(_unitOfWork, _agenda, _notifications, _emails, new ReadyLinks());
+
+        await new AgendaPresenterNotifier(scopes).NotifyAsync(Assignment(null, guest.Id), default);
+
+        var email = Assert.Single(_emails.Added);
+        Assert.Contains($"Xác minh email để vào cuộc họp: https://hop.example.vn/guest/{guest.Id:D}#token=t", email.Body);
+        Assert.Contains("Người tổ chức: Trần Tổ Chức", email.Body);
+        Assert.Contains($"https://hop.example.vn/guest/{guest.Id:D}#token=t", email.HtmlBody);
+    }
+
+    private sealed class ReadyLinks : IGuestInvitationLinkProvider
+    {
+        public Task<bool> IsAvailableAsync(CancellationToken ct) => Task.FromResult(true);
+
+        public Task<GuestInvitationLink> PrepareAsync(Guid invitationId, CancellationToken ct)
+            => Task.FromResult(new GuestInvitationLink(GuestLinkStatus.Ready, $"https://hop.example.vn/guest/{invitationId:D}#token=t"));
     }
 
     [Fact]

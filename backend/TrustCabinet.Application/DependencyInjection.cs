@@ -241,6 +241,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IMeetingInvitationStager, MeetingInvitationEvents>();
         services.AddScoped<MeetingInvitationDispatchProcessor>();
+        services.AddScoped<IMeetingReminderEmails, MeetingReminderEmails>();
         services.AddScoped<EmailQueueProcessor>();
         services.AddScoped<IEmailQueueProcessor>(provider =>
             provider.GetRequiredService<EmailQueueProcessor>());

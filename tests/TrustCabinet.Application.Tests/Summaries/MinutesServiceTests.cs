@@ -165,6 +165,48 @@ public sealed class MinutesServiceTests
     }
 
     [Fact]
+    public async Task Issuing_emails_every_active_reader_but_the_chair_before_the_one_save_of_the_issue()
+    {
+        _sources.ActiveUsers.UnionWith([_secretary, _chair, _member]);
+        var row = Revision(MinutesStatus.WaitingApproval);
+
+        await Service().ApproveAsync(row.Id, _chair, row.UpdatedAt);
+
+        // PO 15/11/2026: the same readers as the bell, the Chair who issued excluded, queued in the issuing transaction.
+        Assert.DoesNotContain(_chair, Assert.Single(_sources.EmailLookups));
+        Assert.Equal(new[] { _member, _secretary }.Order(),
+            _emails.Added.Select(e => Guid.ParseExact(e.ToAddress[..32], "N")).Order());
+        Assert.All(_emails.Added, e =>
+        {
+            Assert.StartsWith("Biên bản cuộc họp đã ban hành: ", e.Subject);
+            Assert.StartsWith($"email-minutes-issued:{row.Id:D}:", e.DeduplicationKey);
+            Assert.Contains($"https://hop.example.vn/mgmt/meetings/{_meeting:D}?tab=minutes", e.Body);
+            Assert.Contains("Nguyễn Chủ Toạ", e.Body);
+            Assert.NotNull(e.HtmlBody);
+        });
+        Assert.Equal((1, 1), (_unitOfWork.Commits, _unitOfWork.Saves));
+    }
+
+    [Fact]
+    public async Task An_issued_correction_is_emailed_as_one_and_no_active_reader_means_no_email()
+    {
+        _sources.ActiveUsers.Add(_member);
+        var issued = Revision(MinutesStatus.Issued);
+        var correction = Revision(MinutesStatus.WaitingApproval, 2, issued.Id);
+
+        await Service().ApproveAsync(correction.Id, _chair, correction.UpdatedAt);
+
+        Assert.StartsWith("Bản đính chính biên bản đã ban hành: ", Assert.Single(_emails.Added).Subject);
+
+        _sources.ActiveUsers.Clear();
+        _emails.Added.Clear();
+        var next = Revision(MinutesStatus.WaitingApproval, 3, correction.Id);
+        await Service().ApproveAsync(next.Id, _chair, next.UpdatedAt);
+
+        Assert.Empty(_emails.Added);
+    }
+
+    [Fact]
     public async Task Returning_without_a_reason_is_refused_and_with_one_sends_it_back_to_the_secretary()
     {
         var row = Revision(MinutesStatus.WaitingApproval);

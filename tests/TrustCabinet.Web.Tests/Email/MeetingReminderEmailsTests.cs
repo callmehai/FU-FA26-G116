@@ -7,6 +7,7 @@ using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Participants;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Email;
+using TrustCabinet.Infrastructure.Persistence;
 
 namespace TrustCabinet.Web.Tests.Email;
 
@@ -125,7 +126,8 @@ public sealed class MeetingReminderEmailsTests
     };
 
     private static MeetingReminderEmails NewService(TrustCabinetDbContext db)
-        => new(db, new Links(), Options.Create(new EmailDeliveryOptions { ApplicationBaseUrl = "https://hop.example.vn" }), new Clock());
+        => new(new EfUnitOfWork(db), new MeetingReminderQuery(db), new EmailMessageRepository(db), new Links(),
+            Options.Create(new EmailDeliveryOptions { ApplicationBaseUrl = "https://hop.example.vn" }), new Clock());
 
     private static TrustCabinetDbContext NewDb()
         => new(new DbContextOptionsBuilder<TrustCabinetDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
