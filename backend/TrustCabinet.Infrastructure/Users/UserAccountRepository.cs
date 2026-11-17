@@ -9,7 +9,7 @@ namespace TrustCabinet.Infrastructure.Users;
 /// UC-05 … UC-06c's <c>:User Repository</c>. Queries only — every rule lives in
 /// <see cref="UserService"/>.
 /// </summary>
-public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccountRepository
+public sealed class UserAccountRepository(TrustCabinetDbContext db) : IUserAccountRepository, ICallerAccountQuery
 {
     public async Task<IReadOnlyCollection<User>> ListAsync(CancellationToken ct = default)
         // Sorted in the database, so PostgreSQL's collation orders Vietnamese names — .NET's

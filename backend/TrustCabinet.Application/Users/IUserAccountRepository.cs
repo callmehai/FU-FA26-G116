@@ -11,6 +11,9 @@ namespace TrustCabinet.Application.Users;
 /// is "not a general-purpose user repository, and a screen that needs to list users gets its own
 /// query"; this is that query. Keeping them apart also keeps the authentication path free of write
 /// methods, so nothing on a sign-in code path can create or modify an account.
+///
+/// An implementation must also implement <see cref="ICallerAccountQuery"/>: that port is resolved from this one, so the
+/// capability gate reads the same accounts (CA-18).
 /// </summary>
 public interface IUserAccountRepository
 {

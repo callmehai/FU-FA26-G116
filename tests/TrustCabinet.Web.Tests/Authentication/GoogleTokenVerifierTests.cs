@@ -1,6 +1,7 @@
 using Google.Apis.Auth;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Infrastructure.Authentication;
 
 namespace TrustCabinet.Web.Tests.Authentication;

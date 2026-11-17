@@ -44,18 +44,8 @@ public sealed class ArchitectureTests
     /// <summary>The only Web files that may name Infrastructure: the composition root and <c>--migrate</c>.</summary>
     private static readonly string[] CompositionRoots = ["DatabaseMigrationCommand.cs", "Program.cs"];
 
-    // A3 — outside Infrastructure, nothing has a field or a parameter of type TrustCabinetDbContext.
-    private static readonly string[] DbContextOutsideInfrastructure =
-    [
-        "Program",
-        "TrustCabinet.Web.AgendaChangePublisher",
-        "TrustCabinet.Web.AttendanceChangePublisher",
-        "TrustCabinet.Web.MeetingDocumentChangePublisher",
-        "TrustCabinet.Web.NotesChangePublisher",
-        "TrustCabinet.Web.SpeakingChangePublisher",
-        "TrustCabinet.Web.SpeechChangePublisher",
-        "TrustCabinet.Web.VoteChangePublisher",
-    ];
+    // A3 — outside Infrastructure, nothing has a field or a parameter of type TrustCabinetDbContext. Emptied by CA-18.
+    private static readonly string[] DbContextOutsideInfrastructure = [];
 
     // A4 — no class of Infrastructure implements an I*Service declared in Domain or Application: a use case lives in Application.
     private static readonly string[] ServicesInInfrastructure = [];
@@ -63,41 +53,15 @@ public sealed class ArchitectureTests
     // A5 — no interface but IUnitOfWork has SaveChangesAsync or InTransactionAsync.
     private static readonly string[] InterfacesExposingTheUnitOfWork = [];
 
-    // A6 — a Web type has no field or parameter of an I*Repository type. CapabilityGate and NotificationWorker
-    // resolve theirs with GetRequiredService inside a method: reflection sees them only because the local lives
-    // across an await and so becomes a field. CA-18 and CA-20 confirm with git grep that none is left.
-    private static readonly string[] WebTypesTakingRepositories =
-    [
-        "TrustCabinet.Web.AgendaChangePublisher",
-        "TrustCabinet.Web.AttendanceChangePublisher",
-        "TrustCabinet.Web.Endpoints.AuthEndpoints",
-        "TrustCabinet.Web.Endpoints.CapabilityGate",
-        "TrustCabinet.Web.MeetingDocumentChangePublisher",
-        "TrustCabinet.Web.MeetingHub",
-        "TrustCabinet.Web.NotesChangePublisher",
-        "TrustCabinet.Web.NotificationHub",
-        "TrustCabinet.Web.NotificationWorker",
-        "TrustCabinet.Web.SpeakingChangePublisher",
-        "TrustCabinet.Web.SpeechChangePublisher",
-        "TrustCabinet.Web.VoteChangePublisher",
-    ];
+    // A6 — a Web type has no field or parameter of an I*Repository type. Emptied by CA-18. A GetRequiredService<T>()
+    // inside a method is seen only when the local lives across an await and so becomes a field, so CA-18 and CA-20
+    // also confirm with git grep that none is left.
+    private static readonly string[] WebTypesTakingRepositories = [];
 
     // A6 — a Web source file names nothing of TrustCabinet.Infrastructure, CompositionRoots apart. Paths under
     // backend/TrustCabinet.Web. Read from the source, because a `new`, a constant or a static call leaves no trace
     // in a signature.
-    private static readonly string[] WebFilesNamingInfrastructure =
-    [
-        "AttendanceChangePublisher.cs",
-        "Endpoints/AuthEndpoints.cs",
-        "Endpoints/UserEndpoints.cs",
-        "MeetingGuestIdentity.cs",
-        "MeetingHub.cs",
-        "NotesChangePublisher.cs",
-        "PdfPageCounter.cs",
-        "SpeakingChangePublisher.cs",
-        "SpeechChangePublisher.cs",
-        "VoteChangePublisher.cs",
-    ];
+    private static readonly string[] WebFilesNamingInfrastructure = [];
 
     // A7 — a class of Infrastructure that takes TrustCabinetDbContext is a *Repository or a *Query, or sits in
     // Persistence/ or Seed/, or is TrustCabinetDbContext* or DependencyInjection. Emptied by CA-17, the last module

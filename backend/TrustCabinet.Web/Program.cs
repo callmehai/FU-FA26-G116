@@ -3,36 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using TrustCabinet.Application;
-using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Agenda;
-using TrustCabinet.Infrastructure.Agenda;
-using TrustCabinet.Infrastructure.Attendance;
-using TrustCabinet.Infrastructure.Summaries;
-using TrustCabinet.Domain.Enums;
+using TrustCabinet.Application.Audit;
 using TrustCabinet.Infrastructure;
-using TrustCabinet.Infrastructure.Access;
 using TrustCabinet.Infrastructure.Authentication;
-using TrustCabinet.Infrastructure.Email;
-using TrustCabinet.Infrastructure.GuestAccess;
-using TrustCabinet.Infrastructure.Calls;
-using TrustCabinet.Infrastructure.CalendarSharing;
 using TrustCabinet.Infrastructure.Documents;
-using TrustCabinet.Infrastructure.Meetings;
-using TrustCabinet.Infrastructure.Notes;
-using TrustCabinet.Infrastructure.Notifications;
-using TrustCabinet.Infrastructure.Users;
-using TrustCabinet.Infrastructure.Participants;
-using TrustCabinet.Infrastructure.Recordings;
-using TrustCabinet.Infrastructure.Speaking;
-using TrustCabinet.Infrastructure.Reports;
-using TrustCabinet.Infrastructure.Transcription;
-using TrustCabinet.Infrastructure.VoiceId;
-using TrustCabinet.Infrastructure.Votes;
 using TrustCabinet.Web;
 using TrustCabinet.Web.Endpoints;
 
 // ADR-0044: this same app, started by PdfPageCounter to parse one uploaded PDF, so a hostile file can only end the child.
-if (args is [PdfPageCounter.ChildArgument, var pdfPath]) Environment.Exit(await PdfPageCounter.RunAsChildAsync(pdfPath));
+if (args is [PdfPageCounter.ChildArgument, var pdfPath])
+    Environment.Exit(await PdfPageCounter.RunAsChildAsync(pdfPath, new PdfPigInspector()));
 
 // ADR-0047: the deploy's deliberate migration step — migrate, seed reference data, exit; no web server.
 if (args is [DatabaseMigrationCommand.Argument, .. var migrationArguments])
@@ -43,68 +25,32 @@ if (args is [DatabaseMigrationCommand.Argument, .. var migrationArguments])
 
 var builder = WebApplication.CreateBuilder(args);
 
-// SCRUM-143: the use case services, filled in module by module while they move out of Infrastructure.
+// SCRUM-143: the use case services, then the storage and adapters behind their ports.
 builder.Services.AddApplication();
-builder.Services.AddTrustCabinetDatabase(builder.Configuration);
-builder.Services.AddTrustCabinetAuthentication(builder.Configuration);
-builder.Services.AddTrustCabinetUserManagement();
-builder.Services.AddTrustCabinetRolePermissions();
-builder.Services.AddTrustCabinetMeetings(builder.Configuration);
-builder.Services.AddTrustCabinetAgenda();
-builder.Services.AddTrustCabinetParticipants();
-builder.Services.AddTrustCabinetAttendance();
-builder.Services.AddTrustCabinetVotes();
-// SCRUM-38: the meeting report and its Excel export.
-builder.Services.AddTrustCabinetReports();
-// SCRUM-116: UC-04 guest access; replaces the fail-closed guest adapters registered above.
-builder.Services.AddTrustCabinetGuestAccess(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.ContentRootPath);
+
+// The web layer's own: the guest token reader, the realtime publishers and hubs, the background workers.
 builder.Services.AddSingleton<IMeetingGuestIdentityResolver, GuestTokenIdentityResolver>();
 builder.Services.AddScoped<IAgendaChangePublisher, AgendaChangePublisher>();
 builder.Services.AddScoped<MeetingDocumentChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Application.Attendance.IAttendanceChangePublisher, AttendanceChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Application.Votes.IVoteChangePublisher, VoteChangePublisher>();
-// SCRUM-27: raised hands and the Chair's queue of speakers (UC-79).
-builder.Services.AddTrustCabinetSpeaking();
+// SCRUM-27: the speaking queue; SCRUM-30: a note save tells the Chair's and the Secretary's other windows.
 builder.Services.AddScoped<TrustCabinet.Application.Speaking.ISpeakingChangePublisher, SpeakingChangePublisher>();
-// SCRUM-30: the Secretary's running notes; a save tells the Chair's and the Secretary's other windows.
-builder.Services.AddTrustCabinetMeetingNotes();
 builder.Services.AddScoped<TrustCabinet.Application.Notes.INotesChangePublisher, NotesChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Application.Recordings.ISpeechChangePublisher, SpeechChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Application.Participants.IParticipantsChangePublisher, ParticipantsChangePublisher>();
 builder.Services.AddScoped<TrustCabinet.Application.Access.ICapabilitiesChangePublisher, CapabilitiesChangePublisher>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IUserIdProvider, NotificationUserIdProvider>();
-builder.Services.AddTrustCabinetNotifications();
 builder.Services.AddHostedService<NotificationWorker>();
-builder.Services.AddTrustCabinetEmailDelivery(builder.Configuration);
-
-// SCRUM-39: meeting call room on LiveKit (ADR-0010). Starts without LiveKit configured; the
-// call endpoints then answer 503.
-builder.Services.AddTrustCabinetCalls(builder.Configuration);
 builder.Services.AddHostedService<CallRoomJanitor>();
-
-// SCRUM-107: meeting documents, bytes on Cloudflare R2 (ADR-0024). Starts without a store
-// configured; uploads then answer 503/MSG166.
-builder.Services.AddTrustCabinetDocuments(builder.Configuration);
-
-// SCRUM-29: recordings of a sitting, on local disk, erased when their retention period runs out.
-builder.Services.AddTrustCabinetRecordings(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddHostedService<RecordingRetentionWorker>();
 builder.Services.AddHostedService<CombinedRecordingWorker>();
 // SCRUM-99: cancels meetings nobody started a day after their planned start (BR-301).
 builder.Services.AddHostedService<MeetingOverdueWorker>();
-
-// SCRUM-142: calendar sharing (UC-84a → UC-84f, UC-85c). A share past its end date is left out when read (BR-425): no job.
-builder.Services.AddTrustCabinetCalendarSharing();
-
-// SCRUM-31: speech to text on the in-house speech worker (workers/speech), one recording at a time.
-builder.Services.AddTrustCabinetTranscription(builder.Configuration);
 builder.Services.AddHostedService<TranscriptionWorker>();
-builder.Services.AddTrustCabinetSummaries(builder.Configuration);
 builder.Services.AddHostedService<SummaryWorker>();
-
-// SCRUM-35: Voice ID — consent, encrypted enrolment samples, speaker suggestions in transcripts.
-builder.Services.AddTrustCabinetVoiceId(builder.Configuration);
 
 // The audit log records where a request came from, and only the web layer can see that.
 builder.Services.AddHttpContextAccessor();
@@ -302,9 +248,9 @@ app.MapEmailEndpoints();
 
 // Health endpoint. It answers 503 when the database cannot be reached, so the deploy's health check
 // (ADR-0047) rolls a version back that started but cannot serve anything.
-app.MapGet("/api/health", async (TrustCabinetDbContext db, CancellationToken ct) =>
+app.MapGet("/api/health", async (IDatabaseProbe database, CancellationToken ct) =>
 {
-    var databaseUp = await db.Database.CanConnectAsync(ct);
+    var databaseUp = await database.CanConnectAsync(ct);
     return Results.Json(new
     {
         status = databaseUp ? "ok" : "unavailable",

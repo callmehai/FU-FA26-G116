@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using TrustCabinet.Domain.Documents;
-using TrustCabinet.Infrastructure.Documents;
 
 namespace TrustCabinet.Web;
 
@@ -144,12 +143,12 @@ public static class PdfPageCounter
 
     /// <summary>
     /// The child's side: prints <c>pages=N</c> and exits 0, or exits 2 for a file that does not parse. It runs before the
-    /// host is built, so the inspector is made here rather than taken from DI.
+    /// host is built, so <c>Program</c> makes the inspector rather than taking it from DI.
     /// </summary>
-    public static async Task<int> RunAsChildAsync(string path)
+    public static async Task<int> RunAsChildAsync(string path, IPdfInspector inspector)
     {
         await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-        if (await DocumentFileRules.CountPdfPagesAsync(file, new PdfPigInspector(), CancellationToken.None) is not { } pages) return 2;
+        if (await DocumentFileRules.CountPdfPagesAsync(file, inspector, CancellationToken.None) is not { } pages) return 2;
         Console.Out.Write(Prefix + pages.ToString(CultureInfo.InvariantCulture));
         return 0;
     }

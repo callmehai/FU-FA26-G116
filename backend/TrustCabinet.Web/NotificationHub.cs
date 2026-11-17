@@ -6,7 +6,7 @@ using TrustCabinet.Web.Endpoints;
 namespace TrustCabinet.Web;
 
 [Authorize]
-public sealed class NotificationHub(IUserAccountRepository users) : Hub
+public sealed class NotificationHub(ICallerAccountQuery users) : Hub
 {
     public override async Task OnConnectedAsync()
     {

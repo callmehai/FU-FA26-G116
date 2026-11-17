@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.Users;
-using TrustCabinet.Infrastructure.Authentication;
 
 namespace TrustCabinet.Web.Endpoints;
 
@@ -60,7 +60,7 @@ public static class UserEndpoints
 
     /// <summary>
     /// The authorization policy name. Registered by <see cref="CapabilityGate"/> against
-    /// <see cref="JwtTokenIssuer.CapabilityClaim"/>, so the check is on the capability the token
+    /// <see cref="ITokenIssuer.CapabilityClaim"/>, so the check is on the capability the token
     /// carries rather than on a role name.
     ///
     /// Kept as an alias of <see cref="AdminCallerRevalidation.AdminUsersPolicy"/>, which is where

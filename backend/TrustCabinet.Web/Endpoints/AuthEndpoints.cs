@@ -5,7 +5,6 @@ using TrustCabinet.Application.Authentication;
 using TrustCabinet.Application.Users;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
-using TrustCabinet.Infrastructure.Authentication;
 
 namespace TrustCabinet.Web.Endpoints;
 
@@ -217,7 +216,7 @@ public static class AuthEndpoints
     /// endpoint a browser calls once per page load.
     /// </summary>
     private static async Task<IResult> Me(
-        ClaimsPrincipal principal, IUserAccountRepository users, CancellationToken ct)
+        ClaimsPrincipal principal, ICallerAccountQuery users, CancellationToken ct)
     {
         var callerId = CapabilityGate.CurrentUserId(principal);
 

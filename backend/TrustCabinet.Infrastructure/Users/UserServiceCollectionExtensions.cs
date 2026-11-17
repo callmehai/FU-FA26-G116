@@ -17,6 +17,9 @@ public static class UserServiceCollectionExtensions
     public static IServiceCollection AddTrustCabinetUserManagement(this IServiceCollection services)
     {
         services.AddScoped<IUserAccountRepository, UserAccountRepository>();
+        // The caller's own account is read through whatever serves the accounts, so the capability gate never sees
+        // another account store than the user screens (a test that swaps in fake accounts swaps both).
+        services.AddScoped<ICallerAccountQuery>(sp => (ICallerAccountQuery)sp.GetRequiredService<IUserAccountRepository>());
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAuditLogQuery, TrustCabinet.Infrastructure.Audit.AuditLogQuery>();
 

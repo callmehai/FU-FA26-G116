@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Recordings;
-using TrustCabinet.Infrastructure;
 
 namespace TrustCabinet.Web;
 
@@ -10,19 +8,14 @@ namespace TrustCabinet.Web;
 /// SCRUM-109 — tells the people of a meeting that its per-mic transcript or capture mode changed, so they re-read.
 /// The same people who may listen to its recordings: the active roster, not an approver or creator outside it.
 /// </summary>
-public sealed class SpeechChangePublisher(IHubContext<MeetingHub> hub, IMeetingRepository meetings, TrustCabinetDbContext db)
+public sealed class SpeechChangePublisher(IHubContext<MeetingHub> hub, MeetingAudience audience)
     : ISpeechChangePublisher
 {
     public async Task PublishAsync(SpeechChange change, CancellationToken ct)
     {
-        var meeting = await meetings.FindWorkflowAsync(change.MeetingId, ct: ct);
-        if (meeting is null) return;
-        var candidates = meeting.Participants.Select(p => p.UserId).Distinct()
-            .Where(id => RecordingRules.CanListen(meeting, id)).ToArray();
-        var listeners = await db.Users.AsNoTracking().Where(u => u.IsActive && candidates.Contains(u.Id))
-            .Select(u => u.Id).ToArrayAsync(ct);
-        if (listeners.Length == 0) return;
-        await hub.Clients.Groups(listeners.Select(id => MeetingHub.Group(change.MeetingId, id)).ToList())
+        var listeners = await audience.ListenersAsync(change.MeetingId, ct);
+        if (listeners.Count == 0) return;
+        await hub.Clients.Groups(MeetingHub.GroupsOf(change.MeetingId, listeners))
             .SendAsync("speechChanged", change, ct);
     }
 }

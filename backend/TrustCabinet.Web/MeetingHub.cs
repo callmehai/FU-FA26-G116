@@ -1,33 +1,37 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using TrustCabinet.Infrastructure;
 using TrustCabinet.Application.Agenda;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Meetings;
 using TrustCabinet.Web.Endpoints;
-using TrustCabinet.Domain.GuestAccess;
 
 namespace TrustCabinet.Web;
 
 [Authorize]
-public sealed class MeetingHub(IMeetingRepository meetings, IMeetingGuestIdentityResolver identities,
-    IAgendaGuestAccess guests) : Hub
+public sealed class MeetingHub(MeetingAudience audience, IMeetingGuestIdentityResolver identities) : Hub
 {
     internal static string Group(Guid meetingId, Guid userId) => $"meeting:{meetingId:D}:user:{userId:D}";
     internal static string GuestGroup(MeetingGuestSession guest)
         => $"meeting:{guest.MeetingId:D}:guest:{guest.InvitationId:D}:session:{guest.SessionId:D}";
 
+    /// <summary>The joined groups of these users of the meeting.</summary>
+    internal static List<string> GroupsOf(Guid meetingId, IEnumerable<Guid> userIds)
+        => userIds.Select(id => Group(meetingId, id)).ToList();
+
+    /// <summary>The joined groups of these users and guest sessions of the meeting.</summary>
+    internal static List<string> GroupsOf(Guid meetingId, MeetingAudienceMembers members)
+        => members.UserIds.Select(id => Group(meetingId, id)).Concat(members.Guests.Select(GuestGroup)).ToList();
+
     public override async Task OnConnectedAsync()
     {
         if (Context.User is { } principal && identities.Resolve(principal) is { } guest)
         {
-            if (!await CanGuestRead(guest, guest.MeetingId)) { Context.Abort(); return; }
+            if (!await audience.CanGuestJoinAsync(guest, guest.MeetingId, Context.ConnectionAborted)) { Context.Abort(); return; }
             await base.OnConnectedAsync();
             return;
         }
         var actor = Context.User is null ? null : CapabilityGate.CurrentUserId(Context.User);
-        if (actor is null || !await meetings.IsUserActiveAsync(actor.Value, Context.ConnectionAborted))
+        if (actor is null || !await audience.IsUserActiveAsync(actor.Value, Context.ConnectionAborted))
         {
             Context.Abort();
             return;
@@ -39,13 +43,13 @@ public sealed class MeetingHub(IMeetingRepository meetings, IMeetingGuestIdentit
     {
         if (identities.Resolve(Context.User!) is { } guest)
         {
-            if (!await CanGuestRead(guest, meetingId)) throw new HubException("Không tìm thấy cuộc họp.");
+            if (!await audience.CanGuestJoinAsync(guest, meetingId, Context.ConnectionAborted))
+                throw new HubException("Không tìm thấy cuộc họp.");
             await Groups.AddToGroupAsync(Context.ConnectionId, GuestGroup(guest), Context.ConnectionAborted);
             return;
         }
         var actor = CapabilityGate.GatedUserId(Context.User!);
-        if (!await meetings.IsUserActiveAsync(actor, Context.ConnectionAborted)
-            || await meetings.FindAccessibleAsync(meetingId, actor, Context.ConnectionAborted) is null)
+        if (!await audience.CanUserJoinAsync(meetingId, actor, Context.ConnectionAborted))
             throw new HubException("Không tìm thấy cuộc họp.");
         await Groups.AddToGroupAsync(Context.ConnectionId, Group(meetingId, actor), Context.ConnectionAborted);
     }
@@ -59,47 +63,18 @@ public sealed class MeetingHub(IMeetingRepository meetings, IMeetingGuestIdentit
         return Groups.RemoveFromGroupAsync(Context.ConnectionId,
             Group(meetingId, CapabilityGate.GatedUserId(Context.User!)), Context.ConnectionAborted);
     }
-
-    private async Task<bool> CanGuestRead(MeetingGuestSession guest, Guid meetingId)
-    {
-        if (!guest.IsValid || guest.MeetingId != meetingId || !await guests.CanReadAsync(guest, Context.ConnectionAborted))
-            return false;
-        var meeting = await meetings.FindWorkflowAsync(meetingId, ct: Context.ConnectionAborted);
-        return meeting is not null && GuestAccessRules.MeetingOpen(meeting.Status);
-    }
 }
 
-public sealed class AgendaChangePublisher(IHubContext<MeetingHub> hub, IMeetingRepository meetings,
-    TrustCabinetDbContext db, ILogger<AgendaChangePublisher> logger, IAgendaGuestAccess guests) : IAgendaChangePublisher
+public sealed class AgendaChangePublisher(IHubContext<MeetingHub> hub, MeetingAudience audience,
+    ILogger<AgendaChangePublisher> logger) : IAgendaChangePublisher
 {
     public async Task PublishAsync(AgendaChange change, CancellationToken ct)
     {
         // Fail closed. The service logs failed publication without undoing the committed write.
-        var groups = await ReaderGroupsAsync(change.MeetingId, meetings, db, guests, ct);
+        var groups = MeetingHub.GroupsOf(change.MeetingId, await audience.ReadersAsync(change.MeetingId, ct));
         if (groups.Count == 0) return;
         await hub.Clients.Groups(groups).SendAsync("agendaChanged", change, ct);
         logger.LogDebug("Published agenda event {EventId} to {Count} authorized user groups", change.EventId, groups.Count);
-    }
-
-    /// <summary>The joined groups of every active user and guest session who may read the meeting now.</summary>
-    internal static async Task<List<string>> ReaderGroupsAsync(Guid meetingId, IMeetingRepository meetings,
-        TrustCabinetDbContext db, IAgendaGuestAccess guests, CancellationToken ct)
-    {
-        var meeting = await meetings.FindWorkflowAsync(meetingId, ct: ct);
-        if (meeting is null) return [];
-        var candidates = meeting.Participants.Select(p => p.UserId).Append(meeting.CreatedById)
-            .Concat(meeting.AssignedApproverId is { } approver ? [approver] : [])
-            .Distinct().Where(actor => MeetingReadPolicy.CanRead(meeting, actor)).ToArray();
-        var active = await db.Users.AsNoTracking().Where(u => candidates.Contains(u.Id) && u.IsActive)
-            .Select(u => u.Id).ToListAsync(ct);
-        var groups = active.Select(actor => MeetingHub.Group(meeting.Id, actor)).ToList();
-        if (GuestAccessRules.MeetingOpen(meeting.Status))
-        {
-            var readers = await guests.ListReadersAsync(meeting.Id, ct);
-            groups.AddRange(readers.Where(g => g.IsValid && g.MeetingId == meeting.Id)
-                .Distinct().Select(MeetingHub.GuestGroup));
-        }
-        return groups;
     }
 }
 
@@ -108,12 +83,11 @@ public sealed class AgendaChangePublisher(IHubContext<MeetingHub> hub, IMeetingR
 public sealed record MeetingDocumentsChange(Guid EventId, Guid MeetingId, DateTimeOffset OccurredAt);
 
 /// <summary>Tells the Documents tab and the room panel that documents were added (SCRUM-21).</summary>
-public sealed class MeetingDocumentChangePublisher(IHubContext<MeetingHub> hub, IMeetingRepository meetings,
-    TrustCabinetDbContext db, IAgendaGuestAccess guests, TimeProvider clock)
+public sealed class MeetingDocumentChangePublisher(IHubContext<MeetingHub> hub, MeetingAudience audience, TimeProvider clock)
 {
     public async Task PublishAsync(Guid meetingId, CancellationToken ct)
     {
-        var groups = await AgendaChangePublisher.ReaderGroupsAsync(meetingId, meetings, db, guests, ct);
+        var groups = MeetingHub.GroupsOf(meetingId, await audience.ReadersAsync(meetingId, ct));
         if (groups.Count > 0)
             await hub.Clients.Groups(groups).SendAsync("documentsChanged",
                 new MeetingDocumentsChange(Guid.CreateVersion7(), meetingId, clock.GetUtcNow()), ct);

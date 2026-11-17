@@ -128,6 +128,14 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
   lại**: giữ `Include`, `AsNoTracking`, `OrderBy`, điều kiện lọc, lọc theo quyền, và số lần truy vấn. Không tách một
   truy vấn thành nhiều lời gọi repository.
 - Cấm generic repository (`IRepository<T>`), specification pattern.
+- Ngoại lệ duy nhất của "query port trả DTO, không tracking, cài bằng lớp `<Chủ đề>Query`" (chốt 16/11/2026 ở CA-18,
+  SCRUM-183): `Application/Users/ICallerAccountQuery` (`FindByIdAsync`, `GetCapabilitiesAsync`), port đọc tài khoản
+  của caller cho `CapabilityGate`, `/api/auth/me`, `NotificationHub`, `NotificationWorker`. Hai truy vấn cũ là của
+  `IUserAccountRepository`: `FindByIdAsync` trả entity `User` có tracking và `Include(Role)`. Port do chính
+  `UserAccountRepository` cài, DI chuyển tiếp sang `IUserAccountRepository` đang đăng ký, nên truy vấn và tracking
+  giữ nguyên (gate vẫn để `User` của caller được theo dõi trong context của request như cũ), và test thay
+  `IUserAccountRepository` bằng fake thì gate đọc cùng fake đó. Port gọi thẳng từ Web, không qua `IUnitOfWork`, nên
+  lỗi lưu trữ tới `CapabilityGate` ở dạng gốc như trước.
 
 ### R6. Mô hình tracking
 
@@ -340,6 +348,9 @@ Redis) cũng thành `PersistenceUnavailableException`, giống các bộ lọc `
   Hằng `MSGnn` ở nguyên trong `Web/Endpoints/` (`MessageCodeCatalogueTests` đọc thư mục đó).
 - Hub, publisher, worker ở Web gọi service hoặc query port của Application; không nhận `TrustCabinetDbContext`, không
   nhận repository.
+- Từ CA-18: `MeetingHub` và các publisher của nó nhận `Application/Meetings/MeetingAudience` (ai được nghe về một
+  cuộc họp: điều kiện vào hub và người nhận từng sự kiện), lớp này đọc qua repository, guest access và query port
+  `IMeetingAudienceQuery`. Web chỉ đổi danh sách người nhận thành tên group.
 
 ### R12. Test
 

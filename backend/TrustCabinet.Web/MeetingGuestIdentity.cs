@@ -1,7 +1,7 @@
 using TrustCabinet.Domain.Meetings;
 using System.Security.Claims;
 using TrustCabinet.Application.Agenda;
-using TrustCabinet.Infrastructure.GuestAccess;
+using TrustCabinet.Application.GuestAccess;
 
 namespace TrustCabinet.Web;
 

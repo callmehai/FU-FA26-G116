@@ -17,7 +17,7 @@ namespace TrustCabinet.Infrastructure.Authentication;
 public sealed class JwtTokenIssuer(IOptions<AuthenticationOptions> options) : ITokenIssuer
 {
     /// <summary>Claim carrying one <see cref="Capability"/>. Repeated once per capability.</summary>
-    public const string CapabilityClaim = "cap";
+    public const string CapabilityClaim = ITokenIssuer.CapabilityClaim;
 
     private readonly AuthenticationOptions _options = options.Value;
 

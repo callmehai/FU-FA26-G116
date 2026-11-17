@@ -36,7 +36,7 @@ public sealed class NotificationWorker(
     {
         using var scope = scopes.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<INotificationService>();
-        var users = scope.ServiceProvider.GetRequiredService<IUserAccountRepository>();
+        var users = scope.ServiceProvider.GetRequiredService<ICallerAccountQuery>();
         await service.QueueStartingSoonAsync(ct);
         foreach (var notification in await service.PendingPushAsync(100, ct))
         {
