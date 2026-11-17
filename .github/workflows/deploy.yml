@@ -1,4 +1,8 @@
-# Tự deploy lên server test sau mỗi lần CI trên main xanh — merge PR xong là server tự cập nhật.
+# Tự deploy sau mỗi lần CI xanh trên main hoặc app — merge PR xong là server của nhánh đó tự cập nhật.
+#
+# Hai nhánh, hai server (ADR-0065): main → server test (bản demo), app → server app (backend bốn project). Mỗi
+# server có environment riêng trên GitHub (server-test, server-app) giữ ba secret DEPLOY_* của nó: job chọn
+# environment theo nhánh, nên cùng một tên secret trỏ tới đúng máy.
 #
 # CI gọi workflow này như một job của chính nó (job "deploy" trong ci.yml), không dùng workflow_run:
 # nhờ vậy trạng thái deploy hiện trên đúng commit vừa merge, cạnh hai check build & test, và dấu
@@ -10,7 +14,7 @@
 # RAM, tự build mất 15–20 phút và đốt hết CPU burst. Không dùng registry (GHCR) để khỏi phải cấp
 # thêm token đọc package cho server.
 #
-# Deploy an toàn (ADR-0047): chỉ main; không đưa server về commit cũ hơn bản đang chạy; image app đổi
+# Deploy an toàn (ADR-0047): chỉ main và app (ADR-0065); không đưa server về commit cũ hơn bản đang chạy; image app đổi
 # thì backup database rồi migrate có chủ đích trước khi đổi container; health check đỏ thì quay về image
 # và commit trước. Migration đã chạy không tự hoàn tác — khôi phục từ backup: deploy/README.md.
 #
@@ -18,10 +22,10 @@
 name: Deploy server test
 
 on:
-  # Gọi từ ci.yml khi backend và frontend đã xanh trên một lần push lên main.
+  # Gọi từ ci.yml khi backend và frontend đã xanh trên một lần push lên main hoặc app.
   workflow_call:
-  # Nút "Run workflow" trong tab Actions — deploy lại main mà không cần push. Chọn nhánh khác thì
-  # bước đầu tiên từ chối.
+  # Nút "Run workflow" trong tab Actions — deploy lại main hoặc app mà không cần push. Chọn nhánh khác
+  # thì bước đầu tiên từ chối.
   workflow_dispatch:
 
 jobs:
@@ -30,29 +34,34 @@ jobs:
     runs-on: ubuntu-latest
     # Hai lần merge sát nhau thì chạy lần lượt, không chạy chồng lên server. Đặt ở job để áp dụng
     # cho cả lần CI gọi lẫn lần bấm Run workflow.
+    # Mỗi nhánh một hàng đợi: deploy app không phải chờ deploy main, vì là hai máy khác nhau.
     concurrency:
-      group: deploy-server-test
+      group: deploy-${{ github.ref_name }}
       cancel-in-progress: false
     # Trang chủ repo có mục Deployments: lần deploy gần nhất, commit nào, kèm link mở server.
+    # Environment cũng là chỗ giữ DEPLOY_SSH_KEY, DEPLOY_HOST, DEPLOY_HOST_KEY của từng server.
     environment:
-      name: server-test
+      name: ${{ github.ref_name == 'app' && 'server-app' || 'server-test' }}
       url: ${{ steps.check.outputs.url }}
     env:
-      # Gọi từ CI thì github.sha là commit vừa push lên main.
+      # Gọi từ CI thì github.sha là commit vừa push lên main hoặc app.
       SHA: ${{ github.sha }}
+      # Nhánh của checkout trên server, trùng nhánh đang deploy.
+      BRANCH: ${{ github.ref_name }}
       SERVER: ubuntu@${{ secrets.DEPLOY_HOST }}
       # Số bản backup database giữ trên server (~/backups). Chỉ backup khi image app đổi, nên 14 bản
       # là vài ngày merge; mỗi bản cỡ vài MB đến vài chục MB trên đĩa 80 GB.
       BACKUPS_KEPT: 14
     steps:
-      - name: Chỉ main
-        # Server dùng chung database: deploy một nhánh có migration chưa merge là để lại schema mà main
-        # không biết. ci.yml chỉ gọi khi push lên main; chặn ở đây là cho nút Run workflow.
+      - name: Chỉ main và app
+        # Mỗi server có một database của riêng nhánh nó: deploy một nhánh có migration chưa merge là để
+        # lại schema mà nhánh đó không biết. ci.yml chỉ gọi khi push lên main hoặc app; chặn ở đây là cho
+        # nút Run workflow.
         run: |
-          if [ "$GITHUB_REF" != refs/heads/main ]; then
-            echo "::error::Chỉ deploy main lên server test, không deploy $GITHUB_REF"
-            exit 1
-          fi
+          case "$GITHUB_REF" in
+            refs/heads/main|refs/heads/app) ;;
+            *) echo "::error::Chỉ deploy main hoặc app, không deploy $GITHUB_REF"; exit 1 ;;
+          esac
 
       - uses: actions/checkout@v4
         with:
@@ -93,7 +102,7 @@ jobs:
           if [ "$current" = "$SHA" ]; then
             echo "Server đang chạy đúng $SHA, deploy lại"
           elif ! git cat-file -e "$current^{commit}" 2> /dev/null; then
-            echo "::warning::Commit $current của server không có trong lịch sử main, vẫn deploy $SHA"
+            echo "::warning::Commit $current của server không có trong lịch sử $BRANCH, vẫn deploy $SHA"
           elif git merge-base --is-ancestor "$SHA" "$current"; then
             echo "::notice::Bỏ qua: server đã chạy $current, mới hơn $SHA. Deploy sẽ đưa server về code cũ."
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -172,7 +181,7 @@ jobs:
               ls -1t \$HOME/backups/trustcabinet-*.dump | tail -n +$((BACKUPS_KEPT + 1)) | xargs -r rm --
             fi
             git fetch -q origin
-            git checkout -q -B main $SHA
+            git checkout -q -B $BRANCH $SHA
             grep -q '^LIVEKIT_API_SECRET=.' deploy/.env || echo \"LIVEKIT_API_SECRET=\$(openssl rand -hex 32)\" >> deploy/.env
             if \$changed; then
               docker tag trustcabinet-app:$APP_TAG trustcabinet-app:latest
@@ -245,7 +254,7 @@ jobs:
           compose="docker compose -f deploy/docker-compose.yml"
           ssh "$SERVER" "set -e
             cd ~/TrustCabinet
-            git checkout -q -B main $PREVIOUS_SHA
+            git checkout -q -B $BRANCH $PREVIOUS_SHA
             docker tag $PREVIOUS_IMAGE trustcabinet-app:latest
             $compose up -d --no-build
             git diff --quiet $SHA HEAD -- deploy/Caddyfile 2> /dev/null || $compose restart caddy

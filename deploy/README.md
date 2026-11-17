@@ -11,6 +11,17 @@ này: [ADR-0015](../docs/05-decisions/0015-server-test-tren-lightsail.md).
 > **Chỉ nhập dữ liệu giả** — không tải lên tài liệu, ghi âm hay thông tin cá nhân thật (Luật Bảo vệ dữ liệu
 > cá nhân 91/2025/QH15).
 
+**Hai server, hai nhánh** ([ADR-0065](../docs/05-decisions/0065-hai-nhanh-hai-server.md)):
+
+| Nhánh | Server Lightsail | URL | Bản |
+|---|---|---|---|
+| `main` | `trustcabinet-4gb` | https://trustcabinet.workspace-hub.space | Bản demo, backend ba project |
+| `app` | `trustcabinet-refactor` | https://app.trustcabinet.workspace-hub.space | Backend bốn project (Clean Architecture) |
+
+Hai server dựng giống nhau theo file này, mỗi máy một database, một bộ secret và một kho tệp riêng. Server `app`
+không dùng R2 mà dùng kho tệp tự host (§9, cách B). Mọi thay đổi trên `main` cũng phải đưa vào `app` bằng một PR
+merge `main` vào `app`, không thì hai bản lệch nhau.
+
 ## Dành cho người test
 
 Mở <https://trustcabinet.workspace-hub.space>. Tài khoản, mật khẩu chung `TrustCabinet@2026`:
@@ -61,9 +72,9 @@ tính năng chưa merge thì chưa có.
 
 ## Tự động deploy
 
-[.github/workflows/deploy.yml](../.github/workflows/deploy.yml) là job cuối của CI trên `main`, chạy
+[.github/workflows/deploy.yml](../.github/workflows/deploy.yml) là job cuối của CI trên `main` và `app`, chạy
 khi build & test đã xanh (hoặc được bỏ qua vì commit không đụng tới): build image trên runner của
-GitHub, chép sang server qua SSH, đưa code trên server về đúng commit đó rồi khởi động lại container.
+GitHub, chép sang server của nhánh đó qua SSH, đưa code trên server về đúng commit đó rồi khởi động lại container.
 Không build trên server: tự build trên máy 1 GB mất 15–20 phút và đốt hết CPU burst; máy 4 GB vẫn chỉ có
 2 vCPU burst.
 
@@ -87,11 +98,11 @@ sang commit mới, đổi Caddyfile thì khởi động lại Caddy) nhưng khô
 - Xem đã deploy xong chưa: bấm dấu tích cạnh commit mới nhất trên trang chủ repo — check *CI / Deploy
   server test / Build & deploy* xanh là server đã chạy bản đó. Mục **Deployments** ở cột phải trang
   chủ repo ghi lần deploy gần nhất, kèm link mở server.
-- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**, nhánh `main`.
+- Deploy lại mà không cần push: tab **Actions** → *Deploy server test* → **Run workflow**, nhánh `main` hoặc `app`.
 - CI đỏ thì không deploy; server giữ bản cũ. Trên pull request, check deploy hiện là *Skipped*.
 
-**Chỉ `main` được deploy.** Chọn nhánh khác ở *Run workflow* thì workflow đỏ ngay bước đầu: deploy một nhánh
-có migration chưa merge rồi quay về `main` sẽ để lại schema mà `main` không biết.
+**Chỉ `main` và `app` được deploy**, mỗi nhánh lên server của nó. Chọn nhánh khác ở *Run workflow* thì workflow đỏ
+ngay bước đầu: deploy một nhánh có migration chưa merge rồi quay về sẽ để lại schema mà nhánh đó không biết.
 
 **Không lùi.** Hai PR merge sát nhau, CI của commit trước có thể xong sau commit sau. Commit cần deploy cũ hơn
 commit server đang chạy thì workflow bỏ qua, vẫn xanh, kèm thông báo *Bỏ qua: server đã chạy …*. Deploy lại
@@ -99,9 +110,11 @@ commit server đang chạy thì workflow bỏ qua, vẫn xanh, kèm thông báo 
 
 ### Thiết lập một lần
 
-Workflow cần ba secret của repo. Làm trong terminal của server (Lightsail → máy `trustcabinet` →
-**Connect using SSH**) và trang **GitHub → repo → Settings → Secrets and variables → Actions → New
-repository secret**:
+Workflow cần ba secret cho mỗi server, đặt trong **environment** của server đó: `server-test` cho `main`,
+`server-app` cho `app` (**GitHub → repo → Settings → Environments → chọn environment → Add environment secret**).
+Job chọn environment theo nhánh nên cùng tên secret trỏ tới đúng máy. Server test có ba secret ở mức repo từ
+trước, vẫn dùng được: secret của environment chỉ đè lên khi có. Làm trong terminal của server (Lightsail → máy →
+**Connect using SSH**):
 
 1. Tạo SSH key riêng cho GitHub Actions và cho phép nó đăng nhập server:
    ```bash
@@ -355,10 +368,14 @@ delivery_state, count(*) from email_messages group by 1, 2"`, hoặc trên trang
 Quay lại SMTP (ví dụ máy chủ thư nội bộ): `EMAIL_PROVIDER=Smtp`, các biến `SMTP_*` và `SMTP_ENABLED=true` (xem
 [note SMTP](../docs/03-api/07-gui-email-thu-moi-note-cai-dat-may-moi.md#4-cấu-hình-smtp)).
 
-### 9. Kho tệp tài liệu trên Cloudflare R2
+### 9. Kho tệp tài liệu
 
-Tải tài liệu lên cuộc họp lưu byte trên R2 ([ADR-0024](../docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)).
-Chưa cấu hình thì app vẫn chạy, nút tải lên báo `MSG166`.
+Tải tài liệu lên cuộc họp lưu byte trên R2 ([ADR-0024](../docs/05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md))
+(cách A), hoặc trên kho S3 tự host chạy cạnh app (cách B, server `app`). Chưa cấu hình thì app vẫn chạy, nút tải lên
+báo `MSG166`. **Mỗi server một bucket riêng**: việc dọn tệp mồ côi của server này xoá mọi tệp mà database của nó
+không biết, tức là xoá tệp của server kia nếu dùng chung.
+
+#### Cách A: Cloudflare R2
 
 1. Cloudflare Dashboard → **R2 Object Storage** → bật R2 (cần thêm phương thức thanh toán, gói miễn phí vẫn đủ
    cho server test) → **Create bucket** `trustcabinet-docs`, Location: **Provide a location hint → Asia-Pacific
@@ -385,6 +402,26 @@ Tổng dung lượng tài liệu của cả hệ thống mặc định **10 GB**
 
 Trình duyệt không gọi thẳng R2 nên CSP trong `Caddyfile` giữ nguyên. Chỉ tải lên dữ liệu giả: R2 lưu ngoài Việt
 Nam, tức là chuyển dữ liệu cá nhân xuyên biên giới (Luật 91/2025/QH15 Điều 20, xem ADR-0024).
+
+#### Cách B: kho tệp tự host trên server
+
+Service `files` (SeaweedFS) trong `docker-compose.yml`, chỉ chạy khi bật profile `files`; tệp nằm trong volume
+`files` trên đĩa server, không ra khỏi máy. Thêm vào `deploy/.env` (khoá `local` không cần bí mật: kho không mở
+cổng ra ngoài, chỉ app gọi trong mạng Docker):
+
+```bash
+COMPOSE_PROFILES=speech,files
+R2_ENDPOINT=http://files:8333
+R2_BUCKET=trustcabinet-refactor
+R2_ACCESS_KEY_ID=local
+R2_SECRET_ACCESS_KEY=local
+```
+
+Rồi `docker compose -f deploy/docker-compose.yml up -d` và tạo bucket một lần (`weed shell` bị treo, dùng HTTP PUT):
+
+```bash
+docker run --rm --network trustcabinet-test_default curlimages/curl:8.11.1 -s -X PUT http://files:8333/trustcabinet-refactor
+```
 
 ### 10. Máy chuyển chữ (tuỳ chọn)
 
@@ -502,7 +539,7 @@ Lời thoại cuộc họp đi từ server sang máy này, nên chỉ dùng máy
 
 ## Sau khi bảo vệ xong
 
-Xoá máy `trustcabinet` **và** IP tĩnh trên Lightsail, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
+Xoá cả hai máy (`trustcabinet-4gb`, `trustcabinet-refactor`) **và** hai IP tĩnh trên Lightsail, rồi đóng tài khoản AWS. Tài khoản đang ở Paid
 plan: hết credit là AWS trừ tiền thẻ.
 
 ## Lỗi thường gặp

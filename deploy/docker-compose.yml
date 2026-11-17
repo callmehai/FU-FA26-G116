@@ -145,6 +145,18 @@ services:
     # không đẩy PostgreSQL và LiveKit ra khỏi RAM của máy 4 GB.
     mem_limit: 2500m
 
+  files:
+    # Kho tệp S3 tự host, cho server không dùng Cloudflare R2 (ADR-0065): chỉ chạy khi deploy/.env có
+    # COMPOSE_PROFILES chứa files, và R2_ENDPOINT=http://files:8333 trỏ app vào đây. Không mở cổng: chỉ app
+    # gọi vào, trong mạng Docker. Không bao giờ cho hai server dùng chung một bucket R2: việc dọn tệp mồ côi
+    # của server này sẽ xoá tệp của server kia. Bucket tạo một lần bằng HTTP PUT: deploy/README.md §9.
+    image: chrislusf/seaweedfs:3.97
+    command: server -dir=/data -s3 -s3.port=8333
+    profiles: ["files"]
+    restart: unless-stopped
+    volumes:
+      - files:/data
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -167,3 +179,4 @@ volumes:
   recordings:
   caddy-data:
   caddy-config:
+  files:
