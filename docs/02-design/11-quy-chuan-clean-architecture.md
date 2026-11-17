@@ -45,8 +45,11 @@ TrustCabinet.Web             endpoint, hub, publisher, worker, composition root.
   `DependencyInjection.cs`, `ArchitectureTests.cs`, `UniqueConflict`).
 - Không rebase nhánh đã mở PR. Việc đưa `main` vào `refactor/clean-architecture` (nếu `main` có hotfix) do người phụ
   trách SCRUM-143 làm bằng merge, giữa hai subtask; agent không tự làm.
-- `refactor/clean-architecture` chỉ merge vào `main` một lần, ở CA-20, sau khi: mọi subtask đã merge vào nhánh
-  refactor, build `-warnaserror` xanh, toàn bộ `dotnet test` xanh, frontend build + lint xanh, và E2E toàn hệ thống pass.
+- ~~`refactor/clean-architecture` chỉ merge vào `main` một lần, ở CA-20.~~ Thay bởi
+  [ADR-0065](../05-decisions/0065-hai-nhanh-hai-server.md) (PO 14/11 và 18/11/2026): nhánh đổi tên thành **`app`**,
+  không merge vào `main`. Hai nhánh cùng sống, mỗi nhánh tự deploy lên server riêng (`main` → bản demo,
+  `app` → https://app.trustcabinet.workspace-hub.space). Thay đổi trên `main` đi sang `app` bằng một PR merge `main`
+  vào `app`; code chỉ có trên `app` không về `main`. Việc mới cho backend bốn project mở PR với base `app`.
 - Commit message tiếng Việt; tiêu đề và mô tả PR tiếng Anh; comment review và comment Jira tiếng Việt
   ([AGENTS.md](../../AGENTS.md)).
 
@@ -499,5 +502,5 @@ trình tự chung giữ nguyên.
 - `git grep -n "TrustCabinetDbContext" backend/TrustCabinet.Application backend/TrustCabinet.Web` chỉ còn `Program.cs`
   và `DatabaseMigrationCommand.cs`.
 - `dotnet build TrustCabinet.sln -warnaserror`, `dotnet test TrustCabinet.sln`, `npm run build`, `npm run lint` xanh
-  trên `refactor/clean-architecture`.
-- E2E toàn hệ thống pass (CA-20), rồi mới merge `refactor/clean-architecture` vào `main`.
+  trên `refactor/clean-architecture` (nay là `app`).
+- E2E toàn hệ thống pass (CA-20). Không merge vào `main`: nhánh `app` chạy riêng (ADR-0065).
