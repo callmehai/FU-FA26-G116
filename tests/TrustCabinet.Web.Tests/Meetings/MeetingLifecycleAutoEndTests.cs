@@ -78,6 +78,54 @@ public sealed partial class MeetingLifecycleTests
     }
 
     [Fact]
+    public async Task Auto_end_sweep_does_not_save_a_failed_end_with_the_next_meeting()
+    {
+        // The older one comes first in the batch; its save fails, the next one is ended on the same context (SCRUM-212).
+        var failing = await SeedRunning(MeetingMode.InPerson, endedHoursAgo: 500, startedHoursAgo: 501);
+        var next = await SeedRunning(MeetingMode.InPerson, endedHoursAgo: 400, startedHoursAgo: 401);
+        await using (var db = fixture.Db())
+        {
+            var item = await db.AgendaItems.SingleAsync(i => i.Id == failing.Items[0]);
+            item.Status = AgendaItemStatus.InProgress;
+            item.ActualStartedAt = fixture.Clock.Now.AddHours(-500);
+            await db.SaveChangesAsync();
+        }
+
+        await using var scope = fixture.Host.Services.CreateAsyncScope();
+        var overdue = scope.ServiceProvider.GetRequiredService<IMeetingOverdueService>();
+        fixture.FailSaveOfMeeting = failing.MeetingId;
+        try
+        {
+            Assert.True(await overdue.EndOverrunAsync() >= 1);
+        }
+        finally
+        {
+            fixture.FailSaveOfMeeting = null;
+        }
+
+        await using var check = fixture.Db();
+        var failed = await check.Meetings.AsNoTracking().SingleAsync(m => m.Id == failing.MeetingId);
+        Assert.Equal(MeetingStatus.InProgress, failed.Status);
+        Assert.Null(failed.ActualEndedAt);
+        Assert.False(await check.MeetingStatusHistory.AnyAsync(h => h.MeetingId == failing.MeetingId));
+        Assert.Equal(AgendaItemStatus.InProgress,
+            (await check.AgendaItems.AsNoTracking().SingleAsync(i => i.Id == failing.Items[0])).Status);
+        var ended = await check.Meetings.AsNoTracking().SingleAsync(m => m.Id == next.MeetingId);
+        Assert.Equal(MeetingStatus.Ended, ended.Status);
+        var history = await check.MeetingStatusHistory.AsNoTracking().SingleAsync(h => h.MeetingId == next.MeetingId);
+        Assert.Equal(MeetingHistoryAction.AutoEnd, history.Action);
+
+        // Left to the next sweep, which ends it once.
+        await using var again = fixture.Host.Services.CreateAsyncScope();
+        Assert.True(await again.ServiceProvider.GetRequiredService<IMeetingOverdueService>().EndOverrunAsync() >= 1);
+        Assert.Equal(MeetingStatus.Ended,
+            (await check.Meetings.AsNoTracking().SingleAsync(m => m.Id == failing.MeetingId)).Status);
+        Assert.Equal(MeetingHistoryAction.AutoEnd, (await check.MeetingStatusHistory.AsNoTracking()
+            .SingleAsync(h => h.MeetingId == failing.MeetingId)).Action);
+        Assert.Single(await check.MeetingStatusHistory.AsNoTracking().Where(h => h.MeetingId == next.MeetingId).ToListAsync());
+    }
+
+    [Fact]
     public async Task System_end_yields_to_a_chair_who_already_ended_the_meeting()
     {
         var s = await SeedRunning(MeetingMode.InPerson, endedHoursAgo: 40, startedHoursAgo: 41);
