@@ -266,6 +266,9 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         return Task.CompletedTask;
     }
 
+    // InTransactionAsync already restores the snapshot on failure; nothing else is tracked.
+    public void DiscardChanges() { }
+
     public async Task<T> InTransactionAsync<T>(
         Func<CancellationToken, Task<T>> operation, CancellationToken ct = default)
     {

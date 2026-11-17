@@ -70,6 +70,10 @@ public sealed class MeetingOverdueService(
             catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException)
             {
                 logger.LogError(error, "Could not cancel overdue meeting {MeetingId}.", id);
+                // The transaction rolled back, but the shared context still tracks this meeting as Cancelled with its
+                // history row and notice; the next meeting's save would write them. Each meeting is read again under
+                // its own lock, so nothing tracked needs to survive.
+                meetings.DiscardChanges();
             }
         }
 
