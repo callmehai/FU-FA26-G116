@@ -146,6 +146,10 @@ public sealed class MeetingLifecycleService(
         catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException or InvalidAgendaExecutionException)
         {
             logger.LogError(error, "Could not end overrunning meeting {MeetingId}.", meetingId);
+            // The transaction rolled back, but the sweep's shared context still tracks this meeting as Ended with its
+            // AutoEnd history row and its agenda, speaking and vote changes; the next meeting's save would write them.
+            // Each meeting is read again under its own lock, so nothing tracked needs to survive (SCRUM-212).
+            meetings.DiscardChanges();
             return false;
         }
 
