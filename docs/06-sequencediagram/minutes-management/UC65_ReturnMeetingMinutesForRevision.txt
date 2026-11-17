@@ -5,7 +5,6 @@ boundary "Minutes Card (Biên bản tab)" as MinutesCard
 control ":Minutes Endpoints" as MinutesEndpoints
 control ":Minutes Service" as MinutesService
 participant ":Notification Service" as NotificationService
-participant ":Meeting Repository" as MeetingRepository
 participant ":Minutes Repository" as MinutesRepository
 database ":Database" as Database
 
@@ -15,18 +14,12 @@ MinutesCard->MinutesEndpoints: reject(minutesId, reason, updatedAt)
 activate MinutesEndpoints
 MinutesEndpoints->MinutesService: ReturnAsync(minutesId, actorId, reason, updatedAt)
 activate MinutesService
-MinutesService->MeetingRepository: findWorkflow(meetingId, forUpdate)
-MeetingRepository->Database: Lock the Meeting and retrieve it (FOR UPDATE)
+MinutesService->MinutesRepository: lock the Meeting and the revision
+MinutesRepository->Database: Lock the Meeting and the revision, and retrieve both (FOR UPDATE)
 activate Database
-Database-->MeetingRepository: Meeting / None
+Database-->MinutesRepository: Meeting and revision / None
 deactivate Database
-MeetingRepository-->MinutesService: Meeting / None
-MinutesService->MinutesRepository: lock(minutesId)
-MinutesRepository->Database: Lock the revision and retrieve it (FOR UPDATE)
-activate Database
-Database-->MinutesRepository: Revision / None
-deactivate Database
-MinutesRepository-->MinutesService: Revision / None
+MinutesRepository-->MinutesService: Meeting and revision / None
 
 alt Meeting not accessible, or actor is neither the current Chair nor the current Secretary - EX-5
     MinutesService-->MinutesEndpoints: Not found

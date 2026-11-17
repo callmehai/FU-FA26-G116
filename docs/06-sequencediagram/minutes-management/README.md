@@ -36,7 +36,7 @@ Quy ước riêng của nhóm này:
 
 ## Cập nhật theo kiến trúc
 
-- **17/11/2026 — CA-19 (SCRUM-184):** service không còn gọi thẳng `:Database` (backend bốn project, [ADR-0064](../../05-decisions/0064-backend-bon-project-clean-architecture.md)); chèn lifeline `:Minutes Repository` (`IMeetingMinutesRepository`), `:Minutes Source Query` (`IMinutesSourceQuery`, UC-59) và `:Meeting Repository`. Bước khoá ở UC-61, UC-64, UC-65, UC-83 tách thành hai lời gọi như code: `findWorkflow(meetingId, forUpdate)` khoá Meeting, rồi `lock(minutesId)` khoá bản biên bản. Message tới `:Database` giữ nguyên nội dung; luồng, nhánh `MSG`/`BR` và actor không đổi.
+- **17/11/2026 — CA-19 (SCRUM-184):** service không còn gọi thẳng `:Database` (backend bốn project, [ADR-0064](../../05-decisions/0064-backend-bon-project-clean-architecture.md)); chèn lifeline `:Minutes Repository` (`IMeetingMinutesRepository`) và `:Minutes Source Query` (`IMinutesSourceQuery`, UC-59). Bước khoá ở UC-61, UC-64, UC-65, UC-83 giữ một message "Lock the Meeting and the revision" qua `:Minutes Repository`; trong code Meeting được khoá qua `IMeetingRepository.FindWorkflowAsync(forUpdate)` rồi bản biên bản qua `IMeetingMinutesRepository.LockAsync`, sơ đồ gộp hai bước để giữ nguyên câu cũ. Message tới `:Database` giữ nguyên nội dung; luồng, nhánh `MSG`/`BR` và actor không đổi.
 
 ## Xuất ảnh
 
