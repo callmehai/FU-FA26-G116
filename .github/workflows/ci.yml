@@ -1,15 +1,15 @@
-# Chạy trên mọi pull request và mọi lần push lên main. Mục đích là bắt được lỗi build/lint
+# Chạy trên mọi pull request và mọi lần push lên main hoặc app (ADR-0065). Mục đích là bắt được lỗi build/lint
 # trước khi merge, vì cả nhóm cùng push vào một repo.
 name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, app]
   pull_request:
 
 # Push mới lên cùng một PR huỷ lần chạy cũ còn dở: chỉ kết quả của commit cuối có ý nghĩa, và repo
 # private chỉ có 2.000 phút Actions miễn phí mỗi tháng (tháng 10/2026 hết sạch trước ngày 26).
-# Trên main thì không huỷ, vì mỗi lần push kéo theo một lần deploy.
+# Trên main và app thì không huỷ, vì mỗi lần push kéo theo một lần deploy.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -166,9 +166,9 @@ jobs:
       # `npm run build` chạy tsc -b trước, nên bước này bắt luôn lỗi kiểu TypeScript.
       - run: npm run build
 
-  # Push lên main mà các job trên xanh hoặc Skipped thì deploy lên server test
+  # Push lên main (server test) hoặc app (server app) mà các job trên xanh hoặc Skipped thì deploy
   # (.github/workflows/deploy.yml) — kể cả lần chỉ sửa deploy/ hay docs, để server luôn chạy đúng
-  # commit đầu main. Nằm trong CI để commit hiện cả trạng thái deploy; trên pull request job này
+  # commit đầu nhánh của nó. Nằm trong CI để commit hiện cả trạng thái deploy; trên pull request job này
   # hiện là Skipped.
   deploy:
     name: Deploy server test
