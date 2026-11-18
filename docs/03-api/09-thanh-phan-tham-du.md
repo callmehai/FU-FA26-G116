@@ -16,7 +16,7 @@ Không có per-participant grants, organizer secretary-recovery hoặc endpoint 
 
 Base: `/api/meetings/{meetingId}`. Authentication bắt buộc. Không đủ quyền đọc: 404 rỗng; inactive internal: 403 rỗng; readable non-manager thực hiện quản lý: 403/MSG85. Mọi response của nhóm participants có `Cache-Control: no-store`.
 
-Roster/context/options trả ETag `"participants-N"`. Mutations trừ own response bắt buộc `If-Match`; thiếu/sai cú pháp: 400/MSG276; revision cũ: 409/MSG275. Revision truyền dưới dạng string. Own response không tăng roster revision, nhưng vẫn phát event để FE tải phản hồi mới. No-op không phát event.
+Roster/context/options trả ETag `"participants-N"`. Proxy nén response (Caddy `encode` trên server) đổi ETag thành `"participants-N-gzip"` (hoặc `-zstd`, `-br`); `If-Match` nhận cả dạng có đuôi đó. Mutations trừ own response bắt buộc `If-Match`; thiếu/sai cú pháp: 400/MSG276; revision cũ: 409/MSG275. Revision truyền dưới dạng string. Own response không tăng roster revision, nhưng vẫn phát event để FE tải phản hồi mới. No-op không phát event.
 
 JSON mutation strict, phân biệt tên property, không nhận property lạ/trùng, enum sai hoa thường, giá trị null không hợp lệ; `additionalPermissions` bị từ chối. Tối đa 64 KiB. DELETE không body. Mutation không nhận query; reads chỉ nhận query được ghi rõ bên dưới.
 
