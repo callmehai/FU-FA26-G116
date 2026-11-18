@@ -23,6 +23,33 @@ python scripts/test_reports/integration_cases.py build   # sinh lại 2 workbook
 ```
 
 Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết case và cách chia việc.
+
+**Workbook 5.2 đang dùng (trên Drive và trong repo) chưa sinh từ `cases/`.** Theo yêu cầu ngày 18/11/2026,
+nó là bản 1.1 (13 sheet theo chức năng, 124 case `XXX_IT01`) giữ nguyên từng ô, cộng 22 sheet mới cùng kiểu
+cho các chức năng bản 1.1 chưa có (287 case) — bản 1.2, tổng 411 case. Chạy `integration_cases.py build` sẽ
+ghi đè nó bằng bản chia theo Feature; đừng chạy cho 5.2 khi chưa thống nhất lại với nhóm.
+
+Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). Mọi vòng đều `Pending` cho tới khi chạy thật:
+
+| Feature | Sheet | 5.2 UI | 5.2.2 API |
+|---|---|---:|---:|
+| FE-01 | Authentication | 34 | 57 |
+| FE-02 | User Management | 45 | 61 |
+| FE-03 | Access Control | 45 | 63 |
+| FE-04 | Meeting Management | 72 | 110 |
+| FE-05 | Agenda | 47 | 83 |
+| FE-06 | Participants | 90 | 195 |
+| FE-07 | Documents | 101 | 217 |
+| FE-08 | Online Room | 98 | 136 |
+| FE-09 | Recording | 69 | 126 |
+| FE-10 | Transcription & Summary | 85 | 181 |
+| FE-11 | Voting | 20 | 43 |
+| FE-12 | Minutes | 44 | 83 |
+| FE-13 | Notifications | 35 | 47 |
+| FE-15 | Reporting | 17 | 21 |
+| FE-16 | Calendar | 68 | 98 |
+| | **Tổng** | **870** | **1521** |
+
 `generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2; nó chỉ sinh 5.0, 5.3, 5.4.
 
 **5.1 viết lại theo production function (mỗi function một sheet), test case nghiệp vụ.**
