@@ -2,63 +2,850 @@
   "feature": "FE-12",
   "code": "MIN",
   "sheet": "Minutes",
-  "precondition": "",
+  "precondition": "Test build of frontend + backend; Chair, Secretary, Member and Outsider accounts supplied by QA lead; a meeting in the needed status with its minutes in the needed state; Chrome and a second browser for the two-user cases; Word and a PDF reader.",
   "groups": [
     {
       "title": "Generate Draft Minutes",
       "uc": [
         "UC-59"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MIN_FT01",
+          "description": "Verify the Secretary builds the first draft of the minutes from the template.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "On the card \"Biên bản\", read the hint and the notice.",
+            "Click \"Tạo bản nháp\".",
+            "Reload the page."
+          ],
+          "expected": [
+            "Step 2: \"Bản nháp điền sẵn thông tin cuộc họp và dự thảo vào mẫu biên bản.\" and the notice \"Chưa có dự thảo AI nên mục I–III để trống.\" with a \"Tạo dự thảo\" button.",
+            "Step 3: the backend answers 201 MSG395; toast \"Đã tạo bản nháp biên bản.\"; badge \"Bản nháp\"; the paper shows \"BIÊN BẢN\", the Chair and Secretary names, the agenda and \"……\" blanks; the foot reads \"Lưu lần cuối <time>\".",
+            "Buttons \"Tải xuống\", \"Tạo lại\", \"Sửa\" and \"Gửi duyệt\" appear.",
+            "Step 4: the same draft is shown."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an InProgress meeting with an agenda and a closed vote; no AI draft and no minutes yet."
+          ],
+          "note": "UC-59 | BR-384 | Manual only"
+        },
+        {
+          "id": "MIN_FT02",
+          "description": "Verify the card warns that the minutes use an AI draft not reviewed yet.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Read the notice on the card \"Biên bản\".",
+            "Click \"Duyệt dự thảo\".",
+            "Click \"Tạo bản nháp\"."
+          ],
+          "expected": [
+            "Step 2: warning \"Dự thảo AI chưa duyệt: biên bản sẽ dùng nội dung chưa rà soát.\" with buttons \"Duyệt dự thảo\".",
+            "Step 3: the page scrolls to the \"Duyệt\" button of the card \"Dự thảo nội dung\" and highlights it.",
+            "Step 4: toast \"Đã tạo bản nháp biên bản.\"; sections I–III hold the AI text; the notice now reads \"Biên bản đang dùng dự thảo AI chưa duyệt.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an Ended meeting whose AI draft is written (\"Chưa duyệt\") and which has no minutes."
+          ],
+          "note": "UC-59 AF-4 | BR-382 | Manual only"
+        },
+        {
+          "id": "MIN_FT03",
+          "description": "Verify \"Tạo lại\" asks before replacing the edited draft and then rebuilds it.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Tạo lại\" on the card \"Biên bản\".",
+            "Click \"Huỷ\".",
+            "Click \"Tạo lại\" again and confirm \"Tạo lại\"."
+          ],
+          "expected": [
+            "Step 2: dialog \"Tạo lại bản nháp biên bản?\" — \"Bản nháp mới điền lại từ mẫu và dự thảo hiện tại. Mọi chỗ đã sửa trong bản nháp biên bản sẽ mất.\"",
+            "Step 3: the dialog closes; the hand edit \"Bản Thư ký đã sửa.\" is still on the paper; no request is sent.",
+            "Step 4: the button shows \"Đang tạo…\", then toast \"Đã tạo bản nháp biên bản.\"; the paper is the template again and the hand edit is gone."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an InProgress meeting whose draft minutes were edited to contain \"Bản Thư ký đã sửa.\"."
+          ],
+          "note": "UC-59 AF-2 | BR-388 | Manual only"
+        },
+        {
+          "id": "MIN_FT04",
+          "description": "Verify the card says the AI draft changed after the minutes were built.",
+          "procedure": [
+            "Edit and save one section of the card \"Dự thảo nội dung\".",
+            "Read the card \"Biên bản\".",
+            "Click \"Tạo lại\" in the notice and confirm."
+          ],
+          "expected": [
+            "Step 2: notice \"Biên bản chưa có dự thảo mới nhất.\" with a \"Tạo lại\" button.",
+            "Step 3: toast \"Đã tạo bản nháp biên bản.\"; the paper holds the edited section and the notice is gone."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on the tab \"Biên bản\" of an Ended meeting whose reviewed AI draft was used to build the minutes."
+          ],
+          "note": "UC-59 AF-5 | BR-382 | Manual only"
+        },
+        {
+          "id": "MIN_FT05",
+          "description": "Verify no draft can be built before the meeting starts.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Read the card \"Biên bản\"."
+          ],
+          "expected": [
+            "The card shows \"Chưa có biên bản.\" and no \"Tạo bản nháp\" button.",
+            "Sending the build anyway (Postman) is refused with 409 MSG398 \"Chỉ soạn biên bản khi cuộc họp đang diễn ra hoặc đã kết thúc.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of a Published meeting."
+          ],
+          "note": "UC-59 EX-2 | BR-387 | Manual only"
+        },
+        {
+          "id": "MIN_FT06",
+          "description": "Verify a Member sees no draft and no build control.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Read the tab."
+          ],
+          "expected": [
+            "The card \"Biên bản\" shows \"Chưa có biên bản ban hành.\" with no button.",
+            "The card \"Dự thảo nội dung\" is not shown while the AI draft is not reviewed."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member of an InProgress meeting whose Secretary has built draft minutes."
+          ],
+          "note": "UC-58 AF-1 | BR-386 | BR-412 | Manual only"
+        },
+        {
+          "id": "MIN_FT07",
+          "description": "Verify two officers building the first draft at once end with one draft.",
+          "procedure": [
+            "In browser A (Secretary) and browser B (Chair) open the tab \"Biên bản\"; both show \"Tạo bản nháp\".",
+            "Click \"Tạo bản nháp\" in A.",
+            "Click \"Tạo bản nháp\" in B."
+          ],
+          "expected": [
+            "Step 2: A shows toast \"Đã tạo bản nháp biên bản.\" and the draft.",
+            "Step 3: B shows toast \"Cuộc họp đã có bản nháp biên bản.\" and reloads the card with the draft A built; only one draft exists."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Chair and Secretary of an InProgress meeting without minutes, signed in in two browsers."
+          ],
+          "note": "UC-59 EX-3 | BR-388 | Manual only"
+        }
+      ]
     },
     {
       "title": "View Minutes",
       "uc": [
         "UC-58"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MIN_FT08",
+          "description": "Verify a Member reads the minutes only once they are issued.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Read the card \"Biên bản\" while the minutes wait for approval.",
+            "After the Chair issues them, reload the tab."
+          ],
+          "expected": [
+            "Step 2: \"Chưa có biên bản ban hành.\"; no paper, no badge.",
+            "Step 3: badge \"Đã ban hành\", the paper, and the foot \"<Chair> duyệt, ban hành lúc <time>\"; a \"Tải xuống\" menu; no \"Sửa\", \"Gửi duyệt\" or \"Tạo bản đính chính\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member of an Ended meeting whose minutes are WaitingApproval; the Chair issues them during the test."
+          ],
+          "note": "UC-58 | BR-412 | Manual only"
+        },
+        {
+          "id": "MIN_FT09",
+          "description": "Verify the version picker opens an earlier revision and returns to the latest.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Open the select \"Phiên bản biên bản\".",
+            "Choose \"Bản gốc\".",
+            "Click \"Xem bản mới nhất\"."
+          ],
+          "expected": [
+            "Step 2: \"Đính chính 1\" (hint \"Đã ban hành\") and \"Bản gốc\" (hint \"Đã thay thế\").",
+            "Step 3: notice \"Đang xem bản gốc, đã thay thế.\" with the original text and badge \"Đã thay thế\".",
+            "Step 4: the issued correction is shown again with badge \"Đã ban hành\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member of an Ended meeting whose minutes were issued and then corrected (the correction issued too)."
+          ],
+          "note": "UC-58 AF-2 | BR-409 | Manual only"
+        },
+        {
+          "id": "MIN_FT10",
+          "description": "Verify the tab of a Secret meeting shows the minutes without any download.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Look at the card \"Biên bản\"."
+          ],
+          "expected": [
+            "The paper and the badge \"Đã ban hành\" are shown; the \"Tải xuống\" menu is absent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member of a Secret Ended meeting whose minutes are issued."
+          ],
+          "note": "UC-58 EX-4 | BR-390 | Manual only"
+        },
+        {
+          "id": "MIN_FT11",
+          "description": "Verify an outsider cannot reach the minutes of a meeting.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId}?tab=minutes."
+          ],
+          "expected": [
+            "The page shows \"Không tìm thấy trang\" — \"Đường dẫn không tồn tại, hoặc bạn không có quyền xem nội dung này.\"; nothing about the minutes appears."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a user who is not on the meeting and did not create or approve it; the meeting's minutes are issued."
+          ],
+          "note": "UC-58 EX-3 | Manual only"
+        },
+        {
+          "id": "MIN_FT12",
+          "description": "Verify the tab says when the minutes cannot be loaded and recovers with \"Thử lại\".",
+          "procedure": [
+            "Ask QA lead to stop the database, then open the tab \"Biên bản\".",
+            "Ask QA lead to start the database and click \"Thử lại\" on the card \"Biên bản\"."
+          ],
+          "expected": [
+            "Step 1: the card \"Biên bản\" shows an error alert with a \"Thử lại\" button (backend 500 MSG403 \"Không tải được biên bản.\" or the sign-in check failing).",
+            "Step 2: the minutes are shown."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of a meeting with draft minutes.",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-58 EX-1 | Manual only"
+        }
+      ]
     },
     {
       "title": "Edit Minutes",
       "uc": [
         "UC-60"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MIN_FT13",
+          "description": "Verify the Secretary edits the minutes and the saved text persists.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Sửa\".",
+            "Replace one \"……\" with \"Thống nhất kế hoạch quý IV.\" and make it bold with \"Đậm (Ctrl+B)\".",
+            "Click \"Lưu\".",
+            "Reload the page."
+          ],
+          "expected": [
+            "Step 2: a Word-like sheet opens with the ribbon \"Định dạng biên bản\" (styles, \"Cỡ chữ\", colours, alignment, lists, table, \"Ngắt trang\", \"Tìm và thay thế (Ctrl+F)\") and the buttons \"Huỷ\" and \"Lưu\".",
+            "Step 4: the button shows \"Đang lưu…\"; backend answers 200 MSG396; toast \"Đã lưu biên bản.\"; the editor closes and the paper shows the bold sentence.",
+            "Step 5: the sentence is still there; the foot shows the new \"Lưu lần cuối\" time."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+          ],
+          "note": "UC-60 | BR-385 | Manual only | Deviation: UC-60 Step 2 describes a plain-text view and a separate preview; the editor is a single WYSIWYG sheet laid out as printed, with no plain-text view."
+        },
+        {
+          "id": "MIN_FT14",
+          "description": "Verify \"Tìm và thay thế\" replaces text inside the minutes only.",
+          "procedure": [
+            "Click \"Sửa\", then press Ctrl+F.",
+            "Type \"……\" in \"Tìm\" and \"Đã thống nhất.\" in \"Thay bằng\".",
+            "Click \"Thay tất cả\", then \"Lưu\"."
+          ],
+          "expected": [
+            "Step 1: the find bar opens in the editor, not the browser's own search.",
+            "Step 3: every \"……\" becomes \"Đã thống nhất.\"; toast \"Đã lưu biên bản.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an InProgress meeting whose draft minutes still hold \"……\"."
+          ],
+          "note": "UC-60 | BR-385 | Manual only"
+        },
+        {
+          "id": "MIN_FT15",
+          "description": "Verify an empty document cannot be saved.",
+          "procedure": [
+            "Click \"Sửa\".",
+            "Select all text (Ctrl+A) and delete it."
+          ],
+          "expected": [
+            "The \"Lưu\" button is disabled; no PUT /api/minutes/{minutesId} is sent (DevTools > Network).",
+            "Clicking \"Huỷ\" restores the paper unchanged."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+          ],
+          "note": "UC-60 EX-2 | BR-394 | Manual only"
+        },
+        {
+          "id": "MIN_FT16",
+          "description": "Verify \"Huỷ\" leaves the editor without saving.",
+          "procedure": [
+            "Click \"Sửa\" and type \"Chưa lưu\".",
+            "Click \"Huỷ\".",
+            "Reload the page."
+          ],
+          "expected": [
+            "Step 2: the editor closes and the paper does not show \"Chưa lưu\"; no PUT request was sent.",
+            "Step 3: the minutes are unchanged."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+          ],
+          "note": "UC-60 | Manual only"
+        },
+        {
+          "id": "MIN_FT17",
+          "description": "Verify a save over someone else's newer save is refused and keeps the typed text.",
+          "procedure": [
+            "In browser A (Secretary) click \"Sửa\" and type \"Bản của Thư ký.\".",
+            "In browser B (Chair) click \"Sửa\", type \"Bản của Chủ trì.\", click \"Lưu\".",
+            "In browser A click \"Lưu\".",
+            "In browser A click \"Lưu\" again."
+          ],
+          "expected": [
+            "Step 2: B shows toast \"Đã lưu biên bản.\".",
+            "Step 3: A shows toast \"Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.\" (MSG401); A's editor stays open with its text.",
+            "Step 4: A's save goes through (\"Đã lưu biên bản.\") over the newer version."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Chair and Secretary of an InProgress meeting with draft minutes, on the tab \"Biên bản\" in two browsers."
+          ],
+          "note": "UC-60 EX-1 | BR-389 | Manual only"
+        },
+        {
+          "id": "MIN_FT18",
+          "description": "Verify minutes sent for approval cannot be edited.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Look at the card \"Biên bản\"."
+          ],
+          "expected": [
+            "Badge \"Chờ duyệt\"; foot \"<Secretary> gửi duyệt lúc <time>\".",
+            "No \"Sửa\", \"Tạo lại\" or \"Gửi duyệt\" button."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an Ended meeting whose minutes are WaitingApproval."
+          ],
+          "note": "UC-60 EX-3 | BR-388 | Manual only"
+        }
+      ]
     },
     {
       "title": "Export to Word",
       "uc": [
         "UC-60"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MIN_FT19",
+          "description": "Verify the minutes download as a Word file with the paper's content.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Tải xuống\", then \"Word\".",
+            "Open the file in Word."
+          ],
+          "expected": [
+            "The browser saves \"Biên bản - Họp giao ban tháng 11.docx\".",
+            "Word shows the same heading, sections and signature block as the paper on screen."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of a Normal InProgress meeting \"Họp giao ban tháng 11\" with draft minutes."
+          ],
+          "note": "UC-60 AF-1 | BR-391 | Manual only"
+        },
+        {
+          "id": "MIN_FT20",
+          "description": "Verify the minutes download as a PDF file.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Tải xuống\", then \"PDF\".",
+            "Open the file."
+          ],
+          "expected": [
+            "The browser saves \"Biên bản - Họp giao ban tháng 11.pdf\": A4, Vietnamese letters correct, same content as the paper."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of a Normal InProgress meeting \"Họp giao ban tháng 11\" with draft minutes."
+          ],
+          "note": "UC-60 AF-2 | BR-391 | Manual only"
+        },
+        {
+          "id": "MIN_FT21",
+          "description": "Verify a Member downloads issued minutes but never a draft.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Tải xuống\", then \"Word\"."
+          ],
+          "expected": [
+            "The Word file of the issued minutes is saved.",
+            "While the minutes were still a draft the Member saw no paper and no \"Tải xuống\"; requesting the draft file directly answers 404."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member of a Normal Ended meeting whose minutes are issued."
+          ],
+          "note": "UC-58 AF-3 | BR-412 | Manual only"
+        },
+        {
+          "id": "MIN_FT22",
+          "description": "Verify the minutes of a Secret meeting cannot be downloaded, even by the Secretary.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Look for \"Tải xuống\"."
+          ],
+          "expected": [
+            "No \"Tải xuống\" menu is shown; the paper is read on screen only.",
+            "Requesting GET /api/minutes/{minutesId}/export directly answers 403 MSG405 \"Biên bản của cuộc họp Mật không được tải về.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of a Secret InProgress meeting with draft minutes."
+          ],
+          "note": "UC-60 EX-6 | BR-390 | Manual only"
+        },
+        {
+          "id": "MIN_FT23",
+          "description": "Verify a failed download says so and leaves no file.",
+          "procedure": [
+            "Ask QA lead to stop the database after the tab has loaded.",
+            "Click \"Tải xuống\", then \"Word\"."
+          ],
+          "expected": [
+            "A toast shows the error (backend 500 MSG403 \"Không tải được biên bản.\", or the sign-in check failing); no file is saved."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary on the tab \"Biên bản\" of a meeting with draft minutes.",
+            "QA lead can stop the database of the test build and start it again."
+          ],
+          "note": "UC-58 EX-1 | Manual only"
+        }
+      ]
     },
     {
       "title": "Submit Minutes",
       "uc": [
         "UC-61"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MIN_FT24",
+          "description": "Verify the Secretary sends the minutes to the Chair and they lock.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Gửi duyệt\".",
+            "Click \"Gửi duyệt\" in the dialog.",
+            "In a second browser signed in as the Chair, open the notification bell."
+          ],
+          "expected": [
+            "Step 2: dialog \"Gửi biên bản cho Chủ toạ duyệt?\" — \"Sau khi gửi, biên bản khoá lại cho tới khi Chủ toạ duyệt hoặc trả lại.\"",
+            "Step 3: \"Đang gửi…\", then toast \"Đã gửi biên bản cho Chủ toạ duyệt.\"; badge \"Chờ duyệt\"; foot \"<Secretary> gửi duyệt lúc <time>\"; \"Sửa\", \"Tạo lại\" and \"Gửi duyệt\" disappear.",
+            "Step 4: the Chair has \"Biên bản chờ duyệt\"; opening it leads to the meeting, where the Chair sees \"Trả lại\" and \"Duyệt và ban hành\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an Ended meeting with completed draft minutes (no \"……\" left); the Chair signed in in a second browser."
+          ],
+          "note": "UC-61 | BR-404 | BR-411 | Manual only"
+        },
+        {
+          "id": "MIN_FT25",
+          "description": "Verify the dialog warns about blanks left in the minutes but still sends.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Gửi duyệt\".",
+            "Click \"Gửi duyệt\" in the dialog."
+          ],
+          "expected": [
+            "Step 2: the dialog starts with \"Biên bản còn chỗ “……” chưa điền.\" in bold.",
+            "Step 3: the minutes are sent: toast \"Đã gửi biên bản cho Chủ toạ duyệt.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an Ended meeting whose draft minutes still hold \"……\"."
+          ],
+          "note": "UC-61 AF-1 | Manual only"
+        },
+        {
+          "id": "MIN_FT26",
+          "description": "Verify the minutes cannot be sent before the meeting ends.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Gửi duyệt\"."
+          ],
+          "expected": [
+            "The dialog shows \"Chỉ gửi duyệt biên bản sau khi cuộc họp kết thúc.\" and its \"Gửi duyệt\" button is disabled; no request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+          ],
+          "note": "UC-61 EX-2 | BR-405 | Manual only"
+        },
+        {
+          "id": "MIN_FT27",
+          "description": "Verify the Chair is not offered \"Gửi duyệt\".",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Look at the buttons of the card \"Biên bản\"."
+          ],
+          "expected": [
+            "The Chair sees \"Tải xuống\", \"Tạo lại\" and \"Sửa\" (primary) but no \"Gửi duyệt\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair (not also Secretary) of an Ended meeting with draft minutes."
+          ],
+          "note": "UC-61 EX-1 | BR-404 | Manual only"
+        },
+        {
+          "id": "MIN_FT28",
+          "description": "Verify sending a copy that someone has just changed is refused and the card reloads.",
+          "procedure": [
+            "In browser A (Secretary) open the tab \"Biên bản\".",
+            "In browser B (Chair) edit and save the minutes.",
+            "In browser A click \"Gửi duyệt\" and confirm."
+          ],
+          "expected": [
+            "Step 3: the dialog closes; toast \"Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.\"; the card reloads with the Chair's text, still \"Bản nháp\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Chair and Secretary of an Ended meeting with draft minutes, signed in in two browsers."
+          ],
+          "note": "UC-61 EX-4 | BR-389 | Manual only"
+        },
+        {
+          "id": "MIN_FT29",
+          "description": "Verify the Secretary corrects returned minutes and sends them again.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Read the notice above the paper.",
+            "Click \"Sửa\", change the text, click \"Lưu\".",
+            "Click \"Gửi duyệt\" and confirm."
+          ],
+          "expected": [
+            "Step 2: badge \"Bị trả lại\" and \"<Chair> trả lại: Bổ sung kết luận mục 2.\".",
+            "Step 3: toast \"Đã lưu biên bản.\"; the badge stays \"Bị trả lại\".",
+            "Step 4: toast \"Đã gửi biên bản cho Chủ toạ duyệt.\"; badge \"Chờ duyệt\"; the Chair is notified again."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an Ended meeting whose minutes the Chair returned with \"Bổ sung kết luận mục 2.\"."
+          ],
+          "note": "UC-61 AF-2 | BR-407 | Manual only"
+        },
+        {
+          "id": "MIN_FT30",
+          "description": "Verify cancelling the dialog sends nothing.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Gửi duyệt\", then \"Huỷ\" in the dialog."
+          ],
+          "expected": [
+            "The dialog closes; the badge stays \"Bản nháp\"; no POST .../submit is sent and the Chair gets no notification."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary of an Ended meeting with draft minutes."
+          ],
+          "note": "UC-61 | Manual only"
+        }
+      ]
     },
     {
       "title": "Approve & Issue Minutes",
       "uc": [
         "UC-64"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MIN_FT31",
+          "description": "Verify the Chair approves and issues the minutes.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Duyệt và ban hành\".",
+            "Click \"Duyệt và ban hành\" in the dialog.",
+            "Reload the page."
+          ],
+          "expected": [
+            "Step 2: dialog \"Duyệt và ban hành biên bản?\" — \"Biên bản được khoá và gửi tới mọi người dự họp. Muốn sửa sau đó phải tạo bản đính chính.\"",
+            "Step 3: \"Đang ban hành…\", then toast \"Đã duyệt và ban hành biên bản.\"; badge \"Đã ban hành\"; foot \"<Chair> duyệt, ban hành lúc <time>\"; \"Trả lại\" and \"Duyệt và ban hành\" disappear and \"Tạo bản đính chính\" appears.",
+            "Step 4: the minutes stay issued; the meeting status stays \"Đã kết thúc\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair of an Ended meeting whose minutes are WaitingApproval."
+          ],
+          "note": "UC-64 | BR-408 | Manual only"
+        },
+        {
+          "id": "MIN_FT32",
+          "description": "Verify every reader is told of the issue and the email opens the minutes tab.",
+          "procedure": [
+            "As the Chair, approve and issue the minutes.",
+            "In a second browser signed in as a Member, open the notification bell.",
+            "Open the issue email in the Member's inbox and click \"Xem biên bản\"."
+          ],
+          "expected": [
+            "Step 2: the Member has \"Biên bản đã ban hành\"; the Chair has none for this issue.",
+            "Step 3: the email (subject \"Biên bản cuộc họp đã ban hành: <title>\") opens /mgmt/meetings/{meetingId}?tab=minutes, showing the issued minutes and \"Tải xuống\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Chair and Member of a Normal Ended meeting whose minutes are WaitingApproval, in two browsers; the Member uses a controlled inbox."
+          ],
+          "note": "UC-64 | BR-411 | BR-412 | Manual only"
+        },
+        {
+          "id": "MIN_FT33",
+          "description": "Verify the Secretary cannot approve.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Look at the card \"Biên bản\"."
+          ],
+          "expected": [
+            "Badge \"Chờ duyệt\"; no \"Trả lại\" and no \"Duyệt và ban hành\" button."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Secretary (not also Chair) of an Ended meeting whose minutes are WaitingApproval."
+          ],
+          "note": "UC-64 EX-1 | BR-406 | Manual only"
+        },
+        {
+          "id": "MIN_FT34",
+          "description": "Verify approving minutes another tab has already returned shows why and reloads.",
+          "procedure": [
+            "In tab A open the tab \"Biên bản\"; in tab B return the minutes with a reason.",
+            "In tab A click \"Duyệt và ban hành\" and confirm."
+          ],
+          "expected": [
+            "The dialog closes; toast \"Biên bản không ở trạng thái chờ duyệt.\" (MSG429); the card reloads with badge \"Bị trả lại\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair of an Ended meeting whose minutes are WaitingApproval, the meeting open in two tabs."
+          ],
+          "note": "UC-64 EX-2 | Manual only"
+        }
+      ]
     },
     {
       "title": "Return Minutes",
       "uc": [
         "UC-65"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MIN_FT35",
+          "description": "Verify the Chair returns the minutes with a reason the Secretary sees.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Trả lại\".",
+            "Type \"Bổ sung kết luận của mục 2.\" in \"Lý do trả lại\" and click \"Trả lại\".",
+            "In a second browser signed in as the Secretary, open the bell and the tab \"Biên bản\"."
+          ],
+          "expected": [
+            "Step 2: dialog \"Trả lại biên bản\" with the required field \"Lý do trả lại\", placeholder \"Ví dụ: Bổ sung kết luận của mục 2.\", hint \"Thư ký sẽ thấy lý do này.\" and counter \"0/2.000\".",
+            "Step 3: \"Đang trả lại…\", then toast \"Đã trả lại biên bản cho Thư ký.\"; badge \"Bị trả lại\"; notice \"<Chair> trả lại: Bổ sung kết luận của mục 2.\".",
+            "Step 4: the Secretary has \"Biên bản bị trả lại\" and sees the same notice with \"Sửa\" and \"Gửi duyệt\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair of an Ended meeting whose minutes are WaitingApproval; the Secretary signed in in a second browser."
+          ],
+          "note": "UC-65 | BR-407 | BR-411 | Manual only"
+        },
+        {
+          "id": "MIN_FT36",
+          "description": "Verify the reason is required.",
+          "procedure": [
+            "Click \"Trả lại\".",
+            "Type only spaces and click \"Trả lại\"."
+          ],
+          "expected": [
+            "The field shows \"Nhập lý do trả lại, tối đa 2.000 ký tự.\"; the dialog stays open; no request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair on the tab \"Biên bản\" of an Ended meeting whose minutes are WaitingApproval."
+          ],
+          "note": "UC-65 EX-3 | BR-407 | Manual only"
+        },
+        {
+          "id": "MIN_FT37",
+          "description": "Verify the reason stops at 2,000 characters.",
+          "procedure": [
+            "Click \"Trả lại\".",
+            "Paste a text of 2,500 characters into \"Lý do trả lại\".",
+            "Click \"Trả lại\"."
+          ],
+          "expected": [
+            "Step 2: the field keeps the first 2,000 characters; the counter reads \"2.000/2.000\".",
+            "Step 3: toast \"Đã trả lại biên bản cho Thư ký.\"; the notice shows the 2,000-character reason."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair on the tab \"Biên bản\" of an Ended meeting whose minutes are WaitingApproval."
+          ],
+          "note": "UC-65 EX-3 | BR-407 | Manual only"
+        },
+        {
+          "id": "MIN_FT38",
+          "description": "Verify cancelling the return keeps the minutes waiting.",
+          "procedure": [
+            "Click \"Trả lại\", type a reason, click \"Huỷ\"."
+          ],
+          "expected": [
+            "The dialog closes; the badge stays \"Chờ duyệt\"; no request is sent and the Secretary is not notified."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair on the tab \"Biên bản\" of an Ended meeting whose minutes are WaitingApproval."
+          ],
+          "note": "UC-65 | Manual only"
+        },
+        {
+          "id": "MIN_FT39",
+          "description": "Verify a Member never sees returned minutes or the reason.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\"."
+          ],
+          "expected": [
+            "The card \"Biên bản\" shows \"Chưa có biên bản ban hành.\"; no badge, no reason, no history."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member of an Ended meeting whose minutes the Chair returned."
+          ],
+          "note": "UC-65 | BR-412 | Manual only"
+        }
+      ]
     },
     {
       "title": "Correct Issued Minutes",
       "uc": [
         "UC-83"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MIN_FT40",
+          "description": "Verify the Chair creates a correction that starts from the issued text.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
+            "Click \"Tạo bản đính chính\".",
+            "Click \"Tạo bản đính chính\" in the dialog."
+          ],
+          "expected": [
+            "Step 2: dialog \"Tạo bản đính chính?\" — \"Bản mới chép nội dung đang ban hành để sửa, rồi gửi duyệt như bản đầu. Mọi người vẫn đọc bản đang ban hành cho tới khi bản đính chính được duyệt.\"",
+            "Step 3: \"Đang tạo…\", then toast \"Đã tạo bản đính chính.\"; badge \"Đính chính · bản nháp\"; the paper holds the issued text; the editor does not open by itself.",
+            "\"Sửa\" is shown, \"Tạo lại\" is not; the select \"Phiên bản biên bản\" lists \"Đính chính 1\" and \"Bản gốc\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair of an Ended meeting whose minutes are issued."
+          ],
+          "note": "UC-83 | BR-409 | BR-413 | Manual only"
+        },
+        {
+          "id": "MIN_FT41",
+          "description": "Verify readers keep reading the issued text while a correction is written.",
+          "procedure": [
+            "As a Member, open the tab \"Biên bản\"."
+          ],
+          "expected": [
+            "Badge \"Đã ban hành\" with the original text; no select \"Phiên bản biên bản\" and no sign of the correction.",
+            "No notification was sent for the correction."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member of an Ended meeting whose minutes are issued and whose Chair has just created a correction."
+          ],
+          "note": "UC-83 | BR-412 | Manual only"
+        },
+        {
+          "id": "MIN_FT42",
+          "description": "Verify an issued correction replaces the original, which stays readable.",
+          "procedure": [
+            "As the Secretary, edit the correction (\"Đính chính: sửa tên dự án.\"), save and \"Gửi duyệt\".",
+            "As the Chair, \"Duyệt và ban hành\".",
+            "As a Member, open the tab, then choose \"Bản gốc\" in \"Phiên bản biên bản\"."
+          ],
+          "expected": [
+            "Step 2: toast \"Đã duyệt và ban hành biên bản.\"; the Member's bell shows \"Biên bản đã ban hành\" and the email says \"Bản đính chính biên bản đã ban hành\" with \"Đính chính lần 1\".",
+            "Step 3: the Member reads the correction (\"Đã ban hành\"); \"Bản gốc\" opens with \"Đã thay thế\" and its original text, and can still be downloaded."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Chair, Secretary and Member of a Normal Ended meeting whose minutes are issued and have a correction in Draft, in three browsers."
+          ],
+          "note": "UC-64 AF-1 | BR-409 | Manual only"
+        },
+        {
+          "id": "MIN_FT43",
+          "description": "Verify only one correction can be started at a time.",
+          "procedure": [
+            "In browser A (Chair) and browser B (Secretary) open the tab \"Biên bản\" of the issued minutes.",
+            "In A click \"Tạo bản đính chính\" and confirm.",
+            "In B click \"Tạo bản đính chính\" and confirm."
+          ],
+          "expected": [
+            "Step 2: A shows \"Đã tạo bản đính chính.\".",
+            "Step 3: B's dialog closes with toast \"Biên bản đang có một bản đính chính chưa ban hành.\" and the card reloads showing A's correction."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Chair and Secretary of an Ended meeting whose minutes are issued, in two browsers."
+          ],
+          "note": "UC-83 EX-3 | BR-410 | Manual only"
+        },
+        {
+          "id": "MIN_FT44",
+          "description": "Verify a Member is not offered a correction.",
+          "procedure": [
+            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\"."
+          ],
+          "expected": [
+            "No \"Tạo bản đính chính\" button on the issued minutes.",
+            "Sending POST /api/minutes/{minutesId}/corrections directly answers 403 MSG397 \"Chỉ Chủ toạ hoặc Thư ký được soạn biên bản.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member of an Ended meeting whose minutes are issued."
+          ],
+          "note": "UC-83 EX-1 | BR-386 | Manual only"
+        }
+      ]
     }
   ]
 }
