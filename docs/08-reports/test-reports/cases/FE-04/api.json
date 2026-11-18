@@ -2,35 +2,1038 @@
   "feature": "FE-04",
   "code": "MEET",
   "sheet": "Meeting Management",
-  "precondition": "",
+  "precondition": "Test build of backend with Postman or curl; role accounts supplied by QA lead: Organizer (MeetingCreator), Approver (MeetingApprover), Chair, Secretary, Member, an administrator (AdminUsers) and an unrelated account; meetings prepared in each status; a way to make the database fail for the 503 cases.",
   "groups": [
     {
       "title": "POST /api/meetings",
       "uc": [
         "UC-14"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MEET_API_IT01",
+          "description": "Verify POST /api/meetings creates a Draft meeting with its roster and history.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"title\": \"Họp giao ban\", \"plannedStartTime\": \"2026-12-01T09:00:00+07:00\", \"plannedEndTime\": \"2026-12-01T10:00:00+07:00\", \"mode\": \"Hybrid\", \"location\": \"Phòng họp A\", \"sensitivity\": \"Internal\", \"description\": \"Thảo luận kế hoạch tuần.\", \"participants\": [{ \"userId\": \"<Chair id>\", \"role\": \"Chair\" }, { \"userId\": \"<Secretary id>\", \"role\": \"Secretary\" }] }",
+            "Send GET /api/meetings/<id from step 2> and GET /api/meetings/<id>/history with the same token."
+          ],
+          "expected": [
+            "HTTP 201 Created with header Location: /api/meetings/<id>.",
+            "Body: { \"code\": \"MSG29\", \"message\": \"Tạo cuộc họp thành công.\", \"meeting\": { ... } } where \"meeting\" has \"status\": \"Draft\", the submitted title, schedule, \"mode\": \"Hybrid\", \"sensitivity\": \"Internal\", \"createdById\" = the Organizer, \"actualStartedAt\": null, \"actualEndedAt\": null, \"chair\": { \"userId\", \"fullName\" } and \"secretaries\": [ ... ] from the roster.",
+            "Step 3: the meeting is readable and the history holds one row \"Create\" with \"fromStatus\": null and \"resultingStatus\": \"Draft\".",
+            "No notification is sent to the roster while the meeting is a Draft."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | BR-24, BR-25, BR-62, BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_creates_a_draft_and_returns_a_location_that_get_can_read)"
+        },
+        {
+          "id": "MEET_API_IT02",
+          "description": "Verify POST /api/meetings fills the form defaults when mode and sensitivity are omitted.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body of the first case without \"mode\", \"sensitivity\", \"location\", \"onlineLink\" and \"description\"."
+          ],
+          "expected": [
+            "HTTP 201 Created, code \"MSG29\".",
+            "\"meeting.mode\" is \"InPerson\" and \"meeting.sensitivity\" is \"Normal\".",
+            "\"meeting.onlineLink\" is null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_returns_the_schedule_and_meeting_level_defaults)"
+        },
+        {
+          "id": "MEET_API_IT03",
+          "description": "Verify POST /api/meetings stores a blank online link as null.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body with \"onlineLink\": \"   \"."
+          ],
+          "expected": [
+            "HTTP 201 Created, code \"MSG29\".",
+            "\"meeting.onlineLink\" is null, which means the TrustCabinet room is used (BR-163)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | BR-163 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT04",
+          "description": "Verify POST /api/meetings never creates a meeting with a status or approver chosen by the client.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body plus \"status\": \"Approved\" and \"assignedApproverId\": \"<Approver id>\"."
+          ],
+          "expected": [
+            "HTTP 201 Created or HTTP 400 \"MSG31\" (the extra fields are not accepted); in no case does a meeting exist with a status other than \"Draft\".",
+            "A created meeting has \"assignedApproverId\": null: no approver is assigned at creation."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester).",
+            "An Approver account exists."
+          ],
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_does_not_create_a_current_assignment_from_a_client_supplied_approver)"
+        },
+        {
+          "id": "MEET_API_IT05",
+          "description": "Verify POST /api/meetings returns every validation error at once and writes nothing.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"title\": \"   \", \"plannedStartTime\": \"2026-12-01T10:00:00+07:00\", \"plannedEndTime\": \"2026-12-01T09:00:00+07:00\", \"mode\": \"Khac\", \"participants\": [ ... valid roster ... ] }",
+            "Send GET /api/meetings?q=Khac and GET /api/meetings."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request.",
+            "Body: { \"code\": \"MSG31\", \"message\": \"Thông tin cuộc họp không hợp lệ.\", \"errors\": { ... } } with \"title\": \"Tên cuộc họp không được để trống.\", \"plannedEndTime\": \"Thời gian kết thúc phải sau thời gian bắt đầu.\" and \"mode\": \"Hình thức cuộc họp không hợp lệ.\" together.",
+            "Step 3: no meeting was created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | EX-1 | BR-24, BR-62 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_returns_all_validation_errors_without_writing; Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start)"
+        },
+        {
+          "id": "MEET_API_IT06",
+          "description": "Verify POST /api/meetings requires the planned start and end.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body without \"plannedStartTime\" and \"plannedEndTime\"."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\".",
+            "\"errors\" contains \"plannedStartTime\" and \"plannedEndTime\".",
+            "No meeting is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | BR-25 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_requires_the_planned_schedule)"
+        },
+        {
+          "id": "MEET_API_IT07",
+          "description": "Verify POST /api/meetings rejects a start time that is not in the future.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body with \"plannedStartTime\" one hour in the past and \"plannedEndTime\" one hour in the future."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\".",
+            "\"errors.plannedStartTime\" is \"Thời gian bắt đầu phải sau thời điểm hiện tại.\"",
+            "No meeting is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | BR-162 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_a_start_in_the_past_and_an_end_not_after_the_start)"
+        },
+        {
+          "id": "MEET_API_IT08",
+          "description": "Verify POST /api/meetings accepts a title of exactly 300 characters and rejects 301.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings with a title of 300 characters and the rest of the valid body.",
+            "Send the same request with a title of 301 characters."
+          ],
+          "expected": [
+            "Step 2: HTTP 201 Created, code \"MSG29\".",
+            "Step 3: HTTP 400, code \"MSG31\", \"errors.title\": \"Tên cuộc họp không được vượt quá 300 ký tự.\""
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | Boundary | Manual only"
+        },
+        {
+          "id": "MEET_API_IT09",
+          "description": "Verify POST /api/meetings rejects an online link longer than 1,000 characters.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body with \"onlineLink\" of 1,001 characters."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\".",
+            "\"errors.onlineLink\": \"Link họp trực tuyến không được vượt quá 1.000 ký tự.\""
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | BR-163 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_rejects_an_online_link_over_1000_characters)"
+        },
+        {
+          "id": "MEET_API_IT10",
+          "description": "Verify POST /api/meetings rejects an over-long location and description.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body with \"location\" of 301 characters and \"description\" of 4,001 characters."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\".",
+            "\"errors.location\": \"Địa điểm không được vượt quá 300 ký tự.\" and \"errors.description\": \"Mô tả không được vượt quá 4000 ký tự.\""
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | Boundary | Manual only"
+        },
+        {
+          "id": "MEET_API_IT11",
+          "description": "Verify POST /api/meetings requires a roster with exactly one Chair.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body without \"participants\".",
+            "Send it again with two entries whose \"role\" is \"Chair\".",
+            "Send it again with one entry whose \"role\" is \"chair\" (lower case)."
+          ],
+          "expected": [
+            "Each step answers HTTP 400 Bad Request with { \"code\": \"MSG277\", \"message\": \"Danh sách thành phần tham dự không hợp lệ.\", \"errors\": { \"participants\" ... } } (step 4 keyed \"participants[0].role\").",
+            "No meeting is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)"
+        },
+        {
+          "id": "MEET_API_IT12",
+          "description": "Verify POST /api/meetings rejects an unknown, duplicated or inactive roster member.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body whose roster has a random GUID as \"userId\".",
+            "Send it again with the same user listed twice.",
+            "Send it again with a deactivated user."
+          ],
+          "expected": [
+            "Each step answers HTTP 400 Bad Request, code \"MSG277\", with \"errors\" keyed \"participants[i].userId\".",
+            "No meeting is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester).",
+            "A deactivated user account exists."
+          ],
+          "note": "UC-14 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)"
+        },
+        {
+          "id": "MEET_API_IT13",
+          "description": "Verify POST /api/meetings answers 400 for a body that is not valid JSON.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"title\": \"Họp giao ban\", "
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\", no \"errors\" map.",
+            "No meeting is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-14 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT14",
+          "description": "Verify POST /api/meetings requires a token.",
+          "procedure": [
+            "Send POST /api/meetings without an Authorization header.",
+            "Body: the valid body."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "No meeting is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+        },
+        {
+          "id": "MEET_API_IT15",
+          "description": "Verify POST /api/meetings refuses a caller without MeetingCreator.",
+          "procedure": [
+            "Sign in as a Member (no MeetingCreator) and keep the access token.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the valid body."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden (fixed endpoint, so 403 and not 404).",
+            "No meeting is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Member account without MeetingCreator supplied by QA lead.",
+            "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
+          ],
+          "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+        }
+      ]
     },
     {
       "title": "PUT /api/meetings/{id}",
       "uc": [
         "UC-15"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MEET_API_IT16",
+          "description": "Verify PUT /api/meetings/{id} updates the information of a Draft meeting.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<draft id>",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"title\": \"Họp giao ban tuần 49\", \"plannedStartTime\": \"2026-12-02T09:00:00+07:00\", \"plannedEndTime\": \"2026-12-02T10:30:00+07:00\", \"mode\": \"Online\", \"sensitivity\": \"Normal\", \"description\": \"Cập nhật nội dung.\" }",
+            "Send GET /api/meetings/<draft id>."
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG30\", \"message\": \"Cập nhật cuộc họp thành công.\", \"meeting\": { ... } } with the new values and \"status\": \"Draft\".",
+            "Step 3 returns the new values and \"updatedAt\" moved forward.",
+            "The history gains no row and no notification is sent."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer, with a roster.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_draft_and_ignores_client_owned_fields)"
+        },
+        {
+          "id": "MEET_API_IT17",
+          "description": "Verify PUT /api/meetings/{id} with unchanged data succeeds without writing.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<draft id> with exactly the values GET returns now.",
+            "Send GET /api/meetings/<draft id>."
+          ],
+          "expected": [
+            "HTTP 200 OK, code \"MSG30\".",
+            "Step 3: \"updatedAt\" is unchanged; no history row or notification was added."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT18",
+          "description": "Verify PUT /api/meetings/{id} edits a Rejected meeting without restarting approval.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<rejected id> with a changed \"description\".",
+            "Send GET /api/meetings/<rejected id> and GET /api/meetings/<rejected id>/history."
+          ],
+          "expected": [
+            "HTTP 200 OK, code \"MSG30\".",
+            "The status is still \"Rejected\"; the assigned approver and the rejection reason are kept.",
+            "No lifecycle history row, notification or invitation is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting created by the Organizer and rejected by its approver.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_rejected_meeting_without_restarting_approval)"
+        },
+        {
+          "id": "MEET_API_IT19",
+          "description": "Verify PUT /api/meetings/{id} reschedules a Published meeting and notifies the invitees.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<published id>",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the current values with \"plannedStartTime\" and \"plannedEndTime\" moved a day later and \"location\": \"Phòng họp B\".",
+            "Sign in as an invited Member and call GET /api/notifications.",
+            "Send GET /api/meetings/<published id>/history as the Organizer."
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG138\", \"message\": \"Đã dời lịch cuộc họp. Người được mời sẽ nhận thông báo ...\", \"meeting\": { ... } } with the new schedule and \"status\": \"Published\".",
+            "Step 3: the Member has one \"MeetingRescheduled\" notification.",
+            "Step 4: one new history row \"Reschedule\" from \"Published\" to \"Published\".",
+            "The Organizer receives no notification of their own change."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting created by the Organizer with an invited Member.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | AF-1 | BR-75, BR-76, BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_reschedules_a_published_meeting_and_notifies_every_invitee; Put_reschedule_does_not_notify_the_organizer_of_their_own_change)"
+        },
+        {
+          "id": "MEET_API_IT20",
+          "description": "Verify PUT /api/meetings/{id} on a Published meeting rejects a change to a locked field.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<published id> with a different \"title\" and \"mode\" and the other values unchanged."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\", \"errors\" names exactly the changed locked fields (\"title\", \"mode\").",
+            "The meeting and its history are unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | AF-1 | BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_rejects_fields_outside_the_schedule)"
+        },
+        {
+          "id": "MEET_API_IT21",
+          "description": "Verify PUT /api/meetings/{id} on a Published meeting needs a start in the future.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<published id> with \"plannedStartTime\" in the past."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\", \"errors.plannedStartTime\": \"Thời gian bắt đầu phải sau thời điểm hiện tại.\"",
+            "No history row or notification is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | BR-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_needs_a_start_in_the_future)"
+        },
+        {
+          "id": "MEET_API_IT22",
+          "description": "Verify PUT /api/meetings/{id} on a Published meeting with no change notifies nobody.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<published id> with exactly the current values.",
+            "Sign in as an invited Member and call GET /api/notifications."
+          ],
+          "expected": [
+            "HTTP 200 OK, code \"MSG30\" (not \"MSG138\").",
+            "No \"Reschedule\" history row and no new notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting created by the Organizer with an invited Member.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_without_changes_notifies_nobody)"
+        },
+        {
+          "id": "MEET_API_IT23",
+          "description": "Verify PUT /api/meetings/{id} refuses a meeting that is no longer editable.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<waiting id> with any valid body."
+          ],
+          "expected": [
+            "HTTP 409 Conflict. Body: { \"code\": \"MSG33\", \"message\": \"Cuộc họp này không thể chỉnh sửa được nữa.\" }",
+            "The meeting is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting created by the Organizer, in status WaitingApproval.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | EX-2 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_MSG33_if_the_meeting_is_not_editable)"
+        },
+        {
+          "id": "MEET_API_IT24",
+          "description": "Verify PUT /api/meetings/{id} checks the status before it reads the body.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<waiting id> with Content-Type: application/json and the body { \"title\": ",
+            "Send PUT /api/meetings/<draft id> with the same broken body."
+          ],
+          "expected": [
+            "Step 2: HTTP 409, code \"MSG33\" even though the JSON is broken.",
+            "Step 3: HTTP 400, code \"MSG31\" with no \"errors\" map."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "One Draft and one WaitingApproval meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_status_before_parsing_invalid_json; Put_returns_400_for_invalid_json_when_meeting_is_editable)"
+        },
+        {
+          "id": "MEET_API_IT25",
+          "description": "Verify PUT /api/meetings/{id} returns validation errors without changing the meeting.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<draft id> with \"title\": \"\" and \"plannedEndTime\" earlier than \"plannedStartTime\".",
+            "Send GET /api/meetings/<draft id>."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\", \"errors\" lists \"title\" and \"plannedEndTime\".",
+            "Step 3 shows the original values."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_validation_errors_without_mutating_the_meeting)"
+        },
+        {
+          "id": "MEET_API_IT26",
+          "description": "Verify PUT /api/meetings/{id} allows a Draft start that is already past.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<draft id> with \"plannedStartTime\" one hour in the past and \"plannedEndTime\" one hour in the future."
+          ],
+          "expected": [
+            "HTTP 200 OK, code \"MSG30\": only create and reschedule require a future start."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT27",
+          "description": "Verify PUT /api/meetings/{id} rejects a roster in the body.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<draft id>",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the current values plus \"participants\": [ ... ]."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG31\": the roster is edited through the participant endpoints only.",
+            "The roster is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer, with a roster.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)"
+        },
+        {
+          "id": "MEET_API_IT28",
+          "description": "Verify PUT /api/meetings/{id} requires a JSON content type.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<draft id> with Content-Type: text/plain and any body."
+          ],
+          "expected": [
+            "HTTP 415 Unsupported Media Type, code \"MSG34\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_state_before_rejecting_a_missing_or_unsupported_content_type)"
+        },
+        {
+          "id": "MEET_API_IT29",
+          "description": "Verify PUT /api/meetings/{id} rejects a body over 64 KiB.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/meetings/<draft id> with a JSON body larger than 64 KiB (a \"description\" of 70,000 characters)."
+          ],
+          "expected": [
+            "HTTP 413 Payload Too Large, code \"MSG87\".",
+            "The meeting is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-15 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_rejects_json_larger_than_64_kib)"
+        },
+        {
+          "id": "MEET_API_IT30",
+          "description": "Verify PUT /api/meetings/{id} requires a token and MeetingCreator.",
+          "procedure": [
+            "Send PUT /api/meetings/<draft id> without an Authorization header.",
+            "Sign in as a Member without MeetingCreator and send the same request."
+          ],
+          "expected": [
+            "Step 1: HTTP 401 Unauthorized.",
+            "Step 2: HTTP 403 Forbidden."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer.",
+            "Active Member account without MeetingCreator supplied by QA lead."
+          ],
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+        },
+        {
+          "id": "MEET_API_IT31",
+          "description": "Verify PUT /api/meetings/{id} answers 404 to another Organizer and to an unknown id alike.",
+          "procedure": [
+            "Sign in as a second Organizer (MeetingCreator) who did not create the meeting.",
+            "Send PUT /api/meetings/<draft id> with a valid body.",
+            "Send PUT /api/meetings/00000000-0000-7000-8000-000000000000 with a valid body."
+          ],
+          "expected": [
+            "Both steps answer HTTP 404 Not Found with an empty body, so the first does not reveal that the meeting exists.",
+            "The meeting is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the first Organizer.",
+            "Second active Organizer account supplied by QA lead."
+          ],
+          "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)"
+        }
+      ]
     },
     {
       "title": "GET /api/meetings",
       "uc": [
         "UC-17"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MEET_API_IT32",
+          "description": "Verify GET /api/meetings returns the first page with its paging metadata.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings",
+            "Headers: Authorization: Bearer <access_token>"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"items\": [ ... ], \"page\": 1, \"pageSize\": 20, \"totalCount\": <n>, \"totalPages\": <n> }.",
+            "Each item has \"id\", \"title\", \"plannedStartTime\", \"plannedEndTime\", \"mode\", \"location\", \"createdAt\", \"status\", \"sensitivity\", \"myResponse\", \"canRespond\".",
+            "The default order is \"plannedStartTime\" descending."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "More than 20 meetings visible to the Organizer."
+          ],
+          "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata)"
+        },
+        {
+          "id": "MEET_API_IT33",
+          "description": "Verify GET /api/meetings lists only meetings the caller may read.",
+          "procedure": [
+            "Sign in as a Member who is on the roster of a Published meeting and not on any other.",
+            "Send GET /api/meetings and note \"totalCount\".",
+            "Sign in as the Organizer and send the same request."
+          ],
+          "expected": [
+            "Step 2: only the Published meeting of the Member appears; Draft, WaitingApproval, Rejected and Approved meetings of others are absent and \"totalCount\" does not count them.",
+            "Step 3: the Organizer sees every meeting they created in any status."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Member account on the roster of one Published meeting; the Organizer has meetings in several statuses."
+          ],
+          "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata; Get_enforces_lifecycle_visibility_for_related_readers)"
+        },
+        {
+          "id": "MEET_API_IT34",
+          "description": "Verify GET /api/meetings filters by status and sensitivity together.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?status=Published&sensitivity=Internal"
+          ],
+          "expected": [
+            "HTTP 200 OK; every item has \"status\": \"Published\" and \"sensitivity\": \"Internal\".",
+            "\"totalCount\" counts only the matching meetings."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Published meetings of mixed sensitivity."
+          ],
+          "note": "UC-17 | BR-30, BR-31 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata)"
+        },
+        {
+          "id": "MEET_API_IT35",
+          "description": "Verify GET /api/meetings searches the title without case or accents.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?q=e2e%20loc"
+          ],
+          "expected": [
+            "HTTP 200 OK; a meeting titled \"E2E Lộc\" is in \"items\".",
+            "A \"%\" or \"_\" in \"q\" is matched as a plain character, not a wildcard."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "A meeting titled \"E2E Lộc\" visible to the Organizer."
+          ],
+          "note": "UC-17 | BR-30 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT36",
+          "description": "Verify GET /api/meetings filters by the overlap of the planned time with from and to.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?from=2026-12-01T00%3A00%3A00%2B07%3A00&to=2026-12-01T23%3A59%3A59%2B07%3A00"
+          ],
+          "expected": [
+            "HTTP 200 OK; every item's planned time overlaps 1 December 2026 (its \"plannedEndTime\" is not before \"from\" and its \"plannedStartTime\" is not after \"to\")."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Meetings on and around 1 December 2026."
+          ],
+          "note": "UC-17 | BR-30 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT37",
+          "description": "Verify GET /api/meetings sorts and pages as asked.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?sortBy=title&sortDir=asc&page=2&pageSize=5"
+          ],
+          "expected": [
+            "HTTP 200 OK with \"page\": 2, \"pageSize\": 5 and items 6 to 10 ordered by title ascending; rows with equal titles follow \"id\" ascending."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "At least 10 meetings visible to the Organizer."
+          ],
+          "note": "UC-17 | BR-32 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT38",
+          "description": "Verify GET /api/meetings returns an empty page for no match and for a page past the end.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?q=khongcoketqua",
+            "Send GET /api/meetings?page=2147483647"
+          ],
+          "expected": [
+            "Both answer HTTP 200 OK with \"items\": [].",
+            "Step 2: \"totalCount\": 0 and \"totalPages\": 0."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-17 | BR-12 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_empty_page_for_no_match_or_page_beyond_end)"
+        },
+        {
+          "id": "MEET_API_IT39",
+          "description": "Verify GET /api/meetings rejects an invalid status, including the retired ones.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?status=MinutesIssued",
+            "Send GET /api/meetings?status=published"
+          ],
+          "expected": [
+            "Both answer HTTP 400 Bad Request: { \"code\": \"MSG32\", \"message\": \"Tiêu chí danh sách cuộc họp không hợp lệ.\", \"errors\": { \"status\": ... } }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
+        },
+        {
+          "id": "MEET_API_IT40",
+          "description": "Verify GET /api/meetings rejects a time filter without an offset or with from after to.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?from=2026-12-01T09:00:00",
+            "Send GET /api/meetings?from=2026-12-02T00%3A00%3A00Z&to=2026-12-01T00%3A00%3A00Z"
+          ],
+          "expected": [
+            "Both answer HTTP 400, code \"MSG32\", with \"errors\" keyed by the offending parameter."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
+        },
+        {
+          "id": "MEET_API_IT41",
+          "description": "Verify GET /api/meetings rejects page, pageSize and sort values out of range.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?page=0",
+            "Send GET /api/meetings?pageSize=101",
+            "Send GET /api/meetings?sortBy=startsAt"
+          ],
+          "expected": [
+            "Each answers HTTP 400, code \"MSG32\", with \"errors\" naming \"page\", \"pageSize\" and \"sortBy\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-17 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
+        },
+        {
+          "id": "MEET_API_IT42",
+          "description": "Verify GET /api/meetings splits upcoming from past with timing.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings?timing=upcoming",
+            "Send GET /api/meetings?timing=past",
+            "Send GET /api/meetings?timing=live"
+          ],
+          "expected": [
+            "Step 2: every item starts after the moment the server received the request.",
+            "Step 3: every item started at or before it; a meeting in progress counts as past.",
+            "Step 4: HTTP 400, code \"MSG32\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Meetings both before and after the current time."
+          ],
+          "note": "UC-17 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT43",
+          "description": "Verify GET /api/meetings?scope=todo keeps only the meetings waiting on the caller.",
+          "procedure": [
+            "Sign in as an Approver with a meeting WaitingApproval assigned to them.",
+            "Send GET /api/meetings?scope=todo",
+            "Send GET /api/meetings?scope=mine"
+          ],
+          "expected": [
+            "Step 2: HTTP 200 OK; the items are only meetings WaitingApproval assigned to the Approver, plus Approved meetings the caller organized.",
+            "Step 3: HTTP 400, code \"MSG32\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Approver account with one meeting assigned and one not assigned to them."
+          ],
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo)"
+        },
+        {
+          "id": "MEET_API_IT44",
+          "description": "Verify GET /api/meetings?excludeDeclined=true hides meetings the caller declined.",
+          "procedure": [
+            "Sign in as a Member who answered \"Không tham dự\" to one Published meeting.",
+            "Send GET /api/meetings",
+            "Send GET /api/meetings?excludeDeclined=true",
+            "Send GET /api/meetings?excludeDeclined=maybe"
+          ],
+          "expected": [
+            "Step 2 includes the declined meeting; step 3 omits it; step 4 answers HTTP 400, code \"MSG32\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Member account who declined one Published meeting."
+          ],
+          "note": "UC-17 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT45",
+          "description": "Verify GET /api/meetings requires a token.",
+          "procedure": [
+            "Send GET /api/meetings without an Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_requires_authentication_and_an_active_account)"
+        },
+        {
+          "id": "MEET_API_IT46",
+          "description": "Verify GET /api/meetings is open to any signed-in account without MeetingCreator.",
+          "procedure": [
+            "Sign in as a Member without MeetingCreator.",
+            "Send GET /api/meetings"
+          ],
+          "expected": [
+            "HTTP 200 OK with only the meetings the Member may read (no 403)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Member account supplied by QA lead."
+          ],
+          "note": "UC-17 | Manual only"
+        }
+      ]
     },
     {
       "title": "GET /api/meetings/{id}",
       "uc": [
         "UC-16"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MEET_API_IT47",
+          "description": "Verify GET /api/meetings/{id} returns the full meeting to its Organizer.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/<id>",
+            "Headers: Authorization: Bearer <access_token>"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body is the flat meeting (no envelope): \"id\", \"title\", \"plannedStartTime\", \"plannedEndTime\", \"actualStartedAt\", \"actualEndedAt\", \"onlineLink\", \"mode\", \"sensitivity\", \"status\" (strings), \"createdById\", \"chair\": { \"userId\", \"fullName\" }, \"secretaries\": [ ... ], \"myMeetingRole\", \"myResponse\", \"canRespond\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "A meeting created by the Organizer with a Chair and a Secretary."
+          ],
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_creates_a_draft_and_returns_a_location_that_get_can_read)"
+        },
+        {
+          "id": "MEET_API_IT48",
+          "description": "Verify GET /api/meetings/{id} hides a Draft from a Member on the roster.",
+          "procedure": [
+            "Sign in as a Member who is on the roster of a Draft meeting.",
+            "Send GET /api/meetings/<draft id>",
+            "Ask the Organizer to Publish it, then send the request again."
+          ],
+          "expected": [
+            "Step 2: HTTP 404 Not Found with an empty body.",
+            "Step 3: HTTP 200 OK with the meeting."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting with the Member on its roster."
+          ],
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_enforces_lifecycle_visibility_for_related_readers; Get_allows_an_active_meeting_participant_without_MeetingCreator)"
+        },
+        {
+          "id": "MEET_API_IT49",
+          "description": "Verify GET /api/meetings/{id} lets the Chair and the Secretary read a Draft.",
+          "procedure": [
+            "Sign in as the Chair of the meeting and send GET /api/meetings/<draft id>.",
+            "Sign in as its Secretary and send the same request."
+          ],
+          "expected": [
+            "Both answer HTTP 200 OK; \"myMeetingRole\" is \"Chair\" and \"Secretary\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting whose roster has the Chair and the Secretary."
+          ],
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Assigned_chair_can_read_before_publication; Assigned_secretary_can_read_detail_list_and_rejection_before_publication)"
+        },
+        {
+          "id": "MEET_API_IT50",
+          "description": "Verify GET /api/meetings/{id} lets the assigned approver read from WaitingApproval.",
+          "procedure": [
+            "Sign in as the Approver assigned to the meeting.",
+            "Send GET /api/meetings/<waiting id>",
+            "Send GET /api/meetings/<draft id> of another meeting where the Approver is not assigned."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 OK (no MeetingCreator needed).",
+            "Step 3: HTTP 404 with an empty body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "One WaitingApproval meeting assigned to the Approver and one unrelated Draft."
+          ],
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_allows_an_active_assigned_approver_without_MeetingCreator)"
+        },
+        {
+          "id": "MEET_API_IT51",
+          "description": "Verify GET /api/meetings/{id} answers 404 alike for a stranger and an unknown id.",
+          "procedure": [
+            "Sign in as an active account with no relation to the meeting.",
+            "Send GET /api/meetings/<existing id>",
+            "Send GET /api/meetings/00000000-0000-7000-8000-000000000000"
+          ],
+          "expected": [
+            "Both answer HTTP 404 Not Found with an empty body; a 403 is never returned."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Existing meeting; an unrelated active account."
+          ],
+          "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)"
+        },
+        {
+          "id": "MEET_API_IT52",
+          "description": "Verify GET /api/meetings/{id} shows the caller their invitation answer.",
+          "procedure": [
+            "Sign in as a Member on the roster of a Published meeting.",
+            "Send GET /api/meetings/<id>",
+            "Answer the invitation \"Không tham dự\" through the participant endpoint and send step 2 again."
+          ],
+          "expected": [
+            "Step 2: \"myResponse\": null and \"canRespond\": true.",
+            "Step 3: \"myResponse\": \"Declined\" and \"canRespond\": false.",
+            "For the Chair both are always \"myResponse\": null and \"canRespond\": false."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting with a Member and the Chair on the roster."
+          ],
+          "note": "UC-16 | SCRUM-20 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT53",
+          "description": "Verify GET /api/meetings/{id} requires a token.",
+          "procedure": [
+            "Send GET /api/meetings/<id> without an Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Existing meeting."
+          ],
+          "note": "UC-16 | Manual only"
+        }
+      ]
     },
     {
       "title": "GET /api/meetings/approvers",
@@ -38,14 +1041,142 @@
         "UC-14",
         "UC-18"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MEET_API_IT54",
+          "description": "Verify GET /api/meetings/approvers lists the active approvers except the caller.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/approvers",
+            "Headers: Authorization: Bearer <access_token>"
+          ],
+          "expected": [
+            "HTTP 200 OK with a list of { \"id\", \"fullName\", \"email\" } only, sorted by name.",
+            "It holds active accounts with MeetingApprover and not the caller, even if the caller also has MeetingApprover; no inactive account appears."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "At least two active Approver accounts and one deactivated Approver."
+          ],
+          "note": "UC-14 | UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_approvers_excludes_the_caller_and_preserves_other_options)"
+        },
+        {
+          "id": "MEET_API_IT55",
+          "description": "Verify GET /api/meetings/approvers requires a token and MeetingCreator.",
+          "procedure": [
+            "Send GET /api/meetings/approvers without an Authorization header.",
+            "Sign in as a Member without MeetingCreator and send the request."
+          ],
+          "expected": [
+            "Step 1: HTTP 401 Unauthorized.",
+            "Step 2: HTTP 403 Forbidden."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Member account supplied by QA lead."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+        },
+        {
+          "id": "MEET_API_IT56",
+          "description": "Verify GET /api/meetings/approvers answers 503 MSG130 when the list cannot be read.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Make the database unavailable, then send GET /api/meetings/approvers."
+          ],
+          "expected": [
+            "HTTP 503 Service Unavailable: { \"code\": \"MSG130\", \"message\": \"Không thể tải danh sách người duyệt. Vui lòng thử lại.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "QA lead can stop the database for the test."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_approvers_returns_a_structured_503_when_the_repository_is_unavailable; Get_approvers_returns_the_contract_503_when_capability_account_lookup_fails)"
+        }
+      ]
     },
     {
       "title": "GET /api/meetings/{id}/submission-readiness",
       "uc": [
         "UC-18"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MEET_API_IT57",
+          "description": "Verify GET /api/meetings/{id}/submission-readiness reports a complete Draft as ready.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/<draft id>/submission-readiness",
+            "Headers: Authorization: Bearer <access_token>",
+            "Send GET /api/meetings/<draft id> afterwards."
+          ],
+          "expected": [
+            "HTTP 200 OK: { \"meetingId\": \"<draft id>\", \"status\": \"Draft\", \"ready\": true, \"errors\": { } }.",
+            "The meeting status, assignment and history are unchanged; an agenda is not required."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Draft meeting with title and planned schedule and no agenda items."
+          ],
+          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingSubmissionReadinessTests.cs (Submission_readiness_does_not_depend_on_agenda_content); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_submission_readiness_does_not_require_agenda_or_sessions_and_does_not_write)"
+        },
+        {
+          "id": "MEET_API_IT58",
+          "description": "Verify GET /api/meetings/{id}/submission-readiness lists what is missing as data, not as an HTTP error.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/<legacy id>/submission-readiness"
+          ],
+          "expected": [
+            "HTTP 200 OK with \"ready\": false and \"errors\" keyed by the missing field (for example \"plannedStartTime\")."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Legacy Draft row without a valid planned schedule, prepared by QA lead in the database."
+          ],
+          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingSubmissionReadinessTests.cs (Submission_readiness_requires_a_valid_planned_schedule)"
+        },
+        {
+          "id": "MEET_API_IT59",
+          "description": "Verify GET /api/meetings/{id}/submission-readiness refuses a meeting that is no longer Draft or Rejected.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/<approved id>/submission-readiness"
+          ],
+          "expected": [
+            "HTTP 409 Conflict: { \"code\": \"MSG41\", \"message\": \"Cuộc họp không còn ở trạng thái Draft hoặc Rejected.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Approved meeting created by the Organizer."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)"
+        },
+        {
+          "id": "MEET_API_IT60",
+          "description": "Verify GET /api/meetings/{id}/submission-readiness is for the Organizer only.",
+          "procedure": [
+            "Sign in as the Chair of the meeting and send GET /api/meetings/<draft id>/submission-readiness.",
+            "Sign in as an unrelated account and send the same request.",
+            "Send it without a token."
+          ],
+          "expected": [
+            "Step 1: HTTP 403 Forbidden, code \"MSG85\" (the Chair can read the meeting but is not its Organizer).",
+            "Step 2: HTTP 404 with an empty body.",
+            "Step 3: HTTP 401."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting with a Chair on its roster; an unrelated account."
+          ],
+          "note": "UC-18 | Manual only"
+        }
+      ]
     },
     {
       "title": "POST /api/meetings/{id}/transitions",
@@ -57,14 +1188,987 @@
         "UC-22",
         "UC-75"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MEET_API_IT61",
+          "description": "Verify POST /api/meetings/{id}/transitions SubmitForApproval moves a Draft to WaitingApproval.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"SubmitForApproval\", \"assignedApproverId\": \"<Approver id from GET /api/meetings/approvers>\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG78\", \"message\": \"Đã gửi cuộc họp để duyệt.\", \"meeting\": { ... \"status\": \"WaitingApproval\" }, \"history\": { ... } }.",
+            "\"history.action\" is \"SubmitForApproval\" with \"assignedApproverId\" = the chosen approver; the actor and time come from the server.",
+            "The Approver has a \"MeetingWaitingApproval\" notification; no email is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Ready Draft meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Active Approver account."
+          ],
+          "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Submit_records_assignment_history_and_approver_notification); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_accepts_the_documented_submit_contract_and_returns_history)"
+        },
+        {
+          "id": "MEET_API_IT62",
+          "description": "Verify POST /api/meetings/{id}/transitions SubmitForApproval resubmits a Rejected meeting directly.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"SubmitForApproval\", \"assignedApproverId\": \"<Approver id>\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG78\", \"message\": \"Đã gửi cuộc họp để duyệt.\", \"meeting\": { ... \"status\": \"WaitingApproval\" }, \"history\": { ... } }.",
+            "One history row \"Rejected\" to \"WaitingApproval\"; the earlier rejection rows and reason are kept; the approver may be a different person."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Rejected meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_resubmits_rejected_directly_and_preserves_the_previous_rejection)"
+        },
+        {
+          "id": "MEET_API_IT63",
+          "description": "Verify SubmitForApproval refuses the Organizer as approver.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"SubmitForApproval\", \"assignedApproverId\": \"<Organizer id>\" }"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request: { \"code\": \"MSG82\", \"message\": \"Người duyệt không hợp lệ hoặc không còn quyền duyệt cuộc họp.\" }.",
+            "No history row is written; the meeting stays \"Draft\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Ready Draft meeting.",
+            "Organizer account that also holds MeetingApprover."
+          ],
+          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_to_the_organizer_returns_MSG82_without_writing_any_workflow_rows)"
+        },
+        {
+          "id": "MEET_API_IT64",
+          "description": "Verify SubmitForApproval refuses an approver without MeetingApprover.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"SubmitForApproval\", \"assignedApproverId\": \"<Member id without MeetingApprover>\" }"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG82\".",
+            "The meeting stays \"Draft\" and has no assigned approver."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Ready Draft meeting.",
+            "Active Member account without MeetingApprover."
+          ],
+          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
+        },
+        {
+          "id": "MEET_API_IT65",
+          "description": "Verify SubmitForApproval refuses a meeting whose information is incomplete.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"SubmitForApproval\", \"assignedApproverId\": \"<Approver id>\" }"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request: { \"code\": \"MSG81\", \"message\": \"Cuộc họp chưa đủ thông tin để gửi duyệt.\", \"errors\": { ... } } naming the missing fields.",
+            "The meeting stays \"Draft\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Legacy Draft row without a valid schedule, prepared by QA lead in the database.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | EX | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
+        },
+        {
+          "id": "MEET_API_IT66",
+          "description": "Verify SubmitForApproval needs an assignedApproverId.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"SubmitForApproval\" }"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request: { \"code\": \"MSG80\", \"message\": \"Yêu cầu chuyển trạng thái không hợp lệ.\" }.",
+            "Nothing is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Ready Draft meeting.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_rejects_unknown_fields_and_numeric_actions)"
+        },
+        {
+          "id": "MEET_API_IT67",
+          "description": "Verify SubmitForApproval refuses a meeting that is not Draft or Rejected.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"SubmitForApproval\", \"assignedApproverId\": \"<Approver id>\" }"
+          ],
+          "expected": [
+            "HTTP 409 Conflict, code \"MSG41\": { \"message\": \"Cuộc họp không còn ở trạng thái Draft hoặc Rejected.\" }.",
+            "No history row or notification is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting already WaitingApproval or Approved.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)"
+        },
+        {
+          "id": "MEET_API_IT68",
+          "description": "Verify POST /api/meetings/{id}/transitions Approve moves WaitingApproval to Approved.",
+          "procedure": [
+            "Sign in as the assigned Approver and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Approve\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG43\", \"message\": \"Đã duyệt cuộc họp.\", \"meeting\": { ... \"status\": \"Approved\" }, \"history\": { ... } }.",
+            "The Organizer has a \"MeetingApproved\" notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval assigned to an Approver (MeetingApprover, not the Organizer)."
+          ],
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Approve_notifies_the_organizer); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_success_codes)"
+        },
+        {
+          "id": "MEET_API_IT69",
+          "description": "Verify POST /api/meetings/{id}/transitions Reject stores the reason and notifies the Organizer.",
+          "procedure": [
+            "Sign in as the assigned Approver and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Reject\", \"reason\": \"  Cần bổ sung báo cáo tài chính.  \" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG44\", \"message\": \"Đã từ chối cuộc họp.\", \"meeting\": { ... \"status\": \"Rejected\" }, \"history\": { ... } }.",
+            "\"history.rejectionReason\" is \"Cần bổ sung báo cáo tài chính.\" (trimmed).",
+            "The Organizer has a \"MeetingRejected\" notification whose body carries the reason."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval assigned to an Approver."
+          ],
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_notifies_the_organizer_with_the_reason; Reject_requires_nonblank_reason_and_stores_trimmed_value)"
+        },
+        {
+          "id": "MEET_API_IT70",
+          "description": "Verify Reject needs a reason.",
+          "procedure": [
+            "Sign in as the assigned Approver and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Reject\", \"reason\": \"   \" }"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request: { \"code\": \"MSG83\", \"message\": \"Cần nhập lý do từ chối.\" }.",
+            "The meeting stays WaitingApproval.",
+            "The same answer comes for \"reason\": null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval assigned to an Approver."
+          ],
+          "note": "UC-19 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_null_rejection_reason_to_required_reason_error)"
+        },
+        {
+          "id": "MEET_API_IT71",
+          "description": "Verify Reject accepts a reason of 1,000 characters and refuses 1,001.",
+          "procedure": [
+            "Sign in as the assigned Approver and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Reject\", \"reason\": \"<1,001 characters>\" }",
+            "Repeat with a reason of exactly 1,000 characters."
+          ],
+          "expected": [
+            "Step 3: HTTP 400 Bad Request: { \"code\": \"MSG84\", \"message\": \"Lý do từ chối không được vượt quá 1.000 ký tự.\" }; the meeting stays WaitingApproval.",
+            "Step 4: HTTP 200 OK, code \"MSG44\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval assigned to an Approver."
+          ],
+          "note": "UC-19 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_accepts_exactly_1000_characters_and_rejects_1001); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_reject_returns_MSG84_when_reason_exceeds_1000_characters)"
+        },
+        {
+          "id": "MEET_API_IT72",
+          "description": "Verify Approve is refused for an account that is not the assigned approver.",
+          "procedure": [
+            "Sign in as an Approver who is not the assigned approver of the meeting and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Approve\" }"
+          ],
+          "expected": [
+            "HTTP 403 Forbidden: { \"code\": \"MSG85\", \"message\": \"Bạn không có quyền thực hiện thao tác này.\" }.",
+            "The meeting stays WaitingApproval; no history row."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval assigned to another Approver; second Approver account who can read the meeting."
+          ],
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Assigned_approver_with_capability_can_approve_but_an_unassigned_approver_cannot); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Legacy_self_assignment_returns_MSG85_without_approving_or_rejecting)"
+        },
+        {
+          "id": "MEET_API_IT73",
+          "description": "Verify Approve and Reject answer 409 when the meeting is no longer waiting.",
+          "procedure": [
+            "Sign in as the assigned Approver and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Approve\" }"
+          ],
+          "expected": [
+            "HTTP 409 Conflict: { \"code\": \"MSG132\", \"message\": \"Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.\" }.",
+            "No history row or notification is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting already Approved or Rejected by the same Approver."
+          ],
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)"
+        },
+        {
+          "id": "MEET_API_IT74",
+          "description": "Verify ReturnToDraft withdraws a WaitingApproval meeting whose approver is no longer valid.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"ReturnToDraft\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG79\", \"message\": \"Đã đưa cuộc họp về bản nháp.\", \"meeting\": { ... \"status\": \"Draft\" }, \"history\": { ... } }.",
+            "The assignment is cleared and one history row \"ReturnToDraft\" with \"fromStatus\": \"WaitingApproval\" is added; earlier rows are kept; no notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval whose approver was deactivated after submission.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | AF | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Waiting_approval_can_be_withdrawn_only_when_approver_is_ineligible); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Legacy_missing_or_self_assignment_returns_MSG79_when_the_organizer_withdraws)"
+        },
+        {
+          "id": "MEET_API_IT75",
+          "description": "Verify ReturnToDraft is refused while the waiting approver is still valid.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"ReturnToDraft\" }"
+          ],
+          "expected": [
+            "HTTP 409 Conflict: { \"code\": \"MSG133\", \"message\": \"Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.\" }.",
+            "The meeting stays WaitingApproval; no history row."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval with an active approver who still holds MeetingApprover.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Ineligible_approver_does_not_allow_withdrawal_from_other_states)"
+        },
+        {
+          "id": "MEET_API_IT76",
+          "description": "Verify POST /api/meetings/{id}/transitions Publish makes an Approved meeting Published and invites the roster.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Publish\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG45\", \"message\": \"Đã công bố cuộc họp.\", \"meeting\": { ... \"status\": \"Published\" }, \"history\": { ... } }.",
+            "Every active, non-delegated roster member except the Organizer has a \"MeetingPublished\" notification.",
+            "With SMTP enabled an email job with an .ics file is queued per roster member; the 200 does not promise delivery."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Approved meeting created by the Organizer with exactly one Chair and at least one Secretary on the roster.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner; Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant)"
+        },
+        {
+          "id": "MEET_API_IT77",
+          "description": "Verify Publish is refused without exactly one Chair and a Secretary.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Publish\" }"
+          ],
+          "expected": [
+            "HTTP 409 Conflict: { \"code\": \"MSG137\", \"message\": \"Cuộc họp cần có đúng một Chủ toạ đang hoạt động và ít nhất một Thư ký đang hoạt động trước khi công bố.\" }.",
+            "The meeting stays Approved; no history, notification or email job."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Approved meeting whose roster has no active Secretary.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG137_when_the_required_roster_is_not_ready)"
+        },
+        {
+          "id": "MEET_API_IT78",
+          "description": "Verify Publish is refused for a meeting that is not Approved.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Publish\" }"
+          ],
+          "expected": [
+            "HTTP 409 Conflict: { \"code\": \"MSG46\", \"message\": \"Cuộc họp này không còn có thể công bố.\" }.",
+            "No history row is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting already Published or still WaitingApproval.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)"
+        },
+        {
+          "id": "MEET_API_IT79",
+          "description": "Verify Publish is refused when the Organizer has lost MeetingCreator, and for a reader who is not the Organizer.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Publish\" }",
+            "Repeat as the Chair of the meeting."
+          ],
+          "expected": [
+            "Step 3: HTTP 403 Forbidden, code \"MSG46\" (\"Cuộc họp này không còn có thể công bố.\").",
+            "Step 4: HTTP 403 Forbidden, code \"MSG85\".",
+            "The meeting stays Approved."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Approved meeting; the Organizer's role was changed by an administrator to one without MeetingCreator; the meeting has a Chair."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG46_when_the_owner_lacks_the_required_capability; Publish_by_a_reader_who_is_not_the_organizer_returns_403_MSG85)"
+        },
+        {
+          "id": "MEET_API_IT80",
+          "description": "Verify Publish answers 503 MSG47 and rolls back when it cannot be saved.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Publish\" }"
+          ],
+          "expected": [
+            "HTTP 503 Service Unavailable: { \"code\": \"MSG47\", \"message\": \"Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.\" }.",
+            "The meeting stays Approved with no history, notification or email job."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Approved meeting; QA lead can make the database fail for the request.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-20 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_persistence_failure_rolls_back_status_history_notifications_and_jobs)"
+        },
+        {
+          "id": "MEET_API_IT81",
+          "description": "Verify POST /api/meetings/{id}/transitions Start moves Published to InProgress.",
+          "procedure": [
+            "Sign in as the Chair of the meeting and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Start\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG110\", \"message\": \"Bắt đầu cuộc họp thành công.\", \"meeting\": { ... \"status\": \"InProgress\" }, \"history\": { ... } }.",
+            "\"meeting.actualStartedAt\" is set by the server in UTC; one history row \"Start\".",
+            "Every active internal roster member except the Chair has a \"MeetingStarted\" notification; no email."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting with exactly one active Chair and at least one active Secretary."
+          ],
+          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_and_end_persist_server_time_history_and_notifications)"
+        },
+        {
+          "id": "MEET_API_IT82",
+          "description": "Verify Start is refused for a reader who is not the Chair.",
+          "procedure": [
+            "Sign in as the Organizer, who is not the Chair and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Start\" }"
+          ],
+          "expected": [
+            "HTTP 403 Forbidden: { \"code\": \"MSG112\", \"message\": \"Không thể bắt đầu cuộc họp này.\" }.",
+            "The meeting stays Published."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting where the Organizer is not the Chair."
+          ],
+          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)"
+        },
+        {
+          "id": "MEET_API_IT83",
+          "description": "Verify Start is refused when the meeting is not Published or has no Secretary.",
+          "procedure": [
+            "Sign in as the Chair of the meeting and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Start\" }"
+          ],
+          "expected": [
+            "HTTP 409 Conflict, code \"MSG112\", message \"Không thể bắt đầu cuộc họp này.\"",
+            "The same answer comes for a meeting already InProgress (a repeated Start).",
+            "No history row or notification."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting whose roster has no active Secretary; and an InProgress meeting."
+          ],
+          "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not; Invalid_state_does_not_mutate)"
+        },
+        {
+          "id": "MEET_API_IT84",
+          "description": "Verify Start answers 503 MSG115 when it cannot be saved.",
+          "procedure": [
+            "Sign in as the Chair of the meeting and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Start\" }"
+          ],
+          "expected": [
+            "HTTP 503 Service Unavailable: { \"code\": \"MSG115\", \"message\": \"Không thể bắt đầu cuộc họp. Vui lòng thử lại.\" }.",
+            "The meeting stays Published."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting; QA lead can make the database fail for the request."
+          ],
+          "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects)"
+        },
+        {
+          "id": "MEET_API_IT85",
+          "description": "Verify POST /api/meetings/{id}/transitions End moves InProgress to Ended and closes the current agenda item.",
+          "procedure": [
+            "Sign in as the Chair of the meeting and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"End\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG111\", \"message\": \"Kết thúc cuộc họp thành công.\", \"meeting\": { ... \"status\": \"Ended\" }, \"history\": { ... } }.",
+            "\"meeting.actualEndedAt\" is set; \"actualStartedAt\" is kept; one history row \"End\".",
+            "GET /api/meetings/<id>/agenda: the item that was in progress is \"Done\"; Pending items stay Pending; open votes and attendance are untouched; Draft votes are deleted."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "InProgress meeting with one agenda item in progress, one Pending and an open vote."
+          ],
+          "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)"
+        },
+        {
+          "id": "MEET_API_IT86",
+          "description": "Verify End is refused for a non-Chair and for a meeting that is not InProgress.",
+          "procedure": [
+            "Sign in as the Organizer, who is not the Chair and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"End\" }",
+            "Repeat as the Chair on a Published meeting."
+          ],
+          "expected": [
+            "Step 3: HTTP 403, code \"MSG114\", message \"Không thể kết thúc cuộc họp này.\"",
+            "Step 4: HTTP 409, code \"MSG114\".",
+            "No history row is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "InProgress meeting where the Organizer is not the Chair; and a Published meeting."
+          ],
+          "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable; Invalid_state_does_not_mutate)"
+        },
+        {
+          "id": "MEET_API_IT87",
+          "description": "Verify End rolls back with 503 MSG116 when it cannot be saved.",
+          "procedure": [
+            "Sign in as the Chair of the meeting and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"End\" }"
+          ],
+          "expected": [
+            "HTTP 503 Service Unavailable: { \"code\": \"MSG116\", \"message\": \"Không thể kết thúc cuộc họp. Vui lòng thử lại.\" }.",
+            "The meeting stays InProgress and its current agenda item is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "InProgress meeting; QA lead can make the database fail for the request."
+          ],
+          "note": "UC-22 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects; Invalid_agenda_timestamps_roll_back_end)"
+        },
+        {
+          "id": "MEET_API_IT88",
+          "description": "Verify POST /api/meetings/{id}/transitions Cancel cancels an unstarted meeting with its reason.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Cancel\", \"reason\": \"Lãnh đạo đi công tác.\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK. Body: { \"code\": \"MSG261\", \"message\": \"Đã huỷ cuộc họp.\", \"meeting\": { ... \"status\": \"Cancelled\" }, \"history\": { ... } }.",
+            "\"meeting.cancellation\" has \"cancelledAt\", \"cancelledById\", \"cancelledByName\" and \"reason\"; \"history.action\" is \"Cancel\" with \"cancellationReason\".",
+            "For a Published meeting each internal invitee (not the Organizer) has a \"MeetingCancelled\" notification and invitees who had an invitation email receive a cancellation email with an .ics METHOD:CANCEL."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting created by the Organizer with an invited Member.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-75 | BR-297 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_returns_MSG261_and_the_meeting_with_its_cancellation); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees)"
+        },
+        {
+          "id": "MEET_API_IT89",
+          "description": "Verify Cancel from WaitingApproval tells the approver and Cancel from Draft tells nobody.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Cancel\", \"reason\": \"Không còn cần họp.\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK, code \"MSG261\", \"meeting.status\": \"Cancelled\".",
+            "WaitingApproval: the assigned Approver has a \"MeetingCancelled\" notification with the reason. Draft: no notification is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "One WaitingApproval and one Draft meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_while_waiting_for_approval_closes_the_request_and_tells_the_approver; Cancel_before_publication_tells_nobody)"
+        },
+        {
+          "id": "MEET_API_IT90",
+          "description": "Verify Cancel needs a reason.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Cancel\", \"reason\": \"   \" }"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request: { \"code\": \"MSG262\", \"message\": \"Cần nhập lý do huỷ cuộc họp.\" }.",
+            "The same answer comes for a missing or null reason; the meeting is not cancelled."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-75 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_without_a_reason_returns_MSG262)"
+        },
+        {
+          "id": "MEET_API_IT91",
+          "description": "Verify Cancel accepts a reason of 1,000 characters and refuses 1,001.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Cancel\", \"reason\": \"<1,001 characters>\" }",
+            "Repeat with exactly 1,000 characters on a second Draft meeting."
+          ],
+          "expected": [
+            "Step 3: HTTP 400 Bad Request: { \"code\": \"MSG345\", \"message\": \"Lý do huỷ không được vượt quá 1.000 ký tự.\" }.",
+            "Step 4: HTTP 200 OK, code \"MSG261\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two Draft meetings created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-75 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_with_a_reason_over_1000_characters_returns_MSG345); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_accepts_exactly_1000_characters_and_rejects_1001)"
+        },
+        {
+          "id": "MEET_API_IT92",
+          "description": "Verify Cancel is refused once the meeting has started, ended or been cancelled.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Cancel\", \"reason\": \"Huỷ.\" }"
+          ],
+          "expected": [
+            "HTTP 409 Conflict: { \"code\": \"MSG263\", \"message\": \"Cuộc họp này không còn có thể huỷ.\" }.",
+            "The meeting status is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "InProgress meeting created by the Organizer (repeat for Ended and Cancelled).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-75 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_of_a_started_meeting_returns_409_MSG263); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (A_started_ended_or_cancelled_meeting_cannot_be_cancelled)"
+        },
+        {
+          "id": "MEET_API_IT93",
+          "description": "Verify Cancel is refused for a reader who is not the Organizer.",
+          "procedure": [
+            "Sign in as the Chair of the meeting and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Cancel\", \"reason\": \"Huỷ.\" }"
+          ],
+          "expected": [
+            "HTTP 403 Forbidden: { \"code\": \"MSG85\", \"message\": \"Bạn không có quyền thực hiện thao tác này.\" }.",
+            "The meeting is not cancelled."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting with a Chair on its roster."
+          ],
+          "note": "UC-75 | SCRUM-150 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85)"
+        },
+        {
+          "id": "MEET_API_IT94",
+          "description": "Verify Cancel answers 503 MSG264 when it cannot be saved.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Cancel\", \"reason\": \"Huỷ.\" }"
+          ],
+          "expected": [
+            "HTTP 503 Service Unavailable: { \"code\": \"MSG264\", \"message\": \"Không thể huỷ cuộc họp. Vui lòng thử lại.\" }.",
+            "The meeting status and history are unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting; QA lead can make the database fail for the request.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-75 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_that_cannot_be_saved_returns_MSG264)"
+        },
+        {
+          "id": "MEET_API_IT95",
+          "description": "Verify TransferOrganizer hands an Approved meeting of a deactivated Organizer to a new Organizer.",
+          "procedure": [
+            "Sign in as an administrator (AdminUsers) and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"TransferOrganizer\", \"organizerId\": \"<new Organizer id>\" }"
+          ],
+          "expected": [
+            "HTTP 200 OK: { \"code\": \"MSG89\", \"message\": \"Đã chuyển cuộc họp cho người tổ chức mới.\", \"meetingId\", \"status\": \"Approved\", \"organizerId\": \"<new Organizer id>\", \"history\": { ... } } with no title, schedule or description of the meeting.",
+            "History gains one \"TransferOrganizer\" row with \"previousOrganizerId\" and \"newOrganizerId\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Approved meeting whose Organizer is deactivated; administrator account; active new Organizer with MeetingCreator who is not the assigned approver."
+          ],
+          "note": "UC-20 | SCRUM-69 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Administrator_transfers_disabled_organizer_meeting_with_MSG89_and_typed_history; Transfer_does_not_return_sensitive_content_to_a_recovery_administrator)"
+        },
+        {
+          "id": "MEET_API_IT96",
+          "description": "Verify TransferOrganizer refuses an invalid new Organizer.",
+          "procedure": [
+            "Sign in as an administrator (AdminUsers) and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"TransferOrganizer\", \"organizerId\": \"<id of a Member without MeetingCreator>\" }"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request: { \"code\": \"MSG134\", \"message\": \"Người tổ chức mới không hợp lệ hoặc không còn quyền tạo cuộc họp.\" }.",
+            "No history row is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Approved meeting whose Organizer is deactivated; administrator account."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Invalid_replacement_returns_MSG134_and_transfer_persistence_failure_returns_MSG88)"
+        },
+        {
+          "id": "MEET_API_IT97",
+          "description": "Verify TransferOrganizer is refused while the current Organizer is active or the meeting is not Approved.",
+          "procedure": [
+            "Sign in as an administrator (AdminUsers) and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"TransferOrganizer\", \"organizerId\": \"<new Organizer id>\" }"
+          ],
+          "expected": [
+            "HTTP 409 Conflict: { \"code\": \"MSG135\", \"message\": \"Trạng thái cuộc họp đã thay đổi hoặc không cho phép thao tác này.\" }.",
+            "A repeat after a successful transfer answers the same."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Approved meeting whose Organizer is still active; administrator account."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Transfer_cannot_replace_an_active_organizer_even_if_their_creator_capability_was_removed; Transfer_requires_an_approved_meeting)"
+        },
+        {
+          "id": "MEET_API_IT98",
+          "description": "Verify TransferOrganizer answers 404 to an account that is not an administrator.",
+          "procedure": [
+            "Sign in as the Organizer or a Member and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"TransferOrganizer\", \"organizerId\": \"<new Organizer id>\" }"
+          ],
+          "expected": [
+            "HTTP 404 Not Found with an empty body: the meeting is not revealed."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Approved meeting whose Organizer is deactivated."
+          ],
+          "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Transfer_requires_current_active_administrator_before_reading_the_meeting)"
+        },
+        {
+          "id": "MEET_API_IT99",
+          "description": "Verify POST /api/meetings/{id}/transitions rejects an unknown, numeric or composite action.",
+          "procedure": [
+            "Sign in as the Organizer and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"4\" }",
+            "Repeat with \"action\": \"SubmitForApproval,Publish\", \" Approve \" and \"approve\"."
+          ],
+          "expected": [
+            "Every request answers HTTP 400 Bad Request: { \"code\": \"MSG80\", \"message\": \"Yêu cầu chuyển trạng thái không hợp lệ.\" }.",
+            "Nothing is written and no status changes."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_one_exact_action_name_without_publishing; Post_transition_rejects_unknown_fields_and_numeric_actions)"
+        },
+        {
+          "id": "MEET_API_IT100",
+          "description": "Verify POST /api/meetings/{id}/transitions rejects fields that do not belong to the action.",
+          "procedure": [
+            "Sign in as the assigned Approver and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"Approve\", \"reason\": \"x\", \"actorId\": \"<any id>\" }"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, code \"MSG80\": the client cannot send an actor, status or timestamp and an action takes only its own fields.",
+            "The meeting stays WaitingApproval."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval assigned to an Approver."
+          ],
+          "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Strict_parser_rejects_forged_or_malformed_commands)"
+        },
+        {
+          "id": "MEET_API_IT101",
+          "description": "Verify POST /api/meetings/{id}/transitions requires JSON and a body under 64 KiB.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/meetings/<id>/transitions with Content-Type: text/plain.",
+            "Send it with a JSON body larger than 64 KiB."
+          ],
+          "expected": [
+            "Step 2: HTTP 415 Unsupported Media Type, code \"MSG34\".",
+            "Step 3: HTTP 413 Payload Too Large, code \"MSG87\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting created by the Organizer.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_json_and_returns_MSG34); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Authentication_active_gate_content_type_and_size_contracts_are_preserved)"
+        },
+        {
+          "id": "MEET_API_IT102",
+          "description": "Verify POST /api/meetings/{id}/transitions requires a token and hides meetings the caller cannot read.",
+          "procedure": [
+            "Send POST /api/meetings/<id>/transitions with { \"action\": \"Publish\" } and no Authorization header.",
+            "Sign in as an unrelated account and send the same request.",
+            "Send it for an unknown meeting id."
+          ],
+          "expected": [
+            "Step 1: HTTP 401 Unauthorized.",
+            "Steps 2 and 3: HTTP 404 Not Found with an empty body, indistinguishable from each other."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Existing Approved meeting; an unrelated active account."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)"
+        },
+        {
+          "id": "MEET_API_IT103",
+          "description": "Verify POST /api/meetings/{id}/transitions answers 503 MSG131 when the account cannot be checked.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Make the account lookup fail, then send POST /api/meetings/<id>/transitions with { \"action\": \"Publish\" }."
+          ],
+          "expected": [
+            "HTTP 503 Service Unavailable: { \"code\": \"MSG131\", \"message\": \"Không thể kiểm tra tài khoản để thực hiện thao tác cuộc họp. Vui lòng thử lại.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "QA lead can make the account lookup fail.",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_workflow_endpoints_return_MSG136_and_MSG131_for_transient_read_failures)"
+        }
+      ]
     },
     {
       "title": "GET /api/meetings/{id}/history",
       "uc": [
         "UC-16"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "MEET_API_IT104",
+          "description": "Verify GET /api/meetings/{id}/history gives the Organizer the full timeline in order.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/<id>/history",
+            "Headers: Authorization: Bearer <access_token>"
+          ],
+          "expected": [
+            "HTTP 200 OK: { \"items\": [ ... ], \"page\": 1, \"pageSize\": 20, \"totalCount\": <n>, \"totalPages\": <n> } ordered by \"occurredAt\" then \"id\" ascending.",
+            "Each item has \"id\", \"meetingId\", \"action\", \"fromStatus\", \"resultingStatus\", \"actorId\", \"actorName\", \"occurredAt\", \"rejectionReason\", \"assignedApproverId\" (on SubmitForApproval) and, on Cancel, \"cancellationReason\".",
+            "A rejected meeting shows the \"rejectionReason\" to the Organizer."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Meeting that was created, submitted and rejected."
+          ],
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Organizer_and_current_approver_get_reasons_and_published_participant_gets_redacted_timeline)"
+        },
+        {
+          "id": "MEET_API_IT105",
+          "description": "Verify GET /api/meetings/{id}/history gives the current approver the full timeline.",
+          "procedure": [
+            "Sign in as the assigned Approver.",
+            "Send GET /api/meetings/<waiting id>/history"
+          ],
+          "expected": [
+            "HTTP 200 OK with the full timeline including the rejection reasons of earlier cycles.",
+            "A former approver (no longer assigned) who is not on the roster gets HTTP 404."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Meeting WaitingApproval assigned to an Approver."
+          ],
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_full_history_to_the_current_assigned_approver)"
+        },
+        {
+          "id": "MEET_API_IT106",
+          "description": "Verify GET /api/meetings/{id}/history redacts the rejection reason for a Member.",
+          "procedure": [
+            "Sign in as a Member on the roster of the Published meeting.",
+            "Send GET /api/meetings/<published id>/history"
+          ],
+          "expected": [
+            "HTTP 200 OK; every item has \"rejectionReason\": null and \"previousOrganizerId\"/\"newOrganizerId\": null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Published meeting that was rejected once before publication; Member on its roster."
+          ],
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_redacted_timeline_to_a_published_participant)"
+        },
+        {
+          "id": "MEET_API_IT107",
+          "description": "Verify GET /api/meetings/{id}/history lets the Chair read before Publish.",
+          "procedure": [
+            "Sign in as the Chair of a Draft meeting.",
+            "Send GET /api/meetings/<draft id>/history"
+          ],
+          "expected": [
+            "HTTP 200 OK with the timeline and the rejection reason; organizer-transfer fields stay null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Draft meeting that was rejected, then returned to Draft, with a Chair on its roster."
+          ],
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Assigned_chair_can_read_before_publication)"
+        },
+        {
+          "id": "MEET_API_IT108",
+          "description": "Verify GET /api/meetings/{id}/history pages and answers empty past the end.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/<id>/history?page=1&pageSize=2",
+            "Send GET /api/meetings/<id>/history?page=2147483647"
+          ],
+          "expected": [
+            "Step 2: at most 2 items, \"totalPages\" matches \"totalCount\".",
+            "Step 3: HTTP 200 OK with \"items\": []."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Meeting with at least 3 history rows."
+          ],
+          "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_empty_for_an_out_of_range_page_before_offset_cast)"
+        },
+        {
+          "id": "MEET_API_IT109",
+          "description": "Verify GET /api/meetings/{id}/history rejects invalid paging.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/<id>/history?page=0",
+            "Send GET /api/meetings/<id>/history?pageSize=101"
+          ],
+          "expected": [
+            "Both answer HTTP 400 Bad Request: { \"code\": \"MSG86\", \"message\": \"Tham số truy vấn không hợp lệ.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead."
+          ],
+          "note": "UC-16 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_invalid_query_when_offset_is_unrepresentable_within_data)"
+        },
+        {
+          "id": "MEET_API_IT110",
+          "description": "Verify GET /api/meetings/{id}/history requires a token and hides meetings the caller cannot read.",
+          "procedure": [
+            "Send GET /api/meetings/<id>/history without a token.",
+            "Sign in as an unrelated account and send it again."
+          ],
+          "expected": [
+            "Step 1: HTTP 401 Unauthorized.",
+            "Step 2: HTTP 404 Not Found with an empty body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Existing meeting; an unrelated account."
+          ],
+          "note": "UC-16 | Manual only"
+        }
+      ]
     }
   ]
 }

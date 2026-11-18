@@ -2,7 +2,7 @@
   "feature": "FE-03",
   "code": "RBAC",
   "sheet": "Access Control",
-  "precondition": "",
+  "precondition": "Test build of frontend + backend; an Administrator account (AdminUsers), a Secretary and a Member account without it supplied by QA lead; the four built-in roles (\"Chủ toạ\", \"Thư ký\", \"Thành viên\", \"Quản trị viên\") plus a custom role; audit-log entries from earlier actions. Chrome and a second browser for the two-user cases.",
   "groups": [
     {
       "title": "Role & Permission Matrix",
@@ -10,28 +10,816 @@
         "UC-10",
         "UC-11"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "RBAC_FT01",
+          "description": "Verify the matrix shows every role against every capability, grouped by function.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click the tab \"Ma trận phân quyền\"."
+          ],
+          "expected": [
+            "GET /api/roles/capabilities succeeds; the table has a \"Vai trò\" column and one column per capability, under group headings \"Cuộc họp\", \"Biên bản\", \"Quản trị\".",
+            "Each column header is the capability name (\"Tạo cuộc họp\", \"Phê duyệt cuộc họp\", \"Soạn biên bản\", \"Thu giọng mẫu hộ\", \"Quản trị người dùng\") with an info tip carrying its description.",
+            "Each role row shows its name, the chip \"Mặc định\" for built-in roles and \"Vai trò của bạn\" on the signed-in account's role; checked boxes match the roles' capabilities.",
+            "The tab \"Danh sách vai trò\" shows the number of roles."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-10 · Manual only"
+        },
+        {
+          "id": "RBAC_FT02",
+          "description": "Verify ticking a box marks the row as changed and offers \"Hoàn tác\" and \"Lưu\".",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "Tick one capability for the \"Thành viên\" row."
+          ],
+          "expected": [
+            "The changed cell is highlighted and \"Hoàn tác\" and \"Lưu\" appear at the end of that row only; no request is sent yet.",
+            "Untick the same box: the row is no longer changed and the buttons disappear."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT03",
+          "description": "Verify \"Lưu\" saves the row and shows the success message.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "Tick \"Tạo cuộc họp\" for the \"Thành viên\" row, then click \"Lưu\".",
+            "Reload the page and open the matrix again."
+          ],
+          "expected": [
+            "PUT /api/roles/capabilities answers 200 \"MSG16\"; the toast \"Cập nhật phân quyền thành công.\" shows, the buttons disappear and the box stays ticked.",
+            "After the reload the box is still ticked."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT04",
+          "description": "Verify \"Hoàn tác\" discards the row's pending changes.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "Change two boxes in one row, then click \"Hoàn tác\"."
+          ],
+          "expected": [
+            "The row returns to the saved set, the buttons disappear and no request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT05",
+          "description": "Verify rows are edited and saved independently.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "Change a box in the \"Thư ký\" row and another in the \"Thành viên\" row, then click \"Lưu\" on the \"Thành viên\" row."
+          ],
+          "expected": [
+            "Only the \"Thành viên\" row is saved; the \"Thư ký\" row keeps its unsaved change and its buttons."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT06",
+          "description": "Verify the matrix warns before the last visible AdminUsers grant is removed.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "Untick \"Quản trị người dùng\" on the only row that has it."
+          ],
+          "expected": [
+            "The warning \"Sau khi lưu, không vai trò nào trên bảng còn quyền quản trị người dùng. Hệ thống sẽ từ chối nếu thao tác này khiến không còn ai quản trị được.\" shows under the row; the Save button is still enabled."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "Only the \"Quản trị viên\" role holds AdminUsers."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT07",
+          "description": "Verify the server refuses a save that would leave no administrator and the row shows why.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "Untick \"Quản trị người dùng\" on the only row that has it and click \"Lưu\"."
+          ],
+          "expected": [
+            "PUT /api/roles/capabilities answers 400 \"MSG17\"; the row shows the red message \"Không thể lưu cấu hình này: sau khi lưu sẽ không còn tài khoản đang hoạt động nào giữ quyền quản trị người dùng, nên không ai vào được màn hình phân quyền nữa.\" and the \"Quản trị người dùng\" cell is outlined as an error.",
+            "The saved matrix is unchanged after a reload."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "Only the \"Quản trị viên\" role holds AdminUsers."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT08",
+          "description": "Verify the checkboxes are disabled while a save is running.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "Change a box, throttle the network and click \"Lưu\"."
+          ],
+          "expected": [
+            "The button reads \"Đang lưu…\" and every checkbox and \"Hoàn tác\" is disabled until the answer arrives."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT09",
+          "description": "Verify saving your own role's permissions refreshes the session.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "On the row marked \"Vai trò của bạn\", untick a capability that is not AdminUsers and click \"Lưu\"."
+          ],
+          "expected": [
+            "\"MSG16\" toast; the session is re-read from /api/auth/me and the sidebar and buttons reflect the new set without signing in again."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "The Administrator's role holds another capability besides AdminUsers."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT10",
+          "description": "Verify holders of a changed role see the new access at once without signing in again.",
+          "procedure": [
+            "In browser B, sign in as a Member and open /mgmt/meetings.",
+            "In browser A, on the matrix give the \"Thành viên\" role \"Tạo cuộc họp\" and click \"Lưu\".",
+            "In browser B, look at the page without reloading."
+          ],
+          "expected": [
+            "B stays signed in; its session reloads in the background and the \"Tạo cuộc họp\" button appears.",
+            "Removing the capability again hides the button in B and an action that needs it is refused."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A Member account signed in in a second browser."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT11",
+          "description": "Verify the matrix shows a retry when it cannot be loaded.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Stop the backend, reload and click the tab \"Ma trận phân quyền\".",
+            "Start the backend and click \"Thử lại\"."
+          ],
+          "expected": [
+            "Step 2 shows the error message with \"Thử lại\" and no matrix.",
+            "Step 3 loads the roles and matrix."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-10 · Manual only"
+        },
+        {
+          "id": "RBAC_FT12",
+          "description": "Verify losing AdminUsers while the matrix is open turns the user away.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "On /mgmt/admin/roles click the tab \"Ma trận phân quyền\".",
+            "In a second browser remove AdminUsers from this account's role, then tick a box here and click \"Lưu\"."
+          ],
+          "expected": [
+            "PUT answers 403; the toast \"Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.\" shows and the app goes to the meeting list; the sidebar no longer offers \"Quản trị\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A second Administrator in another browser, so the role can be changed there."
+          ],
+          "note": "UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT13",
+          "description": "Verify a phone shows each role as a card of named switches.",
+          "procedure": [
+            "Open the matrix at a phone width of 390px."
+          ],
+          "expected": [
+            "Each role is a card whose capabilities are switches carrying their names; the page does not scroll sideways and \"Hoàn tác\" shows with its label."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-10 · Manual only"
+        }
+      ]
     },
     {
       "title": "Manage Roles",
       "uc": [
         "UC-12"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "RBAC_FT14",
+          "description": "Verify the role list shows name, description and account count.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\")."
+          ],
+          "expected": [
+            "GET /api/roles succeeds; the tab \"Danh sách vai trò\" shows columns \"Tên vai trò\", \"Mô tả\", \"Tài khoản\", \"Thao tác\".",
+            "Built-in roles carry the chip \"Mặc định\" and have no edit or delete buttons; the signed-in account's role has \"Vai trò của bạn\".",
+            "A role without a description shows \"Chưa có mô tả\"; the count reads \"N tài khoản\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role \"Thư ký phó\" with no accounts."
+          ],
+          "note": "UC-12 · Manual only"
+        },
+        {
+          "id": "RBAC_FT15",
+          "description": "Verify an Administrator creates a role with initial capabilities.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click \"Tạo vai trò\".",
+            "Type \"Thư ký phó\" in \"Tên vai trò\", a description in \"Mô tả\", tick \"Soạn biên bản\" under \"Quyền ban đầu (tuỳ chọn)\", then click \"Tạo vai trò\" in the footer.",
+            "Open the tab \"Ma trận phân quyền\"."
+          ],
+          "expected": [
+            "POST /api/roles answers 201 \"MSG19\"; the dialog closes, the toast \"Tạo vai trò thành công.\" shows and the new row appears in the list with 0 tài khoản.",
+            "The matrix has a row for the new role with only \"Soạn biên bản\" ticked.",
+            "The new role is available in \"Vai trò\" in the user dialogs."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "No role named \"Thư ký phó\" exists."
+          ],
+          "note": "UC-12a · Manual only"
+        },
+        {
+          "id": "RBAC_FT16",
+          "description": "Verify the create dialog marks an empty or too long name and description without calling the API.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click \"Tạo vai trò\", then \"Tạo vai trò\" in the footer with everything empty.",
+            "Type a name of 65 characters and a description of 257 characters, submit again."
+          ],
+          "expected": [
+            "Step 2: \"Tên vai trò không được để trống.\" shows under \"Tên vai trò\" and the field has focus; no request is sent.",
+            "Step 3: \"Tên vai trò không được dài quá 64 ký tự.\" and \"Mô tả không được dài quá 256 ký tự.\" show; no request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-12a · Manual only"
+        },
+        {
+          "id": "RBAC_FT17",
+          "description": "Verify a duplicate name shows the server's message under the name field.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click \"Tạo vai trò\", type the name of an existing role in another letter case, then submit."
+          ],
+          "expected": [
+            "POST /api/roles answers 409 \"MSG21\"; \"Đã có vai trò dùng tên này. Hãy đặt một tên khác.\" shows under \"Tên vai trò\"; the dialog stays open."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role \"Thư ký phó\" with no accounts."
+          ],
+          "note": "UC-12a · Manual only"
+        },
+        {
+          "id": "RBAC_FT18",
+          "description": "Verify extra spaces in the name are collapsed before saving.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click \"Tạo vai trò\", type \"  Thư   ký   phó  \" in \"Tên vai trò\" and submit."
+          ],
+          "expected": [
+            "The role is created and listed as \"Thư ký phó\" (single spaces, no padding)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "No role named \"Thư ký phó\" exists."
+          ],
+          "note": "UC-12a · Manual only"
+        },
+        {
+          "id": "RBAC_FT19",
+          "description": "Verify an Administrator edits a custom role's name and description.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click the pencil \"Sửa vai trò\" on a custom row.",
+            "Read the dialog, change \"Tên vai trò\", click \"Lưu thay đổi\"."
+          ],
+          "expected": [
+            "The dialog \"Sửa vai trò\" says \"Cập nhật thông tin của <name>.\" and \"Thay đổi quyền thực hiện trực tiếp trong ma trận phân quyền.\" and has no capability list.",
+            "PUT /api/roles/{id} answers 200 \"MSG22\"; the toast \"Cập nhật vai trò thành công.\" shows and the row shows the new name."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role \"Thư ký phó\" with no accounts."
+          ],
+          "note": "UC-12b · Manual only"
+        },
+        {
+          "id": "RBAC_FT20",
+          "description": "Verify editing a role to another role's name shows \"MSG21\" on the name field.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Edit a custom role, type the name of another role and save."
+          ],
+          "expected": [
+            "PUT answers 409 \"MSG21\"; \"Đã có vai trò dùng tên này. Hãy đặt một tên khác.\" shows under \"Tên vai trò\"; the row keeps its name."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role \"Thư ký phó\" with no accounts."
+          ],
+          "note": "UC-12b · Manual only"
+        },
+        {
+          "id": "RBAC_FT21",
+          "description": "Verify built-in roles offer no edit or delete.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Look at the \"Thao tác\" cell of \"Chủ toạ\", \"Thư ký\", \"Thành viên\" and \"Quản trị viên\"."
+          ],
+          "expected": [
+            "No pencil or trash button shows on built-in rows; their permissions are changed only in the matrix."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-12 · Manual only"
+        },
+        {
+          "id": "RBAC_FT22",
+          "description": "Verify closing a role dialog with typed input asks first.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click \"Tạo vai trò\", type a name, press Escape.",
+            "Click \"Tiếp tục sửa\", then close again and click \"Bỏ thay đổi\"."
+          ],
+          "expected": [
+            "Step 1: the confirmation \"Bỏ thay đổi chưa lưu?\" (\"Những gì bạn vừa nhập sẽ không được lưu.\") shows.",
+            "Step 2: \"Tiếp tục sửa\" returns to the form; \"Bỏ thay đổi\" closes it with no request."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-12 · Manual only"
+        },
+        {
+          "id": "RBAC_FT23",
+          "description": "Verify deleting an empty custom role asks for confirmation and removes it.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click the trash \"Xoá vai trò\" on a custom role with 0 accounts.",
+            "Read the dialog \"Xoá vai trò\", then click \"Xoá vai trò\"."
+          ],
+          "expected": [
+            "The dialog says \"Bạn có chắc muốn xoá vai trò “<name>”? Thao tác này không thể hoàn tác.\".",
+            "DELETE /api/roles/{id} answers 200 \"MSG23\"; the toast \"Xoá vai trò thành công.\" shows, the row disappears and the role leaves the matrix."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role \"Thư ký phó\" with no accounts."
+          ],
+          "note": "UC-12c · Manual only"
+        },
+        {
+          "id": "RBAC_FT24",
+          "description": "Verify a role still held by accounts cannot be deleted and the dialog says why up front.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Click the trash on a custom role held by 2 accounts (one deactivated)."
+          ],
+          "expected": [
+            "The dialog says \"Chưa thể xoá vai trò “<name>”.\" with the message \"Vai trò này vẫn còn 2 tài khoản mang, kể cả tài khoản đã vô hiệu hoá. Hãy chuyển họ sang vai trò khác trước khi xoá.\" and the confirm button is disabled.",
+            "No request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role held by two accounts, one deactivated."
+          ],
+          "note": "UC-12c · Manual only"
+        },
+        {
+          "id": "RBAC_FT25",
+          "description": "Verify a stale count is corrected when someone is given the role meanwhile.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Open the delete dialog for an empty custom role.",
+            "In a second browser give an account that role, then click \"Xoá vai trò\" here."
+          ],
+          "expected": [
+            "DELETE answers 409 \"MSG25\"; the dialog shows \"Vai trò này vẫn còn 1 tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá.\" and the list reloads with the new count."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role \"Thư ký phó\" with no accounts.",
+            "A second Administrator in another browser."
+          ],
+          "note": "UC-12c · Manual only"
+        },
+        {
+          "id": "RBAC_FT26",
+          "description": "Verify deleting a role another administrator already deleted reloads the list.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Open the delete dialog for a custom role, delete it in a second browser, then confirm here."
+          ],
+          "expected": [
+            "DELETE answers 404; the dialog closes, the toast \"Vai trò này không còn tồn tại. Danh sách đã được cập nhật.\" shows and the row is gone."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role \"Thư ký phó\" with no accounts.",
+            "A second Administrator in another browser."
+          ],
+          "note": "UC-12c · Manual only"
+        },
+        {
+          "id": "RBAC_FT27",
+          "description": "Verify editing a role another administrator deleted shows a not-found message.",
+          "procedure": [
+            "Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Open \"Sửa vai trò\" for a custom role, delete it in a second browser, then save here."
+          ],
+          "expected": [
+            "PUT answers 404; the dialog closes, the toast \"Vai trò này không còn tồn tại.\" shows and the list reloads without the role."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A custom role \"Thư ký phó\" with no accounts.",
+            "A second Administrator in another browser."
+          ],
+          "note": "UC-12b · Manual only"
+        },
+        {
+          "id": "RBAC_FT28",
+          "description": "Verify a role list that fails to load shows a retry.",
+          "procedure": [
+            "Stop the backend, then Go to /mgmt/admin/roles (sidebar \"Quản trị\" > \"Vai trò\").",
+            "Start the backend and click \"Thử lại\"."
+          ],
+          "expected": [
+            "The page shows the error message with \"Thử lại\"; after the backend returns the list loads."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-12 · Manual only"
+        }
+      ]
     },
     {
       "title": "Audit Log",
       "uc": [
         "UC-13"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "RBAC_FT29",
+          "description": "Verify the audit log lists entries newest first with actor, event, object and IP.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\")."
+          ],
+          "expected": [
+            "The page \"Nhật ký hệ thống\" (\"Sự kiện nghiệp vụ và bảo mật. Không sửa, không xoá được.\") loads GET /api/audit-log; columns are \"Thời điểm\", \"Người thực hiện\", \"Sự kiện\", \"Đối tượng\", \"Địa chỉ IP\".",
+            "The newest entry is first; a system action shows the actor \"Hệ thống\", a guest the chip \"Khách\"; an entry without an address shows \"Không có\".",
+            "There are no edit or delete controls anywhere."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "Entries from an account, a guest and the system."
+          ],
+          "note": "UC-13 · Manual only"
+        },
+        {
+          "id": "RBAC_FT30",
+          "description": "Verify a row opens the entry's details.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\").",
+            "Click a row (for a \"Sửa tài khoản\" entry)."
+          ],
+          "expected": [
+            "A dialog titled with the event label shows \"Người thực hiện\", \"Mã sự kiện\", \"Đối tượng\", \"Địa chỉ IP\" and the section \"Chi tiết\" with the recorded values; an entry without details shows \"Không có chi tiết.\", and an empty value shows \"Chưa có\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "An audit entry with details, for example a user update."
+          ],
+          "note": "UC-13 · Manual only"
+        },
+        {
+          "id": "RBAC_FT31",
+          "description": "Verify searching by object matches names and recorded values.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\").",
+            "Type the name of an account in \"Tìm đối tượng…\"."
+          ],
+          "expected": [
+            "The list narrows to entries about that account after a short pause; the URL gets \"?q=\" and the page returns to 1; the keyword is limited to 100 characters."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-13 · Manual only"
+        },
+        {
+          "id": "RBAC_FT32",
+          "description": "Verify the actor, event type and date filters combine.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\").",
+            "Click \"Bộ lọc\" if the filters are folded, then choose \"Khách\" in \"Người thực hiện\".",
+            "Choose an event in \"Loại sự kiện\" and a period in \"Từ ngày\" / \"Đến ngày\"."
+          ],
+          "expected": [
+            "Step 1 lists only guest entries (\"Mọi người thực hiện\" is the default; \"Hệ thống\" lists system entries; the account list holds the accounts that appear in the log).",
+            "Step 2 narrows further; the \"Bộ lọc\" button shows the number of active filters and the URL carries them."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "Entries from several actors, event types and dates."
+          ],
+          "note": "UC-13 · Manual only"
+        },
+        {
+          "id": "RBAC_FT33",
+          "description": "Verify an end date before the start date is marked and not sent.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\").",
+            "Set \"Từ ngày\" after \"Đến ngày\"."
+          ],
+          "expected": [
+            "The message \"Ngày bắt đầu không được sau ngày kết thúc.\" shows under the toolbar and no request is made with that range."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-13 · Manual only"
+        },
+        {
+          "id": "RBAC_FT34",
+          "description": "Verify \"Xoá bộ lọc\" and \"Đặt lại bộ lọc\" restore the full log.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\").",
+            "Apply a filter that matches nothing.",
+            "Click \"Đặt lại bộ lọc\" in the empty state, then apply a filter again and click the clear button \"Xoá bộ lọc\" in the toolbar."
+          ],
+          "expected": [
+            "The empty state shows \"Không có sự kiện nào khớp bộ lọc.\"; \"Đặt lại bộ lọc\" and the toolbar button both clear the criteria and the URL, and the full log returns.",
+            "A log with no entry at all shows \"Chưa có sự kiện nào được ghi.\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-13 · Manual only"
+        },
+        {
+          "id": "RBAC_FT35",
+          "description": "Verify paging keeps the filters.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\").",
+            "Choose a page size, go to page 2, then reload."
+          ],
+          "expected": [
+            "The pager (\"sự kiện\" items) moves to page 2 and keeps the criteria; after the reload the same page and filters show."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "More than 20 entries."
+          ],
+          "note": "UC-13 · Manual only"
+        },
+        {
+          "id": "RBAC_FT36",
+          "description": "Verify a hand-edited filter link shows the invalid-filter notice.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log?actor=ai-do."
+          ],
+          "expected": [
+            "GET /api/audit-log answers 400 \"MSG469\"; the page shows \"Bộ lọc trên đường dẫn không hợp lệ.\" with \"Đặt lại bộ lọc\", which clears the URL and loads the full log."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-13 · MSG469 · Manual only"
+        },
+        {
+          "id": "RBAC_FT37",
+          "description": "Verify a log that cannot be read shows the backend message and a retry.",
+          "procedure": [
+            "Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\").",
+            "Make the database read fail (QA lead) and reload.",
+            "Restore it and click \"Thử lại\"."
+          ],
+          "expected": [
+            "GET /api/audit-log answers 500 \"MSG470\"; the table shows \"Không tải được nhật ký hệ thống. Vui lòng thử lại.\" with \"Thử lại\"; after recovery the log loads."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "QA lead can make the database read fail."
+          ],
+          "note": "UC-13 · MSG470 · Manual only"
+        },
+        {
+          "id": "RBAC_FT38",
+          "description": "Verify an action done in another screen appears in the log.",
+          "procedure": [
+            "Create a user on /mgmt/admin/users, then Go to /mgmt/admin/audit-log (sidebar \"Quản trị\" > \"Nhật ký hệ thống\").",
+            "Filter \"Loại sự kiện\" by \"Tạo tài khoản\"."
+          ],
+          "expected": [
+            "The top entry is \"Tạo tài khoản\" for that account, with the Administrator as actor and the IP of the browser; the details do not contain the password."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-13 · UC-06a · Manual only"
+        }
+      ]
     },
     {
       "title": "Capability-gated Screens",
       "uc": [
         "UC-10"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "RBAC_FT39",
+          "description": "Verify an Administrator sees the \"Quản trị\" menu entries.",
+          "procedure": [
+            "Sign in as the Administrator and open the sidebar."
+          ],
+          "expected": [
+            "The group \"Quản trị\" lists \"Người dùng\", \"Vai trò\", \"Cấu hình AI\" and \"Nhật ký hệ thống\"; each opens its screen."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-10 · Manual only"
+        },
+        {
+          "id": "RBAC_FT40",
+          "description": "Verify a user without AdminUsers sees no \"Quản trị\" menu.",
+          "procedure": [
+            "Sign in as a Secretary and open the sidebar."
+          ],
+          "expected": [
+            "The group \"Quản trị\" and its four entries are absent; the rest of the menu matches the Secretary's capabilities."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-10 · Manual only"
+        },
+        {
+          "id": "RBAC_FT41",
+          "description": "Verify admin URLs render the same not-found page for a user without AdminUsers.",
+          "procedure": [
+            "Sign in as a Secretary.",
+            "Go to /mgmt/admin/users, then /mgmt/admin/roles, then /mgmt/admin/audit-log, then an unknown URL such as /mgmt/nothing-here."
+          ],
+          "expected": [
+            "All four show the identical page \"Không tìm thấy trang\"; no admin screen is rendered and no admin API call (GET /api/users, /api/roles, /api/audit-log) is made, so the page does not reveal that the screens exist."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-10 · Manual only"
+        },
+        {
+          "id": "RBAC_FT42",
+          "description": "Verify an anonymous visitor is sent to sign in before any admin screen.",
+          "procedure": [
+            "Without signing in, go to /mgmt/admin/roles."
+          ],
+          "expected": [
+            "The app redirects to /login; after signing in as an Administrator it returns to the roles screen.",
+            "No role data was returned to the anonymous browser."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead."
+          ],
+          "note": "UC-10 · Manual only"
+        },
+        {
+          "id": "RBAC_FT43",
+          "description": "Verify the API refuses an admin call even if the screen is reached by tampering.",
+          "procedure": [
+            "Sign in as a Secretary and, in the browser console, call GET /api/roles with the session's access token."
+          ],
+          "expected": [
+            "The backend answers 403; the UI being hidden is not the security boundary."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-10 · Manual only"
+        },
+        {
+          "id": "RBAC_FT44",
+          "description": "Verify an Administrator who loses AdminUsers is moved off the admin screens.",
+          "procedure": [
+            "Sign in as Administrator A and open /mgmt/admin/roles.",
+            "In a second browser an Administrator B removes AdminUsers from A's role (or deactivates A).",
+            "In A's browser click any action or reload."
+          ],
+          "expected": [
+            "A request answers 403; A sees \"Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.\" and lands on the meeting list; after the reload the \"Quản trị\" menu and /mgmt/admin/roles show \"Không tìm thấy trang\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Two Administrator accounts in two browsers; A's role can lose AdminUsers while B keeps it."
+          ],
+          "note": "UC-10 · UC-11 · Manual only"
+        },
+        {
+          "id": "RBAC_FT45",
+          "description": "Verify a capability granted in the matrix shows its screens at once.",
+          "procedure": [
+            "In browser B, sign in as a Member.",
+            "In browser A, give the \"Thành viên\" role the capability \"Quản trị người dùng\" in the matrix and save.",
+            "In browser B, look at the sidebar without signing in again."
+          ],
+          "expected": [
+            "B's session reloads on its own and the group \"Quản trị\" appears; /mgmt/admin/users now opens.",
+            "Taking the capability away again hides the group and the URL shows \"Không tìm thấy trang\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Administrator (AdminUsers), account supplied by QA lead.",
+            "A Member account signed in in a second browser."
+          ],
+          "note": "UC-11 · Manual only"
+        }
+      ]
     }
   ]
 }

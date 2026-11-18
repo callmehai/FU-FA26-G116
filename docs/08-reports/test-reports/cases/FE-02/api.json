@@ -2,28 +2,381 @@
   "feature": "FE-02",
   "code": "USER",
   "sheet": "User Management",
-  "precondition": "",
+  "precondition": "Backend running on the test build (GET /api/health answers 200). An Administrator account holding AdminUsers, a Secretary account without it, and target accounts in the needed state (active, deactivated, Google-only) supplied by QA lead. A controlled inbox for password-reset emails.",
   "groups": [
     {
       "title": "GET /api/users",
       "uc": [
         "UC-05"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "USER_API_IT01",
+          "description": "Verify GET /api/users lists every account, sorted by name, without secrets.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: an array; each item has { \"id\", \"fullName\", \"email\", \"roleId\", \"roleName\", \"isActive\", \"hasPassword\", \"hasGoogleLink\", \"createdAt\" }.",
+            "Deactivated accounts are listed too, with \"isActive\": false.",
+            "No item carries a password hash or a Google subject; the order is the Vietnamese name order (\"Đ\" sorts after \"D\", not after \"Z\")."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "At least one deactivated account and one Google-only account exist."
+          ],
+          "note": "UC-05 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (List_returns_the_accounts_sorted_and_without_secrets) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (List_includes_deactivated_accounts; List_never_exposes_the_password_hash)"
+        },
+        {
+          "id": "USER_API_IT02",
+          "description": "Verify GET /api/users without a token answers 401.",
+          "procedure": [
+            "Send GET /api/users with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "No account data in the body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-05 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Anonymous_callers_are_refused)"
+        },
+        {
+          "id": "USER_API_IT03",
+          "description": "Verify GET /api/users answers 403 for a signed-in caller without AdminUsers.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden (a fixed endpoint, so not 404).",
+            "No account data in the body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-05 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (A_signed_in_user_without_admin_users_is_refused)"
+        },
+        {
+          "id": "USER_API_IT04",
+          "description": "Verify GET /api/users answers 403 when the caller's role lost AdminUsers after the token was issued.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Ask a second Administrator to move the first account to the \"Thành viên\" role (PUT /api/users/{id}).",
+            "Send GET /api/users with the first account's old access token (Authorization: Bearer <accessToken>)."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden although the token still lists AdminUsers: the capability is re-read from the database on every request."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two administrator accounts; the access token of the first is still unexpired."
+          ],
+          "note": "UC-05 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (An_administrator_whose_role_lost_the_capability_is_refused)"
+        },
+        {
+          "id": "USER_API_IT05",
+          "description": "Verify GET /api/users answers 403 for a deactivated Administrator whose token is still valid.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Ask a second Administrator to deactivate the first account (PUT /api/users/{id}/status with { \"isActive\": false }).",
+            "Send GET /api/users with the first account's old access token (Authorization: Bearer <accessToken>)."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden: a valid token does not outlive the deactivation.",
+            "No account data in the body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two administrator accounts; the access token of the first is still unexpired."
+          ],
+          "note": "UC-05 · UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (A_deactivated_administrator_is_refused_even_with_a_valid_token)"
+        }
+      ]
     },
     {
       "title": "GET /api/users/{id}",
       "uc": [
         "UC-05"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "USER_API_IT06",
+          "description": "Verify GET /api/users/{id} returns one account for the edit form.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users/{id} with Authorization: Bearer <accessToken>, using the id of an existing account."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"id\", \"fullName\", \"email\", \"roleId\", \"roleName\", \"isActive\", \"hasPassword\", \"hasGoogleLink\", \"createdAt\" } matching the list item for that id.",
+            "No password hash or Google subject in the body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Get_returns_one_account_and_404_for_an_unknown_id) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Get_returns_the_current_information_for_the_edit_form)"
+        },
+        {
+          "id": "USER_API_IT07",
+          "description": "Verify GET /api/users/{id} answers 404 for an unknown id.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users/{randomGuid} with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found with an empty body (no MSG code)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Get_returns_one_account_and_404_for_an_unknown_id) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Get_reports_not_found_for_an_unknown_account)"
+        },
+        {
+          "id": "USER_API_IT08",
+          "description": "Verify GET /api/users/{id} without a token answers 401.",
+          "procedure": [
+            "Send GET /api/users/{id} with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-06b · Manual only"
+        },
+        {
+          "id": "USER_API_IT09",
+          "description": "Verify GET /api/users/{id} answers 403 for a caller without AdminUsers.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/users/{id} with Authorization: Bearer <accessToken>, using the id of any account."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden.",
+            "No account data in the body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06b · Manual only"
+        }
+      ]
     },
     {
       "title": "POST /api/users",
       "uc": [
         "UC-06a"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "USER_API_IT10",
+          "description": "Verify POST /api/users creates an active account and returns its location.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users with Authorization: Bearer <accessToken>; Content-Type: application/json and Body: { \"fullName\": \"Trần Chủ Toạ\", \"email\": \"chutoa@trustcabinet.local\", \"password\": \"<12+ character password>\", \"roleId\": \"<Chair role id>\" }.",
+            "Send GET /api/users and find the new account."
+          ],
+          "expected": [
+            "HTTP 201 Created, header Location: /api/users/{newId}.",
+            "Body: { \"code\": \"MSG07\", \"message\": \"Tạo tài khoản thành công.\", \"user\": { \"id\", \"fullName\": \"Trần Chủ Toạ\", \"email\", \"roleId\", \"roleName\", \"isActive\": true, ... } }.",
+            "The account is listed as active; the password is stored hashed and never returned.",
+            "One audit entry \"user.created\" names the Administrator as actor and contains no password."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "The email is not used by any account."
+          ],
+          "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG07_with_201_and_a_location; Create_records_the_signed_in_administrator_as_the_actor; Create_answers_with_the_role_id_and_name) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_stores_an_active_account_and_records_the_audit_entry; Create_hashes_the_password_instead_of_storing_it; Create_never_puts_the_password_in_the_audit_details)"
+        },
+        {
+          "id": "USER_API_IT11",
+          "description": "Verify POST /api/users trims surrounding spaces from the name and email.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and Body: { \"fullName\": \"  Lê Thị Hoa  \", \"email\": \"  hoa@trustcabinet.local  \", \"password\": \"<12+ character password>\", \"roleId\": \"<Member role id>\" }."
+          ],
+          "expected": [
+            "HTTP 201 Created, code \"MSG07\".",
+            "The stored \"fullName\" is \"Lê Thị Hoa\" and \"email\" is \"hoa@trustcabinet.local\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_trims_surrounding_whitespace)"
+        },
+        {
+          "id": "USER_API_IT12",
+          "description": "Verify POST /api/users reports every invalid field at once.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and Body: { \"fullName\": \"\", \"email\": \"khong-phai-email\", \"password\": \"ngan\", \"roleId\": \"<Member role id>\" }."
+          ],
+          "expected": [
+            "HTTP 400 Bad Request.",
+            "Body: { \"code\": \"MSG09\", \"message\": \"Thông tin tài khoản không hợp lệ.\", \"errors\": { \"fullName\": \"Họ tên không được để trống.\", \"email\": \"Email không hợp lệ.\", \"password\": \"Mật khẩu phải có ít nhất 12 ký tự.\" } }.",
+            "No account is created and no audit entry is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_400_with_the_offending_fields) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_reports_every_invalid_field_at_once; Create_does_not_audit_when_the_account_was_not_stored)"
+        },
+        {
+          "id": "USER_API_IT13",
+          "description": "Verify POST /api/users rejects a password of 11 characters and accepts one of 12.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and a valid body whose \"password\" is 11 characters long.",
+            "Repeat with a \"password\" of exactly 12 characters and a different email."
+          ],
+          "expected": [
+            "Step 2: HTTP 400, code \"MSG09\", \"errors.password\": \"Mật khẩu phải có ít nhất 12 ký tự.\".",
+            "Step 3: HTTP 201 Created, code \"MSG07\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_rejects_a_password_shorter_than_the_minimum)"
+        },
+        {
+          "id": "USER_API_IT14",
+          "description": "Verify POST /api/users rejects a full name over 200 characters and an email over 256 characters.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and a valid body whose \"fullName\" is 201 characters long.",
+            "Send it again with a valid name and an \"email\" of 257 characters."
+          ],
+          "expected": [
+            "Step 2: HTTP 400, code \"MSG09\", \"errors.fullName\": \"Họ tên không được vượt quá 200 ký tự.\".",
+            "Step 3: HTTP 400, code \"MSG09\", \"errors.email\": \"Email không hợp lệ.\".",
+            "No account is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06a · Manual only"
+        },
+        {
+          "id": "USER_API_IT15",
+          "description": "Verify POST /api/users answers MSG09 on roleId for a role that does not exist or is unreadable.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and a valid body whose \"roleId\" is a well-formed GUID no role has.",
+            "Repeat with \"roleId\": \"Chair\", then with no \"roleId\"."
+          ],
+          "expected": [
+            "Each answer is HTTP 400 with code \"MSG09\" and \"errors.roleId\": \"Vai trò không tồn tại.\".",
+            "No account is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG09_on_roleId_for_a_role_that_does_not_exist) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_rejects_a_role_that_does_not_exist)"
+        },
+        {
+          "id": "USER_API_IT16",
+          "description": "Verify POST /api/users accepts a role an administrator created.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Create a custom role (POST /api/roles) and keep its id.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and a valid body whose \"roleId\" is that custom role."
+          ],
+          "expected": [
+            "HTTP 201 Created, code \"MSG07\"; \"user.roleName\" is the custom role's name."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06a · UC-12a · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_accepts_a_role_an_administrator_created)"
+        },
+        {
+          "id": "USER_API_IT17",
+          "description": "Verify POST /api/users answers 409 MSG08 for an email already in use, ignoring letter case.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and a valid body whose \"email\" is the email of an existing account.",
+            "Repeat with the same email in different letter case."
+          ],
+          "expected": [
+            "Each answer is HTTP 409 Conflict, body { \"code\": \"MSG08\", \"message\": \"Email đã được sử dụng.\" }.",
+            "No second account is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An account with email \"trungnhau@trustcabinet.local\" exists."
+          ],
+          "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG08_with_409_for_a_duplicate_email) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_rejects_an_email_that_already_exists; Create_rejects_an_email_that_differs_only_in_case)"
+        },
+        {
+          "id": "USER_API_IT18",
+          "description": "Verify POST /api/users answers MSG09 on roleId when the role is deleted right before the account is saved.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Delete a custom role (DELETE /api/roles/{id}) and keep its id.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and a valid body naming the deleted role."
+          ],
+          "expected": [
+            "HTTP 400, code \"MSG09\", \"errors.roleId\": \"Vai trò không tồn tại.\", not a 500.",
+            "No account is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "A custom role with no members that can be deleted."
+          ],
+          "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_answers_MSG09_on_the_role_when_the_role_is_deleted_before_the_save)"
+        },
+        {
+          "id": "USER_API_IT19",
+          "description": "Verify POST /api/users without a token answers 401.",
+          "procedure": [
+            "Send POST /api/users with a valid body and no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "No account is created."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-06a · Manual only"
+        },
+        {
+          "id": "USER_API_IT20",
+          "description": "Verify POST /api/users answers 403 for a caller without AdminUsers.",
+          "procedure": [
+            "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users with Authorization: Bearer <accessToken> and a valid body."
+          ],
+          "expected": [
+            "HTTP 403 Forbidden.",
+            "No account is created and no audit entry is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (A_signed_in_user_without_admin_users_is_refused)"
+        }
+      ]
     },
     {
       "title": "PUT /api/users/{id}",
@@ -31,28 +384,761 @@
         "UC-06b",
         "UC-08"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "USER_API_IT21",
+          "description": "Verify PUT /api/users/{id} updates name, email and role and returns the new account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken> and Body: { \"fullName\": \"Phạm Văn Nam\", \"email\": \"nam@trustcabinet.local\", \"roleId\": \"<Secretary role id>\" }."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "Body: { \"code\": \"MSG10\", \"message\": \"Cập nhật tài khoản thành công.\", \"user\": { ..., \"fullName\": \"Phạm Văn Nam\", \"roleName\": \"<Secretary role name>\" } }.",
+            "One audit entry \"user.updated\" holds the values before and after."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "A target Member account."
+          ],
+          "note": "UC-06b · UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_answers_MSG10_with_the_updated_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_changes_the_account_and_records_what_it_was_before; Update_answers_with_the_new_role_name_and_records_it)"
+        },
+        {
+          "id": "USER_API_IT22",
+          "description": "Verify PUT /api/users/{id} lets an account keep its own email.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken>, keeping the account's current \"email\" and changing only \"fullName\"."
+          ],
+          "expected": [
+            "HTTP 200 OK, code \"MSG10\"; the email is not reported as a duplicate."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_lets_an_account_keep_its_own_email)"
+        },
+        {
+          "id": "USER_API_IT23",
+          "description": "Verify PUT /api/users/{id} rejects invalid information without touching the account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken> and Body: { \"fullName\": \"\", \"email\": \"khong-phai-email\", \"roleId\": \"<Member role id>\" }.",
+            "Send GET /api/users/{id}."
+          ],
+          "expected": [
+            "Step 2: HTTP 400, code \"MSG09\", \"errors\": { \"fullName\": \"Họ tên không được để trống.\", \"email\": \"Email không hợp lệ.\" }.",
+            "Step 3: the account still has its old name and email."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_rejects_invalid_information_without_touching_the_account)"
+        },
+        {
+          "id": "USER_API_IT24",
+          "description": "Verify PUT /api/users/{id} answers MSG09 on roleId for a role that has been deleted.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken> and a valid body whose \"roleId\" is a role that no longer exists."
+          ],
+          "expected": [
+            "HTTP 400, code \"MSG09\", \"errors.roleId\": \"Vai trò không tồn tại.\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06b · UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_answers_MSG09_for_a_role_that_has_been_deleted)"
+        },
+        {
+          "id": "USER_API_IT25",
+          "description": "Verify PUT /api/users/{id} answers 409 MSG08 for an email another account uses.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken> and the email of a different existing account.",
+            "Send GET /api/users/{id}."
+          ],
+          "expected": [
+            "Step 2: HTTP 409 Conflict, body { \"code\": \"MSG08\", \"message\": \"Email đã được sử dụng.\" }.",
+            "Step 3: the account still has its old email."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "Two accounts with different emails."
+          ],
+          "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_rejects_an_email_another_account_already_uses; Update_discards_the_rejected_values_when_the_save_is_refused)"
+        },
+        {
+          "id": "USER_API_IT26",
+          "description": "Verify PUT /api/users/{id} answers 404 for an unknown account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{randomGuid} with Authorization: Bearer <accessToken> and a valid body."
+          ],
+          "expected": [
+            "HTTP 404 Not Found with an empty body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_answers_404_for_an_unknown_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_reports_not_found_for_an_unknown_account)"
+        },
+        {
+          "id": "USER_API_IT27",
+          "description": "Verify PUT /api/users/{id} ignores an \"isActive\" field and cannot deactivate.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken> and a valid body plus \"isActive\": false.",
+            "Send GET /api/users/{id}."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 for the profile fields.",
+            "Step 3: \"isActive\" is still true and the account's sessions are untouched."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account."
+          ],
+          "note": "UC-06b · UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_cannot_change_the_status)"
+        },
+        {
+          "id": "USER_API_IT28",
+          "description": "Verify a role change through PUT /api/users/{id} keeps the account signed in.",
+          "procedure": [
+            "Sign in as the target Member (POST /api/auth/login) and keep the refresh cookie.",
+            "As the Administrator, send PUT /api/users/{id} with Authorization: Bearer <accessToken> changing only \"roleId\" to the Secretary role.",
+            "As the target, call POST /api/auth/refresh with the cookie, then GET /api/auth/me."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG10\".",
+            "Step 3: the refresh succeeds (the session is not revoked) and /api/auth/me lists the capabilities of the new role."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target Member account."
+          ],
+          "note": "UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Changing_the_role_does_not_sign_the_account_out) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_keeps_the_sessions_and_tells_the_account_when_the_role_changes)"
+        },
+        {
+          "id": "USER_API_IT29",
+          "description": "Verify an email change through PUT /api/users/{id} ends the account's sessions.",
+          "procedure": [
+            "Sign in as the target (POST /api/auth/login) and keep the refresh cookie.",
+            "As the Administrator, send PUT /api/users/{id} with Authorization: Bearer <accessToken> changing only \"email\".",
+            "As the target, call POST /api/auth/refresh with the old cookie."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG10\".",
+            "Step 3: HTTP 401 with code \"MSG01\": the session was revoked."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account that has signed in."
+          ],
+          "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Changing_an_email_ends_the_sessions_too; Renaming_somebody_leaves_their_session_alone)"
+        },
+        {
+          "id": "USER_API_IT30",
+          "description": "Verify PUT /api/users/{id} refuses to move the last active administrator to a role without AdminUsers.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{ownId} with Authorization: Bearer <accessToken> and a body whose \"roleId\" is the Member role, for the only active account holding AdminUsers.",
+            "Send GET /api/users/{ownId}."
+          ],
+          "expected": [
+            "Step 2: HTTP 409 Conflict, body { \"code\": \"MSG12\", \"message\": \"Không thể đổi trạng thái tài khoản này.\" }.",
+            "Step 3: the account still has its administrator role."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Exactly one active account holds AdminUsers; its credentials are supplied by QA lead."
+          ],
+          "note": "UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_refuses_to_let_an_administrator_drop_their_own_admin_role; Update_refuses_to_demote_the_last_administrator; Moving_the_last_administrator_into_a_custom_role_without_admin_users_is_refused)"
+        },
+        {
+          "id": "USER_API_IT31",
+          "description": "Verify PUT /api/users/{id} lets one administrator demote another while one remains, and lets the last one edit their own name.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{otherAdminId} with Authorization: Bearer <accessToken> moving a second administrator to the Member role.",
+            "Send PUT /api/users/{ownId} changing only \"fullName\" of the remaining administrator."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG10\".",
+            "Step 3: HTTP 200, code \"MSG10\": a profile edit that keeps the role never trips the last-administrator rule."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Two active administrator accounts, supplied by QA lead."
+          ],
+          "note": "UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_lets_one_administrator_demote_another_while_one_remains; Update_lets_an_administrator_edit_their_own_name; Update_lets_the_last_administrator_keep_administering_under_another_role)"
+        },
+        {
+          "id": "USER_API_IT32",
+          "description": "Verify a custom role holding AdminUsers counts toward the last-administrator rule.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Create a custom role with AdminUsers and assign it to a second account (PUT /api/users/{id}).",
+            "Send PUT /api/users/{firstAdminId} with Authorization: Bearer <accessToken> moving the first administrator to the Member role."
+          ],
+          "expected": [
+            "Step 3: HTTP 200, code \"MSG10\": the second account still holds AdminUsers through its custom role."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "One built-in administrator and one custom role with AdminUsers."
+          ],
+          "note": "UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (A_custom_role_holding_admin_users_counts_toward_the_last_administrator_rule)"
+        },
+        {
+          "id": "USER_API_IT33",
+          "description": "Verify PUT /api/users/{id} moves a deactivated account to another role.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id} with Authorization: Bearer <accessToken> moving a deactivated account to the Secretary role."
+          ],
+          "expected": [
+            "HTTP 200, code \"MSG10\"; the account is still \"isActive\": false."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "A deactivated target account."
+          ],
+          "note": "UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (An_inactive_account_can_still_be_moved_to_another_role)"
+        },
+        {
+          "id": "USER_API_IT34",
+          "description": "Verify PUT /api/users/{id} answers 401 without a token and 403 without AdminUsers.",
+          "procedure": [
+            "Send PUT /api/users/{id} with a valid body and no Authorization header.",
+            "Sign in as the Secretary and repeat with its access token."
+          ],
+          "expected": [
+            "Step 1: HTTP 401 Unauthorized.",
+            "Step 2: HTTP 403 Forbidden; the target account is unchanged and no audit entry is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Writes_are_refused_without_admin_users)"
+        }
+      ]
     },
     {
       "title": "PUT /api/users/{id}/status",
       "uc": [
         "UC-06c"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "USER_API_IT35",
+          "description": "Verify PUT /api/users/{id}/status deactivates an account and ends its sessions.",
+          "procedure": [
+            "Sign in as the target (POST /api/auth/login) and keep the refresh cookie.",
+            "As the Administrator, send PUT /api/users/{id}/status with Authorization: Bearer <accessToken> and Body: { \"isActive\": false }.",
+            "As the target, call POST /api/auth/refresh with the old cookie, then POST /api/auth/login with the correct password."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, body { \"code\": \"MSG11\", \"message\": \"Đổi trạng thái tài khoản thành công.\", \"user\": { \"isActive\": false, ... } }.",
+            "Step 3: both calls answer HTTP 401 with code \"MSG02\" (\"Tài khoản không khả dụng. Vui lòng liên hệ quản trị viên.\").",
+            "The row is kept, and one audit entry \"user.deactivated\" is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account that has signed in."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Deactivate_answers_MSG11_and_ends_the_sessions) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Deactivate_sets_the_status_ends_the_sessions_and_audits; Deactivate_never_deletes_the_row)"
+        },
+        {
+          "id": "USER_API_IT36",
+          "description": "Verify PUT /api/users/{id}/status reactivates an account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id}/status with Authorization: Bearer <accessToken> and Body: { \"isActive\": true } for a deactivated account.",
+            "Sign in as that account (POST /api/auth/login)."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG11\", \"user.isActive\": true; one audit entry \"user.reactivated\".",
+            "Step 3: sign-in succeeds with the existing role."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "A deactivated target account with a password."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reactivate_answers_MSG11) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reactivate_sets_the_status_and_audits_without_touching_sessions)"
+        },
+        {
+          "id": "USER_API_IT37",
+          "description": "Verify deactivating an account ends its Voice ID and reactivating does not restore it.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Deactivate an account that has an enrolled Voice ID (PUT /api/users/{id}/status with { \"isActive\": false }).",
+            "Reactivate the same account.",
+            "Sign in as the reactivated account and send GET /api/me/voice."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG11\"; the voice sample is deleted in the same operation.",
+            "Step 3: HTTP 200, code \"MSG11\".",
+            "Step 4: the account is not enrolled; the person must consent and record again."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "A target account with an enrolled Voice ID."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Deactivate_ends_the_voice_id_inside_the_same_write_and_reactivate_restores_nothing; A_refused_deactivation_leaves_the_voice_id_alone)"
+        },
+        {
+          "id": "USER_API_IT38",
+          "description": "Verify PUT /api/users/{id}/status refuses a body that does not state the status.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id}/status with Authorization: Bearer <accessToken> and Body: {}.",
+            "Repeat with Body: { \"is_active\": true } and Body: { \"active\": true }."
+          ],
+          "expected": [
+            "Each answer is HTTP 400, code \"MSG09\", \"errors.isActive\": \"Thiếu trạng thái cần đặt cho tài khoản.\".",
+            "The account stays active, no session is revoked and no audit entry is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Status_change_refuses_a_body_that_does_not_state_the_status)"
+        },
+        {
+          "id": "USER_API_IT39",
+          "description": "Verify an administrator cannot deactivate their own account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{ownId}/status with Authorization: Bearer <accessToken> and Body: { \"isActive\": false }."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, body { \"code\": \"MSG12\", \"message\": \"Không thể đổi trạng thái tài khoản này.\" }.",
+            "The account stays active and no audit entry is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (An_administrator_cannot_deactivate_themselves_over_http; Status_change_answers_409_when_it_is_not_allowed) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Status_change_is_refused_when_an_administrator_aims_at_their_own_account)"
+        },
+        {
+          "id": "USER_API_IT40",
+          "description": "Verify PUT /api/users/{id}/status answers MSG12 when the account is already in the requested state.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{id}/status with Authorization: Bearer <accessToken> and Body: { \"isActive\": true } for an account that is already active."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, code \"MSG12\"; no second audit entry is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Status_change_answers_409_when_it_is_not_allowed)"
+        },
+        {
+          "id": "USER_API_IT41",
+          "description": "Verify two administrators cannot deactivate each other into a system nobody can administer.",
+          "procedure": [
+            "Sign in as Administrator A and as Administrator B (POST /api/auth/login) and keep both tokens.",
+            "With A's token send PUT /api/users/{B}/status with Body: { \"isActive\": false }.",
+            "With B's old token send PUT /api/users/{A}/status with Body: { \"isActive\": false }."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, code \"MSG11\" (A still remains active).",
+            "Step 3: HTTP 403 (B was deactivated and is re-read from the database); A stays active.",
+            "At least one active account keeps AdminUsers; the refused request writes no audit entry."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Exactly two active administrator accounts, supplied by QA lead."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Two_administrators_cannot_deactivate_each_other_into_a_locked_out_system; Deactivating_the_last_administrator_is_refused)"
+        },
+        {
+          "id": "USER_API_IT42",
+          "description": "Verify deactivating a non-administrator is allowed while another administrator exists.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{memberId}/status with Authorization: Bearer <accessToken> and Body: { \"isActive\": false }."
+          ],
+          "expected": [
+            "HTTP 200, code \"MSG11\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Deactivating_a_non_administrator_is_allowed_even_when_one_admin_exists)"
+        },
+        {
+          "id": "USER_API_IT43",
+          "description": "Verify PUT /api/users/{id}/status answers 404 for an unknown account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send PUT /api/users/{randomGuid}/status with Authorization: Bearer <accessToken> and Body: { \"isActive\": false }."
+          ],
+          "expected": [
+            "HTTP 404 Not Found with an empty body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Status_change_answers_404_for_an_unknown_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Status_change_reports_not_found_for_an_unknown_account)"
+        },
+        {
+          "id": "USER_API_IT44",
+          "description": "Verify PUT /api/users/{id}/status answers 401 without a token and 403 without AdminUsers.",
+          "procedure": [
+            "Send PUT /api/users/{id}/status with Body: { \"isActive\": false } and no Authorization header.",
+            "Sign in as the Secretary and repeat with its access token."
+          ],
+          "expected": [
+            "Step 1: HTTP 401 Unauthorized.",
+            "Step 2: HTTP 403 Forbidden; the account stays active."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Writes_are_refused_without_admin_users)"
+        }
+      ]
     },
     {
       "title": "POST /api/users/{id}/password-reset",
       "uc": [
         "UC-07"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "USER_API_IT45",
+          "description": "Verify POST /api/users/{id}/password-reset emails a reset link and records it.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{id}/password-reset with Authorization: Bearer <accessToken> and no body.",
+            "Open the target's inbox (sandbox mailbox)."
+          ],
+          "expected": [
+            "HTTP 200 OK, body { \"code\": \"MSG13\", \"message\": \"Đã gửi email đặt lại mật khẩu.\", \"user\": { \"id\": \"{id}\", ... } }.",
+            "One email with a reset link valid for 60 minutes reaches the target's registered address.",
+            "One audit entry \"user.password_reset_requested\" holds the address, never the token.",
+            "The current password and sessions keep working."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account with a password; SMTP configured to a controlled inbox."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_request_answers_MSG13_and_emails_the_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_request_emails_a_link_to_the_registered_address_and_records_it; Reset_request_leaves_the_current_password_and_sessions_alone)"
+        },
+        {
+          "id": "USER_API_IT46",
+          "description": "Verify POST /api/users/{id}/password-reset answers 409 MSG14 for a deactivated account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{id}/password-reset with Authorization: Bearer <accessToken> for a deactivated account."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, body { \"code\": \"MSG14\", \"message\": \"Tài khoản này không dùng được chức năng đặt lại mật khẩu.\" }.",
+            "No email is sent."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "A deactivated target account."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_request_answers_MSG14_for_a_deactivated_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_request_answers_not_available_for_a_deactivated_account)"
+        },
+        {
+          "id": "USER_API_IT47",
+          "description": "Verify POST /api/users/{id}/password-reset answers 409 MSG14 for a Google-only account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{id}/password-reset with Authorization: Bearer <accessToken> for an account with \"hasPassword\": false."
+          ],
+          "expected": [
+            "HTTP 409 Conflict, code \"MSG14\".",
+            "No email is sent and no password sign-in is added to the account."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active account that signs in only with Google."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_request_answers_MSG14_for_an_account_without_a_password) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_request_answers_not_available_for_an_account_without_a_password)"
+        },
+        {
+          "id": "USER_API_IT48",
+          "description": "Verify POST /api/users/{id}/password-reset answers 503 MSG15 when the email cannot be sent.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Switch the sandbox mail server off, then send POST /api/users/{id}/password-reset with Authorization: Bearer <accessToken>.",
+            "Switch it on and call again."
+          ],
+          "expected": [
+            "Step 2: HTTP 503 Service Unavailable, body { \"code\": \"MSG15\", \"message\": \"Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.\" }; no audit entry; the link that was created never works.",
+            "Step 3: HTTP 200, code \"MSG13\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account with a password; the QA lead can stop the mail server."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_request_answers_MSG15_when_the_email_cannot_be_sent) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_request_answers_email_failed_and_records_nothing_when_the_mail_cannot_go; A_link_whose_email_failed_never_works)"
+        },
+        {
+          "id": "USER_API_IT49",
+          "description": "Verify a failed resend keeps the link already in the inbox working.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{id}/password-reset once with a working mail server and keep the link.",
+            "Switch the mail server off and send it again (HTTP 503).",
+            "Send POST /api/auth/password-reset with the first link and a valid password."
+          ],
+          "expected": [
+            "Step 3: HTTP 200, code \"MSG92\": the failed resend did not replace the link already delivered."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account with a password; the QA lead can stop the mail server."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (A_failed_resend_keeps_the_link_already_in_the_inbox_working)"
+        },
+        {
+          "id": "USER_API_IT50",
+          "description": "Verify a new reset link replaces the older one.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{id}/password-reset twice with a working mail server; keep both links.",
+            "Send POST /api/auth/password-reset with the first link, then with the second."
+          ],
+          "expected": [
+            "Step 2: both requests answer HTTP 200, code \"MSG13\".",
+            "Step 3: the first link answers HTTP 400, code \"MSG93\"; the second answers HTTP 200, code \"MSG92\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account with a password; a controlled inbox."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (A_newer_reset_link_supersedes_the_older_one)"
+        },
+        {
+          "id": "USER_API_IT51",
+          "description": "Verify a reset link dies when the account is deactivated while the email is being sent.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{id}/password-reset while a second Administrator deactivates the same account.",
+            "Send POST /api/auth/password-reset with the emailed link and a valid new password."
+          ],
+          "expected": [
+            "Step 3: HTTP 400, code \"MSG93\": the link was revoked together with the account."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "A slow mail server so that the two calls overlap; an active target account."
+          ],
+          "note": "UC-07 · UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (A_deactivation_during_the_send_still_kills_the_link; An_email_change_during_the_send_kills_the_link_sent_to_the_old_address)"
+        },
+        {
+          "id": "USER_API_IT52",
+          "description": "Verify POST /api/users/{id}/password-reset answers 404 for an unknown account.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send POST /api/users/{randomGuid}/password-reset with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 404 Not Found with an empty body; no email is sent."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_request_answers_404_for_an_unknown_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_request_reports_not_found_for_an_unknown_account)"
+        },
+        {
+          "id": "USER_API_IT53",
+          "description": "Verify POST /api/users/{id}/password-reset answers 401 without a token and 403 without AdminUsers.",
+          "procedure": [
+            "Send POST /api/users/{id}/password-reset with no Authorization header.",
+            "Sign in as the Secretary and repeat with its access token."
+          ],
+          "expected": [
+            "Step 1: HTTP 401 Unauthorized.",
+            "Step 2: HTTP 403 Forbidden; no email is sent."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Secretary account without AdminUsers, supplied by QA lead."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_request_needs_admin_users)"
+        }
+      ]
     },
     {
       "title": "POST /api/auth/password-reset",
       "uc": [
         "UC-07"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "USER_API_IT54",
+          "description": "Verify POST /api/auth/password-reset sets the new password with the emailed token, without signing in.",
+          "procedure": [
+            "Take the token from the reset link (the part after \"#token=\").",
+            "Send POST /api/auth/password-reset with Content-Type: application/json, no Authorization header, and Body: { \"token\": \"<token>\", \"newPassword\": \"<12+ character password>\" }.",
+            "Send POST /api/auth/login with the new password, then with the old one."
+          ],
+          "expected": [
+            "Step 2: HTTP 200, body { \"code\": \"MSG92\", \"message\": \"Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.\" }; no accessToken in the body.",
+            "Step 3: the new password signs in; the old one answers HTTP 401 \"MSG01\".",
+            "Every earlier session of the account is revoked.",
+            "One audit entry \"user.password_reset\" names the account itself as actor."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A reset link sent to an active account with a password (UC-07 administrator step), unexpired and unused."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_with_the_emailed_link_answers_MSG92_without_signing_in) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_sets_the_new_password_ends_every_session_and_records_it)"
+        },
+        {
+          "id": "USER_API_IT55",
+          "description": "Verify POST /api/auth/password-reset answers MSG93 for a missing or unknown token.",
+          "procedure": [
+            "Send POST /api/auth/password-reset with Body: { \"token\": \"khong-ton-tai\", \"newPassword\": \"<12+ character password>\" }.",
+            "Send it with Body: { \"newPassword\": \"<12+ character password>\" } and with Body: {}."
+          ],
+          "expected": [
+            "Each answer is HTTP 400, body { \"code\": \"MSG93\", \"message\": \"Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng liên hệ quản trị viên.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_with_a_dead_link_answers_MSG93) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_refuses_an_unknown_link)"
+        },
+        {
+          "id": "USER_API_IT56",
+          "description": "Verify POST /api/auth/password-reset answers MSG93 for a link that was already used.",
+          "procedure": [
+            "Send POST /api/auth/password-reset with a valid token and password (HTTP 200).",
+            "Send it again with the same token and another valid password."
+          ],
+          "expected": [
+            "Step 2: HTTP 400, code \"MSG93\"; the password set in step 1 is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "One valid reset link."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_link_works_only_once)"
+        },
+        {
+          "id": "USER_API_IT57",
+          "description": "Verify POST /api/auth/password-reset answers MSG93 for a link older than 60 minutes.",
+          "procedure": [
+            "Request a reset link (POST /api/users/{id}/password-reset) and wait more than 60 minutes.",
+            "Send POST /api/auth/password-reset with that token and a valid password."
+          ],
+          "expected": [
+            "HTTP 400, code \"MSG93\"; the password is unchanged."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account with a password; the QA lead can move the clock forward."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_refuses_an_expired_link)"
+        },
+        {
+          "id": "USER_API_IT58",
+          "description": "Verify POST /api/auth/password-reset rejects a password shorter than 12 characters and keeps the link usable.",
+          "procedure": [
+            "Send POST /api/auth/password-reset with Body: { \"token\": \"<token>\", \"newPassword\": \"ngan\" }.",
+            "Send it again with the same token and a valid password."
+          ],
+          "expected": [
+            "Step 1: HTTP 400, body { \"code\": \"MSG94\", \"message\": \"Mật khẩu mới không hợp lệ.\", \"errors\": { \"newPassword\": \"Mật khẩu phải có ít nhất 12 ký tự.\" } }.",
+            "Step 2: HTTP 200, code \"MSG92\": the rejected attempt did not spend the token."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "One valid reset link."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_with_a_too_short_password_answers_MSG94_on_the_field) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (A_too_short_password_is_refused_without_spending_the_link)"
+        },
+        {
+          "id": "USER_API_IT59",
+          "description": "Verify POST /api/auth/password-reset answers MSG93 once the account was deactivated after the link was sent.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send a reset link to the target, then deactivate the target (PUT /api/users/{id}/status with { \"isActive\": false }) and reactivate it.",
+            "Send POST /api/auth/password-reset with the link and a valid password."
+          ],
+          "expected": [
+            "Step 3: HTTP 400, code \"MSG93\": deactivation revoked the outstanding link, and the answer does not say what became of the account."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account holding AdminUsers, supplied by QA lead.",
+            "An active target account with a password; a controlled inbox."
+          ],
+          "note": "UC-07 · UC-06c · Manual only"
+        },
+        {
+          "id": "USER_API_IT60",
+          "description": "Verify a live link does not give a password to a Google-only account.",
+          "procedure": [
+            "Send POST /api/auth/password-reset with a token minted for an account whose password was since removed, and a valid password.",
+            "Send POST /api/auth/login with that email and password."
+          ],
+          "expected": [
+            "Step 1: HTTP 400, code \"MSG93\".",
+            "Step 2: HTTP 401, code \"MSG01\": no password sign-in was added."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A reset link minted before the account became Google-only (QA lead prepares the data)."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (A_live_link_does_not_give_a_password_to_an_account_without_one)"
+        },
+        {
+          "id": "USER_API_IT61",
+          "description": "Verify POST /api/auth/password-reset answers 429 MSG414 after too many attempts from one IP.",
+          "procedure": [
+            "Send POST /api/auth/password-reset with an invalid token repeatedly, faster than the per-minute limit for one IP (shared with login and Google sign-in)."
+          ],
+          "expected": [
+            "Once the limit is passed: HTTP 429 Too Many Requests, body { \"code\": \"MSG414\", \"message\": \"Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.\" } with a Retry-After header.",
+            "After the window passes, the endpoint answers normally again."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthRateLimitingTests.cs (The_ip_limit_is_shared_by_login_google_and_password_reset)"
+        }
+      ]
     }
   ]
 }
