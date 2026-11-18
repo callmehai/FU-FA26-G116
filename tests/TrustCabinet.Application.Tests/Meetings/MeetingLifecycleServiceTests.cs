@@ -136,4 +136,19 @@ public sealed class MeetingLifecycleServiceTests
         Assert.Equal((MeetingHistoryAction.AutoEnd, (Guid?)null, "Quá giờ"), (history.Action, history.ActorId, history.Reason));
         Assert.Equal([TransactionMode.ReadCommitted], _unitOfWork.Modes);
     }
+
+    [Fact]
+    public async Task A_failed_system_end_drops_its_queued_changes_before_the_sweep_moves_on()
+    {
+        var meeting = GivenMeeting(MeetingStatus.InProgress);
+        _unitOfWork.FailNextSave = new PersistenceUnavailableException();
+
+        Assert.False(await Service().EndOverrunAsync(meeting.Id, cutoff: Now.AddHours(2), "Quá giờ"));
+
+        Assert.Equal((0, 0, 1), (_unitOfWork.Saves, _unitOfWork.Commits, _unitOfWork.Rollbacks));
+        // SCRUM-212: the sweep shares one change tracker, so the failed end must not wait there for the next save.
+        Assert.Equal(1, _unitOfWork.Discards);
+        Assert.DoesNotContain("agenda.publish:MeetingEnded", _effects.Calls);
+        Assert.DoesNotContain("room.close", _effects.Calls);
+    }
 }
