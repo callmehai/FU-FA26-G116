@@ -61,6 +61,25 @@
             "Open the closed public vote and look at \"Phiếu từng người\".",
             "Open the closed secret vote."
           ]
+        },
+        {
+          "description": "Verify a vote list that cannot load offers a retry.",
+          "expected": [
+            "Step 2: backend answers 500/MSG206; the tab shows \"Không tải được danh sách biểu quyết. Vui lòng thử lại.\" with a \"Thử lại\" button instead of the list.",
+            "Step 3: the list loads."
+          ],
+          "id": "VOTE_FT04",
+          "note": "UC-52a | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair of a meeting with votes.",
+            "A way to make the backend fail."
+          ],
+          "procedure": [
+            "Make GET /api/meetings/<id>/votes fail on the server.",
+            "Open the meeting from /mgmt/meetings and click the tab \"Biểu quyết\".",
+            "Remove the failure and click \"Thử lại\"."
+          ]
         }
       ]
     },
@@ -76,7 +95,7 @@
             "\"Tạo biểu quyết\" opens the dialog with \"Nội dung biểu quyết\", two \"Phương án\" rows, \"Hình thức\" (\"Công khai\" / \"Bỏ phiếu kín\"), \"Người được bỏ phiếu\" (Chủ toạ/Thư ký/Thành viên/Khách) and \"Mô tả\".",
             "\"Lưu nháp\" shows \"Đang lưu…\", then the new row appears with chip \"Nháp\"."
           ],
-          "id": "VOTE_FT04",
+          "id": "VOTE_FT05",
           "note": "UC-53 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -96,7 +115,7 @@
             "No role: \"Chọn ít nhất một vai trò.\".",
             "No request leaves the browser in any of the three cases."
           ],
-          "id": "VOTE_FT05",
+          "id": "VOTE_FT06",
           "note": "UC-53 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -114,7 +133,7 @@
             "\"Sửa\" reopens \"Sửa biểu quyết\" with the saved values; saving updates the row.",
             "Delete asks \"Xoá biểu quyết nháp\" — \"Xoá nháp …?\"; \"Xoá\" removes the row."
           ],
-          "id": "VOTE_FT06",
+          "id": "VOTE_FT07",
           "note": "UC-53 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -127,22 +146,22 @@
         },
         {
           "description": "Verify leaving the create dialog without saving keeps nothing.",
+          "expected": [
+            "Step 4 closes both dialogs.",
+            "The list shows no \"Nháp bỏ dở\" row; DevTools > Network shows no POST /api/meetings/{meetingId}/votes."
+          ],
+          "id": "VOTE_FT08",
+          "note": "UC-53 | Manual only",
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair on the Votes tab of an Approved meeting."
+          ],
           "procedure": [
             "Click \"Tạo biểu quyết\".",
             "Enter \"Nội dung biểu quyết\" = \"Nháp bỏ dở\" with two options.",
             "Click \"Huỷ\".",
             "In the dialog \"Bỏ thay đổi chưa lưu?\", confirm leaving."
-          ],
-          "expected": [
-            "Step 4 closes both dialogs.",
-            "The list shows no \"Nháp bỏ dở\" row; DevTools > Network shows no POST /api/meetings/{meetingId}/votes."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair on the Votes tab of an Approved meeting."
-          ],
-          "note": "UC-53 | Manual only",
-          "id": "VOTE_FT07"
+          ]
         }
       ]
     },
@@ -158,7 +177,7 @@
             "The paperclip menu attaches the chosen meeting documents; the vote shows them with \"Đã đọc\"/\"Chưa đọc\" badges.",
             "\"Gỡ khỏi biểu quyết\" asks \"Gỡ … khỏi biểu quyết? Tài liệu vẫn ở trong cuộc họp.\"; \"Gỡ\" removes the link, the meeting keeps the file."
           ],
-          "id": "VOTE_FT08",
+          "id": "VOTE_FT09",
           "note": "UC-76 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -175,7 +194,7 @@
             "The draft row is not listed for the Member at all.",
             "An open vote shows its documents but no paperclip menu and no \"Gỡ khỏi biểu quyết\" button."
           ],
-          "id": "VOTE_FT09",
+          "id": "VOTE_FT10",
           "note": "UC-76 | BR-253 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -184,6 +203,24 @@
           "procedure": [
             "Look for the draft row.",
             "Open the open vote and look at its documents."
+          ]
+        },
+        {
+          "description": "Verify the upload dialog stops a file the system storage has no room for.",
+          "expected": [
+            "The dialog shows \"Bộ nhớ tài liệu của hệ thống không đủ chỗ. Hãy báo quản trị viên.\" with the size chosen and the space left, before anything is sent.",
+            "If the request is sent anyway (storage filled meanwhile), the backend answers 409/MSG346 and nothing is attached."
+          ],
+          "id": "VOTE_FT11",
+          "note": "UC-76a | ADR-0034 | Manual only",
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as the Chair of a meeting with a draft vote.",
+            "A PDF larger than the system document storage still free (FileStorage:MaxTotalGigabytes set low by QA lead)."
+          ],
+          "procedure": [
+            "Open the meeting from /mgmt/meetings, click the tab \"Biểu quyết\" and open the draft.",
+            "Choose to attach a file from the computer and pick the PDF."
           ]
         }
       ]
@@ -200,7 +237,7 @@
             "\"Mở\" asks \"Mở …\" — \"Người bỏ phiếu (…) chốt lúc ngay lúc mở.\"; confirming starts the vote and the room hears the \"Bỏ phiếu\" toast.",
             "The row chip becomes \"Đang mở\"."
           ],
-          "id": "VOTE_FT10",
+          "id": "VOTE_FT12",
           "note": "UC-54 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -215,7 +252,7 @@
           "expected": [
             "\"Mở biểu quyết\" (enabled only for the Chair while the meeting is running) creates and opens in one step; the row is \"Đang mở\"."
           ],
-          "id": "VOTE_FT11",
+          "id": "VOTE_FT13",
           "note": "UC-54 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -239,7 +276,7 @@
             "The ballot box lists one radio per option; \"Gửi phiếu\" stays disabled until an option is chosen and every document shows \"Đã xác nhận đọc\".",
             "After \"Gửi phiếu\": \"Bạn đã gửi phiếu.\"; the box no longer accepts input (\"Gửi rồi không đổi, không rút được.\")."
           ],
-          "id": "VOTE_FT12",
+          "id": "VOTE_FT14",
           "note": "UC-55 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -256,7 +293,7 @@
           "expected": [
             "The box shows \"Bạn không có trong danh sách bỏ phiếu.\" and no radio buttons."
           ],
-          "id": "VOTE_FT13",
+          "id": "VOTE_FT15",
           "note": "UC-55 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -272,7 +309,7 @@
             "The Guest sees the ballot box without voter names.",
             "After voting the Guest sees \"Bạn đã gửi phiếu.\"; the secret tally grows by one with no name attached."
           ],
-          "id": "VOTE_FT14",
+          "id": "VOTE_FT16",
           "note": "UC-55 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -280,6 +317,25 @@
           ],
           "procedure": [
             "Open the vote as the Guest and cast a ballot."
+          ]
+        },
+        {
+          "description": "Verify a ballot that cannot be saved says so and can be cast again.",
+          "expected": [
+            "Step 2: backend answers 503/MSG228; an error toast reads \"Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại.\" and the ballot is still open for this voter.",
+            "Step 3: the ballot is recorded once (MSG227) and the turnout grows by one."
+          ],
+          "id": "VOTE_FT17",
+          "note": "UC-55 | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_ballot_that_fails_at_commit_leaves_neither_receipt_nor_count)",
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a Member supplied by QA lead, on the eligible list of an open vote.",
+            "A way to make the backend fail."
+          ],
+          "procedure": [
+            "Open the meeting from /mgmt/meetings and click the tab \"Biểu quyết\".",
+            "Make POST .../ballots fail on the server, choose an option and submit the ballot.",
+            "Remove the failure and submit the same choice again."
           ]
         }
       ]
@@ -296,7 +352,7 @@
             "\"Đóng phiếu\" asks \"Đóng …? Đã bỏ n/m; đóng rồi không ai bỏ thêm được.\"; confirming shows the result bars at once.",
             "Further ballots are refused."
           ],
-          "id": "VOTE_FT15",
+          "id": "VOTE_FT18",
           "note": "UC-56 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -309,35 +365,35 @@
         },
         {
           "description": "Verify cancelling the close confirm keeps the vote open.",
-          "procedure": [
-            "Click \"Đóng phiếu\" on the open vote.",
-            "In the dialog \"Đóng biểu quyết\", click \"Huỷ\"."
-          ],
           "expected": [
             "The dialog closes; the row chip stays \"Đang mở\".",
             "DevTools > Network shows no POST /api/meetings/{meetingId}/votes/{voteId}/close."
           ],
+          "id": "VOTE_FT19",
+          "note": "UC-56 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair on an open vote."
           ],
-          "note": "UC-56 | Manual only",
-          "id": "VOTE_FT16"
+          "procedure": [
+            "Click \"Đóng phiếu\" on the open vote.",
+            "In the dialog \"Đóng biểu quyết\", click \"Huỷ\"."
+          ]
         },
         {
           "description": "Verify a Secretary sees no close control on an open vote.",
-          "procedure": [
-            "Open the vote."
-          ],
           "expected": [
             "The vote shows no \"Đóng phiếu\" button: only the current Chair closes (otherwise the backend answers 409/MSG230)."
           ],
+          "id": "VOTE_FT20",
+          "note": "UC-56 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary on an open vote in an InProgress meeting."
           ],
-          "note": "UC-56 | Manual only",
-          "id": "VOTE_FT17"
+          "procedure": [
+            "Open the vote."
+          ]
         }
       ]
     },
@@ -353,7 +409,7 @@
             "The form requires \"Kết luận\" (\"Thông qua\" / \"Không thông qua\" / \"Hoãn\") and accepts an optional \"Ghi chú\" (\"Ghi rồi không sửa được.\").",
             "After \"Ghi kết luận\" the vote shows the conclusion chip (\"Thông qua\"/\"Không thông qua\"/\"Hoãn\"); the form is gone."
           ],
-          "id": "VOTE_FT18",
+          "id": "VOTE_FT21",
           "note": "UC-57 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -366,37 +422,37 @@
         },
         {
           "description": "Verify leaving without recording keeps the vote unconcluded.",
-          "procedure": [
-            "Open the closed vote, choose \"Thông qua\" and type a note, but do not submit.",
-            "Open another vote, then come back to this one."
-          ],
           "expected": [
             "The vote still shows \"Chưa có kết luận.\"; DevTools > Network shows no POST /api/meetings/{meetingId}/votes/{voteId}/conclusion."
           ],
+          "id": "VOTE_FT22",
+          "note": "UC-57 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair on a closed vote with no conclusion."
           ],
-          "note": "UC-57 | Manual only",
-          "id": "VOTE_FT19"
+          "procedure": [
+            "Open the closed vote, choose \"Thông qua\" and type a note, but do not submit.",
+            "Open another vote, then come back to this one."
+          ]
         },
         {
           "description": "Verify a Member sees the recorded conclusion after reloading.",
-          "procedure": [
-            "As the Chair, record the conclusion with a note.",
-            "As the Member, open the vote.",
-            "Press F5."
-          ],
           "expected": [
             "Step 2 shows the conclusion chip (\"Thông qua\"/\"Không thông qua\"/\"Hoãn\") with the note.",
             "Step 3 shows the same conclusion; it cannot be edited."
           ],
+          "id": "VOTE_FT23",
+          "note": "UC-57 | BR-262 | Manual only",
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A closed vote with no conclusion; Chair and Member accounts supplied by QA lead."
           ],
-          "note": "UC-57 | BR-262 | Manual only",
-          "id": "VOTE_FT20"
+          "procedure": [
+            "As the Chair, record the conclusion with a note.",
+            "As the Member, open the vote.",
+            "Press F5."
+          ]
         }
       ]
     }

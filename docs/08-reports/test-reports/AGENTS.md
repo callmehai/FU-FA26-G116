@@ -164,9 +164,9 @@ does everything mechanical; nobody opens the workbooks to edit them:
 | `scaffold` | creates the missing `FE-xx/ui.json` and `FE-xx/api.json` with the groups from `sheets.json` and no cases |
 | `check` | every route in exactly one sheet; JSON groups = `sheets.json`; IDs `<CODE>_FT01…` / `<CODE>_API_IT01…` in sequence; no empty field; no test-code wording; every `MSGnn` in the catalogue; every test method in a Note exists; lists groups still without cases |
 | `md` | writes `cases/preview/FE-xx/{ui,api}.md` |
-| `build` | `check`, then `md`, then both workbooks from `scripts/test_reports/templates/integration-template.xlsx` (Cover, Test Cases, Test Statistics with formulas, one sheet per FE). Close the workbooks in Excel first |
+| `build` | `check`, then `md`, then Report 5.2.2 (add `--with-ui` for Report 5.2 too: it replaces the v1.2 workbook, see the README) from `scripts/test_reports/templates/integration-template.xlsx` (Cover, Test Cases, Test Statistics with formulas, one sheet per FE). Close the workbooks in Excel first |
 
-Never copy the ACCE sample workbooks (`docs/08-reports/sample/`, gitignored) into the repo; the
+Never copy the course's sample workbooks (`docs/08-reports/sample/`, gitignored) into the repo; the
 template is derived from our own Report 5.2.
 
 ## 5. Splitting the work between agents
@@ -192,7 +192,7 @@ Only the content changes. The layout and style come only from
 `Report5.1_Unit Test.xls` (read through Excel COM — openpyxl cannot open `.xls`), saved cleaned as
 `scripts/test_reports/templates/unit-template.xlsx`: sheets Cover, Test Cases, Test Statistics, plus
 one prototype module sheet with one `methodName` group row and one UTC row, placeholders removed.
-The ACCE sample (`docs/08-reports/sample/Report5.1_Unit_Test.xlsx`, gitignored) decides only how
+The course's sample (`docs/08-reports/sample/Report5.1_Unit_Test.xlsx`, gitignored) decides only how
 sheets are split — one sheet per production function under test, short names (`create_user`,
 `login`), grouped by module in the list sheet. Never copy its text, values or styles. Its O-matrix
 layout is not ours; ours is the row layout of the `.xls`. The teammate first attempt

@@ -2754,7 +2754,8 @@
           ],
           "expected": [
             "One request wins; either way the Member is not on the roster afterwards and cannot read the meeting (404).",
-            "No row for the Member is resurrected by the late answer."
+            "No row for the Member is resurrected by the late answer.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -3094,7 +3095,8 @@
           "expected": [
             "One request: HTTP 200, \"code\": \"MSG147\".",
             "The other: HTTP 409, \"code\": \"MSG151\".",
-            "The row holds the winner's value."
+            "The row holds the winner's value.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -3823,7 +3825,8 @@
           ],
           "expected": [
             "One request succeeds (200, \"code\": \"MSG257\" or \"MSG100\"); the other gets 409/MSG275 or MSG260.",
-            "GET participants shows exactly one Chair and at least one Secretary."
+            "GET participants shows exactly one Chair and at least one Secretary.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",

@@ -13,7 +13,11 @@ Usage (from the repository root):
   python scripts/test_reports/integration_cases.py scaffold   # create the missing FE-xx/{ui,api}.json, groups only
   python scripts/test_reports/integration_cases.py check      # validate; exit 1 on an error
   python scripts/test_reports/integration_cases.py md         # write cases/preview/FE-xx/{ui,api}.md
-  python scripts/test_reports/integration_cases.py build      # check + md + both workbooks
+  python scripts/test_reports/integration_cases.py build      # check + md + Report 5.2.2
+  python scripts/test_reports/integration_cases.py build --with-ui   # ... and Report 5.2 as well
+
+Report 5.2 is not rebuilt by default: the workbook in use is version 1.1 kept cell for cell plus 22 sheets
+(see the test-reports README), and building it from FE-xx/ui.json would replace it.
 
 The workbooks are output: never edit them in Excel, edit the JSON and build again.
 """
@@ -428,7 +432,10 @@ def cmd_build(args):
         sys.exit(f'{len(errors)} error(s): fix them before building.')
     cmd_md(args)
     m = manifest()
-    for book in BOOKS:
+    books = BOOKS if args.with_ui else tuple(b for b in BOOKS if b != 'ui')
+    if 'ui' not in books:
+        print('Report 5.2 skipped: it is the v1.2 workbook, not built from cases/ (pass --with-ui to replace it)')
+    for book in books:
         build_book(book, m)
     print(f'{len(todo)} group(s) still without cases')
 
@@ -436,6 +443,8 @@ def cmd_build(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('command', choices=('routes', 'scaffold', 'check', 'md', 'build'))
+    parser.add_argument('--with-ui', action='store_true',
+                        help='build: also rebuild Report 5.2 from FE-xx/ui.json, replacing the v1.2 workbook')
     args = parser.parse_args()
     return {'routes': cmd_routes, 'scaffold': cmd_scaffold, 'check': cmd_check,
             'md': cmd_md, 'build': cmd_build}[args.command](args) or 0

@@ -199,6 +199,25 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
           "note": "UC-14 | Manual only"
+        },
+        {
+          "id": "MEET_FT11",
+          "description": "Verify a meeting that cannot be saved keeps the form and says so.",
+          "procedure": [
+            "Go to /mgmt/meetings and click \"Tạo cuộc họp\" in the page header.",
+            "Fill in a valid title, time and roster.",
+            "Make POST /api/meetings fail on the server, then click \"Tạo cuộc họp\" in the dialog."
+          ],
+          "expected": [
+            "Backend answers 500/MSG35; the form shows \"Không thể tạo cuộc họp. Vui lòng thử lại.\" and keeps every typed value.",
+            "No new meeting appears in the list; clicking again after the failure is removed creates the meeting once."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
+            "A way to make the backend fail."
+          ],
+          "note": "UC-14 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_save_failure_returns_MSG35_and_500)"
         }
       ]
     },
@@ -209,7 +228,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT11",
+          "id": "MEET_FT12",
           "description": "Verify an Organizer edits a Draft meeting from its detail page.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -229,7 +248,7 @@
           "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_draft_and_ignores_client_owned_fields)"
         },
         {
-          "id": "MEET_FT12",
+          "id": "MEET_FT13",
           "description": "Verify saving without a change shows the no-change message and sends nothing.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -247,7 +266,7 @@
           "note": "UC-15 | Manual only"
         },
         {
-          "id": "MEET_FT13",
+          "id": "MEET_FT14",
           "description": "Verify editing a Rejected meeting keeps it Rejected.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -265,7 +284,7 @@
           "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_rejected_meeting_without_restarting_approval)"
         },
         {
-          "id": "MEET_FT14",
+          "id": "MEET_FT15",
           "description": "Verify an Organizer reschedules a Published meeting and the invitee is told.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -286,7 +305,7 @@
           "note": "UC-15 | AF-1 | BR-75, BR-76, BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_reschedules_a_published_meeting_and_notifies_every_invitee)"
         },
         {
-          "id": "MEET_FT15",
+          "id": "MEET_FT16",
           "description": "Verify the reschedule dialog refuses a past start.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -304,7 +323,7 @@
           "note": "UC-15 | BR-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_needs_a_start_in_the_future)"
         },
         {
-          "id": "MEET_FT16",
+          "id": "MEET_FT17",
           "description": "Verify a Draft saved with a start already past warns, and 24 hours past is refused.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -323,7 +342,7 @@
           "note": "UC-15 | BR-301 | Manual only"
         },
         {
-          "id": "MEET_FT17",
+          "id": "MEET_FT18",
           "description": "Verify the edit dialog reacts when the meeting left the editable states meanwhile.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -343,7 +362,7 @@
           "note": "UC-15 | EX-2 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_MSG33_if_the_meeting_is_not_editable)"
         },
         {
-          "id": "MEET_FT18",
+          "id": "MEET_FT19",
           "description": "Verify validation errors from the edit dialog stay in the dialog.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -360,7 +379,7 @@
           "note": "UC-15 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_validation_errors_without_mutating_the_meeting)"
         },
         {
-          "id": "MEET_FT19",
+          "id": "MEET_FT20",
           "description": "Verify only the Organizer is offered the edit and reschedule button.",
           "procedure": [
             "Open the Draft meeting as its Chair.",
@@ -377,7 +396,7 @@
           "note": "UC-15 | BR-28 | Manual only"
         },
         {
-          "id": "MEET_FT20",
+          "id": "MEET_FT21",
           "description": "Verify an edit made while the meeting is open elsewhere shows after reload.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -403,7 +422,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT21",
+          "id": "MEET_FT22",
           "description": "Verify the list opens on today's meetings with four cards.",
           "procedure": [
             "Sign in as the Organizer and go to /mgmt/meetings."
@@ -421,7 +440,7 @@
           "note": "UC-17 | BR-29 | Manual only"
         },
         {
-          "id": "MEET_FT22",
+          "id": "MEET_FT23",
           "description": "Verify clicking a card filters the list and clicking it again clears it.",
           "procedure": [
             "Go to /mgmt/meetings.",
@@ -442,7 +461,7 @@
           "note": "UC-17 | Manual only"
         },
         {
-          "id": "MEET_FT23",
+          "id": "MEET_FT24",
           "description": "Verify the \"Cần xử lý\" card shows what waits on the user.",
           "procedure": [
             "Sign in as an Approver with a WaitingApproval meeting assigned and go to /mgmt/meetings.",
@@ -459,7 +478,7 @@
           "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo)"
         },
         {
-          "id": "MEET_FT24",
+          "id": "MEET_FT25",
           "description": "Verify search, filters and sorting are applied by the server and kept in the URL.",
           "procedure": [
             "Go to /mgmt/meetings?status=all.",
@@ -480,7 +499,7 @@
           "note": "UC-17 | BR-30, BR-31, BR-32 | Manual only"
         },
         {
-          "id": "MEET_FT25",
+          "id": "MEET_FT26",
           "description": "Verify the \"Thời điểm\" filter offers only the fixed choices.",
           "procedure": [
             "Go to /mgmt/meetings?status=all and open \"Bộ lọc\", then open \"Thời điểm\"."
@@ -496,7 +515,7 @@
           "note": "UC-17 | Manual only"
         },
         {
-          "id": "MEET_FT26",
+          "id": "MEET_FT27",
           "description": "Verify paging keeps the filters and shows the right rows.",
           "procedure": [
             "Go to /mgmt/meetings?status=all with more than 20 meetings.",
@@ -514,7 +533,7 @@
           "note": "UC-17 | BR-32 | Manual only"
         },
         {
-          "id": "MEET_FT27",
+          "id": "MEET_FT28",
           "description": "Verify the empty states for no data, no match and a quiet day.",
           "procedure": [
             "Go to /mgmt/meetings as an Organizer with no meeting.",
@@ -533,7 +552,7 @@
           "note": "UC-17 | BR-12 | Manual only"
         },
         {
-          "id": "MEET_FT28",
+          "id": "MEET_FT29",
           "description": "Verify the list hides meetings the user may not read.",
           "procedure": [
             "Sign in as a Member on the roster of one Published meeting and one Draft meeting; go to /mgmt/meetings?status=all.",
@@ -550,7 +569,7 @@
           "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_enforces_lifecycle_visibility_for_related_readers)"
         },
         {
-          "id": "MEET_FT29",
+          "id": "MEET_FT30",
           "description": "Verify an invalid filter in the URL is reported and ignored.",
           "procedure": [
             "Go to /mgmt/meetings?status=MinutesIssued."
@@ -565,7 +584,7 @@
           "note": "UC-17 | Manual only"
         },
         {
-          "id": "MEET_FT30",
+          "id": "MEET_FT31",
           "description": "Verify a meeting in progress shows the call to enter the room.",
           "procedure": [
             "Go to /mgmt/meetings with an Online meeting InProgress.",
@@ -582,7 +601,7 @@
           "note": "UC-17 | Manual only"
         },
         {
-          "id": "MEET_FT31",
+          "id": "MEET_FT32",
           "description": "Verify a list that fails to load keeps the retry option.",
           "procedure": [
             "Stop the backend or block GET /api/meetings in DevTools, then reload /mgmt/meetings."
@@ -606,7 +625,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT32",
+          "id": "MEET_FT33",
           "description": "Verify the detail page of a meeting shows its schedule, people and tabs.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title)."
@@ -624,7 +643,7 @@
           "note": "UC-16 | BR-29 | Manual only"
         },
         {
-          "id": "MEET_FT33",
+          "id": "MEET_FT34",
           "description": "Verify the status history lists each step in order with who did it.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -642,7 +661,7 @@
           "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Organizer_and_current_approver_get_reasons_and_published_participant_gets_redacted_timeline)"
         },
         {
-          "id": "MEET_FT34",
+          "id": "MEET_FT35",
           "description": "Verify a Member sees the timeline without the rejection reason.",
           "procedure": [
             "Sign in as a Member on the roster of a Published meeting that was rejected once, and open it."
@@ -657,7 +676,7 @@
           "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_redacted_timeline_to_a_published_participant)"
         },
         {
-          "id": "MEET_FT35",
+          "id": "MEET_FT36",
           "description": "Verify a meeting the user cannot read shows the not-found page.",
           "procedure": [
             "Sign in as an account with no relation to a meeting and go to /mgmt/meetings/<its id>.",
@@ -673,7 +692,7 @@
           "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)"
         },
         {
-          "id": "MEET_FT36",
+          "id": "MEET_FT37",
           "description": "Verify a detail page that cannot load offers a retry.",
           "procedure": [
             "Block GET /api/meetings/<id> in DevTools and open the meeting."
@@ -689,7 +708,7 @@
           "note": "UC-16 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_returns_MSG37_when_the_repository_fails)"
         },
         {
-          "id": "MEET_FT37",
+          "id": "MEET_FT38",
           "description": "Verify an invitee answers whether they attend.",
           "procedure": [
             "Sign in as a Member on the roster of a Published meeting and open it.",
@@ -706,7 +725,7 @@
           "note": "UC-16 | SCRUM-20 | Manual only"
         },
         {
-          "id": "MEET_FT38",
+          "id": "MEET_FT39",
           "description": "Verify the selected tab lives in the URL.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -721,6 +740,25 @@
             "Signed in as an active Organizer (MeetingCreator) supplied by QA lead."
           ],
           "note": "UC-16 | Manual only"
+        },
+        {
+          "id": "MEET_FT40",
+          "description": "Verify a meeting the Chair forgot to end shows the system end in its history.",
+          "procedure": [
+            "Open the meeting from the list at /mgmt/meetings (click its title).",
+            "Look at the status badge and at \"Lịch sử trạng thái\"."
+          ],
+          "expected": [
+            "The badge reads \"Đã kết thúc\".",
+            "The newest history row reads \"Tự kết thúc (quá giờ)\" by \"Hệ thống\", with the time the system ended it.",
+            "The meeting room no longer opens for a call."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an active Organizer (MeetingCreator) supplied by QA lead.",
+            "A meeting left \"Đang diễn ra\" more than 24 hours after its planned end, after the overdue job has run (every 15 minutes)."
+          ],
+          "note": "UC-22 | ADR-0062 | SCRUM-212 | Manual only"
         }
       ]
     },
@@ -731,7 +769,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT39",
+          "id": "MEET_FT41",
           "description": "Verify an Organizer sends a ready Draft for approval.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -753,7 +791,7 @@
           "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Submit_records_assignment_history_and_approver_notification)"
         },
         {
-          "id": "MEET_FT40",
+          "id": "MEET_FT42",
           "description": "Verify the dialog requires an approver.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -770,7 +808,7 @@
           "note": "UC-18 | EX | Manual only"
         },
         {
-          "id": "MEET_FT41",
+          "id": "MEET_FT43",
           "description": "Verify the dialog explains a missing approver list.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -787,7 +825,7 @@
           "note": "UC-18 | Manual only"
         },
         {
-          "id": "MEET_FT42",
+          "id": "MEET_FT44",
           "description": "Verify an incomplete meeting lists what is missing and blocks the button.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -805,7 +843,7 @@
           "note": "UC-18 | EX | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
         },
         {
-          "id": "MEET_FT43",
+          "id": "MEET_FT45",
           "description": "Verify an approver who lost the right is refused in the dialog.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -822,7 +860,7 @@
           "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_to_the_organizer_returns_MSG82_without_writing_any_workflow_rows)"
         },
         {
-          "id": "MEET_FT44",
+          "id": "MEET_FT46",
           "description": "Verify a Rejected meeting is resubmitted directly and the Organizer can withdraw a stuck request.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -841,7 +879,7 @@
           "note": "UC-18 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Waiting_approval_can_be_withdrawn_only_when_approver_is_ineligible)"
         },
         {
-          "id": "MEET_FT45",
+          "id": "MEET_FT47",
           "description": "Verify a submit that fails to save stays in the dialog.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -858,7 +896,7 @@
           "note": "UC-18 | EX | Manual only"
         },
         {
-          "id": "MEET_FT46",
+          "id": "MEET_FT48",
           "description": "Verify a stale submit reloads the meeting.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -886,7 +924,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT47",
+          "id": "MEET_FT49",
           "description": "Verify the assigned approver approves a meeting.",
           "procedure": [
             "Sign in as the assigned Approver and open the WaitingApproval meeting.",
@@ -906,7 +944,7 @@
           "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Approve_notifies_the_organizer)"
         },
         {
-          "id": "MEET_FT48",
+          "id": "MEET_FT50",
           "description": "Verify the approver rejects a meeting with a reason.",
           "procedure": [
             "As the assigned Approver click \"Từ chối\".",
@@ -924,7 +962,7 @@
           "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_notifies_the_organizer_with_the_reason)"
         },
         {
-          "id": "MEET_FT49",
+          "id": "MEET_FT51",
           "description": "Verify the rejection dialog needs a reason and keeps the typed text on error.",
           "procedure": [
             "As the approver open \"Từ chối\" and click \"Từ chối\" with the reason empty.",
@@ -941,7 +979,7 @@
           "note": "UC-19 | EX | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_accepts_exactly_1000_characters_and_rejects_1001)"
         },
         {
-          "id": "MEET_FT50",
+          "id": "MEET_FT52",
           "description": "Verify a user who is not the assigned approver gets no approval buttons.",
           "procedure": [
             "Sign in as a second Approver who is not assigned and open the WaitingApproval meeting by its link.",
@@ -958,7 +996,7 @@
           "note": "UC-19 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Assigned_approver_with_capability_can_approve_but_an_unassigned_approver_cannot)"
         },
         {
-          "id": "MEET_FT51",
+          "id": "MEET_FT53",
           "description": "Verify a decision on a meeting that changed meanwhile reloads the page.",
           "procedure": [
             "As the Approver open \"Duyệt cuộc họp\" and keep it open.",
@@ -975,7 +1013,7 @@
           "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)"
         },
         {
-          "id": "MEET_FT52",
+          "id": "MEET_FT54",
           "description": "Verify a decision that fails to save stays in the dialog.",
           "procedure": [
             "As the Approver open \"Duyệt cuộc họp\", make the backend fail and click \"Duyệt\"."
@@ -998,7 +1036,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT53",
+          "id": "MEET_FT55",
           "description": "Verify the Organizer publishes an Approved meeting.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1020,7 +1058,7 @@
           "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner)"
         },
         {
-          "id": "MEET_FT54",
+          "id": "MEET_FT56",
           "description": "Verify Publish is refused when the roster lacks a Secretary.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1037,7 +1075,7 @@
           "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG137_when_the_required_roster_is_not_ready)"
         },
         {
-          "id": "MEET_FT55",
+          "id": "MEET_FT57",
           "description": "Verify Publish by an Organizer who lost MeetingCreator reloads the session.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1054,7 +1092,7 @@
           "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG46_when_the_owner_lacks_the_required_capability)"
         },
         {
-          "id": "MEET_FT56",
+          "id": "MEET_FT58",
           "description": "Verify a publish that fails to save keeps the meeting Approved.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1071,7 +1109,7 @@
           "note": "UC-20 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_persistence_failure_rolls_back_status_history_notifications_and_jobs)"
         },
         {
-          "id": "MEET_FT57",
+          "id": "MEET_FT59",
           "description": "Verify only the Organizer is offered \"Công bố\".",
           "procedure": [
             "Open the Approved meeting as its approver and as its Chair."
@@ -1095,7 +1133,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT58",
+          "id": "MEET_FT60",
           "description": "Verify the Chair starts a Published meeting.",
           "procedure": [
             "Sign in as the Chair, open the Published meeting and click \"Bắt đầu họp\".",
@@ -1112,7 +1150,7 @@
           "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_and_end_persist_server_time_history_and_notifications)"
         },
         {
-          "id": "MEET_FT59",
+          "id": "MEET_FT61",
           "description": "Verify starting well before the planned time asks for confirmation.",
           "procedure": [
             "As the Chair click \"Bắt đầu họp\" on a meeting planned more than 15 minutes ahead.",
@@ -1128,7 +1166,7 @@
           "note": "UC-21 | Manual only"
         },
         {
-          "id": "MEET_FT60",
+          "id": "MEET_FT62",
           "description": "Verify Start is blocked without a Secretary.",
           "procedure": [
             "As the Chair click \"Bắt đầu họp\" on a meeting without a Secretary."
@@ -1143,7 +1181,7 @@
           "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not)"
         },
         {
-          "id": "MEET_FT61",
+          "id": "MEET_FT63",
           "description": "Verify only the Chair sees Start and End.",
           "procedure": [
             "Open the Published meeting as its Organizer who is not the Chair, as the Secretary and as a Member."
@@ -1158,7 +1196,7 @@
           "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)"
         },
         {
-          "id": "MEET_FT62",
+          "id": "MEET_FT64",
           "description": "Verify the Chair ends the meeting after confirming.",
           "procedure": [
             "As the Chair open the InProgress meeting and click \"Kết thúc họp\".",
@@ -1177,7 +1215,7 @@
           "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)"
         },
         {
-          "id": "MEET_FT63",
+          "id": "MEET_FT65",
           "description": "Verify cancelling the End dialog changes nothing.",
           "procedure": [
             "As the Chair click \"Kết thúc họp\" and then close the dialog without confirming."
@@ -1192,7 +1230,7 @@
           "note": "UC-22 | Manual only"
         },
         {
-          "id": "MEET_FT64",
+          "id": "MEET_FT66",
           "description": "Verify a start or end that fails to save can be retried.",
           "procedure": [
             "As the Chair click \"Bắt đầu họp\" with the backend failing.",
@@ -1209,7 +1247,7 @@
           "note": "UC-21 | UC-22 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects)"
         },
         {
-          "id": "MEET_FT65",
+          "id": "MEET_FT67",
           "description": "Verify a second Start from a stale page reloads the meeting.",
           "procedure": [
             "Open the Published meeting in two browsers as the Chair.",
@@ -1233,7 +1271,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_FT66",
+          "id": "MEET_FT68",
           "description": "Verify the Organizer cancels a Published meeting with a reason.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1254,7 +1292,7 @@
           "note": "UC-75 | BR-297 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees)"
         },
         {
-          "id": "MEET_FT67",
+          "id": "MEET_FT69",
           "description": "Verify the cancel dialog warns by status about who is told.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1272,7 +1310,7 @@
           "note": "UC-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_while_waiting_for_approval_closes_the_request_and_tells_the_approver; Cancel_before_publication_tells_nobody)"
         },
         {
-          "id": "MEET_FT68",
+          "id": "MEET_FT70",
           "description": "Verify the cancel dialog needs a reason.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1291,7 +1329,7 @@
           "note": "UC-75 | EX-1 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_without_a_reason_returns_MSG262; Cancel_with_a_reason_over_1000_characters_returns_MSG345)"
         },
         {
-          "id": "MEET_FT69",
+          "id": "MEET_FT71",
           "description": "Verify a started meeting can no longer be cancelled.",
           "procedure": [
             "Open an InProgress meeting as its Organizer.",
@@ -1309,7 +1347,7 @@
           "note": "UC-75 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_of_a_started_meeting_returns_409_MSG263)"
         },
         {
-          "id": "MEET_FT70",
+          "id": "MEET_FT72",
           "description": "Verify only the Organizer is offered the cancel button.",
           "procedure": [
             "Open the Published meeting as its Chair and as a Member."
@@ -1324,7 +1362,7 @@
           "note": "UC-75 | SCRUM-150 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85)"
         },
         {
-          "id": "MEET_FT71",
+          "id": "MEET_FT73",
           "description": "Verify a cancel that fails to save stays in the dialog.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",
@@ -1341,7 +1379,7 @@
           "note": "UC-75 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_that_cannot_be_saved_returns_MSG264)"
         },
         {
-          "id": "MEET_FT72",
+          "id": "MEET_FT74",
           "description": "Verify a meeting not started 24 hours after its planned start is cancelled by the system.",
           "procedure": [
             "Open the meeting from the list at /mgmt/meetings (click its title).",

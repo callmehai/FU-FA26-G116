@@ -121,11 +121,7 @@ def main():
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     meta=dict(project='TrustCabinet',projectCode='SEP490-G116',date=datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')).strftime('%Y-%m-%d'),generatedAt=datetime.now(timezone.utc).isoformat(),commit=commit,sourceDigest=fingerprint,evidenceVerified=verified,testMethods=len(tests),classification=dict(Counter(c['level'] for c in tests)),status=dict(Counter(c['status'] for c in tests)),manualCases=dict(Counter(c['level'] for c in manual)),executions=len(results),templates={name:digest(a.template_dir/name) for name in TEMPLATES.values()})
     books={}
-    # Retired: Report 5.1 comes from scripts/test_reports/unit_cases.py build.
-    # books['UNIT']=unit_book(a.template_dir/TEMPLATES['UNIT'],[c for c in tests if c['level']=='UNIT'],meta)
-    # Retired: Report 5.2 / 5.2.2 come from scripts/test_reports/integration_cases.py build.
-    # books['INTEGRATION']=table_book(a.template_dir/TEMPLATES['INTEGRATION'],[c for c in tests if c['level']=='INTEGRATION']+[c for c in manual if c['level']=='UI'],meta,'INTEGRATION TEST DOCUMENT')
-    # books['API']=table_book(a.template_dir/TEMPLATES['API'],[c for c in tests if c['level']=='API'],meta,'API TEST')
+    # Report 5.1 comes from unit_cases.py build, 5.2 / 5.2.2 from integration_cases.py build.
     books['SYSTEM']=table_book(a.template_dir/TEMPLATES['SYSTEM'],[c for c in manual if c['level']=='SYS'],meta,'SYSTEM TEST REPORT DOCUMENT',True)
     books['UAT']=uat_book(a.template_dir/TEMPLATES['UAT'],[c for c in manual if c['level']=='UAT'],meta)
     specs=build/'authoring.json';write_json(specs,[book.spec(FILES[k]) for k,book in books.items()]);authored=build/'authored'

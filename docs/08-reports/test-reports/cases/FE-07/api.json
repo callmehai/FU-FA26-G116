@@ -1211,7 +1211,8 @@
             "Send PUT /api/folders/<A>/parent with parentId <B> and PUT /api/folders/<B>/parent with parentId <A> at the same time, with Authorization: Bearer <accessToken>."
           ],
           "expected": [
-            "Exactly one request answers 200 MSG194 and the other answers 409 MSG193; the library has no folder that is its own ancestor."
+            "Exactly one request answers 200 MSG194 and the other answers 409 MSG193; the library has no folder that is its own ancestor.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",

@@ -1201,7 +1201,8 @@
           ],
           "expected": [
             "Every response is 2xx; exactly one is 201 Created.",
-            "speaking_requests holds one row for the Member."
+            "speaking_requests holds one row for the Member.",
+            "The requests may be handled in any order: any one of them may be the 201."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -2381,7 +2382,8 @@
             "Send two PUT /api/meetings/{M1}/notes for the same item with \"updatedAt\": null in parallel."
           ],
           "expected": [
-            "One answers HTTP 200 (MSG415), the other HTTP 409 MSG418; meeting_notes holds one row for that item."
+            "One answers HTTP 200 (MSG415), the other HTTP 409 MSG418; meeting_notes holds one row for that item.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",

@@ -384,7 +384,7 @@
           "id": "USER_FT20",
           "description": "Verify the other person is signed out after their email changes.",
           "procedure": [
-            "In browser B, sign in as the target and open /meetings.",
+            "In browser B, sign in as the target and open /mgmt/meetings.",
             "In browser A, \"Sửa\" the target, change \"Email\" and click \"Lưu thay đổi\".",
             "In browser B, reload or open a page."
           ],
@@ -481,7 +481,7 @@
           "id": "USER_FT25",
           "description": "Verify a deactivated person is signed out and cannot sign in.",
           "procedure": [
-            "In browser B, sign in as the target and open /meetings.",
+            "In browser B, sign in as the target and open /mgmt/meetings.",
             "In browser A, deactivate the target.",
             "In browser B reload; then try to sign in again on /login."
           ],
@@ -614,7 +614,7 @@
           "id": "USER_FT32",
           "description": "Verify the changed role applies to the person at once without signing them out.",
           "procedure": [
-            "In browser B, sign in as the target Member and keep /meetings open.",
+            "In browser B, sign in as the target Member and keep /mgmt/meetings open.",
             "In browser A, change the target's role to Secretary (which holds \"MeetingCreator\").",
             "In browser B, look at the sidebar and the meeting list without signing in again."
           ],

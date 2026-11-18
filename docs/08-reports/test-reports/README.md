@@ -1,9 +1,9 @@
 # Bộ test report TrustCabinet theo mẫu
 
 Sáu file Office trong thư mục này được sinh **bằng tiếng Anh**, theo yêu cầu của người dùng.
-Nguồn định dạng là sáu file mẫu trong `C:\Users\nguye\Downloads`; script giữ style, theme,
-bố cục bảng và các phần cố định của mẫu. Nội dung dự án ACCE, người kiểm thử và kết quả mẫu
-được thay bằng nội dung TrustCabinet.
+Nguồn định dạng là sáu file mẫu của môn học, đặt trong một thư mục trên máy (`--template-dir`, mặc định
+là thư mục Downloads của người chạy); script giữ style, theme, bố cục bảng và các phần cố định của mẫu.
+Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu được thay bằng nội dung TrustCabinet.
 
 | File | Nội dung |
 |---|---|
@@ -19,15 +19,16 @@ bố cục bảng và các phần cố định của mẫu. Nội dung dự án 
 
 ```powershell
 python scripts/test_reports/integration_cases.py check   # kiểm tra
-python scripts/test_reports/integration_cases.py build   # sinh lại 2 workbook (đóng Excel trước)
+python scripts/test_reports/integration_cases.py build   # sinh lại 5.2.2 (đóng Excel trước)
 ```
 
 Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết case và cách chia việc.
 
 **Workbook 5.2 đang dùng (trên Drive và trong repo) chưa sinh từ `cases/`.** Theo yêu cầu ngày 18/11/2026,
 nó là bản 1.1 (13 sheet theo chức năng, 124 case `XXX_IT01`) giữ nguyên từng ô, cộng 22 sheet mới cùng kiểu
-cho các chức năng bản 1.1 chưa có (287 case) — bản 1.2, tổng 411 case. Chạy `integration_cases.py build` sẽ
-ghi đè nó bằng bản chia theo Feature; đừng chạy cho 5.2 khi chưa thống nhất lại với nhóm.
+cho các chức năng bản 1.1 chưa có (287 case) — bản 1.2, tổng 411 case. Vì vậy `integration_cases.py build`
+mặc định chỉ sinh 5.2.2 và bỏ qua 5.2; `build --with-ui` mới sinh 5.2 từ `cases/` và ghi đè bản 1.2 — chỉ chạy
+khi nhóm đã thống nhất lấy `cases/` làm nguồn của 5.2.
 
 Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). Mọi vòng đều `Pending` cho tới khi chạy thật:
 
@@ -36,19 +37,19 @@ Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feat
 | FE-01 | Authentication | 34 | 57 |
 | FE-02 | User Management | 45 | 61 |
 | FE-03 | Access Control | 45 | 63 |
-| FE-04 | Meeting Management | 72 | 110 |
+| FE-04 | Meeting Management | 74 | 116 |
 | FE-05 | Agenda | 47 | 83 |
 | FE-06 | Participants | 90 | 195 |
 | FE-07 | Documents | 101 | 217 |
 | FE-08 | Online Room | 98 | 136 |
 | FE-09 | Recording | 69 | 126 |
 | FE-10 | Transcription & Summary | 85 | 181 |
-| FE-11 | Voting | 20 | 43 |
+| FE-11 | Voting | 23 | 53 |
 | FE-12 | Minutes | 44 | 83 |
 | FE-13 | Notifications | 35 | 47 |
 | FE-15 | Reporting | 17 | 21 |
 | FE-16 | Calendar | 68 | 98 |
-| | **Tổng** | **870** | **1521** |
+| | **Tổng** | **875** | **1537** |
 
 `generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2; nó chỉ sinh 5.0, 5.3, 5.4.
 
@@ -78,7 +79,7 @@ Tại thư mục gốc repository:
 Đổi thư mục mẫu hoặc nơi xuất:
 
 ```powershell
-.\scripts\generate-test-reports.cmd --template-dir "C:\Users\nguye\Downloads" --output-dir "C:\github\TrustCabinet\artifacts\test-report-copy"
+.\scripts\generate-test-reports.cmd --template-dir "<thư mục chứa file mẫu>" --output-dir "artifacts\test-report-copy"
 ```
 
 Script cần .NET SDK theo `global.json`, Python với dependency trong

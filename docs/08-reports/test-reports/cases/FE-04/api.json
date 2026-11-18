@@ -84,8 +84,8 @@
             "Body: the valid body plus \"status\": \"Approved\" and \"assignedApproverId\": \"<Approver id>\"."
           ],
           "expected": [
-            "HTTP 201 Created or HTTP 400 \"MSG31\" (the extra fields are not accepted); in no case does a meeting exist with a status other than \"Draft\".",
-            "A created meeting has \"assignedApproverId\": null: no approver is assigned at creation."
+            "HTTP 201 Created: the unknown fields are ignored, not rejected.",
+            "The created meeting has \"status\": \"Draft\" and \"assignedApproverId\": null; GET /api/meetings/<id> answers the same: no approver is assigned and no status is skipped at creation."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -317,6 +317,27 @@
             "Active Chair and Secretary accounts exist (their user ids are known to the tester)."
           ],
           "note": "UC-14 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
+        },
+        {
+          "id": "MEET_API_IT16",
+          "description": "Verify POST /api/meetings answers 500 Internal Server Error MSG35 when the database fails.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "QA lead makes the database fail for the next request.",
+            "Send POST /api/meetings",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: a valid meeting body with a roster."
+          ],
+          "expected": [
+            "HTTP 500 Internal Server Error: { \"code\": \"MSG35\", \"message\": \"Không thể tạo cuộc họp. Vui lòng thử lại.\" }.",
+            "No meeting, participant or history row is created (GET /api/meetings does not list it)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "QA lead can make the database fail for one request."
+          ],
+          "note": "UC-14 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_save_failure_returns_MSG35_and_500)"
         }
       ]
     },
@@ -327,7 +348,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT16",
+          "id": "MEET_API_IT17",
           "description": "Verify PUT /api/meetings/{id} updates the information of a Draft meeting.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -349,7 +370,7 @@
           "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_draft_and_ignores_client_owned_fields)"
         },
         {
-          "id": "MEET_API_IT17",
+          "id": "MEET_API_IT18",
           "description": "Verify PUT /api/meetings/{id} with unchanged data succeeds without writing.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -368,7 +389,7 @@
           "note": "UC-15 | Manual only"
         },
         {
-          "id": "MEET_API_IT18",
+          "id": "MEET_API_IT19",
           "description": "Verify PUT /api/meetings/{id} edits a Rejected meeting without restarting approval.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -388,7 +409,7 @@
           "note": "UC-15 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_updates_an_owned_rejected_meeting_without_restarting_approval)"
         },
         {
-          "id": "MEET_API_IT19",
+          "id": "MEET_API_IT20",
           "description": "Verify PUT /api/meetings/{id} reschedules a Published meeting and notifies the invitees.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -412,7 +433,7 @@
           "note": "UC-15 | AF-1 | BR-75, BR-76, BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_reschedules_a_published_meeting_and_notifies_every_invitee; Put_reschedule_does_not_notify_the_organizer_of_their_own_change)"
         },
         {
-          "id": "MEET_API_IT20",
+          "id": "MEET_API_IT21",
           "description": "Verify PUT /api/meetings/{id} on a Published meeting rejects a change to a locked field.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -430,7 +451,7 @@
           "note": "UC-15 | AF-1 | BR-158 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_rejects_fields_outside_the_schedule)"
         },
         {
-          "id": "MEET_API_IT21",
+          "id": "MEET_API_IT22",
           "description": "Verify PUT /api/meetings/{id} on a Published meeting needs a start in the future.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -448,7 +469,7 @@
           "note": "UC-15 | BR-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_needs_a_start_in_the_future)"
         },
         {
-          "id": "MEET_API_IT22",
+          "id": "MEET_API_IT23",
           "description": "Verify PUT /api/meetings/{id} on a Published meeting with no change notifies nobody.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -467,7 +488,7 @@
           "note": "UC-15 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_on_a_published_meeting_without_changes_notifies_nobody)"
         },
         {
-          "id": "MEET_API_IT23",
+          "id": "MEET_API_IT24",
           "description": "Verify PUT /api/meetings/{id} refuses a meeting that is no longer editable.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -485,7 +506,7 @@
           "note": "UC-15 | EX-2 | BR-28 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_MSG33_if_the_meeting_is_not_editable)"
         },
         {
-          "id": "MEET_API_IT24",
+          "id": "MEET_API_IT25",
           "description": "Verify PUT /api/meetings/{id} checks the status before it reads the body.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -504,7 +525,7 @@
           "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_status_before_parsing_invalid_json; Put_returns_400_for_invalid_json_when_meeting_is_editable)"
         },
         {
-          "id": "MEET_API_IT25",
+          "id": "MEET_API_IT26",
           "description": "Verify PUT /api/meetings/{id} returns validation errors without changing the meeting.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -523,7 +544,7 @@
           "note": "UC-15 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_returns_validation_errors_without_mutating_the_meeting)"
         },
         {
-          "id": "MEET_API_IT26",
+          "id": "MEET_API_IT27",
           "description": "Verify PUT /api/meetings/{id} allows a Draft start that is already past.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -540,7 +561,7 @@
           "note": "UC-15 | Manual only"
         },
         {
-          "id": "MEET_API_IT27",
+          "id": "MEET_API_IT28",
           "description": "Verify PUT /api/meetings/{id} rejects a roster in the body.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -560,7 +581,7 @@
           "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Create_requires_participants_with_MSG277_and_update_rejects_roster)"
         },
         {
-          "id": "MEET_API_IT28",
+          "id": "MEET_API_IT29",
           "description": "Verify PUT /api/meetings/{id} requires a JSON content type.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -577,7 +598,7 @@
           "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_checks_state_before_rejecting_a_missing_or_unsupported_content_type)"
         },
         {
-          "id": "MEET_API_IT29",
+          "id": "MEET_API_IT30",
           "description": "Verify PUT /api/meetings/{id} rejects a body over 64 KiB.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -595,7 +616,7 @@
           "note": "UC-15 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_rejects_json_larger_than_64_kib)"
         },
         {
-          "id": "MEET_API_IT30",
+          "id": "MEET_API_IT31",
           "description": "Verify PUT /api/meetings/{id} requires a token and MeetingCreator.",
           "procedure": [
             "Send PUT /api/meetings/<draft id> without an Authorization header.",
@@ -613,7 +634,7 @@
           "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
         },
         {
-          "id": "MEET_API_IT31",
+          "id": "MEET_API_IT32",
           "description": "Verify PUT /api/meetings/{id} answers 404 to another Organizer and to an unknown id alike.",
           "procedure": [
             "Sign in as a second Organizer (MeetingCreator) who did not create the meeting.",
@@ -630,6 +651,28 @@
             "Second active Organizer account supplied by QA lead."
           ],
           "note": "UC-15 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)"
+        },
+        {
+          "id": "MEET_API_IT33",
+          "description": "Verify PUT /api/meetings/<id> answers 500 Internal Server Error MSG36 when the database fails.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "QA lead makes the database fail for the next request.",
+            "Send PUT /api/meetings/<id>",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: the meeting with a new title."
+          ],
+          "expected": [
+            "HTTP 500 Internal Server Error: { \"code\": \"MSG36\", \"message\": \"Không thể cập nhật cuộc họp. Vui lòng thử lại.\" }.",
+            "GET /api/meetings/<id> still shows the values from before the request."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Draft meeting created by the Organizer.",
+            "QA lead can make the database fail for one request."
+          ],
+          "note": "UC-15 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Put_save_failure_returns_MSG36_and_500)"
         }
       ]
     },
@@ -640,7 +683,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT32",
+          "id": "MEET_API_IT34",
           "description": "Verify GET /api/meetings returns the first page with its paging metadata.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -660,7 +703,7 @@
           "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata)"
         },
         {
-          "id": "MEET_API_IT33",
+          "id": "MEET_API_IT35",
           "description": "Verify GET /api/meetings lists only meetings the caller may read.",
           "procedure": [
             "Sign in as a Member who is on the roster of a Published meeting and not on any other.",
@@ -678,7 +721,7 @@
           "note": "UC-17 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata; Get_enforces_lifecycle_visibility_for_related_readers)"
         },
         {
-          "id": "MEET_API_IT34",
+          "id": "MEET_API_IT36",
           "description": "Verify GET /api/meetings filters by status and sensitivity together.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -696,7 +739,7 @@
           "note": "UC-17 | BR-30, BR-31 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_only_authorized_items_and_pagination_metadata)"
         },
         {
-          "id": "MEET_API_IT35",
+          "id": "MEET_API_IT37",
           "description": "Verify GET /api/meetings searches the title without case or accents.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -714,7 +757,7 @@
           "note": "UC-17 | BR-30 | Manual only"
         },
         {
-          "id": "MEET_API_IT36",
+          "id": "MEET_API_IT38",
           "description": "Verify GET /api/meetings filters by the overlap of the planned time with from and to.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -731,7 +774,7 @@
           "note": "UC-17 | BR-30 | Manual only"
         },
         {
-          "id": "MEET_API_IT37",
+          "id": "MEET_API_IT39",
           "description": "Verify GET /api/meetings sorts and pages as asked.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -748,7 +791,7 @@
           "note": "UC-17 | BR-32 | Manual only"
         },
         {
-          "id": "MEET_API_IT38",
+          "id": "MEET_API_IT40",
           "description": "Verify GET /api/meetings returns an empty page for no match and for a page past the end.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -766,7 +809,7 @@
           "note": "UC-17 | BR-12 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_empty_page_for_no_match_or_page_beyond_end)"
         },
         {
-          "id": "MEET_API_IT39",
+          "id": "MEET_API_IT41",
           "description": "Verify GET /api/meetings rejects an invalid status, including the retired ones.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -783,7 +826,7 @@
           "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
         },
         {
-          "id": "MEET_API_IT40",
+          "id": "MEET_API_IT42",
           "description": "Verify GET /api/meetings rejects a time filter without an offset or with from after to.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -800,7 +843,7 @@
           "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
         },
         {
-          "id": "MEET_API_IT41",
+          "id": "MEET_API_IT43",
           "description": "Verify GET /api/meetings rejects page, pageSize and sort values out of range.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -818,7 +861,7 @@
           "note": "UC-17 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_field_errors_for_invalid_query)"
         },
         {
-          "id": "MEET_API_IT42",
+          "id": "MEET_API_IT44",
           "description": "Verify GET /api/meetings splits upcoming from past with timing.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -839,7 +882,7 @@
           "note": "UC-17 | Manual only"
         },
         {
-          "id": "MEET_API_IT43",
+          "id": "MEET_API_IT45",
           "description": "Verify GET /api/meetings?scope=todo keeps only the meetings waiting on the caller.",
           "procedure": [
             "Sign in as an Approver with a meeting WaitingApproval assigned to them.",
@@ -857,7 +900,7 @@
           "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_rejects_an_unknown_scope_with_MSG32_and_forwards_todo)"
         },
         {
-          "id": "MEET_API_IT44",
+          "id": "MEET_API_IT46",
           "description": "Verify GET /api/meetings?excludeDeclined=true hides meetings the caller declined.",
           "procedure": [
             "Sign in as a Member who answered \"Không tham dự\" to one Published meeting.",
@@ -875,7 +918,7 @@
           "note": "UC-17 | Manual only"
         },
         {
-          "id": "MEET_API_IT45",
+          "id": "MEET_API_IT47",
           "description": "Verify GET /api/meetings requires a token.",
           "procedure": [
             "Send GET /api/meetings without an Authorization header."
@@ -889,7 +932,7 @@
           "note": "UC-17 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_requires_authentication_and_an_active_account)"
         },
         {
-          "id": "MEET_API_IT46",
+          "id": "MEET_API_IT48",
           "description": "Verify GET /api/meetings is open to any signed-in account without MeetingCreator.",
           "procedure": [
             "Sign in as a Member without MeetingCreator.",
@@ -903,6 +946,26 @@
             "Active Member account supplied by QA lead."
           ],
           "note": "UC-17 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT49",
+          "description": "Verify GET /api/meetings answers 500 Internal Server Error MSG38 when the database fails.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "QA lead makes the database fail for the next request.",
+            "Send GET /api/meetings",
+            "Headers: Authorization: Bearer <access_token>"
+          ],
+          "expected": [
+            "HTTP 500 Internal Server Error: { \"code\": \"MSG38\", \"message\": \"Không thể tải danh sách cuộc họp. Vui lòng thử lại.\" }.",
+            "No meeting rows are returned with the error."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "QA lead can make the database fail for one request."
+          ],
+          "note": "UC-17 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (List_returns_MSG38_and_500_when_the_database_read_fails)"
         }
       ]
     },
@@ -913,7 +976,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT47",
+          "id": "MEET_API_IT50",
           "description": "Verify GET /api/meetings/{id} returns the full meeting to its Organizer.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -931,7 +994,7 @@
           "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_creates_a_draft_and_returns_a_location_that_get_can_read)"
         },
         {
-          "id": "MEET_API_IT48",
+          "id": "MEET_API_IT51",
           "description": "Verify GET /api/meetings/{id} hides a Draft from a Member on the roster.",
           "procedure": [
             "Sign in as a Member who is on the roster of a Draft meeting.",
@@ -949,7 +1012,7 @@
           "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_enforces_lifecycle_visibility_for_related_readers; Get_allows_an_active_meeting_participant_without_MeetingCreator)"
         },
         {
-          "id": "MEET_API_IT49",
+          "id": "MEET_API_IT52",
           "description": "Verify GET /api/meetings/{id} lets the Chair and the Secretary read a Draft.",
           "procedure": [
             "Sign in as the Chair of the meeting and send GET /api/meetings/<draft id>.",
@@ -965,7 +1028,7 @@
           "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Assigned_chair_can_read_before_publication; Assigned_secretary_can_read_detail_list_and_rejection_before_publication)"
         },
         {
-          "id": "MEET_API_IT50",
+          "id": "MEET_API_IT53",
           "description": "Verify GET /api/meetings/{id} lets the assigned approver read from WaitingApproval.",
           "procedure": [
             "Sign in as the Approver assigned to the meeting.",
@@ -983,7 +1046,7 @@
           "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_allows_an_active_assigned_approver_without_MeetingCreator)"
         },
         {
-          "id": "MEET_API_IT51",
+          "id": "MEET_API_IT54",
           "description": "Verify GET /api/meetings/{id} answers 404 alike for a stranger and an unknown id.",
           "procedure": [
             "Sign in as an active account with no relation to the meeting.",
@@ -1000,7 +1063,7 @@
           "note": "UC-16 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Missing_and_other_owner_resources_return_the_same_empty_404)"
         },
         {
-          "id": "MEET_API_IT52",
+          "id": "MEET_API_IT55",
           "description": "Verify GET /api/meetings/{id} shows the caller their invitation answer.",
           "procedure": [
             "Sign in as a Member on the roster of a Published meeting.",
@@ -1019,7 +1082,7 @@
           "note": "UC-16 | SCRUM-20 | Manual only"
         },
         {
-          "id": "MEET_API_IT53",
+          "id": "MEET_API_IT56",
           "description": "Verify GET /api/meetings/{id} requires a token.",
           "procedure": [
             "Send GET /api/meetings/<id> without an Authorization header."
@@ -1032,6 +1095,27 @@
             "Existing meeting."
           ],
           "note": "UC-16 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT57",
+          "description": "Verify GET /api/meetings/<id> answers 500 Internal Server Error MSG37 when the database fails.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "QA lead makes the database fail for the next request.",
+            "Send GET /api/meetings/<id>",
+            "Headers: Authorization: Bearer <access_token>"
+          ],
+          "expected": [
+            "HTTP 500 Internal Server Error: { \"code\": \"MSG37\", \"message\": \"Không thể tải thông tin cuộc họp. Vui lòng thử lại.\" }.",
+            "No meeting fields are returned with the error."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Existing meeting the Organizer can read.",
+            "QA lead can make the database fail for one request."
+          ],
+          "note": "UC-16 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_returns_MSG37_when_the_repository_fails)"
         }
       ]
     },
@@ -1043,7 +1127,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT54",
+          "id": "MEET_API_IT58",
           "description": "Verify GET /api/meetings/approvers lists the active approvers except the caller.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1062,7 +1146,7 @@
           "note": "UC-14 | UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_approvers_excludes_the_caller_and_preserves_other_options)"
         },
         {
-          "id": "MEET_API_IT55",
+          "id": "MEET_API_IT59",
           "description": "Verify GET /api/meetings/approvers requires a token and MeetingCreator.",
           "procedure": [
             "Send GET /api/meetings/approvers without an Authorization header.",
@@ -1079,7 +1163,7 @@
           "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Anonymous_and_callers_without_MeetingCreator_are_rejected_by_the_gate)"
         },
         {
-          "id": "MEET_API_IT56",
+          "id": "MEET_API_IT60",
           "description": "Verify GET /api/meetings/approvers answers 503 MSG130 when the list cannot be read.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1104,7 +1188,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT57",
+          "id": "MEET_API_IT61",
           "description": "Verify GET /api/meetings/{id}/submission-readiness reports a complete Draft as ready.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1124,7 +1208,7 @@
           "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingSubmissionReadinessTests.cs (Submission_readiness_does_not_depend_on_agenda_content); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_submission_readiness_does_not_require_agenda_or_sessions_and_does_not_write)"
         },
         {
-          "id": "MEET_API_IT58",
+          "id": "MEET_API_IT62",
           "description": "Verify GET /api/meetings/{id}/submission-readiness lists what is missing as data, not as an HTTP error.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1141,7 +1225,7 @@
           "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingSubmissionReadinessTests.cs (Submission_readiness_requires_a_valid_planned_schedule)"
         },
         {
-          "id": "MEET_API_IT59",
+          "id": "MEET_API_IT63",
           "description": "Verify GET /api/meetings/{id}/submission-readiness refuses a meeting that is no longer Draft or Rejected.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -1158,7 +1242,7 @@
           "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)"
         },
         {
-          "id": "MEET_API_IT60",
+          "id": "MEET_API_IT64",
           "description": "Verify GET /api/meetings/{id}/submission-readiness is for the Organizer only.",
           "procedure": [
             "Sign in as the Chair of the meeting and send GET /api/meetings/<draft id>/submission-readiness.",
@@ -1190,7 +1274,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT61",
+          "id": "MEET_API_IT65",
           "description": "Verify POST /api/meetings/{id}/transitions SubmitForApproval moves a Draft to WaitingApproval.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1212,7 +1296,7 @@
           "note": "UC-18 | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Submit_records_assignment_history_and_approver_notification); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_accepts_the_documented_submit_contract_and_returns_history)"
         },
         {
-          "id": "MEET_API_IT62",
+          "id": "MEET_API_IT66",
           "description": "Verify POST /api/meetings/{id}/transitions SubmitForApproval resubmits a Rejected meeting directly.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1232,7 +1316,7 @@
           "note": "UC-18 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_resubmits_rejected_directly_and_preserves_the_previous_rejection)"
         },
         {
-          "id": "MEET_API_IT63",
+          "id": "MEET_API_IT67",
           "description": "Verify SubmitForApproval refuses the Organizer as approver.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1252,7 +1336,7 @@
           "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_to_the_organizer_returns_MSG82_without_writing_any_workflow_rows)"
         },
         {
-          "id": "MEET_API_IT64",
+          "id": "MEET_API_IT68",
           "description": "Verify SubmitForApproval refuses an approver without MeetingApprover.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1272,7 +1356,7 @@
           "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
         },
         {
-          "id": "MEET_API_IT65",
+          "id": "MEET_API_IT69",
           "description": "Verify SubmitForApproval refuses a meeting whose information is incomplete.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1292,7 +1376,7 @@
           "note": "UC-18 | EX | BR-33 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_submit_returns_MSG81_when_not_ready_and_MSG82_for_an_ineligible_approver)"
         },
         {
-          "id": "MEET_API_IT66",
+          "id": "MEET_API_IT70",
           "description": "Verify SubmitForApproval needs an assignedApproverId.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1312,7 +1396,7 @@
           "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_rejects_unknown_fields_and_numeric_actions)"
         },
         {
-          "id": "MEET_API_IT67",
+          "id": "MEET_API_IT71",
           "description": "Verify SubmitForApproval refuses a meeting that is not Draft or Rejected.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1332,7 +1416,7 @@
           "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Submit_and_readiness_from_approved_return_MSG41_without_side_effects)"
         },
         {
-          "id": "MEET_API_IT68",
+          "id": "MEET_API_IT72",
           "description": "Verify POST /api/meetings/{id}/transitions Approve moves WaitingApproval to Approved.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1351,7 +1435,7 @@
           "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Approve_notifies_the_organizer); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_success_codes)"
         },
         {
-          "id": "MEET_API_IT69",
+          "id": "MEET_API_IT73",
           "description": "Verify POST /api/meetings/{id}/transitions Reject stores the reason and notifies the Organizer.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1371,7 +1455,7 @@
           "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_notifies_the_organizer_with_the_reason; Reject_requires_nonblank_reason_and_stores_trimmed_value)"
         },
         {
-          "id": "MEET_API_IT70",
+          "id": "MEET_API_IT74",
           "description": "Verify Reject needs a reason.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1391,7 +1475,7 @@
           "note": "UC-19 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_null_rejection_reason_to_required_reason_error)"
         },
         {
-          "id": "MEET_API_IT71",
+          "id": "MEET_API_IT75",
           "description": "Verify Reject accepts a reason of 1,000 characters and refuses 1,001.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1411,7 +1495,7 @@
           "note": "UC-19 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Reject_accepts_exactly_1000_characters_and_rejects_1001); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_reject_returns_MSG84_when_reason_exceeds_1000_characters)"
         },
         {
-          "id": "MEET_API_IT72",
+          "id": "MEET_API_IT76",
           "description": "Verify Approve is refused for an account that is not the assigned approver.",
           "procedure": [
             "Sign in as an Approver who is not the assigned approver of the meeting and keep the access token.",
@@ -1430,7 +1514,7 @@
           "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Assigned_approver_with_capability_can_approve_but_an_unassigned_approver_cannot); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Legacy_self_assignment_returns_MSG85_without_approving_or_rejecting)"
         },
         {
-          "id": "MEET_API_IT73",
+          "id": "MEET_API_IT77",
           "description": "Verify Approve and Reject answer 409 when the meeting is no longer waiting.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1449,7 +1533,7 @@
           "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)"
         },
         {
-          "id": "MEET_API_IT74",
+          "id": "MEET_API_IT78",
           "description": "Verify ReturnToDraft withdraws a WaitingApproval meeting whose approver is no longer valid.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1469,7 +1553,7 @@
           "note": "UC-18 | AF | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Waiting_approval_can_be_withdrawn_only_when_approver_is_ineligible); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Legacy_missing_or_self_assignment_returns_MSG79_when_the_organizer_withdraws)"
         },
         {
-          "id": "MEET_API_IT75",
+          "id": "MEET_API_IT79",
           "description": "Verify ReturnToDraft is refused while the waiting approver is still valid.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1489,7 +1573,7 @@
           "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Ineligible_approver_does_not_allow_withdrawal_from_other_states)"
         },
         {
-          "id": "MEET_API_IT76",
+          "id": "MEET_API_IT80",
           "description": "Verify POST /api/meetings/{id}/transitions Publish makes an Approved meeting Published and invites the roster.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1510,7 +1594,7 @@
           "note": "UC-20 | BR-54 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_notifies_active_non_delegated_participants_and_passes_meeting_id_to_the_email_owner; Publish_does_not_notify_the_publisher_in_app_even_when_they_are_a_participant)"
         },
         {
-          "id": "MEET_API_IT77",
+          "id": "MEET_API_IT81",
           "description": "Verify Publish is refused without exactly one Chair and a Secretary.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1530,7 +1614,7 @@
           "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG137_when_the_required_roster_is_not_ready)"
         },
         {
-          "id": "MEET_API_IT78",
+          "id": "MEET_API_IT82",
           "description": "Verify Publish is refused for a meeting that is not Approved.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1550,7 +1634,7 @@
           "note": "UC-20 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_returns_action_specific_conflict_codes)"
         },
         {
-          "id": "MEET_API_IT79",
+          "id": "MEET_API_IT83",
           "description": "Verify Publish is refused when the Organizer has lost MeetingCreator, and for a reader who is not the Organizer.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1571,7 +1655,7 @@
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Publish_returns_MSG46_when_the_owner_lacks_the_required_capability; Publish_by_a_reader_who_is_not_the_organizer_returns_403_MSG85)"
         },
         {
-          "id": "MEET_API_IT80",
+          "id": "MEET_API_IT84",
           "description": "Verify Publish answers 503 MSG47 and rolls back when it cannot be saved.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1591,7 +1675,7 @@
           "note": "UC-20 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Publish_persistence_failure_rolls_back_status_history_notifications_and_jobs)"
         },
         {
-          "id": "MEET_API_IT81",
+          "id": "MEET_API_IT85",
           "description": "Verify POST /api/meetings/{id}/transitions Start moves Published to InProgress.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -1611,7 +1695,7 @@
           "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_and_end_persist_server_time_history_and_notifications)"
         },
         {
-          "id": "MEET_API_IT82",
+          "id": "MEET_API_IT86",
           "description": "Verify Start is refused for a reader who is not the Chair.",
           "procedure": [
             "Sign in as the Organizer, who is not the Chair and keep the access token.",
@@ -1630,7 +1714,7 @@
           "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)"
         },
         {
-          "id": "MEET_API_IT83",
+          "id": "MEET_API_IT87",
           "description": "Verify Start is refused when the meeting is not Published or has no Secretary.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -1650,7 +1734,7 @@
           "note": "UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Start_requires_active_current_secretary_but_end_does_not; Invalid_state_does_not_mutate)"
         },
         {
-          "id": "MEET_API_IT84",
+          "id": "MEET_API_IT88",
           "description": "Verify Start answers 503 MSG115 when it cannot be saved.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -1669,7 +1753,7 @@
           "note": "UC-21 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects)"
         },
         {
-          "id": "MEET_API_IT85",
+          "id": "MEET_API_IT89",
           "description": "Verify POST /api/meetings/{id}/transitions End moves InProgress to Ended and closes the current agenda item.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -1689,7 +1773,7 @@
           "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)"
         },
         {
-          "id": "MEET_API_IT86",
+          "id": "MEET_API_IT90",
           "description": "Verify End is refused for a non-Chair and for a meeting that is not InProgress.",
           "procedure": [
             "Sign in as the Organizer, who is not the Chair and keep the access token.",
@@ -1710,7 +1794,7 @@
           "note": "UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable; Invalid_state_does_not_mutate)"
         },
         {
-          "id": "MEET_API_IT87",
+          "id": "MEET_API_IT91",
           "description": "Verify End rolls back with 503 MSG116 when it cannot be saved.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -1729,7 +1813,7 @@
           "note": "UC-22 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Persistence_failures_rollback_everything_and_skip_effects; Invalid_agenda_timestamps_roll_back_end)"
         },
         {
-          "id": "MEET_API_IT88",
+          "id": "MEET_API_IT92",
           "description": "Verify POST /api/meetings/{id}/transitions Cancel cancels an unstarted meeting with its reason.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1750,7 +1834,7 @@
           "note": "UC-75 | BR-297 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_returns_MSG261_and_the_meeting_with_its_cancellation); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_after_publication_records_who_why_and_when_and_tells_the_invitees)"
         },
         {
-          "id": "MEET_API_IT89",
+          "id": "MEET_API_IT93",
           "description": "Verify Cancel from WaitingApproval tells the approver and Cancel from Draft tells nobody.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1770,7 +1854,7 @@
           "note": "UC-75 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_while_waiting_for_approval_closes_the_request_and_tells_the_approver; Cancel_before_publication_tells_nobody)"
         },
         {
-          "id": "MEET_API_IT90",
+          "id": "MEET_API_IT94",
           "description": "Verify Cancel needs a reason.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1790,7 +1874,7 @@
           "note": "UC-75 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_without_a_reason_returns_MSG262)"
         },
         {
-          "id": "MEET_API_IT91",
+          "id": "MEET_API_IT95",
           "description": "Verify Cancel accepts a reason of 1,000 characters and refuses 1,001.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1811,7 +1895,7 @@
           "note": "UC-75 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_with_a_reason_over_1000_characters_returns_MSG345); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Cancel_accepts_exactly_1000_characters_and_rejects_1001)"
         },
         {
-          "id": "MEET_API_IT92",
+          "id": "MEET_API_IT96",
           "description": "Verify Cancel is refused once the meeting has started, ended or been cancelled.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1831,7 +1915,7 @@
           "note": "UC-75 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_of_a_started_meeting_returns_409_MSG263); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (A_started_ended_or_cancelled_meeting_cannot_be_cancelled)"
         },
         {
-          "id": "MEET_API_IT93",
+          "id": "MEET_API_IT97",
           "description": "Verify Cancel is refused for a reader who is not the Organizer.",
           "procedure": [
             "Sign in as the Chair of the meeting and keep the access token.",
@@ -1850,7 +1934,7 @@
           "note": "UC-75 | SCRUM-150 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_by_someone_who_is_not_the_organizer_returns_403_MSG85)"
         },
         {
-          "id": "MEET_API_IT94",
+          "id": "MEET_API_IT98",
           "description": "Verify Cancel answers 503 MSG264 when it cannot be saved.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1870,7 +1954,7 @@
           "note": "UC-75 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Cancel_that_cannot_be_saved_returns_MSG264)"
         },
         {
-          "id": "MEET_API_IT95",
+          "id": "MEET_API_IT99",
           "description": "Verify TransferOrganizer hands an Approved meeting of a deactivated Organizer to a new Organizer.",
           "procedure": [
             "Sign in as an administrator (AdminUsers) and keep the access token.",
@@ -1889,7 +1973,7 @@
           "note": "UC-20 | SCRUM-69 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Administrator_transfers_disabled_organizer_meeting_with_MSG89_and_typed_history; Transfer_does_not_return_sensitive_content_to_a_recovery_administrator)"
         },
         {
-          "id": "MEET_API_IT96",
+          "id": "MEET_API_IT100",
           "description": "Verify TransferOrganizer refuses an invalid new Organizer.",
           "procedure": [
             "Sign in as an administrator (AdminUsers) and keep the access token.",
@@ -1908,7 +1992,7 @@
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Invalid_replacement_returns_MSG134_and_transfer_persistence_failure_returns_MSG88)"
         },
         {
-          "id": "MEET_API_IT97",
+          "id": "MEET_API_IT101",
           "description": "Verify TransferOrganizer is refused while the current Organizer is active or the meeting is not Approved.",
           "procedure": [
             "Sign in as an administrator (AdminUsers) and keep the access token.",
@@ -1927,7 +2011,7 @@
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Transfer_cannot_replace_an_active_organizer_even_if_their_creator_capability_was_removed; Transfer_requires_an_approved_meeting)"
         },
         {
-          "id": "MEET_API_IT98",
+          "id": "MEET_API_IT102",
           "description": "Verify TransferOrganizer answers 404 to an account that is not an administrator.",
           "procedure": [
             "Sign in as the Organizer or a Member and keep the access token.",
@@ -1945,7 +2029,7 @@
           "note": "UC-20 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Transfer_requires_current_active_administrator_before_reading_the_meeting)"
         },
         {
-          "id": "MEET_API_IT99",
+          "id": "MEET_API_IT103",
           "description": "Verify POST /api/meetings/{id}/transitions rejects an unknown, numeric or composite action.",
           "procedure": [
             "Sign in as the Organizer and keep the access token.",
@@ -1966,7 +2050,7 @@
           "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_one_exact_action_name_without_publishing; Post_transition_rejects_unknown_fields_and_numeric_actions)"
         },
         {
-          "id": "MEET_API_IT100",
+          "id": "MEET_API_IT104",
           "description": "Verify POST /api/meetings/{id}/transitions rejects fields that do not belong to the action.",
           "procedure": [
             "Sign in as the assigned Approver and keep the access token.",
@@ -1985,7 +2069,7 @@
           "note": "UC-19 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Strict_parser_rejects_forged_or_malformed_commands)"
         },
         {
-          "id": "MEET_API_IT101",
+          "id": "MEET_API_IT105",
           "description": "Verify POST /api/meetings/{id}/transitions requires JSON and a body under 64 KiB.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2004,7 +2088,7 @@
           "note": "UC-18 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_requires_json_and_returns_MSG34); Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Authentication_active_gate_content_type_and_size_contracts_are_preserved)"
         },
         {
-          "id": "MEET_API_IT102",
+          "id": "MEET_API_IT106",
           "description": "Verify POST /api/meetings/{id}/transitions requires a token and hides meetings the caller cannot read.",
           "procedure": [
             "Send POST /api/meetings/<id>/transitions with { \"action\": \"Publish\" } and no Authorization header.",
@@ -2022,7 +2106,7 @@
           "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (Readable_non_chair_forbidden_and_hidden_resource_indistinguishable)"
         },
         {
-          "id": "MEET_API_IT103",
+          "id": "MEET_API_IT107",
           "description": "Verify POST /api/meetings/{id}/transitions answers 503 MSG131 when the account cannot be checked.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2037,6 +2121,29 @@
             "Active Organizer account (capability MeetingCreator) supplied by QA lead."
           ],
           "note": "UC-18 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_workflow_endpoints_return_MSG136_and_MSG131_for_transient_read_failures)"
+        },
+        {
+          "id": "MEET_API_IT108",
+          "description": "Verify SubmitForApproval answers 503 MSG42 when it cannot be saved.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "QA lead makes the database fail for the next request.",
+            "Send POST /api/meetings/<id>/transitions",
+            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
+            "Body: { \"action\": \"SubmitForApproval\", \"assignedApproverId\": \"<Approver id>\" }"
+          ],
+          "expected": [
+            "HTTP 503 Service Unavailable: { \"code\": \"MSG42\", \"message\": \"Không thể chuyển trạng thái cuộc họp. Vui lòng thử lại.\" }.",
+            "The meeting stays Draft with no assigned approver and no new history row."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active Organizer account (capability MeetingCreator) supplied by QA lead.",
+            "Ready Draft meeting created by the Organizer.",
+            "Active Approver account.",
+            "QA lead can make the database fail for one request."
+          ],
+          "note": "UC-18 | EX | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Post_transition_maps_persistence_failures_to_action_specific_codes)"
         }
       ]
     },
@@ -2047,7 +2154,7 @@
       ],
       "cases": [
         {
-          "id": "MEET_API_IT104",
+          "id": "MEET_API_IT109",
           "description": "Verify GET /api/meetings/{id}/history gives the Organizer the full timeline in order.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2067,7 +2174,7 @@
           "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingWorkflowServiceTests.cs (Organizer_and_current_approver_get_reasons_and_published_participant_gets_redacted_timeline)"
         },
         {
-          "id": "MEET_API_IT105",
+          "id": "MEET_API_IT110",
           "description": "Verify GET /api/meetings/{id}/history gives the current approver the full timeline.",
           "procedure": [
             "Sign in as the assigned Approver.",
@@ -2084,7 +2191,7 @@
           "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_full_history_to_the_current_assigned_approver)"
         },
         {
-          "id": "MEET_API_IT106",
+          "id": "MEET_API_IT111",
           "description": "Verify GET /api/meetings/{id}/history redacts the rejection reason for a Member.",
           "procedure": [
             "Sign in as a Member on the roster of the Published meeting.",
@@ -2100,7 +2207,7 @@
           "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_redacted_timeline_to_a_published_participant)"
         },
         {
-          "id": "MEET_API_IT107",
+          "id": "MEET_API_IT112",
           "description": "Verify GET /api/meetings/{id}/history lets the Chair read before Publish.",
           "procedure": [
             "Sign in as the Chair of a Draft meeting.",
@@ -2116,7 +2223,7 @@
           "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Assigned_chair_can_read_before_publication)"
         },
         {
-          "id": "MEET_API_IT108",
+          "id": "MEET_API_IT113",
           "description": "Verify GET /api/meetings/{id}/history pages and answers empty past the end.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2135,7 +2242,7 @@
           "note": "UC-16 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_empty_for_an_out_of_range_page_before_offset_cast)"
         },
         {
-          "id": "MEET_API_IT109",
+          "id": "MEET_API_IT114",
           "description": "Verify GET /api/meetings/{id}/history rejects invalid paging.",
           "procedure": [
             "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
@@ -2152,7 +2259,7 @@
           "note": "UC-16 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingEndpointsTests.cs (Get_history_returns_invalid_query_when_offset_is_unrepresentable_within_data)"
         },
         {
-          "id": "MEET_API_IT110",
+          "id": "MEET_API_IT115",
           "description": "Verify GET /api/meetings/{id}/history requires a token and hides meetings the caller cannot read.",
           "procedure": [
             "Send GET /api/meetings/<id>/history without a token.",
@@ -2167,6 +2274,29 @@
             "Existing meeting; an unrelated account."
           ],
           "note": "UC-16 | Manual only"
+        },
+        {
+          "id": "MEET_API_IT116",
+          "description": "Verify a meeting left InProgress 24 hours after its planned end is ended by the system and its history shows AutoEnd.",
+          "procedure": [
+            "Wait for the next run of the overdue job (every 15 minutes), or ask QA lead to run it.",
+            "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/meetings/<id>",
+            "Send GET /api/meetings/<id>/history",
+            "Headers: Authorization: Bearer <access_token>"
+          ],
+          "expected": [
+            "Step 3: \"status\" is \"Ended\" and \"actualEndedAt\" is the time the job ran.",
+            "Step 4: the last item has \"action\": \"AutoEnd\", \"fromStatus\": \"InProgress\", \"resultingStatus\": \"Ended\", \"actorId\": null and \"actorName\": \"Hệ thống\".",
+            "The agenda item that was running is Done, a draft vote of the meeting is gone and the call room is closed, as after the Chair's End.",
+            "A meeting InProgress for less than 24 hours past its planned end (or, if it started late, past its real start) stays InProgress."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A meeting InProgress whose planned end is more than 24 hours ago (Meetings:AutoEndAfterHours = 24), prepared by QA lead; a running agenda item and a draft vote.",
+            "Active Chair account of that meeting."
+          ],
+          "note": "UC-22 | ADR-0062 | SCRUM-212 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleAutoEndTests.cs (Meetings_left_running_are_ended_by_the_system_twelve_hours_after_their_planned_end; System_end_yields_to_a_chair_who_already_ended_the_meeting)"
         }
       ]
     }

@@ -1031,7 +1031,8 @@
           ],
           "expected": [
             "Both answer HTTP 200 \"MSG407\"; the line ends under the voice of the request that ran last.",
-            "Every voice's \"speechMs\" equals what its remaining lines add up to; no voice is left with a negative or doubled time."
+            "Every voice's \"speechMs\" equals what its remaining lines add up to; no voice is left with a negative or doubled time.",
+            "The requests may be handled in any order: the result above holds whichever one runs first."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -2067,7 +2068,8 @@
           ],
           "expected": [
             "Both answer HTTP 200 \"MSG305\".",
-            "GET /api/me/voice shows one consent; the database holds one standing consent for the user."
+            "GET /api/me/voice shows one consent; the database holds one standing consent for the user.",
+            "The requests may be handled in any order: the result above holds whichever one runs first."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -2951,7 +2953,8 @@
             "Send both POST requests at the same moment."
           ],
           "expected": [
-            "One answers 201 \"MSG473\" and the other 409 \"MSG476\"; the person ends with exactly 5 Secretary samples."
+            "One answers 201 \"MSG473\" and the other 409 \"MSG476\"; the person ends with exactly 5 Secretary samples.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",

@@ -24,7 +24,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. One stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. One stored recording."
           ],
           "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)"
         },
@@ -41,7 +41,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One stored recording."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One stored recording."
           ],
           "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
         },
@@ -90,7 +90,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest invitation admitted to the call."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest invitation admitted to the call."
           ],
           "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
         },
@@ -109,7 +109,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has consented for the first take."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has consented for the first take."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)"
         },
@@ -128,7 +128,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. One stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. One stored recording."
           ],
           "note": "UC-43a · Erasure evidence · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
         },
@@ -208,7 +208,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
           "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)"
         },
@@ -225,7 +225,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A small valid webm file."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A small valid webm file."
           ],
           "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_form_carries_a_file_recorded_elsewhere_and_codec_parameters_are_accepted)"
         },
@@ -243,7 +243,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
           "note": "UC-44c · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)"
         },
@@ -261,7 +261,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
           "note": "UC-44c · Boundary: 1000 characters · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)"
         },
@@ -279,7 +279,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44c · Manual only"
         },
@@ -297,7 +297,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
           "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_form_carries_a_file_recorded_elsewhere_and_codec_parameters_are_accepted)"
         },
@@ -315,7 +315,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)"
         },
@@ -333,7 +333,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The test build may set a smaller MaxUploadMegabytes."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The test build may set a smaller MaxUploadMegabytes."
           ],
           "note": "UC-44c · Boundary: MaxUploadMegabytes · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)"
         },
@@ -351,7 +351,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Scheduled with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in Scheduled with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Nothing_is_recorded_before_the_meeting_starts)"
         },
@@ -368,7 +368,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44c · ADR-0040 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (An_online_meeting_has_no_room_recording)"
         },
@@ -404,7 +404,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
         },
@@ -421,7 +421,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
         },
@@ -453,7 +453,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database write failure forced by the QA lead."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database write failure forced by the QA lead."
           ],
           "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Database_outages_answer_with_their_own_codes)"
         }
@@ -478,7 +478,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
         },
@@ -495,7 +495,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
         },
@@ -512,7 +512,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
         },
@@ -530,7 +530,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
         },
@@ -546,7 +546,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
           ],
           "note": "UC-44b · Boundary: partSize · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
         },
@@ -562,7 +562,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
         },
@@ -579,7 +579,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). The test build sets a small MaxUploadMegabytes."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). The test build sets a small MaxUploadMegabytes."
           ],
           "note": "UC-44b · Boundary: MaxUploadMegabytes · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_cannot_grow_past_the_recording_limit)"
         },
@@ -596,7 +596,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
         },
@@ -613,7 +613,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)"
         },
@@ -653,7 +653,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open first take with sound uploaded in parts."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open first take with sound uploaded in parts."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)"
         },
@@ -670,7 +670,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A saved room recording and a second open take with sound."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A saved room recording and a second open take with sound."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_later_take_is_appended_to_the_room_recording_and_the_whole_is_transcribed_again)"
         },
@@ -688,7 +688,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take that received no part."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take that received no part."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_the_mic_heard_nothing_in_is_dropped)"
         },
@@ -706,7 +706,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A take already saved."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A take already saved."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)"
         },
@@ -723,7 +723,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Two Secretaries; a take opened by the first and left open."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Two Secretaries; a take opened by the first and left open."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -741,7 +741,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The test build sets a short IdleTakeHours."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The test build sets a short IdleTakeHours."
           ],
           "note": "UC-44b · Boundary: IdleTakeHours · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_left_open_is_saved_by_the_server_once_no_part_has_come_for_hours)"
         },
@@ -758,7 +758,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -776,7 +776,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take."
           ],
           "note": "UC-44b · Manual only"
         }
@@ -802,7 +802,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. No room recording yet."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. No room recording yet."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)"
         },
@@ -819,7 +819,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. No room recording yet."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. No room recording yet."
           ],
           "note": "UC-44b · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -836,7 +836,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A room recording already saved from an earlier take; no take open."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A room recording already saved from an earlier take; no take open."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_later_take_is_appended_to_the_room_recording_and_the_whole_is_transcribed_again)"
         },
@@ -853,7 +853,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -870,7 +870,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -887,7 +887,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -905,7 +905,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -921,7 +921,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -962,7 +962,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of three takes with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of three takes with a finished transcript."
           ],
           "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)"
         },
@@ -980,7 +980,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording with a single take."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording with a single take."
           ],
           "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)"
         },
@@ -997,7 +997,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes."
           ],
           "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)"
         },
@@ -1014,7 +1014,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes, an uploaded recording and an erased one."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes, an uploaded recording and an erased one."
           ],
           "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)"
         },
@@ -1032,7 +1032,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes."
           ],
           "note": "UC-44d · Manual only"
         }
@@ -1059,7 +1059,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording with a finished transcript."
           ],
           "note": "UC-44e · Erasure on request · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
         },
@@ -1077,7 +1077,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
         },
@@ -1096,7 +1096,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
         },
@@ -1113,7 +1113,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
         },
@@ -1144,7 +1144,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A take open (status Pending)."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A take open (status Pending)."
           ],
           "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)"
         },
@@ -1161,7 +1161,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. Two recordings as described."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. Two recordings as described."
           ],
           "note": "UC-44e · Retention (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Retention_sweep_erases_only_what_has_expired)"
         },
@@ -1179,7 +1179,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording; write failure forced by the QA lead."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording; write failure forced by the QA lead."
           ],
           "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Database_outages_answer_with_their_own_codes)"
         }
@@ -1205,7 +1205,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)"
         },
@@ -1222,7 +1222,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording; the caller is not a participant."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording; the caller is not a participant."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)"
         },
@@ -1239,7 +1239,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One erased recording and one open take."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One erased recording and one open take."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
         },
@@ -1256,7 +1256,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted to the call."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted to the call."
           ],
           "note": "UC-43b · Manual only"
         },
@@ -1290,7 +1290,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Database_outages_answer_with_their_own_codes)"
         }
@@ -1316,7 +1316,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)"
         },
@@ -1364,7 +1364,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)"
         },
@@ -1380,7 +1380,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
         }
@@ -1407,7 +1407,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording on a non-Secret meeting."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording on a non-Secret meeting."
           ],
           "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
         },
@@ -1423,7 +1423,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording on a non-Secret meeting."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording on a non-Secret meeting."
           ],
           "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
         },
@@ -1441,7 +1441,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
         },
@@ -1460,7 +1460,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. The meeting is Secret (Mật)."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. The meeting is Secret (Mật)."
           ],
           "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)"
         },
@@ -1476,7 +1476,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
           "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)"
         },
@@ -1494,7 +1494,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. An erased recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. An erased recording."
           ],
           "note": "UC-43c · Manual only"
         }
@@ -1520,7 +1520,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Sentences from two members."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Sentences from two members."
           ],
           "note": "UC-43a · UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_meeting_joined_from_afar_is_captured_per_mic)"
         },
@@ -1538,7 +1538,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An earlier read with its readAt."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An earlier read with its readAt."
           ],
           "note": "UC-80 · Boundary: 2 seconds · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept)"
         },
@@ -1556,7 +1556,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Two overlapping sentences of the same words, one louder."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Two overlapping sentences of the same words, one louder."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept)"
         },
@@ -1574,7 +1574,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One sentence excluded from the record."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One sentence excluded from the record."
           ],
           "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)"
         },
@@ -1591,7 +1591,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One Online and one InPerson meeting."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One Online and one InPerson meeting."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)"
         },
@@ -1608,7 +1608,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted who has spoken, and sentences of members."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted who has spoken, and sentences of members."
           ],
           "note": "UC-80 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
         },
@@ -1624,7 +1624,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Sentences_are_taken_only_from_people_of_a_running_meeting_joined_from_afar)"
         },
@@ -1655,7 +1655,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_database_outage_on_read_says_so)"
         }
@@ -1681,7 +1681,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The speech worker running; clientClipId is a new GUID."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The speech worker running; clientClipId is a new GUID."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_from_my_mic_is_transcribed_without_diarization_and_named_after_me_once)"
         },
@@ -1699,7 +1699,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_from_my_mic_is_transcribed_without_diarization_and_named_after_me_once)"
         },
@@ -1716,7 +1716,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Silence_stores_nothing)"
         },
@@ -1734,7 +1734,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)"
         },
@@ -1752,7 +1752,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)"
         },
@@ -1769,7 +1769,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-80 · Boundary: 3 MB · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)"
         },
@@ -1805,7 +1805,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in Ended with a Chair, a Secretary and a Member on its participant list. Clock control by the QA lead."
+            "An Online meeting in Ended with a Chair, a Secretary and a Member on its participant list. Clock control by the QA lead."
           ],
           "note": "UC-80 · Boundary: 7 days · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_kept_on_the_device_still_arrives_up_to_a_week_after_the_meeting)"
         },
@@ -1823,7 +1823,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The speech worker stopped."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The speech worker stopped."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_worker_outage_keeps_nothing_so_the_browser_sends_it_again)"
         },
@@ -1841,7 +1841,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-80 · Manual only"
         },
@@ -1859,7 +1859,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest invitation that was never admitted with the notice confirmed."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest invitation that was never admitted with the notice confirmed."
           ],
           "note": "UC-80 · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_is_recorded_only_after_the_notice_and_reads_in_the_transcript_under_their_name_as_a_guest)"
         },
@@ -1875,7 +1875,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
           "note": "UC-80 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_of_another_meeting_or_before_the_meeting_runs_is_refused)"
         }
@@ -1900,7 +1900,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)"
         },
@@ -1918,7 +1918,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence excluded from the record."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence excluded from the record."
           ],
           "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)"
         },
@@ -1935,7 +1935,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence without stored audio."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence without stored audio."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)"
         },
@@ -1953,7 +1953,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest who has spoken."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest who has spoken."
           ],
           "note": "UC-43b · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
         },
@@ -1984,7 +1984,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Database made unavailable by the QA lead."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_database_outage_while_signing_a_link_says_so)"
         }
@@ -2010,7 +2010,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
           ],
           "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)"
         },
@@ -2043,7 +2043,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
           ],
           "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Deleting_a_sentence_or_its_retention_running_out_erases_its_audio)"
         }
@@ -2070,7 +2070,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence marked as leaked."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence marked as leaked."
           ],
           "note": "UC-46c · UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
         },
@@ -2087,7 +2087,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
           "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
         },
@@ -2105,7 +2105,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An excluded sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An excluded sentence."
           ],
           "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
         },
@@ -2123,7 +2123,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
           "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
         },
@@ -2141,7 +2141,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
           "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
         },
@@ -2158,7 +2158,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
           "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)"
         },
@@ -2175,7 +2175,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted who has spoken."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted who has spoken."
           ],
           "note": "UC-46c · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
         },
@@ -2193,7 +2193,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
           "note": "UC-46c · Manual only"
         }
@@ -2220,7 +2220,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by the Member."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by the Member."
           ],
           "note": "UC-80 · UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)"
         },
@@ -2237,7 +2237,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by a Member."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by a Member."
           ],
           "note": "UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)"
         },
@@ -2255,7 +2255,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by a Member."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by a Member."
           ],
           "note": "UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)"
         },
@@ -2273,7 +2273,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest who has spoken."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest who has spoken."
           ],
           "note": "UC-80 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)"
         },
@@ -2291,7 +2291,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
           "note": "UC-80 · Manual only"
         },
@@ -2307,7 +2307,7 @@
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
-            "A Online meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored sentence."
+            "An Online meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored sentence."
           ],
           "note": "UC-80 · Retention (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Deleting_a_sentence_or_its_retention_running_out_erases_its_audio)"
         }

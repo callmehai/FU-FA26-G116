@@ -469,7 +469,8 @@
             "In two browsers as the Secretary and the Chair open the agenda and drag different items at about the same time."
           ],
           "expected": [
-            "One drag is saved with 200/MSG63 and the other answers 409/MSG143; both screens end on the saved order."
+            "One drag is saved with 200/MSG63 and the other answers 409/MSG143; both screens end on the saved order.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -527,7 +528,8 @@
             "In two browsers as the Chair click \"Bắt đầu\" on two different items at the same time."
           ],
           "expected": [
-            "One request answers 200/MSG64; the other answers 409/MSG72 \"Đã có mục nghị sự đang diễn ra.\" and its screen reloads showing the winner as \"Đang bàn\"."
+            "One request answers 200/MSG64; the other answers 409/MSG72 \"Đã có mục nghị sự đang diễn ra.\" and its screen reloads showing the winner as \"Đang bàn\".",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",

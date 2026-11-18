@@ -25,7 +25,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43a · UC-43b · Manual only"
         },
@@ -43,7 +43,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43a · Retention (Law 91/2025) · Manual only"
         },
@@ -61,7 +61,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No recording yet. Repeat on an Ended meeting."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No recording yet. Repeat on an Ended meeting."
           ],
           "note": "UC-43a · Manual only"
         },
@@ -81,7 +81,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43b · Manual only"
         },
@@ -98,7 +98,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43a · Manual only"
         },
@@ -116,7 +116,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The Secretary has the room mic on."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The Secretary has the room mic on."
           ],
           "note": "UC-43a · UC-44b · Manual only"
         },
@@ -135,7 +135,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43a · UC-44e · Manual only"
         },
@@ -169,7 +169,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No room recording exists."
+            "An Online meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No room recording exists."
           ],
           "note": "UC-43a · ADR-0040 · Manual only"
         },
@@ -186,7 +186,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. The caller is not a participant."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. The caller is not a participant."
           ],
           "note": "UC-43a · Manual only"
         },
@@ -204,7 +204,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43a · MSG297 · Manual only"
         },
@@ -222,7 +222,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43b · Manual only"
         },
@@ -239,7 +239,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
           ],
           "note": "UC-43a · Manual only"
         }
@@ -265,7 +265,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43c · Manual only"
         },
@@ -282,7 +282,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43c · Manual only"
         },
@@ -299,7 +299,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-43c · MSG355 · Manual only"
         },
@@ -316,7 +316,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The meeting is Secret (Mật) with one stored recording."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The meeting is Secret (Mật) with one stored recording."
           ],
           "note": "UC-43c · MSG356 · Manual only"
         },
@@ -333,7 +333,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
           ],
           "note": "UC-43c · Manual only"
         }
@@ -359,7 +359,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
           "note": "UC-44a · Manual only"
         },
@@ -375,7 +375,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
           "note": "UC-44a · Manual only"
         },
@@ -393,7 +393,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
           "note": "UC-44a · Consent (Law 91/2025) · Manual only"
         },
@@ -410,7 +410,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
           "note": "UC-44a · Manual only"
         },
@@ -429,7 +429,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
           "note": "UC-44a · UC-44b · Manual only"
         },
@@ -446,7 +446,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. The mic is on."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. The mic is on."
           ],
           "note": "UC-44b · Manual only"
         },
@@ -464,7 +464,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. One saved room recording."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. One saved room recording."
           ],
           "note": "UC-44b · Manual only"
         },
@@ -481,7 +481,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
           "note": "UC-44b · MSG365 · Manual only"
         },
@@ -497,7 +497,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
           "note": "UC-44a · ADR-0040 · Manual only"
         },
@@ -515,7 +515,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
           "note": "UC-44b · MSG360 · Manual only"
         },
@@ -532,7 +532,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
           "note": "UC-44b · Manual only"
         },
@@ -549,7 +549,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
           "note": "UC-44b · Manual only"
         },
@@ -565,7 +565,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
           "note": "UC-44a · MSG359 · Manual only"
         }
@@ -593,7 +593,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
           ],
           "note": "UC-44c · MSG290 · Manual only"
         },
@@ -612,7 +612,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
           "note": "UC-44c · Consent (Law 91/2025) · Manual only"
         },
@@ -630,7 +630,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
           "note": "UC-44c · Boundary: 1000 characters · Manual only"
         },
@@ -648,7 +648,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
           "note": "UC-44c · MSG292 · Manual only"
         },
@@ -666,7 +666,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
           "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only"
         },
@@ -684,7 +684,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Also one Online and one Hybrid meeting."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Also one Online and one Hybrid meeting."
           ],
           "note": "UC-44c · MSG358 · MSG478 · Manual only"
         },
@@ -701,7 +701,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Scheduled with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The tab was opened through its direct link."
+            "An InPerson meeting in Scheduled with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The tab was opened through its direct link."
           ],
           "note": "UC-44c · MSG294 · Manual only"
         },
@@ -719,7 +719,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A second account that can change participants."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A second account that can change participants."
           ],
           "note": "UC-44c · MSG295 · Manual only"
         }
@@ -748,7 +748,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-44e · Erasure on request · Manual only"
         },
@@ -765,7 +765,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-44e · Manual only"
         },
@@ -782,7 +782,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
           "note": "UC-44e · MSG295 · Manual only"
         },
@@ -800,7 +800,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
           ],
           "note": "UC-44e · MSG295 · Manual only"
         },
@@ -817,7 +817,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The room mic is on."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The room mic is on."
           ],
           "note": "UC-44e · MSG364 · Manual only"
         },
@@ -837,7 +837,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
           "note": "UC-44d · MSG366 · Manual only"
         },
@@ -854,7 +854,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
           "note": "UC-44d · Manual only"
         },
@@ -872,7 +872,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of two takes."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of two takes."
           ],
           "note": "UC-44d · MSG367 · Manual only"
         },
@@ -888,7 +888,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
           "note": "UC-44d · Manual only"
         }
@@ -912,7 +912,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
           "note": "UC-80 · Consent (Law 91/2025) · Manual only"
         },
@@ -929,7 +929,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A Guest invitation."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A Guest invitation."
           ],
           "note": "UC-80 · MSG380 · Manual only"
         },
@@ -948,7 +948,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
           "note": "UC-80 · MSG318 · Manual only"
         },
@@ -964,7 +964,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
           "note": "UC-80 · Manual only"
         },
@@ -981,7 +981,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
           "note": "UC-80 · MSG312 · Manual only"
         },
@@ -997,7 +997,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
           "note": "UC-80 · Manual only"
         },
@@ -1016,7 +1016,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
           "note": "UC-46c · UC-80 · Manual only"
         },
@@ -1032,7 +1032,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
           "note": "UC-46c · MSG353 · Manual only"
         },
@@ -1050,7 +1050,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
           "note": "UC-80 · MSG302 · Manual only"
         },
@@ -1069,7 +1069,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
           "note": "UC-80 · UC-46d · MSG322 · Manual only"
         },
@@ -1085,7 +1085,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. Sentences from two members."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. Sentences from two members."
           ],
           "note": "UC-80 · MSG323 · Manual only"
         },
@@ -1103,7 +1103,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence with audio."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence with audio."
           ],
           "note": "UC-43b · Manual only"
         },
@@ -1120,7 +1120,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
+            "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
           "note": "UC-80 · MSG320 · Manual only"
         }
@@ -1145,7 +1145,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
           "note": "UC-80 · Manual only"
         },
@@ -1162,7 +1162,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
           "note": "UC-80 · Manual only"
         },
@@ -1179,7 +1179,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
           "note": "UC-80 · UC-43b · Manual only"
         },
@@ -1197,7 +1197,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
           "note": "UC-80 · UC-46d · MSG322 · Manual only"
         },
@@ -1213,7 +1213,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
           "note": "UC-80 · Manual only"
         },
@@ -1231,7 +1231,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
           "note": "UC-80 · UC-46c · Manual only"
         },
@@ -1247,7 +1247,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
           "note": "UC-80 · Manual only"
         },
@@ -1264,7 +1264,7 @@
           ],
           "preconditions": [
             "Backend and frontend running on the test build.",
-            "A Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A Guest admitted who has spoken."
+            "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A Guest admitted who has spoken."
           ],
           "note": "UC-80 · ADR-0051 · Manual only"
         }

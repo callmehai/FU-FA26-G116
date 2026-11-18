@@ -621,7 +621,8 @@
             "Send GET /api/meetings/<meetingId>/agenda."
           ],
           "expected": [
-            "Both answer 201/MSG60 and the items have different \"position\" values with no gap lost or duplicated."
+            "Both answer 201/MSG60 and the items have different \"position\" values with no gap lost or duplicated.",
+            "The requests may be handled in any order: the result above holds whichever one runs first."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1145,7 +1146,8 @@
           ],
           "expected": [
             "Step 2: HTTP 409 Conflict: { \"code\": \"MSG72\", \"message\": \"Đã có mục nghị sự đang diễn ra.\" }; item B stays Pending.",
-            "Two simultaneous starts on different items give exactly one success and one MSG72."
+            "Two simultaneous starts on different items give exactly one success and one MSG72.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",

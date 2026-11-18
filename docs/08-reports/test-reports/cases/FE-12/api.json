@@ -630,7 +630,8 @@
           ],
           "expected": [
             "One answers HTTP 200 \"MSG396\", the other HTTP 409 \"MSG401\"; never two 200s.",
-            "The stored content is the text of the request that answered 200."
+            "The stored content is the text of the request that answered 200.",
+            "The requests may be handled in any order: the case passes whichever one wins."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
