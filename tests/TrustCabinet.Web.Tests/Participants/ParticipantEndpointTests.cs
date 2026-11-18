@@ -317,6 +317,20 @@ public sealed class ParticipantEndpointTests(ParticipantFixture f) : IClassFixtu
     }
 
     [Fact]
+    public async Task If_match_accepts_the_tag_a_compressing_proxy_rewrote()
+    {
+        // Caddy's `encode` hands the client "participants-N-gzip"; echoing that back must work like the original.
+        var s = await f.Seed(); using var client = f.Client(s.Secretary);
+        var tag = await Tag(client, s.Url);
+        string Encoded(string suffix) => tag[..^1] + suffix + "\"";
+        var add = new { userIds = new[] { s.Outsider }, role = "Member" };
+        await Code(await Write(client, s.Url + "/participants", HttpMethod.Post, add, Encoded("-deflate")), 400, "MSG276");
+        await Code(await Write(client, s.Url + "/participants", HttpMethod.Post, add, Encoded("-gzip-gzip")), 400, "MSG276");
+        await Code(await Write(client, s.Url + "/participants", HttpMethod.Post, add, Encoded("-gzip")), 201, "MSG96");
+        await Code(await Write(client, s.Url + $"/participants/{s.MemberAssignment}", HttpMethod.Delete, etag: Encoded("-zstd")), 409, "MSG275");
+    }
+
+    [Fact]
     public async Task Payload_auth_and_write_failure_contracts_are_explicit()
     {
         var s = await f.Seed(); using var client = f.Client(s.Secretary); using var outsider = f.Client(s.Outsider); using var anonymous = f.Client();
