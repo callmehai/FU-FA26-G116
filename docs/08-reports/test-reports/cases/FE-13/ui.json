@@ -2,14 +2,184 @@
   "feature": "FE-13",
   "code": "NOTI",
   "sheet": "Notifications",
-  "precondition": "",
+  "precondition": "Test build of frontend + backend; participant, Organizer and administrator accounts supplied by QA lead; Approved and Published meetings; mailboxes for the invitees; Chrome and a second browser profile for the two-user cases.",
   "groups": [
     {
       "title": "Notification Panel",
       "uc": [
         "UC-66"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "NOTI_FT01",
+          "description": "Verify the bell shows the unread count and opens the notification panel.",
+          "procedure": [
+            "Go to /calendar after signing in.",
+            "Look at the bell at the bottom of the sidebar, then click it."
+          ],
+          "expected": [
+            "GET /api/notifications/unread-count answers 200; the bell shows a badge \"3\" and its label reads \"Thông báo, 3 chưa đọc\".",
+            "The panel opens with the title \"Thông báo\" and the chip \"3 mới\"; rows are newest first, unread rows are tinted with a dot."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT02",
+          "description": "Verify the badge caps at 99+ when more than 99 notifications are unread.",
+          "procedure": [
+            "Sign in as an account with 120 unread notifications.",
+            "Look at the bell, then open the panel."
+          ],
+          "expected": [
+            "The badge shows \"99+\".",
+            "The panel title chip reads \"99+ mới\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Account with 120 unread notifications, supplied by QA lead."
+          ],
+          "note": "UC-66 | Boundary: 99 | Manual only"
+        },
+        {
+          "id": "NOTI_FT03",
+          "description": "Verify each row shows its title, body, relative time and the exact time on hover.",
+          "procedure": [
+            "Open the panel.",
+            "Look at the first row and hover its time."
+          ],
+          "expected": [
+            "The row shows a kind icon, the title (for example \"Bạn được mời họp\"), the body and a relative time such as \"5 phút trước\".",
+            "Hovering the time shows the full date and time as a tooltip."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT04",
+          "description": "Verify the panel loads older notifications with the paging button.",
+          "procedure": [
+            "Open the panel (20 rows load).",
+            "Scroll to the foot and click \"Xem thông báo cũ hơn\"."
+          ],
+          "expected": [
+            "GET /api/notifications?page=2&pageSize=20 answers 200; the button shows \"Đang tải…\" and then 5 more rows are appended without repeats.",
+            "The button disappears once the last page is loaded."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT05",
+          "description": "Verify the empty panel for an account with no notification.",
+          "procedure": [
+            "Sign in as an account that has never been invited.",
+            "Open the panel."
+          ],
+          "expected": [
+            "The panel shows \"Chưa có thông báo nào\" and \"Lời mời họp và nhắc lịch họp sẽ hiện ở đây.\".",
+            "\"Đánh dấu tất cả đã đọc\" is disabled and the bell shows no badge."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Active account with no notification, supplied by QA lead."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT06",
+          "description": "Verify the panel shows the backend message with a retry when the list cannot load.",
+          "procedure": [
+            "Stop the backend database (QA lead) and open the panel for the first time.",
+            "Restore the database and click \"Thử lại\"."
+          ],
+          "expected": [
+            "Backend answers 500 with MSG40; the panel shows \"Không thể tải thông báo. Vui lòng thử lại.\" and a \"Thử lại\" button.",
+            "After \"Thử lại\" succeeds the list appears."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant; the QA lead can interrupt the database."
+          ],
+          "note": "UC-66 · EX-1 | Manual only"
+        },
+        {
+          "id": "NOTI_FT07",
+          "description": "Verify a failed refresh keeps the list already on screen.",
+          "procedure": [
+            "Open the panel so the list loads, close it.",
+            "Interrupt the database (QA lead), reopen the panel."
+          ],
+          "expected": [
+            "The earlier rows stay visible; one line \"Không làm mới được danh sách.\" with a \"Thử lại\" link shows above them."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account.",
+            "The QA lead can interrupt the database on request."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT08",
+          "description": "Verify the panel closes on Escape, on an outside click and keeps the page usable while open.",
+          "procedure": [
+            "Open the panel.",
+            "Click a button on the page behind it.",
+            "Open the panel again and press Escape.",
+            "Open it again and click outside it."
+          ],
+          "expected": [
+            "The panel is non-modal: the page behind still reacts.",
+            "Escape closes the panel and the focus returns to the bell; an outside click closes it too."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT09",
+          "description": "Verify the panel fits a phone screen.",
+          "procedure": [
+            "Resize the browser to 390px wide (touch emulation) and open the panel."
+          ],
+          "expected": [
+            "The panel spans the full width; \"Đánh dấu tất cả đã đọc\" shows as \"Đọc hết\"; the per-row \"Đánh dấu đã đọc\" check is always visible; the page does not scroll sideways."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT10",
+          "description": "Verify the panel is unreachable when signed out.",
+          "procedure": [
+            "Sign out.",
+            "Go to /calendar."
+          ],
+          "expected": [
+            "The app redirects to /login; no bell and no panel are rendered, and no request to /api/notifications is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Not signed in."
+          ],
+          "note": "UC-66 | Manual only"
+        }
+      ]
     },
     {
       "title": "Mark as Read",
@@ -17,28 +187,448 @@
         "UC-67a",
         "UC-67b"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "NOTI_FT11",
+          "description": "Verify one row is marked read with its check button.",
+          "procedure": [
+            "Open the panel.",
+            "Hover an unread row and click its \"Đánh dấu đã đọc\" check button."
+          ],
+          "expected": [
+            "POST /api/notifications/{id}/read answers 200.",
+            "The row loses its tint and dot, the check button disappears, the bell badge drops from 3 to 2 and the chip reads \"2 mới\".",
+            "Reload the page: the row is still read and the badge still shows 2."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-67a | Manual only"
+        },
+        {
+          "id": "NOTI_FT12",
+          "description": "Verify all notifications are marked read from the panel.",
+          "procedure": [
+            "Open the panel.",
+            "Click \"Đánh dấu tất cả đã đọc\"."
+          ],
+          "expected": [
+            "The button shows \"Đang đánh dấu…\"; POST /api/notifications/read-all answers 200 with markedCount 3.",
+            "Every loaded row turns read, the badge disappears and the chip \"mới\" is gone; the button becomes disabled.",
+            "Notifications on pages not yet loaded are read too: after reload and \"Xem thông báo cũ hơn\" none is tinted."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-67b · BR-51 | Manual only"
+        },
+        {
+          "id": "NOTI_FT13",
+          "description": "Verify \"Đánh dấu tất cả đã đọc\" is disabled when nothing is unread.",
+          "procedure": [
+            "Sign in as an account whose notifications are all read.",
+            "Open the panel and hover the button."
+          ],
+          "expected": [
+            "The button is disabled and no request is sent when it is clicked."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Account with notifications that are all read."
+          ],
+          "note": "UC-67b | Manual only"
+        },
+        {
+          "id": "NOTI_FT14",
+          "description": "Verify a failed single mark puts the row back and tells the user.",
+          "procedure": [
+            "Open the panel.",
+            "Make the backend refuse the call (QA lead stops the API or the browser goes offline).",
+            "Click \"Đánh dấu đã đọc\" on an unread row."
+          ],
+          "expected": [
+            "The row first turns read, then returns to unread, the badge returns to its earlier number and a red toast shows the error message from the backend or the network."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account.",
+            "The QA lead can interrupt the API on request."
+          ],
+          "note": "UC-67a | Manual only"
+        },
+        {
+          "id": "NOTI_FT15",
+          "description": "Verify marking is per account.",
+          "procedure": [
+            "In browser A sign in as participant A and click \"Đánh dấu tất cả đã đọc\".",
+            "In browser B sign in as participant B and open the panel."
+          ],
+          "expected": [
+            "Participant B's rows and badge are unchanged."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Two participants with unread notifications, supplied by QA lead; two browser profiles."
+          ],
+          "note": "UC-67b | Manual only"
+        },
+        {
+          "id": "NOTI_FT16",
+          "description": "Verify the second tab follows after the count is re-read.",
+          "procedure": [
+            "Open the app in two tabs as the same account.",
+            "In tab 1 click \"Đánh dấu tất cả đã đọc\".",
+            "Switch to tab 2 and open the panel."
+          ],
+          "expected": [
+            "Tab 2 reads page 1 again on opening and shows every row read with no badge."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-67b | Manual only"
+        }
+      ]
     },
     {
       "title": "Open Notification Target",
       "uc": [
         "UC-68"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "NOTI_FT17",
+          "description": "Verify clicking a meeting notification opens the meeting and marks it read.",
+          "procedure": [
+            "Open the panel.",
+            "Click the unread row \"Bạn được mời họp\"."
+          ],
+          "expected": [
+            "GET /api/notifications/{id}/target answers 200 with url /mgmt/meetings/<meetingId> and POST .../read answers 200.",
+            "The panel closes, the browser goes to /mgmt/meetings/<meetingId> showing the meeting detail, and the bell badge is one lower."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant of a Published meeting with an unread invitation notification."
+          ],
+          "note": "UC-68 · BR-53 | Manual only"
+        },
+        {
+          "id": "NOTI_FT18",
+          "description": "Verify a meeting the user may no longer read shows the unavailable toast.",
+          "procedure": [
+            "Open the panel (the notification is listed).",
+            "The Organizer removes the user from the meeting in another browser.",
+            "Click the notification."
+          ],
+          "expected": [
+            "GET /api/notifications/{id}/target answers 404; a red toast reads \"Thông báo này không còn khả dụng.\".",
+            "The panel stays open on the same page and the notification is still marked read."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Participant with an invitation notification; an Organizer in a second browser."
+          ],
+          "note": "UC-68 · EX-1 | Manual only"
+        },
+        {
+          "id": "NOTI_FT19",
+          "description": "Verify a calendar-share notification opens the sharing page on that share.",
+          "procedure": [
+            "Sign in as the owner of a calendar who received a share request.",
+            "Open the panel and click the notification."
+          ],
+          "expected": [
+            "The browser goes to /calendar/sharing?share=<shareId> and the share is shown on the sharing page."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A pending calendar share request for the signed-in account (SCRUM-142)."
+          ],
+          "note": "UC-68 · UC-84 | Manual only"
+        },
+        {
+          "id": "NOTI_FT20",
+          "description": "Verify opening a notification for the page the user is already on does not stack history.",
+          "procedure": [
+            "Open the meeting from the panel.",
+            "Open the panel again and click another notification of the same meeting.",
+            "Press Back once."
+          ],
+          "expected": [
+            "The URL stays /mgmt/meetings/<meetingId> and the page re-reads its data.",
+            "Back returns to the page before the meeting, not to a duplicate entry."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Two notifications about the same meeting for the signed-in participant."
+          ],
+          "note": "UC-68 | Manual only"
+        },
+        {
+          "id": "NOTI_FT21",
+          "description": "Verify an already read notification opens without another read request.",
+          "procedure": [
+            "Open the panel and click a row that is already read."
+          ],
+          "expected": [
+            "Only GET /api/notifications/{id}/target is sent; no POST .../read; the browser goes to the meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-68 | Manual only"
+        },
+        {
+          "id": "NOTI_FT22",
+          "description": "Verify a failed read does not block the way to the meeting.",
+          "procedure": [
+            "Make POST /api/notifications/{id}/read fail (QA lead blocks it), keep GET .../target working.",
+            "Click an unread notification."
+          ],
+          "expected": [
+            "The browser still goes to the meeting; the row is back to unread when the panel is reopened."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account.",
+            "The QA lead can block the read call on request."
+          ],
+          "note": "UC-68 | Manual only"
+        }
+      ]
     },
     {
       "title": "Real-time Delivery",
       "uc": [
         "UC-66"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "NOTI_FT23",
+          "description": "Verify a new notification shows a toast and updates the badge while the panel is closed.",
+          "procedure": [
+            "In browser A keep the app open on /calendar as a participant.",
+            "In browser B the Organizer publishes a meeting inviting that participant."
+          ],
+          "expected": [
+            "Browser A shows an info toast \"Bạn được mời họp — Bạn được mời tham dự cuộc họp ...\", the bell rings and the badge goes up by one without any reload."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Participant account and Organizer account supplied by QA lead; an Approved meeting; two browser profiles."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT24",
+          "description": "Verify a new notification appears at the top of an open panel without a toast.",
+          "procedure": [
+            "In browser A open the panel as a participant.",
+            "In browser B the Organizer publishes another meeting inviting that participant."
+          ],
+          "expected": [
+            "The new row appears at the top of the list, tinted as unread, and the chip count rises; no toast is shown."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Same setup as the previous case."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT25",
+          "description": "Verify the same notification pushed twice is shown once.",
+          "procedure": [
+            "Keep the app open and trigger a notification.",
+            "Drop and restore the network so the hub reconnects."
+          ],
+          "expected": [
+            "The list contains the notification once and the badge counts it once."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT26",
+          "description": "Verify the count and list are re-read after the connection returns.",
+          "procedure": [
+            "Open the panel as a participant.",
+            "Take the browser offline for 30 seconds while the Organizer publishes a meeting.",
+            "Bring the browser back online."
+          ],
+          "expected": [
+            "Without a reload, the badge and the top of the list include the notification that was published while offline."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Participant and Organizer accounts; two browser profiles."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT27",
+          "description": "Verify the person who acts does not receive a notification for their own action.",
+          "procedure": [
+            "As the Organizer publish a meeting that the Organizer also takes part in.",
+            "Open the Organizer's panel."
+          ],
+          "expected": [
+            "No \"Bạn được mời họp\" notification for that meeting is listed for the Organizer; other invitees receive theirs."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizer who is also on the roster of an Approved meeting; another participant."
+          ],
+          "note": "UC-66 | Manual only"
+        },
+        {
+          "id": "NOTI_FT28",
+          "description": "Verify a change of role shows the access-updated toast.",
+          "procedure": [
+            "Stay signed in as a user in browser A.",
+            "In browser B an administrator changes that user's role."
+          ],
+          "expected": [
+            "Browser A shows an info toast \"Quyền truy cập của bạn vừa được cập nhật.\" and the menus follow the new role without signing in again."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Account and administrator supplied by QA lead; two browser profiles."
+          ],
+          "note": "UC-66 | Manual only"
+        }
+      ]
     },
     {
       "title": "Invitation & Workflow Emails",
       "uc": [
         "UC-20"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "NOTI_FT29",
+          "description": "Verify publishing a meeting sends an invitation email to the invitee.",
+          "procedure": [
+            "As the Organizer click \"Công bố\" on an Approved meeting that has a participant with a reachable inbox and confirm \"Công bố\" in the dialog \"Công bố cuộc họp\".",
+            "Open the participant's inbox."
+          ],
+          "expected": [
+            "An email with the subject of the invitation arrives, titled \"Lời mời tham dự cuộc họp\", with the meeting information, the link /mgmt/meetings/<id> and the attachment thu-moi-hop.ics.",
+            "The publish request itself does not wait for the mail."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Approved meeting; Organizer; a participant mailbox supplied by QA lead; email transport enabled on the test build."
+          ],
+          "note": "UC-20 · SCRUM-15 | Manual only"
+        },
+        {
+          "id": "NOTI_FT30",
+          "description": "Verify the Organizer who publishes also gets the invitation email but no bell notification.",
+          "procedure": [
+            "As the Organizer who is also a participant, publish the meeting.",
+            "Check the Organizer's inbox and the panel."
+          ],
+          "expected": [
+            "The inbox holds the invitation email; the panel holds no \"Bạn được mời họp\" for that meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizer on the roster of an Approved meeting; a mailbox for the Organizer."
+          ],
+          "note": "UC-20 | Manual only"
+        },
+        {
+          "id": "NOTI_FT31",
+          "description": "Verify a reschedule sends the \"Cuộc họp đã dời lịch\" email to every participant.",
+          "procedure": [
+            "As the Organizer move a Published meeting to a new time.",
+            "Open the inboxes of the participants."
+          ],
+          "expected": [
+            "Each participant receives \"Cuộc họp đã dời lịch\" with the old time struck through beside the new one.",
+            "Each participant except the Organizer also gets a bell notification."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Published meeting with two participants with mailboxes; Organizer."
+          ],
+          "note": "UC-15 · UC-20 | Manual only"
+        },
+        {
+          "id": "NOTI_FT32",
+          "description": "Verify cancelling a meeting sends the cancellation email without a way in.",
+          "procedure": [
+            "As the Organizer cancel a Published meeting with a reason.",
+            "Open an invitee's inbox."
+          ],
+          "expected": [
+            "The email \"Cuộc họp đã bị huỷ\" arrives with the cancel calendar attachment huy-hop.ics and no link into the meeting."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Published meeting with a participant mailbox; Organizer."
+          ],
+          "note": "UC-75 · UC-20 | Manual only"
+        },
+        {
+          "id": "NOTI_FT33",
+          "description": "Verify a reminder email goes out about 15 minutes before the start.",
+          "procedure": [
+            "Publish a meeting that starts in about 14 minutes.",
+            "Wait for the reminder cycle and open the invitee's inbox and panel."
+          ],
+          "expected": [
+            "The email \"Cuộc họp sắp bắt đầu\" arrives and the panel shows the notification \"Cuộc họp sắp bắt đầu\" with \"Cuộc họp \"<title>\" sẽ bắt đầu trong vòng 15 phút.\".",
+            "Each is sent once: waiting another cycle adds nothing."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Published meeting starting within 15 minutes; participant with a mailbox."
+          ],
+          "note": "UC-20 | Boundary: 15-minute window | Manual only"
+        },
+        {
+          "id": "NOTI_FT34",
+          "description": "Verify a participant added after the reminder window opens is not emailed twice.",
+          "procedure": [
+            "Publish a meeting that starts in 10 minutes inviting participant A.",
+            "Add participant B to the roster and wait for the reminder cycle."
+          ],
+          "expected": [
+            "B receives the invitation email and the bell reminder, but no separate \"Cuộc họp sắp bắt đầu\" email."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Published meeting starting in about 10 minutes; Organizer; two participant mailboxes."
+          ],
+          "note": "UC-20 | Manual only"
+        },
+        {
+          "id": "NOTI_FT35",
+          "description": "Verify no email is sent for a draft or unpublished meeting.",
+          "procedure": [
+            "As the Organizer create a meeting and add a participant but do not publish.",
+            "Check the participant's inbox after a few minutes."
+          ],
+          "expected": [
+            "No invitation email arrives."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Organizer; participant mailbox."
+          ],
+          "note": "UC-20 | Manual only"
+        }
+      ]
     }
   ]
 }

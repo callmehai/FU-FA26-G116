@@ -2,21 +2,412 @@
   "feature": "FE-15",
   "code": "RPT",
   "sheet": "Reporting",
-  "precondition": "",
+  "precondition": "Test build of backend + frontend; an Organizer, a Member, an Administrator account and a Guest invitation link supplied by QA lead; meetings in several statuses and months for the Organizer; QA lead can read the audit log and stop the database; Postman or curl.",
   "groups": [
     {
       "title": "GET /api/reports/meetings",
       "uc": [
         "UC-70a"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "RPT_API_IT01",
+          "description": "Verify GET /api/reports/meetings counts the readable meetings per month, status and sensitivity.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2026-01&to=2026-03",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 200 OK with header Cache-Control: private, no-store.",
+            "Body: { \"from\": \"2026-01\", \"to\": \"2026-03\", \"generatedAt\", \"total\": 3, \"byMonth\", \"byStatus\", \"bySensitivity\", \"attendance\", \"duration\", \"minutesTurnaround\" }.",
+            "\"byMonth\" has one entry for every month of the period, including months with \"count\": 0; \"byStatus\" lists all 8 statuses in enum order; \"bySensitivity\" lists \"Normal\", \"Internal\" and \"Secret\".",
+            "The counts match the meetings the Organizer can read; no meeting id, title or participant appears in the body."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Organizer account supplied by QA lead who created a Draft meeting on 10/01/2026, a Published Secret meeting on 20/01/2026 and an Ended meeting on 01/03/2026 00:00 Hanoi time."
+          ],
+          "note": "UC-70a | BR-433 BR-434 BR-437 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Counts_the_readable_meetings_per_month_status_and_sensitivity_in_vietnam_time)"
+        },
+        {
+          "id": "RPT_API_IT02",
+          "description": "Verify GET /api/reports/meetings assigns a meeting to the month of its planned start in Vietnam time.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2026-02&to=2026-03",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "The meeting planned for 01/03/2026 00:30 (+07:00), which is still 28/02 in UTC, is counted in \"2026-03\", not \"2026-02\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Organizer with one meeting whose planned start is 01/03/2026 00:30 Hanoi time."
+          ],
+          "note": "UC-70a | BR-434 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Counts_the_readable_meetings_per_month_status_and_sensitivity_in_vietnam_time)"
+        },
+        {
+          "id": "RPT_API_IT03",
+          "description": "Verify GET /api/reports/meetings counts a Cancelled meeting.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2026-01&to=2026-01",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "\"total\" includes the Cancelled meeting; \"byStatus\" shows \"Cancelled\" with \"count\": 1."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Organizer who cancelled a meeting planned in 01/2026."
+          ],
+          "note": "UC-70a | BR-434 | Manual only"
+        },
+        {
+          "id": "RPT_API_IT04",
+          "description": "Verify GET /api/reports/meetings without a period returns the twelve months ending this month.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings with no query string.",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "\"to\" is the current month in Vietnam time, \"from\" is eleven months earlier, and \"byMonth\" has 12 entries."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any active internal account."
+          ],
+          "note": "UC-70a | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Without_a_period_the_report_covers_the_twelve_months_ending_this_month)"
+        },
+        {
+          "id": "RPT_API_IT05",
+          "description": "Verify GET /api/reports/meetings counts only the meetings the caller may read, administrator included.",
+          "procedure": [
+            "Sign in as the Administrator (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2026-01&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>",
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send the same request as the Organizer."
+          ],
+          "expected": [
+            "Both calls answer HTTP 200 OK.",
+            "The Administrator's \"total\" counts only meetings the Administrator may read under the meeting-list rule (creator, assigned approver, current Chair or Secretary, current participant of a Published meeting), not every meeting in the system.",
+            "Another user's Draft meeting is in the Organizer's count but not in the Administrator's."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Administrator account and an Organizer account supplied by QA lead; the Organizer has Draft meetings the Administrator is not on."
+          ],
+          "note": "UC-70a | BR-432 | Manual only"
+        },
+        {
+          "id": "RPT_API_IT06",
+          "description": "Verify GET /api/reports/meetings averages attendance, duration and minutes turnaround over Ended meetings only.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2026-01&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "\"attendance\": { \"averageRate\", \"meetings\", \"meetingsWithoutAttendance\" }: the rate is Present divided by (current internal participants + Guests whose invitation is not revoked), averaged over Ended meetings that have at least one Present or Absent mark, as a fraction rounded to 4 digits.",
+            "\"minutesTurnaround\": { \"averageHours\", \"meetings\", \"meetingsWithoutIssuedMinutes\" }: hours from the real end time to the first issue of the minutes; a later correction does not change it.",
+            "\"duration\": { \"averageMinutes\", \"meetings\", \"meetingsWithoutTimes\" } counts only Ended meetings with both real start and end times.",
+            "Meetings that are not Ended are in none of the three averages."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Organizer with several Ended meetings: one with attendance marks, one without any, one with issued minutes and a later correction, one with no issued minutes."
+          ],
+          "note": "UC-70a | BR-435 BR-436 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Averages_attendance_and_minutes_turnaround_over_ended_meetings)"
+        },
+        {
+          "id": "RPT_API_IT07",
+          "description": "Verify GET /api/reports/meetings returns zeros and null averages when the caller can read no meeting in the period.",
+          "procedure": [
+            "Sign in as the Member (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2026-01&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 200 OK with no message code.",
+            "\"total\": 0; every \"byMonth\" and \"byStatus\" count is 0; \"attendance.averageRate\", \"duration.averageMinutes\" and \"minutesTurnaround.averageHours\" are null."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Active account that created no meeting and is on none."
+          ],
+          "note": "UC-70a AF-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_viewer_with_nothing_readable_gets_zeros_and_no_averages)"
+        },
+        {
+          "id": "RPT_API_IT08",
+          "description": "Verify GET /api/reports/meetings accepts a 24-month period and 9998 as the last year.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2025-01&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>",
+            "Send GET /api/reports/meetings?from=9998-01&to=9998-12."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 OK with \"byMonth\" holding 24 entries.",
+            "Step 3: HTTP 200 OK with 12 entries."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any active internal account."
+          ],
+          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Twenty_four_months_is_the_longest_period; The_last_year_a_period_may_reach_is_9998)"
+        },
+        {
+          "id": "RPT_API_IT09",
+          "description": "Verify GET /api/reports/meetings rejects a period that is malformed, reversed, incomplete or out of range.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2026-1&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>",
+            "Repeat with from=abc&to=2026-12; from=2026-06&to=2026-01; only from=2026-01; only to=2026-12; from=1999-12&to=2000-01; from=9998-12&to=9999-01."
+          ],
+          "expected": [
+            "Each call: HTTP 400 Bad Request, body { \"code\": \"MSG463\", \"message\": \"Khoảng thời gian không hợp lệ. Chọn tối đa 24 tháng, tháng bắt đầu không sau tháng kết thúc.\" }.",
+            "No figures are returned and no audit row is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any active internal account."
+          ],
+          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (An_invalid_period_is_refused_by_both_endpoints)"
+        },
+        {
+          "id": "RPT_API_IT10",
+          "description": "Verify GET /api/reports/meetings rejects a period longer than 24 months.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings?from=2024-12&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 400 Bad Request, body { \"code\": \"MSG463\", \"message\": \"Khoảng thời gian không hợp lệ. Chọn tối đa 24 tháng, tháng bắt đầu không sau tháng kết thúc.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any active internal account."
+          ],
+          "note": "UC-70a EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Twenty_four_months_is_the_longest_period)"
+        },
+        {
+          "id": "RPT_API_IT11",
+          "description": "Verify GET /api/reports/meetings answers 401 without a token.",
+          "procedure": [
+            "Send GET /api/reports/meetings with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-70a | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)"
+        },
+        {
+          "id": "RPT_API_IT12",
+          "description": "Verify GET /api/reports/meetings answers 403 to a Guest token and to a deactivated account.",
+          "procedure": [
+            "Open a Guest session from an invitation link (UC-04) and keep the guest token.",
+            "Send GET /api/reports/meetings with Authorization: Bearer <guestToken>.",
+            "Sign in as an internal account, deactivate it in Admin, and send the request again with its earlier token."
+          ],
+          "expected": [
+            "Step 2: HTTP 403 Forbidden with no message code.",
+            "Step 3: HTTP 403 Forbidden with no message code."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Guest invitation link; an internal account that QA lead can deactivate."
+          ],
+          "note": "UC-70a | BR-432 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)"
+        },
+        {
+          "id": "RPT_API_IT13",
+          "description": "Verify GET /api/reports/meetings answers 500 MSG464 when the database cannot be read.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database of the test build.",
+            "Send GET /api/reports/meetings?from=2026-01&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>",
+            "Ask QA lead to start the database again."
+          ],
+          "expected": [
+            "HTTP 500, body { \"code\": \"MSG464\", \"message\": \"Không tải được báo cáo. Vui lòng thử lại.\" }."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "QA lead can stop and start the database of the test build."
+          ],
+          "note": "UC-70a EX-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_read_failure_answers_msg464_and_msg465)"
+        },
+        {
+          "id": "RPT_API_IT14",
+          "description": "Verify viewing the report through GET /api/reports/meetings writes no audit row.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings",
+            "   Headers: Authorization: Bearer <accessToken>",
+            "Ask QA lead to look for an audit entry with action \"report.exported\" for the Organizer."
+          ],
+          "expected": [
+            "HTTP 200 OK.",
+            "No audit row exists for this call."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Organizer account; QA lead can read the audit log."
+          ],
+          "note": "UC-70a | BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Viewing_the_report_records_nothing)"
+        }
+      ]
     },
     {
       "title": "GET /api/reports/meetings/export",
       "uc": [
         "UC-70b"
       ],
-      "cases": []
+      "cases": [
+        {
+          "id": "RPT_API_IT15",
+          "description": "Verify GET /api/reports/meetings/export returns the report as an Excel file and records the export.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings/export?from=2026-02&to=2026-03",
+            "   Headers: Authorization: Bearer <accessToken>",
+            "Open the downloaded file.",
+            "Read the audit log (Admin audit screen or QA lead)."
+          ],
+          "expected": [
+            "HTTP 200 OK, Content-Type application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, file name bao-cao-cuoc-hop_2026-02_2026-03.xlsx, header Cache-Control: private, no-store.",
+            "The workbook has one sheet \"Báo cáo cuộc họp\" with \"Khoảng thời gian\" = \"02/2026 – 03/2026\", \"Tổng số cuộc họp\" = 2, the month rows \"02/2026\" and \"03/2026\", the status labels (for example \"Đã công bố\", \"Nháp\"), the sensitivity labels (for example \"Mật\") and the three average rows; numbers are numeric cells.",
+            "\"Tỷ lệ tham dự trung bình\" and \"Thời lượng họp trung bình (phút)\" read \"Chưa có dữ liệu\" with counts 0 and 0 when no Ended meeting qualifies.",
+            "No meeting title appears anywhere in the file.",
+            "One audit row: action \"report.exported\", objectType \"Report\", objectId null, details { \"report\": \"meetings\", \"from\": \"2026-02\", \"to\": \"2026-03\" }, with the actor, IP and time."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Organizer with a Published Secret meeting in 02/2026 and a Draft meeting in 03/2026; QA lead can read the audit log."
+          ],
+          "note": "UC-70b | BR-437 BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Export_returns_the_same_figures_as_an_excel_file_and_records_the_export)"
+        },
+        {
+          "id": "RPT_API_IT16",
+          "description": "Verify GET /api/reports/meetings/export without a period exports the twelve months ending this month.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings/export with no query string.",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 200 OK; the file name is bao-cao-cuoc-hop_<from>_<to>.xlsx with <to> the current Vietnam-time month and <from> eleven months earlier."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any active internal account."
+          ],
+          "note": "UC-70b | BR-433 | Manual only"
+        },
+        {
+          "id": "RPT_API_IT17",
+          "description": "Verify GET /api/reports/meetings/export rejects an invalid period and writes no audit row.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/reports/meetings/export?from=2026-1&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>",
+            "Repeat with from=2026-06&to=2026-01 and from=2024-12&to=2026-12."
+          ],
+          "expected": [
+            "Each call: HTTP 400 Bad Request, body { \"code\": \"MSG463\", \"message\": \"Khoảng thời gian không hợp lệ. Chọn tối đa 24 tháng, tháng bắt đầu không sau tháng kết thúc.\" }.",
+            "No file is returned and no \"report.exported\" audit row is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "Any active internal account."
+          ],
+          "note": "UC-70b EX-1 | BR-433 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (An_invalid_period_is_refused_by_both_endpoints)"
+        },
+        {
+          "id": "RPT_API_IT18",
+          "description": "Verify GET /api/reports/meetings/export answers 401 without a token.",
+          "procedure": [
+            "Send GET /api/reports/meetings/export with no Authorization header."
+          ],
+          "expected": [
+            "HTTP 401 Unauthorized.",
+            "No audit row is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200)."
+          ],
+          "note": "UC-70b | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)"
+        },
+        {
+          "id": "RPT_API_IT19",
+          "description": "Verify GET /api/reports/meetings/export answers 403 to a Guest token and to a deactivated account.",
+          "procedure": [
+            "Open a Guest session from an invitation link and keep the guest token.",
+            "Send GET /api/reports/meetings/export with Authorization: Bearer <guestToken>.",
+            "Repeat with the earlier token of an account that has since been deactivated."
+          ],
+          "expected": [
+            "Each call: HTTP 403 Forbidden with no message code, no file, and no \"report.exported\" audit row."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Guest invitation link; an internal account that QA lead can deactivate."
+          ],
+          "note": "UC-70b | BR-432 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (Anonymous_callers_guests_and_deactivated_accounts_are_refused)"
+        },
+        {
+          "id": "RPT_API_IT20",
+          "description": "Verify GET /api/reports/meetings/export answers 500 MSG465 when the database cannot be read.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to stop the database of the test build.",
+            "Send GET /api/reports/meetings/export?from=2026-01&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>",
+            "Ask QA lead to start the database again."
+          ],
+          "expected": [
+            "HTTP 500, body { \"code\": \"MSG465\", \"message\": \"Không xuất được báo cáo. Vui lòng thử lại.\" }.",
+            "No file is returned and no audit row is written."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "QA lead can stop and start the database of the test build."
+          ],
+          "note": "UC-70b EX-2 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (A_read_failure_answers_msg464_and_msg465)"
+        },
+        {
+          "id": "RPT_API_IT21",
+          "description": "Verify GET /api/reports/meetings/export returns no file when the export cannot be recorded in the audit log.",
+          "procedure": [
+            "Sign in as the Organizer (POST /api/auth/login) and keep the access token.",
+            "Ask QA lead to make saving fail on the test build (database read-only).",
+            "Send GET /api/reports/meetings/export?from=2026-01&to=2026-12",
+            "   Headers: Authorization: Bearer <accessToken>"
+          ],
+          "expected": [
+            "HTTP 500, Content-Type application/json, body { \"code\": \"MSG465\", \"message\": \"Không xuất được báo cáo. Vui lòng thử lại.\" }.",
+            "No .xlsx content leaves the server and no audit row exists."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "QA lead can make writes fail while reads still work."
+          ],
+          "note": "UC-70b EX-2 | BR-438 | Automated: tests/TrustCabinet.Web.Tests/Reports/ReportEndpointTests.cs (No_file_leaves_when_the_export_cannot_be_recorded)"
+        }
+      ]
     }
   ]
 }
