@@ -192,14 +192,25 @@ public static class ParticipantEndpoints
         );
     }
 
+    // A compressing proxy rewrites the ETag it passes on: Caddy's `encode` turns "participants-3" into
+    // "participants-3-gzip" (or -zstd, -br). A client that echoes that header back must still match.
+    private static readonly string[] EncodingSuffixes = ["-gzip", "-zstd", "-br"];
+
     private static long? ParseRevision(string value)
     {
         const string prefix = "\"participants-";
+        if (!value.StartsWith(prefix, StringComparison.Ordinal) || !value.EndsWith('"'))
+            return null;
+        var number = value.AsSpan(prefix.Length, value.Length - prefix.Length - 1);
+        foreach (var suffix in EncodingSuffixes)
+            if (number.EndsWith(suffix, StringComparison.Ordinal))
+            {
+                number = number[..^suffix.Length];
+                break;
+            }
         return
-            value.StartsWith(prefix, StringComparison.Ordinal)
-            && value.EndsWith('"')
-            && long.TryParse(
-                value.AsSpan(prefix.Length, value.Length - prefix.Length - 1),
+            long.TryParse(
+                number,
                 NumberStyles.None,
                 CultureInfo.InvariantCulture,
                 out var revision
