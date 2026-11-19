@@ -8,8 +8,10 @@ gipformer/decoder.int8.onnx e0a156b5454722a524230f9e35d5d928cfcdd3723437b418e5bd
 gipformer/joiner.int8.onnx 12636559d135315f002a1e1b477077d415e888477378db0fd450aee5b21ac551 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/joiner.int8.onnx
 gipformer/tokens.txt f536d03c2e95ebd2930cf0abec88e823bd17d3c1933da7ae6a82db3b80605e15 https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/main/tokens.txt
 
-# 3D-Speaker ERes2Net base, 200k speakers — speaker embedding, 512 dims — Apache-2.0 — ONNX by k2-fsa
-eres2net_base.onnx e2d2048292e055f7b61cdec3db010503f35369b245bf0b3bbad021c9a91e4053 https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_base_200k_sv_zh-cn_16k-common.onnx
+# 3D-Speaker ERes2Net base, 200k speakers — speaker embedding, 512 dims — Apache-2.0 — ONNX by k2-fsa.
+# Pinned to the k2-fsa author's Hugging Face commit of 14/10/2024: the GitHub release asset at the same name was
+# replaced by a re-export on 19/11/2026 (new sha256), and stored voice samples were embedded with this exact file.
+eres2net_base.onnx e2d2048292e055f7b61cdec3db010503f35369b245bf0b3bbad021c9a91e4053 https://huggingface.co/csukuangfj/speaker-embedding-models/resolve/0743f301363dec56491a490f6d6cbc9d67f9a3bf/3dspeaker_speech_eres2net_base_200k_sv_zh-cn_16k-common.onnx
 
 # Silero VAD — MIT
 silero_vad.onnx 9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6 https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
