@@ -1395,7 +1395,7 @@ export default {
         'API: danh sách thu hộ của cuộc họp Mật, cuộc họp trực tuyến; thu cho quantri@ (ngoài danh sách); Chủ toạ, Thành viên, quantri@, chưa đăng nhập gọi danh sách; Thư ký nghe / xoá mẫu tự thu của A qua đường thu hộ',
       ],
       expected:
-        'B: 409 MSG475; mẫu thứ 6: 409 MSG476 và dòng A "5/5" không nút "Thu"; cuộc họp kết thúc: thẻ vẫn hiện, ghi "Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.", không nút "Thu", API 409 MSG477; Mật 404, trực tuyến 404, ngoài danh sách 404; Chủ toạ 403, Thành viên 403 (thiếu quyền), quantri@ 404, ẩn danh 401; mẫu tự thu qua đường thu hộ 404; Chủ toạ không thấy thẻ thu hộ',
+        'B: 409 MSG475; mẫu thứ 6: 409 MSG476 và dòng A "5/5" không nút "Thu"; cuộc họp kết thúc: thẻ vẫn hiện, ghi "Chỉ thu thêm được khi cuộc họp đã công bố hoặc đang họp.", không nút "Thu", API 409 MSG477; Mật 404, trực tuyến 404, ngoài danh sách 404; Chủ toạ 403, Thành viên 403 (thiếu quyền), quantri@ 404, ẩn danh 401; mẫu tự thu qua đường thu hộ 404; Chủ toạ không thấy thẻ thu hộ (tab Bản ghi của Chủ toạ khoá tới khi cuộc họp bắt đầu)',
       async run(qa) {
         const u = await users(qa)
         const [a, b, cm, d] = [await meeting(qa, 'A'), await meeting(qa, 'B'), await meeting(qa, 'C'), await meeting(qa, 'D')]
@@ -1443,8 +1443,15 @@ export default {
           c.fact('the self sample is untouched', (await voice(qa, 'a')).samples.some((s) => s.id === own))
 
           await qa.signIn('chair')
-          await openRecordings(qa, b)
-          await qa.expect(recordingsRegion(qa)).toBeVisible()
+          // PR #427: before the start the Bản ghi tab opens only to the Secretary collecting voice samples; for the
+          // Chair it is locked ("Mở khi cuộc họp bắt đầu") and ?tab=recordings opens Thông tin chung.
+          await qa.goto(`/mgmt/meetings/${b.id}?tab=recordings`)
+          await qa.expect(qa.page.getByRole('heading', { level: 1, name: b.title })).toBeVisible({ timeout: 15_000 })
+          const tab = qa.page.getByRole('tab', { name: 'Bản ghi' })
+          await qa.expect(tab).toHaveAttribute('aria-disabled', 'true')
+          await qa.expect(tab).toHaveAccessibleDescription('Mở khi cuộc họp bắt đầu')
+          await qa.expect(qa.page.getByRole('tab', { name: 'Thông tin chung' })).toHaveAttribute('aria-selected', 'true')
+          await qa.expect(recordingsRegion(qa)).toHaveCount(0)
           await qa.expect(collectionPanel(qa)).toHaveCount(0)
           await settled(qa)
           await qa.shot('chu-toa-khong-co-the-thu-ho')
