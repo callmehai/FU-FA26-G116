@@ -520,7 +520,7 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
             200, "MSG318");
         Assert.Equal("Theo tôi thì kế hoạch này.", fixture.Speech.LastContext);
         var texts = (await List(member, s.MeetingId)).GetProperty("items").EnumerateArray()
-            .Select(i => i.GetProperty("text").GetString()).ToArray();
+            .Select(i => i.GetProperty("text").GetString()!).ToArray();
         Assert.Equal(["Theo tôi thì kế hoạch này", "cần thêm thời gian."], texts);
 
         // A sentence the Secretary corrected is theirs: never read ahead, never re-punctuated.
