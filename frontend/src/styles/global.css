@@ -5587,8 +5587,11 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .find-pair-row > label.visually-hidden { position: absolute; }
 .find-days { display: flex; flex-wrap: wrap; gap: 6px; }
 .find-days .chip-toggle { min-width: 38px; padding: 0 8px; }
-.find-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+/* Side by side the two fields share a line: a label that needs two ("Cách cuộc họp khác") wraps, and the dropdowns
+   stay level by sitting on the bottom edge. */
+.find-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
 .find-label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap; }
+.find-two .find-label { line-height: 1.3; white-space: normal; }
 .find-submit { width: 100%; justify-content: center; }
 .find-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .find-main > * { flex: none; }
