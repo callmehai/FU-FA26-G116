@@ -128,11 +128,11 @@ export function SlotSettingsPanel({
       <div className="find-two">
         <div className="field" data-field="bufferMinutes">
           <span className="find-label">
-            Cách cuộc họp khác
+            Giãn cách họp
             <InfoTip text="Khung đề xuất cách mọi giờ bận ít nhất chừng này, cả trước lẫn sau." />
           </span>
           <Select
-            label="Cách cuộc họp khác"
+            label="Giãn cách họp"
             value={String(value.buffer)}
             options={BUFFER_OPTIONS}
             onChange={(v) => set('buffer', Number(v))}
