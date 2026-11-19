@@ -74,8 +74,8 @@ Multipart giống hệt `POST /api/meetings/{id}/documents/upload` (part `files`
 [11-tai-lieu-cuoc-hop.md](11-tai-lieu-cuoc-hop.md#endpoint)). Thứ tự kiểm:
 
 1. Thư mục đích (nếu có) của chính mình — **trước khi đọc body**; không thì `404 MSG179`. Kho tệp chưa cấu hình → `503 MSG178`.
-2. Giới hạn mỗi lần như UC-33a: ≤ 10 tệp, tổng ≤ 200 MB (`400 MSG288`, PO 27/10/2026 áp cho cả UC-36); từng tệp PDF/DOCX
-   theo nội dung, ≤ 50 MB (`400 MSG164`, `errors["files[i]"]`).
+2. Giới hạn mỗi lần như UC-33a: ≤ 10 tệp, tổng ≤ 100 MB (`400 MSG288`, PO 27/10/2026 áp cho cả UC-36); từng tệp PDF/DOCX
+   theo nội dung, ≤ 10 MB (`400 MSG164`, `errors["files[i]"]`).
 3. Ghi `StoredFile` dưới khoá chung của hệ thống, chỉ khi bộ nhớ còn đủ: không thì `409 MSG346`, **không tệp nào** được
    thêm (ADR-0034).
 4. Đẩy R2 → trong một transaction có khoá chủ kho: kiểm lại thư mục đích, ghi `Document`. Lỗi thì xoá object và đánh dấu
@@ -173,8 +173,8 @@ không đăng nhập được nên không tự đọc. Đặc tả: UC-34b (BA v
   chip "Đã có trong cuộc họp". Mục nghị sự và biểu quyết **không** gửi: ở đó tài liệu đã có được gắn luôn (UC-33b / UC-76a
   AF-2). `MSG165` vẫn có thể về (người khác vừa thêm trong lúc hộp đang mở): giữ lựa chọn, báo lỗi, đọc lại kho để hiện chip.
 - Hiện "x / 10 GB" của cả hệ thống từ `storageUsedBytes` / `storageLimitBytes`; kiểm ở FE trước khi gửi để khỏi đẩy
-  200 MB rồi mới nhận `MSG346`. Server vẫn kiểm lại.
-- Tải lên: giống hộp tải lên của cuộc họp (kiểm 10 tệp / 200 MB / 50 MB trước khi gửi), qua hàng đợi ở trình duyệt, mỗi
+  100 MB rồi mới nhận `MSG346`. Server vẫn kiểm lại.
+- Tải lên: giống hộp tải lên của cuộc họp (kiểm 10 tệp / 100 MB / 10 MB trước khi gửi), qua hàng đợi ở trình duyệt, mỗi
   tệp một request ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)). Mỗi tệp xong thì màn kho đọc lại vị
   trí và dung lượng.
 - Kho của tài khoản đã khoá (SCRUM-113): nút "Xem kho tài liệu" ở màn Người dùng, chỉ bật với tài khoản đã vô hiệu hoá;

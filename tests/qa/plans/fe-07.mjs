@@ -475,7 +475,7 @@ const MSG = {
   197: 'Đã xoá thư mục.',
   238: 'Đã gắn tài liệu vào mục nghị sự.',
   239: 'Đã gỡ tài liệu khỏi mục nghị sự.',
-  164: 'Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB.',
+  164: 'Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.',
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -594,7 +594,7 @@ export default {
         'API: tải vào thư mục của người khác; không đăng nhập',
       ],
       expected:
-        'Hộp thoại báo "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 50 MB." và nêu tên tệp, nút Tải lên khoá; API: 400 MSG164, 400 MSG288, 404 MSG179, 401; kho không thêm gì',
+        'Hộp thoại báo "Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB." và nêu tên tệp, nút Tải lên khoá; API: 400 MSG164, 400 MSG288, 404 MSG179, 401; kho không thêm gì',
       async run(qa) {
         const bad = textFile(qa.name(`FE-07 Ghi chú ${rand()}.txt`))
         const before = (await library(qa, 'member')).documents.length

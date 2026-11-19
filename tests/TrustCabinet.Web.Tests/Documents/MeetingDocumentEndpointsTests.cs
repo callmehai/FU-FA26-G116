@@ -114,7 +114,25 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
-    public async Task A_request_declaring_more_than_200_MB_is_refused_before_it_is_read()
+    public async Task Files_over_100_MB_in_total_are_over_the_submission_limit()
+    {
+        var s = await fixture.Seed();
+        using var client = fixture.Client(s.Secretary);
+        var objects = fixture.Storage.Objects.Count;
+        // Two files one byte past 100 MB together: the request itself stays under the body limit, so the total is what refuses it.
+        var form = new MultipartFormDataContent
+        {
+            { new StreamContent(new ZeroStream(DocumentFileRules.MaxTotalBytes / 2)), "files", "a.pdf" },
+            { new StreamContent(new ZeroStream(DocumentFileRules.MaxTotalBytes / 2 + 1)), "files", "b.pdf" },
+        };
+
+        var body = await AssertCode(await client.PostAsync(s.Url, form), 400, "MSG288");
+        Assert.Equal("Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.", body.GetProperty("message").GetString());
+        await AssertNothingAdded(s, objects);
+    }
+
+    [Fact]
+    public async Task A_request_declaring_more_than_100_MB_is_refused_before_it_is_read()
     {
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Secretary);
@@ -127,7 +145,7 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
     }
 
     [Fact]
-    public async Task A_file_over_50_MB_is_invalid()
+    public async Task A_file_over_10_MB_is_invalid()
     {
         var s = await fixture.Seed();
         using var client = fixture.Client(s.Secretary);
@@ -135,7 +153,8 @@ public sealed class MeetingDocumentEndpointsTests(DocumentFixture fixture) : IAs
         SampleFiles.Pdf().CopyTo(bytes, 0);
 
         var body = await AssertCode(await client.PostAsync(s.Url, DocumentFixture.Form(("lon.pdf", bytes, "1"))), 400, "MSG164");
-        Assert.Contains("50 MB", body.GetProperty("errors").GetProperty("files[0]")[0].GetString());
+        Assert.Equal("Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.", body.GetProperty("message").GetString());
+        Assert.Equal("lon.pdf: tệp lớn hơn 10 MB.", body.GetProperty("errors").GetProperty("files[0]")[0].GetString());
     }
 
     [Fact]

@@ -13,9 +13,10 @@ namespace TrustCabinet.Domain.Documents;
 
 public static class DocumentFileRules
 {
-    public const long MaxFileBytes = 50L * 1024 * 1024;   // BR-214
+    // Meeting decision 19/11/2026 (Khánh): 10 MB a file, 10 files and 100 MB an upload; before, 50 MB and 200 MB.
+    public const long MaxFileBytes = 10L * 1024 * 1024;   // BR-214
     public const int MaxFiles = 10;                       // BR-319
-    public const long MaxTotalBytes = 200L * 1024 * 1024; // BR-319
+    public const long MaxTotalBytes = 100L * 1024 * 1024; // BR-319
     public const int MaxFileNameLength = 255;
     public const int MaxFolderDepth = 5;                         // BR-191
     public const int MaxFolderNameLength = 400;                  // the column
@@ -47,7 +48,7 @@ public static class DocumentFileRules
 
     /// <summary>
     /// A real DOCX has a few dozen entries. ZipArchive loads the whole central directory into
-    /// memory, so a crafted 50 MB one with half a million entries would cost ~200 MB per file.
+    /// memory, so a crafted one packed with entries would cost many times its size per file.
     /// </summary>
     private const int MaxZipEntries = 5000;
     private const uint MaxCentralDirectoryBytes = 1024 * 1024;
@@ -106,7 +107,7 @@ public static class DocumentFileRules
             int? pageCount = null;
             if (name is null) problem = "tên tệp không hợp lệ.";
             else if (candidate.Length == 0) problem = "tệp rỗng.";
-            else if (candidate.Length > MaxFileBytes) problem = "tệp lớn hơn 50 MB.";
+            else if (candidate.Length > MaxFileBytes) problem = "tệp lớn hơn 10 MB.";
             else if (ExpectedContentType(name) is not { } expected) problem = "chỉ nhận tệp .pdf hoặc .docx.";
             else
             {

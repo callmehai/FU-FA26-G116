@@ -23,11 +23,11 @@ Server cũng nhận tên `files[]`. Part tệp mang tên khác bị bỏ qua, pa
 ### Thứ tự kiểm tra
 
 1. Token, tài khoản đang hoạt động — không đạt: `401` / `403` body rỗng.
-2. **Quyền, trước khi đọc body** (để người không có quyền không đẩy được 200 MB lên đĩa server):
+2. **Quyền, trước khi đọc body** (để người không có quyền không đẩy được 100 MB lên đĩa server):
    xem được cuộc họp, đang là Chủ toạ hoặc Thư ký hiện tại, cuộc họp chưa `Ended` và chưa `Cancelled`.
 3. `Content-Length` > 201 MB → `MSG288` ngay, không đọc body.
-4. Số tệp ≤ 10, tổng ≤ 200 MB (BR-319).
-5. Từng tệp: tên hợp lệ có đuôi `.pdf` hoặc `.docx`, không rỗng, ≤ 50 MB, và **nội dung** đúng loại mà đuôi
+4. Số tệp ≤ 10, tổng ≤ 100 MB (BR-319; họp 19/11/2026, trước là 200 MB).
+5. Từng tệp: tên hợp lệ có đuôi `.pdf` hoặc `.docx`, không rỗng, ≤ 10 MB (BR-214; họp 19/11/2026, trước là 50 MB), và **nội dung** đúng loại mà đuôi
    khai (BR-187, BR-214, BR-215). Đuôi phải khớp nội dung vì tệp sẽ được tải về dưới chính tên đó (SCRUM-21):
    một trang HTML không được quay về từ origin của mình dưới tên `x.html`. PDF còn phải **đọc được cấu trúc** và có ít
    nhất một trang; số trang lưu vào `StoredFile.PageCount` là số server đếm (ADR-0044).
@@ -79,8 +79,8 @@ dung vẫn là tài liệu mới (BR-229).
 
 | HTTP | Mã | Khi nào |
 |---|---|---|
-| 400 | `MSG164` | Không có tệp, body không phải multipart, multipart hỏng (kể cả quá 64 part), hoặc ≥ 1 tệp không hợp lệ (đuôi khác `.pdf`/`.docx`, nội dung không khớp đuôi, rỗng, quá 50 MB). `errors` chỉ rõ tệp nào |
-| 400 | `MSG288` | Quá 10 tệp, tổng quá 200 MB, hoặc `Content-Length` quá 201 MB |
+| 400 | `MSG164` | Không có tệp, body không phải multipart, multipart hỏng (kể cả quá 64 part), hoặc ≥ 1 tệp không hợp lệ (đuôi khác `.pdf`/`.docx`, nội dung không khớp đuôi, rỗng, quá 10 MB). `errors` chỉ rõ tệp nào |
+| 400 | `MSG288` | Quá 10 tệp, tổng quá 100 MB, hoặc `Content-Length` quá 101 MB |
 | 403 | `MSG162` | Xem được cuộc họp nhưng không còn là Chủ toạ/Thư ký hiện tại (kể cả Người tổ chức không giữ hai vai trò đó) |
 | 404 | `MSG174` | Không xem được cuộc họp hoặc cuộc họp không tồn tại — **cùng một body**, không lộ cuộc họp có tồn tại |
 | 409 | `MSG172` | Cuộc họp đã kết thúc, kể cả khi vừa kết thúc trong lúc đang tải |
@@ -100,14 +100,14 @@ Khoá là `files[i]` theo thứ tự part tệp; key `files` dùng cho lỗi c�
 
 - Gửi `FormData`: với mỗi tệp `append('files', file)`. FE không gửi `pageCounts` nữa (server tự đếm trang); client cũ
   còn gửi cũng không sao. Không đặt header `Content-Type` tay — trình duyệt tự thêm boundary.
-- **Bắt buộc** kiểm giới hạn ở FE trước khi gửi: ≤ 50 MB mỗi tệp, ≤ 10 tệp, ≤ 200 MB tổng, đuôi
+- **Bắt buộc** kiểm giới hạn ở FE trước khi gửi: ≤ 10 MB mỗi tệp, ≤ 10 tệp, ≤ 100 MB tổng, đuôi
   `.pdf`/`.docx`. Body quá lớn bị server từ chối ngay khi trình duyệt còn đang gửi, nên trình duyệt thường chỉ
   thấy lỗi mạng, không đọc được `MSG288`. Vẫn xử lý `MSG164`/`MSG288` từ server: server kiểm theo nội dung, FE
   chỉ thấy đuôi.
 - Đọc `errors["files[i]"]` để đánh dấu đúng tệp. FE hiện gửi mỗi tệp một request (ADR-0033), nên chỉ có `files[0]`.
 - `MSG162`/`MSG172`/`MSG174` có thể đến **sau** khi người dùng đã bấm tải (mất vai trò, cuộc họp vừa kết
   thúc): đóng hộp thoại và tải lại cuộc họp.
-- Tải 200 MB qua server 1 GB mất thời gian — hiện tiến độ bằng `XMLHttpRequest.upload.onprogress`
+- Tải 100 MB qua server 1 GB mất thời gian — hiện tiến độ bằng `XMLHttpRequest.upload.onprogress`
   (hoặc tương đương). Request bị huỷ giữa chừng thì không tệp nào được thêm.
 - Nút **Tải lên** chỉ hiện cho Chủ toạ/Thư ký hiện tại khi cuộc họp chưa `Ended`; đây chỉ là hiển thị,
   server luôn kiểm lại.
@@ -289,7 +289,7 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
 - Tải lên đi qua hàng đợi ở trình duyệt ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)): hộp thoại
   chỉ chọn và kiểm tệp, mỗi tệp một request `XMLHttpRequest` (`api.upload`, có tiến độ), chạy lần lượt; khay ở góc theo
   dõi, tự thử lại khi chắc chưa lưu, rồi chờ "Thử lại". FE không đếm trang và không gửi `pageCounts` (server đếm).
-- Kiểm trước khi gửi dùng lại câu của `MSG164` (sai đuôi, rỗng, quá 50 MB) và `MSG288` (quá 10 tệp / 200 MB), không
+- Kiểm trước khi gửi dùng lại câu của `MSG164` (sai đuôi, rỗng, quá 10 MB) và `MSG288` (quá 10 tệp / 100 MB), không
   cấp mã mới. Hộp thoại ghi "lưu vào … thư mục của cuộc họp này", không ghi tên thư mục: chủ kho có thể đã đổi tên hay
   chuyển nó, và lần tải sau vẫn vào đúng thư mục đó (BR-227).
 - pdf.js / docx-preview không vẽ được tệp đã nhận (hỏng, định dạng chưa hỗ trợ): trình xem báo `MSG383` (FE), không có
@@ -552,7 +552,7 @@ mục chỉ đổi liên kết của mục đó. UC-33b/UC-33d (SCRUM-58) có en
 `tests/TrustCabinet.Web.Tests/Documents/`:
 
 - `MeetingDocumentEndpointsTests` (PostgreSQL thật, kho tệp trong bộ nhớ): 3 PDF + 1 DOCX; Chủ toạ;
-  ảnh đổi đuôi, DOCM, zip thiếu `word/document.xml`; 11 tệp; body khai > 200 MB; tệp 51 MB; không
+  ảnh đổi đuôi, DOCM, zip thiếu `word/document.xml`; 11 tệp; body khai > 100 MB; tổng hai tệp quá 100 MB; tệp quá 10 MB; không
   tệp / không multipart; Thành viên, Người tổ chức, người ngoài, cuộc họp không tồn tại; Thư ký đã bị
   gỡ, tài khoản bị khoá; cuộc họp đã kết thúc và kết thúc giữa lúc tải; R2 lỗi ở tệp thứ hai; DB lỗi
   sau khi object đã lên; xoá dọn cũng lỗi (object còn lại có dòng `StoredFile` cho job dọn); dòng `StoredFile`
