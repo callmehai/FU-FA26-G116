@@ -137,22 +137,24 @@ thứ Hai trước đó); sai định dạng → `400` không body. Đọc lỗi
 
 ```json
 {
-  "weekStart": "2026-11-09", "weekEnd": "2026-11-13", "dayStart": "08:00", "dayEnd": "17:00",
+  "weekStart": "2026-11-09", "weekEnd": "2026-11-15", "dayStart": "00:00", "dayEnd": "24:00",
   "people": [
     { "shareId": "…", "owner": { "id": "…", "fullName": "…", "email": "…" }, "status": "Effective", "level": "Level1",
       "startDate": "2026-11-09", "endDate": "2026-11-12",
       "days": [ { "date": "2026-11-09", "known": true,
                   "busy": [ { "start": "2026-11-09T09:00:00+07:00", "end": "2026-11-09T11:00:00+07:00" } ] },
-                { "date": "2026-11-13", "known": false, "busy": [] } ] },
+                { "date": "2026-11-15", "known": false, "busy": [] } ] },
     { "shareId": "…", "owner": { … }, "status": "Stopped", "level": "Level1", "startDate": "…", "endDate": "…", "days": [] }
   ]
 }
 ```
 
 - Mỗi chủ lịch một dòng: chia sẻ mới nhất có `status` `Effective` hoặc `Stopped` và chưa quá ngày kết thúc. `Stopped` → `days = []`.
-- Thứ Hai → thứ Sáu; ngày ngoài khoảng chia sẻ → `known = false` ("chưa biết", không phải rảnh, BR-415).
+- Cả tuần, thứ Hai → Chủ nhật (7 ngày), mỗi ngày 00:00–24:00 (Hải 19/11/2026: họp buổi tối, cuối tuần cũng là giờ bận; trước đây chỉ
+  thứ Hai → thứ Sáu, 08:00–17:00). Ngày ngoài khoảng chia sẻ → `known = false` ("chưa biết", không phải rảnh, BR-415).
 - Giờ bận (BR-419, BR-420): chỉ phân công hiện hành Chủ toạ / Thư ký / Thành viên chưa từ chối (Chủ toạ luôn tính); họp Chờ duyệt, Đã duyệt,
-  Đã công bố, Đang họp (từ lúc bắt đầu thật, dài bằng thời lượng dự kiến, ít nhất đến bây giờ), Đã kết thúc (đến giờ kết thúc thật). Mốc lọc theo §3. Các khoảng chồng/chạm nhau đã gộp và cắt vào 08:00–17:00.
+  Đã công bố, Đang họp (từ lúc bắt đầu thật, dài bằng thời lượng dự kiến, ít nhất đến bây giờ), Đã kết thúc (đến giờ kết thúc thật). Mốc lọc theo §3. Các khoảng chồng/chạm nhau đã gộp và cắt theo từng ngày ở nửa đêm: cuộc họp vắt qua 24:00 hiện ở cả hai ngày, phần ngày đầu kết thúc
+  ở `00:00` của ngày sau.
 - Không bao giờ có tên, địa điểm, người dự hay mức mật của cuộc họp (BR-427).
 
 ## 5. Thông báo
@@ -198,7 +200,8 @@ cho mọi tài khoản (PO chốt L8 ngày 10/11/2026).
 - **Lỗi.** `400` (`MSG443`, `MSG455`) và `5xx` hiện trong hộp thoại, giữ nguyên dữ liệu đã nhập. `404`, `403`, `409 MSG449` / `MSG450` /
   `MSG468` nghĩa là danh sách đã cũ: đóng hộp thoại, báo bằng toast (404 không body → "Chia sẻ này không còn.") rồi tải lại. `500 MSG453`
   khi đọc danh sách: câu của server kèm *Thử lại*.
-- **Tab Lịch được chia sẻ** (`?tab=week&week=YYYY-MM-DD`, UC-85c): một hàng một người, mỗi ngày một thanh 08:00–17:00 có vạch mỗi giờ; giờ bận
+- **Tab Lịch được chia sẻ** (`?tab=week&week=YYYY-MM-DD`, UC-85c): bảy cột thứ Hai → Chủ nhật, cột giờ 00:00–24:00 có vạch mỗi giờ, cuộn
+  trong khung và mở sẵn ở 08:00 (cuộn lên xem giờ sớm, xuống xem buổi tối); giờ bận
   tô màu của người đó, ngày `known = false` gạch chéo "Chưa biết" (không bao giờ vẽ như rảnh), người `Stopped` hiện "Đã dừng" và "Không còn xem
   được". Trên điện thoại chọn từng ngày, giờ bận viết ra dưới thanh vì chạm không mở được tooltip.
 - **Thông báo.** `?share={id}` (link BE dựng) cuộn tới dòng đó và tô nền trong giây lát. Đang mở màn này mà có thông báo `CalendarShare*` mới

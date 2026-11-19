@@ -9,7 +9,7 @@ export const MAX_PEOPLE = 10
 export const MAX_RANGE_DAYS = 31
 export const MAX_DAYS_AHEAD = 365
 
-/** The settings column. Dates `YYYY-MM-DD`, times `HH:mm`, weekdays 1 (Monday) … 5 (Friday). */
+/** The settings column. Dates `YYYY-MM-DD`, times `HH:mm`, weekdays 1 (Monday) … 7 (Sunday). */
 export interface SlotSettings {
   duration: number
   from: string
@@ -47,7 +47,7 @@ export const BUFFER_OPTIONS = [0, 15, 30, 45, 60, 120, 180, 240].map((m) => ({
   label: m === 0 ? 'Không cách' : minutesLabel(m),
 }))
 export const STEP_OPTIONS = [5, 10, 15, 30, 60, 120].map((m) => ({ value: String(m), label: minutesLabel(m) }))
-export const WEEKDAY_LABEL = ['T2', 'T3', 'T4', 'T5', 'T6']
+export const WEEKDAY_LABEL = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
 
 /** Day of the week of a `YYYY-MM-DD`, read as UTC so no zone shifts it: 0 = Sunday. */
 export const weekdayOf = (day: string) => new Date(`${day}T00:00:00Z`).getUTCDay()
@@ -96,7 +96,7 @@ export function validateSettings(s: SlotSettings, today: string): SettingsErrors
     errors.fromDate = 'Ngày bắt đầu từ hôm nay đến tối đa 365 ngày sau.'
   if (!s.to || (s.from && (s.to < s.from || spanDays(s.from, s.to) > MAX_RANGE_DAYS)))
     errors.toDate = 'Khoảng ngày tối đa 31 ngày, ngày kết thúc không trước ngày bắt đầu.'
-  if (s.weekdays.length === 0) errors.weekdays = 'Chọn ít nhất một ngày từ thứ Hai đến thứ Sáu.'
+  if (s.weekdays.length === 0) errors.weekdays = 'Chọn ít nhất một ngày trong tuần.'
   const ws = minutesOf(s.workStart)
   const we = minutesOf(s.workEnd)
   if (ws === null) errors.workStart = 'Giờ làm việc không hợp lệ.'
@@ -141,7 +141,13 @@ export const clockOf = (iso: string) => iso.slice(11, 16)
 
 /** "16/11 – 20/11/2026, T2–T6, 08:00–17:00" — the dates and hours of the settings in one line. */
 export function settingsDetail(s: SlotSettings) {
-  const days = s.weekdays.length === 5 ? 'T2–T6' : [...s.weekdays].sort().map((d) => WEEKDAY_LABEL[d - 1]).join(', ')
+  const sorted = [...s.weekdays].sort()
+  const days =
+    sorted.length === 7
+      ? 'Cả tuần'
+      : sorted.join() === '1,2,3,4,5'
+        ? 'T2–T6'
+        : sorted.map((d) => WEEKDAY_LABEL[d - 1]).join(', ')
   const range = `${s.from.slice(8, 10)}/${s.from.slice(5, 7)} – ${s.to.slice(8, 10)}/${s.to.slice(5, 7)}/${s.to.slice(0, 4)}`
   return `${range}, ${days}, ${s.workStart}–${s.workEnd}`
 }

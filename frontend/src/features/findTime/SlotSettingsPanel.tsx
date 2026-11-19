@@ -85,13 +85,6 @@ export function SlotSettingsPanel({
               {label}
             </button>
           ))}
-          {/* BR-422: slots fall Monday to Friday; the weekend shows, but cannot be chosen. */}
-          <button type="button" className="chip-toggle" disabled>
-            T7
-          </button>
-          <button type="button" className="chip-toggle" disabled>
-            CN
-          </button>
         </div>
         {error(errors.weekdays)}
       </fieldset>

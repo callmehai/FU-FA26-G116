@@ -5567,8 +5567,10 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .shared-person[aria-pressed='false']:not(:disabled) .shared-person-name { color: var(--muted-ink); font-weight: 500; text-decoration: line-through; }
 .shared-person-stopped { opacity: .6; }
 .shared-grid { flex: none; padding: 0; overflow: hidden; }
+/* The whole day (00:00–24:00) scrolls inside the card, which opens on 08:00 (SharedWeek); the day heads stay on top. */
+.shared-grid-scroll { max-height: max(360px, calc(100dvh - 320px)); overflow-y: auto; overscroll-behavior: contain; }
 .shared-grid-head, .shared-grid-body { display: grid; }
-.shared-grid-head { border-bottom: 1px solid var(--line); background: var(--surface-alt); }
+.shared-grid-head { position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--line); background: var(--surface-alt); }
 .shared-day { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 8px 10px; border-left: 1px solid var(--line-soft); }
 .shared-day-name { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .shared-day-today .shared-day-name { color: var(--brand); }

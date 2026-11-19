@@ -8,7 +8,9 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Infrastructure.CalendarSharing;
 
 /// <summary>
-/// SCRUM-142 — UC-85c: the week of busy hours people shared with the caller, Monday to Friday, 08:00–17:00 in Vietnam.
+/// SCRUM-142 — UC-85c: the week of busy hours people shared with the caller, the whole week (Monday to Sunday) and the
+/// whole day (00:00–24:00) in Vietnam: a meeting in the evening or at the weekend is busy time too (Hải, 19/11/2026 —
+/// it used to stop at Friday 17:00). The page opens scrolled to the working hours.
 /// Busy blocks only — no title, place, attendee or level of any meeting (BR-427). A stopped share is listed with its
 /// status and shows no hours (BR-424); a share past its end date is left out altogether (BR-425, PO 09/11/2026 Q-B).
 /// </summary>
@@ -18,9 +20,10 @@ public sealed class SharedCalendarService(
     TimeProvider clock,
     ILogger<SharedCalendarService> logger) : ISharedCalendarService
 {
-    internal static readonly TimeOnly DayStart = new(8, 0);
-    internal static readonly TimeOnly DayEnd = new(17, 0);
-    private const int WorkingDays = 5;
+    /// <summary>The window each day shows, as the response states it: midnight to midnight.</summary>
+    internal const string DayStart = "00:00";
+    internal const string DayEnd = "24:00";
+    private const int DaysShown = 7;
 
     public async Task<CalendarShareRead<SharedWeek>> ReadWeekAsync(Guid actorId, DateOnly? week,
         CancellationToken ct = default)
@@ -33,7 +36,7 @@ public sealed class SharedCalendarService(
 
             var today = VietnamTime.Today(clock.GetUtcNow());
             var monday = VietnamTime.Monday(week ?? today);
-            var friday = monday.AddDays(WorkingDays - 1);
+            var sunday = monday.AddDays(DaysShown - 1);
 
             var shares = await db.CalendarShares.AsNoTracking().Include(s => s.Owner)
                 .Where(s => s.ViewerId == actorId && s.EndDate >= today
@@ -56,19 +59,19 @@ public sealed class SharedCalendarService(
             var live = latest.Where(s => StatusOf(s) == nameof(CalendarShareStatus.Effective)).ToList();
             var intervals = await busy.ReadAsync(
                 live.ToDictionary(s => s.OwnerId, s => (CalendarShareLevel?)s.Level),
-                VietnamTime.At(monday, DayStart), VietnamTime.At(friday, DayEnd), ct);
+                Midnight(monday), Midnight(sunday.AddDays(1)), ct);
 
             var people = latest.Select(share =>
             {
                 var status = StatusOf(share);
                 IReadOnlyList<SharedDay> days = status == nameof(CalendarShareStatus.Effective)
-                    ? [.. Enumerable.Range(0, WorkingDays).Select(offset => Day(share, monday.AddDays(offset), intervals))]
+                    ? [.. Enumerable.Range(0, DaysShown).Select(offset => Day(share, monday.AddDays(offset), intervals))]
                     : [];
                 return new SharedPerson(share.Id, new SharePerson(share.Owner.Id, share.Owner.FullName, share.Owner.Email),
                     status, share.Level.ToString(), share.StartDate, share.EndDate, days);
             }).ToList();
 
-            return new(new SharedWeek(monday, friday, DayStart.ToString("HH:mm"), DayEnd.ToString("HH:mm"), people));
+            return new(new SharedWeek(monday, sunday, DayStart, DayEnd, people));
         }
         catch (Exception error) when (error is DbUpdateException or NpgsqlException or TimeoutException)
         {
@@ -83,7 +86,10 @@ public sealed class SharedCalendarService(
         // BR-415: a day outside the share's range is unknown — neither free nor busy.
         if (date < share.StartDate || date > share.EndDate) return new(date, false, []);
         var blocks = intervals.TryGetValue(share.OwnerId, out var found) ? found : [];
-        return new(date, true, [.. CalendarBusyRules.Clip(blocks, VietnamTime.At(date, DayStart), VietnamTime.At(date, DayEnd))
+        // Cut at each midnight: a meeting running past 24:00 shows on both days, ending at "next day 00:00" on the first.
+        return new(date, true, [.. CalendarBusyRules.Clip(blocks, Midnight(date), Midnight(date.AddDays(1)))
             .Select(i => new BusyInterval(VietnamTime.ToLocal(i.Start), VietnamTime.ToLocal(i.End)))]);
     }
+
+    private static DateTimeOffset Midnight(DateOnly date) => VietnamTime.At(date, TimeOnly.MinValue);
 }
