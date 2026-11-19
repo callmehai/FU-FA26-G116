@@ -24,7 +24,7 @@ JSON mutation strict, phân biệt tên property, không nhận property lạ/tr
 
 `GET /api/meetings/participant-options?q=&page=1&pageSize=20` dùng capability `MeetingCreator`, kiểm tra lại quyền và tài khoản active trong database. Không cần meeting ID hoặc `AdminUsers`. Chưa đăng nhập: 401; thiếu quyền: 403. Không mở rộng quyền `/api/users`.
 
-Trả 200: `{items:[{id,fullName,email}],total,page,pageSize,roles:["Chair","Secretary","Member"]}`. Chỉ user active; bao gồm chính người tạo và người đang tham dự cuộc họp khác. Không trả thông tin quản trị, revision hoặc ETag; `Cache-Control: no-store`. Sort fullName rồi ID; `q` trim, tối đa 200 ký tự, tìm tên/email không phân biệt hoa thường và xử lý `%`/`_` như ký tự thường. Page mặc định 1, pageSize mặc định 20 (1..100), page vượt cuối trả items rỗng. Query lạ/trùng/sai: 400/MSG276; lỗi đọc: 500/MSG95. `total` tính sau search, trước paging.
+Trả 200: `{items:[{id,fullName,email}],total,page,pageSize,roles:["Chair","Secretary","Member"]}`. Chỉ user active; bao gồm chính người tạo và người đang tham dự cuộc họp khác. Không trả thông tin quản trị, revision hoặc ETag; `Cache-Control: no-store`. Sort fullName rồi ID; `q` trim, tối đa 200 ký tự, tìm tên/email không phân biệt hoa thường và không phân biệt dấu (`unaccent`: `nguyen` khớp `Nguyễn`, `d` khớp `đ`; 20/11/2026), `%`/`_` là ký tự thường. Page mặc định 1, pageSize mặc định 20 (1..100), page vượt cuối trả items rỗng. Query lạ/trùng/sai: 400/MSG276; lỗi đọc: 500/MSG95. `total` tính sau search, trước paging.
 
 FE dùng ID từ endpoint này để xây `participants` khi POST tạo họp. Backend vẫn kiểm tra lại user active và đúng một Chair khi lưu; kết quả lookup không bảo đảm trạng thái tài khoản giữ nguyên đến lúc POST. Editor-options theo meeting bên dưới tiếp tục dành cho quản lý roster đã tồn tại.
 
@@ -50,7 +50,7 @@ Roster item:
 }
 ```
 
-Guest có role/userId/isActive null; displayName ưu tiên profile tự khai, invitedName/email giữ evidence lời mời. Chỉ current internal và Guest chưa revoke. Sort displayName không phân biệt hoa thường, kind, id. `q` trim, tối đa 200 ký tự, tìm displayName/email/invitedName; page >=1, pageSize 1..100. Khách gọi (token Khách)
+Guest có role/userId/isActive null; displayName ưu tiên profile tự khai, invitedName/email giữ evidence lời mời. Chỉ current internal và Guest chưa revoke. Sort displayName không phân biệt hoa thường, kind, id. `q` trim, tối đa 200 ký tự, tìm displayName/email/invitedName không phân biệt hoa thường và dấu (`thu ky` khớp `Thư ký`, 20/11/2026); page >=1, pageSize 1..100. Khách gọi (token Khách)
 thì `email = null` ở mọi dòng trừ dòng của chính Khách và `q` không so email, để Khách không dò được địa chỉ của ai
 (PO 01/11/2026, SCRUM-116). `total` tính sau search. Không có bộ đếm phản hồi (`totals` đã bỏ, xem §4.1). Options loại mọi current internal và email trùng current Guest.
 
@@ -148,7 +148,7 @@ Bổ sung ngày 22/10/2026 trên baseline `875dde2`. PUT assignments tiếp tụ
 GET /api/meetings/{meetingId}/participants/chair-handover-candidates?q=&page=1&pageSize=20
 ```
 
-`q` trim, tối đa 200 ký tự, tìm fullName/email không phân biệt hoa thường. `page` mặc định1, >=1; `pageSize` mặc định20, 1..100. Không nhận key lạ, trùng hoặc sai kiểu. Sort fullName không phân biệt hoa thường rồi participantId. Lọc **trước search/paging**: assignment thuộc meeting, `ParticipantRules.Current`, tài khoản active, role Member và khác caller. Không cần Accept lời mời, điểm danh hoặc kết nối phòng. Không gọi Guest profile adapter hoặc editor-options.
+`q` trim, tối đa 200 ký tự, tìm fullName/email không phân biệt hoa thường và dấu (20/11/2026). `page` mặc định1, >=1; `pageSize` mặc định20, 1..100. Không nhận key lạ, trùng hoặc sai kiểu. Sort fullName không phân biệt hoa thường rồi participantId. Lọc **trước search/paging**: assignment thuộc meeting, `ParticipantRules.Current`, tài khoản active, role Member và khác caller. Không cần Accept lời mời, điểm danh hoặc kết nối phòng. Không gọi Guest profile adapter hoặc editor-options.
 
 Response `200`, `ETag: "participants-7"`, `Cache-Control: no-store`:
 

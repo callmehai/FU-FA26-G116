@@ -72,7 +72,7 @@ lịch của mình (PO chốt L8 ngày 10/11/2026, Jira 10498). Đọc lỗi →
 
 - `purpose=request` (UC-84a): cần `MeetingCreator` (`403 MSG448`); trả mọi tài khoản đang hoạt động trừ người gọi.
 - `purpose=direct` (UC-84b): mọi tài khoản đang hoạt động; trả người có `MeetingCreator`, trừ người gọi.
-- `q` (≤ 200 ký tự) tìm theo tên hoặc email, không phân biệt hoa thường; `%`, `_` là ký tự thường. Sắp theo tên rồi ID.
+- `q` (≤ 200 ký tự) tìm theo tên hoặc email, không phân biệt hoa thường và dấu (20/11/2026); `%`, `_` là ký tự thường. Sắp theo tên rồi ID.
   `page` từ 1, `pageSize` 1–100 (mặc định 20). Thiếu/sai `purpose`, tham số lạ hoặc lặp, paging sai → `400` không body.
 
 `200 { "items": [{ "id", "fullName", "email", "hasOpenShare" }], "total", "page", "pageSize" }`. `hasOpenShare` = đã có chia sẻ

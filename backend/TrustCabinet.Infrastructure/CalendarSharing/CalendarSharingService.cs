@@ -81,10 +81,10 @@ public sealed class CalendarSharingService(
 
             if (query.Q?.Trim() is { Length: > 0 } search)
             {
-                var pattern = $"%{search.Replace("\\", "\\\\", StringComparison.Ordinal)
-                    .Replace("%", "\\%", StringComparison.Ordinal).Replace("_", "\\_", StringComparison.Ordinal)}%";
-                people = people.Where(u => EF.Functions.ILike(u.FullName, pattern, "\\")
-                    || EF.Functions.ILike(u.Email, pattern, "\\"));
+                // Without marks or case, like every search box (unaccent folds đ to d). A substring test, not LIKE:
+                // unaccent maps full-width ％ ＿ ＼ to % _ \, which would turn back into wildcards after any escaping.
+                people = people.Where(u => EF.Functions.Unaccent(u.FullName).ToLower().Contains(EF.Functions.Unaccent(search).ToLower())
+                    || EF.Functions.Unaccent(u.Email).ToLower().Contains(EF.Functions.Unaccent(search).ToLower()));
             }
 
             var today = Today;

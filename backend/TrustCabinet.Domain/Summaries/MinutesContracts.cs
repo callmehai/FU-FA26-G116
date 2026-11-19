@@ -44,6 +44,7 @@ public enum MinutesFailure
     NotFound,
     Inactive,
     Forbidden,
+    /// <summary>The meeting has not ended (Khánh 19/11/2026): minutes record a whole meeting, so they are built after it.</summary>
     WrongMeetingStatus,
     /// <summary>Minutes exist already and the caller did not ask to rebuild them.</summary>
     Exists,

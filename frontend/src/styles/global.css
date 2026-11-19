@@ -1415,6 +1415,7 @@ a.menu-item { text-decoration: none; }
 /* The event chip and the object's name keep one line each, cut with "…" (the row opens the sheet with both whole; the
    chip also has its tooltip), so the IP and the eye button stay inside the card at a 1200px window (UI-A3). */
 .audit-table td.audit-event .badge { display: inline-block; max-width: 240px; overflow: hidden; line-height: 24px; text-overflow: ellipsis; vertical-align: middle; }
+.audit-table td.audit-object .audit-object-name { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 1360px) {
   .audit-table td.audit-event .badge { max-width: 144px; }
   .audit-table td.audit-object .cell-sub, .audit-table td.audit-actor .cell-sub { max-width: 156px; overflow: hidden; text-overflow: ellipsis; }
@@ -1458,6 +1459,7 @@ a.menu-item { text-decoration: none; }
   .audit-table td.audit-actor { flex: 1 1 100%; order: 3; }
   .audit-table td.audit-object { flex: 1 1 100%; order: 4; white-space: normal; color: var(--muted-ink); font-size: 13px; }
   .audit-table td.audit-object .cell-sub { display: inline; margin-left: 6px; }
+  .audit-table td.audit-object .audit-object-name { max-width: none; white-space: normal; }
   .audit-table td.col-action { position: absolute; top: 8px; right: 8px; }
   .audit-table .person-name, .audit-table .cell-sub { overflow-wrap: anywhere; }
   .audit-table td .cell-sub wbr { display: inline; }

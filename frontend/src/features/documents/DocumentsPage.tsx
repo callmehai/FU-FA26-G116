@@ -29,6 +29,7 @@ import { formatBytes, isPdf, saveBlob } from './documentFile'
 import { FileTypeTag } from './DocumentTags'
 import { LibraryUploadDialog, MoveDialog, NameDialog } from './LibraryDialogs'
 import { childrenOf, LIBRARY_ROOT, placeName, subtreeOf, trailOf } from './libraryTree'
+import { matchesSearch } from '../../lib/search'
 
 type TypeFilter = '' | 'pdf' | 'docx'
 
@@ -134,11 +135,8 @@ export function DocumentsPage() {
   const trail = trailOf(folders, folderId)
   const here = trail.at(-1)
   const filtered = q !== '' || type !== ''
-  const needle = q.trim().toLocaleLowerCase('vi')
-  // A type filter is about files: folders step aside. A search matches folder names as well.
-  const subfolders = type
-    ? []
-    : childrenOf(folders, folderId).filter((f) => f.name.toLocaleLowerCase('vi').includes(needle))
+  // A type filter is about files: folders step aside. A search matches folder names as well, without marks or case.
+  const subfolders = type ? [] : childrenOf(folders, folderId).filter((f) => matchesSearch(f.name, q))
   const loading = view === null || view.folderId !== folderId
   const rows = loading ? null : { subfolders, documents: view.documents }
   const usedRatio = view ? view.storageUsedBytes / view.storageLimitBytes : 0
