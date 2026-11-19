@@ -48,6 +48,7 @@ public static class AuditLogEndpoints
                     i.ObjectType,
                     i.ObjectId,
                     i.ObjectName,
+                    i.ObjectSecret,
                     i.IpAddress,
                     i.Details,
                 }),

@@ -160,8 +160,7 @@ Vài điểm cố ý:
   Việt; `OrderBy` mặc định của .NET so sánh ordinal và sẽ xếp "Đ" sau "Z".
 - **Tài khoản bị vô hiệu hoá vẫn nằm trong danh sách.** UC-06c kích hoạt lại từ chính danh sách
   này — ẩn đi thì không bao giờ bật lại được.
-- **Không phân trang.** Một tổ chức duy nhất (ADR-0004), số nhân sự đếm được; phân trang là bộ máy
-  cho một danh sách không ai phải cuộn. Đã đánh dấu `ponytail:` trong code.
+- **Không phân trang phía server (quyết định tạm, PR #399).** Một tổ chức duy nhất (ADR-0004), `GET /api/users` trả mọi tài khoản trong một response; FE phân trang phía client 20/50/100 trên tập đã lọc (mở trang với `pageSize=100`), giữ trang và kích thước trên URL. Phân trang phía server sẽ là thay đổi contract — chưa làm.
 - **Vai trò là `roleId` + `roleName`** (từ `SCRUM-63`, trước là `"role": "Member"`). Tên lấy từ bảng
   `roles`, nên vai trò quản trị viên tự tạo cũng hiện đúng tên — FE không giữ bảng nhãn nào. Danh
   sách vai trò để chọn: `GET /api/roles` ([04-quan-ly-vai-tro.md](04-quan-ly-vai-tro.md)).
@@ -468,11 +467,13 @@ FE khớp theo `code`, không khớp theo `message` — đổi chữ trong `mess
   "message": "Thông tin tài khoản không hợp lệ.",
   "errors": {
     "fullName": "Họ tên không được để trống.",
-    "email": "Email không hợp lệ.",
+    "email": "Email không được để trống.",
     "password": "Mật khẩu phải có ít nhất 12 ký tự."
   }
 }
 ```
+
+Email sai định dạng trả `errors.email = "Email không hợp lệ."`. FE trỏ lỗi về đúng ô và focus ô sai đầu tiên (kể cả sau 400/409 — PR #399).
 
 **Trả về tất cả field sai cùng lúc**, không phải từng cái một — mỗi lỗi một vòng request là một
 cái form khổ sở.

@@ -19,6 +19,7 @@ public static class SummaryEndpoints
     private const string Msg392ReadFailed = "MSG392";
     private const string Msg393SaveFailed = "MSG393";
     private const string Msg394AiUnavailable = "MSG394";
+    private const string Msg481NothingSaid = "MSG481";
 
     internal sealed record EditBody(string? Objectives, string? Discussion, string? Conclusions);
 
@@ -49,8 +50,9 @@ public static class SummaryEndpoints
             var (status, code, message) = result.Failure switch
             {
                 SummaryFailure.Forbidden => (403, Msg385NotOfficer, "Chỉ Chủ toạ hoặc Thư ký được tạo, sửa và duyệt dự thảo."),
-                SummaryFailure.WrongMeetingStatus => (409, Msg386WrongMeetingStatus,
-                    "Chỉ tạo dự thảo khi cuộc họp đang diễn ra hoặc đã kết thúc."),
+                SummaryFailure.WrongMeetingStatus => (409, Msg386WrongMeetingStatus, "Chỉ tạo dự thảo khi cuộc họp đã kết thúc."),
+                SummaryFailure.NothingSaid => (409, Msg481NothingSaid,
+                    "Cuộc họp chưa có lời thoại nào để AI tóm tắt."),
                 SummaryFailure.Busy => (409, Msg387Busy, "AI đang viết dự thảo, vui lòng chờ."),
                 SummaryFailure.NotDrafted => (409, Msg390NotDrafted, "Chưa có dự thảo để sửa hoặc duyệt."),
                 SummaryFailure.Invalid => (400, Msg389Invalid, "Nội dung dự thảo không hợp lệ."),

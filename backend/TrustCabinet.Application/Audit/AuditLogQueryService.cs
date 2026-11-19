@@ -7,9 +7,11 @@ using TrustCabinet.Domain.Entities;
 namespace TrustCabinet.Application.Audit;
 
 /// <summary>
-/// UC-13 — one page of the audit log, newest first, with the actor of each row named (BR-441, BR-442). It names
-/// accounts, roles and Guest invitations only; it never looks up a Meeting, document or minutes (BR-443), so the log
-/// cannot become a way round the meeting read policy.
+/// UC-13 — one page of the audit log, newest first, with the actor and the object of each row named (BR-441, BR-442).
+/// The object is named as people know it — the meeting's title, the document's file name, the account's full name
+/// (PO 19/11/2026, replacing BR-443's "no meeting titles") — so a reader can tell two meetings apart; the id stays in the
+/// row for the detail view. Only the name is read: viewing the log still opens nothing it names. Nothing of a Mật
+/// meeting is named (Hải 20/11/2026).
 /// </summary>
 internal sealed class AuditLogQueryService(IAuditLogQuery auditLog, IUnitOfWork unitOfWork, ILogger<AuditLogQueryService> logger)
     : IAuditLogQueryService
@@ -46,12 +48,12 @@ internal sealed class AuditLogQueryService(IAuditLogQuery auditLog, IUnitOfWork 
             .Where(x => x.Invitation is not null)
             .ToDictionary(x => x.Id, x => x.Invitation!.Value);
 
-        var userIds = page.Where(a => a.ActorId is not null).Select(a => a.ActorId!.Value)
-            .Concat(ObjectIds(page, AuditActions.UserObjectType)).Distinct().ToList();
-        var roleIds = ObjectIds(page, AuditActions.RoleObjectType).Distinct().ToList();
+        var userIds = page.Where(a => a.ActorId is not null).Select(a => a.ActorId!.Value).Distinct().ToList();
         var invitationIds = guests.Values.Distinct().ToList();
 
-        var (users, roles, invitations) = await auditLog.FindNamesAsync(userIds, roleIds, invitationIds, ct);
+        // Every object of the page named in one read, by the same expression the keyword search reads.
+        var (users, invitations, objects) = await auditLog.FindNamesAsync(
+            userIds, invitationIds, page.Select(a => a.Id).ToArray(), ct);
 
         return page.Select(a =>
         {
@@ -71,19 +73,23 @@ internal sealed class AuditLogQueryService(IAuditLogQuery auditLog, IUnitOfWork 
                 actor = new(AuditActorKind.System, null, null, null);
             }
 
-            var objectName = a.ObjectId is not { } objectId ? null : a.ObjectType switch
-            {
-                AuditActions.UserObjectType => users.GetValueOrDefault(objectId)?.Name,
-                AuditActions.RoleObjectType => roles.GetValueOrDefault(objectId),
-                _ => null,
-            };
+            var named = objects.GetValueOrDefault(a.Id);
+            var secret = named?.Secret == true;
             return new AuditLogItem(a.Id, a.OccurredAt, actor, a.Action, AuditEventCatalog.Label(a.Action),
-                a.ObjectType, a.ObjectId, objectName, a.IpAddress, details[a.Id]);
+                a.ObjectType, a.ObjectId, secret ? null : named?.Name, secret, a.IpAddress,
+                secret ? WithoutNames(details[a.Id]) : details[a.Id]);
         }).ToList();
     }
 
-    private static IEnumerable<Guid> ObjectIds(IEnumerable<AuditLogEntry> page, string objectType)
-        => page.Where(a => a.ObjectType == objectType && a.ObjectId is not null).Select(a => a.ObjectId!.Value);
+    /// <summary>The details of an entry about a Mật meeting, less the names it recorded (<see cref="AuditLogSecrecy.NameKeys"/>).</summary>
+    internal static JsonElement WithoutNames(JsonElement details)
+    {
+        if (details.ValueKind != JsonValueKind.Object) return details;
+        var kept = new Dictionary<string, JsonElement>();
+        foreach (var property in details.EnumerateObject())
+            if (!AuditLogSecrecy.NameKeys.Contains(property.Name, StringComparer.Ordinal)) kept[property.Name] = property.Value;
+        return JsonSerializer.SerializeToElement(kept);
+    }
 
     /// <summary>
     /// A Guest has no account, so their rows have no actor and carry the invitation in the details — under four keys,

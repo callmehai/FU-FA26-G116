@@ -352,7 +352,7 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
     [Fact]
     public async Task Deleting_a_pending_item_moves_its_note_into_the_meeting_wide_note()
     {
-        var s = await f.Seed();
+        var s = await f.Seed(MeetingStatus.InProgress);
         Guid pending;
         await using (var db = f.Db())
         {
@@ -380,7 +380,7 @@ public sealed class MeetingNoteEndpointTests(SummaryFixture f) : IClassFixture<S
     [Fact]
     public async Task Deleting_an_item_folds_each_authors_note_even_without_a_meeting_wide_one()
     {
-        var s = await f.Seed();
+        var s = await f.Seed(MeetingStatus.InProgress);
         Guid pending;
         await using (var db = f.Db())
         {

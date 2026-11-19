@@ -8,6 +8,7 @@ import { Table, TableCell, TableHeader, TableRow, TableView } from '@tiptap/exte
 import { TextAlign } from '@tiptap/extension-text-align'
 import { BackgroundColor, Color, FontSize, TextStyle } from '@tiptap/extension-text-style'
 import StarterKit from '@tiptap/starter-kit'
+import { normalizeSearch } from '../../../lib/search'
 
 /**
  * The minutes document the editor writes (SCRUM-32, ADR-0055): sanitized HTML that the server keeps to one allow-list
@@ -405,22 +406,27 @@ export const findKey = new PluginKey<FindState>('minutesFind')
 function search(doc: PmNode, query: string): Match[] {
   const out: Match[] = []
   if (!query) return out
-  const needle = query.toLocaleLowerCase('vi')
+  // Without marks or case, like every search box: "ubnd tinh" finds "UBND tỉnh".
+  const needle = normalizeSearch(query)
+  if (!needle) return out
   doc.descendants((node, pos) => {
     if (!node.isTextblock) return true
-    // A block's text with each character's document position: a hard break ends a run, so no match spans it.
-    let text = ''
+    // A block's folded text with each character's document position: a hard break ends a run, so no match spans it.
+    // Each character is folded on its own so the positions stay its own; a lone combining mark folds to nothing.
+    let hay = ''
     const at: number[] = []
     node.forEach((child, offset) => {
       if (child.isText) {
-        for (let i = 0; i < child.text!.length; i++) at.push(pos + 1 + offset + i)
-        text += child.text
+        for (let i = 0; i < child.text!.length; i++) {
+          const folded = normalizeSearch(child.text![i])
+          for (let k = 0; k < folded.length; k++) at.push(pos + 1 + offset + i)
+          hay += folded
+        }
       } else {
         at.push(-1)
-        text += '\n'
+        hay += '\n'
       }
     })
-    const hay = text.toLocaleLowerCase('vi')
     for (let i = hay.indexOf(needle); i >= 0; i = hay.indexOf(needle, i + needle.length)) {
       const first = at[i]
       const last = at[i + needle.length - 1]

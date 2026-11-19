@@ -17,7 +17,11 @@ Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duy�
 | Người khác đọc được cuộc họp (trừ Khách) | Chỉ xem, và chỉ sau khi đã duyệt (`summary: null` trước đó) | Xem và tải Word, tải PDF bản đã ban hành và bản đã thay thế (PO 08/11/2026). Không thấy bản nháp, chờ duyệt, bị trả lại hay bản đính chính đang soạn |
 | Không đọc được cuộc họp | `404` | `404` |
 
-- Tạo dự thảo và tạo biên bản chỉ được làm khi cuộc họp đang diễn ra hoặc đã kết thúc (`MSG386`, `MSG398`).
+- Tạo dự thảo và tạo (hoặc tạo lại) biên bản chỉ được làm khi cuộc họp **đã kết thúc** (`MSG386`, `MSG398`; Khánh
+  19/11/2026 — trước đó được làm từ lúc cuộc họp bắt đầu). Dự thảo AI còn cần ít nhất một câu nói (`readiness.sentences`
+  > 0: câu micro còn giữ, hoặc dòng gỡ băng đã xong), không thì `MSG481` — chỉ có chương trình và biểu quyết thì AI tự
+  bịa phần còn lại. Biên bản theo mẫu không cần câu nói: mẫu điền từ hồ sơ cuộc họp và Thư ký viết tiếp. Bản nháp đã
+  tạo trước đó vẫn sửa được như cũ.
 - Server kiểm tra lại quyền ở mọi request.
 - Biên bản của cuộc họp Mật không ai tải được, kể cả Chủ toạ, Thư ký (`MSG405`).
 - Khách không bao giờ thấy biên bản (PO 07/11/2026): Khách không phải người tham dự mà chính sách đọc cuộc họp tính.
@@ -67,7 +71,7 @@ Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duy�
 - **Kết quả biểu quyết** trong `conclusions` được chép từ dữ liệu phiên biểu quyết, không qua AI.
 - **Lỗi:**
   - `403` `MSG385` khi không phải Chủ toạ hay Thư ký.
-  - `409` `MSG386` khi cuộc họp chưa bắt đầu hoặc đã huỷ, `409` `MSG387` khi AI đang viết (cả khi tạo lại,
+  - `409` `MSG386` khi cuộc họp chưa kết thúc (kể cả đang diễn ra) hoặc đã huỷ, `409` `MSG481` khi chưa có câu nói nào, `409` `MSG387` khi AI đang viết (cả khi tạo lại,
     sửa hay duyệt: một bản sửa lúc đó sẽ bị dự thảo mới ghi đè mà không ai biết), `409` `MSG390` khi chưa có dự thảo nào
     viết xong.
   - `400` `MSG389` khi một mục trống hoặc quá dài, `500` `MSG392` khi lỗi đọc, `503` `MSG393` khi lỗi lưu, `503`
@@ -78,7 +82,7 @@ Mã thông báo: `MSG384`–`MSG406`, và `MSG424`–`MSG434`, `MSG456` cho duy�
 | Method | Đường dẫn | Kết quả |
 |---|---|---|
 | `GET` | `/api/meetings/{id}/minutes` | `200` `{ minutes, canManage, draftChangedAt, history, canSubmit, canApprove }` |
-| `POST` | `/api/meetings/{id}/minutes` | `201` `MSG395`. Body `{ rebuild: false }`; đã có bản nháp thì `409` `MSG399`, gửi `rebuild: true` để thay. Bản mới nhất là bản đính chính thì `rebuild: true` trả `409` `MSG456` |
+| `POST` | `/api/meetings/{id}/minutes` | `201` `MSG395`. Body `{ rebuild: false }`; đã có bản nháp thì `409` `MSG399`, gửi `rebuild: true` để thay. Bản mới nhất là bản đính chính thì `rebuild: true` trả `409` `MSG456`. Cuộc họp chưa kết thúc: `409` `MSG398` |
 | `GET` | `/api/minutes/{minutesId}` | `200` cùng dạng `GET …/minutes`, `minutes` là đúng bản `minutesId`: để mở một bản trong `history` |
 | `PUT` | `/api/minutes/{minutesId}` | `200` `MSG396`. Body `{ content, updatedAt }`; `content` là HTML, server lọc rồi lưu và trả lại bản đã lọc |
 | `GET` | `/api/minutes/{minutesId}/export` | `200` file `Biên bản - <tên cuộc họp>.docx` |

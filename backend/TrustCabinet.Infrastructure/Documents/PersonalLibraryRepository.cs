@@ -71,8 +71,10 @@ public sealed class PersonalLibraryRepository(TrustCabinetDbContext db) : IPerso
             query = query.Where(d => !hiddenFiles.Contains(d.StoredFileId));
         }
         // AF-1: a name search and a file-type filter within the location.
-        if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(d => EF.Functions.ILike(d.FileName, "%" + EscapeLike(search.Trim()) + "%", "\\"));
+        // Without marks or case, like every search box (unaccent folds đ to d); a substring test, not LIKE, as unaccent
+        // maps full-width ％ ＿ ＼ to % _ \.
+        if (search?.Trim() is { Length: > 0 } name)
+            query = query.Where(d => EF.Functions.Unaccent(d.FileName).ToLower().Contains(EF.Functions.Unaccent(name).ToLower()));
         if (contentType is not null) query = query.Where(d => d.StoredFile.ContentType == contentType);
         var readable = db.Meetings.Where(MeetingReadPolicy.ForUser(readerId));
         return await query.OrderBy(d => d.FileName).ThenBy(d => d.Id)
@@ -111,7 +113,4 @@ public sealed class PersonalLibraryRepository(TrustCabinetDbContext db) : IPerso
                 readable.Count(m => m.Documents.Any(md => md.DocumentId == d.Id && md.RemovedAt == null)), false))
             .SingleAsync(ct);
     }
-
-    private static string EscapeLike(string value)
-        => value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 }

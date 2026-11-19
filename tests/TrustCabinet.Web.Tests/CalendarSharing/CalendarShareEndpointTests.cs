@@ -141,6 +141,10 @@ public sealed class CalendarShareEndpointTests(CalendarSharingFixture f) : IClas
             var found = await organizer.GetFromJsonAsync<JsonElement>(
                 $"/api/calendar/share-candidates?purpose=request&q={Uri.EscapeDataString(owner2!.FullName)}");
             Assert.Equal(p.Owner2, Assert.Single(found.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
+            // Without marks or case, like every search box.
+            var folded = await organizer.GetFromJsonAsync<JsonElement>(
+                $"/api/calendar/share-candidates?purpose=request&q={Uri.EscapeDataString(TrustCabinet.Domain.SearchText.Fold(owner2.FullName).ToUpperInvariant())}");
+            Assert.Equal(p.Owner2, Assert.Single(folded.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
         }
 
         var first = await organizer.GetFromJsonAsync<JsonElement>("/api/calendar/share-candidates?purpose=request&page=1&pageSize=1");

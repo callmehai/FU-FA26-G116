@@ -8,7 +8,8 @@ public sealed class FakeAuditLog : IAuditLogRepository, IAuditLogQuery
 {
     public List<AuditLogEntry> Rows { get; } = [];
     public Dictionary<Guid, AuditLogPerson> Users { get; } = [];
-    public Dictionary<Guid, string> Roles { get; } = [];
+    /// <summary>The object names, by the object's id.</summary>
+    public Dictionary<Guid, AuditLogObject> Objects { get; } = [];
     public Dictionary<Guid, AuditLogPerson> Invitations { get; } = [];
 
     /// <summary>Every read, in order: <c>count</c>, <c>page</c>, <c>names</c>.</summary>
@@ -27,11 +28,12 @@ public sealed class FakeAuditLog : IAuditLogRepository, IAuditLogQuery
             .Skip(skip).Take(query.PageSize).ToList());
 
     public Task<AuditLogNames> FindNamesAsync(
-        List<Guid> userIds, List<Guid> roleIds, List<Guid> invitationIds, CancellationToken ct = default)
+        List<Guid> userIds, List<Guid> invitationIds, Guid[] entryIds, CancellationToken ct = default)
         => Read("names", () => new AuditLogNames(
             Users.Where(u => userIds.Contains(u.Key)).ToDictionary(),
-            Roles.Where(r => roleIds.Contains(r.Key)).ToDictionary(),
-            Invitations.Where(i => invitationIds.Contains(i.Key)).ToDictionary()));
+            Invitations.Where(i => invitationIds.Contains(i.Key)).ToDictionary(),
+            Rows.Where(a => entryIds.Contains(a.Id) && a.ObjectId is { } id && Objects.ContainsKey(id))
+                .ToDictionary(a => a.Id, a => Objects[a.ObjectId!.Value])));
 
     private IEnumerable<AuditLogEntry> Filtered(AuditLogQuery query)
         => Rows.Where(a => query.ActorUserId is not { } actor || a.ActorId == actor);

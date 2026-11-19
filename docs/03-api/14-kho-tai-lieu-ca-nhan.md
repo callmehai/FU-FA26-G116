@@ -28,7 +28,7 @@ hay chuyển đi giữa lúc đang ghi vào.
 | Tham số | Ý nghĩa |
 |---|---|
 | `folderId` | Thư mục đang mở; bỏ trống = gốc kho |
-| `q` | Tìm theo tên tài liệu, không phân biệt hoa thường, **trong thư mục đang mở** (AF-1). `%` và `_` là ký tự thường |
+| `q` | Tìm theo tên tài liệu, không phân biệt hoa thường và dấu (`bao cao` khớp `Báo cáo`, 20/11/2026), **trong thư mục đang mở** (AF-1). `%` và `_` là ký tự thường. Thư mục con do FE lọc theo cùng cách (`lib/search.ts`) |
 | `type` | `pdf` hoặc `docx`; giá trị khác bị bỏ qua |
 | `meetingId` | Tuỳ chọn (SCRUM-124): đánh dấu `inMeeting` theo cuộc họp này. Hộp "Thêm tài liệu chung" (UC-33a) gửi kèm |
 

@@ -58,7 +58,9 @@ public sealed class MinutesService(IMeetingMinutesRepository minutes, IMinutesSo
                 var (meeting, failure) = await ReadableAsync(meetingId, actorId, token, forUpdate: true);
                 if (meeting is null) return new(failure);
                 if (!SummaryService.Manages(meeting, actorId)) return new(MinutesFailure.Forbidden);
-                if (meeting.Status is not (MeetingStatus.InProgress or MeetingStatus.Ended)) return new(MinutesFailure.WrongMeetingStatus);
+                // Only once the meeting has ended (Khánh 19/11/2026): built while it runs, the minutes would miss the rest
+                // of it and read as if complete.
+                if (meeting.Status != MeetingStatus.Ended) return new(MinutesFailure.WrongMeetingStatus);
                 var current = await minutes.FindLatestAsync(meetingId, token);
                 if (current is not null && !Editable(current.Status)) return new(MinutesFailure.Locked);
                 if (current is not null && !rebuild) return new(MinutesFailure.Exists);

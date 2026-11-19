@@ -38,7 +38,7 @@ public sealed class AuditLogQueryServiceTests
     {
         var (userId, roleId, invitationId) = (Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7());
         _log.Users[userId] = new("Trần Thư Ký", "thuky@example.com");
-        _log.Roles[roleId] = "Thư ký";
+        _log.Objects[roleId] = new("Thư ký", false);
         _log.Invitations[invitationId] = new("Khách mời", "khach@example.com");
         var byUser = Row(userId, objectType: AuditActions.RoleObjectType, objectId: roleId, minutesAgo: 2);
         var byGuest = Row(null, $$$"""{"guest":{"InvitationId":"{{{invitationId}}}"}}""", minutesAgo: 1);
@@ -55,6 +55,21 @@ public sealed class AuditLogQueryServiceTests
         Assert.Equal((3, 1), (page.TotalCount, page.TotalPages));
         Assert.Equal(["count", "page", "names"], _log.Reads);
         Assert.Equal([TransactionMode.None], _unitOfWork.Modes);
+    }
+
+    [Fact]
+    public async Task A_secret_meetings_object_is_not_named_and_its_details_lose_the_names_they_recorded()
+    {
+        var meetingId = Guid.CreateVersion7();
+        _log.Objects[meetingId] = new(null, true);
+        Row(null, """{"title":"Kỷ luật","Name":"x","reason":"hết hạn"}""", AuditActions.MeetingObjectType, meetingId);
+
+        var page = await _service.GetPageAsync(Query());
+
+        var item = Assert.Single(page!.Items);
+        Assert.Null(item.ObjectName);
+        Assert.True(item.ObjectSecret);
+        Assert.Equal(["reason"], item.Details.EnumerateObject().Select(p => p.Name));
     }
 
     [Fact]

@@ -131,9 +131,194 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
         Assert.Equal("203.0.113.7", change.GetProperty("ipAddress").GetString());
         Assert.False(change.GetProperty("details").GetProperty("IsActive").GetBoolean());
         Assert.StartsWith("Kiểm toán ", items[6].GetProperty("objectName").GetString());
-        // Nothing about the meeting is looked up (BR-443).
-        Assert.Equal(JsonValueKind.Null, items[2].GetProperty("objectName").ValueKind);
+        // A document that has no row and recorded no name has none; the meeting is named by its title (PO 19/11/2026).
+        Assert.Equal(SummaryFixture.Title, items[2].GetProperty("objectName").GetString());
         Assert.Equal(JsonValueKind.Null, items[5].GetProperty("objectName").ValueKind);
+    }
+
+    /// <summary>
+    /// 19/11/2026: the list showed "Cuộc họp #01a1bf25" on eight auto-cancellations, read as one meeting cancelled twice a
+    /// day. They were eight meetings made within the same minute: the first eight hex digits of a version 7 Guid are its
+    /// time. Each row is now named by its own meeting.
+    /// </summary>
+    [Fact]
+    public async Task Meetings_made_in_the_same_minute_are_told_apart_by_their_titles()
+    {
+        var log = await Seed();
+        var tag = Guid.NewGuid().ToString("N")[..8];
+        Guid[] ids;
+        await using (var db = f.Db())
+        {
+            var organizer = await db.Users.FirstAsync();
+            var meetings = Enumerable.Range(1, 3).Select(i => new Meeting
+            {
+                Title = $"Họp thường kỳ {tag} số {i}", CreatedById = organizer.Id, Status = MeetingStatus.Cancelled,
+            }).ToArray();
+            db.Meetings.AddRange(meetings);
+            db.AuditLog.AddRange(meetings.Select(m => new AuditLogEntry
+            {
+                Action = AuditActions.MeetingHistory(MeetingHistoryAction.AutoCancel), ObjectType = AuditActions.MeetingObjectType,
+                ObjectId = m.Id, Details = "{}", OccurredAt = Base,
+            }));
+            await db.SaveChangesAsync();
+            ids = meetings.Select(m => m.Id).ToArray();
+        }
+        using var admin = Admin(log);
+
+        var page = await Page(admin, $"q={tag}");
+
+        var named = page.GetProperty("items").EnumerateArray()
+            .ToDictionary(i => i.GetProperty("objectId").GetGuid(), i => i.GetProperty("objectName").GetString());
+        Assert.Equal(3, named.Count);
+        Assert.Single(ids.Select(id => id.ToString()[..8]).Distinct());
+        Assert.Equal(ids.Select((id, i) => $"Họp thường kỳ {tag} số {i + 1}"), ids.Select(id => named[id]));
+    }
+
+    [Fact]
+    public async Task Each_kind_of_object_is_named_and_a_deleted_one_keeps_the_name_its_entry_recorded()
+    {
+        var log = await Seed();
+        var s = await f.Seed(MeetingStatus.Ended);
+        var marker = "n" + Guid.NewGuid().ToString("N");
+        Guid document, vote, minutes;
+        await using (var db = f.Db())
+        {
+            var meeting = await db.Meetings.SingleAsync(m => m.Id == s.MeetingId);
+            var file = new StoredFile { StorageKey = $"test/{Guid.NewGuid():N}", OriginalFileName = "Tờ trình số 12.pdf",
+                ContentType = "application/pdf", ByteSize = 1, ContentSha256 = new string('a', 64), UploadedById = s.Secretary };
+            var doc = new MeetingDocument { MeetingId = s.MeetingId, StoredFileId = file.Id, FileName = "Tờ trình số 12.pdf",
+                AddedById = s.Secretary, AddedAt = Base };
+            var row = new MeetingMinutes { MeetingId = s.MeetingId, CreatedById = s.Secretary, Content = "<p>x</p>" };
+            db.StoredFiles.Add(file);
+            db.MeetingDocuments.Add(doc);
+            db.MeetingMinutes.Add(row);
+            (document, vote, minutes) = (doc.Id, Guid.NewGuid(), row.Id);
+            (string Action, string Type, Guid Object, object Details)[] rows =
+            [
+                (AuditActions.DocumentViewed, AuditActions.MeetingDocumentObjectType, document, new { marker }),
+                // A vote draft deleted when the meeting ended: no row left, its title is in the entry.
+                (AuditActions.VoteDraftDeletedOnMeetingEnd, AuditActions.VoteObjectType, vote,
+                    new { marker, meetingId = s.MeetingId, title = "Thông qua dự toán" }),
+                (AuditActions.MinutesIssued, AuditActions.MinutesObjectType, minutes, new { marker }),
+                // A sentence deleted since: named by the meeting it was said in.
+                (AuditActions.SpeechClipDeleted, AuditActions.SpeechClipObjectType, Guid.NewGuid(),
+                    new { marker, MeetingId = s.MeetingId }),
+            ];
+            db.AuditLog.AddRange(rows.Select((r, i) => new AuditLogEntry
+            {
+                ActorId = log.Admin, Action = r.Action, ObjectType = r.Type, ObjectId = r.Object,
+                Details = JsonSerializer.Serialize(r.Details), OccurredAt = Base.AddMinutes(i),
+            }));
+            await db.SaveChangesAsync();
+            Assert.Equal(SummaryFixture.Title, meeting.Title);
+        }
+        using var admin = Admin(log);
+
+        var items = (await Page(admin, $"q={marker}")).GetProperty("items").EnumerateArray()
+            .ToDictionary(i => i.GetProperty("action").GetString()!, i => i.GetProperty("objectName").GetString());
+
+        Assert.Equal("Tờ trình số 12.pdf", items[AuditActions.DocumentViewed]);
+        Assert.Equal("Thông qua dự toán", items[AuditActions.VoteDraftDeletedOnMeetingEnd]);
+        Assert.Equal(SummaryFixture.Title, items[AuditActions.MinutesIssued]);
+        Assert.Equal(SummaryFixture.Title, items[AuditActions.SpeechClipDeleted]);
+    }
+
+    /// <summary>Hải 20/11/2026: nothing of a Mật meeting is named in the log, nor found by its names.</summary>
+    [Fact]
+    public async Task Nothing_of_a_secret_meeting_is_named_or_found_by_name_while_an_ordinary_one_is()
+    {
+        var log = await Seed();
+        var secret = await f.Seed(MeetingStatus.Ended, Sensitivity.Secret);
+        var ordinary = await f.Seed(MeetingStatus.Ended);
+        var tag = Guid.NewGuid().ToString("N")[..10];
+        var marker = "s" + Guid.NewGuid().ToString("N");
+        Guid document, vote, deletedVote = Guid.NewGuid();
+        await using (var db = f.Db())
+        {
+            await db.Meetings.Where(m => m.Id == secret.MeetingId)
+                .ExecuteUpdateAsync(u => u.SetProperty(m => m.Title, $"Phương án nhân sự {tag}"));
+            await db.Meetings.Where(m => m.Id == ordinary.MeetingId)
+                .ExecuteUpdateAsync(u => u.SetProperty(m => m.Title, $"Giao ban thường {tag}"));
+            var file = new StoredFile { StorageKey = $"test/{Guid.NewGuid():N}", OriginalFileName = "x.pdf",
+                ContentType = "application/pdf", ByteSize = 1, ContentSha256 = new string('c', 64), UploadedById = secret.Secretary };
+            var doc = new MeetingDocument { MeetingId = secret.MeetingId, StoredFileId = file.Id,
+                FileName = $"Danh sách đề bạt {tag}.pdf", AddedById = secret.Secretary, AddedAt = Base };
+            db.StoredFiles.Add(file);
+            db.MeetingDocuments.Add(doc);
+            document = doc.Id;
+            vote = await db.VotingSessions.Where(v => v.MeetingId == secret.MeetingId).Select(v => v.Id).SingleAsync();
+            await db.VotingSessions.Where(v => v.Id == vote).ExecuteUpdateAsync(u => u.SetProperty(v => v.Title, $"Bổ nhiệm {tag}"));
+            (string Action, string Type, Guid Object, object Details)[] rows =
+            [
+                (AuditActions.MeetingAttendanceRecorded, AuditActions.MeetingObjectType, secret.MeetingId, new { marker }),
+                (AuditActions.DocumentViewed, AuditActions.MeetingDocumentObjectType, document, new { marker }),
+                (AuditActions.VoteDraftDeletedOnMeetingEnd, AuditActions.VoteObjectType, vote, new { marker }),
+                // A draft deleted at the end of the meeting: only its entry is left, with its title and its meeting.
+                (AuditActions.VoteDraftDeletedOnMeetingEnd, AuditActions.VoteObjectType, deletedVote,
+                    new { marker, meetingId = secret.MeetingId, title = $"Kỷ luật {tag}" }),
+                (AuditActions.MeetingAttendanceRecorded, AuditActions.MeetingObjectType, ordinary.MeetingId, new { marker }),
+            ];
+            db.AuditLog.AddRange(rows.Select((r, i) => new AuditLogEntry
+            {
+                ActorId = log.Admin, Action = r.Action, ObjectType = r.Type, ObjectId = r.Object,
+                Details = JsonSerializer.Serialize(r.Details), OccurredAt = Base.AddMinutes(i),
+            }));
+            await db.SaveChangesAsync();
+        }
+        using var admin = Admin(log);
+
+        var items = (await Page(admin, $"q={marker}")).GetProperty("items").EnumerateArray()
+            .ToDictionary(i => i.GetProperty("objectId").GetGuid());
+
+        foreach (var id in new[] { secret.MeetingId, document, vote, deletedVote })
+        {
+            Assert.Equal(JsonValueKind.Null, items[id].GetProperty("objectName").ValueKind);
+            Assert.True(items[id].GetProperty("objectSecret").GetBoolean());
+        }
+        Assert.False(items[deletedVote].GetProperty("details").TryGetProperty("title", out _));
+        Assert.Equal($"Giao ban thường {tag}", items[ordinary.MeetingId].GetProperty("objectName").GetString());
+        Assert.False(items[ordinary.MeetingId].GetProperty("objectSecret").GetBoolean());
+
+        // Its names find nothing, with or without marks; the ordinary meeting is still found, and so is an id.
+        foreach (var name in new[] { "Phương án nhân sự", "phuong an nhan su", "Danh sách đề bạt", "Bổ nhiệm", "Kỷ luật" })
+            Assert.Equal(0, (await Page(admin, $"q={Uri.EscapeDataString($"{name} {tag}")}")).GetProperty("totalCount").GetInt32());
+        Assert.Equal([ordinary.MeetingId], (await Page(admin, $"q={Uri.EscapeDataString($"giao ban thuong {tag}")}"))
+            .GetProperty("items").EnumerateArray().Select(i => i.GetProperty("objectId").GetGuid()));
+        Assert.Contains(document, (await Page(admin, $"q={document.ToString()[^8..]}")).GetProperty("items").EnumerateArray()
+            .Select(i => i.GetProperty("objectId").GetGuid()));
+    }
+
+    [Theory]
+    [InlineData("to trinh so 12")]
+    [InlineData("TỜ TRÌNH")]
+    [InlineData("hop giao ban chuyen doi so")]
+    public async Task The_keyword_finds_an_object_by_its_name_without_marks_or_case(string keyword)
+    {
+        var log = await Seed();
+        var s = await f.Seed(MeetingStatus.Ended);
+        Guid document;
+        await using (var db = f.Db())
+        {
+            var file = new StoredFile { StorageKey = $"test/{Guid.NewGuid():N}", OriginalFileName = "Tờ trình số 12.pdf",
+                ContentType = "application/pdf", ByteSize = 1, ContentSha256 = new string('b', 64), UploadedById = s.Secretary };
+            var doc = new MeetingDocument { MeetingId = s.MeetingId, StoredFileId = file.Id, FileName = "Tờ trình số 12.pdf",
+                AddedById = s.Secretary, AddedAt = Base };
+            db.StoredFiles.Add(file);
+            db.MeetingDocuments.Add(doc);
+            document = doc.Id;
+            db.AuditLog.AddRange(
+                new AuditLogEntry { ActorId = log.Admin, Action = AuditActions.DocumentViewed,
+                    ObjectType = AuditActions.MeetingDocumentObjectType, ObjectId = document, Details = "{}", OccurredAt = Base },
+                new AuditLogEntry { ActorId = log.Admin, Action = AuditActions.MeetingAttendanceRecorded,
+                    ObjectType = AuditActions.MeetingObjectType, ObjectId = s.MeetingId, Details = "{}", OccurredAt = Base });
+            await db.SaveChangesAsync();
+        }
+        using var admin = Admin(log);
+
+        var found = (await Page(admin, $"q={Uri.EscapeDataString(keyword)}&pageSize=100")).GetProperty("items")
+            .EnumerateArray().Select(i => i.GetProperty("objectId").GetGuid()).ToArray();
+
+        Assert.Contains(keyword.StartsWith("hop", StringComparison.Ordinal) ? s.MeetingId : document, found);
     }
 
     [Fact]
@@ -183,7 +368,7 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
     }
 
     [Fact]
-    public async Task The_keyword_matches_the_account_or_role_name_the_list_shows_and_no_other_object()
+    public async Task The_keyword_matches_the_name_the_list_shows_and_no_other_object()
     {
         var log = await Seed();
         var tag = Guid.NewGuid().ToString("N")[..10];
@@ -197,7 +382,7 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
             [
                 (AuditActions.UserUpdated, AuditActions.UserObjectType, person.Id),
                 (AuditActions.RoleUpdated, AuditActions.RoleObjectType, role.Id),
-                // Same id under another type: the name is not this object's, so it must not match (BR-443).
+                // Same id under another type: the name is not this object's, so it must not match.
                 (AuditActions.DocumentViewed, AuditActions.MeetingDocumentObjectType, person.Id),
             ];
             db.AuditLog.AddRange(rows.Select(r => new AuditLogEntry
@@ -208,7 +393,8 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
         }
         using var admin = Admin(log);
 
-        var byPerson = await Page(admin, $"q={Uri.EscapeDataString($"tên {tag.ToUpperInvariant()}")}");
+        // Without marks or case: "do ten" finds "Đỗ Tên".
+        var byPerson = await Page(admin, $"q={Uri.EscapeDataString($"do ten {tag.ToUpperInvariant()}")}");
         Assert.Equal([AuditActions.UserUpdated], Actions(byPerson));
         Assert.Equal($"Đỗ Tên {tag}", byPerson.GetProperty("items")[0].GetProperty("objectName").GetString());
         Assert.Equal([AuditActions.RoleUpdated], Actions(await Page(admin, $"q={Uri.EscapeDataString($"Vai trò {tag}")}")));

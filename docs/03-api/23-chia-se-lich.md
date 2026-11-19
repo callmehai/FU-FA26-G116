@@ -72,7 +72,7 @@ lịch của mình (PO chốt L8 ngày 10/11/2026, Jira 10498). Đọc lỗi →
 
 - `purpose=request` (UC-84a): cần `MeetingCreator` (`403 MSG448`); trả mọi tài khoản đang hoạt động trừ người gọi.
 - `purpose=direct` (UC-84b): mọi tài khoản đang hoạt động; trả người có `MeetingCreator`, trừ người gọi.
-- `q` (≤ 200 ký tự) tìm theo tên hoặc email, không phân biệt hoa thường; `%`, `_` là ký tự thường. Sắp theo tên rồi ID.
+- `q` (≤ 200 ký tự) tìm theo tên hoặc email, không phân biệt hoa thường và dấu (20/11/2026); `%`, `_` là ký tự thường. Sắp theo tên rồi ID.
   `page` từ 1, `pageSize` 1–100 (mặc định 20). Thiếu/sai `purpose`, tham số lạ hoặc lặp, paging sai → `400` không body.
 
 `200 { "items": [{ "id", "fullName", "email", "hasOpenShare" }], "total", "page", "pageSize" }`. `hasOpenShare` = đã có chia sẻ
@@ -187,8 +187,9 @@ cho mọi tài khoản (PO chốt L8 ngày 10/11/2026).
 - **Hai thẻ.** "Người xem được lịch của tôi" (`asOwner`, nút *Chia sẻ lịch* → UC-84b) và "Lịch được chia sẻ với tôi" (`asViewer`, nút
   *Xin xem lịch* → UC-84a). Thẻ thứ hai, nút xin xem và tab tuần chỉ hiện khi người dùng có `MeetingCreator`; thiếu quyền thì chỉ có thẻ đầu.
 - **Một dòng một chia sẻ:** người bên kia, rồi một hàng chip — trạng thái ("Chờ bạn trả lời" khi bên được hỏi là mình, "Chờ trả lời" khi mình
-  là bên gửi, "Đang chia sẻ", "Đã dừng" kèm (i) câu `MSG439`, các trạng thái đã đóng màu xám) — mức xem, khoảng ngày; dòng "Xin đổi: …" khi có
-  `pendingChange`; câu "Tài khoản người gửi đã bị vô hiệu hoá, chỉ từ chối được." khi `senderDeactivated`. Chia sẻ đang mở xếp trước, đã đóng sau.
+  là bên gửi, "Đang chia sẻ", "Đã dừng" kèm (i) câu `MSG439`) — mức xem, khoảng ngày; dòng "Xin đổi: …" khi có
+  `pendingChange`; câu "Tài khoản người gửi đã bị vô hiệu hoá, chỉ từ chối được." khi `senderDeactivated`. Chia sẻ đang mở xếp trước; các chia sẻ
+  đã kết thúc (Từ chối / Đã rút / Đã dừng / Đã kết thúc) gom sau nút "Chia sẻ đã kết thúc (N)".
 - **Nút theo `actions`.** *Từ chối* / *Đồng ý* hiện thẳng trên dòng; *Xin thay đổi*, *Đổi chia sẻ*, *Rút yêu cầu*, *Ngừng chia sẻ* / *Thôi xem lịch*
   nằm sau nút "…". Từ chối, rút và ngừng đều hỏi xác nhận.
 - **Đồng ý** (UC-84c): yêu cầu UC-84a cho chủ lịch hạ mức và thu hẹp khoảng **trong** khoảng đã xin (gửi `level`, `startDate`, `endDate`); chia sẻ
@@ -201,6 +202,6 @@ cho mọi tài khoản (PO chốt L8 ngày 10/11/2026).
 - **Tab Lịch được chia sẻ** (`?tab=week&week=YYYY-MM-DD`, UC-85c): một hàng một người, mỗi ngày một thanh 08:00–17:00 có vạch mỗi giờ; giờ bận
   tô màu của người đó, ngày `known = false` gạch chéo "Chưa biết" (không bao giờ vẽ như rảnh), người `Stopped` hiện "Đã dừng" và "Không còn xem
   được". Trên điện thoại chọn từng ngày, giờ bận viết ra dưới thanh vì chạm không mở được tooltip.
-- **Thông báo.** `?share={id}` (link BE dựng) cuộn tới dòng đó và tô nền. Mười loại `CalendarShare*` có icon riêng trong bảng thông báo. Màn Nhật
+- **Thông báo.** `?share={id}` (link BE dựng) cuộn tới dòng đó và tô nền; trỏ tới chia sẻ đã kết thúc thì nhóm "Chia sẻ đã kết thúc" tự mở trước khi cuộn. Mười loại `CalendarShare*` có icon riêng trong bảng thông báo. Màn Nhật
   ký hệ thống hiện `objectType = CalendarShare` là "Chia sẻ lịch".
 

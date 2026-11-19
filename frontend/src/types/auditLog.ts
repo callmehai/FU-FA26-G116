@@ -19,8 +19,16 @@ export interface AuditLogItem {
   objectType: string
   /** Null for an event on no single object (a change to several roles' permissions). */
   objectId: string | null
-  /** Only for `User` and `Role` (BR-443) — never a meeting title or a document name. */
+  /**
+   * The object's name: an account's or a voice owner's full name, a role's name, a meeting's title (also for its
+   * minutes, recordings and sentences), a document's file name, a vote's title. Null when none is known.
+   */
   objectName: string | null
+  /**
+   * The object is, or belongs to, a Mật meeting (Hải 20/11/2026): `objectName` is null, and the names the entry recorded
+   * are left out of `details`. Shown as "Họp Mật" with the end of the id.
+   */
+  objectSecret: boolean
   ipAddress: string | null
   /** As recorded; key names differ between event types, so never rely on a fixed one. */
   details: unknown
