@@ -56,8 +56,10 @@ public enum SummaryFailure
     NotFound,
     Inactive,
     Forbidden,
-    /// <summary>The meeting has not started, or was cancelled: there is nothing to draft from yet.</summary>
+    /// <summary>The meeting has not ended (Khánh 19/11/2026): a draft summarises a whole meeting, not half of one.</summary>
     WrongMeetingStatus,
+    /// <summary>Not one sentence recorded or transcribed: the AI would have nothing said to summarise.</summary>
+    NothingSaid,
     /// <summary>A draft is already queued or being written.</summary>
     Busy,
     /// <summary>No finished draft to edit or review.</summary>
@@ -148,6 +150,9 @@ public interface ISummarySourceQuery
 
     /// <summary>The closed votes in the order they closed, each option's count in the option's order.</summary>
     Task<IReadOnlyList<ClosedVote>> ListClosedVotesAsync(Guid meetingId, CancellationToken ct);
+
+    /// <summary>What a draft would read: each sentence kept from a microphone and each line of a finished transcript.</summary>
+    Task<int> CountSentencesAsync(Guid meetingId, CancellationToken ct);
 
     /// <summary>AI-eCabinet's minutes readiness: what a draft asked for now would draw on, and what it would miss.</summary>
     Task<SummaryReadiness> ReadinessAsync(Guid meetingId, CancellationToken ct);

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Audit;
+using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Infrastructure.Summaries;
@@ -39,12 +40,18 @@ public sealed class SummarySourceQuery(TrustCabinetDbContext db) : ISummarySourc
                 v.Options.OrderBy(o => o.Position).Select(o => new ClosedVoteOption(o.Label, o.BallotCount)).ToList()))
             .ToListAsync(ct);
 
+    /// <summary>The transcripts a draft reads: of recordings still available.</summary>
+    private IQueryable<Transcript> Transcripts(Guid meetingId) => db.Transcripts.Where(t => t.Recording.MeetingId == meetingId
+        && t.Recording.Status == RecordingStatus.Available && t.Recording.DeletedAt == null);
+
+    public async Task<int> CountSentencesAsync(Guid meetingId, CancellationToken ct)
+        => await db.SpeechClips.CountAsync(c => c.MeetingId == meetingId && c.ExcludedAt == null && c.Text != "", ct)
+            + await Transcripts(meetingId).Where(t => t.Status == TranscriptStatus.Completed).SelectMany(t => t.Segments).CountAsync(ct);
+
     public async Task<SummaryReadiness> ReadinessAsync(Guid meetingId, CancellationToken ct)
     {
-        var clips = await db.SpeechClips.CountAsync(c => c.MeetingId == meetingId && c.ExcludedAt == null && c.Text != "", ct);
-        var transcripts = db.Transcripts.Where(t => t.Recording.MeetingId == meetingId
-            && t.Recording.Status == RecordingStatus.Available && t.Recording.DeletedAt == null);
-        var segments = await transcripts.Where(t => t.Status == TranscriptStatus.Completed).SelectMany(t => t.Segments).CountAsync(ct);
+        var sentences = await CountSentencesAsync(meetingId, ct);
+        var transcripts = Transcripts(meetingId);
         var transcribing = await transcripts.CountAsync(t => t.Status == TranscriptStatus.Pending || t.Status == TranscriptStatus.Processing, ct);
         var failed = await transcripts.CountAsync(t => t.Status == TranscriptStatus.Failed, ct);
         var unnamed = await transcripts.Where(t => t.Status == TranscriptStatus.Completed).SelectMany(t => t.Speakers)
@@ -68,7 +75,7 @@ public sealed class SummarySourceQuery(TrustCabinetDbContext db) : ISummarySourc
                 WHERE action = {AuditActions.SpeechClipDeleted} AND details->>'MeetingId' = {meetingId.ToString()}
                 """).SingleAsync(ct),
         }.Max();
-        return new(clips + segments, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes,
+        return new(sentences, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes,
             changed);
     }
 }

@@ -55,17 +55,12 @@ public sealed class ParticipantRepository(TrustCabinetDbContext db) : IParticipa
         }
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
-            var pattern =
-                "%"
-                + query
-                    .Search.Trim()
-                    .Replace("\\", "\\\\", StringComparison.Ordinal)
-                    .Replace("%", "\\%", StringComparison.Ordinal)
-                    .Replace("_", "\\_", StringComparison.Ordinal)
-                + "%";
+            // Without marks or case, like every search box (unaccent folds đ to d). A substring test, not LIKE: unaccent
+            // maps full-width ％ ＿ ＼ to % _ \, which would turn back into wildcards after any escaping done before it.
+            var search = query.Search.Trim();
             users = users.Where(u =>
-                EF.Functions.ILike(u.FullName, pattern, "\\")
-                || EF.Functions.ILike(u.Email, pattern, "\\")
+                EF.Functions.Unaccent(u.FullName).ToLower().Contains(EF.Functions.Unaccent(search).ToLower())
+                || EF.Functions.Unaccent(u.Email).ToLower().Contains(EF.Functions.Unaccent(search).ToLower())
             );
         }
         var total = await users.CountAsync(ct);

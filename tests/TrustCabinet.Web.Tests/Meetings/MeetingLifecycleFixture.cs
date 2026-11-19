@@ -32,6 +32,8 @@ public sealed class MeetingLifecycleFixture : IAsyncLifetime
     internal readonly TestClock Clock = new();
     internal readonly AgendaGuestTestAdapter Guests = new();
     internal SaveFailureInterceptor SaveFailure = null!;
+    /// <summary>Fails the first save that modifies this meeting, once.</summary>
+    internal Guid? FailSaveOfMeeting;
     internal bool FailCommit;
     internal bool ObserveAccountLock;
     internal Action? OnCommitted;
@@ -125,6 +127,12 @@ public sealed class MeetingLifecycleFixture : IAsyncLifetime
             InterceptionResult<int> result, CancellationToken cancellationToken = default)
             {
             var db = eventData.Context!;
+            if (fixture.FailSaveOfMeeting is { } meetingId && db.ChangeTracker.Entries<Meeting>()
+                .Any(e => e.Entity.Id == meetingId && e.State == EntityState.Modified))
+            {
+                fixture.FailSaveOfMeeting = null;
+                throw new DbUpdateException("Injected persistence failure.");
+            }
             if (Enabled || (fixture.FailNotifications && db.ChangeTracker.Entries<Notification>().Any(e => e.State == EntityState.Added))
                 || (fixture.FailCalls && db.ChangeTracker.Entries<CallSession>().Any(e => e.State == EntityState.Modified)))
                 throw new DbUpdateException("Injected persistence failure.");

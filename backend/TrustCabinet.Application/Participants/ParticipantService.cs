@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Agenda;
+using TrustCabinet.Domain;
 using TrustCabinet.Domain.Agenda;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Domain.Audit;
@@ -84,10 +85,11 @@ public sealed partial class ParticipantService(
             .Where(p => p.UserId != actor.UserId && EligibleChairRecipient(p, p.User.IsActive))
             .Select(p => new ChairHandoverCandidate(p.Id, p.UserId, p.User.FullName, p.User.Email))
             .ToArray();
-        var search = query.Search?.Trim();
-        var matches = eligible.Where(p => string.IsNullOrEmpty(search)
-                || p.FullName.Contains(search, StringComparison.OrdinalIgnoreCase)
-                || p.Email.Contains(search, StringComparison.OrdinalIgnoreCase))
+        // Without marks or case, like every search box: "nguyen" finds "Nguyễn".
+        var search = query.Search?.Trim() is { Length: > 0 } typed ? SearchText.Fold(typed) : null;
+        var matches = eligible.Where(p => search is null
+                || SearchText.Contains(p.FullName, search)
+                || SearchText.Contains(p.Email, search))
             .OrderBy(p => p.FullName, StringComparer.OrdinalIgnoreCase).ThenBy(p => p.ParticipantId).ToArray();
         var offset = (long)(query.Page - 1) * query.PageSize;
         return new(Data: new ChairHandoverCandidatePage(
@@ -257,17 +259,17 @@ public sealed partial class ParticipantService(
                     .ThenBy(r => r.Id)
                     .ToArray();
                 var offset = (long)(query.Page - 1) * query.PageSize;
-                var search = query.Search?.Trim();
-                if (!string.IsNullOrEmpty(search))
+                if (query.Search?.Trim() is { Length: > 0 } typed)
+                {
+                    // Without marks or case, like every search box: "nguyen" finds "Nguyễn".
+                    var search = SearchText.Fold(typed);
                     rows = rows.Where(r =>
-                            r.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase)
-                            || (viewerGuest is null && r.Email!.Contains(search, StringComparison.OrdinalIgnoreCase))
-                            || (
-                                r.InvitedName?.Contains(search, StringComparison.OrdinalIgnoreCase)
-                                ?? false
-                            )
+                            SearchText.Contains(r.DisplayName, search)
+                            || (viewerGuest is null && SearchText.Contains(r.Email, search))
+                            || SearchText.Contains(r.InvitedName, search)
                         )
                         .ToArray();
+                }
                 return new(
                     Data: new ParticipantPage(
                         offset >= rows.Length

@@ -92,7 +92,7 @@ export function AuditEntrySheet({ item, onClose }: { item: AuditLogItem; onClose
           <dt>Đối tượng</dt>
           <dd>
             {objectTypeLabel(item.objectType)}
-            {item.objectName && ` · ${item.objectName}`}
+            {item.objectSecret ? ' · Họp Mật' : item.objectName && ` · ${item.objectName}`}
             {item.objectId && <code className="audit-code">{item.objectId}</code>}
           </dd>
         </div>

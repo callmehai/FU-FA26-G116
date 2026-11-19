@@ -35,8 +35,8 @@ public sealed class SummaryServiceTests
         };
         _meetings.Meetings.Add(new Meeting
         {
-            Id = _meeting, Title = "Họp giao ban", Status = MeetingStatus.InProgress, Sensitivity = Sensitivity.Normal,
-            PlannedStartTime = Now.AddHours(-1), PlannedEndTime = Now.AddHours(1), CreatedAt = Now, UpdatedAt = Now,
+            Id = _meeting, Title = "Họp giao ban", Status = MeetingStatus.Ended, Sensitivity = Sensitivity.Normal,
+            PlannedStartTime = Now.AddHours(-2), PlannedEndTime = Now.AddHours(-1), CreatedAt = Now, UpdatedAt = Now,
             Participants = [Participant(_secretary, MeetingRole.Secretary), Participant(_member, MeetingRole.Member)],
         });
         _meetings.ActiveUsers.UnionWith([_secretary, _member]);
@@ -66,6 +66,29 @@ public sealed class SummaryServiceTests
         var outcome = await Service().RequestAsync(_meeting, _member);
 
         Assert.Equal(SummaryFailure.Forbidden, outcome.Failure);
+        Assert.Empty(_summaries.Rows);
+    }
+
+    [Fact]
+    public async Task A_meeting_still_running_has_no_draft_yet()
+    {
+        // Khánh 19/11/2026: a draft summarises the whole meeting, so only once it has ended.
+        _meetings.Meetings[0].Status = MeetingStatus.InProgress;
+
+        var outcome = await Service().RequestAsync(_meeting, _secretary);
+
+        Assert.Equal(SummaryFailure.WrongMeetingStatus, outcome.Failure);
+        Assert.Empty(_summaries.Rows);
+    }
+
+    [Fact]
+    public async Task A_meeting_where_nothing_was_said_has_nothing_to_summarise()
+    {
+        _sources.Sentences = 0;
+
+        var outcome = await Service().RequestAsync(_meeting, _secretary);
+
+        Assert.Equal(SummaryFailure.NothingSaid, outcome.Failure);
         Assert.Empty(_summaries.Rows);
     }
 

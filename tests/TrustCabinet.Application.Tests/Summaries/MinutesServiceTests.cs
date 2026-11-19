@@ -88,6 +88,19 @@ public sealed class MinutesServiceTests
     }
 
     [Fact]
+    public async Task A_meeting_still_running_has_no_minutes_draft_yet()
+    {
+        // Khánh 19/11/2026: built while the meeting runs, the minutes would miss the rest of it.
+        _meetings.Meetings[0].Status = MeetingStatus.InProgress;
+
+        var outcome = await Service().CreateAsync(_meeting, _secretary, rebuild: false);
+
+        Assert.Equal(MinutesFailure.WrongMeetingStatus, outcome.Failure);
+        Assert.Empty(_minutes.Rows);
+        Assert.Equal(0, _unitOfWork.Saves);
+    }
+
+    [Fact]
     public async Task Two_first_builds_at_once_answer_the_loser_that_minutes_exist()
     {
         _unitOfWork.FailNextSave = new UniqueConflictException(UniqueConflict.Unknown);

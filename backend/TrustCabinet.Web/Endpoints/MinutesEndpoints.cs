@@ -105,8 +105,7 @@ public static class MinutesEndpoints
             var (status, code, message) = result.Failure switch
             {
                 MinutesFailure.Forbidden => (403, Msg397NotOfficer, "Chỉ Chủ toạ hoặc Thư ký được soạn biên bản."),
-                MinutesFailure.WrongMeetingStatus => (409, Msg398WrongMeetingStatus,
-                    "Chỉ soạn biên bản khi cuộc họp đang diễn ra hoặc đã kết thúc."),
+                MinutesFailure.WrongMeetingStatus => (409, Msg398WrongMeetingStatus, "Chỉ soạn biên bản khi cuộc họp đã kết thúc."),
                 MinutesFailure.Exists => (409, Msg399Exists, "Cuộc họp đã có bản nháp biên bản."),
                 MinutesFailure.Locked => (409, Msg400Locked, "Biên bản đã gửi duyệt hoặc đã ban hành, không sửa được nữa."),
                 MinutesFailure.Stale => (409, Msg401Stale, "Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất."),

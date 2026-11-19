@@ -144,6 +144,8 @@ public sealed class FakeSummarySourceQuery : ISummarySourceQuery
     public Task<IReadOnlyList<AgendaFacts>> ListAgendaAsync(Guid meetingId, CancellationToken ct) => Task.FromResult<IReadOnlyList<AgendaFacts>>(Agenda);
     public Task<IReadOnlyList<string>> ListDocumentNamesAsync(Guid meetingId, CancellationToken ct) => Task.FromResult<IReadOnlyList<string>>([]);
     public Task<IReadOnlyList<ClosedVote>> ListClosedVotesAsync(Guid meetingId, CancellationToken ct) => Task.FromResult<IReadOnlyList<ClosedVote>>(Votes);
+    public int Sentences { get; set; } = 1;
+    public Task<int> CountSentencesAsync(Guid meetingId, CancellationToken ct) => Task.FromResult(Sentences);
     public Task<SummaryReadiness> ReadinessAsync(Guid meetingId, CancellationToken ct) => Task.FromResult(Readiness);
 }
 

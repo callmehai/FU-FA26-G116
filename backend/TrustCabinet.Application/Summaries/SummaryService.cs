@@ -70,7 +70,10 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
                 var (meeting, failure) = await ReadableAsync(meetingId, actorId, token);
                 if (meeting is null) return new SummaryOutcome(failure);
                 if (!Manages(meeting, actorId)) return new(SummaryFailure.Forbidden);
-                if (meeting.Status is not (MeetingStatus.InProgress or MeetingStatus.Ended)) return new(SummaryFailure.WrongMeetingStatus);
+                // A draft summarises the whole meeting, so only once it has ended, and only from something said in it: from
+                // the agenda and the votes alone the model has nothing to summarise and fills the gap itself (Khánh 19/11/2026).
+                if (meeting.Status != MeetingStatus.Ended) return new(SummaryFailure.WrongMeetingStatus);
+                if (await sources.CountSentencesAsync(meetingId, token) == 0) return new(SummaryFailure.NothingSaid);
                 if (!(await models.ForAsync(meeting.Sensitivity, token)).IsConfigured) return new(SummaryFailure.AiUnavailable);
                 var row = await summaries.FindByMeetingAsync(meetingId, true, token);
                 if (row is { Status: SummaryStatus.Queued or SummaryStatus.Running }) return new(SummaryFailure.Busy);

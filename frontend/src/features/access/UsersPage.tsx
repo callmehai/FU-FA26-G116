@@ -21,6 +21,7 @@ import { useAccessLost } from '../auth/useAccessLost'
 import { useAuth } from '../auth/useAuth'
 import { UserFormDialog, type UserFormTarget } from './UserFormDialog'
 import { latestSearchParams } from '../../lib/latestSearchParams'
+import { normalizeSearch } from '../../lib/search'
 
 type RoleFilter = string | 'all'
 type StatusFilter = 'all' | 'active' | 'inactive'
@@ -56,11 +57,6 @@ function resetUnavailableReason(account: UserAccount) {
   if (!account.hasPassword) return 'Tài khoản chỉ đăng nhập bằng Google — không có mật khẩu để đặt lại'
   if (!account.isActive) return 'Tài khoản đã bị vô hiệu hoá — kích hoạt lại trước khi đặt lại mật khẩu'
   return null
-}
-
-/** Lower-case with diacritics stripped, so "nguyen" finds "Nguyễn" and "dung" finds "Dũng". */
-function fold(text: string) {
-  return text.normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/gi, 'd').toLowerCase()
 }
 
 /**
@@ -152,14 +148,14 @@ export function UsersPage() {
   )
 
   const visible = useMemo(() => {
-    const needle = fold(search.trim())
+    const needle = normalizeSearch(search.trim())
     // Filter only — the backend already sorted with PostgreSQL's Vietnamese collation, which a
     // JavaScript sort would undo ("Đ" would land after "Z").
     return (users ?? []).filter(
       (u) =>
         (roleFilter === 'all' || u.roleId === roleFilter) &&
         (statusFilter === 'all' || u.isActive === (statusFilter === 'active')) &&
-        (!needle || fold(u.fullName).includes(needle) || fold(u.email).includes(needle)),
+        (!needle || normalizeSearch(u.fullName).includes(needle) || normalizeSearch(u.email).includes(needle)),
     )
   }, [users, search, roleFilter, statusFilter])
 

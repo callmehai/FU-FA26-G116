@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { Icon } from '../../components/Icon'
+import { RoomLink } from '../calls/TabLinks'
 import { Select } from '../../components/Select'
 import { backState } from '../../lib/backTarget'
 import { routes } from '../../lib/routes'
@@ -556,14 +557,14 @@ function GridEvent({
       </Link>
       {/* A sibling, like the "+N": a link cannot sit inside the tile's link. */}
       {goIn && (
-        <Link
+        <RoomLink
           className="cal-go"
           style={{ top: top + Math.min(height, GO_AT) - GO_HEIGHT - GO_GAP }}
           to={routes.meetingRoom(meeting.id)}
         >
           Vào phòng họp
           <Icon name="arrowRight" size={13} />
-        </Link>
+        </RoomLink>
       )}
       {hidden.length > 0 && (
         <button
