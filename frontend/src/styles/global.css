@@ -1596,8 +1596,9 @@ a.menu-item { text-decoration: none; }
   white-space: nowrap;
 }
 /* Icon and text both take the tone, so a state reads at a glance without a chip around it; the
-   chip-foreground shades keep the text at 4.5:1 on white. What is over fades back: ended is grey,
-   cancelled lighter still. */
+   chip-foreground shades keep the text at 4.5:1 on white. A meeting that is over reads green
+   (StatusBadge), a called-off one fades back; `.status-ended` is the grey of a closed vote or a
+   finished agenda item. */
 .status > svg { flex: none; color: var(--status-icon); }
 .status-slate { --status-icon: var(--chip-slate-fg); }
 .status-ended { --status-icon: var(--label-ink); font-weight: 500; }
