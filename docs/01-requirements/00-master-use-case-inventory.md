@@ -152,6 +152,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-25 | Hoàn thành mục agenda *(Complete Agenda Item)* | Chair | Đã đặc tả | `<<extend>>` UC-26 |
 | UC-26 | Xem chương trình nghị sự *(View Meeting Agenda)* | Actor có quan hệ với cuộc họp | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-77 | Ghi kết luận mục agenda *(Record Agenda Item Conclusion)* — Chair/Secretary ghi hoặc sửa kết luận của mục `InProgress`/`Done` cho tới khi sinh biên bản nháp | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-26 |
+| UC-82 | Ghi chú cuộc họp *(Take Meeting Notes)* — Thư ký ghi chú thời gian thực theo mục nghị sự hoặc cả cuộc họp; Chủ toạ đọc; BR-397–BR-403, BR-459, BR-461; MSG415–MSG423 | Secretary (ghi), Chair (đọc) | Đã đặc tả | `<<extend>>` UC-26 |
 
 ## FE-06 — Quản lý thành phần tham dự *(Meeting Participant Management)*
 
@@ -209,7 +210,7 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-48 | Xem tóm tắt *(View Meeting Summary)* — người khác chỉ thấy sau khi duyệt | Chair, Secretary (bản chưa duyệt); User có quyền (sau khi duyệt) | Đã đặc tả | `<<extend>>` UC-16 |
 | UC-49 | Chỉnh tóm tắt *(Edit Meeting Summary)* — lưu là mất dấu đã duyệt, phải duyệt lại | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-48 |
 | UC-50 | Duyệt tóm tắt *(Approve Meeting Summary)* — từ đây người dự họp khác đọc được | Chair, Secretary | Đã đặc tả | `<<extend>>` UC-48 |
-| UC-51 | Công bố tóm tắt *(Publish Meeting Summary)* — bước riêng sau khi duyệt | Secretary | Placeholder | `<<extend>>` UC-48 |
+| UC-51 | Công bố tóm tắt *(Publish Meeting Summary)* — bước riêng sau khi duyệt | Secretary | Bỏ/retired (tạm giữ số, sau đánh số lại) | `<<extend>>` UC-48 |
 | UC-81 | Quản lý nhận diện giọng nói cá nhân *(Manage My Voice ID)* — gồm UC-81a Xem thông tin giọng nói (có tab mẫu Thư ký thu hộ), UC-81b Xác nhận đồng ý Voice ID (thông báo 1.3 nói rõ Thư ký thu hộ), UC-81c Thu âm mẫu giọng (tối đa 5 mẫu tự thu, 6–60s; mẫu thu hộ tính riêng), UC-81d Nghe lại mẫu giọng (cả hai bộ, chỉ chính chủ), UC-81e Xoá mẫu giọng (xoá mẫu thu hộ thì Thư ký không còn thấy), UC-81f Rút đồng ý Voice ID (xoá ngay cả hai bộ mẫu và mọi gợi ý) | System Admin, Meeting Organizer, Meeting Approver, Chair, Secretary, Participant | Đã đặc tả các UC con | Độc lập (UC-81b–f `<<extend>>` UC-81a) |
 | UC-86 | Thu giọng mẫu hộ *(Collect Voice Samples for Attendees)* — gồm UC-86a Xem danh sách thu hộ, UC-86b Thu mẫu giọng cho người dự (quyền Thu giọng mẫu hộ, là Thư ký hiện tại, họp trực tiếp/kết hợp, không Mật, Đã công bố/Đang họp, người được thu đã đồng ý 1.3), UC-86c Nghe lại mẫu đã thu (ghi nhật ký), UC-86d Xoá mẫu đã thu | Secretary | Đã đặc tả các UC con (SCRUM-152) | Độc lập |
 

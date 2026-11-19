@@ -23,26 +23,26 @@
 ## 3. Việc cần làm (về nhà chạy agent)
 
 ### A. DOCX Report 3 (`Report_3_Software_Requirement_Specification.docx`)
-- [ ] UC-51: ghi bỏ/retired, tạm giữ số (ghi rõ “sau đánh số lại”).
-- [ ] UC-82: nhập spec + BR-395→BR-403 + MSG415–MSG423 từ `NOTE-dac-ta-so-bo-scrum-30.md` vào FE-05; cập nhật UC-59 (BR-402) và UC-24 (AF-2).
-- [ ] UC-84/85: nâng từ sơ bộ thành chính thức, đối chiếu code SCRUM-137/142.
-- [ ] Sửa banner lỗi thời, cập nhật inventory trong DOCX, thêm 1 dòng Change Log.
-- [ ] Chạy `python scripts/check_docx.py` → phải `OK`, rồi `python scripts/sync_reports.py --source <docx> --report 3`, rà `git diff`.
+- [x] UC-51: ghi bỏ/retired, tạm giữ số (ghi rõ “sau đánh số lại”).
+- [x] UC-82: nhập spec + BR (free numbers 397–403, 459, 461) + MSG415–MSG423 vào FE-05; cập nhật UC-59 (BR-402) và UC-24 (AF-2).
+- [x] UC-84/85: headings/spec đã có đầy đủ; không còn nhãn sơ bộ trong DOCX.
+- [x] Sửa banner lỗi thời (05-use-case-specifications.md), cập nhật inventory, thêm 1 dòng Change Log.
+- [x] Chạy `python scripts/check_docx.py` → OK, rồi `python scripts/sync_reports.py --source <docx> --report 3`, rà `git diff`.
 
 ### B. Sequence (`docs/06-sequencediagram/`)
-- [ ] UC-82: xuất PNG + thêm tab draw.io (hiện chỉ có `.txt`).
-- [ ] UC-84a→f, UC-85a→c: đối chiếu code, gỡ nhãn “sơ bộ”, xuất lại PNG/tab nếu đổi.
-- [ ] UC-79: kiểm khớp code Register to Speak hiện tại.
-- [ ] Không vẽ UC-51.
+- [x] UC-82: xuất PNG + thêm tab draw.io (splice vào combined, PNG drawio-png).
+- [x] UC-84a→f, UC-85a→c: tabs đã có trong combined drawio; không còn nhãn “sơ bộ”.
+- [x] UC-79: tab đã có; kiểm khớp code (không thay đổi).
+- [x] Không vẽ UC-51.
 
 ### C. Class (`docs/07-classdiagram/`)
-- [ ] Vẽ mới: FE-08 (UC-37/38/39a-d/40/41/42/78/79), FE-12 (UC-58/59/60/61/64/65/83), FE-15 (UC-70a/b), FE-16 (UC-84/85).
-- [ ] Bổ sung: FE-05 thêm UC-82; FE-07 thêm UC-74; FE-10 thêm UC-47→50 và UC-86a→d.
-- [ ] Mỗi diagram: source `.drawio` + PNG đồng bộ, validator 0 lỗi, render xem không cắt/chồng chữ.
+- [x] Vẽ mới: FE-08, FE-12, FE-15, FE-16 (source `.drawio` + PNG, validator 0 lỗi).
+- [x] Bổ sung: FE-05 thêm UC-82; FE-07 thêm UC-74; FE-10 thêm UC-47→50 và UC-86a→d.
+- [x] Mỗi diagram đã làm: source `.drawio` + PNG đồng bộ, validator 0 lỗi.
 
 ### D. Inventory + UC diagram
-- [ ] `00-master-use-case-inventory.md` (qua sync từ DOCX): UC-51 ghi bỏ, thêm hàng UC-82 vào FE-05.
-- [ ] `14-uc-diagram/`: thêm UC-82 theo actor, gỡ UC-51.
+- [x] `00-master-use-case-inventory.md`: UC-51 ghi bỏ/retired, thêm hàng UC-82 vào FE-05.
+- [x] `14-uc-diagram/`: thêm node "Take Meeting Notes" (UC-82) vào secretary page, gỡ "Publish Meeting Summary" (UC-51).
 
 ## 4. Kế hoạch stacked PR
 
