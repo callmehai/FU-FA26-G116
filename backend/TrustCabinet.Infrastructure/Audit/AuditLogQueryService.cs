@@ -6,6 +6,7 @@ using Npgsql;
 using NpgsqlTypes;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
+using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Infrastructure.Audit;
 
@@ -68,8 +69,51 @@ internal sealed class AuditLogQueryService(TrustCabinetDbContext db, ILogger<Aud
         + $" '{AuditActions.MinutesObjectType}', '{AuditActions.VoteObjectType}') THEN (SELECT m.title FROM meetings m"
         + $" WHERE m.id = COALESCE({DetailsGuid("meetingId")}, {DetailsGuid("MeetingId")})) END)";
 
+    /// <summary>What lives inside a meeting, and whose name therefore belongs to it.</summary>
+    private static readonly string MeetingScopedTypes = string.Join(", ", new[]
+    {
+        AuditActions.MeetingObjectType, AuditActions.MeetingDocumentObjectType, AuditActions.VoteObjectType,
+        AuditActions.MinutesObjectType, AuditActions.RecordingObjectType, AuditActions.SpeechClipObjectType,
+        AuditActions.TranscriptSpeakerObjectType, AuditActions.GuestSessionObjectType,
+    }.Select(t => $"'{t}'"));
+
+    /// <summary>
+    /// The meeting a meeting-scoped object belongs to: from its live row, else from the meeting id its entry recorded
+    /// (a deleted sentence, a discarded take, a vote draft deleted at the end of the meeting, a speaker by its
+    /// recording). Null when neither tells.
+    /// </summary>
+    private static readonly string ObjectMeetingSql =
+        "COALESCE(CASE a.object_type"
+        + $" WHEN '{AuditActions.MeetingObjectType}' THEN a.object_id"
+        + $" WHEN '{AuditActions.MeetingDocumentObjectType}' THEN (SELECT x.meeting_id FROM meeting_documents x WHERE x.id = a.object_id)"
+        + $" WHEN '{AuditActions.VoteObjectType}' THEN (SELECT x.meeting_id FROM voting_sessions x WHERE x.id = a.object_id)"
+        + $" WHEN '{AuditActions.MinutesObjectType}' THEN (SELECT x.meeting_id FROM meeting_minutes x WHERE x.id = a.object_id)"
+        + $" WHEN '{AuditActions.RecordingObjectType}' THEN (SELECT x.meeting_id FROM recordings x WHERE x.id = a.object_id)"
+        + $" WHEN '{AuditActions.SpeechClipObjectType}' THEN (SELECT x.meeting_id FROM speech_clips x WHERE x.id = a.object_id)"
+        + $" WHEN '{AuditActions.TranscriptSpeakerObjectType}' THEN COALESCE((SELECT r.meeting_id FROM transcript_speakers x"
+        + " JOIN transcripts t ON t.id = x.transcript_id JOIN recordings r ON r.id = t.recording_id WHERE x.id = a.object_id),"
+        + $" (SELECT r.meeting_id FROM recordings r WHERE r.id = {DetailsGuid("recordingId")}))"
+        + $" WHEN '{AuditActions.GuestSessionObjectType}' THEN (SELECT i.meeting_id FROM meeting_guest_invitations i"
+        + $" WHERE i.id::text = {GuestInvitationSql})"
+        + " END,"
+        + $" CASE WHEN a.object_type IN ({MeetingScopedTypes}) THEN COALESCE({DetailsGuid("meetingId")}, {DetailsGuid("MeetingId")}) END)";
+
+    /// <summary>
+    /// Hải 20/11/2026: nothing of a Mật meeting is named in the log — not the meeting, nor its documents, votes, minutes,
+    /// recordings, sentences, speakers or Guest sessions — for any viewer, and its name never matches a search.
+    /// </summary>
+    private static readonly string SecretSql =
+        $"EXISTS (SELECT 1 FROM meetings sm WHERE sm.id = ({ObjectMeetingSql}) AND sm.sensitivity = '{nameof(Sensitivity.Secret)}')";
+
+    /// <summary>Keys under which an entry may have recorded a Mật meeting's names; left out of what the log shows and searches.</summary>
+    internal static readonly string[] SecretNameKeys =
+        ["name", "Name", "title", "Title", "fileName", "FileName", "description", "Description", "options", "Options"];
+
+    private static readonly string SecretNameKeysSql = "ARRAY[" + string.Join(", ", SecretNameKeys.Select(k => $"'{k}'")) + "]";
+
     private static readonly string NamesSql =
-        $"SELECT a.id AS \"Id\", {ObjectNameSql} AS \"Name\" FROM audit_log a WHERE a.id = ANY(@ids)";
+        $"SELECT a.id AS \"Id\", CASE WHEN {SecretSql} THEN NULL ELSE {ObjectNameSql} END AS \"Name\","
+        + $" {SecretSql} AS \"Secret\" FROM audit_log a WHERE a.id = ANY(@ids)";
 
     /// <summary>
     /// Without marks or case, like every search box: "hop thuong" finds "Họp thường" (unaccent folds đ to d too). A
@@ -122,8 +166,9 @@ internal sealed class AuditLogQueryService(TrustCabinetDbContext db, ILogger<Aud
         // ponytail: walks every row's details in the period; add a generated text column with a trigram index if the
         // log grows past what a sequential scan answers quickly.
         if (query.Search is { } search)
-            Where($"({Matches("a.object_id::text")} OR {Matches(ObjectNameSql)}"
-                    + " OR EXISTS (SELECT 1 FROM jsonb_path_query(a.details, '$.**') v "
+            Where($"({Matches("a.object_id::text")} OR (NOT {SecretSql} AND {Matches(ObjectNameSql)})"
+                    + $" OR EXISTS (SELECT 1 FROM jsonb_path_query(CASE WHEN {SecretSql} THEN a.details - {SecretNameKeysSql}"
+                    + " ELSE a.details END, '$.**') v "
                     + $"WHERE jsonb_typeof(v) IN ('string', 'number', 'boolean') AND {Matches("v #>> ARRAY[]::text[]")}))",
                 "q", search, NpgsqlDbType.Text);
 
@@ -151,7 +196,7 @@ internal sealed class AuditLogQueryService(TrustCabinetDbContext db, ILogger<Aud
                     NamesSql,
                     new NpgsqlParameter("ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid) { Value = ids })
                 .ToListAsync(ct))
-            .Where(n => n.Name is not null).ToDictionary(n => n.Id, n => n.Name!);
+            .ToDictionary(n => n.Id);
         var invitations = await db.MeetingGuestInvitations.AsNoTracking()
             .Where(i => invitationIds.Contains(i.Id))
             .Select(i => new { i.Id, i.InvitedName, i.Email }).ToDictionaryAsync(i => i.Id, ct);
@@ -174,12 +219,24 @@ internal sealed class AuditLogQueryService(TrustCabinetDbContext db, ILogger<Aud
                 actor = new(AuditActorKind.System, null, null, null);
             }
 
+            var named = names.GetValueOrDefault(a.Id);
+            var secret = named?.Secret == true;
             return new AuditLogItem(a.Id, a.OccurredAt, actor, a.Action, AuditEventCatalog.Label(a.Action),
-                a.ObjectType, a.ObjectId, names.GetValueOrDefault(a.Id), a.IpAddress, details[a.Id]);
+                a.ObjectType, a.ObjectId, named?.Name, secret, a.IpAddress, secret ? WithoutNames(details[a.Id]) : details[a.Id]);
         }).ToList();
     }
 
-    private sealed record ObjectNameRow(Guid Id, string? Name);
+    private sealed record ObjectNameRow(Guid Id, string? Name, bool Secret);
+
+    /// <summary>The details of an entry about a Mật meeting, less the names it recorded (<see cref="SecretNameKeys"/>).</summary>
+    private static JsonElement WithoutNames(JsonElement details)
+    {
+        if (details.ValueKind != JsonValueKind.Object) return details;
+        var kept = new Dictionary<string, JsonElement>();
+        foreach (var property in details.EnumerateObject())
+            if (!SecretNameKeys.Contains(property.Name, StringComparer.Ordinal)) kept[property.Name] = property.Value;
+        return JsonSerializer.SerializeToElement(kept);
+    }
 
     /// <summary>The C# twin of <see cref="GuestInvitationSql"/>.</summary>
     internal static Guid? GuestInvitationId(JsonElement details)

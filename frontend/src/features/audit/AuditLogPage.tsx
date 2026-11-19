@@ -85,10 +85,14 @@ type Load = { kind: 'loading' } | { kind: 'loaded' } | { kind: 'error'; message:
 /**
  * The object as people know it: its name from the backend (the meeting's title, the document's file name…). With no
  * name, the end of its id: the start of a version 7 id is its creation time, the same for everything made in one
- * minute, so "#01a1bf25" read as one meeting on eight rows (19/11/2026). The whole id is in the sheet.
+ * minute, so "#01a1bf25" read as one meeting on eight rows (19/11/2026). The whole id is in the sheet. Anything of a Mật
+ * meeting reads "Họp Mật" instead of its name.
  */
 function objectLabel(item: AuditLogItem): string | null {
-  return item.objectName ?? (item.objectId ? `#${item.objectId.slice(-8)}` : null)
+  const id = item.objectId ? `#${item.objectId.slice(-8)}` : null
+  // Nothing of a Mật meeting is named in the log, for anyone.
+  if (item.objectSecret) return id ? `Họp Mật · ${id}` : 'Họp Mật'
+  return item.objectName ?? id
 }
 
 /**

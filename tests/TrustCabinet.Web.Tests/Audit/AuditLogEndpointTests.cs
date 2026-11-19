@@ -223,6 +223,71 @@ public sealed class AuditLogEndpointTests(SummaryFixture f) : IClassFixture<Summ
         Assert.Equal(SummaryFixture.Title, items[AuditActions.SpeechClipDeleted]);
     }
 
+    /// <summary>Hải 20/11/2026: nothing of a Mật meeting is named in the log, nor found by its names.</summary>
+    [Fact]
+    public async Task Nothing_of_a_secret_meeting_is_named_or_found_by_name_while_an_ordinary_one_is()
+    {
+        var log = await Seed();
+        var secret = await f.Seed(MeetingStatus.Ended, Sensitivity.Secret);
+        var ordinary = await f.Seed(MeetingStatus.Ended);
+        var tag = Guid.NewGuid().ToString("N")[..10];
+        var marker = "s" + Guid.NewGuid().ToString("N");
+        Guid document, vote, deletedVote = Guid.NewGuid();
+        await using (var db = f.Db())
+        {
+            await db.Meetings.Where(m => m.Id == secret.MeetingId)
+                .ExecuteUpdateAsync(u => u.SetProperty(m => m.Title, $"Phương án nhân sự {tag}"));
+            await db.Meetings.Where(m => m.Id == ordinary.MeetingId)
+                .ExecuteUpdateAsync(u => u.SetProperty(m => m.Title, $"Giao ban thường {tag}"));
+            var file = new StoredFile { StorageKey = $"test/{Guid.NewGuid():N}", OriginalFileName = "x.pdf",
+                ContentType = "application/pdf", ByteSize = 1, ContentSha256 = new string('c', 64), UploadedById = secret.Secretary };
+            var doc = new MeetingDocument { MeetingId = secret.MeetingId, StoredFileId = file.Id,
+                FileName = $"Danh sách đề bạt {tag}.pdf", AddedById = secret.Secretary, AddedAt = Base };
+            db.StoredFiles.Add(file);
+            db.MeetingDocuments.Add(doc);
+            document = doc.Id;
+            vote = await db.VotingSessions.Where(v => v.MeetingId == secret.MeetingId).Select(v => v.Id).SingleAsync();
+            await db.VotingSessions.Where(v => v.Id == vote).ExecuteUpdateAsync(u => u.SetProperty(v => v.Title, $"Bổ nhiệm {tag}"));
+            (string Action, string Type, Guid Object, object Details)[] rows =
+            [
+                (AuditActions.MeetingAttendanceRecorded, AuditActions.MeetingObjectType, secret.MeetingId, new { marker }),
+                (AuditActions.DocumentViewed, AuditActions.MeetingDocumentObjectType, document, new { marker }),
+                (AuditActions.VoteDraftDeletedOnMeetingEnd, AuditActions.VoteObjectType, vote, new { marker }),
+                // A draft deleted at the end of the meeting: only its entry is left, with its title and its meeting.
+                (AuditActions.VoteDraftDeletedOnMeetingEnd, AuditActions.VoteObjectType, deletedVote,
+                    new { marker, meetingId = secret.MeetingId, title = $"Kỷ luật {tag}" }),
+                (AuditActions.MeetingAttendanceRecorded, AuditActions.MeetingObjectType, ordinary.MeetingId, new { marker }),
+            ];
+            db.AuditLog.AddRange(rows.Select((r, i) => new AuditLogEntry
+            {
+                ActorId = log.Admin, Action = r.Action, ObjectType = r.Type, ObjectId = r.Object,
+                Details = JsonSerializer.Serialize(r.Details), OccurredAt = Base.AddMinutes(i),
+            }));
+            await db.SaveChangesAsync();
+        }
+        using var admin = Admin(log);
+
+        var items = (await Page(admin, $"q={marker}")).GetProperty("items").EnumerateArray()
+            .ToDictionary(i => i.GetProperty("objectId").GetGuid());
+
+        foreach (var id in new[] { secret.MeetingId, document, vote, deletedVote })
+        {
+            Assert.Equal(JsonValueKind.Null, items[id].GetProperty("objectName").ValueKind);
+            Assert.True(items[id].GetProperty("objectSecret").GetBoolean());
+        }
+        Assert.False(items[deletedVote].GetProperty("details").TryGetProperty("title", out _));
+        Assert.Equal($"Giao ban thường {tag}", items[ordinary.MeetingId].GetProperty("objectName").GetString());
+        Assert.False(items[ordinary.MeetingId].GetProperty("objectSecret").GetBoolean());
+
+        // Its names find nothing, with or without marks; the ordinary meeting is still found, and so is an id.
+        foreach (var name in new[] { "Phương án nhân sự", "phuong an nhan su", "Danh sách đề bạt", "Bổ nhiệm", "Kỷ luật" })
+            Assert.Equal(0, (await Page(admin, $"q={Uri.EscapeDataString($"{name} {tag}")}")).GetProperty("totalCount").GetInt32());
+        Assert.Equal([ordinary.MeetingId], (await Page(admin, $"q={Uri.EscapeDataString($"giao ban thuong {tag}")}"))
+            .GetProperty("items").EnumerateArray().Select(i => i.GetProperty("objectId").GetGuid()));
+        Assert.Contains(document, (await Page(admin, $"q={document.ToString()[^8..]}")).GetProperty("items").EnumerateArray()
+            .Select(i => i.GetProperty("objectId").GetGuid()));
+    }
+
     [Theory]
     [InlineData("to trinh so 12")]
     [InlineData("TỜ TRÌNH")]
