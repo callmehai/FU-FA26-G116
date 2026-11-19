@@ -344,6 +344,8 @@ public sealed class RoomTakeService(IMeetingRepository meetings, IRecordingRepos
             {
                 segment.StartMs -= gone.DurationMs;
                 segment.EndMs -= gone.DurationMs;
+                // Its words move with it: they are on the recording's clock too.
+                segment.WordStartsMs = segment.WordStartsMs?.Select(ms => ms - gone.DurationMs).ToArray();
             }
             // A line running on past the take's start ends where the take began, or later by what is left after it.
             else if (segment.EndMs > start)
