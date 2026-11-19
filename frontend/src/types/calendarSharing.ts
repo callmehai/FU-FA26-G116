@@ -83,14 +83,17 @@ export interface SharedWeekPerson {
   level: ShareLevel
   startDate: string
   endDate: string
-  /** Monday to Friday; empty for a Stopped share. */
+  /** Monday to Sunday; empty for a Stopped share. */
   days: SharedWeekDay[]
 }
 
 export interface SharedWeek {
   weekStart: string
   weekEnd: string
-  /** "08:00": every busy block is already cut to this window. */
+  /**
+   * "00:00" and "24:00": the whole day. Every busy block is already cut at midnight, so one running past it ends at the
+   * next day's "00:00" and goes on in the next day.
+   */
   dayStart: string
   dayEnd: string
   people: SharedWeekPerson[]

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { declineShare, endShare, listShares, withdrawShare } from '../../api/calendarSharing'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Icon } from '../../components/Icon'
@@ -9,6 +9,7 @@ import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
 import type { Share, ShareLists, ShareResult } from '../../types/calendarSharing'
 import { useAuth } from '../auth/useAuth'
+import { useNotifications } from '../notifications/notificationsContext'
 import { AcceptShareDialog, ChangeShareDialog, NewShareDialog } from './ShareDialogs'
 import { isStale, type ShareOutcome } from './shareOutcome'
 import { ShareRow, type RowIntent } from './ShareRow'
@@ -41,6 +42,9 @@ export function CalendarSharingPage() {
   const weekParam = params.get('week')
   const week = weekParam && DAY.test(weekParam) ? weekParam : vietnamToday()
   const focusId = params.get('share')
+  // A new key for every link followed, the same URL included: opening the notification of the row already in focus
+  // brings it into view again.
+  const { key: linkKey } = useLocation()
 
   const [lists, setLists] = useState<ShareLists | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -65,14 +69,33 @@ export function CalendarSharingPage() {
 
   const reload = useCallback(() => setAttempt((n) => n + 1), [])
 
-  // A notification lands on `?share={id}`: bring that row into view once the lists are in, once per link. A viewer who
-  // lost the right to create meetings no longer has the "shared with me" card, so the row of the stop that told them
-  // is not on the page: say why instead of landing on nothing.
-  const focusHandled = useRef<string | null>(null)
+  // Someone asked, answered or changed a share while this page is open: read the lists again, so the new request is on
+  // the page by the time its notification is opened.
+  const { lastArrival } = useNotifications()
+  const seenArrival = useRef(lastArrival)
   useEffect(() => {
-    if (!lists || !focusId || focusHandled.current === focusId) return
-    focusHandled.current = focusId
+    if (!lastArrival || lastArrival === seenArrival.current) return
+    seenArrival.current = lastArrival
+    if (lastArrival.type.startsWith('CalendarShare')) void Promise.resolve().then(reload)
+  }, [lastArrival, reload])
+
+  // A notification lands on `?share={id}`: bring that row into view once the lists are in, once per link. A link to a
+  // share the lists do not have yet — a notification opened while the page was already showing (Khánh 19/11: it said
+  // the share had stopped) — reads the lists again before deciding it is gone. A viewer who lost the right to create
+  // meetings no longer has the "shared with me" card, so the row of the stop that told them is not on the page: say why
+  // instead of landing on nothing.
+  const focusHandled = useRef<string | null>(null)
+  const reloadedFor = useRef<string | null>(null)
+  useEffect(() => {
+    const link = `${focusId}|${linkKey}`
+    if (!lists || !focusId || focusHandled.current === link) return
     const row = document.getElementById(`share-${focusId}`)
+    if (!row && reloadedFor.current !== focusId) {
+      reloadedFor.current = focusId
+      void Promise.resolve().then(reload)
+      return
+    }
+    focusHandled.current = link
     if (row) row.scrollIntoView({ block: 'center', behavior: 'smooth' })
     else {
       const share = [...lists.asOwner, ...lists.asViewer].find((s) => s.id === focusId)
@@ -88,7 +111,7 @@ export function CalendarSharingPage() {
         { replace: true },
       )
     }
-  }, [lists, focusId, organizer, toast, setParams])
+  }, [lists, focusId, linkKey, organizer, toast, setParams, reload])
 
   function setTab(next: Tab) {
     const p = new URLSearchParams(params)

@@ -5500,7 +5500,10 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .share-tabs .segmented { width: min(100%, 420px); }
 .share-grid { display: grid; flex: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .share-grid-single { grid-template-columns: minmax(0, 760px); }
-.share-section { padding: 0; overflow: hidden; }
+/* No overflow clipping: a row's ⋮ menu must open past the card's edge (the last row's menu hangs below it). The
+   last row rounds its own corners so the focus highlight still follows the card. */
+.share-section { padding: 0; overflow: visible; }
+.share-section > :last-child, .share-section .share-row:last-child { border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); }
 .share-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .share-section-head h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; }
 .share-count { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--surface-alt); color: var(--muted-ink); font-size: 12px; font-weight: 600; text-align: center; }
@@ -5512,22 +5515,36 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .share-list + .share-closed-toggle { border-top: 1px solid var(--line-soft); }
 .share-closed-toggle:first-child { border-top: 0; }
 .share-list { margin: 0; padding: 0; list-style: none; }
-.share-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; scroll-margin: 80px; }
+/* One shape for every row (Khánh 19/11): the person with the actions level with the name, right-aligned, then the chips
+   across the whole row. The "…" place is kept on every row, so Đồng ý / Từ chối / "…" line up from row to row. */
+.share-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 6px 12px; padding: 12px 16px; scroll-margin: 80px; }
 .share-row + .share-row { border-top: 1px solid var(--line-soft); }
 .share-row-closed .person, .share-row-closed .share-level, .share-row-closed .share-period { opacity: .6; }
-/* Opened from a notification: the row is marked by its background, not by a coloured edge. */
-.share-row-focus { background: var(--brand-wash); }
+/* Opened from a notification: the row is marked by its background, not by a coloured edge, and only while the eye
+   finds it — then it fades, so it does not look like a row of another kind. */
+.share-row-focus { animation: share-row-found 3.5s ease-in forwards; }
+@keyframes share-row-found {
+  0%, 60% { background: var(--brand-wash); }
+  100% { background: transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .share-row-focus { animation: none; } }
 /* The whole email: a tap opens no tooltip, so it wraps at its @ and dots (Person) instead of ending in "…". */
 .share-row .person-text .cell-sub { overflow: visible; white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
 /* The break points Person puts in the email; hidden elsewhere, so a phone's email ran under the "…" button. */
 .share-row .person-text wbr { display: inline; }
-.share-row-main { display: flex; flex: 1; flex-direction: column; gap: 6px; min-width: 0; }
+.share-row-main { display: contents; }
+.share-row-main > .person { grid-row: 1; grid-column: 1; }
+.share-row-meta, .share-row-note { grid-column: 1 / -1; }
 .share-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-left: 44px; font-size: 13px; }
 .share-level { color: var(--ink); font-weight: 500; }
 .share-period { color: var(--muted-ink); font-variant-numeric: tabular-nums; }
 .share-row-note { display: flex; align-items: flex-start; gap: 6px; margin: 0; padding-left: 44px; color: var(--muted-ink); font-size: 13px; }
 .share-row-note-warn { color: var(--warning-ink); }
-.share-row-actions { display: flex; flex: none; align-items: center; gap: 8px; }
+/* The viewer's asked-for change: a chip of the same line, the clock saying it waits for an answer. */
+.share-change { display: inline-flex; align-items: center; gap: 4px; color: var(--muted-ink); }
+/* 40px tall like "…", so the buttons sit level with the name (38px avatar) on every row. */
+.share-row-actions { display: flex; flex: none; grid-row: 1; grid-column: 2; align-items: center; justify-content: flex-end; gap: 8px; min-height: 40px; }
+.share-row-menu-slot { flex: none; width: 40px; height: 40px; }
 .share-empty { flex: none; padding: 48px 16px; text-align: center; }
 .share-empty .empty-title { color: var(--muted-ink); font-weight: 500; }
 @media (max-width: 1100px) {
@@ -5537,11 +5554,15 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .share-section-head { flex-wrap: wrap; }
   .share-section-head h2 { flex: 1 1 100%; }
   /* "…" sits in the row's top corner; only the answer buttons take a line of their own under the chips. */
-  .share-row { position: relative; flex-wrap: wrap; padding-right: 52px; }
+  .share-row { position: relative; display: flex; flex-wrap: wrap; gap: 12px; padding-right: 52px; }
+  .share-row-main { display: flex; flex: 1; flex-direction: column; gap: 6px; min-width: 0; }
   .share-row-meta, .share-row-note { padding-left: 0; }
-  .share-row-actions { width: 100%; justify-content: flex-end; }
+  /* Into the place kept for "…", so the answer buttons end at the same edge as "…" above them. */
+  .share-row-actions { width: calc(100% + 46px); min-height: 0; margin-right: -46px; justify-content: flex-end; }
   .share-row-actions > .menu-button-end { position: absolute; top: 8px; right: 6px; }
-  .share-row-actions:has(> .menu-button-end:only-child) { width: 0; }
+  .share-row-menu-slot { display: none; }
+  /* Only "…" (in the corner): takes no room, its gap given back, so the text keeps clear of "…". */
+  .share-row-actions:not(:has(> .btn)) { width: 0; margin-right: -12px; }
 }
 
 .week-toolbar { flex-wrap: nowrap; }
@@ -5558,8 +5579,10 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .shared-person[aria-pressed='false']:not(:disabled) .shared-person-name { color: var(--muted-ink); font-weight: 500; text-decoration: line-through; }
 .shared-person-stopped { opacity: .6; }
 .shared-grid { flex: none; padding: 0; overflow: hidden; }
+/* The whole day (00:00–24:00) scrolls inside the card, which opens on 08:00 (SharedWeek); the day heads stay on top. */
+.shared-grid-scroll { max-height: max(360px, calc(100dvh - 320px)); overflow-y: auto; overscroll-behavior: contain; }
 .shared-grid-head, .shared-grid-body { display: grid; }
-.shared-grid-head { border-bottom: 1px solid var(--line); background: var(--surface-alt); }
+.shared-grid-head { position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--line); background: var(--surface-alt); }
 .shared-day { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 8px 10px; border-left: 1px solid var(--line-soft); }
 .shared-day-name { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .shared-day-today .shared-day-name { color: var(--brand); }
