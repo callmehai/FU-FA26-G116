@@ -121,7 +121,16 @@ Các mã `MSG328`–`MSG343` và `MSG350` **FE tự hiển thị**, API không t
 [danh mục](00-danh-muc-ma-thong-bao.md#phòng-họp-trực-tuyến--scrum-39-scrum-41-apimeetingsidcall). Hành vi dưới
 đây không đi qua endpoint nào, nên không có mã HTTP.
 
-- **Rời phòng (UC-38).** Nút Rời phòng hỏi xác nhận rồi ngắt kết nối và về màn chi tiết; không gọi
+- **Phòng ở tab riêng (PO 19/11/2026).** Mọi nút "Vào phòng họp" (đầu trang chi tiết, dòng danh sách, ô lịch,
+  danh sách "+N" của lịch, trang của Khách) mở phòng ở **tab mới**, tab đang xem giữ nguyên. Tab được đặt tên theo
+  trang nó hiện (`window.name`), nên bấm "Vào phòng họp" lần nữa thì đưa tab phòng đang mở lên trước, không tải lại,
+  không vào phòng lần hai. Nút "Trang cuộc họp" ở đầu phòng đưa tab chi tiết lên trước (mở tab mới nếu chưa có) mà
+  **không rời phòng**, nên không hỏi. Trình duyệt chỉ tìm được tab theo tên giữa các tab mở ra từ nhau; phòng mở từ
+  link trong email thì "Trang cuộc họp" mở chi tiết ở tab mới. Trình duyệt chặn mở tab thì phòng mở ngay tại tab
+  này như trước, và "Trang cuộc họp" hỏi xác nhận rời phòng. Trên điện thoại cũng là tab mới.
+- **Rời phòng (UC-38).** Nút Rời phòng hỏi xác nhận rồi ngắt kết nối và về màn chi tiết: tab phòng do ứng dụng
+  mở thì tự đóng và đưa tab chi tiết lên trước; tab mở cách khác (link email) thì chuyển sang chi tiết ngay tại
+  tab. "Quay lại trang cuộc họp" ở màn chờ và "Về trang cuộc họp" sau khi bị ngắt làm như vậy. Không gọi
   API, không đổi trạng thái cuộc họp. Rời từ cửa sổ nổi thì không hỏi, vì cửa sổ chính đang bị che.
   Người đã rời vào lại được trong khi cuộc họp còn `InProgress`.
 - **Bị ngắt kết nối.** Lý do do LiveKit trả, FE đổi thành câu và quyết định có cho vào lại không:

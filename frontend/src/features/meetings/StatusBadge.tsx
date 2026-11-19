@@ -17,6 +17,15 @@ const STATUS_ICON: Partial<Record<MeetingStatus, IconName>> = {
 }
 
 /**
+ * Where the label's colour differs from the state's tone elsewhere. "Đã kết thúc" is green so a
+ * finished meeting is recognised at a glance (PO, 2026-11-19); its double tick and its words tell it
+ * apart from "Đã duyệt". The calendar and the list row keep it quiet: there a past meeting fades back.
+ */
+const BADGE_TONE: Partial<Record<MeetingStatus, string>> = {
+  Ended: 'emerald',
+}
+
+/**
  * A meeting's lifecycle state as a coloured icon and text, with no chip around it; "Đang diễn ra" is
  * the one solid label, so a live meeting is the first thing found on any screen (ADR-0028).
  *
@@ -42,7 +51,7 @@ export function StatusBadge({
   const icon = flat && status === 'InProgress' ? 'broadcast' : STATUS_ICON[status]
   return (
     <span
-      className={`status status-${STATUS_TONE[status]}${status === 'Cancelled' ? ' status-cancelled' : ''}${plain ? ' status-plain' : ''}${flat ? ' status-flat' : ''}`}
+      className={`status status-${BADGE_TONE[status] ?? STATUS_TONE[status]}${status === 'Cancelled' ? ' status-cancelled' : ''}${plain ? ' status-plain' : ''}${flat ? ' status-flat' : ''}`}
     >
       {!plain && icon && <Icon name={icon} size={14} />}
       {label ?? MEETING_STATUS_LABEL[status]}

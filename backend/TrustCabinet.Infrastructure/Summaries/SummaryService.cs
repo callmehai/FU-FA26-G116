@@ -65,7 +65,10 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
             var (meeting, failure) = await ReadableAsync(meetingId, actorId, ct);
             if (meeting is null) return new(failure);
             if (!Manages(meeting, actorId)) return new(SummaryFailure.Forbidden);
-            if (meeting.Status is not (MeetingStatus.InProgress or MeetingStatus.Ended)) return new(SummaryFailure.WrongMeetingStatus);
+            // A draft summarises the whole meeting, so only once it has ended, and only from something said in it: from
+            // the agenda and the votes alone the model has nothing to summarise and fills the gap itself (Khánh 19/11/2026).
+            if (meeting.Status != MeetingStatus.Ended) return new(SummaryFailure.WrongMeetingStatus);
+            if (await SentencesAsync(meetingId, ct) == 0) return new(SummaryFailure.NothingSaid);
             if (!(await models.ForAsync(meeting.Sensitivity, ct)).IsConfigured) return new(SummaryFailure.AiUnavailable);
             var row = await db.MeetingSummaries.FirstOrDefaultAsync(s => s.MeetingId == meetingId, ct);
             if (row is { Status: SummaryStatus.Queued or SummaryStatus.Running }) return new(SummaryFailure.Busy);
@@ -263,12 +266,19 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
     }
 
     /// <summary>AI-eCabinet's minutes readiness: what the draft would be missing if asked for now.</summary>
+    /// <summary>The transcripts a draft reads: of recordings still available.</summary>
+    private IQueryable<Transcript> Transcripts(Guid meetingId) => db.Transcripts.Where(t => t.Recording.MeetingId == meetingId
+        && t.Recording.Status == RecordingStatus.Available && t.Recording.DeletedAt == null);
+
+    /// <summary>What a draft would read: each sentence kept from a microphone and each line of a finished transcript.</summary>
+    private async Task<int> SentencesAsync(Guid meetingId, CancellationToken ct)
+        => await db.SpeechClips.CountAsync(c => c.MeetingId == meetingId && c.ExcludedAt == null && c.Text != "", ct)
+            + await Transcripts(meetingId).Where(t => t.Status == TranscriptStatus.Completed).SelectMany(t => t.Segments).CountAsync(ct);
+
     private async Task<SummaryReadiness> ReadinessAsync(Guid meetingId, CancellationToken ct)
     {
-        var clips = await db.SpeechClips.CountAsync(c => c.MeetingId == meetingId && c.ExcludedAt == null && c.Text != "", ct);
-        var transcripts = db.Transcripts.Where(t => t.Recording.MeetingId == meetingId
-            && t.Recording.Status == RecordingStatus.Available && t.Recording.DeletedAt == null);
-        var segments = await transcripts.Where(t => t.Status == TranscriptStatus.Completed).SelectMany(t => t.Segments).CountAsync(ct);
+        var sentences = await SentencesAsync(meetingId, ct);
+        var transcripts = Transcripts(meetingId);
         var transcribing = await transcripts.CountAsync(t => t.Status == TranscriptStatus.Pending || t.Status == TranscriptStatus.Processing, ct);
         var failed = await transcripts.CountAsync(t => t.Status == TranscriptStatus.Failed, ct);
         var unnamed = await transcripts.Where(t => t.Status == TranscriptStatus.Completed).SelectMany(t => t.Speakers)
@@ -292,7 +302,7 @@ public sealed class SummaryService(TrustCabinetDbContext db, IMeetingRepository 
                 WHERE action = {AuditActions.SpeechClipDeleted} AND details->>'MeetingId' = {meetingId.ToString()}
                 """).SingleAsync(ct),
         }.Max();
-        return new(clips + segments, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes,
+        return new(sentences, unnamed, transcribing, failed, agenda.Count, agenda.Count(a => a is not null), votes,
             changed);
     }
 

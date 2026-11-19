@@ -365,7 +365,7 @@ export default {
         'Mở chi tiết cuộc họp, bấm "Vào phòng họp"',
       ],
       expected:
-        'Màn chờ "Sẵn sàng tham gia?" với tên cuộc họp, khung xem trước "Camera đang tắt", nút Tắt micro (micro bật) và Bật camera (camera tắt), ô chọn Micro/Camera, dòng "Cuộc họp được ghi âm để lập biên bản · tự xoá sau N ngày" (N từ server), nút Vào phòng và "Quay lại trang cuộc họp"; không cuộn ngang trên điện thoại (UC-37 bước 1–3, BR-331)',
+        'Phòng họp mở ở tab mới, tab chi tiết cuộc họp giữ nguyên (PO 19/11). Màn chờ "Sẵn sàng tham gia?" với tên cuộc họp, khung xem trước "Camera đang tắt", nút Tắt micro (micro bật) và Bật camera (camera tắt), ô chọn Micro/Camera, dòng "Cuộc họp được ghi âm để lập biên bản · tự xoá sau N ngày" (N từ server), nút Vào phòng và "Quay lại trang cuộc họp"; không cuộn ngang trên điện thoại (UC-37 bước 1–3, BR-331)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const state = ok(qa, await get('chair', `/api/meetings/${m.id}/call`), 200, 'GET call')
@@ -374,9 +374,13 @@ export default {
         const go = qa.page.getByRole('link', { name: 'Vào phòng họp' })
         await qa.expect(go).toBeVisible()
         await qa.shot('chi tiet cuoc hop co nut vao phong')
-        await press(qa, go)
-        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}/room$`))
-        await qa.expect(lobbyHeading(qa.page)).toBeVisible({ timeout: 15_000 })
+        // The room opens in a tab of its own; the meeting page stays where it was. The rest is checked on this page.
+        const [roomTab] = await Promise.all([qa.page.waitForEvent('popup'), press(qa, go)])
+        await qa.expect(roomTab).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}/room$`), { timeout: 15_000 })
+        await qa.expect(lobbyHeading(roomTab)).toBeVisible({ timeout: 15_000 })
+        await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}$`))
+        await roomTab.close()
+        await openLobby(qa, m)
         const side = qa.page.getByRole('region', { name: 'Sẵn sàng tham gia?' })
         await qa.expect(side.getByText(m.title)).toBeVisible()
         const preview = qa.page.getByRole('group', { name: 'Xem trước hình của bạn' })
@@ -695,15 +699,16 @@ export default {
       id: 'AC9',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Rời phòng hỏi xác nhận: "Ở lại" giữ kết nối, "Rời phòng" về chi tiết cuộc họp, cuộc họp vẫn diễn ra và vào lại được',
+      title: 'Rời phòng hỏi xác nhận: "Ở lại" giữ kết nối, "Trang cuộc họp" mở chi tiết ở tab khác mà vẫn trong phòng, "Rời phòng" về chi tiết cuộc họp, cuộc họp vẫn diễn ra và vào lại được',
       steps: [
         'thuky@ vào phòng; chutoa@ (cửa sổ thứ hai) cũng trong phòng',
         'Bấm Rời phòng, chọn Ở lại',
-        'Bấm nút quay lại ở đầu phòng, chọn Rời phòng',
+        'Bấm "Trang cuộc họp" ở đầu phòng',
+        'Bấm Rời phòng, chọn Rời phòng',
         'Bấm Vào phòng họp lần nữa',
       ],
       expected:
-        'Hộp "Rời phòng họp" với câu "Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.", nút Ở lại / Rời phòng; Ở lại: vẫn trong phòng; Rời phòng: về trang chi tiết, chủ toạ thấy số người giảm, cuộc họp vẫn Đang diễn ra; vào lại được (UC-38, BR-324)',
+        'Hộp "Rời phòng họp" với câu "Cuộc họp vẫn tiếp tục với những người khác. Bạn có thể vào lại khi cuộc họp còn đang diễn ra.", nút Ở lại / Rời phòng; Ở lại: vẫn trong phòng; "Trang cuộc họp": chi tiết cuộc họp mở ở tab khác, không hỏi, vẫn trong phòng (PO 19/11); Rời phòng: về trang chi tiết, chủ toạ thấy số người giảm, cuộc họp vẫn Đang diễn ra; vào lại được, phòng mở ở tab mới (UC-38, BR-324)',
       run: guarded(async (qa) => {
         const m = await reused(qa, 'live')
         const chair = await person(qa, 'chair')
@@ -723,18 +728,30 @@ export default {
         await press(qa, dialog.getByRole('button', { name: 'Ở lại' }))
         await qa.expect(dialog).toHaveCount(0)
         await qa.expect(leaveButton(qa.page)).toBeVisible()
-        await press(qa, qa.page.getByRole('button', { name: 'Quay lại trang cuộc họp' }))
-        await qa.expect(dialog).toBeVisible()
+        // The meeting page opens in another tab and the call stays on: nothing asks.
+        const [detailTab] = await Promise.all([
+          qa.page.waitForEvent('popup'),
+          press(qa, qa.page.getByRole('button', { name: 'Trang cuộc họp' })),
+        ])
+        await qa.expect(detailTab).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}$`), { timeout: 15_000 })
+        await qa.expect(detailTab.getByRole('heading', { level: 1, name: m.title })).toBeVisible({ timeout: 15_000 })
+        await detailTab.close()
+        await qa.expect(dialog).toHaveCount(0)
+        await qa.expect(leaveButton(qa.page)).toBeVisible()
+        await press(qa, leaveButton(qa.page))
         await press(qa, dialog.getByRole('button', { name: 'Rời phòng' }))
         await qa.expect(qa.page).toHaveURL(new RegExp(`/mgmt/meetings/${m.id}$`), { timeout: 15_000 })
         await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible()
         await qa.expect.poll(() => headerCount(chair), { timeout: 20_000 }).toBe(withMe - 1)
         qa.expect((await get('secretary', `/api/meetings/${m.id}`)).body.status).toBe('InProgress')
         await qa.shot('ve chi tiet cuoc hop')
-        await press(qa, qa.page.getByRole('link', { name: 'Vào phòng họp' }))
-        await qa.expect(lobbyHeading(qa.page)).toBeVisible({ timeout: 15_000 })
-        await joinRoom(qa)
-        await qa.shot('vao lai duoc')
+        const [roomTab] = await Promise.all([
+          qa.page.waitForEvent('popup'),
+          press(qa, qa.page.getByRole('link', { name: 'Vào phòng họp' })),
+        ])
+        await qa.expect(lobbyHeading(roomTab)).toBeVisible({ timeout: 15_000 })
+        await joinRoom(qa, roomTab)
+        await qa.shot('vao lai duoc, chi tiet van o tab cu')
       }),
     },
     {

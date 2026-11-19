@@ -1415,6 +1415,7 @@ a.menu-item { text-decoration: none; }
 /* The event chip and the object's name keep one line each, cut with "…" (the row opens the sheet with both whole; the
    chip also has its tooltip), so the IP and the eye button stay inside the card at a 1200px window (UI-A3). */
 .audit-table td.audit-event .badge { display: inline-block; max-width: 240px; overflow: hidden; line-height: 24px; text-overflow: ellipsis; vertical-align: middle; }
+.audit-table td.audit-object .audit-object-name { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 1360px) {
   .audit-table td.audit-event .badge { max-width: 144px; }
   .audit-table td.audit-object .cell-sub, .audit-table td.audit-actor .cell-sub { max-width: 156px; overflow: hidden; text-overflow: ellipsis; }
@@ -1458,6 +1459,7 @@ a.menu-item { text-decoration: none; }
   .audit-table td.audit-actor { flex: 1 1 100%; order: 3; }
   .audit-table td.audit-object { flex: 1 1 100%; order: 4; white-space: normal; color: var(--muted-ink); font-size: 13px; }
   .audit-table td.audit-object .cell-sub { display: inline; margin-left: 6px; }
+  .audit-table td.audit-object .audit-object-name { max-width: none; white-space: normal; }
   .audit-table td.col-action { position: absolute; top: 8px; right: 8px; }
   .audit-table .person-name, .audit-table .cell-sub { overflow-wrap: anywhere; }
   .audit-table td .cell-sub wbr { display: inline; }
@@ -1596,8 +1598,9 @@ a.menu-item { text-decoration: none; }
   white-space: nowrap;
 }
 /* Icon and text both take the tone, so a state reads at a glance without a chip around it; the
-   chip-foreground shades keep the text at 4.5:1 on white. What is over fades back: ended is grey,
-   cancelled lighter still. */
+   chip-foreground shades keep the text at 4.5:1 on white. A meeting that is over reads green
+   (StatusBadge), a called-off one fades back; `.status-ended` is the grey of a closed vote or a
+   finished agenda item. */
 .status > svg { flex: none; color: var(--status-icon); }
 .status-slate { --status-icon: var(--chip-slate-fg); }
 .status-ended { --status-icon: var(--label-ink); font-weight: 500; }
@@ -3642,16 +3645,22 @@ a.menu-item { text-decoration: none; }
   color: #fff;
   border-bottom: 2px solid var(--gold);
 }
+/* The way to the meeting page's tab: a chevron and its name; on a phone the chevron alone, its name for screen readers. */
 .room-back {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   height: 40px;
+  padding: 0 12px 0 8px;
   border: 0;
-  border-radius: 50%;
+  border-radius: 20px;
   background: transparent;
   color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
 }
 .room-back:hover { background: var(--sidebar-hover); }
@@ -3873,8 +3882,7 @@ a.menu-item { text-decoration: none; }
 .speaking-mine > .status { flex: none; margin-right: auto; }
 .speaking-raise { align-self: flex-start; }
 .speaking-note { margin: 0; color: var(--muted-ink); font-size: 13px; }
-.speaking-empty { display: flex; align-items: center; gap: 8px; color: var(--muted-ink); font-size: 13px; }
-.speaking-empty p { margin: 0; }
+.speaking-empty { margin: 0; color: var(--muted-ink); font-size: 13px; }
 .speaking-skeleton { width: 100%; height: 32px; }
 
 .room-chat-note { margin: 0; color: var(--muted-ink); font-size: 12px; }
@@ -4257,8 +4265,9 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
 @media (max-width: 560px) {
   /* A panel as wide as the screen less its gutters, the same on both sides. */
   .room-panel { width: calc(100vw - 16px); }
+  .room-back { width: 40px; padding: 0; justify-content: center; }
   /* The count keeps its number; the words stay for screen readers. */
-  .room-count-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .room-back-label, .room-count-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   /* Phones have no floating window (Document Picture-in-Picture is desktop-only). */
   .room-control-pip { display: none; }
   .room-controls-main { --panel-pad: 8px; --tray-gap: 8px; margin-bottom: 11px; border-radius: 20px; }
@@ -5631,8 +5640,11 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 .find-pair-row > label.visually-hidden { position: absolute; }
 .find-days { display: flex; flex-wrap: wrap; gap: 6px; }
 .find-days .chip-toggle { min-width: 38px; padding: 0 8px; }
-.find-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+/* Side by side the two fields share a line: a label too long for its half (on a phone) wraps, and the dropdowns
+   stay level by sitting on the bottom edge. */
+.find-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
 .find-label { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap; }
+.find-two .find-label { line-height: 1.3; white-space: normal; }
 .find-submit { width: 100%; justify-content: center; }
 .find-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .find-main > * { flex: none; }

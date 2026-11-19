@@ -261,7 +261,7 @@ public sealed class SummaryFixture : IAsyncLifetime
     /// two agenda items the Chair started and closed one after the other, one sentence said during each, and one closed
     /// vote. Meetings that have not started get no agenda timing, sentences or vote.
     /// </summary>
-    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.InProgress, Sensitivity sensitivity = Sensitivity.Normal)
+    internal async Task<Scenario> Seed(MeetingStatus status = MeetingStatus.Ended, Sensitivity sensitivity = Sensitivity.Normal)
     {
         await using var db = Db();
         string[] names = ["Nguyễn Thư Ký", "Trần Chủ Trì", "Lê Thành Viên", "Phạm Tổ Chức", "Hoàng Người Ngoài"];

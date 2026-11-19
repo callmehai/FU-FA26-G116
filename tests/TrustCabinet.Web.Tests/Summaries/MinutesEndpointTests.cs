@@ -190,7 +190,8 @@ public sealed class MinutesEndpointTests(SummaryFixture f) : IClassFixture<Summa
     [InlineData(MeetingStatus.Draft)]
     [InlineData(MeetingStatus.Published)]
     [InlineData(MeetingStatus.Cancelled)]
-    public async Task Minutes_are_built_only_once_the_meeting_has_started(MeetingStatus status)
+    [InlineData(MeetingStatus.InProgress)]
+    public async Task Minutes_are_built_only_once_the_meeting_has_ended(MeetingStatus status)
     {
         var s = await f.Seed(status);
         using var secretary = f.Client(s.Secretary);

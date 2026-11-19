@@ -4,6 +4,8 @@ import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
 import { Dialog } from '../../../components/Dialog'
 import { Icon } from '../../../components/Icon'
+import { useTabName } from '../../calls/meetingTabs'
+import { RoomLink } from '../../calls/TabLinks'
 import { NotFound } from '../../../components/NotFound'
 import { useToast } from '../../../components/toastContext'
 import { isApiError } from '../../../lib/errors'
@@ -93,6 +95,8 @@ export function MeetingDetailPage() {
   // Back to wherever the meeting was opened from (the calendar on its week and view, the list with
   // its filters); the plain list when it was opened from a notification or a typed URL.
   const back = useBackTarget({ to: routes.meetings, label: 'Cuộc họp' })
+  // The room opens in its own tab; this one keeps a name it can be found by from there.
+  useTabName(routes.meeting(meetingId ?? ''))
 
   if (state.kind === 'notFound') return <NotFound />
 
@@ -334,10 +338,10 @@ function MeetingDetail({
           <div className="page-header-actions">
             {roomOpen && (
               // The meeting is running: green like its "Đang diễn ra" state, and it pings — the call to go in.
-              <Link className="btn btn-live btn-lg btn-cta btn-ping" to={routes.meetingRoom(meeting.id)}>
+              <RoomLink className="btn btn-live btn-lg btn-cta btn-ping" to={routes.meetingRoom(meeting.id)}>
                 <Icon name="video" size={18} />
                 Vào phòng họp
-              </Link>
+              </RoomLink>
             )}
             {canRun && <MeetingLifecycleActions meeting={meeting} onOutcome={onOutcome} />}
             {(canEdit || canReschedule) && (

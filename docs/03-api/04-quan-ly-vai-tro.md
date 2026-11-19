@@ -276,7 +276,7 @@ FE dùng `roleId` làm định danh và tên do backend trả về để hiển 
 - Màn hình **Vai trò** tạo vai trò với quyền ban đầu tuỳ chọn, sửa tên/mô tả vai trò tự tạo, hiển thị
   `userCount`; vai trò mặc định có badge và không có nút sửa/xoá. Xoá vai trò đang có người bị chặn;
   `MSG25` hiển thị số tài khoản từ backend.
-- Màn hình **Người dùng & Quyền** tải bộ lọc và lựa chọn vai trò từ `GET /api/roles`; các request tạo/sửa
+- Màn hình **Người dùng** tải bộ lọc và lựa chọn vai trò từ `GET /api/roles`; các request tạo/sửa
   người dùng gửi `roleId`.
 - Header hiển thị `roleName`; màn hình ma trận dùng id vai trò cho draft, lưu quyền và xử lý trạng thái
   của vai trò hiện tại.

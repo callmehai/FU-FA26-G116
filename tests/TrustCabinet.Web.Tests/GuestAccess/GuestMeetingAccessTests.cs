@@ -57,6 +57,8 @@ public sealed class GuestMeetingAccessTests(GuestAccessFixture f) : IClassFixtur
         Assert.Equal(0, byEmail.GetProperty("total").GetInt32());
         Assert.Equal(1, (await Expect(await guest.GetAsync($"/api/meetings/{s.MeetingId}/participants?q=Th%C6%B0%20k%C3%BD"), 200))
             .GetProperty("total").GetInt32());
+        Assert.Equal(1, (await Expect(await guest.GetAsync($"/api/meetings/{s.MeetingId}/participants?q=THU%20KY"), 200))
+            .GetProperty("total").GetInt32());
         using (var secretary = f.UserClient(s.SecretaryId))
         {
             var internalView = await Expect(await secretary.GetAsync(
