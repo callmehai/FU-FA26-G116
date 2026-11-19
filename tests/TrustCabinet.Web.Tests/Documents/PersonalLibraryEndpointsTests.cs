@@ -448,6 +448,8 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
             .GetProperty("documents").EnumerateArray().Select(d => d.GetProperty("fileName").GetString()!).ToArray();
 
         Assert.Equal(["Báo cáo quý 3.pdf", "Báo cáo quý 4.docx"], await Names("?q=báo CÁO"));
+        // Without marks, like every search box.
+        Assert.Equal(["Báo cáo quý 3.pdf", "Báo cáo quý 4.docx"], await Names("?q=bao%20cao%20QUY"));
         Assert.Equal(["Báo cáo quý 4.docx"], await Names("?q=báo&type=docx"));
         // % and _ are literal characters, not wildcards.
         Assert.Equal(["100%_xong.pdf"], await Names("?q=%25_"));

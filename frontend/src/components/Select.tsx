@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Icon, type IconName } from './Icon'
 import { useAnchoredPopover, useOutsidePress } from './useAnchoredPopover'
+import { matchesSearch } from '../lib/search'
 
 export interface SelectOption<T extends string> {
   value: T
@@ -15,9 +16,6 @@ export interface SelectOption<T extends string> {
   sub?: string
 }
 
-/** Lower case without Vietnamese marks, so "loc" finds "Lộc" (đ becomes d). */
-const fold = (text: string) =>
-  text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/đ/g, 'd')
 
 /**
  * Dropdown built from a button and a listbox instead of a native `<select>`.
@@ -91,8 +89,7 @@ export function Select<T extends string>({
 
   const selected = options.find((o) => o.value === value)
   // What the menu lists: everything, or what the search matches.
-  const needle = fold(query.trim())
-  const shown = needle ? options.filter((o) => fold(`${o.label} ${o.sub ?? ''}`).includes(needle)) : options
+  const shown = query.trim() ? options.filter((o) => matchesSearch(`${o.label} ${o.sub ?? ''}`, query)) : options
 
   const close = useCallback(() => setOpen(false), [])
   useOutsidePress(open, rootRef, close)
