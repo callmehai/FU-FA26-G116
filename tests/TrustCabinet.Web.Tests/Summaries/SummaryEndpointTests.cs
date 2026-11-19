@@ -28,7 +28,7 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
         => client.GetFromJsonAsync<JsonElement>(s.Summary);
 
     /// <summary>A meeting whose draft has been written by the (fake) AI and is Ready.</summary>
-    private async Task<SummaryFixture.Scenario> Drafted(MeetingStatus status = MeetingStatus.InProgress)
+    private async Task<SummaryFixture.Scenario> Drafted(MeetingStatus status = MeetingStatus.Ended)
     {
         f.Model.Reset();
         var s = await f.Seed(status);
@@ -295,7 +295,8 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
     [InlineData(MeetingStatus.Approved)]
     [InlineData(MeetingStatus.Published)]
     [InlineData(MeetingStatus.Cancelled)]
-    public async Task A_draft_is_asked_for_only_once_the_meeting_has_started(MeetingStatus status)
+    [InlineData(MeetingStatus.InProgress)]
+    public async Task A_draft_is_asked_for_only_once_the_meeting_has_ended(MeetingStatus status)
     {
         f.Model.Reset();
         var s = await f.Seed(status);
@@ -305,16 +306,36 @@ public sealed class SummaryEndpointTests(SummaryFixture f) : IClassFixture<Summa
         Assert.False(await db.MeetingSummaries.AnyAsync(x => x.MeetingId == s.MeetingId));
     }
 
-    [Theory]
-    [InlineData(MeetingStatus.InProgress)]
-    [InlineData(MeetingStatus.Ended)]
-    public async Task Chair_and_secretary_may_ask_while_in_progress_and_after_the_end(MeetingStatus status)
+    [Fact]
+    public async Task The_chair_may_ask_once_the_meeting_has_ended()
     {
         f.Model.Reset();
-        var s = await f.Seed(status);
+        var s = await f.Seed(MeetingStatus.Ended);
         using var chair = f.Client(s.Chair);
         await AssertCode(await chair.PostAsync(s.Summary, null), 202, "MSG384");
         await f.ProcessAll();
+    }
+
+    /// <summary>Khánh 19/11/2026: with nothing said, the model has only the agenda and the votes and invents the rest.</summary>
+    [Fact]
+    public async Task A_meeting_where_nothing_was_said_gets_no_draft()
+    {
+        f.Model.Reset();
+        var s = await f.Seed(MeetingStatus.Ended);
+        await using (var db = f.Db())
+        {
+            // Left out of the minutes, or blank: neither is something said.
+            await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).Take(1)
+                .ExecuteUpdateAsync(u => u.SetProperty(c => c.ExcludedAt, f.Clock.Now));
+            await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId && c.ExcludedAt == null)
+                .ExecuteUpdateAsync(u => u.SetProperty(c => c.Text, ""));
+        }
+        using var secretary = f.Client(s.Secretary);
+
+        Assert.Equal(0, (await State(secretary, s)).GetProperty("readiness").GetProperty("sentences").GetInt32());
+        await AssertCode(await secretary.PostAsync(s.Summary, null), 409, "MSG481");
+        await using var check = f.Db();
+        Assert.False(await check.MeetingSummaries.AnyAsync(x => x.MeetingId == s.MeetingId));
     }
 
     [Theory]
