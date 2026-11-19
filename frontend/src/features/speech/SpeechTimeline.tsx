@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { deleteSpeechClip, editSpeechClip, getSpeechClipsText, setSpeechClipExclusion } from '../../api/speech'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
@@ -11,6 +11,7 @@ import { saveBlob } from '../documents/documentFile'
 import { formatClock } from '../recordings/format'
 import { PlayerBar } from '../recordings/PlayerBar'
 import { speakerSlot } from '../recordings/speakers'
+import { SpokenWords } from '../recordings/SpokenWords'
 import { MyClips } from './MyClips'
 import { useClipPlayer, type ClipPlayer } from './useClipPlayer'
 import type { Speech } from './useSpeech'
@@ -116,8 +117,10 @@ export function SpeechTimeline({
     if (!el || !player.playing || !player.currentId) return
     const row = el.querySelector<HTMLElement>(`[data-clip="${CSS.escape(player.currentId)}"]`)
     if (!row) return
-    const top = row.offsetTop - el.offsetTop
-    if (top < el.scrollTop || top + row.offsetHeight > el.scrollTop + el.clientHeight)
+    // A sentence is a run of words inside its paragraph: measured against the list, not its offset parent.
+    const rect = row.getBoundingClientRect()
+    const top = rect.top - el.getBoundingClientRect().top + el.scrollTop
+    if (top < el.scrollTop || top + rect.height > el.scrollTop + el.clientHeight)
       el.scrollTo({ top: Math.max(0, top - 8), behavior: 'smooth' })
   }, [player.currentId, player.playing])
 
@@ -225,6 +228,7 @@ export function SpeechTimeline({
                 player={player}
                 canEdit={!!list?.canEdit}
                 canExclude={!!list?.canExclude}
+                alone={!!shownFilter}
                 onRemove={setRemoving}
                 onChanged={speech.reload}
               />
@@ -295,12 +299,18 @@ const leakHint = (clip: SpeechClip) =>
     ? `Micro của ${clip.leak.speakerName} thu cùng câu này to hơn`
     : `Phần tô màu có thể là lời của ${clip.leak.speakerName}: micro của họ thu to hơn`)
 
+/**
+ * One speaker's run of sentences, read as one paragraph under one name and time (Hải, 19/11/2026): the sentences flow
+ * on, each still its own — a click hears it, its time shows on hover or focus — and the tools at the paragraph's end
+ * act on the sentence last clicked or focused (the first one until then).
+ */
 function Paragraph({
   group,
   slot,
   player,
   canEdit,
   canExclude,
+  alone,
   onRemove,
   onChanged,
 }: {
@@ -309,16 +319,54 @@ function Paragraph({
   player: ClipPlayer
   canEdit: boolean
   canExclude: boolean
+  /** The record is filtered to one speaker: a sentence played stops at its end (Hải, Khánh 19/11/2026). */
+  alone: boolean
   onRemove: (clip: SpeechClip) => void
   onChanged: () => void
 }) {
+  const toast = useToast()
   const first = group.clips[0]
   const colour = speakerSlot(slot)
   const at = player.placeOf.get(first.id)
   const hearing = group.clips.some((c) => c.id === player.currentId)
   const leak = first.leak
   const gone = first.excluded && !canExclude
+  const [pickedId, setPickedId] = useState<string | null>(null)
+  const picked = group.clips.find((c) => c.id === pickedId) ?? first
+  const [editing, setEditing] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const several = group.clips.length > 1
+  const which = several ? ` câu ${wall(picked.startedAt)}` : ''
 
+  const exclude = async (clip: SpeechClip, reason: 'Leak' | 'Other' | null) => {
+    setBusy(true)
+    try {
+      toast.show((await setSpeechClipExclusion(clip.id, reason)).message, 'success')
+      onChanged()
+    } catch (failure) {
+      toast.show(errorMessage(failure), 'error')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const save = async (clip: SpeechClip) => {
+    setBusy(true)
+    setError(null)
+    try {
+      toast.show((await editSpeechClip(clip.id, draft)).message, 'success')
+      setEditing(null)
+    } catch (failure) {
+      setError(errorMessage(failure))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const canEditPicked = canEdit && !picked.excluded
+  const tools = !gone && !editing && (canEditPicked || picked.canDelete || canExclude)
   return (
     <li className={`tl-group${first.excluded ? ' is-excluded' : ''}`}>
       <div className="tl-row tl-row-head">
@@ -341,9 +389,9 @@ function Paragraph({
             <button
               type="button"
               className={hearing && player.playing ? 'tl-play is-on' : 'tl-play'}
-              onClick={() => (hearing && player.playing ? player.toggle() : player.playFrom(first))}
+              onClick={() => (hearing && player.playing ? player.toggle() : player.playFrom(first, { alone }))}
               aria-label={hearing && player.playing ? 'Tạm dừng' : `Nghe lại từ ${wall(first.startedAt)}`}
-              data-tooltip={hearing && player.playing ? 'Tạm dừng' : 'Nghe lại'}
+              data-tooltip={hearing && player.playing ? 'Tạm dừng' : alone ? 'Nghe câu này' : 'Nghe lại'}
             >
               <Icon name={hearing && player.playing ? 'pause' : 'play'} size={12} />
               {at !== undefined && formatClock(at)}
@@ -368,220 +416,191 @@ function Paragraph({
           )}
         </div>
       </div>
-      {gone ? (
-        <div className="tl-row">
-          <span className="tl-time" />
-          <span className="tl-rail" aria-hidden="true" />
-          <p className="tl-text tl-gone">Câu đã được bỏ khỏi biên bản.</p>
+      <div className="tl-row tl-sentence">
+        <span className="tl-time" />
+        <span className="tl-rail" aria-hidden="true" />
+        <div className="tl-content">
+          {gone ? (
+            <p className="tl-text tl-gone">Câu đã được bỏ khỏi biên bản.</p>
+          ) : (
+            <div className="tl-text tl-para">
+              {group.clips.map((clip, i) =>
+                editing === clip.id ? (
+                  <div key={clip.id} className="transcript-editor">
+                    <textarea
+                      value={draft}
+                      maxLength={8000}
+                      rows={Math.min(6, Math.max(2, Math.ceil(draft.length / 70)))}
+                      onChange={(e) => setDraft(e.target.value)}
+                      aria-label="Nội dung câu"
+                      aria-invalid={error ? true : undefined}
+                      autoFocus
+                    />
+                    {error && (
+                      <p className="field-error" role="alert">
+                        {error}
+                      </p>
+                    )}
+                    <div className="row-actions transcript-editor-actions">
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        disabled={busy}
+                        onClick={() => {
+                          setEditing(null)
+                          setError(null)
+                        }}
+                      >
+                        Huỷ
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        disabled={busy || !draft.trim()}
+                        onClick={() => void save(clip)}
+                      >
+                        {busy ? 'Đang lưu…' : 'Lưu'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <Fragment key={clip.id}>
+                    {i > 0 && ' '}
+                    <Sentence
+                      clip={clip}
+                      player={player}
+                      picked={several && clip.id === picked.id}
+                      onPick={() => setPickedId(clip.id)}
+                      onPlay={() => player.playFrom(clip, { alone })}
+                    />
+                  </Fragment>
+                ),
+              )}
+            </div>
+          )}
+          {tools && (
+            <span className="tl-tools">
+              {canEditPicked && (
+                <button
+                  type="button"
+                  className="tl-tool"
+                  aria-label={`Sửa nội dung${which}`}
+                  data-tooltip={`Sửa nội dung${which}`}
+                  onClick={() => {
+                    setDraft(picked.text)
+                    setError(null)
+                    setEditing(picked.id)
+                  }}
+                >
+                  <Icon name="pencil" size={16} />
+                </button>
+              )}
+              {canExclude &&
+                (picked.excluded ? (
+                  <button
+                    type="button"
+                    className="tl-tool"
+                    aria-label={`Khôi phục${which}`}
+                    data-tooltip={`Khôi phục${which}`}
+                    disabled={busy}
+                    onClick={() => void exclude(picked, null)}
+                  >
+                    <Icon name="undo" size={16} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="tl-tool"
+                    aria-label={`Bỏ khỏi biên bản${which}`}
+                    data-tooltip={`Bỏ khỏi biên bản${which}`}
+                    disabled={busy}
+                    onClick={() => void exclude(picked, picked.leak ? 'Leak' : 'Other')}
+                  >
+                    <Icon name="eyeOff" size={16} />
+                  </button>
+                ))}
+              {picked.canDelete && (
+                <button
+                  type="button"
+                  className="tl-tool"
+                  aria-label={`Xoá câu${several ? ` ${wall(picked.startedAt)}` : ''}`}
+                  data-tooltip={`Xoá câu${several ? ` ${wall(picked.startedAt)}` : ''}`}
+                  onClick={() => onRemove(picked)}
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              )}
+            </span>
+          )}
         </div>
-      ) : (
-        group.clips.map((clip, i) => (
-          <Sentence
-            key={clip.id}
-            clip={clip}
-            first={i === 0}
-            player={player}
-            canEdit={canEdit && !clip.excluded}
-            canExclude={canExclude}
-            onRemove={() => onRemove(clip)}
-            onChanged={onChanged}
-          />
-        ))
-      )}
+      </div>
     </li>
   )
 }
 
-/** The sentence's words, with those another mic's speaker probably said highlighted. */
-function Words({ clip }: { clip: SpeechClip }) {
-  const leak = clip.leak
-  if (!leak || leak.whole) return <>{clip.text}</>
-  const inLeak = (word: number) => leak.words.some(([from, to]) => word >= from && word < to)
-  let word = -1
-  return (
-    <>
-      {clip.text.split(/(\s+)/).map((part, i) => {
-        if (!part.trim()) return part
-        word++
-        return inLeak(word) ? (
-          <mark key={i} className="tl-leak-words">
-            {part}
-          </mark>
-        ) : (
-          part
-        )
-      })}
-    </>
-  )
-}
-
+/**
+ * One sentence inside its paragraph: a click (or Enter) hears it, focus or a click picks it for the paragraph's tools,
+ * and its time shows on hover or focus. While it plays, the word being said is marked when the worker timed its words.
+ */
 function Sentence({
   clip,
-  first,
   player,
-  canEdit,
-  canExclude,
-  onRemove,
-  onChanged,
+  picked,
+  onPick,
+  onPlay,
 }: {
   clip: SpeechClip
-  first: boolean
   player: ClipPlayer
-  canEdit: boolean
-  canExclude: boolean
-  onRemove: () => void
-  onChanged: () => void
+  /** The sentence the paragraph's tools act on, marked while the paragraph is pointed at. */
+  picked: boolean
+  onPick: () => void
+  onPlay: () => void
 }) {
-  const toast = useToast()
-  const [busy, setBusy] = useState(false)
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(clip.text)
-  const [error, setError] = useState<string | null>(null)
   const active = clip.id === player.currentId
-
-  const exclude = async (reason: 'Leak' | 'Other' | null) => {
-    setBusy(true)
-    try {
-      toast.show((await setSpeechClipExclusion(clip.id, reason)).message, 'success')
-      onChanged()
-    } catch (failure) {
-      toast.show(errorMessage(failure), 'error')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const save = async () => {
-    setBusy(true)
-    setError(null)
-    try {
-      toast.show((await editSpeechClip(clip.id, draft)).message, 'success')
-      setEditing(false)
-    } catch (failure) {
-      setError(errorMessage(failure))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const tools = !editing && (canEdit || clip.canDelete || canExclude)
+  const leak = clip.leak
+  const leakWords = leak && !leak.whole ? leak.words : null
+  const time = wall(clip.startedAt)
+  const playable = clip.hasAudio
   return (
-    <div className={`tl-row tl-sentence${active ? ' is-active' : ''}`} data-clip={clip.id}>
-      {first || !clip.hasAudio ? (
-        <span className="tl-time">{first ? '' : wall(clip.startedAt)}</span>
-      ) : (
-        <button
-          type="button"
-          className="tl-time tl-time-button"
-          onClick={() => player.playFrom(clip)}
-          aria-label={`Nghe lại từ ${wall(clip.startedAt)}`}
+    <>
+      <span
+        className={`tl-say${active ? ' is-active' : ''}${picked ? ' is-picked' : ''}${playable ? ' is-playable' : ''}`}
+        data-clip={clip.id}
+        role={playable ? 'button' : undefined}
+        tabIndex={0}
+        aria-label={playable ? `Nghe câu lúc ${time}: ${clip.text}` : undefined}
+        data-tooltip={playable ? `Nghe từ ${time}` : time}
+        onFocus={onPick}
+        onClick={() => {
+          onPick()
+          // Selecting words to copy them does not play.
+          if (playable && !window.getSelection()?.toString()) onPlay()
+        }}
+        onKeyDown={(e) => {
+          if (playable && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault()
+            onPlay()
+          }
+        }}
+      >
+        <SpokenWords
+          text={clip.text}
+          starts={clip.wordStartsMs}
+          nowMs={active && player.playing ? player.offsetMs : null}
+          marked={leakWords ? (word) => leakWords.some(([from, to]) => word >= from && word < to) : undefined}
+          markClass="tl-leak-words"
+        />
+      </span>
+      {clip.editedAt && (
+        <span
+          className="tl-edited"
+          tabIndex={0}
+          data-tooltip={`Sửa bởi ${clip.editedByName ?? 'Thư ký'} lúc ${formatDateTime(clip.editedAt)}`}
         >
-          {wall(clip.startedAt)}
-        </button>
+          {' '}
+          đã sửa
+        </span>
       )}
-      <span className="tl-rail" aria-hidden="true" />
-      <div className="tl-content">
-        {editing ? (
-          <div className="transcript-editor">
-            <textarea
-              value={draft}
-              maxLength={8000}
-              rows={Math.min(6, Math.max(2, Math.ceil(draft.length / 70)))}
-              onChange={(e) => setDraft(e.target.value)}
-              aria-label="Nội dung câu"
-              aria-invalid={error ? true : undefined}
-              autoFocus
-            />
-            {error && (
-              <p className="field-error" role="alert">
-                {error}
-              </p>
-            )}
-            <div className="row-actions transcript-editor-actions">
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                disabled={busy}
-                onClick={() => {
-                  setDraft(clip.text)
-                  setEditing(false)
-                }}
-              >
-                Huỷ
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                disabled={busy || !draft.trim()}
-                onClick={() => void save()}
-              >
-                {busy ? 'Đang lưu…' : 'Lưu'}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p className="tl-text">
-            <Words clip={clip} />
-            {clip.editedAt && (
-              <span
-                className="tl-edited"
-                tabIndex={0}
-                data-tooltip={`Sửa bởi ${clip.editedByName ?? 'Thư ký'} lúc ${formatDateTime(clip.editedAt)}`}
-              >
-                {' '}
-                đã sửa
-              </span>
-            )}
-          </p>
-        )}
-        {tools && (
-          <span className="tl-tools">
-            {canEdit && (
-              <button
-                type="button"
-                className="tl-tool"
-                aria-label="Sửa nội dung"
-                data-tooltip="Sửa nội dung"
-                onClick={() => {
-                  setDraft(clip.text)
-                  setEditing(true)
-                }}
-              >
-                <Icon name="pencil" size={16} />
-              </button>
-            )}
-            {canExclude &&
-              (clip.excluded ? (
-                <button
-                  type="button"
-                  className="tl-tool"
-                  aria-label="Khôi phục"
-                  data-tooltip="Khôi phục"
-                  disabled={busy}
-                  onClick={() => void exclude(null)}
-                >
-                  <Icon name="undo" size={16} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="tl-tool"
-                  aria-label="Bỏ khỏi biên bản"
-                  data-tooltip="Bỏ khỏi biên bản"
-                  disabled={busy}
-                  onClick={() => void exclude(clip.leak ? 'Leak' : 'Other')}
-                >
-                  <Icon name="eyeOff" size={16} />
-                </button>
-              ))}
-            {clip.canDelete && (
-              <button type="button" className="tl-tool" aria-label="Xoá câu" data-tooltip="Xoá câu" onClick={onRemove}>
-                <Icon name="trash" size={16} />
-              </button>
-            )}
-          </span>
-        )}
-      </div>
-    </div>
+    </>
   )
 }
