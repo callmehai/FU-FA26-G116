@@ -341,8 +341,16 @@ public sealed class PersonalLibraryEndpointsTests(DocumentFixture fixture) : IAs
             DocumentFixture.Form(("anh.pdf", SampleFiles.Png(), null))));
         Assert.Equal((400, "MSG164"), (status, code));
         Assert.True(body.GetProperty("errors").TryGetProperty("files[0]", out _));
+        Assert.Equal("Hãy chọn tệp PDF hoặc DOCX hợp lệ, mỗi tệp không quá 10 MB.", body.GetProperty("message").GetString());
+        // BR-214: 10 MB a file.
+        var big = new byte[DocumentFileRules.MaxFileBytes + 1];
+        SampleFiles.Pdf().CopyTo(big, 0);
+        Assert.Equal((400, "MSG164"), Pick(await Read(await client.PostAsync("/api/documents/upload",
+            DocumentFixture.Form(("lon.pdf", big, null))))));
         var eleven = Enumerable.Range(0, 11).Select(i => ($"{i}.pdf", SampleFiles.Pdf(), (string?)null)).ToArray();
-        Assert.Equal((400, "MSG288"), Pick(await Read(await client.PostAsync("/api/documents/upload", DocumentFixture.Form(eleven)))));
+        (status, code, body) = await Read(await client.PostAsync("/api/documents/upload", DocumentFixture.Form(eleven)));
+        Assert.Equal((400, "MSG288"), (status, code));
+        Assert.Equal("Mỗi lần tải tối đa 10 tệp, tổng dung lượng không quá 100 MB.", body.GetProperty("message").GetString());
     }
 
     [Fact]
