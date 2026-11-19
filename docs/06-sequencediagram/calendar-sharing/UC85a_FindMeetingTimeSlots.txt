@@ -56,7 +56,7 @@ else Finder is verified
 
         SlotService->MeetingRepository: Get meetings of finder and invitees overlapping the range
         activate MeetingRepository
-        MeetingRepository->Database: Retrieve overlapping meetings with roles and actual end times
+        MeetingRepository->Database: Retrieve overlapping meetings with roles and actual start/end times
         activate Database
         Database-->MeetingRepository: Meetings / Read failed
         deactivate Database
@@ -70,7 +70,7 @@ else Finder is verified
             deactivate SlotController
             FindPage-->Finder: MSG453 - Unable to load the calendar sharing data. Please try again.
         else Data is loaded
-            SlotService->SlotService: Keep only meetings at shared levels (BR-414, BR-417).\nCount the finder's own meetings only when "Tính cả tôi" is ticked,\nthen at every level (BR-416, BR-418).\nCount only current Chair, Secretary or Member assignments as busy;\ndeclined invitations, creator-only and approver-only never count as busy (BR-419).\nCount Chờ duyệt, approved, published, ongoing and ended meetings until their actual end;\nnever Draft, Rejected or cancelled ones (BR-420).\nMark busy with the gap before and after every busy period,\nthen round start times up to the step; skip past start times, keep out-of-range days unknown (BR-415, BR-422)
+            SlotService->SlotService: Keep only meetings at shared levels (BR-414, BR-417).\nCount the finder's own meetings only when "Tính cả tôi" is ticked,\nthen at every level (BR-416, BR-418).\nCount only current Chair, Secretary or Member assignments as busy;\ndeclined invitations, creator-only and approver-only never count as busy (BR-419).\nCount Chờ duyệt, approved and published meetings until their planned end;\nan ongoing meeting for its planned length from its actual start and at least until now\n(a meeting started early is busy today, not until its planned day);\nended meetings until their actual end; never Draft, Rejected or cancelled ones (BR-420).\nMark busy with the gap before and after every busy period,\nthen round start times up to the step; skip past start times, keep out-of-range days unknown (BR-415, BR-422)
 
             alt No slot fits everyone - AF-1
                 SlotService-->SlotController: Slots with the most people free and who is busy

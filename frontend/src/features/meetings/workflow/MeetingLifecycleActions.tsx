@@ -69,7 +69,7 @@ export function MeetingLifecycleActions({
           {starting ? 'Đang bắt đầu…' : 'Bắt đầu họp'}
         </button>
       ) : (
-        <button type="button" className="btn btn-outline btn-lg" onClick={() => setDialog('end')}>
+        <button type="button" className="btn btn-danger btn-lg" onClick={() => setDialog('end')}>
           <Icon name="stop" size={16} />
           Kết thúc họp
         </button>

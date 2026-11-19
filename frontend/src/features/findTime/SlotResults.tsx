@@ -68,7 +68,7 @@ export function SlotResults({
         ) : (
           <>
             <p className="empty-title">Không còn khung nào trong khoảng đã chọn</p>
-            <p className="find-empty-text">Thử khoảng ngày khác, thời lượng ngắn hơn hoặc cách cuộc họp khác ít hơn.</p>
+            <p className="find-empty-text">Thử khoảng ngày khác, thời lượng ngắn hơn hoặc giãn cách họp ít hơn.</p>
           </>
         )}
       </div>

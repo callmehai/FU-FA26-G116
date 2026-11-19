@@ -2,7 +2,8 @@ import type { MeetingStatus } from '../../types/meeting'
 
 /**
  * Colour per lifecycle state (ADR-0012): amber waits, red is refused, green is approved, blue is
- * announced, grey is inert (ended or cancelled: the shape tells them apart). It colours the state's icon (ADR-0028); "Đang diễn ra" is the one solid
+ * announced, grey is inert (ended or cancelled: the shape tells them apart; `StatusBadge` paints
+ * the "Đã kết thúc" label green, so it is found at a glance). It colours the state's icon (ADR-0028); "Đang diễn ra" is the one solid
  * label, so a live meeting is the first thing found on any screen.
  */
 export const STATUS_TONE: Record<MeetingStatus, string> = {

@@ -85,10 +85,7 @@ export function SpeakingPanel({
 
       {live &&
         (data.requests.length === 0 ? (
-          <div className="speaking-empty">
-            <Icon name="hand" size={22} />
-            <p>Chưa có ai giơ tay.</p>
-          </div>
+          <p className="speaking-empty">Chưa có ai giơ tay.</p>
         ) : (
           <ol className="speaking-list" aria-label="Hàng đợi phát biểu" aria-busy={pending}>
             {data.requests.map((request) => {

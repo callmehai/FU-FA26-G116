@@ -157,6 +157,10 @@ public sealed class MinutesApprovalEndpointTests(SummaryFixture f) : IClassFixtu
         using var member = f.Client(s.Member);
         using var outsider = f.Client(s.Outsider);
         var draft = await Build(secretary, s);
+        // A draft built while the meeting still ran, as one could be before 20/11/2026 (minutes are now built only once
+        // it has ended): it is still not sent before the end.
+        await using (var db = f.Db())
+            await db.Meetings.Where(m => m.Id == s.MeetingId).ExecuteUpdateAsync(u => u.SetProperty(m => m.Status, MeetingStatus.InProgress));
 
         // The Chair is told it is the Secretary's to send; anyone else is answered as if there were nothing (EX-1, EX-6).
         await AssertCode(await Act(chair, Id(draft), "submit", Stamp(draft)), 403, "MSG425");

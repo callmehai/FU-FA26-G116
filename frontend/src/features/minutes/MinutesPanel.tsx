@@ -105,6 +105,8 @@ export function MinutesPanel({ meeting }: { meeting: Meeting }) {
         meeting={meeting}
         state={minutes}
         source={draftSource(summary)}
+        // Nothing said in the meeting: no AI draft can be made, so the minutes card does not point at one.
+        nothingSaid={summary.kind === 'ready' && summary.data.readiness?.sentences === 0}
         onChanged={(next) => {
           // Every change answers with the state the server picks, so the card leaves an opened revision with it.
           setSelected(null)
@@ -165,12 +167,20 @@ function SummaryCard({
   // Someone who only reads has nothing to do with a draft that is not there yet: no card that only says so.
   if (!canManage && !draft) return null
   const running = summary?.status === 'Queued' || summary?.status === 'Running'
+  // The button shows from the start of the meeting, but a draft is made only once it has ended and from something said
+  // in it (Khánh 19/11/2026); the server refuses otherwise (MSG386, MSG481).
   const canAsk = canManage && (meeting.status === 'InProgress' || meeting.status === 'Ended')
+  const notYet =
+    meeting.status !== 'Ended'
+      ? 'Tạo dự thảo khi cuộc họp đã kết thúc'
+      : readiness?.sentences === 0
+        ? 'Chưa có lời thoại nào để AI tóm tắt'
+        : undefined
   // The Dự thảo is a snapshot of the transcript: a line corrected, left out or named since leaves it behind (eCab).
   const changedAt = readiness?.transcriptChangedAt
   const stale =
     !!draft && !running && !!changedAt && !!summary?.generatedAt && Date.parse(changedAt) > Date.parse(summary.generatedAt)
-  const askBlocked = !aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined
+  const askBlocked = notYet ?? (!aiReady ? 'Máy AI chưa sẵn sàng' : dirty ? 'Lưu hoặc hoàn tác thay đổi trước' : undefined)
 
   const ask = async () => {
     setBusy(true)
@@ -293,9 +303,11 @@ function SummaryCard({
 
       {!draft && !running && summary?.status !== 'Failed' && (
         <p className="field-hint minutes-empty">
-          {canAsk
-            ? 'Chưa có dự thảo. Bấm “Tạo dự thảo” để AI tóm tắt chương trình, biểu quyết và lời thoại.'
-            : 'Tạo dự thảo khi cuộc họp đã bắt đầu.'}
+          {!canAsk || meeting.status !== 'Ended'
+            ? 'Tạo dự thảo khi cuộc họp đã kết thúc.'
+            : notYet
+              ? 'Chưa có lời thoại nào để AI tóm tắt, nên chưa tạo được dự thảo.'
+              : 'Chưa có dự thảo. Bấm “Tạo dự thảo” để AI tóm tắt chương trình, biểu quyết và lời thoại.'}
         </p>
       )}
 
@@ -337,7 +349,7 @@ function SummaryCard({
         <NameVoicesSheet
           meetingId={meeting.id}
           drafted={!!draft}
-          canGenerate={!canAsk ? 'Tạo dự thảo khi cuộc họp đã bắt đầu.' : running ? 'AI đang viết dự thảo' : askBlocked}
+          canGenerate={running ? 'AI đang viết dự thảo' : askBlocked}
           onClose={() => {
             setNaming(false)
             // Names given here change the readiness and may leave the draft behind the transcript.
@@ -386,8 +398,6 @@ function ReadinessNote({
   onNameVoices?: () => void
 }) {
   const gaps: string[] = []
-  if (!drafted && readiness.sentences === 0)
-    gaps.push('Chưa có lời thoại nào: dự thảo chỉ dựa vào chương trình và biểu quyết.')
   if (readiness.transcribing > 0) gaps.push(`${readiness.transcribing} bản ghi đang chuyển chữ, chưa được tính.`)
   if (readiness.failedTranscripts > 0) gaps.push(`${readiness.failedTranscripts} bản ghi chuyển chữ lỗi, không được tính.`)
   if (!drafted && readiness.agendaItems > 0 && readiness.agendaItemsTimed < readiness.agendaItems)
@@ -478,6 +488,7 @@ function MinutesCard({
   meeting,
   state,
   source,
+  nothingSaid,
   onChanged,
   onSelect,
   onRetry,
@@ -485,6 +496,7 @@ function MinutesCard({
   meeting: Meeting
   state: Load<MinutesState>
   source: DraftSource
+  nothingSaid: boolean
   onChanged: (state: Load<MinutesState>) => void
   onSelect: (minutesId: string | null) => void
   onRetry: () => void
@@ -515,9 +527,12 @@ function MinutesCard({
   // The revision on screen is the newest the caller may see; an older one opened from the history is only read.
   const latest = !minutes || history.length === 0 || history[0].id === minutes.id
   const meetingOpen = meeting.status === 'InProgress' || meeting.status === 'Ended'
+  // Minutes are built only once the meeting has ended (Khánh 19/11/2026; the server answers MSG398 before). While it
+  // runs, the officers see the button greyed with the reason.
+  const buildLater = canManage && meeting.status === 'InProgress' && !minutes
   // A draft, or one the Chair returned, is written again (BR-407); a correction is too, but never rebuilt (BR-413).
   const editable = !!minutes && latest && canManage && meetingOpen && (minutes.status === 'Draft' || minutes.status === 'Rejected')
-  const canBuild = canManage && meetingOpen && (!minutes || (editable && !minutes.supersedesId))
+  const canBuild = canManage && meeting.status === 'Ended' && (!minutes || (editable && !minutes.supersedesId))
   const waiting = !!minutes && latest && minutes.status === 'WaitingApproval'
   const issued = !!minutes && latest && minutes.status === 'Issued'
   // Issued text, and what it replaced, downloads for every reader; a draft only for the two officers (BR-412).
@@ -670,8 +685,14 @@ function MinutesCard({
                 Tạo bản đính chính
               </button>
             )}
-            {!minutes && canBuild && (
-              <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => void build(false).catch(() => undefined)}>
+            {!minutes && (canBuild || buildLater) && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                disabled={busy || buildLater}
+                data-tooltip={buildLater ? 'Tạo biên bản khi cuộc họp đã kết thúc' : undefined}
+                onClick={() => void build(false).catch(() => undefined)}
+              >
                 <Icon name="fileText" size={16} />
                 Tạo bản nháp
               </button>
@@ -684,7 +705,9 @@ function MinutesCard({
         <p className="field-hint minutes-empty">
           {canBuild
             ? 'Bản nháp điền sẵn thông tin cuộc họp và dự thảo vào mẫu biên bản.'
-            : canManage
+            : buildLater
+              ? 'Tạo biên bản khi cuộc họp đã kết thúc.'
+              : canManage
               ? 'Chưa có biên bản.'
               : 'Chưa có biên bản ban hành.'}
         </p>
@@ -713,10 +736,12 @@ function MinutesCard({
       {canBuild && draft === null && source === 'none' && (
         <div className="alert alert-info minutes-notice" role="status">
           <span>Chưa có dự thảo AI nên mục I–III để trống.</span>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => notify(goTo('summary-ask'))}>
-            <Icon name="sparkles" size={16} />
-            Tạo dự thảo
-          </button>
+          {!nothingSaid && (
+            <button type="button" className="btn btn-outline btn-sm" onClick={() => notify(goTo('summary-ask'))}>
+              <Icon name="sparkles" size={16} />
+              Tạo dự thảo
+            </button>
+          )}
         </div>
       )}
       {canBuild && draft === null && source === 'running' && (

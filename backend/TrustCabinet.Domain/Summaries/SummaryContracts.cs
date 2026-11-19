@@ -53,8 +53,10 @@ public enum SummaryFailure
     NotFound,
     Inactive,
     Forbidden,
-    /// <summary>The meeting has not started, or was cancelled: there is nothing to draft from yet.</summary>
+    /// <summary>The meeting has not ended (Khánh 19/11/2026): a draft summarises a whole meeting, not half of one.</summary>
     WrongMeetingStatus,
+    /// <summary>Not one sentence recorded or transcribed: the AI would have nothing said to summarise.</summary>
+    NothingSaid,
     /// <summary>A draft is already queued or being written.</summary>
     Busy,
     /// <summary>No finished draft to edit or review.</summary>

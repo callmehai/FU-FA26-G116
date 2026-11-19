@@ -25,7 +25,7 @@ Cả hai endpoint nằm sau `RequireAdminUsers()` — dùng lại quyền *Quả
 | `from`, `to` | ISO 8601 **có múi giờ** (`2026-11-10T08:00:00+07:00`; trong URL viết `%2B07:00` — dấu `+` không mã hoá thành khoảng trắng và bị `MSG469`) | Khoảng `occurredAt`, tính cả hai đầu. `from` không được sau `to` |
 | `actor` | Guid tài khoản, `guest` hoặc `system` | Một tài khoản; mọi dòng của Khách; mọi dòng hệ thống tự ghi |
 | `action` | mã sự kiện | Phải là một `code` của `/event-types` |
-| `q` | 1–100 ký tự | Tìm không phân biệt hoa thường trong mã đối tượng, **tên** đối tượng khi nó là tài khoản (họ tên) hoặc vai trò (tên vai trò) — đúng `objectName` — và các **giá trị** trong `details` (không khớp tên trường hay `null`); `%`, `_`, `\` được tìm đúng ký tự đó. Không khớp tên người thực hiện, tiêu đề cuộc họp hay tên tài liệu (BR-443). Có dấu phải gõ đúng dấu |
+| `q` | 1–100 ký tự | Tìm không phân biệt hoa thường **và dấu** (`unaccent`: `hop thuong` khớp `Họp thường`, `d` khớp `đ`) trong mã đối tượng, **tên** đối tượng — đúng `objectName` (xem dưới; tên của đối tượng thuộc cuộc họp Mật không bao giờ khớp, mã thì vẫn khớp) — và các **giá trị** trong `details` (với dòng Mật: trừ các khoá tên đã bỏ) (không khớp tên trường hay `null`); `%`, `_`, `\` được tìm đúng ký tự đó. Không khớp tên người thực hiện |
 | `page`, `pageSize` | số nguyên | Mặc định `1`, `20`; `pageSize` tối đa `100` |
 
 Mọi tiêu chí phải cùng khớp (BR-31). Thứ tự: `occurredAt` giảm dần, rồi `id` giảm dần. Trang vượt quá số trang trả
@@ -55,6 +55,7 @@ BR-12.
       "objectType": "User",
       "objectId": "0192…",
       "objectName": "Trần Thị B",
+      "objectSecret": false,
       "ipAddress": "203.0.113.7",
       "details": { "Email": "b@example.com", "IsActive": false }
     }
@@ -69,8 +70,20 @@ BR-12.
 - `actor.kind`: `user`, `guest` hoặc `system` (BR-441). Với `guest`, `id` là mã **lời mời** và `name`/`email` là tên,
   email được mời (không phải tên Khách tự khai). Với `system`, `id`, `name`, `email` đều `null`.
 - `objectId` có thể `null`: sự kiện không gắn với một đối tượng (đổi quyền của nhiều vai trò một lúc).
-- `objectName` chỉ có với `User` (họ tên) và `Role` (tên vai trò; `null` nếu vai trò đã xoá — tên cũ nằm trong
-  `details`). Các loại khác luôn `null`: nhật ký không tra tiêu đề cuộc họp hay tên tài liệu (BR-443).
+- `objectName` là tên đối tượng như người dùng biết nó (PO 19/11/2026, thay câu "không tra tiêu đề cuộc họp" cũ của
+  BR-443): `User` họ tên · `Role` tên vai trò · `Meeting` tiêu đề · `MeetingDocument` tên tệp · `VotingSession` tiêu đề
+  biểu quyết · `MeetingMinutes`, `Recording`, `SpeechClip`, `TranscriptSpeaker` tiêu đề cuộc họp chứa nó ·
+  `VoiceConsent`, `VoiceSample` họ tên chủ giọng · `CalendarShare` "chủ lịch → người xem" · `GuestSession` tên được
+  mời. Đọc dòng còn sống trước (đổi tên thì hiện tên mới); dòng đã xoá thì lấy tên ghi trong `details` (`name`, `title`,
+  `fileName` — vai trò đã xoá, nháp biểu quyết bị xoá khi kết thúc họp); câu nói, lượt ghi đã xoá thì lấy tiêu đề cuộc
+  họp theo `meetingId` trong `details`. Không biết tên thì `null` (`AiProviderSetting`, `Report`). Chỉ đọc tên: xem
+  nhật ký không mở được gì mà nó nêu tên. Tra theo lô cho cả trang (một truy vấn), không N+1.
+- **Cuộc họp Mật không lộ tên** (Hải 20/11/2026): đối tượng là, hoặc thuộc về, một cuộc họp `Secret` — chính cuộc họp,
+  tài liệu, biểu quyết, biên bản, bản ghi, câu nói, người nói, phiên Khách — có `objectName: null` và
+  `objectSecret: true` với **mọi** người xem nhật ký; `details` của dòng đó bỏ các khoá có thể chứa tên (`name`, `title`,
+  `fileName`, `description`, `options`, cả dạng PascalCase). Cuộc họp chứa đối tượng lấy từ dòng còn sống, không còn thì
+  từ `meetingId`/`MeetingId` trong `details` (người nói: `recordingId`); dòng đã xoá mà `details` không cho biết cuộc họp
+  thì không xác định được độ mật và không che (hiện các nơi ghi đều lưu `meetingId`). Các loại khác `objectSecret: false`.
 - `details` là JSON nguyên như lúc ghi; tên trường khác nhau giữa các loại sự kiện (có loại PascalCase, có loại
   camelCase). Hiện dạng key–value chỉ đọc, đừng dựa vào một tên trường cố định.
 - `ipAddress` là địa chỉ của request đã gây ra việc đó, rỗng khi không có request (job tự huỷ cuộc họp). Nháp biểu
@@ -86,7 +99,9 @@ Tên nằm ở backend (`AuditEventCatalog`); `AuditEventCatalogTests` hỏng kh
 
 `/mgmt/admin/audit-log`, mục *Nhật ký hệ thống* dưới Quản trị — `features/audit/AuditLogPage.tsx`. Theo màn 3.3 trừ
 D3–D7 (không Xuất CSV; người thực hiện có thêm Khách, Hệ thống; không "5 lần liên tiếp"; cột Đối tượng là loại + tên
-tài khoản/vai trò hoặc 8 ký tự đầu của mã).
+tên đối tượng, hoặc 8 ký tự **cuối** của mã khi không có tên — 8 ký tự đầu của Guid v7 là thời điểm tạo, mọi thứ tạo
+trong cùng một phút trùng nhau, nên 19/11/2026 tám lần tự huỷ của tám cuộc họp khác nhau cùng hiện "#01a1bf25" như một;
+đối tượng thuộc cuộc họp Mật hiện "Họp Mật · #<8 ký tự cuối>").
 
 - Mọi tiêu chí nằm trên URL (`from`, `to` dạng `YYYY-MM-DD`, `actor`, `action`, `q`, `page`, `pageSize`); giá trị sai
   dạng bị bỏ qua. Khoảng ngày là trọn ngày theo giờ máy người xem, gửi lên dạng UTC. Ngày bắt đầu sau ngày kết thúc
@@ -96,8 +111,8 @@ tài khoản/vai trò hoặc 8 ký tự đầu của mã).
   đổi chỗ — ngày đó thành ngày bắt đầu, ngày bắt đầu cũ thành ngày kết thúc — và khoảng được ghi luôn. Chỉ chọn một
   ngày thì đó là ngày bắt đầu, không có ngày kết thúc. Mở riêng ô
   "Từ ngày" hoặc "Đến ngày" để sửa một đầu; vẫn gõ được dd/mm/yyyy; nút *Xoá* trong lịch bỏ cả hai.
-- Ô "Tìm theo đối tượng…" (màn 3.3): `q` khớp tên ở cột Đối tượng (tài khoản, vai trò), mã đối tượng và giá trị
-  trong `details`.
+- Ô "Tìm theo đối tượng…" (màn 3.3): `q` khớp tên ở cột Đối tượng (mọi loại có tên), mã đối tượng và giá trị
+  trong `details`, không phân biệt dấu.
 - Ô người thực hiện: Khách, Hệ thống, rồi mọi tài khoản từ `GET /api/users` (hai người trùng tên thì hiện email; mã
   tài khoản trên URL không có trong danh sách thì hiện "Tài khoản không rõ"). Ngày không có thật trên URL bị bỏ qua.
 - `auth.sign_in_failed`: chip đỏ, dòng nền đỏ nhạt.

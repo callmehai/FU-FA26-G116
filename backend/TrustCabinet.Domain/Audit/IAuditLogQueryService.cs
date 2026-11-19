@@ -31,6 +31,8 @@ public sealed record AuditLogItem(
     string ObjectType,
     Guid? ObjectId,
     string? ObjectName,
+    /// <summary>The object is, or belongs to, a Mật meeting: <see cref="ObjectName"/> is null and no name is shown.</summary>
+    bool ObjectSecret,
     string IpAddress,
     JsonElement Details);
 

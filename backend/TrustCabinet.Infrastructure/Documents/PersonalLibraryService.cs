@@ -47,8 +47,10 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
             var query = db.Documents.AsNoTracking().Where(d => d.OwnerId == ownerId && d.FolderId == folderId);
             if (hidden is { Files: var hiddenFiles }) query = query.Where(d => !hiddenFiles.Contains(d.StoredFileId));
             // AF-1: a name search and a file-type filter within the location.
-            if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(d => EF.Functions.ILike(d.FileName, "%" + EscapeLike(search.Trim()) + "%", "\\"));
+            // Without marks or case, like every search box (unaccent folds đ to d); a substring test, not LIKE, as unaccent
+            // maps full-width ％ ＿ ＼ to % _ \.
+            if (search?.Trim() is { Length: > 0 } name)
+                query = query.Where(d => EF.Functions.Unaccent(d.FileName).ToLower().Contains(EF.Functions.Unaccent(name).ToLower()));
             if (ContentTypeOf(fileType) is { } contentType) query = query.Where(d => d.StoredFile.ContentType == contentType);
             var documents = await Project(query.OrderBy(d => d.FileName).ThenBy(d => d.Id), readerId, meetingId)
                 .ToListAsync(ct);
@@ -365,9 +367,6 @@ public sealed class PersonalLibraryService(TrustCabinetDbContext db, StoredFileW
         "docx" => DocumentFileRules.DocxContentType,
         _ => null,
     };
-
-    private static string EscapeLike(string value)
-        => value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 
     private static LibraryFolder ToRow(Folder f) => new(f.Id, f.Name, f.ParentId, f.MeetingId, f.CreatedAt);
 }

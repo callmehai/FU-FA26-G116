@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   DisconnectReason,
   type LocalAudioTrack,
@@ -28,6 +28,8 @@ import { useAuth } from '../../auth/useAuth'
 import { guestName, useGuest, useMeetingHome } from '../../guest/guestContext'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useMeeting } from '../../meetings/useMeeting'
+import { returnToMeetingTab, useTabName } from '../meetingTabs'
+import { MeetingPageLink } from '../TabLinks'
 import { VoiceShortcut } from '../../voice/VoiceShortcut'
 import { useNotifications } from '../../notifications/notificationsContext'
 import { DevicePicker, MicLevel } from './devices'
@@ -181,6 +183,9 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   const connectedRef = useRef(false)
   const navigate = useNavigate()
   const home = useMeetingHome(meeting.id)
+  // The room has a tab of its own (PO, 2026-11-19): named, so "Vào phòng họp" brings it forward instead of joining twice.
+  const { pathname } = useLocation()
+  useTabName(pathname)
   const recheckGuest = useGuest()?.recheck
   // A guest's meeting page closes with the meeting (UC-04 EX-1), so a room that is over has nowhere to send them back.
   const asGuest = recheckGuest !== undefined
@@ -211,7 +216,8 @@ export function RoomLifecycle({ meeting, call }: { meeting: Meeting | GuestMeeti
   const leave = useCallback(async () => {
     leavingRef.current = true
     await room.disconnect()
-    navigate(home)
+    // Back to the meeting page's tab, closing this one; here when this tab was not opened by the app.
+    if (!returnToMeetingTab(home)) navigate(home)
   }, [room, navigate, home])
 
   if (call.status !== 'Open') {
@@ -529,10 +535,10 @@ function PreJoin({
           >
             {joining ? 'Đang vào phòng…' : 'Vào phòng'}
           </button>
-          <Link className="prejoin-text-button" to={home}>
+          <MeetingPageLink className="prejoin-text-button" to={home}>
             <Icon name="chevronLeft" size={18} />
             Quay lại trang cuộc họp
-          </Link>
+          </MeetingPageLink>
         </section>
       </main>
     </RoomPage>
@@ -713,9 +719,9 @@ export function LobbyMessage({
         <p className="prejoin-meeting">{title}</p>
         <div className="prejoin-message-actions">
           {showHome && (
-            <Link className="btn btn-outline" to={toList ? routes.meetings : meetingHome}>
+            <MeetingPageLink className="btn btn-outline" to={toList ? routes.meetings : meetingHome}>
               {toList ? 'Về danh sách cuộc họp' : 'Về trang cuộc họp'}
-            </Link>
+            </MeetingPageLink>
           )}
           {children}
         </div>
