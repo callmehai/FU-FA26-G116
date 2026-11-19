@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ToastContext, type ToastTone } from './toastContext'
 
 interface Toast {
@@ -31,12 +31,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   )
 
   const clear = useCallback(() => setToasts([]), [])
+
+  // A manual popover, raised again with each change: a modal open at the time (the document viewer over the call
+  // room) would otherwise cover the toast with its backdrop.
+  const stack = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const el = stack.current
+    if (!el?.showPopover) return
+    if (el.matches(':popover-open')) el.hidePopover()
+    if (toasts.length) el.showPopover()
+  }, [toasts])
   const value = useMemo(() => ({ show, clear }), [show, clear])
 
   return (
     <ToastContext value={value}>
       {children}
-      <div className="toast-stack" role="status" aria-live="polite">
+      <div ref={stack} className="toast-stack" role="status" aria-live="polite" popover="manual">
         {toasts.map((toast) => (
           <div key={toast.id} className={`toast toast-${toast.tone}`}>
             <i className="toast-dot" aria-hidden="true" />

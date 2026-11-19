@@ -29,6 +29,7 @@ import { formatBytes, isPdf, saveBlob } from './documentFile'
 import { FileTypeTag } from './DocumentTags'
 import { LibraryUploadDialog, MoveDialog, NameDialog } from './LibraryDialogs'
 import { childrenOf, LIBRARY_ROOT, placeName, subtreeOf, trailOf } from './libraryTree'
+import { opensInPlace, useOpenDocument } from './viewerOverlay'
 
 type TypeFilter = '' | 'pdf' | 'docx'
 
@@ -64,6 +65,8 @@ export function DocumentsPage() {
   const handleAccessLost = useAccessLost()
   const toast = useToast()
   const navigate = useNavigate()
+  // A document opens over the list, which keeps its folder, filters and scroll (Hải 19/11/2026).
+  const openDocument = useOpenDocument()
   const [params, setParams] = useSearchParams()
   const folderId = params.get('folder') || null
   const q = params.get('q') ?? ''
@@ -347,13 +350,26 @@ export function DocumentsPage() {
                   ))}
                   {rows.documents.map((doc) => {
                     const open = routes.libraryDocument(doc.id, folderId)
+                    const view = () =>
+                      openDocument
+                        ? openDocument({ kind: 'library', documentId: doc.id, folderId })
+                        : navigate(open)
                     return (
-                      <tr key={doc.id} className="row-link" onClick={() => navigate(open)}>
+                      <tr key={doc.id} className="row-link" onClick={view}>
                         <td className="cell-title">
                           <span className="library-name">
                             <FileTypeTag pdf={isPdf(doc)} size={28} />
                             <span className="library-name-col">
-                              <Link to={open} onClick={(e) => e.stopPropagation()} className="library-name-text">
+                              <Link
+                                to={open}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (!opensInPlace(e)) return
+                                  e.preventDefault()
+                                  view()
+                                }}
+                                className="library-name-text"
+                              >
                                 {doc.fileName}
                               </Link>
                               {/* On a phone the size column goes; its facts move under the name. */}

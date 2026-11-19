@@ -2102,6 +2102,8 @@ a.menu-item { text-decoration: none; }
   gap: 8px;
   width: min(356px, calc(100vw - 32px));
 }
+/* A manual popover (to stay over an open modal): none of the browser's popover box — centred, bordered, padded. */
+.toast-stack[popover] { top: auto; left: auto; height: auto; margin: 0; padding: 0; overflow: visible; border: 0; background: transparent; color: inherit; }
 
 .toast {
   display: flex;
@@ -3121,6 +3123,8 @@ a.menu-item { text-decoration: none; }
 .agenda-docs { display: inline-flex; align-items: center; gap: 4px; width: 36px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
 .agenda-docs-none { color: var(--faint-ink); }
 .agenda-actions { flex: none; gap: 6px; }
+/* The step (Bắt đầu, Xong) and the icons (attach, edit, delete): one group on a wide panel, split on a narrow one. */
+.agenda-steps, .agenda-tools { display: contents; }
 .icon-button-danger { color: var(--danger); }
 .agenda-action-slot { width: 34px; flex: none; }
 @media (pointer: coarse) { .agenda-action-slot { width: 40px; } }
@@ -3194,6 +3198,8 @@ a.menu-item { text-decoration: none; }
 .vote-title > span { min-width: 0; overflow-wrap: anywhere; }
 .vote-title:hover > span { color: var(--brand); }
 .vote-actions { flex: none; gap: 6px; }
+/* As on an agenda item: the step (Mở, Đóng phiếu) and the icons are one group until the card is narrow. */
+.vote-steps, .vote-tools { display: contents; }
 .vote-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-width: 0; padding-left: 22px; }
 .vote-status, .vote-conclusion-chip { font-size: 13px; }
 .vote-fact { display: inline-flex; align-items: center; gap: 4px; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -3240,8 +3246,12 @@ a.menu-item { text-decoration: none; }
 .vote-result-count { min-width: 64px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
 .vote-result-count small { color: var(--muted-ink); font-size: 13px; font-weight: 500; }
 .vote-voters { font-size: 13px; }
-.vote-voters summary { min-height: 34px; display: flex; align-items: center; color: var(--brand); cursor: pointer; }
-.vote-voters ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+/* "Phiếu từng người": an outlined button that says it opens a list, its chevron turning when it is open. */
+.vote-voters-toggle { width: fit-content; list-style: none; }
+.vote-voters-toggle::-webkit-details-marker { display: none; }
+.vote-voters-toggle > .icon:last-child { transition: transform .15s ease; }
+.vote-voters[open] .vote-voters-toggle > .icon:last-child { transform: rotate(180deg); }
+.vote-voters ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
 .vote-voters li { display: flex; justify-content: space-between; gap: 12px; }
 .vote-voters li > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .vote-voters li small { color: var(--label-ink); }
@@ -3254,11 +3264,20 @@ a.menu-item { text-decoration: none; }
 .vote-skeleton { width: 60%; height: 18px; }
 /* At the room's width a result row stacks: the label above its bar and count. */
 @container (max-width: 480px) {
-  /* The title keeps the whole row; the actions go under it instead of squeezing it to a word a line. */
-  .vote-title { flex-basis: 100%; }
-  .vote-actions:not(:empty) { order: 1; padding-left: 22px; }
+  /* The icons keep the card's top-right corner beside the title, as on an agenda item; the step goes to the end of the
+     facts line under it (Khánh 19/11/2026). */
+  .vote-actions { display: contents; }
+  .vote-tools { display: flex; flex: none; order: 1; align-self: flex-start; gap: 6px; margin-top: 3px; }
   .vote-break { order: 2; }
   .vote-meta { order: 3; }
+  .vote-steps { display: flex; flex: none; order: 4; gap: 6px; margin-left: auto; }
+  .vote-tools:empty, .vote-steps:empty { display: none; }
+  @media (pointer: coarse) { .vote-tools { margin-top: 0; } }
+  /* As on an agenda item: a phone's page gives the icons the top row, at its right, and the title the width under them. */
+  @container (max-width: 320px) {
+    .vote-head:has(.vote-tools:not(:empty)) .vote-tools { order: -1; margin: 0 0 0 auto; }
+    .vote-head:has(.vote-tools:not(:empty)) .vote-title { flex-basis: 100%; }
+  }
   .vote-result li { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
   /* "Không thông qua" does not fit beside "Hoãn" at the room's width: the short label instead. */
   .vote-conclusion-form .segmented-full { display: none; }
@@ -3305,7 +3324,7 @@ a.menu-item { text-decoration: none; }
   .agenda-sheet .agenda-cell-status { display: inline-flex; width: 92px; }
   .agenda-sheet-concluded .agenda-cell-concluded { display: inline-flex; width: 116px; }
   .agenda-sheet .agenda-docs-count { min-width: 84px; }
-  .agenda-sheet-steps .agenda-actions > .btn { min-width: 100px; justify-content: center; }
+  .agenda-sheet-steps .agenda-steps > .btn { min-width: 100px; justify-content: center; }
   .agenda-sheet-steps .agenda-step-slot { display: block; flex: none; width: 100px; }
   /* Kept as an empty slot here, so the presenters still form a column. */
   .agenda-sheet .agenda-presenter-none { display: inline-flex; visibility: hidden; }
@@ -3324,30 +3343,37 @@ a.menu-item { text-decoration: none; }
   .agenda-sheet .agenda-cell-status { display: inline-flex; width: 92px; }
   .agenda-sheet-concluded .agenda-cell-concluded { display: inline-flex; width: 32px; }
   .agenda-sheet .agenda-docs-count { min-width: 84px; }
-  .agenda-sheet-steps .agenda-actions > .btn { min-width: 100px; justify-content: center; }
+  .agenda-sheet-steps .agenda-steps > .btn { min-width: 100px; justify-content: center; }
   .agenda-sheet-steps .agenda-step-slot { display: block; flex: none; width: 100px; }
 }
 @container (max-width: 640px) {
   .agenda-boxes { grid-template-columns: minmax(0, 1fr); }
 }
-/* The room's panel (and a phone, below): the state goes to the card's top right, beside the title, so
-   the facts and the actions share one line under it and the paperclip never wraps under the presenter. */
+/* The room's panel (and a phone): the icons (attach, edit, delete) take the card's top-right corner beside the title,
+   the same place on every card however the title wraps (Khánh 19/11/2026); the facts go under it, ending in the step
+   (Bắt đầu, Xong) at the right. */
 @container (max-width: 520px) {
   .agenda-meta { display: contents; }
   .agenda-meta > *, .agenda-cell > * { order: 3; }
   .agenda-head { column-gap: 14px; }
-  .agenda-meta .agenda-status { order: 1; align-self: flex-start; margin-top: 10px; }
   .agenda-break { order: 2; }
-  .agenda-actions { order: 6; margin-left: auto; }
+  .agenda-actions { display: contents; }
+  .agenda-tools { display: flex; flex: none; order: 1; align-self: flex-start; gap: 6px; margin-top: 3px; }
+  .agenda-steps { display: flex; flex: none; order: 6; gap: 6px; margin-left: auto; }
+  .agenda-tools:empty, .agenda-steps:empty { display: none; }
+  @media (pointer: coarse) { .agenda-tools { margin-top: 0; } }
+  /* Too narrow to share the line (a phone's page): the icons get the card's top row to themselves, at its right,
+     beside the drag handle, and the title the full width under them, rather than a word a line. */
+  @container (max-width: 320px) {
+    .agenda-head:has(.agenda-tools:not(:empty)) .agenda-grip { order: -2; }
+    .agenda-head:has(.agenda-tools:not(:empty)) .agenda-tools { order: -1; margin: 0 0 0 auto; }
+    .agenda-head:has(.agenda-tools:not(:empty)) .agenda-title { flex-basis: 100%; }
+  }
   .agenda-panel .agenda-item { --agenda-pad: 12px; }
   .agenda-panel .agenda-body { padding-left: var(--agenda-pad); }
   .agenda-sheet .agenda-item, .agenda-sheet .agenda-item:has(.agenda-grip) { --agenda-indent: 12px; }
   .agenda-panel .agenda-sheet .agenda-body { padding-left: 0; }
   .agenda-panel-page .agenda-empty { margin-left: 12px; margin-right: 12px; }
-}
-/* A phone has no room beside the title: the state stays with the facts, the actions wrap under them. */
-@container (max-width: 400px) {
-  .agenda-meta .agenda-status { order: 3; align-self: center; margin-top: 0; }
 }
 
 /* ---------- Placeholder screens ----------
@@ -5050,6 +5076,23 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
   .viewer-download-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .viewer-scroll { padding: 12px 8px; }
   .docx-sheet { padding: 20px 16px; }
+}
+
+/* The viewer over the page a document was opened from (DocumentOverlay, Hải 19/11/2026): a modal inset from the
+   window's edge, so the page — the call room included — shows around it and is still there when it closes. A phone
+   gives it the whole screen. The close is the header's last control, and on a phone sits beside the name, top right. */
+.viewer-dialog {
+  width: calc(100vw - 48px); height: calc(100dvh - 48px); max-width: none; max-height: none;
+  margin: auto; padding: 0; overflow: hidden;
+  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--paper); color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.viewer-dialog::backdrop { background: var(--overlay); }
+.viewer-dialog .viewer { height: 100%; }
+.viewer-close { flex: none; order: 1; color: var(--muted-ink); }
+@media (max-width: 720px) {
+  .viewer-dialog { width: 100vw; height: 100dvh; border: 0; border-radius: 0; }
+  .viewer-close { order: 0; }
 }
 
 /* ---------- Upload queue (features/uploads) ---------- */

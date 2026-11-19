@@ -17,7 +17,6 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useCallback, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { completeAgendaItem, deleteAgendaItem, startAgendaItem } from '../../api/agenda'
 import { Badge } from '../../components/Badge'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
@@ -27,9 +26,9 @@ import { avatarColors, initials } from '../../lib/avatar'
 import { formatClock } from '../../lib/format'
 import type { AgendaItem, AgendaMutationResponse } from '../../types/agenda'
 import type { Meeting } from '../../types/meeting'
-import { useDocumentPath } from '../guest/guestContext'
 import { AddDocumentsDialog, type DocumentSource } from '../documents/AddDocumentsDialog'
 import { AttachMenu } from '../documents/AttachMenu'
+import { DocumentLink } from '../documents/DocumentLink'
 import { FileTypeTag } from '../documents/DocumentTags'
 import { everyDocument, useMeetingDocuments } from '../documents/useMeetingDocuments'
 import { AgendaConclusion } from './AgendaConclusion'
@@ -321,7 +320,7 @@ function AgendaRow({
   children,
 }: {
   meetingId: string
-  /** In the call room a document opens in a new tab, so the call keeps running (BR-315). */
+  /** The call room's narrow panel: facts as icons, no empty slot for the step buttons. */
   room: boolean
   item: AgendaItem
   number: number
@@ -338,7 +337,6 @@ function AgendaRow({
   onComplete: () => void
   children: ReactNode
 }) {
-  const documentPath = useDocumentPath()
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
     disabled: !sortable || locked,
@@ -386,46 +384,52 @@ function AgendaRow({
 
         {(actions.canSetCurrent || actions.canComplete || onAttach || actions.canEdit || actions.canDelete) && (
           <div className="row-actions agenda-actions">
-            {actions.canSetCurrent && (
-              <button type="button" className="btn btn-outline btn-sm" onClick={onStart}>
-                <Icon name="play" size={16} />
-                Bắt đầu
-              </button>
-            )}
-            {actions.canComplete && (
-              <button type="button" className="btn btn-live btn-sm" onClick={onComplete}>
-                <Icon name="check" size={16} />
-                Xong
-              </button>
-            )}
-            {!room && !actions.canSetCurrent && !actions.canComplete && (
-              <span className="agenda-step-slot" aria-hidden="true" />
-            )}
-            {onAttach && <AttachMenu title={item.title} onPick={onAttach} />}
-            {actions.canEdit && (
-              <button
-                type="button"
-                className="icon-button icon-button-sm"
-                onClick={onEdit}
-                aria-label={`Sửa: ${item.title}`}
-                data-tooltip="Sửa"
-              >
-                <Icon name="pencil" size={16} />
-              </button>
-            )}
-            {/* A started item cannot be deleted: keep its slot, so every row's pencil lines up. */}
-            {actions.canEdit && !actions.canDelete && <span className="agenda-action-slot" aria-hidden="true" />}
-            {actions.canDelete && (
-              <button
-                type="button"
-                className="icon-button icon-button-sm icon-button-danger"
-                onClick={onDelete}
-                aria-label={`Xoá: ${item.title}`}
-                data-tooltip="Xoá"
-              >
-                <Icon name="trash" size={16} />
-              </button>
-            )}
+            {/* Two groups, one line on a wide panel. A narrow one (the call room, a phone) keeps the icons in the
+                card's top-right corner, beside the title, and the step under it with the facts (Khánh 19/11/2026). */}
+            <span className="agenda-steps">
+              {actions.canSetCurrent && (
+                <button type="button" className="btn btn-outline btn-sm" onClick={onStart}>
+                  <Icon name="play" size={16} />
+                  Bắt đầu
+                </button>
+              )}
+              {actions.canComplete && (
+                <button type="button" className="btn btn-live btn-sm" onClick={onComplete}>
+                  <Icon name="check" size={16} />
+                  Xong
+                </button>
+              )}
+              {!room && !actions.canSetCurrent && !actions.canComplete && (
+                <span className="agenda-step-slot" aria-hidden="true" />
+              )}
+            </span>
+            <span className="agenda-tools">
+              {onAttach && <AttachMenu title={item.title} onPick={onAttach} />}
+              {actions.canEdit && (
+                <button
+                  type="button"
+                  className="icon-button icon-button-sm"
+                  onClick={onEdit}
+                  aria-label={`Sửa: ${item.title}`}
+                  data-tooltip="Sửa"
+                >
+                  <Icon name="pencil" size={16} />
+                </button>
+              )}
+              {/* A started item cannot be deleted: keep its slot, so every row's pencil lines up. */}
+              {actions.canEdit && !actions.canDelete && <span className="agenda-action-slot" aria-hidden="true" />}
+              {actions.canDelete && (
+                <button
+                  type="button"
+                  className="icon-button icon-button-sm icon-button-danger"
+                  onClick={onDelete}
+                  aria-label={`Xoá: ${item.title}`}
+                  data-tooltip="Xoá"
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              )}
+            </span>
           </div>
         )}
         {/* The facts go on a second line under the title, unless the panel is wide enough for one. */}
@@ -484,14 +488,11 @@ function AgendaRow({
                 <ul className="agenda-doc-list">
                   {item.documents.map((doc) => (
                     <li key={doc.id}>
-                      <Link
-                        to={`${documentPath(meetingId, doc.id)}?${room ? 'from=room&' : ''}back=agenda`}
-                        {...(room && { target: '_blank', rel: 'noopener' })}
-                      >
+                      <DocumentLink meetingId={meetingId} documentId={doc.id} back="agenda">
                         {/* The item lists names only; the extension says which kind it is. */}
                         <FileTypeTag pdf={/\.pdf$/i.test(doc.title)} size={20} />
                         <span>{doc.title}</span>
-                      </Link>
+                      </DocumentLink>
                     </li>
                   ))}
                 </ul>

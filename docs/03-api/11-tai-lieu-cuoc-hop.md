@@ -263,8 +263,8 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
 
 - Token nằm trong JS (không có cookie), nên **không** mở thẳng URL `content` ở tab mới hay đặt vào `<a href>`. Gọi
   bằng client API (bearer) lấy `Blob`/`ArrayBuffer`, rồi đưa cho pdf.js / `docx-preview`; tải về thì
-  `URL.createObjectURL` + `<a download>` với `fileName` từ danh sách. "Mở ở tab mới" từ phòng họp (BR-315) = mở route
-  trình xem của FE ở tab mới, route đó tự gọi API.
+  `URL.createObjectURL` + `<a download>` với `fileName` từ danh sách. Mở tài liệu (cả từ phòng họp, BR-315) = khung xem
+  phủ trên trang đang đứng, tự gọi API ([ADR-0066](../05-decisions/0066-tai-lieu-mo-trong-khung-xem-tren-trang.md)).
 - `client.ts` hiện đọc JSON; cần một biến thể trả `Blob` cho `content` nhưng vẫn đọc body JSON khi lỗi để lấy `code`.
 - Nút Tải về ẩn khi `sensitivity === 'Secret'` (lấy từ `GET /api/meetings/{id}`); server vẫn chặn.
 - Chỉ đọc sau khi kết thúc (BR-282), nút Tải lên chỉ cho Chủ toạ/Thư ký: lấy `status` và `myMeetingRole` từ
@@ -284,8 +284,9 @@ gắn và gỡ mục (SCRUM-58) phát cùng event này.
   họp và panel "Tài liệu" trong phòng họp. Số thứ tự mục lấy theo thứ tự trong danh sách, không theo `position`
   (có thể nhảy số sau khi sắp xếp lại).
 - Trình xem ở route `/mgmt/meetings/{id}/documents/{meetingDocumentId}`, ngoài khung ứng dụng: PDF bằng pdf.js
-  (bản `legacy`, worker cùng origin, CSP không đổi), DOCX bằng `docx-preview`. Từ phòng họp mở ở tab mới, nút
-  "‹ Tài liệu" đóng tab đó; ngoài phòng thì về `?tab=documents` của cuộc họp.
+  (bản `legacy`, worker cùng origin, CSP không đổi), DOCX bằng `docx-preview`. Bấm tài liệu thì màn xem này mở trong
+  khung phủ trên trang (`DocumentOverlay`, ADR-0066), trong phòng họp cũng vậy; ✕, Esc hay Back đóng. Route toàn màn
+  hình còn cho Ctrl/⌘-click và link cũ: "‹ Tài liệu" về `?tab=documents` của cuộc họp.
 - Tải lên đi qua hàng đợi ở trình duyệt ([ADR-0033](../05-decisions/0033-hang-doi-tai-len-o-trinh-duyet.md)): hộp thoại
   chỉ chọn và kiểm tệp, mỗi tệp một request `XMLHttpRequest` (`api.upload`, có tiến độ), chạy lần lượt; khay ở góc theo
   dõi, tự thử lại khi chắc chưa lưu, rồi chờ "Thử lại". FE không đếm trang và không gửi `pageCounts` (server đếm).

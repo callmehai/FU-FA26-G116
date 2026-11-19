@@ -8,6 +8,7 @@ import { routes } from '../../lib/routes'
 import type { LibraryDocument } from '../../types/document'
 import { useAccessLost } from '../auth/useAccessLost'
 import { isPdf, saveBlob } from './documentFile'
+import { ViewerClose, ViewerGone } from './DocumentViewerPage'
 import { FileTypeTag } from './DocumentTags'
 import { DocxView, PdfView } from './renderers'
 import { ViewerZoom } from './ViewerZoom'
@@ -29,7 +30,21 @@ type State =
 export function LibraryViewerPage() {
   const { documentId = '', userId } = useParams()
   const [params] = useSearchParams()
-  const folderId = params.get('folder') || null
+  return <LibraryViewer documentId={documentId} userId={userId} folderId={params.get('folder') || null} />
+}
+
+/** The same viewer over the library page it was opened from (DocumentOverlay): `onClose` replaces "‹ Kho tài liệu". */
+export function LibraryViewer({
+  documentId,
+  userId,
+  folderId,
+  onClose,
+}: {
+  documentId: string
+  userId?: string
+  folderId: string | null
+  onClose?: () => void
+}) {
   const handleAccessLost = useAccessLost()
   const [state, setState] = useState<State>({ kind: 'loading' })
   const [attempt, setAttempt] = useState(0)
@@ -60,7 +75,9 @@ export function LibraryViewerPage() {
     }
   }, [documentId, userId, folderId, attempt, handleAccessLost])
 
-  if (state.kind === 'gone') return <NotFound />
+  if (state.kind === 'gone') {
+    return onClose ? <ViewerGone onClose={onClose} message="Mục này không còn trong kho tài liệu của bạn." /> : <NotFound />
+  }
   const back = userId
     ? routes.userLibrary(userId, folderId)
     : `${routes.documents}${folderId ? `?folder=${folderId}` : ''}`
@@ -68,16 +85,19 @@ export function LibraryViewerPage() {
   return (
     <div className="viewer">
       <header className="viewer-head">
-        <Link className="back-link viewer-back" to={back}>
-          <Icon name="chevronLeft" size={16} />
-          Kho tài liệu
-        </Link>
+        {!onClose && (
+          <Link className="back-link viewer-back" to={back}>
+            <Icon name="chevronLeft" size={16} />
+            Kho tài liệu
+          </Link>
+        )}
         {state.kind === 'loaded' && (
           <>
             <FileTypeTag pdf={isPdf(state.doc)} />
             <h1 className="viewer-title" data-tooltip={state.doc.fileName}>
               {state.doc.fileName}
             </h1>
+            {onClose && <ViewerClose onClose={onClose} />}
             <span className="viewer-break" aria-hidden="true" />
             <span className="viewer-spacer" />
             {isPdf(state.doc) && page && (
@@ -91,6 +111,12 @@ export function LibraryViewerPage() {
               <Icon name="download" size={16} />
               <span className="viewer-download-label">Tải về</span>
             </button>
+          </>
+        )}
+        {onClose && state.kind !== 'loaded' && (
+          <>
+            <span className="viewer-spacer" />
+            <ViewerClose onClose={onClose} />
           </>
         )}
       </header>
