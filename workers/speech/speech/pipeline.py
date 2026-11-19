@@ -56,6 +56,10 @@ VAD_PAD_S = 0.1
 # A speaker's consecutive segments are punctuated as one passage (speech/punctuation.py), so a
 # breath in the middle of a sentence does not end it. A longer pause than this starts a new one.
 PASSAGE_MAX_GAP_S = 5.0
+# The words said just before a per-mic sentence (`context`), read ahead of it so a sentence cut at a breath is
+# punctuated as one. Longer than this, it is not used: the caller corrects that sentence whole, and a long one would
+# only slow the tagger down.
+MAX_CONTEXT_WORDS = 60
 
 # --- Levelling --------------------------------------------------------------------------------
 # A sliding gain lifts quiet stretches before the VAD. In a real meeting the people far from the
@@ -271,6 +275,67 @@ def passages(pieces: list[tuple[float, float, str | None, np.ndarray]], raws: li
             groups.append([index])
         last_end, last_label = end, label
     return groups
+
+
+# The SentencePiece word mark; sherpa-onnx shows it as a leading space in a result's tokens.
+WORD_MARKS = (" ", "▁")
+
+
+def word_starts(tokens: list[str], timestamps: list[float], words: int) -> list[float] | None:
+    """When each word of the recogniser's text begins, in seconds into the piece, or None when unknown.
+
+    sherpa-onnx gives the time of every BPE token the transducer emitted; a token that starts a word
+    carries the SentencePiece word mark. The result holds one time per word of the text, so the
+    transcript can follow the voice word by word. Should the count not match the words (no
+    timestamps, an odd token), there is no timing rather than a wrong one.
+    """
+    if not words or len(timestamps) != len(tokens):
+        return None
+    starts: list[float] = []
+    pending: float | None = None
+    for token, at in zip(tokens, timestamps):
+        if token[:1] in WORD_MARKS:
+            pending = float(at)
+        if not token.lstrip("".join(WORD_MARKS)):
+            continue
+        if pending is not None or not starts:
+            starts.append(pending if pending is not None else float(at))
+            pending = None
+    return starts if len(starts) == words else None
+
+
+def word_times_ms(start_s: float, end_s: float, starts: list[float] | None) -> list[int] | None:
+    """A piece's word starts on the recording's clock, in ms, kept inside the piece and in order."""
+    if starts is None:
+        return None
+    low, high = round(start_s * 1000), round(end_s * 1000)
+    out: list[int] = []
+    for offset in starts:
+        at = min(max(round((start_s + offset) * 1000), low), high)
+        out.append(max(at, out[-1]) if out else at)
+    return out
+
+
+def context_words(context: str | None) -> str | None:
+    """The words said just before, as the tagger reads them (lower case, no marks), or None when unusable.
+
+    Its marks are taken off so the tagger decides them again knowing what followed: a sentence the browser cut at a
+    breath had been closed with a full stop it never had.
+    """
+    if not context:
+        return None
+    words = [word.strip(punctuation.MARKS + punctuation.SENTENCE_END).lower() for word in context.split()]
+    words = [word for word in words if word]
+    return " ".join(words) if 0 < len(words) <= MAX_CONTEXT_WORDS else None
+
+
+def aligned_words(sentence: str, times: list[int] | None) -> list[int] | None:
+    """The word times of a readable line, only while they still match its words one for one.
+
+    Punctuation edits words in place and never adds or drops one, so the recogniser's word times
+    belong to the words of the punctuated text as well; anything else sends no times at all.
+    """
+    return times if times is not None and len(times) == len(sentence.split()) else None
 
 
 def level(samples: np.ndarray, window_s: float = LEVEL_WINDOW_S, target_db: float = LEVEL_TARGET_DBFS,
@@ -509,8 +574,10 @@ class Engine:
         drain()
         return [(start, samples[start:end]) for start, end in pad_regions(found, samples.size)]
 
-    def _transcribe_pieces(self, pieces: list[np.ndarray]) -> list[str]:
+    def _transcribe_pieces(self, pieces: list[np.ndarray]) -> tuple[list[str], list[list[float] | None]]:
+        """The raw text of each piece, and when each of its words begins (seconds into the piece)."""
         texts: list[str] = []
+        timings: list[list[float] | None] = []
         for first in range(0, len(pieces), 8):
             streams = []
             for piece in pieces[first : first + 8]:
@@ -518,22 +585,44 @@ class Engine:
                 stream.accept_waveform(SAMPLE_RATE, piece)
                 streams.append(stream)
             self._recognizer.decode_streams(streams)
-            texts.extend(stream.result.text for stream in streams)
-        return texts
+            for stream in streams:
+                result = stream.result
+                texts.append(result.text)
+                timings.append(word_starts(list(result.tokens), list(result.timestamps), len(result.text.split())))
+        return texts, timings
 
-    def _readable(self, pieces: list[tuple[float, float, str | None, np.ndarray]], raws: list[str]) -> list[str]:
-        """The recogniser's raw text of each piece, punctuated and capitalised."""
+    def _readable(self, pieces: list[tuple[float, float, str | None, np.ndarray]], raws: list[str],
+                  context: str | None = None) -> tuple[list[str], str | None]:
+        """The recogniser's raw text of each piece, punctuated and capitalised.
+
+        `context` is what the same speaker said just before, in an earlier request (the previous sentence from their
+        own mic): it is read ahead of the first passage, so a sentence the browser cut at a pause goes on as one, and
+        comes back punctuated again for the caller to correct its end.
+        """
         if self._punctuator is None:
-            return [text.normalise(raw) for raw in raws]
+            return [text.normalise(raw) for raw in raws], None
         out = [""] * len(pieces)
-        for indices in passages(pieces, raws):
+        before = context_words(context)
+        restored_context = None
+        for number, indices in enumerate(passages(pieces, raws)):
             lines = [" ".join(raws[i].split()).lower() for i in indices]
+            ahead = number == 0 and before is not None
+            if ahead:
+                lines = [before, *lines]
             restored = punctuation.passage(lines, self._punctuator)
             if restored == lines:  # the tagger changed the word count, or nothing at all
                 restored = [text.normalise(line) for line in lines]
+            elif ahead:
+                # Its first word keeps its case: it may itself go on from the sentence before it, which the passage's
+                # capital at its start knows nothing of.
+                first = context.split()[0][:1] if context and context.split() else ""
+                restored_context = (first + restored[0][1:]) if first and restored[0][:1].lower() == first.lower() \
+                    else restored[0]
+            if ahead:
+                restored = restored[1:]
             for index, sentence in zip(indices, restored):
                 out[index] = sentence
-        return out
+        return out, restored_context
 
     def _embed(self, samples: np.ndarray) -> np.ndarray:
         stream = self._extractor.create_stream()
@@ -622,11 +711,11 @@ class Engine:
     # --- operations ------------------------------------------------------------------------------
 
     def transcribe_file(self, path: str | os.PathLike[str], diarize: bool = True,
-                        speakers: int | None = None, profile: str = "room") -> dict:
+                        speakers: int | None = None, profile: str = "room", context: str | None = None) -> dict:
         samples = decode(path)
         with self._lock:
             started = time.monotonic()
-            result = self._transcribe(samples, diarize, speakers, profile)
+            result = self._transcribe(samples, diarize, speakers, profile, context)
             elapsed = time.monotonic() - started
         audio_s = samples.size / SAMPLE_RATE
         log.info(
@@ -636,7 +725,8 @@ class Engine:
         )
         return result
 
-    def _transcribe(self, samples: np.ndarray, diarize: bool, speakers: int | None, profile: str = "room") -> dict:
+    def _transcribe(self, samples: np.ndarray, diarize: bool, speakers: int | None, profile: str = "room",
+                    context: str | None = None) -> dict:
         raw = samples
         clip = profile == "clip"
         samples = level(samples, max_gain_db=self._clip_max_gain_db if clip else LEVEL_MAX_GAIN_DB)
@@ -678,9 +768,10 @@ class Engine:
                     for _, _, label, part in pieces:
                         turns_by_label[label].append(part)
 
-        texts = self._readable(pieces, self._transcribe_pieces([piece[3] for piece in pieces]))
+        raws, timings = self._transcribe_pieces([piece[3] for piece in pieces])
+        texts, restored_context = self._readable(pieces, raws, context)
         segments = []
-        for (start, end, label, part), sentence, loudness in zip(pieces, texts, levels):
+        for (start, end, label, part), sentence, loudness, timing in zip(pieces, texts, levels, timings):
             if sentence:
                 segments.append({
                     "startMs": round(start * 1000),
@@ -688,6 +779,7 @@ class Engine:
                     "speaker": label,
                     "text": sentence,
                     "levelDbfs": None if loudness is None else round(loudness, 1),
+                    "wordStartsMs": aligned_words(sentence, word_times_ms(start, end, timing)),
                 })
         segments.sort(key=lambda segment: (segment["startMs"], segment["endMs"]))
 
@@ -707,6 +799,8 @@ class Engine:
             "embeddingModel": self.model_ids["embedding"],
             "segments": segments,
             "speakers": voices,
+            # The words said before, punctuated again with this sentence after them; null when none were sent or used.
+            "context": restored_context,
         }
 
     def embed_file(self, path: str | os.PathLike[str]) -> tuple[bool, dict]:

@@ -163,9 +163,19 @@ def passage(lines: Sequence[str], restore: Restore) -> list[str]:
         return list(lines)
     if out[-1][-1:] not in SENTENCE_END:  # the model may leave the last sentence open
         out[-1] = out[-1].rstrip(MARKS) + "."
+    # A passage is a new turn: after another speaker or a long pause. The model sometimes leaves its first
+    # word lower case, and a transcript line then read as a fragment ("hơn bản ghi đâu.").
+    out[0] = out[0][:1].upper() + out[0][1:]
     texts = []
     at = 0
-    for line in words:
-        texts.append(" ".join(out[at : at + len(line)]))
-        at += len(line)
+    for index, line in enumerate(words):
+        end = at + len(line)
+        # The next line starts a sentence (the model capitalised it) after a pause the VAD cut at, yet this one
+        # was left open: read together, "… quý bốn Đề nghị …" lacked its full stop.
+        following = out[end : end + 1]
+        if index < len(words) - 1 and line and following and following[0][:1].isupper() \
+                and out[end - 1][-1:] not in MARKS + SENTENCE_END:
+            out[end - 1] += "."
+        texts.append(" ".join(out[at:end]))
+        at = end
     return texts
