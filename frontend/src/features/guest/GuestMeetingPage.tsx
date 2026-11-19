@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
+import { useOutletContext, useParams, useSearchParams } from 'react-router-dom'
+import { useTabName } from '../calls/meetingTabs'
+import { RoomLink } from '../calls/TabLinks'
 import { endGuestSession } from '../../api/guest'
 import { getMyInvitationResponse } from '../../api/participants'
 import { BrandMark } from '../../components/BrandMark'
@@ -43,6 +45,7 @@ type TabId = (typeof TABS)[number]['id']
 export function GuestMeetingPage() {
   const guest = useGuest()!
   const meeting = guest.session.meeting
+  useTabName(routes.guest(guest.invitationId))
   const [params, setParams] = useSearchParams()
   // The tab lives in the URL, so the browser's Back from a document returns to the tab it was opened from.
   const tab: TabId = TABS.find((t) => t.id === params.get('tab'))?.id ?? 'agenda'
@@ -98,10 +101,10 @@ export function GuestMeetingPage() {
           </div>
           {call?.status === 'Open' && (
             <div className="page-header-actions">
-              <Link className="btn btn-live btn-lg btn-cta" to={routes.guestRoom(guest.invitationId)}>
+              <RoomLink className="btn btn-live btn-lg btn-cta" to={routes.guestRoom(guest.invitationId)}>
                 <Icon name="video" size={18} />
                 Vào phòng họp
-              </Link>
+              </RoomLink>
             </div>
           )}
         </div>

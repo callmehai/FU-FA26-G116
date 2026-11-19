@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { RoomLink } from '../calls/TabLinks'
 import { Icon } from '../../components/Icon'
 import { formatClock } from '../../lib/format'
 import { routes } from '../../lib/routes'
@@ -136,10 +136,10 @@ function MoreRow({
       </button>
       {/* A sibling laid over the row's foot: a link cannot sit inside a button. */}
       {goIn && (
-        <Link className="cal-go more-go" to={routes.meetingRoom(meeting.id)}>
+        <RoomLink className="cal-go more-go" to={routes.meetingRoom(meeting.id)}>
           Vào phòng họp
           <Icon name="arrowRight" size={13} />
-        </Link>
+        </RoomLink>
       )}
     </li>
   )

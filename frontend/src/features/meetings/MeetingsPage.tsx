@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { listMeetings } from '../../api/meetings'
 import { ClearFiltersButton } from '../../components/ClearFiltersButton'
 import { Icon } from '../../components/Icon'
+import { RoomLink } from '../calls/TabLinks'
 import { PageHeader } from '../../components/PageHeader'
 import { Pagination } from '../../components/Pagination'
 import { Select } from '../../components/Select'
@@ -309,7 +310,7 @@ export function MeetingsPage() {
           {m.status === 'InProgress' && m.mode !== 'InPerson' ? (
             // The call to act now: green like the "Đang diễn ra" state, and it pings. The room
             // answers 404 to someone who is not invited.
-            <Link
+            <RoomLink
               className="btn btn-live btn-sm btn-ping"
               to={routes.meetingRoom(m.id)}
               onClick={(e) => e.stopPropagation()}
@@ -317,7 +318,7 @@ export function MeetingsPage() {
             >
               <Icon name="video" size={16} />
               <span className="btn-live-label">Vào phòng họp</span>
-            </Link>
+            </RoomLink>
           ) : (
             <Link
               className="icon-button icon-button-sm icon-button-brand"

@@ -32,6 +32,7 @@ import {
   type TrackReferenceOrPlaceholder,
 } from '@livekit/components-react'
 import {
+  ConnectionState,
   type Participant,
   ParticipantEvent,
   type Room,
@@ -63,7 +64,8 @@ import { MyClips } from '../../speech/MyClips'
 import { useSpeech } from '../../speech/useSpeech'
 import { SensitivityBadge } from '../../meetings/StatusBadge'
 import { useAccessLost } from '../../auth/useAccessLost'
-import { useGuest } from '../../guest/guestContext'
+import { useGuest, useMeetingHome } from '../../guest/guestContext'
+import { showInTab } from '../meetingTabs'
 import { DeviceSelect, MicLevel } from './devices'
 import { usePipWindow } from './pipWindow'
 import { RoomRolesContext, useRoleOf, useRoomRoles } from './roomRoles'
@@ -187,11 +189,15 @@ function RoomLayout({
   const tray = useDeviceTray()
   const micTrack = localParticipant.getTrackPublication(Track.Source.Microphone)?.audioTrack
   const guest = useGuest()
+  const home = useMeetingHome(meeting.id)
   const queued = speaking.data?.canManage ? speaking.data.requests.filter((r) => r.status === 'Queued').length : 0
   useRaisedHandAlerts(speaking, panel === 'speaking')
 
-  // Closing the tab while connected asks first; the browser shows its own wording.
-  useBeforeUnload((event) => event.preventDefault())
+  // Closing the tab while connected asks first; the browser shows its own wording. Once "Rời phòng" has hung up,
+  // the tab closes itself without asking.
+  useBeforeUnload((event) => {
+    if (room.state !== ConnectionState.Disconnected) event.preventDefault()
+  })
 
   useEffect(() => {
     const onReconnecting = () => setReconnecting(true)
@@ -298,17 +304,22 @@ function RoomLayout({
 
   return (
     <div className={`room${panel ? ' room-with-panel' : ''}`}>
-      {/* One line, as the meeting page's own heading: back, the title, then how many are here and how
-          sensitive it is. Going back leaves the call, so it asks first, like "Rời phòng". */}
+      {/* One line, as the meeting page's own heading: the way to the meeting page, the title, then how many are here
+          and how sensitive it is. The meeting page has a tab of its own (PO, 2026-11-19): going there keeps this call
+          on, so nothing asks. A browser that blocks the tab can only show the page here, which leaves the call: that
+          asks first, like "Rời phòng". */}
       <header className="room-header">
         <button
           type="button"
           className="room-back"
-          aria-label="Quay lại trang cuộc họp"
-          title="Quay lại trang cuộc họp"
-          onClick={() => setConfirmingLeave(true)}
+          aria-label="Trang cuộc họp"
+          data-tooltip="Mở trang cuộc họp, vẫn ở trong phòng"
+          onClick={() => {
+            if (!showInTab(home)) setConfirmingLeave(true)
+          }}
         >
           <Icon name="chevronLeft" size={20} />
+          <span className="room-back-label">Trang cuộc họp</span>
         </button>
         <h1 className="room-title">{meeting.title}</h1>
         <span className="room-count">

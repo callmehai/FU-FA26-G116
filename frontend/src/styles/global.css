@@ -3617,16 +3617,22 @@ a.menu-item { text-decoration: none; }
   color: #fff;
   border-bottom: 2px solid var(--gold);
 }
+/* The way to the meeting page's tab: a chevron and its name; on a phone the chevron alone, its name for screen readers. */
 .room-back {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   height: 40px;
+  padding: 0 12px 0 8px;
   border: 0;
-  border-radius: 50%;
+  border-radius: 20px;
   background: transparent;
   color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
 }
 .room-back:hover { background: var(--sidebar-hover); }
@@ -4231,8 +4237,9 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
 @media (max-width: 560px) {
   /* A panel as wide as the screen less its gutters, the same on both sides. */
   .room-panel { width: calc(100vw - 16px); }
+  .room-back { width: 40px; padding: 0; justify-content: center; }
   /* The count keeps its number; the words stay for screen readers. */
-  .room-count-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .room-back-label, .room-count-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   /* Phones have no floating window (Document Picture-in-Picture is desktop-only). */
   .room-control-pip { display: none; }
   .room-controls-main { --panel-pad: 8px; --tray-gap: 8px; margin-bottom: 11px; border-radius: 20px; }
