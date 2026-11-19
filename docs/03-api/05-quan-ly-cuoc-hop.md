@@ -188,7 +188,7 @@ Trả `200 OK` và object meeting phẳng, không bọc envelope: `plannedStartT
 Chi tiết, response tạo/sửa họp và mỗi dòng của `GET /api/meetings` còn có câu trả lời lời mời của chính người gọi (SCRUM-20, theo AI-eCabinet):
 
 - `myResponse: "Accepted" | "Declined" | null` — `null` khi chưa trả lời (coi như tham dự), khi người gọi không có trong thành phần, và luôn `null` với Chủ toạ (Chủ toạ không được hỏi).
-- `canRespond: boolean` — `true` khi nên hỏi "Bạn có tham dự cuộc họp này?": người gọi là thành phần nội bộ hiện tại, tài khoản đang hoạt động, không phải Chủ toạ, cuộc họp `Published`/`InProgress` và chưa trả lời. FE hiện hai nút trả lời theo cờ này; endpoint trả lời vẫn tự kiểm tra lại.
+- `canRespond: boolean` — `true` khi server còn cho trả lời: người gọi là thành phần nội bộ hiện tại, tài khoản đang hoạt động, không phải Chủ toạ, cuộc họp `Published`/`InProgress` và chưa trả lời. FE chỉ hiện thanh "Bạn có tham dự cuộc họp này?" khi cuộc họp còn `Published` (từ `InProgress` thì điểm danh thay cho câu hỏi — PR #397), không hiện theo cờ này một mình; endpoint trả lời vẫn tự kiểm tra lại và vẫn nhận câu trả lời ở `InProgress`.
 
 ### PUT `/api/meetings/{id}`
 
@@ -534,10 +534,10 @@ stale content.
   giờ người xem; Chưa diễn ra, Đã diễn ra gửi `timing`. Không còn ô chọn khoảng ngày.
 - **Bốn thẻ trên danh sách** theo AI-eCabinet, mỗi thẻ là `totalCount` của một request `pageSize=1`
   (không theo ô tìm kiếm hay bộ lọc đang chọn): **Họp hôm nay** (cửa sổ `from`/`to` của “Hôm nay”;
-  dòng phụ đếm `status=InProgress`, như `timing=live` của eCab), **Đã công bố** (`status=Published`),
+  dòng phụ `N đang diễn ra` / `Chưa có cuộc họp đang diễn ra`, chỉ đếm `status=InProgress` trong hôm nay — PR #398), **Đã công bố** (`status=Published`),
   **Cần xử lý** (`scope=todo`), **Bản nháp** (`status=Draft`, chỉ người có `MeetingCreator`). Bấm thẻ
   đặt danh sách về đúng bộ lọc của thẻ (xoá ô tìm kiếm và bộ lọc khác); bấm lại thì bỏ. URL giữ
-  `scope=todo` như các tiêu chí khác.
+  `scope=todo` và `sortSet` (sắp xếp tay) như các tiêu chí khác. **Họp hôm nay** và **Cần xử lý** mặc định xếp giờ bắt đầu tăng dần (ngoại lệ so với mặc định chung `plannedStartTime desc`).
 - FE mở form và nút chỉnh sửa ở cả `Draft` và `Rejected` theo contract PUT. Sửa nội dung ở
   Rejected giữ nguyên trạng thái, assignment và rejection history; gửi duyệt lại trực tiếp bằng
   `SubmitForApproval`. `ReturnToDraft` là tùy chọn.
