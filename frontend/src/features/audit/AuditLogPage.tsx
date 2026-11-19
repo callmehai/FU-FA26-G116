@@ -83,6 +83,15 @@ const rangeInvalid = (from: string, to: string) => Boolean(from && to && from > 
 type Load = { kind: 'loading' } | { kind: 'loaded' } | { kind: 'error'; message: string; invalidQuery: boolean }
 
 /**
+ * The object as people know it: its name from the backend (the meeting's title, the document's file name…). With no
+ * name, the end of its id: the start of a version 7 id is its creation time, the same for everything made in one
+ * minute, so "#01a1bf25" read as one meeting on eight rows (19/11/2026). The whole id is in the sheet.
+ */
+function objectLabel(item: AuditLogItem): string | null {
+  return item.objectName ?? (item.objectId ? `#${item.objectId.slice(-8)}` : null)
+}
+
+/**
  * UC-13 View Audit Log (SCRUM-16), screen 3.3. Read-only: the server filters, pages and names each actor;
  * nothing here filters rows itself. The criteria live in the URL. No CSV export (Q3), and the object
  * column names only accounts and roles (BR-443).
@@ -279,7 +288,9 @@ export function AuditLogPage() {
           </td>
           <td className="audit-object">
             {objectTypeLabel(item.objectType)}
-            <span className="cell-sub">{item.objectName ?? (item.objectId && `#${item.objectId.slice(0, 8)}`)}</span>
+            <span className="cell-sub audit-object-name" onPointerOver={tipIfClipped}>
+              {objectLabel(item)}
+            </span>
           </td>
           <td className="cell-muted audit-ip">{item.ipAddress || <span className="audit-none">Không có</span>}</td>
           <td className="col-action">
