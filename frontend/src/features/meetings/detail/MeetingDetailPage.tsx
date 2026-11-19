@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { getMeetingCall } from '../../../api/calls'
 import { BackLink } from '../../../components/BackLink'
+import { BlockedButton } from '../../../components/BlockedButton'
 import { Dialog } from '../../../components/Dialog'
 import { Icon } from '../../../components/Icon'
 import { useTabName } from '../../calls/meetingTabs'
@@ -65,6 +66,24 @@ const TABS = [
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
+
+/**
+ * Why a tab cannot be opened yet, as AI-eCabinet locks its meeting tabs: Bản ghi opens when the meeting starts and
+ * Biên bản when it ends — before that they have nothing in them (nothing is recorded before the start, and minutes are
+ * built only once the meeting is over, MSG386/MSG398). The tab still shows, dimmed with a lock, so the bar keeps its
+ * shape and says what is coming; Thông tin chung, the roster, the agenda, the documents and the votes are prepared
+ * before the meeting and never lock. `earlyRecordings`: the Secretary collecting voice samples for the room's mic
+ * does that in Bản ghi before the start (ADR-0060), as eCab opens the tab early to whoever uploads the room's file.
+ */
+function tabLock(id: TabId, meeting: Meeting, earlyRecordings: boolean): string | null {
+  const cancelled = meeting.status === 'Cancelled'
+  if (id === 'recordings') {
+    if (meeting.status === 'InProgress' || meeting.status === 'Ended' || earlyRecordings) return null
+    return cancelled ? 'Cuộc họp đã huỷ' : 'Mở khi cuộc họp bắt đầu'
+  }
+  if (id === 'minutes' && meeting.status !== 'Ended') return cancelled ? 'Cuộc họp đã huỷ' : 'Mở khi cuộc họp kết thúc'
+  return null
+}
 
 /**
  * The Secretary's notes (SCRUM-30) are the Chair's and the Secretary's alone, and exist only once the sitting starts.
@@ -146,7 +165,19 @@ function MeetingDetail({
   // on its roster and the server answers 404, so the tab is not offered, and a link straight to it opens the overview.
   const onRoster = meeting.myMeetingRole !== null
   const tabs = onRoster ? TABS : TABS.filter((t) => t.id !== 'recordings')
-  const tab: TabId = tabs.find((t) => t.id === params.get('tab'))?.id ?? 'overview'
+  // ADR-0060: the Secretary trusted with "Thu giọng mẫu hộ" records samples on the room's mic, never in a Secret meeting.
+  const collectsVoices =
+    meeting.mode !== 'Online' &&
+    meeting.myMeetingRole === 'Secretary' &&
+    can('VoiceCollector') &&
+    meeting.sensitivity !== 'Secret' &&
+    meeting.status !== 'Cancelled'
+  const locks = Object.fromEntries(tabs.map((t) => [t.id, tabLock(t.id, meeting, collectsVoices)])) as Record<
+    TabId,
+    string | null
+  >
+  // A link straight to a locked tab (`?tab=minutes` while the meeting runs) opens the overview, as an unknown tab does.
+  const tab: TabId = tabs.find((t) => t.id === params.get('tab') && !locks[t.id])?.id ?? 'overview'
   const tabBar = useActiveTabInView(tab)
   const setTab = (id: TabId) =>
     setParams(
@@ -187,13 +218,6 @@ function MeetingDetail({
     room.phase !== 'off' ||
     room.unfinished !== null ||
     (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null)
-  // ADR-0060: the Secretary trusted with "Thu giọng mẫu hộ" records samples on the room's mic, never in a Secret meeting.
-  const collectsVoices =
-    meeting.mode !== 'Online' &&
-    meeting.myMeetingRole === 'Secretary' &&
-    can('VoiceCollector') &&
-    meeting.sensitivity !== 'Secret' &&
-    meeting.status !== 'Cancelled'
   const history = useMeetingHistory(meeting.id)
   // UC-15 opens as a dialog on this page (`?edit=1`), keeping the back link's target.
   const editLink = useEditMeetingLink()
@@ -402,16 +426,18 @@ function MeetingDetail({
 
       <div className="tabs" role="tablist" aria-label="Chi tiết cuộc họp" ref={tabBar}>
         {tabs.map((t) => (
-          <button
+          // A locked tab stays in the bar, dimmed with a lock; hovering, focusing or tapping it says when it opens.
+          <BlockedButton
             key={t.id}
-            type="button"
             role="tab"
             aria-selected={tab === t.id}
-            className={tab === t.id ? 'tab tab-active' : 'tab'}
+            className={tab === t.id ? 'tab tab-active' : locks[t.id] ? 'tab tab-locked' : 'tab'}
+            blocked={locks[t.id]}
             onClick={() => setTab(t.id)}
           >
+            {locks[t.id] && <Icon name="lock" size={14} />}
             {t.label}
-          </button>
+          </BlockedButton>
         ))}
       </div>
 
