@@ -1,7 +1,11 @@
 import { useEditorState, type Editor } from '@tiptap/react'
 import { useEffect, useRef, useState } from 'react'
+import { BlockedButton } from '../../../components/BlockedButton'
 import { Icon } from '../../../components/Icon'
 import { findState, replaceAll, replaceCurrent, setQuery, step } from './schema'
+
+/** Why the step and replace buttons wait. */
+const NO_MATCH = 'Không có kết quả'
 
 /**
  * Find and replace over the sheet (Ctrl+F), as Word's: every match is marked on the page, the current one stronger;
@@ -60,12 +64,12 @@ export function FindBar({ editor, onClose }: { editor: Editor; onClose: () => vo
         <span className="minutes-find-count" aria-live="polite">
           {query ? (count ? `${current + 1}/${count}` : 'Không thấy') : ''}
         </span>
-        <button type="button" className="icon-button icon-button-sm" aria-label="Kết quả trước (Shift+Enter)" data-tooltip="Kết quả trước" disabled={!count} onClick={() => step(editor, -1)}>
+        <BlockedButton className="icon-button icon-button-sm" aria-label="Kết quả trước (Shift+Enter)" data-tooltip="Kết quả trước" blocked={!count && NO_MATCH} onClick={() => step(editor, -1)}>
           <Icon name="chevronUp" size={16} />
-        </button>
-        <button type="button" className="icon-button icon-button-sm" aria-label="Kết quả sau (Enter)" data-tooltip="Kết quả sau" disabled={!count} onClick={() => step(editor, 1)}>
+        </BlockedButton>
+        <BlockedButton className="icon-button icon-button-sm" aria-label="Kết quả sau (Enter)" data-tooltip="Kết quả sau" blocked={!count && NO_MATCH} onClick={() => step(editor, 1)}>
           <Icon name="chevronDown" size={16} />
-        </button>
+        </BlockedButton>
       </div>
       <div className="minutes-find-row">
         <input
@@ -85,12 +89,12 @@ export function FindBar({ editor, onClose }: { editor: Editor; onClose: () => vo
             }
           }}
         />
-        <button type="button" className="icon-button icon-button-sm" aria-label="Thay" data-tooltip="Thay" disabled={!count} onClick={() => replaceCurrent(editor, replacement)}>
+        <BlockedButton className="icon-button icon-button-sm" aria-label="Thay" data-tooltip="Thay" blocked={!count && NO_MATCH} onClick={() => replaceCurrent(editor, replacement)}>
           <Icon name="replace" size={16} />
-        </button>
-        <button type="button" className="icon-button icon-button-sm" aria-label="Thay tất cả" data-tooltip="Thay tất cả" disabled={!count} onClick={() => replaceAll(editor, replacement)}>
+        </BlockedButton>
+        <BlockedButton className="icon-button icon-button-sm" aria-label="Thay tất cả" data-tooltip="Thay tất cả" blocked={!count && NO_MATCH} onClick={() => replaceAll(editor, replacement)}>
           <Icon name="replaceAll" size={16} />
-        </button>
+        </BlockedButton>
         <button type="button" className="icon-button icon-button-sm" aria-label="Đóng tìm kiếm (Esc)" data-tooltip="Đóng" onClick={close}>
           <Icon name="x" size={16} />
         </button>
