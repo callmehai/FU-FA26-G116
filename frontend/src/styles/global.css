@@ -5666,3 +5666,20 @@ a.library-crumb:hover { color: var(--brand); text-decoration: underline; text-un
 /* The guest page's way out for a member who opened a guest link: one line, the link a 40px target. */
 .guest-gate-alt { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 0; color: var(--muted-ink); font-size: 14px; }
 .guest-gate-alt a { display: inline-flex; align-items: center; min-height: 40px; color: var(--brand); font-weight: 600; }
+
+/* ---------- Disabled with a reason (components/BlockedButton.tsx) ----------
+   A control that cannot be used now is aria-disabled rather than disabled, so it keeps focus and taps and its reason
+   (data-tooltip) shows on hover, keyboard focus and a press. It looks exactly as the native disabled state does, hover
+   and press included. A locked meeting tab is the same control, dimmed with a lock (AI-eCabinet's locked tab). */
+.btn[aria-disabled='true'] { cursor: not-allowed; }
+.btn-primary[aria-disabled='true'], .btn-primary[aria-disabled='true']:is(:hover, :active) { background: var(--line); border-color: var(--control-line); color: var(--muted-ink); }
+.btn-outline[aria-disabled='true'], .btn-outline[aria-disabled='true']:is(:hover, :active) { background: var(--surface-alt); color: var(--faint-ink); }
+.btn-ghost[aria-disabled='true'], .btn-ghost[aria-disabled='true']:is(:hover, :active) { background: transparent; color: var(--faint-ink); }
+.btn:not(.btn-primary, .btn-outline, .btn-ghost)[aria-disabled='true'] { opacity: .55; }
+.icon-button[aria-disabled='true'], .icon-button[aria-disabled='true']:is(:hover, :active) { background: none; opacity: .4; cursor: not-allowed; }
+.chip-toggle[aria-disabled='true'], .chip-toggle[aria-disabled='true']:hover { background: var(--surface); opacity: .5; cursor: not-allowed; }
+.tab-locked, .tab-locked:hover { color: var(--muted-ink); opacity: .6; cursor: not-allowed; }
+.tab-locked .icon { flex: none; }
+@media (max-width: 560px) {
+  .tab-locked { gap: 4px; }
+}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useBeforeUnload } from 'react-router-dom'
+import { BlockedButton } from '../../components/BlockedButton'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { DateField } from '../../components/DateField'
 import { Dialog } from '../../components/Dialog'
@@ -631,19 +632,18 @@ export function MeetingForm({
               )}
               <div className="form-lengths" role="group" aria-label="Thời lượng">
                 {LENGTHS.map((length) => (
-                  <button
+                  <BlockedButton
                     key={length.minutes}
-                    type="button"
                     className="chip-toggle"
                     aria-pressed={!multiDay && lengthOf(values) === length.minutes}
-                    disabled={!values.start}
+                    blocked={!values.start && 'Chọn giờ bắt đầu trước'}
                     onClick={() => {
                       setMany({ end: addMinutes(values.start, length.minutes), endDays: 0 })
                       setMultiDay(false)
                     }}
                   >
                     {length.label}
-                  </button>
+                  </BlockedButton>
                 ))}
                 <button
                   type="button"
