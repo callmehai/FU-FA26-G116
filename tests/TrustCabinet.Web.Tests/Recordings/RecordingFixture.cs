@@ -99,6 +99,7 @@ public sealed class RecordingFixture : IAsyncLifetime
         internal byte[]? LastAudio;
         internal bool? LastDiarize;
         internal bool? LastClip;
+        internal string? LastContext;
 
         public bool IsConfigured => true;
 
@@ -111,11 +112,12 @@ public sealed class RecordingFixture : IAsyncLifetime
                 : Task.FromResult(new SpeechEmbedding(NextEmbedding, "eres2net-base-200k@0123456789ab", 7200));
 
         public async Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip,
-            CancellationToken ct)
+            CancellationToken ct, string? context = null)
         {
             Calls++;
             LastDiarize = diarize;
             LastClip = clip;
+            LastContext = context;
             using var copy = new MemoryStream();
             await audio.CopyToAsync(copy, ct);
             LastAudio = copy.ToArray();

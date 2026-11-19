@@ -11,14 +11,22 @@ public interface ISpeechEngine
     bool IsConfigured { get; }
     /// <param name="clip">One sentence from one person's own mic (SCRUM-109): the worker lifts quiet stretches far less,
     /// since those are mostly a neighbour overheard.</param>
-    Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct);
+    /// <param name="context">What the same speaker said just before (their previous sentence): read ahead of this one so
+    /// a sentence cut at a breath is punctuated as one; the worker sends it back punctuated again.</param>
+    Task<SpeechTranscription> TranscribeAsync(Stream audio, string contentType, bool diarize, bool clip, CancellationToken ct,
+        string? context = null);
 }
 
+/// <param name="Context">The <c>context</c> sent, punctuated again with this audio's words after it; null when none was
+/// sent, or the worker could not use it.</param>
 public sealed record SpeechTranscription(long DurationMs, string Language, string AsrModel, string EmbeddingModel,
-    IReadOnlyList<SpeechSegment> Segments, IReadOnlyList<SpeechSpeaker> Speakers);
+    IReadOnlyList<SpeechSegment> Segments, IReadOnlyList<SpeechSpeaker> Speakers, string? Context = null);
 
 /// <param name="LevelDbfs">How loud the segment reached the mic, before the worker levelled it.</param>
-public sealed record SpeechSegment(long StartMs, long EndMs, string? Speaker, string Text, double? LevelDbfs = null);
+/// <param name="WordStartsMs">When each word of <c>Text</c> begins, in ms into the audio, one per word; null when the worker
+/// could not tell (or is older than word timings).</param>
+public sealed record SpeechSegment(long StartMs, long EndMs, string? Speaker, string Text, double? LevelDbfs = null,
+    IReadOnlyList<long>? WordStartsMs = null);
 
 /// <summary>
 /// One diarized voice. The embedding is used once, to suggest who the voice is (SCRUM-35), and is never stored:
@@ -43,8 +51,13 @@ public enum TranscriptFailure
 public sealed record TranscriptOutcome(TranscriptFailure Failure = TranscriptFailure.None, object? Data = null,
     IReadOnlyDictionary<string, string[]>? Errors = null);
 
+/// <summary>
+/// One line of a transcript. <c>WordStartsMs</c>: when each word of <c>Text</c> begins, in ms into the recording, so the
+/// line can follow the voice word by word; null for a line the Secretary corrected or one transcribed before word
+/// timings were kept.
+/// </summary>
 public sealed record TranscriptSegmentView(Guid Id, int Position, long StartMs, long EndMs, string Text,
-    string SpeakerLabel, DateTimeOffset? EditedAt, string? EditedByName);
+    string SpeakerLabel, DateTimeOffset? EditedAt, string? EditedByName, IReadOnlyList<long>? WordStartsMs = null);
 
 /// <summary>
 /// SCRUM-35 — one voice of the recording. <c>Suggested*</c> is the machine's guess from enrolled voices;

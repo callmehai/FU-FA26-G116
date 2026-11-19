@@ -20,13 +20,14 @@ public sealed record SpeechClipOutcome(SpeechClipFailure Failure = SpeechClipFai
 /// One sentence as everyone in the meeting reads it. An excluded sentence still comes, so the line does not vanish
 /// without a trace, but only the Chair and the Secretary get its words. <c>Leak</c> says it was probably overheard.
 /// <c>HasAudio</c> says the caller may hear it (<see cref="ISpeechClipService.PlaybackAsync"/>); <c>Peaks</c> draws
-/// its waveform, one byte per 100 ms. <c>SpeakerId</c> is the member's user id, or for a guest (<c>SpeakerIsGuest</c>,
+/// its waveform, one byte per 100 ms. <c>WordStartsMs</c> is when each word of <c>Text</c> begins, in ms from the sentence's start
+/// (<see cref="Transcription.WordTimings"/>), null when unknown or the words were corrected. <c>SpeakerId</c> is the member's user id, or for a guest (<c>SpeakerIsGuest</c>,
 /// SCRUM-129) their invitation's id; a guest's <c>SpeakerName</c> is the name they gave, or the invited one.
 /// </summary>
 public sealed record SpeechClipView(Guid Id, Guid SpeakerId, string SpeakerName, DateTimeOffset StartedAt, long DurationMs,
     string Text, DateTimeOffset UpdatedAt, DateTimeOffset? EditedAt, string? EditedByName, bool CanDelete,
     bool Excluded = false, string? ExclusionReason = null, string? ExcludedByName = null, SpeechClipLeak? Leak = null,
-    bool HasAudio = false, byte[]? Peaks = null, bool SpeakerIsGuest = false);
+    bool HasAudio = false, byte[]? Peaks = null, bool SpeakerIsGuest = false, IReadOnlyList<long>? WordStartsMs = null);
 
 /// <summary>
 /// SpeechClipFold's verdict: the sentence, or the words <c>[from, to)</c> of it, probably are <c>SpeakerName</c>'s,
@@ -113,6 +114,24 @@ public static class SpeechClipRules
     {
         ["audio/wav"] = ".wav", ["audio/x-wav"] = ".wav", ["audio/wave"] = ".wav", ["audio/webm"] = ".webm", ["audio/ogg"] = ".ogg",
     };
+
+    /// <summary>
+    /// A sentence that starts within this of the same speaker's previous one ending is punctuated with that one read
+    /// ahead of it: the browser cuts a sentence at a breath, and each half came out closed with a full stop. The same
+    /// gap joins one person's sentences into one paragraph on screen.
+    /// </summary>
+    public static readonly TimeSpan ContextGap = TimeSpan.FromSeconds(10);
+
+    /// <summary>The longest previous sentence read ahead of the next one, in words (the worker's own limit).</summary>
+    public const int MaxContextWords = 60;
+
+    /// <summary>The same words, whatever their case and punctuation: a sentence only re-punctuated.</summary>
+    public static bool SameWords(string a, string b)
+    {
+        static IEnumerable<string> Words(string text) => text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+            .Select(w => w.Trim('.', ',', ':', '?', '!', '…').ToLowerInvariant()).Where(w => w.Length > 0);
+        return Words(a).SequenceEqual(Words(b));
+    }
 
     /// <summary>A browser's clock may be off; further than this and the sentence's time is the server's.</summary>
     public static readonly TimeSpan ClockTolerance = TimeSpan.FromMinutes(2);

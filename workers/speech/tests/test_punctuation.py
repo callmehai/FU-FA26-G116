@@ -88,6 +88,21 @@ class PassageTests(unittest.TestCase):
         restore = lambda text: "Xin chào anh Nam, có không"  # noqa: E731
         self.assertEqual(passage(["xin chào", "anh nam có không"], restore), ["Xin chào", "anh Nam, có không."])
 
+    def test_a_passage_starts_with_a_capital(self):
+        restore = lambda text: "hơn bản ghi đâu"  # noqa: E731
+        self.assertEqual(passage(["hơn bản ghi đâu"], restore), ["Hơn bản ghi đâu."])
+
+    def test_a_line_left_open_before_a_new_sentence_gets_its_full_stop(self):
+        restore = lambda text: "Hôm nay họp quý bốn Đề nghị Thư ký báo cáo"  # noqa: E731
+        self.assertEqual(
+            passage(["hôm nay họp quý bốn", "đề nghị thư ký báo cáo"], restore),
+            ["Hôm nay họp quý bốn.", "Đề nghị Thư ký báo cáo."],
+        )
+
+    def test_a_line_that_already_ends_with_a_mark_keeps_it(self):
+        restore = lambda text: "Xin chào, Anh Nam"  # noqa: E731
+        self.assertEqual(passage(["xin chào", "anh nam"], restore), ["Xin chào,", "Anh Nam."])
+
     def test_a_changed_word_count_returns_the_lines_unchanged(self):
         restore = lambda text: "Xinchào."  # noqa: E731
         self.assertEqual(passage(["xin chào"], restore), ["xin chào"])

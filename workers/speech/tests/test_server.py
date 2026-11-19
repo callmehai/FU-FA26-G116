@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from speech.pipeline import UnreadableAudio  # noqa: E402
-from speech.server import SpeechServer, parse_transcribe_query, Rejected  # noqa: E402
+from speech.server import SpeechServer, parse_context, parse_transcribe_query, Rejected  # noqa: E402
 
 
 class FakeEngine:
@@ -21,9 +21,10 @@ class FakeEngine:
         self.fail_with = None
         self.embed_result = (True, {"embedding": [1.0], "model": "emb@1"})
 
-    def transcribe_file(self, path, diarize=True, speakers=None, profile="room"):
+    def transcribe_file(self, path, diarize=True, speakers=None, profile="room", context=None):
         self.calls.append(("transcribe", Path(path).read_bytes(), diarize, speakers, path))
         self.profile = profile
+        self.context = context
         if self.fail_with:
             raise self.fail_with
         return {"durationMs": 1, "segments": [], "speakers": []}
@@ -178,6 +179,13 @@ class QueryParsingTests(unittest.TestCase):
     def test_garbage_is_rejected(self):
         with self.assertRaises(Rejected):
             parse_transcribe_query("&&==")
+
+    def test_context_is_optional_and_bounded(self):
+        self.assertIsNone(parse_context("diarize=false"))
+        self.assertEqual(parse_context("profile=clip&context=Theo+t%C3%B4i+th%C3%AC."), "Theo tôi thì.")
+        self.assertEqual(parse_transcribe_query("diarize=false&profile=clip&context=x"), (False, None, "clip"))
+        with self.assertRaises(Rejected):
+            parse_context("context=" + "a" * 2001)
 
 
 del ServerTests  # base class only; keeps unittest from running it on its own

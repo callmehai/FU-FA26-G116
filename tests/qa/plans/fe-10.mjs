@@ -559,7 +559,7 @@ export default {
         await qa.expect(row.getByText('Có bản gỡ băng')).toBeVisible()
         await qa.expect(row.getByText('Máy nhận dạng')).toBeVisible()
         await qa.expect(lines(row)).toBeVisible()
-        await qa.expect(lines(row).locator('.tl-sentence')).toHaveCount(t.segments.length)
+        await qa.expect(lines(row).locator('.tl-say')).toHaveCount(t.segments.length)
         qa.expect(t.speakers.length, 'the worker heard one voice only').toBeGreaterThanOrEqual(2)
         const speakers = row.locator('aside.transcript-speakers')
         await qa.expect(speakers.getByRole('heading', { name: /Người nói/ })).toBeVisible()
@@ -663,7 +663,7 @@ export default {
 
         await openRecordings(qa, m)
         const row = recordingRow(qa, FILES.main)
-        await qa.expect(lines(row).locator('.tl-sentence')).toHaveCount(t.segments.length)
+        await qa.expect(lines(row).locator('.tl-say')).toHaveCount(t.segments.length)
         await qa.expect(lines(row).locator('strong.tl-name').first()).toBeVisible()
         await qa.expect(row.getByRole('button', { name: /^Tên của/ })).toHaveCount(0)
         await qa.expect(row.getByRole('button', { name: /^Người nói câu lúc/ })).toHaveCount(0)
@@ -688,7 +688,7 @@ export default {
       devices: ['desktop', 'phone'],
       title: 'Thư ký sửa chữ một câu tại chỗ (MSG302, dấu "đã sửa" ghi người sửa); rỗng hoặc quá 8000 ký tự bị chặn (MSG303); Chủ toạ không sửa được (MSG295)',
       steps: [
-        'Thư ký bấm vào chữ của câu "Tôi đề nghị bổ sung…", sửa thành chữ mới, nhấn Enter',
+        'Thư ký bấm vào câu "Tôi đề nghị bổ sung…" để chọn, bấm "Sửa nội dung" của đoạn, sửa thành chữ mới, nhấn Enter',
         'API: PUT câu với chữ toàn khoảng trắng, với 8001 ký tự; Chủ toạ PUT; quantri@ (ngoài danh sách) PUT',
       ],
       expected:
@@ -705,9 +705,14 @@ export default {
         try {
           await openRecordings(qa, m)
           const row = recordingRow(qa, FILES.main)
-          const text = lines(row).locator('p.tl-text').filter({ hasText: original.slice(0, 20) })
-          await text.scrollIntoViewIfNeeded()
-          await press(qa, text)
+          // PR #424: one speaker's consecutive sentences read as one paragraph; picking a sentence points the
+          // paragraph's tools at it, and "Sửa nội dung" opens it for editing.
+          const sayOf = qa.page.locator('.tl-say').filter({ hasText: original.slice(0, 20) })
+          const paragraph = lines(row).locator('.tl-sentence').filter({ has: sayOf })
+          const say = paragraph.locator('.tl-say').filter({ hasText: original.slice(0, 20) })
+          await say.scrollIntoViewIfNeeded()
+          await press(qa, say)
+          await press(qa, paragraph.getByRole('button', { name: /^Sửa nội dung/ }))
           const box = row.getByRole('textbox', { name: 'Nội dung đoạn' })
           await qa.expect(box).toBeVisible()
           await box.fill(changed)
@@ -715,7 +720,7 @@ export default {
           await qa.shot('dang-sua-cau')
           await box.press('Enter')
           await qa.expect(toast(qa, MSG.MSG302)).toBeVisible()
-          const edited = lines(row).locator('p.tl-text').filter({ hasText: 'phần mềm quản lý văn bản' })
+          const edited = lines(row).locator('.tl-sentence').filter({ hasText: 'phần mềm quản lý văn bản' })
           await qa.expect(edited).toBeVisible()
           await qa.expect(edited.getByText('đã sửa')).toBeVisible()
           await settled(qa)
@@ -975,10 +980,13 @@ export default {
           await openRecordings(qa, cm)
           const card = qa.page.locator('section.tl-card')
           await qa.expect(card).toBeVisible()
-          const sentence = card.locator(`.tl-sentence[data-clip="${target.id}"]`)
-          await sentence.scrollIntoViewIfNeeded()
+          // PR #424: the sentence sits in its speaker's paragraph; picking it points the paragraph's tools at it.
+          const say = card.locator(`[data-clip="${target.id}"]`)
+          const sentence = card.locator('.tl-sentence').filter({ has: qa.page.locator(`[data-clip="${target.id}"]`) })
+          await say.scrollIntoViewIfNeeded()
+          await say.focus()
           if (qa.device === 'desktop') await sentence.hover()
-          const drop = sentence.getByRole('button', { name: 'Bỏ khỏi biên bản' })
+          const drop = sentence.getByRole('button', { name: /^Bỏ khỏi biên bản/ })
           await qa.expect(drop).toBeVisible()
           await settled(qa)
           await qa.shot('truoc-khi-bo-cau')
@@ -995,7 +1003,7 @@ export default {
           const txt = await as(qa, 'chair').get(`/api/meetings/${cm.id}/speech-clips.txt`)
           c.check('export', txt, 200)
           c.fact('the excluded sentence is left out of the file', !txt.text.includes(words), words)
-          const restore = group.getByRole('button', { name: 'Khôi phục' })
+          const restore = group.getByRole('button', { name: /^Khôi phục/ })
           if (qa.device === 'desktop') await group.locator('.tl-sentence').hover()
           await press(qa, restore)
           await qa.expect(toast(qa, MSG.MSG352)).toBeVisible()
@@ -1026,10 +1034,12 @@ export default {
         try {
           if (target.excluded) await as(qa, 'chair').put(`/api/speech-clips/${target.id}/exclusion`, { excluded: false })
           await openRecordings(qa, cm)
-          const sentence = qa.page.locator(`.tl-sentence[data-clip="${target.id}"]`)
-          await sentence.scrollIntoViewIfNeeded()
+          const say = qa.page.locator(`[data-clip="${target.id}"]`)
+          const sentence = qa.page.locator('.tl-sentence').filter({ has: say })
+          await say.scrollIntoViewIfNeeded()
+          await say.focus()
           await sentence.hover()
-          await sentence.getByRole('button', { name: 'Bỏ khỏi biên bản' }).click()
+          await sentence.getByRole('button', { name: /^Bỏ khỏi biên bản/ }).click()
           const asked = await qa.page
             .getByRole('dialog')
             .waitFor({ state: 'visible', timeout: 2500 })
