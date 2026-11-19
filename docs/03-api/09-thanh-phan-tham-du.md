@@ -92,7 +92,7 @@ Câu trả lời chỉ là xác nhận trước, giống AI-eCabinet (`migration
 - **Chủ toạ không trả lời** (Chủ toạ điều hành cuộc họp): 409/MSG286. Response của Chủ toạ giữ `Pending` và không hiển thị.
 - **Chưa trả lời coi như tham dự.** Không có bộ đếm Chờ/Chấp nhận/Từ chối.
 - **Không đổi quyền gì.** Từ chối vẫn xem được cuộc họp, tài liệu và vào phòng họp; tác dụng duy nhất là cuộc họp biến khỏi lịch của người đó (`GET /api/meetings?excludeDeclined=true`, xem [05-quan-ly-cuoc-hop.md](05-quan-ly-cuoc-hop.md)). Chủ toạ không bị ẩn kể cả còn câu từ chối từ trước khi nhận vai trò.
-- FE hỏi ở đầu màn chi tiết và trên thẻ cuộc họp ở lịch dạng danh sách, theo `canRespond` có sẵn trong dữ liệu cuộc họp; không hỏi trong tab thành phần. Tab chỉ hiện nhãn cạnh tên người đã trả lời.
+- FE hỏi ở đầu màn chi tiết theo `canRespond` nhưng chỉ khi cuộc họp còn `Published` (từ `InProgress` thì màn chi tiết ẩn thanh này — PR #397); thẻ cuộc họp ở lịch dạng danh sách vẫn hỏi cả khi `InProgress`. Không hỏi trong tab thành phần. Tab chỉ hiện nhãn cạnh tên người đã trả lời.
 
 Đã bỏ routes `POST /participants/secretary-recovery`, `PUT /guest-invitations/{id}/permissions`, `GET /invitation-responses`; client không gọi nữa.
 

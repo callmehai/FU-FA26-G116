@@ -111,7 +111,7 @@ Vai trò trả về bằng `roleId` + `roleName` (tên hiện tại trong bảng
 này dùng chung cho `/login`, `/google`, `/refresh` và `/me`.
 
 Các nhánh lỗi đều trả `401` kèm mã thông báo trong [danh mục mã](00-danh-muc-ma-thong-bao.md). FE khớp theo `code`, không khớp theo
-`message` — đổi chữ trong `message` không được làm FE vỡ.
+`message` — đổi chữ trong `message` không được làm FE vỡ. FE kiểm tra từng ô dưới mỗi ô nhập trước khi gọi API (email trống, sai định dạng email, mật khẩu trống — PR #399), focus ô sai đầu tiên; backend vẫn giữ `MSG01` chung chung cho mọi lỗi email/mật khẩu.
 
 | `code` | Khi nào | `message` |
 |---|---|---|
