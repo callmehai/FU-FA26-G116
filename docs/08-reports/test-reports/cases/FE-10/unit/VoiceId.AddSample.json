@@ -1,0 +1,102 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "VoiceId.AddSample",
+  "description": "Voice samples: add under consent, delete, read audio.",
+  "precondition": "User with consent; speech worker replaced.",
+  "methods": [
+    {
+      "method": "VoiceIdService.AddSampleAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+      "line": 106,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "User consented to notice \"1.3\" and keeps two own samples.",
+            "Audio holds 20 seconds of one clear voice."
+          ],
+          "inputs": "actorId: a consented user; audio: a clear voice recording; contentType: audio/mpeg.",
+          "return": "Success with the new sample (MSG307 \"Đã lưu giọng mẫu.\"); only the encrypted vector is kept for matching, the recording under a consent that says so.",
+          "exception": "N/A",
+          "log": "Saved: encrypted sample with the model and speech length; audit row records the new sample.",
+          "type": "Normal",
+          "note": "UC-81c · BR-363 · BR-369 · MSG307 · Pending: needs the live speech worker to embed a clear voice sample."
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "User never consented."
+          ],
+          "inputs": "actorId: a user without consent; audio: a clear voice recording; contentType: audio/mpeg.",
+          "return": "Failure NoConsent (MSG308 \"Cần đồng ý nhận diện giọng nói trước khi ghi giọng mẫu.\"); the audio never goes to the worker.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81c · BR-361 · MSG308"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "User withdraws consent after the first check, before anything is kept."
+          ],
+          "inputs": "actorId: a user who withdraws mid-way; audio: a clear voice recording; contentType: audio/mpeg.",
+          "return": "Failure NoConsent (MSG308); nothing is kept after the person said no.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81c · BR-365 · MSG308 · Pending: needs a real concurrent consent withdrawal between the two reads."
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "User consented and already keeps 5 own samples."
+          ],
+          "inputs": "actorId: a user with 5 own samples; audio: a clear voice recording; contentType: audio/mpeg.",
+          "return": "Failure LimitReached (MSG310 \"Đã đủ 5 giọng mẫu. Xoá bớt rồi ghi lại.\"); nothing is kept.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81c · BR-363 · MSG310"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "User consented; audio holds 3 seconds of speech."
+          ],
+          "inputs": "actorId: a consented user; audio: a 3-second recording; contentType: audio/mpeg.",
+          "return": "Failure Rejected (MSG309); errors[file] = [\"Giọng mẫu quá ngắn — cần ít nhất 6 giây có tiếng nói. Hãy đọc hết đoạn văn mẫu.\"]; nothing is kept.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81c · BR-363 · MSG309 · Pending: needs the live speech worker to judge speech length."
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "User consented; the speech worker is down."
+          ],
+          "inputs": "actorId: a consented user; audio: a clear voice recording; contentType: audio/mpeg.",
+          "return": "Failure EngineUnavailable (MSG312 \"Máy chủ nhận dạng giọng nói chưa sẵn sàng. Vui lòng thử lại sau.\"); nothing is kept.",
+          "exception": "N/A",
+          "log": "Warning logged with the user id.",
+          "type": "Abnormal",
+          "note": "UC-81c · MSG312 · Pending: needs a live speech worker in a down state."
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "User consented and keeps 4 own samples."
+          ],
+          "inputs": "actorId: a user with 4 own samples; audio: a clear voice recording; contentType: audio/mpeg.",
+          "return": "Success (MSG307); the 5th sample is stored, a 6th would be refused.",
+          "exception": "N/A",
+          "log": "Saved: encrypted sample; audit row records the new sample.",
+          "type": "Boundary",
+          "note": "UC-81c · BR-363 · MSG307 · Pending: needs the live speech worker to embed the fifth sample."
+        }
+      ]
+    }
+  ]
+}

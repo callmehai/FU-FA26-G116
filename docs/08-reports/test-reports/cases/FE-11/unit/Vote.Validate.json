@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"].",
           "log": "N/A",
-          "note": "UC-53 · MSG209 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (A_valid_draft_passes_with_its_roles_parsed)",
+          "note": "UC-53 · MSG209",
           "preconditions": [
             "Draft input with two distinct options and at least one eligible role."
           ],
@@ -21,7 +21,7 @@
           "id": "UTC002",
           "inputs": "Title: \"\"; Description: \"\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Member\"].",
           "log": "N/A",
-          "note": "UC-53 · MSG209 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (A_blank_title_is_rejected)",
+          "note": "UC-53 · MSG209",
           "preconditions": [
             "Draft input with a blank title."
           ],
@@ -33,7 +33,7 @@
           "id": "UTC003",
           "inputs": "Title: \"Chọn địa điểm họp\"; Description: 4001 characters; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: true; EligibleRoles: [\"Member\"].",
           "log": "N/A",
-          "note": "UC-53 · MSG209 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (A_4001_character_description_is_rejected_while_4000_passes)",
+          "note": "UC-53 · MSG209",
           "preconditions": [
             "Draft input with a description over the limit."
           ],
@@ -45,7 +45,7 @@
           "id": "UTC004",
           "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\", \"hà nội\"]; IsAnonymous: false; EligibleRoles: [\"Member\"].",
           "log": "N/A",
-          "note": "UC-53 · MSG209 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (Duplicate_options_that_differ_only_by_case_are_rejected)",
+          "note": "UC-53 · MSG209",
           "preconditions": [
             "Draft input with two options that differ only by case."
           ],
@@ -57,7 +57,7 @@
           "id": "UTC005",
           "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: null; EligibleRoles: [\"Member\"].",
           "log": "N/A",
-          "note": "UC-53 · MSG209 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (A_missing_anonymity_choice_is_rejected)",
+          "note": "UC-53 · MSG209",
           "preconditions": [
             "Draft input without an anonymity choice."
           ],
@@ -69,17 +69,54 @@
           "id": "UTC006",
           "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [].",
           "log": "N/A",
-          "note": "UC-53 · MSG209 Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRulesTests.cs (An_empty_eligible_role_list_is_rejected)",
+          "note": "UC-53 · MSG209",
           "preconditions": [
             "Draft input with no eligible roles."
           ],
           "return": "errors[eligibleRoles] = [\"Chọn ít nhất một vai trò được bỏ phiếu trong Chủ toạ, Thư ký, Thành viên, Khách mời.\"].",
           "type": "Abnormal"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Draft input with a title at the length limit."
+          ],
+          "inputs": "Title: 301 characters; Description: \"\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Member\"].",
+          "return": "errors[title] = [\"Nội dung biểu quyết phải có từ 1 đến 300 ký tự.\"]; 300 characters pass.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-53 · MSG209"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Draft input with only one voting option."
+          ],
+          "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\"]; IsAnonymous: false; EligibleRoles: [\"Member\"].",
+          "return": "errors[options] = [\"Cần ít nhất 2 phương án khác nhau, mỗi phương án từ 1 đến 200 ký tự.\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-53 · MSG209"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Draft input with an option at the length limit."
+          ],
+          "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\", 201 characters]; IsAnonymous: false; EligibleRoles: [\"Member\"].",
+          "return": "errors has \"options\" = [\"Cần ít nhất 2 phương án khác nhau, mỗi phương án từ 1 đến 200 ký tự.\"]; 200 characters pass.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-53 · MSG209"
         }
       ],
       "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
       "line": 60,
-      "method": "VoteRules.Validate"
+      "method": "VoteRules.Validate",
+      "layer": "Domain"
     }
   ],
   "module": "VOTE",

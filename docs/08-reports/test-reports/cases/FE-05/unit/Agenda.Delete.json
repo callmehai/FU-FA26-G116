@@ -1,0 +1,120 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.Delete",
+  "description": "Deleting an agenda item: a planner removes an item and the order closes up.",
+  "precondition": "Meeting in a planning or running status; actor with the needed role.",
+  "methods": [
+    {
+      "method": "AgendaService.DeleteAsync",
+      "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+      "line": 107,
+      "layer": "Application",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "actor: S; itemId: I.",
+          "log": "Item removed; agenda change \"Deleted\" published with the item id and title.",
+          "note": "UC-23c · BR-65 · MSG62",
+          "preconditions": [
+            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Success; 200 / MSG62.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-23c · BR-65 · BR-74 · MSG62",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Success; 200 / MSG62.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "Item unchanged.",
+          "note": "UC-23c · MSG142",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure DeleteLocked; 409 / MSG142.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "actor: Secretary S; itemId: I.",
+          "log": "N/A",
+          "note": "UC-23c · MSG142",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Done."
+          ],
+          "return": "Failure DeleteLocked; 409 / MSG142.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "actor: S; itemId: unknown.",
+          "log": "N/A",
+          "note": "UC-23c",
+          "preconditions": [
+            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "actor: Member M; itemId: I.",
+          "log": "N/A",
+          "note": "UC-23c · BR-65 · MSG67 · Deviation: a Member cannot read a Draft meeting, so the call answers NotFound (404, existence hidden) before the planner check; Forbidden applies once the meeting is readable (for example Published or InProgress).",
+          "preconditions": [
+            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Failure NotFound; 404, empty body.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-23c · BR-74 · MSG67",
+          "preconditions": [
+            "Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Failure Locked; 409 / MSG67.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "actor: S; the database fails while saving.",
+          "log": "N/A",
+          "note": "UC-23c · MSG70",
+          "preconditions": [
+            "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG70.",
+          "type": "Abnormal"
+        }
+      ]
+    }
+  ]
+}

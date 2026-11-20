@@ -1,0 +1,163 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "Recording.Download",
+  "description": "Recording playback, download and lookup: who may listen.",
+  "precondition": "Recording rows seeded.",
+  "methods": [
+    {
+      "method": "RecordingService.DownloadAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+      "line": 131,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Available recording in a Normal meeting.",
+            "The actor is the current Chair."
+          ],
+          "inputs": "recordingId; actorId: the Chair.",
+          "return": "Success; a signed download URL (signed apart from playback links).",
+          "exception": "N/A",
+          "log": "Audit row RecordingDownloaded for the recording with meetingId, file name and byte size, actor = the Chair.",
+          "type": "Normal",
+          "note": "UC-43c · BR-351"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Available recording in an Internal meeting.",
+            "The actor is the current Secretary."
+          ],
+          "inputs": "recordingId; actorId: the Secretary.",
+          "return": "Success; a signed download URL.",
+          "exception": "N/A",
+          "log": "Audit row RecordingDownloaded written.",
+          "type": "Normal",
+          "note": "UC-43c · BR-351"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Available recording; the actor is a Member."
+          ],
+          "inputs": "actorId: a Member.",
+          "return": "ExportForbidden (403, MSG355).",
+          "exception": "N/A",
+          "log": "No audit row.",
+          "type": "Abnormal",
+          "note": "UC-43c · BR-351 · MSG355"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Available recording in a Secret meeting; the actor is the Chair."
+          ],
+          "inputs": "actorId: the Chair.",
+          "return": "SecretMeeting (403, MSG356).",
+          "exception": "N/A",
+          "log": "No audit row.",
+          "type": "Abnormal",
+          "note": "UC-43c · BR-351 · MSG356"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Available recording in a Secret meeting; the actor is a Member."
+          ],
+          "inputs": "actorId: a Member.",
+          "return": "ExportForbidden (403, MSG355).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-43c · BR-351 · MSG355"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "No recording with this id exists."
+          ],
+          "inputs": "recordingId: a random id.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43c"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "actorId: the deactivated user.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43c"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "The actor is not on the roster."
+          ],
+          "inputs": "actorId: the meeting creator, not a participant.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43c · BR-350"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Recording is Deleted."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43c · BR-348"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Recording is Pending (take streaming)."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-43c"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "The combined recording of a hybrid meeting, Available; the actor is the Secretary."
+          ],
+          "inputs": "recordingId: the combined recording.",
+          "return": "Success; a signed download URL; the combined recording can be downloaded.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-43c · BR-458"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "The database fails while reading."
+          ],
+          "inputs": "actorId: the Chair.",
+          "return": "ReadFailed (500, MSG297).",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to sign a download'.",
+          "type": "Abnormal",
+          "note": "UC-43c · MSG297"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "AgendaExecution.TryComplete",
+  "description": "Completing a running item: wrong state or time refuses; success stamps the end.",
+  "precondition": "No database needed; pure rules.",
+  "methods": [
+    {
+      "method": "AgendaExecution.TryComplete",
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "line": 74,
+      "layer": "Domain",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "item {Status: InProgress; ActualStartedAt: 2026-12-01T09:00:00Z}; endedAt: 2026-12-01T10:00:00Z.",
+          "log": "Item fields Status, ActualEndedAt, UpdatedAt set.",
+          "note": "UC-25 · BR-72",
+          "preconditions": [
+            "Item is InProgress, started at 09:00."
+          ],
+          "return": "true; item Status Done, ActualEndedAt and UpdatedAt 10:00:00Z.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "item InProgress, started 09:00:00Z; endedAt: 09:00:00Z.",
+          "log": "N/A",
+          "note": "UC-25 · BR-72",
+          "preconditions": [
+            "Item ends exactly when it started."
+          ],
+          "return": "true; ActualEndedAt equals ActualStartedAt.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "item InProgress, started 09:00:00.000001Z; endedAt: 09:00:00.000000Z.",
+          "log": "N/A",
+          "note": "UC-25 · BR-72 · MSG76",
+          "preconditions": [
+            "End is one microsecond before the start."
+          ],
+          "return": "false; item unchanged.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "item InProgress, started 09:00Z; endedAt: 08:59Z.",
+          "log": "N/A",
+          "note": "UC-25 · BR-72 · MSG76",
+          "preconditions": [
+            "End precedes the start."
+          ],
+          "return": "false; item stays InProgress, ActualEndedAt unchanged.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "item {Status: Pending; ActualStartedAt: null}; endedAt: now.",
+          "log": "N/A",
+          "note": "UC-25 · BR-70 · MSG74",
+          "preconditions": [
+            "Item is still Pending."
+          ],
+          "return": "false.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "item {Status: Done; ActualStartedAt: 09:00Z}; endedAt: 11:00Z.",
+          "log": "N/A",
+          "note": "UC-25 · BR-70 · MSG74",
+          "preconditions": [
+            "Item is already Done."
+          ],
+          "return": "false; ActualEndedAt unchanged.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "item {Status: InProgress; ActualStartedAt: null}.",
+          "log": "N/A",
+          "note": "UC-25 · BR-72 · MSG76",
+          "preconditions": [
+            "Item is InProgress but has no start time."
+          ],
+          "return": "false.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "item InProgress, started 2026-12-01T02:00:00Z; endedAt: 2026-12-01T10:00:00.1234567+07:00.",
+          "log": "N/A",
+          "note": "UC-25 · BR-72",
+          "preconditions": [
+            "End time carries a +07:00 offset with sub-microsecond ticks."
+          ],
+          "return": "true; ActualEndedAt 2026-12-01T03:00:00.123456Z (UTC, truncated to microseconds).",
+          "type": "Boundary"
+        }
+      ]
+    }
+  ]
+}

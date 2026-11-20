@@ -1,0 +1,143 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "Summary.Request",
+  "description": "Requesting an AI summary draft: meeting status, existing draft and queueing.",
+  "precondition": "Meeting with a transcript.",
+  "methods": [
+    {
+      "method": "SummaryService.RequestAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+      "line": 64,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting is InProgress; actor is its current chair.",
+            "The AI server is configured for the meeting sensitivity; no draft exists yet."
+          ],
+          "inputs": "meetingId: an InProgress meeting; actorId: its current chair.",
+          "return": "Success with the fresh state (MSG384 \"Đã gửi yêu cầu. Dự thảo sẽ tự hiện khi AI viết xong.\"); a Queued draft row is stored with the requester and time.",
+          "exception": "N/A",
+          "log": "Saved: Queued draft row with requester and request time.",
+          "type": "Normal",
+          "note": "UC-47 · BR-374 · BR-375 · MSG384"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting is Ended; actor is its current secretary.",
+            "A Failed draft from an earlier request exists."
+          ],
+          "inputs": "meetingId: an Ended meeting with a Failed draft; actorId: its current secretary.",
+          "return": "Success (MSG384); the draft is Queued again and the old text stays readable until the new one lands.",
+          "exception": "N/A",
+          "log": "Saved: draft row back to Queued with the new requester and time.",
+          "type": "Normal",
+          "note": "UC-47 · BR-376 · MSG384"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting is InProgress; actor takes part but is neither chair nor secretary."
+          ],
+          "inputs": "meetingId: an InProgress meeting; actorId: an ordinary member.",
+          "return": "Failure Forbidden (MSG385 \"Chỉ Chủ toạ hoặc Thư ký được tạo, sửa và duyệt dự thảo.\"); nothing is queued.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-47 · BR-374 · MSG385"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting is still Draft; actor is its current chair."
+          ],
+          "inputs": "meetingId: a Draft meeting; actorId: its current chair.",
+          "return": "Failure WrongMeetingStatus (MSG386 \"Chỉ tạo dự thảo khi cuộc họp đang diễn ra hoặc đã kết thúc.\"); nothing is queued.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-47 · BR-375 · MSG386"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting is InProgress; actor is its current chair.",
+            "A draft is already Queued."
+          ],
+          "inputs": "meetingId: a meeting with a Queued draft; actorId: its current chair.",
+          "return": "Failure Busy (MSG387 \"AI đang viết dự thảo, vui lòng chờ.\"); the waiting draft is untouched.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-47 · MSG387"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Meeting is InProgress; actor is its current chair.",
+            "No AI server is configured."
+          ],
+          "inputs": "meetingId: an InProgress meeting; actorId: its current chair.",
+          "return": "Failure AiUnavailable (MSG394 \"Máy AI chưa sẵn sàng. Liên hệ quản trị hệ thống.\"); nothing is queued, as the request would only fail later.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-47 · BR-381 · MSG394"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Actor may not read the meeting."
+          ],
+          "inputs": "meetingId: a meeting the actor may not read; actorId: an outsider.",
+          "return": "Failure NotFound; answered as if the meeting does not exist.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-47"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Actor account is deactivated."
+          ],
+          "inputs": "meetingId: an InProgress meeting; actorId: a deactivated account.",
+          "return": "Failure Inactive; nothing is queued.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-47"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Meeting is InProgress; actor is its current chair.",
+            "Two requests arrive at the same time."
+          ],
+          "inputs": "meetingId: an InProgress meeting without a draft; actorId: its current chair, asking twice at once.",
+          "return": "One request queues the draft (MSG384); the other reads Failure Busy (MSG387).",
+          "exception": "N/A",
+          "log": "Saved: one Queued draft row; warning logged with the meeting id for the concurrent request.",
+          "type": "Abnormal",
+          "note": "UC-47 · MSG387"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Meeting is InProgress; actor is its current chair.",
+            "The store fails while saving the request."
+          ],
+          "inputs": "meetingId: an InProgress meeting; actorId: its current chair.",
+          "return": "Failure SaveFailed (MSG393 \"Không lưu được dự thảo. Vui lòng thử lại.\"); nothing is queued.",
+          "exception": "N/A",
+          "log": "Error logged with the meeting id.",
+          "type": "Abnormal",
+          "note": "UC-47 · MSG393"
+        }
+      ]
+    }
+  ]
+}

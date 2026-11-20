@@ -1,0 +1,341 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "DocumentComment.Add",
+  "description": "Document comments: who may read and add, text limits.",
+  "precondition": "Document readable by the actor.",
+  "methods": [
+    {
+      "method": "DocumentCommentService.AddAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/DocumentCommentService.cs",
+      "line": 56,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting Published; actor \"An\" is a Member; M1 is a PDF with 10 pages in the meeting."
+          ],
+          "inputs": "body: \"Đề nghị bổ sung số liệu quý 3.\"; pageNumber: 4; parentCommentId: null.",
+          "return": "Success; comment returned with body, page 4, author An, no replies; endpoint answers MSG199.",
+          "exception": "N/A",
+          "log": "DocumentComment row saved with AuthorId An, PageNumber 4, CreatedAt = now; a share lock taken on the meeting row.",
+          "type": "Normal",
+          "note": "UC-35 · BR-248 · BR-249 · MSG199"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Same document."
+          ],
+          "inputs": "body: \"   \" (spaces only).",
+          "return": "Failure Blank (HTTP 400, MSG200); nothing is read from the database.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · MSG200"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Same document."
+          ],
+          "inputs": "body: null.",
+          "return": "Failure Blank (HTTP 400, MSG200).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · MSG200"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Same document."
+          ],
+          "inputs": "body: 4,000 characters of \"a\".",
+          "return": "Success; the comment is saved with all 4,000 characters.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · MSG199"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Same document."
+          ],
+          "inputs": "body: 4,001 characters of \"a\".",
+          "return": "Failure TooLong (HTTP 400, MSG348).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · MSG348"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Same document."
+          ],
+          "inputs": "body: 4,000 characters of \"a\" surrounded by 5 spaces on each side.",
+          "return": "Success; the body is trimmed before the length check so it is 4,000 characters.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · MSG199"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Actor cannot read the meeting (not a participant)."
+          ],
+          "inputs": "body: \"Góp ý\".",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · MSG156"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Meeting does not exist."
+          ],
+          "inputs": "meetingId: unknown.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · MSG156"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "M1 was removed from the meeting."
+          ],
+          "inputs": "meetingDocumentId: M1.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · BR-211 · BR-284 · MSG156"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "M3 is attached only to a draft vote; actor is a Member."
+          ],
+          "inputs": "meetingDocumentId: M3.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · BR-253 · MSG156"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Same draft-vote document; actor is the Chair."
+          ],
+          "inputs": "meetingDocumentId: M3; body: \"Ok\".",
+          "return": "Success; managers see draft-vote documents.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · BR-253 · MSG199"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Meeting Ended."
+          ],
+          "inputs": "body: \"Thêm ý kiến\".",
+          "return": "Failure Ended (HTTP 409, MSG251); comments are read-only after the meeting ends.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · BR-282 · MSG251"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Meeting Cancelled (it had been Published, so participants can still open it)."
+          ],
+          "inputs": "body: \"Thêm ý kiến\".",
+          "return": "Failure Cancelled (HTTP 409, MSG349).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · BR-299 · MSG349"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "Meeting InProgress; thread T1 (top-level comment) exists on M1."
+          ],
+          "inputs": "body: \"Đồng ý.\"; parentCommentId: T1; pageNumber: 3.",
+          "return": "Success; reply attached to T1, page number dropped (null) because a reply has no page.",
+          "exception": "N/A",
+          "log": "DocumentComment row with ParentCommentId = T1.",
+          "type": "Normal",
+          "note": "UC-35 · BR-248 · MSG199"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "R1 is a reply to T1."
+          ],
+          "inputs": "body: \"Tôi cũng vậy.\"; parentCommentId: R1.",
+          "return": "Success; the new comment joins thread T1 (ParentCommentId = T1), one level deep.",
+          "exception": "N/A",
+          "log": "DocumentComment row with ParentCommentId = T1, not R1.",
+          "type": "Boundary",
+          "note": "UC-35 · BR-317 · MSG199"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "Comment C9 belongs to another document."
+          ],
+          "inputs": "parentCommentId: C9.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · MSG156"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "M1 is a PDF with 10 pages."
+          ],
+          "inputs": "pageNumber: 10; top-level.",
+          "return": "Success; page 10 kept (last page).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · BR-248"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "M1 is a PDF with 10 pages."
+          ],
+          "inputs": "pageNumber: 11; top-level.",
+          "return": "Success; comment saved without a page (null).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · BR-248"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "M1 is a PDF with 10 pages."
+          ],
+          "inputs": "pageNumber: 0; top-level.",
+          "return": "Success; page dropped (null) because pages start at 1.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · BR-248"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "M1 is a PDF whose page count is unknown (null)."
+          ],
+          "inputs": "pageNumber: 50; top-level.",
+          "return": "Success; page 50 kept as the document has no known limit.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · BR-248"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "M2 is a DOCX."
+          ],
+          "inputs": "pageNumber: 2; top-level.",
+          "return": "Success; page dropped (null) because only PDF comments carry a page.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · BR-248"
+        },
+        {
+          "id": "UTC022",
+          "preconditions": [
+            "Meeting Published; actor is a verified guest with a current session of this meeting, invitation I1, display name \"Khách A\"."
+          ],
+          "inputs": "actor: Guest; body: \"Xin ý kiến\".",
+          "return": "Success; author shown as a guest named \"Khách A\"; endpoint answers MSG199.",
+          "exception": "N/A",
+          "log": "DocumentComment row with GuestInvitationId I1 and no AuthorId; a share lock taken on the guest session row.",
+          "type": "Normal",
+          "note": "UC-35 · BR-181 · MSG199"
+        },
+        {
+          "id": "UTC023",
+          "preconditions": [
+            "Guest whose session has been signed out or has expired."
+          ],
+          "inputs": "actor: Guest with IsValid false.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · BR-181 · MSG156"
+        },
+        {
+          "id": "UTC024",
+          "preconditions": [
+            "Guest whose invitation was revoked."
+          ],
+          "inputs": "actor: Guest.",
+          "return": "Failure NotFound (HTTP 404, MSG156); rechecked on every call.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · BR-181 · MSG156"
+        },
+        {
+          "id": "UTC025",
+          "preconditions": [
+            "Guest of meeting X posting to meeting Y."
+          ],
+          "inputs": "actor: Guest of X; meetingId: Y.",
+          "return": "Failure NotFound (HTTP 404, MSG156).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-35 · MSG156"
+        },
+        {
+          "id": "UTC026",
+          "preconditions": [
+            "Guest session valid but the meeting is Ended."
+          ],
+          "inputs": "actor: Guest.",
+          "return": "Failure NotFound (HTTP 404, MSG156), not MSG251: the guest has lost the meeting altogether.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-35 · BR-181 · MSG156"
+        },
+        {
+          "id": "UTC027",
+          "preconditions": [
+            "Database error while saving."
+          ],
+          "inputs": "body: \"Góp ý\".",
+          "return": "Failure SaveFailed (HTTP 503, MSG202); no comment is saved.",
+          "exception": "N/A",
+          "log": "Error log \"Failed to save a comment on document\".",
+          "type": "Abnormal",
+          "note": "UC-35 · MSG202"
+        }
+      ]
+    }
+  ]
+}

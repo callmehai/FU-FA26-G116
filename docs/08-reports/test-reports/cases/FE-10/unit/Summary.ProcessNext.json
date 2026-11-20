@@ -1,0 +1,90 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "Summary.ProcessNext",
+  "description": "Summary worker: process the next job and requeue interrupted ones.",
+  "precondition": "Queued summary job; language model replaced.",
+  "methods": [
+    {
+      "method": "SummaryService.ProcessNextAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+      "line": 170,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A draft is Queued; the model for the meeting sensitivity is ready.",
+            "The transcript, agenda and closed votes are readable."
+          ],
+          "inputs": "No arguments; the worker calls it for the oldest queued draft.",
+          "return": "true; the draft is stored whole with the model name and the time it was read; the vote lines come straight from the data, never through the model.",
+          "exception": "N/A",
+          "log": "Saved: draft content replacing the old text whole; the earlier review and correction no longer apply.",
+          "type": "Normal",
+          "note": "UC-47 · BR-376 · BR-378 · BR-379 · Pending: needs a live language model; the draft text comes from the model and cannot be stubbed."
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "No draft is Queued."
+          ],
+          "inputs": "No arguments; the queue is empty.",
+          "return": "false; nothing is claimed and nothing changes.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-47"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A draft is Queued; another worker claims it first."
+          ],
+          "inputs": "No arguments; two workers race for the same draft.",
+          "return": "true; the other worker writes the draft, this one steps aside.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-47 · Pending: needs two live workers racing one claim; not observable with an in-memory store."
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A draft is Queued; the model refuses the request."
+          ],
+          "inputs": "No arguments; the model answers with a failure message.",
+          "return": "true; the draft is Failed with the model message.",
+          "exception": "N/A",
+          "log": "Warning logged with the meeting id and the model message.",
+          "type": "Abnormal",
+          "note": "UC-47 · Pending: needs a live language model; the failure message comes from the model."
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "A draft is Queued; writing it fails unexpectedly."
+          ],
+          "inputs": "No arguments; the model call throws.",
+          "return": "true; the draft is Failed with \"Không viết được dự thảo. Vui lòng thử lại.\".",
+          "exception": "N/A",
+          "log": "Error logged with the meeting id.",
+          "type": "Abnormal",
+          "note": "UC-47 · Pending: needs a live language model; the throw comes from the model call."
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "A draft is Queued and written; storing it fails."
+          ],
+          "inputs": "No arguments; the store rejects the finished draft.",
+          "return": "true; the draft is Failed with \"Không lưu được dự thảo. Vui lòng thử lại.\"; it is left out of Running so it never blocks the next request.",
+          "exception": "N/A",
+          "log": "Error logged with the meeting id.",
+          "type": "Abnormal",
+          "note": "UC-47 · Pending: needs a live language model plus a real store failure while persisting the draft."
+        }
+      ]
+    }
+  ]
+}

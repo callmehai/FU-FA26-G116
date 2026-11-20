@@ -1,0 +1,114 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "Transcript.AssignSegmentSpeaker",
+  "description": "Editing a segment and assigning speakers.",
+  "precondition": "Transcript with segments; editor actor.",
+  "methods": [
+    {
+      "method": "TranscriptionService.AssignSegmentSpeakerAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+      "line": 230,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A line is said in SPEAKER_01; SPEAKER_00 is already named as the member; actor is the current secretary."
+          ],
+          "inputs": "segmentId: a line in SPEAKER_01; userId: the member named on SPEAKER_00; guestId: null; label: null; actorId: the current secretary.",
+          "return": "Success with the line, the previous and new voice and newVoice false (MSG407 \"Đã đổi người nói của câu này.\"); the line length moves with it.",
+          "exception": "N/A",
+          "log": "Saved: line voice and both voices speech time; audit row records the move.",
+          "type": "Normal",
+          "note": "UC-46b · BR-368 · MSG407"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "No voice is named as the member; actor is the current secretary.",
+            "Free voice labels remain on the recording."
+          ],
+          "inputs": "segmentId: a line in SPEAKER_01; userId: a meeting member with no voice; guestId: null; label: null; actorId: the current secretary.",
+          "return": "Success with newVoice true (MSG407); a new voice carrying the name is created and the line moves to it.",
+          "exception": "N/A",
+          "log": "Saved: new voice with the assigned name; line voice and speech times; audit row records the move with newVoice true.",
+          "type": "Normal",
+          "note": "UC-46b · BR-368 · MSG407"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A line was wrongly moved away from SPEAKER_00; that voice still exists; actor is the current secretary."
+          ],
+          "inputs": "segmentId: the moved line; userId: null; guestId: null; label: \"SPEAKER_00\"; actorId: the current secretary.",
+          "return": "Success (MSG407); the line moves back to SPEAKER_00 and its time moves back with it.",
+          "exception": "N/A",
+          "log": "Saved: line voice and both voices speech time; audit row records the move.",
+          "type": "Normal",
+          "note": "UC-46b · BR-368 · MSG407"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A line is already said in the member own voice; actor is the current secretary."
+          ],
+          "inputs": "segmentId: a line in the member own voice; userId: that member; guestId: null; label: null; actorId: the current secretary.",
+          "return": "Success with newVoice false (MSG407); a change that changes nothing writes nothing.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-46b · MSG407"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "A line exists; actor is the current secretary."
+          ],
+          "inputs": "segmentId: an existing line; userId: a meeting member; guestId: null; label: \"SPEAKER_00\"; actorId: the current secretary.",
+          "return": "Failure InvalidSpeaker (MSG317); a line is said by one voice, user or guest.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46b · MSG317"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "No line or voice on the recording uses the label; actor is the current secretary."
+          ],
+          "inputs": "segmentId: an existing line; userId: null; guestId: null; label: \"SPEAKER_09\"; actorId: the current secretary.",
+          "return": "Failure NotFound; another recording label is not one of this recording voices.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46b"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "All 100 voice labels are taken by lines or voices; the member has no voice; actor is the current secretary."
+          ],
+          "inputs": "segmentId: a line; userId: a meeting member with no voice; guestId: null; label: null; actorId: the current secretary.",
+          "return": "Failure InvalidSpeaker (MSG317); no free voice label remains.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-46b · MSG317"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "A line exists; actor takes part in the meeting but is not the secretary."
+          ],
+          "inputs": "segmentId: an existing line; userId: a meeting member; guestId: null; label: null; actorId: a member who is not the secretary.",
+          "return": "Failure Forbidden (MSG295); nothing moves.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46b · MSG295"
+        }
+      ]
+    }
+  ]
+}

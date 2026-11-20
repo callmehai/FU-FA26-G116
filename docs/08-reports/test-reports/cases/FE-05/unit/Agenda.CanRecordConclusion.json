@@ -1,0 +1,101 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.CanRecordConclusion",
+  "description": "Conclusion-permission rule: who may record a conclusion, and when.",
+  "precondition": "No database needed; pure rules.",
+  "methods": [
+    {
+      "method": "AgendaRules.CanRecordConclusion",
+      "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+      "line": 52,
+      "layer": "Domain",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "meeting InProgress; item InProgress; hasMinutes: false; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-77 · BR-65",
+          "preconditions": [
+            "Running meeting, running item, no minutes, actor is Chair."
+          ],
+          "return": "true.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "meeting Ended; item Done; hasMinutes: false; actor: Secretary.",
+          "log": "N/A",
+          "note": "UC-77 · BR-65",
+          "preconditions": [
+            "Ended meeting, finished item, no minutes, actor is Secretary."
+          ],
+          "return": "true.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "meeting Ended; item Done; hasMinutes: true; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-77 · MSG273",
+          "preconditions": [
+            "Minutes exist for the meeting."
+          ],
+          "return": "false.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "meeting InProgress; item Pending; hasMinutes: false; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-77 · MSG273",
+          "preconditions": [
+            "Item has not started."
+          ],
+          "return": "false.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "meeting Published; item InProgress; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-77 · MSG273",
+          "preconditions": [
+            "Meeting is only published."
+          ],
+          "return": "false.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "meeting Cancelled; item Done; actor: Chair.",
+          "log": "N/A",
+          "note": "UC-77 · MSG273",
+          "preconditions": [
+            "Meeting was cancelled."
+          ],
+          "return": "false.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "meeting InProgress; item InProgress; actor: Member.",
+          "log": "N/A",
+          "note": "UC-77 · MSG273",
+          "preconditions": [
+            "Actor is a plain Member."
+          ],
+          "return": "false.",
+          "type": "Abnormal"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.RecordConclusion",
+  "description": "Recording a conclusion: a planner saves the outcome of a run item before minutes exist.",
+  "precondition": "Meeting in a planning or running status; actor with the needed role.",
+  "methods": [
+    {
+      "method": "AgendaService.RecordConclusionAsync",
+      "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+      "line": 116,
+      "layer": "Application",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "actor: Chair C; itemId: I; input {Conclusion: \"  Approved the budget.  \"}.",
+          "log": "Conclusion saved trimmed as \"Approved the budget.\"; ConclusionUpdatedById C and ConclusionUpdatedAt/UpdatedAt set; change \"ConclusionUpdated\" published.",
+          "note": "UC-77 · BR-65 · MSG271",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress; no minutes exist."
+          ],
+          "return": "Success; 200 / MSG271.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "actor: Secretary S; input {Conclusion: \"Deferred to next meeting.\"}.",
+          "log": "ConclusionUpdatedById is S.",
+          "note": "UC-77 · BR-65 · MSG271",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Done."
+          ],
+          "return": "Success; 200 / MSG271.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "actor: Chair C; input {Conclusion: \"Noted.\"}.",
+          "log": "N/A",
+          "note": "UC-77 · MSG271",
+          "preconditions": [
+            "Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Done; minutes not yet created."
+          ],
+          "return": "Success; 200 / MSG271.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "actor: Chair C; input {Conclusion: 2000 characters}.",
+          "log": "N/A",
+          "note": "UC-77 · MSG271",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Success; 200 / MSG271.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "actor: Chair C; input {Conclusion: 2001 characters}.",
+          "log": "N/A",
+          "note": "UC-77 · MSG272",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure Invalid on conclusion; 400 / MSG272.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "actor: Chair C; input {Conclusion: \"   \"}.",
+          "log": "N/A",
+          "note": "UC-77 · MSG272",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure Invalid on conclusion; 400 / MSG272.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "actor: Chair C; input {Conclusion: null}.",
+          "log": "N/A",
+          "note": "UC-77 · MSG272",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure Invalid on conclusion; 400 / MSG272.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "actor: Chair C; input {Conclusion: \"x\"}.",
+          "log": "Conclusion unchanged.",
+          "note": "UC-77 · MSG273",
+          "preconditions": [
+            "Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Done; minutes exist for the meeting."
+          ],
+          "return": "Failure Locked; 409 / MSG273.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "actor: Chair C; input {Conclusion: \"x\"}.",
+          "log": "N/A",
+          "note": "UC-77 · MSG273",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Failure Locked; 409 / MSG273.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "actor: Chair C.",
+          "log": "N/A",
+          "note": "UC-77 · MSG273",
+          "preconditions": [
+            "Meeting in status Published; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress (inconsistent)."
+          ],
+          "return": "Failure Locked; 409 / MSG273.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "actor: Member M; input {Conclusion: \"x\"}.",
+          "log": "N/A",
+          "note": "UC-77 · BR-65 · MSG273",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure Forbidden; 403 / MSG273.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "actor: Chair C; itemId: unknown.",
+          "log": "N/A",
+          "note": "UC-77 · MSG174",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
+          ],
+          "return": "Failure NotFound; 404 / MSG174.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC013",
+          "inputs": "actor: stranger.",
+          "log": "N/A",
+          "note": "UC-77 · BR-29 · MSG174",
+          "preconditions": [
+            "Meeting not readable by the actor."
+          ],
+          "return": "Failure NotFound; 404 / MSG174.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC014",
+          "inputs": "actor: Chair C; input.ParseFailure: UnsupportedMedia.",
+          "log": "N/A",
+          "note": "UC-77 · MSG34",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure UnsupportedMedia; 415 / MSG34.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC015",
+          "inputs": "actor: Chair C; the database fails while saving.",
+          "log": "N/A",
+          "note": "UC-77 · MSG274",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG274.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC016",
+          "inputs": "actor: deactivated user.",
+          "log": "N/A",
+          "note": "UC-77",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
+          ],
+          "return": "Failure Inactive; 403, empty body.",
+          "type": "Abnormal"
+        }
+      ]
+    }
+  ]
+}

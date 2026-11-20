@@ -1,0 +1,102 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "AgendaMeetingEnd.Prepare",
+  "description": "Ending a meeting settles the agenda: running items complete.",
+  "precondition": "Meeting with a running agenda item.",
+  "methods": [
+    {
+      "method": "AgendaMeetingEnd.PrepareAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Agenda/AgendaMeetingEnd.cs",
+      "line": 10,
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "meetingId; endedAt: 2026-12-01T10:30:00Z.",
+          "log": "Item Status Done, ActualEndedAt 10:30:00Z; meeting row locked first; change to be published after the caller commits.",
+          "note": "UC-22 · UC-25 · BR-72",
+          "preconditions": [
+            "Meeting being ended inside the caller's meeting transaction.",
+            "An agenda item is InProgress, started 2026-12-01T09:00:00Z."
+          ],
+          "return": "AgendaChange {ChangeType: \"MeetingEnded\"; AgendaItemId: that item; Title: the item title; OccurredAt: 10:30:00Z; new EventId}.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "meetingId; endedAt: now.",
+          "log": "No item is modified.",
+          "note": "UC-22 · BR-72",
+          "preconditions": [
+            "Meeting has items that are all Pending or Done; none InProgress."
+          ],
+          "return": "null; nothing changes.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "meetingId; endedAt: now.",
+          "log": "No item is modified.",
+          "note": "UC-22",
+          "preconditions": [
+            "Meeting has no agenda items."
+          ],
+          "return": "null.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "endedAt: 2026-12-01T09:00:00Z (equal to start).",
+          "log": "N/A",
+          "note": "UC-22 · BR-72",
+          "preconditions": [
+            "An item is InProgress, started 2026-12-01T09:00:00Z."
+          ],
+          "return": "AgendaChange \"MeetingEnded\"; item Done with ActualEndedAt equal to its start.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "InvalidAgendaExecutionException: The current agenda item has no valid start time or the end precedes its start.",
+          "id": "UTC005",
+          "inputs": "endedAt: 2026-12-01T08:00:00Z (before the start).",
+          "log": "Item stays InProgress; the caller's transaction is expected to roll back.",
+          "note": "UC-22 · BR-72",
+          "preconditions": [
+            "An item is InProgress, started 2026-12-01T09:00:00Z."
+          ],
+          "return": "No value is returned.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "InvalidAgendaExecutionException: The current agenda item has no valid start time or the end precedes its start.",
+          "id": "UTC006",
+          "inputs": "endedAt: now.",
+          "log": "N/A",
+          "note": "UC-22 · BR-72",
+          "preconditions": [
+            "An item is InProgress but ActualStartedAt is empty (inconsistent data)."
+          ],
+          "return": "No value is returned.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "InvalidOperationException: Locking the meeting requires the caller's meeting transaction.",
+          "id": "UTC007",
+          "inputs": "meetingId; endedAt: now.",
+          "log": "N/A",
+          "note": "UC-22",
+          "preconditions": [
+            "Called with no surrounding meeting transaction."
+          ],
+          "return": "No value is returned; the meeting cannot be locked.",
+          "type": "Abnormal"
+        }
+      ]
+    }
+  ]
+}

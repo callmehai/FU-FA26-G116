@@ -1,0 +1,101 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "CallRoom.StatusOf",
+  "description": "Online room status: whether the call room is open for a meeting status and mode.",
+  "precondition": "Meeting with known status and mode.",
+  "methods": [
+    {
+      "method": "CallRoomRules.StatusOf",
+      "file": "backend/TrustCabinet.Application/Calls/CallContracts.cs",
+      "line": 22,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting InProgress with mode Online."
+          ],
+          "inputs": "status: InProgress; mode: Online.",
+          "return": "Open; the room can be entered and the waiting screen offers the join button.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting InProgress with mode Hybrid."
+          ],
+          "inputs": "status: InProgress; mode: Hybrid.",
+          "return": "Open; a hybrid sitting has the same online room as an online one.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting Published with mode Online (approved, not started yet)."
+          ],
+          "inputs": "status: Published; mode: Online.",
+          "return": "NotStarted; the waiting screen shows \"Phòng họp chỉ mở khi cuộc họp đang diễn ra.\" (MSG117) and opens by itself when the sitting starts.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37 · MSG117"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting still waiting for approval with mode Online."
+          ],
+          "inputs": "status: WaitingApproval; mode: Online.",
+          "return": "NotStarted; every status other than InProgress, Ended and Cancelled maps here (Draft, WaitingApproval, Rejected, Approved, Published).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37 · MSG117"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting Ended with mode Online."
+          ],
+          "inputs": "status: Ended; mode: Online.",
+          "return": "Ended; the room is closed and no new ticket is issued.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Meeting Cancelled after it was published, with mode Online."
+          ],
+          "inputs": "status: Cancelled; mode: Online.",
+          "return": "Cancelled; only a meeting cancelled after publishing reaches this (a meeting cancelled earlier is answered as if it did not exist).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-75"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Meeting InProgress with mode InPerson."
+          ],
+          "inputs": "status: InProgress; mode: InPerson.",
+          "return": "InPersonOnly; the mode is decided first, so an in-person sitting never has a room whatever its status (\"Cuộc họp này họp trực tiếp nên không có phòng họp trực tuyến.\" MSG280).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37 · MSG280"
+        }
+      ],
+      "layer": "Application"
+    }
+  ]
+}

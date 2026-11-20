@@ -1,0 +1,65 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "VoiceId.SampleAudio",
+  "description": "Voice samples: add under consent, delete, read audio.",
+  "precondition": "User with consent; speech worker replaced.",
+  "methods": [
+    {
+      "method": "VoiceIdService.SampleAudioAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+      "line": 202,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "User owns a sample whose recording was kept."
+          ],
+          "inputs": "actorId: the sample owner; sampleId: a sample with kept audio.",
+          "return": "The decrypted bytes with their content type.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-81d · BR-364"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "The sample belongs to another person."
+          ],
+          "inputs": "actorId: a user; sampleId: another person sample.",
+          "return": "Null; someone else sample is answered exactly like one that does not exist.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81d · BR-364"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "User owns a sample recorded under notice \"1.0\", which kept no recording."
+          ],
+          "inputs": "actorId: the sample owner; sampleId: a sample without kept audio.",
+          "return": "Null; only samples under a consent that says so keep their recording.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-81d · BR-362 · BR-364"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "User owns a sample whose audio no longer decrypts after a key change."
+          ],
+          "inputs": "actorId: the sample owner; sampleId: a sample with an unreadable recording.",
+          "return": "Null; the person is simply not heard back.",
+          "exception": "N/A",
+          "log": "Warning logged with the sample id.",
+          "type": "Abnormal",
+          "note": "UC-81d · BR-364"
+        }
+      ]
+    }
+  ]
+}

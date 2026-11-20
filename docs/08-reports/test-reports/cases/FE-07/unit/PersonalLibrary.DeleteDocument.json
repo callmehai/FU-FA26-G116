@@ -1,0 +1,65 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "PersonalLibrary.DeleteDocument",
+  "description": "Personal library documents: upload with quota, rename, move, delete.",
+  "precondition": "Owner with folders; file storage recorder.",
+  "methods": [
+    {
+      "method": "PersonalLibraryService.DeleteDocumentAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "line": 230,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Owner U1 has D1 used by two meetings."
+          ],
+          "inputs": "documentId: D1.",
+          "return": "None; endpoint answers MSG180.",
+          "exception": "N/A",
+          "log": "Library row of D1 deleted; the meeting copies keep their stored file (DocumentId becomes null).",
+          "type": "Normal",
+          "note": "UC-71a · BR-186 · BR-213 · MSG180"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "D9 missing or another user's."
+          ],
+          "inputs": "documentId: D9.",
+          "return": "NotFound (HTTP 404, MSG175).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-71a · BR-242 · MSG175"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "D1 already deleted."
+          ],
+          "inputs": "documentId: D1.",
+          "return": "NotFound (HTTP 404, MSG175); delete affects 0 rows.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-71a · MSG175"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Database error."
+          ],
+          "inputs": "documentId: D1.",
+          "return": "SaveFailed (HTTP 503, MSG181); the library is unchanged.",
+          "exception": "N/A",
+          "log": "Error log \"Failed to delete a document\".",
+          "type": "Abnormal",
+          "note": "UC-71a · MSG181"
+        }
+      ]
+    }
+  ]
+}

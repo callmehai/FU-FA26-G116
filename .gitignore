@@ -510,3 +510,6 @@ docs/08-reports/sample/
 # Bản gốc ảnh sơ đồ do script xuất ra (đầy đủ độ phân giải, phục vụ dựng báo cáo chuẩn nộp).
 # Chỉ bản nén palette nằm trong docs/ mới vào git.
 anh-goc/
+
+# Backup workbook do scripts/test_reports/*_cases.py build --overwrite sinh ra: chỉ giữ ở máy, không đưa lên git.
+docs/08-reports/test-reports/*.bak-*.xlsx

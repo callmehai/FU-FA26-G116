@@ -1,0 +1,162 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "Recording.Playback",
+  "description": "Recording playback, download and lookup: who may listen.",
+  "precondition": "Recording rows seeded.",
+  "methods": [
+    {
+      "method": "RecordingService.PlaybackAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+      "line": 113,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Recording in status Available in a Published meeting.",
+            "The actor is a current Member; the playback link lasts 120 minutes."
+          ],
+          "inputs": "recordingId: that recording; actorId: the Member.",
+          "return": "Success; a signed playback URL for the recording with ExpiresAt = now + 120 minutes (not a download link).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-43b · BR-350"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "The same recording in a Secret meeting."
+          ],
+          "inputs": "actorId: a Member of the meeting.",
+          "return": "Success; a signed playback URL. Listening is not restricted by sensitivity, only downloading is.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-43b · BR-350 · BR-351"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "No recording with this id exists."
+          ],
+          "inputs": "recordingId: a random id.",
+          "return": "NotFound (404 without body).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "actorId: the deactivated user.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "The actor created the meeting but is not on the roster."
+          ],
+          "inputs": "actorId: the creator.",
+          "return": "NotFound; the recording is hidden.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "The actor is an approver, not on the roster."
+          ],
+          "inputs": "actorId: the approver.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "The actor's Member assignment was removed."
+          ],
+          "inputs": "actorId: the former Member.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "The recording belongs to a meeting that has been deleted or cannot be loaded."
+          ],
+          "inputs": "actorId: any user.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-43b · BR-350"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "The recording was erased: status Deleted."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "NotFound; nothing is signed.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350 · BR-348"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "A room-mic take still streaming: status Pending."
+          ],
+          "inputs": "actorId: the Secretary.",
+          "return": "NotFound; nobody hears a take before the mic is switched off.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44a · UC-43b · BR-350"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "A recording whose transcription failed: status Failed."
+          ],
+          "inputs": "actorId: a Member.",
+          "return": "NotFound; only Available recordings are played.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-43b · BR-350"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "The database fails while reading the recording."
+          ],
+          "inputs": "actorId: a Member.",
+          "return": "ReadFailed (500, MSG297).",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to sign playback'.",
+          "type": "Abnormal",
+          "note": "UC-43b · BR-350 · MSG297"
+        }
+      ]
+    }
+  ]
+}

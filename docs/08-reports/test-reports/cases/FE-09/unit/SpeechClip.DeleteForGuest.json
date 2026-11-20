@@ -1,0 +1,65 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "SpeechClip.DeleteForGuest",
+  "description": "Speech clips for a guest session: list, capture, delete, playback.",
+  "precondition": "Guest session in a meeting in progress.",
+  "methods": [
+    {
+      "method": "SpeechClipService.DeleteForGuestAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "line": 350,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A current guest session; the sentence is the guest's own and still in the record."
+          ],
+          "inputs": "guest session; clipId: the guest's own sentence.",
+          "return": "Success (200, MSG322); the row is removed and its audio file is deleted after the commit.",
+          "exception": "N/A",
+          "log": "Audit SpeechClipDeleted (sentence, meeting, invitation, session, byOwner true); a ClipDeleted change is published.",
+          "type": "Normal",
+          "note": "UC-80 · BR-355 · MSG322"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A current guest session; the sentence is another speaker's."
+          ],
+          "inputs": "guest session; clipId: someone else's sentence.",
+          "return": "NotFound; someone else's sentence does not exist for a guest.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-80 · BR-355"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "The guest session has expired; the sentence is the guest's own."
+          ],
+          "inputs": "An expired guest session; clipId: the guest's own sentence.",
+          "return": "NotFound; after the session the Secretary deletes it on request.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-80 · BR-355"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A current guest session; the database fails while saving the removal."
+          ],
+          "inputs": "guest session; clipId: the guest's own sentence.",
+          "return": "SaveFailed (503, MSG304); the row and its audio file are kept.",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to delete speech clip for a guest'.",
+          "type": "Abnormal",
+          "note": "UC-80 · BR-355 · MSG304"
+        }
+      ]
+    }
+  ]
+}

@@ -225,8 +225,12 @@ is a gap: list it, do not write the missing C# test unless asked.
 Rules (same spirit as §3):
 
 - Business language. Never `Assert.*`, fixture names, `TestServer`, `dotnet test`, fakes or class
-  names in Pre-conditions / Inputs / Expected / Type. The C# test that automates the case goes in
-  **Note** only, as `BR-xx · MSGnn · Automated: tests/... (Method)` or `"Manual only"`.
+  names in any field — Pre-conditions, Inputs, Expected, Type and Note alike. Author every case
+  from the production function itself — its signature, its code at `file:line`, and
+  `docs/03-api/` — never from a file under `tests/`. **Note** carries traceability only:
+  `UC-xx · BR-xx · MSGnn` (omit parts that do not apply), plus `Deviation: …` when the code
+  contradicts the UC spec. Never write `Automated:`, test file paths, or test method names
+  anywhere in a case.
 - `Expected Results` is always the three lines `Return: …` / `Exception: …` / `Log Message: …`.
 - Every value comes from the code — real signatures, real outcomes, real `MSGnn` from
   [00-danh-muc-ma-thong-bao.md](../../03-api/00-danh-muc-ma-thong-bao.md). Read the function and
@@ -240,6 +244,11 @@ Rules (same spirit as §3):
 - Case text is English; Vietnamese messages and sample data stay Vietnamese in quotes.
 - A behaviour the code does that contradicts the UC spec: write the case for the **code**, and add
   `Deviation: …` to Note so BA can review it.
+
+5.1 reads the code of the `app` branch at the commit pinned in `cases/functions.json`
+(`source.ref`): open every file with `git show <ref>:<path>`, never from the working tree, which
+may sit on another branch. When the pin moves, run `relink` and re-verify every UTC against the
+new code before rebuilding the workbook.
 
 Source of truth — do not hand-edit the workbook:
 
@@ -258,25 +267,48 @@ cases/preview/FE-04/unit-*.md    generated Markdown preview of each sheet, for r
       "cases": [
         { "id": "UTC001", "preconditions": ["…"], "inputs": "…",
           "return": "…", "exception": "N/A", "log": "…",
-          "type": "Normal", "note": "BR-xx · MSGnn · Automated: tests/... (Method)" } ] } ]
+          "type": "Normal", "note": "UC-xx · BR-xx · MSGnn" } ] } ]
 }
 ```
 
-[`scripts/test_reports/unit_cases.py`](../../../../scripts/test_reports/unit_cases.py)
+Future gate (opt-in, manifest only): once a function has direct C# tests calling it in-process,
+add `"directTests": ["TestMethodOne", …]` to that method in `functions.json`. `check` then
+verifies each name exists under `tests/`; methods without the key keep the pipeline independent
+of `tests/`. The key never reaches the workbook — `Note` stays `Automated:`-free.
+
+[`scripts/test_reports/unit_cases.py`](../../../scripts/test_reports/unit_cases.py)
 does everything mechanical; nobody opens the workbook to edit it:
 
 | Command | What it does |
 |---|---|
 | `scaffold` | creates the missing `cases/FE-xx/unit/<sheet>.json` with the methods from `functions.json` and no UTCs |
-| `check` | every function exists at its `file:line`; every cited test method exists; UTC IDs `UTC001…` sequential per sheet; `type` is Normal/Abnormal/Boundary; every `MSGnn` in the catalogue; no `Assert.*`/fixture wording outside Note; sheet names valid (≤31 chars, no `/ \ ? * [ ]`, unique); lists methods still without UTCs |
+| `check` | every function exists at its `file:line`; UTC IDs `UTC001…` sequential per sheet; `type` is Normal/Abnormal/Boundary; every `MSGnn` in the catalogue; no `Assert.*`/fixture/test-file wording (`Automated:`, `tests/…cs`, method names) in any field; optional `directTests` (functions.json only) verified against `tests/` when present; sheet names valid (≤31 chars, no `/ \ ? * [ ]`, unique); lists methods still without UTCs |
+| `relink` | after a refactor moved code: finds each method's declaration (in its pinned file, else any `backend/**/*.cs` declaring its class) and rewrites `file`/`line` in `functions.json` and in each sheet JSON; prints `MOVED` / `UNCHANGED` (ambiguous or not found, left as is). It re-pins only; whether the UTCs still match the code is a review. `check` reports the actual line of a method that is not at its pin |
 | `md` | writes `cases/preview/FE-xx/unit-<sheet>.md` |
-| `build` | `check`, then `md`, then `Report5.1_Unit_Test.xlsx` from `scripts/test_reports/templates/unit-template.xlsx` (Cover, Test Cases, Test Statistics with formulas, one sheet per `functions.json` entry). Close the workbook in Excel first |
+| `sync-back` | reads the old workbook in the repo (if present) and merges executed Round 1/2/3, Test date and Tester cells back into the JSON, matched by case id (`UTCnnn`). Only non-empty, non-Pending cells are merged; description/procedure/inputs/expected and every other standard field are never overwritten from Excel. Prints per-sheet merged counts; exits 0 when the old workbook is missing |
+| `build` | dry-run: runs `check` first (an error stops everything), then prints the diff between the old workbook and the JSON — cover version old→new, added/removed sheets, per-sheet UTC counts old→new (by case id), totals. Writes nothing |
+| `build --overwrite` | backs the old workbook up to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx` in the same directory, then `check` + `md` + `Report5.1_Unit_Test.xlsx` as before. Close the workbook in Excel first |
 
 Template formula fixes (kept in both the template and the generated sheets): Test Cases D3/D4
 `#REF!` now point at `Cover!B4`/`Cover!B5`; the Type counts use `$E12` consistently (the
 `E$10` outlier is fixed); the Statistics percentages are wrapped in `IFERROR(…,0)`; each module
 sheet counts `=COUNTIF(A:A,"UTC*")` and the Statistics rows reference each sheet directly with
 Sub total, Test coverage, Test successful coverage and the Normal / Abnormal / Boundary percentages.
+
+### Safe rebuild workflow (mandatory for agents)
+
+JSON is the source of truth, the template is the frame — never patch cells into an old
+workbook. Overwriting a workbook that already holds executed results destroys them, so every
+rebuild follows this order: (1) run `build` with no flags (dry-run: `check` first, then the
+old-vs-JSON diff) and show the diff to the user; (2) wait for an explicit OK — writing over
+the old file without it is forbidden; (3) if the old workbook may hold executed results, run
+`sync-back` first so real Round/Test date/Tester values land in the JSON; (4) run
+`build --overwrite` (backs the old file up to `<name>.bak-<YYYYMMDD-HHMMSS>.xlsx`, then
+regenerates from the template); (5) report the numbers — check errors/todos, what sync-back
+merged, the dry-run diff summary, the backup name, and the new workbook's sheet/case counts.
+`sync-back` is per-book for 5.2/5.2.2 (matched by `<CODE>_FTnn` / `<CODE>_API_ITnn`) and per
+workbook for 5.1 (matched by `UTCnnn`). Do not run `build --overwrite` for 5.2/5.2.2 while
+the hand-written 5.2 v1.2 is awaiting its own archive decision.
 
 Prompt for a phase-1 agent (fill in the FE):
 
@@ -298,12 +330,13 @@ Prompt for a phase-1 agent (fill in the FE):
    15-minute expiry). No `MSGnn` and no limit usually means Normal.
 2. **Preconditions name roles and states, never secrets** ("active Secretary account supplied by QA
    lead"). Passwords appear only as placeholders.
-3. **Unit Notes never reference HTTP tests.** `Automated:` is only for a test that calls the
-   function directly — many such tests live in `tests/TrustCabinet.Web.Tests` but use no HTTP
-   (e.g. `PasswordHasherTests` calls `PasswordHasher.Verify` in-process; the project holds both
-   kinds). An endpoint test never automates a UTC, not even as a cross-reference. No direct test →
-   Note is `Manual only` (keeping UC/MSG context); the missing test itself is tracked as a gap in
-   `functions.json` and the report until someone writes it.
+3. **Unit cases are authored from the function, never from `tests/`.** Read the signature, the
+   code at `file:line`, and `docs/03-api/`; do not copy inputs, values, or method names from a file
+   under `tests/TrustCabinet.Web.Tests` (e.g. do not lift cases from `PasswordHasherTests` even
+   though it calls `PasswordHasher.Verify` in-process). `Note` never contains `Automated:`, test
+   file paths, or test method names — only `UC-xx · BR-xx · MSGnn` context (and `Deviation:`
+   when needed). Whether a C# test calls the function directly is tracked as a gap in
+   `functions.json`, not in the report.
 4. **Quote Vietnamese exactly** from `docs/03-api/`, the endpoint, or the `.tsx`. One wrong word
    fails review.
 5. **Expected checks both sides.** API: status, `code`, body fields, and what must *not* happen (no

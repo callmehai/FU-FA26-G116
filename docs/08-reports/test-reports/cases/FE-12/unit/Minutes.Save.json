@@ -1,0 +1,193 @@
+{
+  "feature": "FE-12",
+  "module": "MIN",
+  "sheet": "Minutes.Save",
+  "description": "Saving minutes content: version check, sanitising and editor permission.",
+  "precondition": "Minutes draft exists; editor actor.",
+  "methods": [
+    {
+      "method": "MinutesService.SaveAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+      "line": 98,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Draft revision with content and UpdatedAt T.",
+            "Actor is the current Secretary who manages the meeting; the caller read the revision at T."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the current Secretary; content: \"<p>Biên bản họp quý 3.</p>\"; loadedAt: T.",
+          "return": "Content stored as the filtered HTML; UpdatedAt moves to now; 200 MSG396.",
+          "exception": "N/A",
+          "log": "Saved: content and UpdatedAt on the Draft revision.",
+          "type": "Normal",
+          "note": "UC-60 · MSG396"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Revision Rejected with a reason and UpdatedAt T.",
+            "Actor is the current Secretary; the caller read the revision at T."
+          ],
+          "inputs": "minutesId: the Rejected revision; actor: the current Secretary; content: \"<p>Bổ sung kết luận.</p>\"; loadedAt: T.",
+          "return": "Content stored; a returned revision is corrected and can be sent again; 200 MSG396.",
+          "exception": "N/A",
+          "log": "Saved: content and UpdatedAt on the Rejected revision.",
+          "type": "Normal",
+          "note": "UC-60 · BR-407 · MSG396"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Actor's account is deactivated."
+          ],
+          "inputs": "minutesId: a Draft revision; actor: deactivated Secretary; content: \"<p>A.</p>\"; loadedAt: T.",
+          "return": "Failure Inactive; 403 with no message code; nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-60"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "No revision has the given id.",
+            "Actor is the current Secretary."
+          ],
+          "inputs": "minutesId: unknown; actor: the current Secretary; content: \"<p>A.</p>\"; loadedAt: now.",
+          "return": "Failure NotFound; 404 with no message code; nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-60"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Draft revision exists.",
+            "Actor is a Member who reads the meeting but is neither Chair nor Secretary."
+          ],
+          "inputs": "minutesId: the Draft revision; actor: the Member; content: \"<p>A.</p>\"; loadedAt: T.",
+          "return": "Failure NotFound; 404 with no message code; nothing saved and nothing revealed.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-60"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Issued revision exists.",
+            "Actor is a Member who reads the meeting."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the Member; content: \"<p>A.</p>\"; loadedAt: T.",
+          "return": "Failure Forbidden; 403 MSG397; nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-60 · MSG397"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Revision WaitingApproval with UpdatedAt T.",
+            "Actor is the current Secretary."
+          ],
+          "inputs": "minutesId: the waiting revision; actor: the current Secretary; content: \"<p>A.</p>\"; loadedAt: T.",
+          "return": "Failure Locked; 409 MSG400; a sent revision is no longer edited here.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-60 · MSG400"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Draft revision; actor is the current Secretary; the caller read it at T."
+          ],
+          "inputs": "minutesId: the Draft revision; content: \"<p>   </p><hr>\" (no text after filtering); loadedAt: T.",
+          "return": "Failure Invalid; 400 MSG402; errors[content] holds the limit message for the 300000-character limit (formatted with N0 in the process culture); nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-60 · MSG402 · Deviation: the limit message formats the 300000 limit with N0 in the process culture, so the separator follows the server locale."
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Draft revision; actor is the current Secretary; the caller read it at T."
+          ],
+          "inputs": "minutesId: the Draft revision; content: 300.001 characters with text; loadedAt: T.",
+          "return": "Failure Invalid; 400 MSG402; errors[content] holds the limit message for the 300000-character limit (formatted with N0 in the process culture); nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-60 · MSG402 · Deviation: the limit message formats the 300000 limit with N0 in the process culture, so the separator follows the server locale."
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Draft revision; actor is the current Secretary; the caller read it at T."
+          ],
+          "inputs": "minutesId: the Draft revision; content: HTML nested deeper than 64 levels; loadedAt: T.",
+          "return": "Failure Invalid; 400 MSG402; an over-deep tree is refused before it is walked; nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-60 · MSG402"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Draft revision; actor is the current Secretary."
+          ],
+          "inputs": "minutesId: the Draft revision; content: \"<p>A.</p>\"; loadedAt: null (the caller sends no copy time).",
+          "return": "Failure Stale; 409 MSG401; nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-60 · BR-389 · MSG401"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Draft revision read at T, then saved by someone else.",
+            "Actor is the current Secretary."
+          ],
+          "inputs": "minutesId: the Draft revision; content: \"<p>A.</p>\"; loadedAt: T.",
+          "return": "Failure Stale; 409 MSG401; the newer save is kept, this one is discarded.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-60 · BR-389 · MSG401"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Draft revision; actor is the current Secretary; the caller read it at T."
+          ],
+          "inputs": "minutesId: the Draft revision; content: exactly 300.000 characters with text; loadedAt: T.",
+          "return": "Content stored; 200 MSG396; exactly 300.000 characters pass.",
+          "exception": "N/A",
+          "log": "Saved: content and UpdatedAt on the Draft revision.",
+          "type": "Boundary",
+          "note": "UC-60 · MSG396"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "Draft revision; actor is the current Secretary; the caller read it at T.",
+            "The database fails on save."
+          ],
+          "inputs": "minutesId: the Draft revision; content: \"<p>A.</p>\"; loadedAt: T.",
+          "return": "Failure SaveFailed; 503 MSG404; nothing saved.",
+          "exception": "N/A",
+          "log": "Error logged with the minutes id.",
+          "type": "Abnormal",
+          "note": "UC-60 · MSG404"
+        }
+      ]
+    }
+  ]
+}

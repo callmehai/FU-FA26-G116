@@ -1,0 +1,120 @@
+{
+  "description": "Role deletion: refused while users hold it and for built-in roles.",
+  "feature": "FE-03",
+  "methods": [
+    {
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "id: that role.",
+          "log": "Audit row RoleDeleted (details { name, capabilities: [\"MeetingCreator\"] }); log \"Role {RoleId} deleted by {ActorId}.\"",
+          "note": "UC-12c · BR-16 · MSG23",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Custom role \"Thư ký phó\" with capabilities [MeetingCreator]; no account holds it, active or deactivated."
+          ],
+          "return": "RoleResult Success (MSG23); the role and its capability grants are removed.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "id: <random Guid with no role>.",
+          "log": "N/A",
+          "note": "UC-12c",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers."
+          ],
+          "return": "RoleResult Failure(NotFound) (HTTP 404, no message code).",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "id: that role.",
+          "log": "N/A",
+          "note": "UC-12c · MSG24",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Built-in role \"Thành viên\"."
+          ],
+          "return": "RoleResult Failure(BuiltInRole) (MSG24); the role stays.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "id: that role.",
+          "log": "N/A",
+          "note": "UC-12c · MSG25",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Custom role held by 2 active accounts."
+          ],
+          "return": "RoleResult InUse with userCount 2 (MSG25); nothing deleted.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "id: that role.",
+          "log": "N/A",
+          "note": "UC-12c · MSG25",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Custom role held by exactly 1 account, which is deactivated."
+          ],
+          "return": "RoleResult InUse with userCount 1 (MSG25): deactivated accounts still count.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "id: that role.",
+          "log": "Log \"Deleting role {RoleId} refused by the foreign key: {Count} account(s) hold it.\"",
+          "note": "UC-12c · MSG25",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "The role has no holder when counted, but an account is assigned to it before the delete executes (the foreign key refuses the delete)."
+          ],
+          "return": "RoleResult InUse (MSG25) with the fresh count, at least 1; no audit row.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "id: unused custom role.",
+          "log": "Error log \"Deleting role {RoleId} failed.\"",
+          "note": "UC-12c · MSG28",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "The database fails while deleting (connection lost or timeout)."
+          ],
+          "return": "RoleResult Failure(SaveFailed) (MSG28); the role and its grants remain.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "id: that role.",
+          "log": "Audit row RoleDeleted.",
+          "note": "UC-12c · BR-16 · MSG23",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Custom role with no capabilities and no holders."
+          ],
+          "return": "RoleResult Success (MSG23); audit details list capabilities as an empty array.",
+          "type": "Boundary"
+        }
+      ],
+      "file": "backend/TrustCabinet.Application/Access/RoleService.cs",
+      "layer": "Application",
+      "line": 184,
+      "method": "RoleService.DeleteAsync"
+    }
+  ],
+  "module": "RBAC",
+  "precondition": "Roles seeded, one in use.",
+  "sheet": "Role.Delete"
+}

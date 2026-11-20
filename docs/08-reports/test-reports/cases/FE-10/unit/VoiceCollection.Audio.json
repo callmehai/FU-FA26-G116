@@ -1,0 +1,53 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "VoiceCollection.Audio",
+  "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+  "precondition": "Meeting with participants and consent.",
+  "methods": [
+    {
+      "method": "VoiceCollectionService.AudioAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
+      "line": 168,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A sample was collected at the meeting; actor is its current secretary."
+          ],
+          "inputs": "meetingId: the meeting; actorId: its current secretary; sampleId: a sample collected there.",
+          "return": "The decrypted bytes with their content type.",
+          "exception": "N/A",
+          "log": "Saved: audit row records the play with the owner and the meeting.",
+          "type": "Normal",
+          "note": "UC-86c · BR-452 · BR-453"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "The sample was collected at another meeting; actor is the current secretary of this one."
+          ],
+          "inputs": "meetingId: this meeting; actorId: its current secretary; sampleId: a sample collected elsewhere.",
+          "return": "Null; a secretary only hears samples taken in their own meeting.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-86c · BR-452"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A sample was collected at the meeting; actor takes part but is not the secretary."
+          ],
+          "inputs": "meetingId: the meeting; actorId: a member who is not the secretary; sampleId: a sample collected there.",
+          "return": "Null; answered as if the meeting does not exist.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-86c · BR-450"
+        }
+      ]
+    }
+  ]
+}

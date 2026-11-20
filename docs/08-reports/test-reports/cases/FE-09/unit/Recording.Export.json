@@ -1,0 +1,113 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "Recording.Export",
+  "description": "Recording rules: upload allowed, who records and listens, export and validation.",
+  "precondition": "No database needed; pure rules.",
+  "methods": [
+    {
+      "method": "RecordingRules.Export",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "line": 247,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "The actor is the Chair of a Normal meeting."
+          ],
+          "inputs": "actor: the Chair.",
+          "return": "None; export allowed.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-43c · UC-45b · BR-351"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "The actor is the Secretary of an Internal meeting."
+          ],
+          "inputs": "actor: the Secretary.",
+          "return": "None.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-43c · UC-45b · BR-351"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "The actor is a Member of a Normal meeting."
+          ],
+          "inputs": "actor: a Member.",
+          "return": "ExportForbidden (shown as MSG355).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43c · UC-45b · BR-351 · MSG355"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "The actor is not on the roster."
+          ],
+          "inputs": "actor: an outsider.",
+          "return": "ExportForbidden.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43c · BR-351 · MSG355"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "The actor is the Chair of a Secret meeting."
+          ],
+          "inputs": "actor: the Chair.",
+          "return": "SecretMeeting (shown as MSG356).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43c · UC-45b · BR-351 · MSG356"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "The actor is the Secretary of a Secret meeting."
+          ],
+          "inputs": "actor: the Secretary.",
+          "return": "SecretMeeting.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-43c · BR-351 · MSG356"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "The actor is a Member of a Secret meeting."
+          ],
+          "inputs": "actor: a Member.",
+          "return": "ExportForbidden; the role check comes before the Secret check.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-43c · BR-351 · MSG355"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "The actor's Chair assignment was replaced."
+          ],
+          "inputs": "actor: the former Chair.",
+          "return": "ExportForbidden.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-43c · BR-351 · MSG355"
+        }
+      ]
+    }
+  ]
+}

@@ -1,15 +1,171 @@
 {
-  "feature": "FE-02",
-  "module": "USER",
-  "sheet": "User.ChangeStatus",
   "description": "Deactivate and reactivate rules: status change, last-admin guard, session and Voice ID side effects.",
-  "precondition": "At least two active administrators exist for the guard cases.",
+  "feature": "FE-02",
   "methods": [
     {
-      "method": "UserService.ChangeStatusAsync",
-      "file": "backend/TrustCabinet.Infrastructure/Users/UserService.cs",
-      "line": 262,
-      "cases": []
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "id: target; isActive: false.",
+          "log": "Audit row UserDeactivated (details { email, isActive: false }); Voice ID ended (reason AccountDeactivated); calendar shares stopped; log \"Account {UserId} deactivated by {ActorId}.\"",
+          "note": "UC-06c · BR-18 · BR-19 · BR-372 · BR-424 · MSG11",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Two active administrators exist; target is an active non-administrator with an enrolled Voice ID and Effective calendar shares."
+          ],
+          "return": "UserResult Success (MSG11) with IsActive false; the row is kept; every refresh token and reset link of the account are revoked after the commit.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "id: target; isActive: false.",
+          "log": "Audit row UserDeactivated; sessions ended.",
+          "note": "UC-06c · BR-18 · MSG11",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Target is an active account without an enrolled Voice ID."
+          ],
+          "return": "UserResult Success (MSG11); no Voice ID log entry because nothing was enrolled.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "id: target; isActive: true.",
+          "log": "Audit row UserReactivated (details { email, isActive: true }); log \"Account {UserId} reactivated by {ActorId}.\"",
+          "note": "UC-06c · BR-03 · MSG11",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Target is a deactivated account."
+          ],
+          "return": "UserResult Success (MSG11) with IsActive true; no session is revoked, Voice ID is not restored and no share restarts.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "id: <random Guid with no account>; isActive: false.",
+          "log": "N/A",
+          "note": "UC-06c",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers."
+          ],
+          "return": "UserResult Failure(NotFound) (HTTP 404, no message code).",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "id: the actor's own id; isActive: false.",
+          "log": "Log \"Status change rejected: administrator {ActorId} aimed at their own account.\"",
+          "note": "UC-06c · MSG12",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers."
+          ],
+          "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the administrator stays active.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "id: target; isActive: true.",
+          "log": "N/A",
+          "note": "UC-06c · MSG12",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Target is already active."
+          ],
+          "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12): a repeated request is refused so the audit log does not record the same change twice.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "id: target; isActive: false.",
+          "log": "N/A",
+          "note": "UC-06c · MSG12",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Target is already deactivated."
+          ],
+          "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); no second audit row.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "id: target (sole active administrator); isActive: false.",
+          "log": "Warning log \"Status change rejected: deactivating {UserId} would leave no active administrator.\"",
+          "note": "UC-06c · MSG12",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "The target is the only active holder of AdminUsers (the actor acts with a still-valid token of an account that is no longer counted)."
+          ],
+          "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the target stays active.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "id: B; isActive: false (requested with A's still-valid access token).",
+          "log": "Warning log \"Status change rejected: ... would leave no active administrator.\"",
+          "note": "UC-06c · MSG12",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Exactly two active administrators A and B; A has already been deactivated by B."
+          ],
+          "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12): the last-administrator rule blocks mutual deactivation.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "id: target administrator; isActive: false.",
+          "log": "Audit row UserDeactivated; sessions ended.",
+          "note": "UC-06c · MSG11",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Two active administrators; the target is one of them."
+          ],
+          "return": "UserResult Success (MSG11): another active administrator remains.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "id: target; isActive: true.",
+          "log": "Audit row UserReactivated.",
+          "note": "UC-06c · MSG11",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Target is an inactive account holding the AdminUsers role; the only active administrator is the actor."
+          ],
+          "return": "UserResult Success (MSG11): reactivation is never blocked by the last-administrator rule.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "id: active target; isActive: false.",
+          "log": "Error log \"Account {UserId} was changed, but ending its sessions failed.\"; audit row UserDeactivated.",
+          "note": "UC-06c · BR-18 · MSG11",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Ending the sessions fails (Redis unavailable) after the commit."
+          ],
+          "return": "UserResult Success (MSG11): the failure is logged, not raised.",
+          "type": "Boundary"
+        }
+      ],
+      "file": "backend/TrustCabinet.Application/Users/UserService.cs",
+      "layer": "Application",
+      "line": 275,
+      "method": "UserService.ChangeStatusAsync"
     }
-  ]
+  ],
+  "module": "USER",
+  "precondition": "At least two active administrators exist for the guard cases.",
+  "sheet": "User.ChangeStatus"
 }

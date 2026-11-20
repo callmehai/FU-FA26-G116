@@ -1,0 +1,173 @@
+{
+  "feature": "FE-04",
+  "module": "MEET",
+  "sheet": "MeetingDetails.From",
+  "description": "Meeting detail projection: the detail fields built from a meeting for a viewer.",
+  "precondition": "Meeting with participants.",
+  "methods": [
+    {
+      "method": "MeetingDetails.From",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingContracts.cs",
+      "line": 54,
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "meeting: Draft, AssignedApproverId set; actorId: creator.",
+          "log": "N/A",
+          "note": "UC-16 · BR-29",
+          "preconditions": [
+            "Draft meeting with a stale AssignedApproverId."
+          ],
+          "return": "Details with AssignedApproverId null (hidden before submission).",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "meeting: WaitingApproval; actorId: creator.",
+          "log": "N/A",
+          "note": "UC-16 · BR-29",
+          "preconditions": [
+            "WaitingApproval meeting with an approver."
+          ],
+          "return": "Details expose AssignedApproverId.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "actorId: Member.",
+          "log": "N/A",
+          "note": "UC-16 · UC-29 · BR-29",
+          "preconditions": [
+            "Published meeting with a Chair, two Secretaries named \"Bình\" and \"An\", and the actor is a Member who has not answered."
+          ],
+          "return": "Chair set; Secretaries ordered by name (An, Bình); MyMeetingRole \"Member\"; MyResponse null; CanRespond true.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "actorId: Chair.",
+          "log": "N/A",
+          "note": "UC-16 · UC-29",
+          "preconditions": [
+            "Actor is the Chair of a Published meeting."
+          ],
+          "return": "MyMeetingRole \"Chair\"; MyResponse null; CanRespond false.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "actorId: Member with response Accepted.",
+          "log": "N/A",
+          "note": "UC-16 · UC-29",
+          "preconditions": [
+            "Actor is a Member who accepted."
+          ],
+          "return": "MyResponse \"Accepted\"; CanRespond false.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "actorId: the creator who is not on the roster.",
+          "log": "N/A",
+          "note": "UC-16 · BR-29",
+          "preconditions": [
+            "Actor has no participant row."
+          ],
+          "return": "MyMeetingRole, MyResponse null; CanRespond false.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "actorId: null.",
+          "log": "N/A",
+          "note": "UC-16 · BR-29",
+          "preconditions": [
+            "No actor supplied."
+          ],
+          "return": "MyMeetingRole, MyResponse null; CanRespond false.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "actorId: delegating Member (Delegated).",
+          "log": "N/A",
+          "note": "UC-16 · UC-29",
+          "preconditions": [
+            "The actor Member row is delegated."
+          ],
+          "return": "MyMeetingRole null; the row is not current.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "meeting: Cancelled; CancelledAt set; CancelledBy \"Lan\"; reason \"Hoãn\".",
+          "log": "N/A",
+          "note": "UC-16 · UC-75 · BR-298",
+          "preconditions": [
+            "Meeting is Cancelled with a stored cancellation time and canceller."
+          ],
+          "return": "Cancellation { time, CancelledById, CancelledByName \"Lan\", Reason \"Hoãn\" }.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "CancelledById: null; CancelledBy: null.",
+          "log": "N/A",
+          "note": "UC-16 · UC-75 · BR-301",
+          "preconditions": [
+            "Meeting was cancelled by the system after the 24-hour rule."
+          ],
+          "return": "Cancellation.CancelledByName is \"Hệ thống\".",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "CancelledAt: null.",
+          "log": "N/A",
+          "note": "UC-16 · BR-299",
+          "preconditions": [
+            "Meeting is Cancelled but has no cancellation time recorded."
+          ],
+          "return": "Cancellation null.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "Status: Published; CancelledAt set.",
+          "log": "N/A",
+          "note": "UC-16 · BR-299",
+          "preconditions": [
+            "Meeting is not Cancelled but has an old CancelledAt value."
+          ],
+          "return": "Cancellation null.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC013",
+          "inputs": "two Chair rows, one not Current.",
+          "log": "N/A",
+          "note": "UC-16 · BR-124",
+          "preconditions": [
+            "Meeting has an inactive Chair row (replaced) next to the current Chair."
+          ],
+          "return": "Chair is the current one only.",
+          "type": "Boundary"
+        }
+      ]
+    }
+  ]
+}

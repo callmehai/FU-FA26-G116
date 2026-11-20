@@ -1,0 +1,137 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "Notification.QueueStartingSoon",
+  "description": "Starting-soon reminders: one notification per active participant inside the 15-minute window.",
+  "precondition": "Published meetings starting within 15 minutes with active participants.",
+  "methods": [
+    {
+      "method": "NotificationService.QueueStartingSoonAsync",
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "line": 119,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Clock 2026-11-18T03:00Z. No Published meeting starts in the next 15 minutes."
+          ],
+          "inputs": "No input.",
+          "return": "0; nothing saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "BR-303"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Published meeting M1 \"Họp giao ban\" starts at 03:10Z with two active participants U1 and U2."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "2.",
+          "exception": "N/A",
+          "log": "Two notifications: type MeetingStartingSoon, title \"Cuộc họp sắp bắt đầu\", body \"Cuộc họp \"Họp giao ban\" sẽ bắt đầu trong vòng 15 phút.\", target Meeting M1, key \"meeting-starting-soon:M1:<start as unix seconds>:<user id>\"; one commit.",
+          "type": "Normal",
+          "note": "BR-303"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting M1 starts exactly 15 minutes ahead, at 03:15Z."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "The participants are reminded: a start at the cutoff is inside the window (2 for 2 participants).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "BR-303"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting M1 starts at 03:15:01Z, one second beyond the window."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "0.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "BR-303"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting M1 starts exactly now, 03:00Z."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "0: a meeting that is starting at this instant is not 'upcoming'.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "BR-303"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "U1 was already reminded for M1 at the same planned start (the key exists); U2 was not."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "1 (only U2).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "BR-303"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Every participant was already reminded."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "0; no save.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "BR-303"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "M1 was reminded for 03:10Z, then rescheduled to 03:12Z the same day."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "2: the key holds the planned start, so the new time is reminded again.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-15 · BR-303 · BR-76"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "The same user appears twice for the same meeting in the upcoming list."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "1: the second row has the same key and is skipped.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "BR-303"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "The meeting is Draft or Cancelled, or the participant is inactive."
+          ],
+          "inputs": "Clock 03:00Z.",
+          "return": "0: only active participants of Published meetings are returned.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "BR-303"
+        }
+      ],
+      "layer": "Application"
+    }
+  ]
+}

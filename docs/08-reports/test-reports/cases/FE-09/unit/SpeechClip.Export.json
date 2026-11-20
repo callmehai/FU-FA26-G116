@@ -1,0 +1,102 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "SpeechClip.Export",
+  "description": "Speech-clip retention erasure and playback.",
+  "precondition": "Clips with ages.",
+  "methods": [
+    {
+      "method": "SpeechClipService.ExportAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "line": 62,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A non-secret meeting with kept sentences (one excluded); the actor is its Chair (active user)."
+          ],
+          "inputs": "meetingId; actorId: the Chair.",
+          "return": "Success with the transcript text file: excluded sentences left out, guest lines labelled “(Khách)”.",
+          "exception": "N/A",
+          "log": "Audit SpeechClipsExported (meeting, sentence count).",
+          "type": "Normal",
+          "note": "UC-45b · BR-351 · BR-358"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A non-secret meeting; the actor is an active Member (not Chair or Secretary)."
+          ],
+          "inputs": "meetingId; actorId: the Member.",
+          "return": "ExportForbidden (403, MSG355).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-45b · BR-351 · MSG355"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A secret meeting; the actor is its Chair."
+          ],
+          "inputs": "meetingId of the secret meeting; actorId: the Chair.",
+          "return": "SecretMeeting (403, MSG356).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-45b · BR-351 · MSG356"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A non-secret meeting with no sentences; the actor is its Chair."
+          ],
+          "inputs": "meetingId; actorId: the Chair.",
+          "return": "Success with an (empty) transcript text file.",
+          "exception": "N/A",
+          "log": "Audit SpeechClipsExported with sentence count 0.",
+          "type": "Boundary",
+          "note": "UC-45b · BR-351"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "The actor is not on the roster of the meeting."
+          ],
+          "inputs": "meetingId; actorId: an outsider.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-45b"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "meetingId; actorId: the deactivated user.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-45b"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "A non-secret meeting; the actor is its Chair.",
+            "The database fails while reading."
+          ],
+          "inputs": "meetingId; actorId: the Chair.",
+          "return": "ReadFailed (500, MSG299).",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to export the speech clips'.",
+          "type": "Abnormal",
+          "note": "UC-45b · MSG299"
+        }
+      ]
+    }
+  ]
+}

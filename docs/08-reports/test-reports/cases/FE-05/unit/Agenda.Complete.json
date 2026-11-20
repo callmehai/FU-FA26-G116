@@ -1,0 +1,133 @@
+{
+  "feature": "FE-05",
+  "module": "AGENDA",
+  "sheet": "Agenda.Complete",
+  "description": "Completing an agenda item: the chair closes the running item.",
+  "precondition": "Meeting in a planning or running status; actor with the needed role.",
+  "methods": [
+    {
+      "method": "AgendaService.CompleteAsync",
+      "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+      "line": 113,
+      "layer": "Application",
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "I.Status Done; ActualEndedAt and UpdatedAt set to now; change \"Completed\" published; no other item is started automatically.",
+          "note": "UC-25 · BR-69 · BR-72 · MSG65",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress, started 10 minutes ago."
+          ],
+          "return": "Success; 200 / MSG65.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "actor: Chair C.",
+          "log": "N/A",
+          "note": "UC-25 · BR-72 · MSG65",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress, started in the same microsecond as now."
+          ],
+          "return": "Success; 200 / MSG65; ActualEndedAt equals ActualStartedAt.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "Item unchanged; an error about invalid actual timestamps is logged.",
+          "note": "UC-25 · BR-72 · MSG76",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress but its stored start time is later than the current time."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG76.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-25 · BR-70 · MSG74",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
+          ],
+          "return": "Failure CannotComplete; 409 / MSG74.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-25 · BR-70 · MSG74",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Done."
+          ],
+          "return": "Failure CannotComplete; 409 / MSG74.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "actor: Secretary S; itemId: I.",
+          "log": "N/A",
+          "note": "UC-25 · BR-69 · MSG74",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure Forbidden; 403 / MSG74.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "actor: Chair C; itemId: I.",
+          "log": "N/A",
+          "note": "UC-25 · BR-69 · MSG74",
+          "preconditions": [
+            "Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress (inconsistent)."
+          ],
+          "return": "Failure Locked; 409 / MSG74.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "actor: Chair C; itemId: unknown.",
+          "log": "N/A",
+          "note": "UC-25",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster."
+          ],
+          "return": "Failure NotFound; 404.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "actor: Chair C; the database fails while saving.",
+          "log": "N/A",
+          "note": "UC-25 · MSG76",
+          "preconditions": [
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is InProgress."
+          ],
+          "return": "Failure SaveFailed; 503 / MSG76.",
+          "type": "Abnormal"
+        }
+      ]
+    }
+  ]
+}

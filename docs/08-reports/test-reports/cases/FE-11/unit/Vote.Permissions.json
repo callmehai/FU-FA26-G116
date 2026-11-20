@@ -1,0 +1,77 @@
+{
+  "feature": "FE-11",
+  "module": "VOTE",
+  "sheet": "Vote.Permissions",
+  "description": "Voting permissions: preparation and closing statuses, chair and manager, draft management, viewer actions.",
+  "precondition": "No database needed; pure rules.",
+  "methods": [
+    {
+      "method": "VoteRules.Permissions",
+      "layer": "Domain",
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "line": 32,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting InProgress; viewer is the Chair."
+          ],
+          "inputs": "meeting: InProgress; viewer: Chair.",
+          "return": "CanManageDraft true, CanOpen true, CanClose true, CanRecordConclusion true.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-52a · UC-54 · UC-56 · UC-57"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting Ended; viewer is the Chair."
+          ],
+          "inputs": "meeting: Ended; viewer: Chair.",
+          "return": "CanManageDraft false, CanOpen false, CanClose true, CanRecordConclusion true.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-56 · UC-57 · BR-270"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting InProgress; viewer is the Secretary."
+          ],
+          "inputs": "meeting: InProgress; viewer: Secretary.",
+          "return": "CanManageDraft true; CanOpen, CanClose and CanRecordConclusion false.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-53 · BR-252"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting Published; viewer is the Chair."
+          ],
+          "inputs": "meeting: Published; viewer: Chair.",
+          "return": "CanManageDraft true; CanOpen false (not started); CanClose false; CanRecordConclusion false.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-53 · BR-252"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting InProgress; viewer is a Member."
+          ],
+          "inputs": "meeting: InProgress; viewer: Member.",
+          "return": "All four permissions false.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-52a"
+        }
+      ]
+    }
+  ]
+}

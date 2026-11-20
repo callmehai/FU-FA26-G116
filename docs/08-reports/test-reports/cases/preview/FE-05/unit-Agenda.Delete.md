@@ -1,0 +1,20 @@
+# Agenda.Delete — Unit (FE-05, AGENDA)
+
+Description: Deleting an agenda item: a planner removes an item and the order closes up.
+
+Precondition: Meeting in a planning or running status; actor with the needed role.
+
+## AgendaService.DeleteAsync
+
+Layer: Application · `backend/TrustCabinet.Application/Agenda/AgendaService.cs:107`
+
+| ID | Pre-conditions | Inputs | Expected | Type | Note |
+|---|---|---|---|---|---|
+| UTC001 | 1. Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.<br>2. Item I is Pending. | actor: S; itemId: I. | Return: Success; 200 / MSG62.<br>Exception: N/A<br>Log Message: Item removed; agenda change "Deleted" published with the item id and title. | Normal | UC-23c · BR-65 · MSG62 |
+| UTC002 | 1. Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.<br>2. Item I is Pending. | actor: Chair C; itemId: I. | Return: Success; 200 / MSG62.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-23c · BR-65 · BR-74 · MSG62 |
+| UTC003 | 1. Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.<br>2. Item I is InProgress. | actor: Chair C; itemId: I. | Return: Failure DeleteLocked; 409 / MSG142.<br>Exception: N/A<br>Log Message: Item unchanged. | Abnormal | UC-23c · MSG142 |
+| UTC004 | 1. Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.<br>2. Item I is Done. | actor: Secretary S; itemId: I. | Return: Failure DeleteLocked; 409 / MSG142.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-23c · MSG142 |
+| UTC005 | Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster. | actor: S; itemId: unknown. | Return: Failure NotFound; 404.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-23c |
+| UTC006 | 1. Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.<br>2. Item I is Pending. | actor: Member M; itemId: I. | Return: Failure NotFound; 404, empty body.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-23c · BR-65 · MSG67 · Deviation: a Member cannot read a Draft meeting, so the call answers NotFound (404, existence hidden) before the planner check; Forbidden applies once the meeting is readable (for example Published or InProgress). |
+| UTC007 | 1. Meeting in status Ended; active Chair C, active Secretary S, active Member M on the roster.<br>2. Item I is Pending. | actor: Chair C; itemId: I. | Return: Failure Locked; 409 / MSG67.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-23c · BR-74 · MSG67 |
+| UTC008 | 1. Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.<br>2. Item I is Pending. | actor: S; the database fails while saving. | Return: Failure SaveFailed; 503 / MSG70.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-23c · MSG70 |

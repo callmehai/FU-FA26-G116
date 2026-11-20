@@ -1,0 +1,53 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "Notification.MarkPushed",
+  "description": "Pending push selection and marking pushed.",
+  "precondition": "Notifications with push state.",
+  "methods": [
+    {
+      "method": "NotificationService.MarkPushedAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "line": 169,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Notification N1 has no push time."
+          ],
+          "inputs": "notificationId N1; clock 2026-11-18T03:00Z.",
+          "return": "No result.",
+          "exception": "N/A",
+          "log": "N1's PushedAt is set to 03:00Z.",
+          "type": "Normal",
+          "note": "UC-66"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Notification N1 was already pushed at 02:00Z."
+          ],
+          "inputs": "notificationId N1; clock 03:00Z.",
+          "return": "No result; PushedAt stays 02:00Z.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-66"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "No notification with this id."
+          ],
+          "inputs": "notificationId random.",
+          "return": "No result and no error.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-66"
+        }
+      ]
+    }
+  ]
+}

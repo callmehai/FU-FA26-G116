@@ -55,15 +55,28 @@ Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feat
 
 **5.1 viết lại theo production function (mỗi function một sheet), test case nghiệp vụ.**
 Nguồn là JSON trong [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
+5.1 mô tả code nhánh `app` (kiến trúc bốn project, ADR-0065), không phải cây làm việc hiện tại:
+`cases/functions.json` (`source.ref`) ghim SHA commit cố định của `app` mà UTC được viết theo;
+đổi ref khi rebase sang commit `app` mới và chạy `relink` để ghim lại `file:line`.
 
 ```powershell
-python scripts/test_reports/unit_cases.py check   # kiểm tra
-python scripts/test_reports/unit_cases.py build   # sinh lại workbook (đóng Excel trước)
+python scripts/test_reports/unit_cases.py check            # kiểm tra
+python scripts/test_reports/unit_cases.py relink           # ghim lại file/line sau khi refactor dời code (check báo dòng thật khi lệch)
+python scripts/test_reports/unit_cases.py sync-back        # gom kết quả Round/Test date/Tester đã chạy thật từ workbook cũ vào JSON (theo mã UTC)
+python scripts/test_reports/unit_cases.py build            # dry-run: kiểm tra rồi in diff workbook cũ so với JSON (không ghi file)
+python scripts/test_reports/unit_cases.py build --overwrite  # sao lưu bản cũ thành .bak-YYYYMMDD-HHMMSS rồi sinh lại workbook (đóng Excel trước)
 ```
+
+Quy trình bắt buộc khi sinh lại workbook: chạy `build` (dry-run) → trình diff cho người dùng → chờ OK → chạy `sync-back` (nếu workbook cũ có kết quả) → chạy `build --overwrite`.
 
 Mỗi UTC gọi trực tiếp production function (in-process), không qua browser hay HTTP.
 `Expected Results` luôn có ba dòng `Return: …`, `Exception: …`, `Log Message: …`.
 Mọi vòng đều bắt đầu là `Pending`; chỉ một lần chạy thật mới được đánh `Passed`/`Failed`.
+
+UTC được viết từ chính production function — chữ ký hàm, code tại `file:line`,
+`docs/03-api/` — không sao chép input/giá trị/tên method từ file dưới `tests/`.
+Cột `Note` chỉ ghi truy xuất `UC-xx · BR-xx · MSGnn` (kèm `Deviation:` khi code lệch UC);
+tuyệt đối không ghi `Automated:`, đường dẫn file test hay tên test method vào bất kỳ trường nào.
 
 Trong Acceptance Test, giữ nguyên bảng tiêu chí/phản hồi ngắn của mẫu. Di chuột hoặc mở
 Notes tại ô tiêu chí để xem precondition, procedure, expected result và source của từng kịch bản.

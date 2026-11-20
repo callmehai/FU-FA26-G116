@@ -1,0 +1,174 @@
+{
+  "feature": "FE-16",
+  "module": "CAL",
+  "sheet": "CalendarSharing.Withdraw",
+  "description": "Changing, withdrawing and ending a share.",
+  "precondition": "An open share.",
+  "methods": [
+    {
+      "method": "CalendarSharingService.WithdrawAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+      "line": 314,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20."
+          ],
+          "inputs": "actor: Binh (sender); shareId.",
+          "return": "Success Withdrawn (MSG438); share status Withdrawn, ClosedAt now, ClosedById Binh.",
+          "exception": "N/A",
+          "log": "Notification CalendarShareWithdrawn queued for An; audit calendar_share.withdrawn.",
+          "type": "Normal",
+          "note": "UC-84e · MSG438"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Pending share started by An (owner, direct): Level1, 2026-11-20 to 2026-12-20."
+          ],
+          "inputs": "actor: An (sender of the direct share).",
+          "return": "Success Withdrawn (MSG438); the notification goes to Binh.",
+          "exception": "N/A",
+          "log": "Notification CalendarShareWithdrawn queued for Binh; audit calendar_share.withdrawn.",
+          "type": "Normal",
+          "note": "UC-84e · MSG438"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Effective share Level1, 2026-11-18 to 2026-12-18; Binh asked for Level2 until 2026-12-30 (pending change)."
+          ],
+          "inputs": "actor: Binh (the viewer who asked).",
+          "return": "Success Withdrawn (MSG438); the pending change is cleared and the share stays Effective at Level1.",
+          "exception": "N/A",
+          "log": "Notification CalendarShareWithdrawn queued for An; audit calendar_share.change_withdrawn with the withdrawn Level and end date.",
+          "type": "Normal",
+          "note": "UC-84e · MSG438"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20."
+          ],
+          "inputs": "actor: An (the asked side).",
+          "return": "Failure NotAllowed (MSG450); only the sender withdraws.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84e · MSG450"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Effective share Level1, 2026-11-18 to 2026-12-18; Binh asked for Level2 until 2026-12-30 (pending change)."
+          ],
+          "inputs": "actor: An (owner).",
+          "return": "Failure NotAllowed (MSG450); the owner declines a change, not withdraws it.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84e · MSG450"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Effective share Level1, 2026-11-18 to 2026-12-18, nothing pending."
+          ],
+          "inputs": "actor: Binh.",
+          "return": "Failure NotAllowed (MSG450); nothing is pending.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84e · MSG450"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Share Declined."
+          ],
+          "inputs": "actor: Binh.",
+          "return": "Failure NotAllowed (MSG450).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84e · MSG450"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20."
+          ],
+          "inputs": "actor: a third user.",
+          "return": "Failure NotFound (404).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84e"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer."
+          ],
+          "inputs": "actor: Binh; shareId: an id that does not exist.",
+          "return": "Failure NotFound (404).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84e"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Pending share whose end date 2026-11-17 has passed."
+          ],
+          "inputs": "actor: Binh.",
+          "return": "Failure NotAllowed (MSG450); nothing written.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-84e · BR-425 · MSG450"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Effective share Level1, 2026-11-18 to 2026-12-18; Binh asked for Level2 until 2026-12-30 (pending change).",
+            "An's account is deactivated; the stop has not been written."
+          ],
+          "inputs": "actor: Binh.",
+          "return": "Failure NotAllowed (MSG450); the share is stopped first.",
+          "exception": "N/A",
+          "log": "Share status Stopped; notifications CalendarShareStopped for both; audit calendar_share.stopped.",
+          "type": "Abnormal",
+          "note": "UC-84e · BR-424 · MSG450"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Share between owner An and viewer Binh; today is 2026-11-18; An and Binh are active and Binh is a Meeting Organizer.",
+            "Pending share started by Binh (viewer): Level2, 2026-11-20 to 2026-12-20.",
+            "The database fails while saving."
+          ],
+          "inputs": "actor: Binh.",
+          "return": "Failure SaveFailed (MSG447); share stays Pending.",
+          "exception": "N/A",
+          "log": "Unit of work changes discarded; error logged.",
+          "type": "Abnormal",
+          "note": "UC-84e · MSG447"
+        }
+      ]
+    }
+  ]
+}

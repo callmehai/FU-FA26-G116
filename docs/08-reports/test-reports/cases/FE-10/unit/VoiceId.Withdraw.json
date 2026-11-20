@@ -1,0 +1,53 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "VoiceId.Withdraw",
+  "description": "Voice ID consent: grant and withdraw, with erasure on withdrawal.",
+  "precondition": "User with and without consent.",
+  "methods": [
+    {
+      "method": "VoiceIdService.WithdrawAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+      "line": 88,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "User consented and keeps own and collected samples plus machine suggestions pointing at them."
+          ],
+          "inputs": "actorId: a consented user with samples.",
+          "return": "Success with the profile showing no consent (MSG306 \"Đã tắt nhận diện giọng nói và xoá toàn bộ giọng mẫu.\"); every sample and every suggestion pointing at the person is gone in the same write.",
+          "exception": "N/A",
+          "log": "Saved: samples and suggestions erased, consent closed; audit row records the withdrawal with the erased counts.",
+          "type": "Normal",
+          "note": "UC-81f · BR-365 · BR-454 · MSG306"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "User has no active consent."
+          ],
+          "inputs": "actorId: a user without consent.",
+          "return": "Success with the profile showing no consent (MSG306); nothing to erase.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-81f · MSG306"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "User consented; the store fails while erasing."
+          ],
+          "inputs": "actorId: a consented user.",
+          "return": "Failure SaveFailed (MSG315 \"Không lưu được thay đổi. Vui lòng thử lại.\").",
+          "exception": "PersistenceException is caught inside the service.",
+          "log": "Error logged with the user id.",
+          "type": "Abnormal",
+          "note": "UC-81f · MSG315"
+        }
+      ]
+    }
+  ]
+}

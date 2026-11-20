@@ -1,0 +1,269 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "DocumentFile.Validate",
+  "description": "Meeting document upload gate: access, file count, sizes, type agreement and hostile content.",
+  "precondition": "Active user who may read the meeting; candidate files with names and bytes.",
+  "methods": [
+    {
+      "method": "DocumentFileRules.ValidateAsync",
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "line": 88,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "One candidate: a 2 MB file \"Bao-cao-Q3.pdf\" whose bytes are a valid 12-page PDF; page counter returns 12."
+          ],
+          "inputs": "candidates: [{FileName \"Bao-cao-Q3.pdf\", Length 2,097,152}].",
+          "return": "Outcome with no failure and one file: name \"Bao-cao-Q3.pdf\", content type application/pdf, 2,097,152 bytes, 12 pages, lowercase hex SHA-256 of the bytes.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-33a · BR-187 · BR-214"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "One candidate: \"Nghi-quyet.docx\" whose bytes are a valid DOCX package."
+          ],
+          "inputs": "candidates: [{FileName \"Nghi-quyet.docx\", Length 48,000}].",
+          "return": "No failure; one file with the DOCX content type, no page count (null), SHA-256 set; the page counter is not called.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-33a · BR-187"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "No file selected."
+          ],
+          "inputs": "candidates: [] (empty list).",
+          "return": "Failure Invalid (HTTP 400, MSG164); errors[\"files\"] = [\"Chưa chọn tệp nào.\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · MSG164"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Ten valid small PDFs submitted together."
+          ],
+          "inputs": "candidates: 10 files of 1 MB each.",
+          "return": "No failure; 10 files returned in submission order.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · BR-319"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Eleven candidates submitted together."
+          ],
+          "inputs": "candidates: 11 files of 1 MB each.",
+          "return": "Failure TooMany (HTTP 400, MSG288); no file is inspected.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · BR-319 · MSG288"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Four valid files whose lengths add to exactly 200 MB."
+          ],
+          "inputs": "candidates: 4 files of 50 MB (52,428,800 bytes) each.",
+          "return": "No failure; the total limit is inclusive and each file is within 50 MB.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · BR-319"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Five files whose lengths add to more than 200 MB."
+          ],
+          "inputs": "candidates: 5 files of 50 MB each (250 MB).",
+          "return": "Failure TooMany (HTTP 400, MSG288).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · BR-319 · MSG288"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "One candidate whose name is only invisible characters / blank after trimming."
+          ],
+          "inputs": "candidates: [{FileName \"   \", Length 1000}].",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"Tệp thứ 1: tên tệp không hợp lệ.\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-215 · MSG164"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "One candidate whose name contains a right-to-left override character."
+          ],
+          "inputs": "candidates: [{FileName \"<U+202E>xcod.pdf\", Length 1000}].",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"Tệp thứ 1: tên tệp không hợp lệ.\"]; the label uses the position because the name is unusable.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-215 · MSG164"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "One candidate with zero bytes."
+          ],
+          "inputs": "candidates: [{FileName \"rong.pdf\", Length 0}].",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"rong.pdf: tệp rỗng.\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-214 · MSG164"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "One candidate of exactly 50 MB with a valid PDF body."
+          ],
+          "inputs": "candidates: [{FileName \"lon.pdf\", Length 52,428,800}].",
+          "return": "No failure; the file size limit is inclusive.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · BR-214"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "One candidate of 50 MB plus 1 byte."
+          ],
+          "inputs": "candidates: [{FileName \"lon.pdf\", Length 52,428,801}].",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"lon.pdf: tệp lớn hơn 50 MB.\"]; the bytes are not read.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · BR-214 · MSG164"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "One candidate of 1 byte with a valid name."
+          ],
+          "inputs": "candidates: [{FileName \"a.pdf\", Length 1}].",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"a.pdf: không phải tệp PDF hoặc DOCX hợp lệ.\"], because 1 byte is not a PDF.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-33a · BR-187 · MSG164"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "One candidate with an extension that is neither .pdf nor .docx."
+          ],
+          "inputs": "candidates: [{FileName \"bang-tinh.xlsx\", Length 5000}].",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"bang-tinh.xlsx: chỉ nhận tệp .pdf hoặc .docx.\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-187 · MSG164"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "One candidate called \"page.pdf\" whose bytes are an HTML page."
+          ],
+          "inputs": "candidates: [{FileName \"page.pdf\", Length 800}] with HTML bytes.",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"page.pdf: không phải tệp PDF hoặc DOCX hợp lệ.\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-187 · MSG164"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "One candidate called \"x.docx\" whose bytes are a PDF."
+          ],
+          "inputs": "candidates: [{FileName \"x.docx\", Length 3000}] with \"%PDF-\" bytes.",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"x.docx: không phải tệp PDF hoặc DOCX hợp lệ.\"] because the extension disagrees with the bytes.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-187 · MSG164"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "One candidate called \"macro.docx\" whose bytes are a macro-enabled DOCM package."
+          ],
+          "inputs": "candidates: [{FileName \"macro.docx\", Length 9000}] with DOCM bytes.",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"macro.docx: không phải tệp PDF hoặc DOCX hợp lệ.\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-187 · MSG164"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "One PDF candidate whose structure cannot be read; page counter returns null."
+          ],
+          "inputs": "candidates: [{FileName \"hong.pdf\", Length 4000}]; countPdfPages returns null.",
+          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"hong.pdf: không phải tệp PDF hoặc DOCX hợp lệ.\"].",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33a · BR-187 · MSG164"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "Three candidates: a valid PDF, an empty file, and an .exe."
+          ],
+          "inputs": "candidates: [ok.pdf (valid), rong.docx (0 bytes), tool.exe (3000 bytes)].",
+          "return": "Failure Invalid (MSG164); errors has files[1] = [\"rong.docx: tệp rỗng.\"] and files[2] = [\"tool.exe: chỉ nhận tệp .pdf hoặc .docx.\"]; every bad file is reported and no file list is returned.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-33a · BR-187 · MSG164"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "Candidate name with a Windows path: \"C:\\Docs\\bao-cao.pdf\" with valid PDF bytes."
+          ],
+          "inputs": "candidates: [{FileName \"C:\\Docs\\bao-cao.pdf\", Length 20000}].",
+          "return": "No failure; the stored file name is \"bao-cao.pdf\".",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-33a · BR-215"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "A valid candidate whose stream is read twice (type detection, then hash)."
+          ],
+          "inputs": "candidates: [{FileName \"a.pdf\"}] with a seekable stream.",
+          "return": "The SHA-256 is computed over the whole file from position 0 and the returned file can reopen its stream for storing.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-33a · BR-187"
+        }
+      ],
+      "layer": "Domain"
+    }
+  ]
+}

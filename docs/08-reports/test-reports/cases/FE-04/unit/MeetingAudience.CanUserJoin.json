@@ -1,0 +1,82 @@
+{
+  "feature": "FE-04",
+  "module": "MEET",
+  "sheet": "MeetingAudience.CanUserJoin",
+  "description": "User room join: an active user may join a meeting they may read.",
+  "precondition": "Meeting and participants seeded; user account state known.",
+  "methods": [
+    {
+      "method": "MeetingAudience.CanUserJoinAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingAudience.cs",
+      "line": 30,
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "meetingId: Published meeting; userId: active Member.",
+          "log": "N/A",
+          "note": "UC-37 · BR-29 · BR-154",
+          "preconditions": [
+            "User account is active.",
+            "Meeting is Published and the user is an active Member."
+          ],
+          "return": "true.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "meetingId: meeting; userId: deactivated Chair.",
+          "log": "N/A",
+          "note": "UC-37 · BR-29 · BR-154",
+          "preconditions": [
+            "User account is deactivated.",
+            "User is the Chair of the meeting."
+          ],
+          "return": "false; the readability lookup is not reached.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "meetingId: Draft meeting; userId: active Member.",
+          "log": "N/A",
+          "note": "UC-37 · BR-29 · BR-154",
+          "preconditions": [
+            "User account is active.",
+            "Meeting is Draft and the user is only a Member (not readable)."
+          ],
+          "return": "false.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "meetingId: unknown id; userId: active user.",
+          "log": "N/A",
+          "note": "UC-37 · BR-29 · BR-154",
+          "preconditions": [
+            "User account is active.",
+            "No meeting exists with the given id."
+          ],
+          "return": "false.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "meetingId: meeting Cancelled from Published; userId: active Member.",
+          "log": "N/A",
+          "note": "UC-37 · BR-29 · BR-300",
+          "preconditions": [
+            "User account is active.",
+            "Meeting was Cancelled after being Published; user is a current Member."
+          ],
+          "return": "true; the invitees may still open a called-off meeting.",
+          "type": "Boundary"
+        }
+      ]
+    }
+  ]
+}

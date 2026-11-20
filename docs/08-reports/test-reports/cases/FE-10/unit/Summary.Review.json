@@ -1,0 +1,65 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "Summary.Review",
+  "description": "Editing and reviewing a summary draft.",
+  "precondition": "Summary draft exists.",
+  "methods": [
+    {
+      "method": "SummaryService.ReviewAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+      "line": 144,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A Ready draft exists; actor is the current secretary."
+          ],
+          "inputs": "meetingId: a meeting with a Ready draft; actorId: its current secretary.",
+          "return": "Success with the fresh state (MSG391 \"Đã duyệt dự thảo.\"); the draft is marked reviewed with reviewer and time, and other readers may see it from now on.",
+          "exception": "N/A",
+          "log": "Saved: reviewer and review time on the draft.",
+          "type": "Normal",
+          "note": "UC-50 · BR-374 · MSG391"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "No draft exists yet; actor is the current secretary."
+          ],
+          "inputs": "meetingId: a meeting without a draft; actorId: its current secretary.",
+          "return": "Failure NotDrafted (MSG390); nothing is marked.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-50 · MSG390"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A draft is Queued on the worker; actor is the current secretary."
+          ],
+          "inputs": "meetingId: a meeting with a Queued draft; actorId: its current secretary.",
+          "return": "Failure Busy (MSG387); the mark would end up on a text nobody has read.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-50 · MSG387"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A Ready draft exists; actor takes part but is neither chair nor secretary."
+          ],
+          "inputs": "meetingId: a meeting with a Ready draft; actorId: an ordinary member.",
+          "return": "Failure Forbidden (MSG385); nothing is marked.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-50 · BR-374 · MSG385"
+        }
+      ]
+    }
+  ]
+}

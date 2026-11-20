@@ -1,0 +1,78 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "SpeechClip.AddForGuest",
+  "description": "Speech clips for a guest session: list, capture, delete, playback.",
+  "precondition": "Guest session in a meeting in progress.",
+  "methods": [
+    {
+      "method": "SpeechClipService.AddForGuestAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "line": 341,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A current, named guest session of a standing invitation for an Online meeting in status InProgress.",
+            "The guest confirmed the recording notice; the speech worker is configured and free."
+          ],
+          "inputs": "guest session; meetingId; upload: clientClipId new, durationMs 5,000, audio/wav audio.",
+          "return": "Success (200, MSG318) with the saved sentence owned by the invitation (not a user).",
+          "exception": "N/A",
+          "log": "A ClipAdded change is published to the meeting.",
+          "type": "Normal",
+          "note": "UC-04 · BR-352 · MSG318"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "A current guest session, but the meeting ended 3 days ago (a member could still send)."
+          ],
+          "inputs": "guest session; meetingId of the ended meeting; upload: valid.",
+          "return": "NotCapturing (409, MSG320).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-04 · MSG320"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A current guest session with a confirmed notice."
+          ],
+          "inputs": "guest session; meetingId; upload: audio of 0 bytes.",
+          "return": "Invalid (400, MSG319) with an error on audio.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-04 · MSG319"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "A current guest session, but the guest never confirmed the recording notice."
+          ],
+          "inputs": "guest session without a confirmed notice; meetingId; upload: valid.",
+          "return": "NoticeRequired (400, MSG380).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-04 · BR-353 · MSG380"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "The invitation is revoked after the capture check, before the sentence is stored."
+          ],
+          "inputs": "guest session admitted at check, revoked before the commit; upload: valid.",
+          "return": "NotCapturing (409, MSG320); the audio file written for the sentence is deleted.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-04 · MSG320"
+        }
+      ]
+    }
+  ]
+}

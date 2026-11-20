@@ -1,0 +1,161 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "PersonalLibrary.CreateFolder",
+  "description": "Personal library folders: create, rename, move, delete with name and cycle rules.",
+  "precondition": "Owner with a folder tree.",
+  "methods": [
+    {
+      "method": "PersonalLibraryService.CreateFolderAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "line": 107,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Owner U1 with an empty library."
+          ],
+          "inputs": "parentId: null; name: \"Hồ sơ 2026\".",
+          "return": "Value: folder row (name \"Hồ sơ 2026\", ParentId null, MeetingId null); endpoint answers MSG187 with HTTP 201.",
+          "exception": "N/A",
+          "log": "Folder saved under the owner lock.",
+          "type": "Normal",
+          "note": "UC-72a · BR-220 · MSG187"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Folder F1 exists at the root."
+          ],
+          "inputs": "parentId: F1; name: \"  Biên bản  \".",
+          "return": "Value with name \"Biên bản\" (trimmed) and ParentId F1.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-72a · BR-220 · MSG187"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A folder named \"Biên bản\" already exists at the same level."
+          ],
+          "inputs": "parentId: null; name: \"Biên bản\".",
+          "return": "Value; duplicate names are allowed.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-72a · BR-221 · MSG187"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Same."
+          ],
+          "inputs": "parentId: F9 (not owner's); name: \"A\".",
+          "return": "Failure DestinationNotFound (HTTP 404, MSG179).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-72a · BR-242 · MSG179"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Same."
+          ],
+          "inputs": "name: null.",
+          "return": "Failure NameRequired (HTTP 400, MSG188).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-72a · BR-220 · MSG188"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Same."
+          ],
+          "inputs": "name: \"    \".",
+          "return": "Failure NameRequired (HTTP 400, MSG188).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-72a · BR-220 · MSG188"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Same."
+          ],
+          "inputs": "name: 400 characters.",
+          "return": "Value; 400 characters is accepted.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-72a · MSG187"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Same."
+          ],
+          "inputs": "name: 401 characters.",
+          "return": "Failure NameTooLong (HTTP 400, MSG348).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-72a · MSG348"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Parent chain: F1 > F2 > F3 > F4 (parent F4 is at level 4)."
+          ],
+          "inputs": "parentId: F4; name: \"Cấp 5\".",
+          "return": "Value; the new folder is at level 5, the allowed maximum.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-72a · BR-191 · MSG187"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Parent chain of five levels F1 > ... > F5."
+          ],
+          "inputs": "parentId: F5; name: \"Cấp 6\".",
+          "return": "Failure TooDeep (HTTP 409, MSG189).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-72a · BR-191 · MSG189"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Parent missing and name blank."
+          ],
+          "inputs": "parentId: F9; name: \"\".",
+          "return": "Failure DestinationNotFound (MSG179); the parent is checked before the name.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-72a · MSG179"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Database error."
+          ],
+          "inputs": "parentId: null; name: \"A\".",
+          "return": "Failure SaveFailed (HTTP 503, MSG190); no folder created.",
+          "exception": "N/A",
+          "log": "Error log \"Failed to create a folder\".",
+          "type": "Abnormal",
+          "note": "UC-72a · MSG190"
+        }
+      ]
+    }
+  ]
+}

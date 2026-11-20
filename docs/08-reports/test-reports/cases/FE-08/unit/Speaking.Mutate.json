@@ -1,0 +1,306 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "Speaking.Mutate",
+  "description": "Register to speak: raise, lower, invite, dismiss.",
+  "precondition": "Meeting in progress; participants seeded.",
+  "methods": [
+    {
+      "method": "SpeakingService.MutateAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Speaking/SpeakingService.cs",
+      "line": 57,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting InProgress; actor is a current participant connected to the room.",
+            "The actor holds no open request."
+          ],
+          "inputs": "operation: Raise; actor: the participant.",
+          "return": "Success with Created true; the queue holds one Queued request at the next free position, stamped with the current agenda item. A Raise change is published to every reader (no invited target).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79 · BR-339"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting InProgress; actor is connected to the room and already holds an open Queued request."
+          ],
+          "inputs": "operation: Raise; actor: the same participant.",
+          "return": "Success with Created false; the hand stays raised and nothing changes, so no change is published.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79 · BR-337"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting InProgress; actor holds an open Queued request and is connected to the room."
+          ],
+          "inputs": "operation: Lower; requestId: that request; actor: its owner.",
+          "return": "Success; the request becomes Cancelled and a Lower change is published.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting InProgress; actor holds an open Invited request and is connected to the room."
+          ],
+          "inputs": "operation: Start; requestId: that request; actor: its owner.",
+          "return": "Success; the request becomes Speaking with StartedAt now and a Start change is published.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting InProgress; actor holds an open Speaking request and is connected to the room."
+          ],
+          "inputs": "operation: Finish; requestId: that request; actor: its owner.",
+          "return": "Success; the request becomes Finished and a Finish change is published.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Meeting InProgress; caller is the current Chair; nobody is invited or speaking.",
+            "A Queued request exists."
+          ],
+          "inputs": "operation: Invite; requestId: that request; actor: the Chair.",
+          "return": "Success; the request becomes Invited with InvitedAt now. An Invite change goes to every reader and an invited-only notice goes to that person alone, so the room can tell them it is their turn.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79 · BR-338"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Meeting InProgress; caller is the current Chair.",
+            "A Queued request exists."
+          ],
+          "inputs": "operation: Decline; requestId: that request; actor: the Chair.",
+          "return": "Success; the request becomes Cancelled and a Decline change is published.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Meeting InProgress; caller is the current Chair.",
+            "Two Queued requests exist at positions 1 and 2."
+          ],
+          "inputs": "operation: MoveUp; requestId: the second request; actor: the Chair.",
+          "return": "Success; the two positions are swapped and a MoveUp change is published.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Meeting InProgress; caller is the current Chair.",
+            "One Queued request already stands first."
+          ],
+          "inputs": "operation: MoveUp; requestId: that request; actor: the Chair.",
+          "return": "Success with the queue unchanged; already first, there is nothing to move and nothing is published.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Meeting InProgress; caller is the current Chair.",
+            "One Queued request already stands last."
+          ],
+          "inputs": "operation: MoveDown; requestId: that request; actor: the Chair.",
+          "return": "Success with the queue unchanged; already last, there is nothing to move and nothing is published.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Meeting InProgress; caller is the current Chair (the Chair acts from the meeting page and need not be in the room).",
+            "Another participant holds an open Speaking request."
+          ],
+          "inputs": "operation: Finish; requestId: that request; actor: the Chair.",
+          "return": "Success; the request becomes Finished and a Finish change is published. Inviting never switches any microphone on or off.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-79 · BR-338"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Actor cannot read the meeting (stranger)."
+          ],
+          "inputs": "operation: Raise; actor: the stranger.",
+          "return": "NotFound; nothing is saved and existence stays hidden.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Actor's account is deactivated."
+          ],
+          "inputs": "operation: Raise; actor: the deactivated Member.",
+          "return": "Inactive; 403 with no message code; nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "Meeting InProgress; actor is the current Chair.",
+            "No request with that id exists in the meeting."
+          ],
+          "inputs": "operation: Invite; requestId: an unknown id; actor: the Chair.",
+          "return": "NotFound; nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "Meeting Ended; another participant holds a request."
+          ],
+          "inputs": "operation: Lower; requestId: that request; actor: anyone but its owner.",
+          "return": "NotFound; an action only its owner takes is answered as if the request did not exist, whatever the meeting's state.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "Meeting Ended; actor is a current participant connected to the room."
+          ],
+          "inputs": "operation: Raise; actor: the participant.",
+          "return": "NotInProgress; 409 \"Phòng họp chỉ mở khi cuộc họp đang diễn ra.\" (MSG117); nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79 · MSG117"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "Meeting InProgress; actor can read the meeting but is not connected to its room."
+          ],
+          "inputs": "operation: Raise; actor: that reader.",
+          "return": "NotInRoom; 409 \"Bạn cần đang ở trong phòng họp để đăng ký phát biểu.\" (MSG458); nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79 · MSG458"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "Meeting InProgress; caller is an ordinary Member.",
+            "A Queued request exists."
+          ],
+          "inputs": "operation: Invite; requestId: that request; actor: the Member.",
+          "return": "NotChair; 403 \"Chỉ Chủ toạ hiện hành được điều hành lượt phát biểu.\" (MSG457); the former Chair after a handover is refused the same way.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79 · MSG457 · BR-338"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "Meeting InProgress; caller is the current Chair; someone is already Invited.",
+            "Another Queued request exists."
+          ],
+          "inputs": "operation: Invite; requestId: the Queued request; actor: the Chair.",
+          "return": "FloorTaken; 409 \"Đang có người được mời hoặc đang phát biểu. Hãy kết thúc lượt đó trước.\" (MSG459); nothing is saved.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79 · MSG459 · BR-338"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "Meeting InProgress; actor holds a Queued request (never invited) and is connected to the room."
+          ],
+          "inputs": "operation: Start; requestId: that request; actor: its owner.",
+          "return": "NotOpen; 409 \"Yêu cầu phát biểu này đã thay đổi. Hãy tải lại danh sách.\" (MSG460); only an Invited request can start.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79 · MSG460"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "Meeting InProgress; actor is an ordinary Member connected to the room.",
+            "Another participant holds an open Queued request."
+          ],
+          "inputs": "operation: Finish; requestId: that request; actor: the Member.",
+          "return": "NotChair (MSG457); ending someone else's turn is the Chair's.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79 · MSG457"
+        },
+        {
+          "id": "UTC022",
+          "preconditions": [
+            "Meeting InProgress; caller is the current Chair.",
+            "Two chairs invite at the same instant and the second write lands second."
+          ],
+          "inputs": "operation: Invite; requestId: the second Queued request; actor: the Chair.",
+          "return": "FloorTaken (MSG459); the committed write stays successful and the losing invite saves nothing further.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-79 · MSG459 · BR-338"
+        },
+        {
+          "id": "UTC023",
+          "preconditions": [
+            "Meeting InProgress; actor is connected to the room.",
+            "The write fails in storage."
+          ],
+          "inputs": "operation: Raise; actor: the participant.",
+          "return": "SaveFailed; 503 \"Không lưu được thay đổi lượt phát biểu. Vui lòng thử lại.\" (MSG462); nothing is saved; no change is published.",
+          "exception": "N/A",
+          "log": "Failed speaking {Operation} for meeting {MeetingId}.",
+          "type": "Abnormal",
+          "note": "UC-79 · MSG462"
+        }
+      ]
+    }
+  ]
+}

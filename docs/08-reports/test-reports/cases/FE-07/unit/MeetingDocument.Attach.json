@@ -1,0 +1,197 @@
+{
+  "feature": "FE-07",
+  "module": "DOC",
+  "sheet": "MeetingDocument.Attach",
+  "description": "Adding a library document to a meeting, removing and detaching meeting documents.",
+  "precondition": "Meeting with documents; personal library documents.",
+  "methods": [
+    {
+      "method": "MeetingDocumentService.AttachAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "line": 192,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting Published; Chair; agenda item A1 exists; documents M1, M2 are in the meeting and not linked to A1."
+          ],
+          "inputs": "agendaItemId: A1; source: existing meeting documents; documentIds: [M1, M2].",
+          "return": "No failure; endpoint answers MSG238.",
+          "exception": "N/A",
+          "log": "Two links (M1-A1, M2-A1) added; links to other items untouched.",
+          "type": "Normal",
+          "note": "UC-33b · BR-277 · MSG238"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "M1 is already linked to a different item A2."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [M1].",
+          "return": "No failure; M1 is now linked to A1 and still to A2.",
+          "exception": "N/A",
+          "log": "Link M1-A1 added.",
+          "type": "Boundary",
+          "note": "UC-33b · BR-277"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "M1 already linked to A1."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [M1].",
+          "return": "Failure AlreadyLinked (HTTP 409, MSG243).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · BR-277 · MSG243"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "M1 not linked, M2 already linked to A1."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [M1, M2].",
+          "return": "Failure AlreadyLinked (MSG243); no link is added.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · BR-277 · MSG243"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Same meeting."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [].",
+          "return": "Failure NotInMeeting (HTTP 404, MSG170).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · MSG170"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "M9 belongs to another meeting."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [M1, M9].",
+          "return": "Failure NotInMeeting (HTTP 404, MSG170).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · BR-211 · MSG170"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Agenda item removed or from another meeting."
+          ],
+          "inputs": "agendaItemId: A9; documentIds: [M1].",
+          "return": "Failure AgendaItemNotFound (HTTP 404, MSG242).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · BR-278 · MSG242"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Library documents D1 (owned by the Chair, file not in the meeting)."
+          ],
+          "inputs": "agendaItemId: A1; source: Library; documentIds: [D1].",
+          "return": "No failure; one new meeting document added and linked to A1.",
+          "exception": "N/A",
+          "log": "MeetingDocument row with an agenda link to A1.",
+          "type": "Normal",
+          "note": "UC-33b · BR-277 · MSG238"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "D1 file already in the meeting as M1, not linked to A1."
+          ],
+          "inputs": "agendaItemId: A1; source: Library; documentIds: [D1].",
+          "return": "No failure; no new document, the existing meeting document M1 is linked to A1.",
+          "exception": "N/A",
+          "log": "Link M1-A1 added only.",
+          "type": "Boundary",
+          "note": "UC-33b · BR-193"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "D1 file already in the meeting and already linked to A1."
+          ],
+          "inputs": "agendaItemId: A1; source: Library; documentIds: [D1].",
+          "return": "Failure AlreadyLinked (HTTP 409, MSG243).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · MSG243"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "D1 not in the actor's library."
+          ],
+          "inputs": "agendaItemId: A1; source: Library; documentIds: [D1].",
+          "return": "Failure LibraryUnavailable (HTTP 400, MSG249).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · BR-209 · MSG249"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Actor is a Member."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [M1].",
+          "return": "Failure Forbidden (HTTP 403, MSG240).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · BR-184 · MSG240"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Meeting Ended."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [M1].",
+          "return": "Failure Ended (HTTP 409, MSG247).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · BR-195 · MSG247"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "Meeting Cancelled."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [M1].",
+          "return": "Failure Cancelled (HTTP 409, MSG349).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-33b · BR-299 · MSG349"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "Database error on save."
+          ],
+          "inputs": "agendaItemId: A1; documentIds: [M1].",
+          "return": "Failure StoreFailed (HTTP 503, MSG244).",
+          "exception": "N/A",
+          "log": "Error log \"Failed to link documents in meeting\".",
+          "type": "Abnormal",
+          "note": "UC-33b · MSG244"
+        }
+      ]
+    }
+  ]
+}

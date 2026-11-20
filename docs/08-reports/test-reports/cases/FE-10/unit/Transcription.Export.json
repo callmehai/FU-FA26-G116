@@ -1,0 +1,115 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "Transcription.Export",
+  "description": "Transcript export: who may export and the file produced.",
+  "precondition": "Transcript seeded.",
+  "methods": [
+    {
+      "method": "TranscriptionService.ExportAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+      "line": 111,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Transcript is Completed with two segments; actor is the current chair.",
+            "SPEAKER_00 is assigned to a named member."
+          ],
+          "inputs": "recordingId: a recording with a Completed transcript; actorId: the current chair.",
+          "return": "Success with a text file named ban-go-bang-<date>.txt; header says what it is and that a machine wrote it, then one [time] speaker: text line per segment.",
+          "exception": "N/A",
+          "log": "Saved: audit row records the export with the segment count.",
+          "type": "Normal",
+          "note": "UC-45b · BR-351"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Transcript is Completed; actor is the current secretary."
+          ],
+          "inputs": "recordingId: a recording with a Completed transcript; actorId: the current secretary.",
+          "return": "Success with the same text file as the chair receives.",
+          "exception": "N/A",
+          "log": "Saved: audit row records the export with the segment count.",
+          "type": "Normal",
+          "note": "UC-45b · BR-351"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Transcript is Completed; actor takes part in the meeting but is neither chair nor secretary."
+          ],
+          "inputs": "recordingId: a recording with a Completed transcript; actorId: an ordinary member.",
+          "return": "Failure ExportForbidden (MSG355 \"Chỉ Chủ toạ hoặc Thư ký được tải bản ghi và bản gỡ băng về.\"); no file.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-45b · BR-351 · MSG355"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Meeting sensitivity is Secret; transcript is Completed; actor is the current chair."
+          ],
+          "inputs": "recordingId: a recording of a Secret meeting; actorId: the current chair.",
+          "return": "Failure SecretMeeting (MSG356 \"Bản ghi và bản gỡ băng của cuộc họp Mật không được tải về.\"); no file.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-45b · BR-351 · MSG356"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Transcript is Processing; actor is the current chair."
+          ],
+          "inputs": "recordingId: a recording whose transcript is still running; actorId: the current chair.",
+          "return": "Failure NotReady (MSG357 \"Bản gỡ băng chưa xong nên chưa tải về được.\"); no file.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-45b · MSG357"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Transcript is Completed with no segments; actor is the current chair."
+          ],
+          "inputs": "recordingId: a recording with an empty Completed transcript; actorId: the current chair.",
+          "return": "Success; the file holds only the header and no lines.",
+          "exception": "N/A",
+          "log": "Saved: audit row records the export with segment count 0.",
+          "type": "Boundary",
+          "note": "UC-45b · BR-351"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "No recording exists for the id."
+          ],
+          "inputs": "recordingId: an unknown id; actorId: an active user.",
+          "return": "Failure NotFound; answered as if the recording does not exist.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-45b"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Transcript is Completed; actor is the current chair.",
+            "The store fails while reading."
+          ],
+          "inputs": "recordingId: a recording with a Completed transcript; actorId: the current chair.",
+          "return": "Failure ReadFailed (MSG299 \"Không tải được bản gỡ băng.\"); no file.",
+          "exception": "PersistenceException is caught inside the service.",
+          "log": "Error logged with the recording id.",
+          "type": "Abnormal",
+          "note": "UC-45b · MSG299"
+        }
+      ]
+    }
+  ]
+}

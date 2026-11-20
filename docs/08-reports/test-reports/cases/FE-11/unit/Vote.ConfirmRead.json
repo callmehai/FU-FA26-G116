@@ -1,0 +1,197 @@
+{
+  "feature": "FE-11",
+  "module": "VOTE",
+  "sheet": "Vote.ConfirmRead",
+  "description": "Confirming that a voter has read the attached material.",
+  "precondition": "Open vote with attached documents.",
+  "methods": [
+    {
+      "method": "VoteService.ConfirmReadAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Votes/VoteService.cs",
+      "line": 258,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting InProgress; Open vote that links the document; actor is eligible and has not confirmed it."
+          ],
+          "inputs": "actor: eligible Member; input.LastPageReached: true.",
+          "return": "Success: confirmation for the document with the current time, AlreadyConfirmed false; MSG253.",
+          "exception": "N/A",
+          "log": "One document read confirmation row saved for the user and the document, with no link to any ballot.",
+          "type": "Normal",
+          "note": "UC-74 · BR-289 · BR-290 · MSG253"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Same document already confirmed by the actor earlier."
+          ],
+          "inputs": "Second call with input.LastPageReached: true.",
+          "return": "Success with the original confirmation time and AlreadyConfirmed true; MSG253.",
+          "exception": "N/A",
+          "log": "No new row written.",
+          "type": "Normal",
+          "note": "UC-74 · BR-291 · MSG253"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Another Open or Closed vote links the same document and the actor confirmed it for the first vote."
+          ],
+          "inputs": "actor confirms again via the second vote.",
+          "return": "Success with the first confirmation time, AlreadyConfirmed true.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-74 · BR-291"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Actor's account is deactivated."
+          ],
+          "inputs": "meetingId, meetingDocumentId, actor, input.",
+          "return": "Failure Inactive; 403 with no message code.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting the actor cannot read."
+          ],
+          "inputs": "actor: stranger.",
+          "return": "Failure DocumentUnavailable; 404 MSG156.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74 · MSG156"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Document removed from the meeting, or linked only to a vote the actor may not see (Draft vote, actor is a Member)."
+          ],
+          "inputs": "actor: Member.",
+          "return": "Failure DocumentUnavailable; 404 MSG156, the same answer as for a missing meeting.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74 · BR-275 · MSG156"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Open vote links the document but the actor is not on the fixed eligible list."
+          ],
+          "inputs": "actor: Member added after the vote opened.",
+          "return": "Failure NotEligible; 409 MSG224.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74 · UC-55 · BR-190 · MSG224"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Vote linking the document is Closed."
+          ],
+          "inputs": "actor: eligible Member.",
+          "return": "Failure NotAccepting; 409 MSG225; nothing recorded.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74 · UC-55 · MSG225"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Open vote but the meeting has Ended."
+          ],
+          "inputs": "actor: eligible Member.",
+          "return": "Failure NotAccepting; 409 MSG225.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74 · UC-55 · MSG225"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Eligible voter has not reached the last page."
+          ],
+          "inputs": "input.LastPageReached: false.",
+          "return": "Failure LastPageNotReached; 400 MSG254; nothing recorded.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74 · BR-290 · MSG254"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Eligible voter, body without the lastPageReached field."
+          ],
+          "inputs": "input.LastPageReached: null.",
+          "return": "Failure LastPageNotReached; 400 MSG254.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-74 · BR-290 · MSG254"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Request body sent with a content type other than JSON."
+          ],
+          "inputs": "input.ParseFailure: UnsupportedMedia.",
+          "return": "Failure UnsupportedMedia; 415 MSG34.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74 · MSG34"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Request body larger than 64 KiB."
+          ],
+          "inputs": "input.ParseFailure: TooLarge.",
+          "return": "Failure TooLarge; 413 MSG87.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-74 · MSG87"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "Two confirmations by the same person arrive at once; the database keeps the first."
+          ],
+          "inputs": "Concurrent duplicate.",
+          "return": "Success with the stored confirmation time, AlreadyConfirmed true; MSG253.",
+          "exception": "N/A",
+          "log": "Second write discarded.",
+          "type": "Normal",
+          "note": "UC-74 · BR-291 · MSG253"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "The database fails while saving the confirmation."
+          ],
+          "inputs": "input.LastPageReached: true.",
+          "return": "Failure SaveFailed; 503 MSG255.",
+          "exception": "N/A",
+          "log": "Error logged with document and meeting ids.",
+          "type": "Abnormal",
+          "note": "UC-74 · MSG255"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "feature": "FE-13",
+  "module": "NOTI",
+  "sheet": "Notification.GetTarget",
+  "description": "Marking notifications read and resolving a notification target.",
+  "precondition": "Notifications of two users.",
+  "methods": [
+    {
+      "method": "NotificationService.GetTargetAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+      "line": 75,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "U1 has notification N1 targeting Meeting M1 (MeetingId M1) and U1 can still access M1."
+          ],
+          "inputs": "userId U1; notificationId N1.",
+          "return": "NotificationTarget(\"Meeting\", M1).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "N1 as above, but U1 lost access to M1 (removed from the roster)."
+          ],
+          "inputs": "userId U1; notificationId N1.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Notification N2 belongs to U2."
+          ],
+          "inputs": "userId U1; notificationId N2.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "No notification with this id."
+          ],
+          "inputs": "userId U1; notificationId random.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "A notification with TargetType Meeting whose MeetingId (M1) differs from its TargetId (M2)."
+          ],
+          "inputs": "userId U1.",
+          "return": "null: the target is not opened.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "A notification of a removed participant: TargetType and TargetId are null."
+          ],
+          "inputs": "userId U1.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "A Meeting notification whose TargetId is null."
+          ],
+          "inputs": "userId U1.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "A calendar-share notification; U1 is the owner or the viewer of the share."
+          ],
+          "inputs": "userId U1.",
+          "return": "NotificationTarget(\"CalendarShare\", shareId).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "A calendar-share notification; the share no longer involves U1 or no longer exists."
+          ],
+          "inputs": "userId U1.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "A calendar-share notification with a null TargetId."
+          ],
+          "inputs": "userId U1.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "A voice-sample notification; the sample S1 still exists and belongs to U1."
+          ],
+          "inputs": "userId U1.",
+          "return": "NotificationTarget(\"VoiceSample\", S1).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "A voice-sample notification; the sample was deleted or belongs to someone else."
+          ],
+          "inputs": "userId U1.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "A voice-sample notification with a null TargetId."
+          ],
+          "inputs": "userId U1.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-68"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "A notification with an unsupported TargetType \"Document\"."
+          ],
+          "inputs": "userId U1.",
+          "return": "null.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-68"
+        }
+      ]
+    }
+  ]
+}

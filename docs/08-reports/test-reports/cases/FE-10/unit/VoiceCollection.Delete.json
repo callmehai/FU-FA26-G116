@@ -1,0 +1,53 @@
+{
+  "feature": "FE-10",
+  "module": "TRANS",
+  "sheet": "VoiceCollection.Delete",
+  "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+  "precondition": "Meeting with participants and consent.",
+  "methods": [
+    {
+      "method": "VoiceCollectionService.DeleteAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
+      "line": 190,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "A sample was collected at the meeting; actor is its current secretary."
+          ],
+          "inputs": "meetingId: the meeting; actorId: its current secretary; sampleId: a sample collected there.",
+          "return": "Success with the sample id (MSG474 \"Đã xoá giọng mẫu thu hộ.\").",
+          "exception": "N/A",
+          "log": "Saved: sample removed; audit row records the deletion with the meeting scope.",
+          "type": "Normal",
+          "note": "UC-86d · BR-452 · MSG474"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "The sample is one the person recorded themself; actor is a secretary."
+          ],
+          "inputs": "meetingId: a meeting; actorId: its current secretary; sampleId: the person own self-recorded sample.",
+          "return": "Failure NotFound; a secretary never touches the person own set.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-86d · BR-452 · BR-448"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "A sample was collected at the meeting; actor takes part but is not the secretary."
+          ],
+          "inputs": "meetingId: the meeting; actorId: a member who is not the secretary; sampleId: a sample collected there.",
+          "return": "Failure NotFound; answered as if the meeting does not exist.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-86d · BR-450"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,294 @@
+{
+  "description": "User update rules: field validation, role change and last-administrator protection.",
+  "feature": "FE-02",
+  "methods": [
+    {
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "id: that account; FullName: \"Lê Văn Anh\"; Email: \"a@x.vn\" (unchanged); RoleId: \"Thành viên\" (unchanged).",
+          "log": "Audit row UserUpdated (details { before, after }); log \"Account {UserId} updated by {ActorId}.\"",
+          "note": "UC-06b · BR-16 · BR-17 · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Active account \"Lê Văn A\" <a@x.vn> with role \"Thành viên\"."
+          ],
+          "return": "UserResult Success (MSG10) with FullName \"Lê Văn Anh\"; no session is ended and nobody is notified.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "id: <random Guid with no account>; valid request.",
+          "log": "N/A",
+          "note": "UC-06b",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers."
+          ],
+          "return": "UserResult Failure(NotFound) (HTTP 404, no message code); nothing saved.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "FullName: \"\"; Email: \"a@x.vn\"; RoleId valid.",
+          "log": "N/A",
+          "note": "UC-06b · BR-14 · MSG09",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Account exists."
+          ],
+          "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được để trống.\"; the account is unchanged.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "FullName: 201 characters; other fields valid.",
+          "log": "N/A",
+          "note": "UC-06b · BR-14 · MSG09",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Account exists."
+          ],
+          "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được vượt quá 200 ký tự.\".",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "FullName: 200 characters; other fields valid.",
+          "log": "Audit row UserUpdated.",
+          "note": "UC-06b · BR-14 · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Account exists."
+          ],
+          "return": "UserResult Success (MSG10).",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC006",
+          "inputs": "Email: \"khong-hop-le\"; other fields valid.",
+          "log": "N/A",
+          "note": "UC-06b · BR-14 · MSG09",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Account exists."
+          ],
+          "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không hợp lệ.\".",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC007",
+          "inputs": "Email: 257 characters; other fields valid.",
+          "log": "N/A",
+          "note": "UC-06b · BR-14 · MSG09",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Account exists."
+          ],
+          "return": "UserResult InvalidInformation (MSG09) with errors[email] = \"Email không hợp lệ.\".",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC008",
+          "inputs": "RoleId: unknown Guid; other fields valid.",
+          "log": "N/A",
+          "note": "UC-08 · MSG09",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Account exists.",
+            "No role has the submitted id."
+          ],
+          "return": "UserResult InvalidInformation (MSG09) with errors[roleId] = \"Vai trò không tồn tại.\"; the previous role is kept.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC009",
+          "inputs": "id: account a@x.vn; Email: \"b@x.vn\".",
+          "log": "N/A",
+          "note": "UC-06b · BR-13 · MSG08",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Another account already uses b@x.vn."
+          ],
+          "return": "UserResult Failure(DuplicateEmail) (MSG08); the account is unchanged.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC010",
+          "inputs": "Email: \"A@x.vn\" (own email, different case).",
+          "log": "Audit row UserUpdated.",
+          "note": "UC-06b · BR-13 · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Account a@x.vn exists."
+          ],
+          "return": "UserResult Success (MSG10): keeping your own email is not a duplicate.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC011",
+          "inputs": "Email: \"c@x.vn\".",
+          "log": "Log \"Update rejected: email already taken (unique index).\"",
+          "note": "UC-06b · BR-13 · MSG08",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Email is free when checked, but a concurrent request takes it before this save."
+          ],
+          "return": "UserResult Failure(DuplicateEmail) (MSG08); the unsaved changes are discarded and no audit row is written.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC012",
+          "inputs": "RoleId: \"Thành viên\".",
+          "log": "Warning log \"Update rejected: changing the role of {UserId} would leave no active administrator.\"",
+          "note": "UC-08 · MSG12",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Account is the only active holder of AdminUsers (role \"Quản trị viên\").",
+            "Target role \"Thành viên\" does not hold AdminUsers."
+          ],
+          "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the account keeps its role.",
+          "type": "Abnormal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC013",
+          "inputs": "id: the first administrator; RoleId: \"Thành viên\".",
+          "log": "Audit row UserUpdated; calendar shares of the person stop if the new role lacks MeetingCreator; capabilities-changed notice sent.",
+          "note": "UC-08 · BR-314 · BR-424 · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Two active accounts hold AdminUsers; the target is one of them.",
+            "Target role \"Thành viên\" does not hold AdminUsers."
+          ],
+          "return": "UserResult Success (MSG10); the role changes and the account is told (capability change published); the session stays.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC014",
+          "inputs": "RoleId: \"Trợ lý\".",
+          "log": "Audit row UserUpdated; capabilities-changed notice sent.",
+          "note": "UC-08 · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "The target is the only active administrator.",
+            "Target role \"Trợ lý\" also holds AdminUsers."
+          ],
+          "return": "UserResult Success (MSG10): the new role keeps AdminUsers, so nobody loses the capability.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC015",
+          "inputs": "FullName changed; Email and RoleId unchanged.",
+          "log": "Audit row UserUpdated.",
+          "note": "UC-06b · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "The target is the only active administrator."
+          ],
+          "return": "UserResult Success (MSG10): the last-administrator rule is checked only when the role moves.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC016",
+          "inputs": "RoleId: \"Thành viên\".",
+          "log": "Audit row UserUpdated.",
+          "note": "UC-08 · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "The target account is deactivated and is the former sole holder of AdminUsers.",
+            "No active administrator remains."
+          ],
+          "return": "UserResult Success (MSG10): an inactive account administers nothing, so changing its role cannot remove the last administrator; nobody is notified.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC017",
+          "inputs": "Email: \"moi@x.vn\" (changed); other fields unchanged.",
+          "log": "Audit row UserUpdated; sessions of the account ended.",
+          "note": "UC-06b · BR-17 · MSG10\nDeviation: BR-17 and UC-06b limit this update to Full Name, but the code also changes Email (ending the session) and System Role (UC-08).",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Active non-administrator account."
+          ],
+          "return": "UserResult Success (MSG10); every refresh token and any open password-reset link of the account are revoked after the commit; no role-change notice is sent.",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC018",
+          "inputs": "Email: \"moi@x.vn\"; RoleId: another role.",
+          "log": "Audit row UserUpdated; sessions ended.",
+          "note": "UC-08 · BR-314 · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Active account; role and email both change."
+          ],
+          "return": "UserResult Success (MSG10); sessions are ended because of the email change and no capability notice is sent (the session does not survive).",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC019",
+          "inputs": "Email: \"A@x.vn\" (only the letter case differs from the stored a@x.vn).",
+          "log": "Audit row UserUpdated; sessions ended.",
+          "note": "UC-06b · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Active account."
+          ],
+          "return": "UserResult Success (MSG10); the email counts as changed (ordinal compare), so sessions are ended.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC020",
+          "inputs": "Email: \"moi@x.vn\".",
+          "log": "Error log \"Account {UserId} was changed, but ending its sessions failed.\"",
+          "note": "UC-06b · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Ending the sessions fails (Redis unavailable) after the commit."
+          ],
+          "return": "UserResult Success (MSG10): the failure is logged, not raised; the session lapses with the access token.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC021",
+          "inputs": "RoleId: role without MeetingCreator.",
+          "log": "Shares stopped and audited.",
+          "note": "UC-08 · BR-424 · MSG10",
+          "preconditions": [
+            "Actor is an administrator holding AdminUsers.",
+            "Active account whose new role lacks MeetingCreator and who views calendar shares."
+          ],
+          "return": "UserResult Success (MSG10); the Effective shares the person views are stopped (reason ViewerLostMeetingCreator).",
+          "type": "Normal"
+        }
+      ],
+      "file": "backend/TrustCabinet.Application/Users/UserService.cs",
+      "layer": "Application",
+      "line": 153,
+      "method": "UserService.UpdateAsync"
+    }
+  ],
+  "module": "USER",
+  "precondition": "Admin actor with user-management capability; target user and roles seeded.",
+  "sheet": "User.Update"
+}

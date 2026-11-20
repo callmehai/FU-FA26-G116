@@ -1,0 +1,77 @@
+{
+  "description": "Sign-out revokes the presented refresh token without failing for an unknown token.",
+  "feature": "FE-01",
+  "methods": [
+    {
+      "cases": [
+        {
+          "exception": "N/A",
+          "id": "UTC001",
+          "inputs": "refreshToken: \"T1\".",
+          "log": "Sign-out: session of account {UserId} ended.",
+          "note": "UC-03 · BR-09",
+          "preconditions": [
+            "Refresh token T1 is stored for account organizer@example.com."
+          ],
+          "return": "Completes without error; T1 is revoked, so no new access token can be issued with it (an access token already issued stays valid until expiry).",
+          "type": "Normal"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC002",
+          "inputs": "refreshToken: \"dead-token\".",
+          "log": "Sign-out with no live refresh token; nothing to revoke.",
+          "note": "UC-03 · BR-09",
+          "preconditions": [
+            "Token store has no live record of the token (already revoked, expired or never issued)."
+          ],
+          "return": "Completes without error and without a failure result; sign-out is treated as successful.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC003",
+          "inputs": "refreshToken: \"\".",
+          "log": "Sign-out with no live refresh token; nothing to revoke.",
+          "note": "UC-03",
+          "preconditions": [
+            "No token store call is needed for a blank token."
+          ],
+          "return": "Completes without error; the token store is not called.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC004",
+          "inputs": "refreshToken: \"   \".",
+          "log": "Sign-out with no live refresh token; nothing to revoke.",
+          "note": "UC-03",
+          "preconditions": [
+            "No token store call is needed for a whitespace token."
+          ],
+          "return": "Completes without error; the token store is not called.",
+          "type": "Boundary"
+        },
+        {
+          "exception": "N/A",
+          "id": "UTC005",
+          "inputs": "refreshToken: \"T1\".",
+          "log": "Sign-out: session of account {UserId} ended.",
+          "note": "UC-03 · BR-09",
+          "preconditions": [
+            "Account has two sessions with refresh tokens T1 and T2."
+          ],
+          "return": "Only T1 is revoked; T2 stays usable for the other session.",
+          "type": "Normal"
+        }
+      ],
+      "file": "backend/TrustCabinet.Application/Authentication/AuthenticationService.cs",
+      "layer": "Application",
+      "line": 233,
+      "method": "AuthenticationService.SignOutAsync"
+    }
+  ],
+  "module": "AUTH",
+  "precondition": "Refresh token store seeded.",
+  "sheet": "Authentication.SignOut"
+}

@@ -1,0 +1,90 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "SpeechClip.Delete",
+  "description": "Editing, deleting and excluding a speech clip.",
+  "precondition": "Existing clips.",
+  "methods": [
+    {
+      "method": "SpeechClipService.DeleteAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "line": 229,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "An existing sentence with audio; the actor is its speaker (active user)."
+          ],
+          "inputs": "clipId; actorId: the speaker.",
+          "return": "Success (200, MSG322); the row is removed and its audio file is deleted after the commit.",
+          "exception": "N/A",
+          "log": "Audit SpeechClipDeleted (sentence, meeting, speaker, byOwner true); a ClipDeleted change is published.",
+          "type": "Normal",
+          "note": "UC-80 · BR-355 · MSG322"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "An existing sentence of another speaker; the actor is the meeting's Secretary."
+          ],
+          "inputs": "clipId; actorId: the Secretary.",
+          "return": "Success (200, MSG322); the row and its audio are removed.",
+          "exception": "N/A",
+          "log": "Audit SpeechClipDeleted (byOwner false); a ClipDeleted change is published.",
+          "type": "Normal",
+          "note": "UC-46d · BR-355 · MSG322"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "An existing sentence; the actor is an active Member who is neither its speaker nor the Secretary."
+          ],
+          "inputs": "clipId; actorId: the other Member.",
+          "return": "Forbidden (403, MSG323).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46d · BR-355 · MSG323"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "No sentence with this id."
+          ],
+          "inputs": "clipId: a random id; actorId: a Member.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46d · BR-355"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "clipId; actorId: the deactivated user.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-46d · BR-355"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "An existing sentence with audio; the actor is its speaker.",
+            "The database fails while saving the removal."
+          ],
+          "inputs": "clipId; actorId: the speaker.",
+          "return": "SaveFailed (503, MSG304); the row and its audio file are kept.",
+          "exception": "PersistenceException caught; logged.",
+          "log": "Error log 'Failed to delete speech clip'.",
+          "type": "Abnormal",
+          "note": "UC-80 · BR-355 · MSG304"
+        }
+      ]
+    }
+  ]
+}

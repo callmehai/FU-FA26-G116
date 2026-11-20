@@ -49,12 +49,13 @@ Nguyên nhân (đã đối chiếu code, không phải đoán):
    detach — mỗi nhánh failure một test (`DraftDenied`, `OpenDenied`, `AnotherOpen`,
    `NoEligibleVoters`, `NotEligible`, `NotAccepting`, `AlreadyCast`, `DocumentsUnread`,
    `CloseDenied`, `ConclusionDenied`…).
-4. Cập nhật `cases/FE-11/unit/` + `functions.json`: Note các UTC chuyển từ `Manual only` sang
-   `Automated: …VoteServiceTests.cs (Method)`; các nhánh vẫn HTTP-only giữ nguyên khai báo gap.
+4. Cập nhật `cases/FE-11/unit/` + `functions.json`: viết UTC từ chính signature/code của
+   `VoteService` (không sao chép từ file test); `Note` chỉ ghi `UC-xx · BR-xx · MSGnn`, tuyệt đối
+   không ghi `Automated:` hay tên file test; các nhánh vẫn HTTP-only giữ nguyên khai báo gap.
 
 ## 4. Ràng buộc nhắc lại
 
 - Lần này **không sửa production code** (theo yêu cầu): chỉ ghi nhận hiện trạng, không nhận vơ
   coverage service trong báo cáo.
-- Mọi UTC vẫn `Pending`; mọi `MSGnn`/route/field/message trong case đều từ code, test,
-  `docs/03-api/` — không bịa giá trị.
+- Mọi UTC vẫn `Pending`; mọi `MSGnn`/route/field/message trong case đều từ code production và
+  `docs/03-api/` — không sao chép từ file test, không bịa giá trị.

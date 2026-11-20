@@ -1,0 +1,295 @@
+{
+  "feature": "FE-09",
+  "module": "REC",
+  "sheet": "RoomTake.Begin",
+  "description": "Room take lifecycle: begin, append, complete, complete idle, delete.",
+  "precondition": "Meeting in progress; storage recorder.",
+  "methods": [
+    {
+      "method": "RoomTakeService.BeginAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
+      "line": 31,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "The meeting has no room recording yet."
+          ],
+          "inputs": "start: consentConfirmed true, consentPurpose 'Họp giao ban'.",
+          "return": "Success: a take opens with its recording id, part size 320,000 and max size 314,572,800 bytes. The new recording is Pending, source BrowserCapture, audio/wav, file name ghi-am-phong-14-11-2026-1700.wav (Vietnam time), consent time now, purpose 'Họp giao ban', RetainUntil 2027-05-13 10:00 UTC, an empty take list, maker = the Secretary.",
+          "exception": "N/A",
+          "log": "An empty WAV file is created in storage; audit RecordingTakeStarted with firstTake true; RecordingsChanged published.",
+          "type": "Normal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-345 · BR-347"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "The meeting already has a saved room recording with consent time 2026-11-14 09:00 UTC and purpose 'Họp giao ban'; no take is open."
+          ],
+          "inputs": "start: consentConfirmed false, consentPurpose null.",
+          "return": "Success: the new take reuses the room recording's consent time and purpose; no new confirmation is needed.",
+          "exception": "N/A",
+          "log": "Audit RecordingTakeStarted with firstTake false; RecordingsChanged published.",
+          "type": "Normal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Hybrid meeting in status InProgress; the actor is its Secretary; no room recording yet."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "Success; a hybrid meeting records the room live, so the take opens.",
+          "exception": "N/A",
+          "log": "Audit RecordingTakeStarted firstTake true.",
+          "type": "Normal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "No room recording yet."
+          ],
+          "inputs": "start: consentConfirmed true, consentPurpose null.",
+          "return": "Success; the purpose is the default 'Lập biên bản cuộc họp'.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "No room recording yet."
+          ],
+          "inputs": "start: consentConfirmed true, consentPurpose '   '.",
+          "return": "Success; the default purpose is used.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "No room recording yet."
+          ],
+          "inputs": "start: consentConfirmed false.",
+          "return": "Invalid (400, MSG291) with an error on consentConfirmed; the first take needs the Secretary's confirmation.",
+          "exception": "N/A",
+          "log": "No file is created, no row saved.",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG291"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "The previous room recording was erased (status Deleted), so the meeting has no kept room recording."
+          ],
+          "inputs": "start: consentConfirmed false.",
+          "return": "Invalid (400, MSG291); the next take counts as a first take again.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG291"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "No room recording yet."
+          ],
+          "inputs": "start: consentConfirmed true, consentPurpose of exactly 1,000 characters.",
+          "return": "Success; purpose stored.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "No room recording yet."
+          ],
+          "inputs": "start: consentConfirmed true, consentPurpose of 1,001 characters.",
+          "return": "Invalid (400, MSG291) with an error on consentPurpose.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG291"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "A room recording exists."
+          ],
+          "inputs": "start: consentConfirmed false, consentPurpose of 1,001 characters.",
+          "return": "Invalid (400, MSG291) with an error on consentPurpose only; a later take is checked for purpose length too.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG291"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "The actor's account is deactivated."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "Inactive (403).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "No such meeting."
+          ],
+          "inputs": "meetingId: random id.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "The actor is not on the roster (creator only)."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "NotFound.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-350"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "The actor is the Chair, not the Secretary."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "Forbidden (403, MSG295).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG295"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "Online meeting in status InProgress; the actor is the Secretary."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "NoRoom (409, MSG358).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-340 · MSG358"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "InPerson meeting in status Published; the actor is the Secretary."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "NotRunning (409, MSG359).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-342 · MSG359"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "InPerson meeting in status Ended; the actor is the Secretary."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "NotRunning (409, MSG359).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-342 · MSG359"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "Another take of the meeting is open (Pending, BrowserCapture), on another device."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "TakeOpen (409, MSG360); no second take is opened.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG360"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "Two devices open a take at the same moment; the database refuses the second one."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "TakeOpen (409, MSG360).",
+          "exception": "UniqueConflictException caught.",
+          "log": "The created file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG360"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "The database or disk fails while saving."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "SaveFailed (503, MSG298).",
+          "exception": "PersistenceException or IOException caught; logged.",
+          "log": "The created file is deleted.",
+          "type": "Abnormal",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG298"
+        },
+        {
+          "id": "UTC021",
+          "preconditions": [
+            "InPerson meeting in status InProgress; the actor is its current Secretary and an active user.",
+            "The clock reads 2026-11-14 10:00 UTC; retention is 180 days; part size 320,000 bytes; upload limit 300 MB.",
+            "The change-event publisher throws."
+          ],
+          "inputs": "start: consentConfirmed true.",
+          "return": "Success; the take stays open.",
+          "exception": "N/A",
+          "log": "Warning log 'Could not publish recordings change'.",
+          "type": "Boundary",
+          "note": "UC-44a · BR-341 · BR-343 · BR-344"
+        }
+      ]
+    }
+  ]
+}

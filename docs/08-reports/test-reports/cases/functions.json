@@ -20,6 +20,13 @@
     "issueDate": "2026-11-13",
     "version": "2.0"
   },
+  "inventory": {
+    "infrastructure": [
+      "backend/TrustCabinet.Infrastructure/Authentication/JwtTokenIssuer.cs",
+      "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+      "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs"
+    ]
+  },
   "project": "TrustCabinet",
   "projectCode": "SEP490-G116",
   "sheets": [
@@ -29,51 +36,15 @@
       "methods": [
         {
           "decides": "Returns success with token pair and capabilities, or InvalidCredentials (MSG01) vs AccountDeactivated (MSG02); unknown email costs one password verification and is indistinguishable from a wrong password.",
-          "directTests": [
-            "An_active_user_with_the_right_password_signs_in",
-            "A_wrong_password_is_rejected",
-            "An_unknown_email_is_rejected",
-            "A_deactivated_account_is_told_so_only_after_the_password_matched",
-            "Blank_input_is_rejected_without_touching_the_database"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Authentication/AuthenticationService.cs",
-          "line": 50,
-          "method": "AuthenticationService.SignInAsync"
+          "file": "backend/TrustCabinet.Application/Authentication/AuthenticationService.cs",
+          "line": 52,
+          "method": "AuthenticationService.SignInAsync",
+          "layer": "Application"
         }
       ],
       "module": "AUTH",
       "precondition": "Seeded users exist (active, deactivated); password hasher configured.",
-      "sheet": "Auth.SignIn"
-    },
-    {
-      "description": "Password hashing and verification: same password verifies, different password fails, malformed hash fails instead of throwing.",
-      "feature": "FE-01",
-      "methods": [
-        {
-          "decides": "Hash creates a salted hash; Verify returns true only for the matching password (incl. rehash-needed); malformed or placeholder hash returns false, never throws.",
-          "directTests": [
-            "A_password_verifies_against_its_own_hash",
-            "A_different_password_does_not_verify",
-            "A_malformed_stored_hash_fails_verification_instead_of_throwing",
-            "The_same_password_hashes_differently_every_time"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
-          "line": 30,
-          "method": "PasswordHasher.Verify"
-        },
-        {
-          "method": "PasswordHasher.Hash",
-          "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
-          "line": 28,
-          "decides": "Creates a salted hash with a fresh random salt on every call; the same password never produces the same hash text.",
-          "directTests": [
-            "The_same_password_hashes_differently_every_time"
-          ]
-        }
-      ],
-      "module": "AUTH",
-      "precondition": "No database needed; pure hashing check.",
-      "sheet": "Password.Verify"
+      "sheet": "Authentication.SignIn"
     },
     {
       "description": "Access token contents and lifetime: subject, capability claims, expiry, tamper rejection.",
@@ -81,15 +52,10 @@
       "methods": [
         {
           "decides": "Creates a signed JWT with sub, jti, email, name and one cap claim per capability; expires after the configured lifetime; tampered or wrong-key tokens are rejected by the validator.",
-          "directTests": [
-            "The_access_token_identifies_the_user",
-            "The_access_token_carries_one_claim_per_capability",
-            "The_access_token_expires_after_the_configured_lifetime",
-            "A_tampered_token_is_rejected"
-          ],
           "file": "backend/TrustCabinet.Infrastructure/Authentication/JwtTokenIssuer.cs",
-          "line": 28,
-          "method": "JwtTokenIssuer.CreateAccessToken"
+          "line": 25,
+          "method": "JwtTokenIssuer.CreateAccessToken",
+          "layer": "Infrastructure"
         }
       ],
       "module": "AUTH",
@@ -97,20 +63,111 @@
       "sheet": "Jwt.AccessToken"
     },
     {
+      "description": "Google sign-in: identity verification, linking an administrator-created account by email, deactivated and unlinked accounts.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Authentication/AuthenticationService.cs",
+          "line": 98,
+          "method": "AuthenticationService.SignInWithGoogleAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "Google token verifier returns an identity or null; account rows seeded.",
+      "sheet": "Authentication.SignInWithGoogle"
+    },
+    {
+      "description": "Refresh token rotation: a valid token is exchanged once; unknown, expired, reused or deactivated-owner tokens are refused.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Authentication/AuthenticationService.cs",
+          "line": 179,
+          "method": "AuthenticationService.RefreshAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "Refresh token store and user rows seeded.",
+      "sheet": "Authentication.Refresh"
+    },
+    {
+      "description": "Sign-out revokes the presented refresh token without failing for an unknown token.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Authentication/AuthenticationService.cs",
+          "line": 233,
+          "method": "AuthenticationService.SignOutAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "Refresh token store seeded.",
+      "sheet": "Authentication.SignOut"
+    },
+    {
+      "description": "Guest link opening: opening a guest invitation link returns the meeting view or a failure.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/GuestAccess/GuestAccessService.cs",
+          "line": 28,
+          "method": "GuestAccessService.OpenAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "Meeting and guest invitation rows seeded.",
+      "sheet": "GuestAccess.Open"
+    },
+    {
+      "description": "Guest verification code: sending, throttling and unknown-invitation answers.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/GuestAccess/GuestAccessService.cs",
+          "line": 45,
+          "method": "GuestAccessService.SendCodeAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "Guest invitation seeded; code sender replaced by a recorder.",
+      "sheet": "GuestAccess.SendCode"
+    },
+    {
+      "description": "Guest code verification: correct code opens a session; wrong, expired and exhausted codes are refused.",
+      "feature": "FE-01",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/GuestAccess/GuestAccessService.cs",
+          "line": 122,
+          "method": "GuestAccessService.VerifyAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AUTH",
+      "precondition": "Guest invitation with a pending verification code.",
+      "sheet": "GuestAccess.Verify"
+    },
+    {
       "description": "User creation rules: valid input creates an active account; validation, duplicate email and unknown role are refused.",
       "feature": "FE-02",
       "methods": [
         {
           "decides": "Valid input stores an active account with a hashed password and audits; invalid fields are reported together; duplicate email answers MSG08; unknown role answers MSG09.",
-          "directTests": [
-            "Create_stores_an_active_account_and_records_the_audit_entry",
-            "Create_rejects_a_password_shorter_than_the_minimum",
-            "Create_rejects_an_email_that_already_exists",
-            "Create_rejects_a_role_that_does_not_exist"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Users/UserService.cs",
+          "file": "backend/TrustCabinet.Application/Users/UserService.cs",
           "line": 61,
-          "method": "UserService.CreateAsync"
+          "method": "UserService.CreateAsync",
+          "layer": "Application"
         }
       ],
       "module": "USER",
@@ -123,14 +180,10 @@
       "methods": [
         {
           "decides": "Deactivate/reactivate flips status and audits; self-target, no-op and last-admin deactivation are refused; deactivation ends sessions and the Voice ID inside the same write.",
-          "directTests": [
-            "Deactivate_sets_the_status_ends_the_sessions_and_audits",
-            "Status_change_is_refused_when_an_administrator_aims_at_their_own_account",
-            "Deactivating_the_last_administrator_is_refused"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Users/UserService.cs",
-          "line": 262,
-          "method": "UserService.ChangeStatusAsync"
+          "file": "backend/TrustCabinet.Application/Users/UserService.cs",
+          "line": 275,
+          "method": "UserService.ChangeStatusAsync",
+          "layer": "Application"
         }
       ],
       "module": "USER",
@@ -138,24 +191,68 @@
       "sheet": "User.ChangeStatus"
     },
     {
+      "description": "User update rules: field validation, role change and last-administrator protection.",
+      "feature": "FE-02",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Users/UserService.cs",
+          "line": 153,
+          "method": "UserService.UpdateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "USER",
+      "precondition": "Admin actor with user-management capability; target user and roles seeded.",
+      "sheet": "User.Update"
+    },
+    {
+      "description": "Password reset request: link creation, email delivery and revocation rules; accounts are not revealed.",
+      "feature": "FE-02",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Users/UserService.cs",
+          "line": 375,
+          "method": "UserService.RequestPasswordResetAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "USER",
+      "precondition": "Active and deactivated users seeded; reset email sender replaced by a recorder.",
+      "sheet": "User.RequestPasswordReset"
+    },
+    {
+      "description": "Password reset completion: single-use expiring token, new-password validation and session revocation.",
+      "feature": "FE-02",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Users/UserService.cs",
+          "line": 471,
+          "method": "UserService.ResetPasswordAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "USER",
+      "precondition": "Active and deactivated users seeded; reset email sender replaced by a recorder.",
+      "sheet": "User.ResetPassword"
+    },
+    {
       "description": "Capability matrix update: grant/revoke capabilities with the lock-out guard.",
       "feature": "FE-03",
       "methods": [
         {
           "decides": "Saves the requested capabilities, deduped and sorted; refuses an unknown capability (MSG17) and removing AdminUsers from the last role holding it; identical sets write nothing.",
-          "directTests": [
-            "Update_saves_the_requested_capabilities",
-            "Update_that_changes_nothing_writes_nothing",
-            "Update_refuses_to_remove_admin_users_from_the_last_role_holding_it"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Access/RolePermissionService.cs",
-          "line": 30,
-          "method": "RolePermissionService.UpdateAsync"
+          "file": "backend/TrustCabinet.Application/Access/RolePermissionService.cs",
+          "line": 33,
+          "method": "RolePermissionService.UpdateAsync",
+          "layer": "Application"
         }
       ],
       "module": "RBAC",
       "precondition": "Roles seeded; admin actor holds role management capability.",
-      "sheet": "RolePerm.Update"
+      "sheet": "RolePermission.Update"
     },
     {
       "description": "Custom role creation: name and capability validation, duplicate guard, built-in protection.",
@@ -163,14 +260,10 @@
       "methods": [
         {
           "decides": "Valid input creates a custom role; blank or over-long names, unknown capabilities and duplicate names (MSG20/MSG21) are refused; built-in roles are never created this way.",
-          "directTests": [
-            "Create_accepts_64_characters_and_refuses_65",
-            "Create_refuses_a_capability_given_as_a_number",
-            "Create_answers_MSG21_for_the_same_name_typed_with_combining_marks"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Access/RoleService.cs",
-          "line": 37,
-          "method": "RoleService.CreateAsync"
+          "file": "backend/TrustCabinet.Application/Access/RoleService.cs",
+          "line": 38,
+          "method": "RoleService.CreateAsync",
+          "layer": "Application"
         }
       ],
       "module": "RBAC",
@@ -178,19 +271,79 @@
       "sheet": "Role.Create"
     },
     {
+      "description": "Role update: name validation, built-in role protection and capability set changes.",
+      "feature": "FE-03",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Access/RoleService.cs",
+          "line": 108,
+          "method": "RoleService.UpdateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "RBAC",
+      "precondition": "Roles seeded, one built-in and one custom.",
+      "sheet": "Role.Update"
+    },
+    {
+      "description": "Role deletion: refused while users hold it and for built-in roles.",
+      "feature": "FE-03",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Access/RoleService.cs",
+          "line": 184,
+          "method": "RoleService.DeleteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "RBAC",
+      "precondition": "Roles seeded, one in use.",
+      "sheet": "Role.Delete"
+    },
+    {
+      "description": "Administrator invariant: a write that would leave no active administrator is refused.",
+      "feature": "FE-03",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Access/AdministratorInvariantGuard.cs",
+          "line": 12,
+          "method": "AdministratorInvariantGuard.WriteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "RBAC",
+      "precondition": "At least one administrator seeded.",
+      "sheet": "AdminGuard.Write"
+    },
+    {
+      "description": "Audit entry recording: caller context, action catalogue and details.",
+      "feature": "FE-03",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Audit/AuditService.cs",
+          "line": 34,
+          "method": "AuditService.RecordAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "RBAC",
+      "precondition": "Caller context available.",
+      "sheet": "Audit.Record"
+    },
+    {
       "description": "Meeting workflow transitions: submit, approve, reject, publish, cancel and organizer transfer with guards.",
       "feature": "FE-04",
       "methods": [
         {
           "decides": "Each legal edge changes status, writes history and notifies; wrong actor, lost capability, self-approval, ineligible approver, unready roster and stale state are refused with 404/403/409/400 and the matching MSGnn.",
-          "directTests": [
-            "Submit_records_assignment_history_and_approver_notification",
-            "Approve_notifies_the_organizer",
-            "Publish_requires_exactly_one_active_chair_and_an_active_secretary"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Meetings/MeetingService.cs",
-          "line": 412,
-          "method": "MeetingService.TransitionAsync"
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+          "line": 418,
+          "method": "MeetingService.TransitionAsync",
+          "layer": "Application"
         }
       ],
       "module": "MEET",
@@ -203,19 +356,16 @@
       "methods": [
         {
           "decides": "Chair starts a Published meeting and ends a running one; non-chair, wrong status and broken roster are refused; end fans out to agenda, speaking, vote drafts and room closure.",
-          "directTests": [
-            "Old_workflow_service_rejects_lifecycle_actions_and_new_service_rejects_other_commands",
-            "Client_cancellation_after_commit_does_not_cancel_effects"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Meetings/MeetingLifecycleService.cs",
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingLifecycleService.cs",
           "gap": "Partial direct coverage (invalid-command rejection and cancellation-after-commit); roster and auth branches are HTTP-only.",
-          "line": 32,
-          "method": "MeetingLifecycleService.TransitionAsync"
+          "line": 33,
+          "method": "MeetingLifecycleService.TransitionAsync",
+          "layer": "Application"
         }
       ],
       "module": "MEET",
       "precondition": "Published meeting with one chair and at least one secretary for Start; InProgress meeting for End.",
-      "sheet": "Meeting.Lifecycle"
+      "sheet": "MeetingLifecycle.Transition"
     },
     {
       "description": "Meeting create and update validation: title, mode, timestamps and the Published reschedule lock.",
@@ -223,14 +373,10 @@
       "methods": [
         {
           "decides": "Valid input creates or updates the meeting; blank title, bad enum, end before start and locked-field changes on a Published meeting are refused with field errors.",
-          "directTests": [
-            "Create_rejects_a_missing_or_blank_title",
-            "Validation_collects_field_errors_and_enforces_lengths",
-            "Create_accepts_each_supported_mode_and_sensitivity"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Meetings/MeetingService.cs",
-          "line": 20,
-          "method": "MeetingService.CreateAsync"
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+          "line": 22,
+          "method": "MeetingService.CreateAsync",
+          "layer": "Application"
         }
       ],
       "module": "MEET",
@@ -238,40 +384,164 @@
       "sheet": "Meeting.Create"
     },
     {
-      "description": "Overrun detection: a running meeting left past its planned end is auto-ended by the worker.",
-      "feature": "FE-04",
-      "methods": [
-        {
-          "decides": "Returns true when status is InProgress and the planned end (or actual start) is at or before the cutoff; otherwise false; the worker then writes the AutoEnd history row.",
-          "directTests": [],
-          "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
-          "gap": "No direct truth-table test; covered only transitively via MeetingTestDoubles and worker HTTP tests.",
-          "line": 23,
-          "method": "MeetingRules.IsOverrun"
-        }
-      ],
-      "module": "MEET",
-      "precondition": "Meeting with known status, planned end and actual start; cutoff is now minus grace.",
-      "sheet": "Meeting.IsOverrun"
-    },
-    {
       "description": "Meeting read policy: who may read a meeting, its history and its rejection reason.",
       "feature": "FE-04",
       "methods": [
         {
           "decides": "Creator, assigned approver and current participants by status may read; outsiders and cancelled-from-Draft meetings get 404; rejection reason is visible only to its audience.",
-          "directTests": [
-            "Assigned_chair_reads_content_and_redacted_history_in_all_states",
-            "Unassigned_or_ineligible_secretary_cannot_read_prepublication_rejection_evidence"
-          ],
           "file": "backend/TrustCabinet.Domain/Meetings/MeetingReadPolicy.cs",
           "line": 34,
-          "method": "MeetingReadPolicy.CanRead"
+          "method": "MeetingReadPolicy.CanRead",
+          "layer": "Domain"
         }
       ],
       "module": "MEET",
       "precondition": "Meeting with known creator, approver and participant list.",
-      "sheet": "Meeting.CanRead"
+      "sheet": "MeetingReadPolicy.CanRead"
+    },
+    {
+      "description": "Update pre-check: editable statuses and organizer ownership before editing.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+          "line": 180,
+          "method": "MeetingService.CheckUpdateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting in a known status; organizer actor.",
+      "sheet": "Meeting.CheckUpdate"
+    },
+    {
+      "description": "Meeting update: validation, reschedule rules and invitation staging.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+          "line": 207,
+          "method": "MeetingService.UpdateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting in an editable status; organizer actor.",
+      "sheet": "Meeting.Update"
+    },
+    {
+      "description": "Submission readiness check: ownership, capability, status and stored-information completeness.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+          "line": 373,
+          "method": "MeetingService.GetSubmissionReadinessAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting rows seeded; actor with known capability and relationship.",
+      "sheet": "Meeting.GetSubmissionReadiness"
+    },
+    {
+      "description": "Status history reading: paging bounds and who may read reasons and the full history.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingService.cs",
+          "line": 739,
+          "method": "MeetingService.GetHistoryAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting with status history rows.",
+      "sheet": "Meeting.GetHistory"
+    },
+    {
+      "description": "System auto-end sweep: running meetings past the cutoff are ended.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingOverdueService.cs",
+          "line": 48,
+          "method": "MeetingOverdueService.EndOverrunAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "InProgress meetings past the cutoff.",
+      "sheet": "MeetingOverdue.EndOverrun"
+    },
+    {
+      "description": "System auto-cancel sweep: overdue unstarted meetings are cancelled.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingOverdueService.cs",
+          "line": 60,
+          "method": "MeetingOverdueService.CancelOverdueAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Unstarted meetings past their planned start.",
+      "sheet": "MeetingOverdue.CancelOverdue"
+    },
+    {
+      "description": "User room join: an active user may join a meeting they may read.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingAudience.cs",
+          "line": 30,
+          "method": "MeetingAudience.CanUserJoinAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting and participants seeded; user account state known.",
+      "sheet": "MeetingAudience.CanUserJoin"
+    },
+    {
+      "description": "Guest room join: a live guest session may join its own open meeting.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingAudience.cs",
+          "line": 35,
+          "method": "MeetingAudience.CanGuestJoinAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Guest sessions and meetings in known statuses seeded.",
+      "sheet": "MeetingAudience.CanGuestJoin"
+    },
+    {
+      "description": "Meeting detail projection: the detail fields built from a meeting for a viewer.",
+      "feature": "FE-04",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Meetings/MeetingContracts.cs",
+          "line": 54,
+          "method": "MeetingDetails.From",
+          "layer": "Application"
+        }
+      ],
+      "module": "MEET",
+      "precondition": "Meeting with participants.",
+      "sheet": "MeetingDetails.From"
     },
     {
       "description": "Agenda item validation: title, description, presenter and document links.",
@@ -279,13 +549,11 @@
       "methods": [
         {
           "decides": "Valid input normalizes newlines and passes; blank or over-long titles, bad presenter assignments and duplicate document links return field errors.",
-          "directTests": [
-            "Normalization_preserves_newlines_and_validates_boundaries"
-          ],
           "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
           "gap": "Direct coverage is Validate/Normalize only; the action matrix (Actions/CanRecordConclusion) is HTTP-only.",
           "line": 32,
-          "method": "AgendaRules.Validate"
+          "method": "AgendaRules.Validate",
+          "layer": "Domain"
         }
       ],
       "module": "AGENDA",
@@ -293,21 +561,308 @@
       "sheet": "Agenda.Validate"
     },
     {
-      "description": "Invitation response rule: who may answer, once, and when the answer is final.",
-      "feature": "FE-06",
+      "description": "Planning-allowed rule: the meeting statuses in which the agenda may change.",
+      "feature": "FE-05",
       "methods": [
         {
-          "decides": "Active non-chair participants with a Pending response in a Published or InProgress meeting may answer once; chair answers, second answers and wrong statuses are refused.",
-          "directTests": [],
-          "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
-          "gap": "No ParticipantRulesTests file; covered only via HTTP endpoint tests.",
-          "line": 37,
-          "method": "ParticipantRules.CanRespond"
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 12,
+          "method": "AgendaRules.PlanningAllowed",
+          "layer": "Domain"
         }
       ],
-      "module": "PART",
-      "precondition": "Participant row with known role, status and response; meeting in Published or InProgress.",
-      "sheet": "Participant.CanRespond"
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Agenda.PlanningAllowed"
+    },
+    {
+      "description": "Planner rule: the chair and the secretary plan the agenda.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 23,
+          "method": "AgendaRules.IsPlanner",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Agenda.IsPlanner"
+    },
+    {
+      "description": "Conclusion-permission rule: who may record a conclusion, and when.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 52,
+          "method": "AgendaRules.CanRecordConclusion",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Agenda.CanRecordConclusion"
+    },
+    {
+      "description": "Agenda actions rule: the operations a viewer may take on an item.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 57,
+          "method": "AgendaRules.Actions",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Agenda.Actions"
+    },
+    {
+      "description": "Input normalization: trimming the title and defaulting the description.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 26,
+          "method": "AgendaRules.Normalize",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Agenda.Normalize"
+    },
+    {
+      "description": "Order-version rule: the hash identifying the current item order.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 45,
+          "method": "AgendaRules.OrderVersion",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Agenda.OrderVersion"
+    },
+    {
+      "description": "Current-participant rule: roster membership that is still current.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 16,
+          "method": "AgendaRules.CurrentParticipant",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Agenda.CurrentParticipant"
+    },
+    {
+      "description": "Role rule: whether the actor holds a role as a current participant.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 18,
+          "method": "AgendaRules.HasRole",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Agenda.HasRole"
+    },
+    {
+      "description": "Completing a running item: wrong state or time refuses; success stamps the end.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 74,
+          "method": "AgendaExecution.TryComplete",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "AgendaExecution.TryComplete"
+    },
+    {
+      "description": "Microsecond truncation: timestamps are normalized to whole microseconds.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Agenda/AgendaRules.cs",
+          "line": 71,
+          "method": "AgendaExecution.UtcMicroseconds",
+          "layer": "Domain"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "AgendaExecution.UtcMicroseconds"
+    },
+    {
+      "description": "Creating an agenda item: a planner adds a titled item while planning is allowed.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+          "line": 103,
+          "method": "AgendaService.CreateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting in a planning or running status; actor with the needed role.",
+      "sheet": "Agenda.Create"
+    },
+    {
+      "description": "Updating an agenda item: a planner edits title, description, presenter or documents.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+          "line": 105,
+          "method": "AgendaService.UpdateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting in a planning or running status; actor with the needed role.",
+      "sheet": "Agenda.Update"
+    },
+    {
+      "description": "Deleting an agenda item: a planner removes an item and the order closes up.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+          "line": 107,
+          "method": "AgendaService.DeleteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting in a planning or running status; actor with the needed role.",
+      "sheet": "Agenda.Delete"
+    },
+    {
+      "description": "Reordering agenda items: a planner submits a new order; the order version changes.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+          "line": 109,
+          "method": "AgendaService.ReorderAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting in a planning or running status; actor with the needed role.",
+      "sheet": "Agenda.Reorder"
+    },
+    {
+      "description": "Starting an agenda item: the chair runs a pending item when no other item runs.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+          "line": 111,
+          "method": "AgendaService.StartAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting in a planning or running status; actor with the needed role.",
+      "sheet": "Agenda.Start"
+    },
+    {
+      "description": "Completing an agenda item: the chair closes the running item.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+          "line": 113,
+          "method": "AgendaService.CompleteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting in a planning or running status; actor with the needed role.",
+      "sheet": "Agenda.Complete"
+    },
+    {
+      "description": "Recording a conclusion: a planner saves the outcome of a run item before minutes exist.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaService.cs",
+          "line": 116,
+          "method": "AgendaService.RecordConclusionAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting in a planning or running status; actor with the needed role.",
+      "sheet": "Agenda.RecordConclusion"
+    },
+    {
+      "description": "Ending a meeting settles the agenda: running items complete.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaMeetingEnd.cs",
+          "line": 10,
+          "method": "AgendaMeetingEnd.PrepareAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Meeting with a running agenda item.",
+      "sheet": "AgendaMeetingEnd.Prepare"
+    },
+    {
+      "description": "Presenter notification when an item is assigned or changed.",
+      "feature": "FE-05",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Agenda/AgendaPresenterNotifier.cs",
+          "line": 15,
+          "method": "AgendaPresenterNotifier.NotifyAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "AGENDA",
+      "precondition": "Agenda item with a presenter.",
+      "sheet": "AgendaPresenterNotifier.Notify"
     },
     {
       "description": "Attendance save: secretary-only write with optimistic concurrency and totals on read.",
@@ -315,11 +870,11 @@
       "methods": [
         {
           "decides": "Secretary saves the attendance list for an InProgress meeting; non-secretary, wrong status, stale version token and unknown targets are refused; read returns totals and permissions.",
-          "directTests": [],
-          "file": "backend/TrustCabinet.Infrastructure/Attendance/AttendanceService.cs",
+          "file": "backend/TrustCabinet.Application/Attendance/AttendanceService.cs",
           "gap": "No direct service test; all coverage is HTTP/SignalR (AttendanceEndpointTests). Needs direct tests.",
-          "line": 67,
-          "method": "AttendanceService.SaveAsync"
+          "line": 76,
+          "method": "AttendanceService.SaveAsync",
+          "layer": "Application"
         }
       ],
       "module": "PART",
@@ -327,23 +882,212 @@
       "sheet": "Attendance.Save"
     },
     {
+      "description": "Roster changes: add, change role, remove, respond, guests, with chair/secretary invariants.",
+      "feature": "FE-06",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Participants/ParticipantService.cs",
+          "line": 348,
+          "method": "ParticipantService.MutateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "PART",
+      "precondition": "Meeting with a roster; organizer or manager actor.",
+      "sheet": "Participant.Mutate"
+    },
+    {
       "description": "Meeting document upload gate: access, file count, sizes, type agreement and hostile content.",
       "feature": "FE-07",
       "methods": [
         {
           "decides": "Valid PDF/DOCX files pass with SHA-256 and page counts; access, file count, total and per-file sizes, type mismatches and hostile PDFs are refused per file with an index.",
-          "directTests": [
-            "Pdf_and_docx_are_recognised_by_their_bytes",
-            "Total_size_over_200_MB_is_checked_before_any_file_is_read"
-          ],
           "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
           "line": 88,
-          "method": "DocumentFileRules.ValidateAsync"
+          "method": "DocumentFileRules.ValidateAsync",
+          "layer": "Domain"
         }
       ],
       "module": "DOC",
       "precondition": "Active user who may read the meeting; candidate files with names and bytes.",
-      "sheet": "Document.Validate"
+      "sheet": "DocumentFile.Validate"
+    },
+    {
+      "description": "Uploading a document to a meeting: pre-check, quota and persistence.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+          "line": 158,
+          "method": "MeetingDocumentService.UploadAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Meeting in a document-preparation status; file storage replaced by a recorder.",
+      "sheet": "MeetingDocument.Upload"
+    },
+    {
+      "description": "Adding a library document to a meeting, removing and detaching meeting documents.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+          "line": 172,
+          "method": "MeetingDocumentService.AddFromLibraryAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Meeting with documents; personal library documents.",
+      "sheet": "MeetingDocument.AddFromLibrary"
+    },
+    {
+      "description": "Adding a library document to a meeting, removing and detaching meeting documents.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+          "line": 177,
+          "method": "MeetingDocumentService.RemoveAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Meeting with documents; personal library documents.",
+      "sheet": "MeetingDocument.Remove"
+    },
+    {
+      "description": "Adding a library document to a meeting, removing and detaching meeting documents.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+          "line": 192,
+          "method": "MeetingDocumentService.AttachAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Meeting with documents; personal library documents.",
+      "sheet": "MeetingDocument.Attach"
+    },
+    {
+      "description": "Opening document content: who may read a meeting or library file.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+          "line": 47,
+          "method": "MeetingDocumentService.OpenContentAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Documents with sensitivity and readers seeded.",
+      "sheet": "MeetingDocument.OpenContent"
+    },
+    {
+      "description": "Personal library folders: create, rename, move, delete with name and cycle rules.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+          "line": 107,
+          "method": "PersonalLibraryService.CreateFolderAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Owner with a folder tree.",
+      "sheet": "PersonalLibrary.CreateFolder"
+    },
+    {
+      "description": "Personal library folders: create, rename, move, delete with name and cycle rules.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+          "line": 156,
+          "method": "PersonalLibraryService.DeleteFolderAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Owner with a folder tree.",
+      "sheet": "PersonalLibrary.DeleteFolder"
+    },
+    {
+      "description": "Personal library documents: upload with quota, rename, move, delete.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+          "line": 187,
+          "method": "PersonalLibraryService.UploadAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Owner with folders; file storage recorder.",
+      "sheet": "PersonalLibrary.Upload"
+    },
+    {
+      "description": "Personal library documents: upload with quota, rename, move, delete.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+          "line": 205,
+          "method": "PersonalLibraryService.RenameDocumentAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Owner with folders; file storage recorder.",
+      "sheet": "PersonalLibrary.RenameDocument"
+    },
+    {
+      "description": "Personal library documents: upload with quota, rename, move, delete.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+          "line": 230,
+          "method": "PersonalLibraryService.DeleteDocumentAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Owner with folders; file storage recorder.",
+      "sheet": "PersonalLibrary.DeleteDocument"
+    },
+    {
+      "description": "Document comments: who may read and add, text limits.",
+      "feature": "FE-07",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Documents/DocumentCommentService.cs",
+          "line": 56,
+          "method": "DocumentCommentService.AddAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "DOC",
+      "precondition": "Document readable by the actor.",
+      "sheet": "DocumentComment.Add"
     },
     {
       "description": "Online room status: whether the call room is open for a meeting status and mode.",
@@ -351,75 +1095,767 @@
       "methods": [
         {
           "decides": "Maps meeting status and mode to room status (open, not-started, ended, in-person-only, cancelled); join and mute follow the same rule.",
-          "directTests": [
-            "Room_names_round_trip_and_reject_anything_else",
-            "Room_status_follows_meeting_status_and_mode"
-          ],
-          "file": "backend/TrustCabinet.Domain/Calls/CallContracts.cs",
-          "line": 41,
-          "method": "CallRoomRules.StatusOf"
+          "file": "backend/TrustCabinet.Application/Calls/CallContracts.cs",
+          "line": 22,
+          "method": "CallRoomRules.StatusOf",
+          "layer": "Application"
         }
       ],
       "module": "ROOM",
       "precondition": "Meeting with known status and mode.",
-      "sheet": "Call.StatusOf"
+      "sheet": "CallRoom.StatusOf"
     },
     {
-      "description": "Microphone-bleed fold: leaked speech sentences are attributed to the louder speaker.",
+      "description": "Joining the room: who may join and in which meeting status; token issuing.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+          "line": 102,
+          "method": "CallRoomService.JoinAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Meeting and participants seeded; LiveKit replaced by a recorder.",
+      "sheet": "CallRoom.Join"
+    },
+    {
+      "description": "Room state read and closing the room at the end of a meeting.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+          "line": 65,
+          "method": "CallRoomService.GetRoomAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Meeting with a room.",
+      "sheet": "CallRoom.GetRoom"
+    },
+    {
+      "description": "Room state read and closing the room at the end of a meeting.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+          "line": 51,
+          "method": "CallRoomService.CloseMeetingRoomAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Meeting with a room.",
+      "sheet": "CallRoom.CloseMeetingRoom"
+    },
+    {
+      "description": "Chair muting a participant.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+          "line": 167,
+          "method": "CallRoomService.MuteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Meeting in progress; chair actor.",
+      "sheet": "CallRoom.Mute"
+    },
+    {
+      "description": "Room provider webhook handling, reconciliation and access enforcement.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+          "line": 226,
+          "method": "CallRoomService.HandleWebhookAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Room provider events as input.",
+      "sheet": "CallRoom.HandleWebhook"
+    },
+    {
+      "description": "Room provider webhook handling, reconciliation and access enforcement.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+          "line": 294,
+          "method": "CallRoomService.ReconcileAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Room provider events as input.",
+      "sheet": "CallRoom.Reconcile"
+    },
+    {
+      "description": "Room provider webhook handling, reconciliation and access enforcement.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+          "line": 319,
+          "method": "CallRoomService.EnforceRoomAccessAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Room provider events as input.",
+      "sheet": "CallRoom.EnforceRoomAccess"
+    },
+    {
+      "description": "Register to speak: raise, lower, invite, dismiss.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Speaking/SpeakingService.cs",
+          "line": 57,
+          "method": "SpeakingService.MutateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Meeting in progress; participants seeded.",
+      "sheet": "Speaking.Mutate"
+    },
+    {
+      "description": "Ending a meeting closes open speaking requests.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Speaking/SpeakingService.cs",
+          "line": 265,
+          "method": "SpeakingMeetingEnd.PrepareAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Meeting with open requests.",
+      "sheet": "SpeakingMeetingEnd.Prepare"
+    },
+    {
+      "description": "Saving a personal meeting note: length and meeting status limits.",
+      "feature": "FE-08",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Notes/MeetingNoteService.cs",
+          "line": 46,
+          "method": "MeetingNoteService.SaveAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "ROOM",
+      "precondition": "Meeting in a note-accepting status.",
+      "sheet": "MeetingNote.Save"
+    },
+    {
+      "description": "Recording rules: upload allowed, who records and listens, export and validation.",
       "feature": "FE-09",
       "methods": [
         {
-          "decides": "A segment covered by another speaker (60 percent within 2s lag, 50 percent word containment, 6 dB louder) is marked as a leak of that speaker; own loud voice is kept.",
-          "directTests": [
-            "Marks_what_the_shared_case_expects",
-            "Words_are_compared_without_case_or_punctuation"
-          ],
-          "file": "backend/TrustCabinet.Domain/Recordings/SpeechClipFold.cs",
-          "line": 46,
-          "method": "SpeechClipFold.Fold"
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+          "line": 247,
+          "method": "RecordingRules.Export",
+          "layer": "Application"
         }
       ],
       "module": "REC",
-      "precondition": "Speech clips with words, timings and peak levels; shared fold cases available.",
-      "sheet": "SpeechClip.Fold"
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Recording.Export"
     },
     {
-      "description": "Speaker suggestion: which user each diarized voice belongs to, with margin and split-person checks.",
+      "description": "Recording upload: permission, meeting status, validation and storage.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+          "line": 61,
+          "method": "RecordingService.AddAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Meeting with participants; file storage recorder.",
+      "sheet": "Recording.Add"
+    },
+    {
+      "description": "Recording playback, download and lookup: who may listen.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+          "line": 113,
+          "method": "RecordingService.PlaybackAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Recording rows seeded.",
+      "sheet": "Recording.Playback"
+    },
+    {
+      "description": "Recording playback, download and lookup: who may listen.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+          "line": 131,
+          "method": "RecordingService.DownloadAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Recording rows seeded.",
+      "sheet": "Recording.Download"
+    },
+    {
+      "description": "Recording erasure on request and when retention expires.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+          "line": 160,
+          "method": "RecordingService.EraseAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Recordings with ages; clock replaced.",
+      "sheet": "Recording.Erase"
+    },
+    {
+      "description": "Room take lifecycle: begin, append, complete, complete idle, delete.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
+          "line": 31,
+          "method": "RoomTakeService.BeginAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Meeting in progress; storage recorder.",
+      "sheet": "RoomTake.Begin"
+    },
+    {
+      "description": "Room take lifecycle: begin, append, complete, complete idle, delete.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
+          "line": 95,
+          "method": "RoomTakeService.AppendAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Meeting in progress; storage recorder.",
+      "sheet": "RoomTake.Append"
+    },
+    {
+      "description": "Room take lifecycle: begin, append, complete, complete idle, delete.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
+          "line": 135,
+          "method": "RoomTakeService.CompleteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Meeting in progress; storage recorder.",
+      "sheet": "RoomTake.Complete"
+    },
+    {
+      "description": "Room take lifecycle: begin, append, complete, complete idle, delete.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
+          "line": 263,
+          "method": "RoomTakeService.DeleteTakeAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Meeting in progress; storage recorder.",
+      "sheet": "RoomTake.DeleteTake"
+    },
+    {
+      "description": "Adding a speech clip: capture permission, duplicates by client id, limits.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 106,
+          "method": "SpeechClipService.AddAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Meeting in progress; participant who may capture.",
+      "sheet": "SpeechClip.Add"
+    },
+    {
+      "description": "Editing, deleting and excluding a speech clip.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 195,
+          "method": "SpeechClipService.EditAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Existing clips.",
+      "sheet": "SpeechClip.Edit"
+    },
+    {
+      "description": "Editing, deleting and excluding a speech clip.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 229,
+          "method": "SpeechClipService.DeleteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Existing clips.",
+      "sheet": "SpeechClip.Delete"
+    },
+    {
+      "description": "Editing, deleting and excluding a speech clip.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 255,
+          "method": "SpeechClipService.SetExclusionAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Existing clips.",
+      "sheet": "SpeechClip.SetExclusion"
+    },
+    {
+      "description": "Speech clips for a guest session: list, capture, delete, playback.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 341,
+          "method": "SpeechClipService.AddForGuestAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Guest session in a meeting in progress.",
+      "sheet": "SpeechClip.AddForGuest"
+    },
+    {
+      "description": "Speech clips for a guest session: list, capture, delete, playback.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 350,
+          "method": "SpeechClipService.DeleteForGuestAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Guest session in a meeting in progress.",
+      "sheet": "SpeechClip.DeleteForGuest"
+    },
+    {
+      "description": "Speech clips for a guest session: list, capture, delete, playback.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 380,
+          "method": "SpeechClipService.PlaybackForGuestAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Guest session in a meeting in progress.",
+      "sheet": "SpeechClip.PlaybackForGuest"
+    },
+    {
+      "description": "Speech-clip retention erasure and playback.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 422,
+          "method": "SpeechClipService.PlaybackAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Clips with ages.",
+      "sheet": "SpeechClip.Playback"
+    },
+    {
+      "description": "Speech-clip retention erasure and playback.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+          "line": 62,
+          "method": "SpeechClipService.ExportAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Clips with ages.",
+      "sheet": "SpeechClip.Export"
+    },
+    {
+      "description": "Building the combined recording of a finished meeting.",
+      "feature": "FE-09",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Recordings/CombinedRecordingService.cs",
+          "line": 39,
+          "method": "CombinedRecordingService.BuildNextAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "REC",
+      "precondition": "Meeting with clips; storage recorder.",
+      "sheet": "CombinedRecording.BuildNext"
+    },
+    {
+      "description": "Transcription worker step: claim the next job, transcribe, store segments.",
       "feature": "FE-10",
       "methods": [
         {
-          "decides": "Best-sample cosine over the threshold with a sufficient margin suggests the user; near-ties are refused; a second voice of the same person is suggested twice only with evidence.",
-          "directTests": [
-            "Below_the_threshold_a_voice_stays_unnamed",
-            "A_near_tie_between_two_people_is_not_guessed",
-            "A_second_voice_that_does_not_sound_like_the_first_is_not_given_the_same_name"
-          ],
-          "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdContracts.cs",
-          "line": 227,
-          "method": "SpeakerMatcher.Suggest"
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+          "line": 334,
+          "method": "TranscriptionService.ProcessNextAsync",
+          "layer": "Application"
         }
       ],
       "module": "TRANS",
-      "precondition": "Diarized speakers with embeddings and candidate users with voice samples; threshold and margin configured.",
-      "sheet": "Speaker.Suggest"
+      "precondition": "Transcription job queued; speech worker replaced.",
+      "sheet": "Transcription.ProcessNext"
     },
     {
-      "description": "Transcript-to-take fit: each segment snaps to the take holding most of it.",
+      "description": "Editing a segment and assigning speakers.",
       "feature": "FE-10",
       "methods": [
         {
-          "decides": "Returns the fitted start and end inside the take with the largest overlap; ties go to the later take; null or single takes pass through.",
-          "directTests": [
-            "A_segment_moves_to_the_take_holding_most_of_it"
-          ],
-          "file": "backend/TrustCabinet.Domain/Transcription/TranscriptionContracts.cs",
-          "line": 128,
-          "method": "TranscriptRules.FitToTake"
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+          "line": 152,
+          "method": "TranscriptionService.EditSegmentAsync",
+          "layer": "Application"
         }
       ],
       "module": "TRANS",
-      "precondition": "Transcript segment with start and end; recording takes with known ranges.",
-      "sheet": "Transcript.FitToTake"
+      "precondition": "Transcript with segments; editor actor.",
+      "sheet": "Transcription.EditSegment"
+    },
+    {
+      "description": "Editing a segment and assigning speakers.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+          "line": 188,
+          "method": "TranscriptionService.AssignSpeakerAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Transcript with segments; editor actor.",
+      "sheet": "Transcription.AssignSpeaker"
+    },
+    {
+      "description": "Editing a segment and assigning speakers.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+          "line": 230,
+          "method": "TranscriptionService.AssignSegmentSpeakerAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Transcript with segments; editor actor.",
+      "sheet": "Transcript.AssignSegmentSpeaker"
+    },
+    {
+      "description": "Transcript export: who may export and the file produced.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+          "line": 111,
+          "method": "TranscriptionService.ExportAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Transcript seeded.",
+      "sheet": "Transcription.Export"
+    },
+    {
+      "description": "Voice ID consent: grant and withdraw, with erasure on withdrawal.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+          "line": 35,
+          "method": "VoiceIdService.GrantAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "User with and without consent.",
+      "sheet": "VoiceId.Grant"
+    },
+    {
+      "description": "Voice ID consent: grant and withdraw, with erasure on withdrawal.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+          "line": 88,
+          "method": "VoiceIdService.WithdrawAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "User with and without consent.",
+      "sheet": "VoiceId.Withdraw"
+    },
+    {
+      "description": "Voice samples: add under consent, delete, read audio.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+          "line": 106,
+          "method": "VoiceIdService.AddSampleAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "User with consent; speech worker replaced.",
+      "sheet": "VoiceId.AddSample"
+    },
+    {
+      "description": "Voice samples: add under consent, delete, read audio.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+          "line": 181,
+          "method": "VoiceIdService.DeleteSampleAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "User with consent; speech worker replaced.",
+      "sheet": "VoiceId.DeleteSample"
+    },
+    {
+      "description": "Voice samples: add under consent, delete, read audio.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdService.cs",
+          "line": 202,
+          "method": "VoiceIdService.SampleAudioAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "User with consent; speech worker replaced.",
+      "sheet": "VoiceId.SampleAudio"
+    },
+    {
+      "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
+          "line": 37,
+          "method": "VoiceCollectionService.CanCollect",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Meeting with participants and consent.",
+      "sheet": "VoiceCollection.CanCollect"
+    },
+    {
+      "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
+          "line": 74,
+          "method": "VoiceCollectionService.AddAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Meeting with participants and consent.",
+      "sheet": "VoiceCollection.Add"
+    },
+    {
+      "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
+          "line": 168,
+          "method": "VoiceCollectionService.AudioAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Meeting with participants and consent.",
+      "sheet": "VoiceCollection.Audio"
+    },
+    {
+      "description": "Collecting voice samples from a meeting: who may collect, add, hear and delete.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/VoiceId/VoiceCollectionService.cs",
+          "line": 190,
+          "method": "VoiceCollectionService.DeleteAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Meeting with participants and consent.",
+      "sheet": "VoiceCollection.Delete"
+    },
+    {
+      "description": "Requesting an AI summary draft: meeting status, existing draft and queueing.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+          "line": 64,
+          "method": "SummaryService.RequestAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Meeting with a transcript.",
+      "sheet": "Summary.Request"
+    },
+    {
+      "description": "Editing and reviewing a summary draft.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+          "line": 108,
+          "method": "SummaryService.EditAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Summary draft exists.",
+      "sheet": "Summary.Edit"
+    },
+    {
+      "description": "Editing and reviewing a summary draft.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+          "line": 144,
+          "method": "SummaryService.ReviewAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Summary draft exists.",
+      "sheet": "Summary.Review"
+    },
+    {
+      "description": "Summary worker: process the next job and requeue interrupted ones.",
+      "feature": "FE-10",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+          "line": 170,
+          "method": "SummaryService.ProcessNextAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "TRANS",
+      "precondition": "Queued summary job; language model replaced.",
+      "sheet": "Summary.ProcessNext"
     },
     {
       "description": "Vote draft validation: question, options, eligibility roles and anonymity flag.",
@@ -427,11 +1863,10 @@
       "methods": [
         {
           "decides": "A draft with 2 distinct options and at least one eligible role passes; empty titles, over-long text, duplicate options and bad role strings return field errors keyed by field.",
-          "directTests": [],
           "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
-          "gap": "No direct test; covered only via HTTP (VoteEndpointTests). Needs direct validation tests.",
           "line": 60,
-          "method": "VoteRules.Validate"
+          "method": "VoteRules.Validate",
+          "layer": "Domain"
         }
       ],
       "module": "VOTE",
@@ -444,11 +1879,10 @@
       "methods": [
         {
           "decides": "Returns the distinct ordered ids of active users holding the selected roles who may read the meeting; attendance is ignored and Guests are excluded; empty means the vote cannot open.",
-          "directTests": [],
           "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
-          "gap": "No direct test; covered only via HTTP opening tests.",
           "line": 91,
-          "method": "VoteRules.EligibleUsers"
+          "method": "VoteRules.EligibleUsers",
+          "layer": "Domain"
         }
       ],
       "module": "VOTE",
@@ -456,16 +1890,15 @@
       "sheet": "Vote.EligibleUsers"
     },
     {
-      "description": "Vote percentage display: per-option share rounded away from zero to 2 decimals, and the zero-ballot case.",
+      "description": "Vote percentage display: per-option share with banker's rounding and the zero-ballot case.",
       "feature": "FE-11",
       "methods": [
         {
           "decides": "Returns the rounded percentage (away from zero, 2 decimals) or null when no ballots exist; 0 votes and unanimous votes are Boundary cases.",
-          "directTests": [],
           "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
-          "gap": "No direct test; covered only implicitly via HTTP result tests.",
           "line": 96,
-          "method": "VoteRules.Percentage"
+          "method": "VoteRules.Percentage",
+          "layer": "Domain"
         }
       ],
       "module": "VOTE",
@@ -473,43 +1906,228 @@
       "sheet": "Vote.Percentage"
     },
     {
+      "description": "Voting permissions: preparation and closing statuses, chair and manager, draft management, viewer actions.",
+      "feature": "FE-11",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+          "line": 32,
+          "method": "VoteRules.Permissions",
+          "layer": "Domain"
+        }
+      ],
+      "module": "VOTE",
+      "precondition": "No database needed; pure rules.",
+      "sheet": "Vote.Permissions"
+    },
+    {
+      "description": "Voting commands: create, edit, delete draft, open, cast, close, conclude.",
+      "feature": "FE-11",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Votes/VoteService.cs",
+          "line": 104,
+          "method": "VoteService.MutateAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "VOTE",
+      "precondition": "Meeting in a voting status; chair or manager actor.",
+      "sheet": "Vote.Mutate"
+    },
+    {
+      "description": "Confirming that a voter has read the attached material.",
+      "feature": "FE-11",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Votes/VoteService.cs",
+          "line": 258,
+          "method": "VoteService.ConfirmReadAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "VOTE",
+      "precondition": "Open vote with attached documents.",
+      "sheet": "Vote.ConfirmRead"
+    },
+    {
       "description": "Fixed minutes template: renders sections I-III from the reviewed draft or from agenda, conclusions, votes and notes.",
       "feature": "FE-12",
       "methods": [
         {
           "decides": "Draft present renders its sections; otherwise agenda plus recorded conclusions, votes and secretary notes render with blank placeholders; hostile AI text stays a plain line and pipes are neutralized.",
-          "directTests": [
-            "Ai_text_cannot_turn_into_a_title_a_table_row_or_a_centred_line",
-            "Without_a_reviewed_draft_the_agenda_conclusions_and_votes_fill_the_sections_and_blanks_remain"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesTemplate.cs",
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesTemplate.cs",
           "line": 32,
-          "method": "MinutesTemplate.Build"
+          "method": "MinutesTemplate.Build",
+          "layer": "Application"
         }
       ],
       "module": "MIN",
       "precondition": "Minutes records with agenda, people, conclusions, votes and notes; optional reviewed draft.",
-      "sheet": "Minutes.Build"
+      "sheet": "MinutesTemplate.Build"
     },
     {
-      "description": "Minutes HTML sanitizer: allow-listed tags and styles, depth guard and empty-document detection.",
+      "description": "Creating the minutes draft from the template: status, existing minutes and sources.",
       "feature": "FE-12",
       "methods": [
         {
-          "decides": "Allowed tags and styles pass and the result is idempotent; script, iframe, images and over-deep trees fall back to text; empty documents are refused by SaveAsync.",
-          "directTests": [
-            "What_the_editor_writes_survives_unchanged",
-            "Scripts_frames_and_their_kind_go_with_their_content",
-            "Lines_become_html"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
-          "line": 79,
-          "method": "MinutesHtml.Sanitize"
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+          "line": 50,
+          "method": "MinutesService.CreateAsync",
+          "layer": "Application"
         }
       ],
       "module": "MIN",
-      "precondition": "HTML fragment from the editor; allow-list and depth limit configured.",
-      "sheet": "Minutes.Sanitize"
+      "precondition": "Meeting in progress or ended; secretary actor.",
+      "sheet": "Minutes.Create"
+    },
+    {
+      "description": "Saving minutes content: version check, sanitising and editor permission.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+          "line": 98,
+          "method": "MinutesService.SaveAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes draft exists; editor actor.",
+      "sheet": "Minutes.Save"
+    },
+    {
+      "description": "Minutes approval workflow: submit, approve (issue), return, correct.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+          "line": 194,
+          "method": "MinutesService.SubmitAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes in the needed status; approver and secretary actors.",
+      "sheet": "Minutes.Submit"
+    },
+    {
+      "description": "Minutes approval workflow: submit, approve (issue), return, correct.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+          "line": 213,
+          "method": "MinutesService.ApproveAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes in the needed status; approver and secretary actors.",
+      "sheet": "Minutes.Approve"
+    },
+    {
+      "description": "Minutes approval workflow: submit, approve (issue), return, correct.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+          "line": 253,
+          "method": "MinutesService.ReturnAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes in the needed status; approver and secretary actors.",
+      "sheet": "Minutes.Return"
+    },
+    {
+      "description": "Minutes approval workflow: submit, approve (issue), return, correct.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+          "line": 274,
+          "method": "MinutesService.CorrectAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes in the needed status; approver and secretary actors.",
+      "sheet": "Minutes.Correct"
+    },
+    {
+      "description": "Minutes export and revision reading.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+          "line": 142,
+          "method": "MinutesService.ExportAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes with revisions.",
+      "sheet": "Minutes.Export"
+    },
+    {
+      "description": "Minutes export and revision reading.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesService.cs",
+          "line": 172,
+          "method": "MinutesService.GetRevisionAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes with revisions.",
+      "sheet": "Minutes.GetRevision"
+    },
+    {
+      "description": "Notes folded into the minutes template: discussion per agenda item and reading the meeting notes in order.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesTemplate.cs",
+          "line": 145,
+          "method": "Notes.Discussion",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes records with agenda and notes.",
+      "sheet": "Notes.Discussion"
+    },
+    {
+      "description": "Notes folded into the minutes template: discussion per agenda item and reading the meeting notes in order.",
+      "feature": "FE-12",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Summaries/MinutesTemplate.cs",
+          "line": 148,
+          "method": "Notes.Read",
+          "layer": "Application"
+        }
+      ],
+      "module": "MIN",
+      "precondition": "Minutes records with agenda and notes.",
+      "sheet": "Notes.Read"
     },
     {
       "description": "Starting-soon reminders: one notification per active participant inside the 15-minute window.",
@@ -517,17 +2135,15 @@
       "methods": [
         {
           "decides": "Queues one reminder row per active participant of Published meetings in the window; existing keys are skipped so a reschedule creates a new key; returns the created count.",
-          "directTests": [
-            "Reminder_is_queued_once_for_each_active_participant_in_the_15_minute_window"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Notifications/NotificationService.cs",
-          "line": 113,
-          "method": "NotificationService.QueueStartingSoonAsync"
+          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+          "line": 119,
+          "method": "NotificationService.QueueStartingSoonAsync",
+          "layer": "Application"
         }
       ],
       "module": "NOTI",
       "precondition": "Published meetings starting within 15 minutes with active participants.",
-      "sheet": "Noti.StartingSoon"
+      "sheet": "Notification.QueueStartingSoon"
     },
     {
       "description": "Email queue worker: claim the oldest message, send it, retry with backoff or fail permanently.",
@@ -535,76 +2151,1897 @@
       "methods": [
         {
           "decides": "Sends the claimed message; 400/422 and undeliverable domains fail at once while 429/5xx retry with exponential backoff; expired leases are reclaimed and shutdown cancels without marking.",
-          "directTests": [
-            "Processor_sends_queued_messages_oldest_first_and_marks_them_sent",
-            "A_message_the_provider_refuses_fails_at_once_without_retries",
-            "Processor_retries_then_preserves_a_permanent_failure_for_audit"
-          ],
-          "file": "backend/TrustCabinet.Infrastructure/Email/EmailQueueProcessor.cs",
-          "line": 32,
-          "method": "EmailQueueProcessor.ProcessNextAsync"
+          "file": "backend/TrustCabinet.Application/Email/EmailQueueProcessor.cs",
+          "line": 33,
+          "method": "EmailQueueProcessor.ProcessNextAsync",
+          "layer": "Application"
         }
       ],
       "module": "NOTI",
       "precondition": "Queued email rows with attempts below the maximum; provider reachable.",
-      "sheet": "Email.ProcessNext"
+      "sheet": "EmailQueueProcessor.ProcessNext"
     },
     {
-      "description": "Report period parsing: trailing 12 months by default, explicit yyyy-MM ranges up to 24 months.",
+      "description": "Meeting-started notification: recipients and payload.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+          "line": 15,
+          "method": "NotificationService.QueueMeetingStartedAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Meeting just started.",
+      "sheet": "Noti.MeetingStarted"
+    },
+    {
+      "description": "Marking notifications read and resolving a notification target.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+          "line": 56,
+          "method": "NotificationService.MarkReadAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Notifications of two users.",
+      "sheet": "Notification.MarkRead"
+    },
+    {
+      "description": "Marking notifications read and resolving a notification target.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+          "line": 71,
+          "method": "NotificationService.MarkAllReadAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Notifications of two users.",
+      "sheet": "Notification.MarkAllRead"
+    },
+    {
+      "description": "Marking notifications read and resolving a notification target.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+          "line": 75,
+          "method": "NotificationService.GetTargetAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Notifications of two users.",
+      "sheet": "Notification.GetTarget"
+    },
+    {
+      "description": "Pending push selection and marking pushed.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+          "line": 166,
+          "method": "NotificationService.PendingPushAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Notifications with push state.",
+      "sheet": "Notification.PendingPush"
+    },
+    {
+      "description": "Pending push selection and marking pushed.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Notifications/NotificationService.cs",
+          "line": 169,
+          "method": "NotificationService.MarkPushedAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Notifications with push state.",
+      "sheet": "Notification.MarkPushed"
+    },
+    {
+      "description": "Invitation dispatch worker: pick the next staged event and send.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Email/MeetingInvitationDispatchProcessor.cs",
+          "line": 21,
+          "method": "MeetingInvitationDispatchProcessor.ProcessNextAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Staged invitation events.",
+      "sheet": "InviteDispatch.ProcessNext"
+    },
+    {
+      "description": "Invitation dispatch worker: pick the next staged event and send.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Email/MeetingInvitationDispatchProcessor.cs",
+          "line": 37,
+          "method": "MeetingInvitationDispatchProcessor.ProcessAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Staged invitation events.",
+      "sheet": "InviteDispatch.Process"
+    },
+    {
+      "description": "Staging invitation emails for publication, cancellation and rescheduling.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+          "line": 27,
+          "method": "MeetingInvitationEvents.StagePublicationInvitationsAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Meeting with participants and guests.",
+      "sheet": "InviteEvents.StagePublish"
+    },
+    {
+      "description": "Staging invitation emails for publication, cancellation and rescheduling.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+          "line": 35,
+          "method": "MeetingInvitationEvents.StageCancellationAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Meeting with participants and guests.",
+      "sheet": "InviteEvents.StageCancel"
+    },
+    {
+      "description": "Staging invitation emails for publication, cancellation and rescheduling.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+          "line": 47,
+          "method": "MeetingInvitationEvents.StageRescheduleInvitationsAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Meeting with participants and guests.",
+      "sheet": "InviteEvents.StageReschedule"
+    },
+    {
+      "description": "Queuing reminder emails for meetings starting soon.",
+      "feature": "FE-13",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Email/MeetingReminderEmails.cs",
+          "line": 31,
+          "method": "MeetingReminderEmails.QueueDueAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "NOTI",
+      "precondition": "Meetings about to start; clock replaced.",
+      "sheet": "MeetingReminderEmails.QueueDue"
+    },
+    {
+      "description": "Meeting report: who may read, period handling and totals.",
       "feature": "FE-15",
       "methods": [
         {
-          "decides": "Both missing means the trailing 12 months; otherwise two yyyy-MM values forming a 1-24 month range within years 2000-9998; anything else returns null and the endpoint answers 400.",
-          "directTests": [],
-          "file": "backend/TrustCabinet.Domain/Reports/ReportContracts.cs",
-          "gap": "No direct Parse test; covered only via HTTP report tests.",
-          "line": 40,
-          "method": "ReportPeriod.Parse"
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Reports/ReportService.cs",
+          "line": 19,
+          "method": "ReportService.GetMeetingReportAsync",
+          "layer": "Application"
         }
       ],
       "module": "RPT",
-      "precondition": "Optional from and to strings; current time for the default window.",
-      "sheet": "Report.ParsePeriod"
+      "precondition": "Meetings in a period; reader with report capability.",
+      "sheet": "Report.GetMeetingReport"
     },
     {
-      "description": "Meeting time search: candidate slots on the work grid with busy and unknown marking.",
-      "feature": "FE-16",
+      "description": "Meeting report export: format and permission.",
+      "feature": "FE-15",
       "methods": [
         {
-          "decides": "Walks the step grid inside working hours minus lunch, skips the past, expands busy periods by the buffer and returns all-free or most-free slots capped at 200 with truncation flags.",
-          "directTests": [
-            "The_BR_422_example_gives_10_00",
-            "Without_a_common_slot_the_most_people_free_are_shown",
-            "At_most_200_slots_in_time_order"
-          ],
-          "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotFinder.cs",
-          "line": 14,
-          "method": "MeetingSlotFinder.Find"
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/Reports/ReportService.cs",
+          "line": 35,
+          "method": "ReportService.ExportMeetingReportAsync",
+          "layer": "Application"
         }
       ],
-      "module": "CAL",
-      "precondition": "Slot search with invitees, duration, range and working hours; each person with busy windows.",
-      "sheet": "MeetingSlot.Find"
+      "module": "RPT",
+      "precondition": "Meetings in a period.",
+      "sheet": "Report.ExportMeetingReport"
     },
     {
-      "description": "Calendar share state machine: who may request, share, respond, change, withdraw and end; direct unit tests cover the action table.",
+      "description": "Calendar share state machine: who may request, share, respond, change, withdraw and end.",
       "feature": "FE-16",
       "methods": [
         {
           "decides": "Pending and Effective shares expose different actions to owner and viewer; accept with a pending change, sensitivity coverage (never Secret) and lapse rules gate each action.",
-          "directTests": [
-            "A_pending_change_is_checked_again_when_approved",
-            "A_share_past_its_end_date_has_ended_with_nothing_left_to_do",
-            "The_actions_follow_who_sent_it_and_what_is_pending"
-          ],
           "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
           "line": 122,
-          "method": "CalendarShareRules.Actions"
+          "method": "CalendarShareRules.Actions",
+          "layer": "Domain"
         }
       ],
       "module": "CAL",
       "precondition": "Calendar share with known state, owner, viewer and sensitivity level.",
-      "sheet": "CalShare.Actions"
+      "sheet": "CalendarShare.Actions"
+    },
+    {
+      "description": "Requesting and directly sharing a calendar: validation, duplicates, notification.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+          "line": 85,
+          "method": "CalendarSharingService.RequestAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "Two active users.",
+      "sheet": "CalendarSharing.Request"
+    },
+    {
+      "description": "Answering a share request: accept and decline with state rules.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+          "line": 149,
+          "method": "CalendarSharingService.AcceptAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "A pending share request.",
+      "sheet": "CalendarSharing.Accept"
+    },
+    {
+      "description": "Answering a share request: accept and decline with state rules.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+          "line": 229,
+          "method": "CalendarSharingService.DeclineAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "A pending share request.",
+      "sheet": "CalendarSharing.Decline"
+    },
+    {
+      "description": "Changing, withdrawing and ending a share.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+          "line": 258,
+          "method": "CalendarSharingService.ChangeAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "An open share.",
+      "sheet": "CalendarSharing.Change"
+    },
+    {
+      "description": "Changing, withdrawing and ending a share.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+          "line": 314,
+          "method": "CalendarSharingService.WithdrawAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "An open share.",
+      "sheet": "CalendarSharing.Withdraw"
+    },
+    {
+      "description": "Changing, withdrawing and ending a share.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+          "line": 344,
+          "method": "CalendarSharingService.EndAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "An open share.",
+      "sheet": "CalendarSharing.End"
+    },
+    {
+      "description": "Finding a meeting time and creating a draft meeting from a slot.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/MeetingSlotService.cs",
+          "line": 24,
+          "method": "MeetingSlotService.FindAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "Invitees with calendars.",
+      "sheet": "MeetingSlot.Find"
+    },
+    {
+      "description": "Finding a meeting time and creating a draft meeting from a slot.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/MeetingSlotService.cs",
+          "line": 60,
+          "method": "MeetingSlotService.CreateDraftAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "Invitees with calendars.",
+      "sheet": "MeetingSlot.CreateDraft"
+    },
+    {
+      "description": "Reading a shared calendar week and the busy time behind it.",
+      "feature": "FE-16",
+      "methods": [
+        {
+          "decides": null,
+          "file": "backend/TrustCabinet.Application/CalendarSharing/SharedCalendarService.cs",
+          "line": 25,
+          "method": "SharedCalendarService.ReadWeekAsync",
+          "layer": "Application"
+        }
+      ],
+      "module": "CAL",
+      "precondition": "An open share.",
+      "sheet": "SharedCalendar.ReadWeek"
     }
-  ]
+  ],
+  "skipped": [
+    {
+      "file": "backend/TrustCabinet.Application/Access/IRoleService.cs",
+      "reason": "Result factories of the role service: they only pick a status and a message code; the codes are covered by the Role.* sheets."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Access/RolePermissionResult.cs",
+      "reason": "Result factories: status and message code only; covered through RolePerm.Update."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Authentication/GoogleSignInResult.cs",
+      "reason": "Result factory: status and message code only; covered through Auth.Google."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Authentication/SignInResult.cs",
+      "reason": "Result factory: status and message code only; covered through Auth.SignIn."
+    },
+    {
+      "class": "CallResult",
+      "file": "backend/TrustCabinet.Application/Calls/CallContracts.cs",
+      "reason": "Result factories: status and message code only; covered through Call.Join."
+    },
+    {
+      "class": "MeetingApproverListResult",
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingContracts.cs",
+      "reason": "Result factory: status only; the approver list is a read-only query."
+    },
+    {
+      "class": "MeetingResult",
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingContracts.cs",
+      "reason": "Result factories: status and message code only; covered through the Meeting.* sheets."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingListContracts.cs",
+      "reason": "Result factories of the list: status only; the list is a read-only query."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingWorkflowContracts.cs",
+      "reason": "Result factories: status, message code and transferred-organizer flag; covered through Meeting.Transition."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Users/UserResult.cs",
+      "reason": "Result factories: status and message code only; covered through the User.* sheets."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Users/UserAccount.cs",
+      "reason": "Maps a user row to the response shape; no rule."
+    },
+    {
+      "class": "TranscriptLine",
+      "file": "backend/TrustCabinet.Application/Summaries/LanguageModel.cs",
+      "reason": "Reference builders for a transcript line: string formatting only; covered through Summary.Write citations."
+    },
+    {
+      "class": "Speaker",
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "reason": "Two-case value constructors for a speaker; no rule."
+    },
+    {
+      "method": "RolePermissionService.GetMatrixAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "RoleService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "AgendaService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "AgendaService.EditorOptionsAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "AgendaService.GetForGuestAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "AiSettingsService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "AttendanceService.ReadAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "CalendarSharingService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "CalendarSharingService.CandidatesAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "DocumentCommentService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "MeetingDocumentService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "PersonalLibraryService.ViewAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "MeetingService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "MeetingService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "MeetingService.ListEligibleApproversAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "MeetingNoteService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "NotificationService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "NotificationService.GetUnreadCountAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "ParticipantService.ReadAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "ParticipantService.ReadCreationOptionsAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "RecordingService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "SpeechClipService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "SpeakingService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "MinutesService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "SummaryService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "TranscriptionService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "UserService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "UserService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "VoiceCollectionService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "VoiceIdService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "VoteService.ListAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "method": "VoteService.GetAsync",
+      "reason": "Read-only query or projection with no business rule of its own: it delegates to a repository and maps the rows; what a caller may see is decided by the read policy tested under FE-04."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Access/BuiltInRoles.cs",
+      "reason": "Lookup over the fixed built-in role names for sorting and defaults; nothing beyond the Role.* sheets."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Access/PermissionCatalog.cs",
+      "reason": "Static catalogue lookup of a capability description; data, not logic."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Audit/AuditEventCatalog.cs",
+      "reason": "Static catalogue lookup of an audit action label; data, not logic."
+    },
+    {
+      "class": "AuditActions",
+      "file": "backend/TrustCabinet.Domain/Audit/AuditRuleTypes.cs",
+      "reason": "Builds a fixed audit action name from a constant; data, not logic."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Ai/AiSettingsService.cs",
+      "class": "AiSettingsService",
+      "method": "AiSettingsService.UpdateAsync",
+      "reason": "Covered indirectly via Summary.Request; Cấu hình AI của quản trị (MSG408/MSG411), không phải CRUD gỡ băng/dự thảo của người dùng; cấu hình này được dùng gián tiếp qua Request/ProcessNext."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Ai/AiSettingsService.cs",
+      "class": "AiSettingsService",
+      "method": "AiSettingsService.TestAsync",
+      "reason": "Covered indirectly via Summary.Request; Nút test kết nối máy AI (MSG412/MSG413); thao tác vận hành, không phải luồng Trans/Summary cốt lõi."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Ai/LanguageModelProvider.cs",
+      "class": "LanguageModelProvider",
+      "method": "LanguageModelProvider.ForAsync",
+      "reason": "Covered indirectly via Summary.ProcessNext; Provider lookup: chọn local/API theo cấu hình (BR-381); routing nội bộ của ProcessNext."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Audit/AuditLogQueryService.cs",
+      "class": "AuditLogQueryService",
+      "method": "AuditLogQueryService.GetPageAsync",
+      "reason": "Covered indirectly via Audit.Record; Getter chỉ đọc (truy vấn phân trang nhật ký, không quyết định nghiệp vụ độc lập). BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarBusyReader.cs",
+      "class": "CalendarBusyReader",
+      "method": "CalendarBusyReader.ReadAsync",
+      "reason": "Covered indirectly via SharedCalendar.ReadWeek; Engine đọc bận nội bộ (đầu vào của ReadWeek); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarShareCloser.cs",
+      "class": "CalendarShareCloser",
+      "method": "CalendarShareCloser.StopAsync",
+      "reason": "Covered indirectly via CalendarSharing.End; Stale + trùng: closer dừng lượt chia sẻ, trùng logic End; phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarShareCloser.cs",
+      "class": "CalendarShareCloser",
+      "method": "CalendarShareCloser.CloseAfterEndDateAsync",
+      "reason": "Covered indirectly via CalendarSharing.End; Stale + trùng: closer đóng sau ngày kết thúc, trùng logic End; phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarShareStopper.cs",
+      "class": "CalendarShareStopper",
+      "method": "CalendarShareStopper.StopDeadSharesAsync",
+      "reason": "Covered indirectly via CalendarSharing.End; Stale + trùng: job dọn lượt chết, trùng logic End; phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/CalendarSharing/CalendarSharingService.cs",
+      "class": "CalendarSharingService",
+      "method": "CalendarSharingService.ShareDirectlyAsync",
+      "reason": "Covered indirectly via CalendarSharing.Request; Helper luồng phụ (chia sẻ trực tiếp, trùng với Request); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Calls/CallContracts.cs",
+      "class": "CallMember",
+      "method": "CallMember.User",
+      "reason": "Covered indirectly via CallRoom.Join; BỎ: factory 1 UTC tạo member user, không BR/MSG; thao tác phân biệt được gộp vào Join."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Calls/CallContracts.cs",
+      "class": "CallMember",
+      "method": "CallMember.Guest",
+      "reason": "Covered indirectly via CallRoom.Join; BỎ: factory 1 UTC tạo member guest, không BR/MSG; gộp vào Join."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Calls/CallContracts.cs",
+      "class": "CallMember",
+      "method": "CallMember.TryParse",
+      "reason": "Covered indirectly via CallRoom.Join; BỎ: TryParse identity member (7 UTC), parsing plumbing, không BR/MSG; gộp vào Join/Mute."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Calls/CallRoomAccessPublisher.cs",
+      "class": "CallRoomAccessPublisher",
+      "method": "CallRoomAccessPublisher.PublishAsync",
+      "reason": "Covered indirectly via CallRoom.Join + CallRoom.HandleWebhook; BỎ: plumbing fan-out realtime sau Join/Webhook (2 UTC, UC-37, không BR/MSG); sự kiện đẩy gộp vào Join/HandleWebhook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentAttacher.cs",
+      "class": "MeetingDocumentAttacher",
+      "method": "MeetingDocumentAttacher.AddUploadsAsync",
+      "reason": "Covered indirectly via MeetingDocument.Attach; Bước lưu phụ trong luồng AttachUpload, không MSG riêng; đã được Attach/AttachUpload bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "class": "MeetingDocumentService",
+      "method": "MeetingDocumentService.CheckUploadAsync",
+      "reason": "Covered indirectly via MeetingDocument.Upload; Pre-check của Upload, cùng mã validation (MSG161/164/166/172/288/346/349/174); giữ Upload làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "class": "MeetingDocumentService",
+      "method": "MeetingDocumentService.CheckAttachUploadAsync",
+      "reason": "Covered indirectly via MeetingDocument.Upload; Pre-check của AttachUpload, cùng mã validation với Upload; giữ Upload làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "class": "MeetingDocumentService",
+      "method": "MeetingDocumentService.AttachUploadAsync",
+      "reason": "Covered indirectly via MeetingDocument.Upload; Upload từ máy vào mục nghị sự; trùng validation với Upload (MSG161/164/166/288/346) + gắn vào mục như Attach (MSG238-244). Giữ Upload và Attach làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/MeetingDocumentService.cs",
+      "class": "MeetingDocumentService",
+      "method": "MeetingDocumentService.DetachAsync",
+      "reason": "Covered indirectly via MeetingDocument.Remove; Gỡ tài liệu khỏi mục nghị sự, cùng họ 'gỡ' với Remove (MSG239/241/245-247 ~ MSG167/169/171/248); giữ Remove làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "class": "PersonalLibraryService",
+      "method": "PersonalLibraryService.OpenContentAsync",
+      "reason": "Covered indirectly via MeetingDocument.OpenContent; Mở tệp trong kho cá nhân, cùng mã mở tệp (MSG158/160/382) với OpenContent cuộc họp; giữ MeetingDocument.OpenContent làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "class": "PersonalLibraryService",
+      "method": "PersonalLibraryService.RenameFolderAsync",
+      "reason": "Covered indirectly via PersonalLibrary.CreateFolder; Đổi tên thư mục (MSG188/191/192). Cùng họ CRUD thư mục với Create/DeleteFolder; giữ Create/DeleteFolder làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "class": "PersonalLibraryService",
+      "method": "PersonalLibraryService.MoveFolderAsync",
+      "reason": "Covered indirectly via PersonalLibrary.CreateFolder; Chuyển thư mục (BR-191/222, MSG189/193-195). Lưỡng lự: có BR riêng nhưng cùng họ CRUD thư mục; giữ Create/DeleteFolder làm đại diện để đạt quota."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "class": "PersonalLibraryService",
+      "method": "PersonalLibraryService.CheckUploadAsync",
+      "reason": "Covered indirectly via MeetingDocument.OpenContent; Pre-check upload kho, cùng mã với PersonalLibrary.Upload (MSG164/288/346/177-179); giữ Upload làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/PersonalLibraryService.cs",
+      "class": "PersonalLibraryService",
+      "method": "PersonalLibraryService.MoveDocumentAsync",
+      "reason": "Covered indirectly via PersonalLibrary.RenameDocument; Chuyển tài liệu (MSG185/186, thư mục đích MSG179). Lưỡng lự: có MSG riêng nhưng cùng họ rename/move tài liệu; giữ RenameDocument làm đại diện để đạt quota."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/StoredFileWriter.cs",
+      "class": "StoredFileWriter",
+      "method": "StoredFileWriter.UsedBytesAsync",
+      "reason": "Covered indirectly via PersonalLibrary.Upload; Plumbing tính dung lượng đã dùng (ADR-0034), không UC/BR/MSG; skip đã được FE-07.json ghi nhận."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Documents/StoredFileWriter.cs",
+      "class": "StoredFileWriter",
+      "method": "StoredFileWriter.WriteAsync",
+      "reason": "Covered indirectly via PersonalLibrary.Upload; Plumbing ghi bytes xuống kho, không MSG/BR độc lập; đã được Upload hai phía bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/CalendarInvitationBuilder.cs",
+      "class": "CalendarInvitationBuilder",
+      "method": "CalendarInvitationBuilder.Build",
+      "reason": "Covered indirectly via InviteDispatch.Process; Dựng nội dung .ics đính kèm; bước build bên trong luồng gửi mail mời (InviteDispatch.Process). Không phải thao tác CRUD người dùng gọi trực tiếp."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/CalendarInvitationBuilder.cs",
+      "class": "CalendarInvitationBuilder",
+      "method": "CalendarInvitationBuilder.MethodOf",
+      "reason": "Covered indirectly via CalendarInvitationBuilder.Build; Đọc ngược chuỗi calendar do chính Build sinh ra để lấy METHOD (plumbing, không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/CalendarInvitationBuilder.cs",
+      "class": "CalendarInvitationBuilder",
+      "method": "CalendarInvitationBuilder.FileNameOf",
+      "reason": "Covered indirectly via CalendarInvitationBuilder.Build; Suy ra tên file đính kèm từ chuỗi calendar (plumbing, không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailHtml.cs",
+      "class": "EmailHtml",
+      "method": "EmailHtml.FromText",
+      "reason": "Covered indirectly via EmailQueueProcessor.ProcessNext; Bọc HTML tĩnh quanh EmailHtml.Inline (không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailHtml.cs",
+      "class": "EmailHtml",
+      "method": "EmailHtml.Inline",
+      "reason": "Covered indirectly via EmailLayout.Render; Link hóa địa chỉ web trong text thuần (không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailHtml.cs",
+      "class": "EmailHtml",
+      "method": "EmailHtml.Escape",
+      "reason": "Covered indirectly via EmailLayout.Render; Escape 4 ký tự HTML (không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailLayout.cs",
+      "class": "EmailLayout",
+      "method": "EmailLayout.Render",
+      "reason": "Covered indirectly via InviteDispatch.Process; Renderer: ráp layout HTML chung cho mọi email; formatter của pipeline gửi mail, đã bao phủ qua InviteDispatch.Process + EmailQueueProcessor.ProcessNext. Cắt sâu theo quota (đợt trước nằm trong nhóm giữ gián tiếp, nay BỎ)."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailLayout.cs",
+      "class": "EmailLayout",
+      "method": "EmailLayout.When",
+      "reason": "Covered indirectly via EmailLayout.Render; Định dạng khoảng thời gian tiếng Việt theo giờ Hà Nội (không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailLayout.cs",
+      "class": "EmailLayout",
+      "method": "EmailLayout.At",
+      "reason": "Covered indirectly via EmailLayout.Render; Định dạng một thời điểm tiếng Việt (không chạm DB/mạng); note không MSGnn (chỉ BR-303). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailLayout.cs",
+      "class": "EmailLayout",
+      "method": "EmailLayout.Time",
+      "reason": "Covered indirectly via EmailLayout.Render; Định dạng giờ HH:mm (không chạm DB/mạng); note không MSGnn (chỉ BR-303). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailLayout.cs",
+      "class": "EmailLayout",
+      "method": "EmailLayout.ModeLabel",
+      "reason": "Covered indirectly via EmailLayout.Render; Ánh xạ tĩnh Online/Hybrid/khác -> nhãn tiếng Việt (không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailTemplates.cs",
+      "class": "EmailTemplates",
+      "method": "EmailTemplates.GuestCode",
+      "reason": "Covered indirectly via InviteDispatch.Process; Template nội dung mail mã Khách; nội dung tĩnh đã bao phủ qua luồng gửi (InviteDispatch.Process). Cắt sâu theo quota."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/EmailTemplates.cs",
+      "class": "EmailTemplates",
+      "method": "EmailTemplates.PasswordReset",
+      "reason": "Covered indirectly via InviteDispatch.Process; Template mail đặt lại mật khẩu (UC-07) — nội dung người dùng nhận nên tiếc nhất khi cắt; nhưng là template tĩnh, đã bao phủ qua pipeline gửi mail. Cắt sâu theo quota."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "class": "MeetingInvitationEvents",
+      "method": "MeetingInvitationEvents.InitialKey",
+      "reason": "Covered indirectly via InviteEvents.StagePublish, InviteEvents.StageCancel, InviteEvents.StageReschedule; Hàm tĩnh thuần túy (trả về key cũ hoặc key suy ra, không chạm DB/mạng); mọi case Normal/Boundary, note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "class": "MeetingInvitationEvents",
+      "method": "MeetingInvitationEvents.Stage",
+      "reason": "Covered indirectly via InviteEvents.StagePublish, InviteEvents.StageCancel, InviteEvents.StageReschedule; Helper dùng chung của 3 Stage*Async (dedup-key + ghi notify); logic fan-out đã được bao phủ qua 3 sheet stage. Cắt sâu theo quota (đợt trước GIỮ, nay BỎ)."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "class": "MeetingInvitationEvents",
+      "method": "MeetingInvitationEvents.PlaceOf",
+      "reason": "Covered indirectly via InviteEvents.StagePublish, InviteEvents.StageCancel, InviteEvents.StageReschedule; Hàm tĩnh chọn chuỗi địa điểm theo Mode (không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "class": "MeetingInvitationEvents",
+      "method": "MeetingInvitationEvents.Title",
+      "reason": "Covered indirectly via InviteEvents.StagePublish, InviteEvents.StageCancel, InviteEvents.StageReschedule; Bảng ánh xạ tĩnh InvitationEventKind -> tiêu đề tiếng Việt; note không MSGnn (BR-300/BR-76/BR-92). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "class": "MeetingInvitationEvents",
+      "method": "MeetingInvitationEvents.RoleLabel",
+      "reason": "Covered indirectly via InviteEvents.StagePublish, InviteEvents.StageCancel, InviteEvents.StageReschedule; Bảng ánh xạ tĩnh role -> nhãn tiếng Việt (không chạm DB/mạng); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/MeetingInvitationEvents.cs",
+      "class": "MeetingInvitationEvents",
+      "method": "MeetingInvitationEvents.IsWithdrawal",
+      "reason": "Covered indirectly via InviteEvents.StagePublish, InviteEvents.StageCancel, InviteEvents.StageReschedule; Vị từ bool tĩnh (Removed/Cancelled -> true); note không MSGnn (chỉ BR-300). Giữ nguyên đề xuất skip đợt trước."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Email/ResendWebhookReceiver.cs",
+      "class": "ResendWebhookReceiver",
+      "method": "ResendWebhookReceiver.ReceiveResendAsync",
+      "reason": "Covered indirectly via EmailQueueProcessor.ProcessNext; Webhook inbound nhận delivery-status từ Resend (ops plumbing, request ẩn danh xác thực Svix); không phải thao tác người dùng, trạng thái gửi đã theo dõi qua EmailQueueProcessor.ProcessNext. Cắt sâu theo quota."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/GuestAccess/GuestAccessService.cs",
+      "class": "GuestAccessService",
+      "method": "GuestAccessService.GetSessionAsync",
+      "reason": "Covered indirectly via GuestAccess.Verify; Getter thuần đọc (lấy session khách); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/GuestAccess/GuestAccessService.cs",
+      "class": "GuestAccessService",
+      "method": "GuestAccessService.SaveProfileAsync",
+      "reason": "Covered indirectly via GuestAccess.Open; Helper plumbing (lưu thông tin khách, bước phụ của luồng mở cổng); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/GuestAccess/GuestAccessService.cs",
+      "class": "GuestAccessService",
+      "method": "GuestAccessService.SignOutAsync",
+      "reason": "Covered indirectly via Authentication.SignOut; Helper plumbing (thoát phiên khách, tương đương đăng xuất); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingAudience.cs",
+      "class": "MeetingAudience",
+      "method": "MeetingAudience.IsUserActiveAsync",
+      "reason": "Covered indirectly via MeetingAudience.CanUserJoin; Lookup active-account 1 dòng (UC-37), không MSG/BR; CanUserJoin check trước nên phủ trực tiếp."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingAudience.cs",
+      "class": "MeetingAudience",
+      "method": "MeetingAudience.ReadersAsync",
+      "reason": "Covered indirectly via MeetingAudience.CanUserJoin; Snapshot readers live (UC-37, BR-29/119/154/155), không MSG; tổng hợp, không quyết định mới."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingAudience.cs",
+      "class": "MeetingAudience",
+      "method": "MeetingAudience.ManagersAsync",
+      "reason": "Covered indirectly via MeetingAudience.CanUserJoin; Danh sách Chair+Secretary active (UC-54, BR-253), không MSG; lookup."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingAudience.cs",
+      "class": "MeetingAudience",
+      "method": "MeetingAudience.ListenersAsync",
+      "reason": "Covered indirectly via MeetingAudience.CanUserJoin; Roster nghe recording (UC-37, BR-29/119), không MSG; cùng mẫu candidates+ListActive."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingAudience.cs",
+      "class": "MeetingAudience",
+      "method": "MeetingAudience.AttendanceReadersAsync",
+      "reason": "Covered indirectly via MeetingAudience.CanUserJoin; Attendance viewers: readers + guest live checks (UC-30, BR-117/154/157), không MSG; hai nhánh user/guest phủ riêng."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingContracts.cs",
+      "class": "MeetingDetails",
+      "method": "MeetingDetails.MyResponseOf",
+      "reason": "Covered indirectly via MeetingDetails.From; Mapping thuần role+response (UC-29), không MSG/BR; gọi trong From."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Meetings/MeetingLifecycleService.cs",
+      "class": "MeetingLifecycleService",
+      "method": "MeetingLifecycleService.EndOverrunAsync",
+      "reason": "Covered indirectly via MeetingOverdue.EndOverrun; Cùng quyết định auto-end BR-460 với Overdue.EndOverrun (11 UTC cutoff + ActualStartedAt); khác actor (lifecycle vs sweep) nhưng không quyết định mới."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Notes/MeetingNoteContracts.cs",
+      "class": "MeetingNoteRules",
+      "method": "MeetingNoteRules.AcceptsNotes",
+      "reason": "Covered indirectly via MeetingNote.Save; BỎ: rule khung giờ ghi (BR-396, MSG417) đã được Save kiểm tra; gộp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Notes/MeetingNoteContracts.cs",
+      "class": "MeetingNoteRules",
+      "method": "MeetingNoteRules.Marked",
+      "reason": "Covered indirectly via MeetingNote.Save; BỎ: rule đánh dấu mục (UC-82) là nhánh hiển thị trong Save; gộp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Notes/MeetingNoteContracts.cs",
+      "class": "MeetingNoteRules",
+      "method": "MeetingNoteRules.Fold",
+      "reason": "Covered indirectly via MeetingNote.Save; BỎ: rule gộp dòng (fold) là renderer/helpers hiển thị ghi chú; gộp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Notes/MeetingNoteContracts.cs",
+      "class": "MeetingNoteRules",
+      "method": "MeetingNoteRules.View",
+      "reason": "Covered indirectly via MeetingNote.Save; BỎ: rule quyền xem (1 UTC, UC-82, không BR) gộp vào Save (MSG415-422) và GetRoom/Join (404 khi không quyền)."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/CombinedRecording.cs",
+      "class": "CombinedRecordingRules",
+      "method": "CombinedRecordingRules.FileName",
+      "reason": "Covered indirectly via ['CombinedRecording.BuildNext']; formatter tên file"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/CombinedRecording.cs",
+      "class": "CombinedRecordingRules",
+      "method": "CombinedRecordingRules.ReadPcm",
+      "reason": "Covered indirectly via ['CombinedRecording.BuildNext']; parse WAV chi tiết 17 cases"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/CombinedRecording.cs",
+      "class": "CombinedRecordingRules",
+      "method": "CombinedRecordingRules.WavHeader",
+      "reason": "Covered indirectly via ['CombinedRecording.BuildNext']; builder header WAV"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/CombinedRecording.cs",
+      "class": "CombinedRecordingRules",
+      "method": "CombinedRecordingRules.Clip",
+      "reason": "Covered indirectly via ['CombinedRecording.BuildNext']; helper clamp số học"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/CombinedRecording.cs",
+      "class": "CombinedTrack",
+      "method": "CombinedTrack.SampleAt",
+      "reason": "Covered indirectly via ['CombinedRecording.BuildNext']; helper mixer"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.UploadAllowed",
+      "reason": "Covered indirectly via ['Recording.Add']; predicate đơn BR-342/MSG294"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.TakesUploads",
+      "reason": "Covered indirectly via ['Recording.Add']; predicate mode InPerson, không MSG riêng"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.HasRoom",
+      "reason": "Covered indirectly via ['RoomTake.Begin']; predicate mode có phòng"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.CanRecord",
+      "reason": "Covered indirectly via ['RoomTake.Begin']; predicate tổng hợp"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.IsRoomMic",
+      "reason": "Covered indirectly via ['RoomTake.Append', 'RoomTake.Complete']; predicate nguồn thu"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.PcmMs",
+      "reason": "Covered indirectly via ['RoomTake.Complete', 'CombinedRecording.BuildNext']; helper số học byte->ms"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.IsRoomWavHeader",
+      "reason": "Covered indirectly via ['RoomTake.Append']; parse WAV-header chi tiết"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.IsSecretary",
+      "reason": "Covered indirectly via ['Recording.Add', 'RoomTake.Begin']; predicate vai trò"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.CanListen",
+      "reason": "Covered indirectly via ['Recording.Playback']; predicate đọc, không MSG"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingContracts.cs",
+      "class": "RecordingRules",
+      "method": "RecordingRules.Validate",
+      "reason": "Covered indirectly via ['Recording.Add']; dict validation phụ MSG291"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+      "class": "RecordingService",
+      "method": "RecordingService.CanUploadAsync",
+      "reason": "Covered indirectly via ['Recording.Add']; pre-check của Add"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+      "class": "RecordingService",
+      "method": "RecordingService.FindPlayableAsync",
+      "reason": "Covered indirectly via ['Recording.Playback']; picker nội bộ, không MSG"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RecordingService.cs",
+      "class": "RecordingService",
+      "method": "RecordingService.EraseExpiredAsync",
+      "reason": "Covered indirectly via ['Recording.Erase']; job giữ liệu nền"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/RoomTakeService.cs",
+      "class": "RoomTakeService",
+      "method": "RoomTakeService.CompleteIdleAsync",
+      "reason": "Covered indirectly via ['RoomTake.Complete']; timeout sweeper phụ, không phải CRUD người dùng"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "class": "SpeechClipService",
+      "method": "SpeechClipService.CanCaptureAsync",
+      "reason": "Covered indirectly via ['SpeechClip.Add']; pre-check của Add"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "class": "SpeechClipService",
+      "method": "SpeechClipService.ListForGuestAsync",
+      "reason": "Covered indirectly via ['SpeechClip.PlaybackForGuest']; helper liệt kê"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "class": "SpeechClipService",
+      "method": "SpeechClipService.CanGuestCaptureAsync",
+      "reason": "Covered indirectly via ['SpeechClip.AddForGuest']; pre-check Guest-Add"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "class": "SpeechClipService",
+      "method": "SpeechClipService.EraseExpiredAsync",
+      "reason": "Covered indirectly via ['SpeechClip.Delete']; job giữ liệu nền"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Recordings/SpeechClipService.cs",
+      "class": "SpeechClipService",
+      "method": "SpeechClipService.FindAudioAsync",
+      "reason": "Covered indirectly via ['SpeechClip.Playback']; locator nội bộ"
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Reports/ReportContracts.cs",
+      "class": "ReportPeriod",
+      "method": "ReportPeriod.EachMonth",
+      "reason": "Covered indirectly via Report.GetMeetingReport + Report.ExportMeetingReport; BỎ: helper liệt kê tháng trong kỳ (BR-434), plumbing vòng lặp của Get/Export; gộp vào Get/Export."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Reports/ReportContracts.cs",
+      "class": "ReportPeriod",
+      "method": "ReportPeriod.Month",
+      "reason": "Covered indirectly via Report.GetMeetingReport + Report.ExportMeetingReport; BỎ: helper định dạng yyyy-MM (BR-433), formatter của Parse; gộp vào Get/Export."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Reports/ReportContracts.cs",
+      "class": "ReportPeriod",
+      "method": "ReportPeriod.Parse",
+      "reason": "Covered indirectly via Report.GetMeetingReport + Report.ExportMeetingReport; BỎ: helper parse kỳ yyyy-MM (18 UTC, BR-433 + MSG463) là bước validation đầu Get/Export; gộp vào Get/Export, không sheet riêng."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Speaking/SpeakingContracts.cs",
+      "class": "SpeakingRules",
+      "method": "SpeakingRules.IsOpen",
+      "reason": "Covered indirectly via Speaking.Mutate; BỎ: rule đơn (BR-337) đã được Mutate kiểm tra và trả MSG457-460; gộp vào Mutate, không sheet riêng."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Speaking/SpeakingContracts.cs",
+      "class": "SpeakingRules",
+      "method": "SpeakingRules.IsChair",
+      "reason": "Covered indirectly via Speaking.Mutate; BỎ: rule phân vai Chủ toạ (BR-338) đã được Mutate kiểm tra (MSG457); gộp vào Mutate."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Speaking/SpeakingContracts.cs",
+      "class": "SpeakingRules",
+      "method": "SpeakingRules.IsMine",
+      "reason": "Covered indirectly via Speaking.Mutate; BỎ: rule sở hữu yêu cầu (UC-79, không BR) đã được Mutate kiểm tra; gộp vào Mutate."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Speaking/SpeakingContracts.cs",
+      "class": "SpeakingRules",
+      "method": "SpeakingRules.Close",
+      "reason": "Covered indirectly via Speaking.Mutate; BỎ: rule đóng lượt (BR-338) là nhánh trạng thái trong Mutate (MSG460); gộp vào Mutate."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Summaries/MeetingTranscriptReader.cs",
+      "class": "MeetingTranscriptReader",
+      "method": "MeetingTranscriptReader.ReadAsync",
+      "reason": "Covered indirectly via Summary.Request; Reader plumbing: đọc transcript làm input cho AI; bước đọc bên trong Request/ProcessNext."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Summaries/SpokenNumbers.cs",
+      "class": "SpokenNumbers",
+      "method": "SpokenNumbers.Normalise",
+      "reason": "Covered indirectly via Summary.ProcessNext; Chuẩn hóa số đọc thành chữ trong input AI; tiền xử lý bên trong ProcessNext, không MSG riêng."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Summaries/SummaryService.cs",
+      "class": "SummaryService",
+      "method": "SummaryService.RequeueInterruptedAsync",
+      "reason": "Covered indirectly via Summary.ProcessNext; Requeue/retry plumbing phía Summary; đã bao phủ qua Summary.ProcessNext."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Summaries/SummaryWriter.Api.cs",
+      "class": "SummaryWriter",
+      "method": "SummaryWriter.WritePartsAsync",
+      "reason": "Covered indirectly via Summary.ProcessNext; Writer plumbing (ghi 3 mục I/II/III); đã bao phủ qua ProcessNext."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Summaries/SummaryWriter.cs",
+      "class": "SummaryWriter",
+      "method": "SummaryWriter.WriteAsync",
+      "reason": "Covered indirectly via Summary.ProcessNext; Writer plumbing: ghi dự thảo AI vào DB; bước lưu bên trong ProcessNext (MSG387/MSG393 bao phủ)."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Summaries/SummaryWriter.cs",
+      "class": "SummaryWriter",
+      "method": "SummaryWriter.Tidy",
+      "reason": "Covered indirectly via Summary.ProcessNext; Chuẩn hóa text dự thảo (trim/collapse); format helper của writer."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+      "class": "TranscriptionService",
+      "method": "TranscriptionService.RetryAsync",
+      "reason": "Covered indirectly via Transcription.ProcessNext; Requeue/retry plumbing: đưa bản lỗi trở lại hàng chờ; không MSG riêng, đã bao phủ qua ProcessNext."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Transcription/TranscriptionService.cs",
+      "class": "TranscriptionService",
+      "method": "TranscriptionService.RequeueInterruptedAsync",
+      "reason": "Covered indirectly via Transcription.ProcessNext; Requeue/retry plumbing: dọn bản dở dang khi worker gián đoạn; nhánh recovery của ProcessNext."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdContracts.cs",
+      "class": "SpeakerMatcher",
+      "method": "SpeakerMatcher.Cosine",
+      "reason": "Covered indirectly via Transcription.AssignSpeaker; Domain: hàm toán thuần túy tính cosine giữa hai vector; không MSG/BR riêng, không thao tác CRUD."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdContracts.cs",
+      "class": "SpeakerMatcher",
+      "method": "SpeakerMatcher.Suggest",
+      "reason": "Covered indirectly via Transcription.AssignSpeaker; Helper gợi ý giọng tương tự (thuật toán cosine/threshold), không chạm DB trực tiếp; hành vi đã được bao phủ qua sheet gán giọng."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdContracts.cs",
+      "class": "SpeakerMatcher",
+      "method": "SpeakerMatcher.SameAs",
+      "reason": "Covered indirectly via Transcription.AssignSpeaker; Domain: ngưỡng so sánh tương tự, thuần logic; đã bao phủ qua AssignSpeaker."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/VoiceId/VoiceIdErasure.cs",
+      "class": "VoiceIdErasure",
+      "method": "VoiceIdErasure.EndAsync",
+      "reason": "Covered indirectly via VoiceId.Withdraw; Worker xóa mẫu + rút consent (xóa cả 2 bộ mẫu ADR-0060, audit VoiceConsentWithdrawn); luồng duy nhất người dùng thấy là Withdraw (MSG306) — xóa qua consent nên Erasure được bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Votes/VoteMeetingEnd.cs",
+      "class": "VoteMeetingEnd",
+      "method": "VoteMeetingEnd.DeleteDraftsAsync",
+      "reason": "Covered indirectly via Vote.Mutate; Dọn nháp khi cuộc họp kết thúc (housekeeping cuối vòng đời), không MSG riêng; đã được Mutate close bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Votes/VoteService.cs",
+      "class": "VoteService",
+      "method": "VoteService.CheckAttachUploadAsync",
+      "reason": "Covered indirectly via Vote.Mutate; Pre-check của AttachUpload, dùng lại mã UC-33a; giữ Mutate làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Application/Votes/VoteService.cs",
+      "class": "VoteService",
+      "method": "VoteService.AttachUploadAsync",
+      "reason": "Covered indirectly via Vote.Mutate; Tải tài liệu từ máy vào biểu quyết; dùng lại mã UC-33a (MSG161/164/288/346/265-267). Giữ Mutate + DOC.Attach làm đại diện."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Attendance/AttendanceRules.cs",
+      "class": "AttendanceRules",
+      "method": "AttendanceRules.ReadStored",
+      "reason": "Covered indirectly via Attendance.Save; EF ValueConverter parse trạng thái điểm danh (MeetingParticipantConfiguration.cs:27, BR-171); không MSG; Save ghi giá trị ReadStored đọc (round-trip gián tiếp); đã 7 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Attendance/AttendanceRules.cs",
+      "class": "AttendanceRules",
+      "method": "AttendanceRules.Token",
+      "reason": "Covered indirectly via Attendance.Save; Token chống stale (AttendanceService.cs:105 stale-check + :183,:188 gắn response; BR-172); không MSG; đã 4 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Attendance/AttendanceRules.cs",
+      "class": "AttendanceRules",
+      "method": "AttendanceRules.Valid",
+      "reason": "Covered indirectly via Attendance.Save; Validate payload điểm danh (AttendanceService.cs:94 → Invalid/MSG148 ở endpoint, BR-171/172); đã 16 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Attendance/AttendanceRules.cs",
+      "class": "AttendanceRules",
+      "method": "AttendanceRules.Display",
+      "reason": "Covered indirectly via Attendance.Save; Ánh xạ hiển thị Official/Legacy (AttendanceService.cs:182-188, BR-170/171, gắn trong Saved response :188); không MSG; đã 6 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarBusyRules.cs",
+      "class": "CalendarBusyRules",
+      "method": "CalendarBusyRules.CountsAsBusy",
+      "reason": "Covered indirectly via SharedCalendar.ReadWeek; Validator nội bộ (quy tắc tính bận); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarBusyRules.cs",
+      "class": "CalendarBusyRules",
+      "method": "CalendarBusyRules.IsBusyAssignment",
+      "reason": "Covered indirectly via SharedCalendar.ReadWeek; Validator nội bộ (quy tắc phân công bận); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarBusyRules.cs",
+      "class": "CalendarBusyRules",
+      "method": "CalendarBusyRules.Interval",
+      "reason": "Covered indirectly via SharedCalendar.ReadWeek; Helper nội bộ (khoảng thời gian bận); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarBusyRules.cs",
+      "class": "CalendarBusyRules",
+      "method": "CalendarBusyRules.Merge",
+      "reason": "Covered indirectly via SharedCalendar.ReadWeek; Helper nội bộ (gộp khoảng bận); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarBusyRules.cs",
+      "class": "CalendarBusyRules",
+      "method": "CalendarBusyRules.Clip",
+      "reason": "Covered indirectly via SharedCalendar.ReadWeek; Helper nội bộ (cắt khoảng bận theo khung); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.IsOpen",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (vị từ lượt mở); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.Length",
+      "reason": "Covered indirectly via CalendarShare.Actions; Helper nội bộ (độ dài lượt chia sẻ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.IsLapsed",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (vị từ hết hạn); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.Covers",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (vị từ bao phủ phạm vi); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.TryParseLevel",
+      "reason": "Covered indirectly via CalendarShare.Actions; Helper nội bộ (parse mức chia sẻ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.ValidNewRange",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (phạm vi mới hợp lệ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.ValidNarrowing",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (thu hẹp hợp lệ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.ValidViewerChange",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (đổi người xem hợp lệ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.ValidOwnerChange",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (đổi chủ hợp lệ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.ValidPendingApproval",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (chờ duyệt hợp lệ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.Sender",
+      "reason": "Covered indirectly via CalendarShare.Actions; Helper nội bộ (xác định bên gửi); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.AskedSide",
+      "reason": "Covered indirectly via CalendarShare.Actions; Helper nội bộ (xác định bên được hỏi); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.IsParty",
+      "reason": "Covered indirectly via CalendarShare.Actions; Validator nội bộ (vị từ bên liên quan); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarShareRules.cs",
+      "class": "CalendarShareRules",
+      "method": "CalendarShareRules.Answerer",
+      "reason": "Covered indirectly via CalendarShare.Actions; Helper nội bộ (xác định bên trả lời); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/CalendarSharingRuleTypes.cs",
+      "class": "KnownDays",
+      "method": "KnownDays.Contains",
+      "reason": "Covered indirectly via MeetingSlot.Find; Helper nội bộ (kiểm tra ngày đã biết); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotFinder.cs",
+      "class": "MeetingSlotFinder",
+      "method": "MeetingSlotFinder.Find",
+      "reason": "Covered indirectly via MeetingSlot.Find; Engine tìm kiếm nội bộ (đầu vào của MeetingSlot.Find); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotFinder.cs",
+      "class": "MeetingSlotFinder",
+      "method": "MeetingSlotFinder.Check",
+      "reason": "Covered indirectly via MeetingSlot.Find; Engine kiểm tra nội bộ (đầu vào của MeetingSlot.Find); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotRules.cs",
+      "class": "MeetingSlotRules",
+      "method": "MeetingSlotRules.TryValidate",
+      "reason": "Covered indirectly via MeetingSlot.Find + MeetingSlot.CreateDraft; Validator nội bộ (bước kiểm trong Find/CreateDraft); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotRules.cs",
+      "class": "MeetingSlotRules",
+      "method": "MeetingSlotRules.ValidInvitees",
+      "reason": "Covered indirectly via MeetingSlot.Find + MeetingSlot.CreateDraft; Validator nội bộ (khách mời hợp lệ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotRules.cs",
+      "class": "MeetingSlotRules",
+      "method": "MeetingSlotRules.ValidBuffer",
+      "reason": "Covered indirectly via MeetingSlot.Find + MeetingSlot.CreateDraft; Validator nội bộ (khoảng đệm hợp lệ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotRules.cs",
+      "class": "MeetingSlotRules",
+      "method": "MeetingSlotRules.DefaultToDate",
+      "reason": "Covered indirectly via MeetingSlot.Find + MeetingSlot.CreateDraft; Helper nội bộ (ngày mặc định); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotRules.cs",
+      "class": "MeetingSlotRules",
+      "method": "MeetingSlotRules.TryParseClock",
+      "reason": "Covered indirectly via MeetingSlot.Find + MeetingSlot.CreateDraft; Helper nội bộ (parse giờ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotRules.cs",
+      "class": "MeetingSlotRules",
+      "method": "MeetingSlotRules.TryParseTimestamp",
+      "reason": "Covered indirectly via MeetingSlot.Find + MeetingSlot.CreateDraft; Helper nội bộ (parse mốc thời gian); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/MeetingSlotRules.cs",
+      "class": "MeetingSlotRules",
+      "method": "MeetingSlotRules.CheckSlotTimes",
+      "reason": "Covered indirectly via MeetingSlot.Find + MeetingSlot.CreateDraft; Validator nội bộ (kiểm giờ khung); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/VietnamTime.cs",
+      "class": "VietnamTime",
+      "method": "VietnamTime.Today",
+      "reason": "Covered indirectly via MeetingSlot.Find + SharedCalendar.ReadWeek; Helper nội bộ (ngày Việt Nam, thuần plumbing giờ); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/VietnamTime.cs",
+      "class": "VietnamTime",
+      "method": "VietnamTime.At",
+      "reason": "Covered indirectly via MeetingSlot.Find + SharedCalendar.ReadWeek; Helper nội bộ (dựng mốc giờ Việt Nam); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/VietnamTime.cs",
+      "class": "VietnamTime",
+      "method": "VietnamTime.ToLocal",
+      "reason": "Covered indirectly via MeetingSlot.Find + SharedCalendar.ReadWeek; Helper nội bộ (đổi về giờ địa phương); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/CalendarSharing/VietnamTime.cs",
+      "class": "VietnamTime",
+      "method": "VietnamTime.Monday",
+      "reason": "Covered indirectly via MeetingSlot.Find + SharedCalendar.ReadWeek; Helper nội bộ (tìm thứ Hai đầu tuần); phủ gián tiếp bởi sheet giữ. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Calls/CallsRuleTypes.cs",
+      "class": "CallRoomNames",
+      "method": "CallRoomNames.ForMeeting",
+      "reason": "Covered indirectly via CallRoom.Join; BỎ: Domain tên phòng LiveKit, helper đặt tên, không MSG/BR độc lập; gộp vào Join/GetRoom."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Calls/CallsRuleTypes.cs",
+      "class": "CallRoomNames",
+      "method": "CallRoomNames.TryParseMeeting",
+      "reason": "Covered indirectly via CallRoom.Join; BỎ: Domain TryParse tên phòng, parsing ngược, không MSG/BR; gộp vào Join."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "class": "DocumentFileRules",
+      "method": "DocumentFileRules.StorageKey",
+      "reason": "Covered indirectly via MeetingDocument.Upload; Key helper 'stored-files/{id}', không MSG/BR."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "class": "DocumentFileRules",
+      "method": "DocumentFileRules.UploadFolderName",
+      "reason": "Covered indirectly via MeetingDocument.Upload; Formatter tên thư mục '<title> – dd/mm/yyyy', không MSG/BR."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "class": "DocumentFileRules",
+      "method": "DocumentFileRules.UploadAccess",
+      "reason": "Covered indirectly via MeetingDocument.Upload; Quyết định quyền upload đã được CheckUpload/Upload bao phủ (MSG162/172/349/174); không giữ sheet Domain riêng."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "class": "DocumentFileRules",
+      "method": "DocumentFileRules.DetectContentTypeAsync",
+      "reason": "Covered indirectly via DocumentFile.Validate; Tiện ích parse bytes (PDF header / DOCX zip), không trả MSG/BR độc lập; đã được ValidateAsync gọi và bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "class": "DocumentFileRules",
+      "method": "DocumentFileRules.MatchesContentType",
+      "reason": "Covered indirectly via DocumentFile.Validate; So khớp đuôi tên với content-type, không MSG/BR riêng; ValidateAsync đã bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "class": "DocumentFileRules",
+      "method": "DocumentFileRules.NormalizeFileName",
+      "reason": "Covered indirectly via DocumentFile.Validate; Tiện ích tách tên file, không trả MSG/BR độc lập; ValidateAsync đã bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "class": "DocumentFileRules",
+      "method": "DocumentFileRules.IsInvisible",
+      "reason": "Covered indirectly via DocumentFile.Validate; Helper ký tự vô hình dùng trong NormalizeFileName, không MSG/BR riêng."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Documents/DocumentFileRules.cs",
+      "class": "DocumentFileRules",
+      "method": "DocumentFileRules.CountPdfPagesAsync",
+      "reason": "Covered indirectly via DocumentFile.Validate; Tiện ích parse PDF (kiểm đuôi/tail rồi đếm trang), không trả MSG/BR độc lập; đã được ValidateAsync gọi và bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/GuestAccess/GuestAccessRules.cs",
+      "class": "GuestAccessRules",
+      "method": "GuestAccessRules.MeetingOpen",
+      "reason": "Covered indirectly via GuestAccess.Open; Predicate thuần đọc (vị từ mở cuộc họp cho khách); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingInvitationRecipientPolicy.cs",
+      "class": "MeetingInvitationRecipientPolicy",
+      "method": "MeetingInvitationRecipientPolicy.SelectSnapshot",
+      "reason": "Covered indirectly via Meeting.Transition; Chọn recipients active-distinct cho fan-out (UC-20, BR-39/322/150), không MSG; lookup, phủ gián tiếp qua publish notify."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingReadPolicy.cs",
+      "class": "MeetingReadPolicy",
+      "method": "MeetingReadPolicy.ForUser",
+      "reason": "Covered indirectly via MeetingReadPolicy.CanRead; Builder predicate cho EF, cùng BR-29/118/119 với CanRead, không MSG; chỉ là wrapper expression."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingReadPolicy.cs",
+      "class": "MeetingReadPolicy",
+      "method": "MeetingReadPolicy.CanReadFullHistory",
+      "reason": "Covered indirectly via Meeting.GetHistory; Creator/approver only (UC-16, BR-445), không MSG; sub-decision của history."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingReadPolicy.cs",
+      "class": "MeetingReadPolicy",
+      "method": "MeetingReadPolicy.CanReadHistory",
+      "reason": "Covered indirectly via Meeting.GetHistory; OR(CanRead, IsAssignedManager) (UC-16, BR-117/118/119/29), không MSG; nhánh history phủ ở GetHistory."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingReadPolicy.cs",
+      "class": "MeetingReadPolicy",
+      "method": "MeetingReadPolicy.CanReadRejectionReason",
+      "reason": "Covered indirectly via Meeting.GetHistory; Rejection audience (UC-19, BR-36), không MSG; phủ ở history rows + reject path."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
+      "class": "MeetingRules",
+      "method": "MeetingRules.IsEditable",
+      "reason": "Covered indirectly via Meeting.CheckUpdate; Predicate trạng thái Draft/Rejected (UC-15, BR-27/34/299), không MSG; helper trạng thái."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
+      "class": "MeetingRules",
+      "method": "MeetingRules.IsOverrun",
+      "reason": "Covered indirectly via MeetingOverdue.EndOverrun; Predicate thuần true/false BR-460 (UC-22), không MSG; truth-table 9 UTC phủ gián tiếp qua sweep."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
+      "class": "MeetingRules",
+      "method": "MeetingRules.IsCancellable",
+      "reason": "Covered indirectly via Meeting.Transition; Predicate 5 status (UC-75, BR-297/299), không MSG; helper trạng thái."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
+      "class": "MeetingRules",
+      "method": "MeetingRules.IsReschedulable",
+      "reason": "Covered indirectly via Meeting.Update; Predicate Published==true (UC-15, BR-158), không MSG; helper 1 dòng."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
+      "class": "MeetingRules",
+      "method": "MeetingRules.TryValidate",
+      "reason": "Covered indirectly via Meeting.Create; Validation input mới (UC-14/15, MSG31); Create 18 + Update 16 UTC phủ hết field errors."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingRules.cs",
+      "class": "MeetingRules",
+      "method": "MeetingRules.ValidatePersistedMeetingInformation",
+      "reason": "Covered indirectly via Meeting.GetSubmissionReadiness; Validation persisted-data (UC-18, BR-33/62/25), không MSG; chỉ là đầu vào của Readiness."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Meetings/MeetingSubmissionReadinessRules.cs",
+      "class": "MeetingSubmissionReadinessRules",
+      "method": "MeetingSubmissionReadinessRules.Validate",
+      "reason": "Covered indirectly via Meeting.GetSubmissionReadiness; Rules BR-33 (UC-18), không MSG; Application thêm ownership/capability/status + MSG nên phủ hoàn toàn."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.Current",
+      "reason": "Covered indirectly via Participant.Mutate; Predicate lọc bản ghi hiệu lực, dùng 8+ chỗ trong ParticipantService (:220,:480,:672,:789,:809,:924); không MSG riêng; đã 6 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.Active",
+      "reason": "Covered indirectly via Participant.Mutate; Predicate nền (người dùng còn hoạt động), ParticipantService.cs:50 + nhiều consumer đọc; không MSG riêng; đã 5 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.Editable",
+      "reason": "Covered indirectly via Participant.Mutate; Gate trạng thái cho phép sửa (ParticipantService.cs:395, BR-79/80); không MSG riêng; đã 8 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.Preparation",
+      "reason": "Covered indirectly via Participant.Mutate; Predicate giai đoạn chuẩn bị (BR-122), dùng qua CanReplaceChair (ParticipantRules.cs:47, ParticipantService.cs:61); không MSG riêng; đã 5 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.Published",
+      "reason": "Covered indirectly via Participant.Mutate; Gate đã công bố (ParticipantService.cs:180, BR-181); không MSG riêng; đã 5 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.Respondable",
+      "reason": "Covered indirectly via Participant.Mutate; Gate phản hồi theo trạng thái họp, dùng 5 chỗ trong ParticipantService (:65,:74,:379,:812,:1016; BR-105); đã 4 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.CanRespond",
+      "reason": "Covered indirectly via Participant.Mutate; Predicate đọc (cờ CanRespond ở MeetingRepository.cs:123, MeetingContracts.cs:80); MSG107/MSG285/MSG286 do endpoint trả. Predicate được ParticipantService dùng ở :63,:74; đã 10 Passed — giữ trong workbook qua keptRound1, chỉ bỏ khỏi view core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.IsSecretary",
+      "reason": "Covered indirectly via Attendance.Save; Gate vai trò thư ký cho điểm danh (AttendanceService.cs:60,:90, BR-170), không thuộc write-path của Mutate; đã 5 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.IsManager",
+      "reason": "Covered indirectly via Participant.Mutate; Gate vai trò quản lý (ParticipantService.cs:59,:156,:392, BR-79); không MSG riêng; đã 5 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.CanReplaceChair",
+      "reason": "Covered indirectly via Participant.Mutate; Quyết định đổi chủ tọa (ParticipantService.cs:61, BR-80/122/126/169; MSG256 do endpoint trả); predicate được Mutate gọi trực tiếp; đã 7 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.ValidRoles",
+      "reason": "Covered indirectly via Participant.Mutate; Validate bộ vai trò (ParticipantService.cs:681,:852,:929, BR-122/123/126; cùng MSG109 với Mutate); đã 8 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Participants/ParticipantRules.cs",
+      "class": "ParticipantRules",
+      "method": "ParticipantRules.TryRole",
+      "reason": "Covered indirectly via Participant.Mutate; Parse vai trò (ParticipantService.cs:665,:848, BR-85/150; cùng MSG101 với Mutate); đã 9 Passed — giữ workbook, bỏ khỏi core."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/RecordingsRuleTypes.cs",
+      "class": "SpeechClipRules",
+      "method": "SpeechClipRules.PerMic",
+      "reason": "Covered indirectly via ['SpeechClip.Add']; predicate đơn"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/RecordingsRuleTypes.cs",
+      "class": "SpeechClipRules",
+      "method": "SpeechClipRules.AcceptsGuest",
+      "reason": "Covered indirectly via ['SpeechClip.AddForGuest']; predicate đơn"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/RecordingsRuleTypes.cs",
+      "class": "SpeechClipRules",
+      "method": "SpeechClipRules.Capturing",
+      "reason": "Covered indirectly via ['SpeechClip.Add']; predicate đơn"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/RecordingsRuleTypes.cs",
+      "class": "SpeechClipRules",
+      "method": "SpeechClipRules.Accepts",
+      "reason": "Covered indirectly via ['SpeechClip.Add']; predicate đơn"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/RecordingsRuleTypes.cs",
+      "class": "SpeechClipRules",
+      "method": "SpeechClipRules.RunsRecord",
+      "reason": "Covered indirectly via ['SpeechClip.Playback', 'SpeechClip.SetExclusion']; predicate đơn"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/SpeechClipFold.cs",
+      "class": "SpeechClipFold",
+      "method": "SpeechClipFold.Fold",
+      "reason": "Covered indirectly via ['SpeechClip.SetExclusion']; domain heuristic 60%/2s/6dB"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/SpeechClipFold.cs",
+      "class": "SpeechClipFold",
+      "method": "SpeechClipFold.Measured",
+      "reason": "Covered indirectly via ['SpeechClip.Playback', 'CombinedRecording.BuildNext']; helper measure timings"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/SpeechClipFold.cs",
+      "class": "SpeechClipFold",
+      "method": "SpeechClipFold.Tokens",
+      "reason": "Covered indirectly via ['SpeechClip.SetExclusion']; tokenizer tiếng Việt"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Recordings/SpeechClipPeaks.cs",
+      "class": "SpeechClipPeaks",
+      "method": "SpeechClipPeaks.FromWav",
+      "reason": "Covered indirectly via ['Recording.Playback', 'CombinedRecording.BuildNext']; parse WAV/peaks chi tiết"
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Summaries/RoomEcho.cs",
+      "class": "RoomEcho",
+      "method": "RoomEcho.IsEcho",
+      "reason": "Covered indirectly via Transcription.ProcessNext; Domain (mặc định BỎ): bộ lọc câu vọng phòng (thuần text matching, không MSG); là bước lọc bên trong pipeline gỡ băng."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Summaries/RoomEcho.cs",
+      "class": "RoomEcho",
+      "method": "RoomEcho.Words",
+      "reason": "Covered indirectly via Transcription.ProcessNext; Domain (mặc định BỎ): tách từ phục vụ IsEcho; helper của helper."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/TranscriptText.cs",
+      "class": "TranscriptText",
+      "method": "TranscriptText.Render",
+      "reason": "Covered indirectly via Transcription.Export; Domain (mặc định BỎ): render text gỡ băng (BR-351); là bước format bên trong Export transcript.txt."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/TranscriptText.cs",
+      "class": "TranscriptText",
+      "method": "TranscriptText.Offset",
+      "reason": "Covered indirectly via Transcription.Export; Domain (mặc định BỎ): tính offset câu chữ; chi tiết format của Export."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/TranscriptText.cs",
+      "class": "TranscriptText",
+      "method": "TranscriptText.Clock",
+      "reason": "Covered indirectly via Transcription.Export; Domain (mặc định BỎ): định dạng thời gian câu chữ; chi tiết format của Export."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/TranscriptText.cs",
+      "class": "TranscriptText",
+      "method": "TranscriptText.FileName",
+      "reason": "Covered indirectly via Transcription.Export; Domain (mặc định BỎ): suy ra tên file gỡ băng; plumbing đặt tên của Export."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/TranscriptionRuleTypes.cs",
+      "class": "TranscriptRules",
+      "method": "TranscriptRules.Provider",
+      "reason": "Covered indirectly via Transcription.ProcessNext; Domain (mặc định BỎ): chọn provider/stt engine; routing nội bộ của worker, không phải thao tác người dùng."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Transcription/TranscriptionRuleTypes.cs",
+      "class": "TranscriptRules",
+      "method": "TranscriptRules.FitToTake",
+      "reason": "Covered indirectly via Transcription.ProcessNext; Domain (mặc định BỎ): kiểm tra bản gỡ băng có khớp take không; là điều kiện nhánh bên trong worker ProcessNext."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdRuleTypes.cs",
+      "class": "VoiceIdRules",
+      "method": "VoiceIdRules.AllowsCollection",
+      "reason": "Covered indirectly via VoiceCollection.CanCollect; Domain (mặc định BỎ): luật cho phép thu mẫu; đã phản ánh ở tầng App qua CanCollect (MSG475/MSG477) và Grant."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/VoiceId/VoiceIdRuleTypes.cs",
+      "class": "VoiceIdRules",
+      "method": "VoiceIdRules.RejectionMessage",
+      "reason": "Covered indirectly via VoiceId.Grant; Domain (mặc định BỎ): câu thông báo từ chối theo lý do; nội dung message đã bao phủ qua Grant/Reject cases."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "class": "VoteRules",
+      "method": "VoteRules.Preparation",
+      "reason": "Covered indirectly via Vote.Mutate; Điều kiện trạng thái Approved/Published/InProgress (BR-252/189), đã gộp trong Permissions/canManageDraft và bao phủ bởi Mutate (MSG213)."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "class": "VoteRules",
+      "method": "VoteRules.Closable",
+      "reason": "Covered indirectly via Vote.Permissions; Điều kiện đóng theo trạng thái cuộc họp (BR-270), đã gộp trong Permissions và bao phủ bởi Mutate close (MSG229/230)."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "class": "VoteRules",
+      "method": "VoteRules.IsChair",
+      "reason": "Covered indirectly via Vote.Permissions; Kiểm tra Chủ toạ, đã gộp trong Permissions; hành vi phân quyền do Mutate bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "class": "VoteRules",
+      "method": "VoteRules.IsManager",
+      "reason": "Covered indirectly via Vote.Permissions; Kiểm tra Chair/Secretary, đã gộp trong Permissions; hành vi do Mutate bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "class": "VoteRules",
+      "method": "VoteRules.CanManageDraft",
+      "reason": "Covered indirectly via Vote.Permissions; IsManager + Preparation, đã gộp trong Permissions; hành vi quản lý nháp do Mutate bao phủ (MSG213)."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "class": "VoteRules",
+      "method": "VoteRules.Actions",
+      "reason": "Covered indirectly via Vote.Permissions; Ma trận action suy ra từ Permissions + trạng thái vote; đã được Mutate (MSG210-236) bao phủ hành vi. Không giữ sheet Domain riêng."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/Votes/VoteRules.cs",
+      "class": "VoteRules",
+      "method": "VoteRules.Normalize",
+      "reason": "Covered indirectly via Vote.Mutate; Trim tiêu đề/mô tả/phương án, không MSG/BR riêng; Validate + Mutate đã bao phủ."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Authentication/JwtTokenIssuer.cs",
+      "class": "JwtTokenIssuer",
+      "method": "JwtTokenIssuer.CreateRefreshToken",
+      "reason": "Covered indirectly via Authentication.Refresh; Helper plumbing (tạo refresh token, phần còn lại của luồng refresh); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+      "class": "PasswordHasher",
+      "method": "PasswordHasher.Hash",
+      "reason": "Covered indirectly via Authentication.SignIn; Helper thuần plumbing (băm mật khẩu nội bộ, không quyết định nghiệp vụ độc lập); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Authentication/PasswordHasher.cs",
+      "class": "PasswordHasher",
+      "method": "PasswordHasher.Verify",
+      "reason": "Covered indirectly via Authentication.SignIn; Helper thuần plumbing (so khớp hash nội bộ, không quyết định nghiệp vụ độc lập); xem báo cáo nhóm FE-01. BỎ khỏi core, giữ file JSON trong workbook."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+      "class": "MinutesHtml",
+      "method": "MinutesHtml.IsHtml",
+      "reason": "Covered indirectly via Minutes.Save; BỎ: Infra detect allow-list (BR-385), helper của Sanitize; gộp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+      "class": "MinutesHtml",
+      "method": "MinutesHtml.Normalize",
+      "reason": "Covered indirectly via Minutes.Save; BỎ: Infra chuẩn hoá HTML (BR-385), helper của Sanitize; gộp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+      "class": "MinutesHtml",
+      "method": "MinutesHtml.Sanitize",
+      "reason": "Covered indirectly via Minutes.Save; BỎ: Infra sanitize HTML (19 UTC, BR-385/BR-394 + MSG402) là bước kiểm tra trong Save; gộp vào Save, không sheet riêng."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+      "class": "MinutesHtml",
+      "method": "MinutesHtml.HasText",
+      "reason": "Covered indirectly via Minutes.Save; BỎ: Infra kiểm tra còn chữ (BR-394 + MSG402), nhánh validation trống của Save; gộp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+      "class": "MinutesHtml",
+      "method": "MinutesHtml.TooDeep",
+      "reason": "Covered indirectly via Minutes.Save; BỎ: Infra kiểm tra lồng sâu quá 64 tầng (BR-394 + MSG402), nhánh validation của Save; gộp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+      "class": "MinutesHtml",
+      "method": "MinutesHtml.FromLines",
+      "reason": "Covered indirectly via Minutes.Save + Minutes.Export; BỎ: Infra dựng HTML từ dòng (BR-385), formatter/render dùng trong Save/Export; gộp vào Save/Export."
+    },
+    {
+      "file": "backend/TrustCabinet.Infrastructure/Summaries/MinutesHtml.cs",
+      "class": "HtmlElement",
+      "method": "HtmlElement.Attribute",
+      "reason": "Covered indirectly via MinutesHtml.Sanitize; BỎ: Infra parse attribute (BR-385), helper cấp 2 của Sanitize; gộp vào Sanitize rồi gộp tiếp vào Save."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/SearchText.cs",
+      "class": "SearchText",
+      "method": "SearchText.Fold",
+      "reason": "Covered indirectly via the list/search integration cases; BỎ: Domain pure fold helper (lowercase, strip marks, đ/Đ to d), no MSGnn, no state; no dedicated sheet."
+    },
+    {
+      "file": "backend/TrustCabinet.Domain/SearchText.cs",
+      "class": "SearchText",
+      "method": "SearchText.Contains",
+      "reason": "Covered indirectly via the list/search integration cases; BỎ: Domain pure contains check over Fold (null-safe), no MSGnn; no dedicated sheet."
+    }
+  ],
+  "source": {
+    "note": "The four-project backend (ADR-0065); read with git show, never from the working tree.",
+    "ref": "7286680a22cd04c31687735c9b87fde348b235cf"
+  }
 }

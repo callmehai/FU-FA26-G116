@@ -1,0 +1,129 @@
+{
+  "feature": "FE-08",
+  "module": "ROOM",
+  "sheet": "CallRoom.HandleWebhook",
+  "description": "Room provider webhook handling, reconciliation and access enforcement.",
+  "precondition": "Room provider events as input.",
+  "methods": [
+    {
+      "method": "CallRoomService.HandleWebhookAsync",
+      "layer": "Application",
+      "file": "backend/TrustCabinet.Application/Calls/CallRoomService.cs",
+      "line": 226,
+      "cases": [
+        {
+          "id": "UTC001",
+          "preconditions": [
+            "Meeting InProgress with mode Online and no active room session yet.",
+            "A participant_joined event arrives with a valid member identity."
+          ],
+          "inputs": "event: participant_joined; roomName: \"meeting-{id}\"; participantIdentity: the user id; participantJoinedAt: now.",
+          "return": "An active session is ensured for the meeting and one open visit is recorded for the member.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37"
+        },
+        {
+          "id": "UTC002",
+          "preconditions": [
+            "Meeting InProgress with mode Online and an active room session.",
+            "A participant_joined event arrives with a valid guest identity."
+          ],
+          "inputs": "event: participant_joined; roomName: \"meeting-{id}\"; participantIdentity: \"guest-{sessionId}\".",
+          "return": "One open visit is recorded under that guest session (no user id); the session stays active.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37 · UC-04"
+        },
+        {
+          "id": "UTC003",
+          "preconditions": [
+            "Meeting already Ended; its room session was closed.",
+            "A participant_joined event arrives from a ticket that outlived the meeting."
+          ],
+          "inputs": "event: participant_joined; roomName: \"meeting-{id}\"; participantIdentity: a current participant.",
+          "return": "The visit is still recorded as evidence, then the recreated room is deleted again and the session ended at once instead of at the next reconciliation.",
+          "exception": "N/A",
+          "log": "Closing {Room} again: {Identity} joined after it closed.",
+          "type": "Normal",
+          "note": "UC-37 · BR-143"
+        },
+        {
+          "id": "UTC004",
+          "preconditions": [
+            "Roster enforcement is on; the joiner was just removed from the participants.",
+            "A participant_joined event arrives with that member identity."
+          ],
+          "inputs": "event: participant_joined; roomName: \"meeting-{id}\"; participantIdentity: the removed member.",
+          "return": "The visit is recorded, then that person is taken out of the room at once instead of at the next reconciliation.",
+          "exception": "N/A",
+          "log": "Removing {Identity} from {Room}: room access ended.",
+          "type": "Normal",
+          "note": "UC-37"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Meeting InProgress with an active session and an open visit; the leaver holds the floor of the speaking queue."
+          ],
+          "inputs": "event: participant_left; roomName: \"meeting-{id}\"; participantIdentity: the leaver.",
+          "return": "The open visit is closed at the event time; the closed hand is published as a Left change so the queue panels refetch (no invited target).",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-38 · UC-79 · BR-337"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Meeting InProgress with an active session and two open visits."
+          ],
+          "inputs": "event: room_finished; roomName: \"meeting-{id}\".",
+          "return": "The session is ended at the event time and every open visit is closed with it.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-37"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Meeting InProgress; two members share their screen at once (one presenter at a time)."
+          ],
+          "inputs": "event: track_published with trackSource ScreenShare; roomName: \"meeting-{id}\"; participantIdentity: the second sharer.",
+          "return": "Every other unmuted screen-share track in the room is muted; the second sharer keeps theirs.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-39c · BR-326"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Any event arrives for a room that is not a meeting room."
+          ],
+          "inputs": "event: participant_joined; roomName: \"lobby-general\"; participantIdentity: any.",
+          "return": "Ignored; no session or visit is touched.",
+          "exception": "N/A",
+          "log": "Ignoring webhook {Event} for room {Room}.",
+          "type": "Normal",
+          "note": "UC-37"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "A participant_joined event arrives with an identity that is neither a user id nor a guest identity."
+          ],
+          "inputs": "event: participant_joined; roomName: \"meeting-{id}\"; participantIdentity: \"unknown-device\".",
+          "return": "Ignored; no session or visit is touched.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-37"
+        }
+      ]
+    }
+  ]
+}
