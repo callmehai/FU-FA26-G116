@@ -253,7 +253,7 @@ export function RolesPage() {
                   <th>Tên vai trò</th>
                   <th>Mô tả</th>
                   <th>Tài khoản</th>
-                  <th>Thao tác</th>
+                  <th className="col-action">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -269,7 +269,7 @@ export function RolesPage() {
                       {role.userCount}
                       <span className="roles-count-unit"> tài khoản</span>
                     </td>
-                    <td className="roles-actions">
+                    <td className="col-action roles-actions">
                       {!role.isBuiltIn && (
                         <span className="row-actions">
                           <button

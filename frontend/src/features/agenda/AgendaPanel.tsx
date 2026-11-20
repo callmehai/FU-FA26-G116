@@ -416,8 +416,7 @@ function AgendaRow({
                   <Icon name="pencil" size={16} />
                 </button>
               )}
-              {/* A started item cannot be deleted: keep its slot, so every row's pencil lines up. */}
-              {actions.canEdit && !actions.canDelete && <span className="agenda-action-slot" aria-hidden="true" />}
+              {/* No slot for a missing delete: the icons the caller has end at the right edge (Hải 20/11/2026). */}
               {actions.canDelete && (
                 <button
                   type="button"

@@ -69,6 +69,16 @@ public static class AuditActions
     public const string RecordingObjectType = "Recording";
 
     /// <summary>
+    /// ADR-0067 — the retention job deleted audio files under the recordings folder that no recording or sentence points
+    /// at any more (a failed delete, an upload cut off, a crash mid-mix). One row per run, with the count and bytes in the
+    /// details; no actor and no object, since the files never had a row of their own.
+    /// </summary>
+    public const string RecordingOrphanFilesDeleted = "recording.orphan_files_deleted";
+
+    /// <summary>What <c>AuditLogEntry.ObjectType</c> carries for <see cref="RecordingOrphanFilesDeleted"/>.</summary>
+    public const string RecordingStorageObjectType = "RecordingStorage";
+
+    /// <summary>
     /// ADR-0041 — the Secretary switched the room mic on (a take opened), or a take was saved: appended to the meeting's
     /// room recording, kept as the first one, or dropped because the mic heard nothing. Who closed it is the actor; the
     /// server closing a take left idle has none.
@@ -135,6 +145,13 @@ public static class AuditActions
     /// because the row they describe is gone by the time anyone reads this one.
     /// </summary>
     public const string VoteDraftDeletedOnMeetingEnd = "vote.draft_deleted_on_meeting_end";
+
+    /// <summary>
+    /// ADR-0067 — the same for a meeting that was cancelled (by its organizer or by the system, BR-301): a draft of a
+    /// meeting that will never start can never be opened. The details carry <c>cancelledById</c> instead of
+    /// <c>endedById</c>.
+    /// </summary>
+    public const string VoteDraftDeletedOnMeetingCancel = "vote.draft_deleted_on_meeting_cancel";
 
     /// <summary>What <c>AuditLogEntry.ObjectType</c> carries for the action above; the <c>ObjectId</c> is the vote's id.</summary>
     public const string VoteObjectType = "VotingSession";

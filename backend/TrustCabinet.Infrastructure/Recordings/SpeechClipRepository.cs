@@ -85,7 +85,7 @@ public sealed class SpeechClipRepository(TrustCabinetDbContext db) : ISpeechClip
         => await db.SpeechClips.AsNoTracking()
             .Where(c => c.MeetingId == meetingId && c.AudioPath != null && c.ExcludedAt == null && c.DurationMs > 0)
             .OrderBy(c => c.StartedAt)
-            .Select(c => new CombinedClip(c.StartedAt, c.DurationMs, c.AudioPath!))
+            .Select(c => new CombinedClip(c.StartedAt, c.DurationMs, c.AudioPath!, c.CreatedAt))
             .ToListAsync(ct);
 
     public Task<DateTimeOffset?> FindLastChangeAsync(Guid meetingId, CancellationToken ct)

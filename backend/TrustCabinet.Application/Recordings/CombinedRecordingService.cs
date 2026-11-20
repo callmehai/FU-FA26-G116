@@ -3,6 +3,9 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Abstractions;
+using TrustCabinet.Application.Audit;
+using TrustCabinet.Application.Meetings;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 
@@ -12,7 +15,9 @@ namespace TrustCabinet.Application.Recordings;
 /// ADR-0062 — after a hybrid meeting ends, the server lays its room recording and every online attendee's sentences on
 /// the real clock and mixes them into one WAV, listed with the meeting's recordings as "Bản ghi tổng hợp". Built once the
 /// sources settle (no take open, nothing new for a minute), and built again whenever one of them changes later: a late
-/// sentence, one taken out of the record, a take cut. A Secretary who erases it is not overridden.
+/// sentence, one taken out of the record, a take cut. A Secretary who erases it is not overridden. Audio removed from a
+/// source never outlives it here (ADR-0067): erasing the room recording erases this one, and a sentence deleted or a take
+/// cut past the rebuild window, or a mix left with only one source, erases it too.
 ///
 /// Each stretch of sound keeps the real clock; silence between stretches is cut to two seconds (<see cref="CombinedTrack"/>),
 /// and a track past twelve hours is not built.
@@ -21,8 +26,8 @@ namespace TrustCabinet.Application.Recordings;
 /// block needs it, and a sentence (a minute at most) is loaded when the block reaches it and dropped once passed.
 /// </summary>
 public sealed class CombinedRecordingService(IRecordingRepository recordingRows, ISpeechClipRepository clipRows,
-    IUnitOfWork unitOfWork, IRecordingStorage storage, ISpeechChangePublisher publisher,
-    TimeProvider clock, IOptions<RecordingOptions> options, ILogger<CombinedRecordingService> logger) : ICombinedRecordingService
+    IMeetingRepository meetingRows, IUnitOfWork unitOfWork, IRecordingStorage storage, ISpeechChangePublisher publisher,
+    IAuditService audit, TimeProvider clock, IOptions<RecordingOptions> options, ILogger<CombinedRecordingService> logger) : ICombinedRecordingService
 {
     private const int BlockSamples = CombinedRecordingRules.SampleRate * 10;
 
@@ -33,8 +38,10 @@ public sealed class CombinedRecordingService(IRecordingRepository recordingRows,
 
     /// <param name="Changed">The last change to any source. The combined row's UpdatedAt holds the one it was built from,
     /// not when it was built: a source that changes while it is being mixed is then still newer, and gets its rebuild.</param>
+    /// <param name="RetainUntil">When its earliest source goes (BR-347: the room's, counted from its first take; or a
+    /// sentence's, if one came first), so the mix never keeps a voice longer than the source it was taken from.</param>
     private sealed record Plan(Guid MeetingId, Guid? ExistingId, DateTimeOffset Changed, IReadOnlyList<RoomPart> Room,
-        IReadOnlyList<CombinedClip> Clips, Recording Template);
+        IReadOnlyList<CombinedClip> Clips, Recording Template, DateTimeOffset RetainUntil);
 
     public async Task<bool> BuildNextAsync(CancellationToken ct = default)
     {
@@ -45,7 +52,8 @@ public sealed class CombinedRecordingService(IRecordingRepository recordingRows,
             TransactionMode.None, ct);
         foreach (var meetingId in meetings)
         {
-            var plan = await unitOfWork.ExecuteAsync(token => PlanAsync(meetingId, settled, token), TransactionMode.None, ct);
+            var (plan, stale) = await unitOfWork.ExecuteAsync(token => PlanAsync(meetingId, settled, token), TransactionMode.None, ct);
+            if (stale is { } staleId) await EraseStaleAsync(staleId, meetingId, ct);
             if (plan is null) continue;
             if (Failed.TryGetValue(meetingId, out var failedAt) && failedAt >= plan.Changed) continue;
             try
@@ -65,31 +73,39 @@ public sealed class CombinedRecordingService(IRecordingRepository recordingRows,
         return false;
     }
 
-    /// <summary>What to mix for this meeting, or null when there is nothing to (re)build yet.</summary>
-    private async Task<Plan?> PlanAsync(Guid meetingId, DateTimeOffset settled, CancellationToken ct)
+    /// <summary>
+    /// What to mix for this meeting, or null when there is nothing to (re)build yet; and the id of a mix left with only
+    /// one side to mix from, which the caller erases in a transaction of its own.
+    /// </summary>
+    private async Task<(Plan? Plan, Guid? Stale)> PlanAsync(Guid meetingId, DateTimeOffset settled, CancellationToken ct)
     {
         var recordings = await recordingRows.ListByMeetingAsync(meetingId, ct);
         // A room take still streaming will be appended to the room recording: wait for it.
-        if (recordings.Any(r => r.Source == RecordingSource.BrowserCapture && r.Status == RecordingStatus.Pending)) return null;
+        if (recordings.Any(r => r.Source == RecordingSource.BrowserCapture && r.Status == RecordingStatus.Pending)) return (null, null);
         var existing = recordings.Where(r => r.Source == RecordingSource.Combined)
             .OrderByDescending(r => r.CreatedAt).FirstOrDefault();
-        if (existing is { Status: RecordingStatus.Deleted }) return null;
+        if (existing is { Status: RecordingStatus.Deleted }) return (null, null);
 
         var rooms = recordings.Where(RecordingRules.IsRoomMic).Where(r => r.Status == RecordingStatus.Available).ToList();
         var clips = await clipRows.ListMixableAsync(meetingId, ct);
-        // Only a meeting heard both in the room and online: either alone already plays as one track.
-        if (rooms.Count == 0 || clips.Count == 0) return null;
+        // Only a meeting heard both in the room and online: either alone already plays as one track. A mix built before
+        // one side went (every sentence deleted or taken out, the room erased) would keep that audio: it goes too.
+        if (rooms.Count == 0 || clips.Count == 0)
+            return (null, existing is { Status: RecordingStatus.Available } ? existing.Id : null);
 
         var clipChanged = await clipRows.FindLastChangeAsync(meetingId, ct);
         var roomChanged = recordings.Where(r => r.Source != RecordingSource.Combined).Max(r => r.UpdatedAt);
         var changed = clipChanged is { } c2 && c2 > roomChanged ? c2 : roomChanged;
-        if (changed > settled) return null;
-        if (existing is not null && existing.UpdatedAt >= changed) return null;
+        if (changed > settled) return (null, null);
+        if (existing is not null && existing.UpdatedAt >= changed) return (null, null);
 
         var room = rooms.SelectMany(r => r.Takes!.Select(t => new RoomPart(t.StartedAt, t.DurationMs, r.StoragePath, t.OffsetMs)))
             .Where(p => p.DurationMs > 0).OrderBy(p => p.StartedAt).ToList();
-        if (room.Count == 0) return null;
-        return new(meetingId, existing?.Id, changed, room, clips, rooms[0]);
+        if (room.Count == 0) return (null, null);
+        var days = options.Value.RetentionDays;
+        var fallback = clock.GetUtcNow().AddDays(days);
+        var retainUntil = rooms.Select(r => r.RetainUntil ?? fallback).Append(clips.Min(c => c.CreatedAt).AddDays(days)).Min();
+        return (new Plan(meetingId, existing?.Id, changed, room, clips, rooms[0], retainUntil), null);
     }
 
     private async Task BuildAsync(Plan plan, CancellationToken ct)
@@ -135,6 +151,7 @@ public sealed class CombinedRecordingService(IRecordingRepository recordingRows,
                     row.ByteSize = byteSize;
                     row.DurationMs = durationMs;
                     row.Status = RecordingStatus.Available;
+                    row.RetainUntil = plan.RetainUntil;
                     row.UpdatedAt = plan.Changed;
                 }
                 else
@@ -145,7 +162,7 @@ public sealed class CombinedRecordingService(IRecordingRepository recordingRows,
                         FileName = CombinedRecordingRules.FileName(origin), StoragePath = path, ContentType = "audio/wav",
                         ByteSize = byteSize, DurationMs = durationMs,
                         ConsentObtainedAt = plan.Template.ConsentObtainedAt, ConsentPurpose = plan.Template.ConsentPurpose,
-                        RetainUntil = now.AddDays(options.Value.RetentionDays), CreatedById = plan.Template.CreatedById,
+                        RetainUntil = plan.RetainUntil, CreatedById = plan.Template.CreatedById,
                         CreatedAt = now, UpdatedAt = plan.Changed,
                     });
                 }
@@ -169,6 +186,67 @@ public sealed class CombinedRecordingService(IRecordingRepository recordingRows,
         logger.LogInformation("Built the combined recording of meeting {MeetingId}: {Room} room takes, {Clips} online sentences, {Ms} ms",
             plan.MeetingId, plan.Room.Count, plan.Clips.Count, durationMs);
         await PublishAsync(plan.MeetingId, ct);
+    }
+
+    public Task<string?> SourceRemovedAsync(Guid meetingId, bool rebuild, Guid? actorId, CancellationToken ct = default)
+        // Joins the caller's transaction, which commits it (IUnitOfWork); the row lock is held until then.
+        => unitOfWork.ExecuteAsync<string?>(async token =>
+        {
+            var id = (await recordingRows.ListByMeetingAsync(meetingId, token))
+                .Where(r => r.Source == RecordingSource.Combined && r.Status == RecordingStatus.Available)
+                .Select(r => (Guid?)r.Id).FirstOrDefault();
+            if (id is null) return null;
+            var row = await recordingRows.LockAsync(id.Value, token);
+            if (row is not { Status: RecordingStatus.Available }) return null;
+            if (rebuild)
+            {
+                var meeting = await meetingRows.FindWorkflowAsync(meetingId, ct: token);
+                if (meeting?.ActualEndedAt is { } ended && ended > clock.GetUtcNow() - CombinedRecordingRules.Window)
+                {
+                    // Older than any source: the next sweep mixes it again without the audio that went.
+                    row.UpdatedAt = DateTimeOffset.UnixEpoch;
+                    return null;
+                }
+            }
+            return await MarkErasedAsync(row, actorId, rebuild ? "source_removed_after_window" : "source_erased", token);
+        }, TransactionMode.ReadCommitted, ct);
+
+    /// <summary>A mix left with nothing to mix from one side: erased in a transaction of its own, file after commit.</summary>
+    private async Task EraseStaleAsync(Guid id, Guid meetingId, CancellationToken ct)
+    {
+        var path = await unitOfWork.ExecuteAsync<string?>(async token =>
+        {
+            var row = await recordingRows.LockAsync(id, token);
+            if (row is not { Status: RecordingStatus.Available }) return null;
+            return await MarkErasedAsync(row, null, "source_erased", token);
+        }, TransactionMode.ReadCommitted, ct);
+        unitOfWork.DiscardChanges();
+        if (path is null) return;
+        DeleteQuietly(path);
+        await PublishAsync(meetingId, ct);
+    }
+
+    /// <summary>As <c>RecordingService</c> erases one: the row stays as evidence, the bytes go after the commit.</summary>
+    private async Task<string> MarkErasedAsync(Recording row, Guid? actorId, string reason, CancellationToken ct)
+    {
+        var now = clock.GetUtcNow();
+        row.Status = RecordingStatus.Deleted;
+        row.DeletedAt = now;
+        row.UpdatedAt = now;
+        await audit.RecordAsync(AuditActions.RecordingErased, AuditActions.RecordingObjectType, row.Id, actorId,
+            new { row.MeetingId, row.FileName, reason }, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        return row.StoragePath;
+    }
+
+    private void DeleteQuietly(string path)
+    {
+        try { storage.Delete(path); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // The retention job's orphan sweep deletes it later: no row points at it any more.
+            logger.LogError(ex, "Could not delete combined recording file {Path}", path);
+        }
     }
 
     private async Task MixAsync(Plan plan, string path, long total, Func<DateTimeOffset, long> sample, CancellationToken ct)

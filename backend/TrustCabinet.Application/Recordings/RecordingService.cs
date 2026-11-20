@@ -17,7 +17,8 @@ namespace TrustCabinet.Application.Recordings;
 /// </summary>
 public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepository recordings, IUnitOfWork unitOfWork,
     IRecordingStorage storage, IRecordingPlaybackSigner signer, IAuditService audit, ISpeechChangePublisher publisher,
-    TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RecordingService> logger) : IRecordingService
+    ICombinedRecordingService combined, TimeProvider clock, IOptions<RecordingOptions> options, ILogger<RecordingService> logger)
+    : IRecordingService
 {
     public async Task<RecordingOutcome> ListAsync(Guid meetingId, Guid actorId, CancellationToken ct = default)
     {
@@ -161,7 +162,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     {
         try
         {
-            string? path = null;
+            IReadOnlyList<string>? paths = null;
             var outcome = await unitOfWork.ExecuteAsync(async token =>
             {
                 var recording = await recordings.FindAsync(recordingId, true, token);
@@ -173,12 +174,12 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
                 if (recording.Status == RecordingStatus.Deleted) return new(RecordingId: recording.Id);
                 // A take still streaming is saved first (switching the mic off), then erased like any recording.
                 if (recording.Status == RecordingStatus.Pending) return new(RecordingFailure.TakeOpen);
-                path = await MarkErasedAsync(recording, actorId, "request", token);
+                paths = await MarkErasedAsync(recording, actorId, "request", token);
                 return new RecordingOutcome(RecordingId: recording.Id);
             }, TransactionMode.ReadCommitted, ct);
-            if (path is not null)
+            if (paths is not null)
             {
-                DeleteQuietly(path);
+                foreach (var path in paths) DeleteQuietly(path);
                 if (await ReadAsync(token => recordings.FindAsync(recordingId, false, token), ct) is { } erased) await PublishAsync(erased.MeetingId, ct);
             }
             return outcome;
@@ -195,16 +196,16 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         var erased = 0;
         foreach (var id in await ReadAsync(token => recordings.ListExpiredAsync(clock.GetUtcNow(), 50, token), ct))
         {
-            string? path = null;
+            IReadOnlyList<string>? paths = null;
             await unitOfWork.ExecuteAsync(async token =>
             {
                 var recording = await recordings.FindAsync(id, true, token);
                 if (recording is { Status: not RecordingStatus.Deleted, RetainUntil: { } until } && until < clock.GetUtcNow())
-                    path = await MarkErasedAsync(recording, null, "retention", token);
+                    paths = await MarkErasedAsync(recording, null, "retention", token);
                 return 0;
             }, TransactionMode.ReadCommitted, ct);
-            if (path is null) continue;
-            DeleteQuietly(path);
+            if (paths is null) continue;
+            foreach (var path in paths) DeleteQuietly(path);
             erased++;
         }
         return erased;
@@ -213,12 +214,15 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
     /// <summary>
     /// The row is kept and marked, the transcript made from it goes with the audio: a transcript is the same speech
     /// in another form. The file itself is deleted by the caller once the transaction has committed, so a rollback
-    /// never leaves a row pointing at bytes that are already gone.
+    /// never leaves a row pointing at bytes that are already gone. The room mic's recording is also in the meeting's
+    /// combined recording (ADR-0061), which is erased with it (ADR-0067): its file is the second one returned.
     /// </summary>
-    private async Task<string> MarkErasedAsync(Recording recording, Guid? actorId, string reason, CancellationToken ct)
+    private async Task<IReadOnlyList<string>> MarkErasedAsync(Recording recording, Guid? actorId, string reason, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
         var path = recording.StoragePath;
+        var mixed = RecordingRules.IsRoomMic(recording)
+            ? await combined.SourceRemovedAsync(recording.MeetingId, rebuild: false, actorId, ct) : null;
         recording.Status = RecordingStatus.Deleted;
         recording.DeletedAt = now;
         recording.UpdatedAt = now;
@@ -226,7 +230,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         await audit.RecordAsync(AuditActions.RecordingErased, AuditActions.RecordingObjectType, recording.Id, actorId,
             new { recording.MeetingId, recording.FileName, reason }, ct);
         await unitOfWork.SaveChangesAsync(ct);
-        return path;
+        return mixed is null ? [path] : [path, mixed];
     }
 
     /// <summary>A read outside any transaction, its storage failure translated (rule R8).</summary>
@@ -262,7 +266,7 @@ public sealed class RecordingService(IMeetingRepository meetings, IRecordingRepo
         try { storage.Delete(path); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // The row already says Deleted; a sweeper retrying file deletion would be the next step if this shows up.
+            // The row already says Deleted, so no row points at the file: the retention job's orphan sweep deletes it.
             logger.LogError(ex, "Could not delete recording file {Path}", path);
         }
     }

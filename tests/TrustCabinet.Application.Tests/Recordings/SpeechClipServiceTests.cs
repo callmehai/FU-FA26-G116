@@ -26,7 +26,7 @@ public sealed class SpeechClipServiceTests
 
     private SpeechClipService Service() => new(_meetings, _clips, _unitOfWork, _engine, new SpeechClipGate(),
         _publisher, new FakeAuditService(), new FixedClock(Now), Options.Create(new RecordingOptions()), _storage,
-        new FakeRecordingSigner(), NullLogger<SpeechClipService>.Instance);
+        new FakeRecordingSigner(), new FakeCombinedRecordings(), NullLogger<SpeechClipService>.Instance);
 
     private static SpeechClipUpload Upload() => new(Guid.CreateVersion7(), Now.AddSeconds(-2), 1500, "audio/wav", [1, 2, 3]);
 

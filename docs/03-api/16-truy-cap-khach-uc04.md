@@ -174,7 +174,7 @@ xoá câu của mình ở `…/speech-clips` (SCRUM-129, [contract](12-ban-ghi-c
 
 | Bảng | Cột chính | Ghi chú |
 |---|---|---|
-| `guest_verification_challenges` | `invitation_id`, `code_hash`, `expires_at`, `failed_attempts`, `consumed_at` | HMAC-SHA256 của mã, không lưu mã thô. Xoá theo lời mời; mã tạo quá 24 giờ (đã hết hạn, ngoài cửa sổ giới hạn 20 mã) bị xoá ở lần gửi mã kế tiếp của lời mời đó |
+| `guest_verification_challenges` | `invitation_id`, `code_hash`, `expires_at`, `failed_attempts`, `consumed_at` | HMAC-SHA256 của mã, không lưu mã thô. Xoá theo lời mời; mã tạo quá 24 giờ (đã hết hạn, ngoài cửa sổ giới hạn 20 mã) bị xoá ở lần gửi mã kế tiếp của lời mời đó, và job `DataRetentionWorker` xoá mọi mã hết hạn quá `Retention:GuestChallengeDays` ngày (mặc định 1) dù lời mời không gửi mã nữa ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)). Phiên Khách giữ lại làm bằng chứng |
 | `guest_sessions` | `invitation_id`, `expires_at`, `revoked_at` | Một dòng mỗi lần xác minh thành công; `id` là `SessionId` ổn định khi reconnect. Giữ lại sau khi hết hạn: đây là bằng chứng Khách đã xác minh email (không chứa dữ liệu cá nhân ngoài id và thời điểm) |
 | `meeting_guest_invitations` | thêm `self_declared_display_name`, `self_declared_job_title` | Nullable; tách khỏi `invited_name`/`email` |
 | `audit_log` | `action = guest.verified`, `object_type = GuestSession` | Một dòng mỗi lần xác minh thành công (§3.3, BR-444); vào phòng họp ghi thêm `call.guest_admitted` ([phòng họp](09-phong-hop-truc-tuyen.md#khách-scrum-59)) |

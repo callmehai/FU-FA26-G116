@@ -28,7 +28,7 @@ Nhận ra **ai** đang nói từ giọng (Voice ID) là chuyện khác: đó là
 |---|---|
 | Thông báo trước khi lưu | `consentConfirmed=true` bắt buộc: Thư ký xác nhận đã thông báo cho người dự và không ai phản đối. Thời điểm xác nhận lưu ở `ConsentObtainedAt`. Có người phản đối thì không ghi. Mic phòng hỏi trước lượt đầu của cuộc họp; lượt sau nối vào cùng bản ghi nên không hỏi lại |
 | Nêu mục đích | `consentPurpose` (mặc định *Lập biên bản cuộc họp*) lưu cùng bản ghi |
-| Thời hạn lưu trữ và xoá | `RetainUntil` = lúc lưu + `Recordings:RetentionDays` (mặc định 180 ngày); job `RecordingRetentionWorker` xoá tự động mỗi 15 phút; Thư ký xoá theo yêu cầu bất cứ lúc nào |
+| Thời hạn lưu trữ và xoá | `RetainUntil` = lúc lưu + `Recordings:RetentionDays` (mặc định 180 ngày); job `RecordingRetentionWorker` xoá tự động mỗi 15 phút; Thư ký xoá theo yêu cầu bất cứ lúc nào. Tệp âm thanh không còn dòng nào trỏ tới (xoá tệp lỗi, tải lên bị ngắt, server tắt giữa lúc nối/cắt/trộn) bị job `DataRetentionWorker` xoá sau `Retention:OrphanAudioGraceHours` giờ (mặc định 24), mỗi lần một dòng audit `recording.orphan_files_deleted` ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)) |
 
 Khi xoá, **tệp âm thanh và transcript** bị xoá; dòng `recordings` giữ lại với `Status = Deleted`
 và `DeletedAt`, kèm một dòng nhật ký kiểm toán `recording.erased` (ai xoá, hay do hết hạn). Như vậy
@@ -200,13 +200,19 @@ Họp kết hợp kết thúc rồi, server trộn bản ghi mic phòng và mọ
 biên bản) thành một tệp WAV 16 kHz mono, đặt mỗi nguồn theo giờ thật; chồng tiếng thì nghe chồng. Khoảng lặng dài hơn
 2 giây giữa hai quãng có tiếng rút còn 2 giây; bản dài quá 12 giờ thì không dựng. Tệp nằm trong
 `GET …/recordings` với `source: "Combined"`, tên `ban-ghi-tong-hop-dd-MM-yyyy-HHmm.wav`, cùng mục đích, người tạo và thời
-hạn lưu với bản ghi mic phòng; nghe (`/playback`), tải (`/download`) và xoá (`DELETE`) như mọi bản ghi.
+hạn lưu với bản ghi mic phòng; nghe (`/playback`), tải (`/download`) và xoá (`DELETE`) như mọi bản ghi. `retainUntil` là ngày
+sớm nhất trong các nguồn: `retainUntil` của bản ghi mic phòng (BR-347, tính từ lượt đầu), hoặc câu sớm nhất +
+`Recordings:RetentionDays` — bản tổng hợp không sống lâu hơn nguồn ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)).
 
 - Dựng khi cuộc họp `Ended`, không Mật, đã có cả bản ghi mic phòng lẫn câu trực tuyến có tiếng, không còn lượt mic phòng
   đang ghi, và nguồn không đổi trong 1 phút. Một worker nền xét mỗi 30 giây, trong 8 ngày sau khi họp xong (câu gửi muộn
   tối đa 7 ngày).
 - Nguồn đổi về sau thì dựng lại tại chỗ (cùng `id`, tệp mới thay tệp cũ) và gửi `RecordingsChanged`. Thư ký đã xoá thì
   không dựng lại.
+- Tiếng đã xoá không còn trong bản tổng hợp ([ADR-0067](../05-decisions/0067-don-du-lieu-dinh-ky.md)): xoá bản ghi mic phòng (Thư ký xoá hay hết hạn)
+  xoá luôn bản tổng hợp trong cùng transaction (audit `recording.erased`, lý do `source_erased`). Xoá một câu hay cắt một
+  lượt ghi trong 8 ngày sau khi họp xong thì bản tổng hợp được trộn lại không có phần đó; quá 8 ngày thì bản tổng hợp bị
+  xoá (lý do `source_removed_after_window`). Bản tổng hợp chỉ còn một phía (mọi câu đã xoá hoặc đã loại) cũng bị xoá.
 - Không có bản gỡ băng: `transcriptStatus` là `"None"`, `POST …/transcribe` trả `409 MSG479`.
 
 ## Cấu hình (`Recordings:*`)

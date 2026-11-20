@@ -176,6 +176,12 @@ public static class RecordingEndpoints
         {
             return Invalid(stored, storage, "Không đọc được biểu mẫu tải lên.");
         }
+        catch when (stored is not null)
+        {
+            // The client went away (or anything else) after the file was written: its bytes are someone's voice.
+            storage.Delete(stored);
+            throw;
+        }
 
         if (stored is null) return Error(400, Msg291Invalid, "Chưa chọn tệp ghi âm.");
         // The room mic streams its takes (ADR-0041); a form only ever carries a file recorded elsewhere.

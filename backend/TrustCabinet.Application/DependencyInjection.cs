@@ -17,6 +17,7 @@ using TrustCabinet.Application.Notifications;
 using TrustCabinet.Application.Participants;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Reports;
+using TrustCabinet.Application.Retention;
 using TrustCabinet.Application.Speaking;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Application.Transcription;
@@ -53,6 +54,8 @@ public static class DependencyInjection
         AddCalls(services);
         AddSpeaking(services);
         AddRecordings(services);
+        // ADR-0067: the periodic clean-up; RetentionOptions and its repository are the infrastructure project's.
+        services.AddScoped<IDataRetentionService, DataRetentionService>();
         AddTranscription(services);
         AddVoiceId(services);
         AddAi(services);
