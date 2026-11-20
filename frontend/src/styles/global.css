@@ -299,6 +299,13 @@ code {
 
 /* A finger needs 40px: fields and buttons grow on a touch screen — the small ones too (SCRUM-151).
    Page buttons, a dialog's close and the quick-choice chips grow beside their own rules, further down. */
+/* iOS Safari zooms the whole page into a field whose text is under 16px, which also throws every anchored menu off
+   (Hải 20/11: the invitee list landed over the field). Text you type is 16px on a touch screen. */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']), textarea, [contenteditable='true'] {
+    font-size: 16px !important;
+  }
+}
 @media (pointer: coarse) {
   :root { --control-height: 40px; --button-height: 40px; }
   .btn-sm, .btn-lg { height: 40px; }
