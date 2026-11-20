@@ -14,7 +14,7 @@ public sealed class FakeRecordingRepository : IRecordingRepository
     public List<Recording> Recordings { get; } = [];
     public List<Guid> Locked { get; } = [];
     public List<Guid> TranscriptsDeleted { get; } = [];
-    public List<Guid> CombinableMeetings { get; } = [];
+    public List<CombinableMeeting> CombinableMeetings { get; } = [];
 
     public Task<IReadOnlyList<Recording>> ListAsync(Guid meetingId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<Recording>>(Recordings.Where(r => r.MeetingId == meetingId)
@@ -48,8 +48,8 @@ public sealed class FakeRecordingRepository : IRecordingRepository
         return Task.CompletedTask;
     }
 
-    public Task<IReadOnlyList<Guid>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<Guid>>(CombinableMeetings);
+    public Task<IReadOnlyList<CombinableMeeting>> ListCombinableMeetingsAsync(DateTimeOffset settled, DateTimeOffset since, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<CombinableMeeting>>(CombinableMeetings);
 
     public Task<IReadOnlyList<Recording>> ListByMeetingAsync(Guid meetingId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<Recording>>(Recordings.Where(r => r.MeetingId == meetingId).ToArray());
@@ -327,4 +327,19 @@ public sealed class FakeCombinedRecordings : ICombinedRecordingService
         Removed.Add((meetingId, rebuild));
         return Task.FromResult<string?>(null);
     }
+}
+
+/// <summary>ffmpeg as the services see it (ADR-0069): there or not; converting is the Web tests' and the real one's.</summary>
+public sealed class FakeAudioTranscoder : IAudioTranscoder
+{
+    public bool Available { get; set; } = true;
+    public int Checks { get; private set; }
+
+    public Task<bool> IsAvailableAsync(CancellationToken ct)
+    {
+        Checks++;
+        return Task.FromResult(Available);
+    }
+
+    public Task<Stream> OpenMp3Async(Stream source, CancellationToken ct) => Task.FromResult(source);
 }

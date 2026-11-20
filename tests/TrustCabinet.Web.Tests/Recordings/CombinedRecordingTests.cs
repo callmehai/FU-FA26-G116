@@ -349,6 +349,65 @@ public sealed class CombinedRecordingTests(RecordingFixture fixture) : IClassFix
     }
 
     [Fact]
+    public async Task An_online_meeting_is_mixed_from_its_mics_alone()
+    {
+        // ADR-0069: the same sentences, in a meeting with no room; a room recording kept from before is not mixed in.
+        var (s, _, _) = await Arrange(MeetingMode.Online);
+        await BuildAll();
+
+        var combined = await Combined(s.MeetingId);
+        Assert.NotNull(combined);
+        Assert.Equal(RecordingStatus.Available, combined.Status);
+        Assert.StartsWith("ban-ghi-tong-hop-", combined.FileName);
+        // From the first sentence (0.5 s) to the last (5.5 s), the 3.5 s of silence between them cut to two.
+        Assert.Equal(1000 + 2000 + 500, combined.DurationMs);
+        Assert.Equal(1000, At(combined, 250));              // the first sentence, without the room under it
+        Assert.Equal(0, At(combined, 1750));                // the silence, cut
+        Assert.Equal(short.MaxValue, At(combined, 3250));   // two mics at once
+        // Listed under the Secretary, with the call room's notice as its consent, kept no longer than its sentences.
+        Assert.Equal(s.Secretary, combined.CreatedById);
+        Assert.Equal(RecordingRules.DefaultPurpose, combined.ConsentPurpose);
+        Assert.Equal(T0, combined.ConsentObtainedAt);
+        Assert.Equal(fixture.Clock.Now.AddMinutes(-5).AddDays(180), combined.RetainUntil);
+
+        // Downloadable by the Chair or a Secretary like any recording, as MP3; never by a member.
+        using var chair = fixture.Client(s.Chair);
+        var link = await chair.GetAsync($"/api/recordings/{combined.Id}/download");
+        Assert.Equal(HttpStatusCode.OK, link.StatusCode);
+        using var anonymous = fixture.Client();
+        var saved = await anonymous.GetAsync((await link.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("url").GetString());
+        Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
+        Assert.Equal("audio/mpeg", saved.Content.Headers.ContentType?.MediaType);
+        Assert.EndsWith(".mp3", saved.Content.Headers.ContentDisposition?.FileNameStar ?? saved.Content.Headers.ContentDisposition?.FileName);
+        using var member = fixture.Client(s.Member);
+        Assert.Equal(HttpStatusCode.Forbidden, (await member.GetAsync($"/api/recordings/{combined.Id}/download")).StatusCode);
+
+        // Every sentence gone: nothing left to mix, so the mix goes too.
+        await using (var db = fixture.Db())
+        {
+            await db.SpeechClips.Where(c => c.MeetingId == s.MeetingId).ExecuteDeleteAsync();
+            await db.Recordings.Where(r => r.Id == combined.Id).ExecuteUpdateAsync(u => u.SetProperty(r => r.UpdatedAt, DateTimeOffset.UnixEpoch));
+        }
+        await BuildAll();
+        Assert.Equal(RecordingStatus.Deleted, (await Combined(s.MeetingId))!.Status);
+        Assert.False(File.Exists(Path.Combine(fixture.StorageRoot, combined.StoragePath)));
+    }
+
+    [Fact]
+    public async Task A_secret_online_meeting_or_one_with_no_sentence_gets_no_mix()
+    {
+        var (secret, _, _) = await Arrange(MeetingMode.Online);
+        await using (var db = fixture.Db())
+            await db.Meetings.Where(m => m.Id == secret.MeetingId).ExecuteUpdateAsync(u => u.SetProperty(m => m.Sensitivity, Sensitivity.Secret));
+        var (silent, _, _) = await Arrange(MeetingMode.Online);
+        await using (var db = fixture.Db())
+            await db.SpeechClips.Where(c => c.MeetingId == silent.MeetingId).ExecuteDeleteAsync();
+        await BuildAll();
+        Assert.Null(await Combined(secret.MeetingId));
+        Assert.Null(await Combined(silent.MeetingId));
+    }
+
+    [Fact]
     public void A_track_keeps_the_real_clock_within_a_stretch_of_sound_and_cuts_the_silence_between()
     {
         var t = new DateTimeOffset(2026, 11, 13, 8, 0, 0, TimeSpan.Zero);

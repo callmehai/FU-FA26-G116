@@ -33,6 +33,8 @@ public static class RecordingEndpoints
     private const string Msg365TakeEmpty = "MSG365";
     private const string Msg366TakeDeleted = "MSG366";
     private const string Msg367LastTake = "MSG367";
+    private const string Msg482Mp3Unavailable = "MSG482";
+    private const string Mp3UnavailableMessage = "Chưa chuyển được bản ghi sang MP3. Vui lòng thử lại sau.";
     private const int MaxFieldBytes = 4 * 1024;
 
     public static void MapRecordingEndpoints(this IEndpointRouteBuilder app)
@@ -101,10 +103,10 @@ public static class RecordingEndpoints
 
         // An <audio> element cannot send a bearer token, so this one route is reached through a signed, expiring URL
         // handed out by /playback above — which is where the caller's right to listen was checked — or by /download,
-        // signed apart, which saves the file instead.
+        // signed apart, which saves the file instead — as MP3 (ADR-0069), converted while it is sent.
         app.MapGet("/api/recordings/{recordingId:guid}/audio", async (Guid recordingId, long? expires, string? signature,
             string? download, IRecordingService service, IRecordingStorage storage, IRecordingPlaybackSigner signer,
-            TimeProvider clock, HttpContext context, CancellationToken ct) =>
+            IAudioTranscoder transcoder, TimeProvider clock, HttpContext context, CancellationToken ct) =>
         {
             var save = download == "1";
             if (expires is not { } until || string.IsNullOrEmpty(signature)
@@ -112,8 +114,19 @@ public static class RecordingEndpoints
                 return Results.NotFound();
             if (await service.FindPlayableAsync(recordingId, ct) is not { } file) return Results.NotFound();
             context.Response.Headers.CacheControl = "private, no-store";
-            return Results.Stream(storage.OpenRead(file.StoragePath), file.ContentType, save ? file.FileName : null,
-                enableRangeProcessing: true);
+            if (!save) return Results.Stream(storage.OpenRead(file.StoragePath), file.ContentType, enableRangeProcessing: true);
+            var name = RecordingRules.Mp3FileName(file.FileName);
+            if (RecordingRules.IsMp3(file.ContentType))
+                return Results.Stream(storage.OpenRead(file.StoragePath), "audio/mpeg", name, enableRangeProcessing: true);
+            try
+            {
+                // Its length is not known until ffmpeg is done: no Content-Length, no ranges.
+                return Results.Stream(await transcoder.OpenMp3Async(storage.OpenRead(file.StoragePath), ct), "audio/mpeg", name);
+            }
+            catch (AudioTranscodeException)
+            {
+                return Error(503, Msg482Mp3Unavailable, Mp3UnavailableMessage);
+            }
         });
     }
 
@@ -232,6 +245,7 @@ public static class RecordingEndpoints
                 RecordingFailure.TooLarge => (413, Msg293TooLarge, "Bản ghi vượt quá giới hạn dung lượng."),
                 RecordingFailure.LastTake => (409, Msg367LastTake, "Bản ghi chỉ còn một lượt ghi. Xoá cả bản ghi nếu muốn bỏ lượt này."),
                 RecordingFailure.Invalid => (400, Msg291Invalid, "Thông tin bản ghi không hợp lệ."),
+                RecordingFailure.Mp3Unavailable => (503, Msg482Mp3Unavailable, Mp3UnavailableMessage),
                 RecordingFailure.ReadFailed => (500, Msg297ReadFailed, "Không tải được danh sách bản ghi."),
                 _ => (503, Msg298SaveFailed, "Không lưu được thay đổi bản ghi. Vui lòng thử lại.")
             };
