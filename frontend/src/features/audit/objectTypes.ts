@@ -17,6 +17,12 @@ const OBJECT_TYPE_LABEL: Record<string, string> = {
   Report: 'Báo cáo',
   // SCRUM-142: the thirteen calendar_share.* events.
   CalendarShare: 'Chia sẻ lịch',
+  // The clean-up jobs' summary rows (one per run that removed something); none has an object id.
+  RecordingStorage: 'Kho âm thanh',
+  StoredFile: 'Kho tài liệu',
+  Notification: 'Thông báo',
+  GuestVerificationChallenge: 'Mã xác minh Khách',
+  EmailMessage: 'Email',
 }
 
 export const objectTypeLabel = (type: string) => OBJECT_TYPE_LABEL[type] ?? type

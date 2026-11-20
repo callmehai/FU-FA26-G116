@@ -30,6 +30,6 @@ public sealed class StoredFileRepository(TrustCabinetDbContext db) : IStoredFile
                 && !db.Documents.Any(d => d.StoredFileId == f.Id)
                 && !db.MeetingDocuments.Any(d => d.StoredFileId == f.Id && d.RemovedAt == null))
             .OrderBy(f => f.UploadedAt).Take(take)
-            .Select(f => new StoredFileRef(f.Id, f.StorageKey))
+            .Select(f => new StoredFileRef(f.Id, f.StorageKey, f.ByteSize))
             .ToListAsync(ct);
 }

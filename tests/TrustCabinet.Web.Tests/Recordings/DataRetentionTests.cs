@@ -22,6 +22,31 @@ public sealed class DataRetentionTests(RecordingFixture fixture) : IClassFixture
         return await rule(scope.ServiceProvider.GetRequiredService<IDataRetentionService>());
     }
 
+    private async Task<int> AuditCount(string action)
+    {
+        await using var db = fixture.Db();
+        return await db.AuditLog.CountAsync(a => a.Action == action);
+    }
+
+    /// <summary>
+    /// PO 19/11/2026 — the run just made wrote exactly one summary row for <paramref name="action"/>: no actor, no object
+    /// id, the count it removed and the cutoff in the details.
+    /// </summary>
+    private async Task<JsonElement> AssertOneSummaryRow(string action, string objectType, int before, int removed)
+    {
+        await using var db = fixture.Db();
+        Assert.Equal(before + 1, await db.AuditLog.CountAsync(a => a.Action == action));
+        var row = await db.AuditLog.AsNoTracking().Where(a => a.Action == action).OrderByDescending(a => a.OccurredAt).FirstAsync();
+        Assert.Null(row.ActorId);
+        Assert.Null(row.ObjectId);
+        Assert.Equal(objectType, row.ObjectType);
+        Assert.True(AuditEventCatalog.Contains(action));
+        var details = JsonDocument.Parse(row.Details).RootElement;
+        Assert.Equal(removed, details.GetProperty("rows").GetInt32());
+        Assert.Equal(JsonValueKind.String, details.GetProperty("cutoff").ValueKind);
+        return details;
+    }
+
     /// <summary>A file under the root (or anywhere, for <paramref name="full"/>), last written <paramref name="age"/> ago.</summary>
     private string File(string relative, TimeSpan age, string? full = null)
     {
@@ -117,11 +142,18 @@ public sealed class DataRetentionTests(RecordingFixture fixture) : IClassFixture
             await db.SaveChangesAsync();
         }
 
+        var before = await AuditCount(AuditActions.NotificationsPurged);
         Assert.Equal(2, await Run(r => r.PruneNotificationsAsync()));
 
         await using var check = fixture.Db();
         var left = await check.Notifications.Where(n => n.UserId == s.Member).Select(n => n.Title).ToListAsync();
         Assert.Equal(new[] { "170-False", "89-True" }, left.Order());
+        var details = await AssertOneSummaryRow(AuditActions.NotificationsPurged, AuditActions.NotificationObjectType, before, 2);
+        Assert.Equal(JsonValueKind.String, details.GetProperty("readCutoff").ValueKind);
+
+        // A run with nothing left to delete writes no row.
+        Assert.Equal(0, await Run(r => r.PruneNotificationsAsync()));
+        Assert.Equal(before + 1, await AuditCount(AuditActions.NotificationsPurged));
     }
 
     [Fact]
@@ -149,7 +181,12 @@ public sealed class DataRetentionTests(RecordingFixture fixture) : IClassFixture
             (invitationId, sessionId) = (invitation.Id, session.Id);
         }
 
-        Assert.True(await Run(r => r.PruneGuestChallengesAsync()) >= 1);
+        var before = await AuditCount(AuditActions.GuestCodesPurged);
+        var deleted = await Run(r => r.PruneGuestChallengesAsync());
+        Assert.True(deleted >= 1);
+        await AssertOneSummaryRow(AuditActions.GuestCodesPurged, AuditActions.GuestVerificationCodeObjectType, before, deleted);
+        Assert.Equal(0, await Run(r => r.PruneGuestChallengesAsync()));
+        Assert.Equal(before + 1, await AuditCount(AuditActions.GuestCodesPurged));
 
         await using var check = fixture.Db();
         Assert.Equal(new[] { "recent" },
@@ -177,8 +214,11 @@ public sealed class DataRetentionTests(RecordingFixture fixture) : IClassFixture
             await db.SaveChangesAsync();
         }
 
+        var before = await AuditCount(AuditActions.EmailBodiesCleared);
         Assert.Equal(2, await Run(r => r.ScrubEmailBodiesAsync()));
+        await AssertOneSummaryRow(AuditActions.EmailBodiesCleared, AuditActions.EmailObjectType, before, 2);
         Assert.Equal(0, await Run(r => r.ScrubEmailBodiesAsync()));
+        Assert.Equal(before + 1, await AuditCount(AuditActions.EmailBodiesCleared));
 
         await using var check = fixture.Db();
         var rows = await check.EmailMessages.AsNoTracking()

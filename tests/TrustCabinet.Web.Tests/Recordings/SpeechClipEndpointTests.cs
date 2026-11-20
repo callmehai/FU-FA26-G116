@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Recordings;
 using TrustCabinet.Application.Transcription;
+using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
 using TrustCabinet.Domain.Recordings;
@@ -358,10 +359,21 @@ public sealed class SpeechClipEndpointTests(RecordingFixture fixture) : IClassFi
 
         await db.SpeechClips.Where(c => c.Id == expiring).ExecuteUpdateAsync(u => u.SetProperty(c => c.CreatedAt,
             fixture.Clock.Now.AddDays(-181)));
+        var before = await db.AuditLog.CountAsync(a => a.Action == AuditActions.SpeechClipsExpired);
+        int erased;
         using (var scope = fixture.Host.Services.CreateScope())
-            Assert.True(await scope.ServiceProvider.GetRequiredService<ISpeechClipService>().EraseExpiredAsync() >= 1);
+            erased = await scope.ServiceProvider.GetRequiredService<ISpeechClipService>().EraseExpiredAsync();
+        Assert.True(erased >= 1);
         Assert.False(File.Exists(files[expiring]));
         Assert.False(await db.SpeechClips.AnyAsync(c => c.Id == expiring));
+        // PO 19/11/2026: one summary row per run that erased something, none for a run that found nothing.
+        var row = await db.AuditLog.AsNoTracking().Where(a => a.Action == AuditActions.SpeechClipsExpired)
+            .OrderByDescending(a => a.OccurredAt).FirstAsync();
+        Assert.Null(row.ActorId);
+        Assert.Equal(erased, System.Text.Json.JsonDocument.Parse(row.Details).RootElement.GetProperty("rows").GetInt32());
+        using (var scope = fixture.Host.Services.CreateScope())
+            Assert.Equal(0, await scope.ServiceProvider.GetRequiredService<ISpeechClipService>().EraseExpiredAsync());
+        Assert.Equal(before + 1, await db.AuditLog.CountAsync(a => a.Action == AuditActions.SpeechClipsExpired));
     }
 
     [Theory]
