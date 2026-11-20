@@ -1050,6 +1050,89 @@ a.menu-item { text-decoration: none; }
 
 .route-fallback { padding: 24px; color: var(--muted-ink); }
 
+/* ---------- Phone shell (ADR-0070) ----------
+   Under 640px the 72px rail took a fifth of the screen: a top bar (brand, bell, account) and a bottom tab bar give
+   the page the whole width. The shell is the visible height and only .content scrolls (Base and Shell above); here
+   the document is also locked, so nothing can scroll it, drag it sideways or bounce it. The bars pad themselves by
+   the safe-area insets; those are 0 until index.html opts into viewport-fit=cover, which it does not yet, since the
+   call room and the sign-in page would then run under the notch in landscape (ADR-0070). */
+:root { --tabbar-height: 56px; }
+html:has(.shell-phone), body:has(.shell-phone) { overflow: hidden; }
+/* Quick taps on a button (the calendar's arrows) must not zoom the page; pinch zoom stays. */
+html:has(.shell-phone) { touch-action: manipulation; }
+/* Toasts and the upload tray sit above the tab bar. */
+body:has(.shell-phone) { --corner-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 12px); }
+.shell-phone { flex-direction: column; }
+.shell-phone .content {
+  flex: 1;
+  padding: 16px max(12px, env(safe-area-inset-right)) 24px max(12px, env(safe-area-inset-left));
+}
+
+.topbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: calc(52px + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+  background: var(--brand);
+  color: #fff;
+}
+.topbar-brand { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 0; min-height: 40px; color: #fff; }
+.topbar-brand .sidebar-brand-disc { width: 32px; height: 32px; }
+.topbar-brand strong { overflow: hidden; font-size: 16px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-brand:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.topbar .notif-badge { box-shadow: 0 0 0 2px var(--brand); }
+/* "99+" runs right of the bell (Material's badge): keep it clear of the avatar. */
+.topbar .notif { margin-right: 12px; }
+/* The account is its avatar alone; its menu drops down from the right edge. */
+.topbar .account { flex: none; }
+.topbar .account summary { padding: 2px; border-color: transparent; }
+.topbar .account-summary, .topbar .account-caret { display: none; }
+.topbar .avatar { width: 36px; height: 36px; }
+.topbar .account-menu { top: calc(100% + 8px); right: 0; bottom: auto; left: auto; width: min(280px, calc(100vw - 24px)); }
+/* The panel spans the screen between the two bars. */
+.shell-phone .notif-panel {
+  top: calc(52px + env(safe-area-inset-top) + 8px);
+  right: 8px;
+  bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 8px);
+  left: 8px;
+  width: auto;
+  max-height: none;
+}
+
+.tabbar {
+  display: flex;
+  flex: none;
+  height: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.tabbar > * { flex: 1 1 0; min-width: 0; }
+.tabbar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: var(--tabbar-height);
+  color: var(--muted-ink);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  list-style: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tabbar-item::-webkit-details-marker { display: none; }
+.tabbar-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tabbar-item.active, .tabbar-more[open] > .tabbar-item { color: var(--brand); }
+.tabbar-item.active .tabbar-label { font-weight: 700; }
+.tabbar-item:focus-visible { outline-offset: -4px; }
+.tabbar-more { position: relative; }
+.tabbar-menu { right: 8px; bottom: calc(100% + 8px); left: auto; }
+
 /* A single "back to the list" link above a record's header. It sits in the column-flex .content, so it
    must not shrink: otherwise a tab whose content overflows squeezes its 32px down to the text height and
    pulls the header up by 12px (seen on the Thành phần tham dự tab). */
@@ -2542,11 +2625,68 @@ a.menu-item { text-decoration: none; }
   .cal-go-full { display: none; }
   .cal-go-short { display: inline; }
 }
+/* A phone's day is one wide column: the button rides on the time line, the title keeps the line under it, and a
+   finger gets 40px around the 28px pill. */
+.cal-go-inline { right: 10px; left: auto; width: 150px; height: 28px; padding: 0 10px; }
+.cal-go-inline::after { content: ''; position: absolute; inset: -6px -4px; }
+.cal-event-go-inline .cal-event-time { min-height: 26px; padding-right: 160px; }
+/* Beside an overlap's "+N" the button steps left of it and says "Vào phòng". */
+.cal-go-inline.cal-go-crowded { right: 52px; width: 112px; }
+.cal-event-go-inline.cal-event-crowded .cal-event-time { padding-right: 172px; }
+.cal-event-go-inline .cal-event-title { -webkit-line-clamp: 1; }
 @keyframes nudge {
   0%, 60%, 100% { transform: none; }
   75% { transform: translateX(3px); }
 }
 .cal-event-crowded .cal-event-time { overflow: hidden; }
+
+/* A phone (ADR-0070): one day at a time, the grid part of the page. The page is the one thing that scrolls up and
+   down — no frame scrolling inside it, nothing that scrolls sideways — and the day strip stays on top while it does.
+   A sideways swipe on the day is the calendar's own (CalendarPage), so the browser only pans it vertically. */
+@media (max-width: 640px) {
+  .calendar-week { flex: none; min-height: 0; overflow: clip; }
+  .calendar-week .calendar-scroll { overflow: visible; touch-action: pan-y pinch-zoom; }
+  .calendar-grid { min-width: 0; }
+  .calendar-toolbar { margin-bottom: 12px; }
+  /* Sticky offsets count from inside the content's padding: without it the strip sticks flush under the top bar. */
+  .shell-phone .content:has(.day-strip) { padding-top: 0; }
+  .shell-phone .content:has(.day-strip) .calendar-toolbar { margin-top: 16px; }
+}
+.day-strip {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  margin: 0 -12px 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+.day-strip-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+  height: 60px;
+  padding: 2px 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.day-strip-weekday { color: var(--label-ink); font-size: 12px; font-weight: 600; line-height: 16px; }
+.day-strip-date { font-size: 16px; font-weight: 700; line-height: 22px; }
+.day-strip-count { min-height: 16px; color: var(--brand); font-size: 12px; font-weight: 600; line-height: 16px; }
+.day-strip-today .day-strip-weekday, .day-strip-today .day-strip-date { color: var(--brand); }
+.day-strip-day[aria-pressed='true'] { border-color: var(--brand); background: var(--brand); color: #fff; }
+.day-strip-day[aria-pressed='true'] :is(.day-strip-weekday, .day-strip-date, .day-strip-count) { color: #fff; }
 
 .calendar-legend { display: flex; flex: none; flex-wrap: wrap; gap: 14px; padding: 8px 12px; border-top: 1px solid var(--line-soft); background: #fbfcfd; color: var(--muted-ink); font-size: 12px; }
 .calendar-legend span { display: flex; align-items: center; gap: 5px; }
@@ -2629,7 +2769,7 @@ a.menu-item { text-decoration: none; }
   .month-weekday { padding: 8px 0; text-align: center; }
   .month-cell { align-items: center; padding: 4px 0; }
   .month-cell-head { flex-direction: column; gap: 2px; }
-  .month-day { align-self: center; min-width: 32px; height: 32px; padding: 0; border-radius: 16px; }
+  .month-day { align-self: center; min-width: 40px; height: 40px; padding: 0; border-radius: 20px; }
   .month-more { min-width: 32px; height: 26px; padding: 0 6px; border-radius: 13px; background: var(--brand-wash); font-size: 12px; font-variant-numeric: tabular-nums; }
   /* 40px to a finger, the cell's whole width. */
   .month-more { position: relative; }
