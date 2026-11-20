@@ -119,6 +119,9 @@ internal sealed class FakeCallRepository : ICallRepository
         return Task.FromResult(0);
     }
 
+    /// <summary>How many raised hands the next ended session reports closing with it (BR-337).</summary>
+    public int HandsClosedOnEnd { get; set; }
+
     public Task<int> EndSessionAsync(Guid sessionId, DateTimeOffset endedAt, CancellationToken ct = default)
     {
         var session = Sessions.Single(s => s.Id == sessionId);
@@ -129,7 +132,7 @@ internal sealed class FakeCallRepository : ICallRepository
             stint.LeftAt = endedAt;
         }
 
-        return Task.FromResult(0);
+        return Task.FromResult(HandsClosedOnEnd);
     }
 
     public Task<IReadOnlyList<ActiveRoomSession>> ListActiveRoomSessionsAsync(CancellationToken ct = default)
