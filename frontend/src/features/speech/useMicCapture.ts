@@ -238,9 +238,17 @@ export function useMicCapture(
     }
 
     let closed = false
+    // iOS starts an AudioContext made outside a tap "suspended" (and "interrupted" by a call or the lock screen): no
+    // audio reaches the tap, so no sentence is ever cut (Hải 20/11, phone in the room). Resume it, and again on the
+    // next touch if the system refuses.
+    const wake = () => {
+      if (context && context.state !== 'running' && context.state !== 'closed') void context.resume().catch(() => undefined)
+    }
     const close = () => {
       if (closed) return
       closed = true
+      window.removeEventListener('pointerdown', wake, true)
+      window.removeEventListener('touchend', wake, true)
       // Whatever was being said when the mic went off is still a sentence.
       enqueue(cutter.flush())
       stream?.getTracks().forEach((track) => track.stop())
@@ -286,6 +294,14 @@ export function useMicCapture(
           }
         }
         source.connect(tap)
+        // WebKit only runs the nodes that lead to the speakers: the tap goes on to them through a silent gain.
+        const silent = context.createGain()
+        silent.gain.value = 0
+        tap.connect(silent).connect(context.destination)
+        context.onstatechange = wake
+        window.addEventListener('pointerdown', wake, true)
+        window.addEventListener('touchend', wake, true)
+        if (context.state !== 'running') await context.resume().catch(() => undefined)
         setState('listening')
       } catch (failure) {
         if (closed) return
