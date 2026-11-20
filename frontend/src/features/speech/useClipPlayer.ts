@@ -37,8 +37,11 @@ export interface ClipPlayer {
   waveform: number[]
   toggle: () => void
   seek: (ms: number) => void
-  /** From this sentence on; one out of the record plays alone, and with `alone` any sentence does. */
-  playFrom: (clip: SpeechClip, options?: { alone?: boolean }) => void
+  /**
+   * From this sentence on; one out of the record plays alone, and with `alone` any sentence does. `then`: the sentences
+   * played after it, in order, before stopping — a paragraph heard whole while the record is filtered to one speaker.
+   */
+  playFrom: (clip: SpeechClip, options?: { alone?: boolean; then?: SpeechClip[] }) => void
   speed: number
   setSpeed: (speed: number) => void
   volume: number
@@ -73,7 +76,8 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
   const links = useRef(new Map<string, { url: string; until: number }>())
   // What is loaded into the element: a place on the track, or a sentence out of the record played alone. `alone`: it
   // stops at its own end even though it has a place on the track.
-  const loaded = useRef<{ clip: SpeechClip; at: number | null; alone: boolean } | null>(null)
+  // `rest`: the sentences still to play after it before stopping (a paragraph played alone).
+  const loaded = useRef<{ clip: SpeechClip; at: number | null; alone: boolean; rest: SpeechClip[] } | null>(null)
   const request = useRef(0)
   const [positionMs, setPositionMs] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -112,7 +116,7 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
 
   /** Plays `clip` from `offset` ms into it; `at` is its place on the track, null when it plays alone. */
   const start = useCallback(
-    async (clip: SpeechClip, at: number | null, offset: number, alone = false) => {
+    async (clip: SpeechClip, at: number | null, offset: number, alone = false, rest: SpeechClip[] = []) => {
       const mine = ++request.current
       const el = element()
       setError(null)
@@ -122,7 +126,7 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
         const url = await link(clip.id)
         if (mine !== request.current) return
         if (loaded.current?.clip.id !== clip.id || el.src !== new URL(url, location.href).href) el.src = url
-        loaded.current = { clip, at, alone: alone || at === null }
+        loaded.current = { clip, at, alone: alone || at === null, rest }
         el.playbackRate = settings.current.speed
         el.volume = settings.current.volume
         el.muted = settings.current.muted
@@ -186,12 +190,13 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
   }, [currentId, element, placeAt, playing, positionMs, start, totalMs])
 
   const playFrom = useCallback(
-    (clip: SpeechClip, options?: { alone?: boolean }) => {
+    (clip: SpeechClip, options?: { alone?: boolean; then?: SpeechClip[] }) => {
       const at = placeOf.get(clip.id)
+      const rest = (options?.then ?? []).filter((c) => c.hasAudio)
       if (at !== undefined) {
         setPositionMs(at)
-        void start(clip, at, 0, options?.alone)
-      } else if (clip.hasAudio) void start(clip, null, 0)
+        void start(clip, at, 0, options?.alone || rest.length > 0, rest)
+      } else if (clip.hasAudio) void start(clip, null, 0, true, rest)
     },
     [placeOf, start],
   )
@@ -219,6 +224,15 @@ export function useClipPlayer(clips: SpeechClip[]): ClipPlayer {
     const onEnded = () => {
       cancelAnimationFrame(frame)
       const current = loaded.current
+      // A paragraph played alone goes on with its own next sentence, wherever the others' sentences fall between.
+      const [following, ...more] = current?.rest ?? []
+      if (following) {
+        const place = placesRef.current.find((p) => p.clip.id === following.id)
+        if (place) setPositionMs(place.at)
+        void start(following, place?.at ?? null, 0, true, more)
+        if (more[0]) void link(more[0].id).catch(() => undefined)
+        return
+      }
       const list = placesRef.current
       const index = current?.at != null && !current.alone ? list.findIndex((p) => p.clip.id === current.clip.id) : -1
       const next = index >= 0 ? list[index + 1] : undefined
