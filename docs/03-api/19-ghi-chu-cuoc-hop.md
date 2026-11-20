@@ -17,7 +17,7 @@ FE: [`NotesPanel`](../../frontend/src/features/notes/NotesPanel.tsx), kiểu [`t
 
 - **Thư ký hiện tại:** thành viên đang hoạt động, có vai trò `Secretary`. Nếu đổi Thư ký, người mới bắt đầu với ghi chú
   trống. Ghi chú của người cũ vẫn còn trong database nhưng không hiện và không vào biên bản.
-- **Ghi chú được ghi khi:** cuộc họp `InProgress`, hoặc `Ended` mà chưa tạo bản nháp biên bản (BR-396, cùng mốc khoá
+- **Ghi chú được ghi khi:** cuộc họp `InProgress`, hoặc `Ended` mà chưa tạo bản nháp biên bản (BR-398, cùng mốc khoá
   với kết luận mục nghị sự).
 - Server kiểm tra lại quyền ở mọi request.
 
@@ -35,9 +35,9 @@ FE: [`NotesPanel`](../../frontend/src/features/notes/NotesPanel.tsx), kiểu [`t
     { "agendaItemId": null, "body": "…", "updatedAt": "ISO", "author": { "id": "…", "fullName": "…" } },
     { "agendaItemId": "…", "body": "Ý kiến: …\nKết luận: …", "updatedAt": "ISO", "author": { … } }
   ],
-  "currentAgendaItemId": "…",                  // mục Chủ toạ đang để InProgress, null nếu không có (BR-397)
+  "currentAgendaItemId": "…",                  // mục Chủ toạ đang để InProgress, null nếu không có (BR-399)
   "canWrite": true,                            // người gọi là Thư ký và cuộc họp còn nhận ghi chú
-  "secret": false                              // cuộc họp Mật: FE không giữ nháp trong localStorage (BR-403)
+  "secret": false                              // cuộc họp Mật: FE không giữ nháp trong localStorage (BR-461)
 }
 
 // PUT body
@@ -45,16 +45,16 @@ FE: [`NotesPanel`](../../frontend/src/features/notes/NotesPanel.tsx), kiểu [`t
 ```
 
 - **`agendaItemId: null`** là ghi chú chung của cả cuộc họp. Mỗi Thư ký có tối đa một ghi chú cho mỗi mục và một ghi
-  chú chung (BR-398).
+  chú chung (BR-400).
 - **`updatedAt`** là giá trị server trả về lần đọc hoặc lần lưu trước. Với ghi chú chưa từng lưu thì gửi `null`.
   Server trả `409` `MSG418` và không ghi đè khi:
   - ghi chú đã được lưu ở cửa sổ khác sau lần đọc đó;
   - gửi `null` cho ghi chú đã tồn tại;
   - gửi một thời điểm cho ghi chú chưa tồn tại.
 
-  Hai nơi cùng mở (khung trong phòng họp và tab mới) vì thế không ghi đè nhau (BR-399).
-- **`body`:** văn bản thuần, tối đa 20.000 ký tự, được để trống (BR-400). `\r\n` được lưu thành `\n`.
-- **Dấu đầu dòng (BR-401):** một dòng bắt đầu bằng `Ý kiến:`, `Kết luận:` hoặc `Nhiệm vụ:` là dòng có đánh dấu: không
+  Hai nơi cùng mở (khung trong phòng họp và tab mới) vì thế không ghi đè nhau (BR-401).
+- **`body`:** văn bản thuần, tối đa 20.000 ký tự, được để trống (BR-403). `\r\n` được lưu thành `\n`.
+- **Dấu đầu dòng (BR-459):** một dòng bắt đầu bằng `Ý kiến:`, `Kết luận:` hoặc `Nhiệm vụ:` là dòng có đánh dấu: không
   phân biệt hoa thường, cho phép khoảng trắng trước dấu hai chấm (`Kết luận :`), và so sau khi chuẩn hoá Unicode NFC (bàn
   phím gõ dấu tổ hợp vẫn khớp). Dấu chỉ là chữ: TrustCabinet không lưu người được giao, hạn hay tiến độ.
 - **Lỗi:**
@@ -121,7 +121,7 @@ Cách panel chạy:
 - **Chọn ghi chú:** ô chọn mặc định theo mục Chủ toạ đang để `InProgress` và đổi theo khi Chủ toạ chuyển mục.
   Thư ký chọn mục khác hoặc "Chung" thì ô chọn giữ lựa chọn đó.
 - **Lưu:** tự lưu 1 giây sau khi ngừng gõ, khi rời ô nhập, khi đổi ghi chú và khi rời tab.
-- **Nháp trên máy (BR-403):** chữ chưa lưu được giữ theo người dùng, cuộc họp và ghi chú, rồi xoá khi server đã có cùng
+- **Nháp trên máy (BR-461):** chữ chưa lưu được giữ theo người dùng, cuộc họp và ghi chú, rồi xoá khi server đã có cùng
   nội dung:
   - cuộc họp Thường (`secret: false`): trong `localStorage`, nên đóng tab rồi vào lại vẫn còn;
   - cuộc họp Mật (`secret: true`): chỉ trong `sessionStorage`, mất khi đóng trang; nháp cũ trong `localStorage` của

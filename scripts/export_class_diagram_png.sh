@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Export one class diagram to PNG with draw.io CLI. The CLI draws the content at 0.66 when the image
 # would be wider than about 2900 px, so the scale is lowered until the width fits.
+# Requirements: bash, draw.io desktop CLI (default /c/Program Files/draw.io/draw.io.exe on Windows /
+# Git Bash; override with DRAWIO=/path/to/drawio), Python 3 with Pillow for the size check.
 # Usage: scripts/export_class_diagram_png.sh docs/07-classdiagram/feature-09-....drawio [output.png]
 set -euo pipefail
 f="$1"; out="${2:-$1.png}"

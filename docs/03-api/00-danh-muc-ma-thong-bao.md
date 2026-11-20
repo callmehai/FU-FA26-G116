@@ -688,13 +688,13 @@ cho cùng tình huống: `MSG295` (sửa chữ mà không phải Thư ký), `MSG
 |---|---|---|---|---|---|
 | `MSG415` | 200 | `PUT …/notes` | Lưu ghi chú (UC-82 Main Flow) | `Đã lưu ghi chú.` | BE |
 | `MSG416` | 403 | `PUT …/notes` | Người đọc được cuộc họp nhưng không phải Thư ký hiện tại ghi chú: Chủ toạ, hoặc Thư ký vừa bị thay (EX-1). `GET` của người không phải Chủ toạ/Thư ký vẫn là `404`, không mã (EX-8) | `Chỉ Thư ký được ghi chú cuộc họp.` | BE |
-| `MSG417` | 409 | `PUT …/notes` | Cuộc họp chưa bắt đầu, đã huỷ, hoặc đã kết thúc và đã có bản nháp biên bản (EX-2, BR-396) | `Chỉ ghi chú khi cuộc họp đang diễn ra, hoặc sau khi kết thúc mà chưa tạo bản nháp biên bản.` | BE |
-| `MSG418` | 409 | `PUT …/notes` | `updatedAt` gửi lên không khớp ghi chú trên server: đã lưu ở cửa sổ khác, hoặc ghi chú đã có/chưa có (EX-3, BR-399) | `Ghi chú vừa được sửa ở cửa sổ khác. Tải lại để xem bản mới nhất.` | BE |
-| `MSG419` | 400 | `PUT …/notes` | Quá 20.000 ký tự (EX-4, BR-400) | `Ghi chú quá dài, tối đa 20.000 ký tự.` | BE |
+| `MSG417` | 409 | `PUT …/notes` | Cuộc họp chưa bắt đầu, đã huỷ, hoặc đã kết thúc và đã có bản nháp biên bản (EX-2, BR-398) | `Chỉ ghi chú khi cuộc họp đang diễn ra, hoặc sau khi kết thúc mà chưa tạo bản nháp biên bản.` | BE |
+| `MSG418` | 409 | `PUT …/notes` | `updatedAt` gửi lên không khớp ghi chú trên server: đã lưu ở cửa sổ khác, hoặc ghi chú đã có/chưa có (EX-3, BR-401) | `Ghi chú vừa được sửa ở cửa sổ khác. Tải lại để xem bản mới nhất.` | BE |
+| `MSG419` | 400 | `PUT …/notes` | Quá 20.000 ký tự (EX-4, BR-403) | `Ghi chú quá dài, tối đa 20.000 ký tự.` | BE |
 | `MSG420` | 409 | `PUT …/notes` | `agendaItemId` không thuộc cuộc họp hoặc mục đã bị xoá (EX-5) | `Mục nghị sự này không còn trong cuộc họp.` | BE |
 | `MSG421` | 500 | `GET …/notes` | Lỗi database khi đọc (EX-6) | `Không tải được ghi chú.` | BE |
 | `MSG422` | 503 | `PUT …/notes` | Lỗi database khi lưu (EX-7); FE giữ nội dung trên máy và gửi lại | `Không lưu được ghi chú. Nội dung vẫn giữ trên máy này và sẽ gửi lại.` | BE |
-| `MSG423` | — | — (FE) | Mất kết nối khi đang ghi chú (AF-3, BR-403) | `Mất kết nối. Ghi chú vẫn giữ trên máy này và sẽ lưu khi có mạng lại.` | FE |
+| `MSG423` | — | — (FE) | Mất kết nối khi đang ghi chú (AF-3, BR-461) | `Mất kết nối. Ghi chú vẫn giữ trên máy này và sẽ lưu khi có mạng lại.` | FE |
 
 ### Đăng ký phát biểu — SCRUM-27 (`/api/meetings/{id}/speaking-requests`) · [contract](20-dang-ky-phat-bieu.md)
 

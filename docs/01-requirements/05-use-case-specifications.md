@@ -1581,7 +1581,16 @@ _UC gom — đặc tả nằm ở các UC con UC-46a, UC-46b… bên dưới._
 
 ### UC-51 – Publish Meeting Summary (retired)
 
-Placeholder only – detailed Use Case Specification will be added later.
+| Mục | Nội dung |
+|---|---|
+| **Primary Actors** | None (retired) |
+| **Secondary Actors** | None |
+| **Description** | Retired on 19/11/2026 by the Product Owner: approving the summary (UC-50) already makes it readable to everyone who may read the Meeting, so a separate publish step has no work left. The number UC-51 is kept for now and will be renumbered later. |
+| **Preconditions** | N/A |
+| **Postconditions** | N/A |
+| **Normal Flow** | N/A |
+| **Alternative Flows** | N/A |
+| **Exception Flows** | N/A |
 
 ### UC-81 – Manage My Voice ID
 

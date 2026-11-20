@@ -786,7 +786,7 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | UC-48 | View Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Read the AI draft, its AI label and its review state; before review only the current Chair and Secretary see it, and after review every reader of the Meeting does. |
 | UC-49 | Edit Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Correct the text of the three sections; saving withdraws the review until the draft is approved again. |
 | UC-50 | Approve Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Approve the draft so the other participants can read it and the minutes can use sections I-III. |
-| UC-51 | Publish Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Placeholder only - detailed Use Case Specification will be elaborated in the iteration that delivers this feature. |
+| UC-51 | Publish Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Retired on 19/11/2026 by the Product Owner: the approved summary (UC-50) is already readable by everyone who may read the Meeting; the number is kept for now and will be renumbered later. |
 | UC-52 | View Meeting Votes | Voting Management | View visible Meeting Votes and their status or result through UC-52a and UC-52b. |
 | UC-53 | Create / Configure Vote | Voting Management | Allows the current Chair or Secretary to prepare a Vote draft and configure or delete an existing draft; only the Chair may proceed to opening the Vote. Draft preparation is allowed before the Meeting starts, while it is Approved or Published, and during InProgress. Each Vote belongs directly to its Meeting; its documents are managed through UC-76. |
 | UC-54 | Open Vote | Voting Management | Allows the current Chair to open a valid Vote during an InProgress Meeting. Opening fixes the eligible-voter list and count. Only one Vote may be Open in a Meeting at a time. |
@@ -2239,7 +2239,16 @@ Delivery scope: UC-31 attendance is delivered separately from the roster, invita
 
 #### 10.8 UC-51 – Publish Meeting Summary (retired)
 
-Retired (placeholder only) – not implemented; number retained, to be renumbered later.
+Retired on 19/11/2026 – the number is kept for now and will be renumbered later.
+
+| Primary Actors | None (retired) | Secondary Actors | None |
+| --- | --- | --- | --- |
+| Description | Retired on 19/11/2026 by the Product Owner: approving the summary (UC-50) already makes it readable to everyone who may read the Meeting, so a separate publish step has no work left. The number UC-51 is kept for now and will be renumbered later. |  |  |
+| Preconditions | N/A |  |  |
+| Postconditions | N/A |  |  |
+| Normal Flow | N/A |  |  |
+| Alternative Flows | N/A |  |  |
+| Exception Flows | N/A |  |  |
 
 ### 11. FE-11 – Voting Management
 

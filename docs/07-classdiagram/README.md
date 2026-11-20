@@ -26,9 +26,9 @@ trích xuất nguyên trạng các class C# đã triển khai.
 | FE-12 Minutes Management | [drawio](feature-12-minutes-management-class-diagram.drawio) · [PNG](feature-12-minutes-management-class-diagram.drawio.png) | UC-58, UC-59, UC-60, UC-61, UC-64, UC-65, UC-83 |
 | FE-13 Notification | [drawio](feature-13-notification-management-class-diagram.drawio) · [PNG](feature-13-notification-management-class-diagram.drawio.png) | UC-66, UC-67a/b, UC-68 |
 | FE-15 Reporting | [drawio](feature-15-reporting-class-diagram.drawio) · [PNG](feature-15-reporting-class-diagram.drawio.png) | UC-70a, UC-70b |
-| FE-16 Calendar Sharing | [drawio](feature-16-calendar-sharing-class-diagram.drawio) · [PNG](feature-16-calendar-sharing-class-diagram.drawio.png) | UC-84, UC-85 |
+| FE-16 Calendar Sharing | [drawio](feature-16-calendar-sharing-class-diagram.drawio) · [PNG](feature-16-calendar-sharing-class-diagram.drawio.png) | UC-84 (UC-85a–c chưa vẽ trong sơ đồ này) |
 
-FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026) và tải từ máy vào cuộc họp (UC-33a AF-1 — SCRUM-107, 23/10/2026): thêm `uploadDocuments` từ `MeetingDocumentsTab` xuống service, `FileStorage.write/delete` (R2, [ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)), `FolderRepository`, entity `Folder` và `Document` (dòng kho), `StoredFile.originalFileName`, và làn bên trái cho job dọn file mồ côi `OrphanFilePurgeJob` + `StoredFileRepository` (BR-213). Cùng đợt sửa `downloadDocument` của `DocumentViewer` thêm `meetingId` cho khớp controller. Sau đó (27/10/2026, PR 166): `DocumentRepository.sumStoredBytes` / `MeetingDocumentRepository.sumStoredBytes` (hạn mức 10 GB, BR-333, ADR-0034) và `viewLockedLibrary` + `findOwnerLibrary` trên `DocumentController`/`DocumentService`/`DocumentRepository` (UC-34b, BR-334, ADR-0035; code ở `PersonalLibraryService`); `User Repository` và `AuditLog` của UC-34b là lớp ngoài feature, chưa vẽ. Ảnh PNG xuất scale 1.2 với `--disable-gpu --disable-software-rasterizer` vì scale 2 bị cắt trên máy này. Luồng chọn từ kho, gỡ/gắn tài liệu, xem/quản lý kho (UC-33a luồng chính, UC-33b–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58/SCRUM-92) đã vẽ ngày 27/10/2026 và chuyển as-built ngày 28/10/2026 (§6e). Còn thiếu quan hệ tác giả `DocumentComment.authorId` → `User` (mới vẽ phía Guest); để lại cho SCRUM-23. FE-11 có class diagram thiết kế (25/10/2026, §6f); FE-09 và FE-10 có class diagram đối chiếu với code 30/10/2026 (§6g); FE-08, FE-12, FE-14 và FE-15 chưa có class diagram trong thư mục này. FE-05 Meeting Session cũ
+FE-07 mới có phần đọc tài liệu cuộc họp và góp ý (UC-32a, UC-32c, UC-35 — SCRUM-21/22/23, 22/10/2026) và tải từ máy vào cuộc họp (UC-33a AF-1 — SCRUM-107, 23/10/2026): thêm `uploadDocuments` từ `MeetingDocumentsTab` xuống service, `FileStorage.write/delete` (R2, [ADR-0024](../05-decisions/0024-luu-file-tai-lieu-tren-cloudflare-r2.md)), `FolderRepository`, entity `Folder` và `Document` (dòng kho), `StoredFile.originalFileName`, và làn bên trái cho job dọn file mồ côi `OrphanFilePurgeJob` + `StoredFileRepository` (BR-213). Cùng đợt sửa `downloadDocument` của `DocumentViewer` thêm `meetingId` cho khớp controller. Sau đó (27/10/2026, PR 166): `DocumentRepository.sumStoredBytes` / `MeetingDocumentRepository.sumStoredBytes` (hạn mức 10 GB, BR-333, ADR-0034) và `viewLockedLibrary` + `findOwnerLibrary` trên `DocumentController`/`DocumentService`/`DocumentRepository` (UC-34b, BR-334, ADR-0035; code ở `PersonalLibraryService`); `User Repository` và `AuditLog` của UC-34b là lớp ngoài feature, chưa vẽ. Ảnh PNG xuất scale 1.2 với `--disable-gpu --disable-software-rasterizer` vì scale 2 bị cắt trên máy này. Luồng chọn từ kho, gỡ/gắn tài liệu, xem/quản lý kho (UC-33a luồng chính, UC-33b–d, UC-34, UC-36, UC-71, UC-72 — SCRUM-58/SCRUM-92) đã vẽ ngày 27/10/2026 và chuyển as-built ngày 28/10/2026 (§6e). Còn thiếu quan hệ tác giả `DocumentComment.authorId` → `User` (mới vẽ phía Guest); để lại cho SCRUM-23. FE-11 có class diagram thiết kế (25/10/2026, §6f); FE-09 và FE-10 có class diagram đối chiếu với code 30/10/2026 (§6g); FE-08, FE-12, FE-15 và FE-16 đã có class diagram trong đợt 20/11/2026 (§6i); FE-14 bỏ theo UC-69 nên không vẽ. FE-05 Meeting Session cũ
 đã bị bỏ theo [ADR-0013](../05-decisions/0013-mot-cuoc-hop-la-mot-buoi-hop.md); FE-05 hiện tại là Agenda.
 UC-07 hiện nằm trong FE-02, không còn một bản 02b độc lập.
 
@@ -150,6 +150,12 @@ render draft không nhúng XML để xem, rồi xuất PNG editable. Với draw.
 kiểm tra giải mã PNG **và mở lại model bằng draw.io** trước khi bàn giao. Dạng nhúng đã kiểm tra
 được là chunk `tEXt`, keyword `mxfile`, nội dung XML qua `encodeURIComponent`, theo
 [file format của draw.io](https://github.com/jgraph/drawio/wiki/File-Format).
+
+`scripts/export_class_diagram_png.sh` chạy bằng bash, cần draw.io desktop CLI và Python 3 có Pillow:
+mặc định script tìm `draw.io` tại `/c/Program Files/draw.io/draw.io.exe` (đường dẫn trên Windows khi
+chạy Git Bash), đặt biến `DRAWIO` nếu CLI nằm chỗ khác; script gọi `python` cho bước đọc kích thước ảnh.
+Ảnh xuất bằng `--disable-gpu --disable-software-rasterizer`, scale tự hạ để không bị draw.io thu nhỏ
+khi nội dung rộng quá ~2900 px.
 
 ## 6. Đồng bộ theo Report 3 ngày 18/10/2026
 
@@ -390,6 +396,23 @@ BA Final Review SCRUM-16 (PR #311, note 42). Sửa **cục bộ** source
 - XML hợp lệ, ID duy nhất, mọi cạnh còn `source`/`target` hợp lệ; PNG xuất lại bằng draw.io desktop `--scale 2` và đã
   mở xem: hai lớp mới không bị cắt chữ, cạnh mới không chồng lên cạnh khác.
 - Dòng 176 (FE-07, `AuditLogRepository` phục vụ BR-318) **giữ nguyên** — đó là feature khác, không phải UC-13.
+
+## 6i. FE-05, FE-12, FE-16 — theo review PR #419 · 20/11/2026
+
+Sửa **cục bộ** ba source theo review của Hải; giữ ID cell, quan hệ và bố cục thủ công còn lại.
+
+- **FE-05:** bỏ `meetingRepoUsed`/`minutesRepoUsed` — mỗi repository chỉ còn một box `meetingRepo`,
+  `minutesRepo`, dùng chung cho cả làn Agenda và làn Ghi chú (UC-82); hai cạnh `uc82_n3`/`uc82_n4`
+  được nối lại vào box chung, đi vòng dưới dải repository để không xuyên class.
+- **FE-12:** `MeetingMinutes` thêm `revisionNumber: int` và `supersedesId?: UUID` cho luồng đính chính
+  UC-83; hộp cao thêm 2 dòng.
+- **FE-16:** `CalendarShare` sửa theo `Domain/Entities/CalendarShare.cs`: `ownerId`, `viewerId`,
+  `initiatedBy`, `level`, `startDate`, `endDate`, `status`, các trường `pending*`, `decidedAt`,
+  `closedAt`, `closedById` (bỏ `requesterId`/`createdAt` không có trong entity). Sơ đồ chỉ vẽ UC-84;
+  UC-85a–c (tìm giờ họp) chưa có class diagram nên bảng §1 ghi rõ.
+- **Kiểm tra:** validator draw.io 0 lỗi cho cả ba source (FE-05 còn cảnh báo cạnh giao nhau của các
+  cạnh dài trong làn Ghi chú, không có cạnh xuyên class); đã render và xem ảnh, không cắt chữ.
+- PNG của ba file được xuất lại và nén palette bằng `scripts/compress_png.py`.
 
 ## 7. Rà soát hiện trạng · 14/10/2026
 
