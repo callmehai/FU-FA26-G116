@@ -137,12 +137,8 @@ export function ShareRow({
             Đồng ý
           </button>
         )}
-        {more.length > 0 ? (
-          <MenuButton label="Thao tác khác" icon="moreVertical" items={more} iconOnly />
-        ) : (
-          // The "…" place, kept empty so the answer buttons stay where they are on every other row.
-          <span className="share-row-menu-slot" aria-hidden="true" />
-        )}
+        {/* No empty place for a missing "…": the buttons end at the right edge (Hải 20/11/2026). */}
+        {more.length > 0 && <MenuButton label="Thao tác khác" icon="moreVertical" items={more} iconOnly />}
       </div>
     </li>
   )

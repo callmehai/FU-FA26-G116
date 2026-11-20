@@ -1098,10 +1098,46 @@ function FittedTiles({ tiles }: { tiles: TrackReferenceOrPlaceholder[] }) {
   const gap = box.width < 600 ? TILE_GAP_PHONE : TILE_GAP
   const fit = fitTiles(box.width, box.height, tiles.length, gap)
 
+  // Opening or closing a panel, or someone arriving, re-flows the grid (two tiles side by side become a column). Each
+  // tile glides from where it was instead of jumping there (Hải 20/11/2026): FLIP — measure, then animate the
+  // difference away. Skipped for people who asked the system for less motion.
+  const fitRef = useRef<HTMLDivElement>(null)
+  const lastRects = useRef(new Map<string, DOMRect>())
+  const identities = tiles.map((t) => t.participant.identity).join('|')
+  useLayoutEffect(() => {
+    const grid = fitRef.current
+    if (!grid) return
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const ids = identities.split('|')
+    const next = new Map<string, DOMRect>()
+    Array.from(grid.children).forEach((child, i) => {
+      const id = ids[i]
+      if (!id || !(child instanceof HTMLElement)) return
+      const now = child.getBoundingClientRect()
+      next.set(id, now)
+      const before = lastRects.current.get(id)
+      if (still || !before || now.width === 0 || now.height === 0) return
+      const dx = before.left - now.left
+      const dy = before.top - now.top
+      const sx = before.width / now.width
+      const sy = before.height / now.height
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) return
+      child.animate(
+        [
+          { transformOrigin: 'top left', transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
+          { transformOrigin: 'top left', transform: 'none' },
+        ],
+        { duration: 220, easing: 'cubic-bezier(0.2, 0, 0, 1)' },
+      )
+    })
+    lastRects.current = next
+  }, [fit.columns, fit.width, fit.height, gap, identities])
+
   return (
     <div className="room-grid-area" ref={ref}>
       {fit.width > 0 && (
         <div
+          ref={fitRef}
           className="room-grid-fit"
           style={{ gap, width: fit.columns * fit.width + (fit.columns - 1) * gap }}
         >
